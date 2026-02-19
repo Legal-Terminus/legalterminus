@@ -28,9 +28,7 @@ const TrustPremium = () => {
                 <span className="trust-premium-title-icon">⚖️</span>
               </h2>
               <p className="trust-premium-subtitle">
-                Get your company registered faster with Legal Terminus’s
-                expert-handled process, built for entrepreneurs who value time
-                and want to avoid unnecessary delays.
+                Get your Trust registered quickly and smoothly with our expert-led process, specially designed for NGOs, charitable initiatives, and social organizations that value timely approval and proper compliance.
               </p>
             </header>
 
@@ -40,15 +38,15 @@ const TrustPremium = () => {
               <ul className="trust-premium-list">
                 <li className="trust-premium-list-item">
                   <span className="trust-premium-list-icon">🧑‍⚖️</span>
-                  Priority handling by trustoration experts
+                  Priority handling by trust law experts
                 </li>
                 <li className="trust-premium-list-item">
                   <span className="trust-premium-list-icon">📑</span>
-                  Hassle-free compliance assistance
+                  Complete documentation & compliance assistance
                 </li>
                 <li className="trust-premium-list-item">
                   <span className="trust-premium-list-icon">⏱️</span>
-                  Strong follow-up & reminder policy
+                  Dedicated follow-up and status tracking
                 </li>
               </ul>
             </section>
@@ -59,12 +57,10 @@ const TrustPremium = () => {
               <div className="trust-premium-note-box">
                 <ul className="trust-premium-note-list">
                   <li className="trust-premium-note-item">
-                    We prioritize your preferred business name and perform a
-                    preliminary name check before submission.
+                    We assist in selecting and verifying your Trust name before filing the application.
                   </li>
                   <li className="trust-premium-note-item">
-                    In case of name rejection, our experts suggest compliant
-                    alternatives to ensure approval.
+                    In case of objections or clarifications from the authority, our experts guide you with proper solutions to ensure smooth approval.
                   </li>
                 </ul>
               </div>

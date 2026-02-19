@@ -54,7 +54,7 @@ const PartnershipLLPBreadcrum = () => {
             </h3>
 
             <p className="partnership-llp-breadcrum-form-subtitle">
-              Talk to our Private Limited Company registration expert
+              Talk to our expert
             </p>
 
             <form

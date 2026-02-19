@@ -10,36 +10,35 @@ const DissolvePrivateBreadcrum = () => {
         <div className="DissolvePrivate-public-content">
 
           <span className="DissolvePrivate-public-tag">
-             Dissolve-Private Registration Online
+             Dissolve a Private Limited Company
           </span>
 
           <h1 className="DissolvePrivate-public-title">
-             Dissolve-Private Registration Online
-            <span> in India</span>
+             Winding Up of a Private Limited Company
           </h1>
 
           <p className="DissolvePrivate-public-description">
-            Legal Terminus can help you with Public Limited Company registration in a smooth and hassle-free manner. We offer competitive professional fees starting at Rs. 3,999/- for Public Limited Company registration in India.
+            Legal Terminus can help you with the Process of Winding Up of a Company in a hassle-free manner within a reasonable time span and competitive Professional fee which starts from Rs. 18999/-
           </p>
 
           <div className="DissolvePrivate-public-features">
             <div className="DissolvePrivate-feature-item"> Minimum 2 Directors Required</div>
-            <div className="DissolvePrivate-feature-item"> Separate Legal Entity</div>
-            <div className="DissolvePrivate-feature-item"> Limited Liability Protection</div>
-            <div className="DissolvePrivate-feature-item"> High Business Credibility</div>
+            <div className="DissolvePrivate-feature-item"> Process Takes 3 to 6 Months</div>
+            <div className="DissolvePrivate-feature-item"> All Liabilities Must Be Cleared Before Closure</div>
+            <div className="DissolvePrivate-feature-item"> Official Strike-Off by Registrar of Companies</div>
           </div>
 
           <div className="DissolvePrivate-public-highlights">
             <div>
-              <h3>12,000+</h3>
+              <h3>1,000+</h3>
               <p>Companies Registered</p>
             </div>
             <div>
-              <h3>99%</h3>
-              <p>Approval Success Rate</p>
+              <h3>100%</h3>
+              <p>Online Process</p>
             </div>
             <div>
-              <h3>15+</h3>
+              <h3>5+</h3>
               <p>Years of Legal Expertise</p>
             </div>
           </div>
@@ -55,7 +54,7 @@ const DissolvePrivateBreadcrum = () => {
             </h3>
 
             <p className="DissolvePrivate-form-subtitle">
-              Talk to our Private Limited Company registration expert
+              Talk to our expert
             </p>
 
             <form

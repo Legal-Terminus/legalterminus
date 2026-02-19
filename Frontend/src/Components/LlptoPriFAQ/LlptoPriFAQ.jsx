@@ -3,124 +3,69 @@ import "./LlptoPriFAQ.css"; // keep your existing CSS file
 
 const faqs = [
   {
-    question: "What is an LLP and how is it different from a Private Limited Company?",
+    question: "What are the benefits of the conversion of Limited Liability Partnership (LLP) into a company?",
+    answer:(
+    <div>
+      <ul>
+        <li>1. The base rate of income tax in case of an LLP is 30%, whereas for private limited companies, the base rate of tax is 22%</li>
+        <li>2. A private limited company has a separate legal identity as compared to a LLP.</li>
+        <li>3. There is a separation of ownership and management in a private limited company, whereas in Limited Liability Partnership (LLP), the partners are owners and the managers of the LLP.</li>
+        <li>4. The venture capitalist prefers corporate structures over LLP structures.</li>
+        <li>5. Due to stringent compliances and disclosures under various laws, Companies enjoy a high degree of creditworthiness as compared to LLPs</li>
+      </ul>
+    </div>
+  ),
+},
+  {
+    question: "What are some key/ basic documents required for conversion of a Limited Liability Partnership (LLP) into a company?",
+    answer:(
+    <div>
+      <ul>
+        <li>1. Particulars of members along with the proposed shareholding ratio</li>
+        <li>2. Declaration of two or more directors verifying the particulars of all members</li>
+        <li>3. Affidavit from all the partners for dissolution of the firm</li>
+        <li>4. Copy of the LLP Agreement</li>
+        <li>5. Copy of Newspaper advertisement in prescribed format</li>
+        <li>6. Relevant certification from a CA/CS/CWA; etc.</li>
+        <li>7. Consent of majority of members</li>
+        <li>8. No objection certificate from the concerned Registrar of companies</li>
+        <li>9. Certificate of registration of LLP</li>
+        <li>10. Statement of accounts of the existing entity, prepared not later than 15 days preceding the date of application duly certified by auditor</li>
+        <li>11. Undertaking by the proposed directors for compliance with requirements of Indian Stamp Act, 1899</li>
+        <li>12. A copy of latest Income Tax Return of the firm</li>
+        <li>13. Declaration/particulars as per DIR 8, DIR 2, 16(1), INC 9</li>
+        <li>14. Bank Statement with current transactions</li>
+        <li>15. KYC documents</li>
+        <li>16. Electricity Bill, Rent Agreement, NOC by the owner of Registered office</li>
+        <li>17. Dissolution Deed</li>
+        <li>18. NOC unsecured creditors & secured creditors</li>
+      </ul>
+    </div>
+  ),
+},
+  {
+    question: "What is the procedure for conversion a Limited Liability Partnership (LLP) into a company?",
+    answer:(
+    <div>
+      <ul>
+        <li>1. Preparation of DSC and DIN of all proposed Directors</li>
+        <li>2. Preparation and Filing of name application through web form RUN through MCA portal.</li>
+        <li>3. Preparation and filing of E form URC 1, E form spice, E form Spice MOA & E form Spice AOA</li>
+        <li>4. Appropriate Government fees is payable depending upon the authorized capital of the company.</li>
+        <li>5. Issuance of Certificate of incorporation along with PAN and TAN.</li>
+      </ul>
+    </div>
+  ),
+},
+  {
+    question: "What is the time period within which the Conversion of LLP into a Company can be completed?",
     answer:
-      "A Limited Liability Partnership (LLP) combines features of a partnership and a company. It offers limited liability to partners and flexibility in internal management. Unlike a private limited company, LLPs have simpler compliance and governance while companies have share capital and stricter statutory requirements.",
+      "The process of Conversion of Partnership Firm into a LLP can take anywhere between 40 to 50 working days, subject to submission of correct information and complete documentation.",
   },
   {
-    question: "Who can register an LLP in India?",
+    question: "How Legal Terminus can help you to convert a Limited Liability Partnership (LLP) into a private limited company?",
     answer:
-      "Any individual or corporate entity (Indian or foreign) can be a partner in an LLP, subject to sectoral regulations. At least two partners are required to form an LLP.",
-  },
-  {
-    question: "Is LLP registration mandatory for all partnerships?",
-    answer:
-      "No. Traditional partnerships can operate without LLP registration, but registering as an LLP provides limited liability protection and other statutory benefits. Many professional firms choose LLP structure for these reasons.",
-  },
-  {
-    question: "How do I register an LLP online in India?",
-    answer:
-      "The usual online steps are: obtain DSCs for partners (if needed), check and reserve the name (RUN-LLP), prepare incorporation documents and LLP agreement, file the incorporation form (Form 2/run the RUN process), and obtain the Certificate of Incorporation from the ROC.",
-  },
-  {
-    question: "What are the documents required for LLP registration?",
-    answer:
-      "Common documents include identity proof (PAN, passport), address proof (Aadhaar, voter ID), registered office proof (utility bill/lease), digital signature certificates for partners (if required), and a duly signed LLP agreement.",
-  },
-  {
-    question: "How much does it cost to register an LLP in India?",
-    answer:
-      "Costs depend on professional fees, government filing fees, and state stamp duty for the LLP agreement. Professional fees vary by service provider; government fees depend on proposed capital and ROC schedules.",
-  },
-  {
-    question: "What is the time required to complete LLP registration?",
-    answer:
-      "If documents are in order, name availability is clear, and filings are correct, registration typically completes in a few working days to a couple of weeks. Delays occur when additional clarifications are requested by the ROC.",
-  },
-  {
-    question: "What are the advantages of registering an LLP?",
-    answer:
-      "Key advantages: limited liability for partners, separate legal entity, flexible management, fewer compliance formalities compared to companies, perpetual succession, and improved credibility with stakeholders.",
-  },
-  {
-    question: "Can an NRI or foreign national be a partner in an LLP?",
-    answer:
-      "Yes — NRIs and foreign nationals can be partners, subject to applicable foreign exchange and sectoral regulations. KYC and identity documents are required during registration.",
-  },
-  {
-    question: "Is there any minimum capital required to start an LLP?",
-    answer:
-      "There is no statutory minimum capital for forming an LLP under the LLP Act. Partners decide the capital contribution among themselves and record it in the LLP agreement.",
-  },
-  {
-    question: "What is DPIN and why is it required for LLP partners?",
-    answer:
-      "DPIN (Designated Partner Identification Number) was formerly used for designated partners. Currently, partners generally require DIN/DPIN or equivalent identifiers where applicable — consult MCA guidance. Digital identity and KYC are required for compliance.",
-  },
-  {
-    question: "Is a digital signature (DSC) required for LLP registration?",
-    answer:
-      "A DSC may be required for filing electronic forms on government portals depending on the type of applicant and the form. Many service providers arrange DSCs for partners as part of the process.",
-  },
-  {
-    question: "Do LLPs have to file annual returns and maintain compliance?",
-    answer:
-      "Yes. LLPs must file annual returns (Form 11) and statement of accounts & solvency (Form 8) with the ROC, and also comply with tax filings (ITR) and other statutory requirements as applicable.",
-  },
-  {
-    question: "What is the Statement of Account and Solvency?",
-    answer:
-      "It is a statutory filing (Form 8) containing the LLP's financial details and a declaration of solvency. It must be filed annually by the LLP as per ROC requirements.",
-  },
-  {
-    question: "When does an LLP need to undergo an audit?",
-    answer:
-      "LLPs with turnover exceeding prescribed thresholds (e.g., turnover above certain limits or capital contribution above specified amount) are required to get their accounts audited by a Chartered Accountant. Check current thresholds before filing.",
-  },
-  {
-    question: "Can partners agree on profit-sharing and roles in the LLP agreement?",
-    answer:
-      "Yes. The LLP agreement sets out roles, duties, profit-sharing ratios, decision-making procedures, and other internal rules — partners have wide latitude to define these terms.",
-  },
-  {
-    question: "How can I change partners or update the LLP agreement later?",
-    answer:
-      "Amendments to the LLP agreement and changes in partners are effected as per the LLP agreement and by filing the prescribed ROC forms to notify changes in designated partners or alterations in the agreement.",
-  },
-  {
-    question: "What happens if an LLP fails to file returns on time?",
-    answer:
-      "Late filing may attract penalties and additional fees. Persistent non-compliance could lead to prosecution, increased fines, or regulatory action by the ROC.",
-  },
-  {
-    question: "Does LLP registration provide protection for partner’s personal assets?",
-    answer:
-      "LLP offers limited liability to partners; however, personal guarantees or fraud can override protection. Partners remain liable to the extent of their agreed contribution.",
-  },
-  {
-    question: "Are foreign-invested businesses allowed as LLPs?",
-    answer:
-      "Foreign investment policies vary by sector. In many sectors, foreign entities can be partners in LLPs, but sectoral restrictions and FDI rules must be checked prior to formation.",
-  },
-  {
-    question: "What are post-incorporation tasks to complete after incorporation?",
-    answer:
-      "Typical tasks: obtain PAN & TAN for the LLP, open a bank account, register the LLP agreement if needed, maintain statutory records, and ensure tax and ROC compliances.",
-  },
-  {
-    question: "Can an LLP be converted into a company or vice versa?",
-    answer:
-      "Yes — conversion between structures is possible under the law, subject to compliance with statutory procedures, approvals, and ROC filings.",
-  },
-  {
-    question: "How do I pick a good LLP name and avoid rejection?",
-    answer:
-      "Choose a unique, descriptive name that does not infringe trademarks or duplicate existing registered entities. Avoid restricted words and follow naming guidelines on the MCA portal before filing.",
-  },
-  {
-    question: "Where can I get official help or check forms for LLP registration?",
-    answer:
-      "Official guidance, downloadable forms, and filing portals are available on the Ministry of Corporate Affairs (MCA) website. Consider professional help for documentation and filings to ensure accuracy.",
+      "Legal Terminus can help you with Conversion of Partnership Firm into a LLP in a hassle-free manner within a reasonable time span and competitive Professional fees. To know more please book a telephonic appointment with one of our consultants for free.",
   },
 ];
 
@@ -137,12 +82,10 @@ const FaqLLP = () => {
       <div className="LLP-to-PLC-container">
         {/* Left side – static text */}
         <div className="LLP-to-PLC-left">
-          <h2 className="LLP-to-PLC-title">Limited Liability Partnership FAQ's</h2>
+          <h2 className="LLP-to-PLC-title">Conversion of LLP into Limited Liability Partnership FAQ's</h2>
 
           <p className="LLP-to-PLC-intro">
-            Explore answers to common questions about Limited Liability Partnership (LLP) registration in India,
-            covering key benefits, eligibility, compliance requirements, partner roles, and comparison with other business structures to
-            help you choose the best option for your needs.
+            Explore answers to common questions about Conversion of Limited Liability Partnership (LLP)  into Private Limited Company covering key benefits, eligibility, compliance requirements, partner roles, and comparison with other business structures to help you choose the best option for your needs.
           </p>
         </div>
 

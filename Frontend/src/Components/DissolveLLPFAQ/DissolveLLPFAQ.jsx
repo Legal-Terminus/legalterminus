@@ -4,52 +4,70 @@ import "./DissolveLLPFAQ.css";
 const faqs = [
   {
     question:
-      "How many persons are required to form a Private Limited Company?",
+      "What are the advantages of winding up of a non-operational LLP?",
     answer:
-      "Minimum two persons are required to form a Private Limited Company and a maximum up to 200 persons can be a member of a single Private Limited Company.",
+      "The LLP becomes exempted from undertaking various applicable and onerous compliance. The LLP and its Designated Partners/ Partners may avoid hefty penalties arising due to various non-compliance.",
   },
   {
     question:
-      "How many Directors are required to form a Private Limited Company?",
-    answer:
-      "Minimum two directors are required in a Private Limited Company, with an upper cap up to 15 directors.",
-  },
+      "What are certain pre-conditions for filing application for winding up a company?",
+    answer:(
+    <div>
+      <ul>
+        <li>1. Completion of all pending compliance</li>
+        <li>2. Disposing off all assets and settling all liabilities</li>
+        <li>3. Nil transaction in company’s bank account(s) for at least three months</li>
+      </ul>
+    </div>
+  ),
+},
   {
-    question: "Who are Directors of the company?",
-    answer:
-      "Directors are officers of the company who are responsible for managing the company and making the decisions as to its operation on a day to day basis, for the benefit of the shareholders.",
-  },
+    question: "What are the documents required for strike off of an LLP?",
+    answer:(
+    <div>
+      <ul>
+        <li>Consent letter from all Designated Partners or Partners</li>
+        <li>Affidavit from all the Designated Partners or Partners</li>
+        <li>Indemnity bond from all Designated Partners or Partners</li>
+        <li>PAN card of LLP</li>
+        <li>PAN card of all Designated Partners or Partners</li>
+        <li>Aadhar card of all the Designated Partners or Partners</li>
+        <li>Resolution passed by the LLP for the winding up</li>
+        <li>Application to ROC for winding up</li>
+        <li>Statement of asset and liabilities duly certified by the Chartered Accountant</li>
+        <li>Latest Income tax return filed by the LLP</li>
+        <li>Closure letter of all the Bank accounts operated by the LLP</li>
+        <li>All the registration Certificates obtained</li>
+      </ul>
+    </div>
+  ),
+},
   {
-    question: "What is a company shareholder?",
+    question: "What is the procedure to winding up an LLP voluntarily?",
+    answer:(
+    <div>
+      <p><strong>Required Documents:</strong></p>
+      <ul>
+        <li>The LLP has to cease all its commercial activities and close its bank account</li>
+        <li>Affidavit to be prepared by the Designated Partners and Partners</li>
+        <li>Obtain CA certificate for Nil Assets & Nil Liabilities</li>
+        <li>File the application along with the respective documents as mentioned above to the registrar of companies in form LLP 24</li>
+        <li>Appropriate Government fees is payable depending upon the contribution of the LLP.</li>
+      </ul>
+    </div>
+  ),
+},
+  {
+    question:
+      "What is the time period within which the process of winding up takes place?",
     answer:
-      "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in day-to-day management or financial affairs.",
+      "The time period required for winding up of LLP shall depend upon various factor, however, based on our past experience it takes around 3 to 6 months to obtain a closure certificate from the department.",
   },
   {
     question:
-      "How much capital is required to start a Private Limited Company?",
+      "How Legal Terminus can help you to wind up your LLP?",
     answer:
-      "The Private Limited Company can be incorporated with any amount of capital and there is no lower or upper limit.",
-  },
-  {
-    question:
-      "What documents are required to incorporate a Private Limited Company?",
-    answer:
-      "PAN Card, Address Proof, Identity Proof of all directors and shareholders.",
-  },
-  {
-    question: "What is the procedure to register a Private Limited Company?",
-    answer:
-      "You need two directors, shareholders, a company name, office address, and KYC documents.",
-  },
-  {
-    question: "What is the time period for incorporation?",
-    answer:
-      "Incorporation usually takes 10–15 working days after submission of correct documents.",
-  },
-  {
-    question: "How Legal Terminus can help?",
-    answer:
-      "Legal Terminus assists with hassle-free incorporation at competitive fees.",
+      "Legal Terminus can help you with winding up in a hassle-free manner within a reasonable time span and competitive Professional fees. To know more please book a telephonic appointment with one of our consultants for free.",
   },
 ];
 
@@ -66,17 +84,11 @@ const DissolveLLPFAQ = () => {
         {/* LEFT */}
         <div className="Dissllp-societys-left">
           <h2 className="Dissllp-societys-title">
-            Dissolve-llp Registration in India FAQ&apos;s
+            Dissolve a Limited Liability Partnership FAQ's&apos;s
           </h2>
 
           <p className="Dissllp-societys-intro">
-            Starting a Private Limited Company in India is an important step for
-            any business owner. With the right support, the process can be
-            simple and stress-free.
-            <br />
-            <br />
-            Below are answers to the most common questions related to company
-            registration.
+            Here, we’ve answered the most common questions about Dissolve a Limited Liability Partnership covering documents, steps, and what happens after registration.
           </p>
         </div>
 

@@ -19,9 +19,9 @@ const Trust = () => {
     <div>
       <TrustBreadcrum />
       <div id="plans">
-        <TrustPlanAndPricing />
+        {/* <TrustPlanAndPricing /> */}
       </div>
-      <TrustTermsCondition />
+      {/* <TrustTermsCondition /> */}
 
       <div id="premium">
         <TrustPremium />
@@ -40,10 +40,10 @@ const Trust = () => {
         <TrustRequirementsTab />
       </div>
       <div id="process">
-        <TrustProcess />
+        {/* <TrustProcess /> */}
       </div>
       <div id="documents">
-        <TrustDocument />
+        {/* <TrustDocument /> */}
       </div>
       <div id="faq">
         <TrustFAQ />

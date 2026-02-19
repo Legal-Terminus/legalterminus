@@ -5,37 +5,37 @@ const steps = [
   {
     title: "Step 1 – Document Submission",
     text:
-      "Submission of required documents and information as per the checklist provided by our team.",
+      "Provision of requisite documents/information to us (As per the checklist to be provided by us)",
   },
   {
-    title: "Step 2 – Company Name & Object Finalization",
+    title: "Step 2 – Company Name & Objects Finalization",
     text:
-      "Finalization of company name and business objects based on a detailed name search conducted by our experts.",
+      "Finalisation of Objects along with Name of the proposed company (Name shall be finalised on the basis of a search report duly conducted & provided by our team)",
   },
   {
     title: "Step 3 – Name Reservation Application",
     text:
-      "Filing of the name reservation application in the prescribed MCA form along with applicable government fees.",
+      "Filing of Application for Name Reservation in requisite e-form along with applicable government fees",
   },
   {
     title: "Step 4 – Digital Signature Certificates",
     text:
-      "Preparation of Digital Signature Certificates (DSC) for promoters and directors and registration on the MCA portal.",
+      "Preparation of requisite numbers of DSC with respect to the proposed Promoters & Directors and Registration of DSC in MCA Portal",
   },
   {
     title: "Step 5 – Incorporation Document Preparation",
     text:
-      "Drafting and preparation of incorporation documents after receiving name approval from MCA.",
+      "Preparation of further incorporation documents upon receipt of name approval letter from the department",
   },
   {
-    title: "Step 6 – Final Form Filing & Fee Payment",
+    title: "Step 6 – Final Form Upload and Fee Payment",
     text:
-      "Uploading of final incorporation forms on the MCA portal along with applicable government fees.",
+      "Uploading of Final Incorporation Forms to the MCA portal along with applicable government fees",
   },
   {
-    title: "Step 7 – Certificate of Incorporation",
+    title: "Step 7 – Registration Certificate Issuance",
     text:
-      "Review by the Registrar of Companies and issuance of the Certificate of Incorporation.",
+      "Processing of the application by the department and issuance of registration certificate",
   },
 ];
 
@@ -43,12 +43,11 @@ const Section8Process = () => {
   return (
     <section className="s8-process-section">
       <h2 className="s8-process-title">
-        Steps for Incorporation Company Registration in India
+        Steps for Section 8 Company Registration in India
       </h2>
 
       <p className="s8-process-subtitle">
-        The complete process of registering a Private Limited Company involves
-        the following structured steps:
+        The broad process of registering a Sec 8 Company involves following steps:
       </p>
 
       <div className="s8-timeline">

@@ -20,10 +20,10 @@ const PartnershipLLP = () => {
         <PartnershipLLPBreadcrum/>
 
         <div id="plans">
-            <PartnershipLLPPlanandPricing/>
+            {/* <PartnershipLLPPlanandPricing/> */}
         </div>
 
-        <PartnershipLLPTandC/>
+        {/* <PartnershipLLPTandC/> */}
 
         <div id="premium">
         <PartnershipLLPZolvitPremium/>
@@ -44,11 +44,11 @@ const PartnershipLLP = () => {
         </div>
 
         <div id="process">
-            <PartnershipLLPProcess/>
+            {/* <PartnershipLLPProcess/> */}
         </div>
 
         <div id="documents">
-            <PartnershipLLPDocument/>
+            {/* <PartnershipLLPDocument/> */}
         </div>
 
         <div id="faq">

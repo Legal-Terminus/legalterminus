@@ -20,10 +20,10 @@ const PrivateLimited = () => {
       <PartnershiptoPrivateBreadcrumb />
 
       <div id="plans">
-        <PartnershiptoPrivatePlanandPricing/>
+        {/* <PartnershiptoPrivatePlanandPricing/> */}
       </div>
 
-      <ParttoPriTermsCondition />
+      {/* <ParttoPriTermsCondition /> */}
 
 
       <div id="premium">
@@ -37,7 +37,7 @@ const PrivateLimited = () => {
       </div>
 
       <div id="types">
-        <ParttoPriPvtTypes />
+        {/* <ParttoPriPvtTypes /> */}
       </div>
 
       <div id="requirements">
@@ -45,11 +45,11 @@ const PrivateLimited = () => {
       </div>
 
       <div id="process">
-        <ParttoPriProcess/>
+        {/* <ParttoPriProcess/> */}
       </div>
 
       <div id="documents">
-        <ParttoPriDocument />
+        {/* <ParttoPriDocument /> */}
       </div>
 
       <div id="faq">

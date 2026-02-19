@@ -28,9 +28,7 @@ const DPPremium = () => {
                 <span className="DP-premium-title-icon">⚖️</span>
               </h2>
               <p className="DP-premium-subtitle">
-                Get your company registered faster with Legal Terminus’s
-                expert-handled process, built for entrepreneurs who value time
-                and want to avoid unnecessary delays.
+                Get your Partnership Firm dissolved smoothly with Legal Terminus’s expert-handled process, designed for business owners who value timely closure and want to avoid unnecessary delays.
               </p>
             </header>
 
@@ -40,15 +38,15 @@ const DPPremium = () => {
               <ul className="DP-premium-list">
                 <li className="DP-premium-list-item">
                   <span className="DP-premium-list-icon">🧑‍⚖️</span>
-                  Priority handling by Societyoration experts
+                  Priority handling by dissolution specialists
                 </li>
                 <li className="DP-premium-list-item">
                   <span className="DP-premium-list-icon">📑</span>
-                  Hassle-free compliance assistance
+                  Hassle-free assistance with all compliance and documentation
                 </li>
                 <li className="DP-premium-list-item">
                   <span className="DP-premium-list-icon">⏱️</span>
-                  Strong follow-up & reminder policy
+                  Strong follow-up & regular status updates
                 </li>
               </ul>
             </section>
@@ -59,12 +57,10 @@ const DPPremium = () => {
               <div className="DP-premium-note-box">
                 <ul className="DP-premium-note-list">
                   <li className="DP-premium-note-item">
-                    We prioritize your preferred business name and perform a
-                    preliminary name check before submission.
+                    We begin with a review of your partnership deed and liabilities to ensure all legal requirements are met before filing.
                   </li>
                   <li className="DP-premium-note-item">
-                    In case of name rejection, our experts suggest compliant
-                    alternatives to ensure approval.
+                    If any pending compliances are found, our experts guide you on how to resolve them quickly to ensure smooth approval of the dissolution process.
                   </li>
                 </ul>
               </div>

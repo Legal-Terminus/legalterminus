@@ -28,7 +28,7 @@ const ZolvitPremium = () => {
                 <span className="Partnership-to-PLC-zp-title-icon">⚖️</span>
               </h2>
               <p className="Partnership-to-PLC-zp-subtitle">
-Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+              Convert your Partnership Firm into a Private Limited Company with Legal Terminus expert-handled process, designed for entrepreneurs who want structured growth, limited liability, and better credibility.
               </p>
             </header>
 
@@ -38,15 +38,19 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <ul className="Partnership-to-PLC-zp-list Partnership-to-PLC-zp-features-list">
                 <li className="Partnership-to-PLC-zp-list-item">
                   <span className="Partnership-to-PLC-zp-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+                  Smooth Conversion Process
                 </li>
                 <li className="Partnership-to-PLC-zp-list-item">
                   <span className="Partnership-to-PLC-zp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                  Complete Documentation & ROC Filing
+                </li>
+                <li className="Partnership-to-PLC-zp-list-item">
+                  <span className="Partnership-to-PLC-zp-list-icon">🔄</span>
+                  Asset & Liability Transfer Support
                 </li>
                 <li className="Partnership-to-PLC-zp-list-item">
                   <span className="Partnership-to-PLC-zp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                  Hassle-Free Compliance Guidance
                 </li>
               </ul>
             </section>
@@ -57,12 +61,16 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <div className="Partnership-to-PLC-zp-note-box">
                 <ul className="Partnership-to-PLC-zp-note-list">
                   <li className="Partnership-to-PLC-zp-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+                    Minimum 2 Directors and 2 Shareholders are required for Private Limited Company incorporation.
                   </li>
                   <li className="Partnership-to-PLC-zp-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                    All existing partners can become shareholders in the new company.
+                  </li>
+                  <li className="Partnership-to-PLC-zp-note-item">
+                    At least one director must be an Indian resident.
+                  </li>
+                  <li className="Partnership-to-PLC-zp-note-item">
+                    The firm should have a clear consent from all partners for conversion.
                   </li>
                 </ul>
               </div>

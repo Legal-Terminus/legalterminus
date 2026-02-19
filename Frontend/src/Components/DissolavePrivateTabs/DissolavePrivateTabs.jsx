@@ -3,10 +3,10 @@ import "./DissolavePrivateTabs.css";
 
 const tabs = [
   { label: "Why Choose Dissolve", id: "company" },
-  { label: "Types", id: "types" },
+  // { label: "Types", id: "types" },
   { label: "Requirements", id: "requirements" },
-  { label: "Process & Steps", id: "process" },
-  { label: "Documents", id: "documents" },
+  // { label: "Process & Steps", id: "process" },
+  // { label: "Documents", id: "documents" },
   { label: "FAQ's", id: "faq" },
 ];
 

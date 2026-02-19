@@ -28,7 +28,7 @@ const ZolvitPremium = () => {
                 <span className="PLC-to-LLP-zp-title-icon">⚖️</span>
               </h2>
               <p className="PLC-to-LLP-zp-subtitle">
-Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+                Convert your Private Limited Company into an LLP with Legal Terminus expert-guided support, designed for businesses seeking operational flexibility, reduced compliance burden, and cost-effective management.
               </p>
             </header>
 
@@ -38,15 +38,15 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <ul className="PLC-to-LLP-zp-list PLC-to-LLP-zp-features-list">
                 <li className="PLC-to-LLP-zp-list-item">
                   <span className="PLC-to-LLP-zp-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+                   Complete assistance for smooth conversion from Private Limited Company to LLP with proper legal compliance.
                 </li>
                 <li className="PLC-to-LLP-zp-list-item">
                   <span className="PLC-to-LLP-zp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                  End-to-end documentation, drafting of LLP Agreement, and seamless filing with the Registrar.
                 </li>
                 <li className="PLC-to-LLP-zp-list-item">
                   <span className="PLC-to-LLP-zp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                  Timely updates and structured compliance reminders to ensure a hassle-free conversion process.
                 </li>
               </ul>
             </section>

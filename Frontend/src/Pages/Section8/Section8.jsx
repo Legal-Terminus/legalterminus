@@ -32,7 +32,7 @@ const Section8 = () => {
       <Section8CompanyTabs/>
       </div>
       <div id="types">
-      <Section8PvtTypes/>
+      {/* <Section8PvtTypes/> */}
       </div>
       <div id="requirements">
       <Section8RequirementsTab/>

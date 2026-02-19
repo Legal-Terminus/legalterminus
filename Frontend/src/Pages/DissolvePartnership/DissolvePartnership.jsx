@@ -19,9 +19,9 @@ const DissolvePartnership = () => {
     <div>
       <DPBreadcrum />
       <div id="plans">
-        <DPPlanAndPricing />
+        {/* <DPPlanAndPricing /> */}
       </div>
-      <DPTermsCondition />
+      {/* <DPTermsCondition /> */}
       <div id="premium">
         <DPPremium />
       </div>
@@ -30,16 +30,16 @@ const DissolvePartnership = () => {
         <DPCompanyTabs />
       </div>
       <div id="types">
-        <DPPvtTypes />
+        {/* <DPPvtTypes /> */}
       </div>
       <div id="requirements">
         <DPRequirementsTab />
       </div>
       <div id="process">
-        <DPProcess />
+        {/* <DPProcess /> */}
       </div>
       <div id="documents">
-        <DPDocument />
+        {/* <DPDocument /> */}
       </div>
       <div id="faq">
         <DPFAQ />

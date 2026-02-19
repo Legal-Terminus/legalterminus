@@ -24,20 +24,11 @@ const DPCompanyTabs = () => {
           {/* Content */}
           <div className="DP-intro-content">
             <h2 className="DP-intro-title">
-              Why Choose Dissolve-Partnership Of Wholly Owned Subsidiary in India?
+              Why Choose Dissolve a Partnership Firm
             </h2>
 
             <p className="DP-intro-text">
-              Registering a company in India is the first step to legally starting
-              your business. The Companies Act, 2013 governs company formation,
-              and the Ministry of Corporate Affairs (MCA) oversees the process.
-              Once registered, your business gains a separate legal identity with
-              rights and protections under Indian law.
-              <br /><br />
-              Choosing the right type of Private Limited Company is crucial as it
-              defines ownership, management structure, and legal protection.
-              Proper registration helps ensure smooth compliance, access to
-              government benefits, and strong market credibility.
+              A Partnership Firm is required to comply with various legal and regulatory obligations throughout its existence. Even if the firm is no longer active, it still needs to file returns, maintain books of accounts, and meet statutory requirements. Failing to comply with these obligations can result in penalties, disputes among partners, and complications with tax authorities or other regulators.
             </p>
           </div>
 
@@ -49,11 +40,11 @@ const DPCompanyTabs = () => {
       ============================ */}
       <section className="DP-act-section">
         <div className="DP-act-container">
-          <div className="DP-act-card">
+          {/* <div className="DP-act-card"> */}
 
-            <h3 className="DP-act-title">Companies Act, 2013</h3>
+            {/* <h3 className="DP-act-title">Companies Act, 2013</h3> */}
 
-            <p className="DP-act-text">
+            {/* <p className="DP-act-text">
               As per Section 2(68) of the Companies Act, 2013, a private limited
               company means a company having such minimum paid-up share capital
               as may be prescribed, and which by its articles of association:
@@ -72,9 +63,9 @@ const DPCompanyTabs = () => {
             <p className="DP-act-point">
               <span className="DP-act-point-label">(c)</span>
               Prohibits any invitation to the public to subscribe to securities.
-            </p>
+            </p> */}
 
-          </div>
+          {/* </div> */}
         </div>
       </section>
 

@@ -35,14 +35,11 @@ A Private Limited Company is a legally registered business under the Companies A
           {/* Text */}
           <div className="Partnership-to-PLC-intro-content">
             <h2 className="Partnership-to-PLC-intro-title">
-              Why Choose Private Limited Company Registration
+              Why Choose Conversion of Partnership into Private Limited Company
             </h2>
             <p className="Partnership-to-PLC-intro-text">
-              
-Registering a company in India is the first step to legally starting your business. The Companies Act, 2013, sets the rules for company formation, and the Ministry of Corporate Affairs (MCA) oversees the process. Once registered, your business gets a legal identity, along with rights and protections under Indian law. 
-<br></br>
-<br></br>
-Choosing the right type of Private Limited Company is important, as it determines how your business is owned, managed, and legally protected. Different types of private limited companies suit different business needs, depending on factors such as ownership structure. Selecting the correct type also helps ensure smooth compliance with legal regulations. Proper registration with the Ministry of Corporate Affairs (MCA) allows your company to operate legally, access government benefits, and build strong credibility in the market.            </p>
+            A partnership firm is a popular business structure for most small and medium traders/manufacturers/  service providers. However, a partnership firm is not mandatorily liable to be registered in terms of the extant provisions of applicable law. Furthermore, there is no provision for compulsory audit of a partnership firm. Therefore, as it grows in size, it becomes need of the hour for a business to evolve into a more trustworthy and transparent structure, such as Company.  It has been observed that such structures are preferred by critical stakeholders (investors, creditors, etc.).
+             </p>
           </div>
         </div>
       </section>
@@ -56,9 +53,7 @@ Choosing the right type of Private Limited Company is important, as it determine
             <h3 className="companies-act-title">Companies Act, 2013</h3>
 
             <p className="companies-act-text">
-              As per Section 2(68) of the Companies Act, 2013, a private limited
-              company means a company having a minimum paid-up share capital as
-              may be prescribed, and which by its articles of association:
+              As per Section 2(68) of the Companies Act, 2013, a Private Limited Company means a company having such minimum paid-up share capital as may be prescribed and which, by its Articles of Association:
             </p>
 
             <p className="companies-act-point">
@@ -68,14 +63,12 @@ Choosing the right type of Private Limited Company is important, as it determine
 
             <p className="companies-act-point">
               <span className="companies-act-point-label">(b)</span>
-              Limits the number of its members to 200 (excluding present and
-              former employees); and
+              Limits the number of its members to 200 (excluding present and former employees who are members); and
             </p>
 
             <p className="companies-act-point">
               <span className="companies-act-point-label">(c)</span>
-              Prohibits any invitation to the public to subscribe for any
-              securities of the company.
+              Prohibits any invitation to the public to subscribe for any securities of the company.
             </p>
           </div>
         </div>

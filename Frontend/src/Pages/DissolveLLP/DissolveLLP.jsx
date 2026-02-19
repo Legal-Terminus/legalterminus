@@ -35,7 +35,7 @@ const DissolveLLP = () => {
       </div>
 
       <div id="types">
-      <DissolveLLPPvtTypes/>
+      {/* <DissolveLLPPvtTypes/> */}
       </div>
 
       <div id="requirements">
@@ -43,11 +43,11 @@ const DissolveLLP = () => {
       </div>
 
       <div id="process">
-        <DissolveLLPProcess/>
+        {/* <DissolveLLPProcess/> */}
       </div>
 
       <div id="documents">
-        <DissolveLLPDocuments/>
+        {/* <DissolveLLPDocuments/> */}
       </div>
 
       <div id="faq">

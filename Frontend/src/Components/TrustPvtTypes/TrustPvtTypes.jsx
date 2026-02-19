@@ -19,48 +19,34 @@ const TrustPvtTypes = () => {
         {/* Content */}
         <div className="trust-types-content">
           <h2 className="trust-types-title">
-            Incorporation Of Wholly Owned Subsidiary in India
+            Types of Trust Registration in India
           </h2>
-
-          <p className="trust-types-intro">
-            Private Limited Companies can be registered in different forms based
-            on ownership, liability, and business objectives. Choosing the right
-            type ensures legal protection, smooth operations, and long-term
-            growth.
-          </p>
 
           {/* Type 1 */}
           <div className="trust-types-block">
             <h3 className="trust-types-subtitle">
-              Company Limited by Shares
+              Public Charitable Trusts:
             </h3>
             <p className="trust-types-text">
-              This is the most common type of Private Limited Company. The
-              liability of shareholders is limited to the unpaid amount on their
-              shares. Ideal for startups and growing businesses looking to raise
-              funds while protecting personal assets.
+              These trusts are created for the benefit of the general public, such as for education, healthcare, religious activities, or other social welfare purposes. They are registered under the relevant state laws (for example, the Bombay Public Trust Act). Many public trusts apply for 12A and 80G registration to get income tax benefits.
             </p>
           </div>
 
           {/* Type 2 */}
           <div className="trust-types-block">
             <h3 className="trust-types-subtitle">
-              Company Limited by Guarantee
+              Private Trusts:
             </h3>
             <p className="trust-types-text">
-              Members agree to contribute a fixed amount in case of liquidation.
-              This structure is generally suitable for non-profit or charitable
-              organizations that do not require share capital.
+              These trusts are formed for the benefit of specific individuals or a particular family. They are governed by the Indian Trusts Act, 1882.
             </p>
           </div>
 
           {/* Type 3 */}
           <div className="trust-types-block">
-            <h3 className="trust-types-subtitle">Unlimited Companies</h3>
+            <h3 className="trust-types-subtitle">Public-cum-Private Trusts:</h3>
             <p className="trust-types-text">
-              An unlimited company places no limit on members’ liability.
-              Members are personally responsible for company debts. This model
-              is less common and usually adopted by closely held businesses.
+              These trusts have both public and private purposes. Part of the income is used for public charitable activities, and part is used for specific private beneficiaries.
             </p>
           </div>
         </div>

@@ -3,105 +3,68 @@ import "./TrustFAQ.css";
 
 const faqs = [
   {
-    question: "What is Trust Registration?",
+    question: "What is the validity criteria of a Trust?",
+    answer:(
+    <div>
+      <p><strong>Before proceeding to trust registration, you should know whether your trust is a valid trust. The state public trust laws do not state any essential ingredients of a valid trust. However, the Indian Trusts Act, 1882 which governs private trust states that a valid trust must:</strong></p>
+      <ul>
+        <li>Have a lawful purpose.</li>
+        <li>Be for a beneficiary.</li>
+        <li>Contain a property as its subject-matter.</li>
+        <li>Such property must be transferable to the beneficiary.</li>
+        <li>Be the creation of a person who is competent to contract.</li>
+        <li>Have a written and signed document for immovable property.</li>
+        <li>Appoint at least two trustees</li>
+        <li>Have one settler.</li>
+        <li>Be for an object (religious or charitable).</li>
+        <li>Have two witnesses.</li>
+      </ul>
+    </div>
+  ),
+},
+  {
+    question: "How many persons are required to register a Public Trust?",
     answer:
-      "Trust registration is the legal process of creating a trust through a written trust deed and registering it with the appropriate authority (usually the Sub-Registrar) under the Indian Trusts Act or relevant state laws. Once registered, the trust gets legal recognition to hold property and carry out its charitable or private objectives.",
+      "Minimum of 3 members are required to form a Public Trust.",
   },
   {
-    question: "How to register a trust online in India?",
-    answer:
-      "Many states now allow parts of the process to be done online – such as booking appointments, paying stamp duty, and generating certain documents. However, the trust deed usually needs to be executed on stamp paper and presented physically at the Sub-Registrar’s office. Professional platforms and consultants can help you complete most formalities digitally and coordinate the physical signing and registration.",
+    question: "What are some basic/ key documents required to register a Trust in India?",
+    answer:(
+    <div>
+      <ul>
+        <li>PAN Card (All the Members)</li>
+        <li>ID Proof (All the Members) (Passport/ Voter ID/ Aadhar Card/ Driving License)</li>
+        <li>Address Proof (All the Members) (Telephone Bill/ Mobile Bill/ Savings Bank Statement)</li>
+        <li>Passport size Photograph (All the Members)</li>
+        <li>All the documents mentioned above in point no 1 to 3 need to be self-signed by the respective proposed directors/ members/ shareholders All the utility bills or bank statements shall be less than 2 months old</li>
+      </ul>
+    </div>
+  ),
   },
   {
-    question: "What is the purpose of Trust Registration?",
-    answer:
-      "Registration gives the trust a formal legal identity, allows it to hold property in its own name, improves transparency for donors and beneficiaries, and is often mandatory for availing tax exemptions like 12A and 80G. A registered trust is easier to manage, regulate, and protect from disputes.",
+    question: "What is the procedure to register a Trust in India?",
+    answer:(
+    <div>
+      <p><strong>The broad process of registering a Trust involves following steps:</strong></p>
+      <ul>
+        <li>STEP 1 : Provision of requisite mentioned documents/information to us</li>
+        <li>STEP 2 : Validating the documents/ information and processing the same</li>
+        <li>STEP 3 : Filing of application and submission of the same</li>
+        <li>STEP 4 : Payment of appropriate government fee as applicable</li>
+        <li>STEP 5 : Processing of the application and issuance of registration certificate</li>
+      </ul>
+    </div>
+  ),
   },
   {
-    question: "Is it mandatory to obtain a PAN card for a registered trust?",
+    question: "What is the time period within which a Trust can be registered?",
     answer:
-      "Yes. A registered trust that receives donations, holds investments, or opens a bank account must obtain a PAN card. PAN is required for filing income-tax returns, applying for 12A/80G, and complying with banking and TDS rules.",
+      "The process of registration of trust can take anywhere between 7 to 10 working days, subject to submission of correct information and complete documentation.",
   },
   {
-    question: "How many types of trust registrations are there?",
+    question: "How Legal Terminus can help you to register a Trust in India?",
     answer:
-      "Broadly, trusts are classified as public trusts (charitable or religious), private trusts (for specific individuals or families), and public-cum-private trusts. The exact categories and procedures can vary slightly depending on the purpose of the trust and the state in which it is registered.",
-  },
-  {
-    question: "Which type of trust is best?",
-    answer:
-      "The best type depends on your objective. Public charitable trusts are ideal for NGOs and social causes, while private trusts work well for estate and succession planning for family members. If your main goal is public benefit and tax exemptions, a public charitable trust is usually preferred.",
-  },
-  {
-    question: "What are the documents required for trust registration?",
-    answer:
-      "Common documents include: the drafted trust deed, ID and address proof of the settlor and trustees, passport-size photographs, proof of the registered office address (electricity bill, tax receipt, or rent agreement with NOC), and any additional affidavits or declarations required by the local Sub-Registrar.",
-  },
-  {
-    question:
-      "Is it necessary to have a physical office address for trust registration?",
-    answer:
-      "Yes, you must provide an address that will serve as the trust’s registered office for communication and legal records. This can be a rented or owned premises, or in some cases even a residential address, so long as you have proper proof and (for rented premises) a landlord’s NOC.",
-  },
-  {
-    question: "Can a trust be converted into a private limited company?",
-    answer:
-      "Direct conversion is generally not provided for under Indian law. However, in practice, a company with similar objectives can be formed and the trust’s activities or assets may be transferred subject to approvals, documentation, and compliance with tax and charity regulations. You should always take professional advice before attempting such restructuring.",
-  },
-  {
-    question: "How to get an 80G registration for a trust?",
-    answer:
-      "After registering the trust and obtaining a PAN, you can apply to the Income Tax Department for 12A and 80G registration by filing the prescribed online forms, uploading documents such as the trust deed, activity reports, and financial statements, and responding to any queries from the department. On approval, donors to the trust can claim tax deductions under Section 80G.",
-  },
-  {
-    question: "How long does trust registration take in India?",
-    answer:
-      "The time frame varies by state and the workload of the Sub-Registrar’s office. Once the deed is drafted and documents are ready, registration may be completed in a few working days to a couple of weeks. Additional approvals like 12A/80G will take extra time.",
-  },
-  {
-    question: "Can foreigners be trustees in an Indian trust?",
-    answer:
-      "In many cases, foreign nationals and NRIs can be appointed as trustees, provided they meet KYC requirements and comply with applicable laws such as FCRA, FEMA, and any state-specific rules. If the trust will receive foreign contributions, FCRA registration or prior permission becomes very important.",
-  },
-  {
-    question: "How many members are required for trust registration?",
-    answer:
-      "Typically, you need at least one settlor and two trustees (three persons in total), although many charitable trusts prefer to have three or more trustees for better governance. The exact number may vary depending on the state’s practice or the trust’s own rules.",
-  },
-  {
-    question: "Can a trust be registered online?",
-    answer:
-      "Partially, yes. You can draft the deed, collect KYC documents, and pay stamp duty online in many states. But execution of the deed and final registration usually involve physical signatures and witnessing at the Sub-Registrar’s office or before an authorised officer.",
-  },
-  {
-    question: "Is trust registration different in different states?",
-    answer:
-      "Yes. While the broad principles are similar, stamp duty rates, registration fees, formats of affidavits, and the authority in charge (Charity Commissioner or Sub-Registrar) can differ from state to state. It’s important to follow the specific procedure of the state where the trust will be based.",
-  },
-  {
-    question: "How much does trust registration cost?",
-    answer:
-      "The cost mainly includes stamp duty on the trust deed, registration fees at the Sub-Registrar office, and any professional or drafting fees you pay. Stamp duty itself varies widely by state and by the nature of the trust, so the total cost can range from a few thousand rupees upwards.",
-  },
-  {
-    question: "Can a trust own property?",
-    answer:
-      "Yes. A registered trust can hold movable and immovable property in its own name, subject to the objects in its trust deed. Property acquired must be used for the purposes of the trust and is managed by the trustees for the benefit of the beneficiaries or the public.",
-  },
-  {
-    question: "How do I modify a trust deed after registration?",
-    answer:
-      "If the trust deed allows for amendments, the trustees can pass a resolution to revise specific clauses and execute a supplementary deed. This supplementary deed must then be registered with the same authority that registered the original deed, and in some states approval from the Charity Commissioner may be required.",
-  },
-  {
-    question: "Can a trust be converted into an NGO?",
-    answer:
-      "A registered charitable trust is already considered a form of NGO. However, if you wish to operate as a different legal form such as a Section 8 company or society, you may need to create that new entity and transfer activities or assets following due process and regulatory approvals.",
-  },
-  {
-    question: "What are the tax benefits of registered trusts?",
-    answer:
-      "Charitable trusts that obtain 12A registration may be exempt from paying income tax on eligible income, and those with 80G approval allow donors to claim tax deductions on donations. Additional benefits can include exemptions on certain capital gains and property taxes, depending on local laws and compliance with the conditions laid down by tax authorities.",
+      "Legal Terminus can help you with to register a Trust for you, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
   },
 ];
 
@@ -118,13 +81,6 @@ const FaqTrust = () => {
         {/* Left side – static text */}
         <div className="trustfaq-left">
           <h2 className="trustfaq-title">Trust Registration FAQ&apos;s</h2>
-
-          <p className="trustfaq-intro">
-            Setting up a trust is a powerful way to support charitable causes,
-            manage family wealth, or protect assets for future generations.
-            The process can feel legal and technical, but once you understand
-            the basics, it becomes much easier to navigate.
-          </p>
 
           <p className="trustfaq-intro">
             To help you get clarity, we&apos;ve answered the most common

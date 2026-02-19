@@ -18,34 +18,30 @@ const PartnershipLLPTypes = () => {
         {/* Right content */}
         <div className="partnership-llp-types-content">
           <h2 className="partnership-llp-types-title">
-            Types of Private Limited Company Registration
+            Types of Conversion of Partnership into Limited Liability Partnership
           </h2>
-
-          <p className="partnership-llp-types-intro">
-            Private Limited Companies can be registered in different forms based on ownership, liability, and business objectives. Choosing the right type helps ensure legal protection, smooth operations, and long-term growth.
-          </p>
 
           {/* Type 1 */}
           <div className="partnership-llp-types-block">
-            <h3 className="partnership-llp-types-subtitle">Company limited by Shares</h3>
+            <h3 className="partnership-llp-types-subtitle">Registered Firm Requirement:</h3>
             <p className="partnership-llp-types-text">
-              This is the most common type of Private Limited Company. The liability of shareholders is limited to the unpaid amount on their shares. It is ideal for startups and growing businesses looking to raise funds while protecting personal assets.
+              The partnership firm should be registered under the Indian Partnership Act, 1932 before applying for conversion into an LLP.
             </p>
           </div>
 
           {/* Type 2 */}
           <div className="partnership-llp-types-block">
-            <h3 className="partnership-llp-types-subtitle">Company limited by Guarantee</h3>
+            <h3 className="partnership-llp-types-subtitle">Partners and Structure:</h3>
             <p className="partnership-llp-types-text">
-              In this type, members agree to contribute a fixed amount in case of liquidation. It is generally suitable for non-profit or charitable organizations that do not require share capital.
+              All existing partners of the firm must become partners in the LLP. No new partner can be added, and no existing partner can be removed during the conversion process.
             </p>
           </div>
 
           {/* Type 3 */}
           <div className="partnership-llp-types-block">
-            <h3 className="partnership-llp-types-subtitle">Unlimited Companies</h3>
+            <h3 className="partnership-llp-types-subtitle">Designated Partners:</h3>
             <p className="partnership-llp-types-text">
-              An unlimited company does not place any limit on members’ liability. Members are personally responsible for company debts. This structure is less common and is usually chosen by closely held businesses with full control over operations.
+              At least two partners must be appointed as designated partners, and one of them must be a resident of India.
             </p>
           </div>
         </div>

@@ -28,9 +28,7 @@ const DissolveLLPPremium = () => {
                 <span className="Dissllp-premium-title-icon">⚖️</span>
               </h2>
               <p className="Dissllp-premium-subtitle">
-                Get your company registered faster with Legal Terminus’s
-                expert-handled process, built for entrepreneurs who value time
-                and want to avoid unnecessary delays.
+                Get your Limited Liability Partnership dissolved smoothly with Legal Terminus’s expert-handled process, designed for partners who want a hassle-free and timely closure without unnecessary complications.
               </p>
             </header>
 
@@ -40,15 +38,15 @@ const DissolveLLPPremium = () => {
               <ul className="Dissllp-premium-list">
                 <li className="Dissllp-premium-list-item">
                   <span className="Dissllp-premium-list-icon">🧑‍⚖️</span>
-                  Priority handling by Societyoration experts
+                  Priority handling by LLP dissolution experts
                 </li>
                 <li className="Dissllp-premium-list-item">
                   <span className="Dissllp-premium-list-icon">📑</span>
-                  Hassle-free compliance assistance
+                  Complete assistance with documentation and compliance filings
                 </li>
                 <li className="Dissllp-premium-list-item">
                   <span className="Dissllp-premium-list-icon">⏱️</span>
-                  Strong follow-up & reminder policy
+                  Strong follow-up & status updates until final strike-off
                 </li>
               </ul>
             </section>
@@ -59,12 +57,10 @@ const DissolveLLPPremium = () => {
               <div className="Dissllp-premium-note-box">
                 <ul className="Dissllp-premium-note-list">
                   <li className="Dissllp-premium-note-item">
-                    We prioritize your preferred business name and perform a
-                    preliminary name check before submission.
+                    All liabilities must be cleared and bank accounts closed before initiating the dissolution process.
                   </li>
                   <li className="Dissllp-premium-note-item">
-                    In case of name rejection, our experts suggest compliant
-                    alternatives to ensure approval.
+                    In case of any discrepancies or pending compliances, our experts provide proper guidance to ensure smooth approval and official strike-off by the Registrar of Companies.
                   </li>
                 </ul>
               </div>

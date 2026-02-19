@@ -10,26 +10,21 @@ const Breadcrum = () => {
         <div className="Partnership-to-PLC-public-content">
 
           <span className="Partnership-to-PLC-public-tag">
-            Private Limited Company Registration
+            Conversion of Partnership firm into Private Limited Company
           </span>
 
           <h1 className="Partnership-to-PLC-public-title">
-            Private Limited Company Registration
-            <span> in India</span>
+            Partnership firm into Private Limited Company
           </h1>
 
           <p className="Partnership-to-PLC-public-description">
-            A Private Limited Company is a popular and trusted business structure in India, especially for startups and growing businesses. It helps protect personal assets, builds business credibility, and makes it easier to raise funds.
-
-<br/><br/>
-Legal Terminus can help you with Private Limited Company registration in a hassle-free way, whenever you need it. We take care of the complete process—from paperwork to approvals—within a reasonable time. Our professional fees start at ₹3,999, making company registration simple, affordable, and stress-free.
-
+            Legal Terminus can help you with Conversion of Partnership into Private Limited Company in a hassle-free manner within a reasonable time span and competitive Professional fee which starts from Rs. 14999/- excluding Govt. Fees.
           </p>
 
           <div className="Partnership-to-PLC-public-features">
             <div className="Partnership-to-PLC-feature-item"> Minimum 2 Directors Required</div>
-            <div className="Partnership-to-PLC-feature-item"> Separate Legal Entity</div>
-            <div className="Partnership-to-PLC-feature-item"> Limited Liability Protection</div>
+            <div className="Partnership-to-PLC-feature-item"> 5 Steps Procedure</div>
+            <div className="Partnership-to-PLC-feature-item"> 40 - 50 Working Days</div>
             <div className="Partnership-to-PLC-feature-item"> High Business Credibility</div>
           </div>
 
@@ -59,7 +54,7 @@ Legal Terminus can help you with Private Limited Company registration in a hassl
             </h3>
 
             <p className="Partnership-to-PLC-form-subtitle">
-              Talk to our Private Limited Company registration expert
+              Talk to our expert
             </p>
 
             <form

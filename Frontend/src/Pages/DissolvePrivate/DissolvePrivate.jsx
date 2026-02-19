@@ -35,18 +35,18 @@ const DissolvePrivate = () => {
       </div>
 
       <div id="types">
-        <DissolavePrivateTypesTabs />
+        {/* <DissolavePrivateTypesTabs /> */}
       </div>
 
       <div id="requirements">
         <DissolvePrivateRequirementsTab />
       </div>
       <div id="process">
-        <DissolvePrivateProcess />
+        {/* <DissolvePrivateProcess /> */}
       </div>
 
       <div id="documents">
-        <DissolvePrivateDocument/>
+        {/* <DissolvePrivateDocument/> */}
       </div>
       <div id="faq">
         <DissolvePrivateFAQ/>

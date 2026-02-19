@@ -20,10 +20,10 @@ const PrivateLimited = () => {
       <PritoLlpBreadcrum />
 
       <div id="plans">
-        <PritoLlpPlanandPricing />
+        {/* <PritoLlpPlanandPricing /> */}
       </div>
 
-      <PritoLlpTermsCondition/>
+      {/* <PritoLlpTermsCondition/> */}
 
 
       <div id="premium">
@@ -37,7 +37,7 @@ const PrivateLimited = () => {
       </div>
 
       <div id="types">
-        <PritoLlpTypes />
+        {/* <PritoLlpTypes /> */}
       </div>
 
       <div id="requirements">
@@ -45,11 +45,11 @@ const PrivateLimited = () => {
       </div>
 
       <div id="process">
-        <PritoLlpProcess />
+        {/* <PritoLlpProcess /> */}
       </div>
 
       <div id="documents">
-        <PritoLlpDocument />
+        {/* <PritoLlpDocument /> */}
       </div>
 
       <div id="faq">

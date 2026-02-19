@@ -3,53 +3,49 @@ import "./PartnershipLLPFAQ.css";
 
 const faqs = [
   {
-    question: "How many persons are required to form a Private Limited Company?",
+    question: "What are some key benefits/ reasons of the conversion of partnership firm into a LLP?",
+    answer:(
+    <div>
+      <ul>
+        <li>1. The liability of the members or the directors are limited in case of LLP whereas in case of partnership firm the liabilities are unlimited</li>
+        <li>2. The LLP is more transparent structure of business as compared to partnership firm</li>
+        <li>3. The benefit of startup recognition under the startup India scheme of the government of India can be availed by a LLP and not by any partnership firm.</li>
+        <li>4. The LLP has a separate legal identity as compared to a partnership firm.</li>
+        <li>5. The venture capitalist gets attracted to invest in a LLP.</li>
+      </ul>
+    </div>
+  ),
+},
+  {
+    question: "What are some key/ basic documents required for conversion of a partnership firm into a LLP?",
+    answer:(
+    <div>
+      <ul>
+        <li>1. Details of proposed Designated Partners/Partners</li>
+        <li>2. Consent of all partners</li>
+        <li>3. Statement of consent of partner of the partnership firm</li>
+        <li>4. Copy of latest Income Tax Return</li>
+        <li>5. List of all Creditors along with their consent for conversion</li>
+        <li>6. List of certified liability and assets</li>
+        <li>7. Relevant certification from a CA/CS/CWA; etc.</li>
+        <li>8. Bank Statement with current transactions</li>
+        <li>9. KYC Documents</li>
+        <li>10. Electricity Bill, Rent Agreement&NOC by the owner of Registered office</li>
+        <li>11. Dissolution Deed</li>
+        <li>12. NOC from the Registrar of firms</li>
+      </ul>
+    </div>
+  ),
+},
+  {
+    question: "What is the time period within which the conversion a partnership firm into a LLP can be completed?",
     answer:
-      "Minimum two persons are required to form a Private Limited Company and a maximum up to 200 persons can be a member of a single Private Limited Company.",
+      "The process of Conversion of partnership firm into a LLP can take anywhere between 40 to 50 working days, subject to submission of correct information and complete documentation.",
   },
   {
-    question: "How many Directors are required to form a Private Limited Company?",
+    question: "How Legal Terminus can help you to convert a partnership firm into an LLP?",
     answer:
-      "Minimum two directors are required in a Private Limited Company, with an upper cap up to 15 directors.",
-  },
-  {
-    question: "Who are Directors of the company?",
-    answer:
-      "Directors are officers of the company who are responsible for managing the company and making the decisions as to its operation on a day to day basis, for the benefit of the shareholders.",
-  },
-  {
-    question: "What is a company shareholder?",
-    answer:
-      "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in day-to-day management or financial affairs. They are also called 'members' and they agree to become part of a company by taking a minimum of one share in it. The quantity of shares held by each person represents how much of the business they own.",
-  },
-  {
-    question: "How much capital is required to start a Private Limited Company?",
-    answer:
-      "The Private Limited Company can be incorporated with any amount of capital and there is no lower or upper limit. Further, the government has relaxed the government fees for Incorporation of a Private Limited Company up to an Authorized capital of Rs. 15,00,000/-, however, the stamp duty, which is still levied, varies from State to State.",
-  },
-  {
-    question:
-      "What are some basic/ key documents required to incorporate a Private Limited Company in India?",
-    answer:
-      "PAN Card (All the Proposed Directors and/or Shareholders)",
-  },
-  {
-    question:
-      "What is the procedure to register a Private Limited Company?",
-    answer:
-      "You need at least two directors, two shareholders, a unique company name, a registered office address in India, and the necessary KYC documents for all directors and shareholders.",
-  },
-  {
-    question:
-      "What is the time period within which a Private Limited Company can be incorporated?",
-    answer:
-      "The process of incorporating a Private Limited Company can take anywhere between 10 to 15 working days, subject to submission of correct information and complete documentation.",
-  },
-  {
-    question:
-      "How Legal Terminus can help you incorporate a Private Limited Company in India?",
-    answer:
-      "Legal Terminus can help you with incorporation of Private Limited Company for you, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+      "Legal Terminus can help you with conversion in a hassle-free manner within a reasonable time span and competitive Professional fees. To know more please book a telephonic appointment with one of our consultants for free.",
   },
 ];
 
@@ -66,17 +62,11 @@ const PartnershipLLPFAQ = () => {
         {/* Left side */}
         <div className="partnership-llp-faq-left">
           <h2 className="partnership-llp-faq-title">
-            Private Limited Company Registration FAQ&apos;s
+            Conversion of Partnership into Limited Liability Partnership FAQ's&apos;s
           </h2>
 
           <p className="partnership-llp-faq-intro">
-            Starting a Private Limited Company in India is an important step for
-            any business owner. With the right support, the process can be simple
-            and stress-free.
-            <br /><br />
-            Here, we’ve answered the most common questions about company
-            registration—covering documents, steps, and what happens after
-            registration.
+            Here, we’ve answered the most common questions about Conversion of Partnership into Limited Liability Partnership covering documents, steps, and what happens.
           </p>
         </div>
 

@@ -9,13 +9,10 @@ const DissolvePrivateRequirementsTab = () => {
         {/* ================= HEADER ================= */}
         <header className="Dissolve-req-header">
           <h2 className="Dissolve-req-title">
-           Dissolve-Private Of Wholly Owned Subsidiary in India
+           Benefits of Choose Dissolve a Private Limited Company
           </h2>
           <p className="Dissolve-req-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company
-            registration process in India. It includes registering the business
-            with the Registrar of Companies (RoC) and obtaining a Digital
-            Signature Certificate (DSC) and Director Identification Number (DIN).
+            Dissolving a Private Limited Company stops compliance costs, avoids penalties, protects from future liabilities, and provides a clean legal closure.
           </p>
         </header>
 
@@ -25,49 +22,44 @@ const DissolvePrivateRequirementsTab = () => {
           {/* Card 1 */}
           <article className="Dissolve-req-card">
             <h3 className="Dissolve-req-card-title">
-              Separate Legal Identity
+              Elimination of Compliance Costs & Penalties:
             </h3>
             <div className="Dissolve-req-card-underline" />
             <p className="Dissolve-req-card-text">
-              Once registered, a company becomes its own legal entity. It can own
-              property, sign contracts, and operate separately from its owners.
+              After dissolution, the company is no longer required to file annual returns, financial statements, or pay regular government fees. This helps save money and avoids penalties for non-compliance.
             </p>
           </article>
 
           {/* Card 2 */}
           <article className="Dissolve-req-card">
             <h3 className="Dissolve-req-card-title">
-              Limited Liability Protection
+              Protection from Future Liabilities:
             </h3>
             <div className="Dissolve-req-card-underline" />
             <p className="Dissolve-req-card-text">
-              The personal assets of shareholders are protected from company
-              debts and business risks, ensuring financial safety.
+              Closing the company legally protects directors and shareholders from future legal issues, debts, or claims related to the company.
             </p>
           </article>
 
           {/* Card 3 */}
           <article className="Dissolve-req-card">
             <h3 className="Dissolve-req-card-title">
-              Access to Government Schemes
+              Proper Financial & Operational Closure:
             </h3>
             <div className="Dissolve-req-card-underline" />
             <p className="Dissolve-req-card-text">
-              Registered companies can benefit from schemes such as Startup
-              India for tax benefits and easier compliance, and Make in India
-              incentives for business growth.
+              Dissolution ensures that all business matters are properly settled, including clearing debts, selling assets, and distributing any remaining funds to shareholders.
             </p>
           </article>
 
           {/* Card 4 */}
           <article className="Dissolve-req-card">
             <h3 className="Dissolve-req-card-title">
-              Increased Credibility
+              Freedom to Start Fresh:
             </h3>
             <div className="Dissolve-req-card-underline" />
             <p className="Dissolve-req-card-text">
-              A registered company gains higher Dissolve among investors, clients,
-              and vendors, making funding and partnerships easier.
+              It allows directors and shareholders to move on from an inactive or loss-making business and focus their time, energy, and investment on new opportunities.
             </p>
           </article>
 

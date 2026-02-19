@@ -28,9 +28,7 @@ const DissolvePrivatePremium = () => {
                 <span className="DissolvePrivate-premium-title-icon">⚖️</span>
               </h2>
               <p className="DissolvePrivate-premium-subtitle">
-                Get your company registered faster with Legal Terminus’s
-                expert-handled process, built for entrepreneurs who value time
-                and want to avoid unnecessary delays.
+                Close your Private Limited Company smoothly with Legal Terminus’s expert-guided dissolution process, designed for business owners who want a compliant and stress-free exit.
               </p>
             </header>
 
@@ -40,15 +38,15 @@ const DissolvePrivatePremium = () => {
               <ul className="DissolvePrivate-premium-list">
                 <li className="DissolvePrivate-premium-list-item">
                   <span className="DissolvePrivate-premium-list-icon">🧑‍⚖️</span>
-                  Priority handling by trustoration experts
+                  Expert handling of board resolution & strike-off process
                 </li>
                 <li className="DissolvePrivate-premium-list-item">
                   <span className="DissolvePrivate-premium-list-icon">📑</span>
-                  Hassle-free compliance assistance
+                  Complete documentation & RoC filing support
                 </li>
                 <li className="DissolvePrivate-premium-list-item">
                   <span className="DissolvePrivate-premium-list-icon">⏱️</span>
-                  Strong follow-up & reminder policy
+                  Timely follow-ups until final dissolution approval
                 </li>
               </ul>
             </section>
@@ -59,12 +57,10 @@ const DissolvePrivatePremium = () => {
               <div className="DissolvePrivate-premium-note-box">
                 <ul className="DissolvePrivate-premium-note-list">
                   <li className="DissolvePrivate-premium-note-item">
-                    We prioritize your preferred business name and perform a
-                    preliminary name check before submission.
+                    All liabilities, statutory dues, and compliance filings must be cleared before initiating the strike-off application.
                   </li>
                   <li className="DissolvePrivate-premium-note-item">
-                    In case of name rejection, our experts suggest compliant
-                    alternatives to ensure approval.
+                    In case of any RoC query or objection, our experts provide prompt clarification and necessary corrections to ensure smooth closure approval.
                   </li>
                 </ul>
               </div>

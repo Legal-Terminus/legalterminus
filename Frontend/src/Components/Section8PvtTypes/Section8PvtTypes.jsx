@@ -19,7 +19,7 @@ const Section8PvtTypes = () => {
         {/* Content */}
         <div className="s8-types-content">
           <h2 className="s8-types-title">
-            Incorporation Of Wholly Owned Subsidiary in India
+            Types of Section 8 Company Registration in India
           </h2>
 
           <p className="s8-types-intro">

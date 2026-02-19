@@ -28,9 +28,7 @@ const Section8Premium = () => {
                 <span className="s8-premium-title-icon">⚖️</span>
               </h2>
               <p className="s8-premium-subtitle">
-                Get your company registered faster with Legal Terminus’s
-                expert-handled process, built for entrepreneurs who value time
-                and want to avoid unnecessary delays.
+                Register your Non-Profit Organization with expert guidance and a faster approval process. Legal Terminus ensures smooth incorporation under Section 8 of the Companies Act, 2013 — ideal for charitable, social, educational, and non-profit objectives.
               </p>
             </header>
 
@@ -40,15 +38,15 @@ const Section8Premium = () => {
               <ul className="s8-premium-list">
                 <li className="s8-premium-list-item">
                   <span className="s8-premium-list-icon">🧑‍⚖️</span>
-                  Priority handling by incorporation experts
+                  Dedicated expert handling for Section 8 incorporation
                 </li>
                 <li className="s8-premium-list-item">
                   <span className="s8-premium-list-icon">📑</span>
-                  Hassle-free compliance assistance
+                  Drafting of MOA & AOA as per non-profit compliance
                 </li>
                 <li className="s8-premium-list-item">
                   <span className="s8-premium-list-icon">⏱️</span>
-                  Strong follow-up & reminder policy
+                  Timely follow-up & compliance coordination
                 </li>
               </ul>
             </section>
@@ -59,12 +57,10 @@ const Section8Premium = () => {
               <div className="s8-premium-note-box">
                 <ul className="s8-premium-note-list">
                   <li className="s8-premium-note-item">
-                    We prioritize your preferred business name and perform a
-                    preliminary name check before submission.
+                    The company must be formed for charitable, social, educational, or non-profit purposes.
                   </li>
                   <li className="s8-premium-note-item">
-                    In case of name rejection, our experts suggest compliant
-                    alternatives to ensure approval.
+                    Profits cannot be distributed to members; they must be reinvested in the organization’s objectives.
                   </li>
                 </ul>
               </div>

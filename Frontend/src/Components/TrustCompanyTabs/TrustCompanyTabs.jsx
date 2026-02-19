@@ -24,20 +24,11 @@ const TrustCompanyTabs = () => {
           {/* Content */}
           <div className="trust-intro-content">
             <h2 className="trust-intro-title">
-              Why Choose trustoration Of Wholly Owned Subsidiary in India?
+              Why Choose Trust Registration in India?
             </h2>
 
             <p className="trust-intro-text">
-              Registering a company in India is the first step to legally starting
-              your business. The Companies Act, 2013 governs company formation,
-              and the Ministry of Corporate Affairs (MCA) oversees the process.
-              Once registered, your business gains a separate legal identity with
-              rights and protections under Indian law.
-              <br /><br />
-              Choosing the right type of Private Limited Company is crucial as it
-              defines ownership, management structure, and legal protection.
-              Proper registration helps ensure smooth compliance, access to
-              government benefits, and strong market credibility.
+              Trust registration in India establishes a non-profit entity primarily for charitable purposes. Like Section 8 companies and societies, the structure of a trust aligns with philanthropic objectives. Below, we address relevant queries related to trust registration in India.
             </p>
           </div>
 
@@ -51,27 +42,30 @@ const TrustCompanyTabs = () => {
         <div className="trust-act-container">
           <div className="trust-act-card">
 
-            <h3 className="trust-act-title">Companies Act, 2013</h3>
+            <h3 className="trust-act-title">Indian Trusts Act, 1882</h3>
 
             <p className="trust-act-text">
-              As per Section 2(68) of the Companies Act, 2013, a private limited
-              company means a company having such minimum paid-up share capital
-              as may be prescribed, and which by its articles of association:
+              As per the provisions of the Indian Trusts Act, 1882 and applicable state laws, a Trust is formed when a settlor transfers property to trustees for the benefit of beneficiaries with a lawful objective.
             </p>
 
             <p className="trust-act-point">
               <span className="trust-act-point-label">(a)</span>
-              Restricts the right to transfer its shares;
+              Name and registered office address of the Trust;
             </p>
 
             <p className="trust-act-point">
               <span className="trust-act-point-label">(b)</span>
-              Limits the number of its members to 200 (excluding employees);
+              Details of the Settlor, Trustees, and Beneficiaries;
             </p>
 
             <p className="trust-act-point">
               <span className="trust-act-point-label">(c)</span>
-              Prohibits any invitation to the public to subscribe to securities.
+              Clearly defined charitable or lawful objectives of the Trust;
+            </p>
+
+            <p className="trust-act-point">
+              <span className="trust-act-point-label">(c)</span>
+              Details of the Trust property or initial corpus fund;
             </p>
 
           </div>

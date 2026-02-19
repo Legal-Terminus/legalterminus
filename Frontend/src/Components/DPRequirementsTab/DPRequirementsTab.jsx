@@ -9,13 +9,10 @@ const DPRequirementsTab = () => {
         {/* ================= HEADER ================= */}
         <header className="DP-req-header">
           <h2 className="DP-req-title">
-            Dissolve-Partnership Of Wholly Owned Subsidiary in India
+            Benefits of Choose Dissolve a Partnership Firm
           </h2>
           <p className="DP-req-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company
-            registration process in India. It includes registering the business
-            with the Registrar of Companies (RoC) and obtaining a Digital
-            Signature Certificate (DSC) and Director Identification Number (DIN).
+            Dissolving a partnership firm ends its legal existence, settles all dues and liabilities, prevents future disputes, and allows partners to move forward with new opportunities.
           </p>
         </header>
 
@@ -25,49 +22,44 @@ const DPRequirementsTab = () => {
           {/* Card 1 */}
           <article className="DP-req-card">
             <h3 className="DP-req-card-title">
-              Separate Legal Identity
+              Legal & Financial Protection:
             </h3>
             <div className="DP-req-card-underline" />
             <p className="DP-req-card-text">
-              Once registered, a company becomes its own legal entity. It can own
-              property, sign contracts, and operate separately from its owners.
+              Closing the firm properly helps prevent future legal problems, protects credit records, and limits responsibility for any actions after closure.
             </p>
           </article>
 
           {/* Card 2 */}
           <article className="DP-req-card">
             <h3 className="DP-req-card-title">
-              Limited Liability Protection
+              Resolving Partner Conflicts:
             </h3>
             <div className="DP-req-card-underline" />
             <p className="DP-req-card-text">
-              The personal assets of shareholders are protected from company
-              debts and business risks, ensuring financial safety.
+              It gives a formal way to end the partnership when disagreements among partners cannot be resolved.
             </p>
           </article>
 
           {/* Card 3 */}
           <article className="DP-req-card">
             <h3 className="DP-req-card-title">
-              Access to Government Schemes
+              Final Settlement of Accounts:
             </h3>
             <div className="DP-req-card-underline" />
             <p className="DP-req-card-text">
-              Registered companies can benefit from schemes such as Startup
-              India for tax benefits and easier compliance, and Make in India
-              incentives for business growth.
+              The process ensures all debts and liabilities are paid off, and any remaining assets are fairly shared among partners.
             </p>
           </article>
 
           {/* Card 4 */}
           <article className="DP-req-card">
             <h3 className="DP-req-card-title">
-              Increased Credibility
+              Freedom to Move On:
             </h3>
             <div className="DP-req-card-underline" />
             <p className="DP-req-card-text">
-              A registered company gains higher trust among investors, clients,
-              and vendors, making funding and partnerships easier.
+              Partners can pursue their own new or better business opportunities without being tied to the old firm.
             </p>
           </article>
 

@@ -3,54 +3,53 @@ import "./PritoLlpFAQ.css";
 
 const faqs = [
   {
-    question: "How many persons are required to form a Private Limited Company?",
-    answer:
-      "Minimum two persons are required to form a Private Limited Company and a maximum up to 200 persons can be a member of a single Private Limited Company.",
-  },
+    question: "What is the reason behind Change in contribution of an LLP?",
+    answer:(
+    <div>
+      <p><strong>An LLP may need to change (enhance) its initial Contribution for one or more of the following reasons:</strong></p>
+      <ul>
+        <li>1. Infusion of additional capital (first point in 42)</li>
+        <li>2. Removal of an existing Partner</li>
+        <li>3. Enhancement of borrowing capacity/ limits</li>
+      </ul>
+    </div>
+  ),
+},
   {
-    question: "How many Directors are required to form a Private Limited Company?",
-    answer:
-      "Minimum two directors are required in a Private Limited Company, with an upper cap up to 15 directors.",
-  },
+    question: "What are some key/ basic documents required for change in contribution of an LLP?",
+    answer:(
+    <div>
+      <ul>
+        <li>1. Existing/ original LLP Agreement</li>
+        <li>2. New Contribution ratio amongst the partners</li>
+        <li>3. DSC of any one Designated Partner; etc.</li>
+      </ul>
+    </div>
+  ),
+},
   {
-    question: "Who are Directors of the company?",
-    answer:
-      "Directors are officers of the company who are responsible for managing the company and making the decisions as to its operation on a day to day basis, for the benefit of the shareholders.",
-  },
-  {
-    question:
-      "What is a company shareholder?",
-    answer:
-      "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in day-to-day management or financial affairs. They are also called 'members' and they agree to become part of a company by taking a minimum of one share in it. The quantity of shares held by each person represents how much of the business they own.",
-  },
-  {
-    question: "How much capital is required to start a Private Limited Company?",
-    answer:
-      "The Private Limited Company can be incorporated with any amount of capital and there is no lower or upper limit. Further, the government has relaxed the government fees for Incorporation of a Private Limited Company up to an Authorized capital of Rs. 15,00,000/-, however, the stamp duty, which is still levied, varies from State to State.",
-  },
-  {
-    question:
-      "What are some basic/ key documents required to incorporate a Private Limited Company in India?",
-    answer:
-      "PAN Card (All the Proposed Directors and/or Shareholders)",
-  },
-  {
-    question:
-      "What is the procedure to register a Private Limited Company?",
-    answer:
-      "You need at least two directors, two shareholders, a unique company name, a registered office address in India, and the necessary KYC documents for all directors and shareholders.",
-  },
-  {
-    question:
-      "What is the time period within which a Private Limited Company can be incorporated?",
-    answer:
-      "The process of incorporating a Private Limited Company can take anywhere between 10 to 15 working days, subject to submission of correct information and complete documentation.",
-  },
+    question: "What is the procedure for increasingthe contribution of an LLP?",
+    answer:(
+    <div>
+      <p><strong>Required Documents:</strong></p>
+      <ul>
+        <li>1. Preparation of a supplementary LLP Agreement on Stamp Paper of appropriate value</li>
+        <li>2. Preparation and Filing of E-form 3 within 30 days of preparation of Supplementary Agreement</li>
+        <li>3. Appropriate Government fees is payable depending upon the contribution of the LLP.</li>
+      </ul>
+    </div>
+  ),
+},
   {
     question:
-      "How Legal Terminus can help you incorporate a Private Limited Company in India?",
+      "What is the time period within which the process of change of contribution takes place?",
     answer:
-      "Legal Terminus can help you with incorporation of Private Limited Company for you, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+      "The process of change in existing contribution of an LLP takes around 1 week, subject to submission of correct information and complete documentation.",
+  },
+  {
+    question: "How Legal Terminus can help you with change in Contribution in your LLP?",
+    answer:
+      "Legal Terminus can help you with changing the name of your LLP in a hassle-free manner within a reasonable time span and for competitive professional fees. To know more, please book a telephonic appointment with one of our consultants free of charge.",
   },
 ];
 
@@ -66,14 +65,10 @@ const FaqPvt = () => {
       <div className="PLC-to-LLP-faqcontainer">
         {/* Left side – static text */}
         <div className="PLC-to-LLP-faqleft">
-          <h2 className="PLC-to-LLP-faqtitle">Private Limited Company Registration FAQ&apos;s</h2>
+          <h2 className="PLC-to-LLP-faqtitle">Conversion of Partnership into Limited Liability Partnership FAQ's&apos;s</h2>
 
           <p className="PLC-to-LLP-faqintro">
-            Starting a Private Limited Company in India is an important step for any business owner. With the right support, the process can be simple and stress-free.
-
-<br/><br/>
-Here, we’ve answered the most common questions about company registration—covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
-
+          Here, we’ve answered the most common questions about Conversion of Private Limited Company into Limited Liability Partnership covering documents, steps, and what happens.
           </p>
 
           <p className="PLC-to-LLP-faqintro">

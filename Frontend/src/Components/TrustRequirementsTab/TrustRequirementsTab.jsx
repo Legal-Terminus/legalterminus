@@ -9,13 +9,10 @@ const TrustRequirementsTab = () => {
         {/* ================= HEADER ================= */}
         <header className="trust-req-header">
           <h2 className="trust-req-title">
-            trustoration Of Wholly Owned Subsidiary in India
+            Benefits of Trust Registration in India
           </h2>
           <p className="trust-req-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company
-            registration process in India. It includes registering the business
-            with the Registrar of Companies (RoC) and obtaining a Digital
-            Signature Certificate (DSC) and Director Identification Number (DIN).
+            Trust registration in India is generally handled at the state level. The trust deed is registered with the local Sub-Registrar office under the applicable state laws.
           </p>
         </header>
 
@@ -25,49 +22,44 @@ const TrustRequirementsTab = () => {
           {/* Card 1 */}
           <article className="trust-req-card">
             <h3 className="trust-req-card-title">
-              Separate Legal Identity
+              Tax Benefits:
             </h3>
             <div className="trust-req-card-underline" />
             <p className="trust-req-card-text">
-              Once registered, a company becomes its own legal entity. It can own
-              property, sign contracts, and operate separately from its owners.
+              A registered trust can apply for 12A to save income tax. It can also get 80G approval so that people who donate to the trust can claim tax benefits.
             </p>
           </article>
 
           {/* Card 2 */}
           <article className="trust-req-card">
             <h3 className="trust-req-card-title">
-              Limited Liability Protection
+              Legal Recognition:
             </h3>
             <div className="trust-req-card-underline" />
             <p className="trust-req-card-text">
-              The personal assets of shareholders are protected from company
-              debts and business risks, ensuring financial safety.
+              Registration gives the trust a proper legal identity. It protects the trust’s property and helps avoid legal problems or disputes.
             </p>
           </article>
 
           {/* Card 3 */}
           <article className="trust-req-card">
             <h3 className="trust-req-card-title">
-              Access to Government Schemes
+              Easy Transfer of Assets:
             </h3>
             <div className="trust-req-card-underline" />
             <p className="trust-req-card-text">
-              Registered companies can benefit from schemes such as Startup
-              India for tax benefits and easier compliance, and Make in India
-              incentives for business growth.
+              In private trusts, assets can be smoothly transferred to family members or beneficiaries without long court procedures.
             </p>
           </article>
 
           {/* Card 4 */}
           <article className="trust-req-card">
             <h3 className="trust-req-card-title">
-              Increased Credibility
+              Better Trust and Funding Support:
             </h3>
             <div className="trust-req-card-underline" />
             <p className="trust-req-card-text">
-              A registered company gains higher trust among investors, clients,
-              and vendors, making funding and partnerships easier.
+              A registered trust is more trusted by donors, government bodies, and companies. It can apply for government grants and foreign funding (after required approval).
             </p>
           </article>
 

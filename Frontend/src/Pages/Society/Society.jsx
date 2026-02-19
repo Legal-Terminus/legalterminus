@@ -19,9 +19,9 @@ const Society = () => {
       <SocietyBreadcrum />
 
       <div id="plans">
-        <SocietyPlanAndPricing />
+        {/* <SocietyPlanAndPricing /> */}
       </div>
-      <SocietyTermsCondition />
+      {/* <SocietyTermsCondition /> */}
 
       <div id="premium">
         <SocietyPremium />
@@ -42,11 +42,11 @@ const Society = () => {
       </div>
 
       <div id="process">
-        <SocietyProcess />
+        {/* <SocietyProcess /> */}
       </div>
       
       <div id="documents">
-        <SocietyDocument />
+        {/* <SocietyDocument /> */}
       </div>
       <div id="faq">
         <SocietyFAQ />

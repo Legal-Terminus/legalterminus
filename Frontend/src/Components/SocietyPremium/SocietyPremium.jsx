@@ -28,9 +28,7 @@ const SocietyPremium = () => {
                 <span className="Society-premium-title-icon">⚖️</span>
               </h2>
               <p className="Society-premium-subtitle">
-                Get your company registered faster with Legal Terminus’s
-                expert-handled process, built for entrepreneurs who value time
-                and want to avoid unnecessary delays.
+                Get your Society registered quickly with our expert-managed process, specially designed for NGOs, associations, and social groups who want smooth and timely approval without delays.
               </p>
             </header>
 
@@ -40,15 +38,15 @@ const SocietyPremium = () => {
               <ul className="Society-premium-list">
                 <li className="Society-premium-list-item">
                   <span className="Society-premium-list-icon">🧑‍⚖️</span>
-                  Priority handling by Societyoration experts
+                  Priority handling by society registration experts
                 </li>
                 <li className="Society-premium-list-item">
                   <span className="Society-premium-list-icon">📑</span>
-                  Hassle-free compliance assistance
+                  Complete documentation and compliance support
                 </li>
                 <li className="Society-premium-list-item">
                   <span className="Society-premium-list-icon">⏱️</span>
-                  Strong follow-up & reminder policy
+                  Dedicated follow-up and regular status updates
                 </li>
               </ul>
             </section>
@@ -59,12 +57,10 @@ const SocietyPremium = () => {
               <div className="Society-premium-note-box">
                 <ul className="Society-premium-note-list">
                   <li className="Society-premium-note-item">
-                    We prioritize your preferred business name and perform a
-                    preliminary name check before submission.
+                    We help you choose and check your preferred Society name before filing the application.
                   </li>
                   <li className="Society-premium-note-item">
-                    In case of name rejection, our experts suggest compliant
-                    alternatives to ensure approval.
+                    If there is any objection or name issue, our experts suggest suitable alternatives to ensure smooth approval.
                   </li>
                 </ul>
               </div>

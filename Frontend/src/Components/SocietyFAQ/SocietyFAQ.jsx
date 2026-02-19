@@ -4,52 +4,69 @@ import "./SocietyFAQ.css";
 const faqs = [
   {
     question:
-      "How many persons are required to form a Private Limited Company?",
+      "What is a Society?",
+    answer:(
+    <div>
+      <p><strong>Society registration in India takes place under The Societies Registration Act, 1860. A society is an entity that works for promoting any of the below-mentioned activities or purposes.</strong></p>
+      <ul>
+        <li>Science</li>
+        <li>Art</li>
+        <li>Literature</li>
+        <li>Education</li>
+        <li>Charity</li>
+        <li>Public museums</li>
+        <li>Libraries</li>
+        <li>Creating military orphan funds etc.</li>
+      </ul>
+    </div>
+  ),
+},
+  {
+    question:
+      "How many persons are required to register a Society?",
     answer:
-      "Minimum two persons are required to form a Private Limited Company and a maximum up to 200 persons can be a member of a single Private Limited Company.",
+      "Minimum of 7 members are required to form a Society.",
+  },
+  {
+    question: "What are some basic/ key documents required to register a Society in India?",
+    answer:(
+    <div>
+      <ul>
+        <li>PAN Card (All the Members)</li>
+        <li>ID Proof (All the Members) (Passport/ Voter ID/ Aadhar Card/ Driving License)</li>
+        <li>Address Proof (All the Members& office of the proposed society) (Telephone Bill/ Mobile Bill/ Savings Bank Statement)</li>
+        <li>Passport size Photograph (All the Members)</li>
+        <li>All the documents mentioned above in point no 1 to 3 need to be self-signed by the respective proposed directors/ members/ shareholders All the utility bills or bank statements shall be less the 2 months old</li>
+      </ul>
+    </div>
+  ),
+},
+  {
+    question: "What is the procedure to register a Society in India?",
+    answer:(
+    <div>
+      <p><strong>The broad process of registering a Society involves following steps:</strong></p>
+      <ul>
+        <li>STEP 1: Provision of requisite mentioned documents/information to us</li>
+        <li>STEP 2: Validating the documents/ information and processing the same</li>
+        <li>STEP 3: Filing of application and submission of the same</li>
+        <li>STEP 4: Payment of appropriate government fee as applicable</li>
+        <li>STEP 5: Processing of the application and issuance of registration certificate</li>
+      </ul>
+    </div>
+  ),
+},
+  {
+    question:
+      "What is the time period within which a Society can be registered?",
+    answer:
+      "The process of registration of Society can take anywhere between 7 to 10 working days, subject to submission of correct information and complete documentation.",
   },
   {
     question:
-      "How many Directors are required to form a Private Limited Company?",
+      "How Legal Terminus can help you to register a Society in India?",
     answer:
-      "Minimum two directors are required in a Private Limited Company, with an upper cap up to 15 directors.",
-  },
-  {
-    question: "Who are Directors of the company?",
-    answer:
-      "Directors are officers of the company who are responsible for managing the company and making the decisions as to its operation on a day to day basis, for the benefit of the shareholders.",
-  },
-  {
-    question: "What is a company shareholder?",
-    answer:
-      "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in day-to-day management or financial affairs.",
-  },
-  {
-    question:
-      "How much capital is required to start a Private Limited Company?",
-    answer:
-      "The Private Limited Company can be incorporated with any amount of capital and there is no lower or upper limit.",
-  },
-  {
-    question:
-      "What documents are required to incorporate a Private Limited Company?",
-    answer:
-      "PAN Card, Address Proof, Identity Proof of all directors and shareholders.",
-  },
-  {
-    question: "What is the procedure to register a Private Limited Company?",
-    answer:
-      "You need two directors, shareholders, a company name, office address, and KYC documents.",
-  },
-  {
-    question: "What is the time period for incorporation?",
-    answer:
-      "Incorporation usually takes 10–15 working days after submission of correct documents.",
-  },
-  {
-    question: "How Legal Terminus can help?",
-    answer:
-      "Legal Terminus assists with hassle-free incorporation at competitive fees.",
+      "Legal Terminus can help you with to register a Society for you, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge. ",
   },
 ];
 
@@ -70,13 +87,7 @@ const SocietyFAQ = () => {
           </h2>
 
           <p className="new-societys-intro">
-            Starting a Private Limited Company in India is an important step for
-            any business owner. With the right support, the process can be
-            simple and stress-free.
-            <br />
-            <br />
-            Below are answers to the most common questions related to company
-            registration.
+            Find clear and simple answers to the most common questions about society registration, documents required, process, fees, and benefits. This section helps you understand the basic requirements and steps before starting the registration process.
           </p>
         </div>
 

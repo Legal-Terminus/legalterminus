@@ -24,20 +24,11 @@ const SocietyCompanyTabs = () => {
           {/* Content */}
           <div className="society-intro-content">
             <h2 className="society-intro-title">
-              Why Choose societyoration Of Wholly Owned Subsidiary in India?
+              Why Choose Society Registration in India?
             </h2>
 
             <p className="society-intro-text">
-              Registering a company in India is the first step to legally starting
-              your business. The Companies Act, 2013 governs company formation,
-              and the Ministry of Corporate Affairs (MCA) oversees the process.
-              Once registered, your business gains a separate legal identity with
-              rights and protections under Indian law.
-              <br /><br />
-              Choosing the right type of Private Limited Company is crucial as it
-              defines ownership, management structure, and legal protection.
-              Proper registration helps ensure smooth compliance, access to
-              government benefits, and strong market credibility.
+              Society registration in India establishes a non-profit entity primarily for charitable purposes. Similar in structure to Section 8 Companies and Trusts, a Society serves philanthropic objectives. Below, we address pertinent queries related to society registration.
             </p>
           </div>
 
@@ -51,27 +42,30 @@ const SocietyCompanyTabs = () => {
         <div className="society-act-container">
           <div className="society-act-card">
 
-            <h3 className="society-act-title">Companies Act, 2013</h3>
+            <h3 className="society-act-title">Societies Registration Act, 1860</h3>
 
             <p className="society-act-text">
-              As per Section 2(68) of the Companies Act, 2013, a private limited
-              company means a company having such minimum paid-up share capital
-              as may be prescribed, and which by its articles of association:
+              As per the Societies Registration Act, 1860, a society is formed by a group of individuals who come together for charitable, literary, scientific, or social purposes. A society is registered with the Registrar of Societies of the respective state and operates according to its Memorandum of Association and Rules & Regulations.
             </p>
 
             <p className="society-act-point">
               <span className="society-act-point-label">(a)</span>
-              Restricts the right to transfer its shares;
+              Is formed by a minimum of seven members (as required under the Act);
             </p>
 
             <p className="society-act-point">
               <span className="society-act-point-label">(b)</span>
-              Limits the number of its members to 200 (excluding employees);
+              Is established for lawful purposes such as education, art, culture, religion, charity, sports, or social welfare;
             </p>
 
             <p className="society-act-point">
               <span className="society-act-point-label">(c)</span>
-              Prohibits any invitation to the public to subscribe to securities.
+              Functions as a non-profit organization, where profits or income are used only for promoting the objectives of the society;
+            </p>
+
+            <p className="society-act-point">
+              <span className="society-act-point-label">(a)</span>
+              Is governed by a managing committee or governing body responsible for its administration and compliance;
             </p>
 
           </div>

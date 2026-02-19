@@ -28,9 +28,7 @@ const PartnershipLLPZolvitPremium = () => {
                 <span className="partnership-llp-zp-title-icon">⚖️</span>
               </h2>
               <p className="partnership-llp-zp-subtitle">
-                Get your company registered faster with Legal Terminus
-                expert-handled process, made for entrepreneurs who value time
-                and want to avoid unnecessary delays.
+                Convert your Partnership Firm into a Private Limited Company smoothly with our expert-managed process, designed for businesses that want better growth, credibility, and legal protection.
               </p>
             </header>
 
@@ -40,17 +38,15 @@ const PartnershipLLPZolvitPremium = () => {
               <ul className="partnership-llp-zp-list partnership-llp-zp-features-list">
                 <li className="partnership-llp-zp-list-item">
                   <span className="partnership-llp-zp-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus
-                  expert-handled process, made for entrepreneurs who value
-                  time and want to avoid unnecessary delays.
+                  Expert handling of complete conversion process
                 </li>
                 <li className="partnership-llp-zp-list-item">
                   <span className="partnership-llp-zp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                  End-to-end documentation and compliance support
                 </li>
                 <li className="partnership-llp-zp-list-item">
                   <span className="partnership-llp-zp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                  Dedicated follow-up and regular status updates
                 </li>
               </ul>
             </section>
@@ -61,12 +57,13 @@ const PartnershipLLPZolvitPremium = () => {
               <div className="partnership-llp-zp-note-box">
                 <ul className="partnership-llp-zp-note-list">
                   <li className="partnership-llp-zp-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+                    We assist in checking name availability and reserving your preferred company name before filing.
                   </li>
                   <li className="partnership-llp-zp-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                    Our team ensures proper transfer of assets, liabilities, and business structure as per legal requirements.
+                  </li>
+                  <li className="partnership-llp-zp-note-item">
+                    In case of any query or objection from authorities, we provide complete support until approval.
                   </li>
                 </ul>
               </div>

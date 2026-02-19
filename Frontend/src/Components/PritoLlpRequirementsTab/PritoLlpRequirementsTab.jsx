@@ -8,12 +8,10 @@ const RequirementsPvt = () => {
         {/* Heading + intro */}
         <header className="PLC-to-LLP-req-header">
           <h2 className="PLC-to-LLP-req-title">
-            Benefits of Private Limited Company Registration in India
+            Benefits of Conversion of Private Limited Company into LLP
           </h2>
           <p className="PLC-to-LLP-req-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company registration process in India. It includes registering the business with the Registrar of Companies (RoC) and obtaining a Digital Signature Certificate (DSC) and Director Identification Number (DIN).
-
-
+            The Ministry of Corporate Affairs (MCA) manages the process of conversion of a Private Limited Company into an LLP in India. It includes filing the required forms with the Registrar of Companies (RoC), obtaining approval for conversion, and completing necessary compliance formalities as prescribed under the applicable laws.
           </p>
         </header>
 
@@ -21,42 +19,41 @@ const RequirementsPvt = () => {
         <div className="PLC-to-LLP-req-grid">
           {/* 1 */}
           <article className="PLC-to-LLP-req-card">
-            <h3 className="PLC-to-LLP-req-card-title">Separate Legal Identity</h3>
+            <h3 className="PLC-to-LLP-req-card-title">Tax Benefits:</h3>
             <div className="PLC-to-LLP-req-card-underline" />
             <p className="PLC-to-LLP-req-card-text">
-Once registered, a company becomes its own legal entity. It can own property, sign contracts, and operate separately from its owners.
-
+              Partners can share profits without Dividend Distribution Tax (DDT). LLPs are not required to pay MAT, and asset transfer during conversion can be tax-free if conditions are met. Past business losses can also be carried forward.
             </p>
           </article>
 
           {/* 2 */}
           <article className="PLC-to-LLP-req-card">
-            <h3 className="PLC-to-LLP-req-card-title">Limited Liability Protection</h3>
+            <h3 className="PLC-to-LLP-req-card-title">Lower Compliance Costs:</h3>
             <div className="PLC-to-LLP-req-card-underline" />
             <p className="PLC-to-LLP-req-card-text">
-              The personal assets of shareholders are safe from company debts and risks, ensuring financial protection.
+              No need to conduct mandatory Board Meetings or Annual General Meetings. Audit is required only if turnover crosses the prescribed limit. Fewer forms need to be filed with ROC.
             </p>
           </article>
 
           {/* 3 */}
           <article className="PLC-to-LLP-req-card">
             <h3 className="PLC-to-LLP-req-card-title">
-              Access to Government Schemes
+              Flexible Management:
             </h3>
             <div className="PLC-to-LLP-req-card-underline" />
             <p className="PLC-to-LLP-req-card-text">
-              Registered companies can benefit from government schemes like Startup India for tax benefits and easier compliance, and Make in India for incentives and support for manufacturing businesses.
+              LLPs are managed as per the LLP Agreement, without strict company structure rules. There is no limit on the number of partners.
             </p>
           </article>
 
           {/* 4 */}
           <article className="PLC-to-LLP-req-card">
             <h3 className="PLC-to-LLP-req-card-title">
-              Increased Credibility
+              Limited Liability Protection:
             </h3>
             <div className="PLC-to-LLP-req-card-underline" />
             <p className="PLC-to-LLP-req-card-text">
-              A registered company is more trusted by investors, clients, and vendors, making it easier to get funding and partnerships.
+              Partners’ personal assets are protected from business debts, except in cases of fraud.
             </p>
           </article>
         </div>

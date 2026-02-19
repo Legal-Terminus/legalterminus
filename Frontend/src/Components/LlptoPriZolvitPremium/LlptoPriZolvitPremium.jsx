@@ -28,7 +28,7 @@ const ZolvitPremium = () => {
                 <span className="LLP-to-PLC-zp-title-icon">⚖️</span>
               </h2>
               <p className="LLP-to-PLC-zp-subtitle">
-Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+                Convert your LLP into a Private Limited Company with Legal Terminus expert-guided process, designed for businesses ready to scale, raise funding, and build stronger market credibility.
               </p>
             </header>
 
@@ -38,15 +38,15 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <ul className="LLP-to-PLC-zp-list LLP-to-PLC-zp-features-list">
                 <li className="LLP-to-PLC-zp-list-item">
                   <span className="LLP-to-PLC-zp-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+                  Smooth and structured conversion from LLP to Private Limited Company with complete legal support.
                 </li>
                 <li className="LLP-to-PLC-zp-list-item">
                   <span className="LLP-to-PLC-zp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                  Complete documentation, drafting of MOA & AOA, and seamless ROC filing process.
                 </li>
                 <li className="LLP-to-PLC-zp-list-item">
                   <span className="LLP-to-PLC-zp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                  Timely updates and dedicated compliance reminders to ensure no delays during conversion.
                 </li>
               </ul>
             </section>
@@ -57,12 +57,10 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <div className="LLP-to-PLC-zp-note-box">
                 <ul className="LLP-to-PLC-zp-note-list">
                   <li className="LLP-to-PLC-zp-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+                    We review your existing LLP details and check name availability before initiating the conversion process.
                   </li>
                   <li className="LLP-to-PLC-zp-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                    In case of name conflict or rejection, our experts suggest legally suitable alternative names to secure approval smoothly.
                   </li>
                 </ul>
               </div>

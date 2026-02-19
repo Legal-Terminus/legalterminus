@@ -8,12 +8,10 @@ const RequirementsLlp = () => {
         {/* Heading + intro */}
         <header className="LLP-to-PLC-req-header">
           <h2 className="LLP-to-PLC-req-title">
-            Benefits of Limited Liability Partnership Registration in India
+            Benefits of Conversion of LLP to Private Limited Company
           </h2>
           <p className="LLP-to-PLC-req-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company registration process in India. It includes registering the business with the Registrar of Companies (RoC) and obtaining a Digital Signature Certificate (DSC) and Director Identification Number (DIN).
-
-
+            Converting an LLP into a Private Limited Company gives your business several practical advantages:
           </p>
         </header>
 
@@ -21,42 +19,41 @@ const RequirementsLlp = () => {
         <div className="LLP-to-PLC-req-grid">
           {/* 1 */}
           <article className="LLP-to-PLC-req-card">
-            <h3 className="LLP-to-PLC-req-card-title">Separate Legal Identity</h3>
+            <h3 className="LLP-to-PLC-req-card-title">Easy Business Growth:</h3>
             <div className="LLP-to-PLC-req-card-underline" />
             <p className="LLP-to-PLC-req-card-text">
-Once registered, a company becomes its own legal entity. It can own property, sign contracts, and operate separately from its owners.
-
+            A Private Limited structure is more suitable for expanding operations and scaling your business smoothly.
             </p>
           </article>
 
           {/* 2 */}
           <article className="LLP-to-PLC-req-card">
-            <h3 className="LLP-to-PLC-req-card-title">Limited Liability Protection</h3>
+            <h3 className="LLP-to-PLC-req-card-title">Better Funding Opportunities:</h3>
             <div className="LLP-to-PLC-req-card-underline" />
             <p className="LLP-to-PLC-req-card-text">
-              The personal assets of shareholders are safe from company debts and risks, ensuring financial protection.
+              It becomes easier to raise money from investors, venture capitalists, or banks, as investors can buy shares in the company.
             </p>
           </article>
 
           {/* 3 */}
           <article className="LLP-to-PLC-req-card">
             <h3 className="LLP-to-PLC-req-card-title">
-              Access to Government Schemes
+              Flexible Share Options:
             </h3>
             <div className="LLP-to-PLC-req-card-underline" />
             <p className="LLP-to-PLC-req-card-text">
-              Registered companies can benefit from government schemes like Startup India for tax benefits and easier compliance, and Make in India for incentives and support for manufacturing businesses.
+              You can issue shares anytime to raise funds and also offer shares to employees as rewards through ESOPs.
             </p>
           </article>
 
           {/* 4 */}
           <article className="LLP-to-PLC-req-card">
             <h3 className="LLP-to-PLC-req-card-title">
-              Increased Credibility
+              Lower Tax Option:
             </h3>
             <div className="LLP-to-PLC-req-card-underline" />
             <p className="LLP-to-PLC-req-card-text">
-              A registered company is more trusted by investors, clients, and vendors, making it easier to get funding and partnerships.
+              Private Limited Companies can opt for a lower corporate tax rate (around 22%–25%), compared to the 30% flat tax rate generally applicable to LLPs.
             </p>
           </article>
         </div>

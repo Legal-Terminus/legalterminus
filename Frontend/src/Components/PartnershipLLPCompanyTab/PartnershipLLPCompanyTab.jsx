@@ -35,10 +35,10 @@ const PartnershipLLPCompanyTab = () => {
           {/* Text */}
           <div className="partnership-llp-companytab-intro-content">
             <h2 className="partnership-llp-companytab-intro-title">
-              Why Choose Private Limited Company Registration
+              Why Choose Conversion of Partnership into Limited Liability Partnership
             </h2>
             <p className="partnership-llp-companytab-intro-text">
-              Registering a company in India is the first step to legally starting your business...
+              A partnership firm is a popular business structure for most small and medium traders/manufacturers/ service providers. However, a partnership firm is not mandatorily liable to be registered in terms of the extant provisions of the applicable law. Furthermore, there is no provision for compulsory audit of a partnership firm. Therefore, as it grows in size, it becomes need of the hour for a business to evolve into a more trustworthy and transparent structure, such as Limited Liability Partnership. It has been observed that such structures are preferred by critical stakeholders (investors, creditors, etc.)
             </p>
           </div>
         </div>
@@ -50,25 +50,25 @@ const PartnershipLLPCompanyTab = () => {
       <section className="partnership-llp-companytab-act-section">
         <div className="partnership-llp-companytab-act-container">
           <div className="partnership-llp-companytab-act-card">
-            <h3 className="partnership-llp-companytab-act-title">Companies Act, 2013</h3>
+            <h3 className="partnership-llp-companytab-act-title">Limited Liability Partnership Act, 2008</h3>
 
             <p className="partnership-llp-companytab-act-text">
-              As per Section 2(68) of the Companies Act, 2013...
+              As per the Limited Liability Partnership Act, 2008, a Limited Liability Partnership (LLP) is a separate legal entity formed by two or more partners who agree to carry on a lawful business with limited liability.
             </p>
 
             <p className="partnership-llp-companytab-act-point">
               <span className="partnership-llp-companytab-act-point-label">(a)</span>
-              Restricts the right to transfer its shares;
+              Is a separate legal entity from its partners;
             </p>
 
             <p className="partnership-llp-companytab-act-point">
               <span className="partnership-llp-companytab-act-point-label">(b)</span>
-              Limits the number of its members to 200;
+              Requires a minimum of two partners, with no maximum limit;
             </p>
 
             <p className="partnership-llp-companytab-act-point">
               <span className="partnership-llp-companytab-act-point-label">(c)</span>
-              Prohibits any invitation to the public to subscribe;
+              Provides limited liability protection to its partners;
             </p>
           </div>
         </div>

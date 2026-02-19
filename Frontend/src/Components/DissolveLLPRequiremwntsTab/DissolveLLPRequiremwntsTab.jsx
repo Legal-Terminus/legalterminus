@@ -9,13 +9,10 @@ const DissolveLLPRequiremwntsTab = () => {
         {/* ================= HEADER ================= */}
         <header className="Dissllp-req-header">
           <h2 className="Dissllp-req-title">
-            Dissolve-llp Of Wholly Owned Subsidiary in India
+           Benefits of Choose Dissolve a Limited Liability Partnership
           </h2>
           <p className="Dissllp-req-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company
-            registration process in India. It includes registering the business
-            with the Registrar of Companies (RoC) and obtaining a Digital
-            Signature Certificate (DSC) and Director Identification Number (DIN).
+            Dissolving an LLP removes ongoing compliance requirements, stops additional penalties, provides a clear legal closure, and allows partners to focus their time and resources on new business opportunities.
           </p>
         </header>
 
@@ -25,49 +22,44 @@ const DissolveLLPRequiremwntsTab = () => {
           {/* Card 1 */}
           <article className="Dissllp-req-card">
             <h3 className="Dissllp-req-card-title">
-              Separate Legal Identity
+              Removal of Compliance Burden:
             </h3>
             <div className="Dissllp-req-card-underline" />
             <p className="Dissllp-req-card-text">
-              Once registered, a company becomes its own legal entity. It can own
-              property, sign contracts, and operate separately from its owners.
+              After dissolution, the LLP is no longer required to file annual returns or financial statements, which saves time, effort, and money.
             </p>
           </article>
 
           {/* Card 2 */}
           <article className="Dissllp-req-card">
             <h3 className="Dissllp-req-card-title">
-              Limited Liability Protection
+              Stop Further Penalties:
             </h3>
             <div className="Dissllp-req-card-underline" />
             <p className="Dissllp-req-card-text">
-              The personal assets of shareholders are protected from company
-              debts and business risks, ensuring financial safety.
+              If the LLP has pending filings, closing it legally prevents additional late fees and penalties from increasing.
             </p>
           </article>
 
           {/* Card 3 */}
           <article className="Dissllp-req-card">
             <h3 className="Dissllp-req-card-title">
-              Access to Government Schemes
+              Proper Legal Closure:
             </h3>
             <div className="Dissllp-req-card-underline" />
             <p className="Dissllp-req-card-text">
-              Registered companies can benefit from schemes such as Startup
-              India for tax benefits and easier compliance, and Make in India
-              incentives for business growth.
+              Dissolution officially closes the LLP and clearly settles its assets and liabilities, protecting partners from future legal issues.
             </p>
           </article>
 
           {/* Card 4 */}
           <article className="Dissllp-req-card">
             <h3 className="Dissllp-req-card-title">
-              Increased Credibility
+              Better Use of Resources:
             </h3>
             <div className="Dissllp-req-card-underline" />
             <p className="Dissllp-req-card-text">
-              A registered company gains higher trust among investors, clients,
-              and vendors, making funding and partnerships easier.
+              It helps partners avoid spending money and time on an inactive business and focus on new or profitable opportunities.
             </p>
           </article>
 

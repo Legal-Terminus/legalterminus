@@ -22,11 +22,11 @@ function LLP() {
 
       {/* Plans */}
       <div id="plans">
-        <LlptoPrivatePlanandPrice />
+        {/* <LlptoPrivatePlanandPrice /> */}
       </div>
 
       {/* Terms & Conditions */}
-      <LlptoPriTermandcondn/>
+      {/* <LlptoPriTermandcondn/> */}
 
       {/* Premium */}
       <div id="premium">
@@ -43,7 +43,7 @@ function LLP() {
 
       {/* Types */}
       <div id="types">
-        <LlptoPriTypes />
+        {/* <LlptoPriTypes /> */}
       </div>
 
       {/* Requirements */}
@@ -53,12 +53,12 @@ function LLP() {
 
       {/* Process */}
       <div id="process">
-        <LlptoPriProcess />
+        {/* <LlptoPriProcess /> */}
       </div>
 
       {/* Documents */}
       <div id="documents">
-        <LlptoPriDocInfographic />
+        {/* <LlptoPriDocInfographic /> */}
       </div>
 
       {/* FAQ */}

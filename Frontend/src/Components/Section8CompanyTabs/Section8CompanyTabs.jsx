@@ -24,20 +24,11 @@ const Section8CompanyTabs = () => {
           {/* Content */}
           <div className="s8-intro-content">
             <h2 className="s8-intro-title">
-              Why Choose Incorporation Of Wholly Owned Subsidiary in India?
+              Why Choose Section 8 Company Registration in India?
             </h2>
 
             <p className="s8-intro-text">
-              Registering a company in India is the first step to legally starting
-              your business. The Companies Act, 2013 governs company formation,
-              and the Ministry of Corporate Affairs (MCA) oversees the process.
-              Once registered, your business gains a separate legal identity with
-              rights and protections under Indian law.
-              <br /><br />
-              Choosing the right type of Private Limited Company is crucial as it
-              defines ownership, management structure, and legal protection.
-              Proper registration helps ensure smooth compliance, access to
-              government benefits, and strong market credibility.
+              A Sec 8 company, also known as a non-profit organization, is primarily established for charitable purposes in India. Its structure resembles that of trusts and societies. Section 8 company in India is considered the most reliable and transparent form of business structure for charitable endeavors. Below, we address relevant queries related to Section 8 company registration and non-profit organization registration in India.
             </p>
           </div>
 
@@ -54,24 +45,27 @@ const Section8CompanyTabs = () => {
             <h3 className="s8-act-title">Companies Act, 2013</h3>
 
             <p className="s8-act-text">
-              As per Section 2(68) of the Companies Act, 2013, a private limited
-              company means a company having such minimum paid-up share capital
-              as may be prescribed, and which by its articles of association:
+              As per Section 8 of the Companies Act, 2013, a Section 8 Company means a company established for promoting charitable objectives such as commerce, art, science, sports, education, research, social welfare, religion, charity, environmental protection, or any other similar purpose, and which:
             </p>
 
             <p className="s8-act-point">
               <span className="s8-act-point-label">(a)</span>
-              Restricts the right to transfer its shares;
+              Intends to apply its profits or income solely towards the promotion of its stated objectives;
             </p>
 
             <p className="s8-act-point">
               <span className="s8-act-point-label">(b)</span>
-              Limits the number of its members to 200 (excluding employees);
+              Prohibits the payment of any dividend to its members;
             </p>
 
             <p className="s8-act-point">
               <span className="s8-act-point-label">(c)</span>
-              Prohibits any invitation to the public to subscribe to securities.
+              Requires prior approval of the Central Government (Regional Director) before incorporation;
+            </p>
+
+            <p className="s8-act-point">
+              <span className="s8-act-point-label">(c)</span>
+              Operates as a limited company without adding the words “Limited” or “Private Limited” to its name.
             </p>
 
           </div>

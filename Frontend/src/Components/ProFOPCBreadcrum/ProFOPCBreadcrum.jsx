@@ -19,7 +19,7 @@ const Breadcrum = () => {
           </h1>
 
           <p className="ProPrietorship-opc-Bc-public-description">
-            Legal Terminus can help you with Conversion of Proprietorship into OPC Private Limited Company in a hassle-free manner within a reasonable time span and competitive Professional fee which starts from Rs. 13999/- excluding Govt. Fees
+            Legal Terminus can help you with conversion of proprietorship into private limited company in a hassle-free manner within a reasonable time span and competitive Professional fee which starts from Rs. 14999/- excluding Govt. Fees
           </p>
 
           <div className="ProPrietorship-opc-Bc-public-features">

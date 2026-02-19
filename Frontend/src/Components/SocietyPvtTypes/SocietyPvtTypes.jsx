@@ -19,48 +19,46 @@ const SocietyPvtTypes = () => {
         {/* Content */}
         <div className="society-types-content">
           <h2 className="society-types-title">
-            societyoration Of Wholly Owned Subsidiary in India
+            Types of Society Registration in India
           </h2>
 
           <p className="society-types-intro">
-            Private Limited Companies can be registered in different forms based
-            on ownership, liability, and business objectives. Choosing the right
-            type ensures legal protection, smooth operations, and long-term
-            growth.
+            Societies in India can be registered based on their purpose and activities:
           </p>
 
           {/* Type 1 */}
           <div className="society-types-block">
             <h3 className="society-types-subtitle">
-              Company Limited by Shares
+              Charitable Societies:
             </h3>
             <p className="society-types-text">
-              This is the most common type of Private Limited Company. The
-              liability of shareholders is limited to the unpaid amount on their
-              shares. Ideal for startups and growing businesses looking to raise
-              funds while protecting personal assets.
+              These are formed to help people in need. They work for social welfare, poverty support, medical help, and other public service activities.
             </p>
           </div>
 
           {/* Type 2 */}
           <div className="society-types-block">
             <h3 className="society-types-subtitle">
-              Company Limited by Guarantee
+              Educational Societies:
             </h3>
             <p className="society-types-text">
-              Members agree to contribute a fixed amount in case of liquidation.
-              This structure is generally suitable for non-profit or charitable
-              organizations that do not require share capital.
+              These societies are created to promote education. They may run schools, colleges, coaching centers, or training institutes.
             </p>
           </div>
 
           {/* Type 3 */}
           <div className="society-types-block">
-            <h3 className="society-types-subtitle">Unlimited Companies</h3>
+            <h3 className="society-types-subtitle">Cultural Societies:</h3>
             <p className="society-types-text">
-              An unlimited company places no limit on members’ liability.
-              Members are personally responsible for company debts. This model
-              is less common and usually adopted by closely held businesses.
+              These focus on promoting and protecting art, music, dance, literature, and cultural heritage.
+            </p>
+          </div>
+
+          {/* Type 4 */}
+          <div className="society-types-block">
+            <h3 className="society-types-subtitle">Religious Societies:</h3>
+            <p className="society-types-text">
+              These are formed to manage religious programs, spiritual activities, or maintain places of worship.
             </p>
           </div>
         </div>

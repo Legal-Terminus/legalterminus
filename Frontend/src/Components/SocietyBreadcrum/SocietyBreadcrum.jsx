@@ -19,27 +19,27 @@ const Breadcrum = () => {
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus can help you with Public Limited Company registration in a smooth and hassle-free manner. We offer competitive professional fees starting at Rs. 3,999/- for Public Limited Company registration in India.
+            Legal Terminus can help you with society registration in India, offering hassle-free services within a reasonable timeframe and for competitive professional fees starting from Rs. 14,999/-. We assist with society registration promptly and efficiently to meet your requirements.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Minimum 2 Directors Required</div>
-            <div className="lt-feature-item"> Separate Legal Entity</div>
-            <div className="lt-feature-item"> Limited Liability Protection</div>
+            <div className="lt-feature-item"> Minimum 7 Members Required</div>
+            <div className="lt-feature-item"> 7 to 10 Working Days</div>
+            <div className="lt-feature-item"> 5 Simple Steps</div>
             <div className="lt-feature-item"> High Business Credibility</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>12,000+</h3>
+              <h3>1,000+</h3>
               <p>Companies Registered</p>
             </div>
             <div>
-              <h3>99%</h3>
-              <p>Approval Success Rate</p>
+              <h3>100%</h3>
+              <p>Online Processess</p>
             </div>
             <div>
-              <h3>15+</h3>
+              <h3>5+</h3>
               <p>Years of Legal Expertise</p>
             </div>
           </div>
@@ -55,7 +55,7 @@ const Breadcrum = () => {
             </h3>
 
             <p className="lt-form-subtitle">
-              Talk to our Private Limited Company registration expert
+              Talk to our Society Registration expert
             </p>
 
             <form

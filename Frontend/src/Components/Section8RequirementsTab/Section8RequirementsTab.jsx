@@ -9,13 +9,10 @@ const Section8RequirementsTab = () => {
         {/* ================= HEADER ================= */}
         <header className="s8-req-header">
           <h2 className="s8-req-title">
-            Incorporation Of Wholly Owned Subsidiary in India
+            Benefits of Section 8 Company Registration in India
           </h2>
           <p className="s8-req-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company
-            registration process in India. It includes registering the business
-            with the Registrar of Companies (RoC) and obtaining a Digital
-            Signature Certificate (DSC) and Director Identification Number (DIN).
+            The Ministry of Corporate Affairs (MCA) governs the incorporation of a Section 8 Company in India. The process includes obtaining name approval, securing a Digital Signature Certificate (DSC) and Director Identification Number (DIN), and filing incorporation documents with the Registrar of Companies (RoC) along with mandatory Central Government approval (through the Regional Director).
           </p>
         </header>
 
@@ -25,49 +22,44 @@ const Section8RequirementsTab = () => {
           {/* Card 1 */}
           <article className="s8-req-card">
             <h3 className="s8-req-card-title">
-              Separate Legal Identity
+              Legal Recognition & Trust
             </h3>
             <div className="s8-req-card-underline" />
             <p className="s8-req-card-text">
-              Once registered, a company becomes its own legal entity. It can own
-              property, sign contracts, and operate separately from its owners.
+              A Section 8 Company is registered under the Companies Act, 2013 and regulated by the Government. Because of strict compliance rules, it is considered more transparent and trustworthy by donors, government bodies, and other stakeholders.
             </p>
           </article>
 
           {/* Card 2 */}
           <article className="s8-req-card">
             <h3 className="s8-req-card-title">
-              Limited Liability Protection
+              Tax Benefits
             </h3>
             <div className="s8-req-card-underline" />
             <p className="s8-req-card-text">
-              The personal assets of shareholders are protected from company
-              debts and business risks, ensuring financial safety.
+              Section 8 Companies can apply for 12A and 80G registration to get tax exemptions. Also receive tax benefits on their donations, which helps attract more funding.
             </p>
           </article>
 
           {/* Card 3 */}
           <article className="s8-req-card">
             <h3 className="s8-req-card-title">
-              Access to Government Schemes
+              No Minimum Capital Requirement
             </h3>
             <div className="s8-req-card-underline" />
             <p className="s8-req-card-text">
-              Registered companies can benefit from schemes such as Startup
-              India for tax benefits and easier compliance, and Make in India
-              incentives for business growth.
+              There is no requirement to maintain a minimum share capital. You can start a Section 8 Company with any suitable capital amount.
             </p>
           </article>
 
           {/* Card 4 */}
           <article className="s8-req-card">
             <h3 className="s8-req-card-title">
-              Increased Credibility
+              Stamp Duty Exemption
             </h3>
             <div className="s8-req-card-underline" />
             <p className="s8-req-card-text">
-              A registered company gains higher trust among investors, clients,
-              and vendors, making funding and partnerships easier.
+              Section 8 Companies are generally exempt from paying stamp duty on their Memorandum and Articles of Association, unlike other companies.
             </p>
           </article>
 

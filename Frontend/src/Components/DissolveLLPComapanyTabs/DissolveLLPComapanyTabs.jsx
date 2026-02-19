@@ -24,20 +24,11 @@ const DissolveLLPComapanyTabs = () => {
           {/* Content */}
           <div className="Dissllp-intro-content">
             <h2 className="Dissllp-intro-title">
-              Why Choose Dissolve-llp Of Wholly Owned Subsidiary in India?
+              Why Choose Dissolve a Limited Liability Partnership
             </h2>
 
             <p className="Dissllp-intro-text">
-              Registering a company in India is the first step to legally starting
-              your business. The Companies Act, 2013 governs company formation,
-              and the Ministry of Corporate Affairs (MCA) oversees the process.
-              Once registered, your business gains a separate legal identity with
-              rights and protections under Indian law.
-              <br /><br />
-              Choosing the right type of Private Limited Company is crucial as it
-              defines ownership, management structure, and legal protection.
-              Proper registration helps ensure smooth compliance, access to
-              government benefits, and strong market credibility.
+              Once an LLP is incorporated, it is legally required to comply with ongoing statutory obligations such as filing annual returns, maintaining financial statements, and meeting regulatory requirements. Failure to comply can result in heavy penalties, additional fees, and legal action against designated partners. Therefore, if an LLP is not carrying on any business activities or has no plans to operate in the future, it is advisable to legally close it.
             </p>
           </div>
 
@@ -49,11 +40,11 @@ const DissolveLLPComapanyTabs = () => {
       ============================ */}
       <section className="Dissllp-act-section">
         <div className="Dissllp-act-container">
-          <div className="Dissllp-act-card">
+          {/* <div className="Dissllp-act-card">
 
-            <h3 className="Dissllp-act-title">Companies Act, 2013</h3>
+            <h3 className="Dissllp-act-title">Companies Act, 2013</h3> */}
 
-            <p className="Dissllp-act-text">
+            {/* <p className="Dissllp-act-text">
               As per Section 2(68) of the Companies Act, 2013, a private limited
               company means a company having such minimum paid-up share capital
               as may be prescribed, and which by its articles of association:
@@ -72,9 +63,9 @@ const DissolveLLPComapanyTabs = () => {
             <p className="Dissllp-act-point">
               <span className="Dissllp-act-point-label">(c)</span>
               Prohibits any invitation to the public to subscribe to securities.
-            </p>
+            </p> */}
 
-          </div>
+          {/* </div> */}
         </div>
       </section>
 

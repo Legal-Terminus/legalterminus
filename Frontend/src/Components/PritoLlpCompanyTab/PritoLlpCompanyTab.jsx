@@ -35,14 +35,11 @@ A Private Limited Company is a legally registered business under the Companies A
           {/* Text */}
           <div className="PLC-to-LLP-pvtintro-content">
             <h2 className="PLC-to-LLP-pvtintro-title">
-              Why Choose Private Limited Company Registration
+              Why Choose Conversion of Private Limited Company into LLP
             </h2>
             <p className="PLC-to-LLP-pvtintro-text">
-              
-Registering a company in India is the first step to legally starting your business. The Companies Act, 2013, sets the rules for company formation, and the Ministry of Corporate Affairs (MCA) oversees the process. Once registered, your business gets a legal identity, along with rights and protections under Indian law. 
-<br></br>
-<br></br>
-Choosing the right type of Private Limited Company is important, as it determines how your business is owned, managed, and legally protected. Different types of private limited companies suit different business needs, depending on factors such as ownership structure. Selecting the correct type also helps ensure smooth compliance with legal regulations. Proper registration with the Ministry of Corporate Affairs (MCA) allows your company to operate legally, access government benefits, and build strong credibility in the market.            </p>
+           Converting a Private Limited Company into a Limited Liability Partnership (LLP) is a strategic step for businesses looking for operational flexibility and reduced compliance burden. The conversion process is governed by the Companies Act, 2013 and the Limited Liability Partnership Act, 2008, and is regulated by the Ministry of Corporate Affairs (MCA). After conversion, the LLP continues the business with all assets, liabilities, rights, and obligations legally transferred from the company.
+            </p>
           </div>
         </div>
       </section>
@@ -53,29 +50,25 @@ Choosing the right type of Private Limited Company is important, as it determine
       <section className="companies-act-section">
         <div className="companies-act-container">
           <div className="companies-act-card">
-            <h3 className="companies-act-title">Companies Act, 2013</h3>
+            <h3 className="companies-act-title">Limited Liability Partnership Act, 2008</h3>
 
             <p className="companies-act-text">
-              As per Section 2(68) of the Companies Act, 2013, a private limited
-              company means a company having a minimum paid-up share capital as
-              may be prescribed, and which by its articles of association:
+              As per the Limited Liability Partnership Act, 2008 and the applicable rules, a Private Limited Company may convert into a Limited Liability Partnership (LLP), subject to prescribed conditions and approval from the Registrar.
             </p>
 
             <p className="companies-act-point">
               <span className="companies-act-point-label">(a)</span>
-              Restricts the right to transfer its shares;
+              There must be a minimum of two Partners and two Designated Partners;
             </p>
 
             <p className="companies-act-point">
               <span className="companies-act-point-label">(b)</span>
-              Limits the number of its members to 200 (excluding present and
-              former employees); and
+              All shareholders of the company must become partners in the LLP;
             </p>
 
             <p className="companies-act-point">
               <span className="companies-act-point-label">(c)</span>
-              Prohibits any invitation to the public to subscribe for any
-              securities of the company.
+              The LLP shall be governed by an LLP Agreement defining the mutual rights and duties of partners;
             </p>
           </div>
         </div>

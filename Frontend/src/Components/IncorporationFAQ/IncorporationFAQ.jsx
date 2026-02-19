@@ -3,49 +3,49 @@ import "./IncorporationFAQ.css";
 
 const faqs = [
   {
-    question: "How many persons are required to form a Private Limited Company?",
+    question: "What is a Wholly Owned Subsidiary (WOS) in India?",
     answer:
-      "Minimum two persons are required to form a Private Limited Company and a maximum up to 200 persons can be a member of a single Private Limited Company.",
+      "A WOS is a private limited company in India where 100% of the shares are held by a foreign company. It operates as a separate legal entity.",
   },
   {
-    question: "How many Directors are required to form a Private Limited Company?",
+    question: "Can a foreign company directly set up a WOS in India?",
     answer:
-      "Minimum two directors are required in a Private Limited Company, with an upper cap up to 15 directors.",
+      "Yes, a foreign company can directly incorporate a WOS in India under the Companies Act, 2013.",
   },
   {
-    question: "Who are Directors of the company?",
+    question: "How many directors are needed to incorporate a WOS in India?",
     answer:
-      "Directors are officers of the company who are responsible for managing the company and making the decisions as to its operation on a day to day basis, for the benefit of the shareholders.",
+      "You need at least two directors, and at least one must be an Indian resident (staying in India for at least 182 days in the previous year).",
   },
   {
-    question: "What is a company shareholder?",
+    question: "Is it necessary to visit India to incorporate a WOS?",
     answer:
-      "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in day-to-day management or financial affairs.",
+      "No physical visit is required. All documents can be signed and notarised and / or apostilled abroad and submitted electronically.",
   },
   {
-    question: "How much capital is required to start a Private Limited Company?",
+    question: "What type of company structure is used for a WOS in India?",
     answer:
-      "The Private Limited Company can be incorporated with any amount of capital and there is no lower or upper limit.",
+      "Most WOS entities are registered as Private Limited Companies due to limited liability and ease of operation.",
   },
   {
-    question: "What documents are required to incorporate a Private Limited Company?",
+    question: "What are the common business areas allowed for a WOS?",
     answer:
-      "PAN Card, Address Proof, Identity Proof of all directors and shareholders.",
+      "Almost all sectors are allowed, except a few like real estate, defence, or agriculture which have restrictions under FDI policy.",
   },
   {
-    question: "What is the procedure to register a Private Limited Company?",
+    question: "Is approval from the Indian government needed for setting up a WOS?",
     answer:
-      "You need two directors, shareholders, a company name, office address, and KYC documents.",
+      "In most sectors under the automatic route, no prior approval is required. In others, prior approval via the Government route is necessary.",
   },
   {
-    question: "What is the time period for incorporation?",
+    question: "What is the process of remitting capital into India?",
     answer:
-      "Incorporation usually takes 10–15 working days after submission of correct documents.",
+      "The capital must be remitted through banking channels in foreign currency and reported to the RBI via Form FC-GPR within 30 days of share allotment.",
   },
   {
-    question: "How Legal Terminus can help?",
+    question: "Is it mandatory to hold an Annual General Meeting (AGM) in India?",
     answer:
-      "Legal Terminus assists with hassle-free incorporation at competitive fees.",
+      "Yes, AGMs must be held, but can be conducted virtually (via VC) as per MCA Circulars—even if all shareholders are outside India.",
   },
 ];
 
@@ -67,12 +67,12 @@ const IncorporationFAQ = () => {
           </h2>
 
           <p className="s8faq-intro">
-            Starting a Private Limited Company in India is an important step for
+            Starting a Wholly Owned Subsidiary in India is an important step for
             any business owner. With the right support, the process can be simple
             and stress-free.
             <br /><br />
-            Below are answers to the most common questions related to company
-            registration.
+            Below are answers to the most common questions related to Wholly Owned Subsidiary
+            in India.
           </p>
         </div>
 

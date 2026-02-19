@@ -15,7 +15,7 @@ export default function Section8Document() {
   return (
     <section className="Section8Document">
       <h2 className="Section8Document-heading">
-        Section 8 Company Registration Document Required
+        Documents Required For Section 8 Company Registration in India
       </h2>
 
       <div className="Section8Document-wrapper">
