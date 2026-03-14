@@ -1,23 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-.pvtltd-pricing-section {
+.change-add-pppricing-section {
   font-family: 'Poppins', sans-serif;
   background: #ffffff;
   padding: 60px 24px 80px;
 }
 
-.pricing-container {
+.change-add-ppcontainer {
   max-width: 1180px;
   margin: 0 auto;
 }
 
 /* Header */
-.pricing-header {
+.change-add-ppheader {
   text-align: center;
   margin-bottom: 40px;
 }
 
-.PvtLtd-pricing-title {
+.change-add-pppricing-title {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -26,14 +26,14 @@
   color: #000;
 }
 
-.pricing-subtitle {
+.change-add-ppsubtitle {
   font-size: 18px;
   font-weight: 500;
   color: #1bb33a;
 }
 
 /* Cards layout with CSS Grid for clean responsiveness */
-.pricing-cards {
+.change-add-ppcards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
@@ -151,11 +151,11 @@
 
 /* Large tablets / small laptops */
 @media (max-width: 1200px) {
-  .pricing-container {
+  .change-add-ppcontainer {
     padding: 0 12px;
   }
 
-  .pricing-cards {
+  .change-add-ppcards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
   }
@@ -169,22 +169,22 @@
 @media (max-width: 992px) {
 
 
-  .PvtLtd-pricing-title {
+  .change-add-pppricing-title {
     font-size: 28px;
   }
 
-  .pricing-subtitle {
+  .change-add-ppsubtitle {
     font-size: 16px;
   }
 
-  .pricing-cards {
+  .change-add-ppcards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 /* Large phones / small tablets: full width cards */
 @media (max-width: 768px) {
-  .pricing-cards {
+  .change-add-ppcards {
     grid-template-columns: 1fr;
   }
 
@@ -196,16 +196,16 @@
 
 /* Small phones */
 @media (max-width: 480px) {
-  .pvtltd-pricing-section {
+  .change-add-pppricing-section {
     padding: 32px 12px 48px;
   }
 
-  .PvtLtd-pricing-title {
+  .change-add-pppricing-title {
     font-size: 22px;
     letter-spacing: 0.5px;
   }
 
-  .pricing-subtitle {
+  .change-add-ppsubtitle {
     font-size: 14px;
   }
 
@@ -226,4 +226,3 @@
     padding: 10px 0;
   }
 }
-

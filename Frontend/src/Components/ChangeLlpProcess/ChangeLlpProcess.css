@@ -1,12 +1,12 @@
 /* ================= BASE ================= */
-.Change-llp-Process-wrapper {
+.change-process-com-process-gst-wrapper {
   padding: 60px 24px;
   max-width: 1200px;
   margin: auto;
   font-family: "Poppins", sans-serif;
 }
 
-.Change-llp-Process-gst-heading {
+.change-process-com-process-heading {
   text-align: center;
   font-size: 32px;
   font-weight: 700;
@@ -14,21 +14,21 @@
   margin-bottom: 6px;
 }
 
-.Change-llp-Process-gst-subheading {
+.change-process-com-process-subheading {
   text-align: center;
   color: #475569;
   margin-bottom: 50px;
 }
 
-/* ================= Change-llp-Process-timeline ================= */
-.Change-llp-Process-timeline {
+/* ================= pvtltd-timeline ================= */
+.change-process-com-process-timeline {
   position: relative;
   display: flex;
   flex-direction: column;
 }
 
 /* CENTER LINE */
-.Change-llp-Process-timeline-line {
+.change-process-com-process-timeline-line {
   position: absolute;
   left: 50%;
   top: 0;
@@ -45,7 +45,7 @@
 }
 
 /* ================= ITEM ================= */
-.Change-llp-Process-timeline-item {
+.change-process-com-process-timeline-item {
   position: relative;
   display: flex;
   align-items: center;
@@ -54,7 +54,7 @@
 }
 
 /* DOT */
-.Change-llp-Process-timeline-dot {
+.change-process-com-process-timeline-dot {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -71,7 +71,7 @@
 }
 
 /* CARD */
-.Change-llp-Process-timeline-card {
+.change-process-com-process-timeline-card {
   width: 400px;
   background: #ffffff;
   padding: 20px 22px;
@@ -79,30 +79,30 @@
   box-shadow: 0 15px 40px rgba(0,0,0,0.08);
 }
 
-.Change-llp-Process-timeline-card h4 {
+.change-process-com-process-timeline-card h4 {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 6px;
   color: #0f172a;
 }
 
-.Change-llp-Process-timeline-card p {
+.change-process-com-process-timeline-card p {
   font-size: 14px;
   color: #475569;
   line-height: 1.6;
 }
 
 /* ================= LEFT / RIGHT ================= */
-.Change-llp-Process-timeline-item.left {
+.change-process-com-process-timeline-item.left {
   justify-content: flex-start;
 }
 
-.Change-llp-Process-timeline-item.right {
+.change-process-com-process-timeline-item.right {
   justify-content: flex-end;
 }
 
 /* ================= CONNECTORS (DESKTOP) ================= */
-.Change-llp-Process-timeline-item.left::after {
+.change-process-com-process-timeline-item.left::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -119,7 +119,7 @@
   transform: translateY(-50%);
 }
 
-.Change-llp-Process-timeline-item.left::before {
+.change-process-com-process-timeline-item.left::before {
   content: "";
   position: absolute;
   top: 50%;
@@ -130,7 +130,7 @@
   border-left: 8px solid #f97316;
 }
 
-.Change-llp-Process-timeline-item.right::after {
+.change-process-com-process-timeline-item.right::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -147,7 +147,7 @@
   transform: translateY(-50%);
 }
 
-.Change-llp-Process-timeline-item.right::before {
+.change-process-com-process-timeline-item.right::before {
   content: "";
   position: absolute;
   top: 50%;
@@ -160,45 +160,45 @@
 
 /* ================= MOBILE PREMIUM (ARROWS KEPT) ================= */
 @media (max-width: 900px) {
-  .Change-llp-Process-wrapper {
+  .change-process-com-process-gst-wrapper {
     padding: 50px 16px;
   }
 
-  .Change-llp-Process-gst-heading {
+  .change-process-com-process-heading {
     font-size: 24px;
   }
 
-  .Change-llp-Process-gst-subheading {
+  .change-process-com-process-subheading {
     font-size: 14px;
     margin-bottom: 40px;
   }
 
-  .Change-llp-Process-timeline-line {
+  .change-process-com-process-timeline-line {
     left: 18px;
     width: 3px;
   }
 
-  .Change-llp-Process-timeline-item {
+  .change-process-com-process-timeline-item {
     justify-content: flex-start !important;
     padding-left: 70px;
   }
 
-  .Change-llp-Process-timeline-dot {
+  .change-process-com-process-timeline-dot {
     left: 18px;
     width: 32px;
     height: 32px;
     font-size: 14px;
   }
 
-  .Change-llp-Process-timeline-card {
+  .change-process-com-process-timeline-card {
     width: 100%;
     background: linear-gradient(180deg, #ffffff, #f8fafc);
     box-shadow: 0 12px 28px rgba(0,0,0,0.06);
   }
 
   /* MOBILE ARROWS → */
-  .Change-llp-Process-timeline-item.left::after,
-  .Change-llp-Process-timeline-item.right::after {
+  .change-process-com-process-timeline-item.left::after,
+  .change-process-com-process-timeline-item.right::after {
     left: 18px;
     right: auto;
     width: 40px;
@@ -212,8 +212,8 @@
     );
   }
 
-  .Change-llp-Process-timeline-item.left::before,
-  .Change-llp-Process-timeline-item.right::before {
+  .change-process-com-process-timeline-item.left::before,
+  .change-process-com-process-timeline-item.right::before {
     left: 52px;
     right: auto;
     border-left: 8px solid #f97316;

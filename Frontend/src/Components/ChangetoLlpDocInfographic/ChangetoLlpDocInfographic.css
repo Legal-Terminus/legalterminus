@@ -1,10 +1,10 @@
-.llpdoc-section {
+.change-doc-section {
   padding: 80px 20px;
   background: #ffffff;
   font-family: "Poppins", sans-serif;
 }
 
-.llpdoc-heading {
+.change-doc-heading {
   text-align: center;
   font-size: 32px;
   font-weight: 600;
@@ -13,7 +13,7 @@
 }
 
 /* Layout */
-.llpdoc-wrapper {
+.change-doc-wrapper {
   max-width: 1200px;
   margin: auto;
   display: grid;
@@ -23,14 +23,14 @@
 }
 
 /* Columns */
-.llpdoc-column {
+.change-doc-column {
   display: flex;
   flex-direction: column;
   gap: 25px;
 }
 
 /* Cards */
-.llpdoc-card {
+.change-doc-card {
   position: relative;
   background: #ffffff;
   padding: 22px 22px 22px 55px;
@@ -38,19 +38,19 @@
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
-.llpdoc-card h4 {
+.change-doc-card h4 {
   margin: 0 0 6px;
   font-size: 16px;
   font-weight: 600;
 }
 
-.llpdoc-card p {
+.change-doc-card p {
   font-size: 14px;
   color: #475569;
   line-height: 1.5;
 }
 
-.llpdoc-number {
+.change-doc-number {
   position: absolute;
   left: -15px;
   top: 22px;
@@ -66,22 +66,22 @@
 }
 
 /* Colors */
-.llpdoc-red { border-left: 5px solid #ef4444; }
-.llpdoc-orange { border-left: 5px solid #f97316; }
-.llpdoc-teal { border-left: 5px solid #14b8a6; }
-.llpdoc-brown { border-left: 5px solid #a16207; }
-.llpdoc-purple { border-left: 5px solid #a855f7; }
-.llpdoc-yellow { border-left: 5px solid #eab308; }
+.change-doc-red { border-left: 5px solid #ef4444; }
+.change-doc-orange { border-left: 5px solid #f97316; }
+.change-doc-teal { border-left: 5px solid #14b8a6; }
+.change-doc-brown { border-left: 5px solid #a16207; }
+.change-doc-purple { border-left: 5px solid #a855f7; }
+.change-doc-yellow { border-left: 5px solid #eab308; }
 
 /* Center Infographic */
-.llpdoc-center {
+.change-doc-center {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.llpdoc-circle {
+.change-doc-circle {
   width: 220px;
   height: 220px;
   background: #ffffff;
@@ -96,7 +96,7 @@
   z-index: 2;
 }
 
-.llpdoc-star {
+.change-doc-star {
   position: absolute;
   width: 260px;
   height: 260px;
@@ -125,35 +125,35 @@
 
 /* Responsive */
 @media (max-width: 992px) {
-  .llpdoc-wrapper {
+  .change-doc-wrapper {
     grid-template-columns: 1fr;
   }
 
-  .llpdoc-center {
+  .change-doc-center {
     order: -1;
     margin-bottom: 40px;
   }
 
-  .llpdoc-column {
+  .change-doc-column {
     align-items: center;
   }
 
-  .llpdoc-card {
+  .change-doc-card {
     max-width: 420px;
   }
 }
 
 @media (max-width: 480px) {
-  .llpdoc-heading {
+  .change-doc-heading {
     font-size: 24px;
   }
 
-  .llpdoc-circle {
+  .change-doc-circle {
     width: 180px;
     height: 180px;
   }
 
-  .llpdoc-star {
+  .change-doc-star {
     width: 210px;
     height: 210px;
   }

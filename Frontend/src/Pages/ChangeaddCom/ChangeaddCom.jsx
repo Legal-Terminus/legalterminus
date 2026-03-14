@@ -7,12 +7,13 @@ import ChangeaddComCompanyTab from '../../Components/ChangeaddComCompanyTab/Chan
 import ChangeaddComTypes from '../../Components/ChangeaddComTypes/ChangeaddComTypes'
 import ChangeaddComRequirementsTab from '../../Components/ChangeaddComRequirementsTab/ChangeaddComRequirementsTab'
 import ChangeaddComProcess from '../../Components/ChangeaddComProcess/ChangeaddComProcess'
-import PvtltdDocument from '../../Components/PvtltdDocument/PvtltdDocument'
+
 import ChangeaddComFAQ from '../../Components/ChangeaddComFAQ/ChangeaddComFAQ'
 import ChangeaddComTermsCondition from '../../Components/ChangeaddComTermsCondition/ChangeaddComTermsCondition'
 import ChangeaddComTestimonial from '../../Components/ChangeaddComTestimonial/ChangeaddComTestimonial'
 import ChangeaddComVideoTestimonial from '../../Components/ChangeaddComVideoTestimonial/ChangeaddComVideoTestimonial'
 import ChangeaddComOurclints from '../../Components/ChangeaddComOurclints/ChangeaddComOurclints'
+import ChangeAddComInfographics from '../../Components/ChangeAddComInfographics/ChangeAddComInfographics'
 
 const PrivateLimited = () => {
   return (
@@ -49,7 +50,7 @@ const PrivateLimited = () => {
       </div>
 
       <div id="documents">
-        {/* <PvtltdDocument /> */}
+      <ChangeAddComInfographics />
       </div>
 
       <div id="faq">

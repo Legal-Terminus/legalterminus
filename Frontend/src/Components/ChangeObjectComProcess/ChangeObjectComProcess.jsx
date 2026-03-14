@@ -39,30 +39,30 @@ const steps = [
   },
 ];
 
-const ChangeObjectComProcess= () => {
+const ChangeObjectComProcess = () => {
   return (
-    <section className="Change-ob-com-pro-Change-ob-com-pro--wrapper">
-      <h2 className="Change-ob-com-pro--heading">
+    <section className="change-ob-com-process-gst-wrapper">
+      <h2 className="change-ob-com-process-heading">
         Steps For Private Limited Company Registration in India
       </h2>
-      <p className="pv-Change-ob-com-pro--subheading">
+      <p className="pv-gst-subheading">
         The broad process of registering a Private Limited company involves
         the following steps:
       </p>
 
-      <div className="Change-ob-com-pro-timeline">
-        <div className="Change-ob-com-pro-timeline-line" />
+      <div className="change-ob-com-process-timeline">
+        <div className="change-ob-com-process-timeline-line" />
 
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`Change-ob-com-pro-timeline-item ${
+            className={`change-ob-com-process-timeline-item ${
               index % 2 === 0 ? "left" : "right"
             }`}
           >
-            <div className="Change-ob-com-pro-timeline-dot">{index + 1}</div>
+            <div className="change-ob-com-process-timeline-dot">{index + 1}</div>
 
-            <div className="Change-ob-com-pro-timeline-card">
+            <div className="change-ob-com-process-timeline-card">
               <h4>{step.title}</h4>
               <p>{step.text}</p>
             </div>

@@ -13,6 +13,8 @@ import ChangeLlpTestimonial from "../../Components/ChangeLlpTestimonial/changeLl
 import ChangeLlpVideoTestimonial from "../../Components/ChangeLlpVideoTestimonial/ChangeLlpVideoTestimonial";
 import ChangeLlpOurClients from "../../Components/ChangeLlpOurClients/ChangeLlpOurClients";
 
+import ChangeNameInfographics from "../../Components/ChangeNameInfographics/ChangeNameInfographics.jsx";
+
 function LLP() {
   return (
     <div>
@@ -54,7 +56,9 @@ function LLP() {
       <div id="process">
         {/* <ChangeLlpProcess /> */}
       </div>
-
+       <div id="documents">
+       <ChangeNameInfographics />
+      </div>
       {/* FAQ */}
       <div id="faq">
         <ChangeLlpFAQ />

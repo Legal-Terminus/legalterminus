@@ -39,30 +39,30 @@ const steps = [
   },
 ];
 
-const IncreaseProcess= () => {
+const IncreaseProcess = () => {
   return (
-    <section className="Increase-Increase-wrapper">
-      <h2 className="Increase-heading">
+    <section className="change-process-gst-wrapper">
+      <h2 className="gst-heading">
         Steps For Private Limited Company Registration in India
       </h2>
-      <p className="pv-Increase-subheading">
+      <p className="pv-gst-subheading">
         The broad process of registering a Private Limited company involves
         the following steps:
       </p>
 
-      <div className="Increase-timeline">
-        <div className="Increase-timeline-line" />
+      <div className="change-process-timeline">
+        <div className="change-process-timeline-line" />
 
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`Increase-timeline-item ${
+            className={`pvtltd-timeline-item ${
               index % 2 === 0 ? "left" : "right"
             }`}
           >
-            <div className="Increase-timeline-dot">{index + 1}</div>
+            <div className="change-process-timeline-dot">{index + 1}</div>
 
-            <div className="Increase-timeline-card">
+            <div className="change-process-timeline-card">
               <h4>{step.title}</h4>
               <p>{step.text}</p>
             </div>

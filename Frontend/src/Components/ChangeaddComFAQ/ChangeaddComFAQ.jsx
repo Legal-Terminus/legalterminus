@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./ChangeaddComFAQ";
+import "./ChangeaddComFAQ.css";
 
 const faqs = [
   {
@@ -43,7 +43,7 @@ const faqs = [
   },
 ];
 
-const ChangeaddComFAQ = () => {
+const ChangeaddComFAQ= () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const toggleFaq = (index) => {
@@ -51,43 +51,47 @@ const ChangeaddComFAQ = () => {
   };
 
   return (
-    <section className="Change-add-com-Faq-section">
-      <div className="Change-add-com-Faq-container">
+    <section className="change-faqsection">
+      <div className="change-faqcontainer">
         {/* Left side – static text */}
-        <div className="Change-add-com-Faq-left">
-          <h2 className="Change-add-com-Faq-title">Changing in Registered Office Address FAQ's</h2>
+        <div className="change-faqleft">
+          <h2 className="change-faqtitle">Private Limited Company Registration FAQ&apos;s</h2>
 
-          <p className="Change-add-com-Faq-intro">
-            Here, we’ve answered the most common questions about changing in Registered Office Address covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
+          <p className="change-faqintro">
+            Starting a Private Limited Company in India is an important step for any business owner. With the right support, the process can be simple and stress-free.
+
+<br/><br/>
+Here, we’ve answered the most common questions about company registration—covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
+
           </p>
 
-          <p className="Change-add-com-Faq-intro">
+          <p className="change-faqintro">
             
           </p>
         </div>
 
         {/* Right side – scrollable Q&A list */}
-        <div className="Change-add-com-Faq-right">
-          <div className="Change-add-com-Faq-list">
+        <div className="change-faqright">
+          <div className="change-faqlist">
             {faqs.map((item, index) => {
               const isActive = index === activeIndex;
               return (
                 <div
                   key={index}
-                  className={`Change-add-com-Faq-item ${isActive ? "active" : ""}`}
+                  className={`faq-item ${isActive ? "active" : ""}`}
                 >
                   <button
                     type="button"
-                    className="Change-add-com-Faq-question"
+                    className="change-faqquestion"
                     onClick={() => toggleFaq(index)}
                   >
                     <span>{item.question}</span>
-                    <span className={`Change-add-com-Faq-icon ${isActive ? "open" : ""}`}>
+                    <span className={`faq-icon ${isActive ? "open" : ""}`}>
                       ▾
                     </span>
                   </button>
                   {isActive && (
-                   <div className={`Change-add-com-Faq-answer ${isActive ? "open" : ""}`}>
+                   <div className={`faq-answer ${isActive ? "open" : ""}`}>
                     <p>{item.answer}</p>
                   </div>
 

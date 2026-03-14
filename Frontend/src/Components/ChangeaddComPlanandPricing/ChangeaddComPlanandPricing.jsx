@@ -3,21 +3,19 @@ import "./ChangeaddComPlanandPricing.css";
 
 const ChangeaddComPlanandPricing = () => {
   return (
-    <section className="Change-addCom-pricing-section">
-      <div className="pricing-container">
+    <section className="change-add-pppricing-section">
+      <div className="change-add-ppcontainer">
         
         {/* Upper part */}
-        <header className="pricing-header">
-          <br></br>
-          <br></br>
-          <h2 className="Change-addCom-pricing-title">CHOOSE YOUR PLAN</h2>
-          <p className="pricing-subtitle">
-            Change Registered Office Address (Company) with pocket friendly-prices.
+        <header className="change-add-ppheader">
+          <h2 className="change-add-pppricing-title">CHOOSE YOUR PLAN</h2>
+          <p className="change-add-ppsubtitle">
+            Register your company with pocket-friendly prices
           </p>
         </header>
 
         {/* Cards */}
-        <div className="pricing-cards">
+        <div className="change-add-ppcards">
 
           {/* Elemental */}
           <article className="plan-card">

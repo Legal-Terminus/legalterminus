@@ -1,5 +1,5 @@
 import React from "react";
-import "./ChangeaddComProcess";
+import "./ChangeaddComProcess.css";
 
 const steps = [
   {
@@ -41,28 +41,28 @@ const steps = [
 
 const ChangeaddComProcess = () => {
   return (
-    <section className="Change-add-com-process-Change-add-com-process-wrapper">
-      <h2 className="Change-add-com-process-heading">
+    <section className="change-add-com-processgst-wrapper">
+      <h2 className="gst-heading">
         Steps For Private Limited Company Registration in India
       </h2>
-      <p className="pv-Change-add-com-process-subheading">
+      <p className="pv-gst-subheading">
         The broad process of registering a Private Limited company involves
         the following steps:
       </p>
 
-      <div className="Change-add-com-process-timeline">
-        <div className="Change-add-com-process-timeline-line" />
+      <div className="change-add-com-processtimeline">
+        <div className="change-add-com-processtimeline-line" />
 
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`Change-add-com-process-timeline-item ${
+            className={`pvtltd-timeline-item ${
               index % 2 === 0 ? "left" : "right"
             }`}
           >
-            <div className="Change-add-com-process-timeline-dot">{index + 1}</div>
+            <div className="change-add-com-processtimeline-dot">{index + 1}</div>
 
-            <div className="Change-add-com-process-timeline-card">
+            <div className="change-add-com-processtimeline-card">
               <h4>{step.title}</h4>
               <p>{step.text}</p>
             </div>

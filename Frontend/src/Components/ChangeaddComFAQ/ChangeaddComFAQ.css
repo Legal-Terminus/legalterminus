@@ -4,14 +4,14 @@
    SECTION WRAPPER
 ================================ */
 
-.Change-add-com-Change-add-com-Faq-section {
+.change-faqsection {
   font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   background-color: #ffffff;
   padding: 72px 24px 64px;
 }
 
-.Change-add-com-Change-add-com-Faq-container {
+.change-faqcontainer {
   max-width: 1180px;
   margin: 0 auto;
   display: grid;
@@ -24,18 +24,18 @@
    LEFT SIDE (STATIC CONTENT)
 ================================ */
 
-.Change-add-com-Change-add-com-Faq-left {
+.change-faqleft {
   color: #111827;
 }
 
-.Change-add-com-Change-add-com-Faq-title {
+.change-faqtitle {
   font-size: 40px;
   line-height: 1.2;
   font-weight: 600;
   margin: 0 0 22px;
 }
 
-.Change-add-com-Change-add-com-Faq-intro {
+.change-faqintro {
   font-size: 15px;
   line-height: 1.9;
   color: #4b5563;
@@ -48,7 +48,7 @@
 
 /* This container stays constant in height on desktop.
    Only the inner list will scroll. */
-.Change-add-com-Change-add-com-Faq-right {
+.change-faqright {
   display: flex;
   flex-direction: column;
   max-height: 540px;        /* <-- constant height */
@@ -56,22 +56,22 @@
 }
 
 /* Scroll area for Q&A items */
-.Change-add-com-Change-add-com-Faq-list {
+.change-faqlist {
   flex: 1;
   overflow-y: auto;
   padding-right: 6px;       /* some room for scrollbar */
 }
 
 /* Scrollbar styling */
-.Change-add-com-Change-add-com-Faq-list::-webkit-scrollbar {
+.change-faqlist::-webkit-scrollbar {
   width: 6px;
 }
 
-.Change-add-com-Change-add-com-Faq-list::-webkit-scrollbar-track {
+.change-faqlist::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.Change-add-com-Change-add-com-Faq-list::-webkit-scrollbar-thumb {
+.change-faqlist::-webkit-scrollbar-thumb {
   background: rgba(26, 169, 26, 0.45);
   border-radius: 999px;
 }
@@ -80,12 +80,12 @@
    FAQ ITEMS
 ================================ */
 
-.Change-add-com-Change-add-com-Faq-item {
+.change-faqitem {
   border-bottom: 1px solid rgba(26, 169, 26, 0.22); /* light green line */
 }
 
 /* Question row */
-.Change-add-com-Change-add-com-Faq-question {
+.change-faqquestion {
 
   text-align: start;
   width: 100%;
@@ -106,22 +106,22 @@
 }
 
 /* Chevron icon */
-.Change-add-com-Change-add-com-Faq-icon {
+.change-faqicon {
   font-size: 18px;
   transform: rotate(0deg);
   transition: transform 0.2s ease;
 }
 
-.Change-add-com-Change-add-com-Faq-icon.open {
+.change-faqicon.open {
   transform: rotate(180deg);
 }
 
 /* Answer text */
-.Change-add-com-Change-add-com-Faq-answer {
+.change-faqanswer {
   padding: 0 0 16px;
 }
 
-.Change-add-com-Change-add-com-Faq-answer p {
+.change-faqanswer p {
   margin: 0;
   font-size: 14px;
   line-height: 1.9;
@@ -129,11 +129,11 @@
 }
 
 /* Active / hover */
-.Change-add-com-Change-add-com-Faq-item.active .Change-add-com-Change-add-com-Faq-question {
+.change-faqitem.active .change-faqquestion {
   color: #1aa91a;
 }
 
-.Change-add-com-Change-add-com-Faq-item:hover .Change-add-com-Change-add-com-Faq-question {
+.change-faqitem:hover .change-faqquestion {
   color: #1aa91a;
 }
 
@@ -142,71 +142,71 @@
 ================================ */
 
 @media (max-width: 1024px) {
-  .Change-add-com-Change-add-com-Faq-section {
+  .change-faqsection {
     padding: 60px 20px 52px;
   }
 
-  .Change-add-com-Change-add-com-Faq-container {
+  .change-faqcontainer {
     column-gap: 40px;
   }
 
-  .Change-add-com-Change-add-com-Faq-title {
+  .change-faqtitle {
     font-size: 34px;
   }
 
-  .Change-add-com-Change-add-com-Faq-right {
+  .change-faqright {
     max-height: 520px;
   }
 }
 
 @media (max-width: 768px) {
-  .Change-add-com-Change-add-com-Faq-section {
+  .change-faqsection {
     padding: 48px 16px 44px;
   }
 
-  .Change-add-com-Change-add-com-Faq-container {
+  .change-faqcontainer {
     grid-template-columns: 1fr;
     row-gap: 32px;
   }
 
-  .Change-add-com-Change-add-com-Faq-title {
+  .change-faqtitle {
     font-size: 30px;
   }
 
   /* On small screens, let the page scroll normally
      (no fixed-height right section). */
-  .Change-add-com-Change-add-com-Faq-right {
+  .change-faqright {
     max-height: none;
   }
 
-  .Change-add-com-Change-add-com-Faq-list {
+  .change-faqlist {
     overflow-y: visible;
     padding-right: 0;
   }
 }
 
 @media (max-width: 480px) {
-  .Change-add-com-Change-add-com-Faq-section {
+  .change-faqsection {
     padding: 40px 12px 40px;
   }
 
-  .Change-add-com-Change-add-com-Faq-title {
+  .change-faqtitle {
     font-size: 26px;
   }
 
-  .Change-add-com-Change-add-com-Faq-question {
+  .change-faqquestion {
     font-size: 14px;
   }
 
-  .Change-add-com-Change-add-com-Faq-answer p,
-  .Change-add-com-Change-add-com-Faq-intro {
+  .change-faqanswer p,
+  .change-faqintro {
     font-size: 13.5px;
   }
 }
 
 /* ================= SMOOTH OPEN / CLOSE ================= */
 
-.Change-add-com-Change-add-com-Faq-answer {
+.change-faqanswer {
   max-height: 0;
   overflow: hidden;
   opacity: 0;
@@ -217,7 +217,7 @@
     transform 0.25s ease;
 }
 
-.Change-add-com-Change-add-com-Faq-answer.open {
+.change-faqanswer.open {
   max-height: 500px; /* large enough for content */
   opacity: 1;
   transform: translateY(0);

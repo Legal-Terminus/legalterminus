@@ -41,28 +41,28 @@ const steps = [
 
 const ChangeLlpProcess = () => {
   return (
-    <section className="Change-llp-Process-wrapper">
-      <h2 className="Change-llp-Process-heading">
-        STEPS FOR PRIVATE LIMITED COMPANY REGISTRATION IN INDIA
+    <section className="change-process-com-process-gst-wrapper">
+      <h2 className="change-process-com-process-heading">
+        Steps For Private Limited Company Registration in India
       </h2>
-      <p className="Change-llp-Process-gst-subheading">
+      <p className="change-process-subheading">
         The broad process of registering a Private Limited company involves
         the following steps:
       </p>
 
-      <div className="Change-llp-Process-timeline">
-        <div className="Change-llp-Process-timeline-line" />
+      <div className="change-process-com-process-timeline">
+        <div className="change-process-com-process-timeline-line" />
 
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`Change-llp-Process-timeline-item ${
+            className={`change-ob-com-process-timeline-item ${
               index % 2 === 0 ? "left" : "right"
             }`}
           >
-            <div className="Change-llp-Process-timeline-dot">{index + 1}</div>
+            <div className="change-process-com-process-timeline-dot">{index + 1}</div>
 
-            <div className="Change-llp-Process-timeline-card">
+            <div className="change-process-com-process-timeline-card">
               <h4>{step.title}</h4>
               <p>{step.text}</p>
             </div>
