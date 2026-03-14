@@ -3,51 +3,55 @@ import "./TMApplicaProcess.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
+    title: "Step 1 – Document Submission & Trademark Search",
     text:
-      "Provision of requisite documents / information to us (as per the checklist to be provided by us).",
+      "Share your brand name/logo and business details with us. We conduct a comprehensive trademark search on the IP India portal to check for existing similar marks — minimising your risk of rejection.",
   },
   {
-    title: "Step 2 – Company Name & Objects Finalization",
+    title: "Step 2 – Trademark Class Selection",
     text:
-      "Finalisation of objects along with name of the proposed company (based on a search report duly conducted and provided by our team).",
+      "Based on your goods/services, we identify the correct trademark class(es) under the Nice Classification system. You'll be advised on single-class vs multi-class filing strategy.",
   },
   {
-    title: "Step 3 – Name Reservation Application",
+    title: "Step 3 – Drafting & Filing Form TM-A",
     text:
-      "Filing of application for name reservation in requisite e-form along with applicable government fees.",
+      "We prepare and file your application through Form TM-A on the official IP India portal (ipindia.gov.in). You get your application number immediately upon successful submission.",
   },
   {
-    title: "Step 4 – Digital Signature Certificates",
+    title: "Step 4 – Vienna Codification (if applicable)",
     text:
-      "Preparation of requisite numbers of DSC with respect to the proposed promoters & directors and registration of DSC in the MCA portal.",
+      "For logo/device marks, the Trademark Registry assigns a Vienna Code to classify the graphical elements.",
   },
   {
-    title: "Step 5 – Incorporation Document Preparation",
+    title: "Step 5 – Examination by Trademark Registry",
     text:
-      "Preparation of further incorporation documents upon receipt of the name approval letter from the department.",
+      "The Trademark Examiner reviews the application within 19–20 months (this timelines varies and depends on the backlog with the department). They check for conflicts with existing marks, absolute and relative grounds for refusal under the Trade Marks Act, 1999.",
   },
   {
-    title: "Step 6 – Final Form Upload & Fee Payment",
+    title: "Step 6 – Reply to Examination Report (if required)",
     text:
-      "Uploading of final incorporation forms to the MCA portal along with applicable government fees.",
+      "If objections are raised, we file a detailed legal reply within 30 days. If needed, we represent you at the Show Cause Hearing before the Examiner. (Included in Enriched & Supreme plans.)",
   },
   {
-    title: "Step 7 – Registration Certificate Issuance",
+    title: "Step 7 – Publication in the Trademark Journal",
     text:
-      "Processing of the application by the department and issuance of the registration certificate.",
+      "Once accepted, the mark is published in the weekly Trademark Journal. It remains open for opposition by any third party for 4 months from the date of publication.",
+  },
+  {
+    title: "Step 8 – Registration Certificate",
+    text:
+      "If no opposition is filed (or opposition is decided in your favour), the Trademark Office issues your Certificate of Registration. Your brand is now officially protected with the ® symbol.",
   },
 ];
 
 const GSTProcess = () => {
   return (
     <section className="Tm-Application-gst-wrapper">
-      <h2 className="Tm-Applica-gst-heading">
-        STEPS FOR PRIVATE LIMITED COMPANY REGISTRATION IN INDIA
+     <h2 className="TM-Applica-doc-heading">
+        Steps for Trademark Registration in India
       </h2>
       <p className="Tm-Application-gst-subheading">
-        The broad process of registering a Private Limited company involves
-        the following steps:
+        The broad process of registering a trademark involves the following steps:
       </p>
 
       <div className="Tm-Application-timeline">

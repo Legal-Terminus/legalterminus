@@ -1,0 +1,224 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+/* ================================
+   SECTION WRAPPER
+================================ */
+
+.ChangeLlp-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #ffffff;
+  padding: 72px 24px 64px;
+}
+
+.ChangeLlp-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.9fr 1.2fr; /* left / right ratio */
+  column-gap: 72px;
+  align-items: flex-start;
+}
+
+/* ================================
+   LEFT SIDE (STATIC CONTENT)
+================================ */
+
+.ChangeLlp-left {
+  color: #111827;
+}
+
+.ChangeLlp-title {
+  font-size: 40px;
+  line-height: 1.2;
+  font-weight: 600;
+  margin: 0 0 22px;
+}
+
+.ChangeLlp-intro {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+  margin: 0 0 16px;
+}
+
+/* ================================
+   RIGHT SIDE (CONSTANT HEIGHT + SCROLL)
+================================ */
+
+/* This container stays constant in height on desktop.
+   Only the inner list will scroll. */
+.ChangeLlp-right {
+  display: flex;
+  flex-direction: column;
+  max-height: 540px;        /* <-- constant height */
+  width: 100%;
+}
+
+/* Scroll area for Q&A items */
+.ChangeLlp-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;       /* some room for scrollbar */
+}
+
+/* Scrollbar styling */
+.ChangeLlp-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ChangeLlp-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ChangeLlp-list::-webkit-scrollbar-thumb {
+  background: rgba(26, 169, 26, 0.45);
+  border-radius: 999px;
+}
+
+/* ================================
+   FAQ ITEMS
+================================ */
+
+.ChangeLlp-item {
+  border-bottom: 1px solid rgba(26, 169, 26, 0.22); /* light green line */
+}
+
+/* Question row */
+.ChangeLlp-question {
+
+  text-align: start;
+  width: 100%;
+  padding: 18px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  font-size: 15px;
+  font-weight: 500;
+  color: #111827;
+
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Chevron icon */
+.ChangeLlp-icon {
+  font-size: 18px;
+  transform: rotate(0deg);
+  transition: transform 0.2s ease;
+}
+
+.ChangeLlp-icon.open {
+  transform: rotate(180deg);
+}
+
+/* Answer text */
+.ChangeLlp-answer {
+  padding: 0 0 16px;
+}
+
+.ChangeLlp-answer p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+/* Active / hover */
+.ChangeLlp-item.active .ChangeLlp-question {
+  color: #1aa91a;
+}
+
+.ChangeLlp-item:hover .ChangeLlp-question {
+  color: #1aa91a;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 1024px) {
+  .ChangeLlp-section {
+    padding: 60px 20px 52px;
+  }
+
+  .ChangeLlp-container {
+    column-gap: 40px;
+  }
+
+  .ChangeLlp-title {
+    font-size: 34px;
+  }
+
+  .ChangeLlp-right {
+    max-height: 520px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ChangeLlp-section {
+    padding: 48px 16px 44px;
+  }
+
+  .ChangeLlp-container {
+    grid-template-columns: 1fr;
+    row-gap: 32px;
+  }
+
+  .ChangeLlp-title {
+    font-size: 30px;
+  }
+
+  /* On small screens, let the page scroll normally
+     (no fixed-height right section). */
+  .ChangeLlp-right {
+    max-height: none;
+  }
+
+  .ChangeLlp-list {
+    overflow-y: visible;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .ChangeLlp-section {
+    padding: 40px 12px 40px;
+  }
+
+  .ChangeLlp-title {
+    font-size: 26px;
+  }
+
+  .ChangeLlp-question {
+    font-size: 14px;
+  }
+
+  .ChangeLlp-answer p,
+  .ChangeLlp-intro {
+    font-size: 13.5px;
+  }
+}
+
+/* ================= SMOOTH OPEN / CLOSE ================= */
+
+.ChangeLlp-answer {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.ChangeLlp-answer.open {
+  max-height: 500px; /* large enough for content */
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -10,20 +10,15 @@ const Breadcrum = () => {
         <div className="cic-public-content">
 
           <span className="cic-public-tag">
-            Change In Name(Company)
+            Change Company Name
           </span>
 
           <h1 className="cic-public-title">
             Change In Name(Company)
-            <span> in India</span>
           </h1>
 
           <p className="cic-public-description">
-            A Private Limited Company is a popular and trusted business structure in India, especially for startups and growing businesses. It helps protect personal assets, builds business credibility, and makes it easier to raise funds.
-
-<br/><br/>
-Legal Terminus can help you with Private Limited Company registration in a hassle-free way, whenever you need it. We take care of the complete process—from paperwork to approvals—within a reasonable time. Our professional fees start at ₹3,999, making company registration simple, affordable, and stress-free.
-
+            Legal Terminus can help you with change company name in a hassle-free manner within a reasonable time span and for a competitive professional fee which starts from Rs. 5999/-.
           </p>
 
           <div className="cic-public-features">
@@ -59,7 +54,7 @@ Legal Terminus can help you with Private Limited Company registration in a hassl
             </h3>
 
             <p className="cic-form-subtitle">
-              Talk to our Private Limited Company registration expert
+              Talk to our expert
             </p>
 
             <form

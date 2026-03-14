@@ -1,0 +1,294 @@
+/* =====================================================
+   SECTION
+===================================================== */
+.doc-section {
+  width: 100%;
+  background: linear-gradient(135deg, #eef3f8, #f8fbff);
+  padding: 100px 20px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.doc-wrapper {
+  position: relative;
+  width: 760px;
+  height: 760px;
+}
+
+/* =====================================================
+   COLORED DASHED ORBIT CIRCLE
+===================================================== */
+.doc-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 560px;
+  height: 560px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px dashed transparent;
+
+  background: linear-gradient(
+    90deg,
+    #1fa2ff,
+    #38ef7d,
+    #ff4d6d,
+    #7b2ff7
+  );
+
+  -webkit-mask:
+    radial-gradient(farthest-side, transparent calc(100% - 4px), black 0);
+  mask:
+    radial-gradient(farthest-side, transparent calc(100% - 4px), black 0);
+
+  opacity: 0.35;
+  z-index: 0;
+}
+
+/* =====================================================
+   CONNECTING GRADIENT LINES
+===================================================== */
+.line {
+  position: absolute;
+  width: 3px;
+  height: 150px;
+  top: 50%;
+  left: 50%;
+  transform-origin: top;
+  z-index: 0;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(31, 162, 255, 0.6),
+    rgba(56, 239, 125, 0.5),
+    rgba(255, 77, 109, 0.4),
+    transparent
+  );
+
+  filter: blur(0.4px);
+}
+
+.line.l1 { transform: translate(-50%, -50%) rotate(0deg); }
+.line.l2 { transform: translate(-50%, -50%) rotate(72deg); }
+.line.l3 { transform: translate(-50%, -50%) rotate(144deg); }
+.line.l4 { transform: translate(-50%, -50%) rotate(216deg); }
+.line.l5 { transform: translate(-50%, -50%) rotate(288deg); }
+
+/* =====================================================
+   CENTER CIRCLE
+===================================================== */
+.doc-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 210px;
+  height: 210px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+
+  /* Green reference gradient */
+  background: linear-gradient(135deg, #1fa971, #2bbf86);
+
+  color: white;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+
+  animation: pulseCenter 3s ease-in-out infinite;
+  z-index: 5;
+}
+
+.doc-center h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.doc-center p {
+  margin-top: 6px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* Pulse Animation */
+@keyframes pulseCenter {
+  0%   { transform: translate(-50%, -50%) scale(1); }
+  50%  { transform: translate(-50%, -50%) scale(1.06); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* =====================================================
+   OUTER CIRCLES
+===================================================== */
+.doc-card {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  padding: 35px 25px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+
+  animation: floatBubble 6s ease-in-out infinite;
+  z-index: 2;
+}
+
+.doc-card h4 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.doc-card p {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Floating Animation */
+@keyframes floatBubble {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+/* =====================================================
+   PERFECT RADIAL POSITIONS
+===================================================== */
+
+/* Top */
+.pos-0 {
+  top: 0;
+  left: 36%;
+  transform: translate(-50%, 0);
+  animation-delay: 0s;
+}
+
+/* Right */
+.pos-1 {
+  top: 200px;
+  right: 0;
+  animation-delay: 1s;
+}
+
+/* Bottom Right */
+.pos-2 {
+  bottom: 50px;
+  right: 150px;
+  animation-delay: 2s;
+}
+
+/* Bottom Left */
+.pos-3 {
+  bottom: 50px;
+  left: 150px;
+  animation-delay: 3s;
+}
+
+/* Left */
+.pos-4 {
+  top: 200px;
+  left: 0;
+  animation-delay: 4s;
+}
+
+/* =====================================================
+   GRADIENT COLORS
+===================================================== */
+.gradient-blue {
+  background: linear-gradient(135deg, #1fa2ff, #12d8fa);
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, #20c997, #38ef7d);
+}
+
+.gradient-yellow {
+  background: linear-gradient(135deg, #f7971e, #ffd200);
+}
+
+.gradient-pink {
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, #7f00ff, #e100ff);
+}
+
+/* =====================================================
+   TABLET RESPONSIVE
+===================================================== */
+@media (max-width: 992px) {
+
+  .doc-wrapper {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .doc-wrapper::before,
+  .line {
+    display: none;
+  }
+
+  .doc-center {
+    position: relative;
+    transform: none;
+    top: auto;
+    left: auto;
+  }
+
+  .doc-card {
+    position: relative;
+    width: 95%;
+    max-width: 420px;
+    height: auto;
+    border-radius: 20px;
+    animation: none;
+  }
+}
+
+/* =====================================================
+   MOBILE RESPONSIVE
+===================================================== */
+@media (max-width: 576px) {
+
+  .doc-section {
+    padding: 70px 15px;
+  }
+
+  .doc-center {
+    width: 170px;
+    height: 170px;
+  }
+
+  .doc-center h2 {
+    font-size: 18px;
+  }
+
+  .doc-center p {
+    font-size: 12px;
+  }
+
+  .doc-card {
+    padding: 25px 20px;
+  }
+
+  .doc-card h4 {
+    font-size: 15px;
+  }
+
+  .doc-card p {
+    font-size: 12px;
+  }
+}

@@ -104,29 +104,32 @@ const DPFAQ = () => {
           </p>
         </div>
 
-        {/* RIGHT */}
-        <div className="DP-societys-right">
-          <div className="DP-societys-list">
+        {/* Right side – scrollable Q&A list */}
+        <div className="Diss-ps-faqright">
+          <div className="Diss-ps-faqlist">
             {faqs.map((item, index) => {
               const isActive = index === activeIndex;
               return (
                 <div
                   key={index}
-                  className={`DP-societys-item ${isActive ? "active" : ""}`}
+                  className={`Diss-ps-faqitem ${isActive ? "active" : ""}`}
                 >
                   <button
-                    className="DP-societys-question"
+                    type="button"
+                    className="Diss-ps-faqquestion"
                     onClick={() => toggleFaq(index)}
                   >
                     <span>{item.question}</span>
-                    <span className={`DP-societys-icon ${isActive ? "open" : ""}`}>
+                    <span className={`Diss-ps-faqicon ${isActive ? "open" : ""}`}>
                       ▾
                     </span>
                   </button>
-
-                  <div className={`DP-societys-answer ${isActive ? "open" : ""}`}>
+                  {isActive && (
+                   <div className={`Diss-ps-faqanswer ${isActive ? "open" : ""}`}>
                     <p>{item.answer}</p>
                   </div>
+
+                  )}
                 </div>
               );
             })}

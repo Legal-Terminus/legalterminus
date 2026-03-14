@@ -28,8 +28,7 @@ const ZolvitPremium = () => {
                 <span className="Tm-zp-title-icon">⚖️</span>
               </h2>
               <p className="Tm-zp-subtitle">
-Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
-              </p>
+               Renew your trademark on time with Legal Terminus expert-handled process, designed to ensure your brand protection continues without interruption. A registered trademark in India is valid for 10 years. It must be renewed before expiry to maintain legal protection and exclusive rights.              </p>
             </header>
 
             {/* Features */}
@@ -38,15 +37,14 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <ul className="Tm-zp-list Tm-zp-features-list">
                 <li className="Tm-zp-list-item">
                   <span className="Tm-zp-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
-                </li>
+                   Complete assistance in filing your trademark renewal application with the Trademark Registry.                </li>
                 <li className="Tm-zp-list-item">
                   <span className="Tm-zp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                  Accurate documentation and timely submission to avoid penalties or removal from the register.
                 </li>
                 <li className="Tm-zp-list-item">
                   <span className="Tm-zp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                  Timely renewal reminders so you never miss the renewal deadline.
                 </li>
               </ul>
             </section>
@@ -57,12 +55,16 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <div className="Tm-zp-note-box">
                 <ul className="Tm-zp-note-list">
                   <li className="Tm-zp-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+                    Trademark renewal is required every 10 years from the date of registration.
                   </li>
                   <li className="Tm-zp-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                    Renewal can be filed within 6 months before the expiry date.
+                  </li>
+                  <li className="Tm-zp-note-item">
+                    There is a grace period of 6 months after expiry with additional late fees.
+                  </li>
+                  <li className="Tm-zp-note-item">
+                    If not renewed within the allowed period, the trademark may be removed from the official register.
                   </li>
                 </ul>
               </div>

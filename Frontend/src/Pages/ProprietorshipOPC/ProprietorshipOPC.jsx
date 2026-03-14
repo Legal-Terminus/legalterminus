@@ -23,10 +23,10 @@ const ProprietorshipOPC = () => {
       <ProFOPCBreadcrum/>
 
       <div id="plans">
-       {/* <ProFOPCPlanandPricing/> */}
+        <ProFOPCPlanandPricing/>
       </div>
 
-      {/* <ProFOPCCondition/> */}
+      <ProFOPCCondition/> 
 
        <div id="premium">
         <ProFOPCZolvitPremium />
@@ -47,11 +47,11 @@ const ProprietorshipOPC = () => {
       </div>
 
        <div id="process">
-        {/* <ProFOPCProcess /> */}
+         <ProFOPCProcess /> 
       </div>
 
       <div id="documents">
-        {/* <ProFOPCDocument /> */}
+         <ProFOPCDocument /> 
       </div>
 
        <div id="faq">

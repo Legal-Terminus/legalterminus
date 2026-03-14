@@ -46,11 +46,11 @@ const PrivateLimited = () => {
       </div>
 
       <div id="process">
-       <CICprocess />
+       {/* <CICprocess /> */}
       </div>
 
       <div id="documents">
-        <CICdocuments />
+        {/* <CICdocuments /> */}
       </div>
 
       <div id="faq">

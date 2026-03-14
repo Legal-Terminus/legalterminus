@@ -3,54 +3,46 @@ import "./CICfaq.css";
 
 const faqs = [
   {
-    question: "How many persons are required to form a Private Limited Company?",
-    answer:
-      "Minimum two persons are required to form a Private Limited Company and a maximum up to 200 persons can be a member of a single Private Limited Company.",
-  },
+    question: "What is the procedure to change the name of a company?",
+    answer:(
+    <div>
+      <ul>
+        <li>1. Conduct a Board Meeting and pass a resolution for change of name</li>
+        <li>2. Check availability of proposed name and file reservation of name through web form RUN</li>
+        <li>3. Conduct an Extra-ordinary General Meeting and pass a Special Resolution therein</li>
+        <li>4. Preparation and filing of form MGT 14 with ROC within prescribed timeline</li>
+        <li>5. Preparation and filing of form INC 24 with ROC within prescribed timeline</li>
+        <li>6. Issuance of revised certificate of incorporation with new/ revised name</li>
+
+        <p><strong>Appropriate Government fees is payable depending upon the authorized capital of the company.</strong></p>
+      </ul>
+    </div>
+  ),
+},
   {
-    question: "How many Directors are required to form a Private Limited Company?",
-    answer:
-      "Minimum two directors are required in a Private Limited Company, with an upper cap up to 15 directors.",
-  },
+    question: "What are some key/ basic documents required for changing the name of a company?",
+    answer:(
+    <div>
+      <p><strong>Required Documents:</strong></p>
+      <ul>
+        <li>1. Active Digital Signature Certificate of the authorized director</li>
+        <li>2. Amended Memorandum of Association and Articles of Association of the company</li>
+        <li>3. Original certificate of incorporation of the company</li>
+        <li>4. PAN of the company; etc.</li>
+      </ul>
+    </div>
+  ),
+},
   {
-    question: "Who are Directors of the company?",
+    question: "What is the time period within which the process of change of Name takes place?",
     answer:
-      "Directors are officers of the company who are responsible for managing the company and making the decisions as to its operation on a day to day basis, for the benefit of the shareholders.",
-  },
-  {
-    question:
-      "What is a company shareholder?",
-    answer:
-      "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in day-to-day management or financial affairs. They are also called 'members' and they agree to become part of a company by taking a minimum of one share in it. The quantity of shares held by each person represents how much of the business they own.",
-  },
-  {
-    question: "How much capital is required to start a Private Limited Company?",
-    answer:
-      "The Private Limited Company can be incorporated with any amount of capital and there is no lower or upper limit. Further, the government has relaxed the government fees for Incorporation of a Private Limited Company up to an Authorized capital of Rs. 15,00,000/-, however, the stamp duty, which is still levied, varies from State to State.",
-  },
-  {
-    question:
-      "What are some basic/ key documents required to incorporate a Private Limited Company in India?",
-    answer:
-      "PAN Card (All the Proposed Directors and/or Shareholders)",
-  },
-  {
-    question:
-      "What is the procedure to register a Private Limited Company?",
-    answer:
-      "You need at least two directors, two shareholders, a unique company name, a registered office address in India, and the necessary KYC documents for all directors and shareholders.",
-  },
-  {
-    question:
-      "What is the time period within which a Private Limited Company can be incorporated?",
-    answer:
-      "The process of incorporating a Private Limited Company can take anywhere between 10 to 15 working days, subject to submission of correct information and complete documentation.",
+      "The process of change in name takes around 2 weeks, subject to submission of correct information and complete documentation.",
   },
   {
     question:
-      "How Legal Terminus can help you incorporate a Private Limited Company in India?",
+      "How Legal Terminus can help you with change in Name of the Company?",
     answer:
-      "Legal Terminus can help you with incorporation of Private Limited Company for you, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+      "Legal Terminus can help you with changing the name of your Company in a hassle-free manner within a reasonable time span and for competitive professional fees. To know more, please book a telephonic appointment with one of our consultants free of charge.",
   },
 ];
 
@@ -66,14 +58,10 @@ const FaqPvt = () => {
       <div className="faqq-container">
         {/* Left side – static text */}
         <div className="faqq-left">
-          <h2 className="faqq-title">Private Limited Company Registration FAQ&apos;s</h2>
+          <h2 className="faqq-title">Changing in Company Name FAQ's</h2>
 
           <p className="faqq-intro">
-            Starting a Private Limited Company in India is an important step for any business owner. With the right support, the process can be simple and stress-free.
-
-<br/><br/>
-Here, we’ve answered the most common questions about company registration—covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
-
+            Here, we’ve answered the most common questions about Changing in Company Name covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
           </p>
 
           <p className="faqq-intro">

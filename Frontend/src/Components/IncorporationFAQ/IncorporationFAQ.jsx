@@ -20,7 +20,7 @@ const faqs = [
   {
     question: "Is it necessary to visit India to incorporate a WOS?",
     answer:
-      "No physical visit is required. All documents can be signed and notarised and / or apostilled abroad and submitted electronically.",
+      "No physical visit is required. All documents can be signed and notarised and/or apostilled abroad and submitted electronically.",
   },
   {
     question: "What type of company structure is used for a WOS in India?",
@@ -57,52 +57,59 @@ const IncorporationFAQ = () => {
   };
 
   return (
-    <section className="s8faq-section">
-      <div className="s8faq-container">
-
-        {/* LEFT */}
-        <div className="incfaq-left">
-          <h2 className="incfaq-title">
-            Incorporation of Wholly Owned Subsidiary in India FAQ&apos;s
+    <section className="Incorporation-faq-section">
+      <div className="Incorporation-faq-container">
+        
+        {/* Left side – static text */}
+        <div className="Incorporation-faq-left">
+          <h2 className="Incorporation-faq-title">
+            Incorporation Of Wholly Owned Subsidiary in India FAQ's
           </h2>
 
-          <p className="s8faq-intro">
+          <p className="Incorporation-faq-intro">
             Starting a Wholly Owned Subsidiary in India is an important step for
             any business owner. With the right support, the process can be simple
             and stress-free.
-            <br /><br />
-            Below are answers to the most common questions related to Wholly Owned Subsidiary
-            in India.
+          </p>
+
+          <p className="s8faq-intro">
+            Below are answers to the most common questions related to Wholly Owned
+            Subsidiary in India.
           </p>
         </div>
 
-        {/* RIGHT */}
-        <div className="s8faq-right">
-          <div className="s8faq-list">
+        {/* Right side – scrollable Q&A list */}
+        <div className="Incorporation-faq-right">
+          <div className="Incorporation-faq-list">
             {faqs.map((item, index) => {
               const isActive = index === activeIndex;
               return (
                 <div
                   key={index}
-                  className={`s8faq-item ${isActive ? "active" : ""}`}
+                  className={`Incorporation-faq-item ${
+                    isActive ? "active" : ""
+                  }`}
                 >
                   <button
-                    className="s8faq-question"
+                    type="button"
+                    className="Incorporation-faq-question"
                     onClick={() => toggleFaq(index)}
                   >
                     <span>{item.question}</span>
-                    <span className={`s8faq-icon ${isActive ? "open" : ""}`}>
+                    <span
+                      className={`Incorporation-faq-icon ${
+                        isActive ? "open" : ""
+                      }`}
+                    >
                       ▾
                     </span>
                   </button>
 
-                  <div
-                    className={`s8faq-answer ${
-                      isActive ? "open" : ""
-                    }`}
-                  >
-                    <p>{item.answer}</p>
-                  </div>
+                  {isActive && (
+                    <div className="Incorporation-faq-answer open">
+                      <p>{item.answer}</p>
+                    </div>
+                  )}
                 </div>
               );
             })}

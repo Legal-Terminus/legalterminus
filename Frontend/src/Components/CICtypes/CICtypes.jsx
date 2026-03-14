@@ -19,7 +19,7 @@ const PvtTypes = () => {
         {/* Right content */}
         <div className="cic-types-content">
           <h2 className="cic-types-title">
-            Types of Proprietorship Firms Registration
+            Types of Change in Company Name
           </h2>
 
           {/* <p className="cic-types-intro">
@@ -28,26 +28,32 @@ const PvtTypes = () => {
 
           {/* Type 1 */}
           <div className="cic-types-block">
-            <h3 className="cic-types-subtitle">Company limited by Shares</h3>
+            <h3 className="cic-types-subtitle">Voluntary Name Change</h3>
             <p className="cic-types-text">
-              This is the most common type of Private Limited Company. The liability of shareholders is limited to the unpaid amount on their shares. It is ideal for startups and growing businesses looking to raise funds while protecting personal assets.
+              The company may decide to change its name to improve branding, create a better market image, or match modern business trends.
             </p>
           </div>
 
           {/* Type 2 */}
           <div className="cic-types-block">
-            <h3 className="cic-types-subtitle">Company limited by Guarantee</h3>
+            <h3 className="cic-types-subtitle">Change Due to New Business Activities</h3>
             <p className="cic-types-text">
-              In this type, members agree to contribute a fixed amount in case of liquidation. It is generally suitable for non-profit or charitable organizations that do not require share capital.
+              If the company starts new services or changes its main business activities, it may update its name to better reflect what it actually does.
             </p>
           </div>
 
           {/* Type 3 */}
           <div className="cic-types-block">
-            <h3 className="cic-types-subtitle">Unlimited Companies</h3>
+            <h3 className="cic-types-subtitle">Change After Conversion (Private ↔ Public)</h3>
             <p className="cic-types-text">
-              An unlimited company does not place any limit on members’ liability. Members are personally responsible for company debts. This structure is less common and is usually chosen by closely held businesses with full control over operations.
-            </p>
+             When a company converts from Private to Public or from Public to Private, it must add or remove the word “Private” in its name accordingly.            </p>
+          </div>
+          
+          {/* Type 4 */}
+          <div className="cic-types-block">
+            <h3 className="cic-types-subtitle">Change After Merger or Ownership Change</h3>
+            <p className="cic-types-text">
+             If there is a merger, acquisition, or major change in management, the company name may be updated to reflect the new ownership.</p>
           </div>
         </div>
       </div>

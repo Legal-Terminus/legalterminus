@@ -3,49 +3,54 @@ import "./TrademarktoOppositionFAQ.css";
 
 const faqs = [
   {
-    question: "What is a Trade License and why is it required?",
+    question: "What is a Trademark Opposition?",
     answer:
-      "A Trade License is an official permission granted by the municipal authority that allows you to carry out your trade or business legally within a specific area. It ensures your business complies with safety, health, and zoning laws.",
+      "After the acceptance and Advertisement of the Trademark by the Trademark department, a fair chance is given to the public at large to oppose such Trademark within 4 months from the date of such advertisement. In common parlance, the objection raised by a third party against the future registration of a Trademark by the department is called “Opposition”.",
   },
   {
-    question: "Who needs to apply for a Trade License?",
+    question: "Who can file a Notice of opposition?",
     answer:
-      "Every individual, firm, or company engaged in any kind of trade, manufacturing, or service activity must obtain a Trade License from the local municipal body before starting operations.",
+      "Any person can file opposition against the advertised trademark before its registration. It is interesting to note that a person objecting need not necessarily be an owner of an applied or registered trademark. Such a person can be a commoner and can file an opposition for the interest of the public at large.",
   },
   {
-    question: "How long is a Trade License valid?",
+    question: "What is the time span within which a Notice of opposition can be filed?",
     answer:
-      "A Trade License is generally valid for one financial year and must be renewed annually before its expiry date to avoid penalties or closure of business activities.",
+      "A notice of opposition can be filed within 4 months from the date of advertisement of Trademark. There is no provision for extension of such time period under the TM legislation.",
   },
   {
-    question: "What are the documents required for a Trade License?",
+    question: "What is a Notice of Opposition?",
     answer:
-      "The required documents typically include proof of business address, identity proof, PAN card, property tax receipt, NOC from the owner, and layout plan of the premises.",
+      "The Notice of Opposition contains the grounds of opposition against which the opponent opposes a Trademark from getting it registered. The Notice of Opposition along with prescribed fees is sent to the TM Department in the first instance. The TM department verifies the same and forwards the Notice of Opposition to the applicant.",
   },
   {
-    question: "What is the processing time for obtaining a Trade License?",
+    question: "What is the way forward for the owner of applied TM post receipt of Notice of Opposition?",
     answer:
-      "The processing time varies by city but typically takes 7–15 working days from the date of submission of a complete and accurate application.",
+      "Upon receipt of such a notice, the owner of applied TM needs to  file a Counter statement within two months of receipt of such Notice, along with a prescribed fee. Non-filing of Counter Statement may lead to deemed abandonment of the applied Trademark. The preparation of Counter statement requires specialized drafting skills and expert legal knowledge.",
   },
   {
-    question: "Can a Trade License be transferred or modified?",
+    question: "What is a Counter Statement?",
     answer:
-      "Yes, a Trade License can be transferred to another person or modified in case of changes in business details, ownership, or address, subject to municipal approval.",
+      "The Counter statement contains point wise reply of the Notice of opposition. It is required to be filed before the Registrar. Post reviewing the same, the Registrar forwards the Counter statement to the Opponent.",
   },
   {
-    question: "What happens if I operate without a Trade License?",
+    question: "What is the next step in Opposition after filing Counter Statement?",
     answer:
-      "Operating a business without a valid Trade License is illegal and may result in fines, penalties, or closure of the business by municipal authorities.",
+      "Once the counter statement is filed, the opponent provides the evidences in support of the Notice of Opposition through an Affidavit along with a prescribed fee. Non-filing of evidence may lead to abandonment of the opposition.",
   },
   {
-    question: "Is online Trade License registration available?",
+    question: "What is the subsequent step in Opposition after filing evidence in support of Notice of Opposition?",
     answer:
-      "Yes, many municipal corporations now allow online submission, document upload, and fee payment for Trade License registration and renewal.",
+      "The applicant has to file evidences in support of its Counter Statement along with the prescribed fee. Non-filing of evidence may lead to abandonment of the applied Trademark.",
   },
   {
-    question: "How can Legal Terminus help in Trade License registration?",
+    question: "What is the next step in Opposition after filing evidence in support of Counter Statement?",
     answer:
-      "Legal Terminus provides end-to-end assistance — from documentation to online submission and municipal follow-up — ensuring a quick and hassle-free Trade License registration process.",
+      "After submission of evidences by both the parties, Registrar calls both the parties for hearing the matter, and Registrar hears arguments from both the parties and adjudicates on the matter.",
+  },
+  {
+    question: "How Legal Terminus can help you with the above process of opposition of Trademark?",
+    answer:
+      "Legal Terminus can help you with the process of opposition of TM for your organization, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
   },
 ];
 
@@ -62,16 +67,11 @@ const TradeLicenseFAQ = () => {
 
         <div className="tlfaqx-left">
           <h2 className="tlfaqx-title">
-            Trade License Registration FAQ&apos;s
+            Trademark Opposition FAQ's
           </h2>
 
           <p className="tlfaqx-intro">
-            Getting a Trade License is an essential step for any business owner.
-            It not only ensures compliance with municipal laws but also builds
-            credibility for your operations. <br /><br />
-            Here, we’ve answered some of the most common questions about Trade
-            License registration, process, and documentation to guide you
-            through every step confidently.
+            Here, we’ve answered some of the most common questions about the Trademark Opposition process, and documentation to guide you through every step confidently.
           </p>
         </div>
 

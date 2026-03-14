@@ -1,0 +1,343 @@
+/* ================= ROOT HERO ================= */
+.Increase-public-hero {
+  padding: 50px 20px;
+  background:
+    radial-gradient(900px 500px at 15% 20%, rgba(34,197,94,0.12), transparent 60%),
+    radial-gradient(700px 400px at 85% 80%, rgba(34,197,94,0.10), transparent 60%),
+    linear-gradient(180deg, #000000, #020202, #050505);
+  font-family: "Inter", sans-serif;
+}
+
+/* ================= CONTAINER ================= */
+.Increase-public-container {
+  max-width: 1300px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: 80px;
+  align-items: center;
+}
+
+/* ================= LEFT CONTENT ================= */
+.Increase-public-content {
+  color: #e5e7eb;
+}
+
+/* TAG */
+.Increase-public-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 20px;
+  background: linear-gradient(135deg, #22c55e, #4ade80);
+  color: #022c22;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 30px;
+  margin-bottom: 22px;
+  letter-spacing: 0.5px;
+}
+
+/* TITLE */
+.Increase-public-title {
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 22px;
+  color: #ffffff;
+}
+
+.Increase-public-title span {
+  color: #4ade80;
+}
+
+/* DESCRIPTION */
+.Increase-public-description {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #d1d5db;
+  max-width: 640px;
+  margin-bottom: 38px;
+}
+
+/* ================= FEATURES ================= */
+.Increase-public-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 30px;
+  margin-bottom: 42px;
+}
+
+.Increase-feature-item {
+  font-size: 15.8px;
+  color: #f8fafc;
+  padding-left: 10px;
+  border-left: 3px solid #22c55e;
+}
+
+/* ================= STATS ================= */
+.Increase-public-highlights {
+  display: flex;
+  gap: 55px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(34,197,94,0.2);
+}
+
+.Increase-public-highlights h3 {
+  font-size: 32px;
+  font-weight: 900;
+  color: #22c55e;
+  margin-bottom: 6px;
+}
+
+.Increase-public-highlights p {
+  font-size: 14.5px;
+  color: #9ca3af;
+  letter-spacing: 0.4px;
+}
+
+/* ================= FORM WRAPPER ================= */
+.Increase-public-form-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+/* ================= FORM CARD ================= */
+.Increase-public-form-card {
+  background:
+    linear-gradient(180deg, #0b0b0b, #040404);
+  border-radius: 18px;
+  padding: 42px;
+  width: 100%;
+  border: 1px solid rgba(34,197,94,0.35);
+  box-shadow:
+    0 40px 90px rgba(0,0,0,0.85),
+    0 0 0 1px rgba(34,197,94,0.15) inset;
+}
+
+/* FORM TITLE */
+.Increase-form-title {
+  font-size: 24px;
+  font-weight: 900;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+/* FORM SUBTITLE */
+.Increase-form-subtitle {
+  font-size: 14.5px;
+  color: #b0b0b0;
+  margin-bottom: 28px;
+}
+
+/* ================= INPUTS ================= */
+.Increase-public-form input,
+.Increase-public-form select {
+  width: 100%;
+  padding: 16px 15px;
+  margin-bottom: 16px;
+  background: linear-gradient(180deg, #000000, #050505);
+  border: 1px solid rgba(34,197,94,0.25);
+  border-radius: 12px;
+  font-size: 14.5px;
+  color: #e5e7eb;
+}
+
+.Increase-public-form input::placeholder {
+  color: #8b8b8b;
+}
+
+.Increase-public-form select {
+  color: #cbd5e1;
+}
+
+/* ================= WHATSAPP ================= */
+.Increase-whatsapp-row {
+  margin: 20px 0 30px;
+}
+
+.Increase-whatsapp-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+}
+
+.Increase-whatsapp-label input {
+  display: none;
+}
+
+.Increase-custom-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 2px solid #22c55e;
+  background: #000;
+  position: relative;
+}
+
+.Increase-whatsapp-label input:checked + .Increase-custom-checkbox::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 6px;
+  height: 11px;
+  border: solid #22c55e;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.Increase-whatsapp-text {
+  font-size: 14.5px;
+  color: #e5e7eb;
+}
+
+.Increase-whatsapp-text strong {
+  color: #4ade80;
+}
+
+/* ================= BUTTON ================= */
+.Increase-public-form button {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #22c55e, #4ade80);
+  color: #022c22;
+  font-size: 16px;
+  font-weight: 900;
+  border: none;
+  border-radius: 14px;
+  letter-spacing: 0.4px;
+}
+
+/* ================= FOOT NOTE ================= */
+.Increase-form-note {
+  text-align: center;
+  font-size: 13.5px;
+  color: #9ca3af;
+  margin-top: 20px;
+}
+
+
+/* ================= LARGE SCREENS (1600px+) ================= */
+@media (min-width: 1600px) {
+  .Increase-public-container {
+    max-width: 1600px;
+    gap: 100px;
+  }
+
+  .Increase-public-title {
+    font-size: 54px;
+  }
+}
+
+/* ================= LAPTOPS (1200px – 1399px) ================= */
+@media (max-width: 1399px) {
+  .Increase-public-container {
+    max-width: 1200px;
+    gap: 70px;
+  }
+
+  .Increase-public-title {
+    font-size: 44px;
+  }
+}
+
+/* ================= SMALL LAPTOP / TABLET LANDSCAPE ================= */
+@media (max-width: 1024px) {
+  .Increase-public-container {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+
+  .Increase-public-content {
+    text-align: left;
+  }
+
+  .Increase-public-title {
+    font-size: 40px;
+  }
+
+  .Increase-public-description {
+    max-width: 100%;
+  }
+
+  .Increase-public-highlights {
+    gap: 40px;
+  }
+}
+
+/* ================= TABLET (768px – 991px) ================= */
+@media (max-width: 991px) {
+  .Increase-public-title {
+    font-size: 36px;
+  }
+
+  .Increase-public-features {
+    grid-template-columns: 1fr;
+  }
+
+  .Increase-public-highlights {
+    flex-wrap: wrap;
+    gap: 30px;
+  }
+
+  .Increase-public-form-card {
+    padding: 20px;
+  }
+}
+
+/* ================= MOBILE LARGE (576px – 767px) ================= */
+@media (max-width: 767px) {
+  .Increase-public-hero {
+    padding: 40px 16px;
+  }
+
+  .Increase-public-title {
+    font-size: 32px;
+    line-height: 1.2;
+  }
+
+  .Increase-public-tag {
+    font-size: 12px;
+    padding: 7px 16px;
+  }
+
+  .Increase-public-highlights {
+    gap: 20px;
+  }
+
+}
+
+/* ================= MOBILE SMALL (<= 480px) ================= */
+@media (max-width: 480px) {
+  .Increase-public-title {
+    font-size: 28px;
+  }
+
+  .Increase-public-description {
+    font-size: 15px;
+  }
+
+  .Increase-feature-item {
+    font-size: 14.5px;
+  }
+
+  .Increase-form-title {
+    font-size: 22px;
+  }
+
+  .Increase-public-form input,
+  .Increase-public-form select {
+    padding: 14px;
+    font-size: 14px;
+  }
+
+  .Increase-public-form button {
+    font-size: 15px;
+    padding: 14px;
+  }
+
+  .Increase-whatsapp-text {
+    font-size: 13.5px;
+  }
+}

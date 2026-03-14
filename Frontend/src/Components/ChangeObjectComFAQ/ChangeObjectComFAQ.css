@@ -1,0 +1,224 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+/* ================================
+   SECTION WRAPPER
+================================ */
+
+.Change-ob-com-faq-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #ffffff;
+  padding: 72px 24px 64px;
+}
+
+.Change-ob-com-faq-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.9fr 1.2fr; /* left / right ratio */
+  column-gap: 72px;
+  align-items: flex-start;
+}
+
+/* ================================
+   LEFT SIDE (STATIC CONTENT)
+================================ */
+
+.Change-ob-com-faq-left {
+  color: #111827;
+}
+
+.Change-ob-com-faq-title {
+  font-size: 40px;
+  line-height: 1.2;
+  font-weight: 600;
+  margin: 0 0 22px;
+}
+
+.Change-ob-com-faq-intro {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+  margin: 0 0 16px;
+}
+
+/* ================================
+   RIGHT SIDE (CONSTANT HEIGHT + SCROLL)
+================================ */
+
+/* This container stays constant in height on desktop.
+   Only the inner list will scroll. */
+.Change-ob-com-faq-right {
+  display: flex;
+  flex-direction: column;
+  max-height: 540px;        /* <-- constant height */
+  width: 100%;
+}
+
+/* Scroll area for Q&A items */
+.Change-ob-com-faq-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;       /* some room for scrollbar */
+}
+
+/* Scrollbar styling */
+.Change-ob-com-faq-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.Change-ob-com-faq-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.Change-ob-com-faq-list::-webkit-scrollbar-thumb {
+  background: rgba(26, 169, 26, 0.45);
+  border-radius: 999px;
+}
+
+/* ================================
+   FAQ ITEMS
+================================ */
+
+.Change-ob-com-faq-item {
+  border-bottom: 1px solid rgba(26, 169, 26, 0.22); /* light green line */
+}
+
+/* Question row */
+.Change-ob-com-faq-question {
+
+  text-align: start;
+  width: 100%;
+  padding: 18px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  font-size: 15px;
+  font-weight: 500;
+  color: #111827;
+
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Chevron icon */
+.Change-ob-com-faq-icon {
+  font-size: 18px;
+  transform: rotate(0deg);
+  transition: transform 0.2s ease;
+}
+
+.Change-ob-com-faq-icon.open {
+  transform: rotate(180deg);
+}
+
+/* Answer text */
+.Change-ob-com-faq-answer {
+  padding: 0 0 16px;
+}
+
+.Change-ob-com-faq-answer p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+/* Active / hover */
+.Change-ob-com-faq-item.active .Change-ob-com-faq-question {
+  color: #1aa91a;
+}
+
+.Change-ob-com-faq-item:hover .Change-ob-com-faq-question {
+  color: #1aa91a;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 1024px) {
+  .Change-ob-com-faq-section {
+    padding: 60px 20px 52px;
+  }
+
+  .Change-ob-com-faq-container {
+    column-gap: 40px;
+  }
+
+  .Change-ob-com-faq-title {
+    font-size: 34px;
+  }
+
+  .Change-ob-com-faq-right {
+    max-height: 520px;
+  }
+}
+
+@media (max-width: 768px) {
+  .Change-ob-com-faq-section {
+    padding: 48px 16px 44px;
+  }
+
+  .Change-ob-com-faq-container {
+    grid-template-columns: 1fr;
+    row-gap: 32px;
+  }
+
+  .Change-ob-com-faq-title {
+    font-size: 30px;
+  }
+
+  /* On small screens, let the page scroll normally
+     (no fixed-height right section). */
+  .Change-ob-com-faq-right {
+    max-height: none;
+  }
+
+  .Change-ob-com-faq-list {
+    overflow-y: visible;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .Change-ob-com-faq-section {
+    padding: 40px 12px 40px;
+  }
+
+  .Change-ob-com-faq-title {
+    font-size: 26px;
+  }
+
+  .Change-ob-com-faq-question {
+    font-size: 14px;
+  }
+
+  .Change-ob-com-faq-answer p,
+  .Change-ob-com-faq-intro {
+    font-size: 13.5px;
+  }
+}
+
+/* ================= SMOOTH OPEN / CLOSE ================= */
+
+.Change-ob-com-faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.Change-ob-com-faq-answer.open {
+  max-height: 500px; /* large enough for content */
+  opacity: 1;
+  transform: translateY(0);
+}

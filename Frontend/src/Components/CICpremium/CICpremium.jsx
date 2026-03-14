@@ -28,8 +28,7 @@ const ZolvitPremium = () => {
                 <span className="np-title-icon">⚖️</span>
               </h2>
               <p className="np-subtitle">
-Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
-              </p>
+               Change your company name smoothly with Legal Terminus’ expert-handled process, designed for businesses that want a professional transition without compliance risks or unnecessary delays.              </p>
             </header>
 
             {/* Features */}
@@ -38,15 +37,14 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <ul className="np-list np-features-list">
                 <li className="np-list-item">
                   <span className="np-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
-                </li>
+                  Complete assistance from passing Board Resolution to obtaining the new Certificate of Incorporation from the Registrar of Companies (ROC).                </li>
                 <li className="np-list-item">
                   <span className="np-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                  Accurate documentation and filing support, including name reservation, alteration of MOA & AOA, and MCA form submission.
                 </li>
                 <li className="np-list-item">
                   <span className="np-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                  Timely follow-ups and regular status updates to ensure faster approval and minimal disruption to your business.
                 </li>
               </ul>
             </section>
@@ -57,12 +55,10 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <div className="np-note-box">
                 <ul className="np-note-list">
                   <li className="np-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+                    We conduct a preliminary name availability check before filing the application to improve approval chances.
                   </li>
                   <li className="np-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                    In case the proposed name is rejected, our experts suggest legally compliant alternative names to ensure smooth approval.
                   </li>
                 </ul>
               </div>

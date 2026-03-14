@@ -46,10 +46,9 @@ const TradeLicenseWhy = () => {
   return (
     <section className="tlwhy-section">
       <div className="tlwhy-container">
-        <h2 className="tlwhy-heading">Why Choose Trade License?</h2>
+        <h2 className="tlwhy-heading">Video Testimonials</h2>
         <p className="tlwhy-subtitle">
-          Hear directly from our clients about their experience and the benefits
-          of obtaining a Trade License for smoother business operations.
+          Hear directly from our clients about their experience working with us.
         </p>
 
         <div className="tlwhy-slider-wrapper">

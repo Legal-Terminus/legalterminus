@@ -35,11 +35,10 @@ A Private Limited Company is a legally registered business under the Companies A
           {/* Text */}
           <div className="Tm-intro-content">
             <h2 className="Tm-intro-title">
-              Why Choose Proprietorship Firms Registration
+              Why Choose Trademark Renewal in India
             </h2>
             <p className="Tm-intro-text">
-             Sole proprietorship firm registration in India is the easiest way to start a new business. It’s when one person owns and runs the business, and they’re personally responsible for any debt it incurs. In simple terms, there’s no legal difference between the sole proprietorship firm and the sole proprietors themselves. Here are answers to some common questions about proprietorship firm registration in India.
-            </p>
+             Trademark renewal is important to continue your legal rights over your brand name, logo, or symbol. A registered trademark is valid for 10 years, and renewing it on time ensures that your protection does not expire. If you fail to renew, your trademark can be removed from the official register, and others may apply for a similar mark. Renewal helps you maintain exclusive rights, protect your brand reputation, and avoid legal risks. It also ensures that your business identity remains secure without interruption.            </p>
           </div>
         </div>
       </section>

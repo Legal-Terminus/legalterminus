@@ -1,100 +1,131 @@
 /* ================= SECTION ================= */
-.llp-step-section {
-  padding: 100px 20px;
-  background: #f8fafc;
-  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+.zigzag-section {
+  padding: 110px 20px;
+  background: #f5f7fb;
+  font-family: "Poppins", sans-serif;
 }
 
 /* ================= HEADER ================= */
-.llp-step-header {
+.zigzag-header {
   text-align: center;
-  max-width: 800px;
-  margin: 0 auto 70px;
+  margin-bottom: 70px;
 }
 
-.llp-step-header h2 {
-  font-size: clamp(30px, 4vw, 42px);
-  font-weight: 800;
+.zigzag-header h2 {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
   color: #0f172a;
-  margin-bottom: 10px;
 }
 
-.llp-step-header p {
-  font-size: 15px;
-  color: #64748b;
-}
-
-/* ================= STEPS ================= */
-.llp-steps {
-  max-width: 900px;
+/* ================= WRAPPER ================= */
+.zigzag-wrapper {
+  position: relative;
+  max-width: 1150px;
   margin: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 26px;
+  height: 380px;
+}
+
+/* ================= CURVED LINE ================= */
+.zigzag-line {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.zigzag-line path {
+  stroke: #cbd5e1;
+  stroke-width: 3;
 }
 
 /* ================= STEP ================= */
-.llp-step {
-  display: flex;
-  align-items: flex-start;
-  gap: 26px;
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 26px 28px;
-  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.1);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+.zigzag-step {
+  position: absolute;
+  width: 150px;
+  text-align: center;
+  z-index: 2;
 }
 
-.llp-step:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 22px 46px rgba(15, 23, 42, 0.16);
+.zigzag-step.top {
+  top: 30px;
 }
 
-/* ================= BADGE ================= */
-.llp-step-badge {
-  min-width: 70px;
-  height: 70px;
-  border-radius: 14px;
-  color: #ffffff;
+.zigzag-step.bottom {
+  bottom: 30px;
+}
+
+/* Horizontal positioning */
+.zigzag-step:nth-child(2) { left: 2%; }
+.zigzag-step:nth-child(3) { left: 20%; }
+.zigzag-step:nth-child(4) { left: 38%; }
+.zigzag-step:nth-child(5) { left: 56%; }
+.zigzag-step:nth-child(6) { left: 74%; }
+.zigzag-step:nth-child(7) { left: 99%; transform: translateX(-100%); }
+
+/* ================= CIRCLE ================= */
+.zigzag-circle {
+  width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  color: #ffffff;
+  margin: auto;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+  transition: transform 0.2s ease;
 }
 
-.llp-step-icon {
-  font-size: 26px;
+.zigzag-circle:hover {
+  transform: translateY(-4px);
 }
 
-.llp-step-id {
-  font-size: 12px;
-  font-weight: 700;
-  margin-top: 2px;
+/* Icon */
+.zigzag-icon {
+  font-size: 20px;
 }
 
-/* ================= CONTENT ================= */
-.llp-step-content h4 {
-  font-size: 18px;
-  font-weight: 800;
-  color: #0f172a;
-  margin-bottom: 6px;
+/* Step number */
+.zigzag-id {
+  font-size: 11px;
+  margin-top: 3px;
+  opacity: 0.85;
 }
 
-.llp-step-content p {
+/* ================= TITLE ================= */
+.zigzag-step h4 {
   font-size: 14px;
-  color: #475569;
-  line-height: 1.6;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
 }
 
 /* ================= RESPONSIVE ================= */
-@media (max-width: 640px) {
-  .llp-step {
+@media (max-width: 992px) {
+
+  .zigzag-wrapper {
+    height: auto;
+    display: flex;
     flex-direction: column;
-    text-align: center;
+    gap: 40px;
   }
 
-  .llp-step-badge {
-    margin: auto;
+  .zigzag-line {
+    display: none;
+  }
+
+  .zigzag-step {
+    position: relative;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 100%;
+  }
+
+  .zigzag-circle {
+    margin-bottom: 8px;
   }
 }

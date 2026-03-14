@@ -1,80 +1,148 @@
 /* ================= SECTION ================= */
-.ladder-section {
-  padding: 100px 20px;
-  background: linear-gradient(180deg, #f8fafc, #ffffff);
+.perfect-circle-section {
+  padding: 120px 20px;
+  background: #f4f7fb;
   font-family: "Poppins", sans-serif;
+  text-align: center;
 }
 
 /* ================= HEADER ================= */
-.ladder-header {
-  text-align: center;
-  margin-bottom: 70px;
-}
 
-.ladder-header h2 {
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 800;
-  color: #0f172a;
-}
 
-.ladder-header p {
-  font-size: 15px;
-  color: #64748b;
-  margin-top: 6px;
+.perfect-header h2 {
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 600;
+  color: #1e293b;
 }
 
 /* ================= WRAPPER ================= */
-.ladder-wrapper {
-  max-width: 800px;
+.perfect-wrapper {
+  position: relative;
+  width: 720px;
+  height: 720px;
   margin: auto;
+}
+
+/* ================= MAIN CENTER CIRCLE ================= */
+.main-circle {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  color: #ffffff;
+
+  top: 59%;
+  left: 60%;
+  transform: translate(-50%, -50%);
+
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-
-/* ================= STEP ================= */
-.ladder-step {
-  transform: translateX(calc(var(--offset) * 32px));
-}
-
-/* ================= CARD ================= */
-.ladder-card {
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 22px 26px;
-  display: flex;
   align-items: center;
-  gap: 18px;
-  border-left: 6px solid;
-  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.14);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  justify-content: center;
+
+  box-shadow: 0 25px 60px rgba(37, 99, 235, 0.25);
+  z-index: 10;
 }
 
-.ladder-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.18);
+.main-circle h3 {
+  font-size: 20px;
+  margin: 0;
+  font-weight: 600;
 }
 
-/* ================= ICON ================= */
-.ladder-icon {
-  font-size: 28px;
+.main-circle span {
+  font-size: 14px;
+  margin-top: 6px;
+  opacity: 0.9;
 }
 
-/* ================= TEXT ================= */
-.ladder-text h4 {
-  font-size: 16px;
-  font-weight: 700;
-  color: #0f172a;
+/* ================= PERFECT ORBIT ================= */
+
+/* IMPORTANT:
+   radius = (wrapper/2) - (outerCircle/2) - spacing
+   720/2 = 360
+   360 - 50 (outer radius) - 30 spacing = 280
+*/
+
+.orbit-item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  text-align: center;
+
+  --radius: 280px;
+
+  transform:
+    rotate(calc(60deg * var(--i)))
+    translate(var(--radius))
+    rotate(calc(-60deg * var(--i)));
+
+  transform-origin: 0 0;
 }
 
-.ladder-text small {
+/* ================= OUTER CIRCLES ================= */
+.orbit-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  color: #ffffff;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
+  transition: all 0.3s ease;
+}
+
+.orbit-circle:hover {
+  transform: scale(1.08);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.25);
+}
+
+.orbit-icon {
+  font-size: 20px;
+}
+
+.orbit-circle small {
   font-size: 12px;
-  color: #64748b;
+  margin-top: 4px;
+  opacity: 0.9;
+}
+
+/* ================= LABEL ================= */
+.orbit-item p {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 500;
 }
 
 /* ================= RESPONSIVE ================= */
-@media (max-width: 768px) {
-  .ladder-step {
+@media (max-width: 900px) {
+
+  .perfect-wrapper {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .orbit-item {
+    position: relative;
+    transform: none !important;
+    top: auto;
+    left: auto;
+  }
+
+  .main-circle {
+    position: relative;
     transform: none;
+    margin-bottom: 20px;
   }
 }

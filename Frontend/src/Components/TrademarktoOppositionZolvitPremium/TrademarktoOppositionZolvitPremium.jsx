@@ -28,8 +28,7 @@ const TradeLicenseZolvitPremium = () => {
                 <span className="tlzp-title-icon">⚖️</span>
               </h2>
               <p className="tlzp-subtitle">
-                Get your trade license registered faster with Legal Terminus expert-handled process,
-                made for entrepreneurs who value time and want to avoid unnecessary delays.
+                Protect your brand with Legal Terminus. Our experts handle the trademark opposition process to help you challenge similar or conflicting trademarks quickly and smoothly.
               </p>
             </header>
 
@@ -39,16 +38,15 @@ const TradeLicenseZolvitPremium = () => {
               <ul className="tlzp-list tlzp-features-list">
                 <li className="tlzp-list-item">
                   <span className="tlzp-list-icon">🧑‍⚖️</span>
-                  Get your trade license registered faster with Legal Terminus expert-handled process,
-                  made for entrepreneurs who value time and want to avoid unnecessary delays.
+                  Expert Support: Our professionals prepare and file your trademark opposition with proper legal guidance.
                 </li>
                 <li className="tlzp-list-item">
                   <span className="tlzp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                  Complete Documentation Help: We assist you in preparing all required documents and responses during the opposition process.
                 </li>
                 <li className="tlzp-list-item">
                   <span className="tlzp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                  Timely Updates & Reminders: Stay informed about important deadlines and case updates so you never miss any step.
                 </li>
               </ul>
             </section>
@@ -59,12 +57,13 @@ const TradeLicenseZolvitPremium = () => {
               <div className="tlzp-note-box">
                 <ul className="tlzp-note-list">
                   <li className="tlzp-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+                    We carefully review the conflicting trademark before filing the opposition.
                   </li>
                   <li className="tlzp-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                    Our team helps you prepare strong grounds to protect your brand rights.
+                  </li>
+                  <li className="tlzp-note-item">
+                    If required, we guide you on the next legal steps during the opposition process.
                   </li>
                 </ul>
               </div>

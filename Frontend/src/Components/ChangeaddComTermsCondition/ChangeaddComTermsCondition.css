@@ -1,0 +1,90 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+.Change-add-com-Tc-tc-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #ffffff;
+  padding: 10px 24px 64px;
+}
+
+.Change-add-com-Tc-tc-container {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* Title */
+.Change-add-com-Tc-tc-title {
+  text-align: center;
+  font-size: 32px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 16px;
+}
+
+/* Subtitle in green */
+.Change-add-com-Tc-tc-subtitle {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1aa91a;
+  margin: 0 0 32px;
+}
+
+/* List */
+.Change-add-com-Tc-tc-list {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding-left: 18px; /* for ordered list numbers */
+}
+
+.Change-add-com-Tc-tc-item {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+/* -----------------------------
+   Responsive
+------------------------------ */
+
+@media (max-width: 1024px) {
+  .Change-add-com-Tc-tc-section {
+    padding: 60px 20px 52px;
+  }
+
+  .Change-add-com-Tc-tc-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .Change-add-com-Tc-tc-section {
+    padding: 48px 16px 44px;
+  }
+
+  .Change-add-com-Tc-tc-title {
+    font-size: 24px;
+  }
+
+  .Change-add-com-Tc-tc-subtitle {
+    font-size: 14px;
+  }
+
+  .Change-add-com-Tc-tc-item {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .Change-add-com-Tc-tc-section {
+    padding: 40px 14px 40px;
+  }
+
+  .Change-add-com-Tc-tc-title {
+    font-size: 22px;
+    letter-spacing: 1.2px;
+  }
+}

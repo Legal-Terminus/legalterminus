@@ -1,131 +1,224 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
-/* ================= SECTION ================= */
-.DP-societys-section {
-  font-family: "Poppins", sans-serif;
+/* ================================
+   SECTION WRAPPER
+================================ */
+
+.Diss-ps-faqsection {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   background-color: #ffffff;
   padding: 72px 24px 64px;
 }
 
-/* ================= LAYOUT ================= */
-.DP-societys-container {
+.Diss-ps-faqcontainer {
   max-width: 1180px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 0.9fr 1.2fr;
+  grid-template-columns: 0.9fr 1.2fr; /* left / right ratio */
   column-gap: 72px;
   align-items: flex-start;
 }
 
-/* ================= LEFT ================= */
-.DP-societys-left {
+/* ================================
+   LEFT SIDE (STATIC CONTENT)
+================================ */
+
+.Diss-ps-faqleft {
   color: #111827;
 }
 
-.DP-societys-title {
+.Diss-ps-faqtitle {
   font-size: 40px;
   line-height: 1.2;
   font-weight: 600;
-  margin-bottom: 22px;
+  margin: 0 0 22px;
 }
 
-.DP-societys-intro {
+.Diss-ps-faqintro {
   font-size: 15px;
   line-height: 1.9;
   color: #4b5563;
+  margin: 0 0 16px;
 }
 
-/* ================= RIGHT ================= */
-.DP-societys-right {
-  max-height: 540px;
+/* ================================
+   RIGHT SIDE (CONSTANT HEIGHT + SCROLL)
+================================ */
+
+/* This container stays constant in height on desktop.
+   Only the inner list will scroll. */
+.Diss-ps-faqright {
+  display: flex;
+  flex-direction: column;
+  max-height: 540px;        /* <-- constant height */
+  width: 100%;
 }
 
-.DP-societys-list {
+/* Scroll area for Q&A items */
+.Diss-ps-faqlist {
+  flex: 1;
   overflow-y: auto;
-  padding-right: 6px;
+  padding-right: 6px;       /* some room for scrollbar */
 }
 
-/* Scrollbar */
-.DP-societys-list::-webkit-scrollbar {
+/* Scrollbar styling */
+.Diss-ps-faqlist::-webkit-scrollbar {
   width: 6px;
 }
 
-.DP-societys-list::-webkit-scrollbar-thumb {
+.Diss-ps-faqlist::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.Diss-ps-faqlist::-webkit-scrollbar-thumb {
   background: rgba(26, 169, 26, 0.45);
   border-radius: 999px;
 }
 
-/* ================= ITEM ================= */
-.DP-societys-item {
-  border-bottom: 1px solid rgba(26, 169, 26, 0.22);
+/* ================================
+   FAQ ITEMS
+================================ */
+
+.Diss-ps-faqitem {
+  border-bottom: 1px solid rgba(26, 169, 26, 0.22); /* light green line */
 }
 
-.DP-societys-question {
+/* Question row */
+.Diss-ps-faqquestion {
+
+  text-align: start;
   width: 100%;
   padding: 18px 0;
-  background: transparent;
-  border: none;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
+
   font-size: 15px;
   font-weight: 500;
-  cursor: pointer;
   color: #111827;
-  text-align: left;
+
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
 }
 
-.DP-societys-icon {
+/* Chevron icon */
+.Diss-ps-faqicon {
+  font-size: 18px;
+  transform: rotate(0deg);
   transition: transform 0.2s ease;
 }
 
-.DP-societys-icon.open {
+.Diss-ps-faqicon.open {
   transform: rotate(180deg);
 }
 
-/* ================= ANSWER ================= */
-.DP-societys-answer {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: all 0.3s ease;
+/* Answer text */
+.Diss-ps-faqanswer {
+  padding: 0 0 16px;
 }
 
-.DP-societys-answer.open {
-  max-height: 500px;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.DP-societys-answer p {
+.Diss-ps-faqanswer p {
+  margin: 0;
   font-size: 14px;
   line-height: 1.9;
   color: #4b5563;
-  margin-bottom: 16px;
 }
 
-/* Active */
-.DP-societys-item.active .DP-societys-question {
+/* Active / hover */
+.Diss-ps-faqitem.active .Diss-ps-faqquestion {
   color: #1aa91a;
 }
 
-/* ================= RESPONSIVE ================= */
+.Diss-ps-faqitem:hover .Diss-ps-faqquestion {
+  color: #1aa91a;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 1024px) {
+  .Diss-ps-faqsection {
+    padding: 60px 20px 52px;
+  }
+
+  .Diss-ps-faqcontainer {
+    column-gap: 40px;
+  }
+
+  .Diss-ps-faqtitle {
+    font-size: 34px;
+  }
+
+  .Diss-ps-faqright {
+    max-height: 520px;
+  }
+}
+
 @media (max-width: 768px) {
-  .DP-societys-container {
+  .Diss-ps-faqsection {
+    padding: 48px 16px 44px;
+  }
+
+  .Diss-ps-faqcontainer {
     grid-template-columns: 1fr;
     row-gap: 32px;
   }
 
-  .DP-societys-right {
+  .Diss-ps-faqtitle {
+    font-size: 30px;
+  }
+
+  /* On small screens, let the page scroll normally
+     (no fixed-height right section). */
+  .Diss-ps-faqright {
     max-height: none;
   }
 
-  .DP-societys-list {
+  .Diss-ps-faqlist {
     overflow-y: visible;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .Diss-ps-faqsection {
+    padding: 40px 12px 40px;
   }
 
-  .DP-societys-title {
-    font-size: 30px;
+  .Diss-ps-faqtitle {
+    font-size: 26px;
   }
+
+  .Diss-ps-faqquestion {
+    font-size: 14px;
+  }
+
+  .Diss-ps-faqanswer p,
+  .Diss-ps-faqintro {
+    font-size: 13.5px;
+  }
+}
+
+/* ================= SMOOTH OPEN / CLOSE ================= */
+
+.Diss-ps-faqanswer {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.Diss-ps-faqanswer.open {
+  max-height: 500px; /* large enough for content */
+  opacity: 1;
+  transform: translateY(0);
 }

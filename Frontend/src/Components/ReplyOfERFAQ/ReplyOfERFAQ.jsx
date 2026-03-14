@@ -3,54 +3,57 @@ import "./ReplyOfERFAQ.css";
 
 const faqs = [
   {
-    question: "How many persons are required to form a Private Limited Company?",
-    answer:
-      "Minimum two persons are required to form a Private Limited Company and a maximum up to 200 persons can be a member of a single Private Limited Company.",
-  },
+    question: "What are the types of Examination Report?",
+    answer:(
+    <div>
+      <p><strong>The Examination Report are of two types</strong></p>
+      <ul>
+        <li>1. With objections: The Examination Report contains the objections on which the mark can be refused.</li>
+        <li>2. Without objections: The Examination Report does not contain any objections, and can be construed as an acceptance of the TM application by the TM department.</li>
+      </ul>
+    </div>
+  ),
+},
   {
-    question: "How many Directors are required to form a Private Limited Company?",
-    answer:
-      "Minimum two directors are required in a Private Limited Company, with an upper cap up to 15 directors.",
-  },
+    question: "What are the various grounds of objections?",
+    answer:(
+    <div>
+      <p><strong>The grounds of objections can be broadly classified into three categories</strong></p>
+      <ul>
+        <li><strong>1. Absolute Grounds of Refusal:</strong> The TM Department may out rightly refuse the application where the applied Trademark is without of any distinctive character, or contains the characteristics of the goods/ services, or deceive the public or cause confusion, or hurt the sentiments of any religion, scandalous or obscene matter, or prohibited word.</li>
+        <li><strong>2. Relative grounds of Refusal:</strong>The TM department issues such objections where the applied Trademark is identical or similar with an earlier applied Trademark or an existing registered Trademark, and the same may create confusion among the public in general.</li>
+        <li><strong>3. Other Grounds of Refusal:</strong>In this category the department objects if the applied Trademark is not properly filed as per the prescribed procedure, such as, use of incorrect form, mentioning wrong specification of goods and or services, not following the Nice classification for specification of goods/ services, incorrect details in the application, wrong classification of Trademark Class.</li>
+      </ul>
+    </div>
+  ),
+},
   {
-    question: "Who are Directors of the company?",
+    question: "Within how many days one can receive the Examination Report?",
     answer:
-      "Directors are officers of the company who are responsible for managing the company and making the decisions as to its operation on a day to day basis, for the benefit of the shareholders.",
-  },
-  {
-    question:
-      "What is a company shareholder?",
-    answer:
-      "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in day-to-day management or financial affairs. They are also called 'members' and they agree to become part of a company by taking a minimum of one share in it. The quantity of shares held by each person represents how much of the business they own.",
-  },
-  {
-    question: "How much capital is required to start a Private Limited Company?",
-    answer:
-      "The Private Limited Company can be incorporated with any amount of capital and there is no lower or upper limit. Further, the government has relaxed the government fees for Incorporation of a Private Limited Company up to an Authorized capital of Rs. 15,00,000/-, however, the stamp duty, which is still levied, varies from State to State.",
-  },
-  {
-    question:
-      "What are some basic/ key documents required to incorporate a Private Limited Company in India?",
-    answer:
-      "PAN Card (All the Proposed Directors and/or Shareholders)",
-  },
-  {
-    question:
-      "What is the procedure to register a Private Limited Company?",
-    answer:
-      "You need at least two directors, two shareholders, a unique company name, a registered office address in India, and the necessary KYC documents for all directors and shareholders.",
+      "There is no time specified for issuance of examination report. However, in general, the examination report is issued by TM department within 30 to 60 days from the application of Trademark.",
   },
   {
     question:
-      "What is the time period within which a Private Limited Company can be incorporated?",
+      "What can be done in case an examination report is received with objections?",
     answer:
-      "The process of incorporating a Private Limited Company can take anywhere between 10 to 15 working days, subject to submission of correct information and complete documentation.",
+      "In such case, the proprietor/ owner of the TM will need to file a reply to the objections raised by the department. While there is no specific format prescribed for reply of examination report, however, it requires specialized drafting skills and expert legal knowledge to respond to such objections.",
+  },
+  {
+    question: "Is there any time specified for reply of examination report?",
+    answer:
+      "The reply to objections raised through examination report need to be responded within 30 days from the date of their receipt.",
   },
   {
     question:
-      "How Legal Terminus can help you incorporate a Private Limited Company in India?",
+      "What are the consequences for non-filing of reply to the examination report?",
     answer:
-      "Legal Terminus can help you with incorporation of Private Limited Company for you, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+      "The applied trademark is liable to be refused and abandoned.",
+  },
+  {
+    question:
+      "How Legal Terminus can help you with filing of reply of examination report of your applied Trademark?",
+    answer:
+      "Legal Terminus can help you with filing reply of examination report for your organization, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
   },
 ];
 
@@ -66,14 +69,10 @@ const FaqPvt = () => {
       <div className="Rf-ER-faq-container">
         {/* Left side – static text */}
         <div className="Rf-ER-faq-left">
-          <h2 className="Rf-ER-faq-title">Private Limited Company Registration FAQ&apos;s</h2>
+          <h2 className="Rf-ER-faq-title">Reply to Examination Report Trademark FAQ's</h2>
 
           <p className="Rf-ER-faq-intro">
-            Starting a Private Limited Company in India is an important step for any business owner. With the right support, the process can be simple and stress-free.
-
-<br/><br/>
-Here, we’ve answered the most common questions about company registration—covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
-
+            Here are answers to some common questions about Reply of Examination Report in trademark registration. These FAQs will help you understand the process, timeline, and importance of filing a proper reply to overcome objections raised by the Trademark Registry.
           </p>
 
           <p className="Rf-ER-faq-intro">

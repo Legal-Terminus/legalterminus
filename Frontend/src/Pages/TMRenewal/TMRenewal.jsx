@@ -43,11 +43,11 @@ const TMRenewal = () => {
         </div>
 
         <div id="process">
-            <TMProcess/>
+            {/* <TMProcess/> */}
         </div>
         
         <div id="documents">
-            <TMRenewalDocuments/>
+            {/* <TMRenewalDocuments/> */}
         </div>
         
         <div id="faq">

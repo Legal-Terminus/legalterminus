@@ -43,7 +43,6 @@ import PartnershipLLP from "./Pages/PartnershipLLP/PartnershipLLP"
 import LLRegistration from "./Pages/LLRegistration/LLRegistration";
 import BCRegistration from "./Pages/BCRegistration/BCRegistration";
 import ISOCertification from "./Pages/ISOCertification/ISOCertification";
-import DissolvePrivate from "./Pages/DissolvePrivate/DissolvePrivate";
 import DissolveLLP from "./Pages/DissolveLLP/DissolveLLP";
 import DissolvePartnership from "./Pages/DissolvePartnership/DissolvePartnership";
 
@@ -56,6 +55,14 @@ import CIROfficeAddress from "./Pages/CIROfficeAddress/CIROfficeAddress";
 import ChangeInObject from "./Pages/ChangeInObject/ChangeInObject";
 import TrademarktoOpposition from"./Pages/TrademarktoOpposition/TrademarktoOpposition";
 import TrademarktoHearing from "./Pages/TrademarktoHearing/TrademarktoHearing";
+
+import WindupPLC from "./Pages/WindupPLC/WindupPLC";
+import ChangeLlp from "./Pages/ChangeLlp/ChangeLlp";
+import ChangeaddCom from "./Pages/ChangeaddCom/ChangeaddCom";
+import ChangeObjectCom from "./Pages/ChangeObjectCom/ChangeObjectCom";
+import Increase from "./Pages/Increase/Increase";
+import Add from "./Pages/Add/Add";
+import DissolvePrivate from "./Pages/DissolvePrivate/DissolvePrivate";
 
 function App() {
   return (
@@ -115,12 +122,34 @@ function App() {
 
           <Route path="/updation/change-name-company" element={<ChangeInCompany />} />
           <Route path="/updation/change-address-llp" element={<CIROfficeAddress />} />
-          <Route path="/updation/change-object-llp" element={<ChangeInObject />} />
-          <Route path="/trademark/opposition" element={<TrademarktoOpposition/>}/>
-          <Route path="/trademark/hearing" element={<TrademarktoHearing/>}/>
-          <Route path="/windup/dissolve-private" element={<DissolvePrivate />} />
+
+          <Route path="//updation/change-object-llp" element={<ChangeInObject />} />
+
+          {/*Windowup Services*/}
+          <Route path="/windup/dissolve-private" element={<WindupPLC />} />
           <Route path="/windup/dissolve-llp" element={<DissolveLLP />} />
           <Route path="/windup/dissolve-partnership" element={<DissolvePartnership />} />
+          
+          <Route path="/updation/change-object-llp" element={<ChangeInObject />} />
+
+          {/*Trademark*/}
+          <Route path="/trademark/opposition" element={<TrademarktoOpposition/>}/>
+          <Route path="/trademark/hearing" element={<TrademarktoHearing/>}/>
+          <Route path="/windup/dissolve-private" element={<DissolvePrivate />} /> 
+          <Route path="/windup/dissolve-llp" element={<DissolveLLP />} />
+          <Route path="/windup/dissolve-partnership" element={<DissolvePartnership />} />
+          <Route path="/updation/change-name-llp" element={<ChangeLlp/>}/> 
+          <Route path="/updation/change-address-company" element={<ChangeaddCom/>}/> 
+          <Route path="/updation/change-object-company" element={<ChangeObjectCom/>}/>
+          <Route path="/updation/increase-authorised-capital" element={<Increase/>}/>
+          <Route path="/updation/add-remove-director" element={<Add/>}/>
+          
+          
+ 
+          <Route path="/trademark/renewal" element={<TMRenewal/>}/>
+          <Route path="/trademark/application" element={<TMApplication/>}/>
+          <Route path="/trademark/exam-reply" element={<ReplyOfExaminationReport/>}/>
+          
         </Routes>
       </RouteLoaderWrapper>
 

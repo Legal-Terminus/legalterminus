@@ -8,42 +8,49 @@ const TermsConditions = () => {
         {/* Heading */}
         <h2 className="TM-Renewal-tc-title">TERMS &amp; CONDITIONS</h2>
 
-        {/* Sub heading */}
         <p className="TM-Renewal-tc-subtitle">
-          By subscribing to the above plans, you agree to abide by our following
-          additional terms and conditions
+          By subscribing to the above plans, you agree to abide by our following additional terms and conditions
         </p>
 
         {/* List */}
         <ol className="TM-Renewal-tc-list">
           <li className="TM-Renewal-tc-item">
-            DSC shall be from Sign X Class III only.
+           Government fees for trademark registration are ₹4,500 per class (online) for Individuals, Sole Proprietors, and MSMEs/Startups, and ₹9,000 per class (online) for Companies, LLPs, and other entities. Physical filing attracts ₹5,000 and ₹10,000 per class respectively, as prescribed under the Trade Marks Act, 1999.</li>
+          
+          <li className="TM-Renewal-tc-item">
+            The above fees apply to a single trademark in a single class. Multi-class applications will attract additional professional and government fees for each additional class.
           </li>
 
           <li className="TM-Renewal-tc-item">
-            The fees mentioned above are valid for contribution up to Rs. 1
-            Lakhs and in case contribution is above Rs. 1 Lakhs the additional
-            fee shall be charged as per actuals.
+            GST at 18% is applicable on professional fees.
           </li>
 
           <li className="TM-Renewal-tc-item">
-            The above fee includes name application for up to 4 choice names and
-            in case all the 4 names are rejected by the department, an
-            additional fee shall be charged as per actuals.
+            The above plan includes up to 5 trademark name searches. In case all submitted name options are rejected during the trademark search process, additional fees may apply for further searches.
           </li>
 
           <li className="TM-Renewal-tc-item">
-            The audit of accounts shall be applicable for the respective FY in
-            which the contribution exceeds Rs. 25 Lakhs &amp; turnover exceeds
-            Rs. 40 Lakhs. Further, the audit fees, if any, shall not be a part
-            of our professional fees and shall be payable directly to the
-            auditor.
+            Government fees shall be payable at actuals, over and above the professional fees.
           </li>
 
           <li className="TM-Renewal-tc-item">
-            In case the above plan does not qualify your requirements, kindly
-            contact our executive, we shall be happy to customise a plan for
-            you.
+            If the trademark application receives an objection from the Trademark Examiner, handling of the Reply to Examination Report (including Show Cause Hearing, if applicable) is included only under the Enriched and Supreme plans.
+          </li>
+
+          <li className="TM-Renewal-tc-item">
+            Opposition proceedings initiated by third parties after journal publication are covered only under the Supreme plan. Legal representation beyond one hearing will be subject to additional charges.
+          </li>
+
+          <li className="TM-Renewal-tc-item">
+            Trademark renewal after 10 years is not included in any of the above plans and will be quoted separately.
+          </li>
+
+          <li className="TM-Renewal-tc-item">
+            In case the applicant is a Foreign National or NRI, fees shall be determined upon mutual discussion.
+          </li>
+
+          <li className="TM-Renewal-tc-item">
+            In case a prior use claim is made (i.e., any use date claimed before the date of filing), an additional fee of ₹2,500/- (+18% GST) shall be applicable under each plan. This is due to the additional effort involved, including drafting of affidavits and compilation of supporting evidence.
           </li>
         </ol>
       </div>

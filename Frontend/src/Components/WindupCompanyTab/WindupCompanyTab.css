@@ -1,0 +1,248 @@
+/* FONT (load once for all sections) */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+/* --------------------------------------------------
+   OVERVIEW
+-------------------------------------------------- */
+
+.overview-wrapper {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+  font-family: "Poppins", sans-serif;
+}
+
+.overview-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 20px;
+}
+
+.overview-text {
+  font-size: 16px;
+  line-height: 1.85;
+  color: #374151;
+  margin-bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .overview-title {
+    font-size: 26px;
+  }
+
+  .overview-text {
+    font-size: 15px;
+  }
+}
+
+/* --------------------------------------------------
+   PVT INTRO
+-------------------------------------------------- */
+
+.Windup-PLC-intro-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #ffffff;
+  padding: 64px 24px 56px;
+}
+
+.Windup-PLC-intro-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.9fr 1.4fr;
+  column-gap: 64px;
+  align-items: center;
+}
+
+/* Illustration */
+.Windup-PLC-intro-illustration-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Windup-PLC-intro-illustration {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Content */
+.Windup-PLC-intro-content {
+  max-width: 720px;
+}
+
+.Windup-PLC-intro-title {
+  font-size: 40px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #151821;
+  margin: 0 0 18px;
+}
+
+.Windup-PLC-intro-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .Windup-PLC-intro-section {
+    padding: 52px 20px 44px;
+  }
+
+  .Windup-PLC-intro-container {
+    column-gap: 40px;
+    grid-template-columns: 0.95fr 1.3fr;
+  }
+
+  .Windup-PLC-intro-title {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .Windup-PLC-intro-section {
+    padding: 40px 16px 36px;
+  }
+
+  .Windup-PLC-intro-container {
+    grid-template-columns: 1fr;
+    row-gap: 32px;
+  }
+
+  .Windup-PLC-intro-illustration-wrap {
+    order: 1;
+  }
+
+  .Windup-PLC-intro-content {
+    order: 2;
+  }
+
+  .Windup-PLC-intro-title {
+    font-size: 28px;
+    text-align: left;
+  }
+
+  .Windup-PLC-intro-text {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .Windup-PLC-intro-section {
+    padding: 32px 14px 28px;
+  }
+
+  .Windup-PLC-intro-title {
+    font-size: 24px;
+  }
+
+  .Windup-PLC-intro-text {
+    font-size: 13.5px;
+    line-height: 1.8;
+  }
+}
+
+/* --------------------------------------------------
+   COMPANIES ACT CARD
+-------------------------------------------------- */
+
+.Windup-PLC-companies-act-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #ffffff;
+  padding: 24px 24px 56px;
+}
+
+.Windup-PLC-companies-act-container {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* Card with soft gradient like your reference */
+.Windup-PLC-companies-act-card {
+  border-radius: 20px;
+  padding: 32px 40px;
+  background: linear-gradient(to bottom, #f4f8ff 0%, #ffffff 100%);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+/* Title */
+.Windup-PLC-companies-act-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #273143;
+  margin: 0 0 14px;
+}
+
+/* Main paragraph */
+.Windup-PLC-companies-act-text {
+  margin: 0 0 18px;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+/* Points (a)(b)(c) */
+.Windup-PLC-companies-act-point {
+  margin: 0 0 10px;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+.Windup-PLC-companies-act-point-label {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .Windup-PLC-companies-act-section {
+    padding: 20px 20px 44px;
+  }
+
+  .Windup-PLC-companies-act-card {
+    padding: 28px 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .Windup-PLC-companies-act-section {
+    padding: 16px 16px 36px;
+  }
+
+  .Windup-PLC-companies-act-card {
+    padding: 24px 20px;
+  }
+
+  .Windup-PLC-companies-act-text,
+  .Windup-PLC-companies-act-point {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .Windup-PLC-companies-act-section {
+    padding: 12px 14px 28px;
+  }
+
+  .Windup-PLC-companies-act-card {
+    padding: 20px 18px;
+  }
+
+  .Windup-PLC-companies-act-title {
+    font-size: 18px;
+  }
+
+  .Windup-PLC-companies-act-text,
+  .Windup-PLC-companies-act-point {
+    font-size: 13.5px;
+  }
+}

@@ -8,12 +8,10 @@ const RequirementsPvt = () => {
         {/* Heading + intro */}
         <header className="rew-header">
           <h2 className="rew-title">
-            Benefits of Private Limited Company Registration in India
+            Benefits of Change in Registered Office Address (LLP)
           </h2>
           <p className="rew-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company registration process in India. It includes registering the business with the Registrar of Companies (RoC) and obtaining a Digital Signature Certificate (DSC) and Director Identification Number (DIN).
-
-
+            Changing the registered office address of your LLP ensures your business remains legally compliant while supporting operational improvements. It helps you avoid penalties, improve efficiency, manage costs effectively, and strengthen your professional image as your business grows.
           </p>
         </header>
 
@@ -21,43 +19,41 @@ const RequirementsPvt = () => {
         <div className="rew-grid">
           {/* 1 */}
           <article className="rew-card">
-            <h3 className="rew-card-title">Separate Legal Identity</h3>
+            <h3 className="rew-card-title">Avoids Penalties and Legal Issues</h3>
             <div className="rew-card-underline" />
             <p className="rew-card-text">
-Once registered, a company becomes its own legal entity. It can own property, sign contracts, and operate separately from its owners.
-
+              Filing the required forms on time helps your LLP stay compliant and avoid fines, legal notices, or other complications.
             </p>
           </article>
 
           {/* 2 */}
           <article className="rew-card">
-            <h3 className="rew-card-title">Limited Liability Protection</h3>
+            <h3 className="rew-card-title">Supports Business Growth</h3>
             <div className="rew-card-underline" />
             <p className="rew-card-text">
-              The personal assets of shareholders are safe from company debts and risks, ensuring financial protection.
+              Shifting to a new location can provide better space, improved facilities, and closer access to clients, suppliers, or target markets.
             </p>
           </article>
 
           {/* 3 */}
           <article className="rew-card">
             <h3 className="rew-card-title">
-              Access to Government Schemes
+              Reduces Business Costs
             </h3>
             <div className="rew-card-underline" />
             <p className="rew-card-text">
-              Registered companies can benefit from government schemes like Startup India for tax benefits and easier compliance, and Make in India for incentives and support for manufacturing businesses.
+              Moving to a more affordable office can lower rent and operating expenses, helping improve the LLP’s overall financial health.
             </p>
           </article>
 
           {/* 4 */}
           <article className="rew-card">
             <h3 className="rew-card-title">
-              Increased Credibility
+              Improves Business Image
             </h3>
             <div className="rew-card-underline" />
             <p className="rew-card-text">
-              A registered company is more trusted by investors, clients, and vendors, making it easier to get funding and partnerships.
-            </p>
+             A better or more professional location can enhance your LLP’s credibility and create a stronger impression in the market.            </p>
           </article>
         </div>
       </div>

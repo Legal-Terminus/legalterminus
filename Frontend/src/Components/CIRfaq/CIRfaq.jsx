@@ -3,54 +3,58 @@ import "./CIRfaq.css";
 
 const faqs = [
   {
-    question: "How many persons are required to form a Private Limited Company?",
+    question: "What is the procedure to change the Registered office of the LLP?",
+    answer:(
+    <div>
+      <p><strong>The procedure of change in registered office of LLP can be categorized as follows:  Change of Address within same City</strong></p>
+      <ul>
+        <li>1. Preparation and filing resolution for change of registered office address</li>
+        <li>2. Preparation and filing Form 15 with necessary attachments</li>
+        <li>3. Preparation and filing of supplementary LLP Agreement</li>
+        <li>4. Preparation and filing of Form 3</li>
+      </ul>
+    <p>Change of Address within same State</p>
+    <br></br>
+
+       <ul>
+        <li>5. If the provision for change of registered office address is not mentioned in the LLP Agreement, then consent of all the partners is required for such change</li>
+        <li>6. Preparation and filing resolution for change of registered office address</li>
+        <li>7. Preparation and filing Form 15 with necessary attachments</li>
+        <li>8. Preparation and filing of supplementary LLP Agreement</li>
+        <li>9. Preparation and filing of Form 3</li>
+    <p>Change of Address within same State, but from one ROC to another ROC</p>
+        <br></br>
+
+        <li>10. If the provision for change of registered office address is not mentioned in the LLP Agreement, then consent of all the partners are required for such change</li>
+        <li>11. Preparation and filing resolution for change of registered office address</li>
+        <li>12. Preparation and filing Form 15 with necessary attachments before the new ROC</li>
+        <li>13. Preparation and filing of supplementary LLP Agreement</li>
+        <li>14. Preparation and filing of Form 3</li>
+        <p>Change of Address in different State</p>
+        <br></br>
+
+        <li>15. If the provision for change of registered office address is not mentioned in the LLP Agreement, then consent of all the partners are required for such change</li>
+        <li>16. Consent of Secured Creditors</li>
+        <li>17. Public Notice to be published in One English & One Vernacular Newspaper</li>
+        <li>18. Preparation and filing resolution for change of registered office address</li>
+        <li>19. Preparation and filing Form 15 with necessary attachments before the ROC of the proposed state</li>
+        <li>20. Preparation and filing of supplementary LLP Agreement</li>
+        <li>21. Preparation and filing of Form 3</li>
+        <p>Appropriate Government fees is payable depending upon the contribution of the LLP.</p>
+        <br></br>
+      </ul>
+    </div>
+  ),
+},
+  {
+    question: "What is the time period within which the process of change of registered office takes place?",
     answer:
-      "Minimum two persons are required to form a Private Limited Company and a maximum up to 200 persons can be a member of a single Private Limited Company.",
+      "The process of change in registered office of an LLP can take anywhere between 1 week to 3 months, subject to submission of correct information and complete documentation.",
   },
   {
-    question: "How many Directors are required to form a Private Limited Company?",
+    question: "How Legal Terminus can help you with change in Registered Office Address of the LLP?",
     answer:
-      "Minimum two directors are required in a Private Limited Company, with an upper cap up to 15 directors.",
-  },
-  {
-    question: "Who are Directors of the company?",
-    answer:
-      "Directors are officers of the company who are responsible for managing the company and making the decisions as to its operation on a day to day basis, for the benefit of the shareholders.",
-  },
-  {
-    question:
-      "What is a company shareholder?",
-    answer:
-      "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in day-to-day management or financial affairs. They are also called 'members' and they agree to become part of a company by taking a minimum of one share in it. The quantity of shares held by each person represents how much of the business they own.",
-  },
-  {
-    question: "How much capital is required to start a Private Limited Company?",
-    answer:
-      "The Private Limited Company can be incorporated with any amount of capital and there is no lower or upper limit. Further, the government has relaxed the government fees for Incorporation of a Private Limited Company up to an Authorized capital of Rs. 15,00,000/-, however, the stamp duty, which is still levied, varies from State to State.",
-  },
-  {
-    question:
-      "What are some basic/ key documents required to incorporate a Private Limited Company in India?",
-    answer:
-      "PAN Card (All the Proposed Directors and/or Shareholders)",
-  },
-  {
-    question:
-      "What is the procedure to register a Private Limited Company?",
-    answer:
-      "You need at least two directors, two shareholders, a unique company name, a registered office address in India, and the necessary KYC documents for all directors and shareholders.",
-  },
-  {
-    question:
-      "What is the time period within which a Private Limited Company can be incorporated?",
-    answer:
-      "The process of incorporating a Private Limited Company can take anywhere between 10 to 15 working days, subject to submission of correct information and complete documentation.",
-  },
-  {
-    question:
-      "How Legal Terminus can help you incorporate a Private Limited Company in India?",
-    answer:
-      "Legal Terminus can help you with incorporation of Private Limited Company for you, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+      "Legal Terminus can help you with change in Registered Office Address of your LLP in a hassle-free manner within a reasonable time span and for competitive professional fees. To know more, please book a telephonic appointment with one of our consultants free of charge.",
   },
 ];
 
@@ -66,14 +70,10 @@ const FaqPvt = () => {
       <div className="faq-container">
         {/* Left side – static text */}
         <div className="faq-left">
-          <h2 className="faq-title">Private Limited Company Registration FAQ&apos;s</h2>
+          <h2 className="faq-title">Change in Registered Office Address (LLP) FAQ's</h2>
 
           <p className="faq-intro">
-            Starting a Private Limited Company in India is an important step for any business owner. With the right support, the process can be simple and stress-free.
-
-<br/><br/>
-Here, we’ve answered the most common questions about company registration—covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
-
+            Here, we’ve answered the most common questions about Changing in Registered Office Address covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
           </p>
 
           <p className="faq-intro">

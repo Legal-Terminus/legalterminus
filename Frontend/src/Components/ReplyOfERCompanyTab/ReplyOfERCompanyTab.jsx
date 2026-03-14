@@ -35,11 +35,10 @@ A Private Limited Company is a legally registered business under the Companies A
           {/* Text */}
           <div className="Replyof-ER-pvt-intro-content">
             <h2 className="Replyof-ER-pvt-intro-title">
-              Why Choose Proprietorship Firms Registration
+              Why Choose Reply of Examination Report?
             </h2>
             <p className="Replyof-ER-pvt-intro-text">
-             Sole proprietorship firm registration in India is the easiest way to start a new business. It’s when one person owns and runs the business, and they’re personally responsible for any debt it incurs. In simple terms, there’s no legal difference between the sole proprietorship firm and the sole proprietors themselves. Here are answers to some common questions about proprietorship firm registration in India.
-            </p>
+             Reply of Examination Report is a crucial step in the trademark registration process in India. After filing a trademark application, the Trademark Registry may raise objections under various legal provisions. Filing a proper and timely reply ensures that your application continues toward registration without being abandoned.            </p>
           </div>
         </div>
       </section>

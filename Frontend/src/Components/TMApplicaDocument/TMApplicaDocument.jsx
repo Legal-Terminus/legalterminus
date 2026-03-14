@@ -5,35 +5,43 @@ const DocumentsInfographic = () => {
   return (
     <section className="TM-Applica-doc-wrapper">
       <h2 className="TM-Applica-doc-heading">
-        DOCUMENTS REQUIRED <br />
-        <span>FOR PRIVATE LIMITED COMPANY REGISTRATION IN INDIA</span>
+        Documents Required for Trademark Registration in India <br />
+        {/* <span>Documents Required for Trademark Registration in India</span> */}
       </h2>
 
       <div className="TM-Applica-doc-container">
         {/* LEFT CARDS */}
         <div className="TM-Applica-doc-col left">
-          <div className="TM-Applica-doc-card red">
-            <h4>1. KYC Documents</h4>
+          <div className="TM-Applica-doc-card pink">
+            <h4>Applicant Identity & KYC Documents</h4>
             <p>
-              PAN & Aadhaar of all proposed directors and shareholders.
-              Address proof like Telephone Bill / Mobile Bill / Bank Statement.
+              (Applicable for Individuals / Proprietors / Authorised Signatories)
             </p>
+            <br></br>
+            <ul>
+            <li>Aadhaar Card / Passport / Voter ID / Driving Licence (any one)</li>
+            <li>PAN Card of authorised signatory (for Company/LLP applications)</li>
+            <li>Aadhaar of authorised signatory (for Company/LLP applications)</li>
+            </ul>
+            </div>
+
+          <div className="TM-Applica-doc-card pink">
+            <h4>Business Entity Proof</h4>
+            <p>
+              (Required for Companies / LLPs / Registered Entities)
+            </p>
+            <br></br>
+            <ul>
+            <li>Certificate of Incorporation</li>
+            <li>PAN Card of the Company / LLP</li>
+            </ul>
           </div>
 
-          <div className="TM-Applica-doc-card orange">
-            <h4>2. Passport Size Photograph</h4>
-            <p>
-              Passport size photograph of all proposed directors and
-              shareholders.
-            </p>
-          </div>
-
-          <div className="TM-Applica-doc-card teal">
-            <h4>3. Electricity Bill</h4>
-            <p>
-              Latest electricity bill corresponding to the registered office
-              address of the company.
-            </p>
+          <div className="TM-Applica-doc-card pink">
+            <h4>Authorization Documents (Power of Attorney)</h4>
+            <ul>
+            <li>Signed Form TM-M (Power of Attorney) on ₹100 stamp paper(Stamp duty may vary from state to state — required for first-time clients)</li>
+            </ul>
           </div>
         </div>
 
@@ -54,28 +62,27 @@ const DocumentsInfographic = () => {
 
         {/* RIGHT CARDS */}
         <div className="TM-Applica-doc-col right">
-          <div className="TM-Applica-doc-card beige">
-            <h4>4. Rent Agreement</h4>
-            <p>
-              Duly notarised rent agreement for the registered office address
-              (if on rent).
-            </p>
+          <div className="TM-Applica-doc-card pink">
+            <h4>Trademark Representation (Brand Details)</h4>
+            <ul>
+            <li>Clear image of the trademark (Logo / Wordmark / Device mark) in JPEG/PNG format (if logo/device mark to be filed)</li>
+            </ul>
           </div>
 
           <div className="TM-Applica-doc-card pink">
-            <h4>5. No Objection Certificate</h4>
-            <p>
-              NOC from the owner allowing use of the premises as registered
-              office.
-            </p>
+            <h4>MSME / Startup Benefit Documents</h4>
+            <ul>
+            <li>MSME Registration Certificate</li>
+            <li>Startup India Recognition Certificate (Required only if claiming 50% government fee concession)</li>
+            </ul>
           </div>
 
-          <div className="TM-Applica-doc-card yellow">
-            <h4>6. Other Documents</h4>
-            <p>
-              Any additional documents as required shall be prepared and
-              provided by our team.
-            </p>
+          <div className="TM-Applica-doc-card pink">
+            <h4>Prior Use Supporting Documents</h4>
+            <ul>
+            <li>Evidence of prior use in India (Invoices, advertisements, packaging, website proof, etc.)</li>
+            <li>Affidavit of use (when claiming use before filing date)</li>
+            </ul>
           </div>
         </div>
       </div>

@@ -28,8 +28,7 @@ const ZolvitPremium = () => {
                 <span className="Replyof-ER-zp-title-icon">⚖️</span>
               </h2>
               <p className="Replyof-ER-zp-subtitle">
-Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
-              </p>
+                Respond to your Trademark Examination Report quickly and professionally with Legal Terminus expert-drafted replies, designed to overcome objections and secure smooth approval without unnecessary delays.              </p>
             </header>
 
             {/* Features */}
@@ -38,15 +37,15 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <ul className="Replyof-ER-zp-list Replyof-ER-zp-features-list">
                 <li className="Replyof-ER-zp-list-item">
                   <span className="Replyof-ER-zp-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+                  Expert Legal Drafting & Objection Handling
                 </li>
                 <li className="Replyof-ER-zp-list-item">
                   <span className="Replyof-ER-zp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                  Comprehensive Documentation Support
                 </li>
                 <li className="Replyof-ER-zp-list-item">
                   <span className="Replyof-ER-zp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                  Timely Filing & Status Tracking
                 </li>
               </ul>
             </section>
@@ -57,12 +56,10 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <div className="Replyof-ER-zp-note-box">
                 <ul className="Replyof-ER-zp-note-list">
                   <li className="Replyof-ER-zp-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+                    We thoroughly review the objections under the Trademark Act and provide strategic solutions based on your case.
                   </li>
                   <li className="Replyof-ER-zp-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                    In case of hearing notices, our experts will guide you on the next steps and representation process to improve approval chances.
                   </li>
                 </ul>
               </div>

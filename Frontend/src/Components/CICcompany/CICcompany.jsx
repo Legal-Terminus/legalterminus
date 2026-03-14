@@ -34,10 +34,10 @@ A Private Limited Company is a legally registered business under the Companies A
           {/* Text */}
           <div className="cic-intro-content">
             <h2 className="cic-intro-title">
-              Why Choose Proprietorship Firms Registration
+              Why Choose Change in Name (Company)
             </h2>
             <p className="cic-intro-text">
-             Sole proprietorship firm registration in India is the easiest way to start a new business. It’s when one person owns and runs the business, and they’re personally responsible for any debt it incurs. In simple terms, there’s no legal difference between the sole proprietorship firm and the sole proprietors themselves. Here are answers to some common questions about proprietorship firm registration in India.
+             Changing the Name of your Company in India helps your business reflect its new vision, branding strategy, or market positioning. Whether you are rebranding, expanding into new markets, changing ownership structure, or aligning your name with updated business activities, the process allows you to legally adopt a new identity without affecting your company’s existing legal status. It ensures compliance with regulatory requirements while maintaining business continuity, contracts, and credibility, supporting your long-term growth and brand recognition.
             </p>
           </div>
         </div>
@@ -46,12 +46,12 @@ A Private Limited Company is a legally registered business under the Companies A
       {/* ===========================
           SECTION 3 — COMPANIES ACT
       ============================ */}
-      <section className="company-act-section">
+      {/* <section className="company-act-section">
         <div className="company-act-container">
           <div className="company-act-card">
-            {/* <h3 className="company-act-title">Companies Act, 2013</h3> */}
+            <h3 className="company-act-title">Companies Act, 2013</h3> */}
 
-            <p className="company-act-text">
+            {/* <p className="company-act-text">
               A Sole Proprietorship is a simple business structure owned and managed by a single individual. It does not have a separate legal identity from its owner and is one of the easiest ways to start a business in India.
             </p>
 
@@ -68,10 +68,10 @@ A Private Limited Company is a legally registered business under the Companies A
             <p className="company-act-point">
               <span className="company-act-point-label">(c)</span>
               Basic registrations like GST Registration (if applicable), Shop & Establishment License, or Udyam Registration.
-            </p>
-          </div>
+            </p> */}
+          {/* </div>
         </div>
-      </section>
+      </section> */}
 
     </div>
   );

@@ -10,7 +10,7 @@ const Breadcrum = () => {
         <div className="prp-bc-content">
 
           <span className="prp-bc-tag">
-            Private Limited Company Registration
+            Private Limited Company Registration...
           </span>
 
           <h1 className="prp-bc-title">

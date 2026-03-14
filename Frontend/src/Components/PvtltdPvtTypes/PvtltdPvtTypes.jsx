@@ -19,7 +19,7 @@ const PvtTypes = () => {
         {/* Right content */}
         <div className="pvt-types-content">
           <h2 className="pvt-types-title">
-            Types of Private Limited Company Registration in India
+            Types of Private Limited Companies in India
           </h2>
 
           {/* <p className="pvt-types-intro">
@@ -28,25 +28,29 @@ const PvtTypes = () => {
 
           {/* Type 1 */}
           <div className="pvt-types-block">
-            <h3 className="pvt-types-subtitle">Company limited by Shares</h3>
+            <h3 className="pvt-types-subtitle">Company Limited by Shares (Most Common)</h3>
             <p className="pvt-types-text">
-              This is the most common type of Private Limited Company. The liability of shareholders is limited to the unpaid amount on their shares. It is ideal for startups and growing businesses looking to raise funds while protecting personal assets.
+              This is the go-to structure for startups and growth-stage businesses. Shareholders' liability is limited to the unpaid amount on their shares — so your personal bank account stays safe even if the business hits a rough patch. Perfect for raising capital from angel investors or VCs.
             </p>
           </div>
 
           {/* Type 2 */}
           <div className="pvt-types-block">
-            <h3 className="pvt-types-subtitle">Company limited by Guarantee</h3>
+            <h3 className="pvt-types-subtitle">Company Limited by Guarantee</h3>
             <p className="pvt-types-text">
-              In this type, members agree to contribute a fixed amount in case of liquidation. It is generally suitable for non-profit or charitable organizations that do not require share capital.
+              Members commit to contributing a fixed amount in the event of winding up — but there's no share capital involved. Preferred by non-profit entities, trade associations, and charitable organisations that want corporate structure without the equity game.
             </p>
           </div>
 
           {/* Type 3 */}
           <div className="pvt-types-block">
-            <h3 className="pvt-types-subtitle">Unlimited Companies</h3>
+            <h3 className="pvt-types-subtitle">Unlimited Company (Rare)</h3>
             <p className="pvt-types-text">
-              An unlimited company does not place any limit on members’ liability. Members are personally responsible for company debts. This structure is less common and is usually chosen by closely held businesses with full control over operations.
+              No ceiling on members' liability — they're personally on the hook for the company's debts. This structure is rarely used and is typically chosen only by closely held businesses with complete control over operations and very specific financial goals.
+            </p>
+              <br></br>
+            <p className="pvt-types-text">
+              <strong>Note: For most founders and entrepreneurs, Company Limited by Shares is the right call. If you're unsure, Book a Free Consultation and we'll help you decide.</strong>
             </p>
           </div>
         </div>

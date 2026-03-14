@@ -35,10 +35,10 @@ A Private Limited Company is a legally registered business under the Companies A
           {/* Text */}
           <div className="pvt-intro-content">
             <h2 className="pvt-intro-title">
-              Why Choose Private Limited Company Registration in India
+              Why Choose a Private Limited Company? Here's the Real Talk.
             </h2>
             <p className="pvt-intro-text">
-             A private limited company is a popular choice for a corporate business structure in India. The company has a separate legal identity, and there is separation of ownership and management. Private limited company registration in India provides benefits like less stringent compliance requirements. Such structures are favored by critical stakeholders such as investors and creditors. Additionally, companies can avail the benefits of start-up recognition under the Start-up India Scheme of the Government of India. Below, we address some common queries related to private limited company registration in India.
+             India's most loved business structure — and for good reason. A Private Limited Company (governed by the Companies Act, 2013) gives you a separate legal identity, shields your personal assets from business liabilities, and signals serious credibility to investors, banks, and clients. Whether you're a startup hustling towards your first funding round or an established SME looking to scale, the Pvt Ltd structure is built for growth. It's also the gateway to government schemes like Startup India, Make in India, and DPIIT recognition.
             </p>
           </div>
         </div>

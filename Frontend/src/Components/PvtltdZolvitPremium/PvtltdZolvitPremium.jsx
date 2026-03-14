@@ -28,8 +28,7 @@ const ZolvitPremium = () => {
                 <span className="zp-title-icon">⚖️</span>
               </h2>
               <p className="zp-subtitle">
-Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
-              </p>
+               Move fast without breaking compliance. Our expert-handled process is built for founders who don't have time to waste — zero back-and-forth, zero confusion.              </p>
             </header>
 
             {/* Features */}
@@ -38,15 +37,14 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <ul className="zp-list zp-features-list">
                 <li className="zp-list-item">
                   <span className="zp-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
-                </li>
+                 Expert-handled process from Day 1 — we own the paperwork so you don't have to.</li>
                 <li className="zp-list-item">
                   <span className="zp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                  Hassle-Free Compliance Support — one dedicated point of contact throughout.
                 </li>
                 <li className="zp-list-item">
                   <span className="zp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                  Proactive Reminder System — never miss a deadline or pay a late penalty.
                 </li>
               </ul>
             </section>
@@ -57,12 +55,10 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <div className="zp-note-box">
                 <ul className="zp-note-list">
                   <li className="zp-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+                    We prioritise your preferred company name and run a preliminary name check before submission to MCA.
                   </li>
                   <li className="zp-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                    In case of name rejection by the RoC, our experts will recommend legally compliant alternative names to ensure swift approval.
                   </li>
                 </ul>
               </div>

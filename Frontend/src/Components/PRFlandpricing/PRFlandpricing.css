@@ -1,23 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-.pvtltd-pricing-section {
+.prf-pricingsection {
   font-family: 'Poppins', sans-serif;
   background: #ffffff;
   padding: 60px 24px 80px;
 }
 
-.pricing-container {
+.prf-pricingcontainer {
   max-width: 1180px;
   margin: 0 auto;
 }
 
 /* Header */
-.pricing-header {
+.prf-pricingheader {
   text-align: center;
   margin-bottom: 40px;
 }
 
-.PvtLtd-pricing-title {
+.prf-pricingtitle {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -26,21 +26,21 @@
   color: #000;
 }
 
-.pricing-subtitle {
+.prf-pricingsubtitle {
   font-size: 18px;
   font-weight: 500;
   color: #1bb33a;
 }
 
 /* Cards layout with CSS Grid for clean responsiveness */
-.pricing-cards {
+.prf-pricingcards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
 
 /* Card */
-.plan-card {
+.prf-pricingcard {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
@@ -51,11 +51,11 @@
 }
 
 /* Plan header */
-.plan-header {
+.prf-pricingheader {
   margin-bottom: 16px;
 }
 
-.plan-name {
+.prf-pricingname {
   font-size: 20px;
   font-weight: 600;
   color: #18b233;
@@ -63,7 +63,7 @@
   margin-bottom: 8px;
 }
 
-.plan-old-price {
+.prf-pricingold-price {
   font-size: 20px;
   font-weight: 500;
   text-align: center;
@@ -72,37 +72,37 @@
   margin-bottom: 2px;
 }
 
-.plan-price {
+.prf-pricingprice {
   font-size: 32px;
   font-weight: 700;
   text-align: center;
   color: #000;
 }
 
-.plan-meta {
+.prf-pricingmeta {
   font-size: 13px;
   text-align: center;
   color: #666;
 }
 
-.plan-meta .popular {
+.prf-pricingmeta .popular {
   font-weight: 600;
   color: #ff3b3b;
   margin-left: 4px;
 }
 
 /* List */
-.plan-body {
+.prf-pricingbody {
   margin-top: 20px;
 }
 
-.plan-list {
+.prf-pricinglist {
   padding: 0;
   margin: 0;
   list-style: none;
 }
 
-.plan-list-item {
+.prf-pricinglist-item {
   font-size: 13px;
   color: #111;
   line-height: 1.6;
@@ -110,7 +110,7 @@
   margin-bottom: 8px;
 }
 
-.plan-list-item::before {
+.prf-pricinglist-item::before {
   content: "";
   width: 8px;
   height: 8px;
@@ -121,12 +121,12 @@
 }
 
 /* Button */
-.plan-footer {
+.prf-pricingfooter {
   text-align: center;
   margin-top: 20px;
 }
 
-.plan-button {
+.prf-pricingbutton {
   background: #21b738;
   color: #ffffff;
   padding: 10px 36px;
@@ -139,7 +139,7 @@
     box-shadow 0.15s ease;
 }
 
-.plan-button:hover {
+.prf-pricingbutton:hover {
   background: #1aa130;
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
@@ -151,16 +151,16 @@
 
 /* Large tablets / small laptops */
 @media (max-width: 1200px) {
-  .pricing-container {
+  .prf-pricingcontainer {
     padding: 0 12px;
   }
 
-  .pricing-cards {
+  .prf-pricingcards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
   }
 
-  .plan-card {
+  .prf-pricingcard {
     padding: 24px;
   }
 }
@@ -169,26 +169,26 @@
 @media (max-width: 992px) {
 
 
-  .PvtLtd-pricing-title {
+  .prf-pricingtitle {
     font-size: 28px;
   }
 
-  .pricing-subtitle {
+  .prf-pricingsubtitle {
     font-size: 16px;
   }
 
-  .pricing-cards {
+  .prf-pricingcards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 /* Large phones / small tablets: full width cards */
 @media (max-width: 768px) {
-  .pricing-cards {
+  .prf-pricingcards {
     grid-template-columns: 1fr;
   }
 
-  .plan-card {
+  .prf-pricingcard {
     max-width: 480px;
     margin: 0 auto;
   }
@@ -196,32 +196,32 @@
 
 /* Small phones */
 @media (max-width: 480px) {
-  .pvtltd-pricing-section {
+  .prf-pricingsection {
     padding: 32px 12px 48px;
   }
 
-  .PvtLtd-pricing-title {
+  .prf-pricingtitle {
     font-size: 22px;
     letter-spacing: 0.5px;
   }
 
-  .pricing-subtitle {
+  .prf-pricingsubtitle {
     font-size: 14px;
   }
 
-  .plan-card {
+  .prf-pricingcard {
     padding: 20px;
   }
 
-  .plan-price {
+  .prf-pricingprice {
     font-size: 28px;
   }
 
-  .plan-old-price {
+  .prf-pricingold-price {
     font-size: 18px;
   }
 
-  .plan-button {
+  .prf-pricingbutton {
     width: 100%;
     padding: 10px 0;
   }

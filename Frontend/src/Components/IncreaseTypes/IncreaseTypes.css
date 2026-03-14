@@ -1,0 +1,147 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+.Increase-types-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #ffffff;
+  padding: 20px 24px 20px;
+}
+
+.Increase-types-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.85fr 1.4fr;
+  column-gap: 72px;
+  align-items: flex-start;
+}
+
+/* Left illustration */
+.Increase-types-illustration-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 12px;
+}
+
+.Increase-types-illustration {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Right content */
+.Increase-types-content {
+  max-width: 760px;
+}
+
+.Increase-types-title {
+  font-size: 40px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #151821;
+  margin: 0 0 18px;
+}
+
+.Increase-types-intro {
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+.Increase-types-block {
+  margin-bottom: 24px;
+}
+
+.Increase-types-subtitle {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.Increase-types-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+/* ---------------------------
+   Responsive
+---------------------------- */
+
+@media (max-width: 1024px) {
+  .Increase-types-section {
+    padding: 52px 20px 44px;
+  }
+
+  .Increase-types-container {
+    column-gap: 40px;
+    grid-template-columns: 0.9fr 1.3fr;
+  }
+
+  .Increase-types-title {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .Increase-types-section {
+    padding: 40px 16px 36px;
+  }
+
+  .Increase-types-container {
+    grid-template-columns: 1fr;
+    row-gap: 32px;
+  }
+
+  .Increase-types-illustration-wrap {
+    order: 1;
+  }
+
+  .Increase-types-content {
+    order: 2;
+  }
+
+  .Increase-types-title {
+    font-size: 28px;
+  }
+
+  .Increase-types-intro,
+  .Increase-types-text {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .Increase-types-section {
+    padding: 32px 14px 28px;
+  }
+
+  .Increase-types-title {
+    font-size: 24px;
+  }
+
+  .Increase-types-intro,
+  .Increase-types-text {
+    font-size: 13.5px;
+    line-height: 1.85;
+  }
+}
+
+
+.Increase-types-illustration {
+  max-width: 115%;        /* increase image size */
+  height: auto;
+  display: block;
+}
+
+
+.Increase-types-content {
+  max-width: 760px;
+  max-height: 520px;     /* control visible height */
+  overflow-y: auto;
+  padding-right: 14px;  /* space for scrollbar */
+}

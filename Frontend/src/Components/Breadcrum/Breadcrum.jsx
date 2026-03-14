@@ -14,17 +14,17 @@ const Breadcrum = () => {
           </span>
 
           <h1 className="lt-public-title">
-            Private Limited Company Registration
-            <span> in India</span>
+            Register Your Private Limited Company
+            <span> in India</span> — Fast, Hassle-Free & 100% Online
           </h1>
 
           <p className="lt-public-description">
-          Legal Terminus can help you with Private Limited Company registration in a hassle-free way, whenever you need it. We take care of the complete process—from paperwork to approvals—within a reasonable time. Our professional fees start at ₹3,999, making company registration simple, affordable, and stress-free.
+            Your big idea deserves a legit structure. Legal Terminus handles your entire Private Limited Company Registration — from name approval to the Certificate of Incorporation — while you stay focused on what matters: building your business. Professional fees starting at ₹3,999* | Government fees extra. (*Prices exclusive of 18% GST and government/statutory charges.)
           </p>
 
           <div className="lt-public-features">
             <div className="lt-feature-item"> Minimum 2 Directors Required</div>
-            <div className="lt-feature-item"> Separate Legal Entity</div>
+            <div className="lt-feature-item"> Separate Legal Identity</div>
             <div className="lt-feature-item"> Limited Liability Protection</div>
             <div className="lt-feature-item"> High Business Credibility</div>
           </div>

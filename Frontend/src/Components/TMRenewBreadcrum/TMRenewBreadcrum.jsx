@@ -10,27 +10,23 @@ const Breadcrum = () => {
         <div className="Tm-content">
 
           <span className="Tm-tag">
-            Private Limited Company Registration
+            Trademark Renewal
           </span>
 
           <h1 className="Tm-title">
-            Private Limited Company Registration
+            Trademark Renewal
             <span> in India</span>
           </h1>
 
           <p className="Tm-description">
-            A Private Limited Company is a popular and trusted business structure in India, especially for startups and growing businesses. It helps protect personal assets, builds business credibility, and makes it easier to raise funds.
-
-<br/><br/>
-Legal Terminus can help you with Private Limited Company registration in a hassle-free way, whenever you need it. We take care of the complete process—from paperwork to approvals—within a reasonable time. Our professional fees start at ₹3,999, making company registration simple, affordable, and stress-free.
-
+            Legal Terminus can help you with obtaining Trademark Renewal in India for your organization, as and when required, in a hassle-free manner within a reasonable time span and for a competitive professional fee which starts from Rs. 2,999/-.
           </p>
 
           <div className="Tm-features">
-            <div className="lt-feature-item"> Minimum 2 Directors Required</div>
-            <div className="lt-feature-item"> Separate Legal Entity</div>
-            <div className="lt-feature-item"> Limited Liability Protection</div>
-            <div className="lt-feature-item"> High Business Credibility</div>
+            <div className="lt-feature-item"> Continued Legal Protection</div>
+            <div className="lt-feature-item"> Prevents Removal from Register</div>
+            <div className="lt-feature-item"> Maintains Exclusive Rights</div>
+            <div className="lt-feature-item"> Protects Brand Value</div>
           </div>
 
           <div className="Tm-highlights">
@@ -59,7 +55,7 @@ Legal Terminus can help you with Private Limited Company registration in a hassl
             </h3>
 
             <p className="lt-form-subtitle">
-              Talk to our Private Limited Company registration expert
+              Talk to our Trademark renewal expert
             </p>
 
             <form

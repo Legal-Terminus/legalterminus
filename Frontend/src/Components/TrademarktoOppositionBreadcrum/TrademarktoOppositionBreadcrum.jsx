@@ -10,28 +10,28 @@ const TradeLicenseBreadcrum = () => {
         <div className="tlbcr-content">
 
           <span className="tlbcr-tag">
-            Trade License Online Registration
+            Trademark Opposition
           </span>
 
           <h1 className="tlbcr-title">
-            Trade License Online Registration
+            Trademark Opposition
             <span> in India</span>
           </h1>
 
           <p className="tlbcr-description">
-            Legal Terminus can help you with Trade License registration in a smooth and hassle-free manner. We offer competitive professional fees starting at Rs. 3,999/- for Trade License registration in India.
+              Legal Terminus can help you with the process of the Trademark Opposition in India for your organization, as and when required, in a hassle-free manner within a reasonable time span and for a competitive professional fee which starts from Rs. 4,999/- excluding government fees.
           </p>
 
           <div className="tlbcr-features">
-            <div className="tlbcr-feature-item"> Minimum 2 Directors Required</div>
-            <div className="tlbcr-feature-item"> Separate Legal Entity</div>
-            <div className="tlbcr-feature-item"> Limited Liability Protection</div>
-            <div className="tlbcr-feature-item"> High Business Credibility</div>
+            <div className="tlbcr-feature-item"> Legal Protection for Your Brand</div>
+            <div className="tlbcr-feature-item"> Strong Legal Representation</div>
+            <div className="tlbcr-feature-item"> Prevent Brand Misuse</div>
+            <div className="tlbcr-feature-item"> Protect Business Reputation</div>
           </div>
 
           <div className="tlbcr-highlights">
             <div>
-              <h3>12,000+</h3>
+              <h3>1,000+</h3>
               <p>Licenses Registered</p>
             </div>
             <div>
@@ -39,7 +39,7 @@ const TradeLicenseBreadcrum = () => {
               <p>Approval Success Rate</p>
             </div>
             <div>
-              <h3>15+</h3>
+              <h3>5+</h3>
               <p>Years of Legal Expertise</p>
             </div>
           </div>
@@ -55,7 +55,7 @@ const TradeLicenseBreadcrum = () => {
             </h3>
 
             <p className="tlbcr-form-subtitle">
-              Talk to our Trade License registration expert
+              Talk to our expert
             </p>
 
             <form

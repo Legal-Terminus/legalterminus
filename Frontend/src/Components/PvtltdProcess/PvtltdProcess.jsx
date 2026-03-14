@@ -5,37 +5,37 @@ const steps = [
   {
     title: "Step 1 – Document Submission",
     text:
-      "Provision of requisite documents / information to us (as per the checklist to be provided by us).",
+      "Share KYC documents and registered office address proof with us (as per checklist). This is your only job at the start — we handle everything from here.",
   },
   {
-    title: "Step 2 – Company Name & Objects Finalization",
+    title: "Step 2 – Company Name & Objects Finalisation",
     text:
-      "Finalisation of objects along with name of the proposed company (based on a search report duly conducted and provided by our team).",
+      "We run a preliminary name availability check and help you finalise your company name and business objects (what your company will do). The name must comply with MCA naming guidelines and must not conflict with existing registered companies, LLPs, or trademarks.",
   },
   {
-    title: "Step 3 – Name Reservation Application",
+    title: "Step 3 – Name Reservation (SPICe+ Part A)",
     text:
-      "Filing of application for name reservation in requisite e-form along with applicable government fees.",
+      "We file for name reservation via SPICe+ Part A, proposing up to 2 names. Once approved, the name is reserved for 20 days within which incorporation must be completed.",
   },
   {
-    title: "Step 4 – Digital Signature Certificates",
+    title: "Step 4 – Digital Signature Certificates (DSC)",
     text:
-      "Preparation of requisite numbers of DSC with respect to the proposed promoters & directors and registration of DSC in the MCA portal.",
+      "DSCs are obtained for all proposed directors and subscribers from authorised Certifying Authorities (e.g., eMudhra, NeSL). All MCA e-filings must be digitally signed — no physical signatures accepted.",
   },
   {
-    title: "Step 5 – Incorporation Document Preparation",
+    title: "Step 5 – DIN for Directors",
     text:
-      "Preparation of further incorporation documents upon receipt of the name approval letter from the department.",
+      "Director Identification Numbers (DIN) are applied for via Form DIR-3 or auto-allotted through the SPICe+ form for new incorporations. Each director must have a unique DIN issued by the MCA",
   },
   {
-    title: "Step 6 – Final Form Upload & Fee Payment",
+    title: "Step 6 – Filing SPICe+ Part B, e-MOA & e-AOA",
     text:
-      "Uploading of final incorporation forms to the MCA portal along with applicable government fees.",
+      "We prepare and file the full SPICe+ integrated form covering: company details, capital, registered office, subscribers, directors, PAN/TAN, GST (if applicable), EPFO, ESIC, and the Memorandum of Association (MOA) and Articles of Association (AOA) in electronic form.",
   },
   {
-    title: "Step 7 – Registration Certificate Issuance",
+    title: "Step 7 – Processing & Certificate of Incorporation",
     text:
-      "Processing of the application by the department and issuance of the registration certificate.",
+      "The MCA / Registrar of Companies (RoC) reviews the application. Upon approval, the Certificate of Incorporation (CoI) is issued digitally with the Company Identification Number (CIN), PAN, and TAN. Timeline: typically 7–15 working days from submission of complete documents.",
   },
 ];
 
@@ -43,11 +43,10 @@ const GSTProcess = () => {
   return (
     <section className="pvtltd-gst-wrapper">
       <h2 className="gst-heading">
-        Steps For Private Limited Company Registration in India
+        Steps for Private Limited Company Registration in India
       </h2>
       <p className="pv-gst-subheading">
-        The broad process of registering a Private Limited company involves
-        the following steps:
+        The registration process is entirely online via the MCA portal (www.mca.gov.in) — no physical visits required. Here's how it flows:
       </p>
 
       <div className="pvtltd-timeline">

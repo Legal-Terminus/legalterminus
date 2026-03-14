@@ -10,33 +10,29 @@ const Breadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Private Limited Company Registration
+            TRADEMARK REGISTRATION IN INDIA
           </span>
 
           <h1 className="lt-public-title">
-            Private Limited Company Registration
+            Trademark Registration
             <span> in India</span>
           </h1>
 
           <p className="lt-public-description">
-            A Private Limited Company is a popular and trusted business structure in India, especially for startups and growing businesses. It helps protect personal assets, builds business credibility, and makes it easier to raise funds.
-
-<br/><br/>
-Legal Terminus can help you with Private Limited Company registration in a hassle-free way, whenever you need it. We take care of the complete process—from paperwork to approvals—within a reasonable time. Our professional fees start at ₹3,999, making company registration simple, affordable, and stress-free.
-
+            Legal Terminus helps you secure your brand name, logo, or slogan — fast, right, and stress-free. We handle everything from trademark search to filing Form TM-A, so you don't have to decode government portals at 2 AM. Professional fees start at ₹1,499. Gov fees extra (₹4,500 for individuals/MSMEs, ₹9,000 for companies — per class).
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Minimum 2 Directors Required</div>
-            <div className="lt-feature-item"> Separate Legal Entity</div>
-            <div className="lt-feature-item"> Limited Liability Protection</div>
-            <div className="lt-feature-item"> High Business Credibility</div>
+            <div className="lt-feature-item"> Valuable Business Asset</div>
+            <div className="lt-feature-item"> Valid for 10 Years</div>
+            <div className="lt-feature-item"> Use ™ Symbol Immediately</div>
+            <div className="lt-feature-item"> Legal Protection Against Infringement</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <h3>2,000+</h3>
+              <p>Trademarks Filed</p>
             </div>
             <div>
               <h3>100%</h3>
@@ -59,7 +55,7 @@ Legal Terminus can help you with Private Limited Company registration in a hassl
             </h3>
 
             <p className="lt-form-subtitle">
-              Talk to our Private Limited Company registration expert
+              Talk to our Trademark registration expert
             </p>
 
             <form

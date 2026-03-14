@@ -19,7 +19,7 @@ const PvtTypes = () => {
         {/* Right content */}
         <div className="cio-types-content">
           <h2 className="cio-types-title">
-            Types of Change In object 
+            Types of Change in Object (LLP)
           </h2>
 
           {/* <p className="cio-types-intro">
@@ -28,26 +28,31 @@ const PvtTypes = () => {
 
           {/* Type 1 */}
           <div className="cio-types-block">
-            <h3 className="cio-types-subtitle">Company limited by Shares</h3>
+            <h3 className="cio-types-subtitle">Adding New Business Activities</h3>
             <p className="cio-types-text">
-              This is the most common type of Private Limited Company. The liability of shareholders is limited to the unpaid amount on their shares. It is ideal for startups and growing businesses looking to raise funds while protecting personal assets.
+              The LLP may include new services or business areas in addition to its existing operations.
             </p>
           </div>
 
           {/* Type 2 */}
           <div className="cio-types-block">
-            <h3 className="cio-types-subtitle">Company limited by Guarantee</h3>
+            <h3 className="cio-types-subtitle">Removing Unnecessary Activities</h3>
             <p className="cio-types-text">
-              In this type, members agree to contribute a fixed amount in case of liquidation. It is generally suitable for non-profit or charitable organizations that do not require share capital.
-            </p>
+              Business activities that are no longer relevant or profitable can be removed from the LLP’s scope.</p>
           </div>
 
           {/* Type 3 */}
           <div className="cio-types-block">
-            <h3 className="cio-types-subtitle">Unlimited Companies</h3>
+            <h3 className="cio-types-subtitle">Modifying Existing Objectives</h3>
             <p className="cio-types-text">
-              An unlimited company does not place any limit on members’ liability. Members are personally responsible for company debts. This structure is less common and is usually chosen by closely held businesses with full control over operations.
-            </p>
+             Current business activities can be updated or redefined to match new market trends or business strategies.</p>
+          </div>
+
+          {/* Type 4 */}
+          <div className="cio-types-block">
+            <h3 className="cio-types-subtitle">Changing the Main Business Activity</h3>
+            <p className="cio-types-text">
+             The LLP can change its primary business focus if it plans to move into a different core area of operation.</p>
           </div>
         </div>
       </div>

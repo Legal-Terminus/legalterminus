@@ -29,18 +29,16 @@ const PricingSection = () => {
 
               <div className="plan-body">
                 <ul className="plan-list">
-                  <li className="plan-list-item">Search Report of Name Availability</li>
+                  <li className="plan-list-item">Name Availability Search Report</li>
                   <li className="plan-list-item">1 RUN Name Approval Certificate</li>
-                  <li className="plan-list-item">Director Identification Number for 2 Individuals</li>
+                  <li className="plan-list-item">DIN for 2 Directors</li>
                   <li className="plan-list-item">Certificate of Incorporation</li>
-                  <li className="plan-list-item">E-PAN</li>
-                  <li className="plan-list-item">E-TAN</li>
-                  <li className="plan-list-item">E-MOA</li>
-                  <li className="plan-list-item">E-AOA</li>
-                  <li className="plan-list-item">Documents for Bank Account Opening</li>
-                  <li className="plan-list-item">Documents for 1st Auditor Appointment</li>
-                  <li className="plan-list-item">EPF Registrations</li>
-                  <li className="plan-list-item">ESI Registrations</li>
+                  <li className="plan-list-item">DIN allotment certificate (if not having DIN previously)</li>
+                  <li className="plan-list-item">E-PAN & E-TAN</li>
+                  <li className="plan-list-item">E-MOA & E-AOA</li>
+                  <li className="plan-list-item">Bank Account Opening Docs</li>
+                  <li className="plan-list-item">1st Auditor Appointment Docs</li>
+                  <li className="plan-list-item">EPF & ESI Registration</li>
                 </ul>
               </div>
             </div>
@@ -64,10 +62,10 @@ const PricingSection = () => {
 
               <div className="plan-body">
                 <ul className="plan-list">
-                  <li className="plan-list-item">Elemental Plan Plus</li>
-                  <li className="plan-list-item">Share Certificate</li>
-                  <li className="plan-list-item">Commencement of Business</li>
-                  <li className="plan-list-item">Udyam/MSME Registration</li>
+                  <li className="plan-list-item">Everything in Elemental +</li>
+                  <li className="plan-list-item">Share Certificate (Form SH-1)</li>
+                  <li className="plan-list-item">Commencement of Business (Form INC-20A)</li>
+                  <li className="plan-list-item">Udyam / MSME Registration</li>
                 </ul>
               </div>
             </div>
@@ -89,26 +87,19 @@ const PricingSection = () => {
 
               <div className="plan-body">
                 <ul className="plan-list">
-                  <li className="plan-list-item">Enriched Plan Plus</li>
-                  <li className="plan-list-item">Income tax filing of Company</li>
-                  <li className="plan-list-item">Preparation of Directors Report</li>
-                  <li className="plan-list-item">Preparation of Annual Return</li>
-                  <li className="plan-list-item">Preparation of Auditor Appointment Paperwork</li>
-                  <li className="plan-list-item">Preparation of List of Share Holders</li>
-                  <li className="plan-list-item">Preparation of Notice of AGM</li>
-                  <li className="plan-list-item">Preparation of Notice of BM</li>
-                  <li className="plan-list-item">Preparation of Extracts of AGM</li>
-                  <li className="plan-list-item">Filing of AOC - 4 (Financial Statements)</li>
-                  <li className="plan-list-item">Filing of MGT - 7 (Annual Return)</li>
-                  <li className="plan-list-item">Filing of ADT - 1 (Auditor Appointment)</li>
-                  <li className="plan-list-item">Minutes of Board Meeting for 1st FY</li>
-                  <li className="plan-list-item">Minutes of General Meeting for 1st FY</li>
-                  <li className="plan-list-item">Maintenance of Statutory E- Registers</li>
-                  <li className="plan-list-item">Filing of DPT - 3 Annual (If Applicable)</li>
-                  <li className="plan-list-item">Filing of MSME - 1 (If Applicable) for 1st FY</li>
-                  <li className="plan-list-item">DIR KYC (2 Directors)</li>
-                  <li className="plan-list-item">Income Tax Filing of 2 Directors</li>
-                  <li className="plan-list-item">Audit fees are excluded and to be paid directly to Auditor</li>
+                  <li className="plan-list-item">Everything in Enriched +</li>
+                  <li className="plan-list-item">Income tax filing of (Company)</li>
+                  <li className="plan-list-item">Directors' Report Preparation</li>
+                  <li className="plan-list-item">Annual Return (MGT-7)</li>
+                  <li className="plan-list-item">Financial Statements (AOC-4)</li>
+                  <li className="plan-list-item">Auditor Appointment in 1st AGM (ADT-1)</li>
+                  <li className="plan-list-item">Preparation of Documents regarding AGM/BM Notice, Minutes & Extracts</li>
+                  <li className="plan-list-item">Statutory E-Register Maintenance</li>
+                  <li className="plan-list-item">DPT-3 (if applicable) for 1st FY</li>
+                  <li className="plan-list-item">MSME-1 (if applicable) for 1st FY</li>
+                  <li className="plan-list-item">DIR KYC for 2 Directors</li>
+                  <li className="plan-list-item">Income Tax Filing for 2 Directors</li>
+                  <li className="plan-list-item">Audit fees excluded (paid to Auditor)</li>
                 </ul>
               </div>
             </div>

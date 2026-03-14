@@ -8,12 +8,10 @@ const RequirementsPvt = () => {
         {/* Heading + intro */}
         <header className="Tm-req-header">
           <h2 className="Tm-req-title">
-            Benefits of Private Limited Company Registration in India
+            Benefits of Trademark Renewal in India
           </h2>
           <p className="Tm-req-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company registration process in India. It includes registering the business with the Registrar of Companies (RoC) and obtaining a Digital Signature Certificate (DSC) and Director Identification Number (DIN).
-
-
+            Renewing your trademark on time ensures continuous legal protection and exclusive rights over your brand. It helps you maintain ownership, avoid legal issues, and preserve your brand value without interruption.
           </p>
         </header>
 
@@ -21,42 +19,41 @@ const RequirementsPvt = () => {
         <div className="Tm-req-grid">
           {/* 1 */}
           <article className="Tm-req-card">
-            <h3 className="Tm-req-card-title">Separate Legal Identity</h3>
+            <h3 className="Tm-req-card-title">Continue Your Brand Identity Protection</h3>
             <div className="Tm-req-card-underline" />
             <p className="Tm-req-card-text">
-Once registered, a company becomes its own legal entity. It can own property, sign contracts, and operate separately from its owners.
-
+             Renewing your trademark ensures that your customers can continue to identify your products or services with your brand. It prevents others from registering or using a similar mark in the same category.
             </p>
           </article>
 
           {/* 2 */}
           <article className="Tm-req-card">
-            <h3 className="Tm-req-card-title">Limited Liability Protection</h3>
+            <h3 className="Tm-req-card-title">Create Business Opportunities</h3>
             <div className="Tm-req-card-underline" />
             <p className="Tm-req-card-text">
-              The personal assets of shareholders are safe from company debts and risks, ensuring financial protection.
+              A renewed trademark remains a valuable intangible asset. You can license, assign, or transfer it and generate revenue through royalty or ownership agreements.
             </p>
           </article>
 
           {/* 3 */}
           <article className="Tm-req-card">
             <h3 className="Tm-req-card-title">
-              Access to Government Schemes
+              Extended Ownership Rights
             </h3>
             <div className="Tm-req-card-underline" />
             <p className="Tm-req-card-text">
-              Registered companies can benefit from government schemes like Startup India for tax benefits and easier compliance, and Make in India for incentives and support for manufacturing businesses.
+              Trademark renewal keeps your legal ownership active. It allows you to take action against anyone who infringes on your rights and protects your brand reputation.
             </p>
           </article>
 
           {/* 4 */}
           <article className="Tm-req-card">
             <h3 className="Tm-req-card-title">
-              Increased Credibility
+              Reduced Legal Risk
             </h3>
             <div className="Tm-req-card-underline" />
             <p className="Tm-req-card-text">
-              A registered company is more trusted by investors, clients, and vendors, making it easier to get funding and partnerships.
+              Timely renewal maintains continuous protection and reduces the risk of disputes. It ensures that no other person can legally claim rights over your registered trademark.
             </p>
           </article>
         </div>

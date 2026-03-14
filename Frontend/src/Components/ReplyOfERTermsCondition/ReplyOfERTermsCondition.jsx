@@ -10,23 +10,20 @@ const TermsConditions = () => {
 
         {/* Sub heading */}
         <p className="Replyof-ER-tc-subtitle">
-          By subscribing to the above plans, you agree to abide by our following
-          additional terms and conditions
+          By subscribing to the above plans, you agree to abide by our following additional terms and conditions
         </p>
 
         {/* List */}
         <ol className="Replyof-ER-tc-list">
           <li className="Replyof-ER-tc-item">
-            DSC shall be from Sign X Class III only.
+            In case the above plan does not qualify your requirements, kindly contact our executive, we shall be happy to customise a plan for you
           </li>
 
           <li className="Replyof-ER-tc-item">
-            The fees mentioned above are valid for contribution up to Rs. 1
-            Lakhs and in case contribution is above Rs. 1 Lakhs the additional
-            fee shall be charged as per actuals.
+            Please note that the above fee does not include the govt fee of Rs. 900/-, which shall be applicable in case the TM application is not filed by Legal Terminus
           </li>
 
-          <li className="Replyof-ER-tc-item">
+          {/* <li className="Replyof-ER-tc-item">
             The above fee includes name application for up to 4 choice names and
             in case all the 4 names are rejected by the department, an
             additional fee shall be charged as per actuals.
@@ -44,7 +41,7 @@ const TermsConditions = () => {
             In case the above plan does not qualify your requirements, kindly
             contact our executive, we shall be happy to customise a plan for
             you.
-          </li>
+          </li> */}
         </ol>
       </div>
     </section>

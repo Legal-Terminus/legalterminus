@@ -19,7 +19,7 @@ const TradeLicenseFeatures = () => {
         {/* Right content */}
         <div className="tlfx-content">
           <h2 className="tlfx-title">
-            Types of Trade License Registration
+            Types of Trademark Opposition
           </h2>
 
           <p className="tlfx-intro">

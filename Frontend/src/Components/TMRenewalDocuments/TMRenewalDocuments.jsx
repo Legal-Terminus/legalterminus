@@ -46,18 +46,18 @@ const steps = [
   },
 ];
 
-const DocumentsInfographic = () => {
+const TMRenewalDocuments = () => {
   return (
-    <section className="infographic-section">
-      <div className="infographic-wrapper">
+    <section className="TMRenew-Doc-infographic-section">
+      <div className="TMRenew-Doc-infographic-wrapper">
         {/* Left Steps */}
-        <div className="steps-column">
+        <div className="TMRenew-Doc-infographic-steps-column">
           {steps
             .filter((s) => s.position === "left")
             .map((step) => (
               <div key={step.id} className={`step-card ${step.color}`}>
-                <div className="step-number">{step.id}</div>
-                <div className="step-content">
+                <div className="TMRenew-Doc-infographic-step--number">{step.id}</div>
+                <div className="TMRenew-Doc-infographic-step--content">
                   <h4>{step.title}</h4>
                   <p>{step.desc}</p>
                 </div>
@@ -71,13 +71,13 @@ const DocumentsInfographic = () => {
         </div>
 
         {/* Right Steps */}
-        <div className="steps-column">
+        <div className="TMRenew-Doc-infographic-steps-column">
           {steps
             .filter((s) => s.position === "right")
             .map((step) => (
               <div key={step.id} className={`step-card ${step.color}`}>
-                <div className="step-number">{step.id}</div>
-                <div className="step-content">
+                <div className="TMRenew-Doc-infographic-step--number">{step.id}</div>
+                <div className="TMRenew-Doc-infographic-step--content">
                   <h4>{step.title}</h4>
                   <p>{step.desc}</p>
                 </div>
@@ -89,4 +89,4 @@ const DocumentsInfographic = () => {
   );
 };
 
-export default DocumentsInfographic;
+export default TMRenewalDocuments;

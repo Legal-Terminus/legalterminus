@@ -2,42 +2,42 @@ import React from "react";
 import "./DPDocument.css";
 
 const steps = [
-  { id: "01", title: "Research", icon: "🔍", color: "#a0005a" },
-  { id: "02", title: "Ideation", icon: "💡", color: "#0f6b3f" },
-  { id: "03", title: "Development", icon: "⚙️", color: "#2f3fa3" },
-  { id: "04", title: "Documentation", icon: "📝", color: "#c62828" },
-  { id: "05", title: "Collaboration", icon: "🤝", color: "#2f6f6b" },
-  { id: "06", title: "Analysis", icon: "📊", color: "#ef6c00" },
+  { id: "01", title: "Research", icon: "🔍" },
+  { id: "02", title: "Ideation", icon: "💡" },
+  { id: "03", title: "Development", icon: "⚙️" },
+  { id: "04", title: "Documentation", icon: "📝" },
+  { id: "05", title: "Collaboration", icon: "🤝" },
+  { id: "06", title: "Analysis", icon: "📊" },
 ];
 
 export default function DPDocument() {
   return (
-    <section className="ladder-section">
-      <div className="ladder-header">
-        <h2>Dissolve-Partnership Registration Process</h2>
-        <p>Step-by-step structured workflow</p>
+    <section className="perfect-circle-section">
+      <div className="perfect-header">
+        <h2>Dissolve Partnership Registration Process</h2>
       </div>
 
-      <div className="ladder-wrapper">
+      <div className="perfect-wrapper">
+
+        <div className="main-circle">
+          <h3>PROCESS</h3>
+          <span>6 Steps</span>
+        </div>
+
         {steps.map((step, index) => (
           <div
             key={step.id}
-            className="ladder-step"
-            style={{ "--offset": index }}
+            className="orbit-item"
+            style={{ "--i": index }}
           >
-            <div
-              className="ladder-card"
-              style={{ borderColor: step.color }}
-            >
-              <span className="ladder-icon">{step.icon}</span>
-
-              <div className="ladder-text">
-                <h4>{step.title}</h4>
-                <small>Step {step.id}</small>
-              </div>
+            <div className="orbit-circle">
+              <span className="orbit-icon">{step.icon}</span>
+              <small>{step.id}</small>
             </div>
+            <p>{step.title}</p>
           </div>
         ))}
+
       </div>
     </section>
   );

@@ -28,7 +28,7 @@ const ZolvitPremium = () => {
                 <span className="xp-title-icon">⚖️</span>
               </h2>
               <p className="xp-subtitle">
-Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+                Change your registered office address smoothly with Legal Terminus’ expert-handled process, designed for businesses that want a quick update without compliance risks or unnecessary delays.
               </p>
             </header>
 
@@ -38,15 +38,15 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <ul className="xp-list xp-features-list">
                 <li className="xp-list-item">
                   <span className="xp-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+                  Complete assistance from drafting Board Resolution to filing required MCA forms and obtaining approval from the Registrar of Companies (ROC).
                 </li>
                 <li className="xp-list-item">
                   <span className="xp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                  Accurate documentation support, including preparation of resolutions, address proof collection, and proper filing as per company law requirements.
                 </li>
                 <li className="xp-list-item">
                   <span className="xp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                  Timely follow-ups and regular updates to ensure your address change is completed efficiently and without penalties.
                 </li>
               </ul>
             </section>
@@ -57,12 +57,10 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <div className="xp-note-box">
                 <ul className="xp-note-list">
                   <li className="xp-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+                    The registered office change must be reported to the ROC within the prescribed time limit to avoid penalties.
                   </li>
                   <li className="xp-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                    Additional approvals may be required if the address change involves shifting to another city or state.
                   </li>
                 </ul>
               </div>

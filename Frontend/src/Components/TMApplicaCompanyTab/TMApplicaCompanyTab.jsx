@@ -35,41 +35,38 @@ A Private Limited Company is a legally registered business under the Companies A
           {/* Text */}
           <div className="Tm-Application-intro-content">
             <h2 className="Tm-Application-intro-title">
-              Why Choose Proprietorship Firms Registration
+              Why Register Your Trademark in India?
             </h2>
             <p className="Tm-Application-intro-text">
-             Sole proprietorship firm registration in India is the easiest way to start a new business. It’s when one person owns and runs the business, and they’re personally responsible for any debt it incurs. In simple terms, there’s no legal difference between the sole proprietorship firm and the sole proprietors themselves. Here are answers to some common questions about proprietorship firm registration in India.
+             Your brand name, logo, or tagline is one of your most valuable assets. Under the Trade Marks Act, 1999, trademark registration grants you exclusive legal rights to use that mark in commerce — and the power to take legal action against anyone who misuses it. 
             </p>
           </div>
         </div>
       </section>
 
-      {/* ===========================
+     {/* ===========================
           SECTION 3 — COMPANIES ACT
       ============================ */}
-      <section className="Tm-Application-companies-act-section">
-        <div className="Tm-Application-companies-act-container">
-          <div className="Tm-Application-companies-act-card">
-            {/* <h3 className="Tm-Application-companies-act-title">Companies Act, 2013</h3> */}
+      <section className="companies-act-section">
+        <div className="companies-act-container">
+          <div className="companies-act-card">
+            <h2 className="Tm-Application-intro-title">Trademark Classes in India (Nice Classification)</h2>
 
-            <p className="Tm-Application-companies-act-text">
-              A Sole Proprietorship is a simple business structure owned and managed by a single individual. It does not have a separate legal identity from its owner and is one of the easiest ways to start a business in India.
+            <p className="companies-act-text">
+             India follows the Nice Classification system, which divides all goods and services into 45 trademark classes — Classes 1 to 34 for goods, and Classes 35 to 45 for services. You must file your trademark under the correct class for protection to apply. Filing in the wrong class can lead to rejection.</p>
+            
+            <p className="companies-act-point">
+              <h1 className="companies-act-title">Goods Classes (1–34) — Quick Reference:</h1>
+              Class 25 → Clothing, footwear, headwear | Class 30 → Coffee, tea, rice, flour, bread, confectionery | Class 5 → Pharmaceuticals, medical preparations | Class 3 → Cosmetics, perfumery, cleaning preparations | Class 9 → Software, electronics, scientific instruments | Class 32 → Beverages (non-alcoholic), beer | Class 33 → Alcoholic beverages | Class 29 → Meat, fish, dairy, preserved foods
             </p>
 
-            <p className="Tm-Application-companies-act-point">
-              <span className="Tm-Application-companies-act-point-label">(a)</span>
-              PAN and Aadhaar of the proprietor;
+            <p className="companies-act-point">
+              <h1 className="companies-act-title">Service Classes (35–45) — Quick Reference:</h1>
+              Class 35 → Advertising, business management, retail services | Class 36 → Financial and insurance services | Class 41 → Education, entertainment, training | Class 42 → IT, SaaS, software development, R&D | Class 43 → Restaurants, hotels, food & drink services | Class 45 → Legal services, security services
             </p>
 
-            <p className="Tm-Application-companies-act-point">
-              <span className="Tm-Application-companies-act-point-label">(b)</span>
-              Business address proof and utility bill; and
-            </p>
-
-            <p className="Tm-Application-companies-act-point">
-              <span className="Tm-Application-companies-act-point-label">(c)</span>
-              Basic registrations like GST Registration (if applicable), Shop & Establishment License, or Udyam Registration.
-            </p>
+            <p className="companies-act-text">
+             <strong>Pro Tip:</strong> Not sure which class fits your business? Our experts will identify the right class(es) before filing — so you don't waste money on incorrect applications.</p>
           </div>
         </div>
       </section>

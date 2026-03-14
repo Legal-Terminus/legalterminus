@@ -28,8 +28,7 @@ const ZolvitPremium = () => {
                 <span className="Tm-Application-zp-title-icon">⚖️</span>
               </h2>
               <p className="Tm-Application-zp-subtitle">
-Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
-              </p>
+               Get your trademark filed faster with Legal Terminus' expert-handled process — made for founders, creators, and businesses who value speed and accuracy.</p>
             </header>
 
             {/* Features */}
@@ -37,17 +36,15 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <h3 className="Tm-Application-zp-label">What You Get:</h3>
               <ul className="Tm-Application-zp-list Tm-Application-zp-features-list">
                 <li className="Tm-Application-zp-list-item">
-                  <span className="Tm-Application-zp-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
-                </li>
-                <li className="Tm-Application-zp-list-item">
                   <span className="Tm-Application-zp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                 Expert-handled, end-to-end trademark filing from search to certificate</li>
+                <li className="Tm-Application-zp-list-item">
+                  <span className="Tm-Application-zp-list-icon">🔎</span>
+                  Hassle-Free Compliance — we handle the registry communication for you
                 </li>
                 <li className="Tm-Application-zp-list-item">
-                  <span className="Tm-Application-zp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
-                </li>
+                  <span className="Tm-Application-zp-list-icon">⏰</span>
+                  Smart Reminder Policy — we track your trademark status and alert you at every stage</li>
               </ul>
             </section>
 
@@ -57,12 +54,10 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <div className="Tm-Application-zp-note-box">
                 <ul className="Tm-Application-zp-note-list">
                   <li className="Tm-Application-zp-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+                    We conduct a comprehensive trademark search before filing to maximise your chances of approval.
                   </li>
                   <li className="Tm-Application-zp-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                    In case of a similar existing mark, our experts will recommend legally sound alternative marks to ensure your application goes through.
                   </li>
                 </ul>
               </div>

@@ -21,10 +21,10 @@ const PrivateLimited = () => {
     <CIRbreadcrum />
 
       <div id="plans">
-        <CIRplans />
+        {/* <CIRplans /> */}
       </div>
 
-     <CIRtermconditions />
+     {/* <CIRtermconditions /> */}
 
 
       <div id="premium">
@@ -46,11 +46,11 @@ const PrivateLimited = () => {
       </div>
 
       <div id="process">
-       <CIRprocess />
+       {/* <CIRprocess /> */}
       </div>
 
       <div id="documents">
-        <CIRdocuments />
+        {/* <CIRdocuments /> */}
       </div>
 
       <div id="faq">

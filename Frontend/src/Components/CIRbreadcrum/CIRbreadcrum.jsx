@@ -10,27 +10,22 @@ const Breadcrum = () => {
         <div className="at-public-content">
 
           <span className="at-public-tag">
-           Change In Registered Office Address 
+           Change in Registered Office Address 
           </span>
 
           <h1 className="at-public-title">
-           Change In Registered Office Address 
-            <span> in India</span>
+           Change in Registered Office Address (LLP) 
           </h1>
 
           <p className="at-public-description">
-            A Private Limited Company is a popular and trusted business structure in India, especially for startups and growing businesses. It helps protect personal assets, builds business credibility, and makes it easier to raise funds.
-
-<br/><br/>
-Legal Terminus can help you with Private Limited Company registration in a hassle-free way, whenever you need it. We take care of the complete process—from paperwork to approvals—within a reasonable time. Our professional fees start at ₹3,999, making company registration simple, affordable, and stress-free.
-
+            Legal Terminus can help you with change in Registered Office Address of your LLP in a hassle-free manner within a reasonable time span and for competitive professional fee which starts from Rs. 2499/- excluding Govt. Fees.
           </p>
 
           <div className="at-public-features">
-            <div className="at-feature-item"> Minimum 2 Directors Required</div>
-            <div className="at-feature-item"> Separate Legal Entity</div>
-            <div className="at-feature-item"> Limited Liability Protection</div>
-            <div className="at-feature-item"> High Business Credibility</div>
+            <div className="at-feature-item"> Partner Approval Required</div>
+            <div className="at-feature-item"> Filing with Registrar (ROC)</div>
+            <div className="at-feature-item"> Address Proof & NOC Required</div>
+            <div className="at-feature-item"> Additional Approval for Inter-State Shift</div>
           </div>
 
           <div className="at-public-highlights">
@@ -59,7 +54,7 @@ Legal Terminus can help you with Private Limited Company registration in a hassl
             </h3>
 
             <p className="at-form-subtitle">
-              Talk to our Private Limited Company registration expert
+              Talk to our expert
             </p>
 
             <form

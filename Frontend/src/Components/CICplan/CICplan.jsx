@@ -10,7 +10,7 @@ const PricingSection = () => {
         <header className="pricing-header">
           <h2 className="PvtLtd-pricing-title">CHOOSE YOUR PLAN</h2>
           <p className="pricing-subtitle">
-            Register your company with pocket-friendly prices
+            Change in name (company) with pocket friendly-prices
           </p>
         </header>
 
@@ -22,25 +22,19 @@ const PricingSection = () => {
             <div>
               <div className="cic-header">
                 <div className="cic-name">Elemental</div>
-                <div className="cic-old-price">₹5,999</div>
-                <div className="cic-price">₹3,999</div>
-                <div className="cic-meta">Excluding gov fee</div>
+                <div className="cic-price">₹5,999</div>
+                <div className="cic-meta">Including gov fee</div>
               </div>
 
               <div className="cic-body">
                 <ul className="cic-list">
-                  <li className="cic-list-item">Search Report of Name Availability</li>
-                  <li className="cic-list-item">1 RUN Name Approval Certificate</li>
-                  <li className="cic-list-item">Director Identification Number for 2 Individuals</li>
-                  <li className="cic-list-item">Certificate of Incorporation</li>
-                  <li className="cic-list-item">E-PAN</li>
-                  <li className="cic-list-item">E-TAN</li>
-                  <li className="cic-list-item">E-MOA</li>
-                  <li className="cic-list-item">E-AOA</li>
-                  <li className="cic-list-item">Documents for Bank Account Opening</li>
-                  <li className="cic-list-item">Documents for 1st Auditor Appointment</li>
-                  <li className="cic-list-item">EPF Registrations</li>
-                  <li className="cic-list-item">ESI Registrations</li>
+                  <li className="cic-list-item">Filing of RUN (Name Application)</li>
+                  <li className="cic-list-item">Preparation of Board Resolution</li>
+                  <li className="cic-list-item">Preparation of Notice of EGM</li>
+                  <li className="cic-list-item">Preparation of EGM Resolution</li>
+                  <li className="cic-list-item">Preparation of MOA</li>
+                  <li className="cic-list-item">Filing of MGT 14</li>
+                  <li className="cic-list-item">Filing of INC 24</li>
                 </ul>
               </div>
             </div>
@@ -50,7 +44,7 @@ const PricingSection = () => {
             </div>
           </article>
 
-          {/* Enriched */}
+          {/* Enriched
           <article className="cic-card">
             <div>
               <div className="cic-header">
@@ -75,9 +69,9 @@ const PricingSection = () => {
             <div className="cic-footer">
               <button className="cic-button">Buy Now</button>
             </div>
-          </article>
+          </article> */}
 
-          {/* Supreme */}
+          {/* Supreme
           <article className="cic-card">
             <div>
               <div className="cic-header">
@@ -116,7 +110,7 @@ const PricingSection = () => {
             <div className="cic-footer">
               <button className="cic-button">Buy Now</button>
             </div>
-          </article>
+          </article> */}
 
         </div>
       </div>

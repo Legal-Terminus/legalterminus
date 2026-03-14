@@ -1,0 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.Windup-PLC-Windup-PLC-section {
+  font-family: 'Poppins', sans-serif;
+  background: #ffffff;
+  padding: 60px 24px 80px;
+}
+
+.Windup-PLC-container {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* Header */
+.Windup-PLC-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.Windup-PLC-Windup-PLC-title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: #000;
+}
+
+.Windup-PLC-subtitle {
+  font-size: 18px;
+  font-weight: 500;
+  color: #1bb33a;
+}
+
+/* Cards layout with CSS Grid for clean responsiveness */
+.Windup-PLC-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+/* Card */
+.Windup-PLC-plan-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Plan header */
+.Windup-PLC-plan-header {
+  margin-bottom: 16px;
+}
+
+.Windup-PLC-plan-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #18b233;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.Windup-PLC-plan-old-price {
+  font-size: 20px;
+  font-weight: 500;
+  text-align: center;
+  color: #ff3b3b;
+  text-decoration: line-through;
+  margin-bottom: 2px;
+}
+
+.Windup-PLC-plan-price {
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  color: #000;
+}
+
+.Windup-PLC-plan-meta {
+  font-size: 13px;
+  text-align: center;
+  color: #666;
+}
+
+.Windup-PLC-plan-meta .popular {
+  font-weight: 600;
+  color: #ff3b3b;
+  margin-left: 4px;
+}
+
+/* List */
+.Windup-PLC-plan-body {
+  margin-top: 20px;
+}
+
+.Windup-PLC-plan-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.Windup-PLC-plan-list-item {
+  font-size: 13px;
+  color: #111;
+  line-height: 1.6;
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.Windup-PLC-plan-list-item::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: #19b43a;
+  border-radius: 50%;
+  margin-right: 10px;
+  margin-top: 6px;
+}
+
+/* Button */
+.Windup-PLC-plan-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.Windup-PLC-plan-button {
+  background: #21b738;
+  color: #ffffff;
+  padding: 10px 36px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.Windup-PLC-plan-button:hover {
+  background: #1aa130;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------------------------------
+   RESPONSIVE BREAKPOINTS
+   --------------------------------- */
+
+/* Large tablets / small laptops */
+@media (max-width: 1200px) {
+  .Windup-PLC-container {
+    padding: 0 12px;
+  }
+
+  .Windup-PLC-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .Windup-PLC-plan-card {
+    padding: 24px;
+  }
+}
+
+/* Tablets: 2 cards per row */
+@media (max-width: 992px) {
+
+
+  .Windup-PLC-Windup-PLC-title {
+    font-size: 28px;
+  }
+
+  .Windup-PLC-subtitle {
+    font-size: 16px;
+  }
+
+  .Windup-PLC-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Large phones / small tablets: full width cards */
+@media (max-width: 768px) {
+  .Windup-PLC-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .Windup-PLC-plan-card {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .Windup-PLC-Windup-PLC-section {
+    padding: 32px 12px 48px;
+  }
+
+  .Windup-PLC-Windup-PLC-title {
+    font-size: 22px;
+    letter-spacing: 0.5px;
+  }
+
+  .Windup-PLC-subtitle {
+    font-size: 14px;
+  }
+
+  .Windup-PLC-plan-card {
+    padding: 20px;
+  }
+
+  .Windup-PLC-plan-price {
+    font-size: 28px;
+  }
+
+  .Windup-PLC-plan-old-price {
+    font-size: 18px;
+  }
+
+  .Windup-PLC-plan-button {
+    width: 100%;
+    padding: 10px 0;
+  }
+}

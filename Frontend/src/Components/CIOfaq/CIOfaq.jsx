@@ -3,54 +3,46 @@ import "./CIOfaq.css";
 
 const faqs = [
   {
-    question: "How many persons are required to form a Private Limited Company?",
-    answer:
-      "Minimum two persons are required to form a Private Limited Company and a maximum up to 200 persons can be a member of a single Private Limited Company.",
-  },
+    question: "What may be certain potential reasons behind change in an LLP’s object(s)?",
+    answer:(
+    <div>
+      <p><strong>An existing LLP may need to change its objects for various reasons. For instance:</strong></p>
+      <ul>
+        <li>1. Existing business may become illegal due to change in law;</li>
+        <li>2. The partners wish to add or amend one or more business lines voluntarily;</li>
+        <li>3. One or more of the objects is/ are no longer required; etc.</li>
+      </ul>
+    </div>
+  ),
+},
   {
-    question: "How many Directors are required to form a Private Limited Company?",
-    answer:
-      "Minimum two directors are required in a Private Limited Company, with an upper cap up to 15 directors.",
-  },
+    question: "What is the procedure to change the objects of an LLP?",
+    answer:(
+    <div>
+      <ul>
+        <li>1. Passing the resolution for change in the objects of the LLP</li>
+        <li>2. Preparation and execution of supplementary LLP Agreement depicting such change</li>
+        <li>3. Preparation and filing E-form 3 for change in LLP Agreement</li>
+        <li>4. Appropriate Government fees is payable depending upon the contribution of the LLP.</li>
+      </ul>
+    </div>
+  ),
+},
   {
-    question: "Who are Directors of the company?",
+    question: "What is the time limit for filing documents in respect of any such change in the objects?",
     answer:
-      "Directors are officers of the company who are responsible for managing the company and making the decisions as to its operation on a day to day basis, for the benefit of the shareholders.",
-  },
-  {
-    question:
-      "What is a company shareholder?",
-    answer:
-      "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in day-to-day management or financial affairs. They are also called 'members' and they agree to become part of a company by taking a minimum of one share in it. The quantity of shares held by each person represents how much of the business they own.",
-  },
-  {
-    question: "How much capital is required to start a Private Limited Company?",
-    answer:
-      "The Private Limited Company can be incorporated with any amount of capital and there is no lower or upper limit. Further, the government has relaxed the government fees for Incorporation of a Private Limited Company up to an Authorized capital of Rs. 15,00,000/-, however, the stamp duty, which is still levied, varies from State to State.",
-  },
-  {
-    question:
-      "What are some basic/ key documents required to incorporate a Private Limited Company in India?",
-    answer:
-      "PAN Card (All the Proposed Directors and/or Shareholders)",
-  },
-  {
-    question:
-      "What is the procedure to register a Private Limited Company?",
-    answer:
-      "You need at least two directors, two shareholders, a unique company name, a registered office address in India, and the necessary KYC documents for all directors and shareholders.",
+      "In terms of the extant provisions of the law, the relevant documents and e-forms in respect of any change in objects of an LLP should filed with the MCA within 30 days.",
   },
   {
     question:
-      "What is the time period within which a Private Limited Company can be incorporated?",
+      "What is a company sWhat is the time period within which the process of change of objects takes place?",
     answer:
-      "The process of incorporating a Private Limited Company can take anywhere between 10 to 15 working days, subject to submission of correct information and complete documentation.",
+      "The process of change in object of the LLP takes around 1 week, subject to submission of correct information and complete documentation.",
   },
   {
-    question:
-      "How Legal Terminus can help you incorporate a Private Limited Company in India?",
+    question: "How Legal Terminus can help you with change in object of the LLP?",
     answer:
-      "Legal Terminus can help you with incorporation of Private Limited Company for you, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+      "Legal Terminus can help you with changing the objects of LLP, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fees. To know more, please book a telephonic appointment with one of our consultants free of charge.",
   },
 ];
 
@@ -66,14 +58,10 @@ const FaqPvt = () => {
       <div className="faa-container">
         {/* Left side – static text */}
         <div className="faa-left">
-          <h2 className="faa-title">Change In object FAQ&apos;s</h2>
+          <h2 className="faa-title">Changing in Object of your LLP FAQ's</h2>
 
           <p className="faa-intro">
-            Starting a Private Limited Company in India is an important step for any business owner. With the right support, the process can be simple and stress-free.
-
-<br/><br/>
-Here, we’ve answered the most common questions about company registration—covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
-
+            Here, we’ve answered the most common questions about Changing in Objects of LLP covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
           </p>
 
           <p className="faa-intro">

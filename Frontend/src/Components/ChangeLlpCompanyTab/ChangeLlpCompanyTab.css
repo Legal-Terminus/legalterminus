@@ -1,0 +1,248 @@
+/* FONT (load once for all sections) */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+/* --------------------------------------------------
+   OVERVIEW
+-------------------------------------------------- */
+
+.overview-wrapper {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+  font-family: "Poppins", sans-serif;
+}
+
+.overview-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 20px;
+}
+
+.overview-text {
+  font-size: 16px;
+  line-height: 1.85;
+  color: #374151;
+  margin-bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .overview-title {
+    font-size: 26px;
+  }
+
+  .overview-text {
+    font-size: 15px;
+  }
+}
+
+/* --------------------------------------------------
+   PVT INTRO
+-------------------------------------------------- */
+
+.ChangeLlpCompanyTab-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #ffffff;
+  padding: 64px 24px 56px;
+}
+
+.ChangeLlpCompanyTab-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.9fr 1.4fr;
+  column-gap: 64px;
+  align-items: center;
+}
+
+/* Illustration */
+.ChangeLlpCompanyTab-illustration-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ChangeLlpCompanyTab-illustration {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Content */
+.ChangeLlpCompanyTab-content {
+  max-width: 720px;
+}
+
+.ChangeLlpCompanyTab-title {
+  font-size: 40px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #151821;
+  margin: 0 0 18px;
+}
+
+.ChangeLlpCompanyTab-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .ChangeLlpCompanyTab-section {
+    padding: 52px 20px 44px;
+  }
+
+  .ChangeLlpCompanyTab-container {
+    column-gap: 40px;
+    grid-template-columns: 0.95fr 1.3fr;
+  }
+
+  .ChangeLlpCompanyTab-title {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ChangeLlpCompanyTab-section {
+    padding: 40px 16px 36px;
+  }
+
+  .ChangeLlpCompanyTab-container {
+    grid-template-columns: 1fr;
+    row-gap: 32px;
+  }
+
+  .ChangeLlpCompanyTab-illustration-wrap {
+    order: 1;
+  }
+
+  .ChangeLlpCompanyTab-content {
+    order: 2;
+  }
+
+  .ChangeLlpCompanyTab-title {
+    font-size: 28px;
+    text-align: left;
+  }
+
+  .ChangeLlpCompanyTab-text {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ChangeLlpCompanyTab-section {
+    padding: 32px 14px 28px;
+  }
+
+  .ChangeLlpCompanyTab-title {
+    font-size: 24px;
+  }
+
+  .ChangeLlpCompanyTab-text {
+    font-size: 13.5px;
+    line-height: 1.8;
+  }
+}
+
+/* --------------------------------------------------
+   COMPANIES ACT CARD
+-------------------------------------------------- */
+
+.companies-act-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #ffffff;
+  padding: 24px 24px 56px;
+}
+
+.companies-act-container {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* Card with soft gradient like your reference */
+.companies-act-card {
+  border-radius: 20px;
+  padding: 32px 40px;
+  background: linear-gradient(to bottom, #f4f8ff 0%, #ffffff 100%);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+/* Title */
+.companies-act-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #273143;
+  margin: 0 0 14px;
+}
+
+/* Main paragraph */
+.companies-act-text {
+  margin: 0 0 18px;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+/* Points (a)(b)(c) */
+.companies-act-point {
+  margin: 0 0 10px;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+.companies-act-point-label {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .companies-act-section {
+    padding: 20px 20px 44px;
+  }
+
+  .companies-act-card {
+    padding: 28px 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .companies-act-section {
+    padding: 16px 16px 36px;
+  }
+
+  .companies-act-card {
+    padding: 24px 20px;
+  }
+
+  .companies-act-text,
+  .companies-act-point {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .companies-act-section {
+    padding: 12px 14px 28px;
+  }
+
+  .companies-act-card {
+    padding: 20px 18px;
+  }
+
+  .companies-act-title {
+    font-size: 18px;
+  }
+
+  .companies-act-text,
+  .companies-act-point {
+    font-size: 13.5px;
+  }
+}

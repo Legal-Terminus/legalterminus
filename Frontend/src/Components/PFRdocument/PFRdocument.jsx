@@ -1,115 +1,82 @@
 import React from "react";
 import "./PFRdocument.css";
-import { FaUser, FaSearch, FaBullseye, FaComments } from "react-icons/fa";
 
-const docs = [
-  {
-    id: "01",
-    title: "KYC Documents",
-    desc: "PAN, Aadhaar, Address proof and bank statement of all partners.",
-    icon: <FaUser />,
-    color: "one",
-  },
-  {
-    id: "02",
-    title: "Passport Photograph",
-    desc: "Passport size photographs of all partners.",
-    icon: <FaSearch />,
-    color: "two",
-  },
-  {
-    id: "03",
-    title: "Electricity Bill",
-    desc: "Latest electricity bill of registered office address.",
-    icon: <FaBullseye />,
-    color: "three",
-  },
-  {
-    id: "04",
-    title: "Other Documents",
-    desc: "Any other documents as required by authorities.",
-    icon: <FaComments />,
-    color: "four",
-  },
-];
+import {
+  FaIdCard,
+  FaCamera,
+  FaFileContract,
+  FaCertificate,
+} from "react-icons/fa";
 
-const PartnershipDocumentsInfographic = () => {
+const PFRdocument = () => {
   return (
-    <section className="di-section">
-      <h2 className="di-heading">
+    <section className="pdi-section">
+      <h2 className="pdi-heading">
         Documents Required for Partnership Firm Registration in India
       </h2>
 
-      <div className="di-wrapper">
+      <div className="pdi-wrapper">
         {/* LEFT COLUMN */}
-        <div className="di-column">
-          <div className="di-card di-left">
-            {/* <span className="di-number">1</span> */}
-            <FaIdCard className="di-icon" />
-            <p>
-              Rs. 200/- stamp paper on name of any of the proposed Partner
-            </p>
+        <div className="pdi-steps">
+          <div className="pdi-step">
+            <div className="pdi-number">01</div>
+            <div className="pdi-card pdi-one">
+              <div className="pdi-icon">
+                <FaIdCard />
+              </div>
+              <p>
+                Rs. 200/- stamp paper on name of any of the proposed Partner
+              </p>
+            </div>
           </div>
 
-          <div className="di-card di-left">
-            {/* <span className="di-number">2</span> */}
-            <FaCamera className="di-icon" />
-            <p>KYC documents - All the Proposed Partners such as :-as ID Proof - PAN and Aadhaar</p>
+          <div className="pdi-step">
+            <div className="pdi-number">02</div>
+            <div className="pdi-card pdi-two">
+              <div className="pdi-icon">
+                <FaCamera />
+              </div>
+              <p>
+                KYC documents – PAN, Aadhaar and other ID proofs of all proposed partners.
+              </p>
+            </div>
           </div>
 
-          {/* <div className="di-card di-left"> */}
-            {/* <span className="di-number">3</span> */}
-            {/* <FaBolt className="di-icon" /> */}
-            {/* <p>
-              Electricity bill corresponding to the registered office address of the proposed Partnership Firm
-            </p> */}
-          {/* </div> */}
+          <div className="pdi-step">
+            <div className="pdi-number">03</div>
+            <div className="pdi-card pdi-three">
+              <div className="pdi-icon">
+                <FaFileContract />
+              </div>
+              <p>
+                Latest electricity bill of the registered office address.
+              </p>
+            </div>
+          </div>
+
+          <div className="pdi-step">
+            <div className="pdi-number">04</div>
+            <div className="pdi-card pdi-four">
+              <div className="pdi-icon">
+                <FaCertificate />
+              </div>
+              <p>
+                Rent agreement (if office is rented), duly notarised.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* CENTER INFOGRAPHIC */}
-        <div className="di-center">
-          <div className="di-rays">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
+        <div className="pdi-center">
+          <div className="pdi-circle">
+            <h3>Documents Required</h3>
+            <p>Partnership Firm Registration</p>
           </div>
-
-          <div className="di-circle">
-            <span>Documents Required</span>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN */}
-        <div className="di-column">
-          <div className="di-card di-right">
-            {/* <span className="di-number">4</span> */}
-            <FaFileContract className="di-icon" />
-            <p>
-              Electricity bill corresponding to the registered office address of the proposed Partnership Firm
-            </p>
-          </div>
-
-          <div className="di-card di-right">
-            {/* <span className="di-number">5</span> */}
-            <FaCertificate className="di-icon" />
-            <p>
-              Rent Agreement duly notarised with respect to the registered office address of the proposed Partnership Firm (if on rent)
-            </p>
-          </div>
-
-          {/* <div className="di-card di-right">
-            <span className="di-number">6</span>
-            <FaFolderOpen className="di-icon" />
-            <h4>Other Documents</h4>
-            <p>Additional documents as required by our team.</p>
-          </div> */}
         </div>
       </div>
     </section>
   );
 };
 
-export default PartnershipDocumentsInfographic;
+export default PFRdocument;

@@ -24,8 +24,11 @@ const PvtltdDocument = () => {
      {/* ===== HEADLINE ===== */}
       <div className="pvtltd-doc-header">
         <h2 className="pvtltd-doc-title">
-          Documents Required For Private Limited Company Registration in India
+          Documents Required for Pvt Ltd Registration
         </h2>
+        <p className="pv-gst-subheading">
+        Get these ready and we'll take care of the rest:
+      </p>
       </div>
 
     <div className="infographic-wrapper">
@@ -52,57 +55,84 @@ const PvtltdDocument = () => {
         </div>
 
         <div className="side left">
-          <div className="card red">
+          <div className="card pink">
             <div className="icon"><FaIdCard /></div>
             <div>
-              <h4><span className="step-no">1.</span>KYC Documents</h4>
-              <p>
-                KYC documents – All the proposed directors and shareholders such as:
-                › ID Proof – PAN and Aadhaar
-                › Address Proof – Telephone Bill / Mobile Bill / Savings Bank Statement
-              </p>
+          <h4>INDIVIDUAL DOCUMENTS</h4> 
+              <h4><span className="step-no">1.</span>Identity Proof</h4>
+            <br></br>
+            <ul>
+            <li>PAN Card (Mandatory for Indian Nationals)</li>
+            <li>Aadhaar Card (Indian Nationals)</li>
+            <li>Passport (Mandatory for Foreign Nationals / NRIs)</li>
+            </ul>
             </div>
           </div>
 
-          <div className="card orange">
+          <div className="card pink">
             <div className="icon"><FaFileContract /></div>
             <div>
-              <h4><span className="step-no">2.</span>Passport Size Photograph</h4>
-              <p>Passport size photograph of all proposed directors and shareholders.</p>
+              <h4><span className="step-no">2.</span>Address Proof (Individual – Not Older Than 2 Months)</h4>
+            <br></br>
+            <ul>
+            <li>Bank Statement</li>
+            <li>Mobile Bill</li>
+            <li>Electricity Bill</li>
+            <li>Water Bill</li>
+            </ul>
             </div>
           </div>
 
-          <div className="card cyan">
+          <div className="card pink">
             <div className="icon"><FaHome /></div>
             <div>
-              <h4><span className="step-no">3.</span>Electricity Bill</h4>
-              <p>Electricity bill corresponding to the registered office address of the company.</p>
+            <h4><span className="step-no">3.</span>Passport Size Photograph</h4>
+            <br></br>
+            <ul>
+            <li>Latest Passport-size Photograph of all Proposed Directors / Shareholders</li>
+            </ul>            
             </div>
           </div>
         </div>
 
         <div className="side right">
-          <div className="card beige">
-            <div className="icon"><FaUserCircle /></div>
+          <div className="card pink">
+            <div className="icon"><FaIdCard /></div>
             <div>
-              <h4><span className="step-no">4.</span>Rent Agreement</h4>
-              <p>Duly notarised rent agreement for the registered office address (if on rent).</p>
+          <h4>REGISTERED OFFICE DOCUMENTS</h4> 
+              <h4><span className="step-no">1.</span>Utility Bill for Office Address (Not Older Than 2 Months)</h4>
+            <br></br>
+            <ul>
+            <li>Electricity Bill</li>
+            <li>Water Bill</li>
+            <li>Gas Bill</li>
+            <li>Property Tax Receipt</li>
+            </ul>
             </div>
           </div>
 
-          <div className="card violet">
-            <div className="icon"><FaBolt /></div>
+          <div className="card pink">
+            <div className="icon"><FaFileContract /></div>
             <div>
-              <h4><span className="step-no">5.</span>No Objection Certificate</h4>
-              <p>No Objection Certificate (NOC) from the owner allowing use of the premises as the registered office.</p>
+              <h4><span className="step-no">2.</span>Rent Agreement (If Premises is Rented)</h4>
+            <br></br>
+            <ul>
+            <li>Duly Notarised Rent Agreement</li>
+            </ul>
             </div>
           </div>
 
-          <div className="card sand">
-            <div className="icon"><FaFileAlt /></div>
+          <div className="card pink">
+            <div className="icon"><FaHome /></div>
             <div>
-              <h4><span className="step-no">6.</span>Other Documents</h4>
-              <p>Other documents shall be prepared and provided by our team as required.</p>
+            <h4><span className="step-no">3.</span>No Objection Certificate (NOC)</h4>
+            <br></br>
+            <ul>
+            <li>NOC from Property Owner permitting use of premises as Registered Office
+              <br></br>
+          <strong>Note:</strong> Residential property is permissible as Registered Office under MCA guidelines
+           </li>
+            </ul>            
             </div>
           </div>
         </div>

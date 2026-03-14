@@ -92,29 +92,32 @@ const DissolveLLPFAQ = () => {
           </p>
         </div>
 
-        {/* RIGHT */}
-        <div className="Dissllp-societys-right">
-          <div className="Dissllp-societys-list">
+        {/* Right side – scrollable Q&A list */}
+        <div className="Diss-llp-faq-right">
+          <div className="Diss-llp-faq-list">
             {faqs.map((item, index) => {
               const isActive = index === activeIndex;
               return (
                 <div
                   key={index}
-                  className={`Dissllp-societys-item ${isActive ? "active" : ""}`}
+                  className={`faq-item ${isActive ? "active" : ""}`}
                 >
                   <button
-                    className="Dissllp-societys-question"
+                    type="button"
+                    className="Diss-llp-faq-question"
                     onClick={() => toggleFaq(index)}
                   >
                     <span>{item.question}</span>
-                    <span className={`Dissllp-societys-icon ${isActive ? "open" : ""}`}>
+                    <span className={`faq-icon ${isActive ? "open" : ""}`}>
                       ▾
                     </span>
                   </button>
-
-                  <div className={`Dissllp-societys-answer ${isActive ? "open" : ""}`}>
+                  {isActive && (
+                   <div className={`faq-answer ${isActive ? "open" : ""}`}>
                     <p>{item.answer}</p>
                   </div>
+
+                  )}
                 </div>
               );
             })}

@@ -17,7 +17,9 @@ import DPProcess from "../../Components/DPProcess/DPProcess";
 const DissolvePartnership = () => {
   return (
     <div>
+
       <DPBreadcrum />
+
       <div id="plans">
         {/* <DPPlanAndPricing /> */}
       </div>
@@ -25,25 +27,33 @@ const DissolvePartnership = () => {
       <div id="premium">
         <DPPremium />
       </div>
+
       <DPTabs />
+
       <div id="company">
         <DPCompanyTabs />
       </div>
+
       <div id="types">
         {/* <DPPvtTypes /> */}
       </div>
+
       <div id="requirements">
         <DPRequirementsTab />
       </div>
+
       <div id="process">
         {/* <DPProcess /> */}
       </div>
+
       <div id="documents">
         {/* <DPDocument /> */}
       </div>
+
       <div id="faq">
         <DPFAQ />
       </div>
+      
       <DPTestimonial/>
       <DPVideoTestimonial/>
       <DPOurClients/>

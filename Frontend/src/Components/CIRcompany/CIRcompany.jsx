@@ -35,11 +35,10 @@ A Private Limited Company is a legally registered business under the Companies A
           {/* Text */}
           <div className="pvt-intro-content">
             <h2 className="pvt-intro-title">
-              Why Choose Change In Registered Office Address 
+              Why Choose Change In Registered Office Address (LLP)
             </h2>
             <p className="pvt-intro-text">
-             Sole proprietorship firm registration in India is the easiest way to start a new business. It’s when one person owns and runs the business, and they’re personally responsible for any debt it incurs. In simple terms, there’s no legal difference between the sole proprietorship firm and the sole proprietors themselves. Here are answers to some common questions about proprietorship firm registration in India.
-            </p>
+            Changing the Registered Office Address of your LLP in India helps your business stay updated and legally compliant when relocating or expanding operations. Whether you are shifting to a bigger office, moving to a new city, restructuring your business setup, or aligning your registered address with your actual place of operations, the process allows you to officially update your LLP’s records without affecting its legal identity. It ensures compliance with regulatory requirements while maintaining smooth business operations, official communication, and credibility, supporting your continued growth and professional image.            </p>
           </div>
         </div>
       </section>
@@ -47,12 +46,12 @@ A Private Limited Company is a legally registered business under the Companies A
       {/* ===========================
           SECTION 3 — COMPANIES ACT
       ============================ */}
-      <section className="cs-act-section">
+      {/* <section className="cs-act-section">
         <div className="cs-act-container">
-          <div className="cs-act-card">
+          <div className="cs-act-card"> */}
             {/* <h3 className="cs-act-title">Companies Act, 2013</h3> */}
 
-            <p className="cs-act-text">
+            {/* <p className="cs-act-text">
               A Sole Proprietorship is a simple business structure owned and managed by a single individual. It does not have a separate legal identity from its owner and is one of the easiest ways to start a business in India.
             </p>
 
@@ -69,10 +68,10 @@ A Private Limited Company is a legally registered business under the Companies A
             <p className="cs-act-point">
               <span className="cs-act-point-label">(c)</span>
               Basic registrations like GST Registration (if applicable), Shop & Establishment License, or Udyam Registration.
-            </p>
-          </div>
+            </p> */}
+          {/* </div>
         </div>
-      </section>
+      </section> */}
 
     </div>
   );

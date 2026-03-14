@@ -10,42 +10,49 @@ const TermsConditions = () => {
 
         {/* Sub heading */}
         <p className="pvtltd-tc-subtitle">
-          By subscribing to the above plans, you agree to abide by our following
-          additional terms and conditions
+          By subscribing to any of the above plans, you agree to the following terms. No fine print, no nasty surprises — just transparency.
         </p>
 
         {/* List */}
         <ol className="pvtltd-tc-list">
           <li className="pvtltd-tc-item">
-            The Stamp Duty varies from state to state and shall be charged as per actuals.
+            Stamp Duty is state-specific and shall be charged at actuals over and above the plan price.
           </li>
 
           <li className="pvtltd-tc-item">
-            The fees mentioned above are valid for Authorised Capital up to Rs. 15 Lakhs, where the government fee is minimum. For above Rs. 15 Lakhs, the government fee shall increase accordingly.
+            The above professional fees are valid for Authorised Capital up to ₹15 Lakhs, where the government filing fee is at minimum. For Authorised Capital above ₹15 Lakhs, additional government fees will apply and shall be charged at actuals.
           </li>
 
           <li className="pvtltd-tc-item">
-            The above fee includes Name application for up to 4 choice names and in case all the 4 names are rejected by the department, an additional fee shall be charged.
+            The plan fee covers name reservation for up to 4 proposed names. If all 4 names are rejected by the MCA/RoC, an additional filing fee will be charged for re-submission.
           </li>
 
           <li className="pvtltd-tc-item">
-            The Audit Fees shall not be a part of our professional fees and shall be payable directly to the Auditor.
+            Audit fees are NOT part of our professional fees and shall be paid directly by the client to the appointed Statutory Auditor. (This is legally mandated and non-negotiable as per the Companies Act, 2013.)
           </li>
 
           <li className="pvtltd-tc-item">
-            In case the above plan does not qualify your requirements, kindly contact our executive, we shall be happy to customize a plan for you.
+            18% GST is applicable on all professional fees as per prevailing tax laws.
           </li>
 
            <li className="pvtltd-tc-item">
-            18% GST applicable on professional fee.
+            Government fees, stamp duty, and Digital Signature Certificate (DSC) charges are payable at actuals and are not included in any plan.
           </li>
 
            <li className="pvtltd-tc-item">
-            Government fees and DSC charges shall be payable as per actuals.
+            If any Director or Shareholder is a Foreign National or Non-Resident Indian (NRI), the incorporation fee shall be determined on a case-to-case basis and confirmed prior to engagement.
           </li>
 
            <li className="pvtltd-tc-item">
-            In case any of the Directors/ Shareholders is a Foreign National or NRI, the incorporation fees shall be determined with mutual discussion.
+            In case your requirements exceed the scope of any listed plan, our team will be happy to customise a package just for you — just reach out.
+          </li>
+
+          <li className="pvtltd-tc-item">
+            Supreme Plan fees cover compliance for the 1st Financial Year only. Subsequent years will be quoted separately.
+          </li>
+
+          <li className="pvtltd-tc-item">
+            Commencement of Business (Form INC-20A) must be filed within 180 days of the date of incorporation. Failure to do so may attract penalties under Section 11 of the Companies Act, 2013. We will remind you, but timely document and payment submission from the client is essential.
           </li>
         </ol>
       </div>

@@ -1,0 +1,245 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+/* Section base */
+
+.Add-Process-gt-section {
+    font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #ffffff;
+    padding: 64px 20px 72px;
+}
+
+.Add-Process-gt-container {
+    max-width: 1360px;
+    margin: 0 auto;
+}
+
+
+/* Heading */
+
+.Add-Process-gt-heading {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    margin: 0 0 40px;
+    color: #111827;
+}
+
+
+/* Slider wrapper (for side arrows) */
+
+.Add-Process-gt-slider-wrapper {
+    position: relative;
+    padding: 0 52px;
+    /* space so arrows don't overlap cards */
+}
+
+
+/* Horizontal slider */
+
+.Add-Process-gt-slider {
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding-bottom: 8px;
+}
+
+.Add-Process-gt-slider::-webkit-scrollbar {
+    display: none;
+}
+
+.Add-Process-gt-slider {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+
+/* Testimonial card */
+
+.Add-Process-gt-card {
+    min-width: 290px;
+    max-width: 290px;
+    flex-shrink: 0;
+    background: #fbfbfb;
+    border-radius: 18px;
+    border: 2px solid #1aa91a;
+    padding: 36px 28px 32px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+}
+
+
+/* Quote marks */
+
+.Add-Process-gt-quote {
+    position: absolute;
+    font-size: 40px;
+    color: #1aa91a;
+}
+
+.Add-Process-gt-quote-top {
+    top: 10px;
+    left: 18px;
+}
+
+.Add-Process-gt-quote-bottom {
+    bottom: 10px;
+    right: 24px;
+}
+
+
+/* Avatar */
+
+.Add-Process-gt-avatar-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.Add-Process-gt-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #1aa91a;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 600;
+    border: 4px solid #e5f8e8;
+}
+
+
+/* Text */
+
+.Add-Process-gt-text {
+    margin: 0 0 22px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #333333;
+}
+
+
+/* Name & role */
+
+.Add-Process-gt-name {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1aa91a;
+}
+
+.Add-Process-gt-role {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #111827;
+}
+
+
+/* Stars */
+
+.Add-Process-gt-stars {
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    font-size: 18px;
+    color: #ff9900;
+}
+
+
+/* SIDE ARROWS (left & right of cards) */
+
+.Add-Process-gt-side-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: #1aa91a;
+    color: #ffffff;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+    z-index: 10;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.Add-Process-gt-side-arrow:hover {
+    background: #128a15;
+    transform: translateY(-50%) scale(1.06);
+}
+
+.Add-Process-gt-left {
+    left: 10px;
+}
+
+.Add-Process-gt-right {
+    right: 10px;
+}
+
+
+/* -----------------------
+   Responsive
+------------------------ */
+
+@media (max-width: 1024px) {
+    .Add-Process-gt-heading {
+        font-size: 28px;
+    }
+    .Add-Process-gt-slider-wrapper {
+        padding: 0 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .Add-Process-gt-section {
+        padding: 52px 16px 60px;
+    }
+    .Add-Process-gt-heading {
+        font-size: 24px;
+        margin-bottom: 28px;
+    }
+    .Add-Process-gt-card {
+        min-width: 260px;
+        max-width: 260px;
+        padding: 30px 22px 28px;
+    }
+    .Add-Process-gt-slider-wrapper {
+        padding: 0 32px;
+    }
+    .Add-Process-gt-side-arrow {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 520px) {
+    .Add-Process-gt-section {
+        padding: 44px 10px 52px;
+    }
+    .Add-Process-gt-heading {
+        font-size: 22px;
+    }
+    .Add-Process-gt-slider-wrapper {
+        padding: 0 24px;
+    }
+    .Add-Process-gt-card {
+        min-width: 240px;
+        max-width: 240px;
+    }
+    .Add-Process-gt-left {
+        left: 4px;
+    }
+    .Add-Process-gt-right {
+        right: 4px;
+    }
+}

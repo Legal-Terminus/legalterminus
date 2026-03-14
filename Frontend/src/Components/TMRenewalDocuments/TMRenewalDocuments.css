@@ -1,9 +1,9 @@
-.infographic-section {
+.TMRenew-Doc-infographic-section {
   padding: 80px 20px;
   background: #f7f9fc;
 }
 
-.infographic-wrapper {
+.TMRenew-Doc-infographic-wrapper {
   max-width: 1200px;
   margin: auto;
   display: grid;
@@ -12,13 +12,13 @@
   gap: 40px;
 }
 
-.steps-column {
+.TMRenew-Doc-infographic-steps-column {
   display: flex;
   flex-direction: column;
   gap: 30px;
 }
 
-.step-card {
+.TMRenew-Doc-infographic-step--card {
   position: relative;
   background: #ffffff;
   border-radius: 50px;
@@ -26,7 +26,7 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
-.step-number {
+.TMRenew-Doc-infographic-step--number {
   position: absolute;
   left: -10px;
   top: 50%;
@@ -42,36 +42,36 @@
   justify-content: center;
 }
 
-.step-content h4 {
+.TMRenew-Doc-infographic-step--content h4 {
   margin-bottom: 8px;
   font-size: 16px;
   font-weight: 600;
   color: #1f2937;
 }
 
-.step-content p {
+.TMRenew-Doc-infographic-step--content p {
   font-size: 14px;
   line-height: 1.6;
   color: #555;
 }
 
 /* Colors */
-.teal .step-number {
+.teal .TMRenew-Doc-infographic-step--number {
   background: #20b2aa;
 }
-.blue .step-number {
+.blue .TMRenew-Doc-infographic-step--number {
   background: #3498db;
 }
-.navy .step-number {
+.navy .TMRenew-Doc-infographic-step--number {
   background: #2c3e50;
 }
-.red .step-number {
+.red .TMRenew-Doc-infographic-step--number {
   background: #e74c3c;
 }
-.pink .step-number {
+.pink .TMRenew-Doc-infographic-step--number {
   background: #e84393;
 }
-.orange .step-number {
+.orange .TMRenew-Doc-infographic-step--number {
   background: #f39c12;
 }
 
@@ -100,7 +100,7 @@
 ======================= */
 
 @media (max-width: 992px) {
-  .infographic-wrapper {
+  .TMRenew-Doc-infographic-wrapper {
     grid-template-columns: 1fr;
     gap: 50px;
   }
@@ -111,11 +111,11 @@
 }
 
 @media (max-width: 576px) {
-  .step-card {
+  .TMRenew-Doc-infographic-step--card {
     padding: 20px 20px 20px 80px;
   }
 
-  .step-number {
+  .TMRenew-Doc-infographic-step--number {
     width: 60px;
     height: 60px;
     font-size: 18px;

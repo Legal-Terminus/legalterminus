@@ -8,12 +8,10 @@ const RequirementsPvt = () => {
         {/* Heading + intro */}
         <header className="raq-header">
           <h2 className="raq-title">
-            Benefits of Change In object in India
+            Benefits of Change in Object (LLP)
           </h2>
           <p className="raq-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company registration process in India. It includes registering the business with the Registrar of Companies (RoC) and obtaining a Digital Signature Certificate (DSC) and Director Identification Number (DIN).
-
-
+            Changing the object of your LLP allows your business to legally update or expand its activities as it grows. It ensures compliance with regulations while providing flexibility to explore new opportunities, attract investors, and adapt to changing market conditions
           </p>
         </header>
 
@@ -21,43 +19,39 @@ const RequirementsPvt = () => {
         <div className="raq-grid">
           {/* 1 */}
           <article className="raq-card">
-            <h3 className="raq-card-title">Separate Legal Identity</h3>
+            <h3 className="raq-card-title">Supports Business Growth and Diversification</h3>
             <div className="raq-card-underline" />
             <p className="raq-card-text">
-Once registered, a company becomes its own legal entity. It can own property, sign contracts, and operate separately from its owners.
-
+             It allows the LLP to enter new markets or industries, helping increase revenue and reduce dependence on a single line of business.
             </p>
           </article>
 
           {/* 2 */}
           <article className="raq-card">
-            <h3 className="raq-card-title">Limited Liability Protection</h3>
+            <h3 className="raq-card-title">Ensures Legal Compliance</h3>
             <div className="raq-card-underline" />
             <p className="raq-card-text">
-              The personal assets of shareholders are safe from company debts and risks, ensuring financial protection.
-            </p>
+              Updating the business activities keeps the LLP’s records aligned with its actual operations, helping avoid penalties or issues during inspections or audits.            </p>
           </article>
 
           {/* 3 */}
           <article className="raq-card">
             <h3 className="raq-card-title">
-              Access to Government Schemes
+              Provides Operational Flexibility
             </h3>
             <div className="raq-card-underline" />
             <p className="raq-card-text">
-              Registered companies can benefit from government schemes like Startup India for tax benefits and easier compliance, and Make in India for incentives and support for manufacturing businesses.
-            </p>
+              It gives the LLP the freedom to adapt to changing market conditions and update its business focus as it grows.            </p>
           </article>
 
           {/* 4 */}
           <article className="raq-card">
             <h3 className="raq-card-title">
-              Increased Credibility
+              Helps Attract Investors and Partners
             </h3>
             <div className="raq-card-underline" />
             <p className="raq-card-text">
-              A registered company is more trusted by investors, clients, and vendors, making it easier to get funding and partnerships.
-            </p>
+             A clear and updated business objective can build confidence among potential investors or partners interested in the LLP’s new activities.            </p>
           </article>
         </div>
       </div>

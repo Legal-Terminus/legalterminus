@@ -3,54 +3,60 @@ import "./TMApplicaFAQ.css";
 
 const faqs = [
   {
-    question: "How many persons are required to form a Private Limited Company?",
+    question: "Is trademark registration mandatory in India?",
     answer:
-      "Minimum two persons are required to form a Private Limited Company and a maximum up to 200 persons can be a member of a single Private Limited Company.",
+      "No, trademark registration is voluntary under the Trade Marks Act, 1999. However, registration gives you exclusive legal rights and the right to use ® — making it strongly advisable for any serious brand.",
   },
   {
-    question: "How many Directors are required to form a Private Limited Company?",
+    question: "Can I use ™ before my trademark is registered?",
     answer:
-      "Minimum two directors are required in a Private Limited Company, with an upper cap up to 15 directors.",
+      "Yes! The ™ symbol can be used as soon as your application is filed, indicating that you're claiming rights over the mark. The ® symbol can only be used after the trademark is officially registered.",
   },
   {
-    question: "Who are Directors of the company?",
+    question: "How long does trademark registration take in India?",
     answer:
-      "Directors are officers of the company who are responsible for managing the company and making the decisions as to its operation on a day to day basis, for the benefit of the shareholders.",
-  },
-  {
-    question:
-      "What is a company shareholder?",
-    answer:
-      "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in day-to-day management or financial affairs. They are also called 'members' and they agree to become part of a company by taking a minimum of one share in it. The quantity of shares held by each person represents how much of the business they own.",
-  },
-  {
-    question: "How much capital is required to start a Private Limited Company?",
-    answer:
-      "The Private Limited Company can be incorporated with any amount of capital and there is no lower or upper limit. Further, the government has relaxed the government fees for Incorporation of a Private Limited Company up to an Authorized capital of Rs. 15,00,000/-, however, the stamp duty, which is still levied, varies from State to State.",
+      "A smooth, uncontested trademark registration typically takes 2-3 years (this timelines varies and depends on the backlog with the department). If the application receives an examination report or faces opposition, it can take longer.",
   },
   {
     question:
-      "What are some basic/ key documents required to incorporate a Private Limited Company in India?",
+      "What is a trademark class? Do I need to file in multiple classes?",
     answer:
-      "PAN Card (All the Proposed Directors and/or Shareholders)",
+      "A trademark class defines the category of goods or services your mark protects. India follows the Nice Classification with 45 classes. If your brand spans multiple product/service categories, you should consider multi-class filing to ensure complete protection.",
+  },
+  {
+    question: "What happens if my trademark application gets objected?",
+    answer:
+      "The Trademark Examiner may raise objections (Absolute or Relative grounds) in an examination report. You have 30 days to file a reply. If not resolved, a Show Cause Hearing is scheduled. Our Enriched and Supreme plans cover this process.",
   },
   {
     question:
-      "What is the procedure to register a Private Limited Company?",
+      "How long is a registered trademark valid?",
     answer:
-      "You need at least two directors, two shareholders, a unique company name, a registered office address in India, and the necessary KYC documents for all directors and shareholders.",
+    "A registered trademark in India is valid for 10 years from the date of filing. It can be renewed indefinitely every 10 years via Form TM-R, by paying the prescribed renewal fee.",
   },
   {
     question:
-      "What is the time period within which a Private Limited Company can be incorporated?",
+      "Can a foreign company or NRI register a trademark in India?",
     answer:
-      "The process of incorporating a Private Limited Company can take anywhere between 10 to 15 working days, subject to submission of correct information and complete documentation.",
+      "Yes. A foreign company or NRI can file a trademark application in India. For foreign applicants, an address for service in India is required. Our team handles the complete process. Fees for such cases are determined on mutual discussion.",
   },
   {
     question:
-      "How Legal Terminus can help you incorporate a Private Limited Company in India?",
+      "What is the government fee for trademark registration?",
     answer:
-      "Legal Terminus can help you with incorporation of Private Limited Company for you, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+      "The government fee (Form TM-A) is ₹4,500 per class (online) for Individuals, Sole Proprietors, and MSME/Startup entities, and ₹9,000 per class (online) for Companies, LLPs, and other entities. These are in addition to Legal Terminus' professional fees.",
+  },
+  {
+    question:
+      "Can I register a trademark that is already in use by someone else?",
+    answer:
+      "No. If a similar or identical mark already exists in the same class, it will likely be refused by the Trademark Registry on relative grounds. This is exactly why we conduct a comprehensive trademark search before filing.",
+  },
+  {
+    question:
+      "What is Form TM-M?",
+    answer:
+      "Form TM-M serves as a Power of Attorney authorising Legal Terminus to file and prosecute your trademark application on your behalf. It is executed on ₹100 stamp paper (stamp duty may vary from state to state) and is mandatory for all trademark filings handled by us.",
   },
 ];
 
@@ -66,14 +72,10 @@ const FaqPvt = () => {
       <div className="Tm-Applica-faq-container">
         {/* Left side – static text */}
         <div className="Tm-Applica-faq-left">
-          <h2 className="Tm-Applica-faq-title">Private Limited Company Registration FAQ&apos;s</h2>
+          <h2 className="Tm-Applica-faq-title">Trademark Registration FAQ's</h2>
 
           <p className="Tm-Applica-faq-intro">
-            Starting a Private Limited Company in India is an important step for any business owner. With the right support, the process can be simple and stress-free.
-
-<br/><br/>
-Here, we’ve answered the most common questions about company registration—covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
-
+            Filing a trademark can feel like navigating a maze — but it doesn't have to. We've answered the most common questions about the process, timeline, documents, and costs.
           </p>
 
           <p className="Tm-Applica-faq-intro">

@@ -1,0 +1,111 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
+/* Section wrapper */
+.Windup-PLC-tabs-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #f5f9ff;
+  padding: 32px 24px 16px;
+}
+
+/* Container width */
+.Windup-PLC-tabs-container {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* White card */
+.Windup-PLC-tabs-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(33, 89, 25, 0.08);
+  padding: 0;
+  overflow: hidden;
+
+  /* sticky on scroll */
+  position: sticky;
+  top: 0;       /* change if you have a fixed header (e.g. 70px) */
+  z-index: 50;
+}
+
+/* Tabs wrapper */
+.Windup-PLC-tabs-list {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.Windup-PLC-tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* Individual Tab */
+.Windup-PLC-tab {
+  border: none;
+  outline: none;
+  background: transparent;
+
+  /* MORE padding so text looks visually full */
+  padding: 18px 38px;
+
+  font-size: 14.5px;
+  font-weight: 500;
+
+  /* Slight letter spacing to make text look cleaner & wider */
+  letter-spacing: 2.8px;
+
+  color: #0a0b17;
+  cursor: pointer;
+
+  flex: 0 0 auto;       /* tab width = text width */
+  display: inline-flex;
+  align-items: center;
+
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+/* Active tab styling */
+.Windup-PLC-tab.active {
+  background: #e9f0ff;
+  color: #1aa91a;
+
+  /* Top-line highlight */
+  box-shadow: inset 0 3px 0 #16b646;
+}
+
+/* Hover (inactive tabs) */
+.Windup-PLC-tab:not(.active):hover {
+  background: rgba(245, 248, 255, 0.9);
+}
+
+/* -------------------------------
+      RESPONSIVE
+--------------------------------*/
+
+/* Tablets */
+@media (max-width: 768px) {
+  .Windup-PLC-tabs-section {
+    padding: 24px 16px;
+  }
+
+  .Windup-PLC-tab {
+    padding: 16px 26px;
+    font-size: 13.5px;
+  }
+}
+
+/* Small Phones */
+@media (max-width: 480px) {
+  .Windup-PLC-tabs-section {
+    padding: 20px 12px;
+  }
+
+  .Windup-PLC-tab {
+    padding: 14px 20px;
+    font-size: 12.5px;
+    letter-spacing: 0.15px;
+  }
+}

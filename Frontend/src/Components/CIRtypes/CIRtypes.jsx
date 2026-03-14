@@ -19,7 +19,7 @@ const PvtTypes = () => {
         {/* Right content */}
         <div className="cir-types-content">
           <h2 className="cir-types-title">
-            Types of Change In Registered Office Address 
+            Types of Change in Registered Office Address (LLP) 
           </h2>
 
           {/* <p className="cir-types-intro">
@@ -28,25 +28,25 @@ const PvtTypes = () => {
 
           {/* Type 1 */}
           <div className="cir-types-block">
-            <h3 className="cir-types-subtitle">Company limited by Shares</h3>
+            <h3 className="cir-types-subtitle">Within the Same State & Same ROC Jurisdiction</h3>
             <p className="cir-types-text">
-              This is the most common type of Private Limited Company. The liability of shareholders is limited to the unpaid amount on their shares. It is ideal for startups and growing businesses looking to raise funds while protecting personal assets.
+              This is the simplest type of change, such as shifting to another office within the same city or ROC area. It requires partner approval and filing the prescribed form with the Registrar.
             </p>
           </div>
 
           {/* Type 2 */}
           <div className="cir-types-block">
-            <h3 className="cir-types-subtitle">Company limited by Guarantee</h3>
+            <h3 className="cir-types-subtitle">Within the Same State but Different ROC Jurisdiction</h3>
             <p className="cir-types-text">
-              In this type, members agree to contribute a fixed amount in case of liquidation. It is generally suitable for non-profit or charitable organizations that do not require share capital.
+              If the LLP shifts its office to a location that falls under a different ROC within the same state, necessary filings must be made and the LLP agreement may need to be updated.
             </p>
           </div>
 
           {/* Type 3 */}
           <div className="cir-types-block">
-            <h3 className="cir-types-subtitle">Unlimited Companies</h3>
+            <h3 className="cir-types-subtitle">From One State to Another</h3>
             <p className="cir-types-text">
-              An unlimited company does not place any limit on members’ liability. Members are personally responsible for company debts. This structure is less common and is usually chosen by closely held businesses with full control over operations.
+              This is the most detailed process, as it involves changing the state mentioned in the LLP agreement. It requires partner approval, consent from secured creditors (if any), publication of a public notice in newspapers, and filing the required form with the new ROC.
             </p>
           </div>
         </div>

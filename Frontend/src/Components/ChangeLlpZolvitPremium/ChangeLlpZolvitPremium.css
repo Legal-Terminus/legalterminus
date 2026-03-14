@@ -1,0 +1,260 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+.ChangeLlp-zp-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #f7fafc;
+  padding: 48px 24px;
+}
+
+.ChangeLlp-zp-container {
+  max-width: 1380px;
+  margin: 0 auto;
+}
+
+.ChangeLlp-zp-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  padding: 40px 48px;
+  display: grid;
+  grid-template-columns: 1.05fr 1.3fr;
+  gap: 48px;
+  align-items: center;
+}
+
+/* Illustration */
+
+.ChangeLlp-zp-illustration-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ChangeLlp-zp-illustration {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Content */
+
+.ChangeLlp-zp-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.ChangeLlp-zp-header {
+  margin-bottom: 24px;
+}
+
+.ChangeLlp-zp-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px;
+}
+
+.ChangeLlp-zp-title-highlight {
+  color: #d9a520; /* gold-like similar to reference */
+  font-weight: 700;
+}
+
+.ChangeLlp-zp-title-icon {
+  font-size: 22px;
+  vertical-align: middle;
+}
+
+.ChangeLlp-zp-subtitle {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #4b5563;
+}
+
+/* Sections */
+
+.ChangeLlp-zp-section-block {
+  margin-bottom: 20px;
+}
+
+.ChangeLlp-zp-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px;
+}
+
+/* Features list */
+
+.ChangeLlp-zp-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ChangeLlp-zp-list-item {
+  display: flex;
+  align-items: flex-start;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.ChangeLlp-zp-list-icon {
+  font-size: 18px;
+  margin-right: 10px;
+  margin-top: 1px;
+}
+
+/* Note box */
+
+.ChangeLlp-zp-note-box {
+  background-color: #f1f7ff;
+  border-radius: 14px;
+  padding: 16px 20px;
+}
+
+.ChangeLlp-zp-note-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ChangeLlp-zp-note-item {
+  position: relative;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.7;
+}
+
+.ChangeLlp-zp-note-item + .ChangeLlp-zp-note-item {
+  margin-top: 4px;
+}
+
+.ChangeLlp-zp-note-item::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 18px;
+  line-height: 1;
+  color: #9ca3af;
+}
+
+/* CTA + Pricing */
+
+.ChangeLlp-zp-cta-row {
+  margin: 20px 0 16px;
+}
+
+.ChangeLlp-zp-cta-btn {
+  display: inline-block;
+  background-color: #117c16; /* deep navy similar to reference */
+  color: #ffffff;
+  padding: 12px 40px;
+  border-radius: 999px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.ChangeLlp-zp-cta-btn:hover {
+  background-color: #001f46;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
+}
+
+.ChangeLlp-zp-pricing {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #4b5563;
+}
+
+.ChangeLlp-zp-price-strong {
+  font-weight: 600;
+}
+
+/* ------------------------------
+   RESPONSIVE BEHAVIOR
+   ------------------------------ */
+
+/* Medium screens: shrink paddings and gaps */
+@media (max-width: 1024px) {
+  .ChangeLlp-zp-section {
+    padding: 56px 20px;
+  }
+
+  .ChangeLlp-zp-card {
+    padding: 32px 32px;
+    gap: 32px;
+    grid-template-columns: 1fr 1.2fr;
+  }
+
+  .ChangeLlp-zp-title {
+    font-size: 24px;
+  }
+}
+
+/* Tablets: stack columns */
+@media (max-width: 768px) {
+  .ChangeLlp-zp-section {
+    padding: 48px 16px;
+  }
+
+  .ChangeLlp-zp-card {
+    grid-template-columns: 1fr;
+    padding: 28px 22px;
+  }
+
+  .ChangeLlp-zp-illustration-wrapper {
+    order: 1;
+  }
+
+  .ChangeLlp-zp-content {
+    order: 2;
+  }
+
+  .ChangeLlp-zp-title {
+    font-size: 22px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .ChangeLlp-zp-section {
+    padding: 40px 12px;
+  }
+
+  .ChangeLlp-zp-card {
+    padding: 24px 18px;
+  }
+
+  .ChangeLlp-zp-title {
+    font-size: 20px;
+  }
+
+  .ChangeLlp-zp-subtitle {
+    font-size: 13px;
+  }
+
+  .ChangeLlp-zp-list-item {
+    font-size: 13px;
+  }
+
+  .ChangeLlp-zp-cta-btn {
+    width: 100%;
+    text-align: center;
+    padding: 11px 0;
+  }
+
+  .ChangeLlp-zp-pricing {
+    font-size: 12px;
+  }
+}

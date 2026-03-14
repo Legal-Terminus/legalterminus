@@ -9,24 +9,22 @@ const TradeLicenseTermCondition = () => {
         <h2 className="tltc-title">TERMS &amp; CONDITIONS</h2>
 
         {/* Sub heading */}
-        <p className="tltc-subtitle">
+        {/* <p className="tltc-subtitle">
           By subscribing to the above plans, you agree to abide by our following
           additional terms and conditions
-        </p>
+        </p> */}
 
         {/* List */}
         <ol className="tltc-list">
           <li className="tltc-item">
-            DSC shall be from Sign X Class III only.
+            The fee mentioned above does not include govt. fee of Rs. 2,700/- which shall be payable over and above the fee mentioned.
           </li>
 
           <li className="tltc-item">
-            The fees mentioned above are valid for contribution up to Rs. 1
-            Lakh and in case contribution is above Rs. 1 Lakh, additional fees
-            shall be charged as per actuals.
+            Further in case of a change of Attorney an additional govt. fee of Rs. 900/- shall be applicable in addition to above
           </li>
 
-          <li className="tltc-item">
+          {/* <li className="tltc-item">
             The above fee includes name application for up to 4 choice names and
             in case all 4 names are rejected by the department, an additional fee
             shall be charged as per actuals.
@@ -44,7 +42,7 @@ const TradeLicenseTermCondition = () => {
             In case the above plan does not qualify your requirements, kindly
             contact our executive — we shall be happy to customise a plan for
             you.
-          </li>
+          </li> */}
         </ol>
       </div>
     </section>

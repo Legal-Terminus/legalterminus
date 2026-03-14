@@ -28,8 +28,7 @@ const ZolvitPremium = () => {
                 <span className="cp-title-icon">⚖️</span>
               </h2>
               <p className="cp-subtitle">
-Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
-              </p>
+               Update your LLP’s business activities smoothly with Legal Terminus’ expert-handled process, designed for growing businesses that want to expand legally without compliance risks or delays.              </p>
             </header>
 
             {/* Features */}
@@ -38,15 +37,15 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <ul className="cp-list cp-features-list">
                 <li className="cp-list-item">
                   <span className="cp-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+                  Complete assistance from drafting partner resolution to amending the LLP Agreement and filing required forms with the Registrar.
                 </li>
                 <li className="cp-list-item">
                   <span className="cp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                  Accurate documentation and hassle-free filing support to officially record the change in business activities.
                 </li>
                 <li className="cp-list-item">
                   <span className="cp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                  Timely follow-ups and regular updates to ensure quick approval and uninterrupted business operations.
                 </li>
               </ul>
             </section>
@@ -57,12 +56,10 @@ Get your company registered faster with Legal Terminus expert-handled process, m
               <div className="cp-note-box">
                 <ul className="cp-note-list">
                   <li className="cp-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+                    Partner approval is mandatory before changing or adding new business activities in the LLP.
                   </li>
                   <li className="cp-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                    The updated LLP Agreement must be filed with the Registrar within the prescribed time limit to avoid penalties.
                   </li>
                 </ul>
               </div>

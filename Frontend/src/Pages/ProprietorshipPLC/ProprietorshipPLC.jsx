@@ -20,10 +20,10 @@ const ProprietorshipPLC = () => {
         <ProFPLCBreadcrum/>
 
         <div id="plans">
-       {/* <ProFPLCPlanandPricing/> */}
+        <ProFPLCPlanandPricing/> 
       </div>
 
-      {/* <ProFPLCCondition/> */}
+       <ProFPLCCondition/> 
 
       <div id="premium">
         <ProFPLCZolvitPremium />
@@ -36,7 +36,7 @@ const ProprietorshipPLC = () => {
       </div>
 
        <div id="types">
-        {/* <ProFPLCTypes /> */}
+         <ProFPLCTypes /> 
       </div>
 
       <div id="requirements">
@@ -44,11 +44,11 @@ const ProprietorshipPLC = () => {
       </div>
 
       <div id="process">
-        {/* <ProFPLCProcess/> */}
+         <ProFPLCProcess/> 
         </div>
 
       <div id="documents">
-        {/* <ProFPLCDocument/> */}
+         <ProFPLCDocument/> 
       </div>
 
       <div id="faq">

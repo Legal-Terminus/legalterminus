@@ -10,7 +10,7 @@ const DissolvePrivateBreadcrum = () => {
         <div className="DissolvePrivate-public-content">
 
           <span className="DissolvePrivate-public-tag">
-             Dissolve a Private Limited Company
+             Dissolve a Private Limited Company..
           </span>
 
           <h1 className="DissolvePrivate-public-title">

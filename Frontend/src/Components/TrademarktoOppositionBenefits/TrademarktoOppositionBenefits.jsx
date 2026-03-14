@@ -8,7 +8,7 @@ const TradeLicenseBenefits = () => {
         {/* Heading + intro */}
         <header className="tlb-header">
           <h2 className="tlb-title">
-            Benefits of Trade License Registration in India
+            Benefits of Trademark Opposition
           </h2>
           <p className="tlb-subtitle">
             Trade licenses are issued by municipal authorities to regulate and authorize

@@ -1,23 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-.llp-llp-pricingsection {
+.LLP-Plan-Price-section {
   font-family: 'Poppins', sans-serif;
   background: #ffffff;
   padding: 60px 24px 80px;
 }
 
-.llp-pricingcontainer {
+.LLP-Plan-pricing-container {
   max-width: 1180px;
   margin: 0 auto;
 }
 
 /* Header */
-.llp-pricingheader {
+.LLP-Plan-pricing-header {
   text-align: center;
   margin-bottom: 40px;
 }
 
-.llp-llp-pricingtitle {
+.LLP-Plan-Price-title {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -26,21 +26,21 @@
   color: #000;
 }
 
-.llp-pricingsubtitle {
+.LLP-Plan-pricing-subtitle {
   font-size: 18px;
   font-weight: 500;
   color: #1bb33a;
 }
 
 /* Cards layout with CSS Grid for clean responsiveness */
-.llp-pricingcards {
+.LLP-Plan-pricing-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
 
 /* Card */
-.plan-card {
+.LLP-Plan--card {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
@@ -51,11 +51,11 @@
 }
 
 /* Plan header */
-.plan-header {
+.LLP-Plan--header {
   margin-bottom: 16px;
 }
 
-.plan-name {
+.LLP-Plan--name {
   font-size: 20px;
   font-weight: 600;
   color: #18b233;
@@ -63,7 +63,7 @@
   margin-bottom: 8px;
 }
 
-.plan-old-price {
+.LLP-Plan--old-price {
   font-size: 20px;
   font-weight: 500;
   text-align: center;
@@ -72,37 +72,37 @@
   margin-bottom: 2px;
 }
 
-.plan-price {
+.LLP-Plan--price {
   font-size: 32px;
   font-weight: 700;
   text-align: center;
   color: #000;
 }
 
-.plan-meta {
+.LLP-Plan--meta {
   font-size: 13px;
   text-align: center;
   color: #666;
 }
 
-.plan-meta .popular {
+.LLP-Plan--meta .popular {
   font-weight: 600;
   color: #ff3b3b;
   margin-left: 4px;
 }
 
 /* List */
-.plan-body {
+.LLP-Plan--body {
   margin-top: 20px;
 }
 
-.plan-list {
+.LLP-Plan--list {
   padding: 0;
   margin: 0;
   list-style: none;
 }
 
-.plan-list-item {
+.LLP-Plan--list-item {
   font-size: 13px;
   color: #111;
   line-height: 1.6;
@@ -110,7 +110,7 @@
   margin-bottom: 8px;
 }
 
-.plan-list-item::before {
+.LLP-Plan--list-item::before {
   content: "";
   width: 8px;
   height: 8px;
@@ -121,12 +121,12 @@
 }
 
 /* Button */
-.plan-footer {
+.LLP-Plan--footer {
   text-align: center;
   margin-top: 20px;
 }
 
-.plan-button {
+.LLP-Plan--button {
   background: #21b738;
   color: #ffffff;
   padding: 10px 36px;
@@ -139,7 +139,7 @@
     box-shadow 0.15s ease;
 }
 
-.plan-button:hover {
+.LLP-Plan--button:hover {
   background: #1aa130;
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
@@ -151,16 +151,16 @@
 
 /* Large tablets / small laptops */
 @media (max-width: 1200px) {
-  .llp-pricingcontainer {
+  .LLP-Plan-pricing-container {
     padding: 0 12px;
   }
 
-  .llp-pricingcards {
+  .LLP-Plan-pricing-cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
   }
 
-  .plan-card {
+  .LLP-Plan--card {
     padding: 24px;
   }
 }
@@ -169,26 +169,26 @@
 @media (max-width: 992px) {
 
 
-  .llp-llp-pricingtitle {
+  .LLP-Plan-Price-title {
     font-size: 28px;
   }
 
-  .llp-pricingsubtitle {
+  .LLP-Plan-pricing-subtitle {
     font-size: 16px;
   }
 
-  .llp-pricingcards {
+  .LLP-Plan-pricing-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 /* Large phones / small tablets: full width cards */
 @media (max-width: 768px) {
-  .llp-pricingcards {
+  .LLP-Plan-pricing-cards {
     grid-template-columns: 1fr;
   }
 
-  .plan-card {
+  .LLP-Plan--card {
     max-width: 480px;
     margin: 0 auto;
   }
@@ -196,32 +196,32 @@
 
 /* Small phones */
 @media (max-width: 480px) {
-  .llp-llp-pricingsection {
+  .LLP-Plan-Price-section {
     padding: 32px 12px 48px;
   }
 
-  .llp-llp-pricingtitle {
+  .LLP-Plan-Price-title {
     font-size: 22px;
     letter-spacing: 0.5px;
   }
 
-  .llp-pricingsubtitle {
+  .LLP-Plan-pricing-subtitle {
     font-size: 14px;
   }
 
-  .plan-card {
+  .LLP-Plan--card {
     padding: 20px;
   }
 
-  .plan-price {
+  .LLP-Plan--price {
     font-size: 28px;
   }
 
-  .plan-old-price {
+  .LLP-Plan--old-price {
     font-size: 18px;
   }
 
-  .plan-button {
+  .LLP-Plan--button {
     width: 100%;
     padding: 10px 0;
   }
