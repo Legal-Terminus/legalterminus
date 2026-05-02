@@ -2,16 +2,17 @@ import React from 'react'
 import './Herosection.css'
 import right3danimation from '../../assets/hero-video.mp4'
 
+const TAGS = [
+  'Startup Registration',
+  'NGO Registration',
+  'Trademark Registration',
+  'Government License',
+  'Government Registration',
+  'Return Filing',
+  'More +'
+]
+
 const Herosection = () => {
-  const tags = [
-    'Startup Registration',
-    'NGO Registration',
-    'Trademark Registration',
-    'Government License',
-    'Government Registration',
-    'Return Filing',
-    'More +'
-  ]
 
   return (
     <section className="hs-hero" aria-label="Hero — Business Compliance">
@@ -44,7 +45,7 @@ const Herosection = () => {
 
           {/* Gap intentionally maintained between actions and tags */}
           <div id="recommended" className="hs-hero__tags" role="list" aria-label="Popular services">
-            {tags.map(tag => (
+            {TAGS.map(tag => (
               <button
                 key={tag}
                 className={`hs-tag ${tag === 'GST Registration' ? 'hs-tag--highlight' : ''}`}
@@ -67,6 +68,8 @@ const Herosection = () => {
               muted
               loop
               playsInline
+              width="600"
+              height="400"
               className="hs-video-card__media"
             />
         

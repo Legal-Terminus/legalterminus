@@ -1,16 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import "./IECOurclints.css";
 
-import client1 from "../../assets/our (1).webp";
-import client2 from "../../assets/our (2).webp";
-import client3 from "../../assets/our (3).webp";
-import client4 from "../../assets/our (4).webp";
-import client5 from "../../assets/our (5).webp";
-import client6 from "../../assets/our (6).webp";
-import client7 from "../../assets/our (7).webp";
-import client8 from "../../assets/our (8).webp";
-import client9 from "../../assets/our (9).webp";
-import client10 from "../../assets/our (10).webp";
+import { clientLogos } from "../../assets/clientLogos.js";
 // ... continue imports up to client119 as in your original file
 
 const IECOurClients = () => {
@@ -133,7 +124,7 @@ const IECOurClients = () => {
           <div className="iecclients-scroller">
             <ul className="iecclients-track" ref={trackRef}>
               {logosDup.map((src, i) => (
-                <li className="iecclients-card" key={i}>
+                <li className="iecclients-card" key={`logo-${i}`}>
                   <figure className="iecclients-logo">
                     <img
                       src={src}

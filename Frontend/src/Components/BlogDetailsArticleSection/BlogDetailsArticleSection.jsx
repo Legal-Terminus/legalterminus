@@ -18,15 +18,12 @@ const BlogDetailsArticleSection = () => {
     e.preventDefault();
     const q = e.target.elements["bda-search"].value.trim();
     if (!q) return;
-    console.log("Search query:", q);
   };
 
   const handleCategoryClick = (cat) => {
-    console.log("Category clicked:", cat);
   };
 
   const openPost = (id) => {
-    console.log("open post:", id);
   };
 
   return (
@@ -43,7 +40,7 @@ const BlogDetailsArticleSection = () => {
                 className="blogdetailsarticle-hero-image"
                 src={heroImg}
                 alt="Legal consultation signing documents"
-                loading="eager"
+                loading="lazy"
               />
             </div>
 
@@ -67,7 +64,7 @@ const BlogDetailsArticleSection = () => {
                 <button
                   className="blogdetailsarticle-btn blogdetailsarticle-btn-primary"
                   type="button"
-                  onClick={() => console.log("Read more")}
+                  onClick={() => {}}
                 >
                   Read More
                 </button>
@@ -75,7 +72,7 @@ const BlogDetailsArticleSection = () => {
                 <button
                   className="blogdetailsarticle-btn blogdetailsarticle-btn-outline"
                   type="button"
-                  onClick={() => console.log("Save article")}
+                  onClick={() => {}}
                 >
                   Save
                 </button>
@@ -227,7 +224,7 @@ const BlogDetailsArticleSection = () => {
 
             <h3 className="blogdetailsarticle-comment-title">Leave A Comment</h3>
 
-            <form className="blogdetailsarticle-comment-form" onSubmit={(e)=>{ e.preventDefault(); console.log("post comment"); }}>
+            <form className="blogdetailsarticle-comment-form" onSubmit={(e) => { e.preventDefault(); }}>
               <div className="blogdetailsarticle-form-grid">
                 <input type="text" placeholder="Name" />
                 <input type="email" placeholder="Email" />

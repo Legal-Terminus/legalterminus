@@ -8,18 +8,24 @@ import cf5 from '../../assets/cf5.webp';
 import cf6 from '../../assets/cf6.webp';
 
 
-const ClientFeedback = () => {
-  const testimonials = [
-    { text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", name: "Fannie Sanders", role: "Entrepreneur", img: cf1 },
-    { text: "Sed do eiusmod tempor incididunt ut labore et dolore magna.", name: "Paddy Hardy", role: "Entrepreneur", img: cf2 },
-    { text: "Consectetur adipiscing elit, sed do eiusmod tempor incididunt.", name: "Hari Wheatley", role: "Manager", img: cf4 },
-    { text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", name: "Clara Benson", role: "Founder", img: cf5 },
-    { text: "Sed do eiusmod tempor incididunt ut labore.", name: "Julian Cooper", role: "CEO", img: cf6 },
-    { text: "Dolore magna aliqua sed do tempor.", name: "Naomi Flynn", role: "Designer", img: cf2 },
-  ];
+const TESTIMONIALS = [
+  { id: "fannie-sanders", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", name: "Fannie Sanders", role: "Entrepreneur", img: cf1 },
+  { id: "paddy-hardy", text: "Sed do eiusmod tempor incididunt ut labore et dolore magna.", name: "Paddy Hardy", role: "Entrepreneur", img: cf2 },
+  { id: "hari-wheatley", text: "Consectetur adipiscing elit, sed do eiusmod tempor incididunt.", name: "Hari Wheatley", role: "Manager", img: cf4 },
+  { id: "clara-benson", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", name: "Clara Benson", role: "Founder", img: cf5 },
+  { id: "julian-cooper", text: "Sed do eiusmod tempor incididunt ut labore.", name: "Julian Cooper", role: "CEO", img: cf6 },
+  { id: "naomi-flynn", text: "Dolore magna aliqua sed do tempor.", name: "Naomi Flynn", role: "Designer", img: cf2 },
+];
 
-  // create clones for infinite effect
-  const infinite = [...testimonials, ...testimonials, ...testimonials];
+const ClientFeedback = () => {
+  const testimonials = TESTIMONIALS;
+
+  // create clones for infinite effect — prefix with clone group so keys are unique
+  const infinite = [
+    ...testimonials.map((t) => ({ ...t, _key: `a-${t.id}` })),
+    ...testimonials.map((t) => ({ ...t, _key: `b-${t.id}` })),
+    ...testimonials.map((t) => ({ ...t, _key: `c-${t.id}` })),
+  ];
   const START = testimonials.length; // start index in the middle clone
   const VISIBLE = 3;
 
@@ -29,6 +35,7 @@ const ClientFeedback = () => {
   const trackRef = useRef(null);
   const slideWidthRef = useRef(0);
   const intervalRef = useRef(null);
+  const resizeTimerRef = useRef(null);
   const TRANS_MS = 600; // must match CSS transition duration
 
   // next: move by one
@@ -131,16 +138,13 @@ const ClientFeedback = () => {
   useEffect(() => {
     measure();
     const onResize = () => {
-      // small debounce
-      clearTimeout(intervalRef.current?._resizeTimer);
-      intervalRef.current = { ...intervalRef.current, _resizeTimer: setTimeout(() => {
-        measure();
-      }, 90) };
+      clearTimeout(resizeTimerRef.current);
+      resizeTimerRef.current = setTimeout(measure, 90);
     };
-    window.addEventListener("resize", onResize);
+    window.addEventListener("resize", onResize, { passive: true });
     return () => {
       window.removeEventListener("resize", onResize);
-      if (intervalRef.current && intervalRef.current._resizeTimer) clearTimeout(intervalRef.current._resizeTimer);
+      clearTimeout(resizeTimerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -167,8 +171,8 @@ const ClientFeedback = () => {
         <div className="cf-slider">
           <div className="cf-slider-viewport">
             <div className="cf-slider-track" ref={trackRef}>
-              {infinite.map((item, i) => (
-                <div className="cf-card" key={i}>
+              {infinite.map((item) => (
+                <div className="cf-card" key={item._key}>
                   <div className="cf-card-inner">
                     <div className="cf-quote-mark">“</div>
                     <p className="cf-text">{item.text}</p>
@@ -188,9 +192,9 @@ const ClientFeedback = () => {
         </div>
 
         <div className="cf-dots">
-          {testimonials.map((_, i) => (
+          {testimonials.map((t, i) => (
             <button
-              key={i}
+              key={t.id}
               className={`cf-dot ${index % testimonials.length === i ? "active" : ""}`}
               onClick={() => goTo(i)}
               aria-label={`Go to slide ${i + 1}`}

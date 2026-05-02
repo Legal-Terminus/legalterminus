@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import "./Tabs.css";
 
 import Incorporation from "../Incorporation/Incorporation";
@@ -22,17 +22,15 @@ const TAB_ITEMS = [
   { id: "clients", label: "Our client" }
 ];
 
-/**
- * PanelsMap: uncomment and wire components when ready
- */
+// Component references — instantiated only when their tab is active
 const PanelsMap = {
-  inc: <Incorporation />,
-  steps: <Steps />,
-  docs: <Documents />,
-  faq: <Faq />,
-  why: <WhyUs />,
-  test: <BlogDetailsTestimonial />,
-  clients: <OurClients />
+  inc: Incorporation,
+  steps: Steps,
+  docs: Documents,
+  faq: Faq,
+  why: WhyUs,
+  test: BlogDetailsTestimonial,
+  clients: OurClients,
 };
 
 const Tabs = () => {
@@ -47,31 +45,15 @@ const Tabs = () => {
   const rowTopRef = useRef(0);
   const rowHeightRef = useRef(0);
 
-  // Measure row height/top and store CSS var for scroll-margin
-  useEffect(() => {
-    const update = () => {
-      const rowEl = rowRef.current;
-      if (!rowEl) return;
-      const rect = rowEl.getBoundingClientRect();
-      const extra = 12;
-      const total = Math.ceil(rect.height + extra);
-      rowHeightRef.current = rect.height;
-      rowTopRef.current = rect.top + window.scrollY;
-      const wrap = rowEl.closest(".TabSec-wrap");
-      if (wrap) wrap.style.setProperty("--tabsec-sticky-height", `${total}px`);
-    };
-
-    if (typeof window !== "undefined") {
-      update();
-      window.addEventListener("resize", update);
-      window.addEventListener("load", update);
-    }
-    return () => {
-      if (typeof window !== "undefined") {
-        window.removeEventListener("resize", update);
-        window.removeEventListener("load", update);
-      }
-    };
+  // Shared measurement function — used by both scroll and resize handlers
+  const updateMeasurements = useCallback(() => {
+    const rowEl = rowRef.current;
+    if (!rowEl) return;
+    const rect = rowEl.getBoundingClientRect();
+    rowHeightRef.current = rect.height;
+    rowTopRef.current = rect.top + window.scrollY;
+    const wrap = rowEl.closest(".TabSec-wrap");
+    if (wrap) wrap.style.setProperty("--tabsec-sticky-height", `${Math.ceil(rect.height + 12)}px`);
   }, []);
 
   // Keep active tab visible inside horizontal scroller (buffered)
@@ -134,34 +116,38 @@ const Tabs = () => {
     if (btn) btn.focus({ preventScroll: true });
   };
 
-  // sticky toggle on scroll + recompute on resize
+  // Single effect: registers scroll + resize once on mount; uses refs to avoid stale closure
+  const isFixedRef = useRef(isFixed);
+  isFixedRef.current = isFixed;
+
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    updateMeasurements();
+    window.addEventListener("load", updateMeasurements, { once: true });
+
     const handleScroll = () => {
       if (!rowTopRef.current) return;
       const scrollY = window.scrollY || window.pageYOffset;
-      if (scrollY >= rowTopRef.current && !isFixed) setIsFixed(true);
-      else if (scrollY < rowTopRef.current && isFixed) setIsFixed(false);
+      if (scrollY >= rowTopRef.current && !isFixedRef.current) setIsFixed(true);
+      else if (scrollY < rowTopRef.current && isFixedRef.current) setIsFixed(false);
     };
 
+    let resizeTimer;
     const onResize = () => {
-      const rowEl = rowRef.current;
-      if (!rowEl) return;
-      const rect = rowEl.getBoundingClientRect();
-      rowHeightRef.current = rect.height;
-      rowTopRef.current = rect.top + window.scrollY;
-      const wrap = rowEl.closest(".TabSec-wrap");
-      if (wrap) wrap.style.setProperty("--tabsec-sticky-height", `${Math.ceil(rect.height + 12)}px`);
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(updateMeasurements, 100);
     };
 
-    onResize();
     window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", onResize);
+    window.addEventListener("resize", onResize, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", onResize);
+      clearTimeout(resizeTimer);
     };
-  }, [isFixed]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updateMeasurements]);
 
   return (
     <div className="TabSec-outer">
@@ -217,22 +203,28 @@ const Tabs = () => {
         </nav>
 
         <main className="TabSec-panel" role="region" aria-live="polite">
-          {TAB_ITEMS.map((t) => (
-            <section
-              key={t.id}
-              id={`panel-${t.id}`}
-              role="region"
-              aria-labelledby={`tab-${t.id}`}
-              className={`TabSec-panelContent ${active === t.id ? "TabSec-isActive" : ""}`}
-            >
-              <div className="TabSec-panelInner">
-                <div className="TabSec-panelHeading">
-                  <h2>{t.label}</h2>
+          {TAB_ITEMS.map((t) => {
+            const ActivePanel = PanelsMap[t.id];
+            return (
+              <section
+                key={t.id}
+                id={`panel-${t.id}`}
+                role="region"
+                aria-labelledby={`tab-${t.id}`}
+                className="TabSec-panelContent TabSec-isActive"
+                hidden={active !== t.id}
+              >
+                <div className="TabSec-panelInner">
+                  <div className="TabSec-panelHeading">
+                    <h2>{t.label}</h2>
+                  </div>
+                  <div className="TabSec-panelBody">
+                    {active === t.id && <ActivePanel />}
+                  </div>
                 </div>
-                <div className="TabSec-panelBody">{PanelsMap[t.id]}</div>
-              </div>
-            </section>
-          ))}
+              </section>
+            );
+          })}
         </main>
       </div>
     </div>

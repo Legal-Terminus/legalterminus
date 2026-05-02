@@ -211,8 +211,9 @@ const Faq = () => {
 
                 {filtered.map((item, idx) => {
                   const isOpen = openIndex === idx;
+                  const stableKey = item.q.slice(0, 40);
                   return (
-                    <div key={idx} className={`incorption-faq-card ${isOpen ? "open" : ""}`}>
+                    <div key={stableKey} className={`incorption-faq-card ${isOpen ? "open" : ""}`}>
                       <button className="incorption-faq-question" onClick={() => toggle(idx)}>
                         <span className="incorption-faq-qtext">{item.q}</span>
                         <span className="incorption-faq-icon">
@@ -231,7 +232,7 @@ const Faq = () => {
                           >
                             <div className="incorption-faq-answer">
                               {item.a.split("\n\n").map((para, i) => (
-                                <p key={i}>{para}</p>
+                                <p key={`${stableKey}-p${i}`}>{para}</p>
                               ))}
                             </div>
                           </motion.div>

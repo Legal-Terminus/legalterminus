@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import "./Premiumbusiness.css";
 
 const PREMIUM_ICONS = [
@@ -40,7 +40,7 @@ const SERVICES = [
 ];
 
 
-function PremiumIcon({ path, id }) {
+const PremiumIcon = memo(function PremiumIcon({ path, id }) {
   return (
     <svg
       className="pb-icon-svg"
@@ -74,7 +74,7 @@ function PremiumIcon({ path, id }) {
       <title id={`pb-icon-${id}`}>Service icon</title>
     </svg>
   );
-}
+});
 
 export default function Premiumbusiness() {
   const [openIndex, setOpenIndex] = useState(null);
@@ -124,7 +124,7 @@ With a strong focus on customer satisfaction and smart solutions, Legal Terminus
                   <span>View Legal Services</span>
                 </button>
 
-                <button className="pb-ghost"style={{ color: "#000" }}>
+                <button className="pb-ghost pb-ghost--dark">
                   <span>Get Expert Consultation</span>
                 </button>
             </div>

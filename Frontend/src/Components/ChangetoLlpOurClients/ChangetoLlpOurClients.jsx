@@ -1,10 +1,9 @@
 import React, { useRef, useEffect } from "react";
 import "./ChangetoLlpOurClients.css";
 
-import client1 from "../../assets/our (1).webp";
-import client2 from "../../assets/our (2).webp";
+import { clientLogos } from "../../assets/clientLogos.js";
 /* … all imports unchanged … */
-import client119 from "../../assets/our (119).webp";
+import { clientLogos } from "../../assets/clientLogos.js";
 
 const LlpOurClients = () => {
   const logos = [
@@ -124,7 +123,7 @@ const LlpOurClients = () => {
           <div className="llpoc-scroller">
             <ul className="llpoc-track" ref={trackRef}>
               {logosDup.map((src, i) => (
-                <li className="llpoc-card" key={i}>
+                <li className="llpoc-card" key={`logo-${i}`}>
                   <figure className="llpoc-logo">
                     <img src={src} alt={`client-${i}`} className="llpoc-img" />
                   </figure>
