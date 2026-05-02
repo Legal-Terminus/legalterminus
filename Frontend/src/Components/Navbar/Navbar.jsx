@@ -413,7 +413,7 @@ export default function NavbarAdvanced() {
       setActiveMegaTab(null);
       setNestedOpenItem(null);
       setRightPanelStyle({ top: 0, left: null });
-    }, 160);
+    }, 350);
   };
 
   // compute and set the right panel position so it lines up with the hovered left tab
@@ -773,7 +773,7 @@ export default function NavbarAdvanced() {
                                                         nestedOpenItem === key
                                                       )
                                                         setNestedOpenItem(null);
-                                                    }, 120)
+                                                    }, 300)
                                                   }
                                                   aria-hidden={
                                                     nestedOpenItem !== key
@@ -876,7 +876,7 @@ export default function NavbarAdvanced() {
                                             }`}
                                             onMouseEnter={() => openNested(key)}
                                             onMouseLeave={() =>
-                                              setNestedOpenItem(null)
+                                              setTimeout(() => setNestedOpenItem(null), 300)
                                             }
                                           >
                                             <ul className="nested-links">
