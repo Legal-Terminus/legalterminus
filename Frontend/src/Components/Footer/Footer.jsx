@@ -122,7 +122,7 @@ const Footer = () => {
           <div className="footer-col footer-contact">
             <h3 className="footer-title">Free Consultation</h3>
 
-            
+
 
             <ul className="contact-list">
               <li>
@@ -157,12 +157,12 @@ const Footer = () => {
         </div>
 
         <div className="footer-bottom">
-          
+
           <div className="footer-bottom-content">
             <div className="copyright">
-              © 2023 Legal Terminus. All Rights Reserved. | Powered by Legal Terminus Developed by <a href='https://prwebstock.com/' className='pr'>PR WEBSTOCK</a>
+              © 2023 Legal Terminus. All Rights Reserved. | Powered by Legal Terminus Developed by <a href='https://infynialabs.com/' className='pr'>AI Agents from InfyniaLabs</a>
             </div>
-            
+
           </div>
         </div>
       </div>
