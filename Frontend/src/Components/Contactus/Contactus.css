@@ -32,8 +32,8 @@
   box-sizing: border-box;
   position: relative;
   overflow: visible;
-  /* padding: 120px 24px; */
-  margin-top: 180px;
+  padding: 80px 24px 100px;
+  margin-top: 0;
 }
 
 .zen-inner {
@@ -42,7 +42,7 @@
   display: grid;
   grid-template-columns: 1fr 760px; /* desktop: left flexible, right 760px */
   gap: 60px;
-  align-items: start;
+  align-items: center;
   position: relative;
   z-index: 1;
 }
@@ -85,7 +85,7 @@
 @keyframes fadeInScale { to { opacity: 1; transform: scale(1); } }
 
 /* Left column */
-.zen-left { padding: 40px 0; }
+.zen-left { padding: 0; }
 .zen-left-inner { max-width: 600px; }
 
 .zen-subtle { display: inline-flex; align-items: center; gap: 12px; color: #c7d2ff; font-weight: 700; font-size: 14px; letter-spacing: 1px; margin-bottom: 24px; text-transform: uppercase; background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%); padding: 12px 24px; border-radius: 50px; border: 1px solid rgba(99, 102, 241, 0.12); }
@@ -133,19 +133,19 @@
 /* hover: brand-like accent + lift */
 .zen-social-btn:hover { background: linear-gradient(135deg, var(--zen-accent) 0%, var(--zen-accent-light) 100%); color: white; transform: translateY(-3px); box-shadow: 0 12px 30px rgba(99, 102, 241, 0.25); }
 
-/* Right column / form card — positioned to overlap visually like the provided image */
+/* Right column / form card */
 .zen-right {
   display: flex;
   justify-content: flex-end;
-  padding-top: 40px;
+  padding-top: 0;
   position: relative;
-  top: -120px; /* controlled overlap that looks like the screenshot */
+  top: 0;
 }
 
 /* Form card can expand to use the wider right column */
 .zen-form-card {
   width: 100%;
-  max-width: 760px; /* increased to match the column width */
+  max-width: 760px;
   background: var(--zen-card-bg);
   border-radius: var(--zen-radius-card);
   padding: 40px;
@@ -153,7 +153,7 @@
   border: 1px solid rgba(226,232,240,0.8);
   backdrop-filter: blur(8px);
   position: relative;
-  margin-top: -30px;
+  margin-top: 0;
 }
 
 .zen-form-title { margin: 0 0 16px 0; font-size: 28px; color: #0f172a; font-weight: 800; line-height: 1.2; }
@@ -179,9 +179,9 @@
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
-  .zen-inner { gap: 40px; grid-template-columns: 1fr 520px; } /* reduce right width a bit on medium desktops */
+  .zen-inner { gap: 40px; grid-template-columns: 1fr 520px; }
   .zen-title { font-size: 48px; }
-  .zen-right { top: -40px; }
+  .zen-right { top: 0; }
   .zen-form-card { max-width: 520px; }
 }
 
@@ -193,7 +193,7 @@
 }
 
 @media (max-width: 768px) {
-  .zen-section { padding: 80px 20px; margin-top: 0px; }
+  .zen-section { padding: 60px 20px; }
   .zen-title { font-size: 34px; }
   .zen-grid { grid-template-columns: 1fr; gap: 14px; }
   .zen-form-card { padding: 24px; max-width: 100%; }
