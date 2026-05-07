@@ -1,36 +1,22 @@
-.blog-page {
+/* Blog page container styling */
+.blog-page,
+.blogpage-root {
   width: 100%;
   background-color: #fff;
+  padding: 2rem 0;
 }
 
-.blog-page-header {
-  margin-bottom: 3rem;
-}
-
-.blog-page-header h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #0b3d91;
-  margin: 1rem 0;
-  line-height: 1.2;
-}
-
-.blog-page-header p {
-  font-size: 1.1rem;
-  color: #515c66;
-  line-height: 1.6;
-  margin-top: 1rem;
-}
-
-/* Blog articles grid */
-.blog-articles-grid {
+/* Blog article card grid */
+.blogpage-grid,
+.tabs-wrap.full-width {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
   margin: 2rem 0;
+  width: 100%;
 }
 
-.blog-article-card {
+.blogpage-card {
   background: #fff;
   border-radius: 12px;
   overflow: hidden;
@@ -39,45 +25,68 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
-.blog-article-card:hover {
+.blogpage-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-.blog-article-image {
+/* Card media/image section */
+.blogpage-card-media {
   width: 100%;
   height: 200px;
-  object-fit: cover;
+  position: relative;
+  overflow: hidden;
   background-color: #f0f0f0;
 }
 
-.blog-article-content {
+.blogpage-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.blogpage-tags {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.blogpage-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: rgba(11, 61, 145, 0.8);
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Card content section */
+.blogpage-card-body {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
 
-.blog-article-category {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #ff8a00;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 0.5rem;
-  width: fit-content;
-}
-
-.blog-article-date {
-  font-size: 0.875rem;
+.blogpage-date {
+  font-size: 0.85rem;
   color: #999;
   margin-bottom: 0.75rem;
+  display: block;
 }
 
-.blog-article-title {
+.blogpage-card-title,
+.blogpage-title {
   font-size: 1.25rem;
   font-weight: 700;
   color: #0b1220;
@@ -86,39 +95,108 @@
   flex-grow: 1;
 }
 
-.blog-article-excerpt {
+.blogpage-card-excerpt,
+.blogpage-excerpt {
   font-size: 0.95rem;
   color: #666;
   line-height: 1.5;
   margin-top: 0.75rem;
 }
 
-/* Responsive adjustments */
+/* Outer wrapper */
+.blogpage-grid-wrap,
+.tabs-outer {
+  width: 100%;
+  padding: 28px 18px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+}
+
+.blogpage-grid-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Banner section */
+.blogpage-banner {
+  position: relative;
+  padding: 4.2rem 3rem;
+  background: #f6f2ef;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.07);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 22rem;
+  margin-bottom: 3rem;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .blogpage-grid,
+  .tabs-wrap.full-width {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
-  .blog-articles-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  .blogpage-grid,
+  .tabs-wrap.full-width {
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
   }
 
-  .blog-page-header h1 {
-    font-size: 1.75rem;
+  .blogpage-card-media {
+    height: 180px;
   }
 
-  .blog-article-card {
-    margin-bottom: 1rem;
+  .blogpage-card-body {
+    padding: 1.25rem;
+  }
+
+  .blogpage-card-title,
+  .blogpage-title {
+    font-size: 1.1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .blog-articles-grid {
+  .blogpage-grid,
+  .tabs-wrap.full-width {
     grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
 
-  .blog-page-header h1 {
-    font-size: 1.5rem;
-  }
-
-  .blog-article-image {
+  .blogpage-card-media {
     height: 150px;
+  }
+
+  .blogpage-card-body {
+    padding: 1rem;
+  }
+
+  .blogpage-card-title,
+  .blogpage-title {
+    font-size: 1rem;
+  }
+
+  .blogpage-date {
+    font-size: 0.8rem;
+  }
+
+  .blogpage-card-excerpt,
+  .blogpage-excerpt {
+    font-size: 0.9rem;
+  }
+
+  .blogpage-banner {
+    padding: 2rem 1.5rem;
+    min-height: 18rem;
   }
 }
