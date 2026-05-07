@@ -1,18 +1,368 @@
 .olwf-page {
-  padding: 2rem;
-  min-height: 70vh;
+  width: 100%;
+  background-color: #f9fafb;
 }
 
-.page-header {
-  margin-bottom: 2rem;
+.olwf-banner {
+  background: linear-gradient(135deg, #0b5f3a 0%, #19a35f 100%);
+  color: white;
+  padding: 80px 20px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(11, 95, 58, 0.15);
 }
 
-.page-header h1 {
-  font-size: 2.5rem;
-  color: #333;
+.olwf-banner h1 {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 15px 0;
+  letter-spacing: -0.5px;
 }
 
-.page-content {
-  font-size: 1rem;
-  color: #666;
+.olwf-banner p {
+  font-size: 20px;
+  margin: 0;
+  opacity: 0.95;
+}
+
+.olwf-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.olwf-intro {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  margin: 60px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.olwf-intro h2 {
+  color: #0b5f3a;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  border-bottom: 3px solid #19a35f;
+  padding-bottom: 15px;
+}
+
+.olwf-intro p {
+  color: #071521;
+  font-size: 16px;
+  line-height: 1.8;
+  margin-bottom: 15px;
+}
+
+.olwf-intro p:last-child {
+  margin-bottom: 0;
+}
+
+.olwf-features {
+  margin: 60px 0;
+}
+
+.olwf-features h2 {
+  color: #0b5f3a;
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 40px;
+  border-bottom: 3px solid #19a35f;
+  padding-bottom: 15px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.feature-card {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(11, 95, 58, 0.12);
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  background: #19a35f;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 auto 15px;
+}
+
+.feature-card h3 {
+  color: #0b5f3a;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.feature-card p {
+  color: #6b7b83;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.olwf-services {
+  margin: 60px 0;
+}
+
+.olwf-services h2 {
+  color: #0b5f3a;
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 40px;
+  border-bottom: 3px solid #19a35f;
+  padding-bottom: 15px;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.service-category {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #0b5f3a;
+}
+
+.category-title {
+  color: #0b5f3a;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.service-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.service-list li {
+  color: #071521;
+  font-size: 14px;
+  line-height: 1.8;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.service-list li:last-child {
+  margin-bottom: 0;
+}
+
+.check-mark {
+  color: #19a35f;
+  font-weight: bold;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.olwf-eligibility {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  margin: 60px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.olwf-eligibility h2 {
+  color: #0b5f3a;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 40px;
+  border-bottom: 3px solid #19a35f;
+  padding-bottom: 15px;
+}
+
+.eligibility-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.eligibility-column h3 {
+  color: #0b5f3a;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.eligibility-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.eligibility-column li {
+  color: #071521;
+  font-size: 15px;
+  line-height: 2;
+  padding-left: 25px;
+  position: relative;
+}
+
+.eligibility-column li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #19a35f;
+  font-weight: bold;
+}
+
+.reusable-section {
+  margin: 60px 0;
+}
+
+.olwf-cta {
+  background: linear-gradient(135deg, #0b5f3a 0%, #19a35f 100%);
+  color: white;
+  padding: 60px 40px;
+  border-radius: 12px;
+  text-align: center;
+  margin: 60px 0;
+  box-shadow: 0 8px 20px rgba(11, 95, 58, 0.2);
+}
+
+.olwf-cta h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.olwf-cta p {
+  font-size: 18px;
+  margin-bottom: 30px;
+  opacity: 0.95;
+}
+
+.cta-button {
+  background-color: white;
+  color: #0b5f3a;
+  border: none;
+  padding: 14px 40px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 1024px) {
+  .olwf-banner h1 {
+    font-size: 40px;
+  }
+
+  .eligibility-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .olwf-banner {
+    padding: 50px 20px;
+  }
+
+  .olwf-banner h1 {
+    font-size: 32px;
+  }
+
+  .olwf-banner p {
+    font-size: 16px;
+  }
+
+  .olwf-intro {
+    padding: 25px;
+  }
+
+  .olwf-intro h2 {
+    font-size: 24px;
+  }
+
+  .olwf-services h2,
+  .olwf-features h2 {
+    font-size: 24px;
+  }
+
+  .feature-card {
+    padding: 20px;
+  }
+
+  .service-category {
+    padding: 20px;
+  }
+
+  .olwf-cta {
+    padding: 40px 20px;
+  }
+
+  .olwf-cta h2 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .olwf-container {
+    padding: 0 1rem;
+  }
+
+  .olwf-banner h1 {
+    font-size: 24px;
+  }
+
+  .olwf-banner p {
+    font-size: 14px;
+  }
+
+  .olwf-intro {
+    padding: 20px;
+    margin: 40px 0;
+  }
+
+  .olwf-intro h2 {
+    font-size: 20px;
+  }
+
+  .features-grid,
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .olwf-eligibility {
+    padding: 20px;
+  }
+
+  .eligibility-content {
+    gap: 20px;
+  }
 }

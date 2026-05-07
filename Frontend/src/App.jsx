@@ -152,10 +152,10 @@ function App() {
             <Route path="/professional-tax-return" element={<ProfessionalTaxReturn />} />
             <Route path="/about" element={<About />} />
             <Route path="/media" element={<Media />} />
-            <Route path="/policies/privacy" element={<PrivacyPolicy />} />
-            <Route path="/policies/terms" element={<TermsConditions />} />
-            <Route path="/policies/refund" element={<RefundPolicy />} />
-            <Route path="/policies/confidentiality" element={<ConfidentialityPolicy />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-conditions" element={<TermsConditions />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/confidentiality-policy" element={<ConfidentialityPolicy />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>

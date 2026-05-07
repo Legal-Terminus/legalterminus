@@ -40,20 +40,6 @@
   padding-bottom: 15px;
 }
 
-.policy-intro {
-  background-color: #f0f9f5;
-  border-left: 4px solid #19a35f;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-}
-
-.policy-intro p {
-  color: #071521;
-  margin: 0;
-  line-height: 1.7;
-}
-
 .policy-section {
   margin-bottom: 30px;
 }
@@ -69,38 +55,7 @@
   color: #071521;
   font-size: 15px;
   line-height: 1.7;
-  margin: 0 0 12px 0;
-}
-
-.policy-section ul,
-.policy-section ol {
-  color: #071521;
-  font-size: 15px;
-  line-height: 1.8;
-  margin: 12px 0;
-  padding-left: 20px;
-}
-
-.policy-section li {
-  margin-bottom: 8px;
-}
-
-.refund-process {
-  background-color: #f0f9f5;
-  border-left: 4px solid #19a35f;
-  padding: 20px;
-  border-radius: 8px;
-  margin: 30px 0;
-}
-
-.refund-process h3 {
-  color: #0b5f3a;
-  margin-top: 0;
-}
-
-.refund-process ol {
-  color: #071521;
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .policy-contact {
@@ -119,6 +74,7 @@
 .policy-contact p {
   color: #071521;
   line-height: 1.6;
+  margin: 10px 0;
 }
 
 .policy-contact a {
@@ -151,9 +107,7 @@
     font-size: 16px;
   }
 
-  .policy-section p,
-  .policy-section ul,
-  .policy-section ol {
+  .policy-section p {
     font-size: 14px;
   }
 }
