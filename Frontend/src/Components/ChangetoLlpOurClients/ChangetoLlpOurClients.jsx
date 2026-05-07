@@ -2,13 +2,9 @@ import React, { useRef, useEffect } from "react";
 import "./ChangetoLlpOurClients.css";
 
 import { clientLogos } from "../../assets/clientLogos.js";
-/* … all imports unchanged … */
-import { clientLogos } from "../../assets/clientLogos.js";
 
 const LlpOurClients = () => {
-  const logos = [
-    client1, client2, /* … unchanged … */ client119
-  ];
+  const logos = clientLogos;
 
   const logosDup = [...logos, ...logos];
 

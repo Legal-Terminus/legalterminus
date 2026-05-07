@@ -5,16 +5,10 @@ import "./DissolaveOurClients.css";
 import { clientLogos } from "../../assets/clientLogos.js";
 
 
-/* ---- assets imports stay SAME ---- */
+
 
 const DissolaveOurClients = () => {
-  const logos = [
-    client1, client2, client3, client4, client5, client6, client7, client8,
-    client9, client10, client11, client12, client13, client14, client15,
-    client16, client17, client18, client19, client20,
-    /* ...rest unchanged */
-    client119,
-  ];
+  const logos = clientLogos;
 
   const logosDup = [...logos, ...logos];
 

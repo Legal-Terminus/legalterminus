@@ -57,6 +57,10 @@ const ChangeObjectCom = lazy(() => import("./Pages/ChangeObjectCom/ChangeObjectC
 const Increase = lazy(() => import("./Pages/Increase/Increase"));
 const Add = lazy(() => import("./Pages/Add/Add"));
 const DissolvePrivate = lazy(() => import("./Pages/DissolvePrivate/DissolvePrivate"));
+const PrivatetoPublic = lazy(() => import("./Pages/PrivatetoPublic/PrivatetoPublic"));
+const PublictoPrivate = lazy(() => import("./Pages/PublictoPrivate/PublictoPrivate"));
+const ChangetoCompany = lazy(() => import("./Pages/ChangetoCompany/ChangetoCompany"));
+const ChangetoLlp = lazy(() => import("./Pages/ChangetoLlp/ChangetoLlp"));
 
 function App() {
   return (
@@ -116,6 +120,10 @@ function App() {
             <Route path="/trademark/renewal" element={<TMRenewal />} />
             <Route path="/trademark/application" element={<TMApplication />} />
             <Route path="/trademark/exam-reply" element={<ReplyOfExaminationReport />} />
+            <Route path="/conversion/private-to-public" element={<PrivatetoPublic />} />
+            <Route path="/conversion/public-to-private" element={<PublictoPrivate />} />
+            <Route path="/updation/change-name-company-to-company" element={<ChangetoCompany />} />
+            <Route path="/updation/change-name-llp-to-llp" element={<ChangetoLlp />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>

@@ -2,13 +2,9 @@ import React, { useRef, useEffect } from "react";
 import "./TradeLicenseOurClients.css";
 
 import { clientLogos } from "../../assets/clientLogos.js";
-// ... continue imports up to client119 as in your original file
 
 const TradeLicenseOurClients = () => {
-  const logos = [
-    client1, client2, client3, client4, client5, client6, client7, client8, client9, client10,
-    // include all your other clients (11–119)
-  ];
+  const logos = clientLogos;
 
   const logosDup = [...logos, ...logos];
   const trackRef = useRef(null);

@@ -2,13 +2,9 @@ import React, { useRef, useEffect } from "react";
 import "./ChangetoCompanyOurClients.css";
 
 import { clientLogos } from "../../assets/clientLogos.js";
-/* imports unchanged */
 
 const OurClients = () => {
-  const logos = [
-    client1, client2, client3, client4, client5, client6, client7, client8, client9, client10,
-    /* array unchanged */
-  ];
+  const logos = clientLogos;
 
   const logosDup = [...logos, ...logos];
 
