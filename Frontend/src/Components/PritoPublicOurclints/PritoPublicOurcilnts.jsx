@@ -5,6 +5,7 @@ import { clientLogos } from "../../assets/clientLogos.js";
 
 const OurClients = () => {
   const logos = clientLogos;
+  const logosDup = [...logos, ...logos];
 
   const trackRef = useRef(null);
   const rafRef = useRef(null);
