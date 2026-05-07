@@ -2,7 +2,7 @@ import React from "react";
 
 import TrademarktoOppositionBreadcrum from "../../Components/TrademarktoOppositionBreadcrum/TrademarktoOppositionBreadcrum";
 import TrademarktoOppositionPlans from "../../Components/TrademarktoOppositionBreadcrum/TrademarktoOppositionBreadcrum";
-import TrademarktoOppositionTermCondition from "../../Components/TrademarktoOppositionTermcondition/TrademarktoOppositionTermCondition";
+import TrademarktoOppositionTermCondition from "../../Components/TrademarktoOppositionTermCondition/TrademarktoOppositionTermCondition";
 import TrademarktoOppositionZolvitPremium from "../../Components/TrademarktoOppositionZolvitPremium/TrademarktoOppositionZolvitPremium";
 import TrademarktoOppositionTabs from "../../Components/TrademarktoOppositionTabs/TrademarktoOppositionTabs";
 import TrademarktoOppositionOverview from "../../Components/TrademarktoOppositionOverview/TrademarktoOppositionOverview";
