@@ -12,7 +12,7 @@ import AddFAQ from '../../Components/AddFAQ/AddFAQ'
 import AddTermsCondition from '../../Components/AddTermsCondition/AddTermsCondition'
 import AddTestimonial from '../../Components/AddTestimonial/AddTestimonial'
 import AddVideoTestimonial from '../../Components/AddVideoTestimonial/AddVideoTestimonial'
-import AddOurclints from '../../Components/AddOurclints/AddOurclints'
+import AddOurclints from '../../Components/AddOurclints/AddOurClints'
 
 const PrivateLimited = () => {
   return (

@@ -1,6 +1,6 @@
 import React from 'react'
 import './Herosection.css'
-import right3danimation from '../../assets/hero-video.mp4'
+import right3danimation from '../../assets/Hero-Video.mp4'
 
 const TAGS = [
   'Startup Registration',
