@@ -1,5 +1,5 @@
 import React from "react";
-import "./ChangetoLlPRequirementsTab.css";
+import "./ChangetoLlpRequirementsTab.css";
 
 const RequirementsLlp = () => {
   return (

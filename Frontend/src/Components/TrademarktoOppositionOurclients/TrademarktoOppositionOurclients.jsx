@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import "./TrademarktoOppositionOurClients.css";
+import "./TrademarktoOppositionOurclients.css";
 
 import { clientLogos } from "../../assets/clientLogos.js";
 

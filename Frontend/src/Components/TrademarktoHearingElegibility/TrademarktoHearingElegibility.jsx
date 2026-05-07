@@ -1,5 +1,5 @@
 import React from "react";
-import "./trademarktoHearingElegibility.css";
+import "./TrademarktoHearingElegibility.css";
 
 const steps = [
   {

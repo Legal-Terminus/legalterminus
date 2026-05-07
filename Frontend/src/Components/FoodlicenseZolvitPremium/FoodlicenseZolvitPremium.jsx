@@ -1,5 +1,5 @@
 import React from "react";
-import "./FoodLicenseZolvitPremium.css";
+import "./FoodlicenseZolvitPremium.css";
 import premiumIllustration from "../../assets/lt-companys.svg";
 
 const FoodLicenseZolvitPremium = () => {

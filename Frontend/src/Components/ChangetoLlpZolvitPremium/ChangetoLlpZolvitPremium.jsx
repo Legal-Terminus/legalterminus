@@ -1,5 +1,5 @@
 import React from "react";
-import "./ChangetoLlPZolvitPremium.css";
+import "./ChangetoLlpZolvitPremium.css";
 import premiumIllustration from "../../assets/lt-company.svg";
 
 const ZolvitPremium = () => {
