@@ -1,11 +1,11 @@
 import React from 'react'
-import './About.css'
+import './StartupIndia.css'
 
-const About = () => {
+const StartupIndia = () => {
   return (
-    <div className="about-page">
+    <div className="startup-india-page">
       <div className="page-header">
-        <h1>About</h1>
+        <h1>Startup India Registration</h1>
       </div>
       <div className="page-content">
         <p>Content to be added...</p>
@@ -14,4 +14,4 @@ const About = () => {
   )
 }
 
-export default About
+export default StartupIndia

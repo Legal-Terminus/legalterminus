@@ -61,6 +61,22 @@ const PrivatetoPublic = lazy(() => import("./Pages/PrivatetoPublic/PrivatetoPubl
 const PublictoPrivate = lazy(() => import("./Pages/PublictoPrivate/PublictoPrivate"));
 const ChangetoCompany = lazy(() => import("./Pages/ChangetoCompany/ChangetoCompany"));
 const ChangetoLlp = lazy(() => import("./Pages/ChangetoLlp/ChangetoLlp"));
+const OLWF = lazy(() => import("./Pages/OLWF/OLWF"));
+const StartupIndia = lazy(() => import("./Pages/StartupIndia/StartupIndia"));
+const StartupOdisha = lazy(() => import("./Pages/StartupOdisha/StartupOdisha"));
+const ITRIndividual = lazy(() => import("./Pages/ITRIndividual/ITRIndividual"));
+const ITRBusiness = lazy(() => import("./Pages/ITRBusiness/ITRBusiness"));
+const AnnualFilingCompany = lazy(() => import("./Pages/AnnualFilingCompany/AnnualFilingCompany"));
+const AnnualFilingLLP = lazy(() => import("./Pages/AnnualFilingLLP/AnnualFilingLLP"));
+const EPFReturn = lazy(() => import("./Pages/EPFReturn/EPFReturn"));
+const ESIReturn = lazy(() => import("./Pages/ESIReturn/ESIReturn"));
+const ProfessionalTaxReturn = lazy(() => import("./Pages/ProfessionalTaxReturn/ProfessionalTaxReturn"));
+const About = lazy(() => import("./Pages/About/About"));
+const Media = lazy(() => import("./Pages/Media/Media"));
+const PrivacyPolicy = lazy(() => import("./Pages/Policies/PrivacyPolicy"));
+const TermsConditions = lazy(() => import("./Pages/Policies/TermsConditions"));
+const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
+const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
 
 function App() {
   return (
@@ -124,6 +140,22 @@ function App() {
             <Route path="/conversion/public-to-private" element={<PublictoPrivate />} />
             <Route path="/updation/change-name-company-to-company" element={<ChangetoCompany />} />
             <Route path="/updation/change-name-llp-to-llp" element={<ChangetoLlp />} />
+            <Route path="/olwf" element={<OLWF />} />
+            <Route path="/startup-india" element={<StartupIndia />} />
+            <Route path="/startup-odisha" element={<StartupOdisha />} />
+            <Route path="/itr-individual" element={<ITRIndividual />} />
+            <Route path="/itr-business" element={<ITRBusiness />} />
+            <Route path="/annual-filing-company" element={<AnnualFilingCompany />} />
+            <Route path="/annual-filing-llp" element={<AnnualFilingLLP />} />
+            <Route path="/epf-return" element={<EPFReturn />} />
+            <Route path="/esi-return" element={<ESIReturn />} />
+            <Route path="/professional-tax-return" element={<ProfessionalTaxReturn />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/media" element={<Media />} />
+            <Route path="/policies/privacy" element={<PrivacyPolicy />} />
+            <Route path="/policies/terms" element={<TermsConditions />} />
+            <Route path="/policies/refund" element={<RefundPolicy />} />
+            <Route path="/policies/confidentiality" element={<ConfidentialityPolicy />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>

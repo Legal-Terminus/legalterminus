@@ -1,11 +1,11 @@
 import React from 'react'
-import './About.css'
+import './ITRIndividual.css'
 
-const About = () => {
+const ITRIndividual = () => {
   return (
-    <div className="about-page">
+    <div className="itr-individual-page">
       <div className="page-header">
-        <h1>About</h1>
+        <h1>ITR Filing (Individual)</h1>
       </div>
       <div className="page-content">
         <p>Content to be added...</p>
@@ -14,4 +14,4 @@ const About = () => {
   )
 }
 
-export default About
+export default ITRIndividual

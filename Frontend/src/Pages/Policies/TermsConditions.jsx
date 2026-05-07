@@ -1,11 +1,11 @@
 import React from 'react'
-import './About.css'
+import './TermsConditions.css'
 
-const About = () => {
+const TermsConditions = () => {
   return (
-    <div className="about-page">
+    <div className="terms-conditions-page">
       <div className="page-header">
-        <h1>About</h1>
+        <h1>Terms & Conditions</h1>
       </div>
       <div className="page-content">
         <p>Content to be added...</p>
@@ -14,4 +14,4 @@ const About = () => {
   )
 }
 
-export default About
+export default TermsConditions

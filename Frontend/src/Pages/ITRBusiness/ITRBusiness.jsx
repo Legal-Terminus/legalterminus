@@ -1,11 +1,11 @@
 import React from 'react'
-import './About.css'
+import './ITRBusiness.css'
 
-const About = () => {
+const ITRBusiness = () => {
   return (
-    <div className="about-page">
+    <div className="itr-business-page">
       <div className="page-header">
-        <h1>About</h1>
+        <h1>ITR Filing (Business)</h1>
       </div>
       <div className="page-content">
         <p>Content to be added...</p>
@@ -14,4 +14,4 @@ const About = () => {
   )
 }
 
-export default About
+export default ITRBusiness
