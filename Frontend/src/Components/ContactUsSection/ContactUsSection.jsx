@@ -35,8 +35,8 @@ const ContactUsSection = () => {
             <div className="contactussection-card-body">
               <h3 className="contactussection-card-title">Let's Talk</h3>
               <ul className="contactussection-list">
-                <li><span className="contactussection-bullet" /> <strong>Phone:</strong> (+62) 81 157 5891</li>
-                <li><span className="contactussection-bullet" /> <strong>Location:</strong> Bhubaneswar, Odisha</li>
+                <li><span className="contactussection-bullet" /> <strong>Phone:</strong> (+91) 8280045432 / 8280093456</li>
+                <li><span className="contactussection-bullet" /> <strong>Location:</strong> Flat No 1B, RK Enclave, Plot No A/155, Saheed Nagar, Bhubaneswar, Odisha 751007</li>
                 <li><span className="contactussection-bullet" /> <strong>Email:</strong> sales21@legalterminus.com</li>
               </ul>
             </div>
@@ -49,8 +49,7 @@ const ContactUsSection = () => {
             <div className="contactussection-card-body">
               <h3 className="contactussection-card-title">Open Hours</h3>
               <ul className="contactussection-list">
-                <li><span className="contactussection-bullet" /> Mon – Fri: 9 AM — 4 PM</li>
-                <li><span className="contactussection-bullet" /> Sat: 9 AM — 2 PM</li>
+                <li><span className="contactussection-bullet" /> Mon – Sat: 10 AM — 7 PM</li>
                 <li><span className="contactussection-bullet" /> Sunday: Closed</li>
               </ul>
             </div>
