@@ -5,7 +5,7 @@ import right3danimation from '../../assets/Hero-Video.mp4'
 
 const Herosection = () => {
   const tags = [
-    { label: 'Startup Registration', href: '/startup-odisha' },
+    { label: 'Startup Registration', href: '/startup-india' },
     { label: 'Startup Odisha', href: '/startup-odisha' },
     { label: 'NGO Registration', href: null },
     { label: 'Trademark Registration', href: '/trademark/application' },
