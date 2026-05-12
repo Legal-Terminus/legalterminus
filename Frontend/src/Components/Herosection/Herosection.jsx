@@ -5,14 +5,12 @@ import right3danimation from '../../assets/Hero-Video.mp4'
 
 const Herosection = () => {
   const tags = [
-    { label: 'Startup Registration', href: '/startup-india' },
-    { label: 'Startup Odisha', href: '/startup-odisha' },
-    { label: 'NGO Registration', href: null },
+    { label: 'Company Registration', href: '/private-limited-company-registration-in-india' },
     { label: 'Trademark Registration', href: '/trademark/application' },
-    { label: 'Government License', href: null },
-    { label: 'Government Registration', href: null },
-    { label: 'Return Filing', href: '/gst-return-filing' },
-    { label: 'More +', href: null },
+    { label: 'GST Registration', href: '/gst-registration' },
+    { label: 'FSSAI License', href: '/food-license' },
+    { label: 'ITR Filing', href: '/itr-individual' },
+    { label: 'Trade License', href: '/trade-license' },
   ]
 
   return (
