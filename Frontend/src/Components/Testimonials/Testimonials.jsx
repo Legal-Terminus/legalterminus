@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Testimonials.css";
 import testimonialImg from "../../assets/testimonial.webp";
 
@@ -35,7 +35,15 @@ const DATA = [
 ];
 
 export default function Testimonials() {
-  const [active, setActive] = useState(DATA[0]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const active = DATA[activeIndex];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % DATA.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <section className="Testimonials-container">
@@ -85,13 +93,13 @@ export default function Testimonials() {
 
         {/* AVATAR SWITCH */}
         <div className="Testimonials-switch">
-          {DATA.map((item) => (
+          {DATA.map((item, index) => (
             <button
               key={item.id}
               className={`Testimonials-switchItem ${
-                active.id === item.id ? "active" : ""
+                activeIndex === index ? "active" : ""
               }`}
-              onClick={() => setActive(item)}
+              onClick={() => setActiveIndex(index)}
             >
               <div className="avatar-indicator"></div>
               <img src={item.avatar} alt={item.name} />
