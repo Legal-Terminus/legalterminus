@@ -420,3 +420,19 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
+
+.contactussection-feedback {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 8px;
+}
+.contactussection-feedback--success {
+  background: #e6f9ee;
+  color: #0b5f3a;
+}
+.contactussection-feedback--error {
+  background: #fdecea;
+  color: #c0392b;
+}
