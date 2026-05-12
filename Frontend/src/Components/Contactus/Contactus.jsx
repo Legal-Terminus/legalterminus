@@ -3,15 +3,14 @@ import React, { useState, useEffect } from 'react';
 import './Contactus.css';
 
 // react-icons (ensure package is installed)
-import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaYoutube, FaGithub } from 'react-icons/fa';
+import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaYoutube } from 'react-icons/fa';
 
 const SOCIALS = [
-  { name: 'LinkedIn', href: '#', icon: <FaLinkedin size={20} /> },
-  { name: 'Facebook', href: '#', icon: <FaFacebook size={20} /> },
-  { name: 'Twitter', href: '#', icon: <FaTwitter size={20} /> },
-  { name: 'Instagram', href: '#', icon: <FaInstagram size={20} /> },
-  { name: 'YouTube', href: '#', icon: <FaYoutube size={20} /> },
-  { name: 'GitHub', href: '#', icon: <FaGithub size={20} /> },
+  { name: 'LinkedIn',  href: 'https://www.linkedin.com/company/legalterminus/', icon: <FaLinkedin size={20} /> },
+  { name: 'Facebook',  href: 'https://www.facebook.com/LegalTerminusofficial',  icon: <FaFacebook size={20} /> },
+  { name: 'Twitter',   href: 'https://x.com/legalterminus',                      icon: <FaTwitter size={20} /> },
+  { name: 'Instagram', href: 'https://www.instagram.com/legalterminus/',          icon: <FaInstagram size={20} /> },
+  { name: 'YouTube',   href: 'https://www.youtube.com/@LegalTerminus',            icon: <FaYoutube size={20} /> },
 ];
 
 const ContactUs = () => {
@@ -70,7 +69,7 @@ const ContactUs = () => {
                 </div>
                 <div className="zen-contact-text">
                   <div className="zen-contact-label">General Inquiries</div>
-                  <div className="zen-contact-value">+91 82800 93456</div>
+                  <div className="zen-contact-value">+91 82800 93456 / 8280045432</div>
                 </div>
               </div>
 
