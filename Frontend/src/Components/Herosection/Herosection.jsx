@@ -10,7 +10,7 @@ const Herosection = () => {
     { label: 'Trademark Registration', href: '/trademark/application' },
     { label: 'Government License', href: null },
     { label: 'Government Registration', href: null },
-    { label: 'Return Filing', href: null },
+    { label: 'Return Filing', href: '/gst-return-filing' },
     { label: 'More +', href: null },
   ]
 
