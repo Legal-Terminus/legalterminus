@@ -129,6 +129,7 @@
 .contactussection-iconwrap {
   width: 60px;
   height: 60px;
+  min-width: 60px;
   border-radius: 14px;
   display: grid;
   place-items: center;
@@ -137,6 +138,8 @@
   font-size: 21px;
   border: 1px solid rgba(69,160,73,0.2);
   transition: background .25s ease, transform .25s ease;
+  flex-shrink: 0;
+  align-self: flex-start;
 }
 .contactussection-card:hover .contactussection-iconwrap {
   background: #45A049;
@@ -168,15 +171,18 @@
 }
 .contactussection-list li {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 6px;
+  align-items: flex-start;
 }
 .contactussection-bullet {
   width: 8px;
   height: 8px;
+  min-width: 8px;
   background: #45A049;
   border-radius: 50%;
-  margin-top: 6px;
+  margin-top: 5px;
+  flex-shrink: 0;
 }
 
 /* -------------------------
