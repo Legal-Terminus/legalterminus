@@ -186,6 +186,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
+  text-decoration: none;
 }
 
 .pb-ghost--dark { color: #000; }
