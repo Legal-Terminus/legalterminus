@@ -120,11 +120,7 @@ With a strong focus on customer satisfaction and smart solutions, Legal Terminus
 
 
             <div className="pb-actions">
-             <button className="pb-primary">
-                  <span>View Legal Services</span>
-                </button>
-
-                <a href="/contact/us" className="pb-ghost pb-ghost--dark">
+                <a href="/contact/us" className="pb-primary">
                   <span>Get Expert Consultation</span>
                 </a>
             </div>
