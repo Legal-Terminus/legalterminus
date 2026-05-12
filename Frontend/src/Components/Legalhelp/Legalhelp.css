@@ -256,6 +256,7 @@
   cursor: pointer;
   box-shadow: 0 10px 22px rgba(11,20,30,0.08);
   transition: transform .18s var(--lh-smooth);
+  text-decoration: none;
 }
 
 .lh-cta:hover{ transform: translateY(-3px); }
