@@ -124,9 +124,9 @@ With a strong focus on customer satisfaction and smart solutions, Legal Terminus
                   <span>View Legal Services</span>
                 </button>
 
-                <button className="pb-ghost pb-ghost--dark">
+                <a href="/contact/us" className="pb-ghost pb-ghost--dark">
                   <span>Get Expert Consultation</span>
-                </button>
+                </a>
             </div>
           </div>
         </div>
