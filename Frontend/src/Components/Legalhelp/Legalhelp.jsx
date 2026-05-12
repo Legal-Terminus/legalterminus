@@ -304,7 +304,7 @@ const Legalhelp = () => {
   const filteredCards = active === "all" ? CARDS : CARDS.filter((c) => c.category === active);
 
   return (
-    <section className="lh-root" aria-labelledby="lh-heading">
+    <section id="services" className="lh-root" aria-labelledby="lh-heading">
       <div className="lh-inner">
         <h2 id="lh-heading" className="lh-title">
           Your Trusted Partner for Legal & Compliance Services

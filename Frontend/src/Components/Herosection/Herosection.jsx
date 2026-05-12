@@ -41,7 +41,7 @@ const Herosection = () => {
 
           <div className="hs-hero__actions" role="group" aria-label="Hero actions">
             <a className="hs-btn hs-btn--primary" href="/contact/us" aria-label="Contact us">Contact Us</a>
-            <a className="hs-btn hs-btn--ghost" href="/services" aria-label="View services">Services</a>
+            <a className="hs-btn hs-btn--ghost" href="/#services" aria-label="View services">Services</a>
           </div>
 
           {/* Gap intentionally maintained between actions and tags */}
