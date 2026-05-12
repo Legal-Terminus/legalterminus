@@ -1,5 +1,5 @@
 import React from "react";
-import "./LlpCompanyTab.css";
+import "./LLPCompanyTab.css";
 
 // Replace with your actual illustration
 import pvtIllustration from "../../assets/whypvt-imp.svg";

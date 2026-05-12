@@ -12,7 +12,6 @@
 
   --text-color: white;
   --icon-color: #45a049;
-  --bg-img: none;
 }
 
 .premium-footer {
@@ -20,10 +19,6 @@
   color: var(--text-color);
   overflow: hidden;
   padding: 80px 20px 0px;
-  background-image: var(--bg-img);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   isolation: isolate;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   letter-spacing: 1.2px;

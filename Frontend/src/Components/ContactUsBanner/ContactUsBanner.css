@@ -40,9 +40,18 @@
   background-size: cover;
   background-position: center right;
   filter: brightness(0.72) contrast(1.05);
-  transform: scale(1.12); /* slightly reduced base scale for mobile */
+  transform: scale(1.12);
   transition: transform 1.2s cubic-bezier(.22,.9,.36,1), filter 1.3s;
   will-change: transform;
+}
+
+@keyframes hero-breathe {
+  0%, 100% { transform: scale(1.12) translateY(0px); }
+  50%       { transform: scale(1.12) translateY(-6px); }
+}
+
+.hero-img--breathing {
+  animation: hero-breathe 3.6s ease-in-out infinite;
 }
 
 /* soft-glass sheen layer */

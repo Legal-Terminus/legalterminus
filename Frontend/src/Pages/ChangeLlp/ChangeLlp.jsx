@@ -9,7 +9,7 @@ import ChangeLlpTypes from "../../Components/ChangeLlpTypes/ChangeLlpTypes";
 import ChangeLlpRequirementsTab from "../../Components/ChangeLlpRequirementsTab/ChangeLlpRequirementsTab";
 import ChangeLlpProcess from "../../Components/ChangeLlpProcess/ChangeLlpProcess";
 import ChangeLlpFAQ from "../../Components/ChangeLlpFAQ/ChangeLlpFAQ";
-import ChangeLlpTestimonial from "../../Components/ChangeLlpTestimonial/changeLlpTestimonial";
+import ChangeLlpTestimonial from "../../Components/ChangeLlpTestimonial/ChangeLlpTestimonial";
 import ChangeLlpVideoTestimonial from "../../Components/ChangeLlpVideoTestimonial/ChangeLlpVideoTestimonial";
 import ChangeLlpOurClients from "../../Components/ChangeLlpOurClients/ChangeLlpOurClients";
 

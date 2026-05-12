@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import './Herosection.css'
-import right3danimation from '../../assets/hero-video.mp4'
+import right3danimation from '../../assets/Hero-Video.mp4'
 
 const Herosection = () => {
   const tags = [
@@ -78,9 +78,11 @@ const Herosection = () => {
               muted
               loop
               playsInline
+              width="600"
+              height="400"
               className="hs-video-card__media"
             />
-        
+
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 import React from "react";
-import "./ProFopcDocument.css";
+import "./ProFOPCDocument.css";
 
 const documents = [
   {

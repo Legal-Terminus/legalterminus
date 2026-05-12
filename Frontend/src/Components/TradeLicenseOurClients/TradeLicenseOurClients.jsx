@@ -1,23 +1,10 @@
 import React, { useRef, useEffect } from "react";
 import "./TradeLicenseOurClients.css";
 
-import client1 from "../../assets/our (1).webp";
-import client2 from "../../assets/our (2).webp";
-import client3 from "../../assets/our (3).webp";
-import client4 from "../../assets/our (4).webp";
-import client5 from "../../assets/our (5).webp";
-import client6 from "../../assets/our (6).webp";
-import client7 from "../../assets/our (7).webp";
-import client8 from "../../assets/our (8).webp";
-import client9 from "../../assets/our (9).webp";
-import client10 from "../../assets/our (10).webp";
-// ... continue imports up to client119 as in your original file
+import { clientLogos } from "../../assets/clientLogos.js";
 
 const TradeLicenseOurClients = () => {
-  const logos = [
-    client1, client2, client3, client4, client5, client6, client7, client8, client9, client10,
-    // include all your other clients (11–119)
-  ];
+  const logos = clientLogos;
 
   const logosDup = [...logos, ...logos];
   const trackRef = useRef(null);
@@ -133,7 +120,7 @@ const TradeLicenseOurClients = () => {
           <div className="tradeclients-scroller">
             <ul className="tradeclients-track" ref={trackRef}>
               {logosDup.map((src, i) => (
-                <li className="tradeclients-card" key={i}>
+                <li className="tradeclients-card" key={`logo-${i}`}>
                   <figure className="tradeclients-logo">
                     <img
                       src={src}

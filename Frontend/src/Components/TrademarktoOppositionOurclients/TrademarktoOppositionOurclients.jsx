@@ -1,22 +1,10 @@
 import React, { useRef, useEffect } from "react";
-import "./TrademarktoOppositionOurClients.css";
+import "./TrademarktoOppositionOurclients.css";
 
-import client1 from "../../assets/our (1).webp";
-import client2 from "../../assets/our (2).webp";
-import client3 from "../../assets/our (3).webp";
-import client4 from "../../assets/our (4).webp";
-import client5 from "../../assets/our (5).webp";
-import client6 from "../../assets/our (6).webp";
-import client7 from "../../assets/our (7).webp";
-import client8 from "../../assets/our (8).webp";
-import client9 from "../../assets/our (9).webp";
-import client10 from "../../assets/our (10).webp";
+import { clientLogos } from "../../assets/clientLogos.js";
 
 const TradeLicenseOurClients = () => {
-  const logos = [
-    client1, client2, client3, client4, client5,
-    client6, client7, client8, client9, client10,
-  ];
+  const logos = clientLogos;
 
   const logosDup = [...logos, ...logos];
   const trackRef = useRef(null);
@@ -102,7 +90,7 @@ const TradeLicenseOurClients = () => {
           <div className="tlcoc-scroller">
             <ul className="tlcoc-track" ref={trackRef}>
               {logosDup.map((src, i) => (
-                <li className="tlcoc-card" key={i}>
+                <li className="tlcoc-card" key={`logo-${i}`}>
                   <figure className="tlcoc-logo">
                     <img src={src} alt={`client-${i}`} className="tlcoc-img" />
                   </figure>

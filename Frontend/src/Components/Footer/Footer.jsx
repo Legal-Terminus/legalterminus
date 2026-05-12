@@ -11,15 +11,11 @@ import {
 } from 'react-icons/fa';
 import './Footer.css';
 
-const BG_IMG =
-  'https://templatekit.jegtheme.com/justic/wp-content/uploads/sites/251/2022/03/athens-greece-the-academy-buildings-e1648383645835.jpg';
-
-import LOGO from
-  '../../assets/legal.png';
+import LOGO from '../../assets/legal.png';
 
 const Footer = () => {
   return (
-    <footer className="premium-footer" style={{ ['--bg-img']: `url(${BG_IMG})` }}>
+    <footer className="premium-footer">
       <div className="premium-footer-overlay" />
       <div className="premium-footer-inner">
         <div className="footer-columns">
@@ -126,7 +122,7 @@ const Footer = () => {
           <div className="footer-col footer-contact">
             <h3 className="footer-title">Free Consultation</h3>
 
-            
+
 
             <ul className="contact-list">
               <li>
@@ -161,12 +157,12 @@ const Footer = () => {
         </div>
 
         <div className="footer-bottom">
-          
+
           <div className="footer-bottom-content">
             <div className="copyright">
-              © 2023 Legal Terminus. All Rights Reserved. | Powered by Legal Terminus Developed by <a href='https://prwebstock.com/' className='pr'>PR WEBSTOCK</a>
+              © 2023 Legal Terminus. All Rights Reserved. | Powered by Legal Terminus Developed by <a href='https://infynialabs.com/' className='pr'>AI Agents from InfyniaLabs</a>
             </div>
-            
+
           </div>
         </div>
       </div>

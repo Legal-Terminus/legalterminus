@@ -1,5 +1,5 @@
 // NavbarAdvanced.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   FaEnvelope,
   FaMapMarkerAlt,
@@ -17,6 +17,14 @@ import {
   FaArrowRight,
 } from "react-icons/fa";
 import "./Navbar.css";
+
+// Module-level style constants — avoids new object allocation on every render
+const ROTATE_STYLE = { transform: "rotate(90deg)" };
+const RELATIVE_POS = { position: "relative" };
+const TEXT_LEFT = { textAlign: "left" };
+const PADDING_LEFT_12 = { paddingLeft: 12 };
+const MARGIN_LEFT_12 = { marginLeft: 12 };
+const MARGIN_TOP_6 = { marginTop: 6 };
 
 const LOGO_GIF =
   "https://legalterminus.com/wp-content/uploads/2023/09/Legal-Terminus-LOGO-GIF_300-x-150.gif";
@@ -303,28 +311,50 @@ export default function NavbarAdvanced() {
   const [headerHeight, setHeaderHeight] = useState(0);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", onScroll);
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 10);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // measure header height (on mount + resize + when scrolled or when menu opens)
+  const measure = useCallback(() => {
+    const h = headerRef.current
+      ? headerRef.current.getBoundingClientRect().height
+      : 0;
+    setHeaderHeight(Math.ceil(h));
+    document.documentElement.style.setProperty(
+      "--site-header-height",
+      `${Math.ceil(h)}px`
+    );
+  }, []);
+
+  // Register resize listener once on mount only
   useEffect(() => {
-    function measure() {
-      const h = headerRef.current
-        ? headerRef.current.getBoundingClientRect().height
-        : 0;
-      setHeaderHeight(Math.ceil(h));
-      // set CSS var as well for any global use
-      document.documentElement.style.setProperty(
-        "--site-header-height",
-        `${Math.ceil(h)}px`
-      );
-    }
     measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [scrolled, isMenuOpen]);
+    let resizeTimer;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(measure, 100);
+    };
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => {
+      window.removeEventListener("resize", onResize);
+      clearTimeout(resizeTimer);
+    };
+  }, [measure]);
+
+  // Re-measure when header visually changes (scroll state or menu open)
+  useEffect(() => {
+    measure();
+  }, [scrolled, isMenuOpen, measure]);
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -338,31 +368,36 @@ export default function NavbarAdvanced() {
     return () => document.body.classList.remove("no-scroll");
   }, [isMenuOpen]);
 
+  const isMenuOpenRef = useRef(isMenuOpen);
+  isMenuOpenRef.current = isMenuOpen;
+
+  const onKey = useCallback((e) => {
+    if (e.key === "Escape") {
+      setIsMenuOpen(false);
+      setMegaOpenFor(null);
+      setActiveMegaTab(null);
+      setNestedOpenItem(null);
+    }
+  }, []);
+
+  const onOutsideClick = useCallback((e) => {
+    if (
+      isMenuOpenRef.current &&
+      drawerRef.current &&
+      !drawerRef.current.contains(e.target)
+    ) {
+      setIsMenuOpen(false);
+    }
+  }, []);
+
   useEffect(() => {
-    function onKey(e) {
-      if (e.key === "Escape") {
-        setIsMenuOpen(false);
-        setMegaOpenFor(null);
-        setActiveMegaTab(null);
-        setNestedOpenItem(null);
-      }
-    }
-    function onClick(e) {
-      if (
-        isMenuOpen &&
-        drawerRef.current &&
-        !drawerRef.current.contains(e.target)
-      ) {
-        setIsMenuOpen(false);
-      }
-    }
     document.addEventListener("keydown", onKey);
-    document.addEventListener("mousedown", onClick);
+    document.addEventListener("mousedown", onOutsideClick);
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("mousedown", onOutsideClick);
     };
-  }, [isMenuOpen]);
+  }, [onKey, onOutsideClick]);
 
   const openMegaCompact = (id) => {
     clearTimeout(megaTimeoutRef.current);
@@ -378,7 +413,7 @@ export default function NavbarAdvanced() {
       setActiveMegaTab(null);
       setNestedOpenItem(null);
       setRightPanelStyle({ top: 0, left: null });
-    }, 160);
+    }, 350);
   };
 
   // compute and set the right panel position so it lines up with the hovered left tab
@@ -417,15 +452,24 @@ export default function NavbarAdvanced() {
     }
   };
 
+  const activeMegaTabRef = useRef(activeMegaTab);
+  activeMegaTabRef.current = activeMegaTab;
+
   useEffect(() => {
-    function onResize() {
-      if (activeMegaTab) {
-        setTimeout(() => showRightPanel(activeMegaTab), 40);
-      }
-    }
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [activeMegaTab, megaOpenFor]);
+    let resizeTimer;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (activeMegaTabRef.current) showRightPanel(activeMegaTabRef.current);
+      }, 60);
+    };
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => {
+      window.removeEventListener("resize", onResize);
+      clearTimeout(resizeTimer);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const nestedKey = (topId, catId, idx) =>
     `${topId}__${catId || "child"}__${idx}`;
@@ -475,7 +519,7 @@ export default function NavbarAdvanced() {
                 <a href="tel:8280093456" className="topbar-link">
                   <FaPhone
                     className="topbar-icon"
-                    style={{ transform: "rotate(90deg)" }}
+                    style={ROTATE_STYLE}
                   />
                   8280093456
                 </a>
@@ -729,7 +773,7 @@ export default function NavbarAdvanced() {
                                                         nestedOpenItem === key
                                                       )
                                                         setNestedOpenItem(null);
-                                                    }, 120)
+                                                    }, 300)
                                                   }
                                                   aria-hidden={
                                                     nestedOpenItem !== key
@@ -790,7 +834,7 @@ export default function NavbarAdvanced() {
                                     return (
                                       <div
                                         key={key}
-                                        style={{ position: "relative" }}
+                                        style={RELATIVE_POS}
                                       >
                                         {!hasNested ? (
                                           <a
@@ -800,7 +844,7 @@ export default function NavbarAdvanced() {
                                               setMegaOpenFor(null);
                                               setNestedOpenItem(null);
                                             }}
-                                            style={{ textAlign: "left" }}
+                                            style={TEXT_LEFT}
                                           >
                                             {child.label}
                                           </a>
@@ -832,12 +876,12 @@ export default function NavbarAdvanced() {
                                             }`}
                                             onMouseEnter={() => openNested(key)}
                                             onMouseLeave={() =>
-                                              setNestedOpenItem(null)
+                                              setTimeout(() => setNestedOpenItem(null), 300)
                                             }
                                           >
                                             <ul className="nested-links">
                                               {child.children.map((sub, si) => (
-                                                <li key={si}>
+                                                <li key={sub.href || sub.label}>
                                                   <a
                                                     href={sub.href}
                                                     onClick={() => {
@@ -1013,7 +1057,7 @@ export default function NavbarAdvanced() {
                                       className={`premium-sublist ${
                                         isActiveSub ? "expanded" : ""
                                       }`}
-                                      style={{ paddingLeft: 12 }}
+                                      style={PADDING_LEFT_12}
                                     >
                                       <ul className="premium-sublinks">
                                         {cat.items.map((sub, i) => (
@@ -1059,14 +1103,13 @@ export default function NavbarAdvanced() {
                                     </a>
 
                                     {hasInnerChildren && (
-                                      <div style={{ marginLeft: 12 }}>
+                                      <div style={MARGIN_LEFT_12}>
                                         {cat.children.map((c2, idx2) => (
-                                          <a
-                                            key={idx2}
+                                          <a key={c2.href || c2.label}
                                             href={c2.href}
                                             onClick={() => setIsMenuOpen(false)}
                                             className="premium-nav-link simple"
-                                            style={{ marginTop: 6 }}
+                                            style={MARGIN_TOP_6}
                                           >
                                             <span className="premium-link-text">
                                               {c2.label}
@@ -1102,7 +1145,7 @@ export default function NavbarAdvanced() {
               <div className="drawer-contact-item">
                 <FaPhone
                   className="drawer-contact-icon"
-                  style={{ transform: "rotate(90deg)" }}
+                  style={ROTATE_STYLE}
                 />
                 <div className="drawer-contact-text">8280093456</div>
               </div>

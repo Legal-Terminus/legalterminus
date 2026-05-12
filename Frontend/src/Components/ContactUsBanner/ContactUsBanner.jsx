@@ -3,12 +3,11 @@ import React, { useEffect, useRef } from "react";
 import { motion, useSpring, useTransform, useMotionValue } from "framer-motion";
 import "./ContactUsBanner.css";
 
-const ContactUsBanner = () => {
-  const IMAGE_URL =
-    "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80";
+const IMAGE_URL =
+  "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80";
 
+const ContactUsBanner = () => {
   const rootRef = useRef(null);
-  const imgWrapRef = useRef(null);
   const sweepRef = useRef(null);
 
   // Cursor motion values
@@ -19,51 +18,52 @@ const ContactUsBanner = () => {
   const sx = useSpring(px, { stiffness: 90, damping: 20 });
   const sy = useSpring(py, { stiffness: 90, damping: 20 });
 
-  // Parallax transform based on cursor
+  // Parallax transforms
   const tiltX = useTransform(sy, (v) => v * -8);
   const tiltY = useTransform(sx, (v) => v * 8);
   const translateX = useTransform(sx, (v) => v * 15);
   const translateY = useTransform(sy, (v) => v * 8);
 
-  // breathing idle motion
-  const breath = useSpring(0, { stiffness: 12, damping: 12 });
-  useEffect(() => {
-    let frame;
-    const loop = () => {
-      breath.set(Math.sin(Date.now() / 1800) * 6);
-      frame = requestAnimationFrame(loop);
-    };
-    loop();
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
-  // cursor tracking
+  // Throttled cursor tracking using rAF — avoids getBoundingClientRect on every mousemove
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
-    const move = (e) => {
-      const r = el.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      px.set(x);
-      py.set(y);
-    };
-    el.addEventListener("mousemove", move);
-    return () => el.removeEventListener("mousemove", move);
-  }, []);
+    let rafId = null;
+    let lastX = 0, lastY = 0;
 
-  // Entrance sweep
+    const move = (e) => {
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        px.set((lastX - r.left) / r.width - 0.5);
+        py.set((lastY - r.top) / r.height - 0.5);
+        rafId = null;
+      });
+    };
+
+    el.addEventListener("mousemove", move, { passive: true });
+    return () => {
+      el.removeEventListener("mousemove", move);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [px, py]);
+
+  // Entrance sweep — pure DOM, no React state
   useEffect(() => {
     const sweep = sweepRef.current;
     if (!sweep) return;
     sweep.style.transform = "translateX(-120%)";
     sweep.style.opacity = "0";
-    setTimeout(() => {
+    const t1 = setTimeout(() => {
       sweep.style.transition = "1.1s cubic-bezier(.22,.9,.36,1)";
       sweep.style.transform = "translateX(120%)";
       sweep.style.opacity = "0.35";
-      setTimeout(() => (sweep.style.opacity = "0"), 900);
+      const t2 = setTimeout(() => { sweep.style.opacity = "0"; }, 900);
+      return () => clearTimeout(t2);
     }, 100);
+    return () => clearTimeout(t1);
   }, []);
 
   return (
@@ -72,34 +72,27 @@ const ContactUsBanner = () => {
       ref={rootRef}
       aria-label="Hero section for Notary service"
     >
-      {/* Image Wrapper */}
       <motion.div
-        ref={imgWrapRef}
         className="hero-img-wrap"
         style={{
           rotateX: tiltX,
           rotateY: tiltY,
           x: translateX,
           y: translateY,
-          scale: 1,
         }}
         aria-hidden="true"
       >
-        <motion.div
-          className="hero-img"
-          style={{
-            backgroundImage: `url(${IMAGE_URL})`,
-            y: breath,
-          }}
+        {/* breathing idle motion handled by CSS animation — no rAF loop */}
+        <div
+          className="hero-img hero-img--breathing"
+          style={{ backgroundImage: `url(${IMAGE_URL})` }}
         />
         <div className="hero-img-glass" aria-hidden="true" />
         <div className="hero-img-sweep" ref={sweepRef} aria-hidden="true" />
       </motion.div>
 
-      {/* Overlay */}
       <div className="contactusbanner-overlay" aria-hidden="true" />
 
-      {/* Content */}
       <div className="contactusbanner-container">
         <div className="contactusbanner-left">
           <h1 className="contactusbanner-title">

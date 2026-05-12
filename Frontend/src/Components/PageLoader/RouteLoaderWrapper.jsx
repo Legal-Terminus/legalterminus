@@ -8,19 +8,14 @@ const RouteLoaderWrapper = ({ children }) => {
 
   useEffect(() => {
     setLoading(true);
-
-    // minimum loader display time
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-
+    const timer = setTimeout(() => setLoading(false), 100);
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
   return (
     <>
       <PageLoader active={loading} />
-      {!loading && children}
+      {children}
     </>
   );
 };

@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import "./Breadcrum.css";
 
 const Breadcrum = () => {
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+  };
+
   return (
     <section className="lt-public-hero">
       <div className="lt-public-container">
@@ -58,9 +65,15 @@ const Breadcrum = () => {
               Talk to our Private Limited Company registration expert
             </p>
 
+            {submitted ? (
+              <div className="lt-form-success" role="alert">
+                <p>✅ Thank you! Our team will contact you shortly.</p>
+              </div>
+            ) : null}
             <form
               className="lt-public-form"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={handleSubmit}
+              style={submitted ? { display: "none" } : undefined}
             >
               <input type="text" placeholder="Full Name" required />
               <input type="email" placeholder="Email Address" required />

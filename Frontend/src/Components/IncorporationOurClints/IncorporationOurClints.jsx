@@ -2,39 +2,13 @@ import React, { useRef, useEffect } from "react";
 import "./IncorporationOurClints.css";
 
 
-import client1 from "../../assets/our (1).webp";
-import client2 from "../../assets/our (2).webp";
-import client3 from "../../assets/our (3).webp";
-import client4 from "../../assets/our (4).webp";
-import client5 from "../../assets/our (5).webp";
-import client6 from "../../assets/our (6).webp";
-import client7 from "../../assets/our (7).webp";
-import client8 from "../../assets/our (8).webp";
-import client9 from "../../assets/our (9).webp";
-import client10 from "../../assets/our (10).webp";
-import client11 from "../../assets/our (11).webp";
-import client12 from "../../assets/our (12).webp";
-import client13 from "../../assets/our (13).webp";
-import client14 from "../../assets/our (14).webp";
-import client15 from "../../assets/our (15).webp";
-import client16 from "../../assets/our (16).webp";
-import client17 from "../../assets/our (17).webp";
-import client18 from "../../assets/our (18).webp";
-import client19 from "../../assets/our (19).webp";
-import client20 from "../../assets/our (20).webp";
-import client119 from "../../assets/our (119).webp";
+import { clientLogos } from "../../assets/clientLogos.js";
 
 
-/* ---- assets imports stay SAME ---- */
+
 
 const IncorporationOurClients = () => {
-  const logos = [
-    client1, client2, client3, client4, client5, client6, client7, client8,
-    client9, client10, client11, client12, client13, client14, client15,
-    client16, client17, client18, client19, client20,
-    /* ...rest unchanged */
-    client119,
-  ];
+  const logos = clientLogos;
 
   const logosDup = [...logos, ...logos];
 
@@ -147,7 +121,7 @@ const IncorporationOurClients = () => {
               {logosDup.map((src, i) => (
                 <li
                   className="incorp-our-clients-card"
-                  key={i}
+                  key={`logo-${i}`}
                 >
                   <figure className="incorp-our-clients-logo">
                     <img

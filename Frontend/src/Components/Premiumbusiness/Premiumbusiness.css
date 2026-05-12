@@ -188,6 +188,8 @@
   transition: var(--transition);
 }
 
+.pb-ghost--dark { color: #000; }
+
 .pb-ghost:hover {
   background: rgba(76, 175, 80, 0.1);
   border-color: #45a049;

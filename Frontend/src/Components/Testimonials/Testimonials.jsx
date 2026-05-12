@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./Testimonials.css";
 import testimonialImg from "../../assets/testimonial.webp";
 
+// Static data defined at module level — not re-allocated on every render
 const DATA = [
   {
     id: 1,

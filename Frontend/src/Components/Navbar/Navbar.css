@@ -153,6 +153,18 @@
   transform: translateY(6px);
 }
 
+/* invisible bridge above the mega menu to cover the gap between nav item and menu */
+.mega-menu.compact::before,
+.mega-menu.expanded::before {
+  content: '';
+  position: absolute;
+  top: -18px;
+  left: 0;
+  right: 0;
+  height: 18px;
+  background: transparent;
+}
+
 /* inner wrapper: POSITION CONTEXT ADDED */
 .mega-inner-compact {
   position: relative; /* <-- needed so right panel can be absolutely positioned relative to this box */
@@ -216,6 +228,17 @@
   display: none; /* hide by default */
   z-index: 3;
 }
+
+/* invisible bridge between left column and right panel so mouse can cross the gap */
+.mega-right-panel.visible::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -20px;
+  width: 20px;
+  height: 100%;
+  background: transparent;
+}
 .mega-right-panel.visible {
   opacity: 1;
   transform: translateY(0) scale(1);
@@ -277,6 +300,21 @@
   visibility: visible;
   transform: translateX(0);
   pointer-events: auto;
+}
+
+/* invisible bridge between trigger and nested panel so mouse can cross the gap */
+.nested-panel.open::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -22px;
+  width: 22px;
+  height: 100%;
+  background: transparent;
+}
+.mega-menu.left-align .nested-panel.open::before {
+  left: auto;
+  right: -22px;
 }
 
 /* nested links */

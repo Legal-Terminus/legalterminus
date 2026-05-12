@@ -1,23 +1,10 @@
 import React, { useRef, useEffect } from "react";
 import "./ChangetoCompanyOurClients.css";
 
-import client1 from "../../assets/our (1).webp";
-import client2 from "../../assets/our (2).webp";
-import client3 from "../../assets/our (3).webp";
-import client4 from "../../assets/our (4).webp";
-import client5 from "../../assets/our (5).webp";
-import client6 from "../../assets/our (6).webp";
-import client7 from "../../assets/our (7).webp";
-import client8 from "../../assets/our (8).webp";
-import client9 from "../../assets/our (9).webp";
-import client10 from "../../assets/our (10).webp";
-/* imports unchanged */
+import { clientLogos } from "../../assets/clientLogos.js";
 
 const OurClients = () => {
-  const logos = [
-    client1, client2, client3, client4, client5, client6, client7, client8, client9, client10,
-    /* array unchanged */
-  ];
+  const logos = clientLogos;
 
   const logosDup = [...logos, ...logos];
 
@@ -136,7 +123,7 @@ const OurClients = () => {
           <div className="prp-clients-scroller">
             <ul className="prp-clients-track" ref={trackRef}>
               {logosDup.map((src, i) => (
-                <li className="prp-clients-card" key={i}>
+                <li className="prp-clients-card" key={`logo-${i}`}>
                   <figure className="prp-clients-logo">
                     <img src={src} alt={`client-${i}`} className="prp-clients-img" />
                   </figure>

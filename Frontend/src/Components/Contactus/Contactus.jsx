@@ -38,7 +38,6 @@ const ContactUs = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Demo submit — replace with actual submit logic
-    console.log('Form submitted', form);
     alert('Thanks — form submitted (demo).');
     setForm({ fullName: '', company: '', phone: '', email: '', subject: '', message: '' });
   };
