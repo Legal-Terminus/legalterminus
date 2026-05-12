@@ -1,34 +1,9 @@
-import React, { useState, useRef } from "react";
-import emailjs from "@emailjs/browser";
+import React from "react";
 import "./ContactUsSection.css";
 import { FaPhone, FaMapMarkerAlt, FaEnvelope } from "react-icons/fa";
 import { FiClock } from "react-icons/fi";
 
-const SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-const PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-
 const ContactUsSection = () => {
-  const formRef = useRef(null);
-  const [status, setStatus] = useState("idle"); // idle | sending | success | error
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setStatus("sending");
-
-    emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, formRef.current, PUBLIC_KEY)
-      .then(() => {
-        setStatus("success");
-        formRef.current.reset();
-      })
-      .catch(() => setStatus("error"));
-  };
-
-  const handleClear = () => {
-    if (formRef.current) formRef.current.reset();
-    setStatus("idle");
-  };
-
   return (
     <section className="contactussection-wrapper" aria-labelledby="contactus-heading">
       <div className="contactussection-left">
@@ -86,32 +61,22 @@ const ContactUsSection = () => {
       <aside className="contactussection-right" aria-labelledby="contactus-form-heading">
         <h3 id="contactus-form-heading" className="contactussection-form-heading">Send a Message</h3>
 
-        <form ref={formRef} className="contactussection-form" onSubmit={handleSubmit} noValidate>
+        <form className="contactussection-form" onSubmit={(e) => e.preventDefault()} noValidate>
           <div className="contactussection-row">
-            <input className="contactussection-field" type="text" name="from_name" placeholder="Your Name" aria-label="Your name" required />
-            <input className="contactussection-field" type="email" name="reply_to" placeholder="Your Email" aria-label="Your email" required />
+            <input className="contactussection-field" type="text" placeholder="Your Name" aria-label="Your name" />
+            <input className="contactussection-field" type="email" placeholder="Your Email" aria-label="Your email" />
           </div>
 
-          <input className="contactussection-field" type="text" name="subject" placeholder="Subject" aria-label="Subject" required />
-          <textarea className="contactussection-field contactussection-textarea" name="message" placeholder="Your Message" aria-label="Your message" required />
+          <input className="contactussection-field" type="text" placeholder="Subject" aria-label="Subject" />
+          <textarea className="contactussection-field contactussection-textarea" placeholder="Your Message" aria-label="Your message" />
 
           <div className="contactussection-actions">
-            <button className="contactussection-button" type="submit" disabled={status === "sending"}>
-              {status === "sending" ? "SENDING…" : "SEND MESSAGE"}
-            </button>
-            <button className="contactussection-ghost" type="button" onClick={handleClear}>CLEAR</button>
+            <button className="contactussection-button" type="submit">SEND MESSAGE</button>
+            <button className="contactussection-ghost" type="button" onClick={() => {
+              const form = document.querySelector('.contactussection-form');
+              if (form) form.reset();
+            }}>CLEAR</button>
           </div>
-
-          {status === "success" && (
-            <p className="contactussection-feedback contactussection-feedback--success">
-              Message sent successfully! We'll get back to you soon.
-            </p>
-          )}
-          {status === "error" && (
-            <p className="contactussection-feedback contactussection-feedback--error">
-              Something went wrong. Please try again or email us directly.
-            </p>
-          )}
         </form>
 
         <div className="contactussection-mini" aria-hidden="true">
