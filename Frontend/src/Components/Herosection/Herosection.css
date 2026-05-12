@@ -159,7 +159,10 @@ body{
   gap:10px 12px;
 }
 
-.hs-tag{
+.hs-tag,
+a.hs-tag,
+a.hs-tag:hover,
+a.hs-tag:visited{
   padding:8px 14px;
   border-radius:999px;
   font-size:15px;
@@ -169,7 +172,7 @@ body{
   border:1px solid var(--tag-border);
   box-shadow:0 6px 18px rgba(9,20,18,0.03);
   white-space:nowrap;
-  text-decoration:none;
+  text-decoration:none !important;
 }
 
 .hs-tag--highlight{
