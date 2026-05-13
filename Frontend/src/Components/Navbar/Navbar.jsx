@@ -43,6 +43,16 @@ const navData = [
           {
             label: "Private Limited Company Registration In India",
             href: "/private-limited-company-registration-in-india",
+            children: [
+              {
+                label: "Private Limited Company Registration In India",
+                href: "/private-limited-company-registration-in-india",
+              },
+              {
+                label: "Private Limited Company Registration Copy",
+                href: "/pvt-ltd-registration-copy",
+              },
+            ],
           },
           {
             label: "Incorporation Of Wholly Owned Subsidiary In India",
