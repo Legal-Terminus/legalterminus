@@ -78,21 +78,48 @@ const TermsConditions = lazy(() => import("./Pages/Policies/TermsConditions"));
 const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
 const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
 
-function ScrollToTop() {
-  const { pathname } = useLocation();
+// Store scroll positions keyed by location.key
+const scrollPositions = {};
+
+// Disable browser's built-in scroll restoration so we fully control it
+if (typeof window !== "undefined") {
+  window.history.scrollRestoration = "manual";
+}
+
+function ScrollManager() {
+  const { pathname, key } = useLocation();
   const navType = useNavigationType();
+
   useEffect(() => {
-    if (navType === "PUSH") {
+    if (navType === "POP") {
+      const saved = scrollPositions[key] ?? 0;
+      // Delay slightly so lazy-loaded content finishes rendering
+      const id = setTimeout(() => {
+        window.scrollTo({ top: saved, behavior: "instant" });
+      }, 50);
+      return () => clearTimeout(id);
+    } else {
       window.scrollTo({ top: 0, behavior: "instant" });
     }
-  }, [pathname, navType]);
+  }, [pathname, key, navType]);
+
+  // Save scroll position just before leaving this entry
+  useEffect(() => {
+    const save = () => { scrollPositions[key] = window.scrollY; };
+    window.addEventListener("scroll", save, { passive: true });
+    return () => {
+      save();
+      window.removeEventListener("scroll", save);
+    };
+  }, [key]);
+
   return null;
 }
 
 function App() {
   return (
     <Router>
-      <ScrollToTop />
+      <ScrollManager />
       <Navbar />
 
       <RouteLoaderWrapper>
