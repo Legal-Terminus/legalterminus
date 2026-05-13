@@ -11,7 +11,7 @@ const ContactUsSection = () => {
           <iframe
             className="contactussection-iframe"
             title="Bhubaneswar map"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.463426483872!2d85.82233021486082!3d20.29605938637152!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a1908b6d7f6d4b7%3A0x9a5c2ff9b7f2a5c2!2sBhubaneswar%2C%20Odisha%20751001%2C%20India!5e0!3m2!1sen!2sus!4v1620000000000"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3741.8!2d85.8394!3d20.2961!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a190915b8c1a795%3A0x2f1a3a7e1a3b1b1b!2sSaheed%20Nagar%2C%20Bhubaneswar%2C%20Odisha%20751007!5e0!3m2!1sen!2sin!4v1700000000000"
             allowFullScreen
             loading="lazy"
           />
@@ -58,7 +58,7 @@ const ContactUsSection = () => {
       </div>
 
       <aside className="contactussection-right" aria-labelledby="contactus-form-heading">
-        <h3 id="contactus-form-heading" className="contactussection-form-heading">Send a Message</h3>
+        <h3 id="contactus-form-heading" className="contactussection-form-heading">Request a Callback</h3>
 
         <form className="contactussection-form" onSubmit={(e) => e.preventDefault()} noValidate>
           <div className="contactussection-row">
@@ -66,11 +66,11 @@ const ContactUsSection = () => {
             <input className="contactussection-field" type="email" placeholder="Your Email" aria-label="Your email" />
           </div>
 
-          <input className="contactussection-field" type="text" placeholder="Subject" aria-label="Subject" />
+          <input className="contactussection-field" type="tel" placeholder="Mobile Number" aria-label="Mobile number" />
           <textarea className="contactussection-field contactussection-textarea" placeholder="Your Message" aria-label="Your message" />
 
           <div className="contactussection-actions">
-            <button className="contactussection-button" type="submit">SEND MESSAGE</button>
+            <button className="contactussection-button" type="submit">SEND</button>
             <button className="contactussection-ghost" type="button" onClick={() => {
               const form = document.querySelector('.contactussection-form');
               if (form) form.reset();

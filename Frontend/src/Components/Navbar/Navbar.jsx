@@ -561,15 +561,6 @@ export default function NavbarAdvanced() {
                 </a>
                 <a
                   className="social"
-                  href="https://wa.me/918280008183"
-                  aria-label="Whatsapp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FaWhatsapp />
-                </a>
-                <a
-                  className="social"
                   href="https://www.youtube.com/@LegalTerminus"
                   aria-label="youtube"
                   target="_blank"
