@@ -523,18 +523,21 @@ export default function NavbarAdvanced() {
                   />
                   8280093456
                 </a>
+                <span className="topbar-sep">/</span>
+                <a href="tel:8280045432" className="topbar-link">
+                  8280045432
+                </a>
               </div>
             </div>
 
             <div className="topbar-right">
-              <div className="topbar-tag">
-                Turning big ideas into great products!
-              </div>
-              <div className="topbar-socials">
+<div className="topbar-socials">
                 <a
                   className="social"
                   href="https://www.facebook.com/LegalTerminusofficial"
                   aria-label="Facebook"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <FaFacebookF />
                 </a>
@@ -542,6 +545,8 @@ export default function NavbarAdvanced() {
                   className="social"
                   href="https://www.instagram.com/legalterminus/"
                   aria-label="Instagram"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <FaInstagram />
                 </a>
@@ -549,16 +554,26 @@ export default function NavbarAdvanced() {
                   className="social"
                   href="https://twitter.com/legalterminus"
                   aria-label="Twitter"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <FaTwitter />
                 </a>
-                <a className="social" href="#twitter" aria-label="Whatsapp">
+                <a
+                  className="social"
+                  href="https://wa.me/918280008183"
+                  aria-label="Whatsapp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <FaWhatsapp />
                 </a>
                 <a
                   className="social"
                   href="https://www.youtube.com/@LegalTerminus"
                   aria-label="youtube"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <FaYoutube />
                 </a>
@@ -566,6 +581,8 @@ export default function NavbarAdvanced() {
                   className="social"
                   href="https://www.linkedin.com/company/legalterminus/"
                   aria-label="LinkedIn"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <FaLinkedinIn />
                 </a>
@@ -617,7 +634,7 @@ export default function NavbarAdvanced() {
                           {it.label}
                         </button>
                       ) : (
-                        <a role="menuitem" href={it.href} className="nav-link">
+                        <a role="menuitem" href={it.href} className="nav-link" style={{ fontWeight: 700 }}>
                           {it.label}
                         </a>
                       )}

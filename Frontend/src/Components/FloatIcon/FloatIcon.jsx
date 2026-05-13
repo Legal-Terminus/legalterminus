@@ -27,7 +27,7 @@ const FloatIcon = () => {
 
       {/* WhatsApp */}
       <a
-        href="https://wa.me/919999999999"
+        href="https://wa.me/918280008183"
         target="_blank"
         rel="noopener noreferrer"
         className="float-icon whatsapp"
