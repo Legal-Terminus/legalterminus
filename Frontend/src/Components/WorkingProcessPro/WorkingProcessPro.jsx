@@ -8,68 +8,48 @@ const steps = [
     title: "Application",
     text: "Fill out the application form",
     icon: <FaRegFileAlt />,
-    color: "green",
   },
   {
     no: "02",
     title: "Payment",
     text: "Complete the online payment",
     icon: <FaCreditCard />,
-    color: "yellow",
   },
   {
     no: "03",
     title: "Processing",
     text: "Our executive processes your application",
     icon: <FaHeadset />,
-    color: "red",
   },
   {
     no: "04",
     title: "Confirmation",
     text: "Receive confirmation via email",
     icon: <FaEnvelope />,
-    color: "purple",
   },
 ];
 
 const WorkingProcessPro = () => {
   return (
     <section className="WPI-section">
-      <div className="WPI-container">
-
-        <div className="WPI-left">
-        <div className="WPI-infographic">
-          <div className="WPI-layer back"></div>
-          <div className="WPI-layer middle"></div>
-
-          <div className="WPI-layer front">
-            <span className="WPI-badge">Legal Terminus</span>
-            <h2>Our Working<br />Process</h2>
-            <p>Simple & Transparent</p>
-          </div>
-        </div>
+      <div className="WPI-header">
+        <span className="WPI-badge">Legal Terminus</span>
+        <h2 className="WPI-title">Our Working Process</h2>
+        <p className="WPI-subtitle">Simple &amp; Transparent</p>
       </div>
 
-
-
-        {/* RIGHT STEPS */}
-        <div className="WPI-right">
-          {steps.map((step, index) => (
-            <div className="WPI-step-row" key={index}>
-              <span className="WPI-line" />
-              <div className={`WPI-step WPI-${step.color}`}>
-                <div className="WPI-step-icon">{step.icon}</div>
-                <div className="WPI-step-content">
-                  <span className="WPI-step-no">{step.no}</span>
-                  <h4>{step.title}</h4>
-                  <p>{step.text}</p>
-                </div>
-              </div>
+      <div className="WPI-steps">
+        {steps.map((step, index) => (
+          <div className="WPI-step" key={index}>
+            <div className="WPI-icon-wrap">
+              {step.icon}
+              <span className="WPI-no">{step.no}</span>
             </div>
-          ))}
-        </div>
-
+            {index < steps.length - 1 && <div className="WPI-connector" />}
+            <h4 className="WPI-step-title">{step.title}</h4>
+            <p className="WPI-step-text">{step.text}</p>
+          </div>
+        ))}
       </div>
     </section>
   );

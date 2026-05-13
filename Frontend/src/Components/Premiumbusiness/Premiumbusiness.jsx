@@ -89,7 +89,7 @@ export default function Premiumbusiness() {
         <div className="pb-left">
           <div className="pb-left-content">
            <h3 id="pb-heading" className="pb-head">
-              Legal Solutions Made <span className="highlight">Simple</span>
+              Compliances Made <span className="highlight">Simple</span>
             </h3>
 
 
