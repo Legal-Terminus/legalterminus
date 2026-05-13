@@ -1,10 +1,10 @@
 import React from 'react'
+import './PrivateLimitedCopy.css'
 import Breadcrum from '../../Components/Breadcrum/Breadcrum'
 import PvtltdPlanandPricing from '../../Components/PvtltdPlanandPricing/PvtltdPlanandPricing'
 import PvtltdZolvitPremium from '../../Components/PvtltdZolvitPremium/PvtltdZolvitPremium'
 import PvtltdTabs from '../../Components/PvtltdTabs/PvtltdTabs'
 import PvtltdCompanyTab from '../../Components/PvtltdCompanyTab/PvtltdCompanyTab'
-import PvtltdPvtTypes from '../../Components/PvtltdPvtTypes/PvtltdPvtTypes'
 import PvtltdRequirementsTab from '../../Components/PvtltdRequirementsTab/PvtltdRequirementsTab'
 import PvtltdProcess from '../../Components/PvtltdProcess/PvtltdProcess'
 import PvtltdDocument from '../../Components/PvtltdDocument/PvtltdDocument'
@@ -13,18 +13,20 @@ import PvtltdTermsCondition from '../../Components/PvtltdTermsCondition/PvtltdTe
 import PvtltdTestimonial from '../../Components/PvtltdTestimonial/PvtltdTestimonial'
 import PvtltdVideoTestimonial from '../../Components/PvtltdVideoTestimonial/PvtltdVideoTestimonial'
 import PvtltdOurclints from '../../Components/PvtltdOurclints/PvtltdOurclints'
+import CopyPvtTypes from '../../Components/CopyPvtTypes/CopyPvtTypes'
 
 const PrivateLimitedCopy = () => {
   return (
     <div>
-      <Breadcrum />
+      <div className="copy-page-hero">
+        <Breadcrum />
+      </div>
 
-      <div id="plans">
+      <div id="plans" className="copy-page-pricing">
         <PvtltdPlanandPricing />
       </div>
 
       <PvtltdTermsCondition />
-
 
       <div id="premium">
         <PvtltdZolvitPremium />
@@ -37,7 +39,7 @@ const PrivateLimitedCopy = () => {
       </div>
 
       <div id="types">
-        <PvtltdPvtTypes />
+        <CopyPvtTypes />
       </div>
 
       <div id="requirements">
