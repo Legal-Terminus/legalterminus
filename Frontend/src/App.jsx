@@ -77,6 +77,7 @@ const PrivacyPolicy = lazy(() => import("./Pages/Policies/PrivacyPolicy"));
 const TermsConditions = lazy(() => import("./Pages/Policies/TermsConditions"));
 const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
 const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
+const PrivateLimitedCopy = lazy(() => import("./Pages/PrivateLimitedCopy/PrivateLimitedCopy"));
 
 // Store scroll positions keyed by location.key
 const scrollPositions = {};
@@ -195,6 +196,7 @@ function App() {
             <Route path="/terms-conditions" element={<TermsConditions />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/confidentiality-policy" element={<ConfidentialityPolicy />} />
+            <Route path="/pvt-ltd-registration-copy" element={<PrivateLimitedCopy />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>
