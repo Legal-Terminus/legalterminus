@@ -11,7 +11,7 @@ const ContactUsSection = () => {
           <iframe
             className="contactussection-iframe"
             title="Bhubaneswar map"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3741.8!2d85.8394!3d20.2961!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a190915b8c1a795%3A0x2f1a3a7e1a3b1b1b!2sSaheed%20Nagar%2C%20Bhubaneswar%2C%20Odisha%20751007!5e0!3m2!1sen!2sin!4v1700000000000"
+            src="https://maps.google.com/maps?q=Flat+No+1B+RK+Enclave+Plot+No+A%2F155+Saheed+Nagar+Bhubaneswar+Odisha+751007&output=embed"
             allowFullScreen
             loading="lazy"
           />
