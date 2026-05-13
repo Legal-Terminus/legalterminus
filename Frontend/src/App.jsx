@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { lazy, Suspense, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 import "./App.css";
 
 import Navbar from "./Components/Navbar/Navbar";
@@ -78,9 +78,21 @@ const TermsConditions = lazy(() => import("./Pages/Policies/TermsConditions"));
 const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
 const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  const navType = useNavigationType();
+  useEffect(() => {
+    if (navType === "PUSH") {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [pathname, navType]);
+  return null;
+}
+
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Navbar />
 
       <RouteLoaderWrapper>
