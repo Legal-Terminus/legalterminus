@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
 /* ================= BASE ================= */
 .pvtltd-gst-wrapper {
   padding: 60px 24px;
@@ -6,7 +8,7 @@
   font-family: "Poppins", sans-serif;
 }
 
-/* Override global gst-heading inside this section */
+/* Heading — scoped so it doesn't bleed to other sections */
 .pvtltd-gst-wrapper .gst-heading {
   text-align: center;
   font-size: 36px;
@@ -24,14 +26,15 @@
   line-height: 1.6;
 }
 
-/* ================= pvtltd-timeline ================= */
+/* ================= TIMELINE CONTAINER ================= */
 .pvtltd-timeline {
   position: relative;
   display: flex;
   flex-direction: column;
+  gap: 16px;           /* dense spacing between steps */
 }
 
-/* CENTER LINE */
+/* CENTER LINE — starts exactly at the top of the first dot */
 .pvtltd-timeline-line {
   position: absolute;
   left: 50%;
@@ -42,7 +45,7 @@
   background: linear-gradient(
     to bottom,
     #facc15,
-    #f97316,
+    #f97316 40%,
     #22c55e
   );
   border-radius: 4px;
@@ -54,14 +57,13 @@
   display: flex;
   align-items: flex-start;
   width: 100%;
-  min-height: 100px;
 }
 
-/* DOT */
+/* ================= DOT — top: 0 so number sits at line start ================= */
 .pvtltd-timeline-dot {
   position: absolute;
   left: 50%;
-  top: 20px;
+  top: 0;                                   /* flush with item top = line start */
   transform: translateX(-50%);
   width: 38px;
   height: 38px;
@@ -71,31 +73,33 @@
   display: grid;
   place-items: center;
   font-weight: 700;
+  font-size: 15px;
   z-index: 2;
-  box-shadow: 0 8px 22px rgba(249,115,22,0.45);
+  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.45);
 }
 
-/* CARD */
+/* ================= CARD — closer to line, compact padding ================= */
 .pvtltd-timeline-card {
-  width: calc(50% - 70px);
-  max-width: 460px;
+  width: calc(50% - 50px);    /* card edge sits ~50 px from centre line */
+  max-width: 480px;
   background: #ffffff;
-  padding: 20px 22px;
-  border-radius: 16px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+  padding: 16px 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.07);
 }
 
 .pvtltd-timeline-card h4 {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   margin-bottom: 6px;
   color: #0f172a;
 }
 
 .pvtltd-timeline-card p {
-  font-size: 14px;
+  font-size: 13.5px;
   color: #475569;
-  line-height: 1.6;
+  line-height: 1.65;
+  margin: 0;
 }
 
 /* ================= LEFT / RIGHT ================= */
@@ -107,60 +111,69 @@
   justify-content: flex-end;
 }
 
-/* ================= CONNECTORS (DESKTOP) ================= */
+/* ================= CONNECTORS
+   Dot centre = top 0 + height 38/2 = 19 px
+   Arrow  height = border-top(6) + border-bottom(6) = 12 px → top = 19 - 6 = 13 px
+   Line   height = 2 px                              → top = 19 - 1 = 18 px
+   ================= */
+
+/* LEFT — dashed line from card edge toward centre dot */
 .pvtltd-timeline-item.left::after {
   content: "";
   position: absolute;
-  top: 38px;
+  top: 18px;
   right: 50%;
-  width: 65px;
+  width: 45px;
   height: 2px;
   background: repeating-linear-gradient(
     to right,
     #f97316,
-    #f97316 6px,
-    transparent 6px,
-    transparent 12px
+    #f97316 5px,
+    transparent 5px,
+    transparent 10px
   );
 }
 
+/* LEFT — arrowhead pointing right (toward dot) */
 .pvtltd-timeline-item.left::before {
   content: "";
   position: absolute;
-  top: 33px;
-  right: calc(50% - -18px);
+  top: 13px;
+  right: calc(50% - 20px);
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
   border-left: 8px solid #f97316;
 }
 
+/* RIGHT — dashed line from dot toward card */
 .pvtltd-timeline-item.right::after {
   content: "";
   position: absolute;
-  top: 38px;
+  top: 18px;
   left: 50%;
-  width: 65px;
+  width: 45px;
   height: 2px;
   background: repeating-linear-gradient(
     to left,
     #f97316,
-    #f97316 6px,
-    transparent 6px,
-    transparent 12px
+    #f97316 5px,
+    transparent 5px,
+    transparent 10px
   );
 }
 
+/* RIGHT — arrowhead pointing left (toward dot) */
 .pvtltd-timeline-item.right::before {
   content: "";
   position: absolute;
-  top: 33px;
-  left: calc(50% - -18px);
+  top: 13px;
+  left: calc(50% - 20px);
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
   border-right: 8px solid #f97316;
 }
 
-/* ================= MOBILE PREMIUM (ARROWS KEPT) ================= */
+/* ================= MOBILE ================= */
 @media (max-width: 900px) {
   .pvtltd-gst-wrapper {
     padding: 50px 16px;
@@ -175,6 +188,10 @@
     margin-bottom: 40px;
   }
 
+  .pvtltd-timeline {
+    gap: 12px;
+  }
+
   .pvtltd-timeline-line {
     left: 18px;
     width: 3px;
@@ -182,43 +199,45 @@
 
   .pvtltd-timeline-item {
     justify-content: flex-start !important;
-    padding-left: 70px;
+    padding-left: 66px;
   }
 
+  /* Mobile dot — 32 px tall, top: 0 → centre at 16 px */
   .pvtltd-timeline-dot {
     left: 18px;
     width: 32px;
     height: 32px;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .pvtltd-timeline-card {
     width: 100%;
     background: linear-gradient(180deg, #ffffff, #f8fafc);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.06);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
   }
 
-  /* MOBILE ARROWS → */
+  /* Mobile connector — horizontal → right toward card */
   .pvtltd-timeline-item.left::after,
   .pvtltd-timeline-item.right::after {
     left: 18px;
     right: auto;
-    width: 40px;
-    top: 35px;
+    width: 36px;
+    top: 15px;           /* 32/2 - 1 */
     background: repeating-linear-gradient(
       to right,
       #f97316,
-      #f97316 6px,
-      transparent 6px,
-      transparent 12px
+      #f97316 5px,
+      transparent 5px,
+      transparent 10px
     );
   }
 
+  /* Mobile arrowhead → right */
   .pvtltd-timeline-item.left::before,
   .pvtltd-timeline-item.right::before {
-    left: 52px;
+    left: 48px;
     right: auto;
-    top: 30px;
+    top: 10px;           /* 16 - 6 */
     border-left: 8px solid #f97316;
     border-right: none;
   }
