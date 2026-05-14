@@ -57,6 +57,8 @@ const GSTProcess = () => {
             key={index}
             className={`pvtltd-timeline-item ${
               index % 2 === 0 ? "left" : "right"
+            } ${index === 0 ? "first" : ""} ${
+              index === steps.length - 1 ? "last" : ""
             }`}
           >
             <div className="pvtltd-timeline-dot">{index + 1}</div>
