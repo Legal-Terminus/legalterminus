@@ -6,18 +6,22 @@
   font-family: "Poppins", sans-serif;
 }
 
-.pv-gst-heading {
+/* Override global gst-heading inside this section */
+.pvtltd-gst-wrapper .gst-heading {
   text-align: center;
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
-  color: #16a34a;
-  margin-bottom: 6px;
+  color: #0f172a;
+  margin-bottom: 10px;
+  line-height: 1.3;
 }
 
 .pv-gst-subheading {
   text-align: center;
+  font-size: 16px;
   color: #475569;
-  margin-bottom: 50px;
+  margin-bottom: 52px;
+  line-height: 1.6;
 }
 
 /* ================= pvtltd-timeline ================= */
@@ -162,7 +166,7 @@
     padding: 50px 16px;
   }
 
-  .pv-gst-heading {
+  .pvtltd-gst-wrapper .gst-heading {
     font-size: 24px;
   }
 
