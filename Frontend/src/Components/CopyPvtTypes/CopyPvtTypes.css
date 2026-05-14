@@ -29,21 +29,18 @@
 }
 
 .cpvt-card {
-  background: #fff;
-  border-radius: 14px;
-  border: 1.5px solid rgba(27, 179, 58, 0.2);
-  box-shadow:
-    0 8px 28px rgba(27, 179, 58, 0.09),
-    0 2px 8px rgba(0, 0, 0, 0.04);
+  background: #f9fafb;
+  border: none;
+  border-left: 4px solid #22c55e;
+  border-radius: 8px;
+  box-shadow: none;
   padding: 32px 28px;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .cpvt-card:hover {
-  transform: translateY(-5px);
-  box-shadow:
-    0 14px 40px rgba(27, 179, 58, 0.16),
-    0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.12);
 }
 
 /* Number accent */
