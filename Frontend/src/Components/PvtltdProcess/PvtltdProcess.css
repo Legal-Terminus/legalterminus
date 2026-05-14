@@ -80,8 +80,7 @@
 
 /* ================= CARD — closer to line, compact padding ================= */
 .pvtltd-timeline-card {
-  width: calc(50% - 50px);    /* card edge sits ~50 px from centre line */
-  max-width: 480px;
+  width: calc(50% - 50px);    /* card edge sits exactly 50 px from centre line */
   background: #ffffff;
   padding: 16px 20px;
   border-radius: 14px;
