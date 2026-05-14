@@ -69,50 +69,40 @@ const FaqPvt = () => {
   return (
     <section className="faq-section">
       <div className="faq-container">
-        {/* Left side – static text */}
-        <div className="faq-left">
-          <h2 className="faq-title">Private Limited Company Registration — FAQs</h2>
 
+        {/* Centered heading & subheading */}
+        <div className="faq-header">
+          <h2 className="faq-title">Private Limited Company Registration — FAQs</h2>
           <p className="faq-intro">
             Got questions? We've got answers — straight, no-BS, legally accurate.
           </p>
-
-          <p className="faq-intro">
-            
-          </p>
         </div>
 
-        {/* Right side – scrollable Q&A list */}
-        <div className="faq-right">
-          <div className="faq-list">
-            {faqs.map((item, index) => {
-              const isActive = index === activeIndex;
-              return (
-                <div
-                  key={index}
-                  className={`faq-item ${isActive ? "active" : ""}`}
+        {/* Full-width FAQ accordion */}
+        <div className="faq-list">
+          {faqs.map((item, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <div
+                key={index}
+                className={`faq-item ${isActive ? "active" : ""}`}
+              >
+                <button
+                  type="button"
+                  className="faq-question"
+                  onClick={() => toggleFaq(index)}
                 >
-                  <button
-                    type="button"
-                    className="faq-question"
-                    onClick={() => toggleFaq(index)}
-                  >
-                    <span>{item.question}</span>
-                    <span className={`faq-icon ${isActive ? "open" : ""}`}>
-                      ▾
-                    </span>
-                  </button>
-                  {isActive && (
-                   <div className={`faq-answer ${isActive ? "open" : ""}`}>
-                    <p>{item.answer}</p>
-                  </div>
-
-                  )}
+                  <span>{item.question}</span>
+                  <span className={`faq-icon ${isActive ? "open" : ""}`}>▾</span>
+                </button>
+                <div className={`faq-answer ${isActive ? "open" : ""}`}>
+                  <div className="faq-answer-content">{item.answer}</div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
+
       </div>
     </section>
   );
