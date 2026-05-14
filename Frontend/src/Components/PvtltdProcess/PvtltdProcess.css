@@ -113,14 +113,14 @@
 
 /* ================= CONNECTORS — centred on card by default ================= */
 
-/* LEFT — dashed line from card edge toward centre dot */
+/* LEFT — dashed line from card edge to dot edge (card at 50%-50px, dot edge at 50%-20px) */
 .pvtltd-timeline-item.left::after {
   content: "";
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: 50%;
-  width: 45px;
+  right: calc(50% + 20px);   /* right edge flush with dot left edge */
+  width: 30px;               /* spans the 30px gap from card to dot */
   height: 2px;
   background: repeating-linear-gradient(
     to right,
@@ -131,26 +131,26 @@
   );
 }
 
-/* LEFT — arrowhead pointing right (toward dot) */
+/* LEFT — arrowhead pointing right, tip at dot left edge */
 .pvtltd-timeline-item.left::before {
   content: "";
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: calc(50% - 20px);
+  right: calc(50% + 20px);   /* tip flush with dot left edge */
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
   border-left: 8px solid #f97316;
 }
 
-/* RIGHT — dashed line from dot toward card */
+/* RIGHT — dashed line from dot edge to card edge */
 .pvtltd-timeline-item.right::after {
   content: "";
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  left: 50%;
-  width: 45px;
+  left: calc(50% + 20px);    /* left edge flush with dot right edge */
+  width: 30px;
   height: 2px;
   background: repeating-linear-gradient(
     to left,
@@ -161,13 +161,13 @@
   );
 }
 
-/* RIGHT — arrowhead pointing left (toward dot) */
+/* RIGHT — arrowhead pointing left, tip at dot right edge */
 .pvtltd-timeline-item.right::before {
   content: "";
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  left: calc(50% - 20px);
+  left: calc(50% + 20px);    /* tip flush with dot right edge */
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
   border-right: 8px solid #f97316;
@@ -247,12 +247,12 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
   }
 
-  /* Mobile connector — horizontal → right toward card, centred on card */
+  /* Mobile connector — from dot right edge (34px) to arrowhead start (58px) */
   .pvtltd-timeline-item.left::after,
   .pvtltd-timeline-item.right::after {
-    left: 18px;
+    left: 34px;              /* dot right edge: 18px center + 16px radius */
     right: auto;
-    width: 36px;
+    width: 24px;             /* 58px - 34px = 24px */
     top: 50%;
     transform: translateY(-50%);
     background: repeating-linear-gradient(
@@ -264,10 +264,10 @@
     );
   }
 
-  /* Mobile arrowhead → right, centred on card */
+  /* Mobile arrowhead → right, tip at card left edge (66px) */
   .pvtltd-timeline-item.left::before,
   .pvtltd-timeline-item.right::before {
-    left: 48px;
+    left: 58px;              /* tip (left + 8px) = 66px = card left edge */
     right: auto;
     top: 50%;
     transform: translateY(-50%);
