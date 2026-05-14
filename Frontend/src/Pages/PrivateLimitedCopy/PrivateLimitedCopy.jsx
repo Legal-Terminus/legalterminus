@@ -7,7 +7,7 @@ import PvtltdTabs from '../../Components/PvtltdTabs/PvtltdTabs'
 import PvtltdCompanyTab from '../../Components/PvtltdCompanyTab/PvtltdCompanyTab'
 import PvtltdRequirementsTab from '../../Components/PvtltdRequirementsTab/PvtltdRequirementsTab'
 import PvtltdProcess from '../../Components/PvtltdProcess/PvtltdProcess'
-import PvtltdDocument from '../../Components/PvtltdDocument/PvtltdDocument'
+import CopyPvtDocument from '../../Components/CopyPvtDocument/CopyPvtDocument'
 import PvtltdFAQ from '../../Components/PvtltdFAQ/PvtltdFAQ'
 import PvtltdTermsCondition from '../../Components/PvtltdTermsCondition/PvtltdTermsCondition'
 import PvtltdTestimonial from '../../Components/PvtltdTestimonial/PvtltdTestimonial'
@@ -51,7 +51,7 @@ const PrivateLimitedCopy = () => {
       </div>
 
       <div id="documents">
-        <PvtltdDocument />
+        <CopyPvtDocument />
       </div>
 
       <div id="faq">
