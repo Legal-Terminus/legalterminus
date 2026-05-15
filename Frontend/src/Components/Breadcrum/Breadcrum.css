@@ -46,9 +46,8 @@
   color: #ffffff;
 }
 
-.lt-public-title span {
-  color: #4ade80;
-}
+.lt-title-india  { color: #ffffff; }
+.lt-title-tagline { color: #4ade80; }
 
 /* DESCRIPTION */
 .lt-public-description {

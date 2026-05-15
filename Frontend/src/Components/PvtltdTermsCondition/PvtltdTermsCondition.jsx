@@ -5,6 +5,8 @@ const TermsConditions = () => {
   return (
     <section className="pvtltd-tc-section">
       <div className="pvtltd-tc-container">
+        <div className="pvtltd-tc-card">
+
         {/* Heading */}
         <h2 className="pvtltd-tc-title">TERMS &amp; CONDITIONS</h2>
 
@@ -55,6 +57,7 @@ const TermsConditions = () => {
             Commencement of Business (Form INC-20A) must be filed within 180 days of the date of incorporation. Failure to do so may attract penalties under Section 11 of the Companies Act, 2013. We will remind you, but timely document and payment submission from the client is essential.
           </li>
         </ol>
+        </div>
       </div>
     </section>
   );
