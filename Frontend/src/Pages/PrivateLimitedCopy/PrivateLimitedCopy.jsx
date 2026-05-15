@@ -22,41 +22,63 @@ const PrivateLimitedCopy = () => {
         <Breadcrum />
       </div>
 
+      <div className="section-divider" />
+
       <div id="plans" className="copy-page-pricing">
         <PvtltdPlanandPricing />
       </div>
 
+      <div className="section-divider" />
+
       <PvtltdTermsCondition />
+
+      <div className="section-divider" />
 
       <div id="premium">
         <PvtltdZolvitPremium />
       </div>
 
+      <div className="section-divider" />
+
       <PvtltdTabs />
+
+      <div className="section-divider" />
 
       <div id="company">
         <PvtltdCompanyTab />
       </div>
 
+      <div className="section-divider" />
+
       <div id="types">
         <CopyPvtTypes />
       </div>
+
+      <div className="section-divider" />
 
       <div id="requirements">
         <PvtltdRequirementsTab />
       </div>
 
+      <div className="section-divider" />
+
       <div id="process">
         <PvtltdProcess />
       </div>
+
+      <div className="section-divider" />
 
       <div id="documents">
         <CopyPvtDocument />
       </div>
 
+      <div className="section-divider" />
+
       <div id="faq">
         <PvtltdFAQ />
       </div>
+
+      <div className="section-divider" />
 
       <PvtltdTestimonial />
       <PvtltdVideoTestimonial />

@@ -1,3 +1,17 @@
+/* ===== SECTION DIVIDER ===== */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(34, 197, 94, 0.25) 20%,
+    rgba(34, 197, 94, 0.45) 50%,
+    rgba(34, 197, 94, 0.25) 80%,
+    transparent 100%
+  );
+  margin: 0 40px;
+}
+
 /* ===== 1. FORM CARD — green glow shadow ===== */
 .copy-page-hero .lt-public-form-card {
   border: 1px solid rgba(34, 197, 94, 0.55);
