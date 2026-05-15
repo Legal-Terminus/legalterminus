@@ -6,6 +6,7 @@
   max-width: 1200px;
   margin: auto;
   font-family: "Poppins", sans-serif;
+  background: #ffffff;
 }
 
 /* Heading — scoped so it doesn't bleed to other sections */
