@@ -60,8 +60,6 @@ const PrivateLimitedCopy = () => {
         <PvtltdRequirementsTab />
       </div>
 
-      <div className="section-divider" />
-
       <div id="process">
         <PvtltdProcess />
       </div>
