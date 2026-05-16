@@ -38,8 +38,6 @@ const PrivateLimitedCopy = () => {
         <PvtltdZolvitPremium />
       </div>
 
-      <div className="section-divider" />
-
       <PvtltdTabs />
 
       <div className="section-divider" />
@@ -59,6 +57,8 @@ const PrivateLimitedCopy = () => {
       <div id="requirements">
         <PvtltdRequirementsTab />
       </div>
+
+      <div className="section-divider" />
 
       <div id="process">
         <PvtltdProcess />

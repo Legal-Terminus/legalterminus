@@ -6,7 +6,7 @@
   max-width: 1200px;
   margin: auto;
   font-family: "Poppins", sans-serif;
-  background: #ffffff;
+  background: #f8fafc;
 }
 
 /* Heading — scoped so it doesn't bleed to other sections */
@@ -85,7 +85,7 @@
   background: #ffffff;
   padding: 16px 20px;
   border-radius: 14px;
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
 }
 
 .pvtltd-timeline-card h4 {
@@ -113,14 +113,14 @@
 
 /* ================= CONNECTORS — centred on card by default ================= */
 
-/* LEFT — dashed line from card edge to dot edge (card at 50%-50px, dot edge at 50%-20px) */
+/* LEFT — dashed line from dot edge to arrowhead (number → card direction) */
 .pvtltd-timeline-item.left::after {
   content: "";
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   right: calc(50% + 20px);   /* right edge flush with dot left edge */
-  width: 30px;               /* spans the 30px gap from card to dot */
+  width: 22px;               /* spans dot-edge to arrowhead back */
   height: 2px;
   background: repeating-linear-gradient(
     to right,
@@ -131,29 +131,29 @@
   );
 }
 
-/* LEFT — arrowhead pointing right, tip at dot left edge */
+/* LEFT — arrowhead pointing left, tip at card right edge */
 .pvtltd-timeline-item.left::before {
   content: "";
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: calc(50% + 20px);   /* tip flush with dot left edge */
+  right: calc(50% + 42px);   /* tip at card right edge */
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
-  border-left: 8px solid #f97316;
+  border-right: 8px solid #f97316;
 }
 
-/* RIGHT — dashed line from dot edge to card edge */
+/* RIGHT — dashed line from dot edge to arrowhead (number → card direction) */
 .pvtltd-timeline-item.right::after {
   content: "";
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   left: calc(50% + 20px);    /* left edge flush with dot right edge */
-  width: 30px;
+  width: 22px;
   height: 2px;
   background: repeating-linear-gradient(
-    to left,
+    to right,
     #f97316,
     #f97316 5px,
     transparent 5px,
@@ -161,16 +161,16 @@
   );
 }
 
-/* RIGHT — arrowhead pointing left, tip at dot right edge */
+/* RIGHT — arrowhead pointing right, tip at card left edge */
 .pvtltd-timeline-item.right::before {
   content: "";
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  left: calc(50% + 20px);    /* tip flush with dot right edge */
+  left: calc(50% + 42px);    /* tip at card left edge */
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
-  border-right: 8px solid #f97316;
+  border-left: 8px solid #f97316;
 }
 
 /* ================= FIRST item — dot anchored to top of centre line ================= */
