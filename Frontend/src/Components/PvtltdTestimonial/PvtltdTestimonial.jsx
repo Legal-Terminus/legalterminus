@@ -1,9 +1,9 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import "./PvtltdTestimonial.css";
 
 const GOOGLE_REVIEW_URL = "https://share.google/vpPPXcq7hegJilJvt";
 
-const AVATAR_COLORS = ["#4285F4", "#EA4335", "#34A853", "#FBBC05", "#9C27B0", "#FF5722", "#00ACC1", "#F4511E"];
+const AVATAR_COLORS = ["#4285F4", "#EA4335", "#34A853", "#FBBC05"];
 
 const testimonials = [
   {
@@ -34,62 +34,6 @@ const testimonials = [
     rating: 5,
     initial: "P",
   },
-  {
-    name: "Ananya Singh",
-    role: "Startup Founder",
-    text: "They explained every step clearly and completed the process on time.",
-    rating: 5,
-    initial: "A",
-  },
-  {
-    name: "Rahul Verma",
-    role: "Consultant",
-    text: "Smooth GST registration and very responsive support.",
-    rating: 4,
-    initial: "R",
-  },
-  {
-    name: "Sneha Patil",
-    role: "Entrepreneur",
-    text: "Got timely reminders for all compliance due dates. Stress-free now.",
-    rating: 5,
-    initial: "S",
-  },
-  {
-    name: "Mohit Sharma",
-    role: "Director, FinSync Solutions",
-    text: "Their advisory has helped us structure our business better.",
-    rating: 5,
-    initial: "M",
-  },
-  {
-    name: "Arjun Nair",
-    role: "Proprietor",
-    text: "Very polite staff and accurate guidance for tax planning.",
-    rating: 4,
-    initial: "A",
-  },
-  {
-    name: "Ritu Jain",
-    role: "Business Owner",
-    text: "Paperwork was minimal and everything happened online. Very convenient.",
-    rating: 5,
-    initial: "R",
-  },
-  {
-    name: "Deepak Kulkarni",
-    role: "Co-Founder, TechHive",
-    text: "They took care of all MCA filings and kept us updated at every step.",
-    rating: 5,
-    initial: "D",
-  },
-  {
-    name: "Neha Agarwal",
-    role: "Consultant",
-    text: "Prompt responses, transparent pricing and professional work.",
-    rating: 5,
-    initial: "N",
-  },
 ];
 
 const GoogleG = ({ size = 20 }) => (
@@ -111,14 +55,43 @@ const StarRow = ({ rating }) => (
 
 const GoogleTestimonials = () => {
   const sliderRef = useRef(null);
+  const intervalRef = useRef(null);
+
+  const getCardWidth = () => {
+    const container = sliderRef.current;
+    if (!container) return 300;
+    const card = container.querySelector(".gt-card");
+    return card ? card.offsetWidth + 20 : 300;
+  };
+
+  const startAutoScroll = () => {
+    intervalRef.current = setInterval(() => {
+      const container = sliderRef.current;
+      if (!container) return;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      if (container.scrollLeft >= maxScroll - 5) {
+        container.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        container.scrollBy({ left: getCardWidth(), behavior: "smooth" });
+      }
+    }, 3200);
+  };
+
+  const stopAutoScroll = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  };
+
+  useEffect(() => {
+    startAutoScroll();
+    return () => stopAutoScroll();
+  }, []);
 
   const handleScroll = (direction) => {
+    stopAutoScroll();
     const container = sliderRef.current;
     if (!container) return;
-    const card = container.querySelector(".gt-card");
-    if (!card) return;
-    const cardWidth = card.offsetWidth + 20;
-    container.scrollBy({ left: direction === "next" ? cardWidth : -cardWidth, behavior: "smooth" });
+    container.scrollBy({ left: direction === "next" ? getCardWidth() : -getCardWidth(), behavior: "smooth" });
+    startAutoScroll();
   };
 
   return (
@@ -136,7 +109,7 @@ const GoogleTestimonials = () => {
               <span className="gt-overall-score">4.8</span>
               <div>
                 <div className="gt-overall-stars">★★★★★</div>
-                <p className="gt-review-count">Based on 12+ reviews</p>
+                <p className="gt-review-count">Based on 4+ reviews</p>
               </div>
             </div>
           </div>
@@ -156,7 +129,12 @@ const GoogleTestimonials = () => {
         <div className="gt-slider-wrapper">
           <button className="gt-side-arrow gt-left" aria-label="Previous" onClick={() => handleScroll("prev")}>&#10094;</button>
 
-          <div className="gt-slider" ref={sliderRef}>
+          <div
+            className="gt-slider"
+            ref={sliderRef}
+            onMouseEnter={stopAutoScroll}
+            onMouseLeave={startAutoScroll}
+          >
             {testimonials.map((t, idx) => (
               <article className="gt-card" key={idx}>
                 {/* Top row: avatar + name + org */}
