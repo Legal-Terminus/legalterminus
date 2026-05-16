@@ -18,10 +18,10 @@ const PvtTabs = () => {
 
     const section = document.getElementById(id);
     if (section) {
-      const tabsEl = document.querySelector(".pvt-tabs-section");
-      const offset = tabsEl ? tabsEl.offsetHeight : 72;
-      const top = section.getBoundingClientRect().top + window.pageYOffset - offset;
-      window.scrollTo({ top, behavior: "smooth" });
+      section.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }
   };
 
