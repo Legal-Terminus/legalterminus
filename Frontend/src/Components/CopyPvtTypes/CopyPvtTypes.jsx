@@ -11,7 +11,7 @@ const types = [
   {
     number: "02",
     title: "Company Limited by Guarantee",
-    subtitle: "",
+    subtitle: "Common for Non-Profits",
     text: "Members commit to contributing a fixed amount in the event of winding up — but there's no share capital involved. Preferred by non-profit entities, trade associations, and charitable organisations that want corporate structure without the equity game.",
   },
   {
