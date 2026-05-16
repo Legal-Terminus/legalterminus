@@ -113,29 +113,29 @@
 }
 
 
-/* Text */
-
-.gt-text {
-    margin: 0 0 22px;
-    font-size: 15px;
-    line-height: 1.7;
-    color: #333333;
-}
-
-
 /* Name & role */
 
 .gt-name {
-    margin: 0 0 6px;
-    font-size: 18px;
-    font-weight: 600;
+    margin: 0 0 3px;
+    font-size: 17px;
+    font-weight: 700;
     color: #1aa91a;
 }
 
 .gt-role {
-    margin: 0 0 12px;
-    font-size: 14px;
-    color: #111827;
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Review text */
+
+.gt-text {
+    margin: 0 0 16px;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: #333333;
 }
 
 

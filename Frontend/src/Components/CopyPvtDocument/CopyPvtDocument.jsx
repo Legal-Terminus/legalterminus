@@ -68,7 +68,6 @@ const DocItem = ({ doc, index }) => (
     <div className="cpvd-doc-item-top">
       <div className="cpvd-doc-icon">{doc.icon}</div>
       <div className="cpvd-doc-meta">
-        <span className="cpvd-doc-num">0{index + 1}</span>
         <h4 className="cpvd-doc-title">{doc.title}</h4>
         <span className="cpvd-doc-note">{doc.note}</span>
       </div>

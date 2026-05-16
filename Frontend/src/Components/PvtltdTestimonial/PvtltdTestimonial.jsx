@@ -128,32 +128,14 @@ const GoogleTestimonials = () => {
           <div className="gt-slider" ref={sliderRef}>
             {testimonials.map((t, idx) => (
               <article className="gt-card" key={idx}>
-                {/* top quote */}
-                <span className="gt-quote gt-quote-top">“</span>
-
-                {/* avatar */}
-                <div className="gt-avatar-wrap">
-                  <div className="gt-avatar">
-                    <span>{t.initial}</span>
-                  </div>
-                </div>
-
-                {/* text */}
-                <p className="gt-text">{t.text}</p>
-
-                {/* name & role */}
                 <h3 className="gt-name">{t.name}</h3>
                 <p className="gt-role">{t.role}</p>
-
-                {/* stars */}
+                <p className="gt-text">{t.text}</p>
                 <div className="gt-stars">
                   {Array.from({ length: t.rating }).map((_, i) => (
                     <span key={i}>★</span>
                   ))}
                 </div>
-
-                {/* bottom quote */}
-                <span className="gt-quote gt-quote-bottom">”</span>
               </article>
             ))}
           </div>
