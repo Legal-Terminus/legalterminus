@@ -1,6 +1,10 @@
 import React, { useRef } from "react";
 import "./PvtltdTestimonial.css";
 
+const GOOGLE_REVIEW_URL = "https://share.google/vpPPXcq7hegJilJvt";
+
+const AVATAR_COLORS = ["#4285F4", "#EA4335", "#34A853", "#FBBC05", "#9C27B0", "#FF5722", "#00ACC1", "#F4511E"];
+
 const testimonials = [
   {
     name: "Kirti Ranjan Sahu",
@@ -88,67 +92,110 @@ const testimonials = [
   },
 ];
 
+const GoogleG = ({ size = 20 }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+  </svg>
+);
+
+const StarRow = ({ rating }) => (
+  <div className="gt-stars">
+    {[1, 2, 3, 4, 5].map((s) => (
+      <span key={s} className={s <= rating ? "gt-star filled" : "gt-star empty"}>★</span>
+    ))}
+  </div>
+);
+
 const GoogleTestimonials = () => {
   const sliderRef = useRef(null);
 
   const handleScroll = (direction) => {
     const container = sliderRef.current;
     if (!container) return;
-
     const card = container.querySelector(".gt-card");
     if (!card) return;
-
-    const gap = 24; // same as CSS gap
-    const cardWidth = card.offsetWidth + gap;
-
-    container.scrollBy({
-      left: direction === "next" ? cardWidth : -cardWidth,
-      behavior: "smooth",
-    });
+    const cardWidth = card.offsetWidth + 20;
+    container.scrollBy({ left: direction === "next" ? cardWidth : -cardWidth, behavior: "smooth" });
   };
 
   return (
     <section className="gt-section">
       <div className="gt-container">
-        <h2 className="gt-heading">
-          See What Our Customers Say on Google
-        </h2>
 
-        <div className="gt-slider-wrapper">
-          {/* Left arrow */}
-          <button
-            className="gt-side-arrow gt-left"
-            aria-label="Previous testimonials"
-            onClick={() => handleScroll("prev")}
+        {/* ── Google-branded header ── */}
+        <div className="gt-brand-header">
+          <div className="gt-brand-left">
+            <div className="gt-brand-label">
+              <GoogleG size={28} />
+              <span className="gt-brand-text">Google Reviews</span>
+            </div>
+            <div className="gt-overall">
+              <span className="gt-overall-score">4.8</span>
+              <div>
+                <div className="gt-overall-stars">★★★★★</div>
+                <p className="gt-review-count">Based on 12+ reviews</p>
+              </div>
+            </div>
+          </div>
+          <a
+            href={GOOGLE_REVIEW_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="gt-write-btn"
           >
-            ❮
-          </button>
+            Write a Review ↗
+          </a>
+        </div>
 
-          {/* Cards slider */}
+        <h2 className="gt-heading">What Our Clients Say</h2>
+
+        {/* ── Slider ── */}
+        <div className="gt-slider-wrapper">
+          <button className="gt-side-arrow gt-left" aria-label="Previous" onClick={() => handleScroll("prev")}>&#10094;</button>
+
           <div className="gt-slider" ref={sliderRef}>
             {testimonials.map((t, idx) => (
               <article className="gt-card" key={idx}>
-                <h3 className="gt-name">{t.name}</h3>
-                <p className="gt-role">{t.role}</p>
+                {/* Top row: avatar + name + org */}
+                <div className="gt-card-top">
+                  <div
+                    className="gt-avatar"
+                    style={{ background: AVATAR_COLORS[idx % AVATAR_COLORS.length] }}
+                  >
+                    {t.initial}
+                  </div>
+                  <div className="gt-card-meta">
+                    <h3 className="gt-name">{t.name}</h3>
+                    <p className="gt-role">{t.role}</p>
+                  </div>
+                </div>
+
+                {/* Review text */}
                 <p className="gt-text">{t.text}</p>
-                <div className="gt-stars">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <span key={i}>★</span>
-                  ))}
+
+                {/* Bottom: stars + Google G */}
+                <div className="gt-card-bottom">
+                  <StarRow rating={t.rating} />
+                  <GoogleG size={16} />
                 </div>
               </article>
             ))}
           </div>
 
-          {/* Right arrow */}
-          <button
-            className="gt-side-arrow gt-right"
-            aria-label="Next testimonials"
-            onClick={() => handleScroll("next")}
-          >
-            ❯
-          </button>
+          <button className="gt-side-arrow gt-right" aria-label="Next" onClick={() => handleScroll("next")}>&#10095;</button>
         </div>
+
+        {/* ── See all link ── */}
+        <div className="gt-see-all">
+          <a href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" className="gt-see-all-link">
+            <GoogleG size={16} />
+            See all reviews on Google
+          </a>
+        </div>
+
       </div>
     </section>
   );
