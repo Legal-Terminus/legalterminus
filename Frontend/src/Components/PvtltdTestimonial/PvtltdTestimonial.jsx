@@ -82,14 +82,15 @@ const GoogleTestimonials = () => {
 
   useEffect(() => {
     if (isPaused) return;
-    const id = setInterval(goNext, 3600);
+    const id = setInterval(() => setActive((i) => wrap(i + 1, n)), 3000);
     return () => clearInterval(id);
   }, [isPaused]);
 
-  const visible = [
-    { t: testimonials[prev],   idx: prev,   pos: "side" },
-    { t: testimonials[active], idx: active, pos: "center" },
-    { t: testimonials[next],   idx: next,   pos: "side" },
+  // Slot-based: keys never change so CSS transitions animate correctly
+  const slots = [
+    { slotKey: "left",   t: testimonials[prev],   idx: prev,   pos: "side" },
+    { slotKey: "center", t: testimonials[active], idx: active, pos: "center" },
+    { slotKey: "right",  t: testimonials[next],   idx: next,   pos: "side" },
   ];
 
   return (
@@ -114,11 +115,11 @@ const GoogleTestimonials = () => {
           <button className="gt-arrow gt-arrow--left" aria-label="Previous" onClick={goPrev}>&#8249;</button>
 
           <div className="gt-cards">
-            {visible.map(({ t, idx, pos }) => {
+            {slots.map(({ slotKey, t, idx, pos }) => {
               const isLong = t.text.length > TRUNCATE;
               const text = isLong ? t.text.slice(0, TRUNCATE).trimEnd() + "..." : t.text;
               return (
-                <article key={idx} className={`gt-card gt-card--${pos}`}>
+                <article key={slotKey} className={`gt-card gt-card--${pos}`}>
 
                   {/* Name + Role */}
                   <div className="gt-identity">
