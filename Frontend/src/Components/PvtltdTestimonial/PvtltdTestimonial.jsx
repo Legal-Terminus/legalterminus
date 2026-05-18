@@ -9,40 +9,44 @@ const testimonials = [
     role: "",
     text: "I had an excellent experience with Legal Terminus Private Limited. They got my GST registration completed within just a couple of hours, and I even received my GST certificate the same day. The entire process was quick, smooth, and absolutely hassle-free. Their team is professional, responsive, and truly knows their work. If you're looking for fast and reliable GST or compliance services, I highly recommend Legal Terminus Private Limited.",
     rating: 5,
+    reviewUrl: "https://share.google/Wt5vo5Gv803Lm8lCU",
   },
   {
     name: "Hemant Sahoo",
     role: "",
     text: "I'm really happy I went with Legal Terminus. Not only was their pricing the most reasonable I found, but the team also supported me through the whole incorporation process. A touch more structure in their service would make them unbeatable, but honestly, for the price and the help, they deserve 5 stars.",
     rating: 5,
+    reviewUrl: "https://share.google/LsHJrrLQAitbVOR64",
   },
   {
     name: "Dipti Ranjan Sahoo",
     role: "Director, Ephorsys Private Limited",
     text: "We are glad to share that our company Ephorsys Private Limited was successfully incorporated with the support of Legal Terminus. Their team provided excellent guidance throughout the entire process—from documentation to final approval. Everything was handled smoothly, professionally, and on time. Thank you, Legal Terminus, for making our incorporation journey hassle-free!",
     rating: 5,
+    reviewUrl: "https://share.google/N5YvB1q88GqIqOw1s",
   },
   {
     name: "Santanu Kumar Sahu",
     role: "",
     text: "Excellent service for company registration! The staff was very helpful, answered all my questions clearly, and made the entire process completely hassle-free. I'd definitely recommend them to anyone starting a new business.",
     rating: 5,
+    reviewUrl: "https://share.google/GDfL8Vjd6xtO4N85I",
   },
   {
     name: "Debasish Sahu",
     role: "",
     text: "I am highly impressed with their refund policy. The process was completely transparent, hassle-free, and handled with professionalism. My refund was processed quickly without any complications.",
     rating: 5,
+    reviewUrl: "https://share.google/sjv8gwi0uY4bNzVol",
   },
   {
     name: "Pritam Rath",
     role: "Director, Stabdha Utility Insights Pvt. Ltd.",
     text: "Working with Legal Terminus for our annual compliances has been a seamless experience. Their knowledgeable team handled everything efficiently, ensuring we met all our regulatory requirements on time. We appreciate their proactive approach and clear communication. Highly recommend their services!",
     rating: 5,
+    reviewUrl: "https://share.google/Fvn6xNsw6BUnvKc4q",
   },
 ];
-
-const AVATAR_COLORS = ["#4285F4", "#34A853", "#EA4335", "#FBBC05", "#9C27B0", "#00BCD4"];
 
 const TRUNCATE = 110;
 
@@ -107,25 +111,19 @@ const GoogleTestimonials = () => {
 
         {/* Slider row */}
         <div className="gt-slider-row">
-          {/* Left arrow */}
           <button className="gt-arrow gt-arrow--left" aria-label="Previous" onClick={goPrev}>&#8249;</button>
 
-          {/* Cards */}
           <div className="gt-cards">
             {visible.map(({ t, idx, pos }) => {
               const isLong = t.text.length > TRUNCATE;
               const text = isLong ? t.text.slice(0, TRUNCATE).trimEnd() + "..." : t.text;
               return (
                 <article key={idx} className={`gt-card gt-card--${pos}`}>
-                  {/* Avatar + Name + Role */}
-                  <div className="gt-card-top">
-                    <div className="gt-avatar" style={{ background: AVATAR_COLORS[idx % AVATAR_COLORS.length] }}>
-                      {t.name.charAt(0)}
-                    </div>
-                    <div className="gt-identity">
-                      <h3 className="gt-name">{t.name}</h3>
-                      {t.role && <p className="gt-role">{t.role}</p>}
-                    </div>
+
+                  {/* Name + Role */}
+                  <div className="gt-identity">
+                    <h3 className="gt-name">{t.name}</h3>
+                    {t.role && <p className="gt-role">{t.role}</p>}
                   </div>
 
                   {/* Stars */}
@@ -135,8 +133,8 @@ const GoogleTestimonials = () => {
                   <p className="gt-text">
                     {text}
                     {isLong && (
-                      <a href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" className="gt-show-more">
-                        {" "}Show More
+                      <a href={t.reviewUrl} target="_blank" rel="noopener noreferrer" className="gt-read-more">
+                        {" "}Read More
                       </a>
                     )}
                   </p>
@@ -154,7 +152,6 @@ const GoogleTestimonials = () => {
             })}
           </div>
 
-          {/* Right arrow */}
           <button className="gt-arrow gt-arrow--right" aria-label="Next" onClick={goNext}>&#8250;</button>
         </div>
 
@@ -170,7 +167,7 @@ const GoogleTestimonials = () => {
           ))}
         </div>
 
-        {/* Write a review link */}
+        {/* CTA */}
         <div className="gt-cta">
           <a href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" className="gt-cta-link">
             Write a Review on Google &#8599;
