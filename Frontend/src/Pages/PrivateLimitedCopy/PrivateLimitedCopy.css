@@ -11,6 +11,23 @@ h1, h2, h3, h4, h5, h6 {
   text-align: inherit;
 }
 
+/* ===== SPECIFIC OVERRIDES ===== */
+
+/* FAQ intro — center (parent has text-align:center but body rule overrides) */
+.faq-header p.faq-intro {
+  text-align: center;
+}
+
+/* ZolvitPremium subtitle — left (body text, not a true subheading) */
+.zp-content p.zp-subtitle {
+  text-align: left;
+}
+
+/* Form card title & subtitle — left (inside dark form card) */
+.lt-public-form-card p.lt-form-subtitle {
+  text-align: left;
+}
+
 /* ===== SUBHEADINGS — center align ===== */
 p[class*="subtitle"],
 p[class*="sub-title"],
