@@ -5,39 +5,39 @@ const GOOGLE_REVIEW_URL = "https://share.google/vpPPXcq7hegJilJvt";
 
 const testimonials = [
   {
-    name: "Kirti Ranjan Sahu",
-    role: "Proprietor, Keshab Jewellers",
-    text: "Very professional and efficient ITR filing services. The team was extremely helpful throughout the process. Thank you.",
+    name: "Sourav Sahoo",
+    role: "",
+    text: "I had an excellent experience with Legal Terminus Private Limited. They got my GST registration completed within just a couple of hours, and I even received my GST certificate the same day. The entire process was quick, smooth, and absolutely hassle-free. Their team is professional, responsive, and truly knows their work. If you're looking for fast and reliable GST or compliance services, I highly recommend Legal Terminus Private Limited.",
     rating: 5,
   },
   {
-    name: "Gobinda Chandra Mishra",
-    role: "Influencer",
-    text: "Best ITR filing service provider. Quick, reliable and very professional. Highly recommended for anyone looking for hassle-free tax filing.",
+    name: "Hemant Sahoo",
+    role: "",
+    text: "I'm really happy I went with Legal Terminus. Not only was their pricing the most reasonable I found, but the team also supported me through the whole incorporation process. A touch more structure in their service would make them unbeatable, but honestly, for the price and the help, they deserve 5 stars.",
     rating: 5,
   },
   {
-    name: "Babaji Samal",
-    role: "MD, AppsSys Technosoft",
-    text: "This year I went through the company incorporation in Bhubaneswar by Legal Terminus. Their service is exceptional. I would highly recommend.",
+    name: "Dipti Ranjan Sahoo",
+    role: "Director, Ephorsys Private Limited",
+    text: "We are glad to share that our company Ephorsys Private Limited was successfully incorporated with the support of Legal Terminus. Their team provided excellent guidance throughout the entire process—from documentation to final approval. Everything was handled smoothly, professionally, and on time. Thank you, Legal Terminus, for making our incorporation journey hassle-free!",
+    rating: 5,
+  },
+  {
+    name: "Santanu Kumar Sahu",
+    role: "",
+    text: "Excellent service for company registration! The staff was very helpful, answered all my questions clearly, and made the entire process completely hassle-free. I'd definitely recommend them to anyone starting a new business.",
+    rating: 5,
+  },
+  {
+    name: "Debasish Sahu",
+    role: "",
+    text: "I am highly impressed with their refund policy. The process was completely transparent, hassle-free, and handled with professionalism. My refund was processed quickly without any complications.",
     rating: 5,
   },
   {
     name: "Pritam Rath",
     role: "Director, Stabdha Utility Insights Pvt. Ltd.",
-    text: "Working with Legal Terminus for our annual compliances has been a seamless experience. Highly recommend their services!",
-    rating: 5,
-  },
-  {
-    name: "Siddharth Mohanty",
-    role: "Entrepreneur, Bhubaneswar",
-    text: "Excellent guidance throughout the company registration process. Very knowledgeable team and quick turnaround. Will definitely use again.",
-    rating: 5,
-  },
-  {
-    name: "Priya Agarwal",
-    role: "Director, StartupOdisha",
-    text: "Their attention to detail and prompt responses made our compliance process completely stress-free. Highly recommend!",
+    text: "Working with Legal Terminus for our annual compliances has been a seamless experience. Their knowledgeable team handled everything efficiently, ensuring we met all our regulatory requirements on time. We appreciate their proactive approach and clear communication. Highly recommend their services!",
     rating: 5,
   },
 ];
@@ -124,7 +124,7 @@ const GoogleTestimonials = () => {
                     </div>
                     <div className="gt-identity">
                       <h3 className="gt-name">{t.name}</h3>
-                      <p className="gt-role">{t.role}</p>
+                      {t.role && <p className="gt-role">{t.role}</p>}
                     </div>
                   </div>
 
