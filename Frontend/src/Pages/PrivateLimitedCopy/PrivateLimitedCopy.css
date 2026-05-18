@@ -6,6 +6,28 @@ li {
   text-align: justify;
 }
 
+/* ===== RESET NAV / MENU — never justify navigation ===== */
+nav li,
+nav a,
+nav p,
+header li,
+header a,
+header p,
+[class*="nav"] li,
+[class*="nav"] a,
+[class*="nav"] p,
+[class*="menu"] li,
+[class*="menu"] a,
+[class*="menu"] p,
+[class*="dropdown"] li,
+[class*="dropdown"] a,
+[class*="dropdown"] p,
+[class*="header"] li,
+[class*="header"] a,
+[class*="header"] p {
+  text-align: left;
+}
+
 /* ===== HEADINGS — keep as-is ===== */
 h1, h2, h3, h4, h5, h6 {
   text-align: inherit;
