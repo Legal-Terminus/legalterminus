@@ -1,36 +1,35 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
-/* ── Section ── */
+/* ── Section — dark gradient ── */
 .gt-section {
   font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f8fafc;
+  background: linear-gradient(135deg, #0f172a 0%, #1a3a2e 55%, #0f172a 100%);
   padding: 64px 20px 72px;
 }
 
 .gt-container {
-  max-width: 1360px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
-/* ── Google-branded header ── */
+/* ── Google brand header ── */
 .gt-brand-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 16px;
   background: #ffffff;
-  border: 1px solid #e8eaed;
   border-radius: 16px;
-  padding: 20px 28px;
-  margin-bottom: 40px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 18px 28px;
+  margin-bottom: 48px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 }
 
 .gt-brand-left {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
@@ -41,39 +40,37 @@
 }
 
 .gt-brand-text {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: #202124;
-  letter-spacing: 0.2px;
 }
 
 .gt-overall {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .gt-overall-score {
-  font-size: 40px;
+  font-size: 38px;
   font-weight: 700;
   color: #202124;
   line-height: 1;
 }
 
 .gt-overall-stars {
-  font-size: 20px;
+  font-size: 18px;
   color: #FBBC05;
   letter-spacing: 2px;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
 .gt-review-count {
   margin: 0;
-  font-size: 13px;
+  font-size: 12.5px;
   color: #5f6368;
 }
 
-/* Write a Review button */
 .gt-write-btn {
   display: inline-flex;
   align-items: center;
@@ -86,84 +83,137 @@
   padding: 10px 22px;
   border-radius: 999px;
   text-decoration: none;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
   white-space: nowrap;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .gt-write-btn:hover {
   background: #1557b0;
-  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+  box-shadow: 0 4px 14px rgba(26, 115, 232, 0.4);
 }
 
-/* ── Section heading ── */
+/* ── Heading ── */
 .gt-heading {
   text-align: center;
-  font-size: 30px;
+  font-size: 32px;
   font-weight: 700;
-  color: #111827;
-  margin: 0 0 32px;
+  color: #ffffff;
+  margin: 0 0 40px;
   letter-spacing: 0.3px;
 }
 
-/* ── Slider wrapper ── */
-.gt-slider-wrapper {
-  position: relative;
-  padding: 0 52px;
-}
-
-.gt-slider {
+/* ── Carousel ── */
+.gt-carousel {
   display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  padding-bottom: 8px;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  align-items: center;
+  gap: 16px;
 }
 
-.gt-slider::-webkit-scrollbar {
-  display: none;
-}
-
-/* ── Review card ── */
-.gt-card {
-  min-width: 280px;
-  max-width: 280px;
+/* Arrow buttons */
+.gt-arrow {
   flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.gt-arrow:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.08);
+}
+
+/* Card window — clips overflow */
+.gt-carousel-window {
+  flex: 1;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+/* Track slides left/right */
+.gt-carousel-track {
+  display: flex;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Individual card ── */
+.gt-card {
+  min-width: 100%;
   background: #ffffff;
-  border: 1px solid #e8eaed;
-  border-radius: 12px;
-  padding: 20px 20px 16px;
+  border-radius: 20px;
+  padding: 40px 44px 36px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  gap: 20px;
 }
 
-.gt-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
-  border-color: #d2e3fc;
+/* Decorative opening quote */
+.gt-deco-quote {
+  font-size: 72px;
+  line-height: 0.8;
+  color: #22c55e;
+  opacity: 0.25;
+  font-family: Georgia, serif;
+  display: block;
+  margin-bottom: -8px;
 }
 
-/* Card top row: avatar + name + org */
-.gt-card-top {
+/* Review text */
+.gt-text {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #1e293b;
+  font-weight: 400;
+  margin: 0;
+  min-height: 60px;
+}
+
+/* Divider */
+.gt-card-divider {
+  height: 1px;
+  background: #e8eaed;
+  margin: 0;
+}
+
+/* Card footer */
+.gt-card-footer {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.gt-card-author {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .gt-avatar {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
   border-radius: 50%;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 700;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
 .gt-card-meta {
@@ -173,9 +223,9 @@
 
 .gt-name {
   margin: 0 0 2px;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 700;
-  color: #202124;
+  color: #111827;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -184,79 +234,59 @@
 .gt-role {
   margin: 0;
   font-size: 12.5px;
-  color: #5f6368;
+  color: #6b7280;
   line-height: 1.4;
 }
 
-/* Review text */
-.gt-text {
-  margin: 0;
-  font-size: 13.5px;
-  line-height: 1.65;
-  color: #3c4043;
-  flex: 1;
-}
-
-/* Card bottom: stars + Google G */
-.gt-card-bottom {
+.gt-card-rating {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
 }
 
+/* Stars */
 .gt-stars {
   display: flex;
   gap: 2px;
 }
 
 .gt-star {
-  font-size: 16px;
+  font-size: 17px;
 }
 
-.gt-star.filled {
-  color: #FBBC05;
-}
+.gt-star.filled { color: #FBBC05; }
+.gt-star.empty  { color: #dadce0; }
 
-.gt-star.empty {
-  color: #dadce0;
-}
-
-/* ── Side arrows ── */
-.gt-side-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid #e8eaed;
-  background: #ffffff;
-  color: #5f6368;
-  font-size: 16px;
-  cursor: pointer;
+/* ── Dot indicators ── */
+.gt-dots {
   display: flex;
-  align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
-  z-index: 10;
-  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
 }
 
-.gt-side-arrow:hover {
-  background: #1a73e8;
-  color: #ffffff;
-  border-color: #1a73e8;
-  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.25);
+.gt-dot {
+  height: 8px;
+  width: 8px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s ease, width 0.3s ease;
 }
 
-.gt-left  { left: 4px; }
-.gt-right { right: 4px; }
+.gt-dot.active {
+  background: #22c55e;
+  width: 28px;
+}
 
-/* ── See all link ── */
+/* ── See all ── */
 .gt-see-all {
   text-align: center;
-  margin-top: 28px;
+  margin-top: 32px;
 }
 
 .gt-see-all-link {
@@ -265,41 +295,39 @@
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #1a73e8;
+  color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
-  padding: 8px 20px;
-  border: 1px solid #d2e3fc;
+  padding: 10px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 999px;
-  background: #ffffff;
-  transition: background 0.15s ease, box-shadow 0.15s ease;
+  background: rgba(255, 255, 255, 0.07);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .gt-see-all-link:hover {
-  background: #e8f0fe;
-  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.12);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 /* ── Responsive ── */
-@media (max-width: 1024px) {
-  .gt-heading { font-size: 26px; }
-  .gt-slider-wrapper { padding: 0 44px; }
-}
-
 @media (max-width: 768px) {
-  .gt-section { padding: 52px 16px 60px; }
-  .gt-heading { font-size: 22px; }
-  .gt-brand-header { padding: 16px 20px; }
-  .gt-overall-score { font-size: 32px; }
-  .gt-slider-wrapper { padding: 0 36px; }
-  .gt-card { min-width: 250px; max-width: 250px; }
-  .gt-side-arrow { width: 36px; height: 36px; font-size: 14px; }
+  .gt-section       { padding: 52px 16px 60px; }
+  .gt-heading       { font-size: 26px; }
+  .gt-brand-header  { padding: 14px 18px; }
+  .gt-overall-score { font-size: 30px; }
+  .gt-card          { padding: 30px 28px 26px; }
+  .gt-text          { font-size: 15px; }
+  .gt-deco-quote    { font-size: 56px; }
+  .gt-arrow         { width: 40px; height: 40px; font-size: 22px; }
 }
 
-@media (max-width: 520px) {
-  .gt-section { padding: 44px 12px 52px; }
-  .gt-brand-header { flex-direction: column; align-items: flex-start; }
-  .gt-slider-wrapper { padding: 0 28px; }
-  .gt-card { min-width: 230px; max-width: 230px; }
-  .gt-left { left: 0; }
-  .gt-right { right: 0; }
+@media (max-width: 480px) {
+  .gt-section       { padding: 44px 12px 52px; }
+  .gt-heading       { font-size: 22px; }
+  .gt-brand-header  { flex-direction: column; align-items: flex-start; }
+  .gt-card          { padding: 24px 20px 22px; }
+  .gt-card-footer   { flex-direction: column; align-items: flex-start; }
+  .gt-card-rating   { align-items: flex-start; flex-direction: row; gap: 12px; }
+  .gt-arrow         { width: 36px; height: 36px; font-size: 20px; }
 }

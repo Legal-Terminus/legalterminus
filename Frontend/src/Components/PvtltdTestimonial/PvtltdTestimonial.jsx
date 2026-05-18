@@ -1,8 +1,7 @@
-import React, { useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./PvtltdTestimonial.css";
 
 const GOOGLE_REVIEW_URL = "https://share.google/vpPPXcq7hegJilJvt";
-
 const AVATAR_COLORS = ["#4285F4", "#EA4335", "#34A853", "#FBBC05"];
 
 const testimonials = [
@@ -37,7 +36,7 @@ const testimonials = [
 ];
 
 const GoogleG = ({ size = 20 }) => (
-  <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+  <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" style={{ flexShrink: 0 }}>
     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -54,51 +53,23 @@ const StarRow = ({ rating }) => (
 );
 
 const GoogleTestimonials = () => {
-  const sliderRef = useRef(null);
-  const intervalRef = useRef(null);
+  const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-  const getCardWidth = () => {
-    const container = sliderRef.current;
-    if (!container) return 300;
-    const card = container.querySelector(".gt-card");
-    return card ? card.offsetWidth + 20 : 300;
-  };
-
-  const startAutoScroll = () => {
-    intervalRef.current = setInterval(() => {
-      const container = sliderRef.current;
-      if (!container) return;
-      const maxScroll = container.scrollWidth - container.clientWidth;
-      if (container.scrollLeft >= maxScroll - 5) {
-        container.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        container.scrollBy({ left: getCardWidth(), behavior: "smooth" });
-      }
-    }, 3200);
-  };
-
-  const stopAutoScroll = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-  };
+  const next = () => setCurrent((c) => (c + 1) % testimonials.length);
+  const prev = () => setCurrent((c) => (c - 1 + testimonials.length) % testimonials.length);
 
   useEffect(() => {
-    startAutoScroll();
-    return () => stopAutoScroll();
-  }, []);
-
-  const handleScroll = (direction) => {
-    stopAutoScroll();
-    const container = sliderRef.current;
-    if (!container) return;
-    container.scrollBy({ left: direction === "next" ? getCardWidth() : -getCardWidth(), behavior: "smooth" });
-    startAutoScroll();
-  };
+    if (paused) return;
+    const id = setInterval(next, 4000);
+    return () => clearInterval(id);
+  }, [paused, current]);
 
   return (
     <section className="gt-section">
       <div className="gt-container">
 
-        {/* ── Google-branded header ── */}
+        {/* Google brand header */}
         <div className="gt-brand-header">
           <div className="gt-brand-left">
             <div className="gt-brand-label">
@@ -113,60 +84,78 @@ const GoogleTestimonials = () => {
               </div>
             </div>
           </div>
-          <a
-            href={GOOGLE_REVIEW_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="gt-write-btn"
-          >
+          <a href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" className="gt-write-btn">
             Write a Review ↗
           </a>
         </div>
 
+        {/* Heading */}
         <h2 className="gt-heading">What Our Clients Say</h2>
 
-        {/* ── Slider ── */}
-        <div className="gt-slider-wrapper">
-          <button className="gt-side-arrow gt-left" aria-label="Previous" onClick={() => handleScroll("prev")}>&#10094;</button>
+        {/* Carousel */}
+        <div
+          className="gt-carousel"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          {/* Left arrow */}
+          <button className="gt-arrow gt-arrow-left" aria-label="Previous" onClick={prev}>&#8249;</button>
 
-          <div
-            className="gt-slider"
-            ref={sliderRef}
-            onMouseEnter={stopAutoScroll}
-            onMouseLeave={startAutoScroll}
-          >
-            {testimonials.map((t, idx) => (
-              <article className="gt-card" key={idx}>
-                {/* Top row: avatar + name + org */}
-                <div className="gt-card-top">
-                  <div
-                    className="gt-avatar"
-                    style={{ background: AVATAR_COLORS[idx % AVATAR_COLORS.length] }}
-                  >
-                    {t.initial}
+          {/* Card window */}
+          <div className="gt-carousel-window">
+            <div
+              className="gt-carousel-track"
+              style={{ transform: `translateX(-${current * 100}%)` }}
+            >
+              {testimonials.map((t, idx) => (
+                <article className="gt-card" key={idx}>
+                  {/* Quote decoration */}
+                  <span className="gt-deco-quote">&#10077;</span>
+
+                  {/* Review text */}
+                  <p className="gt-text">{t.text}</p>
+
+                  {/* Divider */}
+                  <div className="gt-card-divider" />
+
+                  {/* Bottom row: avatar + name/org + stars + G */}
+                  <div className="gt-card-footer">
+                    <div className="gt-card-author">
+                      <div className="gt-avatar" style={{ background: AVATAR_COLORS[idx] }}>
+                        {t.initial}
+                      </div>
+                      <div className="gt-card-meta">
+                        <h3 className="gt-name">{t.name}</h3>
+                        <p className="gt-role">{t.role}</p>
+                      </div>
+                    </div>
+                    <div className="gt-card-rating">
+                      <StarRow rating={t.rating} />
+                      <GoogleG size={16} />
+                    </div>
                   </div>
-                  <div className="gt-card-meta">
-                    <h3 className="gt-name">{t.name}</h3>
-                    <p className="gt-role">{t.role}</p>
-                  </div>
-                </div>
-
-                {/* Review text */}
-                <p className="gt-text">{t.text}</p>
-
-                {/* Bottom: stars + Google G */}
-                <div className="gt-card-bottom">
-                  <StarRow rating={t.rating} />
-                  <GoogleG size={16} />
-                </div>
-              </article>
-            ))}
+                </article>
+              ))}
+            </div>
           </div>
 
-          <button className="gt-side-arrow gt-right" aria-label="Next" onClick={() => handleScroll("next")}>&#10095;</button>
+          {/* Right arrow */}
+          <button className="gt-arrow gt-arrow-right" aria-label="Next" onClick={next}>&#8250;</button>
         </div>
 
-        {/* ── See all link ── */}
+        {/* Dot indicators */}
+        <div className="gt-dots">
+          {testimonials.map((_, idx) => (
+            <button
+              key={idx}
+              className={`gt-dot ${idx === current ? "active" : ""}`}
+              aria-label={`Go to review ${idx + 1}`}
+              onClick={() => { setPaused(true); setCurrent(idx); setTimeout(() => setPaused(false), 500); }}
+            />
+          ))}
+        </div>
+
+        {/* See all */}
         <div className="gt-see-all">
           <a href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" className="gt-see-all-link">
             <GoogleG size={16} />
