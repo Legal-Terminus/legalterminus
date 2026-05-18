@@ -1,3 +1,11 @@
+/* ===== JUSTIFY ALL BODY TEXT ===== */
+div p,
+section p,
+article p,
+li {
+  text-align: justify;
+}
+
 /* ===== SECTION DIVIDER ===== */
 .section-divider {
   height: 1px;
