@@ -18,13 +18,11 @@ p[class*="subhead"],
 p[class*="sub-head"],
 p[class*="label"],
 p[class*="caption"],
-p[class*="note"],
+p[class*="-note"],
 p[class*="-sub"],
 p[class*="count"],
-p[class*="title"],
+p[class*="-title"],
 p[class*="heading"],
-p[class*="intro"],
-p[class*="description"],
 p[class*="tagline"] {
   text-align: center;
 }
