@@ -1,117 +1,140 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
 
 /* ── Section ── */
 .gt-section {
   font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #ffffff;
-  padding: 64px 20px 72px;
+  background: #fef5ee;
+  padding: 72px 20px 80px;
 }
 
 .gt-container {
-  max-width: 1200px;
+  max-width: 1160px;
   margin: 0 auto;
 }
 
-/* ── Header row ── */
-.gt-section-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 40px;
+/* ── Header ── */
+.gt-header {
+  text-align: center;
+  margin-bottom: 52px;
 }
 
-.gt-heading {
-  font-size: 28px;
+.gt-label {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #e8642a;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* Watermark + heading stacked */
+.gt-title-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.gt-title-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(52px, 9vw, 96px);
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+.gt-title {
+  position: relative;
+  margin: 0;
+  font-size: clamp(30px, 4vw, 42px);
   font-weight: 700;
   color: #111827;
-  margin: 0 0 6px;
+  line-height: 1.2;
+  z-index: 1;
 }
 
-.gt-subheading {
-  margin: 0;
-  font-size: 14px;
-  color: #6b7280;
-}
-
-/* ── Arrow buttons (purple) ── */
-.gt-arrows {
+/* ── Slider row ── */
+.gt-slider-row {
   display: flex;
-  gap: 10px;
-  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
 }
 
+/* ── Arrows ── */
 .gt-arrow {
+  flex-shrink: 0;
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  border: none;
-  background: #7c3aed;
-  color: #ffffff;
+  border: 1.5px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
   font-size: 28px;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.18s ease, transform 0.15s ease;
+  transition: border-color 0.18s, background 0.18s, transform 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .gt-arrow:hover {
-  background: #6d28d9;
+  border-color: #e8642a;
+  color: #e8642a;
   transform: scale(1.08);
 }
 
-/* ── Slider ── */
-.gt-slider {
+/* ── Cards container ── */
+.gt-cards {
+  flex: 1;
   display: flex;
-  gap: 24px;
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  align-items: stretch;
+  align-items: center;
+  gap: 20px;
+  min-height: 0;
 }
 
-.gt-slider::-webkit-scrollbar {
-  display: none;
-}
-
-/* ── Review card ── */
+/* ── Individual card ── */
 .gt-card {
-  min-width: calc((100% - 48px) / 3);
-  flex-shrink: 0;
-  background: #f3f4f6;
-  border-radius: 14px;
-  padding: 0 0 20px;
+  flex: 1;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px 24px 24px;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  gap: 14px;
+  transition: transform 0.35s ease, box-shadow 0.35s ease, opacity 0.35s ease;
 }
 
-.gt-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
+/* Side cards — smaller, slightly faded */
+.gt-card--side {
+  transform: scale(0.91);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  opacity: 0.72;
 }
 
-/* Card top box — white raised area with avatar + name + stars */
+/* Center / featured card */
+.gt-card--center {
+  transform: scale(1);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.13);
+  opacity: 1;
+  z-index: 2;
+}
+
+/* Card top: avatar + name + role */
 .gt-card-top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
-  background: #ffffff;
-  border-radius: 10px;
-  margin: 14px 14px 0;
-  padding: 16px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
 }
 
 .gt-avatar {
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
   flex-shrink: 0;
   display: flex;
@@ -120,18 +143,17 @@
   font-size: 22px;
   font-weight: 700;
   color: #ffffff;
-  text-transform: uppercase;
 }
 
-.gt-card-identity {
+.gt-identity {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .gt-name {
   margin: 0;
-  font-size: 15px;
+  font-size: 15.5px;
   font-weight: 700;
   color: #111827;
   line-height: 1.2;
@@ -139,27 +161,31 @@
 
 .gt-role {
   margin: 0;
-  font-size: 11.5px;
-  color: #6b7280;
+  font-size: 12px;
+  color: #9ca3af;
   font-weight: 400;
   line-height: 1.4;
 }
 
+/* Stars */
 .gt-stars {
   display: flex;
-  gap: 1px;
-  margin-top: 4px;
+  gap: 2px;
 }
 
-.gt-star        { font-size: 18px; }
+.gt-star        { line-height: 1; }
 .gt-star.filled { color: #FBBC05; }
-.gt-star.empty  { color: #d1d5db; }
+.gt-star.empty  { color: #e5e7eb; }
+
+.gt-stars--lg .gt-star { font-size: 20px; }
+.gt-stars--sm .gt-star { font-size: 15px; }
+.gt-stars--md .gt-star { font-size: 17px; }
 
 /* Review text */
 .gt-text {
-  margin: 16px 20px 0;
+  margin: 0;
   font-size: 13.5px;
-  line-height: 1.72;
+  line-height: 1.75;
   color: #6b7280;
   flex: 1;
 }
@@ -172,100 +198,90 @@
   white-space: nowrap;
 }
 
-.gt-show-more:hover {
-  text-decoration: underline;
-}
+.gt-show-more:hover { text-decoration: underline; }
 
-/* Card footer: Posted On Google badge */
-.gt-card-footer {
-  margin: 18px 20px 0;
-  padding-top: 14px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.gt-posted-badge {
+/* Card footer: Posted On Google */
+.gt-footer {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: auto;
 }
 
-.gt-posted-label {
+.gt-posted {
   display: flex;
   flex-direction: column;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
-.gt-posted-label span {
+.gt-posted span {
   font-size: 12px;
   color: #374151;
   font-weight: 500;
 }
 
-/* ── Footer row ── */
-.gt-footer-row {
+/* ── Dots ── */
+.gt-dots {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 36px;
 }
 
-.gt-write-btn {
+.gt-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #d1d5db;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.gt-dot--active {
+  background: #e8642a;
+  transform: scale(1.3);
+}
+
+/* ── CTA ── */
+.gt-cta {
+  text-align: center;
+  margin-top: 32px;
+}
+
+.gt-cta-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #7c3aed;
-  color: #ffffff;
-  font-family: "Poppins", sans-serif;
   font-size: 13.5px;
   font-weight: 600;
-  padding: 10px 24px;
-  border-radius: 999px;
+  color: #e8642a;
   text-decoration: none;
-  white-space: nowrap;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
-}
-
-.gt-write-btn:hover {
-  background: #6d28d9;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
-}
-
-.gt-see-all-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #7c3aed;
-  text-decoration: none;
-  padding: 10px 24px;
-  border: 1.5px solid #7c3aed;
+  padding: 10px 26px;
+  border: 1.5px solid #e8642a;
   border-radius: 999px;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.2s, color 0.2s;
 }
 
-.gt-see-all-link:hover {
-  background: #f5f3ff;
+.gt-cta-link:hover {
+  background: #e8642a;
+  color: #ffffff;
 }
 
 /* ── Responsive ── */
-@media (max-width: 1024px) {
-  .gt-card { min-width: calc((100% - 24px) / 2); }
-}
-
 @media (max-width: 768px) {
-  .gt-section  { padding: 52px 16px 60px; }
-  .gt-heading  { font-size: 22px; }
-  .gt-card     { min-width: calc(100%); }
-  .gt-arrow    { width: 36px; height: 36px; font-size: 22px; }
+  .gt-section   { padding: 52px 12px 60px; }
+  .gt-card--side { display: none; }
+  .gt-cards      { justify-content: center; }
+  .gt-card--center { transform: scale(1); flex: unset; width: 100%; max-width: 420px; }
+  .gt-arrow      { width: 36px; height: 36px; font-size: 22px; }
 }
 
 @media (max-width: 480px) {
-  .gt-section          { padding: 44px 12px 52px; }
-  .gt-heading          { font-size: 19px; }
-  .gt-section-header   { flex-direction: column; }
-  .gt-arrows           { align-self: flex-end; }
-  .gt-arrow            { width: 34px; height: 34px; font-size: 20px; }
+  .gt-section  { padding: 44px 10px 52px; }
+  .gt-title    { font-size: 26px; }
+  .gt-arrow    { width: 32px; height: 32px; font-size: 20px; }
 }
