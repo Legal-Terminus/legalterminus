@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./PvtltdTestimonial.css";
 
 const GOOGLE_REVIEW_URL = "https://share.google/vpPPXcq7hegJilJvt";
-const AVATAR_COLORS = ["#4285F4", "#EA4335", "#34A853", "#FBBC05"];
 
 const testimonials = [
   {
@@ -10,28 +9,36 @@ const testimonials = [
     role: "Proprietor of Keshab Jewellers",
     text: "Very professional and efficient ITR filing services. Thank you.",
     rating: 5,
-    initial: "K",
   },
   {
     name: "Gobinda Chandra Mishra",
     role: "Influencer",
     text: "Best ITR filing service provider.",
     rating: 5,
-    initial: "G",
   },
   {
     name: "Babaji Samal",
     role: "MD, AppsSys Technosoft",
     text: "This year I went through the company incorporation in Bhubaneswar by Legal Terminus. Their service is exceptional. I would highly recommend.",
     rating: 5,
-    initial: "B",
   },
   {
     name: "Pritam Rath",
     role: "Director at Stabdha Utility Insights – Private Limited",
     text: "Working with Legal Terminus for our annual compliances has been a seamless experience. Highly recommend their services!",
     rating: 5,
-    initial: "P",
+  },
+  {
+    name: "Siddharth Mohanty",
+    role: "Entrepreneur, Bhubaneswar",
+    text: "Excellent guidance throughout the company registration process. Very knowledgeable team and quick turnaround.",
+    rating: 5,
+  },
+  {
+    name: "Priya Agarwal",
+    role: "Director, StartupOdisha",
+    text: "Their attention to detail and prompt responses made our compliance process completely stress-free. Highly recommend!",
+    rating: 5,
   },
 ];
 
@@ -53,17 +60,38 @@ const StarRow = ({ rating }) => (
 );
 
 const GoogleTestimonials = () => {
-  const [current, setCurrent] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const sliderRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const next = () => setCurrent((c) => (c + 1) % testimonials.length);
-  const prev = () => setCurrent((c) => (c - 1 + testimonials.length) % testimonials.length);
+  const getStep = () => {
+    const container = sliderRef.current;
+    if (!container) return 300;
+    const card = container.querySelector(".gt-card");
+    return card ? card.getBoundingClientRect().width + 20 : 300;
+  };
+
+  const scrollNext = () => {
+    const container = sliderRef.current;
+    if (!container) return;
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    if (container.scrollLeft >= maxScroll - 4) {
+      container.scrollTo({ left: 0, behavior: "smooth" });
+    } else {
+      container.scrollBy({ left: getStep(), behavior: "smooth" });
+    }
+  };
+
+  const scrollPrev = () => {
+    const container = sliderRef.current;
+    if (!container) return;
+    container.scrollBy({ left: -getStep(), behavior: "smooth" });
+  };
 
   useEffect(() => {
-    if (paused) return;
-    const id = setInterval(next, 4000);
+    if (isPaused) return;
+    const id = setInterval(scrollNext, 3500);
     return () => clearInterval(id);
-  }, [paused, current]);
+  }, [isPaused]);
 
   return (
     <section className="gt-section">
@@ -73,14 +101,14 @@ const GoogleTestimonials = () => {
         <div className="gt-brand-header">
           <div className="gt-brand-left">
             <div className="gt-brand-label">
-              <GoogleG size={28} />
+              <GoogleG size={26} />
               <span className="gt-brand-text">Google Reviews</span>
             </div>
             <div className="gt-overall">
-              <span className="gt-overall-score">4.8</span>
+              <span className="gt-overall-score">4.9</span>
               <div>
                 <div className="gt-overall-stars">★★★★★</div>
-                <p className="gt-review-count">Based on 4+ reviews</p>
+                <p className="gt-review-count">Based on 6+ reviews</p>
               </div>
             </div>
           </div>
@@ -92,73 +120,36 @@ const GoogleTestimonials = () => {
         {/* Heading */}
         <h2 className="gt-heading">What Our Clients Say</h2>
 
-        {/* Carousel */}
-        <div
-          className="gt-carousel"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
-          {/* Left arrow */}
-          <button className="gt-arrow gt-arrow-left" aria-label="Previous" onClick={prev}>&#8249;</button>
+        {/* Slider */}
+        <div className="gt-slider-wrapper">
+          <button className="gt-arrow gt-arrow-left" aria-label="Previous" onClick={() => { setIsPaused(true); scrollPrev(); setTimeout(() => setIsPaused(false), 800); }}>&#8249;</button>
 
-          {/* Card window */}
-          <div className="gt-carousel-window">
-            <div
-              className="gt-carousel-track"
-              style={{ transform: `translateX(-${current * 100}%)` }}
-            >
-              {testimonials.map((t, idx) => (
-                <article className="gt-card" key={idx}>
-                  {/* Quote decoration */}
-                  <span className="gt-deco-quote">&#10077;</span>
-
-                  {/* Review text */}
-                  <p className="gt-text">{t.text}</p>
-
-                  {/* Divider */}
-                  <div className="gt-card-divider" />
-
-                  {/* Bottom row: avatar + name/org + stars + G */}
-                  <div className="gt-card-footer">
-                    <div className="gt-card-author">
-                      <div className="gt-avatar" style={{ background: AVATAR_COLORS[idx] }}>
-                        {t.initial}
-                      </div>
-                      <div className="gt-card-meta">
-                        <h3 className="gt-name">{t.name}</h3>
-                        <p className="gt-role">{t.role}</p>
-                      </div>
-                    </div>
-                    <div className="gt-card-rating">
-                      <StarRow rating={t.rating} />
-                      <GoogleG size={16} />
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+          <div
+            className="gt-slider"
+            ref={sliderRef}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+          >
+            {testimonials.map((t, idx) => (
+              <article className="gt-card" key={idx}>
+                <h3 className="gt-name">{t.name}</h3>
+                <p className="gt-role">{t.role}</p>
+                <p className="gt-text">{t.text}</p>
+                <div className="gt-card-bottom">
+                  <StarRow rating={t.rating} />
+                  <GoogleG size={15} />
+                </div>
+              </article>
+            ))}
           </div>
 
-          {/* Right arrow */}
-          <button className="gt-arrow gt-arrow-right" aria-label="Next" onClick={next}>&#8250;</button>
-        </div>
-
-        {/* Dot indicators */}
-        <div className="gt-dots">
-          {testimonials.map((_, idx) => (
-            <button
-              key={idx}
-              className={`gt-dot ${idx === current ? "active" : ""}`}
-              aria-label={`Go to review ${idx + 1}`}
-              onClick={() => { setPaused(true); setCurrent(idx); setTimeout(() => setPaused(false), 500); }}
-            />
-          ))}
+          <button className="gt-arrow gt-arrow-right" aria-label="Next" onClick={() => { setIsPaused(true); scrollNext(); setTimeout(() => setIsPaused(false), 800); }}>&#8250;</button>
         </div>
 
         {/* See all */}
         <div className="gt-see-all">
           <a href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" className="gt-see-all-link">
-            <GoogleG size={16} />
+            <GoogleG size={15} />
             See all reviews on Google
           </a>
         </div>

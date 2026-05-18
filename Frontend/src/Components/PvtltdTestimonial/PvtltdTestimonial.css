@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
-/* ── Section — dark gradient ── */
+/* ── Section ── */
 .gt-section {
   font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: linear-gradient(135deg, #0f172a 0%, #1a3a2e 55%, #0f172a 100%);
@@ -8,7 +8,7 @@
 }
 
 .gt-container {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -20,10 +20,10 @@
   flex-wrap: wrap;
   gap: 16px;
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 18px 28px;
-  margin-bottom: 48px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  margin-bottom: 44px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
 }
 
 .gt-brand-left {
@@ -36,11 +36,11 @@
 .gt-brand-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
 }
 
 .gt-brand-text {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   color: #202124;
 }
@@ -52,14 +52,14 @@
 }
 
 .gt-overall-score {
-  font-size: 38px;
+  font-size: 36px;
   font-weight: 700;
   color: #202124;
   line-height: 1;
 }
 
 .gt-overall-stars {
-  font-size: 18px;
+  font-size: 17px;
   color: #FBBC05;
   letter-spacing: 2px;
   line-height: 1.3;
@@ -67,7 +67,7 @@
 
 .gt-review-count {
   margin: 0;
-  font-size: 12.5px;
+  font-size: 12px;
   color: #5f6368;
 }
 
@@ -95,28 +95,27 @@
 /* ── Heading ── */
 .gt-heading {
   text-align: center;
-  font-size: 32px;
+  font-size: 30px;
   font-weight: 700;
   color: #ffffff;
-  margin: 0 0 40px;
-  letter-spacing: 0.3px;
+  margin: 0 0 36px;
 }
 
-/* ── Carousel ── */
-.gt-carousel {
+/* ── Slider wrapper ── */
+.gt-slider-wrapper {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 /* Arrow buttons */
 .gt-arrow {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.07);
   color: #ffffff;
   font-size: 28px;
   line-height: 1;
@@ -128,160 +127,89 @@
 }
 
 .gt-arrow:hover {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.45);
   transform: scale(1.08);
 }
 
-/* Card window — clips overflow */
-.gt-carousel-window {
+/* Slider track — 3 cards visible */
+.gt-slider {
   flex: 1;
-  overflow: hidden;
-  border-radius: 20px;
-}
-
-/* Track slides left/right */
-.gt-carousel-track {
   display: flex;
-  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 20px;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-/* ── Individual card ── */
+.gt-slider::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Review card ── */
 .gt-card {
-  min-width: 100%;
+  min-width: calc((100% - 40px) / 3);
+  flex-shrink: 0;
   background: #ffffff;
-  border-radius: 20px;
-  padding: 40px 44px 36px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-  position: relative;
+  border-radius: 16px;
+  border-top: 3px solid #22c55e;
+  padding: 26px 24px 22px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Decorative opening quote */
-.gt-deco-quote {
-  font-size: 72px;
-  line-height: 0.8;
-  color: #22c55e;
-  opacity: 0.25;
-  font-family: Georgia, serif;
-  display: block;
-  margin-bottom: -8px;
+.gt-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+/* Client name */
+.gt-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.3;
+}
+
+/* Organisation */
+.gt-role {
+  margin: 0;
+  font-size: 12.5px;
+  color: #16a34a;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 /* Review text */
 .gt-text {
-  font-size: 17px;
-  line-height: 1.8;
-  color: #1e293b;
-  font-weight: 400;
   margin: 0;
-  min-height: 60px;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #374151;
+  flex: 1;
 }
 
-/* Divider */
-.gt-card-divider {
-  height: 1px;
-  background: #e8eaed;
-  margin: 0;
-}
-
-/* Card footer */
-.gt-card-footer {
+/* Card bottom: stars + G */
+.gt-card-bottom {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
-.gt-card-author {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.gt-avatar {
-  width: 46px;
-  height: 46px;
-  min-width: 46px;
-  border-radius: 50%;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 19px;
-  font-weight: 700;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-}
-
-.gt-card-meta {
-  flex: 1;
-  min-width: 0;
-}
-
-.gt-name {
-  margin: 0 0 2px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #111827;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.gt-role {
-  margin: 0;
-  font-size: 12.5px;
-  color: #6b7280;
-  line-height: 1.4;
-}
-
-.gt-card-rating {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-}
-
-/* Stars */
 .gt-stars {
   display: flex;
   gap: 2px;
 }
 
-.gt-star {
-  font-size: 17px;
-}
-
-.gt-star.filled { color: #FBBC05; }
-.gt-star.empty  { color: #dadce0; }
-
-/* ── Dot indicators ── */
-.gt-dots {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 28px;
-}
-
-.gt-dot {
-  height: 8px;
-  width: 8px;
-  border-radius: 999px;
-  border: none;
-  background: rgba(255, 255, 255, 0.3);
-  cursor: pointer;
-  padding: 0;
-  transition: background 0.3s ease, width 0.3s ease;
-}
-
-.gt-dot.active {
-  background: #22c55e;
-  width: 28px;
-}
+.gt-star          { font-size: 16px; }
+.gt-star.filled   { color: #FBBC05; }
+.gt-star.empty    { color: #e5e7eb; }
 
 /* ── See all ── */
 .gt-see-all {
@@ -293,41 +221,41 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.80);
   text-decoration: none;
   padding: 10px 24px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.06);
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .gt-see-all-link:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.13);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.38);
 }
 
 /* ── Responsive ── */
+@media (max-width: 1024px) {
+  .gt-card { min-width: calc((100% - 20px) / 2); }
+}
+
 @media (max-width: 768px) {
-  .gt-section       { padding: 52px 16px 60px; }
-  .gt-heading       { font-size: 26px; }
-  .gt-brand-header  { padding: 14px 18px; }
-  .gt-overall-score { font-size: 30px; }
-  .gt-card          { padding: 30px 28px 26px; }
-  .gt-text          { font-size: 15px; }
-  .gt-deco-quote    { font-size: 56px; }
-  .gt-arrow         { width: 40px; height: 40px; font-size: 22px; }
+  .gt-section          { padding: 52px 16px 60px; }
+  .gt-heading          { font-size: 24px; }
+  .gt-brand-header     { padding: 14px 18px; }
+  .gt-overall-score    { font-size: 28px; }
+  .gt-card             { min-width: calc(100% - 0px); padding: 22px 20px 18px; }
+  .gt-arrow            { width: 38px; height: 38px; font-size: 22px; }
 }
 
 @media (max-width: 480px) {
-  .gt-section       { padding: 44px 12px 52px; }
-  .gt-heading       { font-size: 22px; }
-  .gt-brand-header  { flex-direction: column; align-items: flex-start; }
-  .gt-card          { padding: 24px 20px 22px; }
-  .gt-card-footer   { flex-direction: column; align-items: flex-start; }
-  .gt-card-rating   { align-items: flex-start; flex-direction: row; gap: 12px; }
-  .gt-arrow         { width: 36px; height: 36px; font-size: 20px; }
+  .gt-section          { padding: 44px 12px 52px; }
+  .gt-heading          { font-size: 20px; }
+  .gt-brand-header     { flex-direction: column; align-items: flex-start; }
+  .gt-slider-wrapper   { gap: 8px; }
+  .gt-arrow            { width: 34px; height: 34px; font-size: 20px; }
 }
