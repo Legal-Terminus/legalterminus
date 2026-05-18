@@ -82,7 +82,7 @@ const GoogleTestimonials = () => {
 
   useEffect(() => {
     if (isPaused) return;
-    const id = setInterval(() => setActive((i) => wrap(i + 1, n)), 3000);
+    const id = setInterval(() => setActive((i) => wrap(i + 1, n)), 1800);
     return () => clearInterval(id);
   }, [isPaused]);
 
