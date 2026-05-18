@@ -12,8 +12,8 @@
   margin: 0 auto;
 }
 
-/* ── Google brand header ── */
-.gt-brand-header {
+/* ── Section header row (brand + arrows) ── */
+.gt-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -21,26 +21,26 @@
   gap: 16px;
   background: #ffffff;
   border-radius: 14px;
-  padding: 18px 28px;
+  padding: 18px 24px;
   margin-bottom: 44px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
 }
 
-.gt-brand-left {
+.gt-header-left {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
 .gt-brand-label {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
 }
 
 .gt-brand-text {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: #202124;
 }
@@ -52,14 +52,14 @@
 }
 
 .gt-overall-score {
-  font-size: 36px;
+  font-size: 34px;
   font-weight: 700;
   color: #202124;
   line-height: 1;
 }
 
 .gt-overall-stars {
-  font-size: 17px;
+  font-size: 16px;
   color: #FBBC05;
   letter-spacing: 2px;
   line-height: 1.3;
@@ -67,74 +67,51 @@
 
 .gt-review-count {
   margin: 0;
-  font-size: 12px;
+  font-size: 11.5px;
   color: #5f6368;
 }
 
-.gt-write-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #1a73e8;
-  color: #ffffff;
-  font-family: "Poppins", sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 10px 22px;
-  border-radius: 999px;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
-}
-
-.gt-write-btn:hover {
-  background: #1557b0;
-  box-shadow: 0 4px 14px rgba(26, 115, 232, 0.4);
-}
-
-/* ── Heading ── */
-.gt-heading {
-  text-align: center;
-  font-size: 30px;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 36px;
-}
-
-/* ── Slider wrapper ── */
-.gt-slider-wrapper {
+/* Arrows — now inside header-right */
+.gt-header-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
 }
 
-/* Arrow buttons */
 .gt-arrow {
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.07);
-  color: #ffffff;
-  font-size: 28px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #374151;
+  font-size: 26px;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
 }
 
 .gt-arrow:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.45);
+  background: #e9f0ff;
+  border-color: #4285F4;
+  color: #1a73e8;
   transform: scale(1.08);
 }
 
-/* Slider track — 3 cards visible */
+/* ── Heading ── */
+.gt-heading {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 32px;
+}
+
+/* ── Slider ── */
 .gt-slider {
-  flex: 1;
   display: flex;
   gap: 20px;
   overflow-x: hidden;
@@ -152,35 +129,69 @@
   min-width: calc((100% - 40px) / 3);
   flex-shrink: 0;
   background: #ffffff;
-  border-radius: 16px;
-  border-top: 3px solid #22c55e;
-  padding: 26px 24px 22px;
+  border-radius: 12px;
+  padding: 22px 20px 18px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0, 0, 0, 0.06);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .gt-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
 }
 
-/* Client name */
+/* Card top row: avatar + name + stars */
+.gt-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gt-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.gt-card-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
 .gt-name {
   margin: 0;
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 700;
   color: #111827;
-  line-height: 1.3;
+  line-height: 1.2;
 }
 
-/* Organisation */
+.gt-stars {
+  display: flex;
+  gap: 1px;
+}
+
+.gt-star        { font-size: 14px; }
+.gt-star.filled { color: #FBBC05; }
+.gt-star.empty  { color: #e5e7eb; }
+
+/* Organisation / role */
 .gt-role {
   margin: 0;
-  font-size: 12.5px;
-  color: #16a34a;
+  font-size: 12px;
+  color: #6b7280;
   font-weight: 500;
   line-height: 1.4;
 }
@@ -189,53 +200,92 @@
 .gt-text {
   margin: 0;
   font-size: 13.5px;
-  line-height: 1.75;
+  line-height: 1.72;
   color: #374151;
   flex: 1;
 }
 
-/* Card bottom: stars + G */
-.gt-card-bottom {
+.gt-read-more {
+  color: #1a73e8;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.gt-read-more:hover {
+  text-decoration: underline;
+}
+
+/* Card footer: "Posted on Google" badge */
+.gt-card-footer {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.gt-posted-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gt-posted-text {
+  font-size: 11.5px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* ── Footer row: see all + write ── */
+.gt-footer-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 4px;
-}
-
-.gt-stars {
-  display: flex;
-  gap: 2px;
-}
-
-.gt-star          { font-size: 16px; }
-.gt-star.filled   { color: #FBBC05; }
-.gt-star.empty    { color: #e5e7eb; }
-
-/* ── See all ── */
-.gt-see-all {
-  text-align: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
   margin-top: 32px;
 }
 
 .gt-see-all-link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
+  gap: 7px;
+  font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.80);
+  color: rgba(255, 255, 255, 0.82);
   text-decoration: none;
-  padding: 10px 24px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 9px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.07);
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .gt-see-all-link:hover {
-  background: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.14);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.38);
+  border-color: rgba(255, 255, 255, 0.40);
+}
+
+.gt-write-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a73e8;
+  color: #ffffff;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 20px;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gt-write-btn:hover {
+  background: #1557b0;
+  box-shadow: 0 4px 14px rgba(26, 115, 232, 0.4);
 }
 
 /* ── Responsive ── */
@@ -244,18 +294,18 @@
 }
 
 @media (max-width: 768px) {
-  .gt-section          { padding: 52px 16px 60px; }
-  .gt-heading          { font-size: 24px; }
-  .gt-brand-header     { padding: 14px 18px; }
-  .gt-overall-score    { font-size: 28px; }
-  .gt-card             { min-width: calc(100% - 0px); padding: 22px 20px 18px; }
-  .gt-arrow            { width: 38px; height: 38px; font-size: 22px; }
+  .gt-section       { padding: 52px 16px 60px; }
+  .gt-heading       { font-size: 22px; }
+  .gt-section-header { padding: 14px 18px; }
+  .gt-overall-score { font-size: 28px; }
+  .gt-card          { min-width: calc(100% - 0px); padding: 20px 18px 16px; }
+  .gt-arrow         { width: 34px; height: 34px; font-size: 22px; }
 }
 
 @media (max-width: 480px) {
-  .gt-section          { padding: 44px 12px 52px; }
-  .gt-heading          { font-size: 20px; }
-  .gt-brand-header     { flex-direction: column; align-items: flex-start; }
-  .gt-slider-wrapper   { gap: 8px; }
-  .gt-arrow            { width: 34px; height: 34px; font-size: 20px; }
+  .gt-section       { padding: 44px 12px 52px; }
+  .gt-heading       { font-size: 19px; }
+  .gt-section-header { flex-direction: column; align-items: flex-start; }
+  .gt-header-right  { align-self: flex-end; }
+  .gt-arrow         { width: 32px; height: 32px; font-size: 20px; }
 }
