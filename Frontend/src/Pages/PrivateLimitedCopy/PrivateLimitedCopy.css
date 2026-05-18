@@ -6,8 +6,12 @@ li {
   text-align: justify;
 }
 
-/* ===== RESET HEADINGS & SUBHEADINGS — inherit parent alignment ===== */
-h1, h2, h3, h4, h5, h6,
+/* ===== HEADINGS — keep as-is ===== */
+h1, h2, h3, h4, h5, h6 {
+  text-align: inherit;
+}
+
+/* ===== SUBHEADINGS — center align ===== */
 p[class*="subtitle"],
 p[class*="sub-title"],
 p[class*="subhead"],
@@ -16,11 +20,13 @@ p[class*="label"],
 p[class*="caption"],
 p[class*="note"],
 p[class*="-sub"],
-p[class*="role"],
 p[class*="count"],
 p[class*="title"],
-p[class*="heading"] {
-  text-align: inherit;
+p[class*="heading"],
+p[class*="intro"],
+p[class*="description"],
+p[class*="tagline"] {
+  text-align: center;
 }
 
 /* ===== SECTION DIVIDER ===== */
