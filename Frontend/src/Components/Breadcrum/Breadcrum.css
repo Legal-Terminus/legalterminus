@@ -44,8 +44,7 @@
   line-height: 1.1;
   margin-bottom: 22px;
   color: #ffffff;
-  text-align: justify;
-  text-align-last: justify;
+  text-align: left;
 }
 
 .lt-title-india  { color: #ffffff; }
