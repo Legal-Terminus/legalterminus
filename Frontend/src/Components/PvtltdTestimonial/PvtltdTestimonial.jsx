@@ -95,6 +95,20 @@ const testimonials = [
     rating: 5,
     reviewUrl: "https://share.google/n57YYuiCGhApeSibv",
   },
+  {
+    name: "Abinash Das",
+    role: "TANUMANASA RESEARCH PRIVATE LIMITED",
+    text: "Successfully completed our Trademark Registration process with their assistance. The team was very supportive, professional, and handled the entire process smoothly. Thank you for the excellent service and guidance throughout. Highly recommended.",
+    rating: 5,
+    reviewUrl: "https://share.google/Ljzq62wQ6jiOSz0TH",
+  },
+  {
+    name: "Raj Kanungo",
+    role: "",
+    text: "Recently, I used the services of Legal Terminus. I am really impressed and happy with the level of professionalism shown by the team. They are very proactive and responsive. I highly recommend them — well deserved 5 stars for the team.",
+    rating: 5,
+    reviewUrl: "https://share.google/rkTaaDB9Ae6VymhLb",
+  },
 ];
 
 const TRUNCATE = 110;
