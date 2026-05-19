@@ -49,6 +49,10 @@ const navData = [
             href: "/pvt-ltd-registration-copy",
           },
           {
+            label: "Private Limited Company Registration Copy 2",
+            href: "/pvt-ltd-registration-copy-2",
+          },
+          {
             label: "Incorporation Of Wholly Owned Subsidiary In India",
             href: "/incorption-registration-in-india",
           },
