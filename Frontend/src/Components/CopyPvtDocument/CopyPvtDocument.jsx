@@ -87,7 +87,7 @@ const CopyPvtDocument = () => {
 
         {/* Header */}
         <div className="cpvd-header">
-          <h2 className="cpvd-main-title">Documents Required for Pvt Ltd Registration</h2>
+          <h2 className="cpvd-main-title">Documents Required for Private Limited Company Registration in India</h2>
           <p className="cpvd-main-subtitle">Get these ready and we'll take care of the rest</p>
         </div>
 

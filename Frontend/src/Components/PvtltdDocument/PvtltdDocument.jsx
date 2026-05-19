@@ -24,7 +24,7 @@ const PvtltdDocument = () => {
      {/* ===== HEADLINE ===== */}
       <div className="pvtltd-doc-header">
         <h2 className="pvtltd-doc-title">
-          Documents Required for Pvt Ltd Registration
+          Documents Required for Private Limited Company Registration in India
         </h2>
         <p className="pv-gst-subheading">
         Get these ready and we'll take care of the rest:
