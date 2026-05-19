@@ -22,9 +22,10 @@
   isolation: isolate;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   letter-spacing: 1.2px;
+  background: linear-gradient(160deg, #0a1628 0%, #0d1f3c 55%, #0f2545 100%);
 }
 
-/* white + gray overlay */
+/* navy overlay */
 .premium-footer-overlay {
   position: absolute;
   inset: 0;
@@ -32,15 +33,11 @@
   pointer-events: none;
   background: linear-gradient(
     160deg,
-    rgba(0,0,0,0.95) 0%,
-    rgba(0,0,0,0.92) 20%,
-    rgba(0,0,0,0.88) 40%,
-    rgba(0,0,0,0.82) 60%,
-    rgba(0,0,0,0.78) 80%,
-    rgba(0,0,0,0.72) 100%
+    rgba(10, 22, 40, 0.75) 0%,
+    rgba(13, 31, 60, 0.65) 50%,
+    rgba(15, 37, 69, 0.55) 100%
   );
-
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
   opacity: 1;
 }
 
