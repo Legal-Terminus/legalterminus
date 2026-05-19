@@ -46,6 +46,55 @@ const testimonials = [
     rating: 5,
     reviewUrl: "https://share.google/Fvn6xNsw6BUnvKc4q",
   },
+  {
+    name: "Amit Mohapatra",
+    role: "MargX Consultancy",
+    text: "Like the professional approach to the client. Proper follow ups and right information given to the client in utmost care. Thank you the entire team for the extreme support and care. Hope this support continues.",
+    rating: 5,
+    reviewUrl: "https://share.google/TDhzoO4clAYzYl4pq",
+  },
+  {
+    name: "Pravas Kumar Jagat",
+    role: "",
+    text: "It was a great experience, they always gave follow ups and suggestions to get the work done in time.",
+    rating: 5,
+    reviewUrl: "https://share.google/xodOvoHKCpMdGrF0e",
+  },
+  {
+    name: "Priyanka Behera",
+    role: "ROOTAMZ PRIVATE LIMITED",
+    text: "ROOTAMZ PRIVATE LIMITED had a wonderful experience working with Legal Terminus Private Limited Company. Their team was highly professional, cooperative, and dedicated to delivering quality service throughout the entire process. Communication was smooth, transparent, and timely at every stage. We truly appreciate their support, expertise, and commitment, and we look forward to future collaborations together.",
+    rating: 5,
+    reviewUrl: "https://share.google/7K1z1CdCoR7nMuL0h",
+  },
+  {
+    name: "Kanhu Charan Dash",
+    role: "VAIDYA SETU HEALTH AND WELLNESS PRIVATE LIMITED",
+    text: "Excellent experience with Legal Terminus for Private Limited Company registration. This is the best company registration service provider in Odisha. Their team handled the complete process professionally and completed everything on time. They managed all documentation efficiently and ensured timely completion. Communication was smooth, quick, and helpful throughout. Truly reliable and trustworthy professionals for startup registration and compliance services.",
+    rating: 5,
+    reviewUrl: "https://share.google/UVSLslzp3EKzYkaYv",
+  },
+  {
+    name: "Subhalaxmi Maharana",
+    role: "MY NESTHUB PRIVATE LIMITED",
+    text: "Really satisfied with their service. They handled everything properly without confusion and were always available for help. Made the whole process stress-free.",
+    rating: 5,
+    reviewUrl: "https://share.google/FZlICcNJ9qaLejdC9",
+  },
+  {
+    name: "Kumar Gourav",
+    role: "Lifora Exim Private Limited",
+    text: "Thank you for the smooth company registration service. The team was supportive, responsive, and completed all formalities within the promised timeline. They kept us informed at every stage and helped us understand the entire process easily. Great experience overall and very professional service from start to finish.",
+    rating: 5,
+    reviewUrl: "https://share.google/7rULTTU1PCnOOGXmL",
+  },
+  {
+    name: "Akankshya P. Rout",
+    role: "PRAC-G PRIVATE LIMITED",
+    text: "Very good experience with company registration services. The team guided us properly throughout the process and completed all work smoothly and on time. They were always available to answer our queries and provided excellent support from start to finish. Highly recommended for business registration services.",
+    rating: 5,
+    reviewUrl: "https://share.google/n57YYuiCGhApeSibv",
+  },
 ];
 
 const TRUNCATE = 110;
