@@ -15,13 +15,13 @@ import CopyPvtTypes from '../../Components/CopyPvtTypes/CopyPvtTypes'
 const PrivateLimitedCopy2 = () => {
   return (
     <div>
-      <div className="copy-page-hero">
+      <div className="copy2-page-hero">
         <Breadcrum />
       </div>
 
       <div className="section-divider" />
 
-      <div id="plans" className="copy-page-pricing">
+      <div id="plans" className="copy2-page-pricing">
         <PvtltdPlanandPricing />
       </div>
 

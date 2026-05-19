@@ -80,24 +80,62 @@ p[class*="tagline"] {
   margin: 0 40px;
 }
 
-/* ===== 1. FORM CARD — green glow shadow ===== */
-.copy-page-hero .lt-public-form-card {
-  border: 1px solid rgba(34, 197, 94, 0.55);
-  box-shadow:
-    0 0 0 1px rgba(34, 197, 94, 0.15) inset,
-    0 0 28px rgba(34, 197, 94, 0.4),
-    0 0 56px rgba(34, 197, 94, 0.18),
-    0 40px 90px rgba(0, 0, 0, 0.85);
+/* ===== HERO — deep navy background ===== */
+.copy2-page-hero .lt-public-hero {
+  background:
+    radial-gradient(900px 500px at 15% 20%, rgba(34, 197, 94, 0.10), transparent 60%),
+    radial-gradient(700px 400px at 85% 80%, rgba(34, 197, 94, 0.08), transparent 60%),
+    linear-gradient(160deg, #0a1628 0%, #0d1f3c 55%, #0f2545 100%);
 }
 
-/* Form inputs & selects — green border (#4ade80) */
-.copy-page-hero .lt-public-form input,
-.copy-page-hero .lt-public-form select {
+/* ===== FORM CARD — white card on navy bg ===== */
+.copy2-page-hero .lt-public-form-card {
+  background: #ffffff;
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.12) inset,
+    0 0 32px rgba(34, 197, 94, 0.22),
+    0 40px 80px rgba(0, 0, 0, 0.35);
+}
+
+/* Form title & subtitle — navy text */
+.copy2-page-hero .lt-form-title {
+  color: #0a1628;
+}
+.copy2-page-hero .lt-form-subtitle {
+  color: #475569;
+}
+
+/* Inputs & selects — light bg, green border, navy text */
+.copy2-page-hero .lt-public-form input,
+.copy2-page-hero .lt-public-form select {
+  background: #f8fafc;
   border: 1px solid #4ade80;
+  color: #0a1628;
+}
+.copy2-page-hero .lt-public-form input::placeholder {
+  color: #94a3b8;
+}
+.copy2-page-hero .lt-public-form select {
+  color: #1e293b;
+}
+.copy2-page-hero .lt-public-form select option {
+  background: #ffffff;
+  color: #1e293b;
+}
+
+/* WhatsApp row text — navy */
+.copy2-page-hero .lt-whatsapp-text {
+  color: #1e293b;
+}
+
+/* Foot note — muted slate */
+.copy2-page-hero .lt-form-note {
+  color: #64748b;
 }
 
 /* ===== 2. PRICING CARDS — solid green border, no shadow ===== */
-.copy-page-pricing .plan-card {
+.copy2-page-pricing .plan-card {
   border: 1px solid #22c55e;
   box-shadow: none;
   transform: none;
@@ -105,18 +143,18 @@ p[class*="tagline"] {
 }
 
 /* Remove previous middle-card elevation */
-.copy-page-pricing .plan-card:nth-child(2) {
+.copy2-page-pricing .plan-card:nth-child(2) {
   border: 1px solid #22c55e;
   box-shadow: none;
   transform: none;
 }
 
-.copy-page-pricing .plan-card:hover {
+.copy2-page-pricing .plan-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
 }
 
-.copy-page-pricing .plan-card:nth-child(2):hover {
+.copy2-page-pricing .plan-card:nth-child(2):hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
 }
