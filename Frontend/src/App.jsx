@@ -81,6 +81,7 @@ const TermsConditions = lazy(() => import("./Pages/Policies/TermsConditions"));
 const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
 const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
 const PrivateLimitedCopy = lazy(() => import("./Pages/PrivateLimitedCopy/PrivateLimitedCopy"));
+const PrivateLimitedCopy2 = lazy(() => import("./Pages/PrivateLimitedCopy2/PrivateLimitedCopy2"));
 
 // Pages that are NOT service pages — testimonial/social proof sections are hidden here
 const NON_SERVICE_PATHS = new Set([
@@ -226,6 +227,7 @@ function App() {
             <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/confidentiality-policy" element={<ConfidentialityPolicy />} />
             <Route path="/pvt-ltd-registration-copy" element={<PrivateLimitedCopy />} />
+            <Route path="/pvt-ltd-registration-copy-2" element={<PrivateLimitedCopy2 />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>
