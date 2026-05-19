@@ -80,56 +80,106 @@ p[class*="tagline"] {
   margin: 0 40px;
 }
 
-/* ===== HERO — deep navy background ===== */
+/* ===== HERO — rich dark gradient + subtle grid ===== */
 .copy2-page-hero .lt-public-hero {
+  position: relative;
+  overflow: hidden;
   background:
-    radial-gradient(900px 500px at 15% 20%, rgba(34, 197, 94, 0.10), transparent 60%),
-    radial-gradient(700px 400px at 85% 80%, rgba(34, 197, 94, 0.08), transparent 60%),
-    linear-gradient(160deg, #0a1628 0%, #0d1f3c 55%, #0f2545 100%);
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.02) 0px,
+      rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px,
+      transparent 64px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.02) 0px,
+      rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px,
+      transparent 64px
+    ),
+    linear-gradient(135deg, #0b0f19 0%, #111827 45%, #0a1f3d 100%);
 }
 
-/* ===== FORM CARD — white card on navy bg ===== */
+/* Top-right green glow orb */
+.copy2-page-hero .lt-public-hero::before {
+  content: '';
+  position: absolute;
+  top: -140px;
+  right: -60px;
+  width: 560px;
+  height: 560px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, transparent 68%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Bottom-left indigo accent orb */
+.copy2-page-hero .lt-public-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  left: -80px;
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.10) 0%, transparent 68%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Lift content above decorative orbs */
+.copy2-page-hero .lt-public-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== FORM CARD — glassmorphism ===== */
 .copy2-page-hero .lt-public-form-card {
-  background: #ffffff;
-  border: 1px solid rgba(34, 197, 94, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
-    0 0 0 1px rgba(34, 197, 94, 0.12) inset,
-    0 0 32px rgba(34, 197, 94, 0.22),
-    0 40px 80px rgba(0, 0, 0, 0.35);
+    0 8px 40px rgba(0, 0, 0, 0.50),
+    0 0 0 1px rgba(34, 197, 94, 0.20) inset,
+    0 0 52px rgba(34, 197, 94, 0.12);
 }
 
-/* Form title & subtitle — navy text */
+/* Form title & subtitle */
 .copy2-page-hero .lt-form-title {
-  color: #0a1628;
+  color: #ffffff;
 }
 .copy2-page-hero .lt-form-subtitle {
-  color: #475569;
-}
-
-/* Inputs & selects — light bg, green border, navy text */
-.copy2-page-hero .lt-public-form input,
-.copy2-page-hero .lt-public-form select {
-  background: #f8fafc;
-  border: 1px solid #4ade80;
-  color: #0a1628;
-}
-.copy2-page-hero .lt-public-form input::placeholder {
   color: #94a3b8;
 }
+
+/* Inputs & selects — frosted glass */
+.copy2-page-hero .lt-public-form input,
 .copy2-page-hero .lt-public-form select {
-  color: #1e293b;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(74, 222, 128, 0.50);
+  color: #e2e8f0;
+}
+.copy2-page-hero .lt-public-form input::placeholder {
+  color: #64748b;
+}
+.copy2-page-hero .lt-public-form select {
+  color: #cbd5e1;
 }
 .copy2-page-hero .lt-public-form select option {
-  background: #ffffff;
-  color: #1e293b;
+  background: #1e293b;
+  color: #e2e8f0;
 }
 
-/* WhatsApp row text — navy */
+/* WhatsApp text */
 .copy2-page-hero .lt-whatsapp-text {
-  color: #1e293b;
+  color: #cbd5e1;
 }
 
-/* Foot note — muted slate */
+/* Foot note */
 .copy2-page-hero .lt-form-note {
   color: #64748b;
 }
