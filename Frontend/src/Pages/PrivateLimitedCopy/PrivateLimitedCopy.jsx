@@ -10,9 +10,6 @@ import PvtltdProcess from '../../Components/PvtltdProcess/PvtltdProcess'
 import CopyPvtDocument from '../../Components/CopyPvtDocument/CopyPvtDocument'
 import PvtltdFAQ from '../../Components/PvtltdFAQ/PvtltdFAQ'
 import PvtltdTermsCondition from '../../Components/PvtltdTermsCondition/PvtltdTermsCondition'
-import PvtltdTestimonial from '../../Components/PvtltdTestimonial/PvtltdTestimonial'
-import PvtltdVideoTestimonial from '../../Components/PvtltdVideoTestimonial/PvtltdVideoTestimonial'
-import PvtltdOurclints from '../../Components/PvtltdOurclints/PvtltdOurclints'
 import CopyPvtTypes from '../../Components/CopyPvtTypes/CopyPvtTypes'
 
 const PrivateLimitedCopy = () => {
@@ -76,11 +73,6 @@ const PrivateLimitedCopy = () => {
         <PvtltdFAQ />
       </div>
 
-      <div className="section-divider" />
-
-      <PvtltdTestimonial />
-      <PvtltdVideoTestimonial />
-      <PvtltdOurclints />
 
     </div>
   );

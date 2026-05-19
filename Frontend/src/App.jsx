@@ -6,6 +6,9 @@ import Navbar from "./Components/Navbar/Navbar";
 import Footer from "./Components/Footer/Footer";
 import RouteLoaderWrapper from "./Components/PageLoader/RouteLoaderWrapper";
 import FloatIcon from "./Components/FloatIcon/FloatIcon";
+import PvtltdTestimonial from "./Components/PvtltdTestimonial/PvtltdTestimonial";
+import PvtltdVideoTestimonial from "./Components/PvtltdVideoTestimonial/PvtltdVideoTestimonial";
+import PvtltdOurclints from "./Components/PvtltdOurclints/PvtltdOurclints";
 
 const Home = lazy(() => import("./Pages/Home/Home"));
 const ContactUs = lazy(() => import("./Pages/ContactUs/ContactUs"));
@@ -78,6 +81,32 @@ const TermsConditions = lazy(() => import("./Pages/Policies/TermsConditions"));
 const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
 const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
 const PrivateLimitedCopy = lazy(() => import("./Pages/PrivateLimitedCopy/PrivateLimitedCopy"));
+
+// Pages that are NOT service pages — testimonial/social proof sections are hidden here
+const NON_SERVICE_PATHS = new Set([
+  "/",
+  "/contact/us",
+  "/blog",
+  "/blog/details",
+  "/about",
+  "/media",
+  "/privacy-policy",
+  "/terms-conditions",
+  "/refund-policy",
+  "/confidentiality-policy",
+]);
+
+function ServiceFooterSections() {
+  const { pathname } = useLocation();
+  if (NON_SERVICE_PATHS.has(pathname)) return null;
+  return (
+    <>
+      <PvtltdTestimonial />
+      <PvtltdVideoTestimonial />
+      <PvtltdOurclints />
+    </>
+  );
+}
 
 // Store scroll positions keyed by location.key
 const scrollPositions = {};
@@ -201,6 +230,7 @@ function App() {
         </Suspense>
       </RouteLoaderWrapper>
 
+      <ServiceFooterSections />
       <FloatIcon />
       <Footer />
     </Router>
