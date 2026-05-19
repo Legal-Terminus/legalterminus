@@ -44,6 +44,8 @@
   line-height: 1.1;
   margin-bottom: 22px;
   color: #ffffff;
+  text-align: justify;
+  text-align-last: justify;
 }
 
 .lt-title-india  { color: #ffffff; }
@@ -148,6 +150,11 @@
 
 .lt-public-form select {
   color: #cbd5e1;
+}
+
+.lt-public-form select option {
+  color: #111111;
+  background: #ffffff;
 }
 
 /* ================= WHATSAPP ================= */

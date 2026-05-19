@@ -23,7 +23,7 @@ const Breadcrum = () => {
           <h1 className="lt-public-title">
             Register Your Private Limited Company
             <span className="lt-title-india"> in India</span>
-            {" "}—{" "}
+            <br />
             <span className="lt-title-tagline">Fast, Hassle-Free &amp; 100% Online</span>
           </h1>
 
