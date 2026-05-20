@@ -2,25 +2,11 @@ import React from "react";
 import "./BlogBanner.css";
 
 
-const BlogBanner = ({
-  title = (
-    <>
-      Discover Articles,
-      <br />
-      News & Insights
-    </>
-  ),
-  subtitle = "Explore well-curated stories, expert insights, and the latest updates from Notrav.",
-  onNavigate,
-  onExplore,
-  onSubscribe,
-}) => {
+const BlogBanner = ({ onNavigate }) => {
   const handleNavigate = (key) => {
     if (typeof onNavigate === "function") onNavigate({ key });
     else {
-      // default behavior if no handler passed (progressive fallback)
       if (key === "home") window.location.href = "/";
-      if (key === "blog") window.location.href = "#articles";
     }
   };
 
@@ -104,41 +90,11 @@ const BlogBanner = ({
 
       {/* Foreground content */}
       <div className="blogpage-banner-content">
-        <h1 className="blogpage-banner-heading">{title}</h1>
+        <h1 className="blogpage-banner-heading">Discover Our Articles &amp; News</h1>
 
-        <p className="blogpage-banner-sub">{subtitle}</p>
-
-        <div className="blogpage-banner-actions" role="group" aria-label="Banner actions">
-          <button
-            className="blogpage-banner-btn"
-            type="button"
-            onClick={() => {
-              if (typeof onExplore === "function") onExplore();
-              else {
-                // Default: jump to articles section
-                const el = document.getElementById("articles");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-              }
-            }}
-          >
-            Explore Now
-          </button>
-
-          <button
-            className="blogpage-banner-btn secondary"
-            type="button"
-            onClick={() => {
-              if (typeof onSubscribe === "function") onSubscribe();
-              else {
-                // default fallback — scroll to subscribe anchor
-                const el = document.getElementById("subscribe");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-              }
-            }}
-          >
-            Subscribe
-          </button>
-        </div>
+        <p className="blogpage-banner-sub">
+          Explore well-curated blogs and the latest updates from Legal Terminus.
+        </p>
       </div>
     </section>
   );
