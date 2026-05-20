@@ -51,7 +51,7 @@ const BlogPost = () => {
             <nav className="blogpost-breadcrumb" aria-label="Breadcrumb">
               <Link to="/">Home</Link>
               <span aria-hidden="true"> / </span>
-              <Link to="/blog">Blog</Link>
+              <span>Blog</span>
               <span aria-hidden="true"> / </span>
               <span>{post.category}</span>
             </nav>
