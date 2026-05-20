@@ -28,7 +28,7 @@
 /* Centered content container */
 .tabs-wrap.full-width {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1200px;
   background: transparent;
   padding: 18px;
   border-radius: var(--radius);
@@ -235,7 +235,7 @@ button:hover,
 
 /* media queries: concise responsive adjustments */
 @media (max-width: 1024px) {
-  .tabs-wrap.full-width { max-width: 920px; padding: 16px; }
+  .tabs-wrap.full-width { max-width: 1200px; padding: 16px; }
   .tabs-inner { padding: 6px 12px; gap: 8px; }
   .tab { padding: 9px 14px; font-size: 15px; }
   .panel-heading h2 { font-size: 20px; }

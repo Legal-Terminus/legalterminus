@@ -36,7 +36,7 @@
 
 /* HERO */
 .Documents-hero { padding: 18px 6px; margin-bottom: 20px; }
-.Documents-hero-inner { max-width: 1180px; margin: 0 auto; }
+.Documents-hero-inner { max-width: 1200px; margin: 0 auto; }
 .Documents-hero-top {
   display: flex;
   align-items: center;

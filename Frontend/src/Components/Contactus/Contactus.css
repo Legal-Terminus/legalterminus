@@ -21,7 +21,7 @@
   /* UI */
   --zen-radius: 12px;
   --zen-radius-card: 16px;
-  --zen-max-width: 1400px;
+  --zen-max-width: 1200px;
   --zen-transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

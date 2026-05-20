@@ -301,7 +301,7 @@
 /* Large desktops / widescreen up to 2560px */
 @media (max-width: 2560px) {
   .cf-content {
-    max-width: 1400px;
+    max-width: 1200px;
     padding: 0 28px;
   }
 
@@ -353,7 +353,7 @@
 /* Large laptop / small desktop up to 1366px */
 @media (max-width: 1366px) {
   .cf-content {
-    max-width: 1100px;
+    max-width: 1200px;
     padding: 0 18px;
   }
 
@@ -698,7 +698,7 @@
    viewport flexible, but preventing an overly-wide viewport helps centering. */
 .cf-slider-viewport {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
   box-sizing: border-box;

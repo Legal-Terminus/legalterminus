@@ -321,7 +321,7 @@
 @media (min-width: 1400px) {
   .expert-section {
     padding: 96px 24px;
-    max-width: 1400px; /* slightly wider on very large screens */
+    max-width: 1200px; /* slightly wider on very large screens */
   }
 
   .expert-header h2 {

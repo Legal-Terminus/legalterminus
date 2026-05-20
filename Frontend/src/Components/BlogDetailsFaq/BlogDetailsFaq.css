@@ -11,7 +11,7 @@
 }
 
 .faq-inner {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   gap: clamp(18px, 2.4vw, 40px);

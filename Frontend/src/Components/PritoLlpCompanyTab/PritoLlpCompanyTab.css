@@ -6,7 +6,7 @@
 -------------------------------------------------- */
 
 .overview-wrapper {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 40px 24px 60px;
   font-family: "Poppins", sans-serif;
@@ -49,7 +49,7 @@
 }
 
 .PLC-to-LLP-pvtintro-container {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 0.9fr 1.4fr;
@@ -161,7 +161,7 @@
 }
 
 .companies-act-container {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 

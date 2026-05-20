@@ -12,7 +12,7 @@
 
 /* CONTAINER */
 .blogdetailsarticle-container {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 340px;
@@ -457,7 +457,7 @@
   }
 
   .blogdetailsarticle-container {
-    max-width: 1400px;
+    max-width: 1200px;
     grid-template-columns: 1fr 360px;
     gap: 2.75rem;
   }
@@ -486,7 +486,7 @@
   }
 
   .blogdetailsarticle-container {
-    max-width: 1180px;
+    max-width: 1200px;
     grid-template-columns: 1fr 340px;
     gap: 2rem;
   }

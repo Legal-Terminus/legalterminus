@@ -27,7 +27,7 @@
 .AboutUsBanner-inner {
   position: relative;
   z-index: 1;
-  max-width: 1180px;
+  max-width: 1200px;
   width: 100%;
   padding: 28px 24px;
 }
@@ -65,7 +65,7 @@
 /* Extra Large Devices (Desktops ≥ 1200px) */
 @media (min-width: 1200px) {
   .AboutUsBanner-inner {
-    max-width: 1180px;
+    max-width: 1200px;
   }
 }
 

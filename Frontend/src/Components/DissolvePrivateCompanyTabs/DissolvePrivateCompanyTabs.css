@@ -17,7 +17,7 @@
 }
 
 .Dissolve-intro-container {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 0.9fr 1.4fr;
@@ -66,7 +66,7 @@
 }
 
 .Dissolve-act-container {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 

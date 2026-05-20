@@ -15,7 +15,7 @@
 
 /* ================= CONTAINER ================= */
 .gstv2-hero-container {
-  max-width: 1300px;
+  max-width: 1200px;
   margin: auto;
   display: grid;
   grid-template-columns: 1.3fr 1fr;

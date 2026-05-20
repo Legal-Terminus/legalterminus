@@ -10,7 +10,7 @@
 
 /* ================= CONTAINER ================= */
 .ProPrietorship-opc-Bc-public-container {
-  max-width: 1300px;
+  max-width: 1200px;
   margin: auto;
   display: grid;
   grid-template-columns: 1.3fr 0.7fr;
