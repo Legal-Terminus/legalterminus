@@ -82,6 +82,7 @@ const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
 const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
 const PrivateLimitedCopy = lazy(() => import("./Pages/PrivateLimitedCopy/PrivateLimitedCopy"));
 const PrivateLimitedCopy2 = lazy(() => import("./Pages/PrivateLimitedCopy2/PrivateLimitedCopy2"));
+const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
 
 // Pages that are NOT service pages — testimonial/social proof sections are hidden here
 const NON_SERVICE_PATHS = new Set([
@@ -97,9 +98,11 @@ const NON_SERVICE_PATHS = new Set([
   "/confidentiality-policy",
 ]);
 
+const isBlogPost = (pathname) => /^\/blog\/.+/.test(pathname);
+
 function ServiceFooterSections() {
   const { pathname } = useLocation();
-  if (NON_SERVICE_PATHS.has(pathname)) return null;
+  if (NON_SERVICE_PATHS.has(pathname) || isBlogPost(pathname)) return null;
   return (
     <>
       <PvtltdTestimonial />
@@ -160,6 +163,7 @@ function App() {
             <Route path="/contact/us" element={<ContactUs />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/details" element={<BlogDetails />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/one-person-company" element={<OPC />} />
             <Route path="/public-limited-company-registration-in-india" element={<Publicltd />} />
             <Route path="/private-limited-company-registration-in-india" element={<PrivateLimited />} />
