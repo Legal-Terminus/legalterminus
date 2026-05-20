@@ -3,12 +3,11 @@ import { Link } from "react-router-dom";
 import { posts, CATEGORIES } from "../../data/blogData";
 import "./BlogPage.css";
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 4;
 
 const BlogPage = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
-  const [email, setEmail] = useState("");
 
   const filtered =
     activeCategory === "All"
@@ -33,22 +32,59 @@ const BlogPage = () => {
 
   return (
     <section className="blogpage-root">
-      {/* Category Filter Tabs */}
-      <div className="blogpage-filters-wrap">
-        <div className="blogpage-filters">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              className={`blogpage-filter-btn${activeCategory === cat ? " active" : ""}`}
-              onClick={() => handleCategoryClick(cat)}
-            >
-              {cat}
-            </button>
-          ))}
+      {/* Top bar: Category tabs + Pagination side by side */}
+      <div className="blogpage-topbar-wrap">
+        <div className="blogpage-topbar">
+          {/* Category Filter Tabs */}
+          <div className="blogpage-filters">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                className={`blogpage-filter-btn${activeCategory === cat ? " active" : ""}`}
+                onClick={() => handleCategoryClick(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Pagination — top right */}
+          {totalPages > 1 && (
+            <nav className="blogpage-pagination" aria-label="Blog pagination">
+              <button
+                className="blogpage-page-btn"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                aria-label="Previous page"
+              >
+                ←
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  className={`blogpage-page-btn${currentPage === page ? " active" : ""}`}
+                  onClick={() => handlePageChange(page)}
+                  aria-current={currentPage === page ? "page" : undefined}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                className="blogpage-page-btn"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                aria-label="Next page"
+              >
+                →
+              </button>
+            </nav>
+          )}
         </div>
       </div>
 
-      {/* Blog Grid */}
+      {/* Blog Grid — 4 cards, centered */}
       <div className="blogpage-grid-wrap">
         <div className="blogpage-grid">
           {paginated.map((post) => (
@@ -80,76 +116,7 @@ const BlogPage = () => {
             </article>
           ))}
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <nav className="blogpage-pagination" aria-label="Blog pagination">
-            <button
-              className="blogpage-page-btn"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              aria-label="Previous page"
-            >
-              ←
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                className={`blogpage-page-btn${currentPage === page ? " active" : ""}`}
-                onClick={() => handlePageChange(page)}
-                aria-current={currentPage === page ? "page" : undefined}
-              >
-                {page}
-              </button>
-            ))}
-
-            <button
-              className="blogpage-page-btn"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              aria-label="Next page"
-            >
-              →
-            </button>
-          </nav>
-        )}
       </div>
-
-      <hr className="blogpage-divider" />
-
-      {/* Newsletter */}
-      <aside className="blogpage-newsletter">
-        <small className="blogpage-newsletter-label">NEWSLETTER</small>
-
-        <h2 className="blogpage-newsletter-heading">
-          Get the Latest <em>Update</em>
-          <br />
-          From <em>Legal Terminus</em>
-        </h2>
-
-        <form
-          className="blogpage-newsletter-form"
-          onSubmit={(e) => e.preventDefault()}
-        >
-          <label htmlFor="bp-email" className="blogpage-sr-only">
-            Your email
-          </label>
-
-          <input
-            id="bp-email"
-            type="email"
-            placeholder="Your email"
-            className="blogpage-input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <button type="submit" className="blogpage-submit" aria-label="subscribe">
-            →
-          </button>
-        </form>
-      </aside>
     </section>
   );
 };
