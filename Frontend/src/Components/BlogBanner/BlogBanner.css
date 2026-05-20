@@ -8,7 +8,7 @@
    ========================================= */
 .blogpage-banner {
   position: relative;
-  padding: 4.2rem 3rem; 
+  padding: 2.5rem 3rem 1.5rem;
   background: #f6f2ef;
   border-radius: 20px;
   overflow: hidden;
@@ -16,10 +16,10 @@
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
   align-items: center;
   justify-content: center;
-  min-height: 22rem; /* Increased height */
+  min-height: auto;
 }
 
 /* SVG Background */
@@ -190,8 +190,7 @@
 /* Large Laptops (≤ 1599px) */
 @media (max-width: 1599px) {
   .blogpage-banner {
-    padding: 3.5rem 2.5rem;
-    min-height: 20rem;
+    padding: 2rem 2.5rem 1.2rem;
   }
   .blogpage-banner-heading { font-size: 2.4rem; }
   .bubble-1 { width: 130px; height: 130px; }
@@ -201,8 +200,7 @@
 /* Normal Laptops (≤ 1299px) */
 @media (max-width: 1299px) {
   .blogpage-banner {
-    padding: 3rem 2rem;
-    min-height: 18rem;
+    padding: 1.8rem 2rem 1rem;
   }
   .blogpage-banner-heading { font-size: 2.2rem; }
   .blogpage-banner-sub { font-size: 1.1rem; }
@@ -211,8 +209,7 @@
 /* Tablets Landscape (≤ 1099px) */
 @media (max-width: 1099px) {
   .blogpage-banner {
-    padding: 2.6rem 1.8rem;
-    min-height: 17rem;
+    padding: 1.6rem 1.8rem 1rem;
   }
   .blogpage-banner-heading { font-size: 2rem; }
   .blogpage-banner-sub { font-size: 1.05rem; }
@@ -223,31 +220,26 @@
 /* Tablets Portrait (≤ 899px) */
 @media (max-width: 899px) {
   .blogpage-banner {
-    padding: 2.4rem 1.4rem;
-    min-height: 16rem;
+    padding: 1.4rem 1.4rem 0.9rem;
   }
   .blogpage-banner-heading { font-size: 1.8rem; }
   .blogpage-banner-sub { font-size: 1rem; }
   .blogpage-banner-breadcrumb { padding: 0.35rem 0.7rem; }
-  .blogpage-banner-actions { gap: 0.75rem; }
 }
 
 /* Large Phones (≤ 690px) */
 @media (max-width: 690px) {
   .blogpage-banner {
-    padding: 2rem 1.2rem;
-    min-height: 15rem;
+    padding: 1.2rem 1.2rem 0.8rem;
   }
   .blogpage-banner-heading { font-size: 1.65rem; }
   .blogpage-banner-sub { font-size: 0.95rem; }
-  .blogpage-banner-btn { width: 100%; }
 }
 
 /* Medium Phones (≤ 520px) */
 @media (max-width: 520px) {
   .blogpage-banner {
-    padding: 1.8rem 1rem;
-    min-height: 14rem;
+    padding: 1.1rem 1rem 0.75rem;
   }
   .blogpage-banner-heading { font-size: 1.45rem; }
   .blogpage-banner-sub { font-size: 0.9rem; }
@@ -258,20 +250,17 @@
 /* Small Phones (≤ 420px) */
 @media (max-width: 420px) {
   .blogpage-banner {
-    padding: 1.6rem 0.85rem;
-    min-height: 13rem;
+    padding: 1rem 0.85rem 0.7rem;
   }
   .blogpage-banner-heading { font-size: 1.25rem; }
   .blogpage-banner-sub { font-size: 0.85rem; }
   .blogpage-banner-breadcrumb { font-size: 0.75rem; }
-  .blogpage-banner-btn { font-size: 0.9rem; padding: 0.6rem 1rem; }
 }
 
 /* Tiny Phones (≤ 360px) */
 @media (max-width: 360px) {
   .blogpage-banner {
-    padding: 1.4rem 0.7rem;
-    min-height: 12.5rem;
+    padding: 0.9rem 0.7rem 0.6rem;
   }
   .blogpage-banner-heading { font-size: 1.15rem; }
   .blogpage-banner-sub { font-size: 0.8rem; }
