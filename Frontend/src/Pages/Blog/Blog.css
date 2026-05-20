@@ -3,13 +3,13 @@
 .blogpage-root {
   width: 100%;
   background-color: #fff;
-  padding: 2rem 0;
+  padding: 0.75rem 0 2rem;
 }
 
-/* ─── Top bar: Category tabs + Pagination in one row ───── */
+/* ─── Top bar: Category tabs + Pagination — centred ────── */
 .blogpage-topbar-wrap {
   width: 100%;
-  padding: 0 18px 1.5rem;
+  padding: 1rem 18px 1.25rem;
   box-sizing: border-box;
   display: flex;
   justify-content: center;
@@ -17,12 +17,11 @@
 
 .blogpage-topbar {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
   max-width: 1200px;
   width: 100%;
-  flex-wrap: wrap;
 }
 
 /* Category Filter Tabs */
@@ -31,6 +30,7 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+  justify-content: center;
 }
 
 .blogpage-filter-btn {
@@ -58,12 +58,13 @@
   border-color: #0b3d91;
 }
 
-/* ─── Pagination (top-right of topbar) ─────────────────── */
+/* ─── Pagination (centred below category tabs) ──────────── */
 .blogpage-pagination {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .blogpage-page-btn {
@@ -254,8 +255,7 @@
 /* Responsive design */
 @media (max-width: 768px) {
   .blogpage-topbar {
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
   }
 

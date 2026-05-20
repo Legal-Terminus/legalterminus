@@ -4,6 +4,7 @@ import { posts, CATEGORIES } from "../../data/blogData";
 import "./BlogPage.css";
 
 const PAGE_SIZE = 4;
+const VISIBLE_PAGES = 5;
 
 const BlogPage = () => {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -30,9 +31,25 @@ const BlogPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Sliding window of 5 page numbers centred on current page
+  const getVisiblePages = () => {
+    if (totalPages <= VISIBLE_PAGES) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    let start = Math.max(1, currentPage - Math.floor(VISIBLE_PAGES / 2));
+    let end = start + VISIBLE_PAGES - 1;
+    if (end > totalPages) {
+      end = totalPages;
+      start = Math.max(1, end - VISIBLE_PAGES + 1);
+    }
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  };
+
+  const visiblePages = getVisiblePages();
+
   return (
     <section className="blogpage-root">
-      {/* Top bar: Category tabs + Pagination side by side */}
+      {/* Top bar: Category tabs + Pagination — both centred */}
       <div className="blogpage-topbar-wrap">
         <div className="blogpage-topbar">
           {/* Category Filter Tabs */}
@@ -48,19 +65,10 @@ const BlogPage = () => {
             ))}
           </div>
 
-          {/* Pagination — top right */}
+          {/* Pagination — 5 numbers + next arrow */}
           {totalPages > 1 && (
             <nav className="blogpage-pagination" aria-label="Blog pagination">
-              <button
-                className="blogpage-page-btn"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                aria-label="Previous page"
-              >
-                ←
-              </button>
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              {visiblePages.map((page) => (
                 <button
                   key={page}
                   className={`blogpage-page-btn${currentPage === page ? " active" : ""}`}
@@ -72,8 +80,8 @@ const BlogPage = () => {
               ))}
 
               <button
-                className="blogpage-page-btn"
-                onClick={() => handlePageChange(currentPage + 1)}
+                className="blogpage-page-btn blogpage-page-arrow"
+                onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 aria-label="Next page"
               >
