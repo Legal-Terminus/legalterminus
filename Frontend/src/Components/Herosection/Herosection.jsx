@@ -117,7 +117,7 @@ const Herosection = () => {
             <div className="hs-rating-badge">
               <FaStar className="hs-tp-star" aria-hidden="true" />
               <div className="hs-rating-text">
-                <span className="hs-rating-score">4.4/5</span>
+                <span className="hs-rating-score">4.3/5</span>
                 <span className="hs-rating-label">Trustpilot</span>
               </div>
             </div>
