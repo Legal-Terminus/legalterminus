@@ -28,11 +28,7 @@ body {
 /* ── Hero wrapper ── */
 .hs-hero {
   width: 100%;
-  background:
-    linear-gradient(rgba(25, 163, 95, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(25, 163, 95, 0.04) 1px, transparent 1px),
-    #ffffff;
-  background-size: 52px 52px, 52px 52px, auto;
+  background: #ffffff;
   padding: 8px 0 20px;
 }
 
@@ -199,7 +195,7 @@ body {
 
 .hs-title-green {
   font-size: clamp(22px, 2.4vw, 32px);
-  color: #19a35f;
+  color: #4CAF50;
   font-weight: 700;
 }
 
