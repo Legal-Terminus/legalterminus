@@ -77,13 +77,13 @@ body {
 
 .hs-float--doc {
   top: 6%;
-  right: 6%;
+  right: 22%;
   animation-delay: 0s;
 }
 
 .hs-float--shield {
   top: 44%;
-  right: -16%;
+  right: 10%;
   animation-delay: 1s;
 }
 
