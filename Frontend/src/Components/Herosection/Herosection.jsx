@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import {
   FaBuilding, FaShieldAlt, FaPercent, FaFileAlt, FaRegistered, FaSync,
-  FaSearch, FaStar, FaRegFileAlt, FaChartBar
+  FaSearch, FaStar, FaCheckSquare, FaChartLine
 } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import './Herosection.css'
@@ -26,9 +26,9 @@ const Herosection = () => {
         <div className="hs-hero__photo-col" aria-hidden="true">
           <div className="hs-photo-wrap">
             <img src={heroIllustration} alt="Legal Terminus professionals" className="hs-hero-img" />
-            <div className="hs-float hs-float--doc"><FaRegFileAlt /></div>
+            <div className="hs-float hs-float--doc"><FaCheckSquare /></div>
             <div className="hs-float hs-float--shield"><FaShieldAlt /></div>
-            <div className="hs-float hs-float--chart"><FaChartBar /></div>
+            <div className="hs-float hs-float--chart"><FaChartLine /></div>
           </div>
         </div>
 
