@@ -6,7 +6,7 @@ import {
 } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import './Herosection.css'
-import heroIllustration from '../../assets/heroIllustration.webp'
+import heroIllustration from '../../assets/hero-photo.webp.webp'
 
 const serviceCards = [
   { icon: <FaBuilding />, title: 'Business Registration', text: 'Start your business with ease', href: '/private-limited-company-registration-in-india' },

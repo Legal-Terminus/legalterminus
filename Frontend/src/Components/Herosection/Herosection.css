@@ -73,9 +73,11 @@ body {
   z-index: 1;
   width: 100%;
   height: auto;
-  max-height: 440px;
+  max-height: 400px;
   object-fit: contain;
+  object-position: center bottom;
   display: block;
+  border-radius: 16px;
 }
 
 /* Floating icon bubbles */
