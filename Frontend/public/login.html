@@ -519,12 +519,7 @@
     const DEMO_EMAIL = 'admin@legalterminus.com';
     const DEMO_PW    = 'Admin@123';
 
-    if (email !== DEMO_EMAIL) {
-      showError('Invalid User ID. No account found with this email address.', 'email');
-      return;
-    }
-
-    if (pw !== DEMO_PW) {
+    if (email !== DEMO_EMAIL || pw !== DEMO_PW) {
       showError('Password is wrong. Please try again.', 'password');
       return;
     }
