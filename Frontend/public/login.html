@@ -471,13 +471,14 @@
   }
 
   /* ── show / clear error ── */
-  function showError(msg) {
+  /* field = 'email' | 'password' | 'both' (default) */
+  function showError(msg, field = 'both') {
     const box = document.getElementById('loginError');
     document.getElementById('loginErrorMsg').textContent = msg;
     box.classList.add('show');
 
-    /* shake both inputs */
-    ['email','password'].forEach(id => {
+    const targets = field === 'both' ? ['email','password'] : [field];
+    targets.forEach(id => {
       const el = document.getElementById(id);
       el.classList.add('input-err', 'shake');
       el.addEventListener('animationend', () => el.classList.remove('shake'), { once: true });
@@ -514,14 +515,17 @@
     }
 
     /* ── simulate authentication ──
-       Replace this block with your real API call.
-       Any email/password that doesn't match the demo
-       credentials triggers the wrong-password error.   ── */
+       Replace this block with your real API call.      ── */
     const DEMO_EMAIL = 'admin@legalterminus.com';
     const DEMO_PW    = 'Admin@123';
 
-    if (email !== DEMO_EMAIL || pw !== DEMO_PW) {
-      showError('Incorrect email or password. Please try again.');
+    if (email !== DEMO_EMAIL) {
+      showError('Invalid User ID. No account found with this email address.', 'email');
+      return;
+    }
+
+    if (pw !== DEMO_PW) {
+      showError('Incorrect password. Please try again.', 'password');
       return;
     }
 
