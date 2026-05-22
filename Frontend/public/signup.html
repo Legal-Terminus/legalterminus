@@ -42,19 +42,19 @@
     .brand-panel::before {
       content: '';
       position: absolute;
-      width: 320px; height: 320px;
+      width: 340px; height: 340px;
       border-radius: 50%;
       background: rgba(255,255,255,.06);
-      top: -100px; left: -100px;
+      top: -110px; right: -110px;
     }
 
     .brand-panel::after {
       content: '';
       position: absolute;
-      width: 200px; height: 200px;
+      width: 220px; height: 220px;
       border-radius: 50%;
       background: rgba(255,255,255,.06);
-      bottom: -60px; right: -50px;
+      bottom: -70px; left: -60px;
     }
 
     .logo-area { margin-bottom: 40px; z-index: 1; }
@@ -288,8 +288,8 @@
 
 <div class="card">
 
-  <!-- ── LEFT: brand panel ── -->
-  <div class="brand-panel">
+  <!-- ── RIGHT: brand panel ── -->
+  <div class="brand-panel" style="order:2">
     <div class="logo-area">
       <img
         class="logo-gif"
@@ -377,8 +377,8 @@
     </div>
   </div>
 
-  <!-- ── RIGHT: signup form ── -->
-  <div class="form-panel">
+  <!-- ── LEFT: signup form ── -->
+  <div class="form-panel" style="order:1">
     <h1>Create an Account</h1>
     <p class="sub">Fill in the details below to get started</p>
 
