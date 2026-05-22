@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Legal Terminus</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f4f0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    .card {
+      display: flex;
+      width: min(960px, 96vw);
+      min-height: 580px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,.14);
+    }
+
+    /* ── LEFT: form panel ── */
+    .form-panel {
+      flex: 1 1 50%;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 56px 52px;
+    }
+
+    .form-panel h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #0f1724;
+      margin-bottom: 6px;
+      letter-spacing: -.3px;
+    }
+
+    .form-panel .sub {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 36px;
+    }
+
+    .field { margin-bottom: 20px; }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 7px;
+    }
+
+    .field input {
+      width: 100%;
+      height: 46px;
+      padding: 0 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 9px;
+      font-size: 14px;
+      color: #111827;
+      outline: none;
+      transition: border-color .2s;
+      background: #fff;
+    }
+
+    .field input::placeholder { color: #9ca3af; }
+
+    .field input:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
+
+    .pw-wrap { position: relative; }
+
+    .pw-wrap input { padding-right: 44px; }
+
+    .eye-btn {
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      transition: color .2s;
+    }
+
+    .eye-btn:hover { color: #16a34a; }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 26px;
+    }
+
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: #6b7280;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .remember input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: #16a34a;
+      cursor: pointer;
+    }
+
+    .forgot {
+      font-size: 13px;
+      font-weight: 600;
+      color: #16a34a;
+      text-decoration: none;
+    }
+
+    .forgot:hover { text-decoration: underline; }
+
+    .btn-login {
+      width: 100%;
+      height: 48px;
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .3px;
+      transition: background .2s, transform .1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-login:hover { background: #15803d; }
+    .btn-login:active { transform: scale(.985); }
+
+    .signup-row {
+      margin-top: 22px;
+      text-align: center;
+      font-size: 13.5px;
+      color: #6b7280;
+    }
+
+    .signup-row a {
+      color: #16a34a;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .signup-row a:hover { text-decoration: underline; }
+
+    /* ── RIGHT: brand panel ── */
+    .brand-panel {
+      flex: 1 1 50%;
+      background: linear-gradient(145deg, #16a34a 0%, #15803d 55%, #166534 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 56px 44px;
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    /* decorative circles */
+    .brand-panel::before {
+      content: '';
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+      top: -110px;
+      right: -110px;
+    }
+
+    .brand-panel::after {
+      content: '';
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+      bottom: -70px;
+      left: -60px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 48px;
+      z-index: 1;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,.18);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-name {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.2px;
+    }
+
+    .logo-name span { opacity: .75; font-weight: 500; }
+
+    /* illustration card */
+    .illus-card {
+      background: rgba(255,255,255,.12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 18px;
+      padding: 32px 28px 28px;
+      width: 100%;
+      max-width: 320px;
+      z-index: 1;
+      margin-bottom: 32px;
+    }
+
+    .illus-card svg { display: block; margin: 0 auto 18px; }
+
+    .illus-card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .illus-card p {
+      font-size: 13px;
+      text-align: center;
+      opacity: .8;
+      line-height: 1.6;
+    }
+
+    /* dots */
+    .dots {
+      display: flex;
+      gap: 8px;
+      z-index: 1;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.35);
+    }
+
+    .dot.active {
+      width: 26px;
+      border-radius: 5px;
+      background: #fff;
+    }
+
+    /* ── responsive ── */
+    @media (max-width: 640px) {
+      .card { flex-direction: column; min-height: unset; }
+      .brand-panel { padding: 36px 28px; min-height: 240px; }
+      .form-panel { padding: 36px 28px; }
+      .illus-card { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- ── LEFT: login form ── -->
+  <div class="form-panel">
+    <h1>Welcome Back!</h1>
+    <p class="sub">Please enter your details to continue</p>
+
+    <div class="field">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" placeholder="Enter Your Email" autocomplete="email" />
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="password" placeholder="Enter Password" autocomplete="current-password" />
+        <button class="eye-btn" type="button" onclick="togglePw()" aria-label="Toggle password visibility" id="eyeBtn">
+          <!-- eye icon (visible) -->
+          <svg id="iconShow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <!-- eye-off icon (hidden) -->
+          <svg id="iconHide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="row">
+      <label class="remember">
+        <input type="checkbox" /> Remember Me
+      </label>
+      <a href="#" class="forgot">Forgot Password?</a>
+    </div>
+
+    <button class="btn-login" type="button">
+      Login
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </button>
+
+    <p class="signup-row">Don't have an account? <a href="#">Sign Up</a></p>
+  </div>
+
+  <!-- ── RIGHT: brand panel ── -->
+  <div class="brand-panel">
+    <!-- logo -->
+    <div class="logo-area">
+      <div class="logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+        </svg>
+      </div>
+      <div class="logo-name">Legal<span>Terminus</span></div>
+    </div>
+
+    <!-- illustration card -->
+    <div class="illus-card">
+      <!-- legal scales illustration -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="120" height="100" viewBox="0 0 120 100">
+        <!-- base -->
+        <rect x="55" y="88" width="10" height="5" rx="2" fill="rgba(255,255,255,0.3)"/>
+        <rect x="40" y="93" width="40" height="4" rx="2" fill="rgba(255,255,255,0.3)"/>
+        <!-- pole -->
+        <line x1="60" y1="88" x2="60" y2="20" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- beam -->
+        <line x1="20" y1="32" x2="100" y2="32" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- center knot -->
+        <circle cx="60" cy="32" r="4" fill="white" opacity="0.9"/>
+        <!-- left chain -->
+        <line x1="20" y1="32" x2="20" y2="54" stroke="rgba(255,255,255,0.7)" stroke-width="1.8" stroke-dasharray="3,2"/>
+        <!-- right chain -->
+        <line x1="100" y1="32" x2="100" y2="58" stroke="rgba(255,255,255,0.7)" stroke-width="1.8" stroke-dasharray="3,2"/>
+        <!-- left pan -->
+        <path d="M8 54 Q20 60 32 54" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- right pan (slightly lower) -->
+        <path d="M88 58 Q100 64 112 58" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- decorative dots -->
+        <circle cx="20" cy="54" r="2.5" fill="rgba(255,255,255,0.5)"/>
+        <circle cx="100" cy="58" r="2.5" fill="rgba(255,255,255,0.5)"/>
+        <!-- document icon -->
+        <rect x="50" y="6" width="20" height="26" rx="3" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>
+        <line x1="54" y1="12" x2="66" y2="12" stroke="rgba(255,255,255,0.6)" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="54" y1="16" x2="66" y2="16" stroke="rgba(255,255,255,0.6)" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="54" y1="20" x2="62" y2="20" stroke="rgba(255,255,255,0.6)" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+
+      <h2>Trusted Legal Services at Your Fingertips</h2>
+      <p>Instant registrations, filings &amp; compliance — trusted by thousands of businesses across India.</p>
+    </div>
+
+    <div class="dots">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function togglePw() {
+    const input = document.getElementById('password');
+    const show  = document.getElementById('iconShow');
+    const hide  = document.getElementById('iconHide');
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      show.style.display = 'none';
+      hide.style.display = 'block';
+    } else {
+      input.type = 'password';
+      show.style.display = 'block';
+      hide.style.display = 'none';
+    }
+  }
+</script>
+
+</body>
+</html>
