@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account — Legal Terminus</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f4f0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    .card {
+      display: flex;
+      width: min(1020px, 96vw);
+      min-height: 620px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,.14);
+    }
+
+    /* ── LEFT: brand panel ── */
+    .brand-panel {
+      flex: 0 0 42%;
+      background: linear-gradient(145deg, #16a34a 0%, #15803d 55%, #166534 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 52px 40px;
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    .brand-panel::before {
+      content: '';
+      position: absolute;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+      top: -100px; left: -100px;
+    }
+
+    .brand-panel::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+      bottom: -60px; right: -50px;
+    }
+
+    .logo-area { margin-bottom: 40px; z-index: 1; }
+
+    .logo-gif {
+      height: 58px;
+      width: auto;
+      filter: drop-shadow(0 2px 10px rgba(0,0,0,.18));
+      display: block;
+    }
+
+    .illus-card {
+      background: rgba(255,255,255,.12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 18px;
+      padding: 28px 24px 22px;
+      width: 100%;
+      max-width: 300px;
+      z-index: 1;
+      margin-bottom: 28px;
+    }
+
+    .illus-card svg { display: block; margin: 0 auto 16px; }
+
+    .illus-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 7px;
+      line-height: 1.3;
+    }
+
+    .illus-card p {
+      font-size: 12.5px;
+      text-align: center;
+      opacity: .8;
+      line-height: 1.6;
+    }
+
+    .dots { display: flex; gap: 8px; z-index: 1; }
+
+    .dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.35);
+    }
+
+    .dot.active {
+      width: 26px;
+      border-radius: 5px;
+      background: #fff;
+    }
+
+    /* ── RIGHT: form panel ── */
+    .form-panel {
+      flex: 1 1 58%;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 48px 52px;
+      overflow-y: auto;
+    }
+
+    .form-panel h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0f1724;
+      margin-bottom: 5px;
+      letter-spacing: -.3px;
+    }
+
+    .form-panel .sub {
+      font-size: 13.5px;
+      color: #6b7280;
+      margin-bottom: 28px;
+    }
+
+    /* two-column grid for name fields */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 16px;
+    }
+
+    .field { margin-bottom: 17px; }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    /* required star */
+    .field label .req { color: #16a34a; margin-left: 2px; }
+
+    .field input, .field select {
+      width: 100%;
+      height: 44px;
+      padding: 0 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 9px;
+      font-size: 13.5px;
+      color: #111827;
+      outline: none;
+      background: #fff;
+      transition: border-color .2s;
+      appearance: none;
+    }
+
+    .field input::placeholder { color: #9ca3af; }
+    .field select { color: #9ca3af; cursor: pointer; }
+    .field select.filled { color: #111827; }
+
+    .field input:focus,
+    .field select:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
+
+    /* phone row: flag + input */
+    .phone-row { display: flex; gap: 8px; }
+
+    .phone-row select {
+      width: 90px;
+      flex-shrink: 0;
+      padding: 0 8px;
+      font-size: 13px;
+      color: #374151;
+    }
+
+    .phone-row input { flex: 1; }
+
+    /* password wrapper */
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 44px; }
+
+    .eye-btn {
+      position: absolute;
+      right: 13px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      cursor: pointer; padding: 4px;
+      color: #9ca3af;
+      display: flex; align-items: center;
+      transition: color .2s;
+    }
+    .eye-btn:hover { color: #16a34a; }
+
+    /* strength bar */
+    .strength-bar {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+      height: 4px;
+    }
+
+    .strength-bar span {
+      flex: 1;
+      border-radius: 2px;
+      background: #e5e7eb;
+      transition: background .3s;
+    }
+
+    .strength-label {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 4px;
+      min-height: 14px;
+      transition: color .3s;
+    }
+
+    /* terms row */
+    .terms-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 4px 0 20px;
+      font-size: 12.5px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    .terms-row input[type="checkbox"] {
+      width: 15px; height: 15px;
+      margin-top: 2px;
+      accent-color: #16a34a;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .terms-row a { color: #16a34a; font-weight: 600; text-decoration: none; }
+    .terms-row a:hover { text-decoration: underline; }
+
+    .btn-create {
+      width: 100%; height: 48px;
+      background: #16a34a;
+      color: #fff; border: none;
+      border-radius: 10px;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; letter-spacing: .3px;
+      transition: background .2s, transform .1s;
+      display: flex; align-items: center;
+      justify-content: center; gap: 8px;
+    }
+    .btn-create:hover { background: #15803d; }
+    .btn-create:active { transform: scale(.985); }
+
+    .login-row {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 13.5px;
+      color: #6b7280;
+    }
+
+    .login-row a { color: #16a34a; font-weight: 700; text-decoration: none; }
+    .login-row a:hover { text-decoration: underline; }
+
+    /* ── responsive ── */
+    @media (max-width: 700px) {
+      .card { flex-direction: column; min-height: unset; }
+      .brand-panel { padding: 32px 24px; min-height: 200px; }
+      .form-panel { padding: 32px 24px; }
+      .grid-2 { grid-template-columns: 1fr; gap: 0; }
+      .illus-card { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- ── LEFT: brand panel ── -->
+  <div class="brand-panel">
+    <div class="logo-area">
+      <img
+        class="logo-gif"
+        src="/logo-animated.gif"
+        onerror="this.src='https://legalterminus.com/wp-content/uploads/2023/09/Legal-Terminus-LOGO-GIF_300-x-150.gif'"
+        alt="Legal Terminus"
+      />
+    </div>
+
+    <div class="illus-card">
+      <!-- onboarding / person registering illustration -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="170" height="135" viewBox="0 0 170 135">
+        <defs>
+          <radialGradient id="g2" cx="50%" cy="60%" r="50%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.15)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </radialGradient>
+        </defs>
+
+        <ellipse cx="85" cy="90" rx="52" ry="32" fill="url(#g2)"/>
+
+        <!-- ── big clipboard / form ── -->
+        <rect x="54" y="14" width="62" height="82" rx="6" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.45)" stroke-width="1.5"/>
+        <!-- clip top -->
+        <rect x="74" y="10" width="22" height="8" rx="4" fill="rgba(255,255,255,0.45)"/>
+        <!-- form lines on clipboard -->
+        <rect x="62" y="30" width="46" height="3" rx="1.5" fill="rgba(255,255,255,0.6)"/>
+        <!-- field 1 -->
+        <rect x="62" y="40" width="46" height="7" rx="3" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+        <rect x="65" y="43" width="22" height="1.5" rx=".75" fill="rgba(255,255,255,0.5)"/>
+        <!-- field 2 -->
+        <rect x="62" y="52" width="46" height="7" rx="3" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+        <rect x="65" y="55" width="28" height="1.5" rx=".75" fill="rgba(255,255,255,0.5)"/>
+        <!-- field 3 -->
+        <rect x="62" y="64" width="46" height="7" rx="3" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+        <rect x="65" y="67" width="18" height="1.5" rx=".75" fill="rgba(255,255,255,0.5)"/>
+        <!-- submit button on clipboard -->
+        <rect x="70" y="78" width="30" height="8" rx="4" fill="rgba(255,255,255,0.55)"/>
+        <rect x="77" y="81" width="16" height="2" rx="1" fill="rgba(22,100,60,0.5)"/>
+
+        <!-- ── person standing to the right ── -->
+        <!-- head -->
+        <circle cx="128" cy="42" r="11" fill="rgba(255,255,255,0.65)"/>
+        <!-- hair -->
+        <path d="M118 40 Q120 30 128 31 Q136 30 138 40" fill="rgba(255,255,255,0.4)"/>
+        <!-- eyes -->
+        <circle cx="124" cy="41" r="1.6" fill="rgba(22,100,60,0.55)"/>
+        <circle cx="132" cy="41" r="1.6" fill="rgba(22,100,60,0.55)"/>
+        <!-- smile -->
+        <path d="M124 46 Q128 50 132 46" stroke="rgba(22,100,60,0.45)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        <!-- neck -->
+        <rect x="124" y="52" width="8" height="7" rx="3" fill="rgba(255,255,255,0.55)"/>
+        <!-- torso -->
+        <path d="M114 59 Q128 54 142 59 L139 90 H117 Z" fill="rgba(255,255,255,0.35)"/>
+        <!-- left arm pointing at clipboard -->
+        <path d="M114 65 Q96 68 88 72" stroke="rgba(255,255,255,0.7)" stroke-width="6" stroke-linecap="round" fill="none"/>
+        <circle cx="86" cy="73" r="3.5" fill="rgba(255,255,255,0.55)"/>
+        <!-- right arm down -->
+        <path d="M142 65 Q148 74 146 84" stroke="rgba(255,255,255,0.6)" stroke-width="6" stroke-linecap="round" fill="none"/>
+        <!-- legs -->
+        <path d="M121 90 Q120 108 119 118" stroke="rgba(255,255,255,0.5)" stroke-width="7" stroke-linecap="round"/>
+        <path d="M135 90 Q136 108 137 118" stroke="rgba(255,255,255,0.5)" stroke-width="7" stroke-linecap="round"/>
+        <!-- shoes -->
+        <ellipse cx="119" cy="120" rx="7" ry="3.5" fill="rgba(255,255,255,0.35)"/>
+        <ellipse cx="137" cy="120" rx="7" ry="3.5" fill="rgba(255,255,255,0.35)"/>
+
+        <!-- ── floating sparkles / stars ── -->
+        <circle cx="18" cy="22" r="2.5" fill="rgba(255,255,255,0.45)"/>
+        <circle cx="160" cy="18" r="2" fill="rgba(255,255,255,0.4)"/>
+        <circle cx="10" cy="88" r="1.8" fill="rgba(255,255,255,0.3)"/>
+        <circle cx="158" cy="100" r="1.5" fill="rgba(255,255,255,0.3)"/>
+        <!-- tick badge top-right -->
+        <rect x="140" y="28" width="22" height="22" rx="6" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+        <polyline points="146,39 150,44 161,33" stroke="rgba(255,255,255,0.85)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+
+      <h2>Join Legal Terminus Today</h2>
+      <p>Create your free account and get instant access to 100+ legal services across India.</p>
+    </div>
+
+    <div class="dots">
+      <div class="dot"></div>
+      <div class="dot active"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: signup form ── -->
+  <div class="form-panel">
+    <h1>Create an Account</h1>
+    <p class="sub">Fill in the details below to get started</p>
+
+    <!-- name row -->
+    <div class="grid-2">
+      <div class="field">
+        <label for="fname">First Name <span class="req">*</span></label>
+        <input type="text" id="fname" placeholder="Enter First Name" required />
+      </div>
+      <div class="field">
+        <label for="lname">Last Name <span class="req">*</span></label>
+        <input type="text" id="lname" placeholder="Enter Last Name" required />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="email">Email Address <span class="req">*</span></label>
+      <input type="email" id="email" placeholder="Enter Your Email" required />
+    </div>
+
+    <div class="field">
+      <label for="phone">Phone Number <span class="req">*</span></label>
+      <div class="phone-row">
+        <select id="dial" onchange="this.classList.add('filled')">
+          <option value="+91" selected>🇮🇳 +91</option>
+          <option value="+1">🇺🇸 +1</option>
+          <option value="+44">🇬🇧 +44</option>
+          <option value="+971">🇦🇪 +971</option>
+          <option value="+65">🇸🇬 +65</option>
+          <option value="+61">🇦🇺 +61</option>
+        </select>
+        <input type="tel" id="phone" placeholder="Enter Mobile Number" maxlength="10" required />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="btype">Business / Service Type</label>
+      <select id="btype" onchange="this.classList.add('filled')">
+        <option value="" disabled selected>Select Service Type (optional)</option>
+        <option>Private Limited Company</option>
+        <option>LLP Registration</option>
+        <option>GST Registration</option>
+        <option>Trademark</option>
+        <option>Startup India</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="password">Password <span class="req">*</span></label>
+      <div class="pw-wrap">
+        <input type="password" id="password" placeholder="Create a Strong Password" required oninput="checkStrength(this.value)" />
+        <button class="eye-btn" type="button" onclick="togglePw('password','eyePw1','iconS1','iconH1')" aria-label="Toggle password">
+          <svg id="iconS1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg id="iconH1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+      </div>
+      <div class="strength-bar">
+        <span id="sb1"></span><span id="sb2"></span><span id="sb3"></span><span id="sb4"></span>
+      </div>
+      <div class="strength-label" id="strengthLabel"></div>
+    </div>
+
+    <div class="field">
+      <label for="confirm">Confirm Password <span class="req">*</span></label>
+      <div class="pw-wrap">
+        <input type="password" id="confirm" placeholder="Re-enter Your Password" required />
+        <button class="eye-btn" type="button" onclick="togglePw('confirm','eyePw2','iconS2','iconH2')" aria-label="Toggle confirm password">
+          <svg id="iconS2" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg id="iconH2" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <label class="terms-row">
+      <input type="checkbox" id="terms" required />
+      <span>I agree to the <a href="#">Terms &amp; Conditions</a> and <a href="#">Privacy Policy</a> of Legal Terminus</span>
+    </label>
+
+    <button class="btn-create" type="button" onclick="handleSignup()">
+      Create Account
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <line x1="19" y1="8" x2="19" y2="14"/>
+        <line x1="22" y1="11" x2="16" y2="11"/>
+      </svg>
+    </button>
+
+    <p class="login-row">Already have an account? <a href="/login.html">Log In</a></p>
+  </div>
+
+</div>
+
+<script>
+  /* ── toggle password visibility ── */
+  function togglePw(inputId, btnId, showId, hideId) {
+    const input = document.getElementById(inputId);
+    const show  = document.getElementById(showId);
+    const hide  = document.getElementById(hideId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      show.style.display = 'none';
+      hide.style.display = 'block';
+    } else {
+      input.type = 'password';
+      show.style.display = 'block';
+      hide.style.display = 'none';
+    }
+  }
+
+  /* ── password strength meter ── */
+  function checkStrength(val) {
+    const bars  = [1,2,3,4].map(i => document.getElementById('sb'+i));
+    const label = document.getElementById('strengthLabel');
+    const colors = { 1:'#ef4444', 2:'#f97316', 3:'#eab308', 4:'#16a34a' };
+    const labels = { 1:'Weak', 2:'Fair', 3:'Good', 4:'Strong' };
+
+    let score = 0;
+    if (val.length >= 8)          score++;
+    if (/[A-Z]/.test(val))        score++;
+    if (/[0-9]/.test(val))        score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    bars.forEach((b, i) => {
+      b.style.background = i < score ? colors[score] : '#e5e7eb';
+    });
+    label.textContent    = val.length ? labels[score] || '' : '';
+    label.style.color    = colors[score] || '#9ca3af';
+  }
+
+  /* ── basic signup validation ── */
+  function handleSignup() {
+    const fname  = document.getElementById('fname').value.trim();
+    const lname  = document.getElementById('lname').value.trim();
+    const email  = document.getElementById('email').value.trim();
+    const phone  = document.getElementById('phone').value.trim();
+    const pw     = document.getElementById('password').value;
+    const cpw    = document.getElementById('confirm').value;
+    const terms  = document.getElementById('terms').checked;
+
+    if (!fname || !lname) { alert('Please enter your full name.'); return; }
+    if (!email || !/\S+@\S+\.\S+/.test(email)) { alert('Please enter a valid email address.'); return; }
+    if (!phone || phone.length < 10) { alert('Please enter a valid 10-digit phone number.'); return; }
+    if (pw.length < 8) { alert('Password must be at least 8 characters.'); return; }
+    if (pw !== cpw) { alert('Passwords do not match.'); return; }
+    if (!terms) { alert('Please accept the Terms & Conditions to continue.'); return; }
+
+    alert('Account created successfully! Welcome to Legal Terminus.');
+  }
+</script>
+
+</body>
+</html>
