@@ -342,81 +342,64 @@
 
     <!-- illustration card -->
     <div class="illus-card">
-      <!-- person with laptop illustration -->
-      <svg xmlns="http://www.w3.org/2000/svg" width="180" height="145" viewBox="0 0 180 145">
-        <defs>
-          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
-            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-          </radialGradient>
-        </defs>
+      <!-- person + clipboard illustration -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="190" height="150" viewBox="0 0 190 150">
 
-        <!-- glow circle behind person -->
-        <ellipse cx="90" cy="95" rx="55" ry="40" fill="url(#glow)"/>
+        <!-- scatter dots -->
+        <circle cx="12"  cy="20"  r="3"   fill="rgba(255,255,255,0.35)"/>
+        <circle cx="178" cy="30"  r="2.5" fill="rgba(255,255,255,0.30)"/>
+        <circle cx="8"   cy="110" r="2"   fill="rgba(255,255,255,0.25)"/>
+        <circle cx="170" cy="120" r="2"   fill="rgba(255,255,255,0.25)"/>
+        <circle cx="90"  cy="8"   r="2"   fill="rgba(255,255,255,0.20)"/>
 
-        <!-- ── desk / table ── -->
-        <rect x="30" y="108" width="120" height="6" rx="3" fill="rgba(255,255,255,0.25)"/>
-        <rect x="42" y="114" width="8" height="18" rx="2" fill="rgba(255,255,255,0.15)"/>
-        <rect x="130" y="114" width="8" height="18" rx="2" fill="rgba(255,255,255,0.15)"/>
+        <!-- ── clipboard ── -->
+        <!-- board body -->
+        <rect x="18" y="28" width="82" height="106" rx="10" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.50)" stroke-width="1.8"/>
+        <!-- clip -->
+        <rect x="44" y="20" width="30" height="16" rx="8" fill="rgba(255,255,255,0.45)"/>
+        <rect x="50" y="24" width="18" height="8"  rx="4" fill="rgba(255,255,255,0.20)"/>
+        <!-- form row 1 -->
+        <rect x="30" y="52" width="58" height="8" rx="4" fill="rgba(255,255,255,0.35)"/>
+        <!-- form row 2 (highlighted / active field) -->
+        <rect x="30" y="68" width="58" height="8" rx="4" fill="rgba(255,255,255,0.55)" stroke="rgba(255,255,255,0.80)" stroke-width="1"/>
+        <rect x="35" y="71" width="28" height="2" rx="1" fill="rgba(22,101,52,0.30)"/>
+        <!-- form row 3 -->
+        <rect x="30" y="84" width="58" height="8" rx="4" fill="rgba(255,255,255,0.35)"/>
+        <!-- submit button on clipboard -->
+        <rect x="30" y="100" width="38" height="13" rx="6" fill="rgba(255,255,255,0.60)"/>
+        <rect x="37" y="104" width="24" height="5" rx="2.5" fill="rgba(22,101,52,0.35)"/>
 
-        <!-- ── laptop base ── -->
-        <rect x="52" y="90" width="76" height="18" rx="4" fill="rgba(255,255,255,0.30)"/>
-        <!-- laptop hinge -->
-        <rect x="86" y="88" width="8" height="4" rx="1" fill="rgba(255,255,255,0.45)"/>
-        <!-- laptop screen -->
-        <rect x="56" y="44" width="68" height="46" rx="5" fill="rgba(255,255,255,0.20)" stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>
-        <!-- screen glow -->
-        <rect x="60" y="48" width="60" height="38" rx="3" fill="rgba(255,255,255,0.12)"/>
-        <!-- screen content lines -->
-        <rect x="66" y="55" width="36" height="3" rx="1.5" fill="rgba(255,255,255,0.55)"/>
-        <rect x="66" y="62" width="48" height="2" rx="1" fill="rgba(255,255,255,0.35)"/>
-        <rect x="66" y="68" width="40" height="2" rx="1" fill="rgba(255,255,255,0.35)"/>
-        <rect x="66" y="74" width="44" height="2" rx="1" fill="rgba(255,255,255,0.25)"/>
-        <!-- keyboard dots -->
-        <rect x="58" y="95" width="64" height="3" rx="1.5" fill="rgba(255,255,255,0.20)"/>
+        <!-- ── checkmark badge (top-right) ── -->
+        <circle cx="158" cy="32" r="20" fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.50)" stroke-width="1.5"/>
+        <circle cx="158" cy="32" r="14" fill="rgba(255,255,255,0.30)"/>
+        <polyline points="149,32 155,39 168,24" stroke="rgba(255,255,255,0.95)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 
-        <!-- ── person body ── -->
-        <!-- torso -->
-        <path d="M72 80 Q90 75 108 80 L104 108 H76 Z" fill="rgba(255,255,255,0.35)"/>
-        <!-- left arm reaching to keyboard -->
-        <path d="M72 84 Q60 92 58 99" stroke="rgba(255,255,255,0.7)" stroke-width="7" stroke-linecap="round" fill="none"/>
-        <!-- right arm reaching to keyboard -->
-        <path d="M108 84 Q120 92 122 99" stroke="rgba(255,255,255,0.7)" stroke-width="7" stroke-linecap="round" fill="none"/>
-        <!-- left hand -->
-        <circle cx="57" cy="101" r="4" fill="rgba(255,255,255,0.55)"/>
-        <!-- right hand -->
-        <circle cx="123" cy="101" r="4" fill="rgba(255,255,255,0.55)"/>
-        <!-- neck -->
-        <rect x="86" y="62" width="8" height="10" rx="3" fill="rgba(255,255,255,0.55)"/>
+        <!-- ── person (standing right, pointing at clipboard) ── -->
         <!-- head -->
-        <circle cx="90" cy="52" r="14" fill="rgba(255,255,255,0.65)"/>
-        <!-- hair -->
-        <path d="M77 50 Q80 36 90 38 Q100 36 103 50" fill="rgba(255,255,255,0.4)"/>
-        <!-- face — eyes -->
-        <circle cx="85" cy="51" r="1.8" fill="rgba(22,100,60,0.6)"/>
-        <circle cx="95" cy="51" r="1.8" fill="rgba(22,100,60,0.6)"/>
-        <!-- face — smile -->
-        <path d="M85 57 Q90 61 95 57" stroke="rgba(22,100,60,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-
-        <!-- ── floating badge: checkmark ── -->
-        <rect x="6" y="28" width="38" height="24" rx="6" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
-        <polyline points="14,40 20,46 32,34" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <rect x="12" y="56" width="26" height="2" rx="1" fill="rgba(255,255,255,0.25)"/>
-        <rect x="16" y="60" width="18" height="2" rx="1" fill="rgba(255,255,255,0.18)"/>
-
-        <!-- ── floating badge: document ── -->
-        <rect x="136" y="20" width="36" height="44" rx="5" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
-        <rect x="142" y="28" width="24" height="2.5" rx="1.2" fill="rgba(255,255,255,0.6)"/>
-        <rect x="142" y="34" width="20" height="2" rx="1" fill="rgba(255,255,255,0.4)"/>
-        <rect x="142" y="39" width="22" height="2" rx="1" fill="rgba(255,255,255,0.4)"/>
-        <rect x="142" y="44" width="16" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
-        <rect x="142" y="49" width="18" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
-
-        <!-- ── small star sparkles ── -->
-        <circle cx="28" cy="18" r="2.5" fill="rgba(255,255,255,0.5)"/>
-        <circle cx="152" cy="14" r="2" fill="rgba(255,255,255,0.4)"/>
-        <circle cx="164" cy="78" r="1.8" fill="rgba(255,255,255,0.35)"/>
-        <circle cx="16" cy="78" r="1.5" fill="rgba(255,255,255,0.3)"/>
+        <circle cx="148" cy="72" r="14" fill="rgba(255,255,255,0.65)"/>
+        <!-- hair cap -->
+        <path d="M135 70 Q137 57 148 58 Q159 57 161 70" fill="rgba(255,255,255,0.38)"/>
+        <!-- eyes -->
+        <circle cx="143" cy="71" r="2"   fill="rgba(22,101,52,0.55)"/>
+        <circle cx="153" cy="71" r="2"   fill="rgba(22,101,52,0.55)"/>
+        <!-- smile -->
+        <path d="M143 77 Q148 82 153 77" stroke="rgba(22,101,52,0.50)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <!-- neck -->
+        <rect x="144" y="85" width="8" height="8" rx="3" fill="rgba(255,255,255,0.55)"/>
+        <!-- torso -->
+        <rect x="132" y="93" width="32" height="34" rx="8" fill="rgba(255,255,255,0.38)"/>
+        <!-- left arm pointing at clipboard -->
+        <path d="M132 100 Q110 102 100 98" stroke="rgba(255,255,255,0.70)" stroke-width="7" stroke-linecap="round" fill="none"/>
+        <!-- pointing hand -->
+        <circle cx="97" cy="97" r="5" fill="rgba(255,255,255,0.60)"/>
+        <!-- right arm down -->
+        <path d="M164 100 Q170 110 168 122" stroke="rgba(255,255,255,0.60)" stroke-width="7" stroke-linecap="round" fill="none"/>
+        <!-- legs -->
+        <path d="M140 127 Q139 138 138 146" stroke="rgba(255,255,255,0.55)" stroke-width="8" stroke-linecap="round"/>
+        <path d="M156 127 Q157 138 158 146" stroke="rgba(255,255,255,0.55)" stroke-width="8" stroke-linecap="round"/>
+        <!-- shoes -->
+        <ellipse cx="137" cy="147" rx="8" ry="4" fill="rgba(255,255,255,0.35)"/>
+        <ellipse cx="159" cy="147" rx="8" ry="4" fill="rgba(255,255,255,0.35)"/>
       </svg>
 
       <h2>Trusted Legal Services at Your Fingertips</h2>
