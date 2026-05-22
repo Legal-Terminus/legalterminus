@@ -171,6 +171,7 @@
     .field input::placeholder { color: #9ca3af; }
     .field select { color: #9ca3af; cursor: pointer; }
     .field select.filled { color: #111827; }
+    .field select option { color: #111827; }
 
     .field input:focus,
     .field select:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
@@ -417,12 +418,12 @@
       <label for="btype">Business / Service Type</label>
       <select id="btype" onchange="this.classList.add('filled')">
         <option value="" disabled selected>Select Service Type (optional)</option>
-        <option>Private Limited Company</option>
-        <option>LLP Registration</option>
+        <option>Company Registration</option>
+        <option>Trademark Registration</option>
         <option>GST Registration</option>
-        <option>Trademark</option>
-        <option>Startup India</option>
-        <option>Other</option>
+        <option>FSSAI License</option>
+        <option>Return Filing</option>
+        <option>Others</option>
       </select>
     </div>
 
