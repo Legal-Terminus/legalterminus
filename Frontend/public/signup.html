@@ -8,19 +8,19 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #f0f4f0;
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      padding: 16px;
+      padding: 24px 16px;
     }
 
     .card {
       display: flex;
-      width: min(1400px, 100%);
-      height: calc(100vh - 32px);
+      width: min(1060px, 98vw);
+      min-height: 600px;
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 24px 60px rgba(0,0,0,.14);
