@@ -585,7 +585,17 @@
     if (pw !== cpw) { alert('Passwords do not match.'); return; }
     if (!terms) { alert('Please accept the Terms & Conditions to continue.'); return; }
 
-    alert('Account created successfully! Welcome to Legal Terminus.');
+    /* ── save user to localStorage ── */
+    const users = JSON.parse(localStorage.getItem('lt_users') || '[]');
+    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+      alert('An account with this email already exists. Please log in.');
+      return;
+    }
+    users.push({ name: fname, email: email.toLowerCase(), phone, password: pw });
+    localStorage.setItem('lt_users', JSON.stringify(users));
+
+    alert('Account created successfully! You can now log in.');
+    window.location.href = '/login';
   }
 </script>
 

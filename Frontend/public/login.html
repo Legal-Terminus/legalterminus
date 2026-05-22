@@ -166,25 +166,19 @@
 
     .signup-row a:hover { text-decoration: underline; }
 
-    /* ── login error box ── */
-    .login-error {
+    /* ── per-field inline error ── */
+    .field-err-msg {
       display: none;
-      align-items: flex-start;
-      gap: 9px;
-      background: #fef2f2;
-      border: 1.5px solid #fca5a5;
-      border-radius: 9px;
-      padding: 10px 14px;
-      margin-bottom: 16px;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 12.5px;
       color: #dc2626;
-      font-size: 13px;
-      line-height: 1.5;
     }
-    .login-error.show { display: flex; }
-    .login-error svg { flex-shrink: 0; margin-top: 1px; }
+    .field-err-msg.show { display: flex; }
 
     /* ── field error highlight ── */
-    .field input.input-err { border-color: #ef4444 !important; }
+    .field input.input-err { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239,68,68,.10) !important; }
 
     /* ── shake animation ── */
     @keyframes shake {
@@ -316,17 +310,13 @@
     <h1>Welcome Back!</h1>
     <p class="sub">Please enter your details to continue</p>
 
-    <!-- login error -->
-    <div class="login-error" id="loginError">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-      <span id="loginErrorMsg">Incorrect email or password. Please try again.</span>
-    </div>
-
     <div class="field">
       <label for="email">Email Address</label>
-      <input type="email" id="email" placeholder="Enter Your Email" autocomplete="email" oninput="clearError()" />
+      <input type="email" id="email" placeholder="Enter Your Email" autocomplete="email" oninput="clearFieldErr('email')" />
+      <div class="field-err-msg" id="emailErr">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="emailErrTxt"></span>
+      </div>
     </div>
 
     <div class="field">
@@ -346,6 +336,10 @@
             <line x1="1" y1="1" x2="23" y2="23"/>
           </svg>
         </button>
+      </div>
+      <div class="field-err-msg" id="passwordErr">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="passwordErrTxt"></span>
       </div>
     </div>
 
@@ -470,52 +464,64 @@
     }
   }
 
-  /* ── show / clear error ── */
-  /* field = 'email' | 'password' | 'both' (default) */
-  function showError(msg, field = 'both') {
-    const box = document.getElementById('loginError');
-    document.getElementById('loginErrorMsg').textContent = msg;
-    box.classList.add('show');
-
-    const targets = field === 'both' ? ['email','password'] : [field];
-    targets.forEach(id => {
-      const el = document.getElementById(id);
-      el.classList.add('input-err', 'shake');
-      el.addEventListener('animationend', () => el.classList.remove('shake'), { once: true });
-    });
+  /* ── per-field error helpers ── */
+  function showFieldErr(field, msg) {
+    const input = document.getElementById(field);
+    const errBox = document.getElementById(field + 'Err');
+    const errTxt = document.getElementById(field + 'ErrTxt');
+    errTxt.textContent = msg;
+    errBox.classList.add('show');
+    input.classList.add('input-err', 'shake');
+    input.addEventListener('animationend', () => input.classList.remove('shake'), { once: true });
   }
 
-  function clearError() {
-    document.getElementById('loginError').classList.remove('show');
-    ['email','password'].forEach(id =>
-      document.getElementById(id).classList.remove('input-err')
-    );
+  function clearFieldErr(field) {
+    document.getElementById(field).classList.remove('input-err');
+    document.getElementById(field + 'Err').classList.remove('show');
+  }
+
+  function clearAllErrors() {
+    clearFieldErr('email');
+    clearFieldErr('password');
   }
 
   /* ── login handler ── */
   function handleLogin() {
+    clearAllErrors();
     const email = document.getElementById('email').value.trim();
     const pw    = document.getElementById('password').value;
 
-    if (!email && !pw) {
-      showError('Please enter your email address and password.');
-      return;
-    }
-    if (!email) {
-      showError('Please enter your email address.');
-      return;
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      showError('Please enter a valid email address.');
-      return;
+    /* empty field checks */
+    let hasErr = false;
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      showFieldErr('email', email ? 'Please enter a valid email address.' : 'Please enter your email address.');
+      hasErr = true;
     }
     if (!pw) {
-      showError('Please enter your password.');
+      showFieldErr('password', 'Please enter your password.');
+      hasErr = true;
+    }
+    if (hasErr) return;
+
+    /* ── validate against registered users (localStorage) ── */
+    const users = JSON.parse(localStorage.getItem('lt_users') || '[]');
+    const user  = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+    if (!user) {
+      /* email not found → show both errors */
+      showFieldErr('email',    'Invalid User ID. No account found with this email.');
+      showFieldErr('password', 'Password is wrong.');
       return;
     }
 
-    /* ── connect your real API here ── */
-    alert('Login successful! Welcome back.');
+    if (user.password !== pw) {
+      /* email correct, password wrong → only password error */
+      showFieldErr('password', 'Password is wrong. Please try again.');
+      return;
+    }
+
+    /* ── success ── */
+    alert('Login successful! Welcome back, ' + user.name + '.');
   }
 </script>
 
