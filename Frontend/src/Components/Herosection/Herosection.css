@@ -5,7 +5,7 @@
   --muted: #6b7b83;
   --primary-700: #0b5f3a;
   --primary-500: #19a35f;
-  --container-max: 1200px;
+  --container-max: 1500px;
 }
 
 *, *::before, *::after {
@@ -29,18 +29,18 @@ body {
 .hs-hero {
   width: 100%;
   background: #ffffff;
-  padding: 8px 0 20px;
+  padding: 0;
 }
 
 .hs-hero__container {
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 12px 40px;
   display: grid;
   grid-template-columns: 1fr 1.2fr 1fr;
   gap: 20px;
   align-items: center;
-  min-height: 58vh;
+  min-height: 55vh;
 }
 
 /* ─────────────────────────────
@@ -441,11 +441,8 @@ a.hs-scard:hover {
 
 /* Mobile (≤600px) — hide cards too */
 @media (max-width: 600px) {
-  .hs-hero {
-    padding: 16px 0;
-  }
   .hs-hero__container {
-    padding: 0 16px;
+    padding: 16px;
     gap: 0;
   }
   .hs-hero__cards-col {
