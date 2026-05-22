@@ -407,16 +407,9 @@
     <h1>Create an Account</h1>
     <p class="sub">Fill in the details below to get started</p>
 
-    <!-- name row -->
-    <div class="grid-2">
-      <div class="field">
-        <label for="fname">First Name <span class="req">*</span></label>
-        <input type="text" id="fname" placeholder="Enter First Name" required />
-      </div>
-      <div class="field">
-        <label for="lname">Last Name <span class="req">*</span></label>
-        <input type="text" id="lname" placeholder="Enter Last Name" required />
-      </div>
+    <div class="field">
+      <label for="fname">Name <span class="req">*</span></label>
+      <input type="text" id="fname" placeholder="Enter Your Name" required />
     </div>
 
     <div class="field">
@@ -437,19 +430,6 @@
         </select>
         <input type="tel" id="phone" placeholder="Enter Mobile Number" maxlength="10" required />
       </div>
-    </div>
-
-    <div class="field">
-      <label for="btype">Business / Service Type</label>
-      <select id="btype" onchange="this.classList.add('filled')">
-        <option value="" disabled selected>Select Service Type (optional)</option>
-        <option>Company Registration</option>
-        <option>Trademark Registration</option>
-        <option>GST Registration</option>
-        <option>FSSAI License</option>
-        <option>Return Filing</option>
-        <option>Others</option>
-      </select>
     </div>
 
     <div class="field">
@@ -591,14 +571,13 @@
   /* ── basic signup validation ── */
   function handleSignup() {
     const fname  = document.getElementById('fname').value.trim();
-    const lname  = document.getElementById('lname').value.trim();
     const email  = document.getElementById('email').value.trim();
     const phone  = document.getElementById('phone').value.trim();
     const pw     = document.getElementById('password').value;
     const cpw    = document.getElementById('confirm').value;
     const terms  = document.getElementById('terms').checked;
 
-    if (!fname || !lname) { alert('Please enter your full name.'); return; }
+    if (!fname) { alert('Please enter your name.'); return; }
     if (!email || !/\S+@\S+\.\S+/.test(email)) { alert('Please enter a valid email address.'); return; }
     if (!phone || phone.length < 10) { alert('Please enter a valid 10-digit phone number.'); return; }
     const allRulesMet = RULES.every(({ test }) => test(pw));
