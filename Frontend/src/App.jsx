@@ -94,6 +94,7 @@ const NON_SERVICE_PATHS = new Set([
   "/media",
   "/privacy-policy",
   "/terms-conditions",
+  "/policies/terms",
   "/refund-policy",
   "/confidentiality-policy",
 ]);
@@ -228,6 +229,7 @@ function App() {
             <Route path="/media" element={<Media />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-conditions" element={<TermsConditions />} />
+            <Route path="/policies/terms" element={<TermsConditions />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/confidentiality-policy" element={<ConfidentialityPolicy />} />
             <Route path="/pvt-ltd-registration-copy" element={<PrivateLimitedCopy />} />
