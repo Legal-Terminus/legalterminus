@@ -18,10 +18,6 @@ export default function TermsConditions() {
     <div className="policy-page">
       <section className="policy-banner">
         <h1>Terms &amp; Conditions</h1>
-        <p className="tc-subtitle">
-          Please read these terms carefully before using our services at{' '}
-          <strong>www.legalterminus.com</strong>
-        </p>
       </section>
 
       <div className="tc-layout">
