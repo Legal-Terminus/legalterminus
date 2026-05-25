@@ -930,14 +930,16 @@ export default function NavbarAdvanced() {
             </div>
 
             <div className="nav-right">
-              <button
-                className="icon-btn search-btn"
-                aria-label="Search"
-                onClick={() => alert("Implement search overlay")}
-                title="Search"
-              >
-                <FaUser />
-              </button>
+              <div className="user-login-wrap">
+                <a
+                  href="/login"
+                  className="icon-btn user-login-btn"
+                  aria-label="User Login"
+                >
+                  <FaUser />
+                </a>
+                <span className="user-login-tooltip">User Login</span>
+              </div>
 
               <button
                 className={`menu-trigger ${isMenuOpen ? "open" : ""}`}

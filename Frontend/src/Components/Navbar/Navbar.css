@@ -116,6 +116,39 @@
 }
 .icon-btn:hover { background: rgba(34,197,94,0.1); color: #166534; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(34,197,94,0.15); }
 
+/* user login icon + tooltip */
+.user-login-wrap { position: relative; display: inline-flex; }
+.user-login-btn { text-decoration: none; }
+.user-login-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.85);
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.user-login-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1a1a1a;
+}
+.user-login-wrap:hover .user-login-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
 /* menu trigger */
 .menu-trigger { display:flex; flex-direction:column; gap:4px; width:52px; height:52px; padding:14px; border-radius:12px; border:1px solid rgba(34,197,94,0.2); background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.05)); cursor:pointer; transition: all 0.4s ease; position: relative; overflow: hidden; flex-shrink: 0; }
 .menu-bar { width:22px; height:2px; background: linear-gradient(135deg, #22c55e, #16a34a); display:block; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-radius: 2px; }
