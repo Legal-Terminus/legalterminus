@@ -17,7 +17,6 @@ export default function TermsConditions() {
   return (
     <div className="policy-page">
       <section className="policy-banner">
-        <p className="tc-effective">Effective Date: January 1, 2024</p>
         <h1>Terms &amp; Conditions</h1>
         <p className="tc-subtitle">
           Please read these terms carefully before using our services at{' '}
@@ -284,9 +283,6 @@ export default function TermsConditions() {
               out to us:
             </p>
             <p>
-              <strong>Email:</strong>{' '}
-              <a href="mailto:admin@legalterminus.com">admin@legalterminus.com</a>
-              <br />
               <strong>Phone:</strong>{' '}
               <a href="tel:+918280045432">+91 8280 045 432</a>
               <br />
