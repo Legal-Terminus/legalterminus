@@ -9,246 +9,550 @@
 
     body {
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f0f4f0;
+      background: #f4f6f8;
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      padding: 24px 16px;
+      color: #1a1a2e;
     }
 
-    .card {
+    /* ── TOP NAV BAR ── */
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0 40px;
+      height: 62px;
       display: flex;
-      width: min(960px, 96vw);
-      min-height: 560px;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 24px 60px rgba(0,0,0,.14);
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
     }
 
-    /* LEFT: brand panel */
-    .brand-panel {
-      flex: 0 0 38%;
-      background: linear-gradient(145deg, #16a34a 0%, #15803d 55%, #166534 100%);
+    .topbar-logo img { height: 44px; width: auto; }
+
+    .topbar-right {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #16a34a;
+      text-decoration: none;
+      padding: 7px 16px;
+      border: 1.5px solid #16a34a;
+      border-radius: 8px;
+      transition: background .2s;
+    }
+    .topbar-home:hover { background: #f0fdf4; }
+
+    .topbar-logout {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #dc2626;
+      background: none;
+      border: 1.5px solid #fca5a5;
+      border-radius: 8px;
+      padding: 7px 16px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .topbar-logout:hover { background: #fff1f1; }
+
+    /* ── PAGE LAYOUT ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 36px 20px 60px;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 28px;
+    }
+
+    /* ── PROFILE HEADER CARD ── */
+    .profile-header {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+
+    .avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: #fff;
+      font-size: 28px;
+      font-weight: 700;
+      display: flex;
       align-items: center;
       justify-content: center;
-      padding: 52px 40px;
-      position: relative;
-      overflow: hidden;
-      color: #fff;
-    }
-
-    .brand-panel::before {
-      content: '';
-      position: absolute;
-      width: 340px; height: 340px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.06);
-      top: -110px; right: -110px;
-    }
-
-    .brand-panel::after {
-      content: '';
-      position: absolute;
-      width: 220px; height: 220px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.06);
-      bottom: -70px; left: -60px;
-    }
-
-    .logo-area {
-      z-index: 1;
-      background: #ffffff;
-      border-radius: 14px;
-      padding: 10px 22px;
-      box-shadow: 0 4px 18px rgba(0,0,0,.15);
-      margin-bottom: 40px;
-    }
-
-    .logo-gif { height: 58px; width: auto; display: block; }
-
-    .avatar-circle {
-      width: 90px; height: 90px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.18);
-      border: 3px solid rgba(255,255,255,.4);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 38px; font-weight: 700; color: #fff;
-      margin-bottom: 16px; z-index: 1;
+      flex-shrink: 0;
       text-transform: uppercase;
     }
 
-    .brand-name {
-      font-size: 20px; font-weight: 700; letter-spacing: -.2px;
-      z-index: 1; text-align: center; margin-bottom: 6px;
+    .profile-header-info h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 4px;
     }
 
-    .brand-email {
-      font-size: 13px; color: rgba(255,255,255,.75);
-      z-index: 1; text-align: center; word-break: break-all;
+    .profile-header-info p {
+      font-size: 13px;
+      color: #6b7280;
     }
 
-    .brand-tagline {
-      font-size: 12px; color: rgba(255,255,255,.55);
-      z-index: 1; text-align: center; margin-top: 18px; line-height: 1.5;
+    .member-badge {
+      margin-left: auto;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #16a34a;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 20px;
     }
 
-    /* RIGHT: details panel */
-    .details-panel {
-      flex: 1;
+    /* ── SECTION CARD ── */
+    .section-card {
       background: #fff;
+      border-radius: 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 28px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .section-head h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .section-icon svg { width: 16px; height: 16px; fill: #16a34a; }
+
+    .section-body {
+      padding: 24px 28px;
+    }
+
+    /* ── FIELD GRID ── */
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 40px;
+    }
+
+    @media (max-width: 600px) {
+      .field-grid { grid-template-columns: 1fr; }
+    }
+
+    .field-item .field-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 5px;
+    }
+
+    .field-item .field-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .field-item .field-sub {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 3px;
+    }
+
+    /* ── PASSWORD SECTION ── */
+    .pw-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .pw-info p { font-size: 13px; color: #6b7280; margin-top: 4px; }
+
+    .pw-info strong { font-size: 15px; font-weight: 600; color: #111827; }
+
+    .btn-reset {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 20px;
+      border-radius: 9px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity .2s;
+    }
+    .btn-reset:hover { opacity: .88; }
+
+    /* ── BILLING ── */
+    .billing-empty, .purchase-empty {
       display: flex;
       flex-direction: column;
+      align-items: center;
       justify-content: center;
-      padding: 52px 48px;
+      padding: 32px 20px;
+      text-align: center;
+      gap: 10px;
     }
 
-    .details-panel h1 {
-      font-size: 26px; font-weight: 700; color: #0f1724;
-      margin-bottom: 6px; letter-spacing: -.3px;
-    }
-
-    .details-panel .sub {
-      font-size: 14px; color: #6b7280; margin-bottom: 36px;
-    }
-
-    .detail-row {
+    .empty-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
       display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      padding: 16px 0;
-      border-bottom: 1px solid #f1f5f1;
-    }
-    .detail-row:last-of-type { border-bottom: none; }
-
-    .detail-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: #f0fdf4; border: 1px solid #bbf7d0;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
     }
 
-    .detail-icon svg { width: 18px; height: 18px; fill: #16a34a; }
+    .empty-icon svg { width: 24px; height: 24px; fill: #16a34a; }
 
-    .detail-label {
-      font-size: 11px; font-weight: 600; color: #9ca3af;
-      text-transform: uppercase; letter-spacing: .6px; margin-bottom: 3px;
+    .empty-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
     }
 
-    .detail-value {
-      font-size: 15px; font-weight: 600; color: #111827;
+    .empty-sub {
+      font-size: 12px;
+      color: #9ca3af;
+      max-width: 280px;
     }
 
-    .actions {
-      display: flex; gap: 12px; margin-top: 36px; flex-wrap: wrap;
+    .btn-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #16a34a;
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 8px 18px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .2s;
+      margin-top: 6px;
+    }
+    .btn-add:hover { background: #dcfce7; }
+
+    /* ── PURCHASE TABLE ── */
+    .purchase-placeholder {
+      border: 1.5px dashed #d1fae5;
+      border-radius: 10px;
+      padding: 22px;
+      background: #f9fffe;
     }
 
-    .btn-home {
-      flex: 1; min-width: 120px; height: 46px;
-      background: linear-gradient(135deg, #16a34a, #15803d);
-      color: #fff; border: none; border-radius: 10px;
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      display: inline-flex; align-items: center; justify-content: center;
-      gap: 8px; text-decoration: none;
-      transition: opacity .2s, transform .15s;
+    .purchase-placeholder p {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.6;
     }
-    .btn-home:hover { opacity: .9; transform: translateY(-1px); }
 
-    .btn-logout {
-      flex: 1; min-width: 120px; height: 46px;
-      background: #fff; color: #dc2626;
-      border: 1.5px solid #fca5a5; border-radius: 10px;
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      display: inline-flex; align-items: center; justify-content: center;
-      gap: 8px;
-      transition: background .2s, transform .15s;
+    .purchase-placeholder ul {
+      margin-top: 10px;
+      padding-left: 18px;
     }
-    .btn-logout:hover { background: #fff1f1; transform: translateY(-1px); }
+
+    .purchase-placeholder li {
+      font-size: 13px;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    .purchase-placeholder li::marker { color: #16a34a; }
+
+    /* ── DANGER ZONE ── */
+    .danger-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .danger-info strong { font-size: 14px; font-weight: 600; color: #111827; display: block; margin-bottom: 3px; }
+    .danger-info p { font-size: 12px; color: #9ca3af; }
+
+    .btn-danger {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #fff;
+      color: #dc2626;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 20px;
+      border-radius: 9px;
+      border: 1.5px solid #fca5a5;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-danger:hover { background: #fff1f1; }
 
     @media (max-width: 640px) {
-      .card { flex-direction: column; }
-      .brand-panel { flex: none; padding: 36px 28px; min-height: 200px; }
-      .details-panel { padding: 36px 28px; }
+      .topbar { padding: 0 16px; }
+      .profile-header { flex-direction: column; align-items: flex-start; }
+      .member-badge { margin-left: 0; }
+      .section-head, .section-body { padding: 16px 18px; }
     }
   </style>
 </head>
 <body>
 
-<div class="card">
-  <!-- LEFT brand panel -->
-  <div class="brand-panel">
-    <div class="logo-area">
-      <img
-        src="/logo-animated.gif"
-        onerror="this.src='https://legalterminus.com/wp-content/uploads/2023/09/Legal-Terminus-LOGO-GIF_300-x-150.gif'"
-        alt="Legal Terminus"
-        class="logo-gif"
-      />
-    </div>
-    <div class="avatar-circle" id="avatarInitial">?</div>
-    <div class="brand-name" id="panelName">—</div>
-    <div class="brand-email" id="panelEmail">—</div>
-    <div class="brand-tagline">Welcome back!<br>Manage your Legal Terminus account below.</div>
-  </div>
-
-  <!-- RIGHT details panel -->
-  <div class="details-panel">
-    <h1>My Account</h1>
-    <p class="sub">Your registered account details</p>
-
-    <div class="detail-row">
-      <div class="detail-icon">
-        <!-- person icon -->
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4z"/>
-        </svg>
-      </div>
-      <div>
-        <div class="detail-label">Full Name</div>
-        <div class="detail-value" id="detailName">—</div>
-      </div>
-    </div>
-
-    <div class="detail-row">
-      <div class="detail-icon">
-        <!-- email icon -->
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
-        </svg>
-      </div>
-      <div>
-        <div class="detail-label">Email Address</div>
-        <div class="detail-value" id="detailEmail">—</div>
-      </div>
-    </div>
-
-    <div class="detail-row">
-      <div class="detail-icon">
-        <!-- phone icon -->
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/>
-        </svg>
-      </div>
-      <div>
-        <div class="detail-label">Phone Number</div>
-        <div class="detail-value" id="detailPhone">—</div>
-      </div>
-    </div>
-
-    <div class="actions">
-      <a href="/" class="btn-home">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        Go to Website
-      </a>
-      <button class="btn-logout" onclick="handleLogout()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
-        Logout
-      </button>
-    </div>
+<!-- TOP NAV -->
+<div class="topbar">
+  <a class="topbar-logo" href="/">
+    <img
+      src="/logo-animated.gif"
+      onerror="this.src='https://legalterminus.com/wp-content/uploads/2023/09/Legal-Terminus-LOGO-GIF_300-x-150.gif'"
+      alt="Legal Terminus"
+    />
+  </a>
+  <div class="topbar-right">
+    <a href="/" class="topbar-home">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Go to Website
+    </a>
+    <button class="topbar-logout" onclick="handleLogout()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+      Logout
+    </button>
   </div>
 </div>
+
+<!-- PAGE CONTENT -->
+<div class="page">
+  <div class="page-title">My Profile</div>
+
+  <!-- PROFILE HEADER -->
+  <div class="profile-header">
+    <div class="avatar" id="avatarInitial">?</div>
+    <div class="profile-header-info">
+      <h2 id="headerName">—</h2>
+      <p id="headerEmail">—</p>
+    </div>
+    <div class="member-badge">Active Member</div>
+  </div>
+
+  <!-- PROFILE DETAILS -->
+  <div class="section-card">
+    <div class="section-head">
+      <h3>
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4z"/></svg>
+        </div>
+        Profile Details
+      </h3>
+    </div>
+    <div class="section-body">
+      <div class="field-grid">
+        <div class="field-item">
+          <div class="field-label">Full Name</div>
+          <div class="field-value" id="detailName">—</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Country</div>
+          <div class="field-value">India</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">State</div>
+          <div class="field-value" id="detailState">—</div>
+          <div class="field-sub">Not provided at signup</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Language</div>
+          <div class="field-value">English</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMAIL -->
+  <div class="section-card">
+    <div class="section-head">
+      <h3>
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        </div>
+        Email Address
+      </h3>
+    </div>
+    <div class="section-body">
+      <div class="field-value" id="detailEmail">—</div>
+      <div class="field-sub" style="margin-top:6px">You can use this email to sign in and reset your password.</div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="section-card">
+    <div class="section-head">
+      <h3>
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+        </div>
+        Mobile Number
+      </h3>
+    </div>
+    <div class="section-body">
+      <div class="field-value" id="detailPhone">—</div>
+      <div class="field-sub" style="margin-top:6px">Used for account verification and support contact.</div>
+    </div>
+  </div>
+
+  <!-- PASSWORD -->
+  <div class="section-card">
+    <div class="section-head">
+      <h3>
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm3.1-9H8.9V6a3.1 3.1 0 0 1 6.2 0v2z"/></svg>
+        </div>
+        Password
+      </h3>
+    </div>
+    <div class="section-body">
+      <div class="pw-row">
+        <div class="pw-info">
+          <strong>••••••••••••</strong>
+          <p>Ensure your account's security by keeping your password up to date.</p>
+        </div>
+        <a href="/forgot-password" class="btn-reset">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1C8.676 1 6 3.676 6 7v1H4v15h16V8h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>
+          Reset Password
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- BILLING -->
+  <div class="section-card">
+    <div class="section-head">
+      <h3>
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+        </div>
+        Billing Information
+      </h3>
+    </div>
+    <div class="section-body">
+      <div class="billing-empty">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+        </div>
+        <div class="empty-title">No billing details added</div>
+        <div class="empty-sub">Add your GST number, billing address, and company name for invoices on your orders.</div>
+        <a href="/contact/us" class="btn-add">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13H13v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Contact Us to Update
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PURCHASES -->
+  <div class="section-card">
+    <div class="section-head">
+      <h3>
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12z"/></svg>
+        </div>
+        My Purchases
+      </h3>
+    </div>
+    <div class="section-body">
+      <div class="purchase-empty">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12z"/></svg>
+        </div>
+        <div class="empty-title">No purchases yet</div>
+        <div class="empty-sub">When you subscribe to a Legal Terminus service, your orders will appear here.</div>
+        <a href="/" class="btn-add">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+          Explore Services
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div class="section-card">
+    <div class="section-head">
+      <h3>
+        <div class="section-icon" style="background:#fff5f5;border-color:#fecaca;">
+          <svg viewBox="0 0 24 24" style="fill:#dc2626;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        </div>
+        <span style="color:#dc2626;">Account Actions</span>
+      </h3>
+    </div>
+    <div class="section-body">
+      <div class="danger-row">
+        <div class="danger-info">
+          <strong>Sign Out</strong>
+          <p>Sign out of your Legal Terminus account on this device.</p>
+        </div>
+        <button class="btn-danger" onclick="handleLogout()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .page -->
 
 <script>
   const raw = localStorage.getItem('lt_logged_in');
@@ -257,17 +561,19 @@
   } else {
     const user = JSON.parse(raw);
 
-    // Avatar initial
     document.getElementById('avatarInitial').textContent = (user.name || '?').charAt(0).toUpperCase();
+    document.getElementById('headerName').textContent    = user.name  || '—';
+    document.getElementById('headerEmail').textContent   = user.email || '—';
+    document.getElementById('detailName').textContent    = user.name  || '—';
+    document.getElementById('detailEmail').textContent   = user.email || '—';
+    document.getElementById('detailPhone').textContent   = user.phone ? ('+91 ' + user.phone) : '—';
+    document.getElementById('detailState').textContent   = user.state  || '—';
 
-    // Panel
-    document.getElementById('panelName').textContent  = user.name  || '—';
-    document.getElementById('panelEmail').textContent = user.email || '—';
-
-    // Detail rows
-    document.getElementById('detailName').textContent  = user.name  || '—';
-    document.getElementById('detailEmail').textContent = user.email || '—';
-    document.getElementById('detailPhone').textContent = user.phone ? ('+91 ' + user.phone) : '—';
+    // hide the "not provided" sub if state is filled
+    if (user.state) {
+      document.querySelector('#detailState + .field-sub') &&
+        (document.querySelector('#detailState').nextElementSibling.style.display = 'none');
+    }
   }
 
   function handleLogout() {
