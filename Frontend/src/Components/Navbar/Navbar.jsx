@@ -286,6 +286,7 @@ const navData = [
 
 export default function NavbarAdvanced() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(() => !!localStorage.getItem('lt_logged_in'));
   const [scrolled, setScrolled] = useState(false);
   const [megaOpenFor, setMegaOpenFor] = useState(null);
   const [activeMegaTab, setActiveMegaTab] = useState(null);
@@ -924,13 +925,13 @@ export default function NavbarAdvanced() {
             <div className="nav-right">
               <div className="user-login-wrap">
                 <a
-                  href="/login"
+                  href={loggedIn ? '/account' : '/login'}
                   className="icon-btn user-login-btn"
-                  aria-label="User Login"
+                  aria-label={loggedIn ? 'My Account' : 'User Login'}
                 >
                   <FaUser />
                 </a>
-                <span className="user-login-tooltip">User Login</span>
+                <span className="user-login-tooltip">{loggedIn ? 'My Account' : 'User Login'}</span>
               </div>
 
               <button

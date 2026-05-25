@@ -524,6 +524,7 @@
     }
 
     /* ── success ── */
+    localStorage.setItem('lt_logged_in', JSON.stringify({ name: user.name, email: user.email, phone: user.phone || '' }));
     window.location.href = '/';
   }
 </script>
