@@ -66,6 +66,18 @@ p[class*="tagline"] {
   text-align: center;
 }
 
+/* ===== FOOTER OVERRIDE — prevent justify from bleeding into global footer ===== */
+footer p,
+footer li {
+  text-align: inherit;
+}
+.footer-center .footer-desc {
+  text-align: center;
+}
+.footer-bottom-content .copyright {
+  text-align: center;
+}
+
 /* ===== SECTION DIVIDER ===== */
 .section-divider {
   height: 1px;
