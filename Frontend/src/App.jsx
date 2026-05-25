@@ -16,7 +16,6 @@ const Blog = lazy(() => import("./Pages/Blog/Blog"));
 const BlogDetails = lazy(() => import("./Pages/BlogDetails/BlogDetails"));
 const OPC = lazy(() => import("./Pages/OPC/OPC"));
 const Publicltd = lazy(() => import("./Pages/Publicltd/Publicltd"));
-const PrivateLimited = lazy(() => import("./Pages/PrivateLimited/PrivateLimited"));
 const IncorptionPage = lazy(() => import("./Pages/IncorptionPage/IncorptionPage"));
 const Trust = lazy(() => import("./Pages/Trust/Trust"));
 const Society = lazy(() => import("./Pages/Society/Society"));
@@ -80,7 +79,6 @@ const PrivacyPolicy = lazy(() => import("./Pages/Policies/PrivacyPolicy"));
 const TermsConditions = lazy(() => import("./Pages/Policies/TermsConditions"));
 const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
 const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
-const PrivateLimitedCopy = lazy(() => import("./Pages/PrivateLimitedCopy/PrivateLimitedCopy"));
 const PrivateLimitedCopy2 = lazy(() => import("./Pages/PrivateLimitedCopy2/PrivateLimitedCopy2"));
 const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
 
@@ -164,7 +162,6 @@ function App() {
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/one-person-company" element={<OPC />} />
             <Route path="/public-limited-company-registration-in-india" element={<Publicltd />} />
-            <Route path="/private-limited-company-registration-in-india" element={<PrivateLimited />} />
             <Route path="/incorption-registration-in-india" element={<IncorptionPage />} />
             <Route path="/trust" element={<Trust />} />
             <Route path="/society" element={<Society />} />
@@ -230,8 +227,7 @@ function App() {
             <Route path="/policies/terms" element={<TermsConditions />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/confidentiality-policy" element={<ConfidentialityPolicy />} />
-            <Route path="/pvt-ltd-registration-copy" element={<PrivateLimitedCopy />} />
-            <Route path="/pvt-ltd-registration-copy-2" element={<PrivateLimitedCopy2 />} />
+            <Route path="/private-limited-company-registration-in-india" element={<PrivateLimitedCopy2 />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>
