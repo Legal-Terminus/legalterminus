@@ -92,6 +92,12 @@ const NON_SERVICE_PATHS = new Set([
   "/media",
   "/privacy-policy",
   "/terms-conditions",
+  "/refund-policy",
+  "/confidentiality-policy",
+  "/policies/privacy",
+  "/policies/terms",
+  "/policies/refund",
+  "/policies/confidentiality",
 ]);
 
 const isBlogPost = (pathname) => /^\/blog\/.+/.test(pathname);
