@@ -226,7 +226,9 @@ function App() {
             <Route path="/terms-conditions" element={<TermsConditions />} />
             <Route path="/policies/terms" element={<TermsConditions />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/policies/refund" element={<RefundPolicy />} />
             <Route path="/confidentiality-policy" element={<ConfidentialityPolicy />} />
+            <Route path="/policies/confidentiality" element={<ConfidentialityPolicy />} />
             <Route path="/private-limited-company-registration-in-india" element={<PrivateLimitedCopy2 />} />
           </Routes>
         </Suspense>

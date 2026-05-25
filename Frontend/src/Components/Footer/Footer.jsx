@@ -38,13 +38,13 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/refund-policy">
+                <Link to="/policies/refund">
                   <span className="link-icon">→</span>
                   <span className="link-text">Refund Policy</span>
                 </Link>
               </li>
               <li>
-                <Link to="/confidentiality-policy">
+                <Link to="/policies/confidentiality">
                   <span className="link-icon">→</span>
                   <span className="link-text">Confidentiality Policy</span>
                 </Link>
