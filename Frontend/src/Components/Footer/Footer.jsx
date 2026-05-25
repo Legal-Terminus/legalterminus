@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   FaFacebookF,
   FaInstagram,
@@ -25,28 +26,28 @@ const Footer = () => {
             <h3 className="footer-title">Quick Links</h3>
             <ul className="footer-links">
               <li>
-                <a href="#about">
+                <Link to="/policies/terms">
                   <span className="link-icon">→</span>
                   <span className="link-text">Terms & Conditions</span>
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#services">
+                <Link to="/policies/privacy">
                   <span className="link-icon">→</span>
                   <span className="link-text">Privacy Policy</span>
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#blog">
+                <Link to="/refund-policy">
                   <span className="link-icon">→</span>
                   <span className="link-text">Refund Policy</span>
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#contact">
+                <Link to="/confidentiality-policy">
                   <span className="link-icon">→</span>
                   <span className="link-text">Confidentiality Policy</span>
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
