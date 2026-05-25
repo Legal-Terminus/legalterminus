@@ -227,6 +227,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/media" element={<Media />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/policies/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms-conditions" element={<TermsConditions />} />
             <Route path="/policies/terms" element={<TermsConditions />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
