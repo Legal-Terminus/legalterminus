@@ -268,19 +268,18 @@
 
 /* inner white "card" that holds the content — centered and constrained */
 .footer-bottom-content {
-  /* make inner area a white rounded card to read like an "advanced label" */
   max-width: 1200px;
   margin: 0 auto;
-  
-  color: white;          /* use green-dark for inner text to keep brand tone */
+  color: white;
   padding: 12px 20px;
   border-radius: 12px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   gap: 16px;
   box-shadow: 0 8px 28px rgba(14,28,18,0.06);
   flex-wrap: wrap;
+  text-align: center;
 }
 
 /* ensure all inner text inherits the white-card colors (dark green text) */
