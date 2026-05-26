@@ -1,9 +1,7 @@
-/* ===============================
-   SECTION
-================================ */
+/* ─── Section ─────────────────────────────────────────── */
 .hlb-section {
-  padding: 100px 0;
-  background: #ffffff;
+  padding: 80px 0 90px;
+  background: #f8faff;
 }
 
 .hlb-container {
@@ -12,163 +10,228 @@
   padding: 0 20px;
 }
 
-/* ===============================
-   HEADER
-================================ */
+/* ─── Header ──────────────────────────────────────────── */
 .hlb-header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 50px;
 }
 
 .hlb-subtitle {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  color: #0f766e;
-  margin-bottom: 8px;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: #0b3d91;
+  background: rgba(11, 61, 145, 0.08);
+  padding: 5px 14px;
+  border-radius: 100px;
+  margin-bottom: 14px;
+  text-transform: uppercase;
 }
 
 .hlb-title {
-  font-size: 40px;
+  font-size: 2.1rem;
   font-weight: 700;
-  color: #0f172a;
-  line-height: 1.2;
+  color: #0b1220;
+  line-height: 1.25;
+  margin: 0 0 14px;
 }
 
 .hlb-subdesc {
-  max-width: 700px;
-  margin: 14px auto 0;
-  font-size: 16px;
-  color: #475569;
-  line-height: 1.6;
+  max-width: 620px;
+  margin: 0 auto;
+  font-size: 1rem;
+  color: #515c66;
+  line-height: 1.7;
 }
 
-/* ===============================
-   GRID
-================================ */
+/* ─── Grid ────────────────────────────────────────────── */
 .hlb-grid {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 30px;
-  align-items: stretch;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
 }
 
-/* ===============================
-   FEATURED BLOG
-================================ */
-.hlb-featured {
-  border: 1px solid #e5e7eb;
-  border-radius: 18px;
-  padding: 30px;
-  background: linear-gradient(180deg, #ffffff, #f9fafb);
-}
-
-.hlb-meta {
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 12px;
-}
-
-.hlb-meta span:first-child {
-  font-weight: 600;
-  color: #0f766e;
-}
-
-.hlb-featured-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 12px;
-}
-
-.hlb-featured-desc {
-  font-size: 15px;
-  color: #475569;
-  line-height: 1.7;
-  margin-bottom: 20px;
-}
-
-.hlb-image-wrapper img {
-  width: 100%;
-  border-radius: 14px;
-  object-fit: cover;
-}
-
-/* ===============================
-   RIGHT BLOG LIST (SCROLL)
-================================ */
-.hlb-list {
+/* ─── Card link wrapper ───────────────────────────────── */
+.hlb-card-link {
+  text-decoration: none;
+  color: inherit;
   display: flex;
   flex-direction: column;
-  gap: 18px;
 }
 
-.hlb-scroll {
-  max-height: 520px;
-  overflow-y: auto;
-  padding-right: 6px;
-}
-
-/* Scrollbar styling */
-.hlb-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-
-.hlb-scroll::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
-}
-
-/* Blog card */
+/* ─── Card ────────────────────────────────────────────── */
 .hlb-card {
-  border: 1px solid #e5e7eb;
+  background: #fff;
   border-radius: 14px;
-  padding: 22px;
-  background: #ffffff;
-  transition: all 0.3s ease;
-  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
 }
 
-.hlb-card:hover {
-  transform: translateY(-4px);
-  border-color: #0f766e;
-  box-shadow: 0 15px 35px rgba(15, 118, 110, 0.12);
+.hlb-card-link:hover .hlb-card {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(11, 61, 145, 0.13);
+}
+
+/* ─── Card media ──────────────────────────────────────── */
+.hlb-card-media {
+  position: relative;
+  width: 100%;
+  height: 210px;
+  overflow: hidden;
+  background: #e8edf5;
+  flex-shrink: 0;
+}
+
+.hlb-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.hlb-card-link:hover .hlb-card-image {
+  transform: scale(1.05);
+}
+
+.hlb-card-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(11, 61, 145, 0.85);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* ─── Card body ───────────────────────────────────────── */
+.hlb-card-body {
+  padding: 1.4rem 1.5rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.hlb-card-date {
+  font-size: 0.8rem;
+  color: #999;
+  margin-bottom: 0.6rem;
+  display: block;
 }
 
 .hlb-card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #0f172a;
-  line-height: 1.4;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0b1220;
+  line-height: 1.45;
+  margin: 0 0 0.7rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* ===============================
-   RESPONSIVE
-================================ */
-@media (max-width: 992px) {
+.hlb-card-excerpt {
+  font-size: 0.88rem;
+  color: #515c66;
+  line-height: 1.6;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.hlb-read-more {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0b3d91;
+  letter-spacing: 0.2px;
+  transition: letter-spacing 0.2s;
+}
+
+.hlb-card-link:hover .hlb-read-more {
+  letter-spacing: 0.6px;
+}
+
+/* ─── View All ────────────────────────────────────────── */
+.hlb-view-all-wrap {
+  text-align: center;
+  margin-top: 2.5rem;
+}
+
+.hlb-view-all-btn {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  background: #0b3d91;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.22s, transform 0.22s;
+}
+
+.hlb-view-all-btn:hover {
+  background: #0a3278;
+  transform: translateY(-2px);
+}
+
+/* ─── Responsive ──────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .hlb-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .hlb-grid .hlb-card-link:last-child {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .hlb-section {
+    padding: 60px 0 70px;
+  }
+
   .hlb-grid {
     grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
 
-  .hlb-scroll {
-    max-height: unset;
+  .hlb-grid .hlb-card-link:last-child {
+    display: flex;
   }
 
   .hlb-title {
-    font-size: 34px;
+    font-size: 1.7rem;
+  }
+
+  .hlb-card-media {
+    height: 190px;
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 480px) {
   .hlb-title {
-    font-size: 28px;
+    font-size: 1.45rem;
   }
 
-  .hlb-featured-title {
-    font-size: 20px;
+  .hlb-card-body {
+    padding: 1.1rem 1.2rem 1.3rem;
   }
 
-  .hlb-card-title {
-    font-size: 16px;
+  .hlb-card-media {
+    height: 170px;
   }
 }
