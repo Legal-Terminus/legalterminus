@@ -165,7 +165,7 @@ const Footer = () => {
           </div>
           <div className="footer-bottom-content">
             <div className="copyright">
-              © 2023 Legal Terminus. All Rights Reserved. | Powered by Legal Terminus Developed by <a href='https://infynialabs.com/' className='pr'>AI Agents from InfyniaLabs</a>
+              © 2023-2026 Legal Terminus Private Limited. All Rights Reserved. | Powered by Legal Terminus Developed by <a href='https://infynialabs.com/' className='pr'>AI Agents from InfyniaLabs</a>
             </div>
           </div>
         </div>

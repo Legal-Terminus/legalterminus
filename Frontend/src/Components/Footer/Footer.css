@@ -236,7 +236,6 @@
   font-size: clamp(0.875rem,1.5vw,0.9375rem);
   font-weight:500;
   transition: color .24s ease;
-  white-space: nowrap;
 }
 .contact-info a:hover { color: var(--green-primary); }
 
