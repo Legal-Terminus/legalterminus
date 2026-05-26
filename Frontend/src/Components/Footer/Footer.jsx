@@ -140,7 +140,7 @@ const Footer = () => {
                   <span className="ci"><FaPhone style={{ transform: "rotate(90deg)" }}/></span>
                   <div className="contact-info">
                     <span className="contact-label">Call Us</span>
-                    <a href="tel:8280093456">8280093456</a> / <a href="tel:8280045432">8280045432</a>
+                    <span style={{whiteSpace:'nowrap'}}><a href="tel:8280093456">8280093456</a>/<a href="tel:8280045432">8280045432</a></span>
                   </div>
                 </div>
               </li>
