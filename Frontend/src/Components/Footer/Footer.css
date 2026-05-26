@@ -236,6 +236,7 @@
   font-size: clamp(0.875rem,1.5vw,0.9375rem);
   font-weight:500;
   transition: color .24s ease;
+  white-space: nowrap;
 }
 .contact-info a:hover { color: var(--green-primary); }
 
@@ -271,7 +272,7 @@
   font-size: 0.78rem;
   line-height: 1.65;
   margin: 0;
-  text-align: center;
+  text-align: justify;
 }
 
 .footer-disclaimer strong {
