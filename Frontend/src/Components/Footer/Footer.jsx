@@ -158,12 +158,15 @@ const Footer = () => {
         </div>
 
         <div className="footer-bottom">
-
+          <div className="footer-disclaimer">
+            <p>
+              <strong>Disclaimer:</strong> This website is privately operated consultancy service provider and is not affiliated with any government authority. We provide assistance in documentation, preparation and filing services only. Government approvals / registrations are issued by the respective government departments. Fees charged on this website are professional consultancy fees only and do not include government fees. By using this website, you acknowledge that we are a private service provider.
+            </p>
+          </div>
           <div className="footer-bottom-content">
             <div className="copyright">
-              © 2023 Legal Terminus. All Rights Reserved. | Powered by Legal Terminus Developed by <a href='https://infynialabs.com/' className='pr'>AI Agents from InfyniaLabs</a>
+              © 2023 – 2026 Legal Terminus Private Limited. All rights reserved.
             </div>
-
           </div>
         </div>
       </div>

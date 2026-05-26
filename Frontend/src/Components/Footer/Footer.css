@@ -258,6 +258,27 @@
   box-shadow: none;
 }
 
+/* disclaimer bar */
+.footer-disclaimer {
+  max-width: 1100px;
+  margin: 0 auto 18px;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.footer-disclaimer p {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.78rem;
+  line-height: 1.65;
+  margin: 0;
+  text-align: center;
+}
+
+.footer-disclaimer strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
 /* divider inside should be subtle over green */
 .footer-divider {
   height: 1px;
