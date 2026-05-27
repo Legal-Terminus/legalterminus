@@ -45,7 +45,7 @@ const faqs = [
   {
     question: "Is it mandatory to hold an Annual General Meeting (AGM) in India?",
     answer:
-      "Yes, AGMs must be held, but can be conducted virtually (via VC) as per MCA Circulars—even if all shareholders are outside India.",
+      "Yes, AGMs must be held, but can be conducted virtually (via VC) as per MCA Circulars — even if all shareholders are outside India.",
   },
 ];
 
@@ -57,63 +57,38 @@ const IncorporationFAQ = () => {
   };
 
   return (
-    <section className="Incorporation-faq-section">
-      <div className="Incorporation-faq-container">
-        
-        {/* Left side – static text */}
-        <div className="Incorporation-faq-left">
-          <h2 className="Incorporation-faq-title">
-            Incorporation Of Wholly Owned Subsidiary in India FAQ's
-          </h2>
+    <section className="incfaq-section">
+      <div className="incfaq-container">
 
-          <p className="Incorporation-faq-intro">
-            Starting a Wholly Owned Subsidiary in India is an important step for
-            any business owner. With the right support, the process can be simple
-            and stress-free.
-          </p>
-
-          <p className="s8faq-intro">
-            Below are answers to the most common questions related to Wholly Owned
-            Subsidiary in India.
+        <div className="incfaq-header">
+          <h2 className="incfaq-title">Incorporation Of Wholly Owned Subsidiary — FAQs</h2>
+          <p className="incfaq-intro">
+            Got questions? We've got answers — straight, no-BS, legally accurate.
           </p>
         </div>
 
-        {/* Right side – scrollable Q&A list */}
-        <div className="Incorporation-faq-right">
-          <div className="Incorporation-faq-list">
-            {faqs.map((item, index) => {
-              const isActive = index === activeIndex;
-              return (
-                <div
-                  key={index}
-                  className={`Incorporation-faq-item ${
-                    isActive ? "active" : ""
-                  }`}
+        <div className="incfaq-list">
+          {faqs.map((item, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <div
+                key={index}
+                className={`incfaq-item ${isActive ? "active" : ""}`}
+              >
+                <button
+                  type="button"
+                  className="incfaq-question"
+                  onClick={() => toggleFaq(index)}
                 >
-                  <button
-                    type="button"
-                    className="Incorporation-faq-question"
-                    onClick={() => toggleFaq(index)}
-                  >
-                    <span>{item.question}</span>
-                    <span
-                      className={`Incorporation-faq-icon ${
-                        isActive ? "open" : ""
-                      }`}
-                    >
-                      ▾
-                    </span>
-                  </button>
-
-                  {isActive && (
-                    <div className="Incorporation-faq-answer open">
-                      <p>{item.answer}</p>
-                    </div>
-                  )}
+                  <span>{item.question}</span>
+                  <span className={`incfaq-icon ${isActive ? "open" : ""}`}>▾</span>
+                </button>
+                <div className={`incfaq-answer ${isActive ? "open" : ""}`}>
+                  <div className="incfaq-answer-content">{item.answer}</div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
 
       </div>
