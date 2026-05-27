@@ -3,7 +3,7 @@ import "./PublicltdTab.css";
 
 const tabs = [
   { label: "Why Choose Public ltd", id: "company" },
-  { label: "Features", id: "features" },
+  { label: "Types", id: "features" },
   { label: "Benefits", id: "benefits" },
   { label: "Documents", id: "documents" },
   { label: "Process", id: "process" },

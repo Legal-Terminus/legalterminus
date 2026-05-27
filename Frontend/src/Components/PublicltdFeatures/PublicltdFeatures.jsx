@@ -1,66 +1,63 @@
 import React from "react";
 import "./PublicltdFeatures.css";
-import typesIllustration from "../../assets/public-1.png"
 
+const types = [
+  {
+    number: "01",
+    title: "Listed Public Company",
+    subtitle: "Stock Exchange",
+    text: "These companies are registered on a stock exchange like BSE or NSE. People can buy and sell their shares during market hours. They must follow strict rules set by SEBI and other market authorities.",
+  },
+  {
+    number: "02",
+    title: "Unlisted Public Company",
+    subtitle: "Privately Held",
+    text: "These companies are not registered on a stock exchange. Their shares are not available for public trading. They can still issue shares to investors, but only in a limited or private way.",
+  },
+  {
+    number: "03",
+    title: "Government Public Company",
+    subtitle: "State / Central Owned",
+    text: "In this type, the Central or State Government owns at least 51% of the company. Many government-owned enterprises and Public Sector Undertakings (PSUs) come under this category.",
+  },
+  {
+    number: "04",
+    title: "Section 8 Company",
+    subtitle: "Non-Profit / Social Purpose",
+    text: "A Section 8 company is a non-profit entity created for social or charitable purposes like education, healthcare, or welfare. It can be registered as a public company, but its primary goal is service, not profit.",
+  },
+];
 
-const PvtTypes = () => {
+const PublicltdFeatures = () => {
   return (
-    <section className="pub-ty-types-section">
-      <div className="pub-ty-types-container">
-        {/* Left graphic */}
-        <div className="pub-ty-types-illustration-wrap">
-          <img
-            src={typesIllustration}
-            alt="Types of Private Limited Company"
-            className="pub-ty-types-illustration"
-          />
+    <section className="pub-types-section">
+      <div className="pub-types-container">
+
+        <h2 className="pub-types-title">Types of Public Limited Company in India</h2>
+
+        <div className="pub-types-cards">
+          {types.map((type) => (
+            <div className="pub-types-card" key={type.number}>
+              <div className="pub-types-number">{type.number}</div>
+              <h3 className="pub-types-card-title">
+                {type.title}
+                {type.subtitle && (
+                  <span className="pub-types-card-subtitle"> ({type.subtitle})</span>
+                )}
+              </h3>
+              <p className="pub-types-card-text">{type.text}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Right content */}
-        <div className="pub-ty-types-content">
-          <h2 className="pub-ty-types-title">
-            Types of Public Limited Company Registration in India
-          </h2>
+        <p className="pub-types-note">
+          <strong>Note:</strong> For most businesses, a Listed Public Company is chosen when they plan to raise funds from the public through the stock exchange. If you need guidance on the right structure,{" "}
+          <strong>Book a Free Consultation</strong> and our experts will help you decide.
+        </p>
 
-          <p className="pub-ty-types-intro">
-            Public limited companies can be different based on how they raise money, who owns them, and whether their shares are available in the market. Below are the main types:
-          </p>
-
-          {/* Type 1 */}
-          <div className="pub-ty-types-block">
-            <h3 className="pub-ty-types-subtitle">Listed Public Company</h3>
-            <p className="pub-ty-types-text">
-              These companies are registered on a stock exchange. People can buy and sell their shares during market hours. They must follow strict rules set by market authorities.
-            </p>
-          </div>
-
-          {/* Type 2 */}
-          <div className="pub-ty-types-block">
-            <h3 className="pub-ty-types-subtitle">Unlisted Public Company</h3>
-            <p className="pub-ty-types-text">
-              These companies are not registered on a stock exchange. Their shares are not available for public trading. They can still give shares to investors, but only in a limited/private way.
-            </p>
-          </div>
-
-          {/* Type 3 */}
-          <div className="pub-ty-types-block">
-            <h3 className="pub-ty-types-subtitle">Government Public Company</h3>
-            <p className="pub-ty-types-text">
-              In this type of company, the Central or State Government owns at least 51% of the company. Many government-owned companies come under this category.
-            </p>
-          </div>
-
-          {/* Type 4 */}
-          <div className="pub-ty-types-block">
-            <h3 className="pub-ty-types-subtitle">Section 8 Company</h3>
-            <p className="pub-ty-types-text">
-              A Section 8 company is a non-profit company created for social or charitable purposes like education, healthcare, or welfare. It can be registered as a public or private company, but its main goal is service, not profit.
-            </p>
-          </div>
-        </div>
       </div>
     </section>
   );
 };
 
-export default PvtTypes;
+export default PublicltdFeatures;

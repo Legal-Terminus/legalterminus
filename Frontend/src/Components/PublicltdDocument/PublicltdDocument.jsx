@@ -1,84 +1,155 @@
 import React from "react";
-import {
-  FaExclamation,
-  FaCog,
-  FaBullseye,
-  FaDollarSign,
-  FaChartLine,
-} from "react-icons/fa";
 import "./PublicltdDocument.css";
+import {
+  FaUser,
+  FaBuilding,
+  FaIdCard,
+  FaFileAlt,
+  FaCamera,
+  FaBolt,
+  FaFileContract,
+  FaShieldAlt,
+} from "react-icons/fa";
 
-const steps = [
+const directorDocs = [
   {
-    step: "01",
-    title: "Document Review",
-    desc: "Initial verification and assessment of submitted documents.",
-    icon: <FaExclamation />,
-    color: "pink",
+    icon: <FaIdCard />,
+    title: "Identity Proof",
+    note: "Mandatory for all proposed directors & shareholders",
+    items: [
+      "PAN Card (Mandatory for all Directors & Shareholders)",
+      "Aadhaar Card",
+      "Passport / Voter ID / Driving License",
+    ],
   },
   {
-    step: "02",
-    title: "Eligibility Check",
-    desc: "Ensure compliance with all applicable requirements.",
-    icon: <FaCog />,
-    color: "purple",
+    icon: <FaFileAlt />,
+    title: "Address Proof",
+    note: "Not older than 2 months",
+    items: [
+      "Bank Statement",
+      "Mobile Bill",
+      "Electricity Bill",
+      "Water Bill",
+    ],
   },
   {
-    step: "03",
-    title: "Processing",
-    desc: "Detailed review and internal processing workflow.",
-    icon: <FaBullseye />,
-    color: "blue",
-  },
-  {
-    step: "04",
-    title: "Approval",
-    desc: "Final approval after validation checks.",
-    icon: <FaDollarSign />,
-    color: "orange",
-  },
-  {
-    step: "05",
-    title: "Completion",
-    desc: "Successful completion and handover of documents.",
-    icon: <FaChartLine />,
-    color: "green",
+    icon: <FaCamera />,
+    title: "Passport Size Photograph",
+    note: "For all proposed directors & shareholders",
+    items: [
+      "Latest passport-size photograph of all Proposed Directors / Shareholders",
+    ],
   },
 ];
 
-const CurvedInfographicSection = () => {
+const companyDocs = [
+  {
+    icon: <FaBolt />,
+    title: "Registered Office — Utility Bill",
+    note: "Not older than 2 months",
+    items: [
+      "Electricity Bill",
+      "Water Bill",
+      "Gas Bill",
+      "Property Tax Receipt",
+    ],
+  },
+  {
+    icon: <FaFileContract />,
+    title: "Registered Office — Ownership / Rental",
+    note: "As applicable",
+    items: [
+      "Duly Notarised Rent Agreement (if rented)",
+      "Sale Deed / Property ownership document (if owned)",
+    ],
+  },
+  {
+    icon: <FaShieldAlt />,
+    title: "No Objection Certificate (NOC)",
+    note: "From property owner",
+    items: [
+      "NOC from Property Owner permitting use of premises as Registered Office",
+      "Note: Residential property is permissible as Registered Office under MCA guidelines",
+    ],
+  },
+];
+
+const DocItem = ({ doc }) => (
+  <div className="pubdoc-item">
+    <div className="pubdoc-item-top">
+      <div className="pubdoc-icon">{doc.icon}</div>
+      <div className="pubdoc-meta">
+        <h4 className="pubdoc-title">{doc.title}</h4>
+        <span className="pubdoc-note">{doc.note}</span>
+      </div>
+    </div>
+    <ul className="pubdoc-list">
+      {doc.items.map((item, i) => (
+        <li key={i} className="pubdoc-list-item">{item}</li>
+      ))}
+    </ul>
+  </div>
+);
+
+const PublicltdDocument = () => {
   return (
-    <section className="curved-section">
-      <div className="curved-wrapper">
-        {/* LEFT CIRCLE */}
-        <div className="curved-center">
-          <span>INFO<br />GRAPHICS</span>
+    <section className="pubdoc-section">
+      <div className="pubdoc-container">
+
+        {/* Header */}
+        <div className="pubdoc-header">
+          <h2 className="pubdoc-main-title">
+            Documents Required for Public Limited Company Registration in India
+          </h2>
+          <p className="pubdoc-main-subtitle">Get these ready and we'll take care of the rest</p>
         </div>
 
-        {/* CURVED LINE */}
-        <div className="curved-line"></div>
+        {/* Two columns */}
+        <div className="pubdoc-columns">
 
-        {/* STEPS */}
-        <div className="curved-steps">
-          {steps.map((item, index) => (
-            <div key={index} className={`curved-step step-${index + 1}`}>
-              <div className="step-dot">
-                <span>{item.step}</span>
-              </div>
-
-              <div className={`step-card ${item.color}`}>
-                <div>
-                  <h4>{item.title}</h4>
-                  <p>{item.desc}</p>
-                </div>
-                <div className="step-icon">{item.icon}</div>
+          {/* Director / Shareholder Documents */}
+          <div className="pubdoc-column">
+            <div className="pubdoc-col-header">
+              <div className="pubdoc-col-header-icon"><FaUser /></div>
+              <div>
+                <h3 className="pubdoc-col-title">Director / Shareholder Documents</h3>
+                <p className="pubdoc-col-subtitle">Required for each director & shareholder</p>
               </div>
             </div>
-          ))}
+            <div className="pubdoc-col-body">
+              {directorDocs.map((doc, i) => (
+                <DocItem key={i} doc={doc} />
+              ))}
+            </div>
+          </div>
+
+          {/* Company / Office Documents */}
+          <div className="pubdoc-column">
+            <div className="pubdoc-col-header pubdoc-col-header--office">
+              <div className="pubdoc-col-header-icon"><FaBuilding /></div>
+              <div>
+                <h3 className="pubdoc-col-title">Company & Registered Office Documents</h3>
+                <p className="pubdoc-col-subtitle">Office address proof & ownership records</p>
+              </div>
+            </div>
+            <div className="pubdoc-col-body">
+              {companyDocs.map((doc, i) => (
+                <DocItem key={i} doc={doc} />
+              ))}
+            </div>
+          </div>
+
         </div>
+
+        {/* Bottom note */}
+        <p className="pubdoc-bottom-note">
+          All documents must be self-attested by the respective proposed directors / shareholders. All utility bills or bank statements must not be older than 2 months.
+        </p>
+
       </div>
     </section>
   );
 };
 
-export default CurvedInfographicSection;
+export default PublicltdDocument;
