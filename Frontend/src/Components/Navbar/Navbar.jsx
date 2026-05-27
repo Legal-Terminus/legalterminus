@@ -1147,7 +1147,7 @@ export default function NavbarAdvanced() {
               <div className="drawer-contact-item">
                 <FaMapMarkerAlt className="drawer-contact-icon" />
                 <div className="drawer-contact-text">
-                  Australia - 175 24th Street, Office 3567 Melbourn, EA 265
+                  Flat No 1B, RK Enclave, Plot No A/155, Saheed Nagar, Bhubaneswar, Odisha 751007
                 </div>
               </div>
 
@@ -1156,7 +1156,7 @@ export default function NavbarAdvanced() {
                   className="drawer-contact-icon"
                   style={ROTATE_STYLE}
                 />
-                <div className="drawer-contact-text">8280093456</div>
+                <div className="drawer-contact-text">8280093456 / 8280045432</div>
               </div>
 
               <div className="drawer-contact-item">
@@ -1185,15 +1185,19 @@ export default function NavbarAdvanced() {
                 </a>
                 <a
                   className="premium-social-link"
-                  href="#twitter"
+                  href="https://x.com/legalterminus"
                   aria-label="Twitter"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <FaTwitter />
                 </a>
                 <a
                   className="premium-social-link"
-                  href="#linkedin"
+                  href="https://www.linkedin.com/company/legalterminus/"
                   aria-label="LinkedIn"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <FaLinkedinIn />
                 </a>
