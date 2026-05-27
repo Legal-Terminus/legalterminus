@@ -1,138 +1,154 @@
 import React from "react";
 import "./IncorporationDocuments.css";
+import { FaUser, FaBuilding, FaIdCard, FaFileAlt, FaCamera, FaBolt, FaFileContract, FaShieldAlt, FaPassport, FaStamp } from "react-icons/fa";
 
-/* ================= ICONS ================= */
+const directorDocs = [
+  {
+    icon: <FaPassport />,
+    title: "Identity Proof",
+    note: "Mandatory for all proposed directors & shareholders",
+    items: [
+      "Passport (Mandatory for Foreign Nationals / NRIs)",
+      "PAN Card (Mandatory for Indian Resident Director)",
+      "Aadhaar Card (for Indian Resident Director)",
+    ],
+  },
+  {
+    icon: <FaFileAlt />,
+    title: "Address Proof",
+    note: "Not older than 2 months",
+    items: [
+      "Bank Statement",
+      "Mobile Bill",
+      "Electricity Bill",
+      "Water Bill",
+    ],
+  },
+  {
+    icon: <FaCamera />,
+    title: "Passport Size Photograph",
+    note: "For all proposed directors & shareholders",
+    items: [
+      "Latest passport-size photograph of all Proposed Directors / Shareholders",
+    ],
+  },
+];
 
-const BulbIcon = () => (
-  <svg width="36" height="36" viewBox="0 0 64 64" fill="none">
-    <path
-      d="M32 6C21 6 12 15 12 26c0 8 5 14 9 18 2 2 3 4 3 6h16c0-2 1-4 3-6 4-4 9-10 9-18C52 15 43 6 32 6z"
-      stroke="white"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M24 56h16M26 50h12"
-      stroke="white"
-      strokeWidth="3"
-      strokeLinecap="round"
-    />
-  </svg>
-);
+const companyDocs = [
+  {
+    icon: <FaStamp />,
+    title: "Parent Company Documents",
+    note: "Apostilled by competent authority in home country",
+    items: [
+      "Certificate of Incorporation of the parent/holding company",
+      "Memorandum & Articles of Association (or equivalent charter document)",
+      "Board Resolution authorising incorporation of WOS in India",
+    ],
+  },
+  {
+    icon: <FaBolt />,
+    title: "Registered Office — Utility Bill",
+    note: "Not older than 2 months",
+    items: [
+      "Electricity Bill",
+      "Water Bill",
+      "Gas Bill",
+      "Property Tax Receipt",
+    ],
+  },
+  {
+    icon: <FaFileContract />,
+    title: "Registered Office — Ownership / Rental",
+    note: "As applicable",
+    items: [
+      "Duly Notarised Rent Agreement (if rented)",
+      "Sale Deed / Property ownership document (if owned)",
+    ],
+  },
+  {
+    icon: <FaShieldAlt />,
+    title: "No Objection Certificate (NOC)",
+    note: "From property owner",
+    items: [
+      "NOC from Property Owner permitting use of premises as Registered Office",
+      "Note: Residential property is permissible as Registered Office under MCA guidelines",
+    ],
+  },
+];
 
-const RocketIcon = () => (
-  <svg width="36" height="36" viewBox="0 0 64 64" fill="none">
-    <path
-      d="M32 6C42 14 46 26 46 38L32 48 18 38C18 26 22 14 32 6z"
-      stroke="white"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path d="M32 22v10" stroke="white" strokeWidth="3" strokeLinecap="round" />
-    <circle cx="32" cy="26" r="3" fill="white" />
-  </svg>
-);
-
-const TargetIcon = () => (
-  <svg width="36" height="36" viewBox="0 0 64 64" fill="none">
-    <circle cx="32" cy="32" r="18" stroke="white" strokeWidth="3" />
-    <circle cx="32" cy="32" r="8" stroke="white" strokeWidth="3" />
-    <circle cx="32" cy="32" r="2.5" fill="white" />
-  </svg>
-);
-
-/* ================= CARD ================= */
-
-const Item = ({ color, icon, title, desc, rotate }) => (
-  <div className="inc-docs-item">
-    <svg width="180" height="180" viewBox="0 0 180 180">
-      <circle cx="90" cy="90" r="70" stroke="#e0e0e0" strokeWidth="10" fill="none" />
-      <circle
-        cx="90"
-        cy="90"
-        r="70"
-        stroke={color}
-        strokeWidth="10"
-        fill="none"
-        strokeDasharray="220 440"
-        transform={`rotate(${rotate} 90 90)`}
-      />
-      <circle cx="90" cy="90" r="42" fill={color} />
-      <g transform="translate(72 72)">{icon}</g>
-    </svg>
-
-    <h3 style={{ color }}>{title}</h3>
-    <p>{desc}</p>
+const DocItem = ({ doc }) => (
+  <div className="incd-doc-item">
+    <div className="incd-doc-item-top">
+      <div className="incd-doc-icon">{doc.icon}</div>
+      <div className="incd-doc-meta">
+        <h4 className="incd-doc-title">{doc.title}</h4>
+        <span className="incd-doc-note">{doc.note}</span>
+      </div>
+    </div>
+    <ul className="incd-doc-list">
+      {doc.items.map((item, i) => (
+        <li key={i} className="incd-doc-list-item">{item}</li>
+      ))}
+    </ul>
   </div>
 );
 
-/* ================= MAIN ================= */
-
-export default function IncorporationDocuments() {
+const IncorporationDocuments = () => {
   return (
-    <section className="inc-docs-section">
-      <div className="inc-docs-container">
+    <section className="incd-section">
+      <div className="incd-container">
 
-        {/* SEO HEADING */}
-        <h2 className="inc-docs-main-heading">
-          Documents Required for Incorporation of Wholly Owned Subsidiary in India
-        </h2>
-
-        {/* DECORATIVE HEADER */}
-        <div className="inc-docs-header">
-          Documents Required
-          <span>Incorporation of Wholly Owned Subsidiary in India</span>
+        {/* Header */}
+        <div className="incd-header">
+          <h2 className="incd-main-title">Documents Required for Incorporation of Wholly Owned Subsidiary in India</h2>
+          <p className="incd-main-subtitle">Get these ready and we'll take care of the rest</p>
         </div>
 
-        {/* CONNECTOR */}
-        <svg className="inc-docs-connector" viewBox="0 0 800 200">
-          <path
-            d="
-              M400 20 V80
-              M200 80 H600
-              M200 80 V150
-              M400 80 V150
-              M600 80 V150
-            "
-            stroke="#9e9e9e"
-            strokeWidth="2"
-            fill="none"
-          />
-          <circle cx="200" cy="80" r="3" fill="#9e9e9e" />
-          <circle cx="400" cy="80" r="3" fill="#9e9e9e" />
-          <circle cx="600" cy="80" r="3" fill="#9e9e9e" />
-        </svg>
+        {/* Two columns */}
+        <div className="incd-columns">
 
-        {/* ITEMS */}
-        <div className="inc-docs-items">
-          <Item
-            color="#18c5b9"
-            rotate="-120"
-            title="Identity Proof"
-            desc="PAN card, Aadhaar card, or Passport of directors."
-            icon={<BulbIcon />}
-          />
+          {/* Director / Individual Documents */}
+          <div className="incd-column">
+            <div className="incd-col-header">
+              <div className="incd-col-header-icon"><FaUser /></div>
+              <div>
+                <h3 className="incd-col-title">Director / Promoter Documents</h3>
+                <p className="incd-col-subtitle">Required for each director & shareholder</p>
+              </div>
+            </div>
+            <div className="incd-col-body">
+              {directorDocs.map((doc, i) => (
+                <DocItem key={i} doc={doc} />
+              ))}
+            </div>
+          </div>
 
-          <Item
-            color="#f5b300"
-            rotate="-60"
-            title="Address Proof"
-            desc="Utility bill, bank statement, or rental agreement."
-            icon={<RocketIcon />}
-          />
+          {/* Company / Office Documents */}
+          <div className="incd-column">
+            <div className="incd-col-header incd-col-header--office">
+              <div className="incd-col-header-icon"><FaBuilding /></div>
+              <div>
+                <h3 className="incd-col-title">Company & Registered Office Documents</h3>
+                <p className="incd-col-subtitle">Parent company records & office address proof</p>
+              </div>
+            </div>
+            <div className="incd-col-body">
+              {companyDocs.map((doc, i) => (
+                <DocItem key={i} doc={doc} />
+              ))}
+            </div>
+          </div>
 
-          <Item
-            color="#8e44ad"
-            rotate="0"
-            title="Registered Office Proof"
-            desc="Electricity bill and NOC from property owner."
-            icon={<TargetIcon />}
-          />
         </div>
+
+        {/* Bottom note */}
+        <p className="incd-bottom-note">
+          All documents must be self-attested. Documents of foreign nationals and the parent company must be apostilled / notarised by the competent authority in their home country before submission.
+        </p>
 
       </div>
     </section>
   );
-}
+};
+
+export default IncorporationDocuments;
