@@ -990,14 +990,12 @@ export default function NavbarAdvanced() {
             <div className="drawer-about">
               <h3 className="drawer-about-title">About Us</h3>
               <p className="drawer-about-text">
-                We must explain to you how all seds this mistakens idea off
-                denouncing pleasures and praising pain was born and I will give
-                you a completed accounts of the system and expound.
+                At Legal Terminus, we simplify complex legal processes with trusted, professional, and client-focused solutions. Our team is committed to delivering reliable legal support with transparency, accuracy, and dedicated guidance for individuals, startups, and businesses.
               </p>
 
               <div className="drawer-cta-wrap">
                 <a
-                  href="#contact"
+                  href="/contact/us"
                   className="drawer-cta"
                   onClick={() => setIsMenuOpen(false)}
                 >
