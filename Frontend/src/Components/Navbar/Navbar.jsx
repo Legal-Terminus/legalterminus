@@ -1173,6 +1173,8 @@ export default function NavbarAdvanced() {
                   className="premium-social-link"
                   href="https://www.facebook.com/LegalTerminusofficial"
                   aria-label="Facebook"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <FaFacebookF />
                 </a>
@@ -1180,6 +1182,8 @@ export default function NavbarAdvanced() {
                   className="premium-social-link"
                   href="https://www.instagram.com/legalterminus/"
                   aria-label="Instagram"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <FaInstagram />
                 </a>
