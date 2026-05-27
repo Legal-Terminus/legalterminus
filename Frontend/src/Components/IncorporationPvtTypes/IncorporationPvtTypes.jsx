@@ -1,69 +1,53 @@
 import React from "react";
 import "./IncorporationPvtTypes.css";
-import typesIllustration from "../../assets/pvtltd-types.png";
+
+const types = [
+  {
+    number: "01",
+    title: "Company Limited by Shares",
+    subtitle: "Most Common",
+    text: "This is the most widely used structure for a Wholly Owned Subsidiary in India. The parent foreign company holds 100% of the shares, and liability is limited to the unpaid amount on those shares — keeping the parent's global assets fully protected.",
+  },
+  {
+    number: "02",
+    title: "Company Limited by Guarantee",
+    subtitle: "Non-Profit / Association",
+    text: "Members commit to contributing a fixed amount upon winding up, with no share capital involved. This structure is suitable for non-profit WOS entities, trade associations, or liaison-type subsidiaries that require corporate structure without equity participation.",
+  },
+  {
+    number: "03",
+    title: "Unlimited Company",
+    subtitle: "Rare",
+    text: "No cap on members' liability — the parent company bears unlimited responsibility for the subsidiary's debts. This structure is rarely chosen and is typically considered only when the parent seeks maximum control and operates in a tightly held environment.",
+  },
+];
 
 const IncorporationPvtTypes = () => {
   return (
     <section className="incorp-types-section">
       <div className="incorp-types-container">
 
-        {/* Illustration */}
-        <div className="incorp-types-illustration-wrap">
-          <img
-            src={typesIllustration}
-            alt="Types of Private Limited Company"
-            className="incorp-types-illustration"
-          />
+        <h2 className="incorp-types-title">Types of Wholly Owned Subsidiary in India</h2>
+
+        <div className="incorp-types-cards">
+          {types.map((type) => (
+            <div className="incorp-types-card" key={type.number}>
+              <div className="incorp-types-number">{type.number}</div>
+              <h3 className="incorp-types-card-title">
+                {type.title}
+                {type.subtitle && (
+                  <span className="incorp-types-card-subtitle"> ({type.subtitle})</span>
+                )}
+              </h3>
+              <p className="incorp-types-card-text">{type.text}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Content */}
-        <div className="incorp-types-content">
-          <h2 className="incorp-types-title">
-            Incorporation Of Wholly Owned Subsidiary in India
-          </h2>
-
-          <p className="incorp-types-intro">
-            Private Limited Companies can be registered in different forms based
-            on ownership, liability, and business objectives. Choosing the right
-            type ensures legal protection, smooth operations, and long-term
-            growth.
-          </p>
-
-          {/* Type 1 */}
-          <div className="incorp-types-block">
-            <h3 className="incorp-types-subtitle">
-              Company Limited by Shares
-            </h3>
-            <p className="incorp-types-text">
-              This is the most common type of Private Limited Company. The
-              liability of shareholders is limited to the unpaid amount on their
-              shares. Ideal for startups and growing businesses looking to raise
-              funds while protecting personal assets.
-            </p>
-          </div>
-
-          {/* Type 2 */}
-          <div className="incorp-types-block">
-            <h3 className="incorp-types-subtitle">
-              Company Limited by Guarantee
-            </h3>
-            <p className="incorp-types-text">
-              Members agree to contribute a fixed amount in case of liquidation.
-              This structure is generally suitable for non-profit or charitable
-              organizations that do not require share capital.
-            </p>
-          </div>
-
-          {/* Type 3 */}
-          <div className="incorp-types-block">
-            <h3 className="incorp-types-subtitle">Unlimited Companies</h3>
-            <p className="incorp-types-text">
-              An unlimited company places no limit on members’ liability.
-              Members are personally responsible for company debts. This model
-              is less common and usually adopted by closely held businesses.
-            </p>
-          </div>
-        </div>
+        <p className="incorp-types-note">
+          <strong>Note:</strong> For most foreign companies entering India, Company Limited by Shares is the standard choice for a WOS. If you need guidance on the right structure,{" "}
+          <strong>Book a Free Consultation</strong> and our experts will help you decide.
+        </p>
 
       </div>
     </section>
