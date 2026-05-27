@@ -1,5 +1,5 @@
 /* ================= ROOT HERO ================= */
-.lt-public-hero {
+.pub-ltd-hero {
   padding: 50px 20px;
   background:
     radial-gradient(900px 500px at 15% 20%, rgba(34,197,94,0.12), transparent 60%),
@@ -9,7 +9,7 @@
 }
 
 /* ================= CONTAINER ================= */
-.lt-public-container {
+.pub-ltd-container {
   max-width: 1200px;
   margin: auto;
   display: grid;
@@ -19,12 +19,12 @@
 }
 
 /* ================= LEFT CONTENT ================= */
-.lt-public-content {
+.pub-ltd-content {
   color: #e5e7eb;
 }
 
 /* TAG */
-.lt-public-tag {
+.pub-ltd-tag {
   display: inline-flex;
   align-items: center;
   padding: 9px 20px;
@@ -38,7 +38,7 @@
 }
 
 /* TITLE */
-.lt-public-title {
+.pub-ltd-title {
   font-size: 48px;
   font-weight: 900;
   line-height: 1.1;
@@ -47,8 +47,9 @@
   text-align: left;
 }
 
-.lt-title-india  { color: #ffffff; }
-.lt-title-tagline {
+.pub-ltd-title-india { color: #ffffff; }
+
+.pub-ltd-tagline {
   color: #4ade80;
   display: block;
   text-align: left;
@@ -58,7 +59,7 @@
 }
 
 /* DESCRIPTION */
-.lt-public-description {
+.pub-ltd-description {
   font-size: 17px;
   line-height: 1.8;
   color: #d1d5db;
@@ -68,14 +69,14 @@
 }
 
 /* ================= FEATURES ================= */
-.lt-public-features {
+.pub-ltd-features {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px 30px;
   margin-bottom: 42px;
 }
 
-.lt-feature-item {
+.pub-ltd-feature-item {
   font-size: 15.8px;
   color: #f8fafc;
   padding-left: 10px;
@@ -83,34 +84,34 @@
 }
 
 /* ================= STATS ================= */
-.lt-public-highlights {
+.pub-ltd-highlights {
   display: flex;
   gap: 55px;
   padding-top: 15px;
   border-top: 1px solid rgba(34,197,94,0.2);
 }
 
-.lt-public-highlights h3 {
+.pub-ltd-highlights h3 {
   font-size: 32px;
   font-weight: 900;
   color: #22c55e;
   margin-bottom: 6px;
 }
 
-.lt-public-highlights p {
+.pub-ltd-highlights p {
   font-size: 14.5px;
   color: #9ca3af;
   letter-spacing: 0.4px;
 }
 
 /* ================= FORM WRAPPER ================= */
-.lt-public-form-wrapper {
+.pub-ltd-form-wrapper {
   display: flex;
   justify-content: center;
 }
 
 /* ================= FORM CARD ================= */
-.lt-public-form-card {
+.pub-ltd-form-card {
   background: linear-gradient(180deg, #0b0b0b, #040404);
   border-radius: 18px;
   padding: 42px;
@@ -122,7 +123,7 @@
 }
 
 /* FORM TITLE */
-.lt-form-title {
+.pub-ltd-form-title {
   font-size: 24px;
   font-weight: 900;
   color: #ffffff;
@@ -130,15 +131,15 @@
 }
 
 /* FORM SUBTITLE */
-.lt-form-subtitle {
+.pub-ltd-form-subtitle {
   font-size: 14.5px;
   color: #b0b0b0;
   margin-bottom: 28px;
 }
 
 /* ================= INPUTS ================= */
-.lt-public-form input,
-.lt-public-form select {
+.pub-ltd-form input,
+.pub-ltd-form select {
   width: 100%;
   padding: 16px 15px;
   margin-bottom: 16px;
@@ -149,36 +150,36 @@
   color: #e5e7eb;
 }
 
-.lt-public-form input::placeholder {
+.pub-ltd-form input::placeholder {
   color: #8b8b8b;
 }
 
-.lt-public-form select {
+.pub-ltd-form select {
   color: #cbd5e1;
 }
 
-.lt-public-form select option {
+.pub-ltd-form select option {
   color: #111111;
   background: #ffffff;
 }
 
 /* ================= WHATSAPP ================= */
-.lt-whatsapp-row {
+.pub-ltd-whatsapp-row {
   margin: 20px 0 30px;
 }
 
-.lt-whatsapp-label {
+.pub-ltd-whatsapp-label {
   display: flex;
   align-items: center;
   gap: 12px;
   user-select: none;
 }
 
-.lt-whatsapp-label input {
+.pub-ltd-whatsapp-label input {
   display: none;
 }
 
-.lt-custom-checkbox {
+.pub-ltd-checkbox {
   width: 20px;
   height: 20px;
   border-radius: 5px;
@@ -187,7 +188,7 @@
   position: relative;
 }
 
-.lt-whatsapp-label input:checked + .lt-custom-checkbox::after {
+.pub-ltd-whatsapp-label input:checked + .pub-ltd-checkbox::after {
   content: "";
   position: absolute;
   left: 5px;
@@ -199,17 +200,17 @@
   transform: rotate(45deg);
 }
 
-.lt-whatsapp-text {
+.pub-ltd-whatsapp-text {
   font-size: 14.5px;
   color: #e5e7eb;
 }
 
-.lt-whatsapp-text strong {
+.pub-ltd-whatsapp-text strong {
   color: #4ade80;
 }
 
 /* ================= BUTTON ================= */
-.lt-public-form button {
+.pub-ltd-form button {
   width: 100%;
   padding: 16px;
   background: linear-gradient(135deg, #22c55e, #4ade80);
@@ -223,7 +224,7 @@
 }
 
 /* ================= FORM SUCCESS ================= */
-.lt-form-success {
+.pub-ltd-form-success {
   background: rgba(34,197,94,0.1);
   border: 1px solid rgba(34,197,94,0.4);
   border-radius: 12px;
@@ -236,7 +237,7 @@
 }
 
 /* ================= FOOT NOTE ================= */
-.lt-form-note {
+.pub-ltd-form-note {
   text-align: center;
   font-size: 13.5px;
   color: #9ca3af;
@@ -246,123 +247,123 @@
 
 /* ================= LARGE SCREENS (1600px+) ================= */
 @media (min-width: 1600px) {
-  .lt-public-container {
+  .pub-ltd-container {
     max-width: 1600px;
     gap: 100px;
   }
 
-  .lt-public-title {
+  .pub-ltd-title {
     font-size: 54px;
   }
 }
 
 /* ================= LAPTOPS (1200px – 1399px) ================= */
 @media (max-width: 1399px) {
-  .lt-public-container {
+  .pub-ltd-container {
     max-width: 1200px;
     gap: 70px;
   }
 
-  .lt-public-title {
+  .pub-ltd-title {
     font-size: 44px;
   }
 }
 
 /* ================= SMALL LAPTOP / TABLET LANDSCAPE ================= */
 @media (max-width: 1024px) {
-  .lt-public-container {
+  .pub-ltd-container {
     grid-template-columns: 1fr;
     gap: 60px;
   }
 
-  .lt-public-content {
+  .pub-ltd-content {
     text-align: left;
   }
 
-  .lt-public-title {
+  .pub-ltd-title {
     font-size: 40px;
   }
 
-  .lt-public-description {
+  .pub-ltd-description {
     max-width: 100%;
   }
 
-  .lt-public-highlights {
+  .pub-ltd-highlights {
     gap: 40px;
   }
 }
 
 /* ================= TABLET (768px – 991px) ================= */
 @media (max-width: 991px) {
-  .lt-public-title {
+  .pub-ltd-title {
     font-size: 36px;
   }
 
-  .lt-public-features {
+  .pub-ltd-features {
     grid-template-columns: 1fr;
   }
 
-  .lt-public-highlights {
+  .pub-ltd-highlights {
     flex-wrap: wrap;
     gap: 30px;
   }
 
-  .lt-public-form-card {
+  .pub-ltd-form-card {
     padding: 20px;
   }
 }
 
 /* ================= MOBILE LARGE (576px – 767px) ================= */
 @media (max-width: 767px) {
-  .lt-public-hero {
+  .pub-ltd-hero {
     padding: 40px 16px;
   }
 
-  .lt-public-title {
+  .pub-ltd-title {
     font-size: 32px;
     line-height: 1.2;
   }
 
-  .lt-public-tag {
+  .pub-ltd-tag {
     font-size: 12px;
     padding: 7px 16px;
   }
 
-  .lt-public-highlights {
+  .pub-ltd-highlights {
     gap: 20px;
   }
 }
 
 /* ================= MOBILE SMALL (<= 480px) ================= */
 @media (max-width: 480px) {
-  .lt-public-title {
+  .pub-ltd-title {
     font-size: 28px;
   }
 
-  .lt-public-description {
+  .pub-ltd-description {
     font-size: 15px;
   }
 
-  .lt-feature-item {
+  .pub-ltd-feature-item {
     font-size: 14.5px;
   }
 
-  .lt-form-title {
+  .pub-ltd-form-title {
     font-size: 22px;
   }
 
-  .lt-public-form input,
-  .lt-public-form select {
+  .pub-ltd-form input,
+  .pub-ltd-form select {
     padding: 14px;
     font-size: 14px;
   }
 
-  .lt-public-form button {
+  .pub-ltd-form button {
     font-size: 15px;
     padding: 14px;
   }
 
-  .lt-whatsapp-text {
+  .pub-ltd-whatsapp-text {
     font-size: 13.5px;
   }
 }

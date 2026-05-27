@@ -10,35 +10,35 @@ const PublicBreadcrum = () => {
   };
 
   return (
-    <section className="lt-public-hero">
-      <div className="lt-public-container">
+    <section className="pub-ltd-hero">
+      <div className="pub-ltd-container">
 
         {/* LEFT CONTENT */}
-        <div className="lt-public-content">
+        <div className="pub-ltd-content">
 
-          <span className="lt-public-tag">
+          <span className="pub-ltd-tag">
             Public Limited Company Registration
           </span>
 
-          <h1 className="lt-public-title">
+          <h1 className="pub-ltd-title">
             Public Limited Company Registration
-            <span className="lt-title-india"> in India</span>
+            <span className="pub-ltd-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Fast, Compliant &amp; Built to Scale</span>
+            <span className="pub-ltd-tagline">Fast, Compliant &amp; Built to Scale</span>
           </h1>
 
-          <p className="lt-public-description">
+          <p className="pub-ltd-description">
             Legal Terminus can help you with Public Limited Company Registration in India, as and when required, in a hassle-free manner within a reasonable time span. We provide expert assistance to meet your business setup needs in India.
           </p>
 
-          <div className="lt-public-features">
-            <div className="lt-feature-item"> Minimum 7 Shareholders Required</div>
-            <div className="lt-feature-item"> Minimum 3 Directors Required</div>
-            <div className="lt-feature-item"> 15 to 20 Working Days</div>
-            <div className="lt-feature-item"> High Business Credibility</div>
+          <div className="pub-ltd-features">
+            <div className="pub-ltd-feature-item"> Minimum 7 Shareholders Required</div>
+            <div className="pub-ltd-feature-item"> Minimum 3 Directors Required</div>
+            <div className="pub-ltd-feature-item"> 15 to 20 Working Days</div>
+            <div className="pub-ltd-feature-item"> High Business Credibility</div>
           </div>
 
-          <div className="lt-public-highlights">
+          <div className="pub-ltd-highlights">
             <div>
               <h3>1,000+</h3>
               <p>Companies Registered</p>
@@ -56,23 +56,23 @@ const PublicBreadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="lt-public-form-wrapper">
-          <div className="lt-public-form-card">
+        <aside className="pub-ltd-form-wrapper">
+          <div className="pub-ltd-form-card">
 
-            <h3 className="lt-form-title">Get Expert Assistance</h3>
+            <h3 className="pub-ltd-form-title">Get Expert Assistance</h3>
 
-            <p className="lt-form-subtitle">
+            <p className="pub-ltd-form-subtitle">
               Talk to our expert
             </p>
 
             {submitted ? (
-              <div className="lt-form-success" role="alert">
+              <div className="pub-ltd-form-success" role="alert">
                 <p>✅ Thank you! Our team will contact you shortly.</p>
               </div>
             ) : null}
 
             <form
-              className="lt-public-form"
+              className="pub-ltd-form"
               onSubmit={handleSubmit}
               style={submitted ? { display: "none" } : undefined}
             >
@@ -97,11 +97,11 @@ const PublicBreadcrum = () => {
                 <option>4:00 PM – 6:00 PM</option>
               </select>
 
-              <div className="lt-whatsapp-row">
-                <label className="lt-whatsapp-label">
+              <div className="pub-ltd-whatsapp-row">
+                <label className="pub-ltd-whatsapp-label">
                   <input type="checkbox" defaultChecked />
-                  <span className="lt-custom-checkbox"></span>
-                  <span className="lt-whatsapp-text">
+                  <span className="pub-ltd-checkbox"></span>
+                  <span className="pub-ltd-whatsapp-text">
                     Receive updates on <strong>WhatsApp</strong>
                   </span>
                 </label>
@@ -110,7 +110,7 @@ const PublicBreadcrum = () => {
               <button type="submit">Book Free Consultation</button>
             </form>
 
-            <p className="lt-form-note">
+            <p className="pub-ltd-form-note">
               🔒 100% Confidential • No Spam • No Hidden Charges
             </p>
 
