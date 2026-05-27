@@ -11,12 +11,9 @@ const IncorporationRequirementsTab = () => {
           <h2 className="incorp-req-title">
             Benefits of Incorporation Of Wholly Owned Subsidiary in India
           </h2>
-          {/* <p className="incorp-req-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company
-            registration process in India. It includes registering the business
-            with the Registrar of Companies (RoC) and obtaining a Digital
-            Signature Certificate (DSC) and Director Identification Number (DIN).
-          </p> */}
+          <p className="incorp-req-subtitle">
+            A Wholly Owned Subsidiary (WOS) in India is registered as a Private Limited Company under the Companies Act, 2013, with 100% shareholding held by the foreign parent company — giving you full control, limited liability, and direct access to India's rapidly growing market.
+          </p>
         </header>
 
         {/* ================= CARDS ================= */}
