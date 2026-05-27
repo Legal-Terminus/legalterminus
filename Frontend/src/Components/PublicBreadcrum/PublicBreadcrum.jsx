@@ -15,15 +15,17 @@ const PublicBreadcrum = () => {
 
           <h1 className="lt-public-title">
             Public Limited Company Registration
-            <span> in India</span>
+            <span className="lt-title-india"> in India</span>
+            <br />
+            <span className="lt-title-tagline">Reliable, Compliant &amp; 100% Transparent</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus can assist you with the public limited company registration in India for you, as and when required, ensuring a hassle-free process within a reasonable timeframe. Our competitive professional fees start from Rs. 24,999/-.
+            Legal Terminus can help you with Public Limited Company Registration in India, as and when required, in a hassle-free manner within a reasonable time span. We provide expert assistance to meet your business setup needs in India.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Minimum 7 Persons Required</div>
+            <div className="lt-feature-item"> Minimum 7 Shareholders Required</div>
             <div className="lt-feature-item"> Minimum 3 Directors Required</div>
             <div className="lt-feature-item"> 15 to 20 Working Days</div>
             <div className="lt-feature-item"> High Business Credibility</div>
@@ -39,7 +41,7 @@ const PublicBreadcrum = () => {
               <p>Online Process</p>
             </div>
             <div>
-              <h3>5+</h3>
+              <h3>7+</h3>
               <p>Years of Legal Expertise</p>
             </div>
           </div>
@@ -55,7 +57,7 @@ const PublicBreadcrum = () => {
             </h3>
 
             <p className="lt-form-subtitle">
-              Talk to our Public Company registration expert
+              Talk to our expert
             </p>
 
             <form
