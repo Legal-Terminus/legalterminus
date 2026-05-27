@@ -5,6 +5,7 @@ const IncorporationTermsCondition = () => {
   return (
     <section className="incorp-tc-section">
       <div className="incorp-tc-container">
+        <div className="incorp-tc-card">
 
         {/* ================= HEADING ================= */}
         <h2 className="incorp-tc-title">TERMS &amp; CONDITIONS</h2>
@@ -45,7 +46,7 @@ const IncorporationTermsCondition = () => {
             contact our executive. We shall be happy to customise a plan for you.
           </li>
         </ol>
-
+        </div>
       </div>
     </section>
   );
