@@ -1,4 +1,5 @@
 import React from "react";
+import "./IncorptionPage.css";
 import IncorptionBreadcrum from "../../Components/IncorptionBreadcrum/IncorptionBreadcrum";
 import IncorporationPlanAndPricing from "../../Components/IncorptionPlanedPriceing/IncorptionPlanedPriceing";
 import IncorporationTermsCondition from "../../Components/IncorptionTermsCondition/IncorptionTermsCondition";
@@ -10,54 +11,68 @@ import IncorporationRequirementsTab from "../../Components/IncorporationRequirem
 import IncorporationProcess from "../../Components/IncorporationProcess/IncorporationProcess";
 import IncorporationDocuments from "../../Components/IncorporationDocuments/IncorporationDocuments";
 import IncorporationFAQ from "../../Components/IncorporationFAQ/IncorporationFAQ";
-import IncorporationTestimonial from "../../Components/IncorporationTestimonial/IncorporationTestimonial";
-import IncorporationVideoTestimonial from "../../Components/IncorporationVideoTestimonial/IncorporationVideoTestimonial";
-import IncorporationOurClients from "../../Components/IncorporationOurClints/IncorporationOurClints";
 
 const IncorptionPage = () => {
   return (
-    <>
-      <IncorptionBreadcrum />
-
-      <div id="plans">
-        {/* <IncorporationPlanAndPricing /> */}
+    <div>
+      <div className="incorp-page-hero">
+        <IncorptionBreadcrum />
       </div>
-      {/* <IncorporationTermsCondition /> */}
+
+      <div className="section-divider" />
+
+      <div id="plans" className="incorp-page-pricing">
+        <IncorporationPlanAndPricing />
+      </div>
+
+      <div className="section-divider" />
+
+      <IncorporationTermsCondition />
+
+      <div className="section-divider" />
 
       <div id="premium">
-        {/* <IncorporationPremium /> */}
+        <IncorporationPremium />
       </div>
 
       <IncorporationTabs />
+
+      <div className="section-divider" />
 
       <div id="company">
         <IncorporationCompanyTabs />
       </div>
 
+      <div className="section-divider" />
+
       <div id="types">
-        {/* <IncorporationPvtTypes /> */}
+        <IncorporationPvtTypes />
       </div>
+
+      <div className="section-divider" />
 
       <div id="requirements">
         <IncorporationRequirementsTab />
       </div>
 
+      <div className="section-divider" />
+
       <div id="process">
         <IncorporationProcess />
       </div>
 
+      <div className="section-divider" />
+
       <div id="documents">
         <IncorporationDocuments />
       </div>
-      
+
+      <div className="section-divider" />
+
       <div id="faq">
         <IncorporationFAQ />
       </div>
-
-      <IncorporationTestimonial />
-      <IncorporationVideoTestimonial />
-      <IncorporationOurClients />
-    </>
+    </div>
   );
 };
 
