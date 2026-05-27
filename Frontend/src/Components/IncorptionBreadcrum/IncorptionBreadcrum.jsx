@@ -13,7 +13,9 @@ const IncorptionBreadcrum = () => {
 
           <h1 className="lt-public-title">
             Incorporation Of Wholly Owned Subsidiary
-            <span> in India</span>
+            <span className="lt-title-india"> in India</span>
+            <br />
+            <span className="lt-title-tagline">Reliable, Compliant &amp; 100% Transparent</span>
           </h1>
 
           <p className="lt-public-description">

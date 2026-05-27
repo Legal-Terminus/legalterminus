@@ -67,7 +67,10 @@
 .incorp-page-hero .lt-public-title {
   color: #ffffff;
 }
-.incorp-page-hero .lt-public-title span {
+.incorp-page-hero .lt-title-india {
+  color: #ffffff;
+}
+.incorp-page-hero .lt-title-tagline {
   color: #4ade80;
 }
 .incorp-page-hero .lt-public-description {
