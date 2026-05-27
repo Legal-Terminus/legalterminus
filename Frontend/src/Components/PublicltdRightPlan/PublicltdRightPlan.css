@@ -1,23 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-.pvtltd-pricing-section {
+/* ===============================
+   ROOT SECTION
+   =============================== */
+.pub-plan-section {
   font-family: 'Poppins', sans-serif;
   background: #ffffff;
   padding: 60px 24px 80px;
 }
 
-.pricing-container {
+.pub-plan-container {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-/* Header */
-.pricing-header {
+/* ===============================
+   HEADER
+   =============================== */
+.pub-plan-header {
   text-align: center;
   margin-bottom: 40px;
 }
 
-.PvtLtd-pricing-title {
+.pub-plan-title {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -26,21 +31,25 @@
   color: #000;
 }
 
-.pricing-subtitle {
+.pub-plan-subtitle {
   font-size: 18px;
   font-weight: 500;
   color: #1bb33a;
 }
 
-/* Cards layout with CSS Grid for clean responsiveness */
-.pricing-cards {
+/* ===============================
+   CARDS GRID
+   =============================== */
+.pub-plan-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
 
-/* Card */
-.plan-card {
+/* ===============================
+   CARD
+   =============================== */
+.pub-plan-card {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
@@ -48,14 +57,22 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Plan header */
-.plan-header {
+.pub-plan-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* ===============================
+   PLAN CARD HEADER
+   =============================== */
+.pub-plan-card-header {
   margin-bottom: 16px;
 }
 
-.plan-name {
+.pub-plan-name {
   font-size: 20px;
   font-weight: 600;
   color: #18b233;
@@ -63,7 +80,7 @@
   margin-bottom: 8px;
 }
 
-.plan-old-price {
+.pub-plan-old-price {
   font-size: 20px;
   font-weight: 500;
   text-align: center;
@@ -72,37 +89,39 @@
   margin-bottom: 2px;
 }
 
-.plan-price {
+.pub-plan-price {
   font-size: 32px;
   font-weight: 700;
   text-align: center;
   color: #000;
 }
 
-.plan-meta {
+.pub-plan-meta {
   font-size: 13px;
   text-align: center;
   color: #666;
 }
 
-.plan-meta .popular {
+.pub-plan-popular {
   font-weight: 600;
   color: #ff3b3b;
   margin-left: 4px;
 }
 
-/* List */
-.plan-body {
+/* ===============================
+   PLAN BODY / LIST
+   =============================== */
+.pub-plan-body {
   margin-top: 20px;
 }
 
-.plan-list {
+.pub-plan-list {
   padding: 0;
   margin: 0;
   list-style: none;
 }
 
-.plan-list-item {
+.pub-plan-list-item {
   font-size: 13px;
   color: #111;
   line-height: 1.6;
@@ -110,7 +129,7 @@
   margin-bottom: 8px;
 }
 
-.plan-list-item::before {
+.pub-plan-list-item::before {
   content: "";
   width: 8px;
   height: 8px;
@@ -118,15 +137,18 @@
   border-radius: 50%;
   margin-right: 10px;
   margin-top: 6px;
+  flex-shrink: 0;
 }
 
-/* Button */
-.plan-footer {
+/* ===============================
+   FOOTER / BUTTON
+   =============================== */
+.pub-plan-footer {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
-.plan-button {
+.pub-plan-button {
   background: #21b738;
   color: #ffffff;
   padding: 10px 36px;
@@ -135,93 +157,85 @@
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.plan-button:hover {
+.pub-plan-button:hover {
   background: #1aa130;
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
-/* ---------------------------------
+/* ===============================
    RESPONSIVE BREAKPOINTS
-   --------------------------------- */
+   =============================== */
 
-/* Large tablets / small laptops */
 @media (max-width: 1200px) {
-  .pricing-container {
+  .pub-plan-container {
     padding: 0 12px;
   }
 
-  .pricing-cards {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .pub-plan-cards {
     gap: 20px;
   }
 
-  .plan-card {
+  .pub-plan-card {
     padding: 24px;
   }
 }
 
-/* Tablets: 2 cards per row */
 @media (max-width: 992px) {
-
-
-  .PvtLtd-pricing-title {
+  .pub-plan-title {
     font-size: 28px;
   }
 
-  .pricing-subtitle {
+  .pub-plan-subtitle {
     font-size: 16px;
   }
 
-  .pricing-cards {
+  .pub-plan-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Large phones / small tablets: full width cards */
 @media (max-width: 768px) {
-  .pricing-cards {
+  .pub-plan-cards {
     grid-template-columns: 1fr;
   }
 
-  .plan-card {
+  .pub-plan-card {
     max-width: 480px;
     margin: 0 auto;
   }
 }
 
-/* Small phones */
 @media (max-width: 480px) {
-  .pvtltd-pricing-section {
+  .pub-plan-section {
     padding: 32px 12px 48px;
   }
 
-  .PvtLtd-pricing-title {
+  .pub-plan-title {
     font-size: 22px;
     letter-spacing: 0.5px;
   }
 
-  .pricing-subtitle {
+  .pub-plan-subtitle {
     font-size: 14px;
   }
 
-  .plan-card {
+  .pub-plan-card {
     padding: 20px;
   }
 
-  .plan-price {
+  .pub-plan-price {
     font-size: 28px;
   }
 
-  .plan-old-price {
+  .pub-plan-old-price {
     font-size: 18px;
   }
 
-  .plan-button {
+  .pub-plan-button {
     width: 100%;
     padding: 10px 0;
   }
