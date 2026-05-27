@@ -44,12 +44,10 @@
   line-height: 1.1;
   margin-bottom: 22px;
   color: #ffffff;
+  text-align: left;
 }
 
-.lt-title-india {
-  color: #ffffff;
-}
-
+.lt-title-india  { color: #ffffff; }
 .lt-title-tagline {
   color: #4ade80;
   display: block;
@@ -66,6 +64,7 @@
   color: #d1d5db;
   max-width: 640px;
   margin-bottom: 38px;
+  text-align: justify;
 }
 
 /* ================= FEATURES ================= */
@@ -112,8 +111,7 @@
 
 /* ================= FORM CARD ================= */
 .lt-public-form-card {
-  background:
-    linear-gradient(180deg, #0b0b0b, #040404);
+  background: linear-gradient(180deg, #0b0b0b, #040404);
   border-radius: 18px;
   padding: 42px;
   width: 100%;
@@ -157,6 +155,11 @@
 
 .lt-public-form select {
   color: #cbd5e1;
+}
+
+.lt-public-form select option {
+  color: #111111;
+  background: #ffffff;
 }
 
 /* ================= WHATSAPP ================= */
@@ -216,6 +219,20 @@
   border: none;
   border-radius: 14px;
   letter-spacing: 0.4px;
+  cursor: pointer;
+}
+
+/* ================= FORM SUCCESS ================= */
+.lt-form-success {
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.4);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #4ade80;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 /* ================= FOOT NOTE ================= */
@@ -314,7 +331,6 @@
   .lt-public-highlights {
     gap: 20px;
   }
-
 }
 
 /* ================= MOBILE SMALL (<= 480px) ================= */

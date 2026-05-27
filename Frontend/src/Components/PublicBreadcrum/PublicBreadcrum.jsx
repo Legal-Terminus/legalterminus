@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import "./PublicBreadcrum.css";
 
 const PublicBreadcrum = () => {
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+  };
+
   return (
     <section className="lt-public-hero">
       <div className="lt-public-container">
@@ -17,7 +24,7 @@ const PublicBreadcrum = () => {
             Public Limited Company Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Reliable, Compliant &amp; 100% Transparent</span>
+            <span className="lt-title-tagline">Fast, Compliant &amp; Built to Scale</span>
           </h1>
 
           <p className="lt-public-description">
@@ -52,17 +59,22 @@ const PublicBreadcrum = () => {
         <aside className="lt-public-form-wrapper">
           <div className="lt-public-form-card">
 
-            <h3 className="lt-form-title">
-              Get Expert Assistance
-            </h3>
+            <h3 className="lt-form-title">Get Expert Assistance</h3>
 
             <p className="lt-form-subtitle">
               Talk to our expert
             </p>
 
+            {submitted ? (
+              <div className="lt-form-success" role="alert">
+                <p>✅ Thank you! Our team will contact you shortly.</p>
+              </div>
+            ) : null}
+
             <form
               className="lt-public-form"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={handleSubmit}
+              style={submitted ? { display: "none" } : undefined}
             >
               <input type="text" placeholder="Full Name" required />
               <input type="email" placeholder="Email Address" required />
@@ -85,7 +97,7 @@ const PublicBreadcrum = () => {
                 <option>4:00 PM – 6:00 PM</option>
               </select>
 
-             <div className="lt-whatsapp-row">
+              <div className="lt-whatsapp-row">
                 <label className="lt-whatsapp-label">
                   <input type="checkbox" defaultChecked />
                   <span className="lt-custom-checkbox"></span>
@@ -95,10 +107,7 @@ const PublicBreadcrum = () => {
                 </label>
               </div>
 
-
-              <button type="submit">
-                Book Free Consultation
-              </button>
+              <button type="submit">Book Free Consultation</button>
             </form>
 
             <p className="lt-form-note">
