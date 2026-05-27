@@ -116,7 +116,7 @@
   border-radius: 18px;
   padding: 42px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
 }
 
 /* FORM TITLE */
@@ -225,19 +225,19 @@
 .pub-ltd-form button {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #22c55e, #4ade80);
-  color: #022c22;
+  background: #22c55e;
+  color: #ffffff;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 700;
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   letter-spacing: 0.4px;
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.15s ease;
+  transition: background 0.2s ease, transform 0.15s ease;
 }
 
 .pub-ltd-form button:hover {
-  opacity: 0.92;
+  background: #16a34a;
   transform: translateY(-1px);
 }
 
