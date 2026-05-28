@@ -1,253 +1,208 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-/* ===== SECTION ===== */
-.llpplan-section {
+.LLP-Plan-Price-section {
   font-family: 'Poppins', sans-serif;
-  background: #f8fafc;
-  padding: 72px 24px 88px;
+  background: #ffffff;
+  padding: 60px 24px 80px;
 }
 
-.llpplan-container {
+.LLP-Plan-pricing-container {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-/* ===== HEADER ===== */
-.llpplan-header {
+/* Header */
+.LLP-Plan-pricing-header {
   text-align: center;
-  margin-bottom: 52px;
+  margin-bottom: 40px;
 }
 
-.llpplan-title {
-  font-size: 36px;
+.LLP-Plan-Price-title {
+  font-size: 32px;
   font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: #000;
 }
 
-.llpplan-subtitle {
-  font-size: 17px;
-  color: #475569;
-  font-weight: 400;
+.LLP-Plan-pricing-subtitle {
+  font-size: 18px;
+  font-weight: 500;
+  color: #1bb33a;
 }
 
-/* ===== CARDS GRID ===== */
-.llpplan-cards {
+/* Cards layout */
+.LLP-Plan-pricing-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px;
-  align-items: start;
-}
-
-/* ===== BASE CARD ===== */
-.llpplan-card {
-  position: relative;
-  background: #ffffff;
-  border-radius: 20px;
-  border: 1.5px solid #e2e8f0;
-  padding: 32px 28px 28px;
-  display: flex;
-  flex-direction: column;
   gap: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.llpplan-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.10);
-}
-
-/* ===== POPULAR CARD ===== */
-.llpplan-card--popular {
-  border: 2px solid #22c55e;
-  background: linear-gradient(160deg, #f0fdf4 0%, #ffffff 60%);
-  box-shadow: 0 8px 40px rgba(34, 197, 94, 0.18);
-  transform: translateY(-8px);
-}
-
-.llpplan-card--popular:hover {
-  transform: translateY(-12px);
-  box-shadow: 0 16px 48px rgba(34, 197, 94, 0.22);
-}
-
-/* ===== BADGE ===== */
-.llpplan-badge {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(135deg, #16a34a, #22c55e);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  padding: 5px 18px;
-  border-radius: 30px;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
-}
-
-/* ===== CARD TOP ===== */
-.llpplan-card-top {
-  text-align: center;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.llpplan-card--popular .llpplan-card-top {
-  border-bottom-color: rgba(34, 197, 94, 0.2);
-}
-
-.llpplan-name {
-  font-size: 22px;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 14px;
-}
-
-.llpplan-card--popular .llpplan-name {
-  color: #16a34a;
-}
-
-.llpplan-old-price {
-  font-size: 16px;
-  font-weight: 500;
-  color: #ef4444;
-  text-decoration: line-through;
-  margin-bottom: 4px;
-}
-
-.llpplan-price {
-  font-size: 40px;
-  font-weight: 800;
-  color: #0f172a;
-  line-height: 1;
-  margin-bottom: 6px;
-}
-
-.llpplan-card--popular .llpplan-price {
-  color: #16a34a;
-}
-
-.llpplan-meta {
-  font-size: 12.5px;
-  color: #94a3b8;
-}
-
-/* ===== FEATURE LIST ===== */
-.llpplan-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* Card */
+.LLP-Plan--card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
+  padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  flex: 1;
+  justify-content: space-between;
 }
 
-.llpplan-list-item {
-  font-size: 13.5px;
-  color: #374151;
-  line-height: 1.55;
+/* Plan header */
+.LLP-Plan--header {
+  margin-bottom: 16px;
+}
+
+.LLP-Plan--name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #18b233;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.LLP-Plan--old-price {
+  font-size: 20px;
+  font-weight: 500;
+  text-align: center;
+  color: #ff3b3b;
+  text-decoration: line-through;
+  margin-bottom: 2px;
+}
+
+.LLP-Plan--price {
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  color: #000;
+}
+
+.LLP-Plan--meta {
+  font-size: 13px;
+  text-align: center;
+  color: #666;
+}
+
+.LLP-Plan--meta .popular {
+  font-weight: 600;
+  color: #ff3b3b;
+  margin-left: 4px;
+}
+
+/* List */
+.LLP-Plan--body {
+  margin-top: 20px;
+}
+
+.LLP-Plan--list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.LLP-Plan--list-item {
+  font-size: 13px;
+  color: #111;
+  line-height: 1.6;
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  margin-bottom: 8px;
 }
 
-.llpplan-list-item::before {
+.LLP-Plan--list-item::before {
   content: "";
   width: 8px;
   height: 8px;
-  min-width: 8px;
-  background: #22c55e;
+  background: #19b43a;
   border-radius: 50%;
-  margin-top: 5px;
+  margin-right: 10px;
+  margin-top: 6px;
+  flex-shrink: 0;
 }
 
-.llpplan-card--popular .llpplan-list-item {
-  color: #1e293b;
+/* Button */
+.LLP-Plan--footer {
+  text-align: center;
+  margin-top: 20px;
 }
 
-/* ===== BUTTON ===== */
-.llpplan-footer {
-  margin-top: 4px;
-}
-
-.llpplan-btn {
-  width: 100%;
-  padding: 14px;
-  font-size: 15px;
-  font-weight: 700;
-  border-radius: 12px;
-  border: 2px solid #22c55e;
-  background: transparent;
-  color: #16a34a;
+.LLP-Plan--button {
+  background: #21b738;
+  color: #ffffff;
+  padding: 10px 36px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
-  letter-spacing: 0.3px;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.llpplan-btn:hover {
-  background: #22c55e;
-  color: #ffffff;
+.LLP-Plan--button:hover {
+  background: #1aa130;
   transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
-.llpplan-btn--popular {
-  background: linear-gradient(135deg, #16a34a, #22c55e);
-  color: #ffffff;
-  border-color: transparent;
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
-}
-
-.llpplan-btn--popular:hover {
-  background: linear-gradient(135deg, #15803d, #16a34a);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(34, 197, 94, 0.4);
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {
-  .llpplan-cards {
+/* Responsive */
+@media (max-width: 1200px) {
+  .LLP-Plan-pricing-container {
+    padding: 0 12px;
+  }
+  .LLP-Plan-pricing-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
   }
-  .llpplan-card--popular {
-    transform: translateY(-4px);
+  .LLP-Plan--card {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 992px) {
+  .LLP-Plan-Price-title {
+    font-size: 28px;
+  }
+  .LLP-Plan-pricing-subtitle {
+    font-size: 16px;
+  }
+  .LLP-Plan-pricing-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 768px) {
-  .llpplan-section {
-    padding: 56px 16px 72px;
-  }
-  .llpplan-title {
-    font-size: 28px;
-  }
-  .llpplan-cards {
+  .LLP-Plan-pricing-cards {
     grid-template-columns: 1fr;
+  }
+  .LLP-Plan--card {
     max-width: 480px;
     margin: 0 auto;
-  }
-  .llpplan-card--popular {
-    transform: none;
-  }
-  .llpplan-card--popular:hover {
-    transform: translateY(-4px);
   }
 }
 
 @media (max-width: 480px) {
-  .llpplan-section {
-    padding: 44px 12px 60px;
+  .LLP-Plan-Price-section {
+    padding: 32px 12px 48px;
   }
-  .llpplan-title {
-    font-size: 24px;
+  .LLP-Plan-Price-title {
+    font-size: 22px;
+    letter-spacing: 0.5px;
   }
-  .llpplan-price {
-    font-size: 34px;
+  .LLP-Plan-pricing-subtitle {
+    font-size: 14px;
   }
-  .llpplan-card {
-    padding: 28px 20px 24px;
+  .LLP-Plan--card {
+    padding: 20px;
+  }
+  .LLP-Plan--price {
+    font-size: 28px;
+  }
+  .LLP-Plan--old-price {
+    font-size: 18px;
+  }
+  .LLP-Plan--button {
+    width: 100%;
+    padding: 10px 0;
   }
 }
