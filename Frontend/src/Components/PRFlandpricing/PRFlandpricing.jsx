@@ -20,7 +20,7 @@ const PricingSection = () => {
           {/* Elemental */}
           <article className="prf-pricingcard">
             <div>
-              <div className="prf-pricingheader">
+              <div className="prf-planheader">
                 <div className="prf-pricingname">Elemental</div>
                 <div className="prf-pricingold-price">₹5,999</div>
                 <div className="prf-pricingprice">₹3,999</div>
@@ -53,7 +53,7 @@ const PricingSection = () => {
           {/* Enriched */}
           <article className="prf-pricingcard">
             <div>
-              <div className="prf-pricingheader">
+              <div className="prf-planheader">
                 <div className="prf-pricingname">Enriched</div>
                 <div className="prf-pricingold-price">₹7,999</div>
                 <div className="prf-pricingprice">₹5,999</div>
@@ -80,7 +80,7 @@ const PricingSection = () => {
           {/* Supreme */}
           <article className="prf-pricingcard">
             <div>
-              <div className="prf-pricingheader">
+              <div className="prf-planheader">
                 <div className="prf-pricingname">Supreme</div>
                 <div className="prf-pricingold-price">₹29,999</div>
                 <div className="prf-pricingprice">₹24,999</div>
