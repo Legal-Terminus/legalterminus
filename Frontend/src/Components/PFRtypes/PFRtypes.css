@@ -33,9 +33,6 @@
 /* Right content */
 .pfr-types-content {
   max-width: 760px;
-  max-height: 520px;
-  overflow-y: auto;
-  padding-right: 14px;
 }
 
 .pfr-types-title {
@@ -54,20 +51,31 @@
 }
 
 .pfr-types-block {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  background: #fff;
+  border: 1px solid #22c55e;
+  border-radius: 12px;
+  padding: 22px 24px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pfr-types-block:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.18);
 }
 
 .pfr-types-subtitle {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   font-size: 18px;
-  font-weight: 600;
-  color: #374151;
+  font-weight: 700;
+  color: #18b233;
 }
 
 .pfr-types-text {
   margin: 0;
-  font-size: 15px;
-  line-height: 1.9;
+  font-size: 14.5px;
+  line-height: 1.85;
   color: #4b5563;
 }
 
