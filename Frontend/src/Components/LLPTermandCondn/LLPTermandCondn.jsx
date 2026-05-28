@@ -5,6 +5,7 @@ const TermsConditions = () => {
   return (
     <section className="llp-tc-section">
       <div className="llp-tc-container">
+        <div className="llp-tc-card">
         {/* Heading */}
         <h2 className="llp-tc-title">TERMS &amp; CONDITIONS</h2>
 
@@ -35,6 +36,7 @@ const TermsConditions = () => {
             In case the above plan does not qualify your requirements, kindly contact our executive, we shall be happy to customise a plan for you.
           </li>
         </ol>
+        </div>
       </div>
     </section>
   );

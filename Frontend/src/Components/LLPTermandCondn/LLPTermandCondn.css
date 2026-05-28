@@ -1,15 +1,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
 .llp-tc-section {
-  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background-color: #ffffff;
-  padding: 10px 24px 64px;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: #f8fafc;
+  padding: 10px 24px 48px;
 }
 
 .llp-tc-container {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.llp-tc-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  padding: 40px 48px;
 }
 
 /* Title */
@@ -36,7 +42,7 @@
 .llp-tc-list {
   max-width: 1150px;
   margin: 0 auto;
-  padding-left: 18px; /* for ordered list numbers */
+  padding-left: 18px;
 }
 
 .llp-tc-item {
@@ -46,45 +52,23 @@
   margin-bottom: 16px;
 }
 
-/* -----------------------------
-   Responsive
------------------------------- */
-
+/* Responsive */
 @media (max-width: 1024px) {
-  .llp-tc-section {
-    padding: 60px 20px 52px;
-  }
-
-  .llp-tc-title {
-    font-size: 28px;
-  }
+  .llp-tc-section { padding: 10px 20px 40px; }
+  .llp-tc-card { padding: 32px 32px; }
+  .llp-tc-title { font-size: 28px; }
 }
 
 @media (max-width: 768px) {
-  .llp-tc-section {
-    padding: 48px 16px 44px;
-  }
-
-  .llp-tc-title {
-    font-size: 24px;
-  }
-
-  .llp-tc-subtitle {
-    font-size: 14px;
-  }
-
-  .llp-tc-item {
-    font-size: 14px;
-  }
+  .llp-tc-section { padding: 10px 16px 36px; }
+  .llp-tc-card { padding: 28px 22px; }
+  .llp-tc-title { font-size: 24px; }
+  .llp-tc-subtitle { font-size: 14px; }
+  .llp-tc-item { font-size: 14px; }
 }
 
 @media (max-width: 480px) {
-  .llp-tc-section {
-    padding: 40px 14px 40px;
-  }
-
-  .llp-tc-title {
-    font-size: 22px;
-    letter-spacing: 1.2px;
-  }
+  .llp-tc-section { padding: 10px 12px 28px; }
+  .llp-tc-card { padding: 24px 16px; }
+  .llp-tc-title { font-size: 20px; letter-spacing: 1px; }
 }
