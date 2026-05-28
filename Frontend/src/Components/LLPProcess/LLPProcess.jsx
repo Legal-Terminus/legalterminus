@@ -40,7 +40,7 @@ const steps = [
   {
     title: "Step 8 – LLP Agreement Preparation",
     text:
-      "Preparation, Execution & Noterisation of LLP agreement",
+      "Preparation, Execution & Notarisation of LLP agreement",
   },
   {
     title: "Step 9 – LLP Agreement Filing",
@@ -49,29 +49,31 @@ const steps = [
   },
 ];
 
-const GSTProcess = () => {
+const LLPProcess = () => {
   return (
-    <section className="llp-gst-wrapper">
-      <h2 className="gst-heading">
+    <section className="llpproc-wrapper">
+      <h2 className="llpproc-heading">
         Steps For Limited Liability Partnership Registration In India
       </h2>
-      <p className="pv-gst-subheading">
+      <p className="llpproc-subheading">
         The broad process of registering an LLP involves the following steps:
       </p>
 
-      <div className="llp-timeline">
-        <div className="llp-timeline-line" />
+      <div className="llpproc-timeline">
+        <div className="llpproc-timeline-line" />
 
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`llp-timeline-item ${
+            className={`llpproc-timeline-item ${
               index % 2 === 0 ? "left" : "right"
+            } ${index === 0 ? "first" : ""} ${
+              index === steps.length - 1 ? "last" : ""
             }`}
           >
-            <div className="llp-timeline-dot">{index + 1}</div>
+            <div className="llpproc-timeline-dot">{index + 1}</div>
 
-            <div className="llp-timeline-card">
+            <div className="llpproc-timeline-card">
               <h4>{step.title}</h4>
               <p>{step.text}</p>
             </div>
@@ -82,4 +84,4 @@ const GSTProcess = () => {
   );
 };
 
-export default GSTProcess;
+export default LLPProcess;

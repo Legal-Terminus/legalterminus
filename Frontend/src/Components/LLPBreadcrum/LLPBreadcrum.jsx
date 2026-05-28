@@ -15,7 +15,9 @@ const LLPBreadcrum = () => {
 
           <h1 className="lt-public-title">
             Limited Liability Partnership Registration
-            <span> in India</span>
+            <span className="lt-title-india"> in India</span>
+            <br />
+            <span className="lt-title-tagline">Flexible, Compliant &amp; 100% Transparent</span>
           </h1>
 
           <p className="lt-public-description">

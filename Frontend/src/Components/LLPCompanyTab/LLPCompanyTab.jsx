@@ -47,27 +47,27 @@ A Private Limited Company is a legally registered business under the Companies A
       {/* ===========================
           SECTION 3 — COMPANIES ACT
       ============================ */}
-      <section className="companies-act-section">
-        <div className="companies-act-container">
-          <div className="companies-act-card">
-            <h3 className="companies-act-title">Limited Liability Partnership Act, 2008</h3>
+      <section className="llp-com-com-Companiesact-section">
+        <div className="llp-com-com-Companiesact-container">
+          <div className="llp-com-com-Companiesact-card">
+            <h3 className="llp-com-com-Companiesact-title">Limited Liability Partnership Act, 2008</h3>
 
-            <p className="companies-act-text">
+            <p className="llp-com-com-Companiesact-text">
               As per the Limited Liability Partnership Act, 2008, an LLP (Limited Liability Partnership) means a partnership formed and registered under this Act, where the partners enjoy limited liability and the LLP has a separate legal identity.
             </p>
 
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(a)</span>
+            <p className="llp-com-com-Companiesact-point">
+              <span className="llp-com-com-Companiesact-point-label">(a)</span>
               It is a separate legal entity from its partners;
             </p>
 
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(b)</span>
+            <p className="llp-com-com-Companiesact-point">
+              <span className="llp-com-com-Companiesact-point-label">(b)</span>
               Partners have limited liability, restricted to their agreed contribution; and
             </p>
 
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(c)</span>
+            <p className="llp-com-com-Companiesact-point">
+              <span className="llp-com-com-Companiesact-point-label">(c)</span>
               It provides the flexibility of a partnership with the benefits of limited liability and perpetual succession.
             </p>
           </div>

@@ -10,9 +10,6 @@ import LLPRequirementsTab from "../../Components/LLPRequirementsTab/LLPRequireme
 import LLPProcess from "../../Components/LLPProcess/LLPProcess";
 import LLPDocInfographic from "../../Components/LLPDocInfographic/LLPDocInfographic";
 import LLPFAQ from "../../Components/LLPFAQ/LLPFAQ";
-import LLPTestimonial from "../../Components/LLPTestimonial/LLPTestimonial";
-import LLPVideoTestimonial from "../../Components/LLPVideoTestimonial/LLPVideoTestimonial";
-import LLPOurClients from "../../Components/LLPOurClients/LLPOurClients";
 
 function LLP() {
   return (
@@ -66,12 +63,6 @@ function LLP() {
         <LLPFAQ />
       </div>
 
-      {/* Testimonials */}
-      <LLPTestimonial />
-      <LLPVideoTestimonial />
-
-      {/* Our Clients */}
-      <LLPOurClients />
     </div>
   );
 }
