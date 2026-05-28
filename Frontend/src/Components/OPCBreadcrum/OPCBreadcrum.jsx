@@ -15,7 +15,9 @@ const Breadcrum = () => {
 
           <h1 className="lt-public-title">
             One Person Company (OPC) Registration
-            <span> in India</span>
+            <span className="lt-title-india"> in India</span>
+            <br />
+            <span className="lt-title-tagline">Reliable, Compliant &amp; 100% Transparent</span>
           </h1>
 
           <p className="lt-public-description">

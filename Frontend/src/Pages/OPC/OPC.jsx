@@ -1,4 +1,5 @@
 import React from 'react'
+import "./OPC.css";
 import OPCBreadcrum from '../../Components/OPCBreadcrum/OPCBreadcrum'
 import OPCPlans from '../../Components/OPCPlans/OPCPlans'
 import OPCTermCondition from '../../Components/OPCTermCondition/OPCTermCondition'
@@ -18,38 +19,67 @@ import OPCOurclints from '../../Components/OPCOurclints/OPCOurclints'
 const OPC = () => {
   return (
     <div>
-      <OPCBreadcrum />
-       <div id="plans">
+      <div className="opc-page-hero">
+        <OPCBreadcrum />
+      </div>
+
+      <div className="section-divider" />
+
+      <div id="plans" className="opc-page-pricing">
         <OPCPlans />
       </div>
+
+      <div className="section-divider" />
+
       <OPCTermCondition />
+
+      <div className="section-divider" />
+
       <div id="premium">
         <OpcZolvitPremium />
       </div>
+
       <OPCTabs />
+
+      <div className="section-divider" />
+
       <div id="company">
         <OPCOverview />
       </div>
-     <div id="types">
+
+      <div className="section-divider" />
+
+      <div id="types">
         <OPCFeatures />
       </div>
+
+      <div className="section-divider" />
+
       <div id="requirements">
         <OPCBenefits />
       </div>
+
+      <div className="section-divider" />
+
       <div id="process">
         <OPCElegibility />
       </div>
-     <div id="documents">
+
+      <div className="section-divider" />
+
+      <div id="documents">
         <OPCDocuments />
       </div>
-     <div id="faq">
+
+      <div className="section-divider" />
+
+      <div id="faq">
         <OPCFAQ />
       </div>
 
       <OPCProcess />
       <OPCWhy />
       <OPCOurclints />
-  
     </div>
   )
 }
