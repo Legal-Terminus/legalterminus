@@ -132,12 +132,12 @@
 /* ================= FORM CARD ================= */
 
 .lt-public-form-card {
-    background: linear-gradient(180deg, #0b0b0b, #040404);
+    background: #ffffff;
     border-radius: 18px;
     padding: 42px;
     width: 100%;
-    border: 1px solid rgba(34, 197, 94, 0.35);
-    box-shadow: 0 40px 90px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(34, 197, 94, 0.15) inset;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 }
 
 
@@ -146,7 +146,7 @@
 .lt-form-title {
     font-size: 24px;
     font-weight: 900;
-    color: #ffffff;
+    color: #0f172a;
     margin-bottom: 6px;
 }
 
@@ -155,7 +155,7 @@
 
 .lt-form-subtitle {
     font-size: 14.5px;
-    color: #b0b0b0;
+    color: #64748b;
     margin-bottom: 28px;
 }
 
@@ -167,19 +167,29 @@
     width: 100%;
     padding: 16px 15px;
     margin-bottom: 16px;
-    background: linear-gradient(180deg, #000000, #050505);
-    border: 1px solid rgba(34, 197, 94, 0.25);
+    background: #ffffff;
+    border: 1.5px solid #22c55e;
     border-radius: 12px;
     font-size: 14.5px;
-    color: #e5e7eb;
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.lt-public-form input:focus,
+.lt-public-form select:focus {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
 }
 
 .lt-public-form input::placeholder {
-    color: #8b8b8b;
+    color: #94a3b8;
 }
 
 .lt-public-form select {
-    color: #cbd5e1;
+    color: #64748b;
+    appearance: auto;
 }
 
 
@@ -194,11 +204,8 @@
     align-items: center;
     gap: 12px;
     -webkit-user-select: none;
-    /* Safari and Chrome */
     -moz-user-select: none;
-    /* Firefox */
     -ms-user-select: none;
-    /* Internet Explorer/Edge (old) */
     user-select: none;
 }
 
@@ -211,8 +218,13 @@
     height: 20px;
     border-radius: 5px;
     border: 2px solid #22c55e;
-    background: #000;
+    background: #fff;
     position: relative;
+    flex-shrink: 0;
+}
+
+.lt-whatsapp-label input:checked+.lt-custom-checkbox {
+    background: #22c55e;
 }
 
 .lt-whatsapp-label input:checked+.lt-custom-checkbox::after {
@@ -222,18 +234,18 @@
     top: 1px;
     width: 6px;
     height: 11px;
-    border: solid #22c55e;
+    border: solid #fff;
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
 
 .lt-whatsapp-text {
     font-size: 14.5px;
-    color: #e5e7eb;
+    color: #374151;
 }
 
 .lt-whatsapp-text strong {
-    color: #4ade80;
+    color: #16a34a;
 }
 
 
@@ -249,6 +261,12 @@
     border: none;
     border-radius: 14px;
     letter-spacing: 0.4px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.lt-public-form button:hover {
+    opacity: 0.92;
 }
 
 
@@ -257,7 +275,7 @@
 .lt-form-note {
     text-align: center;
     font-size: 13.5px;
-    color: #9ca3af;
+    color: #64748b;
     margin-top: 20px;
 }
 
