@@ -1,143 +1,143 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
 
 .pfr-types-section {
-  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background-color: #ffffff;
-  padding: 20px 24px 20px;
+  font-family: "Poppins", sans-serif;
+  background: #f8fafc;
+  padding: 60px 24px 70px;
 }
 
 .pfr-types-container {
   max-width: 1200px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 0.85fr 1.4fr;
-  column-gap: 72px;
-  align-items: flex-start;
-}
-
-/* Left illustration */
-.pfr-types-illustration-wrap {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 12px;
-}
-
-.pfr-types-illustration {
-  max-width: 115%;
-  height: auto;
-  display: block;
-}
-
-/* Right content */
-.pfr-types-content {
-  max-width: 760px;
 }
 
 .pfr-types-title {
-  font-size: 40px;
-  line-height: 1.25;
-  font-weight: 600;
+  font-size: 36px;
+  font-weight: 700;
   color: #151821;
-  margin: 0 0 18px;
+  text-align: center;
+  margin: 0 0 48px;
+  line-height: 1.3;
 }
 
-.pfr-types-intro {
-  margin: 0 0 24px;
-  font-size: 15px;
-  line-height: 1.9;
-  color: #4b5563;
+/* ===== CARDS GRID ===== */
+.pfr-types-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  margin-bottom: 40px;
 }
 
-.pfr-types-block {
-  margin-bottom: 20px;
-  background: #fff;
-  border: 1px solid #22c55e;
-  border-radius: 12px;
-  padding: 22px 24px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+.pfr-types-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-top: 3px solid #22c55e;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  padding: 32px 28px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.pfr-types-block:hover {
+.pfr-types-card:hover {
+  border-color: #22c55e;
+  box-shadow: 0 8px 28px rgba(34, 197, 94, 0.14);
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.18);
 }
 
-.pfr-types-subtitle {
-  margin: 0 0 10px;
+/* Number accent */
+.pfr-types-number {
+  font-size: 48px;
+  font-weight: 800;
+  color: rgba(27, 179, 58, 0.18);
+  line-height: 1;
+  margin-bottom: 16px;
+  letter-spacing: -1px;
+}
+
+.pfr-types-card-title {
   font-size: 18px;
   font-weight: 700;
-  color: #18b233;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+  line-height: 1.4;
 }
 
-.pfr-types-text {
-  margin: 0;
+.pfr-types-card-subtitle {
+  font-weight: 500;
+  color: #18b233;
+  font-size: 15px;
+}
+
+.pfr-types-card-text {
   font-size: 14.5px;
   line-height: 1.85;
   color: #4b5563;
+  margin: 0;
 }
 
-/* ---------------------------
-   Responsive
----------------------------- */
+/* ===== NOTE ===== */
+.pfr-types-note {
+  text-align: center;
+  font-size: 14.5px;
+  color: #555;
+  background: rgba(27, 179, 58, 0.05);
+  border: 1px solid rgba(27, 179, 58, 0.2);
+  border-radius: 10px;
+  padding: 16px 28px;
+  max-width: 820px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
 
+/* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
-  .pfr-types-section {
-    padding: 52px 20px 44px;
-  }
-
-  .pfr-types-container {
-    column-gap: 40px;
-    grid-template-columns: 0.9fr 1.3fr;
-  }
-
   .pfr-types-title {
-    font-size: 32px;
+    font-size: 30px;
+  }
+
+  .pfr-types-cards {
+    gap: 20px;
   }
 }
 
 @media (max-width: 768px) {
   .pfr-types-section {
-    padding: 40px 16px 36px;
+    padding: 48px 16px 56px;
   }
 
-  .pfr-types-container {
+  .pfr-types-cards {
     grid-template-columns: 1fr;
-    row-gap: 32px;
-  }
-
-  .pfr-types-illustration-wrap {
-    order: 1;
-  }
-
-  .pfr-types-content {
-    order: 2;
+    gap: 18px;
   }
 
   .pfr-types-title {
-    font-size: 28px;
-  }
-
-  .pfr-types-intro,
-  .pfr-types-text {
-    font-size: 14px;
+    font-size: 26px;
+    margin-bottom: 32px;
   }
 }
 
 @media (max-width: 480px) {
   .pfr-types-section {
-    padding: 32px 14px 28px;
+    padding: 36px 14px 44px;
   }
 
   .pfr-types-title {
-    font-size: 24px;
+    font-size: 22px;
   }
 
-  .pfr-types-intro,
-  .pfr-types-text {
+  .pfr-types-card {
+    padding: 24px 20px;
+  }
+
+  .pfr-types-number {
+    font-size: 38px;
+  }
+
+  .pfr-types-card-title {
+    font-size: 16px;
+  }
+
+  .pfr-types-card-text {
     font-size: 13.5px;
-    line-height: 1.85;
   }
 }
