@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./PublicltdTab.css";
 
 const tabs = [
-  { label: "Why Choose Public ltd", id: "company" },
+  { label: "Why Choose Public Ltd", id: "company" },
   { label: "Types", id: "features" },
   { label: "Benefits", id: "benefits" },
   { label: "Documents", id: "documents" },
@@ -10,7 +10,7 @@ const tabs = [
   { label: "FAQ's", id: "faq" },
 ];
 
-const PvtTabs = () => {
+const PublicltdTabs = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const handleClick = (index, id) => {
@@ -26,15 +26,15 @@ const PvtTabs = () => {
   };
 
   return (
-    <section className="pvt-tabs-section">
-      <div className="pvt-tabs-container">
-        <div className="pvt-tabs-card">
-          <div className="pvt-tabs-list">
+    <section className="pub-tabs-section">
+      <div className="pub-tabs-container">
+        <div className="pub-tabs-card">
+          <div className="pub-tabs-list">
             {tabs.map((tab, index) => (
               <button
                 key={tab.id}
                 type="button"
-                className={`pvt-tab ${index === activeIndex ? "active" : ""}`}
+                className={`pub-tab ${index === activeIndex ? "active" : ""}`}
                 onClick={() => handleClick(index, tab.id)}
               >
                 {tab.label}
@@ -47,4 +47,4 @@ const PvtTabs = () => {
   );
 };
 
-export default PvtTabs;
+export default PublicltdTabs;

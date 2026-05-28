@@ -1,0 +1,24 @@
+/* ===== SECTION DIVIDER ===== */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(34, 197, 94, 0.25) 20%,
+    rgba(34, 197, 94, 0.45) 50%,
+    rgba(34, 197, 94, 0.25) 80%,
+    transparent 100%
+  );
+  margin: 0 40px;
+}
+
+/* ===== PRICING CARDS — solid green border, hover lift ===== */
+.pub-page-pricing .pub-plan-card {
+  border: 1px solid #22c55e;
+  box-shadow: none;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.pub-page-pricing .pub-plan-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
+}

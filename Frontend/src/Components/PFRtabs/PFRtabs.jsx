@@ -10,7 +10,7 @@ const tabs = [
   { label: "FAQ's", id: "faq" },
 ];
 
-const PvtTabs = () => {
+const PFRTabs = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const handleClick = (index, id) => {
@@ -26,15 +26,15 @@ const PvtTabs = () => {
   };
 
   return (
-    <section className="pvt-tabs-section">
-      <div className="pvt-tabs-container">
-        <div className="pvt-tabs-card">
-          <div className="pvt-tabs-list">
+    <section className="pfr-tabs-section">
+      <div className="pfr-tabs-container">
+        <div className="pfr-tabs-card">
+          <div className="pfr-tabs-list">
             {tabs.map((tab, index) => (
               <button
                 key={tab.id}
                 type="button"
-                className={`pvt-tab ${index === activeIndex ? "active" : ""}`}
+                className={`pfr-tab ${index === activeIndex ? "active" : ""}`}
                 onClick={() => handleClick(index, tab.id)}
               >
                 {tab.label}
@@ -47,4 +47,4 @@ const PvtTabs = () => {
   );
 };
 
-export default PvtTabs;
+export default PFRTabs;

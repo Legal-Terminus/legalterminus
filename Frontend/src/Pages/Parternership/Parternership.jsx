@@ -1,6 +1,7 @@
 import React from 'react'
+import "./Parternership.css";
 import PRFbreadcrum from '../../Components/PFRbreadcrum/PFRbreadcrum'
-import PRFlandpricing from '../../Components/PRFlandpricing/PRFlandpricing' 
+import PRFlandpricing from '../../Components/PRFlandpricing/PRFlandpricing'
 import PFRtermscondition from '../../Components/PFRtermscondition/PFRtermscondition'
 import PFRpremium from '../../Components/PFRpremium/PFRpremium'
 import PFRtabs from '../../Components/PFRtabs/PFRtabs'
@@ -10,58 +11,67 @@ import PFRrequirmentTabs from '../../Components/PFRrequirmentTabs/PFRrequirmentT
 import PFRprocess from '../../Components/PFRprocess/PFRprocess'
 import PFRdocument from '../../Components/PFRdocument/PFRdocument'
 import PFRfaq from '../../Components/PFRfaq/PFRfaq'
-import PFRtestimonial from '../../Components/PFRtestimonial/PFRtestimonial'
-import PFRvideo from '../../Components/PFRvideo/PFRvideo'
-import PFRclients from '../../Components/PFRclients/PFRclients'
-
 
 const PrivateLimited = () => {
   return (
     <div>
-      <PRFbreadcrum />
+      <div className="pfr-page-hero">
+        <PRFbreadcrum />
+      </div>
 
-      <div id="plans">
+      <div className="section-divider" />
+
+      <div id="plans" className="pfr-page-pricing">
         <PRFlandpricing />
       </div>
 
+      <div className="section-divider" />
+
       <PFRtermscondition />
 
+      <div className="section-divider" />
 
       <div id="premium">
-       <PFRpremium />
+        <PFRpremium />
       </div>
 
-     <PFRtabs />
+      <PFRtabs />
+
+      <div className="section-divider" />
 
       <div id="company">
-       <PFRcompanytab />
+        <PFRcompanytab />
       </div>
 
+      <div className="section-divider" />
+
       <div id="types">
-      <PFRtypes />
+        <PFRtypes />
       </div>
+
+      <div className="section-divider" />
 
       <div id="requirements">
         <PFRrequirmentTabs />
       </div>
 
+      <div className="section-divider" />
+
       <div id="process">
-      <PFRprocess />
+        <PFRprocess />
       </div>
+
+      <div className="section-divider" />
 
       <div id="documents">
-       <PFRdocument />
+        <PFRdocument />
       </div>
+
+      <div className="section-divider" />
 
       <div id="faq">
-       <PFRfaq />
+        <PFRfaq />
       </div>
-
-      <PFRtestimonial />
-      <PFRvideo />
-      <PFRclients />
-
-      
     </div>
   );
 };

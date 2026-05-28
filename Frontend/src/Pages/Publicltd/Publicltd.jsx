@@ -1,6 +1,7 @@
 import React from 'react'
+import "./Publicltd.css";
 import PublicBreadcrum from '../../Components/PublicBreadcrum/PublicBreadcrum'
- import PublicltdRightPlan from '../../Components/PublicltdRightPlan/PublicltdRightPlan'
+import PublicltdRightPlan from '../../Components/PublicltdRightPlan/PublicltdRightPlan'
 import PublicltdTermsCondition from '../../Components/PublicltdTermsCondition/PublicltdTermsCondition'
 import PublicltdZolvitPremium from '../../Components/PublicltdZolvitPremium/PublicltdZolvitPremium'
 import PublicltdTab from '../../Components/PublicltdTab/PublicltdTab'
@@ -9,49 +10,66 @@ import PublicltdFeatures from '../../Components/PublicltdFeatures/PublicltdFeatu
 import PublicltdBenifits from '../../Components/PublicltdBenifits/PublicltdBenifits'
 import PublicltdDocument from '../../Components/PublicltdDocument/PublicltdDocument'
 import PublicltdProcess from '../../Components/PublicltdProcess/PublicltdProcess'
-import PublicltdWhy from '../../Components/PublicltdWhy/PublicltdWhy'
 import PublicltdFAQ from '../../Components/PublicltdFAQ/PublicltdFAQ'
-
-
 
 const Publicltd = () => {
   return (
     <div>
       <PublicBreadcrum />
-      <PublicltdRightPlan />
+
+      <div className="section-divider" />
+
+      <div id="plans" className="pub-page-pricing">
+        <PublicltdRightPlan />
+      </div>
+
+      <div className="section-divider" />
+
       <PublicltdTermsCondition />
-      <PublicltdZolvitPremium />
+
+      <div className="section-divider" />
+
+      <div id="premium">
+        <PublicltdZolvitPremium />
+      </div>
+
       <PublicltdTab />
 
+      <div className="section-divider" />
+
       <div id="company">
-        < PublicltdOverview/>
+        <PublicltdOverview />
       </div>
-      
+
+      <div className="section-divider" />
+
       <div id="features">
-        <PublicltdFeatures/>
+        <PublicltdFeatures />
       </div>
+
+      <div className="section-divider" />
 
       <div id="benefits">
-        <PublicltdBenifits/>
+        <PublicltdBenifits />
       </div>
 
-      
+      <div className="section-divider" />
+
       <div id="documents">
-        <PublicltdDocument/>
+        <PublicltdDocument />
       </div>
+
+      <div className="section-divider" />
 
       <div id="process">
         <PublicltdProcess />
       </div>
 
-      {/* <PublicltdWhy /> */}
+      <div className="section-divider" />
 
       <div id="faq">
         <PublicltdFAQ />
       </div>
-      
-
-
     </div>
   )
 }

@@ -1,14 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
 
-/* Section wrapper — sticky so the full tab bar stays visible while scrolling */
+/* Section wrapper */
 .pvt-tabs-section {
-  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #f8fafc;
   padding: 32px 24px 16px;
-  position: sticky;
-  top: 0;
-  z-index: 50;
 }
 
 /* Container width */
@@ -17,13 +13,16 @@
   margin: 0 auto;
 }
 
-/* White card */
+/* White card — sticky on scroll */
 .pvt-tabs-card {
   background: #ffffff;
   border-radius: 14px;
   box-shadow: 0 18px 40px rgba(33, 89, 25, 0.08);
   padding: 0;
   overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 /* Tabs wrapper */
@@ -45,23 +44,15 @@
   border: none;
   outline: none;
   background: transparent;
-
-  /* MORE padding so text looks visually full */
   padding: 18px 38px;
-
   font-size: 14.5px;
   font-weight: 500;
-
-  /* Slight letter spacing to make text look cleaner & wider */
   letter-spacing: 2.8px;
-
   color: #0a0b17;
   cursor: pointer;
-
-  flex: 0 0 auto;       /* tab width = text width */
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-
   transition: background 0.15s ease, color 0.15s ease;
 }
 
@@ -69,8 +60,6 @@
 .pvt-tab.active {
   background: #e9f0ff;
   color: #1aa91a;
-
-  /* Top-line highlight */
   box-shadow: inset 0 3px 0 #16b646;
 }
 
@@ -79,16 +68,11 @@
   background: rgba(245, 248, 255, 0.9);
 }
 
-/* -------------------------------
-      RESPONSIVE
---------------------------------*/
-
 /* Tablets */
 @media (max-width: 768px) {
   .pvt-tabs-section {
     padding: 24px 16px;
   }
-
   .pvt-tab {
     padding: 16px 26px;
     font-size: 13.5px;
@@ -100,7 +84,6 @@
   .pvt-tabs-section {
     padding: 20px 12px;
   }
-
   .pvt-tab {
     padding: 14px 20px;
     font-size: 12.5px;
