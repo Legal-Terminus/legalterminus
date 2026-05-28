@@ -58,6 +58,8 @@ const OPCElegibility = () => {
             key={index}
             className={`opcelg-timeline-item ${
               index % 2 === 0 ? "left" : "right"
+            } ${index === 0 ? "first" : ""} ${
+              index === steps.length - 1 ? "last" : ""
             }`}
           >
             <div className="opcelg-timeline-dot">{index + 1}</div>
