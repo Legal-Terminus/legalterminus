@@ -41,7 +41,7 @@ const LLPBreadcrum = () => {
               <p>Online Process</p>
             </div>
             <div>
-              <h3>5+</h3>
+              <h3>7+</h3>
               <p>Years of Legal Expertise</p>
             </div>
           </div>
