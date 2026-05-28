@@ -11,7 +11,6 @@ import OPCBenefits from '../../Components/OPCBenefits/OPCBenefits'
 import OPCElegibility from '../../Components/OPCElegibility/OPCElegibility'
 import OPCDocuments from '../../Components/OPCDocuments/OPCDocuments'
 import OPCFAQ from '../../Components/OPCFAQ/OPCFAQ'
-import OPCProcess from '../../Components/OPCProcess/OPCProcess'
 import OPCWhy from '../../Components/OPCWhy/OPCWhy'
 import OPCOurclints from '../../Components/OPCOurclints/OPCOurclints'
 
@@ -77,7 +76,6 @@ const OPC = () => {
         <OPCFAQ />
       </div>
 
-      <OPCProcess />
       <OPCWhy />
       <OPCOurclints />
     </div>
