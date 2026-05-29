@@ -18,7 +18,7 @@ const STATES = [
   "Delhi", "Jammu & Kashmir", "Ladakh", "Puducherry", "Chandigarh",
 ];
 
-const STEPS = ["order-summary", "checkout", "payment", "success", "thankyou"];
+const STEPS = ["order-summary", "checkout", "payment", "success", "failed", "thankyou"];
 
 const ProCheckoutModal = ({ plan, onClose }) => {
   const [step, setStep] = useState("order-summary");
@@ -74,7 +74,6 @@ const ProCheckoutModal = ({ plan, onClose }) => {
     if (!form.fullName.trim()) e.fullName = "Full name is required";
     if (!/^\d{10}$/.test(form.mobile.trim())) e.mobile = "Enter a valid 10-digit mobile number";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = "Enter a valid email address";
-    if (!form.businessName.trim()) e.businessName = "Business name is required";
     if (!form.state) e.state = "Please select your state";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -84,7 +83,9 @@ const ProCheckoutModal = ({ plan, onClose }) => {
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
-      setStep("success");
+      // Simulate occasional failure (for demo — replace with real gateway result)
+      const success = Math.random() > 0.15;
+      setStep(success ? "success" : "failed");
     }, 2000);
   };
 
@@ -248,15 +249,16 @@ const ProCheckoutModal = ({ plan, onClose }) => {
               <h3 className="pco-form-group-title">Business Details</h3>
 
               <div className="pco-field">
-                <label className="pco-field-label">Business Name</label>
+                <label className="pco-field-label">
+                  Business Name <span className="pco-field-optional">(Optional)</span>
+                </label>
                 <input
-                  className={`pco-input${errors.businessName ? " pco-input-error" : ""}`}
+                  className="pco-input"
                   type="text"
                   placeholder="Enter business name"
                   value={form.businessName}
                   onChange={(e) => updateField("businessName", e.target.value)}
                 />
-                {errors.businessName && <span className="pco-error-msg">{errors.businessName}</span>}
               </div>
 
               <div className="pco-field">
@@ -513,7 +515,43 @@ const ProCheckoutModal = ({ plan, onClose }) => {
           </div>
         )}
 
-        {/* ── STEP 5: THANK YOU ── */}
+        {/* ── STEP 5: PAYMENT FAILED ── */}
+        {step === "failed" && (
+          <div className="pco-step pco-failed-step">
+            <div className="pco-failed-circle">
+              <span className="pco-failed-icon">✕</span>
+            </div>
+            <h2 className="pco-failed-title">Payment Failed</h2>
+            <p className="pco-failed-sub">
+              We couldn't process your payment. Please check your details and try again.
+            </p>
+
+            <div className="pco-failed-reasons">
+              <div className="pco-failed-reasons-title">Common reasons for failure:</div>
+              <ul className="pco-failed-reasons-list">
+                <li>Insufficient balance</li>
+                <li>Bank declined the transaction</li>
+                <li>Network issue during payment</li>
+                <li>Incorrect card or UPI details</li>
+              </ul>
+            </div>
+
+            <button
+              className="pco-btn-primary"
+              onClick={() => { setIsProcessing(false); setStep("payment"); }}
+            >
+              Try Again
+            </button>
+            <button
+              className="pco-btn-outline pco-btn-mt"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {/* ── STEP 6: THANK YOU ── */}
         {step === "thankyou" && (
           <div className="pco-step pco-thankyou-step">
             <div className="pco-thankyou-illustration">🎉</div>
