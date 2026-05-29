@@ -35,7 +35,7 @@ const PricingSection = () => {
               <div className="TM-Renewal-header">
                 <div className="TM-Renewal-name">Elemental</div>
                 <div className="TM-Renewal-old-price">₹5,999</div>
-                <div className="TM-Renewal-price">₹3,999</div>
+                <div className="TM-Renewal-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="TM-Renewal-meta">Excluding gov fee</div>
               </div>
 
@@ -68,7 +68,7 @@ const PricingSection = () => {
               <div className="TM-Renewal-header">
                 <div className="TM-Renewal-name">Enriched</div>
                 <div className="TM-Renewal-old-price">₹7,999</div>
-                <div className="TM-Renewal-price">₹5,999</div>
+                <div className="TM-Renewal-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="TM-Renewal-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
                 </div>
@@ -95,7 +95,7 @@ const PricingSection = () => {
               <div className="TM-Renewal-header">
                 <div className="TM-Renewal-name">Supreme</div>
                 <div className="TM-Renewal-old-price">₹29,999</div>
-                <div className="TM-Renewal-price">₹24,999</div>
+                <div className="TM-Renewal-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="TM-Renewal-meta">Excluding gov fee</div>
               </div>
 

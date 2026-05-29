@@ -32,7 +32,7 @@ const PricingSection = () => {
             <div>
               <div className="cic-header">
                 <div className="cic-name">Elemental</div>
-                <div className="cic-price">₹5,999</div>
+                <div className="cic-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="cic-meta">Including gov fee</div>
               </div>
 

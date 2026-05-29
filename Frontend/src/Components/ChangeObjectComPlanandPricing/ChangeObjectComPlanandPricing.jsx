@@ -34,7 +34,7 @@ const ChangeObjectComPlanandPricing = () => {
             <div>
               <div className="Change-ob-Pp-plan-header">
                 <div className="Change-ob-Pp-plan-name">Elemental</div>
-                <div className="Change-ob-Pp-plan-price">₹2,999</div>
+                <div className="Change-ob-Pp-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="Change-ob-Pp-plan-meta">Including gov fee</div>
               </div>
 
@@ -60,7 +60,7 @@ const ChangeObjectComPlanandPricing = () => {
               <div className="Change-ob-Pp-plan-header">
                 <div className="Change-ob-Pp-plan-name">Enriched</div>
                 <div className="Change-ob-Pp-plan-old-price">₹7,999</div>
-                <div className="Change-ob-Pp-plan-price">₹5,999</div>
+                <div className="Change-ob-Pp-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="Change-ob-Pp-plan-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
                 </div>
@@ -87,7 +87,7 @@ const ChangeObjectComPlanandPricing = () => {
               <div className="Change-ob-Pp-plan-header">
                 <div className="Change-ob-Pp-plan-name">Supreme</div>
                 <div className="Change-ob-Pp-plan-old-price">₹29,999</div>
-                <div className="Change-ob-Pp-plan-price">₹24,999</div>
+                <div className="Change-ob-Pp-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="Change-ob-Pp-plan-meta">Excluding gov fee</div>
               </div>
 

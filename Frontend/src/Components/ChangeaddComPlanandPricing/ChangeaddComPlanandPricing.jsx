@@ -34,7 +34,7 @@ const ChangeaddComPlanandPricing = () => {
             <div>
               <div className="plan-header">
                 <div className="plan-name">Elemental</div>
-                <div className="plan-price">₹1,499</div>
+                <div className="plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="plan-meta">Including gov fee</div>
               </div>
 
@@ -55,7 +55,7 @@ const ChangeaddComPlanandPricing = () => {
             <div>
               <div className="plan-header">
                 <div className="plan-name">Enriched</div>
-                <div className="plan-price">₹3,999</div>
+                <div className="plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="plan-meta">
                   Including gov fee <span className="popular">(Popular)</span>
                 </div>
@@ -78,7 +78,7 @@ const ChangeaddComPlanandPricing = () => {
             <div>
               <div className="plan-header">
                 <div className="plan-name">Supreme</div>
-                <div className="plan-price">₹19,999</div>
+                <div className="plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="plan-meta">Excluding gov fee</div>
               </div>
 

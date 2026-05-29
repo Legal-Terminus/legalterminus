@@ -35,7 +35,7 @@ const LLPPlanandPrice = () => {
               <div className="LLP-Plan--header">
                 <div className="LLP-Plan--name">Elemental</div>
                 <div className="LLP-Plan--old-price">₹5,999</div>
-                <div className="LLP-Plan--price">₹3,999</div>
+                <div className="LLP-Plan--price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="LLP-Plan--meta">Excluding gov fee</div>
               </div>
 
@@ -66,7 +66,7 @@ const LLPPlanandPrice = () => {
               <div className="LLP-Plan--header">
                 <div className="LLP-Plan--name">Enriched</div>
                 <div className="LLP-Plan--old-price">₹9,999</div>
-                <div className="LLP-Plan--price">₹7,999</div>
+                <div className="LLP-Plan--price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="LLP-Plan--meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
                 </div>
@@ -94,7 +94,7 @@ const LLPPlanandPrice = () => {
               <div className="LLP-Plan--header">
                 <div className="LLP-Plan--name">Supreme</div>
                 <div className="LLP-Plan--old-price">₹29,999</div>
-                <div className="LLP-Plan--price">₹24,999</div>
+                <div className="LLP-Plan--price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="LLP-Plan--meta">Excluding gov fee</div>
               </div>
 

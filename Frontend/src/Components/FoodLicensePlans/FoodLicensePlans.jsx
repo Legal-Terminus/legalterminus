@@ -33,7 +33,7 @@ const FoodLicensePlans = () => {
             <div>
               <div className="foodlicenseplan-header">
                 <div className="foodlicenseplan-name">Elemental</div>
-                <div className="foodlicenseplan-price">₹1,499</div>
+                <div className="foodlicenseplan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="foodlicenseplan-meta">Excluding gov fee</div>
               </div>
 
@@ -54,7 +54,7 @@ const FoodLicensePlans = () => {
             <div>
               <div className="foodlicenseplan-header">
                 <div className="foodlicenseplan-name">Enriched</div>
-                <div className="foodlicenseplan-price">₹3,999</div>
+                <div className="foodlicenseplan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="foodlicenseplan-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
                 </div>
@@ -77,7 +77,7 @@ const FoodLicensePlans = () => {
             <div>
               <div className="foodlicenseplan-header">
                 <div className="foodlicenseplan-name">Supreme</div>
-                <div className="foodlicenseplan-price">₹7,999</div>
+                <div className="foodlicenseplan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="foodlicenseplan-meta">Excluding gov fee</div>
               </div>
 

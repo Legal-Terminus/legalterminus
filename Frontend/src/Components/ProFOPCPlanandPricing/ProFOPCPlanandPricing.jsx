@@ -35,7 +35,7 @@ const PricingSection = () => {
               <div className="profopc-plan-header">
                 <div className="profopc-plan-name">Elemental</div>
                 <div className="profopc-plan-old-price">₹5,999</div>
-                <div className="profopc-plan-price">₹3,999</div>
+                <div className="profopc-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="profopc-plan-meta">Excluding gov fee</div>
               </div>
 
@@ -68,7 +68,7 @@ const PricingSection = () => {
               <div className="profopc-plan-header">
                 <div className="profopc-plan-name">Enriched</div>
                 <div className="profopc-plan-old-price">₹7,999</div>
-                <div className="profopc-plan-price">₹5,999</div>
+                <div className="profopc-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="profopc-plan-meta">
                   Excluding gov fee <span className="profopc-popular">(Popular)</span>
                 </div>
@@ -95,7 +95,7 @@ const PricingSection = () => {
               <div className="profopc-plan-header">
                 <div className="profopc-plan-name">Supreme</div>
                 <div className="profopc-plan-old-price">₹29,999</div>
-                <div className="profopc-plan-price">₹24,999</div>
+                <div className="profopc-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="profopc-plan-meta">Excluding gov fee</div>
               </div>
 

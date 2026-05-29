@@ -35,7 +35,7 @@ const TrustPlanAndPricing = () => {
               <div className="trust-plan-header">
                 <div className="trust-plan-name">Elemental</div>
                 <div className="trust-plan-old-price">₹5,999</div>
-                <div className="trust-plan-price">₹3,999</div>
+                <div className="trust-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="trust-plan-meta">Excluding gov fee</div>
               </div>
 
@@ -68,7 +68,7 @@ const TrustPlanAndPricing = () => {
               <div className="trust-plan-header">
                 <div className="trust-plan-name">Enriched</div>
                 <div className="trust-plan-old-price">₹7,999</div>
-                <div className="trust-plan-price">₹5,999</div>
+                <div className="trust-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="trust-plan-meta">
                   Excluding gov fee <span className="trust-popular">(Popular)</span>
                 </div>
@@ -95,7 +95,7 @@ const TrustPlanAndPricing = () => {
               <div className="trust-plan-header">
                 <div className="trust-plan-name">Supreme</div>
                 <div className="trust-plan-old-price">₹29,999</div>
-                <div className="trust-plan-price">₹24,999</div>
+                <div className="trust-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="trust-plan-meta">Excluding gov fee</div>
               </div>
 

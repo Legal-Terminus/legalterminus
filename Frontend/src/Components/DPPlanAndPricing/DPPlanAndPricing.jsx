@@ -35,7 +35,7 @@ const DPPlanAndPricing = () => {
               <div className="DP-plan-header">
                 <div className="DP-plan-name">Elemental</div>
                 <div className="DP-plan-old-price">₹5,999</div>
-                <div className="DP-plan-price">₹3,999</div>
+                <div className="DP-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="DP-plan-meta">Excluding gov fee</div>
               </div>
 
@@ -68,7 +68,7 @@ const DPPlanAndPricing = () => {
               <div className="DP-plan-header">
                 <div className="DP-plan-name">Enriched</div>
                 <div className="DP-plan-old-price">₹7,999</div>
-                <div className="DP-plan-price">₹5,999</div>
+                <div className="DP-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="DP-plan-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
                 </div>
@@ -95,7 +95,7 @@ const DPPlanAndPricing = () => {
               <div className="DP-plan-header">
                 <div className="DP-plan-name">Supreme</div>
                 <div className="DP-plan-old-price">₹29,999</div>
-                <div className="DP-plan-price">₹24,999</div>
+                <div className="DP-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="DP-plan-meta">Excluding gov fee</div>
               </div>
 

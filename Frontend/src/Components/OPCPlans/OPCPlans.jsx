@@ -34,7 +34,7 @@ const OPCPlan = () => {
               <div className="opcplan-header">
                 <div className="opcplan-name">Elemental</div>
                 <div className="opcplan-old-price">₹5,999</div>
-                <div className="opcplan-price">₹3,999</div>
+                <div className="opcplan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="opcplan-meta">Excluding gov fee</div>
               </div>
 
@@ -66,7 +66,7 @@ const OPCPlan = () => {
               <div className="opcplan-header">
                 <div className="opcplan-name">Enriched</div>
                 <div className="opcplan-old-price">₹7,999</div>
-                <div className="opcplan-price">₹5,999</div>
+                <div className="opcplan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="opcplan-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
                 </div>
@@ -93,7 +93,7 @@ const OPCPlan = () => {
               <div className="opcplan-header">
                 <div className="opcplan-name">Supreme</div>
                 <div className="opcplan-old-price">₹29,999</div>
-                <div className="opcplan-price">₹24,999</div>
+                <div className="opcplan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="opcplan-meta">Excluding gov fee</div>
               </div>
 

@@ -33,7 +33,7 @@ const TradeLicensePlans = () => {
             <div>
               <div className="tradeplan-header">
                 <div className="tradeplan-name">Elemental</div>
-                <div className="tradeplan-price">₹2,999</div>
+                <div className="tradeplan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="tradeplan-meta">Excluding gov fee</div>
               </div>
 
@@ -66,7 +66,7 @@ const TradeLicensePlans = () => {
               <div className="tradeplan-header">
                 <div className="tradeplan-name">Enriched</div>
                 <div className="tradeplan-old-price">₹7,999</div>
-                <div className="tradeplan-price">₹5,999</div>
+                <div className="tradeplan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="tradeplan-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
                 </div>
@@ -93,7 +93,7 @@ const TradeLicensePlans = () => {
               <div className="tradeplan-header">
                 <div className="tradeplan-name">Supreme</div>
                 <div className="tradeplan-old-price">₹29,999</div>
-                <div className="tradeplan-price">₹24,999</div>
+                <div className="tradeplan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="tradeplan-meta">Excluding gov fee</div>
               </div>
 

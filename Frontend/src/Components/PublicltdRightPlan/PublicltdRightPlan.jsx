@@ -35,7 +35,7 @@ const PricingSection = () => {
               <div className="pub-plan-card-header">
                 <div className="pub-plan-name">Elemental</div>
                 <div className="pub-plan-old-price">₹29,999</div>
-                <div className="pub-plan-price">₹24,999</div>
+                <div className="pub-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="pub-plan-meta">Excluding gov fee</div>
               </div>
 
@@ -68,7 +68,7 @@ const PricingSection = () => {
               <div className="pub-plan-card-header">
                 <div className="pub-plan-name">Enriched</div>
                 <div className="pub-plan-old-price">₹34,999</div>
-                <div className="pub-plan-price">₹27,999</div>
+                <div className="pub-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="pub-plan-meta">
                   Excluding gov fee <span className="pub-plan-popular">(Popular)</span>
                 </div>
@@ -96,7 +96,7 @@ const PricingSection = () => {
               <div className="pub-plan-card-header">
                 <div className="pub-plan-name">Supreme</div>
                 <div className="pub-plan-old-price">₹49,999</div>
-                <div className="pub-plan-price">₹39,999</div>
+                <div className="pub-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="pub-plan-meta">Excluding gov fee</div>
               </div>
 

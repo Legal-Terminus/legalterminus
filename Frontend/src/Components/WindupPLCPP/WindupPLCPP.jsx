@@ -35,7 +35,7 @@ const WindupPLCPP = () => {
               <div className="Windup-PLC-plan-header">
                 <div className="Windup-PLC-plan-name">Elemental</div>
                 <div className="Windup-PLC-plan-old-price">₹5,999</div>
-                <div className="Windup-PLC-plan-price">₹3,999</div>
+                <div className="Windup-PLC-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="Windup-PLC-plan-meta">Excluding gov fee</div>
               </div>
 
@@ -68,7 +68,7 @@ const WindupPLCPP = () => {
               <div className="Windup-PLC-plan-header">
                 <div className="Windup-PLC-plan-name">Enriched</div>
                 <div className="Windup-PLC-plan-old-price">₹7,999</div>
-                <div className="Windup-PLC-plan-price">₹5,999</div>
+                <div className="Windup-PLC-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="Windup-PLC-plan-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
                 </div>
@@ -95,7 +95,7 @@ const WindupPLCPP = () => {
               <div className="Windup-PLC-plan-header">
                 <div className="Windup-PLC-plan-name">Supreme</div>
                 <div className="Windup-PLC-plan-old-price">₹29,999</div>
-                <div className="Windup-PLC-plan-price">₹24,999</div>
+                <div className="Windup-PLC-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="Windup-PLC-plan-meta">Excluding gov fee</div>
               </div>
 

@@ -35,7 +35,7 @@ const IncorporationPlanAndPricing = () => {
               <div className="incorp-plan-header">
                 <div className="incorp-plan-name">Elemental</div>
                 <div className="incorp-plan-old-price">₹5,999</div>
-                <div className="incorp-plan-price">₹3,999</div>
+                <div className="incorp-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="incorp-plan-meta">Excluding gov fee</div>
               </div>
 
@@ -68,7 +68,7 @@ const IncorporationPlanAndPricing = () => {
               <div className="incorp-plan-header">
                 <div className="incorp-plan-name">Enriched</div>
                 <div className="incorp-plan-old-price">₹7,999</div>
-                <div className="incorp-plan-price">₹5,999</div>
+                <div className="incorp-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="incorp-plan-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
                 </div>
@@ -95,7 +95,7 @@ const IncorporationPlanAndPricing = () => {
               <div className="incorp-plan-header">
                 <div className="incorp-plan-name">Supreme</div>
                 <div className="incorp-plan-old-price">₹29,999</div>
-                <div className="incorp-plan-price">₹24,999</div>
+                <div className="incorp-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="incorp-plan-meta">Excluding gov fee</div>
               </div>
 

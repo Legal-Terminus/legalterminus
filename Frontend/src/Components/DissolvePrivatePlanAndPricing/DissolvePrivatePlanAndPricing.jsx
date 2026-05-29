@@ -34,7 +34,7 @@ const DissolvePrivatePlanAndPricing = () => {
             <div>
               <div className="DissolvePrivate-plan-header">
                 <div className="DissolvePrivate-plan-name">Elemental</div>
-                <div className="DissolvePrivate-plan-price">₹18,999</div>
+                <div className="DissolvePrivate-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="DissolvePrivate-plan-meta">Excluding gov fee</div>
               </div>
 
@@ -55,7 +55,7 @@ const DissolvePrivatePlanAndPricing = () => {
             <div>
               <div className="DissolvePrivate-plan-header">
                 <div className="DissolvePrivate-plan-name">Enriched</div>
-                <div className="DissolvePrivate-plan-price">₹23,999</div>
+                <div className="DissolvePrivate-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="DissolvePrivate-plan-meta">
                   Excluding gov fee <span className="DissolvePrivate-popular">(Popular)</span>
                 </div>
@@ -80,7 +80,7 @@ const DissolvePrivatePlanAndPricing = () => {
             <div>
               <div className="DissolvePrivate-plan-header">
                 <div className="DissolvePrivate-plan-name">Supreme</div>
-                <div className="DissolvePrivate-plan-price">₹26,999</div>
+                <div className="DissolvePrivate-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="DissolvePrivate-plan-meta">Excluding gov fee</div>
               </div>
 

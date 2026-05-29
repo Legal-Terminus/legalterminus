@@ -35,7 +35,7 @@ const SocietyPlanAndPricing = () => {
               <div className="Society-plan-header">
                 <div className="Society-plan-name">Elemental</div>
                 <div className="Society-plan-old-price">₹5,999</div>
-                <div className="Society-plan-price">₹3,999</div>
+                <div className="Society-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="Society-plan-meta">Excluding gov fee</div>
               </div>
 
@@ -68,7 +68,7 @@ const SocietyPlanAndPricing = () => {
               <div className="Society-plan-header">
                 <div className="Society-plan-name">Enriched</div>
                 <div className="Society-plan-old-price">₹7,999</div>
-                <div className="Society-plan-price">₹5,999</div>
+                <div className="Society-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="Society-plan-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
                 </div>
@@ -95,7 +95,7 @@ const SocietyPlanAndPricing = () => {
               <div className="Society-plan-header">
                 <div className="Society-plan-name">Supreme</div>
                 <div className="Society-plan-old-price">₹29,999</div>
-                <div className="Society-plan-price">₹24,999</div>
+                <div className="Society-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="Society-plan-meta">Excluding gov fee</div>
               </div>
 

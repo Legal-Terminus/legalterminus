@@ -34,7 +34,7 @@ const IECPlans = () => {
               <div className="iecplan-header">
                 <div className="iecplan-name">Elemental</div>
                 <div className="iecplan-old-price">₹5,999</div>
-                <div className="iecplan-price">₹3,999</div>
+                <div className="iecplan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="iecplan-meta">Excluding gov fee</div>
               </div>
 
@@ -61,7 +61,7 @@ const IECPlans = () => {
               <div className="iecplan-header">
                 <div className="iecplan-name">Elemental</div>
                 <div className="iecplan-old-price">₹4,999</div>
-                <div className="iecplan-price">₹1,999</div>
+                <div className="iecplan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="iecplan-meta">
                   Excluding gov fee
                 </div>
@@ -85,7 +85,7 @@ const IECPlans = () => {
               <div className="iecplan-header">
                 <div className="iecplan-name">Supreme</div>
                 <div className="iecplan-old-price">₹29,999</div>
-                <div className="iecplan-price">₹24,999</div>
+                <div className="iecplan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="iecplan-meta">Excluding gov fee</div>
               </div>
 
