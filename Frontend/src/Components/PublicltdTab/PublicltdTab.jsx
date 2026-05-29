@@ -5,8 +5,8 @@ const tabs = [
   { label: "Why Choose Public Ltd", id: "company" },
   { label: "Types", id: "features" },
   { label: "Benefits", id: "benefits" },
-  { label: "Documents", id: "documents" },
   { label: "Process", id: "process" },
+  { label: "Documents", id: "documents" },
   { label: "FAQ's", id: "faq" },
 ];
 
