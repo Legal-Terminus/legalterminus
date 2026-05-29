@@ -202,6 +202,12 @@
   box-shadow: 0 25px 65px rgba(0,0,0,0.12);
 }
 
+.contactussection-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .contactussection-form-heading {
   margin: 0 0 20px;
   font-size: 22px;
