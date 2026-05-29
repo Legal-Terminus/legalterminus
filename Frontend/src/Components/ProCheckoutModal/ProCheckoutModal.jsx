@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ProCheckoutModal.css";
-import { getUserProfile } from "../../utils/userProfile";
+import { getUserProfile, saveUserProfile } from "../../utils/userProfile";
 
 const STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -162,6 +162,14 @@ const ProCheckoutModal = ({ plan, onClose }) => {
       // Replace with real gateway result — demo simulates ~20% failure rate
       const success = Math.random() > 0.2;
       if (success) {
+        // Persist the form data so future checkouts auto-fill
+        saveUserProfile({
+          fullName:     form.fullName,
+          email:        form.email,
+          mobile:       form.mobile,
+          businessName: form.businessName,
+          state:        form.state,
+        });
         setStep("success");
       } else {
         setFailureReason(pickFailureReason(paymentMethod));
