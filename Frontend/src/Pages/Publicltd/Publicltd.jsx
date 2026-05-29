@@ -55,14 +55,14 @@ const Publicltd = () => {
 
       <div className="section-divider" />
 
-      <div id="documents">
-        <PublicltdDocument />
+      <div id="process">
+        <PublicltdProcess />
       </div>
 
       <div className="section-divider" />
 
-      <div id="process">
-        <PublicltdProcess />
+      <div id="documents">
+        <PublicltdDocument />
       </div>
 
       <div className="section-divider" />
