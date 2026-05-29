@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ProCheckoutModal.css";
+import { getUserProfile } from "../../utils/userProfile";
 
 const STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -85,11 +86,17 @@ function pickFailureReason(paymentMethod) {
 const STEPS = ["order-summary", "checkout", "payment", "success", "failed", "thankyou"];
 
 const ProCheckoutModal = ({ plan, onClose }) => {
+  const savedUser = getUserProfile();
+
   const [step, setStep] = useState("order-summary");
   const [paymentMethod, setPaymentMethod] = useState("upi");
-  const [failureReason, setFailureReason] = useState(null); // key into FAILURE_REASONS
+  const [failureReason, setFailureReason] = useState(null);
   const [form, setForm] = useState({
-    fullName: "", mobile: "", email: "", businessName: "", state: "",
+    fullName:     savedUser?.fullName     || "",
+    mobile:       savedUser?.mobile       || "",
+    email:        savedUser?.email        || "",
+    businessName: savedUser?.businessName || "",
+    state:        savedUser?.state        || "",
   });
   const [errors, setErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
@@ -260,6 +267,13 @@ const ProCheckoutModal = ({ plan, onClose }) => {
         {step === "checkout" && (
           <div className="pco-step">
             <h2 className="pco-step-heading">Checkout</h2>
+
+            {savedUser && (
+              <div className="pco-autofill-banner">
+                <span className="pco-autofill-icon">✓</span>
+                Details pre-filled from your account. Update if needed.
+              </div>
+            )}
 
             <div className="pco-form-group">
               <h3 className="pco-form-group-title">Personal Details</h3>

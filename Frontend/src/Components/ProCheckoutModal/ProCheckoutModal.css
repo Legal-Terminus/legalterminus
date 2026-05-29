@@ -304,6 +304,28 @@
 
 .pco-btn-outline:hover { background: #f0faf2; }
 
+/* ── AUTO-FILL BANNER ── */
+.pco-autofill-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0faf2;
+  border: 1px solid #b8dfc2;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #2e7d32;
+  font-weight: 500;
+  margin-bottom: 18px;
+}
+
+.pco-autofill-icon {
+  font-size: 15px;
+  font-weight: 700;
+  color: #21b738;
+  flex-shrink: 0;
+}
+
 /* ── CHECKOUT FORM ── */
 .pco-step-heading {
   font-size: 20px;
