@@ -279,6 +279,13 @@
   font-weight: 500;
 }
 
+.pco-addon-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: #21b738;
+  white-space: nowrap;
+}
+
 
 /* ── ORDER SUMMARY BOX ── */
 .pco-summary-box {
@@ -846,34 +853,25 @@
   line-height: 1.6;
 }
 
-.pco-failed-reasons {
-  background: #fff5f5;
-  border: 1px solid #ffd0d0;
+.pco-failed-tip-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 13px 15px;
   margin-bottom: 22px;
   text-align: left;
 }
 
-.pco-failed-reasons-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #c62828;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
+.pco-failed-tip-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
 
-.pco-failed-reasons-list {
-  margin: 0;
-  padding-left: 18px;
-}
-
-.pco-failed-reasons-list li {
+.pco-failed-tip {
   font-size: 13px;
-  color: #555;
-  line-height: 1.6;
-  margin-bottom: 2px;
+  color: #5d4037;
+  margin: 0;
+  line-height: 1.65;
 }
 
 .pco-btn-mt {

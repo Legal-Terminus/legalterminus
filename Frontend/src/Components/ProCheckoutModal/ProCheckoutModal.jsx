@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import "./ProCheckoutModal.css";
 
 const ADDONS = [
-  { id: "trademark", name: "Trademark Registration" },
-  { id: "msme", name: "MSME Certificate" },
-  { id: "shop", name: "Shop & Establishment Reg." },
-  { id: "gst-return", name: "GST Return Filing" },
-  { id: "startup", name: "Startup India Registration" },
+  { id: "trademark", name: "Trademark Registration", price: 999 },
+  { id: "msme", name: "MSME Certificate", price: 499 },
+  { id: "shop", name: "Shop & Establishment Reg.", price: 799 },
+  { id: "gst-return", name: "GST Return Filing", price: 999 },
+  { id: "startup", name: "Startup India Registration", price: 1499 },
 ];
 
 const STATES = [
@@ -18,12 +18,85 @@ const STATES = [
   "Delhi", "Jammu & Kashmir", "Ladakh", "Puducherry", "Chandigarh",
 ];
 
+// Maps every possible failure code → what the user sees
+const FAILURE_REASONS = {
+  cancelled: {
+    icon: "↩",
+    colour: "#f57c00",
+    title: "Payment Cancelled",
+    message: "You cancelled the payment before it was completed.",
+    tip: "No money has been deducted. Click \"Go Back\" to choose a payment method and try again.",
+    tryLabel: "Go Back to Payment",
+  },
+  wrong_upi: {
+    icon: "📲",
+    colour: "#e53935",
+    title: "Invalid UPI ID",
+    message: "The UPI ID or VPA you entered could not be found.",
+    tip: "Double-check the UPI ID and make sure it is active (e.g. yourname@upi).",
+    tryLabel: "Try Again",
+  },
+  card_auth_failed: {
+    icon: "💳",
+    colour: "#e53935",
+    title: "Card Authentication Failed",
+    message: "We could not verify your card details. OTP may have expired or was entered incorrectly.",
+    tip: "Re-enter your card details carefully and make sure to approve the OTP within 5 minutes.",
+    tryLabel: "Try Again",
+  },
+  insufficient_balance: {
+    icon: "💰",
+    colour: "#e53935",
+    title: "Insufficient Balance",
+    message: "Your account does not have enough balance to complete this transaction.",
+    tip: "Add funds to your account or choose a different payment method.",
+    tryLabel: "Try Another Method",
+  },
+  bank_declined: {
+    icon: "🏦",
+    colour: "#e53935",
+    title: "Transaction Declined by Bank",
+    message: "Your bank has declined this transaction.",
+    tip: "Contact your bank for details or use a different card / payment method.",
+    tryLabel: "Try Another Method",
+  },
+  network_error: {
+    icon: "📡",
+    colour: "#e53935",
+    title: "Network Error",
+    message: "The payment could not be completed due to a connection issue.",
+    tip: "Check your internet connection and try again. No amount has been deducted.",
+    tryLabel: "Try Again",
+  },
+  timeout: {
+    icon: "⏱",
+    colour: "#e53935",
+    title: "Payment Timed Out",
+    message: "Your payment session expired before the transaction could be processed.",
+    tip: "Please start the payment again. Sessions expire after 10 minutes for security.",
+    tryLabel: "Try Again",
+  },
+};
+
+// Picks a realistic failure reason for demo purposes
+function pickFailureReason(paymentMethod) {
+  const pool = {
+    upi:        ["wrong_upi", "insufficient_balance", "network_error", "timeout"],
+    card:       ["card_auth_failed", "insufficient_balance", "bank_declined", "network_error"],
+    netbanking: ["bank_declined", "network_error", "timeout"],
+    wallet:     ["insufficient_balance", "network_error", "timeout"],
+  };
+  const options = pool[paymentMethod] || ["network_error"];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
 const STEPS = ["order-summary", "checkout", "payment", "success", "failed", "thankyou"];
 
 const ProCheckoutModal = ({ plan, onClose }) => {
   const [step, setStep] = useState("order-summary");
   const [selectedAddons, setSelectedAddons] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [failureReason, setFailureReason] = useState(null); // key into FAILURE_REASONS
   const [form, setForm] = useState({
     fullName: "", mobile: "", email: "", businessName: "", state: "",
   });
@@ -51,9 +124,10 @@ const ProCheckoutModal = ({ plan, onClose }) => {
     if (modalRef.current) modalRef.current.scrollTop = 0;
   }, [step]);
 
-  const total = plan.price;
+  // Total always reflects plan + selected addons
+  const total = plan.price + selectedAddons.reduce((sum, a) => sum + a.price, 0);
+
   const stepIndex = STEPS.indexOf(step);
-  const showBackButton = stepIndex > 0 && stepIndex < 3;
   const showProgress = stepIndex < 3;
 
   const toggleAddon = (addon) => {
@@ -79,14 +153,38 @@ const ProCheckoutModal = ({ plan, onClose }) => {
     return Object.keys(e).length === 0;
   };
 
+  // Back button behaviour depends on current step
+  const handleBack = () => {
+    if (step === "payment") {
+      // Clicking back FROM payment = user cancelled
+      setFailureReason("cancelled");
+      setStep("failed");
+    } else if (step === "checkout") {
+      setStep("order-summary");
+    }
+  };
+
+  const showBackButton = step === "checkout" || step === "payment";
+
   const handlePay = () => {
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
-      // Simulate occasional failure (for demo — replace with real gateway result)
-      const success = Math.random() > 0.15;
-      setStep(success ? "success" : "failed");
+      // Replace with real gateway result — demo simulates ~20% failure rate
+      const success = Math.random() > 0.2;
+      if (success) {
+        setStep("success");
+      } else {
+        setFailureReason(pickFailureReason(paymentMethod));
+        setStep("failed");
+      }
     }, 2000);
+  };
+
+  const handleTryAgain = () => {
+    setFailureReason(null);
+    setIsProcessing(false);
+    setStep("payment");
   };
 
   const progressSteps = [
@@ -95,6 +193,8 @@ const ProCheckoutModal = ({ plan, onClose }) => {
     { label: "Payment", key: "payment" },
   ];
 
+  const failure = failureReason ? FAILURE_REASONS[failureReason] : null;
+
   return (
     <div className="pco-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="pco-modal" ref={modalRef}>
@@ -102,9 +202,7 @@ const ProCheckoutModal = ({ plan, onClose }) => {
         {/* Sticky header */}
         <div className="pco-modal-head">
           {showBackButton ? (
-            <button className="pco-back-btn" onClick={() => setStep(STEPS[stepIndex - 1])}>
-              ← Back
-            </button>
+            <button className="pco-back-btn" onClick={handleBack}>← Back</button>
           ) : (
             <div />
           )}
@@ -160,9 +258,8 @@ const ProCheckoutModal = ({ plan, onClose }) => {
 
             <div className="pco-addons-section">
               <h3 className="pco-addons-title">
-                Interested in other services? <span className="pco-optional-tag">(Optional)</span>
+                Add More Services <span className="pco-optional-tag">(Optional)</span>
               </h3>
-              <p className="pco-addons-note">Check any services you'd like our team to contact you about.</p>
               {ADDONS.map((addon) => (
                 <label key={addon.id} className="pco-addon-row">
                   <input
@@ -172,6 +269,7 @@ const ProCheckoutModal = ({ plan, onClose }) => {
                     onChange={() => toggleAddon(addon)}
                   />
                   <span className="pco-addon-name">{addon.name}</span>
+                  <span className="pco-addon-price">+ ₹{addon.price.toLocaleString("en-IN")}</span>
                 </label>
               ))}
             </div>
@@ -181,14 +279,15 @@ const ProCheckoutModal = ({ plan, onClose }) => {
                 <span>{plan.name} Plan</span>
                 <span>₹{plan.price.toLocaleString("en-IN")}</span>
               </div>
-              {selectedAddons.length > 0 && (
-                <div className="pco-summary-row pco-summary-interest">
-                  <span>Also interested in: {selectedAddons.map((a) => a.name).join(", ")}</span>
+              {selectedAddons.map((a) => (
+                <div key={a.id} className="pco-summary-row">
+                  <span>{a.name}</span>
+                  <span>₹{a.price.toLocaleString("en-IN")}</span>
                 </div>
-              )}
+              ))}
               <div className="pco-summary-divider" />
               <div className="pco-summary-total-row">
-                <span>Total</span>
+                <span>Total ({1 + selectedAddons.length} {selectedAddons.length === 0 ? "item" : "items"})</span>
                 <span className="pco-total-amount">₹{total.toLocaleString("en-IN")}</span>
               </div>
             </div>
@@ -282,11 +381,12 @@ const ProCheckoutModal = ({ plan, onClose }) => {
                 <span>{plan.name} Plan</span>
                 <span>₹{plan.price.toLocaleString("en-IN")}</span>
               </div>
-              {selectedAddons.length > 0 && (
-                <div className="pco-summary-row pco-summary-interest">
-                  <span>Also interested in: {selectedAddons.map((a) => a.name).join(", ")}</span>
+              {selectedAddons.map((a) => (
+                <div key={a.id} className="pco-summary-row">
+                  <span>{a.name}</span>
+                  <span>₹{a.price.toLocaleString("en-IN")}</span>
                 </div>
-              )}
+              ))}
               <div className="pco-summary-divider" />
               <div className="pco-summary-total-row">
                 <span>Total Amount</span>
@@ -344,16 +444,12 @@ const ProCheckoutModal = ({ plan, onClose }) => {
                   <div className="pco-qr-box">
                     <svg viewBox="0 0 100 100" width="130" height="130" xmlns="http://www.w3.org/2000/svg">
                       <rect width="100" height="100" fill="#fff"/>
-                      {/* Top-left finder */}
                       <rect x="5" y="5" width="28" height="28" rx="2" fill="none" stroke="#111" strokeWidth="3"/>
                       <rect x="11" y="11" width="16" height="16" rx="1" fill="#111"/>
-                      {/* Top-right finder */}
                       <rect x="67" y="5" width="28" height="28" rx="2" fill="none" stroke="#111" strokeWidth="3"/>
                       <rect x="73" y="11" width="16" height="16" rx="1" fill="#111"/>
-                      {/* Bottom-left finder */}
                       <rect x="5" y="67" width="28" height="28" rx="2" fill="none" stroke="#111" strokeWidth="3"/>
                       <rect x="11" y="73" width="16" height="16" rx="1" fill="#111"/>
-                      {/* Data modules */}
                       <rect x="40" y="5" width="4" height="4" fill="#111"/><rect x="46" y="5" width="4" height="4" fill="#111"/>
                       <rect x="56" y="5" width="4" height="4" fill="#111"/><rect x="62" y="5" width="4" height="4" fill="#111"/>
                       <rect x="40" y="11" width="4" height="4" fill="#111"/><rect x="52" y="11" width="4" height="4" fill="#111"/>
@@ -516,37 +612,25 @@ const ProCheckoutModal = ({ plan, onClose }) => {
         )}
 
         {/* ── STEP 5: PAYMENT FAILED ── */}
-        {step === "failed" && (
+        {step === "failed" && failure && (
           <div className="pco-step pco-failed-step">
-            <div className="pco-failed-circle">
-              <span className="pco-failed-icon">✕</span>
-            </div>
-            <h2 className="pco-failed-title">Payment Failed</h2>
-            <p className="pco-failed-sub">
-              We couldn't process your payment. Please check your details and try again.
-            </p>
-
-            <div className="pco-failed-reasons">
-              <div className="pco-failed-reasons-title">Common reasons for failure:</div>
-              <ul className="pco-failed-reasons-list">
-                <li>Insufficient balance</li>
-                <li>Bank declined the transaction</li>
-                <li>Network issue during payment</li>
-                <li>Incorrect card or UPI details</li>
-              </ul>
+            <div className="pco-failed-circle" style={{ background: failure.colour, boxShadow: `0 8px 24px ${failure.colour}55` }}>
+              <span className="pco-failed-icon">{failure.icon}</span>
             </div>
 
-            <button
-              className="pco-btn-primary"
-              onClick={() => { setIsProcessing(false); setStep("payment"); }}
-            >
-              Try Again
+            <h2 className="pco-failed-title">{failure.title}</h2>
+            <p className="pco-failed-sub">{failure.message}</p>
+
+            <div className="pco-failed-tip-box">
+              <span className="pco-failed-tip-icon">💡</span>
+              <p className="pco-failed-tip">{failure.tip}</p>
+            </div>
+
+            <button className="pco-btn-primary" onClick={handleTryAgain}>
+              {failure.tryLabel}
             </button>
-            <button
-              className="pco-btn-outline pco-btn-mt"
-              onClick={onClose}
-            >
-              Cancel
+            <button className="pco-btn-outline pco-btn-mt" onClick={onClose}>
+              Cancel Order
             </button>
           </div>
         )}
