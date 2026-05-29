@@ -232,6 +232,15 @@
   transform: translateY(-2px);
 }
 
+/* Select */
+.contactussection-select {
+  color: #a0a4aa;
+  appearance: auto;
+  cursor: pointer;
+}
+.contactussection-select:focus { color: #111827; }
+.contactussection-select option { color: #111827; }
+
 /* Textarea */
 .contactussection-textarea {
   min-height: 150px;

@@ -67,6 +67,25 @@ const ContactUsSection = () => {
           </div>
 
           <input className="contactussection-field" type="tel" placeholder="Mobile Number" aria-label="Mobile number" />
+
+          <select className="contactussection-field contactussection-select" aria-label="Select your state">
+            <option value="">Select Your State</option>
+            <option>Odisha</option>
+            <option>Maharashtra</option>
+            <option>Delhi</option>
+            <option>Karnataka</option>
+            <option>Tamil Nadu</option>
+            <option>Other</option>
+          </select>
+
+          <select className="contactussection-field contactussection-select" aria-label="Preferred call time">
+            <option value="">Preferred Call Time</option>
+            <option>10:00 AM – 12:00 PM</option>
+            <option>12:00 PM – 2:00 PM</option>
+            <option>2:00 PM – 4:00 PM</option>
+            <option>4:00 PM – 6:00 PM</option>
+          </select>
+
           <textarea className="contactussection-field contactussection-textarea" placeholder="Your Message" aria-label="Your message" />
 
           <div className="contactussection-actions">
