@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import "./ChangeaddComPlanandPricing.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 1499, services: ["Within same City Govt Fee Included"] },
+  { id: "enriched", name: "Enriched", price: 3999, services: ["Within same State, however one city to another city Govt Fee Included"] },
+  { id: "supreme", name: "Supreme", price: 19999, services: ["One State to another State"] }
+];
 
 const ChangeaddComPlanandPricing = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="change-add-pppricing-section">
       <div className="change-add-ppcontainer">
         
@@ -34,7 +46,7 @@ const ChangeaddComPlanandPricing = () => {
             </div>
 
             <div className="plan-footer">
-              <button className="plan-button">Buy Now</button>
+              <button className="plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -57,7 +69,7 @@ const ChangeaddComPlanandPricing = () => {
             </div>
 
             <div className="plan-footer">
-              <button className="plan-button">Buy Now</button>
+              <button className="plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -78,14 +90,23 @@ const ChangeaddComPlanandPricing = () => {
             </div>
 
             <div className="plan-footer">
-              <button className="plan-button">Buy Now</button>
+              <button className="plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
           <br></br>
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default ChangeaddComPlanandPricing;

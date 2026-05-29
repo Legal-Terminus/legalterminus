@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import "./PartnershiptoPrivatePlanandPricing.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 3999, services: ["Search Report of Name Availability", "1 RUN Name Approval Certificate", "Director Identification Number for 2 Individuals", "Certificate of Incorporation", "E-PAN", "E-TAN", "E-MOA", "E-AOA", "Documents for Bank Account Opening", "Documents for 1st Auditor Appointment", "EPF Registrations", "ESI Registrations"] },
+  { id: "enriched", name: "Enriched", price: 5999, services: ["Elemental Plan Plus", "Share Certificate", "Commencement of Business", "Udyam/MSME Registration"] },
+  { id: "supreme", name: "Supreme", price: 24999, services: ["Enriched Plan Plus", "Income tax filing of Company", "Preparation of Directors Report", "Preparation of Annual Return", "Preparation of Auditor Appointment Paperwork", "Preparation of List of Share Holders", "Preparation of Notice of AGM", "Preparation of Notice of BM", "Preparation of Extracts of AGM", "Filing of AOC - 4 (Financial Statements)", "Filing of MGT - 7 (Annual Return)", "Filing of ADT - 1 (Auditor Appointment)", "Minutes of Board Meeting for 1st FY", "Minutes of General Meeting for 1st FY", "Maintenance of Statutory E- Registers", "Filing of DPT - 3 Annual (If Applicable)", "Filing of MSME - 1 (If Applicable) for 1st FY", "DIR KYC (2 Directors)", "Income Tax Filing of 2 Directors", "Audit fees are excluded and to be paid directly to Auditor"] }
+];
 
 const PricingSection = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="Partnership-to-PLC-pricing-section">
       <div className="pricing-container">
         
@@ -46,7 +58,7 @@ const PricingSection = () => {
             </div>
 
             <div className="plan-footer">
-              <button className="plan-button">Buy Now</button>
+              <button className="plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -73,7 +85,7 @@ const PricingSection = () => {
             </div>
 
             <div className="plan-footer">
-              <button className="plan-button">Buy Now</button>
+              <button className="plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -114,14 +126,23 @@ const PricingSection = () => {
             </div>
 
             <div className="plan-footer">
-              <button className="plan-button">Buy Now</button>
+              <button className="plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default PricingSection;

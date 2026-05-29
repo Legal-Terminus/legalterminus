@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import "./LLPPlanandPrice.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 3999, services: ["Search Report of Name Availability", "1 RUN Name Approval Certificate", "DPIN for 2 Designated Partners", "Certificate of Incorporation", "E-PAN", "E-TAN", "LLP Agreement Drafting", "Documents for Bank Account Opening", "EPF Registration", "ESI Registration"] },
+  { id: "enriched", name: "Enriched", price: 7999, services: ["Elemental Plan Plus", "LLP Agreement Execution &amp; Filing", "Udyam / MSME Registration", "GST Registration", "Commencement of Business Certificate"] },
+  { id: "supreme", name: "Supreme", price: 24999, services: ["Enriched Plan Plus", "Income Tax Filing of LLP", "Preparation of Annual Return", "Preparation of Partners Report", "Filing of LLP Form 8 (Statement of Accounts)", "Filing of LLP Form 11 (Annual Return)", "Preparation of Auditor Appointment Paperwork", "Minutes of Partners Meeting for 1st FY", "Maintenance of Statutory E-Registers", "DIR KYC (2 Designated Partners)", "Income Tax Filing of 2 Designated Partners", "Audit fees excluded — payable directly to Auditor"] }
+];
 
 const LLPPlanandPrice = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="LLP-Plan-Price-section">
       <div className="LLP-Plan-pricing-container">
 
@@ -44,7 +56,7 @@ const LLPPlanandPrice = () => {
             </div>
 
             <div className="LLP-Plan--footer">
-              <button className="LLP-Plan--button">Buy Now</button>
+              <button className="LLP-Plan--button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -72,7 +84,7 @@ const LLPPlanandPrice = () => {
             </div>
 
             <div className="LLP-Plan--footer">
-              <button className="LLP-Plan--button">Buy Now</button>
+              <button className="LLP-Plan--button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -105,14 +117,23 @@ const LLPPlanandPrice = () => {
             </div>
 
             <div className="LLP-Plan--footer">
-              <button className="LLP-Plan--button">Buy Now</button>
+              <button className="LLP-Plan--button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default LLPPlanandPrice;

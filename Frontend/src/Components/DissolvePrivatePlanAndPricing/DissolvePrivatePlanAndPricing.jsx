@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import "./DissolvePrivatePlanAndPricing.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 18999, services: ["The Company having Nil Transactions"] },
+  { id: "enriched", name: "Enriched", price: 23999, services: ["The Company having Nil Transactions", "Annual filing (AOC 4 & MGT 7) for 1 Year", "ITR of Company for 1 Year"] },
+  { id: "supreme", name: "Supreme", price: 26999, services: ["The Company having Nil Transactions", "Annual filing (AOC 4 & MGT 7) for 1 Year", "ITR of Company for 1 Year", "Commencement of Business", "GST Cancellation", "GST Final Return Filing (GSTR -10)"] }
+];
 
 const DissolvePrivatePlanAndPricing = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="DissolvePrivate-pricing-section">
       <div className="DissolvePrivate-pricing-container">
 
@@ -34,7 +46,7 @@ const DissolvePrivatePlanAndPricing = () => {
             </div>
 
             <div className="DissolvePrivate-plan-footer">
-              <button className="DissolvePrivate-plan-button">Buy Now</button>
+              <button className="DissolvePrivate-plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -59,7 +71,7 @@ const DissolvePrivatePlanAndPricing = () => {
             </div>
 
             <div className="DissolvePrivate-plan-footer">
-              <button className="DissolvePrivate-plan-button">Buy Now</button>
+              <button className="DissolvePrivate-plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -85,14 +97,23 @@ const DissolvePrivatePlanAndPricing = () => {
             </div>
 
             <div className="DissolvePrivate-plan-footer">
-              <button className="DissolvePrivate-plan-button">Buy Now</button>
+              <button className="DissolvePrivate-plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default DissolvePrivatePlanAndPricing;

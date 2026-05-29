@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import "./AddPlanandPricing.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 1499, services: ["Filing of DIR 12 (Addition/ Cessation)", "Preparation of Board Resolution"] },
+  { id: "enriched", name: "Enriched", price: 3499, services: ["Filing of DIR 12 (Addition/ Cessation)", "DSC of 1 Proposed Director", "DIN of 1 Proposed Director", "Preparation of Board Resolution"] },
+  { id: "supreme", name: "Supreme", price: 4999, services: ["Filing of DIR 12 (Addition)", "DSC of 1 Proposed Director", "DIN of 1 Proposed Director", "Filing of DIR 12 (Cessation)", "Preparation of Board Resolution"] }
+];
 
 const AddPlanandPricing = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="Add-pp-Add-pp-section">
       <div className="Add-pp-container">
         
@@ -35,7 +47,7 @@ const AddPlanandPricing = () => {
             </div>
 
             <div className="Add-pp-footer">
-              <button className="Add-pp-button">Buy Now</button>
+              <button className="Add-pp-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -61,7 +73,7 @@ const AddPlanandPricing = () => {
             </div>
 
             <div className="Add-pp-footer">
-              <button className="Add-pp-button">Buy Now</button>
+              <button className="Add-pp-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -86,14 +98,23 @@ const AddPlanandPricing = () => {
             </div>
 
             <div className="Add-pp-footer">
-              <button className="Add-pp-button">Buy Now</button>
+              <button className="Add-pp-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default AddPlanandPricing;

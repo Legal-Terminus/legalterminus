@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import "./TradeLicensePlans.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 2999, services: [] },
+  { id: "enriched", name: "Enriched", price: 5999, services: [] },
+  { id: "supreme", name: "Supreme", price: 24999, services: [] }
+];
 
 const TradeLicensePlans = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="trade-pricing-section">
       <div className="tradepricing-container">
         {/* Header Section */}
@@ -44,7 +56,7 @@ const TradeLicensePlans = () => {
             </div>
 
             <div className="tradeplan-footer">
-              <button className="tradeplan-button">Buy Now</button>
+              <button className="tradeplan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -71,7 +83,7 @@ const TradeLicensePlans = () => {
             </div>
 
             <div className="tradeplan-footer">
-              <button className="tradeplan-button">Buy Now</button>
+              <button className="tradeplan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -112,13 +124,22 @@ const TradeLicensePlans = () => {
             </div>
 
             <div className="tradeplan-footer">
-              <button className="tradeplan-button">Buy Now</button>
+              <button className="tradeplan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default TradeLicensePlans;

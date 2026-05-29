@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import "./CICplan.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 5999, services: ["Filing of RUN (Name Application)", "Preparation of Board Resolution", "Preparation of Notice of EGM", "Preparation of EGM Resolution", "Preparation of MOA", "Filing of MGT 14", "Filing of INC 24"] }
+];
 
 const PricingSection = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="pvtltd-pricing-section">
       <div className="pricing-container">
         
@@ -40,7 +50,7 @@ const PricingSection = () => {
             </div>
 
             <div className="cic-footer">
-              <button className="cic-button">Buy Now</button>
+              <button className="cic-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -115,7 +125,16 @@ const PricingSection = () => {
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default PricingSection;

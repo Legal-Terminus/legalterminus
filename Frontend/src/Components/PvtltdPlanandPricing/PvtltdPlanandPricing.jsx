@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import "./PvtltdPlanandPricing.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 3999, services: ["Name Availability Search Report", "1 RUN Name Approval Certificate", "DIN for 2 Directors", "Certificate of Incorporation", "DIN allotment certificate (if not having DIN previously)", "E-PAN & E-TAN", "E-MOA & E-AOA", "Bank Account Opening Docs", "1st Auditor Appointment Docs", "EPF & ESI Registration"] },
+  { id: "enriched", name: "Enriched", price: 5999, services: ["Everything in Elemental +", "Share Certificate (Form SH-1)", "Commencement of Business (Form INC-20A)", "Udyam / MSME Registration"] },
+  { id: "supreme", name: "Supreme", price: 24999, services: ["Everything in Enriched +", "Income tax filing of (Company)", "Directors' Report Preparation", "Annual Return (MGT-7)", "Financial Statements (AOC-4)", "Auditor Appointment in 1st AGM (ADT-1)", "Preparation of Documents regarding AGM/BM Notice, Minutes & Extracts", "Statutory E-Register Maintenance", "DPT-3 (if applicable) for 1st FY", "MSME-1 (if applicable) for 1st FY", "DIR KYC for 2 Directors", "Income Tax Filing for 2 Directors", "Audit fees excluded (paid to Auditor)"] }
+];
 
 const PricingSection = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="pvtltd-pricing-section">
       <div className="pricing-container">
         
@@ -44,7 +56,7 @@ const PricingSection = () => {
             </div>
 
             <div className="plan-footer">
-              <button className="plan-button">Buy Now</button>
+              <button className="plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -71,7 +83,7 @@ const PricingSection = () => {
             </div>
 
             <div className="plan-footer">
-              <button className="plan-button">Buy Now</button>
+              <button className="plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -105,14 +117,23 @@ const PricingSection = () => {
             </div>
 
             <div className="plan-footer">
-              <button className="plan-button">Buy Now</button>
+              <button className="plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default PricingSection;

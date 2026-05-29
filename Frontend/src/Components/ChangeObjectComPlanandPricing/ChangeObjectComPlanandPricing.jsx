@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import "./ChangeObjectComPlanandPricing.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 2999, services: ["Preparation of Board Resolution", "Preparation of Notice of EGM", "Preparation of EGM Resolution", "Preparation of MOA", "Filing of MGT 14"] },
+  { id: "enriched", name: "Enriched", price: 5999, services: ["Elemental Plan Plus", "Share Certificate", "Commencement of Business", "Udyam/MSME Registration"] },
+  { id: "supreme", name: "Supreme", price: 24999, services: ["Enriched Plan Plus", "Income tax filing of Company", "Preparation of Directors Report", "Preparation of Annual Return", "Preparation of Auditor Appointment Paperwork", "Preparation of List of Share Holders", "Preparation of Notice of AGM", "Preparation of Notice of BM", "Preparation of Extracts of AGM", "Filing of AOC - 4 (Financial Statements)", "Filing of MGT - 7 (Annual Return)", "Filing of ADT - 1 (Auditor Appointment)", "Minutes of Board Meeting for 1st FY", "Minutes of General Meeting for 1st FY", "Maintenance of Statutory E- Registers", "Filing of DPT - 3 Annual (If Applicable)", "Filing of MSME - 1 (If Applicable) for 1st FY", "DIR KYC (2 Directors)", "Income Tax Filing of 2 Directors", "Audit fees are excluded and to be paid directly to Auditor"] }
+];
 
 const ChangeObjectComPlanandPricing = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="Change-ob-Pp-section">
       <div className="Change-ob-Pp-container">
         
@@ -38,7 +50,7 @@ const ChangeObjectComPlanandPricing = () => {
             </div>
 
             <div className="Change-ob-Pp-plan-footer">
-              <button className="Change-ob-Pp-plan-button">Buy Now</button>
+              <button className="Change-ob-Pp-plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -65,7 +77,7 @@ const ChangeObjectComPlanandPricing = () => {
             </div>
 
             <div className="Change-ob-Pp-plan-footer">
-              <button className="Change-ob-Pp-plan-button">Buy Now</button>
+              <button className="Change-ob-Pp-plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article> */}
 
@@ -106,14 +118,23 @@ const ChangeObjectComPlanandPricing = () => {
             </div>
 
             <div className="Change-ob-Pp-plan-footer">
-              <button className="Change-ob-Pp-plan-button">Buy Now</button>
+              <button className="Change-ob-Pp-plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article> */}
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default ChangeObjectComPlanandPricing;

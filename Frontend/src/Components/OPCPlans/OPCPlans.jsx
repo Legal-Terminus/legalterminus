@@ -1,7 +1,19 @@
 import "./OPCPlans.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 3999, services: [] },
+  { id: "enriched", name: "Enriched", price: 5999, services: [] },
+  { id: "supreme", name: "Supreme", price: 24999, services: [] }
+];
 
 const OPCPlan = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="opc-pricing-section">
       <div className="opcpricing-container">
         
@@ -44,7 +56,7 @@ const OPCPlan = () => {
             </div>
 
             <div className="opcplan-footer">
-              <button className="opcplan-button">Buy Now</button>
+              <button className="opcplan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -71,7 +83,7 @@ const OPCPlan = () => {
             </div>
 
             <div className="opcplan-footer">
-              <button className="opcplan-button">Buy Now</button>
+              <button className="opcplan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -107,14 +119,23 @@ const OPCPlan = () => {
             </div>
 
             <div className="opcplan-footer">
-              <button className="opcplan-button">Buy Now</button>
+              <button className="opcplan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default OPCPlan;

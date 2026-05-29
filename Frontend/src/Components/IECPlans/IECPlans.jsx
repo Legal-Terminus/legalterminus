@@ -1,7 +1,19 @@
 import "./IECPlans.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 3999, services: [] },
+  { id: "elemental", name: "Elemental", price: 1999, services: [] },
+  { id: "supreme", name: "Supreme", price: 24999, services: [] }
+];
 
 const IECPlans = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="iec-pricing-section">
       <div className="iecpricing-container">
         
@@ -39,7 +51,7 @@ const IECPlans = () => {
             </div>
 
             <div className="iecplan-footer">
-              <button className="iecplan-button">Buy Now</button>
+              <button className="iecplan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article> */}
 
@@ -63,7 +75,7 @@ const IECPlans = () => {
             </div>
 
             <div className="iecplan-footer">
-              <button className="iecplan-button">Buy Now</button>
+              <button className="iecplan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -90,14 +102,23 @@ const IECPlans = () => {
             </div>
 
             <div className="iecplan-footer">
-              <button className="iecplan-button">Buy Now</button>
+              <button className="iecplan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article> */}
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default IECPlans;

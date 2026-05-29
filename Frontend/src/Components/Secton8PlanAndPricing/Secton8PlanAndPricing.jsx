@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import "./Section8PlanAndPricing.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 7999, services: ["1 RUN Name Approval Application", "DIN for 2 Individuals", "License for Sec 8", "Certificate from Professional", "Certificate of Incorporation", "E-PAN", "E-TAN", "E-MOA", "E-AOA", "Documents for Bank Account opening", "Documents for 1st Auditor Appointment", "EPF Registrations", "ESI Registrations"] },
+  { id: "enriched", name: "Enriched", price: 9999, services: ["Elemental Plan +", "Udyam Registration", "Share Certificate", "Commencement of Business"] },
+  { id: "supreme", name: "Supreme", price: 24999, services: ["Enriched Plan +", "ITR Filing of 2 Directors", "ITR Filing of Company", "Prepairation of Directors Report", "Prepairation of Auditor Appointment Paperwork", "Prepairation of List of Shareholders", "Prepairation of Notice of AGM", "Prepairation of Notice of BM", "Prepairation of Extracts of AGM", "Prepairation and filing of AOC-4 (Financial Statements)", "Prepairation and filing of MGT-7 (Annual Return)", "Filing of ADT-1 (Auditor Appointment)", "Minutes of BM for 1st year", "Minutes of AGM for 1st year", "Maintenance of Statutory E-Registers", "DIR KYC - 2 Directors", "Audit fees are excluded and to be paid directly to the Auditor’s account."] }
+];
 
 const Section8PlanAndPricing = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="s8-pricing-section">
       <div className="s8-pricing-container">
 
@@ -46,7 +58,7 @@ const Section8PlanAndPricing = () => {
             </div>
 
             <div className="s8-plan-footer">
-              <button className="s8-plan-button">Buy Now</button>
+              <button className="s8-plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -72,7 +84,7 @@ const Section8PlanAndPricing = () => {
             </div>
 
             <div className="s8-plan-footer">
-              <button className="s8-plan-button">Buy Now</button>
+              <button className="s8-plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -109,14 +121,23 @@ const Section8PlanAndPricing = () => {
             </div>
 
             <div className="s8-plan-footer">
-              <button className="s8-plan-button">Buy Now</button>
+              <button className="s8-plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default Section8PlanAndPricing;

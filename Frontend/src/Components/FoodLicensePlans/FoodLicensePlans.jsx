@@ -1,7 +1,19 @@
 import "./FoodLicensePlans.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 1499, services: [] },
+  { id: "enriched", name: "Enriched", price: 3999, services: [] },
+  { id: "supreme", name: "Supreme", price: 7999, services: [] }
+];
 
 const FoodLicensePlans = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="foodlicense-pricing-section">
       <div className="foodlicensepricing-container">
         
@@ -33,7 +45,7 @@ const FoodLicensePlans = () => {
             </div>
 
             <div className="foodlicenseplan-footer">
-              <button className="foodlicenseplan-button">Buy Now</button>
+              <button className="foodlicenseplan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -56,7 +68,7 @@ const FoodLicensePlans = () => {
             </div>
 
             <div className="foodlicenseplan-footer">
-              <button className="foodlicenseplan-button">Buy Now</button>
+              <button className="foodlicenseplan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -77,14 +89,23 @@ const FoodLicensePlans = () => {
             </div>
 
             <div className="foodlicenseplan-footer">
-              <button className="foodlicenseplan-button">Buy Now</button>
+              <button className="foodlicenseplan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default FoodLicensePlans;

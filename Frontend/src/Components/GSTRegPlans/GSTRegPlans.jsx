@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./GSTRegPlans.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const packages = [
   {
@@ -35,12 +36,14 @@ const FEATURE_LIMIT = 6;
 
 const GSTRegistrationPackages = () => {
   const [expanded, setExpanded] = useState({});
+  const [activePlan, setActivePlan] = useState(null);
 
   const toggleReadMore = (index) => {
     setExpanded((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
   return (
+    <>
     <section className="gst-reg-section">
       <header className="gst-reg-header">
         <h2 className="gst-reg-title">
@@ -102,12 +105,17 @@ const GSTRegistrationPackages = () => {
                 </button>
               )}
 
-              <button className="gst-reg-btn">Buy Now</button>
+              <button className="gst-reg-btn" onClick={() => setActivePlan({ id: pkg.title.toLowerCase(), name: pkg.title, price: parseInt(pkg.price.replace('₹', '')), services: pkg.features })}>Buy Now</button>
             </article>
           );
         })}
       </div>
     </section>
+
+      {activePlan && (
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+      )}
+    </>
   );
 };
 

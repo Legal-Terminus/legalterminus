@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import "./TMApplicaPlanandPricing.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 9000, services: ["Trademark Search Report", "Form TM-A Filing (1 Class)", "Government Filing Fee (Individuals/MSME: ₹4,500 | Companies: ₹9,000)", "TM Application Number", "Use of ™ Symbol Immediately After Filing"] },
+  { id: "enriched", name: "Enriched", price: 7499, services: ["Elemental Plan Plus", "Reply to Examination Report (if objection)", "Hearing Representation (1 instance)", "Udyam/MSME Registration (if applicable)"] },
+  { id: "supreme", name: "Supreme", price: 24499, services: ["Enriched Plan Plus", "Opposition Handling Support (1 instance)", "Opposition Hearing Representation", "Renewal Reminder before 10-year expiry", "Certificate of Trademark Registration"] }
+];
 
 const PricingSection = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="Tm-Tm-Applica-pricing-section">
       <div className="Tm-Applica-pricing-container">
         
@@ -39,7 +51,7 @@ const PricingSection = () => {
             </div>
 
             <div className="Applica-footer">
-              <button className="Applica-button">Buy Now</button>
+              <button className="Applica-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -66,7 +78,7 @@ const PricingSection = () => {
             </div>
 
             <div className="Applica-footer">
-              <button className="Applica-button">Buy Now</button>
+              <button className="Applica-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -92,14 +104,23 @@ const PricingSection = () => {
             </div>
 
             <div className="Applica-footer">
-              <button className="Applica-button">Buy Now</button>
+              <button className="Applica-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default PricingSection;

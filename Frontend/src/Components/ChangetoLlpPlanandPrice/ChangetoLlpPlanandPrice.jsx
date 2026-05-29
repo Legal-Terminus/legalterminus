@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import "./ChangetoLlpPlanandPrice.css";
+import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+
+
+const PLANS = [
+  { id: "elemental", name: "Elemental", price: 7999, services: ["Name Search for LLP Incorporation", "1 RUN Name Approval Application", "DPIN for 2 Individuals", "Certificate of Incorporation", "LLP Agreement", "LLP Government Fees", "DSC of 2 Designated Partners", "Filing of PAN Application", "Documents for Bank Account opening"] },
+  { id: "enriched", name: "Enriched", price: 9999, services: ["Elemental Plan Plus", "UDYAM Registration", "GST Registration"] },
+  { id: "supreme", name: "Supreme", price: 13999, services: ["Enriched Plan Plus", "Filing of LLP 11", "Filing of LLP 8", "ITR Filing of LLP"] }
+];
 
 const PricingSection = () => {
+  const [activePlan, setActivePlan] = useState(null);
+
   return (
+
+    <>
     <section className="llpprice-section">
       <div className="llpprice-container">
 
@@ -42,7 +54,7 @@ const PricingSection = () => {
             </div>
 
             <div className="llpprice-plan-footer">
-              <button className="llpprice-plan-button">Buy Now</button>
+              <button className="llpprice-plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
           </article>
 
@@ -67,7 +79,7 @@ const PricingSection = () => {
             </div>
 
             <div className="llpprice-plan-footer">
-              <button className="llpprice-plan-button">Buy Now</button>
+              <button className="llpprice-plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 
@@ -91,14 +103,23 @@ const PricingSection = () => {
             </div>
 
             <div className="llpprice-plan-footer">
-              <button className="llpprice-plan-button">Buy Now</button>
+              <button className="llpprice-plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
           </article>
 
         </div>
       </div>
     </section>
-  );
-};
+
+
+      {activePlan && (
+
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+
+      )}
+
+    </>
+
+  );};
 
 export default PricingSection;
