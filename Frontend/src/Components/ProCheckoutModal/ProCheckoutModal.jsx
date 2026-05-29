@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import "./ProCheckoutModal.css";
 
 const ADDONS = [
-  { id: "trademark", name: "Trademark Registration", price: 999 },
-  { id: "msme", name: "MSME Certificate", price: 499 },
-  { id: "shop", name: "Shop & Establishment Reg.", price: 799 },
-  { id: "gst-return", name: "GST Return Filing", price: 999 },
-  { id: "startup", name: "Startup India Registration", price: 1499 },
+  { id: "trademark", name: "Trademark Registration" },
+  { id: "msme", name: "MSME Certificate" },
+  { id: "shop", name: "Shop & Establishment Reg." },
+  { id: "gst-return", name: "GST Return Filing" },
+  { id: "startup", name: "Startup India Registration" },
 ];
 
 const STATES = [
@@ -51,7 +51,7 @@ const ProCheckoutModal = ({ plan, onClose }) => {
     if (modalRef.current) modalRef.current.scrollTop = 0;
   }, [step]);
 
-  const total = plan.price + selectedAddons.reduce((sum, a) => sum + a.price, 0);
+  const total = plan.price;
   const stepIndex = STEPS.indexOf(step);
   const showBackButton = stepIndex > 0 && stepIndex < 3;
   const showProgress = stepIndex < 3;
@@ -159,8 +159,9 @@ const ProCheckoutModal = ({ plan, onClose }) => {
 
             <div className="pco-addons-section">
               <h3 className="pco-addons-title">
-                Add More Services <span className="pco-optional-tag">(Optional)</span>
+                Interested in other services? <span className="pco-optional-tag">(Optional)</span>
               </h3>
+              <p className="pco-addons-note">Check any services you'd like our team to contact you about.</p>
               {ADDONS.map((addon) => (
                 <label key={addon.id} className="pco-addon-row">
                   <input
@@ -170,7 +171,6 @@ const ProCheckoutModal = ({ plan, onClose }) => {
                     onChange={() => toggleAddon(addon)}
                   />
                   <span className="pco-addon-name">{addon.name}</span>
-                  <span className="pco-addon-price">+ ₹{addon.price.toLocaleString("en-IN")}</span>
                 </label>
               ))}
             </div>
@@ -180,15 +180,14 @@ const ProCheckoutModal = ({ plan, onClose }) => {
                 <span>{plan.name} Plan</span>
                 <span>₹{plan.price.toLocaleString("en-IN")}</span>
               </div>
-              {selectedAddons.map((a) => (
-                <div key={a.id} className="pco-summary-row">
-                  <span>{a.name}</span>
-                  <span>₹{a.price.toLocaleString("en-IN")}</span>
+              {selectedAddons.length > 0 && (
+                <div className="pco-summary-row pco-summary-interest">
+                  <span>Also interested in: {selectedAddons.map((a) => a.name).join(", ")}</span>
                 </div>
-              ))}
+              )}
               <div className="pco-summary-divider" />
               <div className="pco-summary-total-row">
-                <span>Total ({1 + selectedAddons.length} {selectedAddons.length === 0 ? "item" : "items"})</span>
+                <span>Total</span>
                 <span className="pco-total-amount">₹{total.toLocaleString("en-IN")}</span>
               </div>
             </div>
@@ -281,12 +280,11 @@ const ProCheckoutModal = ({ plan, onClose }) => {
                 <span>{plan.name} Plan</span>
                 <span>₹{plan.price.toLocaleString("en-IN")}</span>
               </div>
-              {selectedAddons.map((a) => (
-                <div key={a.id} className="pco-summary-row">
-                  <span>{a.name}</span>
-                  <span>₹{a.price.toLocaleString("en-IN")}</span>
+              {selectedAddons.length > 0 && (
+                <div className="pco-summary-row pco-summary-interest">
+                  <span>Also interested in: {selectedAddons.map((a) => a.name).join(", ")}</span>
                 </div>
-              ))}
+              )}
               <div className="pco-summary-divider" />
               <div className="pco-summary-total-row">
                 <span>Total Amount</span>
