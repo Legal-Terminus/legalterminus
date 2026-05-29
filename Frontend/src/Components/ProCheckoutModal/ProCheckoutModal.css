@@ -1,0 +1,808 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* ── OVERLAY ── */
+.pco-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(3px);
+}
+
+/* ── MODAL ── */
+.pco-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 92vh;
+  overflow-y: auto;
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: #e0e0e0 transparent;
+}
+
+.pco-modal::-webkit-scrollbar { width: 4px; }
+.pco-modal::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 4px;
+}
+
+/* ── STICKY HEADER ── */
+.pco-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 10px;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 10;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.pco-back-btn {
+  background: none;
+  border: none;
+  color: #21b738;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-family: 'Poppins', sans-serif;
+  transition: background 0.15s;
+}
+.pco-back-btn:hover { background: #f0faf2; }
+
+.pco-close-btn {
+  background: none;
+  border: none;
+  color: #777;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+.pco-close-btn:hover { background: #f5f5f5; color: #333; }
+
+/* ── PROGRESS STEPS ── */
+.pco-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 28px 10px;
+}
+
+.pco-progress-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.pco-progress-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #bbb;
+  background: #fff;
+  transition: all 0.25s ease;
+}
+
+.pco-progress-item.active .pco-progress-circle,
+.pco-progress-item.done .pco-progress-circle {
+  border-color: #21b738;
+  background: #21b738;
+  color: #fff;
+}
+
+.pco-progress-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #bbb;
+  transition: color 0.25s;
+}
+
+.pco-progress-item.active .pco-progress-label,
+.pco-progress-item.done .pco-progress-label {
+  color: #21b738;
+}
+
+.pco-progress-line {
+  flex: 1;
+  height: 2px;
+  background: #e8e8e8;
+  margin: 0 10px;
+  margin-bottom: 18px;
+  transition: background 0.25s;
+}
+.pco-progress-line.done { background: #21b738; }
+
+/* ── STEP WRAPPER ── */
+.pco-step {
+  padding: 20px 22px 28px;
+}
+
+/* ── ORDER SUMMARY ── */
+.pco-plan-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pco-plan-avatar {
+  width: 42px;
+  height: 42px;
+  background: #f0faf2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.pco-section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.pco-selected-plan-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f4fcf5;
+  border: 1.5px solid #c8ecd0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.pco-plan-gift-icon { font-size: 28px; }
+
+.pco-plan-name-tag {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 2px;
+}
+
+.pco-plan-price-tag {
+  font-size: 22px;
+  font-weight: 700;
+  color: #21b738;
+}
+
+.pco-includes { margin-bottom: 20px; }
+
+.pco-includes-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.pco-include-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.pco-green-check {
+  color: #21b738;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ── ADD-ONS ── */
+.pco-addons-section { margin-bottom: 20px; }
+
+.pco-addons-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 10px;
+}
+
+.pco-optional-tag {
+  font-weight: 400;
+  color: #999;
+  font-size: 13px;
+}
+
+.pco-addon-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 7px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+}
+
+.pco-addon-row:hover {
+  border-color: #21b738;
+  background: #f8fff9;
+}
+
+.pco-addon-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #21b738;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pco-addon-name {
+  flex: 1;
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+}
+
+.pco-addon-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: #21b738;
+  white-space: nowrap;
+}
+
+/* ── ORDER SUMMARY BOX ── */
+.pco-summary-box {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+
+.pco-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 7px;
+}
+
+.pco-summary-divider {
+  height: 1px;
+  background: #e2e2e2;
+  margin: 8px 0;
+}
+
+.pco-summary-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.pco-total-amount {
+  color: #21b738;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* ── BUTTONS ── */
+.pco-btn-primary {
+  width: 100%;
+  padding: 13px;
+  background: #21b738;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.pco-btn-primary:hover:not(:disabled) {
+  background: #1aa130;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(33, 183, 56, 0.25);
+}
+
+.pco-btn-primary:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.pco-btn-outline {
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  color: #21b738;
+  border: 2px solid #21b738;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: background 0.2s;
+  box-sizing: border-box;
+}
+
+.pco-btn-outline:hover { background: #f0faf2; }
+
+/* ── CHECKOUT FORM ── */
+.pco-step-heading {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+.pco-form-group { margin-bottom: 20px; }
+
+.pco-form-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #444;
+  margin: 0 0 12px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #efefef;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.pco-field { margin-bottom: 12px; }
+
+.pco-field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pco-input,
+.pco-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 7px;
+  font-size: 14px;
+  color: #1a1a1a;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+  background: #fff;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.pco-input:focus,
+.pco-select:focus {
+  border-color: #21b738;
+  box-shadow: 0 0 0 3px rgba(33, 183, 56, 0.1);
+}
+
+.pco-input-error { border-color: #e53935 !important; }
+
+.pco-error-msg {
+  display: block;
+  font-size: 11px;
+  color: #e53935;
+  margin-top: 4px;
+}
+
+/* Secured by */
+.pco-secured-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.pco-secured-text {
+  font-size: 11px;
+  color: #aaa;
+}
+
+.pco-payment-badges { display: flex; gap: 5px; }
+
+.pco-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.pco-badge-razorpay { color: #0f4c81; border-color: #0f4c81; }
+.pco-badge-upi      { color: #5f259f; border-color: #5f259f; }
+.pco-badge-visa     { color: #1a1f71; border-color: #1a1f71; }
+.pco-badge-mc       { color: #c41a2e; border-color: #f79e1b; }
+
+/* ── PAYMENT METHODS ── */
+.pco-payment-methods {
+  border: 1.5px solid #ebebeb;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.pco-pm-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.15s;
+}
+
+.pco-pm-row:last-child { border-bottom: none; }
+.pco-pm-row:hover { background: #f8f9fa; }
+.pco-pm-row.selected {
+  background: #f0faf2;
+  border-left: 3px solid #21b738;
+}
+
+.pco-pm-icon { font-size: 20px; }
+.pco-pm-label { flex: 1; font-size: 14px; font-weight: 500; color: #333; }
+.pco-pm-arrow { color: #bbb; font-size: 20px; font-weight: 300; }
+
+/* ── UPI PANEL ── */
+.pco-upi-panel {
+  text-align: center;
+  margin-bottom: 18px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+}
+
+.pco-upi-scan-text {
+  font-size: 13px;
+  color: #555;
+  margin: 0 0 12px;
+  font-weight: 500;
+}
+
+.pco-qr-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.pco-qr-box {
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  display: inline-flex;
+}
+
+.pco-upi-or {
+  font-size: 12px;
+  color: #aaa;
+  margin: 0 0 8px;
+}
+
+.pco-upi-id-box {
+  display: inline-block;
+  background: #f0faf2;
+  border: 1px solid #b8dfc2;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #21b738;
+  letter-spacing: 0.3px;
+}
+
+/* ── CARD PANEL ── */
+.pco-card-panel { margin-bottom: 18px; }
+
+.pco-card-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── GENERIC PANEL ── */
+.pco-generic-panel {
+  margin-bottom: 18px;
+  padding: 18px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.pco-generic-note {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* ── TOTAL PAYABLE ── */
+.pco-total-payable-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* ── SPINNER ── */
+.pco-processing-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pco-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: pco-spin 0.65s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+@keyframes pco-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── SECURE NOTE ── */
+.pco-secure-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: #f0faf2;
+  border-radius: 8px;
+}
+
+.pco-lock-icon { font-size: 16px; margin-top: 1px; }
+.pco-secure-title { font-size: 13px; font-weight: 700; color: #21b738; }
+.pco-secure-sub   { font-size: 12px; color: #666; margin-top: 2px; }
+
+/* ── PAYMENT SUCCESS ── */
+.pco-success-step { text-align: center; }
+
+.pco-success-circle {
+  width: 72px;
+  height: 72px;
+  background: #21b738;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 8px 24px rgba(33, 183, 56, 0.3);
+  animation: pco-pop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes pco-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  80%  { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pco-success-tick {
+  color: #fff;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.pco-success-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 6px;
+}
+
+.pco-success-sub {
+  font-size: 13px;
+  color: #777;
+  margin: 0 0 20px;
+}
+
+.pco-order-detail-box {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.pco-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 7px 0;
+  border-bottom: 1px solid #efefef;
+}
+.pco-detail-row:last-child { border-bottom: none; }
+
+.pco-detail-label { color: #999; }
+.pco-detail-value { font-weight: 700; color: #1a1a1a; }
+
+.pco-services-box {
+  background: #f0faf2;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.pco-services-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #21b738;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.pco-service-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.pco-next-box {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.pco-next-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.pco-next-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.pco-next-list li {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+/* ── THANK YOU ── */
+.pco-thankyou-step { text-align: center; }
+
+.pco-thankyou-illustration {
+  font-size: 54px;
+  margin-bottom: 12px;
+  animation: pco-pop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pco-thankyou-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px;
+}
+
+.pco-thankyou-sub {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.65;
+  margin: 0 0 24px;
+}
+
+.pco-contact-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.pco-contact-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.pco-contact-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.pco-icon-whatsapp { background: #dcfce7; }
+.pco-icon-email    { background: #dbeafe; }
+.pco-icon-support  { background: #f3e8ff; }
+
+.pco-contact-card-label {
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 3px;
+}
+
+.pco-contact-card-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  word-break: break-all;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 520px) {
+  .pco-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .pco-modal {
+    border-radius: 16px 16px 0 0;
+    max-height: 95vh;
+    max-width: 100%;
+  }
+}
