@@ -1,14 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ProCheckoutModal.css";
 
-const ADDONS = [
-  { id: "trademark", name: "Trademark Registration", price: 999 },
-  { id: "msme", name: "MSME Certificate", price: 499 },
-  { id: "shop", name: "Shop & Establishment Reg.", price: 799 },
-  { id: "gst-return", name: "GST Return Filing", price: 999 },
-  { id: "startup", name: "Startup India Registration", price: 1499 },
-];
-
 const STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
   "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka",
@@ -94,7 +86,6 @@ const STEPS = ["order-summary", "checkout", "payment", "success", "failed", "tha
 
 const ProCheckoutModal = ({ plan, onClose }) => {
   const [step, setStep] = useState("order-summary");
-  const [selectedAddons, setSelectedAddons] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [failureReason, setFailureReason] = useState(null); // key into FAILURE_REASONS
   const [form, setForm] = useState({
@@ -124,19 +115,10 @@ const ProCheckoutModal = ({ plan, onClose }) => {
     if (modalRef.current) modalRef.current.scrollTop = 0;
   }, [step]);
 
-  // Total always reflects plan + selected addons
-  const total = plan.price + selectedAddons.reduce((sum, a) => sum + a.price, 0);
+  const total = plan.price;
 
   const stepIndex = STEPS.indexOf(step);
   const showProgress = stepIndex < 3;
-
-  const toggleAddon = (addon) => {
-    setSelectedAddons((prev) =>
-      prev.find((a) => a.id === addon.id)
-        ? prev.filter((a) => a.id !== addon.id)
-        : [...prev, addon]
-    );
-  };
 
   const updateField = (key, value) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -256,38 +238,14 @@ const ProCheckoutModal = ({ plan, onClose }) => {
               ))}
             </div>
 
-            <div className="pco-addons-section">
-              <h3 className="pco-addons-title">
-                Add More Services <span className="pco-optional-tag">(Optional)</span>
-              </h3>
-              {ADDONS.map((addon) => (
-                <label key={addon.id} className="pco-addon-row">
-                  <input
-                    type="checkbox"
-                    className="pco-addon-checkbox"
-                    checked={!!selectedAddons.find((a) => a.id === addon.id)}
-                    onChange={() => toggleAddon(addon)}
-                  />
-                  <span className="pco-addon-name">{addon.name}</span>
-                  <span className="pco-addon-price">+ ₹{addon.price.toLocaleString("en-IN")}</span>
-                </label>
-              ))}
-            </div>
-
             <div className="pco-summary-box">
               <div className="pco-summary-row">
                 <span>{plan.name} Plan</span>
                 <span>₹{plan.price.toLocaleString("en-IN")}</span>
               </div>
-              {selectedAddons.map((a) => (
-                <div key={a.id} className="pco-summary-row">
-                  <span>{a.name}</span>
-                  <span>₹{a.price.toLocaleString("en-IN")}</span>
-                </div>
-              ))}
               <div className="pco-summary-divider" />
               <div className="pco-summary-total-row">
-                <span>Total ({1 + selectedAddons.length} {selectedAddons.length === 0 ? "item" : "items"})</span>
+                <span>Total</span>
                 <span className="pco-total-amount">₹{total.toLocaleString("en-IN")}</span>
               </div>
             </div>
@@ -381,12 +339,6 @@ const ProCheckoutModal = ({ plan, onClose }) => {
                 <span>{plan.name} Plan</span>
                 <span>₹{plan.price.toLocaleString("en-IN")}</span>
               </div>
-              {selectedAddons.map((a) => (
-                <div key={a.id} className="pco-summary-row">
-                  <span>{a.name}</span>
-                  <span>₹{a.price.toLocaleString("en-IN")}</span>
-                </div>
-              ))}
               <div className="pco-summary-divider" />
               <div className="pco-summary-total-row">
                 <span>Total Amount</span>
@@ -587,7 +539,7 @@ const ProCheckoutModal = ({ plan, onClose }) => {
 
             <div className="pco-services-box">
               <div className="pco-services-title">Services Purchased</div>
-              {[...plan.services, ...selectedAddons.map((a) => a.name)].map((s) => (
+              {plan.services.map((s) => (
                 <div key={s} className="pco-service-row">
                   <span className="pco-green-check">✓</span>
                   <span>{s}</span>
