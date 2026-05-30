@@ -1,6 +1,7 @@
 import React from "react";
 import "./CICbreadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const Breadcrum = () => {
   return (
     <section className="cic-public-hero">
@@ -46,63 +47,10 @@ const Breadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="cic-public-form-wrapper">
-          <div className="cic-public-form-card">
-
-            <h3 className="cic-form-title">
-              Get Expert Assistance
-            </h3>
-
-            <p className="cic-form-subtitle">
-              Talk to our expert
-            </p>
-
-            <form
-              className="cic-public-form"
-              onSubmit={(e) => e.preventDefaucic()}
-            >
-              <input type="text" placeholder="Full Name" required />
-              <input type="email" placeholder="Email Address" required />
-              <input type="tel" placeholder="Mobile Number" required />
-
-              <select required>
-                <option value="">Select Your State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              <select>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <div className="cic-whatsapp-row">
-                <label className="cic-whatsapp-label">
-                  <input type="checkbox" defaucicChecked />
-                  <span className="cic-custom-checkbox"></span>
-                  <span className="cic-whatsapp-text">
-                    Receive updates on <strong>WhatsApp</strong>
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit">
-                Book Free Consucication
-              </button>
-            </form>
-
-            <p className="cic-form-note">
-              🔒 100% Confidential • No Spam • No Hidden Charges
-            </p>
-
-          </div>
-        </aside>
+        <ConsultationForm
+          source="cic-registration"
+          subtitle="Talk to our expert"
+        />
 
       </div>
     </section>

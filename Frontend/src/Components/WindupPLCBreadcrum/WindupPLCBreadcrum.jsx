@@ -1,6 +1,7 @@
 import React from "react";
 import "./WindupPLCBreadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const WindupPLCBreadcrum = () => {
   return (
     <section className="Windup-PLC-bd-hero">
@@ -51,63 +52,10 @@ Legal Terminus can help you with Private Limited Company registration in a hassl
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="Windup-PLC-bd-form-wrapper">
-          <div className="Windup-PLC-bd-form-card">
-
-            <h3 className="Windup-PLC-bd-form-title">
-              Get Expert Assistance
-            </h3>
-
-            <p className="Windup-PLC-bd-form-subtitle">
-              Talk to our Private Limited Company registration expert
-            </p>
-
-            <form
-              className="Windup-PLC-bd-form"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input type="text" placeholder="Full Name" required />
-              <input type="email" placeholder="Email Address" required />
-              <input type="tel" placeholder="Mobile Number" required />
-
-              <select required>
-                <option value="">Select Your State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              <select>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <div className="Windup-PLC-bd-whatsapp-row">
-                <label className="Windup-PLC-bd-whatsapp-label">
-                  <input type="checkbox" defaultChecked />
-                  <span className="Windup-PLC-bd-custom-checkbox"></span>
-                  <span className="Windup-PLC-bd-whatsapp-text">
-                    Receive updates on <strong>WhatsApp</strong>
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit">
-                Book Free Consultation
-              </button>
-            </form>
-
-            <p className="Windup-PLC-bd-form-note">
-              🔒 100% Confidential • No Spam • No Hidden Charges
-            </p>
-
-          </div>
-        </aside>
+        <ConsultationForm
+          source="windup-plc"
+          subtitle="Talk to our Private Limited Company registration expert"
+        />
 
       </div>
     </section>

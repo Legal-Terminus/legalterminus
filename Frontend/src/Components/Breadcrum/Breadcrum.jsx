@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./Breadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const Breadcrum = () => {
   const [submitted, setSubmitted] = useState(false);
 
@@ -54,70 +55,10 @@ const Breadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="lt-public-form-wrapper">
-          <div className="lt-public-form-card">
-
-            <h3 className="lt-form-title">
-              Get Expert Assistance
-            </h3>
-
-            <p className="lt-form-subtitle">
-              Talk to our Private Limited Company registration expert
-            </p>
-
-            {submitted ? (
-              <div className="lt-form-success" role="alert">
-                <p>✅ Thank you! Our team will contact you shortly.</p>
-              </div>
-            ) : null}
-            <form
-              className="lt-public-form"
-              onSubmit={handleSubmit}
-              style={submitted ? { display: "none" } : undefined}
-            >
-              <input type="text" placeholder="Full Name" required />
-              <input type="email" placeholder="Email Address" required />
-              <input type="tel" placeholder="Mobile Number" required />
-
-              <select required>
-                <option value="">Select Your State</option>
-                <option>Odisha</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              <select>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <div className="lt-whatsapp-row">
-                <label className="lt-whatsapp-label">
-                  <input type="checkbox" defaultChecked />
-                  <span className="lt-custom-checkbox"></span>
-                  <span className="lt-whatsapp-text">
-                    Receive updates on <strong>WhatsApp</strong>
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit">
-                Book Free Consultation
-              </button>
-            </form>
-
-            <p className="lt-form-note">
-              🔒 100% Confidential • No Spam • No Hidden Charges
-            </p>
-
-          </div>
-        </aside>
+        <ConsultationForm
+          source="private-limited"
+          subtitle="Talk to our Private Limited Company registration expert"
+        />
 
       </div>
     </section>

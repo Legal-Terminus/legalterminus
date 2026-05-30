@@ -1,6 +1,7 @@
 import React from "react";
 import "./PublictoPrivateBreadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const PublicBreadcrum = () => {
   return (
     <section className="plt-bc-hero">
@@ -51,63 +52,10 @@ const PublicBreadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="plt-bc-form-wrapper">
-          <div className="plt-bc-form-card">
-
-            <h3 className="plt-bc-form-title">
-              Get Expert Assistance
-            </h3>
-
-            <p className="plt-bc-form-subtitle">
-              Talk to our Public Company registration expert
-            </p>
-
-            <form
-              className="plt-bc-form"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input type="text" placeholder="Full Name" required />
-              <input type="email" placeholder="Email Address" required />
-              <input type="tel" placeholder="Mobile Number" required />
-
-              <select required>
-                <option value="">Select Your State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              <select>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <div className="plt-bc-whatsapp-row">
-                <label className="plt-bc-whatsapp-label">
-                  <input type="checkbox" defaultChecked />
-                  <span className="plt-bc-custom-checkbox"></span>
-                  <span className="plt-bc-whatsapp-text">
-                    Receive updates on <strong>WhatsApp</strong>
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit">
-                Book Free Consultation
-              </button>
-            </form>
-
-            <p className="plt-bc-form-note">
-              🔒 100% Confidential • No Spam • No Hidden Charges
-            </p>
-
-          </div>
-        </aside>
+        <ConsultationForm
+          source="public-to-private"
+          subtitle="Talk to our Public Company registration expert"
+        />
 
       </div>
     </section>

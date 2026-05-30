@@ -1,6 +1,7 @@
 import React from "react";
 import "./ChangetoLlpBreadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const LLPBreadcrum = () => {
   return (
     <section className="llpbr-public-hero">
@@ -47,63 +48,10 @@ const LLPBreadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="llpbr-public-form-wrapper">
-          <div className="llpbr-public-form-card">
-
-            <h3 className="llpbr-form-title">
-              Get Expert Assistance
-            </h3>
-
-            <p className="llpbr-form-subtitle">
-              Talk to our LLP registration expert
-            </p>
-
-            <form
-              className="llpbr-public-form"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input type="text" placeholder="Full Name" required />
-              <input type="email" placeholder="Email Address" required />
-              <input type="tel" placeholder="Mobile Number" required />
-
-              <select required>
-                <option value="">Select Your State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              <select>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <div className="llpbr-whatsapp-row">
-                <label className="llpbr-whatsapp-label">
-                  <input type="checkbox" defaultChecked />
-                  <span className="llpbr-custom-checkbox"></span>
-                  <span className="llpbr-whatsapp-text">
-                    Receive updates on <strong>WhatsApp</strong>
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit">
-                Book Free Consultation
-              </button>
-            </form>
-
-            <p className="llpbr-form-note">
-              🔒 100% Confidential • No Spam • No Hidden Charges
-            </p>
-
-          </div>
-        </aside>
+        <ConsultationForm
+          source="company-to-llp"
+          subtitle="Talk to our LLP registration expert"
+        />
 
       </div>
     </section>

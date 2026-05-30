@@ -1,6 +1,7 @@
 import React from "react";
 import "./PartnershipLLPBreadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const PartnershipLLPBreadcrum = () => {
   return (
     <section className="partnership-llp-breadcrum-hero">
@@ -46,63 +47,10 @@ const PartnershipLLPBreadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="partnership-llp-breadcrum-form-wrapper">
-          <div className="partnership-llp-breadcrum-form-card">
-
-            <h3 className="partnership-llp-breadcrum-form-title">
-              Get Expert Assistance
-            </h3>
-
-            <p className="partnership-llp-breadcrum-form-subtitle">
-              Talk to our expert
-            </p>
-
-            <form
-              className="partnership-llp-breadcrum-form"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input type="text" placeholder="Full Name" required />
-              <input type="email" placeholder="Email Address" required />
-              <input type="tel" placeholder="Mobile Number" required />
-
-              <select required>
-                <option value="">Select Your State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              <select>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <div className="partnership-llp-breadcrum-whatsapp-row">
-                <label className="partnership-llp-breadcrum-whatsapp-label">
-                  <input type="checkbox" defaultChecked />
-                  <span className="partnership-llp-breadcrum-checkbox"></span>
-                  <span className="partnership-llp-breadcrum-whatsapp-text">
-                    Receive updates on <strong>WhatsApp</strong>
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit">
-                Book Free Consultation
-              </button>
-            </form>
-
-            <p className="partnership-llp-breadcrum-note">
-              🔒 100% Confidential • No Spam • No Hidden Charges
-            </p>
-
-          </div>
-        </aside>
+        <ConsultationForm
+          source="partnership-to-llp"
+          subtitle="Talk to our expert"
+        />
 
       </div>
     </section>

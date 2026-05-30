@@ -10,7 +10,7 @@ const COLLECTION = "contactLeads";
 /* ================= SUBMIT CONTACT FORM ================= */
 export const createContactLead = async (req, res) => {
   try {
-    const { fullName, company, phone, email, subject, message, state, preferredCallTime, source } = req.body;
+    const { fullName, company, phone, email, subject, message, state, preferredCallTime, source, whatsapp } = req.body;
 
     if (!phone || !email || !message) {
       return res.status(400).json({ message: "Phone, email, and message are required." });
@@ -26,6 +26,7 @@ export const createContactLead = async (req, res) => {
       state: state || "",
       preferredCallTime: preferredCallTime || "",
       source: source || "unknown",
+      whatsapp: whatsapp === true || whatsapp === 'true',
       status: "new",               // new | contacted | closed
       createdAt: new Date(),
       updatedAt: new Date(),

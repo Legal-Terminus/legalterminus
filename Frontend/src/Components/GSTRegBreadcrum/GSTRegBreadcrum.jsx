@@ -1,6 +1,7 @@
 import React from "react";
 import "./GSTRegBreadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const GSTRegBreadcrum = () => {
   return (
     <section className="gstv2-hero-section">
@@ -60,56 +61,10 @@ const GSTRegBreadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <div className="gstv2-form-section">
-          <div className="gstv2-form-box">
-
-            <div className="gstv2-form-header">
-              <h3 className="gstv2-form-title">Get Expert Assistance</h3>
-              <p className="gstv2-form-subtitle">
-                Talk to our GST registration expert
-              </p>
-            </div>
-
-            <form className="gstv2-form-body" onSubmit={(e) => e.preventDefault()}>
-              <input className="gstv2-input-field" type="text" placeholder="Full Name" required />
-              <input className="gstv2-input-field" type="email" placeholder="Email Address" required />
-              <input className="gstv2-input-field" type="tel" placeholder="Mobile Number" required />
-
-              <select className="gstv2-select-field" required>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <select className="gstv2-select-field" required>
-                <option value="">State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              {/* WHATSAPP */}
-              <div className="gstv2-whatsapp-section">
-                <input type="checkbox" id="gstWhatsapp" className="gstv2-whatsapp-checkbox" defaultChecked />
-                <label htmlFor="gstWhatsapp" className="gstv2-whatsapp-label">
-                  Receive updates on <strong>WhatsApp</strong>
-                </label>
-              </div>
-
-              <button type="submit" className="gstv2-submit-button">
-                Book Free Consultation
-              </button>
-            </form>
-
-            <div className="gstv2-form-footer">
-              Your information is safe with us • No spam
-            </div>
-          </div>
-        </div>
+        <ConsultationForm
+          source="gst-registration"
+          subtitle="Talk to our GST registration expert"
+        />
 
       </div>
     </section>

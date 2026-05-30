@@ -1,6 +1,7 @@
 import React from "react";
 import "./DPBreadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const DPBreadcrum = () => {
   return (
     <section className="DP-public-hero">
@@ -46,63 +47,10 @@ const DPBreadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="DP-public-form-wrapper">
-          <div className="DP-public-form-card">
-
-            <h3 className="DP-form-title">
-              Get Expert Assistance
-            </h3>
-
-            <p className="DP-form-subtitle">
-              Talk to our expert
-            </p>
-
-            <form
-              className="DP-public-form"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input type="text" placeholder="Full Name" required />
-              <input type="email" placeholder="Email Address" required />
-              <input type="tel" placeholder="Mobile Number" required />
-
-              <select required>
-                <option value="">Select Your State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              <select>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <div className="DP-whatsapp-row">
-                <label className="DP-whatsapp-label">
-                  <input type="checkbox" defaultChecked />
-                  <span className="DP-custom-checkbox"></span>
-                  <span className="DP-whatsapp-text">
-                    Receive updates on <strong>WhatsApp</strong>
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit">
-                Book Free Consultation
-              </button>
-            </form>
-
-            <p className="DP-form-note">
-              🔒 100% Confidential • No Spam • No Hidden Charges
-            </p>
-
-          </div>
-        </aside>
+        <ConsultationForm
+          source="director-partner"
+          subtitle="Talk to our expert"
+        />
 
       </div>
     </section>

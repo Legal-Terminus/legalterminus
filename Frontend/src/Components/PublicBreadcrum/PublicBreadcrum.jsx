@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./PublicBreadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const PublicBreadcrum = () => {
   const [submitted, setSubmitted] = useState(false);
 
@@ -56,66 +57,10 @@ const PublicBreadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="pub-ltd-form-wrapper">
-          <div className="pub-ltd-form-card">
-
-            <h3 className="pub-ltd-form-title">Get Expert Assistance</h3>
-
-            <p className="pub-ltd-form-subtitle">
-              Talk to our expert
-            </p>
-
-            {submitted ? (
-              <div className="pub-ltd-form-success" role="alert">
-                <p>✅ Thank you! Our team will contact you shortly.</p>
-              </div>
-            ) : null}
-
-            <form
-              className="pub-ltd-form"
-              onSubmit={handleSubmit}
-              style={submitted ? { display: "none" } : undefined}
-            >
-              <input type="text" placeholder="Full Name" required />
-              <input type="email" placeholder="Email Address" required />
-              <input type="tel" placeholder="Mobile Number" required />
-
-              <select required>
-                <option value="">Select Your State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              <select>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <div className="pub-ltd-whatsapp-row">
-                <label className="pub-ltd-whatsapp-label">
-                  <input type="checkbox" defaultChecked />
-                  <span className="pub-ltd-checkbox"></span>
-                  <span className="pub-ltd-whatsapp-text">
-                    Receive updates on <strong>WhatsApp</strong>
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit">Book Free Consultation</button>
-            </form>
-
-            <p className="pub-ltd-form-note">
-              🔒 100% Confidential • No Spam • No Hidden Charges
-            </p>
-
-          </div>
-        </aside>
+        <ConsultationForm
+          source="public-limited-company"
+          subtitle="Talk to our expert"
+        />
 
       </div>
     </section>

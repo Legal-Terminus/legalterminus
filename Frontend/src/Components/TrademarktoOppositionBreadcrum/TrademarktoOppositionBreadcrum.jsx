@@ -1,6 +1,7 @@
 import React from "react";
 import "./TrademarktoOppositionBreadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const TradeLicenseBreadcrum = () => {
   return (
     <section className="tlbcr-hero">
@@ -47,63 +48,10 @@ const TradeLicenseBreadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="tlbcr-form-wrapper">
-          <div className="tlbcr-form-card">
-
-            <h3 className="tlbcr-form-title">
-              Get Expert Assistance
-            </h3>
-
-            <p className="tlbcr-form-subtitle">
-              Talk to our expert
-            </p>
-
-            <form
-              className="tlbcr-form"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input type="text" placeholder="Full Name" required />
-              <input type="email" placeholder="Email Address" required />
-              <input type="tel" placeholder="Mobile Number" required />
-
-              <select required>
-                <option value="">Select Your State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              <select>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <div className="tlbcr-whatsapp-row">
-                <label className="tlbcr-whatsapp-label">
-                  <input type="checkbox" defaultChecked />
-                  <span className="tlbcr-custom-checkbox"></span>
-                  <span className="tlbcr-whatsapp-text">
-                    Receive updates on <strong>WhatsApp</strong>
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit">
-                Book Free Consultation
-              </button>
-            </form>
-
-            <p className="tlbcr-form-note">
-              🔒 100% Confidential • No Spam • No Hidden Charges
-            </p>
-
-          </div>
-        </aside>
+        <ConsultationForm
+          source="trademark-opposition"
+          subtitle="Talk to our expert"
+        />
 
       </div>
     </section>

@@ -1,6 +1,7 @@
 import React from "react";
 import "./ChangeObjectComBreadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const ChangeObjectComBreadcrum = () => {
   return (
     <section className="Change-ob-Breadcrum-public-hero">
@@ -46,63 +47,10 @@ const ChangeObjectComBreadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="Change-ob-Breadcrum-public-form-wrapper">
-          <div className="Change-ob-Breadcrum-public-form-card">
-
-            <h3 className="Change-ob-Breadcrum-form-title">
-              Get Expert Assistance
-            </h3>
-
-            <p className="Change-ob-Breadcrum-form-subtitle">
-              Talk to our expert
-            </p>
-
-            <form
-              className="Change-ob-Breadcrum-public-form"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input type="text" placeholder="Full Name" required />
-              <input type="email" placeholder="Email Address" required />
-              <input type="tel" placeholder="Mobile Number" required />
-
-              <select required>
-                <option value="">Select Your State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              <select>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <div className="Change-ob-Breadcrum-whatsapp-row">
-                <label className="Change-ob-Breadcrum-whatsapp-label">
-                  <input type="checkbox" defaultChecked />
-                  <span className="Change-ob-Breadcrum-custom-checkbox"></span>
-                  <span className="Change-ob-Breadcrum-whatsapp-text">
-                    Receive updates on <strong>WhatsApp</strong>
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit">
-                Book Free Consultation
-              </button>
-            </form>
-
-            <p className="Change-ob-Breadcrum-form-note">
-              🔒 100% Confidential • No Spam • No Hidden Charges
-            </p>
-
-          </div>
-        </aside>
+        <ConsultationForm
+          source="change-company-object"
+          subtitle="Talk to our expert"
+        />
 
       </div>
     </section>

@@ -1,6 +1,7 @@
 import React from "react";
 import "./ChangetoComapnyBreadcrum.css";
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const Breadcrum = () => {
   return (
     <section className="prp-bc-hero">
@@ -49,63 +50,10 @@ const Breadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <aside className="prp-bc-form-wrapper">
-          <div className="prp-bc-form-card">
-
-            <h3 className="prp-bc-form-title">
-              Get Expert Assistance
-            </h3>
-
-            <p className="prp-bc-form-subtitle">
-              Talk to our Private Limited Company registration expert
-            </p>
-
-            <form
-              className="prp-bc-form"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input type="text" placeholder="Full Name" required />
-              <input type="email" placeholder="Email Address" required />
-              <input type="tel" placeholder="Mobile Number" required />
-
-              <select required>
-                <option value="">Select Your State</option>
-                <option>Maharashtra</option>
-                <option>Delhi</option>
-                <option>Karnataka</option>
-                <option>Tamil Nadu</option>
-                <option>Other</option>
-              </select>
-
-              <select>
-                <option value="">Preferred Call Time</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 2:00 PM</option>
-                <option>2:00 PM – 4:00 PM</option>
-                <option>4:00 PM – 6:00 PM</option>
-              </select>
-
-              <div className="prp-bc-whatsapp-row">
-                <label className="prp-bc-whatsapp-label">
-                  <input type="checkbox" defaultChecked />
-                  <span className="prp-bc-custom-checkbox"></span>
-                  <span className="prp-bc-whatsapp-text">
-                    Receive updates on <strong>WhatsApp</strong>
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit">
-                Book Free Consultation
-              </button>
-            </form>
-
-            <p className="prp-bc-form-note">
-              🔒 100% Confidential • No Spam • No Hidden Charges
-            </p>
-
-          </div>
-        </aside>
+        <ConsultationForm
+          source="proprietorship-to-company"
+          subtitle="Talk to our Private Limited Company registration expert"
+        />
 
       </div>
     </section>

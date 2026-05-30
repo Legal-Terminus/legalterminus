@@ -2,6 +2,7 @@ import React from 'react';
 import './UdyamRegBreadcrum.css'
 import bgImage from '../../assets/breadcrum.png';
 
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const Breadcrum = () => {
   return (
     <section
@@ -61,76 +62,11 @@ const Breadcrum = () => {
           </div>
         </div>
 
-        {/* RIGHT PANEL (FORM CARD) */}
-        <aside className="reg-breadcrum-right-panel">
-          <div className="reg-breadcrum-ribbon">
-            <img src="https://corpbiz.io/img/offer_icon.webp" alt="" />
-          </div>
-
-          <div className="reg-breadcrum-form-card">
-            <h3 className="reg-breadcrum-form-title">Get Free Expert Consultation</h3>
-
-            <form
-                className="reg-breadcrum-lead-form"
-                onSubmit={(e) => e.preventDefault()}
-              >
-                <input
-                  className="reg-breadcrum-input"
-                  placeholder="Your Name"
-                  type="text"
-                />
-
-                <input
-                  className="reg-breadcrum-input"
-                  placeholder="Email Address"
-                  type="email"
-                />
-
-                <div className="reg-breadcrum-phone-row">
-                  <input
-                    className="reg-breadcrum-input reg-breadcrum-phone"
-                    placeholder="Mobile Number"
-                    type="tel"
-                  />
-                </div>
-
-                <select className="reg-breadcrum-input reg-breadcrum-select">
-                  <option>Select State</option>
-                  <option>Maharashtra</option>
-                  <option>Delhi</option>
-                  <option>Karnataka</option>
-                </select>
-
-              {/* ⭐ Preferable Call Timing Dropdown */}
-                  <select className="reg-breadcrum-input reg-breadcrum-select">
-                    <option>Select Preferable Time to Call</option>
-                    <option>9:00 AM – 10:00 AM</option>
-                    <option>10:00 AM – 11:00 AM</option>
-                    <option>11:00 AM – 12:00 PM</option>
-                    <option>12:00 PM – 1:00 PM</option>
-                    <option>1:00 PM – 2:00 PM</option>
-                    <option>2:00 PM – 3:00 PM</option>
-                    <option>3:00 PM – 4:00 PM</option>
-                    <option>4:00 PM – 5:00 PM</option>
-                    <option>5:00 PM – 6:00 PM</option>
-                    <option>6:00 PM – 7:00 PM</option>
-                  </select>
-
-
-                <label className="reg-breadcrum-whatsapp">
-                  Get Update on{' '}
-                  <span className="reg-breadcrum-wh-icon">Whatsapp</span>
-                  <input type="checkbox" defaultChecked />
-                  <span className="reg-breadcrum-toggle" />
-                </label>
-
-                <button className="reg-breadcrum-get-started" type="submit">
-                  GET STARTED NOW
-                </button>
-              </form>
-
-          </div>
-        </aside>
+        {/* RIGHT FORM */}
+        <ConsultationForm
+          source="udyam-registration"
+          subtitle="Talk to our expert"
+        />
       </div>
     </section>
   );
