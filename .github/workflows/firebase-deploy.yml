@@ -1,4 +1,4 @@
-name: Deploy to Firebase Hosting
+name: Deploy to Firebase Production
 
 on:
   push:
@@ -11,25 +11,73 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Setup Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: Frontend/package-lock.json
 
-      - name: Install dependencies
+      # Build Frontend
+      - name: Install Frontend dependencies
         run: npm ci
         working-directory: Frontend
 
-      - name: Build
+      - name: Build Frontend
         run: npm run build
         working-directory: Frontend
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_PROD_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_PROD_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROD_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_PROD_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_PROD_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_PROD_APP_ID }}
 
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      # Build Backend
+      - name: Install Backend dependencies
+        run: npm ci
+        working-directory: backend
+
+      # Setup Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Login to Google Artifact Registry
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LEGAL_TERMINUS_WEB }}
-          channelId: live
-          projectId: legal-terminus-web
+          credentials_json: ${{ secrets.FIREBASE_PROD_SERVICE_ACCOUNT_JSON }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker authentication to GAR
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      # Build and push Docker image to Google Artifact Registry
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: us-central1-docker.pkg.dev/${{ secrets.FIREBASE_PROD_PROJECT_ID }}/legal-terminus-prod/backend:latest
+          cache-from: type=registry,ref=us-central1-docker.pkg.dev/${{ secrets.FIREBASE_PROD_PROJECT_ID }}/legal-terminus-prod/backend:buildcache
+          cache-to: type=registry,ref=us-central1-docker.pkg.dev/${{ secrets.FIREBASE_PROD_PROJECT_ID }}/legal-terminus-prod/backend:buildcache,mode=max
+
+      # Deploy to Firebase App Hosting Production
+      - name: Deploy to Firebase App Hosting Production
+        run: |
+          npm install -g firebase-tools
+          firebase deploy \
+            --project=${{ secrets.FIREBASE_PROD_PROJECT_ID }} \
+            --token=${{ secrets.FIREBASE_PROD_CLI_TOKEN }} \
+            --only hosting
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_PROD_API_KEY }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_PROD_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROD_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_PROD_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_PROD_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_PROD_APP_ID }}
+
+

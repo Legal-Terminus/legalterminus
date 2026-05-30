@@ -5,7 +5,7 @@ import {
   updateClient,
   deleteClient,
   toggleClientStatus,
-} from "../controllers/client.controller.js";
+} from "../controllers/client.controller.firestore.js";
 
 const router = express.Router();
 

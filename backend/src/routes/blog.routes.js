@@ -5,7 +5,7 @@ import {
   updateBlog,
   deleteBlog,
   getAllBlogs
-} from "../controllers/blog.controller.js";
+} from "../controllers/blog.controller.firestore.js";
 
 const router = express.Router();
 

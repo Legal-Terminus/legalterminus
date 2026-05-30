@@ -5,7 +5,7 @@ import {
   updateVideoTestimonial,
   deleteVideoTestimonial,
   toggleVideoTestimonialStatus,
-} from "../controllers/videotestimonial.controller.js";
+} from "../controllers/videotestimonial.controller.firestore.js";
 
 const router = express.Router();
 

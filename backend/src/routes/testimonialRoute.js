@@ -1,5 +1,20 @@
 import express from "express";
-import testimonialController from "../controllers/testimonialController.js";
+import {
+  createTestimonial,
+  getAllTestimonials,
+  getTestimonial,
+  updateTestimonial,
+  deleteTestimonial,
+} from "../controllers/testimonial.controller.firestore.js";
+
+const testimonialController = {
+  createTestimonial,
+  getAllTestimonials,
+  getTestimonial,
+  updateTestimonial,
+  deleteTestimonial,
+  toggleStatus: deleteTestimonial,
+};
 
 const router = express.Router();
 

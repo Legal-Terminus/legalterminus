@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Create Account — Legal Terminus</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+  <!-- Firebase Config Loader -->
+  <script src="/firebase-config-loader.js"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -591,18 +597,53 @@
     if (pw !== cpw) { alert('Passwords do not match.'); return; }
     if (!terms) { alert('Please accept the Terms & Conditions to continue.'); return; }
 
-    /* ── save user to localStorage ── */
-    const users = JSON.parse(localStorage.getItem('lt_users') || '[]');
-    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-      alert('An account with this email already exists. Please log in.');
-      return;
-    }
-    users.push({ name: fname, email: email.toLowerCase(), phone, password: pw });
-    localStorage.setItem('lt_users', JSON.stringify(users));
+    /* Show loading state */
+    const btn = document.querySelector('.btn-create');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Creating account...';
 
-    alert('Account created successfully! You can now log in.');
-    window.location.href = '/login';
+    /* ── Ensure Firebase is initialized ── */
+    ensureFirebaseReady()
+      .then(() => {
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        /* ── create user with Firebase ── */
+        return auth.createUserWithEmailAndPassword(email, pw)
+          .then((userCredential) => {
+            const userId = userCredential.user.uid;
+
+            // Save user profile to Firestore
+            return db.collection('users').doc(userId).set({
+              name: fname,
+              email: email,
+              phone: phone,
+              state: '',
+              createdAt: new Date(),
+              updatedAt: new Date()
+            }).then(() => {
+              alert('Account created successfully! You can now log in.');
+              window.location.href = '/login';
+            });
+          });
+      })
+      .catch((error) => {
+        btn.disabled = false;
+        btn.textContent = originalText;
+
+        if (error.code === 'auth/email-already-in-use') {
+          alert('An account with this email already exists. Please log in.');
+        } else if (error.code === 'auth/weak-password') {
+          alert('Password is too weak. Please use a stronger password.');
+        } else if (error.code === 'auth/invalid-email') {
+          alert('Please enter a valid email address.');
+        } else {
+          alert(error.message || 'Signup failed. Please try again.');
+        }
+      });
   }
+
 </script>
 
 </body>

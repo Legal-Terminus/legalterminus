@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login — Legal Terminus</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+  <!-- Firebase Config Loader -->
+  <script src="/firebase-config-loader.js"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -488,8 +493,26 @@
     clearFieldErr('password');
   }
 
-  /* ── login handler ── */
+  /* ── Firebase initialization ── */
+  let auth = null;
+
+  // Initialize Firebase on page load
+  loadFirebaseConfig()
+    .then(() => {
+      auth = firebase.auth();
+    })
+    .catch((error) => {
+      console.error('Failed to initialize Firebase:', error);
+      alert('Failed to load authentication service. Please refresh the page.');
+    });
+
+  /* ── login handler with Firebase ── */
   function handleLogin() {
+    if (!auth) {
+      alert('Authentication service is not ready. Please refresh the page.');
+      return;
+    }
+
     clearAllErrors();
     const email = document.getElementById('email').value.trim();
     const pw    = document.getElementById('password').value;
@@ -506,27 +529,35 @@
     }
     if (hasErr) return;
 
-    /* ── validate against registered users (localStorage) ── */
-    const users = JSON.parse(localStorage.getItem('lt_users') || '[]');
-    const user  = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    /* Show loading state */
+    const btn = document.querySelector('.btn-login');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
 
-    if (!user) {
-      /* email not found → show both errors */
-      showFieldErr('email',    'Invalid User ID. No account found with this email.');
-      showFieldErr('password', 'Password is wrong.');
-      return;
-    }
+    /* ── sign in with Firebase ── */
+    auth.signInWithEmailAndPassword(email, pw)
+      .then((userCredential) => {
+        // Success
+        window.location.href = '/';
+      })
+      .catch((error) => {
+        btn.disabled = false;
+        btn.textContent = originalText;
 
-    if (user.password !== pw) {
-      /* email correct, password wrong → only password error */
-      showFieldErr('password', 'Password is wrong. Please try again.');
-      return;
-    }
-
-    /* ── success ── */
-    localStorage.setItem('lt_logged_in', JSON.stringify({ name: user.name, email: user.email, phone: user.phone || '' }));
-    window.location.href = '/';
+        if (error.code === 'auth/user-not-found') {
+          showFieldErr('email', 'Invalid User ID. No account found with this email.');
+          showFieldErr('password', 'Password is wrong.');
+        } else if (error.code === 'auth/wrong-password') {
+          showFieldErr('password', 'Password is wrong. Please try again.');
+        } else if (error.code === 'auth/invalid-email') {
+          showFieldErr('email', 'Please enter a valid email address.');
+        } else {
+          showFieldErr('email', error.message || 'Login failed. Please try again.');
+        }
+      });
   }
+
 </script>
 
 </body>

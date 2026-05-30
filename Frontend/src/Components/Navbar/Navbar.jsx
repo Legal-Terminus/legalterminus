@@ -16,6 +16,8 @@ import {
   FaChevronRight,
   FaArrowRight,
 } from "react-icons/fa";
+import { initializeApp } from "firebase/app";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "./Navbar.css";
 
 // Module-level style constants — avoids new object allocation on every render
@@ -286,17 +288,27 @@ const navData = [
 
 export default function NavbarAdvanced() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(() => !!localStorage.getItem('lt_logged_in'));
+  const [loggedIn, setLoggedIn] = useState(false);
 
-  // Keep loggedIn in sync with localStorage whenever our auth helpers update it
+  // Initialize Firebase and listen for auth state changes
   useEffect(() => {
-    const syncAuth = () => setLoggedIn(!!localStorage.getItem('lt_logged_in'));
-    window.addEventListener('lt-auth-change', syncAuth);
-    window.addEventListener('storage', syncAuth);          // cross-tab sync
-    return () => {
-      window.removeEventListener('lt-auth-change', syncAuth);
-      window.removeEventListener('storage', syncAuth);
+    const firebaseConfig = {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID
     };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setLoggedIn(!!user);
+    });
+
+    return unsubscribe;
   }, []);
   const [scrolled, setScrolled] = useState(false);
   const [megaOpenFor, setMegaOpenFor] = useState(null);

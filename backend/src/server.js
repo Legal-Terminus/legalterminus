@@ -10,9 +10,11 @@ import employeeRoutes from "./routes/employee.routes.js";
 import videoTestimonialRoutes from "./routes/videotestimonial.routes.js";
 import clientRoutes from "./routes/client.routes.js";
 import testimonialRoutes from "./routes/testimonialRoute.js";
-import { connectDB } from "./config/db.js";
+import authRoutes from "./routes/auth.routes.js";
+import initializeFirebase from "./config/firebase.js";
 
-dotenv.config();
+// Load environment variables from .env.qa (for Firebase config)
+dotenv.config({ path: ".env.qa" });
 
 const app = express();
 
@@ -21,9 +23,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /* ================= CORS ================= */
+const allowedOrigins = [
+  "http://localhost:5173", // Local development
+  "http://localhost:5000", // Local API
+  /\.firebaseapp\.com$/, // Firebase Hosting domain (all projects)
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -34,6 +42,9 @@ app.use(express.json());
 /* ================= 🔥 STATIC FILE SERVING ================= */
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
+// Serve React static files from public folder (built frontend)
+app.use(express.static(path.join(__dirname, "../public")));
+
 /* ================= ROUTES ================= */
 app.use("/api/admin/blog", blogRoutes);
 app.use("/api/admin/category", categoryRoutes);
@@ -41,12 +52,21 @@ app.use("/api/employees", employeeRoutes);
 app.use("/api/video-testimonials", videoTestimonialRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/clients", clientRoutes);
+app.use("/api/auth", authRoutes);
+
+/* ================= FALLBACK ROUTE (SPA) ================= */
+// Serve React app for all non-API routes
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "../public", "index.html"));
+});
 
 /* ================= START SERVER ================= */
 const PORT = process.env.PORT || 5000;
 
-const startServer = async () => {
-  await connectDB();
+const startServer = () => {
+  // Initialize Firebase
+  initializeFirebase();
+
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
   });

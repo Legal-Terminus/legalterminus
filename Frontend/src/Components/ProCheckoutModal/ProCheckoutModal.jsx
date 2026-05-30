@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 import "./ProCheckoutModal.css";
-import { getUserProfile, saveUserProfile } from "../../utils/userProfile";
 
 const STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -163,13 +164,32 @@ const ProCheckoutModal = ({ plan, onClose }) => {
       const success = Math.random() > 0.2;
       if (success) {
         // Persist the form data so future checkouts auto-fill
-        saveUserProfile({
+        const profileData = {
           fullName:     form.fullName,
           email:        form.email,
           mobile:       form.mobile,
           businessName: form.businessName,
           state:        form.state,
-        });
+        };
+
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+
+        if (currentUser) {
+          // If user is logged in, save to Firestore
+          const db = getFirestore();
+          setDoc(doc(db, 'users', currentUser.uid), {
+            fullName:     profileData.fullName,
+            businessName: profileData.businessName,
+            state:        profileData.state,
+            mobile:       profileData.mobile,
+            updatedAt: new Date()
+          }, { merge: true }).catch(err => console.error('Error saving to Firestore:', err));
+        } else {
+          // If user is not logged in, save to localStorage as temporary cache
+          localStorage.setItem('lt_checkout_profile', JSON.stringify(profileData));
+        }
+
         setStep("success");
       } else {
         setFailureReason(pickFailureReason(paymentMethod));
