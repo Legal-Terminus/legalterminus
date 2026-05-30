@@ -19,8 +19,10 @@
   margin-bottom: 10px;
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 12px;
+  text-align: center;
 }
 
 .govtcosts-badge {
@@ -39,6 +41,7 @@
   color: #64748b;
   margin-bottom: 28px;
   line-height: 1.7;
+  text-align: center;
 }
 
 /* Table wrapper for horizontal scroll on small screens */
