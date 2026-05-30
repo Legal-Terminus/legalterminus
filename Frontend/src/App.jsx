@@ -12,6 +12,7 @@ import PvtltdOurclints from "./Components/PvtltdOurclints/PvtltdOurclints";
 import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
 
 const MyProfile = lazy(() => import("./Pages/MyProfile/MyProfile"));
+const Login = lazy(() => import("./Pages/Login/Login"));
 
 const Home = lazy(() => import("./Pages/Home/Home"));
 const ContactUs = lazy(() => import("./Pages/ContactUs/ContactUs"));
@@ -84,8 +85,6 @@ const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
 const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
 const PrivateLimitedCopy2 = lazy(() => import("./Pages/PrivateLimitedCopy2/PrivateLimitedCopy2"));
 const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
-
-const MyProfile = lazy(() => import("./Pages/MyProfile/MyProfile"));
 
 // Pages that are NOT service pages — testimonial/social proof sections are hidden here
 const NON_SERVICE_PATHS = new Set([
@@ -169,6 +168,7 @@ function App() {
         <Suspense fallback={null}>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/contact/us" element={<ContactUs />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/details" element={<BlogDetails />} />

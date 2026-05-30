@@ -1,172 +1,272 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { saveUserProfile, getUserProfile, clearUserProfile } from "../../utils/userProfile";
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import "./Login.css";
-
-const STATES = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka",
-  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram",
-  "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
-  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
-  "Delhi", "Jammu & Kashmir", "Ladakh", "Puducherry", "Chandigarh",
-];
 
 const Login = () => {
   const navigate = useNavigate();
-  const existing = getUserProfile();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({ email: "", password: "" });
+  const [auth, setAuth] = useState(null);
 
-  const [form, setForm] = useState({
-    fullName:     existing?.fullName     || "",
-    email:        existing?.email        || "",
-    mobile:       existing?.mobile       || "",
-    state:        existing?.state        || "",
-    businessName: existing?.businessName || "",
-  });
-  const [errors, setErrors]     = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  const isEditing = !!existing;
-
-  const update = (key, val) => {
-    setForm(f => ({ ...f, [key]: val }));
-    setErrors(e => ({ ...e, [key]: "" }));
-  };
-
-  const validate = () => {
-    const e = {};
-    if (!form.fullName.trim())
-      e.fullName = "Full name is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
-      e.email = "Enter a valid email address";
-    if (!/^\d{10}$/.test(form.mobile.trim()))
-      e.mobile = "Enter a valid 10-digit mobile number";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-    saveUserProfile(form);          // sets lt_user + lt_logged_in + fires lt-auth-change
-    setSubmitted(true);
-  };
-
-  const handleLogout = () => {
-    clearUserProfile();             // removes keys + fires lt-auth-change
-    navigate("/");
-  };
-
-  // Redirect after 1.5 s so user sees the success tick
   useEffect(() => {
-    if (!submitted) return;
-    const t = setTimeout(() => navigate("/"), 1500);
-    return () => clearTimeout(t);
-  }, [submitted, navigate]);
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch("/api/auth/firebase-config");
+        const config = await response.json();
+        const app = initializeApp(config, "login-app");
+        const authInstance = getAuth(app);
+        setAuth(authInstance);
+
+        // Check if already logged in
+        const unsubscribe = onAuthStateChanged(authInstance, (user) => {
+          if (user) {
+            navigate("/my-profile");
+          }
+        });
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error("Error loading Firebase config:", error);
+      }
+    };
+
+    fetchConfig();
+  }, [navigate]);
+
+  const clearFieldErr = (field) => {
+    setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  const validateForm = () => {
+    let newErrors = { email: "", password: "" };
+    let isValid = true;
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Please enter a valid email";
+      isValid = false;
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+      isValid = false;
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+    if (!auth) {
+      setErrors((prev) => ({ ...prev, email: "Firebase not initialized" }));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/my-profile");
+    } catch (error) {
+      console.error("Login error:", error);
+      let errorMsg = "Login failed";
+
+      if (error.code === "auth/user-not-found") {
+        errorMsg = "No account found with this email";
+        setErrors((prev) => ({ ...prev, email: errorMsg }));
+      } else if (error.code === "auth/wrong-password") {
+        errorMsg = "Incorrect password";
+        setErrors((prev) => ({ ...prev, password: errorMsg }));
+      } else if (error.code === "auth/invalid-email") {
+        errorMsg = "Invalid email address";
+        setErrors((prev) => ({ ...prev, email: errorMsg }));
+      } else if (error.code === "auth/too-many-requests") {
+        errorMsg = "Too many failed attempts. Please try again later";
+        setErrors((prev) => ({ ...prev, email: errorMsg }));
+      } else {
+        setErrors((prev) => ({ ...prev, email: errorMsg }));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <div className="login-brand">
-          <div className="login-brand-icon">⚖️</div>
-          <h1 className="login-brand-name">Legal Terminus</h1>
-        </div>
+    <div className="login-container">
+      <div className="card">
+        {/* LEFT: login form */}
+        <div className="form-panel">
+          <h1>Welcome Back!</h1>
+          <p className="sub">Please enter your details to continue</p>
 
-        {submitted ? (
-          <div className="login-success">
-            <div className="login-success-icon">✓</div>
-            <h2>{isEditing ? "Details updated!" : "Signed in successfully!"}</h2>
-            <p>Redirecting you to the home page…</p>
-          </div>
-        ) : (
-          <>
-            <h2 className="login-title">{isEditing ? "My Account" : "Sign In"}</h2>
-            <p className="login-sub">
-              {isEditing
-                ? "Your details are saved. Edit below to update them."
-                : "Save your details once — they'll auto-fill at checkout every time."}
-            </p>
+          <form onSubmit={handleLogin}>
+            <div className="field">
+              <label htmlFor="email">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                placeholder="Enter Your Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onInput={() => clearFieldErr("email")}
+                className={errors.email ? "input-err" : ""}
+              />
+              {errors.email && (
+                <div className="field-err-msg show">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  <span>{errors.email}</span>
+                </div>
+              )}
+            </div>
 
-            <form className="login-form" onSubmit={handleSubmit} noValidate>
-              <div className="login-field">
-                <label className="login-label">Full Name</label>
+            <div className="field">
+              <label htmlFor="password">Password</label>
+              <div className="pw-wrap">
                 <input
-                  className={`login-input${errors.fullName ? " error" : ""}`}
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={form.fullName}
-                  onChange={e => update("fullName", e.target.value)}
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  placeholder="Enter Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onInput={() => clearFieldErr("password")}
+                  className={errors.password ? "input-err" : ""}
                 />
-                {errors.fullName && <span className="login-error">{errors.fullName}</span>}
-              </div>
-
-              <div className="login-field">
-                <label className="login-label">Email Address</label>
-                <input
-                  className={`login-input${errors.email ? " error" : ""}`}
-                  type="email"
-                  placeholder="Enter your email"
-                  value={form.email}
-                  onChange={e => update("email", e.target.value)}
-                />
-                {errors.email && <span className="login-error">{errors.email}</span>}
-              </div>
-
-              <div className="login-field">
-                <label className="login-label">Mobile Number</label>
-                <input
-                  className={`login-input${errors.mobile ? " error" : ""}`}
-                  type="tel"
-                  placeholder="10-digit mobile number"
-                  value={form.mobile}
-                  maxLength={10}
-                  onChange={e => update("mobile", e.target.value.replace(/\D/g, ""))}
-                />
-                {errors.mobile && <span className="login-error">{errors.mobile}</span>}
-              </div>
-
-              <div className="login-field">
-                <label className="login-label">
-                  Business Name <span className="login-optional">(Optional)</span>
-                </label>
-                <input
-                  className="login-input"
-                  type="text"
-                  placeholder="Enter your business name"
-                  value={form.businessName}
-                  onChange={e => update("businessName", e.target.value)}
-                />
-              </div>
-
-              <div className="login-field">
-                <label className="login-label">
-                  State <span className="login-optional">(Optional)</span>
-                </label>
-                <select
-                  className="login-input"
-                  value={form.state}
-                  onChange={e => update("state", e.target.value)}
-                >
-                  <option value="">Select State</option>
-                  {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-
-              <button className="login-btn" type="submit">
-                {isEditing ? "Update Details" : "Sign In & Save Details"}
-              </button>
-
-              {isEditing && (
                 <button
                   type="button"
-                  className="login-btn-logout"
-                  onClick={handleLogout}
+                  className="eye-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label="Toggle password visibility"
                 >
-                  Sign Out
+                  {showPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
                 </button>
+              </div>
+              {errors.password && (
+                <div className="field-err-msg show">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  <span>{errors.password}</span>
+                </div>
               )}
-            </form>
-          </>
-        )}
+            </div>
+
+            <div className="row">
+              <label className="remember">
+                <input type="checkbox" /> Remember Me
+              </label>
+              <a href="/forgot-password" className="forgot">
+                Forgot Password?
+              </a>
+            </div>
+
+            <button type="submit" className="btn-login" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </button>
+
+            <p className="signup-row">
+              Don't have an account? <a href="/signup">Sign Up</a>
+            </p>
+          </form>
+        </div>
+
+        {/* RIGHT: brand panel */}
+        <div className="brand-panel">
+          {/* animated logo */}
+          <div className="logo-area">
+            <img
+              className="logo-gif"
+              src="/logo-animated.gif"
+              onError={(e) => (e.target.src = "https://legalterminus.com/wp-content/uploads/2023/09/Legal-Terminus-LOGO-GIF_300-x-150.gif")}
+              alt="Legal Terminus"
+            />
+          </div>
+
+          {/* illustration card */}
+          <div className="illus-card">
+            <svg xmlns="http://www.w3.org/2000/svg" width="190" height="150" viewBox="0 0 190 150">
+              {/* scatter dots */}
+              <circle cx="12" cy="20" r="3" fill="rgba(255,255,255,0.35)" />
+              <circle cx="178" cy="30" r="2.5" fill="rgba(255,255,255,0.30)" />
+              <circle cx="8" cy="110" r="2" fill="rgba(255,255,255,0.25)" />
+              <circle cx="170" cy="120" r="2" fill="rgba(255,255,255,0.25)" />
+              <circle cx="90" cy="8" r="2" fill="rgba(255,255,255,0.20)" />
+
+              {/* clipboard */}
+              <rect x="18" y="28" width="82" height="106" rx="10" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.50)" strokeWidth="1.8" />
+              <rect x="44" y="20" width="30" height="16" rx="8" fill="rgba(255,255,255,0.45)" />
+              <rect x="50" y="24" width="18" height="8" rx="4" fill="rgba(255,255,255,0.20)" />
+              <rect x="30" y="52" width="58" height="8" rx="4" fill="rgba(255,255,255,0.35)" />
+              <rect x="30" y="68" width="58" height="8" rx="4" fill="rgba(255,255,255,0.55)" stroke="rgba(255,255,255,0.80)" strokeWidth="1" />
+              <rect x="35" y="71" width="28" height="2" rx="1" fill="rgba(22,101,52,0.30)" />
+              <rect x="30" y="84" width="58" height="8" rx="4" fill="rgba(255,255,255,0.35)" />
+              <rect x="30" y="100" width="38" height="13" rx="6" fill="rgba(255,255,255,0.60)" />
+              <rect x="37" y="104" width="24" height="5" rx="2.5" fill="rgba(22,101,52,0.35)" />
+
+              {/* checkmark badge */}
+              <circle cx="158" cy="32" r="20" fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.50)" strokeWidth="1.5" />
+              <circle cx="158" cy="32" r="14" fill="rgba(255,255,255,0.30)" />
+              <polyline points="149,32 155,39 168,24" stroke="rgba(255,255,255,0.95)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+
+              {/* person */}
+              <circle cx="148" cy="72" r="14" fill="rgba(255,255,255,0.65)" />
+              <path d="M135 70 Q137 57 148 58 Q159 57 161 70" fill="rgba(255,255,255,0.38)" />
+              <circle cx="143" cy="71" r="2" fill="rgba(22,101,52,0.55)" />
+              <circle cx="153" cy="71" r="2" fill="rgba(22,101,52,0.55)" />
+              <path d="M143 77 Q148 82 153 77" stroke="rgba(22,101,52,0.50)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+              <rect x="144" y="85" width="8" height="8" rx="3" fill="rgba(255,255,255,0.55)" />
+              <rect x="132" y="93" width="32" height="34" rx="8" fill="rgba(255,255,255,0.38)" />
+              <path d="M132 100 Q110 102 100 98" stroke="rgba(255,255,255,0.70)" strokeWidth="7" strokeLinecap="round" fill="none" />
+              <circle cx="97" cy="97" r="5" fill="rgba(255,255,255,0.60)" />
+              <path d="M164 100 Q170 110 168 122" stroke="rgba(255,255,255,0.60)" strokeWidth="7" strokeLinecap="round" fill="none" />
+              <path d="M140 127 Q139 138 138 146" stroke="rgba(255,255,255,0.55)" strokeWidth="8" strokeLinecap="round" />
+              <path d="M156 127 Q157 138 158 146" stroke="rgba(255,255,255,0.55)" strokeWidth="8" strokeLinecap="round" />
+              <ellipse cx="137" cy="147" rx="8" ry="4" fill="rgba(255,255,255,0.35)" />
+              <ellipse cx="159" cy="147" rx="8" ry="4" fill="rgba(255,255,255,0.35)" />
+            </svg>
+
+            <h2>Trusted Legal Services at Your Fingertips</h2>
+            <p>Instant registrations, filings &amp; compliance — trusted by thousands of businesses across India.</p>
+          </div>
+
+          <div className="dots">
+            <div className="dot active"></div>
+            <div className="dot"></div>
+            <div className="dot"></div>
+          </div>
+        </div>
       </div>
     </div>
   );
