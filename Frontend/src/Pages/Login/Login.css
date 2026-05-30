@@ -162,6 +162,23 @@
   margin: 0;
 }
 
+/* Logout button */
+.login-btn-logout {
+  margin-top: 2px;
+  padding: 11px;
+  background: transparent;
+  color: #e53935;
+  border: 1.5px solid #e53935;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: background 0.2s;
+}
+
+.login-btn-logout:hover { background: #fff5f5; }
+
 /* Responsive */
 @media (max-width: 480px) {
   .login-card { padding: 28px 20px; }

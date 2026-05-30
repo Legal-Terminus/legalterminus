@@ -287,6 +287,17 @@ const navData = [
 export default function NavbarAdvanced() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(() => !!localStorage.getItem('lt_logged_in'));
+
+  // Keep loggedIn in sync with localStorage whenever our auth helpers update it
+  useEffect(() => {
+    const syncAuth = () => setLoggedIn(!!localStorage.getItem('lt_logged_in'));
+    window.addEventListener('lt-auth-change', syncAuth);
+    window.addEventListener('storage', syncAuth);          // cross-tab sync
+    return () => {
+      window.removeEventListener('lt-auth-change', syncAuth);
+      window.removeEventListener('storage', syncAuth);
+    };
+  }, []);
   const [scrolled, setScrolled] = useState(false);
   const [megaOpenFor, setMegaOpenFor] = useState(null);
   const [activeMegaTab, setActiveMegaTab] = useState(null);
@@ -925,7 +936,7 @@ export default function NavbarAdvanced() {
             <div className="nav-right">
               <div className="user-login-wrap">
                 <a
-                  href={loggedIn ? '/account' : '/login'}
+                  href="/login"
                   className="icon-btn user-login-btn"
                   aria-label={loggedIn ? 'My Account' : 'User Login'}
                 >

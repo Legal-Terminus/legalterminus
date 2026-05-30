@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { saveUserProfile } from "../../utils/userProfile";
+import { saveUserProfile, getUserProfile, clearUserProfile } from "../../utils/userProfile";
 import "./Login.css";
 
 const STATES = [
@@ -14,11 +14,18 @@ const STATES = [
 
 const Login = () => {
   const navigate = useNavigate();
+  const existing = getUserProfile();
+
   const [form, setForm] = useState({
-    fullName: "", email: "", mobile: "", state: "", businessName: "",
+    fullName:     existing?.fullName     || "",
+    email:        existing?.email        || "",
+    mobile:       existing?.mobile       || "",
+    state:        existing?.state        || "",
+    businessName: existing?.businessName || "",
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors]     = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const isEditing = !!existing;
 
   const update = (key, val) => {
     setForm(f => ({ ...f, [key]: val }));
@@ -27,9 +34,12 @@ const Login = () => {
 
   const validate = () => {
     const e = {};
-    if (!form.fullName.trim()) e.fullName = "Full name is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = "Enter a valid email";
-    if (!/^\d{10}$/.test(form.mobile.trim())) e.mobile = "Enter a valid 10-digit mobile number";
+    if (!form.fullName.trim())
+      e.fullName = "Full name is required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+      e.email = "Enter a valid email address";
+    if (!/^\d{10}$/.test(form.mobile.trim()))
+      e.mobile = "Enter a valid 10-digit mobile number";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -37,10 +47,21 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    saveUserProfile(form);
+    saveUserProfile(form);          // sets lt_user + lt_logged_in + fires lt-auth-change
     setSubmitted(true);
-    setTimeout(() => navigate("/"), 1500);
   };
+
+  const handleLogout = () => {
+    clearUserProfile();             // removes keys + fires lt-auth-change
+    navigate("/");
+  };
+
+  // Redirect after 1.5 s so user sees the success tick
+  useEffect(() => {
+    if (!submitted) return;
+    const t = setTimeout(() => navigate("/"), 1500);
+    return () => clearTimeout(t);
+  }, [submitted, navigate]);
 
   return (
     <div className="login-page">
@@ -53,14 +74,16 @@ const Login = () => {
         {submitted ? (
           <div className="login-success">
             <div className="login-success-icon">✓</div>
-            <h2>Signed in successfully!</h2>
+            <h2>{isEditing ? "Details updated!" : "Signed in successfully!"}</h2>
             <p>Redirecting you to the home page…</p>
           </div>
         ) : (
           <>
-            <h2 className="login-title">Sign In</h2>
+            <h2 className="login-title">{isEditing ? "My Account" : "Sign In"}</h2>
             <p className="login-sub">
-              Your details will be auto-filled at checkout for a faster experience.
+              {isEditing
+                ? "Your details are saved. Edit below to update them."
+                : "Save your details once — they'll auto-fill at checkout every time."}
             </p>
 
             <form className="login-form" onSubmit={handleSubmit} noValidate>
@@ -129,8 +152,18 @@ const Login = () => {
               </div>
 
               <button className="login-btn" type="submit">
-                Sign In &amp; Save Details
+                {isEditing ? "Update Details" : "Sign In & Save Details"}
               </button>
+
+              {isEditing && (
+                <button
+                  type="button"
+                  className="login-btn-logout"
+                  onClick={handleLogout}
+                >
+                  Sign Out
+                </button>
+              )}
             </form>
           </>
         )}
