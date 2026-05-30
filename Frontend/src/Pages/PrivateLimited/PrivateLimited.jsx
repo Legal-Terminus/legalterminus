@@ -11,6 +11,7 @@ import PvtltdProcess from '../../Components/PvtltdProcess/PvtltdProcess'
 import PvtltdDocument from '../../Components/PvtltdDocument/PvtltdDocument'
 import PvtltdFAQ from '../../Components/PvtltdFAQ/PvtltdFAQ'
 import PvtltdTermsCondition from '../../Components/PvtltdTermsCondition/PvtltdTermsCondition'
+import PvtltdGovtCosts from '../../Components/PvtltdGovtCosts/PvtltdGovtCosts'
 
 const PrivateLimited = () => {
   return (
@@ -24,6 +25,10 @@ const PrivateLimited = () => {
       <div id="plans" className="pvtltd-page-pricing">
         <PvtltdPlanandPricing />
       </div>
+
+      <div className="section-divider" />
+
+      <PvtltdGovtCosts />
 
       <div className="section-divider" />
 
