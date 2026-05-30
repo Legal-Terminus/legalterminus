@@ -11,6 +11,7 @@ import CopyPvtDocument from '../../Components/CopyPvtDocument/CopyPvtDocument'
 import PvtltdFAQ from '../../Components/PvtltdFAQ/PvtltdFAQ'
 import PvtltdTermsCondition from '../../Components/PvtltdTermsCondition/PvtltdTermsCondition'
 import CopyPvtTypes from '../../Components/CopyPvtTypes/CopyPvtTypes'
+import PvtltdGovtCosts from '../../Components/PvtltdGovtCosts/PvtltdGovtCosts'
 
 const PrivateLimitedCopy2 = () => {
   return (
@@ -24,6 +25,10 @@ const PrivateLimitedCopy2 = () => {
       <div id="plans" className="copy2-page-pricing">
         <PvtltdPlanandPricing />
       </div>
+
+      <div className="section-divider" />
+
+      <PvtltdGovtCosts />
 
       <div className="section-divider" />
 
