@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { initializeApp } from "firebase/app";
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   onAuthStateChanged,
 } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
+import { getFirebaseAuth, getFirebaseDb } from "../../utils/firebase";
 import "./Signup.css";
 
 const Signup = () => {
@@ -21,34 +20,12 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ name: "", email: "", password: "", confirmPassword: "" });
-  const [auth, setAuth] = useState(null);
-  const [db, setDb] = useState(null);
-
   useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await fetch("/api/auth/firebase-config");
-        const config = await response.json();
-        const app = initializeApp(config, "signup-app");
-        const authInstance = getAuth(app);
-        const dbInstance = getFirestore(app);
-        setAuth(authInstance);
-        setDb(dbInstance);
-
-        // Check if already logged in
-        const unsubscribe = onAuthStateChanged(authInstance, (user) => {
-          if (user) {
-            navigate("/my-profile");
-          }
-        });
-
-        return () => unsubscribe();
-      } catch (error) {
-        console.error("Error loading Firebase config:", error);
-      }
-    };
-
-    fetchConfig();
+    const auth = getFirebaseAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) navigate("/my-profile");
+    });
+    return () => unsubscribe();
   }, [navigate]);
 
   const clearFieldErr = (field) => {
@@ -96,8 +73,8 @@ const Signup = () => {
   };
 
   const createUserProfile = async (user) => {
-    if (!db) return;
     try {
+      const db = getFirebaseDb();
       const userDocRef = doc(db, "users", user.uid);
       await setDoc(userDocRef, {
         uid: user.uid,
@@ -118,12 +95,9 @@ const Signup = () => {
     e.preventDefault();
 
     if (!validateForm()) return;
-    if (!auth) {
-      setErrors((prev) => ({ ...prev, email: "Firebase not initialized" }));
-      return;
-    }
 
     setLoading(true);
+    const auth = getFirebaseAuth();
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await createUserProfile(userCredential.user);
@@ -149,13 +123,10 @@ const Signup = () => {
     }
   };
 
-  const handleGoogleSignup = async () => {
-    if (!auth) {
-      setErrors((prev) => ({ ...prev, email: "Firebase not initialized" }));
-      return;
-    }
-
+  const handleGoogleSignup = async (e) => {
+    e.preventDefault();
     setLoading(true);
+    const auth = getFirebaseAuth();
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
@@ -333,7 +304,7 @@ const Signup = () => {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              Sign Up with Google
+              Continue with Google
             </button>
 
             <p className="login-row">

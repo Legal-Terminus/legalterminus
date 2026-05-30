@@ -16,8 +16,8 @@ import {
   FaChevronRight,
   FaArrowRight,
 } from "react-icons/fa";
-import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { getFirebaseAuth } from "../../utils/firebase";
 import "./Navbar.css";
 
 // Module-level style constants — avoids new object allocation on every render
@@ -292,34 +292,11 @@ export default function NavbarAdvanced() {
 
   // Initialize Firebase and listen for auth state changes
   useEffect(() => {
-    try {
-      const firebaseConfig = {
-        apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-        authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-        storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-        messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-        appId: import.meta.env.VITE_FIREBASE_APP_ID
-      };
-
-      if (!firebaseConfig.apiKey) {
-        console.warn("Firebase API key not configured");
-        return;
-      }
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        setLoggedIn(!!user);
-      });
-
-      return unsubscribe;
-    } catch (error) {
-      console.error("Firebase initialization error:", error.message);
-      // App continues to function even if Firebase fails
-      return () => {};
-    }
+    const auth = getFirebaseAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setLoggedIn(!!user);
+    });
+    return () => unsubscribe();
   }, []);
   const [scrolled, setScrolled] = useState(false);
   const [megaOpenFor, setMegaOpenFor] = useState(null);

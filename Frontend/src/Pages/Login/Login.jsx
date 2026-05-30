@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { initializeApp } from "firebase/app";
 import {
-  getAuth,
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   onAuthStateChanged,
 } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { getFirebaseAuth, getFirebaseDb } from "../../utils/firebase";
 import "./Login.css";
 
 const Login = () => {
@@ -18,34 +17,12 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
-  const [auth, setAuth] = useState(null);
-  const [db, setDb] = useState(null);
-
   useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await fetch("/api/auth/firebase-config");
-        const config = await response.json();
-        const app = initializeApp(config, "login-app");
-        const authInstance = getAuth(app);
-        const dbInstance = getFirestore(app);
-        setAuth(authInstance);
-        setDb(dbInstance);
-
-        // Check if already logged in
-        const unsubscribe = onAuthStateChanged(authInstance, (user) => {
-          if (user) {
-            navigate("/my-profile");
-          }
-        });
-
-        return () => unsubscribe();
-      } catch (error) {
-        console.error("Error loading Firebase config:", error);
-      }
-    };
-
-    fetchConfig();
+    const auth = getFirebaseAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) navigate("/my-profile");
+    });
+    return () => unsubscribe();
   }, [navigate]);
 
   const clearFieldErr = (field) => {
@@ -80,30 +57,26 @@ const Login = () => {
     e.preventDefault();
 
     if (!validateForm()) return;
-    if (!auth) {
-      setErrors((prev) => ({ ...prev, email: "Firebase not initialized" }));
-      return;
-    }
 
     setLoading(true);
+    const auth = getFirebaseAuth();
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       // Ensure user profile exists in Firestore
-      if (db) {
-        const userDocRef = doc(db, "users", userCredential.user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-          await setDoc(userDocRef, {
-            uid: userCredential.user.uid,
-            name: userCredential.user.displayName || "User",
-            email: userCredential.user.email,
-            phone: "",
-            address: "",
-            avatar: userCredential.user.photoURL || null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-        }
+      const db = getFirebaseDb();
+      const userDocRef = doc(db, "users", userCredential.user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+          uid: userCredential.user.uid,
+          name: userCredential.user.displayName || "User",
+          email: userCredential.user.email,
+          phone: "",
+          address: "",
+          avatar: userCredential.user.photoURL || null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
       }
       navigate("/my-profile");
     } catch (error) {
@@ -130,38 +103,38 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    if (!auth) {
-      setErrors((prev) => ({ ...prev, email: "Firebase not initialized" }));
-      return;
-    }
-
+  const handleGoogleLogin = async (e) => {
+    e.preventDefault();
     setLoading(true);
+    const auth = getFirebaseAuth();
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       // Ensure user profile exists in Firestore
-      if (db) {
-        const userDocRef = doc(db, "users", result.user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-          await setDoc(userDocRef, {
-            uid: result.user.uid,
-            name: result.user.displayName || "User",
-            email: result.user.email,
-            phone: "",
-            address: "",
-            avatar: result.user.photoURL || null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-        }
+      const db = getFirebaseDb();
+      const userDocRef = doc(db, "users", result.user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+          uid: result.user.uid,
+          name: result.user.displayName || "User",
+          email: result.user.email,
+          phone: "",
+          address: "",
+          avatar: result.user.photoURL || null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
       }
       navigate("/my-profile");
     } catch (error) {
-      console.error("Google login error:", error);
-      if (error.code !== "auth/popup-closed-by-user") {
-        setErrors((prev) => ({ ...prev, email: "Google sign-in failed" }));
+      console.error("Google login error:", error.code, error.message);
+      if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
+        // user closed popup — do nothing
+      } else if (error.code === "auth/unauthorized-domain") {
+        setErrors((prev) => ({ ...prev, email: "This domain is not authorized in Firebase. Add localhost to Firebase Console → Authentication → Settings → Authorized domains." }));
+      } else {
+        setErrors((prev) => ({ ...prev, email: `Sign-in failed: ${error.code || error.message}` }));
       }
     } finally {
       setLoading(false);
@@ -177,6 +150,20 @@ const Login = () => {
           <p className="sub">Please enter your details to continue</p>
 
           <form onSubmit={handleLogin}>
+            <button type="button" className="btn-google" onClick={handleGoogleLogin} disabled={loading}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              Continue with Google
+            </button>
+
+            <div className="divider">
+              <span>OR</span>
+            </div>
+
             <div className="field">
               <label htmlFor="email">Email Address</label>
               <input
@@ -259,20 +246,6 @@ const Login = () => {
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
               </svg>
-            </button>
-
-            <div className="divider">
-              <span>OR</span>
-            </div>
-
-            <button type="button" className="btn-google" onClick={handleGoogleLogin} disabled={loading}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-              Sign In with Google
             </button>
 
             <p className="signup-row">
