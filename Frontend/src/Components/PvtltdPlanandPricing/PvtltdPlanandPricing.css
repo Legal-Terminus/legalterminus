@@ -49,6 +49,9 @@
   flex-direction: column;
   justify-content: space-between;
   position: relative;
+  text-align: left;
+  word-spacing: normal;
+  hyphens: none;
 }
 
 .plan-card--popular {
@@ -129,6 +132,9 @@
   line-height: 1.6;
   display: flex;
   margin-bottom: 8px;
+  text-align: left;
+  word-spacing: normal;
+  hyphens: none;
 }
 
 .plan-list-item::before {
