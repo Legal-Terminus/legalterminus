@@ -1,120 +1,134 @@
-.tc-page {
+.policy-page {
   width: 100%;
   min-height: 100vh;
-  background-color: #f4f7f5;
+  background-color: #f9fafb;
 }
 
-.tc-banner {
+.policy-banner {
   background: linear-gradient(135deg, #0b5f3a 0%, #19a35f 100%);
   color: white;
-  padding: 70px 24px 60px;
+  padding: 60px 20px;
   text-align: center;
 }
 
-.tc-banner h1 {
+.policy-banner h1 {
   font-size: 48px;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0;
   letter-spacing: -0.5px;
 }
 
-.tc-container {
+.policy-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 60px 24px 80px;
+  padding: 60px 20px;
 }
 
-.tc-document {
-  background: #ffffff;
+.policy-content {
+  background-color: white;
   border-radius: 12px;
-  padding: 48px 52px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.tc-intro {
-  font-size: 15px;
-  line-height: 1.85;
-  color: #071521;
-  margin: 0 0 16px;
-  text-align: justify;
-}
-
-.tc-doc-heading {
-  font-size: 18px;
+.policy-content > h2 {
+  color: #0b5f3a;
+  font-size: 32px;
   font-weight: 700;
-  text-decoration: underline;
-  color: #071521;
-  margin: 32px 0 20px;
+  margin-bottom: 30px;
+  border-bottom: 3px solid #19a35f;
+  padding-bottom: 15px;
 }
 
-.tc-doc-heading:first-of-type {
-  margin-top: 24px;
+.policy-section {
+  margin-bottom: 30px;
 }
 
-.tc-para {
-  font-size: 15px;
-  line-height: 1.85;
-  color: #071521;
-  margin: 0 0 20px;
-  text-align: justify;
-}
-
-.tc-para:last-child {
-  margin-bottom: 0;
-}
-
-.tc-num {
+.policy-section h3 {
+  color: #0b5f3a;
+  font-size: 18px;
   font-weight: 600;
-  margin-right: 4px;
+  margin-bottom: 12px;
 }
 
-.tc-sub-list {
-  margin: -12px 0 20px 36px;
-  padding: 0;
-  font-size: 15px;
-  line-height: 1.85;
+.policy-section p {
   color: #071521;
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 0;
 }
 
-.tc-sub-list li {
-  margin-bottom: 8px;
-  text-align: justify;
+.policy-contact {
+  background-color: #f0f9f5;
+  border-left: 4px solid #19a35f;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 40px;
 }
 
+.policy-contact h3 {
+  color: #0b5f3a;
+  margin-top: 0;
+}
+
+.policy-contact p {
+  color: #071521;
+  line-height: 1.6;
+}
+
+.policy-contact a {
+  color: #19a35f;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.policy-contact a:hover {
+  color: #0b5f3a;
+  text-decoration: underline;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .tc-banner h1 {
+  .policy-banner h1 {
     font-size: 32px;
   }
 
-  .tc-document {
-    padding: 32px 28px;
+  .policy-content {
+    padding: 30px 20px;
   }
 
-  .tc-intro,
-  .tc-para,
-  .tc-sub-list {
+  .policy-content > h2 {
+    font-size: 24px;
+  }
+
+  .policy-section h3 {
+    font-size: 16px;
+  }
+
+  .policy-section p {
     font-size: 14px;
   }
 }
 
 @media (max-width: 480px) {
-  .tc-banner {
-    padding: 48px 16px 42px;
+  .policy-banner {
+    padding: 40px 15px;
   }
 
-  .tc-banner h1 {
-    font-size: 26px;
+  .policy-banner h1 {
+    font-size: 24px;
   }
 
-  .tc-container {
-    padding: 32px 16px 56px;
+  .policy-container {
+    padding: 30px 15px;
   }
 
-  .tc-document {
-    padding: 24px 20px;
+  .policy-content {
+    padding: 20px;
   }
 
-  .tc-sub-list {
-    margin-left: 20px;
+  .policy-content > h2 {
+    font-size: 20px;
   }
 }

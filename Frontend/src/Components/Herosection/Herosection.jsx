@@ -1,174 +1,78 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import {
-  FaBuilding, FaShieldAlt, FaPercent, FaFileAlt, FaRegistered, FaSync,
-  FaSearch, FaStar, FaCheckSquare, FaChartLine
-} from 'react-icons/fa'
-import { FcGoogle } from 'react-icons/fc'
+import React from 'react'
 import './Herosection.css'
-import heroIllustration from '../../assets/hero-photo.webp.webp'
+import right3danimation from '../../assets/Hero-Video.mp4'
 
-const serviceCards = [
-  { icon: <FaBuilding />, title: 'Business Registration', text: 'Start your business with ease', href: '/private-limited-company-registration-in-india' },
-  { icon: <FaShieldAlt />, title: 'Compliance', text: 'Stay compliant, stay secure', href: '/annual-filing-company' },
-  { icon: <FaPercent />, title: 'GST Registration', text: 'Hassle-free GST registration', href: '/gst-registration' },
-  { icon: <FaFileAlt />, title: 'ITR Filing', text: 'File returns with confidence', href: '/itr-individual' },
-  { icon: <FaRegistered />, title: 'Trademark', text: 'Protect your brand identity', href: '/trademark/application' },
-  { icon: <FaSync />, title: 'Returns', text: 'Timely filing, zero hassle', href: '/gst-return-filing' },
+const TAGS = [
+  'Startup Registration',
+  'NGO Registration',
+  'Trademark Registration',
+  'Government License',
+  'Government Registration',
+  'Return Filing',
+  'More +'
 ]
-
-const ALL_SERVICES = [
-  { keywords: ['private limited', 'pvt ltd', 'pvt limited', 'private company', 'company registration', 'business registration'], href: '/private-limited-company-registration-in-india' },
-  { keywords: ['opc', 'one person company', 'one person'], href: '/one-person-company' },
-  { keywords: ['public limited', 'public company'], href: '/public-limited-company-registration-in-india' },
-  { keywords: ['llp', 'limited liability partnership'], href: '/llp' },
-  { keywords: ['partnership', 'partner firm'], href: '/partnership' },
-  { keywords: ['proprietorship', 'sole proprietorship'], href: '/proprietorship' },
-  { keywords: ['trust', 'trust registration'], href: '/trust' },
-  { keywords: ['society', 'society registration'], href: '/society' },
-  { keywords: ['section 8', 'ngo', 'non profit', 'non-profit', 'section8'], href: '/section-8' },
-  { keywords: ['gst registration', 'gst reg', 'goods and service tax'], href: '/gst-registration' },
-  { keywords: ['gst return', 'gst filing', 'gst return filing'], href: '/gst-return-filing' },
-  { keywords: ['epf', 'provident fund', 'employee provident'], href: '/epf' },
-  { keywords: ['esic', 'esi', 'employee state insurance'], href: '/esic' },
-  { keywords: ['udyam', 'msme', 'udyam registration'], href: '/udyam' },
-  { keywords: ['professional tax', 'professional tax registration'], href: '/professional-tax' },
-  { keywords: ['shop', 'shop establishment', 'shop act'], href: '/shop-establishment' },
-  { keywords: ['food license', 'fssai', 'food safety'], href: '/food-license' },
-  { keywords: ['trade license'], href: '/trade-license' },
-  { keywords: ['iec', 'import export', 'import export code'], href: '/iec' },
-  { keywords: ['labour license', 'labor license'], href: '/labour-license' },
-  { keywords: ['barcode', 'bar code', 'barcode registration'], href: '/bar-code' },
-  { keywords: ['iso', 'iso certification'], href: '/iso' },
-  { keywords: ['trademark', 'trademark registration', 'trademark application'], href: '/trademark/application' },
-  { keywords: ['trademark renewal'], href: '/trademark/renewal' },
-  { keywords: ['trademark opposition'], href: '/trademark/opposition' },
-  { keywords: ['trademark hearing'], href: '/trademark/hearing' },
-  { keywords: ['itr', 'income tax', 'itr individual', 'income tax return individual'], href: '/itr-individual' },
-  { keywords: ['itr business', 'income tax business'], href: '/itr-business' },
-  { keywords: ['annual filing company', 'annual return company'], href: '/annual-filing-company' },
-  { keywords: ['annual filing llp', 'annual return llp'], href: '/annual-filing-llp' },
-  { keywords: ['epf return'], href: '/epf-return' },
-  { keywords: ['esi return', 'esic return'], href: '/esi-return' },
-  { keywords: ['professional tax return'], href: '/professional-tax-return' },
-  { keywords: ['startup india'], href: '/startup-india' },
-  { keywords: ['startup odisha'], href: '/startup-odisha' },
-  { keywords: ['dissolve llp', 'close llp'], href: '/windup/dissolve-llp' },
-  { keywords: ['dissolve partnership', 'close partnership'], href: '/windup/dissolve-partnership' },
-  { keywords: ['dissolve private', 'close private', 'wind up company'], href: '/windup/dissolve-private' },
-  { keywords: ['contact', 'contact us', 'callback', 'enquiry'], href: '/contact/us' },
-]
-
-function findService(query) {
-  const q = query.trim().toLowerCase()
-  if (!q) return null
-  for (const svc of ALL_SERVICES) {
-    for (const kw of svc.keywords) {
-      if (kw.includes(q) || q.includes(kw)) return svc.href
-    }
-  }
-  return null
-}
 
 const Herosection = () => {
-  const [query, setQuery] = useState('')
-  const navigate = useNavigate()
-
-  const handleSearch = () => {
-    const href = findService(query)
-    if (href) {
-      navigate(href)
-    } else {
-      navigate(`/#services`)
-    }
-  }
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleSearch()
-  }
 
   return (
     <section className="hs-hero" aria-label="Hero — Business Compliance">
       <div className="hs-hero__container">
 
-        {/* LEFT — Photo with floating icons */}
-        <div className="hs-hero__photo-col" aria-hidden="true">
-          <div className="hs-photo-wrap">
-            <img src={heroIllustration} alt="Legal Terminus professionals" className="hs-hero-img" />
-            <div className="hs-float hs-float--doc"><FaCheckSquare /></div>
-            <div className="hs-float hs-float--shield"><FaShieldAlt /></div>
-            <div className="hs-float hs-float--chart"><FaChartLine /></div>
-          </div>
-        </div>
+        {/* LEFT */}
+        <div className="hs-hero__left">
+          {/* Two-line title — refined layout */}
+          <h1 className="hs-hero__title" aria-level="1">
+            <span className="hs-hero__line hs-hero__line--top">
+              <span className="hs-hero__emph">Empower Your</span>
+              <span className="hs-hero__strong"> Business</span>
+            </span>
 
-        {/* CENTER — Main content */}
-        <div className="hs-hero__center">
-
-          {/* Rating badges */}
-          <div className="hs-ratings" aria-label="Our ratings">
-            <div className="hs-rating-badge">
-              <FcGoogle size={26} aria-hidden="true" />
-              <div className="hs-rating-text">
-                <span className="hs-rating-score">4.9/5</span>
-                <span className="hs-rating-label">Google Reviews</span>
-              </div>
-            </div>
-            <div className="hs-rating-sep" aria-hidden="true" />
-            <div className="hs-rating-badge">
-              <FaStar className="hs-tp-star" aria-hidden="true" />
-              <div className="hs-rating-text">
-                <span className="hs-rating-score">4.3/5</span>
-                <span className="hs-rating-label">Trustpilot</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Headline */}
-          <h1 className="hs-hero__title">
-            <span className="hs-title-dark">Build Your Business with Passion.</span>
-            <span className="hs-title-green">Run It Smarter with Legal Terminus.</span>
+            <span className="hs-hero__line hs-hero__line--bottom">
+              <span className="hs-hero__accent-pill">Business Compliance &amp; Management</span>
+              <span className="hs-hero__subtext"> — Made Easy With Us</span>
+            </span>
           </h1>
 
           <p className="hs-hero__subtitle">
-            Your business, our expertise. We make legal, tax and compliance simple, fast and stress-free.
+            Simple, reliable compliance services for startups and established enterprises fast onboarding,
+            expert support and end-to-end management so you can focus on growth.
           </p>
 
-          {/* Search bar */}
-          <div className="hs-search-wrap" role="search">
-            <input
-              className="hs-search-input"
-              type="text"
-              placeholder="Type your compliance needs or ask us anything..."
-              aria-label="Search compliance services"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            <button className="hs-search-btn" type="button" aria-label="Search" onClick={handleSearch}>
-              <FaSearch />
-            </button>
-          </div>
-
-          {/* CTA buttons — unchanged */}
           <div className="hs-hero__actions" role="group" aria-label="Hero actions">
-            <a className="hs-btn hs-btn--primary" href="/contact/us" aria-label="Contact us">Contact Us</a>
-            <a className="hs-btn hs-btn--ghost" href="/#services" aria-label="View services">Services</a>
+            <a className="hs-btn hs-btn--primary" href="/contact" aria-label="Contact us">Contact Us</a>
+            <a className="hs-btn hs-btn--ghost" href="/services" aria-label="View services">Services</a>
           </div>
 
+          {/* Gap intentionally maintained between actions and tags */}
+          <div id="recommended" className="hs-hero__tags" role="list" aria-label="Popular services">
+            {TAGS.map(tag => (
+              <button
+                key={tag}
+                className={`hs-tag ${tag === 'GST Registration' ? 'hs-tag--highlight' : ''}`}
+                role="listitem"
+                type="button"
+                aria-pressed={tag === 'GST Registration'}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* RIGHT — Service cards */}
-        <div className="hs-hero__cards-col">
-          <div className="hs-scards-grid">
-            {serviceCards.map(card => (
-              <Link to={card.href} className="hs-scard" key={card.title}>
-                <div className="hs-scard__icon" aria-hidden="true">{card.icon}</div>
-                <div className="hs-scard__body">
-                  <div className="hs-scard__title">{card.title}</div>
-                  <div className="hs-scard__text">{card.text}</div>
-                </div>
-              </Link>
-            ))}
+        {/* RIGHT */}
+        <div className="hs-hero__right" aria-hidden="false">
+          <div className="hs-video-card">
+            <video
+              src={right3danimation}
+              autoPlay
+              muted
+              loop
+              playsInline
+              width="600"
+              height="400"
+              className="hs-video-card__media"
+            />
+        
           </div>
         </div>
 
