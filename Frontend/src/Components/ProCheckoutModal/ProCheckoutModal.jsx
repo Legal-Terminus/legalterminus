@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
-import { getUserProfile } from "../../utils/userProfile.js";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
 import "./ProCheckoutModal.css";
 
 const STATES = [
@@ -123,6 +123,26 @@ const ProCheckoutModal = ({ plan, onClose }) => {
     return () => { document.body.style.overflow = ""; };
   }, []);
 
+  // Firestore fallback: if localStorage has no profile, fetch from Firestore
+  useEffect(() => {
+    if (savedUser) return; // already have data from localStorage
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    const db = getFirestore();
+    getDoc(doc(db, "users", currentUser.uid)).then((snap) => {
+      if (!snap.exists()) return;
+      const d = snap.data();
+      setForm((f) => ({
+        fullName:     f.fullName     || d.fullName     || d.name  || "",
+        email:        f.email        || d.email        || currentUser.email || "",
+        mobile:       f.mobile       || d.mobile       || d.phone || "",
+        businessName: f.businessName || d.businessName || "",
+        state:        f.state        || d.state        || "",
+      }));
+    }).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (modalRef.current) modalRef.current.scrollTop = 0;
   }, [step]);
@@ -184,8 +204,9 @@ const ProCheckoutModal = ({ plan, onClose }) => {
         mobile:       profileData.mobile,
         updatedAt:    new Date(),
       }, { merge: true }).catch((err) => console.error('Error saving to Firestore:', err));
+      saveUserProfile(profileData);
     } else {
-      localStorage.setItem('lt_checkout_profile', JSON.stringify(profileData));
+      saveUserProfile(profileData);
     }
 
     try {

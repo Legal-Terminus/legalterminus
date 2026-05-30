@@ -8,6 +8,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { getFirebaseAuth, getFirebaseDb } from "../../utils/firebase";
+import { saveUserProfile } from "../../utils/userProfile";
 import "./Login.css";
 
 const Login = () => {
@@ -78,6 +79,14 @@ const Login = () => {
           updatedAt: new Date(),
         });
       }
+      const firestoreData = userDoc.exists() ? userDoc.data() : {};
+      saveUserProfile({
+        fullName: firestoreData.fullName || firestoreData.name || userCredential.user.displayName || "",
+        email: userCredential.user.email,
+        mobile: firestoreData.mobile || firestoreData.phone || "",
+        businessName: firestoreData.businessName || "",
+        state: firestoreData.state || "",
+      });
       navigate("/my-profile");
     } catch (error) {
       console.error("Login error:", error);
@@ -126,6 +135,14 @@ const Login = () => {
           updatedAt: new Date(),
         });
       }
+      const firestoreData = userDoc.exists() ? userDoc.data() : {};
+      saveUserProfile({
+        fullName: firestoreData.fullName || firestoreData.name || result.user.displayName || "",
+        email: result.user.email,
+        mobile: firestoreData.mobile || firestoreData.phone || "",
+        businessName: firestoreData.businessName || "",
+        state: firestoreData.state || "",
+      });
       navigate("/my-profile");
     } catch (error) {
       console.error("Google login error:", error.code, error.message);
