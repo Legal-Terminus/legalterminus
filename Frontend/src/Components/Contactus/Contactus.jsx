@@ -5,6 +5,8 @@ import './Contactus.css';
 // react-icons (ensure package is installed)
 import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaYoutube } from 'react-icons/fa';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const SOCIALS = [
   { name: 'LinkedIn',  href: 'https://www.linkedin.com/company/legalterminus/', icon: <FaLinkedin size={20} /> },
   { name: 'Facebook',  href: 'https://www.facebook.com/LegalTerminusofficial',  icon: <FaFacebook size={20} /> },
@@ -23,6 +25,8 @@ const ContactUs = () => {
     message: ''
   });
   const [animated, setAnimated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState(null); // { type: 'success'|'error', text }
 
   useEffect(() => {
     const timer = setTimeout(() => setAnimated(true), 80);
@@ -34,11 +38,25 @@ const ContactUs = () => {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Demo submit — replace with actual submit logic
-    alert('Thanks — form submitted (demo).');
-    setForm({ fullName: '', company: '', phone: '', email: '', subject: '', message: '' });
+    setFeedback(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, source: 'home' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Submission failed.');
+      setFeedback({ type: 'success', text: "Thanks for reaching out! We'll get back to you soon." });
+      setForm({ fullName: '', company: '', phone: '', email: '', subject: '', message: '' });
+    } catch (err) {
+      setFeedback({ type: 'error', text: err.message || 'Something went wrong. Please try again.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -153,14 +171,33 @@ const ContactUs = () => {
                 </label>
               </div>
 
+              {feedback && (
+                <p
+                  className="zen-fade-in"
+                  style={{
+                    color: feedback.type === 'success' ? '#166534' : '#991b1b',
+                    background: feedback.type === 'success' ? '#dcfce7' : '#fee2e2',
+                    borderRadius: '6px',
+                    padding: '8px 12px',
+                    fontSize: '0.875rem',
+                    margin: '0 0 8px',
+                  }}
+                  role="alert"
+                >
+                  {feedback.text}
+                </p>
+              )}
+
               <div className="zen-form-actions zen-fade-in" style={{ '--zen-delay': '0.4s' }}>
-                <button type="submit" className="zen-submit">
-                  Submit Now
-                  <span className="zen-submit-arrow" aria-hidden>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </span>
+                <button type="submit" className="zen-submit" disabled={loading}>
+                  {loading ? 'Sending…' : 'Submit Now'}
+                  {!loading && (
+                    <span className="zen-submit-arrow" aria-hidden>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </span>
+                  )}
                 </button>
               </div>
             </form>

@@ -12,6 +12,7 @@ import clientRoutes from "./routes/client.routes.js";
 import testimonialRoutes from "./routes/testimonialRoute.js";
 import authRoutes from "./routes/auth.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
+import contactRoutes from "./routes/contact.routes.js";
 import initializeFirebase from "./config/firebase.js";
 
 // Load environment variables
@@ -56,6 +57,7 @@ app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/contact", contactRoutes);
 
 /* ================= HEALTH CHECK ================= */
 app.get("/health", (req, res) => res.json({ status: "ok" }));
