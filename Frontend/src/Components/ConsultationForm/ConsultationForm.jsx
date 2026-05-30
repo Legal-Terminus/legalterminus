@@ -116,6 +116,7 @@ const ConsultationForm = ({
               value={form.fullName}
               onChange={handleChange}
               placeholder="Full Name"
+              maxLength={100}
             />
 
             <input
@@ -126,6 +127,7 @@ const ConsultationForm = ({
               onChange={handleChange}
               placeholder="Email Address"
               required
+              maxLength={254}
             />
 
             <input
@@ -136,6 +138,7 @@ const ConsultationForm = ({
               onChange={handleChange}
               placeholder="Mobile Number"
               required
+              maxLength={15}
             />
 
             <select

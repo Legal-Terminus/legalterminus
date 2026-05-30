@@ -7,26 +7,69 @@ import {
 
 const COLLECTION = "contactLeads";
 
+/* ── Sanitization helpers ───────────────────────────────────────────────── */
+// Strip all HTML/script tags and trim whitespace
+const stripTags = (str) =>
+  typeof str === "string" ? str.replace(/<[^>]*>/g, "").trim() : "";
+
+// Keep only digits (for phone numbers)
+const digitsOnly = (str) =>
+  typeof str === "string" ? str.replace(/\D/g, "") : "";
+
+const FIELD_LIMITS = {
+  fullName: 100,
+  company: 100,
+  phone: 15,
+  email: 254,
+  subject: 200,
+  message: 2000,
+  state: 60,
+  preferredCallTime: 50,
+  source: 80,
+};
+
 /* ================= SUBMIT CONTACT FORM ================= */
 export const createContactLead = async (req, res) => {
   try {
-    const { fullName, company, phone, email, subject, message, state, preferredCallTime, source, whatsapp } = req.body;
+    const raw = req.body;
 
+    const fullName         = stripTags(raw.fullName).slice(0, FIELD_LIMITS.fullName);
+    const company          = stripTags(raw.company).slice(0, FIELD_LIMITS.company);
+    const phone            = digitsOnly(raw.phone).slice(0, FIELD_LIMITS.phone);
+    const email            = stripTags(raw.email).toLowerCase().slice(0, FIELD_LIMITS.email);
+    const subject          = stripTags(raw.subject).slice(0, FIELD_LIMITS.subject);
+    const message          = stripTags(raw.message).slice(0, FIELD_LIMITS.message);
+    const state            = stripTags(raw.state).slice(0, FIELD_LIMITS.state);
+    const preferredCallTime = stripTags(raw.preferredCallTime).slice(0, FIELD_LIMITS.preferredCallTime);
+    const source           = stripTags(raw.source).slice(0, FIELD_LIMITS.source) || "unknown";
+    const whatsapp         = raw.whatsapp === true || raw.whatsapp === "true";
+
+    // Validate required fields
     if (!phone || !email || !message) {
       return res.status(400).json({ message: "Phone, email, and message are required." });
     }
 
+    // Basic email format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: "Invalid email address." });
+    }
+
+    // Phone must be 7–15 digits
+    if (phone.length < 7) {
+      return res.status(400).json({ message: "Invalid phone number." });
+    }
+
     const lead = await createDoc(COLLECTION, null, {
-      fullName: fullName || "",
-      company: company || "",
+      fullName,
+      company,
       phone,
       email,
-      subject: subject || "",
+      subject,
       message,
-      state: state || "",
-      preferredCallTime: preferredCallTime || "",
-      source: source || "unknown",
-      whatsapp: whatsapp === true || whatsapp === 'true',
+      state,
+      preferredCallTime,
+      source,
+      whatsapp,
       status: "new",               // new | contacted | closed
       createdAt: new Date(),
       updatedAt: new Date(),

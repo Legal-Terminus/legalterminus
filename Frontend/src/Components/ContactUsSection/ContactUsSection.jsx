@@ -19,9 +19,12 @@ const ContactUsSection = () => {
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState(null); // { type: "success"|"error", text }
 
+  const FIELD_MAX = { fullName: 100, email: 254, phone: 15, message: 2000, state: 60, preferredCallTime: 50 };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const max = FIELD_MAX[name];
+    setForm((prev) => ({ ...prev, [name]: max ? value.slice(0, max) : value }));
   };
 
   const handleSubmit = async (e) => {
@@ -181,6 +184,7 @@ const ContactUsSection = () => {
             placeholder="Your Message"
             aria-label="Your message"
             required
+            maxLength={2000}
           />
 
           {feedback && (
