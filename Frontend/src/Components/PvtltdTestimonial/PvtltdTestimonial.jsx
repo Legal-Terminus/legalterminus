@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./PvtltdTestimonial.css";
 
-const GOOGLE_REVIEW_URL = "https://share.google/vpPPXcq7hegJilJvt";
+const GOOGLE_REVIEW_URL = "https://search.google.com/local/writereview?placeid=ChIJPRyfyn0JGToRBpcyAzX97Hk";
 
 const testimonials = [
   {
