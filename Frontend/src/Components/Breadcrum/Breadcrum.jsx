@@ -29,7 +29,6 @@ const Breadcrum = () => {
             A Private Limited Company (Pvt. Ltd.) is India's most investor-loved business structure — registered under the Companies Act, 2013 and governed by the Ministry of Corporate Affairs (MCA). It gives your venture a separate legal identity, shields personal assets via limited liability, and opens doors to institutional funding that no proprietorship or partnership can access. In 2026, the entire incorporation process is 100% online through the SPICe+ portal — no office visits, no paper chaos. Government registration fee is nil for companies with Authorised Capital up to ₹15 Lakhs; stamp duty is state-specific and charged at actuals.
           </p>
 
-          <p className="lt-features-label">Quick Trust Badges</p>
           <div className="lt-public-features">
             <div className="lt-feature-item">Separate Legal Entity</div>
             <div className="lt-feature-item">Limited Liability Protection</div>
@@ -37,7 +36,6 @@ const Breadcrum = () => {
             <div className="lt-feature-item">Perpetual Succession</div>
           </div>
 
-          <p className="lt-features-label">Receipts (the trust stats)</p>
           <div className="lt-public-highlights">
             <div>
               <h3>1,000+</h3>
@@ -48,8 +46,8 @@ const Breadcrum = () => {
               <p>MCA21 V3 + SPICe+ AGILE-PRO-S</p>
             </div>
             <div>
-              <h3>6 Years</h3>
-              <p>of Companies Act expertise</p>
+              <h3>7+</h3>
+              <p>Years of Legal Expertise</p>
             </div>
           </div>
 
