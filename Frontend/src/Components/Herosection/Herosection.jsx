@@ -2,16 +2,6 @@ import React from 'react'
 import './Herosection.css'
 import right3danimation from '../../assets/Hero-Video.mp4'
 
-const TAGS = [
-  'Startup Registration',
-  'NGO Registration',
-  'Trademark Registration',
-  'Government License',
-  'Government Registration',
-  'Return Filing',
-  'More +'
-]
-
 const Herosection = () => {
 
   return (
@@ -43,20 +33,7 @@ const Herosection = () => {
             <a className="hs-btn hs-btn--ghost" href="/services" aria-label="View services">Services</a>
           </div>
 
-          {/* Gap intentionally maintained between actions and tags */}
-          <div id="recommended" className="hs-hero__tags" role="list" aria-label="Popular services">
-            {TAGS.map(tag => (
-              <button
-                key={tag}
-                className={`hs-tag ${tag === 'GST Registration' ? 'hs-tag--highlight' : ''}`}
-                role="listitem"
-                type="button"
-                aria-pressed={tag === 'GST Registration'}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
+
         </div>
 
         {/* RIGHT */}

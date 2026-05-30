@@ -266,7 +266,7 @@ body {
   display: flex;
   gap: 12px;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
 }
 
@@ -467,4 +467,42 @@ a.hs-scard:hover {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+/* ── Tag pills ─────────────────────────────────────── */
+.hs-hero__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+  align-items: center;
+}
+
+.hs-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 13px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  color: #2d7a50;
+  background: #f0faf4;
+  border: 1px solid rgba(25, 163, 95, 0.22);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  line-height: 1;
+}
+
+.hs-tag:hover {
+  background: #ddf2e8;
+  border-color: rgba(25, 163, 95, 0.45);
+  color: #0b5f3a;
+}
+
+.hs-tag--highlight {
+  background: #ddf2e8;
+  border-color: rgba(25, 163, 95, 0.45);
+  color: #0b5f3a;
 }
