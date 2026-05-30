@@ -292,23 +292,34 @@ export default function NavbarAdvanced() {
 
   // Initialize Firebase and listen for auth state changes
   useEffect(() => {
-    const firebaseConfig = {
-      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-      appId: import.meta.env.VITE_FIREBASE_APP_ID
-    };
+    try {
+      const firebaseConfig = {
+        apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+        authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+        storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+        appId: import.meta.env.VITE_FIREBASE_APP_ID
+      };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+      if (!firebaseConfig.apiKey) {
+        console.warn("Firebase API key not configured");
+        return;
+      }
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setLoggedIn(!!user);
-    });
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
 
-    return unsubscribe;
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        setLoggedIn(!!user);
+      });
+
+      return unsubscribe;
+    } catch (error) {
+      console.error("Firebase initialization error:", error.message);
+      // App continues to function even if Firebase fails
+      return () => {};
+    }
   }, []);
   const [scrolled, setScrolled] = useState(false);
   const [megaOpenFor, setMegaOpenFor] = useState(null);
