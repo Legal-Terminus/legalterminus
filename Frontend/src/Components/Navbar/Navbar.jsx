@@ -959,7 +959,7 @@ export default function NavbarAdvanced() {
             <div className="nav-right">
               <div className="user-login-wrap">
                 <a
-                  href="/login"
+                  href={loggedIn ? "/my-profile" : "/login"}
                   className="icon-btn user-login-btn"
                   aria-label={loggedIn ? 'My Account' : 'User Login'}
                 >
@@ -1174,6 +1174,23 @@ export default function NavbarAdvanced() {
                 })}
               </ul>
             </nav>
+
+            {loggedIn && (
+              <div style={{ borderTop: "1px solid #eee", paddingTop: 12, marginTop: 12 }}>
+                <a
+                  href="/my-profile"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="premium-nav-link"
+                  style={{ display: "block", padding: "10px 0" }}
+                >
+                  <span className="premium-link-text">
+                    <FaUser style={{ marginRight: 8, verticalAlign: "middle" }} />
+                    My Profile
+                  </span>
+                  <FaChevronRight className="premium-link-arrow" />
+                </a>
+              </div>
+            )}
 
             <div className="drawer-contact">
               <h4 className="drawer-contact-title">Contact Info</h4>

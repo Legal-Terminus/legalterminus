@@ -9,6 +9,9 @@ import FloatIcon from "./Components/FloatIcon/FloatIcon";
 import PvtltdTestimonial from "./Components/PvtltdTestimonial/PvtltdTestimonial";
 import PvtltdVideoTestimonial from "./Components/PvtltdVideoTestimonial/PvtltdVideoTestimonial";
 import PvtltdOurclints from "./Components/PvtltdOurclints/PvtltdOurclints";
+import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
+
+const MyProfile = lazy(() => import("./Pages/MyProfile/MyProfile"));
 
 const Home = lazy(() => import("./Pages/Home/Home"));
 const ContactUs = lazy(() => import("./Pages/ContactUs/ContactUs"));
@@ -82,6 +85,8 @@ const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/Confidentialit
 const PrivateLimitedCopy2 = lazy(() => import("./Pages/PrivateLimitedCopy2/PrivateLimitedCopy2"));
 const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
 
+const MyProfile = lazy(() => import("./Pages/MyProfile/MyProfile"));
+
 // Pages that are NOT service pages — testimonial/social proof sections are hidden here
 const NON_SERVICE_PATHS = new Set([
   "/",
@@ -99,6 +104,7 @@ const NON_SERVICE_PATHS = new Set([
   "/policies/refund",
   "/policies/confidentiality",
   "/login",
+  "/my-profile",
 ]);
 
 const isBlogPost = (pathname) => /^\/blog\/.+/.test(pathname);
@@ -167,6 +173,7 @@ function App() {
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/details" element={<BlogDetails />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
             <Route path="/one-person-company" element={<OPC />} />
             <Route path="/public-limited-company-registration-in-india" element={<Publicltd />} />
             <Route path="/incorption-registration-in-india" element={<IncorptionPage />} />
