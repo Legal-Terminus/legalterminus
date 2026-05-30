@@ -17,39 +17,39 @@ const Breadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Private Limited Company Registration
+            PRIVATE LIMITED COMPANY REGISTRATION IN INDIA
           </span>
 
           <h1 className="lt-public-title">
-            Register Your Private Limited Company
+            Private Limited Company Registration
             <span className="lt-title-india"> in India</span>
-            <br />
-            <span className="lt-title-tagline">Fast, Hassle-Free &amp; 100% Online</span>
           </h1>
 
           <p className="lt-public-description">
-            Your big idea deserves a legit structure. Legal Terminus handles your entire Private Limited Company Registration — from name approval to the Certificate of Incorporation — while you stay focused on what matters: building your business. Professional fees starting at ₹3,999* | Government fees extra. (*Prices exclusive of 18% GST and government/statutory charges.)
+            A Private Limited Company (Pvt. Ltd.) is India's most investor-loved business structure — registered under the Companies Act, 2013 and governed by the Ministry of Corporate Affairs (MCA). It gives your venture a separate legal identity, shields personal assets via limited liability, and opens doors to institutional funding that no proprietorship or partnership can access. In 2026, the entire incorporation process is 100% online through the SPICe+ portal — no office visits, no paper chaos. Government registration fee is nil for companies with Authorised Capital up to ₹15 Lakhs; stamp duty is state-specific and charged at actuals.
           </p>
 
+          <p className="lt-features-label">Quick Trust Badges</p>
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Minimum 2 Directors Required</div>
-            <div className="lt-feature-item"> Separate Legal Identity</div>
-            <div className="lt-feature-item"> Limited Liability Protection</div>
-            <div className="lt-feature-item"> High Business Credibility</div>
+            <div className="lt-feature-item">Separate Legal Entity</div>
+            <div className="lt-feature-item">Limited Liability Protection</div>
+            <div className="lt-feature-item">Investor-Ready Structure</div>
+            <div className="lt-feature-item">Perpetual Succession</div>
           </div>
 
+          <p className="lt-features-label">Receipts (the trust stats)</p>
           <div className="lt-public-highlights">
             <div>
               <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <p>Pvt Ltd companies incorporated</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Process</p>
+              <h3>100% Online</h3>
+              <p>MCA21 V3 + SPICe+ AGILE-PRO-S</p>
             </div>
             <div>
-              <h3>7+</h3>
-              <p>Years of Legal Expertise</p>
+              <h3>6 Years</h3>
+              <p>of Companies Act expertise</p>
             </div>
           </div>
 
