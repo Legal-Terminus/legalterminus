@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getUserProfile } from "../../utils/userProfile.js";
 import "./ProCheckoutModal.css";
 
 const STATES = [
@@ -84,6 +85,9 @@ function pickFailureReason(paymentMethod) {
   return options[Math.floor(Math.random() * options.length)];
 }
 
+// Base URL for backend API calls
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 const STEPS = ["order-summary", "checkout", "payment", "success", "failed", "thankyou"];
 
 const ProCheckoutModal = ({ plan, onClose }) => {
@@ -156,46 +160,79 @@ const ProCheckoutModal = ({ plan, onClose }) => {
 
   const showBackButton = step === "checkout" || step === "payment";
 
-  const handlePay = () => {
+  const handlePay = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      // Replace with real gateway result — demo simulates ~20% failure rate
-      const success = Math.random() > 0.2;
-      if (success) {
-        // Persist the form data so future checkouts auto-fill
-        const profileData = {
-          fullName:     form.fullName,
-          email:        form.email,
-          mobile:       form.mobile,
-          businessName: form.businessName,
-          state:        form.state,
-        };
 
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
+    // Persist profile data for future auto-fill regardless of payment outcome
+    const profileData = {
+      fullName:     form.fullName,
+      email:        form.email,
+      mobile:       form.mobile,
+      businessName: form.businessName,
+      state:        form.state,
+    };
 
-        if (currentUser) {
-          // If user is logged in, save to Firestore
-          const db = getFirestore();
-          setDoc(doc(db, 'users', currentUser.uid), {
-            fullName:     profileData.fullName,
-            businessName: profileData.businessName,
-            state:        profileData.state,
-            mobile:       profileData.mobile,
-            updatedAt: new Date()
-          }, { merge: true }).catch(err => console.error('Error saving to Firestore:', err));
-        } else {
-          // If user is not logged in, save to localStorage as temporary cache
-          localStorage.setItem('lt_checkout_profile', JSON.stringify(profileData));
-        }
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
 
-        setStep("success");
-      } else {
-        setFailureReason(pickFailureReason(paymentMethod));
-        setStep("failed");
+    if (currentUser) {
+      const db = getFirestore();
+      setDoc(doc(db, 'users', currentUser.uid), {
+        fullName:     profileData.fullName,
+        businessName: profileData.businessName,
+        state:        profileData.state,
+        mobile:       profileData.mobile,
+        updatedAt:    new Date(),
+      }, { merge: true }).catch((err) => console.error('Error saving to Firestore:', err));
+    } else {
+      localStorage.setItem('lt_checkout_profile', JSON.stringify(profileData));
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/payment/initiate`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          orderId,
+          amount:        plan.price,
+          form,
+          planName:      plan.name,
+          paymentMethod,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to initiate payment');
       }
-    }, 2000);
+
+      const { encRequest, accessCode, formUrl } = await res.json();
+
+      // Build and auto-submit a hidden form to CCAvenue's hosted payment page.
+      // This redirects the user to CCAvenue; after payment they are sent back
+      // to /payment/result via the backend redirect_url / cancel_url handlers.
+      const hiddenForm = document.createElement('form');
+      hiddenForm.method = 'POST';
+      hiddenForm.action = formUrl;
+      hiddenForm.style.display = 'none';
+
+      [['encRequest', encRequest], ['access_code', accessCode]].forEach(([name, value]) => {
+        const input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = name;
+        input.value = value;
+        hiddenForm.appendChild(input);
+      });
+
+      document.body.appendChild(hiddenForm);
+      hiddenForm.submit();
+      // Page navigates away — no further state updates needed
+    } catch (err) {
+      console.error('Payment initiation error:', err);
+      setIsProcessing(false);
+      setFailureReason('network_error');
+      setStep('failed');
+    }
   };
 
   const handleTryAgain = () => {

@@ -1,0 +1,171 @@
+.pr-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  background: #f7f8fa;
+}
+
+.pr-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.10);
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+}
+
+/* Icon circle */
+.pr-icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pr-success-circle { background: #e8f5e9; }
+.pr-cancel-circle  { background: #fff3e0; }
+.pr-failed-circle  { background: #ffebee; }
+
+.pr-icon {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.pr-success-circle .pr-icon { color: #2e7d32; }
+.pr-cancel-circle  .pr-icon { color: #e65100; }
+.pr-failed-circle  .pr-icon { color: #c62828; }
+
+/* Text */
+.pr-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.pr-sub {
+  font-size: 1rem;
+  color: #555;
+  margin: 0;
+}
+
+/* Detail box */
+.pr-detail-box {
+  width: 100%;
+  background: #f7f8fa;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.pr-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.pr-detail-label { color: #888; }
+.pr-detail-value { font-weight: 600; color: #1a1a2e; word-break: break-all; }
+
+/* Next steps */
+.pr-next-box {
+  width: 100%;
+  background: #f0f7ff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-align: left;
+}
+
+.pr-next-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1a1a2e;
+  margin-bottom: 10px;
+}
+
+.pr-next-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pr-next-list li { font-size: 0.88rem; color: #555; }
+
+/* Contact cards */
+.pr-contact-cards {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pr-contact-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f7f8fa;
+  border-radius: 10px;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.pr-contact-icon { font-size: 1.4rem; flex-shrink: 0; }
+.pr-contact-label { font-size: 0.78rem; color: #888; }
+.pr-contact-value { font-size: 0.9rem; font-weight: 600; color: #1a1a2e; }
+
+/* Tip box */
+.pr-tip-box {
+  width: 100%;
+  background: #fffde7;
+  border: 1px solid #ffe082;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+}
+
+.pr-tip-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+.pr-tip-box p { margin: 0; font-size: 0.88rem; color: #555; }
+
+/* Buttons */
+.pr-btn-primary {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.pr-btn-primary:hover { opacity: 0.88; }
+
+@media (max-width: 480px) {
+  .pr-card { padding: 28px 16px; }
+  .pr-title { font-size: 1.35rem; }
+}

@@ -11,9 +11,11 @@ import videoTestimonialRoutes from "./routes/videotestimonial.routes.js";
 import clientRoutes from "./routes/client.routes.js";
 import testimonialRoutes from "./routes/testimonialRoute.js";
 import authRoutes from "./routes/auth.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
 import initializeFirebase from "./config/firebase.js";
 
-// Load environment variables from .env.qa (for Firebase config)
+// Load environment variables
+dotenv.config({ path: ".env" });
 dotenv.config({ path: ".env.qa" });
 
 const app = express();
@@ -24,9 +26,12 @@ const __dirname = path.dirname(__filename);
 
 /* ================= CORS ================= */
 const allowedOrigins = [
-  "http://localhost:5173", // Local development
-  "http://localhost:5000", // Local API
-  /\.firebaseapp\.com$/, // Firebase Hosting domain (all projects)
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5000",
+  /\.firebaseapp\.com$/,
+  /\.web\.app$/,
+  /legalterminus\.com$/,
 ];
 
 app.use(
@@ -53,6 +58,7 @@ app.use("/api/video-testimonials", videoTestimonialRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/payment", paymentRoutes);
 
 /* ================= FALLBACK ROUTE (SPA) ================= */
 // Serve React app for all non-API routes

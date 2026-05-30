@@ -12,6 +12,7 @@ import PvtltdOurclints from "./Components/PvtltdOurclints/PvtltdOurclints";
 import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
 
 const MyProfile = lazy(() => import("./Pages/MyProfile/MyProfile"));
+const PaymentResult = lazy(() => import("./Pages/PaymentResult/PaymentResult"));
 const Login = lazy(() => import("./Pages/Login/Login"));
 const Signup = lazy(() => import("./Pages/Signup/Signup"));
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword/ForgotPassword"));
@@ -180,6 +181,7 @@ function App() {
             <Route path="/blog/details" element={<BlogDetails />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
+            <Route path="/payment/result" element={<PaymentResult />} />
             <Route path="/one-person-company" element={<OPC />} />
             <Route path="/public-limited-company-registration-in-india" element={<Publicltd />} />
             <Route path="/incorption-registration-in-india" element={<IncorptionPage />} />

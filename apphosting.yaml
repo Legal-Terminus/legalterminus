@@ -1,0 +1,50 @@
+runConfig:
+  cpu: 1
+  memoryMiB: 512
+  concurrency: 80
+  minInstances: 0
+  maxInstances: 2
+
+env:
+  - variable: NODE_ENV
+    value: production
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: PORT
+    value: "5000"
+    availability:
+      - RUNTIME
+
+  # Firebase client-side vars — injected at build time into Vite bundle
+  # Secrets must exist in Google Secret Manager under these names
+  - variable: VITE_FIREBASE_API_KEY
+    secret: FIREBASE_QA_API_KEY
+    availability:
+      - BUILD
+
+  - variable: VITE_FIREBASE_AUTH_DOMAIN
+    secret: FIREBASE_QA_AUTH_DOMAIN
+    availability:
+      - BUILD
+
+  - variable: VITE_FIREBASE_PROJECT_ID
+    secret: FIREBASE_QA_PROJECT_ID
+    availability:
+      - BUILD
+
+  - variable: VITE_FIREBASE_STORAGE_BUCKET
+    secret: FIREBASE_QA_STORAGE_BUCKET
+    availability:
+      - BUILD
+
+  - variable: VITE_FIREBASE_MESSAGING_SENDER_ID
+    secret: FIREBASE_QA_MESSAGING_SENDER_ID
+    availability:
+      - BUILD
+
+  - variable: VITE_FIREBASE_APP_ID
+    secret: FIREBASE_QA_APP_ID
+    availability:
+      - BUILD
