@@ -62,6 +62,11 @@
   color: #d1d5db;
   max-width: 640px;
   margin-bottom: 38px;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  word-spacing: -0.01em;
 }
 
 /* ================= SECTION LABELS ================= */
