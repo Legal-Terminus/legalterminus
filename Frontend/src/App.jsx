@@ -13,6 +13,7 @@ import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
 
 const MyProfile = lazy(() => import("./Pages/MyProfile/MyProfile"));
 const Login = lazy(() => import("./Pages/Login/Login"));
+const Signup = lazy(() => import("./Pages/Signup/Signup"));
 
 const Home = lazy(() => import("./Pages/Home/Home"));
 const ContactUs = lazy(() => import("./Pages/ContactUs/ContactUs"));
@@ -103,6 +104,7 @@ const NON_SERVICE_PATHS = new Set([
   "/policies/refund",
   "/policies/confidentiality",
   "/login",
+  "/signup",
   "/my-profile",
 ]);
 
@@ -169,6 +171,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/contact/us" element={<ContactUs />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/details" element={<BlogDetails />} />

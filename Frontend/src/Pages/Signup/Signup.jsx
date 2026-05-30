@@ -3,21 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
-  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   onAuthStateChanged,
 } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-import "./Login.css";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import "./Signup.css";
 
-const Login = () => {
+const Signup = () => {
   const navigate = useNavigate();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [auth, setAuth] = useState(null);
   const [db, setDb] = useState(null);
 
@@ -26,7 +29,7 @@ const Login = () => {
       try {
         const response = await fetch("/api/auth/firebase-config");
         const config = await response.json();
-        const app = initializeApp(config, "login-app");
+        const app = initializeApp(config, "signup-app");
         const authInstance = getAuth(app);
         const dbInstance = getFirestore(app);
         setAuth(authInstance);
@@ -53,8 +56,16 @@ const Login = () => {
   };
 
   const validateForm = () => {
-    let newErrors = { email: "", password: "" };
+    let newErrors = { name: "", email: "", password: "", confirmPassword: "" };
     let isValid = true;
+
+    if (!name.trim()) {
+      newErrors.name = "Full name is required";
+      isValid = false;
+    } else if (name.trim().length < 2) {
+      newErrors.name = "Name must be at least 2 characters";
+      isValid = false;
+    }
 
     if (!email.trim()) {
       newErrors.email = "Email is required";
@@ -72,11 +83,38 @@ const Login = () => {
       isValid = false;
     }
 
+    if (!confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+      isValid = false;
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
   };
 
-  const handleLogin = async (e) => {
+  const createUserProfile = async (user) => {
+    if (!db) return;
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        name: name || user.displayName || "User",
+        email: user.email,
+        phone: "",
+        address: "",
+        avatar: user.photoURL || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    } catch (error) {
+      console.error("Error creating user profile:", error);
+    }
+  };
+
+  const handleSignup = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) return;
@@ -87,41 +125,22 @@ const Login = () => {
 
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // Ensure user profile exists in Firestore
-      if (db) {
-        const userDocRef = doc(db, "users", userCredential.user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-          await setDoc(userDocRef, {
-            uid: userCredential.user.uid,
-            name: userCredential.user.displayName || "User",
-            email: userCredential.user.email,
-            phone: "",
-            address: "",
-            avatar: userCredential.user.photoURL || null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-        }
-      }
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await createUserProfile(userCredential.user);
       navigate("/my-profile");
     } catch (error) {
-      console.error("Login error:", error);
-      let errorMsg = "Login failed";
+      console.error("Signup error:", error);
+      let errorMsg = "Signup failed";
 
-      if (error.code === "auth/user-not-found") {
-        errorMsg = "No account found with this email";
+      if (error.code === "auth/email-already-in-use") {
+        errorMsg = "Email already in use";
         setErrors((prev) => ({ ...prev, email: errorMsg }));
-      } else if (error.code === "auth/wrong-password") {
-        errorMsg = "Incorrect password";
-        setErrors((prev) => ({ ...prev, password: errorMsg }));
       } else if (error.code === "auth/invalid-email") {
         errorMsg = "Invalid email address";
         setErrors((prev) => ({ ...prev, email: errorMsg }));
-      } else if (error.code === "auth/too-many-requests") {
-        errorMsg = "Too many failed attempts. Please try again later";
-        setErrors((prev) => ({ ...prev, email: errorMsg }));
+      } else if (error.code === "auth/weak-password") {
+        errorMsg = "Password is too weak";
+        setErrors((prev) => ({ ...prev, password: errorMsg }));
       } else {
         setErrors((prev) => ({ ...prev, email: errorMsg }));
       }
@@ -130,7 +149,7 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleSignup = async () => {
     if (!auth) {
       setErrors((prev) => ({ ...prev, email: "Firebase not initialized" }));
       return;
@@ -140,28 +159,12 @@ const Login = () => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      // Ensure user profile exists in Firestore
-      if (db) {
-        const userDocRef = doc(db, "users", result.user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-          await setDoc(userDocRef, {
-            uid: result.user.uid,
-            name: result.user.displayName || "User",
-            email: result.user.email,
-            phone: "",
-            address: "",
-            avatar: result.user.photoURL || null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-        }
-      }
+      await createUserProfile(result.user);
       navigate("/my-profile");
     } catch (error) {
-      console.error("Google login error:", error);
+      console.error("Google signup error:", error);
       if (error.code !== "auth/popup-closed-by-user") {
-        setErrors((prev) => ({ ...prev, email: "Google sign-in failed" }));
+        setErrors((prev) => ({ ...prev, email: "Google signup failed" }));
       }
     } finally {
       setLoading(false);
@@ -169,14 +172,37 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
+    <div className="signup-container">
       <div className="card">
-        {/* LEFT: login form */}
+        {/* LEFT: signup form */}
         <div className="form-panel">
-          <h1>Welcome Back!</h1>
-          <p className="sub">Please enter your details to continue</p>
+          <h1>Create Account</h1>
+          <p className="sub">Sign up to access your profile and manage your services</p>
 
-          <form onSubmit={handleLogin}>
+          <form onSubmit={handleSignup}>
+            <div className="field">
+              <label htmlFor="name">Full Name</label>
+              <input
+                type="text"
+                id="name"
+                placeholder="Enter Your Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onInput={() => clearFieldErr("name")}
+                className={errors.name ? "input-err" : ""}
+              />
+              {errors.name && (
+                <div className="field-err-msg show">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  <span>{errors.name}</span>
+                </div>
+              )}
+            </div>
+
             <div className="field">
               <label htmlFor="email">Email Address</label>
               <input
@@ -206,7 +232,7 @@ const Login = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
-                  placeholder="Enter Password"
+                  placeholder="Enter Password (min 6 chars)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onInput={() => clearFieldErr("password")}
@@ -244,17 +270,52 @@ const Login = () => {
               )}
             </div>
 
-            <div className="row">
-              <label className="remember">
-                <input type="checkbox" /> Remember Me
-              </label>
-              <a href="/forgot-password" className="forgot">
-                Forgot Password?
-              </a>
+            <div className="field">
+              <label htmlFor="confirmPassword">Confirm Password</label>
+              <div className="pw-wrap">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  placeholder="Confirm Your Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onInput={() => clearFieldErr("confirmPassword")}
+                  className={errors.confirmPassword ? "input-err" : ""}
+                />
+                <button
+                  type="button"
+                  className="eye-btn"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label="Toggle confirm password visibility"
+                >
+                  {showConfirmPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <div className="field-err-msg show">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  <span>{errors.confirmPassword}</span>
+                </div>
+              )}
             </div>
 
-            <button type="submit" className="btn-login" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
+            <button type="submit" className="btn-signup" disabled={loading}>
+              {loading ? "Creating Account..." : "Sign Up"}
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
@@ -265,18 +326,18 @@ const Login = () => {
               <span>OR</span>
             </div>
 
-            <button type="button" className="btn-google" onClick={handleGoogleLogin} disabled={loading}>
+            <button type="button" className="btn-google" onClick={handleGoogleSignup} disabled={loading}>
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              Sign In with Google
+              Sign Up with Google
             </button>
 
-            <p className="signup-row">
-              Don't have an account? <a href="/signup">Sign Up</a>
+            <p className="login-row">
+              Already have an account? <a href="/login">Log In</a>
             </p>
           </form>
         </div>
@@ -296,53 +357,34 @@ const Login = () => {
           {/* illustration card */}
           <div className="illus-card">
             <svg xmlns="http://www.w3.org/2000/svg" width="190" height="150" viewBox="0 0 190 150">
-              {/* scatter dots */}
-              <circle cx="12" cy="20" r="3" fill="rgba(255,255,255,0.35)" />
-              <circle cx="178" cy="30" r="2.5" fill="rgba(255,255,255,0.30)" />
-              <circle cx="8" cy="110" r="2" fill="rgba(255,255,255,0.25)" />
-              <circle cx="170" cy="120" r="2" fill="rgba(255,255,255,0.25)" />
-              <circle cx="90" cy="8" r="2" fill="rgba(255,255,255,0.20)" />
+              {/* rocket ship illustration */}
+              <g transform="translate(95, 75)">
+                <circle cx="0" cy="0" r="40" fill="rgba(255,255,255,0.10)" stroke="rgba(255,255,255,0.30)" strokeWidth="1.5" />
+                {/* rocket body */}
+                <rect x="-12" y="-35" width="24" height="50" rx="6" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.50)" strokeWidth="1" />
+                {/* window */}
+                <circle cx="0" cy="-20" r="5" fill="rgba(22,101,52,0.40)" />
+                {/* fins */}
+                <path d="M-12 5 L-25 25 L-15 10 Z" fill="rgba(255,255,255,0.20)" />
+                <path d="M12 5 L25 25 L15 10 Z" fill="rgba(255,255,255,0.20)" />
+                {/* flame */}
+                <path d="M-8 15 L0 35 L8 15 Q0 25 -8 15" fill="rgba(255,200,100,0.30)" />
+              </g>
 
-              {/* clipboard */}
-              <rect x="18" y="28" width="82" height="106" rx="10" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.50)" strokeWidth="1.8" />
-              <rect x="44" y="20" width="30" height="16" rx="8" fill="rgba(255,255,255,0.45)" />
-              <rect x="50" y="24" width="18" height="8" rx="4" fill="rgba(255,255,255,0.20)" />
-              <rect x="30" y="52" width="58" height="8" rx="4" fill="rgba(255,255,255,0.35)" />
-              <rect x="30" y="68" width="58" height="8" rx="4" fill="rgba(255,255,255,0.55)" stroke="rgba(255,255,255,0.80)" strokeWidth="1" />
-              <rect x="35" y="71" width="28" height="2" rx="1" fill="rgba(22,101,52,0.30)" />
-              <rect x="30" y="84" width="58" height="8" rx="4" fill="rgba(255,255,255,0.35)" />
-              <rect x="30" y="100" width="38" height="13" rx="6" fill="rgba(255,255,255,0.60)" />
-              <rect x="37" y="104" width="24" height="5" rx="2.5" fill="rgba(22,101,52,0.35)" />
-
-              {/* checkmark badge */}
-              <circle cx="158" cy="32" r="20" fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.50)" strokeWidth="1.5" />
-              <circle cx="158" cy="32" r="14" fill="rgba(255,255,255,0.30)" />
-              <polyline points="149,32 155,39 168,24" stroke="rgba(255,255,255,0.95)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-
-              {/* person */}
-              <circle cx="148" cy="72" r="14" fill="rgba(255,255,255,0.65)" />
-              <path d="M135 70 Q137 57 148 58 Q159 57 161 70" fill="rgba(255,255,255,0.38)" />
-              <circle cx="143" cy="71" r="2" fill="rgba(22,101,52,0.55)" />
-              <circle cx="153" cy="71" r="2" fill="rgba(22,101,52,0.55)" />
-              <path d="M143 77 Q148 82 153 77" stroke="rgba(22,101,52,0.50)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-              <rect x="144" y="85" width="8" height="8" rx="3" fill="rgba(255,255,255,0.55)" />
-              <rect x="132" y="93" width="32" height="34" rx="8" fill="rgba(255,255,255,0.38)" />
-              <path d="M132 100 Q110 102 100 98" stroke="rgba(255,255,255,0.70)" strokeWidth="7" strokeLinecap="round" fill="none" />
-              <circle cx="97" cy="97" r="5" fill="rgba(255,255,255,0.60)" />
-              <path d="M164 100 Q170 110 168 122" stroke="rgba(255,255,255,0.60)" strokeWidth="7" strokeLinecap="round" fill="none" />
-              <path d="M140 127 Q139 138 138 146" stroke="rgba(255,255,255,0.55)" strokeWidth="8" strokeLinecap="round" />
-              <path d="M156 127 Q157 138 158 146" stroke="rgba(255,255,255,0.55)" strokeWidth="8" strokeLinecap="round" />
-              <ellipse cx="137" cy="147" rx="8" ry="4" fill="rgba(255,255,255,0.35)" />
-              <ellipse cx="159" cy="147" rx="8" ry="4" fill="rgba(255,255,255,0.35)" />
+              {/* stars */}
+              <circle cx="20" cy="15" r="2" fill="rgba(255,255,255,0.40)" />
+              <circle cx="160" cy="25" r="2.5" fill="rgba(255,255,255,0.35)" />
+              <circle cx="15" cy="120" r="1.5" fill="rgba(255,255,255,0.30)" />
+              <circle cx="170" cy="110" r="1.5" fill="rgba(255,255,255,0.30)" />
             </svg>
 
-            <h2>Trusted Legal Services at Your Fingertips</h2>
-            <p>Instant registrations, filings &amp; compliance — trusted by thousands of businesses across India.</p>
+            <h2>Welcome to Legal Terminus</h2>
+            <p>Join thousands of businesses using our trusted legal services for registrations, filings, and compliance.</p>
           </div>
 
           <div className="dots">
-            <div className="dot active"></div>
             <div className="dot"></div>
+            <div className="dot active"></div>
             <div className="dot"></div>
           </div>
         </div>
@@ -351,4 +393,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;
