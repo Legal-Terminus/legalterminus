@@ -232,9 +232,6 @@ const Login = () => {
             </div>
 
             <div className="row">
-              <label className="remember">
-                <input type="checkbox" /> Remember Me
-              </label>
               <a href="/forgot-password" className="forgot">
                 Forgot Password?
               </a>

@@ -14,6 +14,7 @@ import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
 const MyProfile = lazy(() => import("./Pages/MyProfile/MyProfile"));
 const Login = lazy(() => import("./Pages/Login/Login"));
 const Signup = lazy(() => import("./Pages/Signup/Signup"));
+const ForgotPassword = lazy(() => import("./Pages/ForgotPassword/ForgotPassword"));
 
 const Home = lazy(() => import("./Pages/Home/Home"));
 const ContactUs = lazy(() => import("./Pages/ContactUs/ContactUs"));
@@ -105,6 +106,7 @@ const NON_SERVICE_PATHS = new Set([
   "/policies/confidentiality",
   "/login",
   "/signup",
+  "/forgot-password",
   "/my-profile",
 ]);
 
@@ -172,6 +174,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/contact/us" element={<ContactUs />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/details" element={<BlogDetails />} />

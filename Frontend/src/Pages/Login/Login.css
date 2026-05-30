@@ -115,25 +115,8 @@ body {
 .row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   margin-bottom: 26px;
-}
-
-.remember {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  color: #6b7280;
-  cursor: pointer;
-  user-select: none;
-}
-
-.remember input[type='checkbox'] {
-  width: 15px;
-  height: 15px;
-  accent-color: #16a34a;
-  cursor: pointer;
 }
 
 .forgot {

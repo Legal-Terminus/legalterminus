@@ -101,7 +101,7 @@ const Signup = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await createUserProfile(userCredential.user);
-      navigate("/my-profile");
+      navigate("/login");
     } catch (error) {
       console.error("Signup error:", error);
       let errorMsg = "Signup failed";
