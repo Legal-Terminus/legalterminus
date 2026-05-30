@@ -9,6 +9,224 @@ on:
         required: false
         default: 'main'
         type: string
+      deploy_backend:
+        description: 'Deploy backend to Cloud Run'
+        required: false
+        default: true
+        type: boolean
+      deploy_frontend:
+        description: 'Deploy frontend to Firebase Hosting'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  REGION: us-central1
+  SERVICE_NAME: legal-terminus-qa
+  GAR_REPO: legal-terminus-qa
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # ── Authenticate ────────────────────────────────────────────────────────
+      - name: 🔐 Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.QA_WIF_PROVIDER }}
+          service_account: ${{ secrets.QA_WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # ── Build & Deploy Frontend → Firebase Hosting ─────────────────────────
+      - name: Install Frontend dependencies
+        if: github.event.inputs.deploy_frontend == 'true'
+        run: npm ci
+        working-directory: Frontend
+
+      - name: Build Frontend
+        if: github.event.inputs.deploy_frontend == 'true'
+        run: npm run build
+        working-directory: Frontend
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_QA_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_QA_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_QA_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_QA_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_QA_APP_ID }}
+          VITE_API_BASE_URL: https://${{ env.SERVICE_NAME }}-${{ secrets.FIREBASE_QA_PROJECT_NUMBER }}-${{ env.REGION }}.a.run.app
+
+      - name: 🔥 Install Firebase CLI
+        if: github.event.inputs.deploy_frontend == 'true'
+        run: npm install -g firebase-tools
+
+      - name: 🌐 Deploy Frontend to Firebase Hosting
+        if: github.event.inputs.deploy_frontend == 'true'
+        run: |
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          firebase deploy --only hosting \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
+            --token="$ACCESS_TOKEN"
+
+      # ── Build & Deploy Backend → Cloud Run ─────────────────────────────────
+      - name: Set up Docker Buildx
+        if: github.event.inputs.deploy_backend == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure Docker for Google Artifact Registry
+        if: github.event.inputs.deploy_backend == 'true'
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Build and push Docker image
+        if: github.event.inputs.deploy_backend == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/backend:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/backend:buildcache
+          cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/backend:buildcache,mode=max
+
+      - name: 🚀 Deploy to Cloud Run
+        if: github.event.inputs.deploy_backend == 'true'
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/backend:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --port=8080 \
+            --min-instances=0 \
+            --max-instances=5 \
+            --memory=512Mi \
+            --cpu=1 \
+            --set-env-vars="NODE_ENV=production" \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
+
+          URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --region=${{ env.REGION }} \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
+            --format='value(status.url)')
+          echo "✅ Backend live at: $URL"
+
+
+# Manual trigger only — no automatic deploys
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: false
+        default: 'main'
+        type: string
+      deploy_apphosting:
+        description: 'Deploy to Firebase App Hosting (QA)'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # ── Build Frontend ──────────────────────────────────────────────────────
+      - name: Install Frontend dependencies
+        run: npm ci
+        working-directory: Frontend
+
+      - name: Build Frontend
+        run: npm run build
+        working-directory: Frontend
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_QA_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_QA_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_QA_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_QA_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_QA_APP_ID }}
+
+      # Copy built frontend into backend/public so Express can serve it
+      - name: Copy Frontend dist → backend/public
+        run: |
+          mkdir -p backend/public
+          cp -r Frontend/dist/. backend/public/
+
+      # ── Build Backend ───────────────────────────────────────────────────────
+      - name: Install Backend dependencies
+        run: npm ci --omit=dev
+        working-directory: backend
+
+      # ── Deploy to App Hosting ───────────────────────────────────────────────
+      - name: 🔐 Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.QA_WIF_PROVIDER }}
+          service_account: ${{ secrets.QA_WIF_SERVICE_ACCOUNT }}
+
+      - name: 🔥 Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: 🚀 Deploy to Firebase App Hosting (QA)
+        if: github.event.inputs.deploy_apphosting == 'true'
+        run: |
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          export FIREBASE_TOKEN=$ACCESS_TOKEN
+
+          PROJECT_ID="${{ secrets.FIREBASE_QA_PROJECT_ID }}"
+
+          echo "🔄 Creating App Hosting rollout for project: $PROJECT_ID"
+          if ! firebase apphosting:rollouts:create legal-terminus-qa \
+            --git-branch ${{ github.event.inputs.branch }} \
+            --project="$PROJECT_ID"; then
+            echo "❌ App Hosting rollout failed."
+            echo "📝 Monitor at: https://console.firebase.google.com/project/$PROJECT_ID/apphosting"
+            exit 1
+          fi
+
+          echo "✅ Deployment initiated: https://$PROJECT_ID.web.app"
+
+
+# Manual trigger only — no automatic deploys
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: false
+        default: 'main'
+        type: string
       deploy_apphosting:
         description: 'Deploy to Firebase App Hosting (QA)'
         required: false

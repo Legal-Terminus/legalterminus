@@ -47,9 +47,6 @@ app.use(express.json());
 /* ================= 🔥 STATIC FILE SERVING ================= */
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// Serve React static files from public folder (built frontend)
-app.use(express.static(path.join(__dirname, "../public")));
-
 /* ================= ROUTES ================= */
 app.use("/api/admin/blog", blogRoutes);
 app.use("/api/admin/category", categoryRoutes);
@@ -60,11 +57,8 @@ app.use("/api/clients", clientRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/payment", paymentRoutes);
 
-/* ================= FALLBACK ROUTE (SPA) ================= */
-// Serve React app for all non-API routes
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, "../public", "index.html"));
-});
+/* ================= HEALTH CHECK ================= */
+app.get("/health", (req, res) => res.json({ status: "ok" }));
 
 /* ================= START SERVER ================= */
 const PORT = process.env.PORT || 5000;
