@@ -48,6 +48,12 @@ export const getDb = () => {
   return admin.firestore();
 };
 
+// Export db singleton for convenience
+export const db = (() => {
+  initializeFirebase();
+  return admin.firestore();
+})();
+
 /**
  * Get Firebase Auth instance
  */

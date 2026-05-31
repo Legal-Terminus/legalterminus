@@ -1,10 +1,10 @@
-# Feature Specification: Legal-Terminus Workflow App (Hybrid Mobile + Web)
+# Feature Specification: Legal-Terminus Workflow App (Web + Mobile)
 
 **Feature Branch**: `001-workflow-app`
 
 **Created**: 2026-05-31
 
-**Status**: Draft
+**Status**: Draft (Refined 2026-05-31)
 
 ---
 
@@ -15,13 +15,47 @@ Legal-Terminus is a legal-services firm. This app replaces ad-hoc WhatsApp/email
 - **Internal team** (admin, manager, team members) — assign, execute, and track service tasks
 - **Clients** — track their service tasks, upload documents, approve steps, and pay
 
-The app is a single Capacitor build (web + Android + iOS) that shows different screens based on the authenticated user's role. It shares the existing Firebase project, Firestore database, and backend APIs with the public website (`Frontend/`).
+### Delivery Strategy
 
-**Note**: The old separate web panels (AdminPannel, ClientPannel, EmployeePannel) have been removed. All functionality for internal team and clients is consolidated into the single `MobileApp/` (Capacitor) project, which also runs as a web app.
+**Phase 1 — Web App**: Build the full feature set as a responsive web application. This is the primary delivery target. All screens and business logic are designed for web (desktop + tablet + mobile browser) first.
+
+**Phase 2 — Mobile App**: Once the web app is stable, wrap it with Capacitor for Android/iOS. The UI/UX is designed mobile-friendly from day one to make porting straightforward.
+
+### Workflow Engine
+
+Workflows are modelled as **XState state machines**. Each workflow service (Company Incorporation, Trademark, etc.) is a configuration file that defines states (steps), transitions (completions, rejections, branches), guards (payment gates, role checks), and actions (email triggers, notifications). Adding a new service is a matter of writing a new XState config — no new code. The backend stores current state in Firestore; the XState machine is the authoritative source of transition rules.
+
+### Technology
+
+- **Frontend app**: Vite + React 19 + TypeScript at `Portal/` — responsive web app, Capacitor wrapper for Phase 2
+- **Workflow engine**: XState v5 (state machines) — frontend and backend share the same machine config
+- **Backend**: Node.js/Express (ES Modules), Firebase Admin SDK — `backend/`
+- **Database**: Firestore (single source of truth); Firebase Storage for documents
+- **Auth**: Firebase Authentication; Firebase custom claims carry `role`. **Auth methods**: Email/password login, Google Sign-In (OAuth), client self-signup (email/password), password reset via email link
+- **Existing public website**: `Frontend/` — unchanged; marketing, blog, Razorpay payments
+
+### Scope
+
+**Phase 1 workflow**: Company Incorporation only (41 steps). The XState framework and all reusable building blocks (payment gate, document upload, email trigger, branch decision, parallel steps) are built for this workflow. The other 3 services (Trademark, GST, UDYAM) are config additions in Phase 2.
 
 **Four roles**: `admin` | `manager` | `team_member` | `client`
 
-**Four initial service workflows**: Company Incorporation · Trademark Registration · GST Registration · UDYAM Registration
+**All four service workflows defined** (Phase 1 implements Company Incorporation; others follow the same pattern): Company Incorporation · Trademark Registration · GST Registration · UDYAM Registration
+
+### Role & Permission Summary
+
+| Action | Admin | Manager | Team Member | Client |
+|---|---|---|---|---|
+| Create task (no payment) | ✅ Direct | ✅ Needs Admin approval | ❌ | ❌ |
+| Create task (with payment) | ✅ | ✅ | ✅ Needs Manager approval | ❌ |
+| Delete any record | ✅ | ❌ | ❌ | ❌ |
+| View all tasks | ✅ | ✅ | Assigned only | Own only |
+| View all reports | ✅ | ✅ | ❌ | Delay summary only |
+| Override payment gate | ✅ Audited | ❌ | ❌ | ❌ |
+| Mark step urgent | ✅ | ✅ | ❌ | ❌ |
+| Reassign task steps | ✅ Any | ✅ Any | ✅ To other members | ❌ |
+| Configure email templates | ✅ | ❌ | ❌ | ❌ |
+| Send broadcast notifications | ✅ | ❌ | ❌ | ❌ |
 
 ---
 
@@ -78,6 +112,11 @@ An admin or manager creates a new task by selecting a client and a service workf
 3. **Given** a workflow is created, **When** the system instantiates steps, **Then** each step has: `assignedTo` (uid or "client"), `status` (pending/active/completed/blocked), `deadline`, `paymentGated` flag, `allowedWithoutPayment` flag, `isUrgent` flag, and `parallelGroup` identifier.
 4. **Given** a task is created, **Then** the client receives an in-app notification and email confirming the service has started.
 5. **Given** a manager creates a task with `paymentStatus = not_paid` (which requires admin approval), **When** submitted, **Then** the task status is `pending_approval` and the admin receives a notification to approve or reject.
+6. **Given** a team member wants to create a task, **Then** they must provide payment evidence; task status is `pending_manager_approval` until a manager approves.
+7. **Given** a manager approves or rejects a task submitted by a team member, **Then** the submitter receives an in-app notification and the task moves to `active` (approved) or `rejected` with a rejection reason.
+8. **Given** an admin approves a manager-created task that had `paymentStatus = not_paid`, **Then** the task activates and both the manager and client are notified.
+9. **Given** a task is created, **When** payment mode is recorded, **Then** `mode` must be one of: `bank_transfer | cash | upi | cheque | credit_card`; amount, date, and proof reference are also recorded.
+10. **Given** an XState machine is instantiated for a task, **Then** the machine snapshot (current state, context) is persisted in `tasks/{taskId}/machineSnapshot`; every step transition re-persists the snapshot atomically.
 
 ---
 
@@ -137,39 +176,47 @@ When a government department raises a resubmission (e.g. on name reservation or 
 
 ### User Story 7 — Admin Reports and Analytics (Priority: P2)
 
-The admin has access to a comprehensive reporting dashboard covering tasks by status, payment collection, workload by team member, delay analysis, and service category breakdowns.
+The admin has access to a comprehensive reporting dashboard covering 13 distinct report types across task status, payment collection, workload, delays, service categories, clients, and storage.
 
-**Why this priority**: Without visibility, the admin cannot manage the business. Reports are explicitly required in the spec.
+**Why this priority**: Without visibility, the admin cannot manage the business. All 13 report types are explicitly enumerated in the source requirements.
 
-**Independent Test**: Create 10 tasks across 3 clients with varying payment statuses and step completions, then verify the admin report correctly shows all breakdowns listed below.
+**Independent Test**: Create 10 tasks across 3 clients with varying payment statuses and step completions, then verify every report type below reflects accurate numbers with correct filters applied.
 
 **Acceptance Scenarios**:
 
-1. **Given** an admin opens Reports, **Then** they can view: all tasks (list + filter), completed tasks, pending tasks — each crosscut by: Fully Paid / Partially Paid / Not Paid.
-2. **Given** the workload report is opened, **Then** admin sees pending tasks per team member and completed tasks per team member, with the ability to reassign from the report screen.
-3. **Given** the delay report is opened, **Then** delays are categorised by: Due to LT (internal) / Due to Client / Due to Department, with day buckets (0–2 / 3–5 / >5).
-4. **Given** the payment report is opened, **Then** it shows incoming payments by mode (Bank Transfer, Cash, UPI, Cheque, Credit Card), monthly totals, outstanding dues, and advance payments.
-5. **Given** the service category report is opened, **Then** tasks are grouped by service (Company Incorporation, Trademark, GST, UDYAM) with count and revenue.
-6. **Given** the storage report is opened, **Then** admin sees storage used per client and a system-wide projection for when more storage should be purchased.
-7. **Given** an admin opens "List of Clients" report, **Then** they see each client's reference group, linked email IDs, and active task count.
+1. **All Tasks Report** — **Given** admin opens "All Tasks", **Then** all tasks are listed with filter/sort by: date range, status, service type, assigned team member, payment status (Fully Paid / Partially Paid / Not Paid).
+2. **Completed Tasks Report** — **Given** admin opens "Completed Tasks", **Then** completed tasks appear with completion date, service type, team member, and payment status.
+3. **Pending Tasks Report** — **Given** admin opens "Pending Tasks", **Then** pending tasks show with sub-categorisation by reason: payment pending, document pending, client action pending, government/department pending.
+4. **Workload Report (per team member)** — **Given** admin opens Workload, **Then** it shows each team member's count of: pending tasks, completed tasks, delayed tasks; with drill-down to the task list and option to reassign directly from the report.
+5. **Delay Report** — **Given** admin opens Delay Report, **Then** delays are categorised by cause: Due to LT (internal team) / Due to Client / Due to Government/Department; each bucket further segmented by age: 0–2 days / 3–5 days / >5 days.
+6. **Payment Collection Report** — **Given** admin opens Payment Report, **Then** it shows: total collected, breakdown by mode (Bank Transfer / Cash / UPI / Cheque / Credit Card), monthly trend, outstanding dues, and advance payments received.
+7. **Service Category Report** — **Given** admin opens Service Report, **Then** tasks are grouped by service type (Company Incorporation, Trademark, GST, UDYAM) with count, revenue, and average completion time.
+8. **Client List Report** — **Given** admin opens Client List, **Then** it shows all client profiles with: name, reference/group tag, all linked email IDs, active task count, mobile, and last activity date.
+9. **Client Login Mapping Report** — **Given** admin opens Login Mapping, **Then** it shows each email ID mapped to its owning client profile, showing which email is the primary login, flagging orphan emails (email exists in auth but not in any client profile).
+10. **Storage Report** — **Given** admin opens Storage, **Then** it shows storage used per client, total system usage, and a projection alert if system-wide storage is within 20% of the provisioned limit.
+11. **Master Sheet** — **Given** admin or manager opens Master Sheet, **Then** they see a table of all tasks with columns: client name, service, current step, assigned team member, payment status, amount paid, amount due, last updated. Exportable as CSV/Excel.
+12. **Pending Task Categorisation** — Same as scenario 3 but with the ability to filter by any single reason to isolate blockers.
+13. **Escalation Report** — **Given** admin opens Escalation, **Then** it shows steps that have exceeded their `deadlineDays` threshold grouped by team member, with escalation age and audit trail.
 
 ---
 
 ### User Story 8 — Role-Based User and Client Management (Priority: P2)
 
-Admin can create and manage team member accounts and client profiles. Managers can create/edit but not delete. All user creation goes through the system — no out-of-band account sharing.
+Admin can create and manage all user accounts. Managers can create/edit clients and team members but cannot delete any records. Team members can only view and edit their own profile.
 
 **Why this priority**: The team and client roster is a prerequisite for assigning tasks.
 
-**Independent Test**: Admin creates a team member (role: team_member), assigns them to a workflow step, then admin elevates them to manager — verify the new role is reflected immediately in the app and the manager can now approve tasks.
+**Independent Test**: Admin creates a team member, assigns them to a step, elevates them to manager — verify new role reflects immediately. Manager creates a client — verify client can log in. Manager attempts deletion — verify it is blocked.
 
 **Acceptance Scenarios**:
 
-1. **Given** an admin creates a team member with email, full name, designation, date of joining, and role, **Then** a Firebase Auth account is created server-side, a password-reset email is sent, and a Firestore `users/{uid}` document is written with the correct role and custom claim.
-2. **Given** an admin creates a client profile, **Then** mandatory fields (name, mobile, address, email) are validated; optional fields (GST, Aadhaar, PAN, organisation name) are stored; multiple email IDs are supported and any can be used for login/notifications.
+1. **Given** an admin creates a team member, **Then** required fields are: full name, mobile/contact number, email, designation, date of joining, role; optional: father's name, date of birth, address. A Firebase Auth account is created server-side, password-reset email is sent, Firestore `users/{uid}` written with correct role and custom claim.
+2. **Given** an admin or manager creates a client profile, **Then** required fields are: full name, mobile, address, primary email; optional: organisation name, GST number, PAN number, Aadhaar number, additional email IDs, state, business name. Multiple email IDs are stored in `emailIds[]`; any can be used for login and notifications.
 3. **Given** an admin updates a user's role via `PATCH /api/auth/set-role`, **Then** both the Firestore document and the Firebase Auth custom claim are updated atomically; the user's next token refresh reflects the new role.
-4. **Given** a manager attempts to delete a user or record, **Then** the action is blocked with "Managers cannot delete records."
-5. **Given** a team member leaves, **When** admin triggers reassignment, **Then** all open workflow steps assigned to that uid are reassigned to a new team member; the action is logged in the audit trail.
+4. **Given** a manager attempts to delete a user, client, task, or any record, **Then** the action is blocked with HTTP 403 and UI message "Managers cannot delete records."
+5. **Given** a team member leaves, **When** admin triggers reassignment, **Then** all open workflow steps assigned to that uid are bulk-reassigned to a selected new team member; the action is logged in the audit trail.
+6. **Given** the same email address appears in multiple client profiles (multi-email client), **Then** login resolves to the profile where that email is the primary email; if it is a secondary email, the most recently created profile is returned and admin is alerted to resolve the ambiguity.
+7. **Given** a manager creates a client profile, **Then** the profile is immediately active without admin approval — managers have full create/edit rights for clients.
 
 ---
 
@@ -232,6 +279,93 @@ Clients see an in-app catalogue of all available legal services with pricing and
 
 ---
 
+### User Story 13 — Manager Task Approval Workflow (Priority: P1)
+
+When a team member creates a task, it requires manager approval. When a manager creates a task without proof of payment, it requires admin approval. Approvals are time-sensitive with in-app alerts.
+
+**Why this priority**: The approval chain is a core business process — tasks cannot go live without it.
+
+**Acceptance Scenarios**:
+
+1. **Given** a team member submits a new task with payment proof attached, **Then** the task status is `pending_manager_approval`; all managers receive an in-app notification with the task details.
+2. **Given** a manager approves the task, **Then** status changes to `active`; the XState machine is instantiated; the team member and client are notified.
+3. **Given** a manager rejects the task, **Then** status changes to `rejected`; the team member receives the rejection reason and must revise and resubmit.
+4. **Given** a manager creates a task with `paymentStatus = not_paid`, **When** submitted, **Then** the task status is `pending_admin_approval`; admin receives notification.
+5. **Given** an admin approves a manager's no-payment task, **Then** it activates; manager and client are notified.
+6. **Given** an approval is pending for more than 24 hours, **Then** an escalation reminder is sent to the relevant approver.
+
+---
+
+### User Story 14 — Multi-Email Client Management (Priority: P1)
+
+A client may have multiple email addresses. Any registered email can receive notifications. The primary email is the login credential; secondary emails receive copies of notifications.
+
+**Why this priority**: Explicitly required in source requirements; clients often use both personal and business emails.
+
+**Acceptance Scenarios**:
+
+1. **Given** admin adds a secondary email to a client profile, **Then** it is appended to `emailIds[]` and all future notification emails are sent to all addresses in the array.
+2. **Given** a client logs in with a secondary email, **Then** authentication resolves to the correct profile; a note is shown that "you are logged in via a secondary email; primary email is X".
+3. **Given** admin removes a secondary email, **Then** it is removed from `emailIds[]` and no longer receives notifications from the next notification onwards.
+4. **Given** an email exists in Firebase Auth but is not mapped to any `emailIds[]`, **Then** the Client Login Mapping Report flags it as an orphan email needing resolution.
+
+---
+
+### User Story 15 — Payment Mode Recording (Priority: P2)
+
+Every payment recorded against a task must capture the mode (Bank Transfer, Cash, UPI, Cheque, Credit Card), amount, date, and optional reference/proof. This data feeds the payment report.
+
+**Why this priority**: Finance tracking requires mode-level breakdown; the payment report depends on it.
+
+**Acceptance Scenarios**:
+
+1. **Given** admin or manager records a payment, **Then** required fields are: amount, date, mode (one of `bank_transfer | cash | upi | cheque | credit_card`); optional: reference number, uploaded proof image.
+2. **Given** a payment is recorded, **Then** `amountPaid` on the task is updated, `amountDue` is recalculated, and `paymentStatus` is recomputed automatically (`not_paid → part_paid → fully_paid`).
+3. **Given** a payment is recorded at or above the amount for a payment gate, **Then** the XState machine fires the `PAYMENT_CONFIRMED` event and activates the gated step.
+4. **Given** admin views payment history for a task, **Then** they see a chronological list of all payments with mode, amount, date, recorded-by, and reference.
+
+---
+
+### User Story 16 — Admin Broadcast Notifications (Priority: P3)
+
+Admin can push a notification (offer, news, alert) to all clients or a filtered group. The notification appears in-app on next open and is optionally sent as email.
+
+**Why this priority**: Marketing and operational announcements are explicitly listed in the spec requirements.
+
+**Acceptance Scenarios**:
+
+1. **Given** admin creates a broadcast with title, body, and target (all clients / by state / by service type), **Then** a notification document is written to each target client's `notifications/` sub-collection.
+2. **Given** a client opens the app after a broadcast, **Then** the broadcast notification appears as an in-app banner/modal with dismiss option.
+3. **Given** admin enables "also send as email" on a broadcast, **Then** emails are queued to all target addresses; delivery failures are reported back to admin.
+
+---
+
+### User Story 17 — Workflow Template Configuration (Priority: P1)
+
+Workflows have two layers: a **code layer** (XState machine topology — step order, branches, payment guards, parallel groups) which is developer-owned, and a **configuration layer** (step metadata — labels, deadlines, email templates, default assignee role) which is admin-editable via a Workflow Settings screen without any code deployment.
+
+**Why this priority**: Without this separation, every label change or deadline adjustment requires a code deployment. Admin must be able to tune workflows for operational realities (e.g. change "3 days" to "5 days" for a government step) independently.
+
+**Hybrid model**:
+- **Code layer** (XState config file, deployed with app): step sequence, branch conditions (`new_name` vs `documentation`), payment gate guards, parallel group membership, loop-back transitions, `allowedWithoutPayment` flags. Changing any of these requires a developer and a deployment.
+- **Config layer** (Firestore `workflowTemplates/{workflowId}/steps/{stepNumber}`): step label, description, deadline days, default assignee role, document requirement description, email template reference, whether a reminder is sent. Admin can edit these at any time from the portal.
+
+**At task creation**, the backend:
+1. Instantiates the XState machine for the workflow type.
+2. Reads the config layer from Firestore to populate each step's metadata.
+3. Persists the machine snapshot and the populated step list into `tasks/{taskId}`.
+
+**Acceptance Scenarios**:
+
+1. **Given** admin opens "Workflow Settings" for Company Incorporation, **Then** they see a list of all 41 steps with their current label, deadline, default assignee role, and email template.
+2. **Given** admin updates a step's deadline from 3 days to 5 days, **Then** all new tasks created after that point use the updated deadline; existing in-progress tasks are unaffected unless admin explicitly re-applies.
+3. **Given** admin changes a step's default assignee role from `team_member` to `manager`, **Then** new tasks auto-assign that step to the logged-in manager who created the task (or the first available manager).
+4. **Given** admin edits a step's email template reference, **Then** the next email triggered by that step uses the new template.
+5. **Given** a developer updates the XState machine topology (adds a new step, changes a branch condition), **Then** the system detects that the config layer has fewer steps than the machine and flags a "config out of sync" warning on the Workflow Settings screen; admin is prompted to fill in metadata for the new step before the workflow can be used in new tasks.
+6. **Given** a non-admin role attempts to access Workflow Settings, **Then** the route is blocked with a 403 — only `admin` can edit workflow configurations.
+
+---
+
 ### Edge Cases
 
 - A client with a single email linked to multiple client profiles: login resolves to the correct profile based on the primary client lookup; admin can switch context between profiles.
@@ -245,25 +379,83 @@ Clients see an in-app catalogue of all available legal services with pricing and
 
 ---
 
-## Workflow Definitions (from service data)
+## Workflow Definitions
 
-### Company Incorporation (41 steps)
+> **Phase 1 implementation**: Company Incorporation only. The XState framework, all building blocks (payment gate, document cycle, email trigger, branch decision, parallel step group), and all shared UI components are built for this workflow. The remaining 3 services are Phase 2 — each is a new XState config file, zero new code.
+
+### XState Architecture (Hybrid Model)
+
+**Code layer** — XState machine config file (`Portal/src/workflows/configs/companyIncorporation.machine.ts`):
+
+| Building Block | XState Pattern |
+|---|---|
+| Payment gate | Guard: `({ context }) => context.paymentStatus === 'fully_paid'` |
+| `allowedWithoutPayment` steps | Guard override on specific states |
+| Document upload/review cycle | Invoked actor (`documentReviewActor`) |
+| Branch decision (new name vs docs) | Choice pseudostate → conditional transitions |
+| Parallel step group | `type: 'parallel'` state with nested regions |
+| Email trigger | Entry action (`sendEmailAction`) |
+| Admin payment override | Event `ADMIN_OVERRIDE_PAYMENT` → guard bypassed |
+| Loop back | Event transition back to earlier state (iteration count in context) |
+
+**Config layer** — Firestore `workflowTemplates/{workflowId}/steps/{stepNumber}`:
+
+| Field | Editable by Admin? |
+|---|---|
+| `label` (step title) | ✅ Yes |
+| `description` | ✅ Yes |
+| `deadlineDays` | ✅ Yes |
+| `defaultAssigneeRole` | ✅ Yes |
+| `documentRequirementText` | ✅ Yes |
+| `emailTemplateRef` | ✅ Yes |
+| `stepNumber` / `parallelGroup` / `paymentGated` | ❌ Code layer only |
+| `allowedWithoutPayment` / branch conditions | ❌ Code layer only |
+
+**Task instantiation flow**:
+1. Admin/manager calls `POST /api/tasks` with `{ clientUid, workflowType, paymentStatus, ... }`
+2. Backend reads `workflowTemplates/{workflowType}/steps` from Firestore (config layer)
+3. Backend instantiates the XState machine with initial context `{ taskId, clientUid, paymentStatus }`
+4. Backend writes populated step documents and machine snapshot to `tasks/{taskId}`
+5. XState machine snapshot is the source of truth for which step is active; Firestore is the persistence layer
+6. Every subsequent step transition: `POST /api/tasks/:taskId/transition { event: 'COMPLETE_STEP' }` → backend hydrates snapshot → sends event → persists new snapshot
+
+---
+
+### Company Incorporation (41 steps) — **Phase 1**
 
 Sequential steps with conditional branches and parallel execution:
-- Steps 1–2: Payment gate (full / part / pending)
-- Steps 3–10: Work assignment, name/object collection, search, finalization, client approval (loop back to step 6 on rejection)
-- Steps 11–13: Name application filing and government approval (department step)
-- Steps 14–19: Resubmission branch — "For new name" (loop to step 6) OR "For documentation" (prepare → approve → resubmit)
-- Step 20: Name Approval Letter received — email to client with attachment
-- Step 21: Part-payment blinking gate
-- Steps 22–26: Document collection, form fill, form check (`allowedWithoutPayment = true` for these 3 steps)
-- Step 27: Full payment confirmed
-- Step 28: Upload incorporation forms (`paymentGated = true`, admin override only)
-- Step 29: Challan payment (manual entry only — date + challan details, no payment integration)
-- Steps 30–37: Government approval + resubmission branch (information vs. document path)
-- Steps 38–41: COI received, PAN/TAN received, mail to client, master sheet update
 
-### Trademark Registration (25 steps)
+| Step(s) | Description | Assigned | Special |
+|---|---|---|---|
+| 1–2 | Payment gate (full / part / pending) | Admin/Manager | `paymentGated`; `part_paid` allows steps 3–10 |
+| 3 | Work assignment — task assigned to team member | Admin/Manager | — |
+| 4–5 | Collect company name + objects from client | Client action | — |
+| 6 | Confirm/finalize name selection | Team member | — |
+| 7 | Name availability search | Team member | — |
+| 8 | Finalize name for filing | Team member | — |
+| 9 | Send name draft to client | Client action | Email trigger |
+| 10 | Client approval of name | Client | Loop to step 6 on rejection |
+| 11 | File name application | Team member | Government/dept step |
+| 12 | Await government approval | Dept | `status = awaiting_govt` |
+| 13 | Name application result received | Team member | — |
+| 14–19 | Resubmission branch | — | Branch: "New name" → loop to 6; "Documentation" → prepare → approve → resubmit |
+| 20 | Name Approval Letter received | Team member | Email to client with attachment |
+| 21 | Part-payment blinking gate | Admin/Manager | `paymentGated`; blinking until resolved |
+| 22–26 | Document collection, form fill, form check | Team + Client | `allowedWithoutPayment = true` for steps 22–24 |
+| 27 | Full payment confirmed | Admin/Manager | Clears payment gate at step 28 |
+| 28 | Upload incorporation forms | Team member | `paymentGated = true`; admin override only |
+| 29 | Challan payment | Team member | Manual entry only — date + challan ID; no payment integration |
+| 30–37 | Government approval + resubmission branch | Dept + Team | Branch: information path OR document path |
+| 38 | COI received | Team member | Email to client with attachment |
+| 39 | PAN/TAN received | Team member | Email to client with attachment |
+| 40 | Mail to client | Team member | — |
+| 41 | Master sheet update | Team member | Marks task `completed` |
+
+**Parallel steps**: Steps in the "DSC preparation" group run in parallel — all must complete before the next sequential step activates.
+
+---
+
+### Trademark Registration (25 steps) — Phase 2
 
 - Steps 1–2: Payment gate
 - Steps 3–10: Work assignment, name/object collection, search, client approval (loop to step 6 on rejection)
@@ -275,7 +467,7 @@ Sequential steps with conditional branches and parallel execution:
 - Step 23: Challan payment (manual entry only)
 - Steps 24–25: Acknowledgement + challan mail to client, master sheet update
 
-### GST Registration (21 steps)
+### GST Registration (21 steps) — Phase 2
 
 - Steps 1–2: Payment gate
 - Steps 3–5: Work assignment, checklist, document collection (client uploads)
@@ -284,7 +476,7 @@ Sequential steps with conditional branches and parallel execution:
 - Steps 15–20: Resubmission branch — information path OR document path — form resubmission
 - Step 21: GST Certificate received — email to client with attachment
 
-### UDYAM Registration (8 steps, simplified)
+### UDYAM Registration (8 steps, simplified) — Phase 2
 
 - Steps 1–2: Payment gate
 - Steps 3–4: Work assignment, checklist received
@@ -300,28 +492,50 @@ Sequential steps with conditional branches and parallel execution:
 uid, email, fullName, mobile, role (admin|manager|team_member|client),
 status (active|inactive), createdAt, updatedAt, createdBy?,
 // team_member extras:
-fatherName?, dateOfBirth?, address?, designation?, dateOfJoining?,
+contactNumber?, fatherName?, dateOfBirth?, address?,
+designation?, dateOfJoining?,
 // client extras:
 organisationName?, gstNumber?, panNumber?, aadhaarNumber?,
-emailIds[] (array of additional emails), state?, businessName?
+emailIds[] (all emails incl. primary), primaryEmail,
+state?, businessName?, referenceGroup?
 ```
 
-### `workflows/{workflowId}` — workflow template definitions
+### `workflowTemplates/{workflowId}` — admin-editable config layer
 ```
-name, serviceType, steps[{
-  stepNumber, title, description, assignedTo (uid|"client"|null),
-  paymentGated, allowedWithoutPayment, parallelGroup?,
-  deadlineDays, emailTrigger?, documentRequired?,
-  branches[{condition, nextStepNumber}]
-}]
+// Top-level document (read-only, set by developer on first deploy):
+workflowId (e.g. "company_incorporation"), name, serviceType, totalSteps,
+machineConfigVersion  // bumped when code layer changes; triggers sync warning
+
+// Sub-collection: workflowTemplates/{workflowId}/steps/{stepNumber}
+// All fields below are ADMIN-EDITABLE via Workflow Settings screen:
+stepNumber,
+label,               // display name for this step
+description,         // longer description shown to assignee
+deadlineDays,        // SLA from step activation
+defaultAssigneeRole, // "team_member" | "manager" | "client"
+documentRequirementText?,  // instructions shown to client when doc upload required
+emailTemplateRef?,   // references emailTemplates/{templateId}
+sendReminderAfterDays?     // 0 = no reminder
+
+// Read-only (reflects XState machine code layer — never edited via UI):
+paymentGated,        // true if this step is behind a payment guard in the machine
+allowedWithoutPayment, // true if machine allows this step before full payment
+parallelGroup?,      // step group ID if this step runs in parallel with others
+branches?,           // branch conditions defined in machine topology
 ```
 
 ### `tasks/{taskId}` — workflow instances per client
 ```
-clientUid, workflowId, workflowName, status, paymentStatus,
-amountTotal, amountPaid, amountDue, paymentMode?, paymentDate?,
+clientUid, workflowId, workflowName,
+status (pending_manager_approval|pending_admin_approval|active|completed|rejected),
+paymentStatus (not_paid|part_paid|fully_paid),
+amountTotal, amountPaid, amountDue,
 createdBy, createdAt, updatedAt, isUrgent,
-currentStepNumber, steps[{...step state}]
+currentStepNumber,
+machineSnapshot: { value, context }   // XState persisted snapshot
+// approval tracking:
+pendingApprovalFrom?: (uid of approver),
+rejectionReason?: string
 ```
 
 ### `taskSteps/{taskId}/steps/{stepId}`
@@ -345,7 +559,12 @@ uid, type, title, body, deepLink, read, createdAt, taskId?, stepId?
 
 ### `payments/{paymentId}`
 ```
-taskId, clientUid, amount, mode, date, recordedBy, notes?, createdAt
+taskId, clientUid, amount,
+mode (bank_transfer|cash|upi|cheque|credit_card),
+date, recordedBy,
+referenceNumber?,   // UTR, cheque no., UPI transaction ID
+proofStoragePath?,  // uploaded image/receipt
+notes?, createdAt
 ```
 
 ### `auditLog/{entryId}`
@@ -358,15 +577,39 @@ action, performedBy, performedAt, previousValue?, newValue?, note?
 
 ## Non-Functional Requirements
 
-- **Authentication**: Email/password + Google Sign-In via Firebase Auth; email OTP for first login on mobile
+### Delivery Phases
+- **Phase 1**: Responsive web app only (`Portal/` — Vite + React + TypeScript). Target: Chrome/Safari/Edge on desktop, tablet, and mobile browser. No native app build yet.
+- **Phase 2**: Capacitor wrapper for Android/iOS after web app is stable and validated.
+- **Phase 1 workflow scope**: Company Incorporation only. All other services (Trademark, GST, UDYAM) follow in Phase 2 as XState config files.
+
+### Workflow Engine (XState v5)
+- Every workflow service is a `createMachine({...})` configuration file — no bespoke logic per service.
+- Shared building blocks (guards, actions, actors) live in `Portal/src/workflows/shared/`.
+- Individual workflow configs live in `Portal/src/workflows/configs/` (e.g. `companyIncorporation.machine.ts`).
+- Backend exposes `POST /api/tasks/:taskId/transition` — accepts event, hydrates snapshot, sends event, persists new snapshot.
+- Frontend uses `useMachine` (or `useSelector` on a service actor) to render the current step reactively.
+
+### Security & Auth
+- **Authentication**: Email/password + Google Sign-In via Firebase Auth; email OTP for first login on mobile (Phase 2)
 - **Authorisation**: Firebase custom claims (`role`) verified on every protected backend route via `verifyToken` middleware; `requireRole()` enforces per-route permissions
-- **Performance**: Task list must load < 2s on 4G; step transitions must persist to Firestore < 1s
-- **Offline**: Capacitor app must show cached task list when offline; mutations queue and sync on reconnect
 - **Security**: Signed URLs for document access (TTL: 15 min); no PAN/Aadhaar in list endpoints; input sanitisation on all backend routes (OWASP Top 10)
+
+### Performance
+- Task list must load < 2s on broadband; step transitions must persist to Firestore < 1s
+- XState snapshot hydration must add < 50ms overhead per transition
+
+### Storage & Notifications
 - **Storage**: Firebase Storage per-client quota; alerts at 80% and 100%; auto-deletion after 1 year with 30-day advance notice
 - **Email**: Configurable SMTP/SendGrid via Nodemailer; delivery failure alerts to admin; template customisation per step/service
-- **Notifications**: In-app (Firestore real-time listener) + push (FCM for mobile) + email; configurable frequency for payment reminders
-- **Platforms**: Android 10+, iOS 15+, Chrome/Safari/Edge (web)
-- **Accessibility**: WCAG 2.1 AA; minimum 44×44px touch targets on mobile
-- **Deployment**: `MobileApp/` web build → Firebase Hosting; `backend/` → Cloud Run (`asia-south2`, 0–5 instances, 512Mi); CI/CD via `.github/workflows/firebase-preview-qa.yml`
-- **Capacitor CORS**: Backend allows `capacitor://localhost` (iOS) and `http://localhost` (Android) in addition to Firebase and legalterminus.com origins
+- **Notifications**: In-app (Firestore real-time listener) + email; FCM push notifications in Phase 2
+
+### Platforms & Accessibility
+- **Phase 1**: Chrome 100+, Safari 15+, Edge 100+ (web)
+- **Phase 2**: Android 10+, iOS 15+
+- **Accessibility**: WCAG 2.1 AA; responsive layout works at 320px minimum width; minimum 44×44px tap targets throughout
+
+### Deployment
+- `Portal/` web build → Firebase Hosting (same project as public website)
+- `backend/` → Cloud Run (`asia-south2`, service `legal-terminus-qa`, 0–5 instances, 512Mi)
+- CI/CD via `.github/workflows/firebase-preview-qa.yml`
+- **CORS** (Phase 2 prep): Backend already allows `capacitor://localhost` (iOS) and `http://localhost` (Android)

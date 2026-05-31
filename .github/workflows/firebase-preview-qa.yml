@@ -16,6 +16,11 @@ on:
         required: false
         default: true
         type: boolean
+      deploy_portal:
+        description: 'Deploy Portal to Firebase Hosting'
+        required: false
+        default: true
+        type: boolean
       deploy_frontend:
         description: 'Deploy frontend to Firebase Hosting'
         required: false
@@ -85,7 +90,34 @@ jobs:
         if: github.event.inputs.deploy_frontend == 'true' || github.event_name == 'push'
         run: |
           ACCESS_TOKEN=$(gcloud auth print-access-token)
-          firebase deploy --only hosting \
+          firebase deploy --only hosting:website \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
+            --token="$ACCESS_TOKEN"
+
+      # ── Build & Deploy Portal → Firebase Hosting ────────────────────────────
+      - name: Install Portal dependencies
+        if: github.event.inputs.deploy_portal == 'true' || github.event_name == 'push'
+        run: npm ci
+        working-directory: Portal
+
+      - name: Build Portal
+        if: github.event.inputs.deploy_portal == 'true' || github.event_name == 'push'
+        run: npm run build
+        working-directory: Portal
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_QA_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_QA_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_QA_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_QA_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_QA_APP_ID }}
+          VITE_API_BASE_URL: https://${{ secrets.FIREBASE_QA_PROJECT_ID }}.web.app/api
+
+      - name: 🌐 Deploy Portal to Firebase Hosting
+        if: github.event.inputs.deploy_portal == 'true' || github.event_name == 'push'
+        run: |
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          firebase deploy --only hosting:portal \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
             --token="$ACCESS_TOKEN"
 

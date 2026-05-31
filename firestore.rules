@@ -1,0 +1,92 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ───────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function role() {
+      return request.auth.token.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && role() == 'admin';
+    }
+
+    function isAdminOrManager() {
+      return isSignedIn() && role() in ['admin', 'manager'];
+    }
+
+    function isCurrentUser(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // ── users/{uid} ────────────────────────────────────────────────────────
+    match /users/{uid} {
+      // Any authenticated user can read their own profile; admin can read all
+      allow read: if isCurrentUser(uid) || isAdmin();
+      // Only admin can create/update user records (role management is server-side)
+      allow write: if isAdmin();
+    }
+
+    // ── tasks/{taskId} ─────────────────────────────────────────────────────
+    match /tasks/{taskId} {
+      // Client can only read tasks where they are the client
+      allow read: if isAdminOrManager()
+        || (isSignedIn() && role() == 'team_member' && resource.data.assignedTo == request.auth.uid)
+        || (isSignedIn() && role() == 'client' && resource.data.clientUid == request.auth.uid);
+
+      // Only admin and manager can create/update tasks
+      allow create, update: if isAdminOrManager();
+
+      // Only admin can delete tasks
+      allow delete: if isAdmin();
+
+      // ── tasks/{taskId}/steps/{stepId} ────────────────────────────────────
+      match /steps/{stepId} {
+        allow read: if isAdminOrManager()
+          || (isSignedIn() && role() == 'team_member' && get(/databases/$(database)/documents/tasks/$(taskId)).data.assignedTo == request.auth.uid)
+          || (isSignedIn() && role() == 'client' && get(/databases/$(database)/documents/tasks/$(taskId)).data.clientUid == request.auth.uid);
+        allow write: if isAdminOrManager();
+      }
+    }
+
+    // ── workflowTemplates/{workflowId} ─────────────────────────────────────
+    match /workflowTemplates/{workflowId} {
+      // All authenticated portal users can read templates (needed to render step titles)
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+
+      match /steps/{stepNumber} {
+        allow read: if isSignedIn();
+        allow write: if isAdmin();
+      }
+    }
+
+    // ── payments/{paymentId} ──────────────────────────────────────────────
+    match /payments/{paymentId} {
+      allow read: if isAdminOrManager()
+        || (isSignedIn() && role() == 'client' && resource.data.clientUid == request.auth.uid);
+      allow create, update: if isAdminOrManager();
+      allow delete: if isAdmin();
+    }
+
+    // ── notifications/{notifId} ───────────────────────────────────────────
+    match /notifications/{notifId} {
+      // Users can only read their own notifications
+      allow read: if isSignedIn() && resource.data.recipientUid == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.recipientUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt']);
+      // Only backend (admin SDK) creates notifications — no client write
+      allow create, delete: if false;
+    }
+
+    // ── Deny everything else ───────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
