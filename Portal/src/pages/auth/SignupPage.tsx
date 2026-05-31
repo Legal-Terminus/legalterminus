@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { createUserWithEmailAndPassword, getIdToken } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { Link } from 'react-router-dom';
 import { apiFetch } from '../../api/client';
@@ -31,10 +31,7 @@ export default function SignupPage() {
         body: JSON.stringify({ fullName, mobile, businessName }),
       });
 
-      // 3. Refresh token to get updated custom claims (role)
-      await getIdToken(userCredential.user, true);
-
-      // Auth listener will now fire with updated role claim and trigger redirect
+      // Auth listener will now read role from Firestore and trigger redirect
       setSuccess(true);
       setEmail('');
       setPassword('');

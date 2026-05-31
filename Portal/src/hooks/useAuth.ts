@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { onAuthStateChanged, getIdTokenResult } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
 import { useAuthStore } from '../store/authStore';
 import type { Role } from '../store/authStore';
 
@@ -11,20 +12,29 @@ export function useAuthListener() {
     setLoading(true);
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const tokenResult = await getIdTokenResult(firebaseUser);
-        let role = (tokenResult.claims['role'] as Role) ?? null;
-        const idToken = await firebaseUser.getIdToken();
-        
-        // Default to 'client' if no role is set (Google users or guests)
-        if (!role) {
-          console.warn('No role found for user, defaulting to client');
-          role = 'client';
+        try {
+          // Read role from Firestore /users/{uid} document
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          
+          let role: Role = 'client'; // Default role
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            role = (userData?.role as Role) ?? 'client';
+          }
+          
+          const idToken = await firebaseUser.getIdToken();
+          setUser(firebaseUser, role, idToken);
+        } catch (error) {
+          console.error('Error reading user role from Firestore:', error);
+          // Fallback to client role if Firestore read fails
+          const idToken = await firebaseUser.getIdToken();
+          setUser(firebaseUser, 'client', idToken);
         }
-        
-        setUser(firebaseUser, role, idToken);
       } else {
         setUser(null, null, null);
       }
+      setLoading(false);
     });
     return unsubscribe;
   }, [setUser, setLoading]);

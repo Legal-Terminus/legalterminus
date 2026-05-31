@@ -106,11 +106,18 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 - `SignupPage.tsx` — client self-signup form (email, password, full name, mobile, optional business name); calls `POST /api/auth/register` after Firebase Auth account creation; shows "Check your email" confirmation.
 - `ForgotPasswordPage.tsx` — email form; calls Firebase `sendPasswordResetEmail`; shows confirmation and link to return to login.
 - `Google OAuth` — configured in Firebase Console; redirect back to `http://localhost:5173/login` after sign-in.
-- `Portal/src/store/authStore.ts` — `onAuthStateChanged` populates `{ user, role, loading }`; role extracted from `token.claims.role`.
-- `Portal/src/hooks/useAuth.ts` — exports `{ user, role, loading, isAuthenticated }`.
+- `Portal/src/store/authStore.ts` — `onAuthStateChanged` populates `{ user, role, loading }`.
+- `Portal/src/hooks/useAuth.ts` — exports `{ user, role, loading, isAuthenticated }` by reading role from Firestore `/users/{uid}` document.
 - `Portal/src/api/client.ts` — `apiFetch<T>()` injects `Authorization: Bearer <token>` from `currentUser.getIdToken()` on every call (auto-refreshes if expired).
 - `setPersistence(auth, browserLocalPersistence)` called on app mount (survives page refresh).
 - Logout clears `authStore` and redirects to `/login`.
+
+**Implementation Notes** (Updated 2026-05-31):
+- Role is now stored in **Firestore** `/users/{uid}` document (not Firebase custom claims) for easier development testing
+- Backend `POST /api/auth/register` creates user document with `role: "client"` by default
+- `useAuthListener()` reads role from Firestore via `getDoc(doc(db, 'users', uid))` instead of `getIdTokenResult().claims`
+- This allows changing role directly in Firestore console for testing without needing Firebase Console custom claims UI
+- Backend endpoint `PATCH /api/auth/set-role` (admin-only) can update roles in Firestore and sync to custom claims if needed later
 
 **Backend endpoints needed**:
 - `POST /api/auth/register` — creates `users/{uid}` with role = "client"; accepts { fullName, email?, mobile?, businessName?, state? }

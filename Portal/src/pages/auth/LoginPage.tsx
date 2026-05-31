@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, getIdToken } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
@@ -19,12 +19,20 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // Refresh token to ensure custom claims (role) are current
-      await getIdToken(userCredential.user, true);
-      // Navigation handled by auth listener after role is resolved
+      await signInWithEmailAndPassword(auth, email, password);
+      // Auth listener will now read role from Firestore and trigger redirect
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Invalid email or password';
+      console.error('Email sign-in error:', err);
+      let msg = 'Sign-in failed. Please try again.';
+      if (err instanceof Error) {
+        if (err.message.includes('invalid-credential') || err.message.includes('user-not-found') || err.message.includes('wrong-password')) {
+          msg = 'Invalid email or password. Please try again.';
+        } else if (err.message.includes('too-many-requests')) {
+          msg = 'Too many failed login attempts. Please try again later.';
+        } else {
+          msg = err.message;
+        }
+      }
       setError(msg);
     } finally {
       setLoading(false);
@@ -35,11 +43,8 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      console.log('Starting Google Sign-In...');
       const provider = new GoogleAuthProvider();
-      console.log('GoogleAuthProvider created');
       const userCredential = await signInWithPopup(auth, provider);
-      console.log('Google popup succeeded, user:', userCredential.user.email);
       
       const idToken = await userCredential.user.getIdToken();
       
@@ -53,19 +58,25 @@ export default function LoginPage() {
             fullName: userCredential.user.displayName || userCredential.user.email 
           }),
         });
-        console.log('User registered in Firestore');
       } catch (err) {
-        console.log('User already registered or registration skipped:', err);
-        // Continue even if registration fails (user might already exist)
+        // User already registered or registration skipped - this is fine
       }
       
-      // Refresh token to get updated custom claims (role)
-      await getIdToken(userCredential.user, true);
-      console.log('Token refreshed, should redirect now');
-      // Navigation handled by auth listener after role is resolved
+      // Auth listener will read role from Firestore and trigger redirect
     } catch (err) {
       console.error('Google sign-in error:', err);
-      const msg = err instanceof Error ? err.message : 'Google sign-in failed';
+      let msg = 'Google sign-in failed. Please try again.';
+      if (err instanceof Error) {
+        if (err.message.includes('popup-closed') || err.message.includes('cancelled')) {
+          msg = 'Sign-in was cancelled. Please try again.';
+        } else if (err.message.includes('account-exists-with-different-credential')) {
+          msg = 'This email is already registered with a different sign-in method.';
+        } else if (err.message.includes('auth/popup-blocked')) {
+          msg = 'Sign-in popup was blocked. Please allow popups and try again.';
+        } else {
+          msg = err.message;
+        }
+      }
       setError(msg);
     } finally {
       setLoading(false);
