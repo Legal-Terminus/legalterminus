@@ -15,7 +15,9 @@ Legal-Terminus is a legal-services firm. This app replaces ad-hoc WhatsApp/email
 - **Internal team** (admin, manager, team members) — assign, execute, and track service tasks
 - **Clients** — track their service tasks, upload documents, approve steps, and pay
 
-The app is a single Capacitor build (web + Android + iOS) that shows different screens based on the authenticated user's role. It shares the existing Firebase project, Firestore database, and backend APIs with the website.
+The app is a single Capacitor build (web + Android + iOS) that shows different screens based on the authenticated user's role. It shares the existing Firebase project, Firestore database, and backend APIs with the public website (`Frontend/`).
+
+**Note**: The old separate web panels (AdminPannel, ClientPannel, EmployeePannel) have been removed. All functionality for internal team and clients is consolidated into the single `MobileApp/` (Capacitor) project, which also runs as a web app.
 
 **Four roles**: `admin` | `manager` | `team_member` | `client`
 
@@ -357,12 +359,14 @@ action, performedBy, performedAt, previousValue?, newValue?, note?
 ## Non-Functional Requirements
 
 - **Authentication**: Email/password + Google Sign-In via Firebase Auth; email OTP for first login on mobile
-- **Authorisation**: Firebase custom claims (role) verified on every backend request via `verifyToken` middleware
+- **Authorisation**: Firebase custom claims (`role`) verified on every protected backend route via `verifyToken` middleware; `requireRole()` enforces per-route permissions
 - **Performance**: Task list must load < 2s on 4G; step transitions must persist to Firestore < 1s
 - **Offline**: Capacitor app must show cached task list when offline; mutations queue and sync on reconnect
-- **Security**: Signed URLs for document access (TTL: 15 min); no PAN/Aadhaar in list endpoints; input sanitisation on all backend routes
+- **Security**: Signed URLs for document access (TTL: 15 min); no PAN/Aadhaar in list endpoints; input sanitisation on all backend routes (OWASP Top 10)
 - **Storage**: Firebase Storage per-client quota; alerts at 80% and 100%; auto-deletion after 1 year with 30-day advance notice
-- **Email**: Configurable SMTP/SendGrid; delivery failure alerts to admin; template customisation per step/service
-- **Notifications**: In-app (Firestore listener) + push (FCM for mobile) + email; configurable frequency for payment reminders
+- **Email**: Configurable SMTP/SendGrid via Nodemailer; delivery failure alerts to admin; template customisation per step/service
+- **Notifications**: In-app (Firestore real-time listener) + push (FCM for mobile) + email; configurable frequency for payment reminders
 - **Platforms**: Android 10+, iOS 15+, Chrome/Safari/Edge (web)
 - **Accessibility**: WCAG 2.1 AA; minimum 44×44px touch targets on mobile
+- **Deployment**: `MobileApp/` web build → Firebase Hosting; `backend/` → Cloud Run (`asia-south2`, 0–5 instances, 512Mi); CI/CD via `.github/workflows/firebase-preview-qa.yml`
+- **Capacitor CORS**: Backend allows `capacitor://localhost` (iOS) and `http://localhost` (Android) in addition to Firebase and legalterminus.com origins

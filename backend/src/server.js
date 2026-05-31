@@ -28,6 +28,8 @@ const __dirname = path.dirname(__filename);
 /* ================= CORS ================= */
 const allowedOrigins = [
   /^http:\/\/localhost(:\d+)?$/,   // any localhost port in development
+  "capacitor://localhost",          // Capacitor iOS app
+  "http://localhost",               // Capacitor Android app
   /\.firebaseapp\.com$/,
   /\.web\.app$/,
   /legalterminus\.com$/,
