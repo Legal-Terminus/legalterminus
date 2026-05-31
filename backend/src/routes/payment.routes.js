@@ -1,131 +1,106 @@
 import express from 'express';
-import { encrypt, decrypt } from '../utils/ccavenue.js';
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
+import { getDb } from '../config/firebase.js';
 
 const router = express.Router();
 
-// CCAvenue payment option mapping from UI value → CCAvenue code
-const PAYMENT_OPTION_MAP = {
-  upi:        'UPI',
-  card:       'CC',
-  netbanking: 'NB',
-  wallet:     'PAYW',
-};
+function getRazorpayInstance() {
+  return new Razorpay({
+    key_id:     process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+}
 
 /**
- * POST /api/payment/initiate
+ * POST /api/payment/create-order
  *
- * Accepts order details from the frontend, builds the CCAvenue parameter
- * string, encrypts it, and returns { encRequest, accessCode, formUrl }.
- *
- * The frontend then creates a hidden <form> and submits it to formUrl
- * with encRequest + access_code — this initiates the CCAvenue checkout.
- *
- * NOTE: In local development, the redirect_url / cancel_url must be
- * publicly accessible for CCAvenue to POST back to them.
- * Use a tunnelling tool (e.g. ngrok) during testing, or deploy first.
+ * Creates a Razorpay order and returns { orderId, amount, currency, keyId }.
+ * The frontend uses keyId + orderId to open the Razorpay checkout popup.
  */
-router.post('/initiate', (req, res) => {
-  const { orderId, amount, form, planName, paymentMethod } = req.body;
+router.post('/create-order', async (req, res) => {
+  const { amount, planName, userId } = req.body;
 
-  if (!orderId || !amount || !form) {
-    return res.status(400).json({ error: 'Missing required fields: orderId, amount, form' });
+  if (!amount || !planName) {
+    return res.status(400).json({ error: 'Missing required fields: amount, planName' });
   }
 
-  const {
-    CCAVENUE_MERCHANT_ID,
-    CCAVENUE_ACCESS_CODE,
-    CCAVENUE_WORKING_KEY,
-    CCAVENUE_FORM_URL,
-    BASE_URL,
-    FRONTEND_URL,
-  } = process.env;
-
-  if (!CCAVENUE_MERCHANT_ID || !CCAVENUE_ACCESS_CODE || !CCAVENUE_WORKING_KEY) {
-    return res.status(500).json({ error: 'CCAvenue credentials are not configured on the server.' });
+  const { RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } = process.env;
+  if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+    return res.status(500).json({ error: 'Razorpay credentials are not configured on the server.' });
   }
 
-  const redirectUrl = `${BASE_URL}/api/payment/response`;
-  const cancelUrl   = `${BASE_URL}/api/payment/cancel`;
-
-  // Build URL-encoded parameter string exactly as CCAvenue expects
-  const params = new URLSearchParams({
-    merchant_id:     CCAVENUE_MERCHANT_ID,
-    order_id:        orderId,
-    currency:        'INR',
-    amount:          Number(amount).toFixed(2),
-    redirect_url:    redirectUrl,
-    cancel_url:      cancelUrl,
-    language:        'EN',
-    billing_name:    form.fullName    || '',
-    billing_email:   form.email       || '',
-    billing_tel:     form.mobile      || '',
-    billing_address: 'NA',
-    billing_city:    'NA',
-    billing_state:   form.state       || '',
-    billing_country: 'India',
-    billing_zip:     '000000',
-    payment_option:  PAYMENT_OPTION_MAP[paymentMethod] || 'CC',
-    merchant_param1: planName         || '',
-  });
-
-  const encRequest = encrypt(params.toString(), CCAVENUE_WORKING_KEY);
-
-  return res.json({
-    encRequest,
-    accessCode: CCAVENUE_ACCESS_CODE,
-    formUrl:    CCAVENUE_FORM_URL,
-  });
-});
-
-/**
- * POST /api/payment/response
- *
- * CCAvenue POSTs the encrypted response here after the user completes
- * (or fails) payment on the CCAvenue-hosted page.
- * We decrypt, inspect order_status, and redirect to the SPA result page.
- */
-router.post('/response', express.urlencoded({ extended: false }), (req, res) => {
-  const { encResp } = req.body;
-  const { CCAVENUE_WORKING_KEY, FRONTEND_URL } = process.env;
-
-  if (!encResp) {
-    return res.redirect(`${FRONTEND_URL}/payment/result?status=failed&reason=no_response`);
-  }
-
-  let decrypted;
   try {
-    decrypted = decrypt(encResp, CCAVENUE_WORKING_KEY);
-  } catch {
-    return res.redirect(`${FRONTEND_URL}/payment/result?status=failed&reason=decrypt_error`);
+    const razorpay = getRazorpayInstance();
+    const order = await razorpay.orders.create({
+      amount:   Math.round(Number(amount) * 100), // convert to paise
+      currency: 'INR',
+      receipt:  `LT-${Date.now()}`,
+      notes:    { planName, userId: userId || '' },
+    });
+
+    return res.json({
+      orderId:  order.id,
+      amount:   order.amount,
+      currency: order.currency,
+      keyId:    RAZORPAY_KEY_ID,
+    });
+  } catch (err) {
+    console.error('Razorpay create-order error:', err);
+    return res.status(500).json({ error: 'Failed to create Razorpay order' });
   }
-
-  const params       = new URLSearchParams(decrypted);
-  const orderStatus  = params.get('order_status');
-  const orderId      = params.get('order_id')     || '';
-  const amount       = params.get('amount')        || '';
-  const trackingId   = params.get('tracking_id')   || '';
-  const failureMsg   = params.get('failure_message') || 'Payment failed';
-
-  if (orderStatus === 'Success') {
-    const query = new URLSearchParams({ status: 'success', order_id: orderId, amount, tracking_id: trackingId });
-    return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
-  }
-
-  // Aborted / Invalid / Failure
-  const query = new URLSearchParams({ status: 'failed', order_id: orderId, reason: failureMsg });
-  return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
 });
 
 /**
- * POST /api/payment/cancel
+ * POST /api/payment/verify
  *
- * CCAvenue POSTs here when the user clicks "Cancel" on the payment page.
+ * Verifies the Razorpay payment signature (HMAC-SHA256) received from the
+ * frontend after the user completes payment in the Razorpay popup.
+ * On success, saves the transaction to Firestore.
  */
-router.post('/cancel', express.urlencoded({ extended: false }), (req, res) => {
-  const { FRONTEND_URL } = process.env;
-  const orderId = req.body.order_id || '';
-  const query   = new URLSearchParams({ status: 'cancelled', order_id: orderId });
-  return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
+router.post('/verify', async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planName, userId, amount } = req.body;
+
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    return res.status(400).json({ error: 'Missing payment verification fields' });
+  }
+
+  const { RAZORPAY_KEY_SECRET } = process.env;
+  const expectedSignature = crypto
+    .createHmac('sha256', RAZORPAY_KEY_SECRET)
+    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+    .digest('hex');
+
+  if (expectedSignature !== razorpay_signature) {
+    console.error('Razorpay signature mismatch');
+    return res.status(400).json({ error: 'Payment signature verification failed' });
+  }
+
+  // Save to Firestore
+  if (userId) {
+    try {
+      const db = getDb();
+      await db.collection('users').doc(userId).collection('payments').doc(razorpay_order_id).set({
+        orderId:   razorpay_order_id,
+        paymentId: razorpay_payment_id,
+        amount:    parseFloat(amount) || 0,
+        planName:  planName || '',
+        status:    'success',
+        paymentDate: new Date(),
+        updatedAt:   new Date(),
+      });
+
+      await db.collection('users').doc(userId).update({
+        currentPlan:   planName,
+        paidPlanStart: new Date(),
+        updatedAt:     new Date(),
+      }).catch((err) => console.error('Error updating user subscription:', err));
+    } catch (err) {
+      console.error('Error saving payment to Firestore:', err);
+    }
+  }
+
+  return res.json({ success: true });
 });
 
 export default router;

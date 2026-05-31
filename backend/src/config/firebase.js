@@ -1,7 +1,13 @@
 import admin from "firebase-admin";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config({ path: ".env.qa" });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, "../../.env.qa") });
+dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 /**
  * Initialize Firebase Admin SDK

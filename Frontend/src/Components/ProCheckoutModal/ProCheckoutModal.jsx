@@ -86,15 +86,25 @@ function pickFailureReason(paymentMethod) {
 }
 
 // Base URL for backend API calls
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
-const STEPS = ["order-summary", "checkout", "payment", "success", "failed", "thankyou"];
+const STEPS = ["order-summary", "checkout", "success", "failed"];
+
+function loadRazorpayScript() {
+  return new Promise((resolve, reject) => {
+    if (window.Razorpay) { resolve(); return; }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = resolve;
+    script.onerror = () => reject(new Error('Failed to load Razorpay script'));
+    document.head.appendChild(script);
+  });
+}
 
 const ProCheckoutModal = ({ plan, onClose }) => {
   const savedUser = getUserProfile();
 
   const [step, setStep] = useState("order-summary");
-  const [paymentMethod, setPaymentMethod] = useState("upi");
   const [failureReason, setFailureReason] = useState(null);
   const [form, setForm] = useState({
     fullName:     savedUser?.fullName     || "",
@@ -150,7 +160,7 @@ const ProCheckoutModal = ({ plan, onClose }) => {
   const total = plan.price;
 
   const stepIndex = STEPS.indexOf(step);
-  const showProgress = stepIndex < 3;
+  const showProgress = stepIndex < 2; // only show for order-summary and checkout
 
   const updateField = (key, value) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -169,21 +179,17 @@ const ProCheckoutModal = ({ plan, onClose }) => {
 
   // Back button behaviour depends on current step
   const handleBack = () => {
-    if (step === "payment") {
-      // Clicking back FROM payment = user cancelled
-      setFailureReason("cancelled");
-      setStep("failed");
-    } else if (step === "checkout") {
+    if (step === "checkout") {
       setStep("order-summary");
     }
   };
 
-  const showBackButton = step === "checkout" || step === "payment";
+  const showBackButton = step === "checkout";
 
   const handlePay = async () => {
     setIsProcessing(true);
 
-    // Persist profile data for future auto-fill regardless of payment outcome
+    // Persist profile data for future auto-fill
     const profileData = {
       fullName:     form.fullName,
       email:        form.email,
@@ -210,46 +216,82 @@ const ProCheckoutModal = ({ plan, onClose }) => {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/payment/initiate`, {
+      // Step 1: Create Razorpay order on backend
+      const orderRes = await fetch(`${API_BASE}/api/payment/create-order`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
-          orderId,
-          amount:        plan.price,
-          form,
-          planName:      plan.name,
-          paymentMethod,
+          amount:   plan.price,
+          planName: plan.name,
+          userId:   currentUser?.uid || '',
         }),
       });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Failed to initiate payment');
+      if (!orderRes.ok) {
+        const errData = await orderRes.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create order');
       }
 
-      const { encRequest, accessCode, formUrl } = await res.json();
+      const { orderId: rzpOrderId, amount: rzpAmount, currency, keyId } = await orderRes.json();
 
-      // Build and auto-submit a hidden form to CCAvenue's hosted payment page.
-      // This redirects the user to CCAvenue; after payment they are sent back
-      // to /payment/result via the backend redirect_url / cancel_url handlers.
-      const hiddenForm = document.createElement('form');
-      hiddenForm.method = 'POST';
-      hiddenForm.action = formUrl;
-      hiddenForm.style.display = 'none';
+      // Step 2: Load Razorpay checkout script
+      await loadRazorpayScript();
 
-      [['encRequest', encRequest], ['access_code', accessCode]].forEach(([name, value]) => {
-        const input = document.createElement('input');
-        input.type  = 'hidden';
-        input.name  = name;
-        input.value = value;
-        hiddenForm.appendChild(input);
+      // Step 3: Open Razorpay checkout popup
+      const options = {
+        key:         keyId,
+        amount:      rzpAmount,
+        currency,
+        name:        'Legal Terminus',
+        description: `${plan.name} Plan`,
+        order_id:    rzpOrderId,
+        prefill: {
+          name:    form.fullName,
+          email:   form.email,
+          contact: form.mobile,
+        },
+        theme: { color: '#1a237e' },
+        handler: async (response) => {
+          // Step 4: Verify signature on backend
+          try {
+            const verifyRes = await fetch(`${API_BASE}/api/payment/verify`, {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify({
+                razorpay_order_id:   response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature:  response.razorpay_signature,
+                planName: plan.name,
+                userId:   currentUser?.uid || '',
+                amount:   plan.price,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            if (verifyData.success) {
+              setStep('success');
+            } else {
+              setFailureReason('network_error');
+              setStep('failed');
+            }
+          } catch {
+            setFailureReason('network_error');
+            setStep('failed');
+          }
+        },
+        modal: {
+          ondismiss: () => { setIsProcessing(false); },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', () => {
+        setFailureReason('bank_declined');
+        setStep('failed');
       });
-
-      document.body.appendChild(hiddenForm);
-      hiddenForm.submit();
-      // Page navigates away — no further state updates needed
+      rzp.open();
+      setIsProcessing(false);
     } catch (err) {
-      console.error('Payment initiation error:', err);
+      console.error('Payment error:', err);
       setIsProcessing(false);
       setFailureReason('network_error');
       setStep('failed');
@@ -259,13 +301,12 @@ const ProCheckoutModal = ({ plan, onClose }) => {
   const handleTryAgain = () => {
     setFailureReason(null);
     setIsProcessing(false);
-    setStep("payment");
+    setStep("checkout");
   };
 
   const progressSteps = [
     { label: "Order", key: "order-summary" },
     { label: "Details", key: "checkout" },
-    { label: "Payment", key: "payment" },
   ];
 
   const failure = failureReason ? FAILURE_REASONS[failureReason] : null;
@@ -448,9 +489,10 @@ const ProCheckoutModal = ({ plan, onClose }) => {
 
             <button
               className="pco-btn-primary"
-              onClick={() => { if (validate()) setStep("payment"); }}
+              disabled={isProcessing}
+              onClick={() => { if (validate()) handlePay(); }}
             >
-              🔒 Pay Securely
+              {isProcessing ? 'Processing…' : '🔒 Proceed to Payment'}
             </button>
 
             <div className="pco-secured-row">
@@ -465,153 +507,7 @@ const ProCheckoutModal = ({ plan, onClose }) => {
           </div>
         )}
 
-        {/* ── STEP 3: PAYMENT ── */}
-        {step === "payment" && (
-          <div className="pco-step">
-            <h2 className="pco-step-heading">Select Payment Method</h2>
-
-            <div className="pco-payment-methods">
-              {[
-                { id: "upi", label: "UPI", icon: "📲" },
-                { id: "card", label: "Card", icon: "💳" },
-                { id: "netbanking", label: "Net Banking", icon: "🏦" },
-                { id: "wallet", label: "Wallet", icon: "👛" },
-              ].map((pm) => (
-                <div
-                  key={pm.id}
-                  className={`pco-pm-row${paymentMethod === pm.id ? " selected" : ""}`}
-                  onClick={() => setPaymentMethod(pm.id)}
-                >
-                  <span className="pco-pm-icon">{pm.icon}</span>
-                  <span className="pco-pm-label">{pm.label}</span>
-                  <span className="pco-pm-arrow">›</span>
-                </div>
-              ))}
-            </div>
-
-            {paymentMethod === "upi" && (
-              <div className="pco-upi-panel">
-                <p className="pco-upi-scan-text">Scan &amp; Pay using UPI</p>
-                <div className="pco-qr-wrapper">
-                  <div className="pco-qr-box">
-                    <svg viewBox="0 0 100 100" width="130" height="130" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="100" height="100" fill="#fff"/>
-                      <rect x="5" y="5" width="28" height="28" rx="2" fill="none" stroke="#111" strokeWidth="3"/>
-                      <rect x="11" y="11" width="16" height="16" rx="1" fill="#111"/>
-                      <rect x="67" y="5" width="28" height="28" rx="2" fill="none" stroke="#111" strokeWidth="3"/>
-                      <rect x="73" y="11" width="16" height="16" rx="1" fill="#111"/>
-                      <rect x="5" y="67" width="28" height="28" rx="2" fill="none" stroke="#111" strokeWidth="3"/>
-                      <rect x="11" y="73" width="16" height="16" rx="1" fill="#111"/>
-                      <rect x="40" y="5" width="4" height="4" fill="#111"/><rect x="46" y="5" width="4" height="4" fill="#111"/>
-                      <rect x="56" y="5" width="4" height="4" fill="#111"/><rect x="62" y="5" width="4" height="4" fill="#111"/>
-                      <rect x="40" y="11" width="4" height="4" fill="#111"/><rect x="52" y="11" width="4" height="4" fill="#111"/>
-                      <rect x="40" y="17" width="4" height="4" fill="#111"/><rect x="50" y="17" width="4" height="4" fill="#111"/>
-                      <rect x="58" y="17" width="4" height="4" fill="#111"/><rect x="62" y="23" width="4" height="4" fill="#111"/>
-                      <rect x="46" y="23" width="4" height="4" fill="#111"/><rect x="54" y="23" width="4" height="4" fill="#111"/>
-                      <rect x="40" y="29" width="4" height="4" fill="#111"/><rect x="48" y="29" width="4" height="4" fill="#111"/>
-                      <rect x="5" y="40" width="4" height="4" fill="#111"/><rect x="13" y="40" width="4" height="4" fill="#111"/>
-                      <rect x="21" y="40" width="4" height="4" fill="#111"/><rect x="29" y="40" width="4" height="4" fill="#111"/>
-                      <rect x="5" y="48" width="4" height="4" fill="#111"/><rect x="17" y="48" width="4" height="4" fill="#111"/>
-                      <rect x="25" y="48" width="4" height="4" fill="#111"/><rect x="5" y="56" width="4" height="4" fill="#111"/>
-                      <rect x="13" y="56" width="4" height="4" fill="#111"/><rect x="21" y="56" width="4" height="4" fill="#111"/>
-                      <rect x="29" y="56" width="4" height="4" fill="#111"/><rect x="9" y="62" width="4" height="4" fill="#111"/>
-                      <rect x="25" y="62" width="4" height="4" fill="#111"/><rect x="40" y="40" width="4" height="4" fill="#111"/>
-                      <rect x="48" y="40" width="4" height="4" fill="#111"/><rect x="56" y="40" width="4" height="4" fill="#111"/>
-                      <rect x="44" y="46" width="4" height="4" fill="#111"/><rect x="60" y="46" width="4" height="4" fill="#111"/>
-                      <rect x="40" y="52" width="4" height="4" fill="#111"/><rect x="52" y="52" width="4" height="4" fill="#111"/>
-                      <rect x="64" y="52" width="4" height="4" fill="#111"/><rect x="46" y="58" width="4" height="4" fill="#111"/>
-                      <rect x="54" y="58" width="4" height="4" fill="#111"/><rect x="40" y="64" width="4" height="4" fill="#111"/>
-                      <rect x="62" y="64" width="4" height="4" fill="#111"/><rect x="67" y="40" width="4" height="4" fill="#111"/>
-                      <rect x="79" y="40" width="4" height="4" fill="#111"/><rect x="87" y="40" width="4" height="4" fill="#111"/>
-                      <rect x="73" y="46" width="4" height="4" fill="#111"/><rect x="83" y="46" width="4" height="4" fill="#111"/>
-                      <rect x="91" y="46" width="4" height="4" fill="#111"/><rect x="67" y="52" width="4" height="4" fill="#111"/>
-                      <rect x="75" y="52" width="4" height="4" fill="#111"/><rect x="69" y="58" width="4" height="4" fill="#111"/>
-                      <rect x="85" y="58" width="4" height="4" fill="#111"/><rect x="75" y="64" width="4" height="4" fill="#111"/>
-                      <rect x="91" y="64" width="4" height="4" fill="#111"/><rect x="40" y="67" width="4" height="4" fill="#111"/>
-                      <rect x="52" y="67" width="4" height="4" fill="#111"/><rect x="60" y="67" width="4" height="4" fill="#111"/>
-                      <rect x="44" y="73" width="4" height="4" fill="#111"/><rect x="56" y="73" width="4" height="4" fill="#111"/>
-                      <rect x="64" y="73" width="4" height="4" fill="#111"/><rect x="40" y="79" width="4" height="4" fill="#111"/>
-                      <rect x="48" y="79" width="4" height="4" fill="#111"/><rect x="62" y="79" width="4" height="4" fill="#111"/>
-                      <rect x="54" y="85" width="4" height="4" fill="#111"/><rect x="40" y="91" width="4" height="4" fill="#111"/>
-                      <rect x="48" y="91" width="4" height="4" fill="#111"/><rect x="60" y="91" width="4" height="4" fill="#111"/>
-                      <rect x="67" y="73" width="4" height="4" fill="#111"/><rect x="79" y="73" width="4" height="4" fill="#111"/>
-                      <rect x="73" y="79" width="4" height="4" fill="#111"/><rect x="87" y="79" width="4" height="4" fill="#111"/>
-                      <rect x="67" y="85" width="4" height="4" fill="#111"/><rect x="79" y="85" width="4" height="4" fill="#111"/>
-                      <rect x="91" y="85" width="4" height="4" fill="#111"/><rect x="73" y="91" width="4" height="4" fill="#111"/>
-                      <rect x="85" y="91" width="4" height="4" fill="#111"/>
-                    </svg>
-                  </div>
-                </div>
-                <p className="pco-upi-or">Or pay using UPI ID</p>
-                <div className="pco-upi-id-box">legalterminus@upi</div>
-              </div>
-            )}
-
-            {paymentMethod === "card" && (
-              <div className="pco-card-panel">
-                <div className="pco-field">
-                  <label className="pco-field-label">Card Number</label>
-                  <input className="pco-input" type="text" placeholder="0000 0000 0000 0000" maxLength={19} />
-                </div>
-                <div className="pco-card-row">
-                  <div className="pco-field">
-                    <label className="pco-field-label">Expiry</label>
-                    <input className="pco-input" type="text" placeholder="MM / YY" maxLength={7} />
-                  </div>
-                  <div className="pco-field">
-                    <label className="pco-field-label">CVV</label>
-                    <input className="pco-input" type="password" placeholder="•••" maxLength={3} />
-                  </div>
-                </div>
-                <div className="pco-field">
-                  <label className="pco-field-label">Name on Card</label>
-                  <input className="pco-input" type="text" placeholder="Enter cardholder name" />
-                </div>
-              </div>
-            )}
-
-            {paymentMethod === "netbanking" && (
-              <div className="pco-generic-panel">
-                <p className="pco-generic-note">
-                  You will be redirected to your bank's secure portal to complete the payment.
-                </p>
-              </div>
-            )}
-
-            {paymentMethod === "wallet" && (
-              <div className="pco-generic-panel">
-                <p className="pco-generic-note">
-                  Select your preferred wallet — Paytm, PhonePe, or Amazon Pay — to complete payment.
-                </p>
-              </div>
-            )}
-
-            <div className="pco-total-payable-row">
-              <span>Total Payable</span>
-              <span className="pco-total-amount">₹{total.toLocaleString("en-IN")}</span>
-            </div>
-
-            <button className="pco-btn-primary" onClick={handlePay} disabled={isProcessing}>
-              {isProcessing ? (
-                <span className="pco-processing-text">
-                  <span className="pco-spinner" /> Processing...
-                </span>
-              ) : (
-                `🔒 Pay ₹${total.toLocaleString("en-IN")}`
-              )}
-            </button>
-
-            <div className="pco-secure-note">
-              <span className="pco-lock-icon">🔒</span>
-              <div>
-                <div className="pco-secure-title">100% Secure Payments</div>
-                <div className="pco-secure-sub">Your payment details are safe and encrypted.</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── STEP 4: PAYMENT SUCCESS ── */}
+        {/* ── STEP 3: PAYMENT SUCCESS ── */}
         {step === "success" && (
           <div className="pco-step pco-success-step">
             <div className="pco-success-circle">
@@ -624,10 +520,6 @@ const ProCheckoutModal = ({ plan, onClose }) => {
               {[
                 { label: "Order ID", value: orderId },
                 { label: "Amount Paid", value: `₹${total.toLocaleString("en-IN")}` },
-                {
-                  label: "Payment Method",
-                  value: paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1),
-                },
                 { label: "Date", value: paymentDate },
               ].map(({ label, value }) => (
                 <div key={label} className="pco-detail-row">
