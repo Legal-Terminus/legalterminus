@@ -1,5 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import { getAuth } from "firebase/auth";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
 import "./ProCheckoutModal.css";
@@ -88,33 +94,34 @@ function pickFailureReason(paymentMethod) {
 // Base URL for backend API calls
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
-const STEPS = ["order-summary", "checkout", "success", "failed"];
+const STEPS = ["order-summary", "login", "checkout", "redirecting", "failed"];
 
 function loadRazorpayScript() {
-  return new Promise((resolve, reject) => {
-    if (window.Razorpay) { resolve(); return; }
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.onload = resolve;
-    script.onerror = () => reject(new Error('Failed to load Razorpay script'));
-    document.head.appendChild(script);
-  });
+  // No longer used — kept as stub in case of future rollback
+  return Promise.resolve();
 }
 
 const ProCheckoutModal = ({ plan, onClose }) => {
-  const savedUser = getUserProfile();
-
   const [step, setStep] = useState("order-summary");
   const [failureReason, setFailureReason] = useState(null);
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  // Inline auth state
+  const [authMode, setAuthMode] = useState("login"); // "login" | "signup"
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authName, setAuthName] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
   const [form, setForm] = useState({
-    fullName:     savedUser?.fullName     || "",
-    mobile:       savedUser?.mobile       || "",
-    email:        savedUser?.email        || "",
-    businessName: savedUser?.businessName || "",
-    state:        savedUser?.state        || "",
+    fullName:     "",
+    mobile:       "",
+    email:        "",
+    businessName: "",
+    state:        "",
   });
   const [errors, setErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
+  const saveTimerRef = useRef(null);
   const modalRef = useRef(null);
 
   const orderId = useRef(
@@ -130,28 +137,48 @@ const ProCheckoutModal = ({ plan, onClose }) => {
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
   }, []);
 
-  // Firestore fallback: if localStorage has no profile, fetch from Firestore
+  // Track auth state on mount
   useEffect(() => {
-    if (savedUser) return; // already have data from localStorage
     const auth = getAuth();
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-    const db = getFirestore();
-    getDoc(doc(db, "users", currentUser.uid)).then((snap) => {
-      if (!snap.exists()) return;
-      const d = snap.data();
-      setForm((f) => ({
-        fullName:     f.fullName     || d.fullName     || d.name  || "",
-        email:        f.email        || d.email        || currentUser.email || "",
-        mobile:       f.mobile       || d.mobile       || d.phone || "",
-        businessName: f.businessName || d.businessName || "",
-        state:        f.state        || d.state        || "",
-      }));
-    }).catch(() => {});
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const cu = auth.currentUser;
+    setLoggedInUser(cu || null);
+  }, []);
+
+  // Fill form from Firestore/localStorage for a given user
+  const fillFormFromUser = useCallback(async (currentUser) => {
+    // Start with localStorage cache
+    const cached = getUserProfile();
+    const base = {
+      fullName:     cached?.fullName     || "",
+      mobile:       cached?.mobile       || "",
+      email:        cached?.email        || currentUser.email || "",
+      businessName: cached?.businessName || "",
+      state:        cached?.state        || "",
+    };
+    setForm(base);
+
+    // Overlay with Firestore data
+    try {
+      const db = getFirestore();
+      const snap = await getDoc(doc(db, "users", currentUser.uid));
+      if (snap.exists()) {
+        const d = snap.data();
+        setForm({
+          fullName:     d.fullName     || d.name  || base.fullName,
+          email:        d.email        || currentUser.email || base.email,
+          mobile:       d.mobile       || d.phone || base.mobile,
+          businessName: d.businessName || base.businessName,
+          state:        d.state        || base.state,
+        });
+      }
+    } catch (_) {}
+  }, []);
 
   useEffect(() => {
     if (modalRef.current) modalRef.current.scrollTop = 0;
@@ -160,10 +187,31 @@ const ProCheckoutModal = ({ plan, onClose }) => {
   const total = plan.price;
 
   const stepIndex = STEPS.indexOf(step);
-  const showProgress = stepIndex < 2; // only show for order-summary and checkout
+  const showProgress = step === "order-summary" || step === "checkout";
 
+  // Debounced auto-save: whenever the user edits the form, persist to Firestore + localStorage
   const updateField = (key, value) => {
-    setForm((f) => ({ ...f, [key]: value }));
+    setForm((f) => {
+      const updated = { ...f, [key]: value };
+      // Debounce save to avoid hammering Firestore on every keystroke
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        saveUserProfile(updated);
+        const auth = getAuth();
+        const cu = auth.currentUser;
+        if (cu) {
+          const db = getFirestore();
+          setDoc(doc(db, 'users', cu.uid), {
+            fullName:     updated.fullName,
+            businessName: updated.businessName,
+            state:        updated.state,
+            mobile:       updated.mobile,
+            updatedAt:    new Date(),
+          }, { merge: true }).catch(() => {});
+        }
+      }, 1000);
+      return updated;
+    });
     setErrors((e) => ({ ...e, [key]: "" }));
   };
 
@@ -177,121 +225,162 @@ const ProCheckoutModal = ({ plan, onClose }) => {
     return Object.keys(e).length === 0;
   };
 
-  // Back button behaviour depends on current step
-  const handleBack = () => {
-    if (step === "checkout") {
-      setStep("order-summary");
+  // After a successful auth inside the modal, fill form and advance
+  const afterAuth = useCallback(async (currentUser) => {
+    setLoggedInUser(currentUser);
+    await fillFormFromUser(currentUser);
+    setStep("checkout");
+  }, [fillFormFromUser]);
+
+  // Inline email/password login
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError("");
+    if (!authEmail.trim() || !authPassword) {
+      setAuthError("Please enter your email and password.");
+      return;
+    }
+    if (authMode === "signup" && !authName.trim()) {
+      setAuthError("Please enter your name.");
+      return;
+    }
+    setAuthLoading(true);
+    const auth = getAuth();
+    try {
+      let userCredential;
+      if (authMode === "login") {
+        userCredential = await signInWithEmailAndPassword(auth, authEmail.trim(), authPassword);
+      } else {
+        userCredential = await createUserWithEmailAndPassword(auth, authEmail.trim(), authPassword);
+        const db = getFirestore();
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+          uid:       userCredential.user.uid,
+          name:      authName.trim(),
+          fullName:  authName.trim(),
+          email:     authEmail.trim(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }, { merge: true });
+      }
+      await afterAuth(userCredential.user);
+    } catch (err) {
+      const map = {
+        "auth/user-not-found":      "No account found with this email.",
+        "auth/wrong-password":      "Incorrect password.",
+        "auth/invalid-credential": "Incorrect email or password.",
+        "auth/email-already-in-use": "An account with this email already exists.",
+        "auth/weak-password":       "Password must be at least 6 characters.",
+        "auth/invalid-email":       "Invalid email address.",
+        "auth/too-many-requests":   "Too many attempts. Please try again later.",
+      };
+      setAuthError(map[err.code] || "Something went wrong. Please try again.");
+    } finally {
+      setAuthLoading(false);
     }
   };
 
-  const showBackButton = step === "checkout";
+  // Google sign-in inside modal
+  const handleGoogleAuth = async () => {
+    setAuthError("");
+    setAuthLoading(true);
+    const auth = getAuth();
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const db = getFirestore();
+      const ref = doc(db, "users", result.user.uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          uid:       result.user.uid,
+          name:      result.user.displayName || "",
+          fullName:  result.user.displayName || "",
+          email:     result.user.email,
+          avatar:    result.user.photoURL || null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+      await afterAuth(result.user);
+    } catch (err) {
+      if (err.code !== "auth/popup-closed-by-user" && err.code !== "auth/cancelled-popup-request") {
+        setAuthError("Google sign-in failed. Please try again.");
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  // "Proceed to Checkout" — requires login
+  const handleProceedToCheckout = async () => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      setStep("login");
+      return;
+    }
+    setLoggedInUser(currentUser);
+    await fillFormFromUser(currentUser);
+    setStep("checkout");
+  };
+
+  // Back button behaviour depends on current step
+  const handleBack = () => {
+    if (step === "checkout") setStep(loggedInUser ? "order-summary" : "login");
+    if (step === "login") setStep("order-summary");
+  };
+
+  const showBackButton = step === "checkout" || step === "login";
 
   const handlePay = async () => {
-    setIsProcessing(true);
-
-    // Persist profile data for future auto-fill
-    const profileData = {
-      fullName:     form.fullName,
-      email:        form.email,
-      mobile:       form.mobile,
-      businessName: form.businessName,
-      state:        form.state,
-    };
+    if (!validate()) return;
 
     const auth = getAuth();
     const currentUser = auth.currentUser;
-
-    if (currentUser) {
-      const db = getFirestore();
-      setDoc(doc(db, 'users', currentUser.uid), {
-        fullName:     profileData.fullName,
-        businessName: profileData.businessName,
-        state:        profileData.state,
-        mobile:       profileData.mobile,
-        updatedAt:    new Date(),
-      }, { merge: true }).catch((err) => console.error('Error saving to Firestore:', err));
-      saveUserProfile(profileData);
-    } else {
-      saveUserProfile(profileData);
+    // Should never reach here without a user (Proceed to Checkout already guards this),
+    // but keep as a safety net.
+    if (!currentUser) {
+      setShowLoginPrompt(true);
+      return;
     }
 
+    setIsProcessing(true);
+
+    // Do a final save before redirecting (in case debounce hadn't fired yet)
+    saveUserProfile(form);
+    const db = getFirestore();
+    setDoc(doc(db, 'users', currentUser.uid), {
+      fullName:     form.fullName,
+      businessName: form.businessName,
+      state:        form.state,
+      mobile:       form.mobile,
+      updatedAt:    new Date(),
+    }, { merge: true }).catch(() => {});
+
     try {
-      // Step 1: Create Razorpay order on backend
-      const orderRes = await fetch(`${API_BASE}/api/payment/create-order`, {
+      const res = await fetch(`${API_BASE}/api/payment/initiate`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
           amount:   plan.price,
           planName: plan.name,
-          userId:   currentUser?.uid || '',
+          userId:   currentUser.uid,
+          form,
         }),
       });
 
-      if (!orderRes.ok) {
-        const errData = await orderRes.json().catch(() => ({}));
-        throw new Error(errData.error || 'Failed to create order');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to initiate payment');
       }
 
-      const { orderId: rzpOrderId, amount: rzpAmount, currency, keyId } = await orderRes.json();
+      const { redirectUrl } = await res.json();
 
-      // Step 2: Load Razorpay checkout script
-      await loadRazorpayScript();
-
-      // Step 3: Open Razorpay checkout popup
-      const options = {
-        key:         keyId,
-        amount:      rzpAmount,
-        currency,
-        name:        'Legal Terminus',
-        description: `${plan.name} Plan`,
-        order_id:    rzpOrderId,
-        prefill: {
-          name:    form.fullName,
-          email:   form.email,
-          contact: form.mobile,
-        },
-        theme: { color: '#1a237e' },
-        handler: async (response) => {
-          // Step 4: Verify signature on backend
-          try {
-            const verifyRes = await fetch(`${API_BASE}/api/payment/verify`, {
-              method:  'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body:    JSON.stringify({
-                razorpay_order_id:   response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature:  response.razorpay_signature,
-                planName: plan.name,
-                userId:   currentUser?.uid || '',
-                amount:   plan.price,
-              }),
-            });
-            const verifyData = await verifyRes.json();
-            if (verifyData.success) {
-              setStep('success');
-            } else {
-              setFailureReason('network_error');
-              setStep('failed');
-            }
-          } catch {
-            setFailureReason('network_error');
-            setStep('failed');
-          }
-        },
-        modal: {
-          ondismiss: () => { setIsProcessing(false); },
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', () => {
-        setFailureReason('bank_declined');
-        setStep('failed');
-      });
-      rzp.open();
-      setIsProcessing(false);
+      // Show the redirecting step briefly, then navigate to PhonePe
+      setStep('redirecting');
+      setTimeout(() => { window.location.href = redirectUrl; }, 800);
     } catch (err) {
-      console.error('Payment error:', err);
+      console.error('Payment initiation error:', err);
       setIsProcessing(false);
       setFailureReason('network_error');
       setStep('failed');
@@ -384,21 +473,128 @@ const ProCheckoutModal = ({ plan, onClose }) => {
               </div>
             </div>
 
-            <button className="pco-btn-primary" onClick={() => setStep("checkout")}>
+            <button className="pco-btn-primary" onClick={handleProceedToCheckout}>
               Proceed to Checkout
             </button>
           </div>
         )}
 
-        {/* ── STEP 2: CHECKOUT ── */}
+        {/* ── STEP 2: INLINE LOGIN / SIGNUP ── */}
+        {step === "login" && (
+          <div className="pco-step">
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <div style={{ fontSize: "36px", marginBottom: "8px" }}>🔐</div>
+              <h2 className="pco-step-heading" style={{ marginBottom: "4px" }}>
+                {authMode === "login" ? "Sign in to continue" : "Create your account"}
+              </h2>
+              <p style={{ color: "#666", fontSize: "14px", margin: 0 }}>
+                Your payment will be linked to your account
+              </p>
+            </div>
+
+            {/* Google button */}
+            <button
+              type="button"
+              disabled={authLoading}
+              onClick={handleGoogleAuth}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
+                width: "100%", padding: "11px 16px", border: "1.5px solid #dadce0", borderRadius: "8px",
+                background: "#fff", cursor: authLoading ? "not-allowed" : "pointer",
+                fontSize: "15px", fontWeight: "500", color: "#3c4043", marginBottom: "20px",
+                opacity: authLoading ? 0.6 : 1,
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
+              Continue with Google
+            </button>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+              <div style={{ flex: 1, height: "1px", background: "#e5e7eb" }} />
+              <span style={{ color: "#9ca3af", fontSize: "13px" }}>or</span>
+              <div style={{ flex: 1, height: "1px", background: "#e5e7eb" }} />
+            </div>
+
+            <form onSubmit={handleAuthSubmit} noValidate>
+              {authMode === "signup" && (
+                <div className="pco-field">
+                  <label className="pco-field-label">Full Name</label>
+                  <input
+                    className="pco-input"
+                    type="text"
+                    placeholder="Enter your name"
+                    value={authName}
+                    onChange={(e) => { setAuthName(e.target.value); setAuthError(""); }}
+                    autoComplete="name"
+                  />
+                </div>
+              )}
+              <div className="pco-field">
+                <label className="pco-field-label">Email</label>
+                <input
+                  className="pco-input"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={authEmail}
+                  onChange={(e) => { setAuthEmail(e.target.value); setAuthError(""); }}
+                  autoComplete="email"
+                />
+              </div>
+              <div className="pco-field">
+                <label className="pco-field-label">Password</label>
+                <input
+                  className="pco-input"
+                  type="password"
+                  placeholder={authMode === "signup" ? "Create a password (min 6 chars)" : "Enter your password"}
+                  value={authPassword}
+                  onChange={(e) => { setAuthPassword(e.target.value); setAuthError(""); }}
+                  autoComplete={authMode === "signup" ? "new-password" : "current-password"}
+                />
+              </div>
+
+              {authError && (
+                <div style={{ color: "#e53935", fontSize: "13px", marginBottom: "12px", padding: "8px 12px", background: "#fff5f5", borderRadius: "6px", border: "1px solid #ffcdd2" }}>
+                  {authError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="pco-btn-primary"
+                disabled={authLoading}
+                style={{ width: "100%", marginBottom: "12px" }}
+              >
+                {authLoading ? "Please wait…" : authMode === "login" ? "Sign In" : "Create Account"}
+              </button>
+            </form>
+
+            <p style={{ textAlign: "center", fontSize: "14px", color: "#666", margin: 0 }}>
+              {authMode === "login" ? (
+                <>Don't have an account?{" "}
+                  <button type="button" onClick={() => { setAuthMode("signup"); setAuthError(""); }} style={{ background: "none", border: "none", color: "#1a73e8", cursor: "pointer", fontWeight: "600", padding: 0 }}>
+                    Sign up
+                  </button>
+                </>
+              ) : (
+                <>Already have an account?{" "}
+                  <button type="button" onClick={() => { setAuthMode("login"); setAuthError(""); }} style={{ background: "none", border: "none", color: "#1a73e8", cursor: "pointer", fontWeight: "600", padding: 0 }}>
+                    Sign in
+                  </button>
+                </>
+              )}
+            </p>
+          </div>
+        )}
+
+        {/* ── STEP 3: CHECKOUT ── */}
         {step === "checkout" && (
           <div className="pco-step">
             <h2 className="pco-step-heading">Checkout</h2>
 
-            {savedUser && (
+            {loggedInUser && (
               <div className="pco-autofill-banner">
                 <span className="pco-autofill-icon">✓</span>
-                Details pre-filled from your account. Update if needed.
+                Details pre-filled from your account. Any changes are saved automatically.
               </div>
             )}
 
@@ -490,7 +686,7 @@ const ProCheckoutModal = ({ plan, onClose }) => {
             <button
               className="pco-btn-primary"
               disabled={isProcessing}
-              onClick={() => { if (validate()) handlePay(); }}
+              onClick={handlePay}
             >
               {isProcessing ? 'Processing…' : '🔒 Proceed to Payment'}
             </button>
@@ -498,7 +694,7 @@ const ProCheckoutModal = ({ plan, onClose }) => {
             <div className="pco-secured-row">
               <span className="pco-secured-text">Secured by</span>
               <div className="pco-payment-badges">
-                <span className="pco-badge pco-badge-razorpay">Razorpay</span>
+                <span className="pco-badge pco-badge-razorpay">PhonePe</span>
                 <span className="pco-badge pco-badge-upi">UPI</span>
                 <span className="pco-badge pco-badge-visa">VISA</span>
                 <span className="pco-badge pco-badge-mc">MC</span>
@@ -507,7 +703,18 @@ const ProCheckoutModal = ({ plan, onClose }) => {
           </div>
         )}
 
-        {/* ── STEP 3: PAYMENT SUCCESS ── */}
+        {/* ── STEP 3: REDIRECTING TO PHONEPE ── */}
+        {step === "redirecting" && (
+          <div className="pco-step" style={{ textAlign: 'center', padding: '48px 24px' }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+            <h2 className="pco-step-heading">Redirecting to PhonePe…</h2>
+            <p style={{ color: '#666', marginTop: 8 }}>
+              You are being securely redirected to PhonePe to complete your payment.
+            </p>
+          </div>
+        )}
+
+        {/* ── STEP 4: PAYMENT SUCCESS ── */}
         {step === "success" && (
           <div className="pco-step pco-success-step">
             <div className="pco-success-circle">

@@ -14,28 +14,8 @@ const PaymentResult = () => {
   const isSuccess   = status === "success";
   const isCancelled = status === "cancelled";
 
-  // If loaded inside the CCAvenue iFrame checkout, post the result back to
-  // the parent modal instead of rendering the full page.
-  const isInIframe = window.self !== window.top;
-  useEffect(() => {
-    if (isInIframe) {
-      window.parent.postMessage(
-        { type: 'PAYMENT_RESULT', status, orderId, amount, trackingId },
-        '*'
-      );
-    } else {
-      window.scrollTo({ top: 0, behavior: "instant" });
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Show a minimal loading screen while postMessage is dispatched
-  if (isInIframe) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', fontFamily: 'sans-serif', color: '#555' }}>
-        Processing result…
-      </div>
-    );
-  }
+  // Scroll to top on mount
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, []);
 
   const paymentDate = useRef(
     new Date().toLocaleDateString("en-IN", {

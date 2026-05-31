@@ -27,11 +27,7 @@ const __dirname = path.dirname(__filename);
 
 /* ================= CORS ================= */
 const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://localhost:5175",
-  "http://localhost:5176",
-  "http://localhost:5000",
+  /^http:\/\/localhost(:\d+)?$/,   // any localhost port in development
   /\.firebaseapp\.com$/,
   /\.web\.app$/,
   /legalterminus\.com$/,
