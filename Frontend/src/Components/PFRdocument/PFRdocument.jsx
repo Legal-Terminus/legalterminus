@@ -1,67 +1,57 @@
 import React from "react";
 import "./PFRdocument.css";
 import {
-  FaUser, FaBuilding, FaIdCard, FaFileAlt, FaCamera,
-  FaBolt, FaFileContract, FaStamp,
+  FaUser, FaBuilding, FaIdCard, FaFileAlt,
+  FaBolt, FaFileContract, FaShieldAlt,
 } from "react-icons/fa";
 
 const partnerDocs = [
   {
     icon: <FaIdCard />,
-    title: "Identity Proof",
+    title: "Partner Identity",
     note: "Mandatory for all proposed partners",
     items: [
-      "PAN Card (Mandatory)",
-      "Aadhaar Card",
-      "Passport (for Foreign Nationals / NRIs)",
+      "Self-attested PAN card of each partner",
+      "Self-attested Aadhaar card of each partner",
+      "Passport-size photograph of each partner",
+      "For NRI / foreign partner: notarised + apostilled passport copy",
     ],
   },
   {
     icon: <FaFileAlt />,
-    title: "Address Proof",
-    note: "Not older than 2 months",
+    title: "Partnership Deed",
+    note: "Drafted by us",
     items: [
-      "Bank Statement",
-      "Electricity Bill",
-      "Mobile Bill",
-      "Water Bill",
-    ],
-  },
-  {
-    icon: <FaCamera />,
-    title: "Passport Size Photograph",
-    note: "For all proposed partners",
-    items: [
-      "Latest passport-size photograph of all Proposed Partners",
+      "Printed on stamp paper of correct denomination",
+      "Signed by all partners + two witnesses",
+      "Notarised",
+      "The Deed is the firm's constitution — every clause matters",
     ],
   },
 ];
 
 const firmDocs = [
   {
-    icon: <FaStamp />,
-    title: "Stamp Paper",
-    note: "For Partnership Deed execution",
-    items: [
-      "Rs. 200/- stamp paper in the name of any proposed Partner (denomination may vary by state)",
-    ],
-  },
-  {
     icon: <FaBolt />,
-    title: "Office Address Proof",
-    note: "Not older than 2 months",
+    title: "Firm's Registered Office Proof",
+    note: "Not older than 60 days",
     items: [
-      "Electricity Bill",
-      "Water Bill",
-      "Gas Bill",
-      "Property Tax Receipt",
+      "Latest electricity / Municipal tax bill (≤ 60 days old)",
+      "NoC from the property owner",
+      "If rented: notarised rent agreement",
+      "If co-working: service agreement + operator NoC",
+      "Photograph of office front-board (some states require)",
     ],
   },
   {
-    icon: <FaFileContract />,
-    title: "Rent Agreement",
-    note: "If premises is rented",
-    items: ["Duly Notarised Rent Agreement"],
+    icon: <FaShieldAlt />,
+    title: "RoF Form 1 + Affidavit (Registered Firms Only)",
+    note: "Required for RoF registration",
+    items: [
+      "Application for Registration in Form 1 (state-specific format)",
+      "Affidavit on stamp paper certifying all particulars in the Deed are correct",
+      "Signed by all partners or authorized agent",
+    ],
   },
 ];
 
@@ -117,7 +107,7 @@ const PFRdocument = () => {
             <div className="pfrd-col-header pfrd-col-header--office">
               <div className="pfrd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="pfrd-col-title">Firm & Office Documents</h3>
+                <h3 className="pfrd-col-title">Firm &amp; Office Documents</h3>
                 <p className="pfrd-col-subtitle">Required for the firm's registered address</p>
               </div>
             </div>
@@ -129,11 +119,6 @@ const PFRdocument = () => {
           </div>
 
         </div>
-
-        {/* Bottom note */}
-        <p className="pfrd-bottom-note">
-          All documents should be self-attested. Stamp paper denomination may vary by state — our team will confirm the exact requirement for your state.
-        </p>
 
       </div>
     </section>

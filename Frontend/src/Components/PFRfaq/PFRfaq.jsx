@@ -3,58 +3,69 @@ import "./PFRfaq.css";
 
 const faqs = [
   {
-    question: "How many persons are required to form a Partnership Firm?",
-    answer: "Minimum 2 persons are required to form a Partnership Firm and there is an upper cap of 20 persons.",
+    question: "Is registration of a Partnership Firm mandatory in 2026?",
+    answer:
+      "No, registration is not mandatory. You can start and run a Partnership Firm without registering it. However, an unregistered firm cannot file a legal case to recover money or enforce agreements. That's why registration is strongly recommended.",
   },
   {
-    question: "Why should I choose to register a Partnership Firm?",
-    answer: "A Partnership Firm is very easy to form due to its minimal registration requirement and it requires only a Partnership Deed to incorporate.",
+    question: "How many partners can a Partnership Firm have?",
+    answer:
+      "Minimum 2 partners. Maximum 50 partners under Rule 10 of the Companies (Miscellaneous) Rules, 2014. Only natural persons (individuals) — not companies, LLPs, trusts, or HUFs as entities — can be partners. Indian residents and NRIs both qualify; foreign nationals can also be partners subject to FEMA conditions.",
   },
   {
-    question: "How can I create / form a Partnership Firm?",
-    answer: "In India a Partnership Firm can be formed through a Partnership Deed duly notarised by a Notary Public.",
+    question: "How long does Partnership Firm registration take?",
+    answer:
+      "Unregistered firms (Elemental tier): 5–7 working days from start of Deed drafting to PAN allotment. Registered firms (Enriched / Supreme): 10–15 working days end-to-end, depending on the state's RoF processing speed. Maharashtra, Karnataka, Tamil Nadu, and Delhi are typically fastest; some northern and eastern states have longer queues.",
   },
   {
-    question: "What is the Stamp duty amount for execution of a Partnership Deed?",
-    answer: "The Partnership Deed needs to be executed with Rs. 200/- Stamp Paper in India. The denomination may vary from state to state.",
-  },
-  {
-    question: "Can I choose any name for my Partnership Firm?",
-    answer: "The partners can choose any business name as per their wish. However, the business name should not be the same as a registered trademark.",
-  },
-  {
-    question: "Can I restrict others from using my Partnership Firm's name?",
-    answer: "No, the Partnership Firm cannot restrict any other person from using its business name, unless it gets its name registered under the Trade Mark Act.",
-  },
-  {
-    question: "What are the Income Tax implications on a Partnership Firm?",
-    answer: "Income earned by the Partnership Firm is taxed in the hands of the firm itself at a flat rate of 30% (surcharge and cess extra). The partner's share of profit is exempt from tax and interest on capital is exempt up to a certain limit.",
-  },
-  {
-    question: "To what extent is the liability of a Partnership Firm limited?",
-    answer: "The liability of a Partnership Firm and its Partners is unlimited in the eyes of Law. Each partner is jointly and severally liable for the debts of the firm.",
-  },
-  {
-    question: "What is the procedure to register a Partnership Firm?",
+    question: "Should I choose Partnership Firm or LLP?",
     answer: (
       <div>
-        <p>The broad process of registering a Partnership Firm involves the following steps:</p>
-        <ol>
-          <li>Step 1 — Provision of requisite documents/information to us</li>
-          <li>Step 2 — Preparation of draft Partnership Deed</li>
-          <li>Step 3 — Execution &amp; Notarisation of Partnership Deed with requisite Stamp Duty</li>
-          <li>Step 4 — Application for PAN &amp; TAN of the firm</li>
-        </ol>
+        <p><strong>Choose Partnership Firm if:</strong></p>
+        <ul>
+          <li>You want a simple and low-cost setup</li>
+          <li>You are working with trusted partners</li>
+        </ul>
+        <p><strong>Choose LLP if:</strong></p>
+        <ul>
+          <li>You want limited liability protection</li>
+          <li>You plan to grow or take higher risks</li>
+        </ul>
       </div>
     ),
   },
   {
-    question: "How long does it take to form a Partnership Firm?",
-    answer: "The process of formation of a Partnership Firm can take anywhere between 5 to 7 working days, subject to submission of correct information and complete documentation.",
+    question: "What is Section 69 and why does it matter so much?",
+    answer:
+      "Section 69 of the Indian Partnership Act, 1932 says: an UNREGISTERED firm cannot file a suit in court to enforce any right arising from a contract — against third parties OR against partners. So if your customer doesn't pay, or if your business partner cheats you, you have no legal remedy unless your firm is registered. There's a narrow exception: partners CAN sue for dissolution and settlement of accounts even if the firm is unregistered. But for everything else — registration is what gives the Deed teeth.",
   },
   {
-    question: "How can Legal Terminus help you register a Partnership Firm?",
-    answer: "Legal Terminus can help you with registration of a Partnership Firm in a hassle-free manner within a reasonable time span and for a competitive professional fee. Book a free telephonic consultation with one of our experts to get started.",
+    question: "How are Partnership Firms taxed in 2026?",
+    answer:
+      "Partnership Firms are taxed at a flat 30% on profits (plus 12% surcharge if income > ₹1 cr, plus 4% Health & Education Cess). After the firm pays tax, partners can withdraw their share of profit tax-free under Section 10(2A) — there's no double taxation. Partners' remuneration and interest on capital are deductible at the firm level (subject to Section 40(b) limits). Firms below ₹1cr / ₹2cr turnover can opt for Section 44AD presumptive tax — 6%/8% of turnover declared as income, no audit.",
+  },
+  {
+    question: "Can I add or remove a partner after the firm is registered?",
+    answer:
+      "Yes. You execute a Supplementary Partnership Deed (or Deed of Reconstitution) reflecting the change — admission, retirement, expulsion, or death of a partner. Notarise it, and if your firm is registered, file Form 5 with the RoF within 90 days. Stamp duty applies on the supplementary Deed (similar to original). We handle reconstitution under our Annual Compliance retainer.",
+  },
+  {
+    question: "Can a Partnership Firm be converted to an LLP or Pvt Ltd later?",
+    answer: (
+      <div>
+        <p>Yes, you can convert Partnership Firm to:</p>
+        <ul>
+          <li>LLP (simpler process)</li>
+          <li>Private Limited Company (slightly complex)</li>
+          <li>Many businesses convert as they grow</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    question: "How can Legal Terminus help me register my Partnership Firm?",
+    answer:
+      "Legal Terminus takes care of your entire Partnership registration process from start to finish. We draft a clear and legally sound Partnership Deed, handle all documentation and registration work, and guide you at every step. Our pricing is transparent with no hidden charges, and we ensure the process is smooth and hassle-free, usually completed within 15 working days.",
   },
 ];
 
@@ -69,7 +80,6 @@ const PFRFaq = () => {
     <section className="pfr-faq-section">
       <div className="pfr-faq-container">
 
-        {/* Centered heading & subheading */}
         <div className="pfr-faq-header">
           <h2 className="pfr-faq-title">Partnership Firm Registration — FAQs</h2>
           <p className="pfr-faq-intro">
@@ -77,7 +87,6 @@ const PFRFaq = () => {
           </p>
         </div>
 
-        {/* Full-width staggered FAQ accordion */}
         <div className="pfr-faq-list">
           {faqs.map((item, index) => {
             const isActive = index === activeIndex;
