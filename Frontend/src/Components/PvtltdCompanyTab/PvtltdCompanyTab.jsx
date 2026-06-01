@@ -35,10 +35,13 @@ A Private Limited Company is a legally registered business under the Companies A
           {/* Text */}
           <div className="pvt-intro-content">
             <h2 className="pvt-intro-title">
-              Why Choose a Private Limited Company? Here's the Real Talk.
+              Why Choose a Private Limited Company
             </h2>
             <p className="pvt-intro-text">
-             India's most loved business structure — and for good reason. A Private Limited Company (governed by the Companies Act, 2013) gives you a separate legal identity, shields your personal assets from business liabilities, and signals serious credibility to investors, banks, and clients. Whether you're a startup hustling towards your first funding round or an established SME looking to scale, the Pvt Ltd structure is built for growth. It's also the gateway to government schemes like Startup India, Make in India, and DPIIT recognition.
+              Private Limited is the default structure for any business that intends to raise external capital, hire senior talent with ESOPs, sell to enterprise customers, or scale beyond a small team. The Companies Act, 2013 gives you a clean separation between founders and the company, limited liability protection, perpetual succession, and the structural plumbing investors actually understand — share classes, preference rights, valuation caps, board observer seats. Almost every funded Indian startup runs as a Pvt Ltd.
+            </p>
+            <p className="pvt-intro-text">
+              The trade-off is real: heaviest annual compliance load (statutory audit + AGM + AOC-4 + MGT-7 + DIR-3 KYC + minimum 4 board meetings), strictest tax regime (22-25% even with 115BAA), and the highest setup cost. For founders not raising capital and below ₹50L turnover, LLP or OPC is often the smarter first choice. For founders aiming at Series A, Pvt Ltd is non-negotiable from Day 1.
             </p>
           </div>
         </div>
