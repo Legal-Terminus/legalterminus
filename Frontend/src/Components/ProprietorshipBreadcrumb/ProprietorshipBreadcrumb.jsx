@@ -18,7 +18,7 @@ const Breadcrum = () => {
             Proprietorship Firm Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Your Proprietorship business. Live in 3 days.</span>
+            <span className="lt-title-tagline">Your Business, Live in 3 days</span>
           </h1>
 
           <p className="lt-public-description">
@@ -41,15 +41,21 @@ const Breadcrum = () => {
               <h3>All States</h3>
               <p>MSME, GST &amp; Shop &amp; Est</p>
             </div>
+            <div>
+              <h3>7+</h3>
+              <p>Years of Legal Expertise</p>
+            </div>
           </div>
 
         </div>
 
         {/* RIGHT FORM */}
-        <ConsultationForm
-          source="proprietorship"
-          subtitle="Talk to our Proprietorship Firms Registration expert"
-        />
+        <div id="pro-consult-form">
+          <ConsultationForm
+            source="proprietorship"
+            subtitle="Talk to our Proprietorship Firms Registration expert"
+          />
+        </div>
 
       </div>
     </section>

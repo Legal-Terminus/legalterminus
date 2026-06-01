@@ -15,31 +15,31 @@ const TermsConditions = () => {
 
           <ol className="pvtltd-tc-list">
             <li className="pvtltd-tc-item">
-              <strong>Professional Fee Only:</strong> All quoted prices are exclusive of government fees, licence charges, and out-of-pocket costs. Our fee covers professional services — advisory, registration filing, follow-up, and post-setup handover. Government and licence costs are billed separately at actuals with prior approval.
+              Professional Fee Only: All quoted prices are exclusive of government fees, licence charges, and out-of-pocket costs. Our fee covers professional services — advisory, registration filing, follow-up, and post-setup handover. Government and licence costs are billed separately at actuals with prior approval.
             </li>
             <li className="pvtltd-tc-item">
-              <strong>No Single Registration:</strong> A 'Proprietorship Firm' has no central registration in India — there is no single Act under which it is registered. Identity is established through a combination of registrations: MSME (Udyam), GST (if applicable), Shop &amp; Establishment Act, Trade Licence, etc. Plans cover the registrations listed; additional registrations are quoted separately.
+              No Single Registration: A 'Proprietorship Firm' has no central registration in India — there is no single Act under which it is registered. Identity is established through a combination of registrations: MSME (Udyam), GST (if applicable), Shop &amp; Establishment Act, Trade Licence, etc. Plans cover the registrations listed; additional registrations are quoted separately.
             </li>
             <li className="pvtltd-tc-item">
-              <strong>Government &amp; Licence Fees Separate:</strong> MSME registration is FREE. GST government fee is NIL. Shop &amp; Establishment Act registration: ₹100 – ₹4,000 depending on state. Trade Licence: ₹500 – ₹5,000 depending on municipality and activity. All payable at actuals.
+              Government &amp; Licence Fees Separate: MSME registration is FREE. GST government fee is NIL. Shop &amp; Establishment Act registration: ₹100 – ₹4,000 depending on state. Trade Licence: ₹500 – ₹5,000 depending on municipality and activity. All payable at actuals.
             </li>
             <li className="pvtltd-tc-item">
-              <strong>GST on Our Fee:</strong> All quoted prices are exclusive of GST @ 18%, charged at checkout.
+              GST on Our Fee: All quoted prices are exclusive of GST @ 18%, charged at checkout.
             </li>
             <li className="pvtltd-tc-item">
-              <strong>Single Owner:</strong> A Proprietorship Firm has exactly ONE owner — the proprietor. There are no partners, no co-owners, no shareholders. The firm's PAN remains the proprietor's individual PAN; there is no separate firm PAN.
+              Single Owner: A Proprietorship Firm has exactly ONE owner — the proprietor. There are no partners, no co-owners, no shareholders. The firm's PAN remains the proprietor's individual PAN; there is no separate firm PAN.
             </li>
             <li className="pvtltd-tc-item">
-              <strong>Unlimited Liability Disclosure:</strong> A proprietorship is NOT a separate legal entity from the proprietor. The proprietor is personally liable for all debts, liabilities, and legal obligations of the business. Personal assets are NOT insulated. Clients seeking liability protection should consider OPC, LLP, or Pvt Ltd structures — we will flag this on the discovery call.
+              Unlimited Liability Disclosure: A proprietorship is NOT a separate legal entity from the proprietor. The proprietor is personally liable for all debts, liabilities, and legal obligations of the business. Personal assets are NOT insulated. Clients seeking liability protection should consider OPC, LLP, or Pvt Ltd structures — we will flag this on the discovery call.
             </li>
             <li className="pvtltd-tc-item">
-              <strong>Refund Policy:</strong> Full refund of professional fee (less ₹999 documentation handling) is available if the first registration application (typically MSME) is not filed within 5 working days from receipt of complete documents. Government fees, licence fees, and stamp paper costs already paid are non-refundable.
+              Refund Policy: Full refund of professional fee (less ₹999 documentation handling) is available if the first registration application (typically MSME) is not filed within 5 working days from receipt of complete documents. Government fees, licence fees, and stamp paper costs already paid are non-refundable.
             </li>
             <li className="pvtltd-tc-item">
-              <strong>Re-application by Authority:</strong> One free re-application per registration (e.g., GST query, Shop &amp; Est rejection) is included if the deficiency arises from documentation drafted by us. Re-applications arising from client-side changes are billed separately.
+              Re-application by Authority: One free re-application per registration (e.g., GST query, Shop &amp; Est rejection) is included if the deficiency arises from documentation drafted by us. Re-applications arising from client-side changes are billed separately.
             </li>
             <li className="pvtltd-tc-item">
-              <strong>Out-of-Scope Items:</strong> Specific sectoral licences beyond the chosen plan (RBI, SEBI, IRDAI, drug licence, AYUSH, BIS, telecom etc.), trademark registration beyond Supreme tier, foreign trade compliance beyond IEC, conversion to Pvt Ltd / LLP / OPC, and registered office shifting are not included and quoted separately on request.
+              Out-of-Scope Items: Specific sectoral licences beyond the chosen plan (RBI, SEBI, IRDAI, drug licence, AYUSH, BIS, telecom etc.), trademark registration beyond Supreme tier, foreign trade compliance beyond IEC, conversion to Pvt Ltd / LLP / OPC, and registered office shifting are not included and quoted separately on request.
             </li>
           </ol>
 

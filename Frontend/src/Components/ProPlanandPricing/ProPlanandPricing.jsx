@@ -60,8 +60,7 @@ const ProPlanandPricing = () => {
           <div className="pricing-cards">
 
             {/* Elemental */}
-            <article className="plan-card plan-card--normal">
-              <div className="plan-badge plan-badge--normal">★ NORMAL</div>
+            <article className="plan-card">
               <div>
                 <div className="plan-header">
                   <div className="plan-name">Elemental</div>
@@ -112,8 +111,7 @@ const ProPlanandPricing = () => {
             </article>
 
             {/* Supreme */}
-            <article className="plan-card plan-card--fullservice">
-              <div className="plan-badge plan-badge--fullservice">✦ FULL-SERVICE</div>
+            <article className="plan-card">
               <div>
                 <div className="plan-header">
                   <div className="plan-name">Supreme</div>

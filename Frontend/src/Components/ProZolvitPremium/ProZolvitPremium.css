@@ -108,7 +108,7 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  text-decoration: none;
+  text-decoration: none !important;
   transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 

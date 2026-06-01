@@ -37,7 +37,7 @@ const ZolvitPremium = () => {
                     48-hour SLA on MSME + Shop &amp; Establishment filings — same-day if started before 11 AM.
                   </li>
                   <li className="zp-list-item">
-                    <span className="zp-list-icon">🛡</span>
+                    <span className="zp-list-icon">✅</span>
                     Senior expert reviewed registration map — no mismatches between MSME, Shop &amp; Est, GST, and bank docs.
                   </li>
                   <li className="zp-list-item">
@@ -68,16 +68,25 @@ const ZolvitPremium = () => {
                   Marketplace onboarding (Amazon, Flipkart, Meesho, Zomato) requires a GSTIN matching your bank statement and Aadhaar address. Mismatches between any of these = onboarding rejected. Plan the address consistency upfront.
                 </li>
                 <li className="zp-note-item">
-                  <strong>Section 44AD</strong> presumptive tax has a 5-year lock-in: if you opt in once and then opt out, you lose the benefit for the next 5 years. Don't toggle in and out — pick a regime and stick. We run the math on the discovery call.
+                  Section 44AD presumptive tax has a 5-year lock-in: if you opt in once and then opt out, you lose the benefit for the next 5 years. Don't toggle in and out — pick a regime and stick. We run the math on the discovery call.
                 </li>
                 <li className="zp-note-item">
-                  <strong>Proprietorship has UNLIMITED liability</strong> — your personal assets (house, savings, vehicle) are at risk for business debts. If you're operating in regulated, high-liability, or product-recall sectors, you should NOT be a proprietorship. We'll flag this honestly.
+                  Proprietorship has UNLIMITED liability — your personal assets (house, savings, vehicle) are at risk for business debts. If you're operating in regulated, high-liability, or product-recall sectors, you should NOT be a proprietorship. We'll flag this honestly.
                 </li>
               </ul>
             </div>
 
             <div className="zp-cta-row">
-              <button className="zp-cta-btn">Consult a Legal Expert</button>
+              <a
+                href="#pro-consult-form"
+                className="zp-cta-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("pro-consult-form")?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                Consult a Legal Expert
+              </a>
             </div>
           </div>
 
