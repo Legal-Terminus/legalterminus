@@ -35,41 +35,100 @@ A Private Limited Company is a legally registered business under the Companies A
           {/* Text */}
           <div className="pvt-intro-content">
             <h2 className="pvt-intro-title">
-              Why Choose Partnership Firm Registration In India
+              Why Choose a Partnership Firm
             </h2>
             <p className="pvt-intro-text">
-              Partnership firm registration in India is a prevalent choice for starting a new business. It involves creating an unregistered business entity through a partnership deed, where two or more individuals come together to form a business and distribute profits in an agreed ratio. Compared to corporate business structures, partnership firm registration entails lesser compliance requirements.
-             </p>
+              Partnership Firm is the oldest and simplest co-founder structure in India — governed by the Indian Partnership Act, 1932, predating both the Companies Act and the LLP Act. Think of it as 'sole proprietorship for two or more people'. No MCA filings, no DSC, no DIN, no annual MGT-7 — just a Deed, a PAN, and you can be doing business. For consultants, traders, family-run businesses, and short-term ventures where compliance overhead is the enemy, this remains the structure of choice.
+            </p>
+            <p className="pvt-intro-text">
+              The trade-off is real: unlimited personal liability for all partners, no separate legal identity, and a firm taxed at the same flat 30% as an LLP. If liability protection or institutional credibility matters, you should look at LLP. If quick setup, low compliance, and partner flexibility matter more — Partnership Firm wins.
+            </p>
           </div>
         </div>
       </section>
 
       {/* ===========================
-          SECTION 3 — COMPANIES ACT
+          SECTION 3 — COMPARISON TABLE
       ============================ */}
-      <section className="companies-act-section">
-        <div className="companies-act-container">
-          <div className="companies-act-card">
-            <h3 className="companies-act-title">Indian Partnership Act, 1932</h3>
-
-            <p className="companies-act-text">
-              As per the Indian Partnership Act, 1932, a partnership firm is a business arrangement where two or more persons agree to run a business together and share its profits as per mutually decided terms, recorded in a Partnership Deed:
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(a)</span>
-              The firm operates based on a Partnership Deed, which defines partner roles, capital contribution, profit-sharing ratio, and responsibilities;
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(b)</span>
-              The firm must have a minimum of two partners, and the partners jointly manage and control the operations of the business; and
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(c)</span>
-              The partners share profits as well as liabilities, meaning each partner can be responsible for obligations of the firm as per the deed and law.
-            </p>
+      <section className="pvt-compare-section">
+        <div className="pvt-compare-container">
+          <h2 className="pvt-compare-title">Partnership Firm vs LLP vs Pvt Ltd: The Deep Dive</h2>
+          <p className="pvt-compare-subtitle">
+            Three structures, three trade-offs. Here's the honest 2026 comparison:
+          </p>
+          <div className="pvt-compare-table-wrapper">
+            <table className="pvt-compare-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Partnership Firm</th>
+                  <th>LLP</th>
+                  <th>Pvt Ltd</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Governing Law</td>
+                  <td>Partnership Act 1932</td>
+                  <td>LLP Act 2008</td>
+                  <td>Companies Act 2013</td>
+                </tr>
+                <tr>
+                  <td>Registration With</td>
+                  <td>Registrar of Firms (state)</td>
+                  <td>MCA21 V3 (central)</td>
+                  <td>MCA21 V3 (central)</td>
+                </tr>
+                <tr>
+                  <td>Min / Max Partners</td>
+                  <td>2 / 50</td>
+                  <td>2 / unlimited</td>
+                  <td>2 / 200 (Pvt)</td>
+                </tr>
+                <tr>
+                  <td>Separate Legal Entity</td>
+                  <td>No</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>Limited Liability</td>
+                  <td>No (unlimited)</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>Income Tax Rate</td>
+                  <td>30% (flat)</td>
+                  <td>30% (flat)</td>
+                  <td>22% – 25.17%</td>
+                </tr>
+                <tr>
+                  <td>Audit Threshold</td>
+                  <td>Turnover &gt; ₹1cr (Sec 44AB)</td>
+                  <td>Turnover &gt; ₹40L OR Cap &gt; ₹25L</td>
+                  <td>Mandatory regardless</td>
+                </tr>
+                <tr>
+                  <td>Annual ROC Filing</td>
+                  <td>None (RoF static)</td>
+                  <td>Form 11 + Form 8</td>
+                  <td>MGT-7 + AOC-4</td>
+                </tr>
+                <tr>
+                  <td>Setup Cost (Total)</td>
+                  <td>₹3K – ₹8K</td>
+                  <td>₹8K – ₹15K</td>
+                  <td>₹10K – ₹25K</td>
+                </tr>
+                <tr>
+                  <td>Right to Sue</td>
+                  <td>Only if registered</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

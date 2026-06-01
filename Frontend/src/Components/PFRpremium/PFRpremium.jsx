@@ -8,77 +8,90 @@ const ZolvitPremium = () => {
       <div className="zp-container">
         <div className="zp-card">
 
-          {/* Left illustration */}
-          <div className="zp-illustration-wrapper">
-            <img
-              src={premiumIllustration}
-              alt="Private Limited Company Registration by Legal Terminus"
-              className="zp-illustration"
-            />
-          </div>
+          {/* Top two-column row: illustration + content */}
+          <div className="zp-top-row">
 
-          {/* Right content */}
-          <div className="zp-content">
+            {/* Left illustration */}
+            <div className="zp-illustration-wrapper">
+              <img
+                src={premiumIllustration}
+                alt="Partnership Firm Registration by Legal Terminus"
+                className="zp-illustration"
+              />
+            </div>
 
-            {/* Title + subtitle */}
-            <header className="zp-header">
-              <h2 className="zp-title">
-                Legal Terminus{" "}
-                <span className="zp-title-highlight">Priority</span>{" "}
-                <span className="zp-title-icon">⚖️</span>
-              </h2>
-              <p className="zp-subtitle">
-               Get your Partnership Firm registered faster with Legal Terminus’s expert-handled process—perfect for entrepreneurs and business partners who want a smooth registration without delays.
-              </p>
-            </header>
+            {/* Right content */}
+            <div className="zp-content">
 
-            {/* Features */}
-            <section className="zp-section-block">
-              <h3 className="zp-label">What You Get:</h3>
-              <ul className="zp-list zp-features-list">
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">🧑‍⚖️</span>
-                  Quick Partnership Firm Registration with complete end-to-end support
-                </li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">📑</span>
-                  Drafting of Partnership Deed as per your business structure
-                </li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">⏱️</span>
-                  Hassle-Free Documentation & Filing Support
-                </li>
-              </ul>
-            </section>
+              {/* Title + subtitle */}
+              <header className="zp-header">
+                <h2 className="zp-title">
+                  Legal Terminus{" "}
+                  <span className="zp-title-highlight">Priority</span>{" "}
+                  <span className="zp-title-icon">⚖</span>
+                </h2>
+                <p className="zp-subtitle">
+                  Starting a Partnership Firm may look easy, but problems usually arise later when the agreement is not clear. We make sure your Partnership Deed is properly drafted to avoid future disputes between partners.
+                </p>
+              </header>
 
-            {/* Note */}
-            <section className="zp-section-block">
-              <h3 className="zp-label">Important Notes:</h3>
-              <div className="zp-note-box">
-                <ul className="zp-note-list">
-                  <li className="zp-note-item">
-                    We prepare your Partnership Deed carefully based on capital contribution, profit-sharing ratio, and partner roles.
+              {/* Features */}
+              <section className="zp-section-block">
+                <h3 className="zp-label">What you get</h3>
+                <ul className="zp-list zp-features-list">
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">⚡</span>
+                    Draft of Partnership Deed within 48 hours and quick stamp duty calculation.
                   </li>
-                  <li className="zp-note-item">
-                    In case of any missing documents or clarification needed, our team will assist instantly to avoid delays.
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">✅</span>
+                    Deed reviewed by an experienced professional covering profit sharing, exit terms, and dispute handling.
+                  </li>
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">🔄</span>
+                    Regular updates on registration status via WhatsApp.
+                  </li>
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">📞</span>
+                    Direct support from a dedicated expert whenever you need help.
+                  </li>
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">📑</span>
+                    Complete post-registration documents and compliance guidance.
                   </li>
                 </ul>
-              </div>
-            </section>
+              </section>
 
-            {/* CTA */}
+            </div>
+          </div>
+
+          {/* Full-width bottom: Important Notes + CTA */}
+          <div className="zp-bottom-full">
+            <h3 className="zp-label">Important Notes</h3>
+            <div className="zp-note-box">
+              <ul className="zp-note-list">
+                <li className="zp-note-item">
+                  <strong>Unregistered firms cannot SUE</strong> third parties or co-partners under Section 69 — but they CAN be sued. If a customer doesn't pay, you have no court remedy unless you register first. Strongly weigh this before opting Elemental tier.
+                </li>
+                <li className="zp-note-item">
+                  <strong>The Partnership Deed is your firm's constitution</strong> — not a template. Generic deeds skip clauses on goodwill, IP ownership, partner-incapacity, dissolution triggers. Our custom Deed (Enriched / Supreme) covers all 12 standard contingency clauses.
+                </li>
+                <li className="zp-note-item">
+                  <strong>Firm partners have UNLIMITED liability</strong> — personal assets are at risk for firm debts. If liability protection matters, you should be looking at LLP, not Partnership Firm. We flag this on the discovery call.
+                </li>
+                <li className="zp-note-item">
+                  <strong>Audit kicks in at turnover &gt; ₹1 crore</strong> (Section 44AB of the Income Tax Act). Below that, you can use Section 44ADA presumptive taxation if professional, or Section 44AD if business — much simpler than full audit.
+                </li>
+              </ul>
+            </div>
+
             <div className="zp-cta-row">
               <button className="zp-cta-btn">
                 Consult a Legal Expert
               </button>
             </div>
-
-            {/* Pricing
-            <p className="zp-pricing">
-              <span className="zp-label">Starts from ₹3,999 (excluding government fees)</span> for Private Limited Company Registration in India.{" "}The package includes name approval, incorporation, DIN for two directors, e-PAN, e-TAN, and bank account documents. Also covers auditor appointment documents, EPF and ESI registrations.
-              </p> */}
-
           </div>
+
         </div>
       </div>
     </section>
