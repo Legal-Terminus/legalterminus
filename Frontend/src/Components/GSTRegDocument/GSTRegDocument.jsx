@@ -1,121 +1,131 @@
 import React from "react";
-import {
-  FaIdCard,
-  FaAddressCard,
-  FaBuilding,
-  FaUserTie,
-  FaMapMarkerAlt,
-  FaUniversity,
-  FaPenNib,
-  FaFileAlt,
-} from "react-icons/fa";
 import "./GSTRegDocument.css";
+import { FaUser, FaBuilding, FaIdCard, FaCamera, FaFileContract, FaShieldAlt, FaBolt, FaFileAlt } from "react-icons/fa";
 
-const leftDocs = [
+const businessDocs = [
   {
-    desc: "Any registration certificate of an organization such as Certification of Incorporation/Partnership Deed/Trade License.",
     icon: <FaIdCard />,
-    bg: "bg-blue",
+    title: "Business Registration Proof",
+    note: "Any valid registration certificate of the organisation",
+    items: [
+      "Certificate of Incorporation / Partnership Deed / Trade Licence",
+      "For Proprietorship: MSME (Udyam) certificate or Shop & Est certificate",
+    ],
   },
   {
-    desc: "Rent agreement and Electricity bill of the registered office address of the organization.",
-    icon: <FaAddressCard />,
-    bg: "bg-orange",
-  },
-  {
-    desc: "ROR copy / Property Tax receipt",
     icon: <FaBuilding />,
-    bg: "bg-purple",
+    title: "Registered Office Proof",
+    note: "Address proof for the principal place of business",
+    items: [
+      "Rent agreement + electricity bill (if rented)",
+      "Property tax receipt + electricity bill (if owned)",
+      "NOC from property owner",
+    ],
   },
   {
-    desc: "Photo, PAN card & Aadhar Card of all the Directors/Partners/Proprietor.",
-    icon: <FaUserTie />,
-    bg: "bg-red",
+    icon: <FaFileContract />,
+    title: "Bank Account Documents",
+    note: "Proof of active bank account",
+    items: [
+      "Cancelled cheque (with pre-printed name & account number)",
+      "Bank statement (latest 3 months, with current transactions)",
+    ],
   },
 ];
 
-const rightDocs = [
+const personDocs = [
   {
-    desc: "Photo, PAN card & Aadhar Card of the Authorised person who will be responsible under GST",
-    icon: <FaMapMarkerAlt />,
-    bg: "bg-teal",
+    icon: <FaUser />,
+    title: "PAN &amp; Aadhaar of Directors / Partners / Proprietor",
+    note: "Mandatory for all key persons of the organisation",
+    items: [
+      "Self-attested PAN card",
+      "Self-attested Aadhaar card (mobile-linked for OTP authentication)",
+      "Passport-size photograph",
+    ],
   },
   {
-    desc: "Authorization letter/ Board Resolution for Authorised person (shall be provided by us)",
-    icon: <FaUniversity />,
-    bg: "bg-green",
+    icon: <FaCamera />,
+    title: "Authorised Signatory Identity",
+    note: "Person responsible for GST filings",
+    items: [
+      "PAN + Aadhaar of the authorised signatory",
+      "Board Resolution / Authorisation Letter appointing the signatory",
+      "Digital Signature (DSC) if applicable",
+    ],
   },
   {
-    desc: "A detailed checklist will be provided by our team in this respect",
-    icon: <FaPenNib />,
-    bg: "bg-indigo",
+    icon: <FaShieldAlt />,
+    title: "Additional Documents",
+    note: "Activity-specific or additional proofs",
+    items: [
+      "Head office and branch office details (if applicable)",
+      "Nature of business activity (HSN / SAC code mapping)",
+      "LUT Bond (for zero-rated exporters claiming refund without IGST)",
+    ],
   },
 ];
 
-const GSTDocuments = () => {
+const DocItem = ({ doc }) => (
+  <div className="opcd-doc-item">
+    <div className="opcd-doc-item-top">
+      <div className="opcd-doc-icon">{doc.icon}</div>
+      <div className="opcd-doc-meta">
+        <h4 className="opcd-doc-title" dangerouslySetInnerHTML={{ __html: doc.title }} />
+        <span className="opcd-doc-note">{doc.note}</span>
+      </div>
+    </div>
+    <ul className="opcd-doc-list">
+      {doc.items.map((item, i) => (
+        <li key={i} className="opcd-doc-list-item">{item}</li>
+      ))}
+    </ul>
+  </div>
+);
+
+const GSTRegDocument = () => {
   return (
-    <section className="gst-section">
-      <div className="gst-wrapper">
-        {/* LEFT */}
-        <div className="gst-column">
-          {leftDocs.map((doc, i) => (
-            <div key={i} className={`gst-card ${doc.bg}`}>
-              <div className="gst-icon">{doc.icon}</div>
-              <div className="gst-text">
-                <h4>{doc.title}</h4>
-                <p>{doc.desc}</p>
-              </div>
-            </div>
-          ))}
+    <section className="opcd-section" id="documents">
+      <div className="opcd-container">
+
+        <div className="opcd-header">
+          <h2 className="opcd-main-title">Documents Required for GST Registration in India</h2>
+          <p className="opcd-main-subtitle">Get these ready and we'll take care of the rest</p>
         </div>
 
-        {/* CENTER */}
-        <div className="gst-center">
-          <svg className="gst-lines" viewBox="0 0 300 300">
-            {[45, 105, 195, 255].map((y, i) => (
-              <line key={i} x1="150" y1="150" x2="20" y2={y} />
-            ))}
-            {[45, 105, 195, 255].map((y, i) => (
-              <line key={i} x1="150" y1="150" x2="280" y2={y} />
-            ))}
-          </svg>
+        <div className="opcd-columns">
 
-          <div className="gst-hexagon">
-            <div className="gst-hex-content">
-              <h3>GST</h3>
-              <span>Documents</span>
+          <div className="opcd-column">
+            <div className="opcd-col-header">
+              <div className="opcd-col-header-icon"><FaBuilding /></div>
+              <div>
+                <h3 className="opcd-col-title">Business &amp; Office Documents</h3>
+                <p className="opcd-col-subtitle">Registration proof, address &amp; bank details</p>
+              </div>
+            </div>
+            <div className="opcd-col-body">
+              {businessDocs.map((doc, i) => <DocItem key={i} doc={doc} />)}
             </div>
           </div>
-        </div>
 
-        {/* RIGHT */}
-        <div className="gst-column">
-          {rightDocs.map((doc, i) => (
-            <div key={i} className={`gst-card ${doc.bg}`}>
-              <div className="gst-icon">{doc.icon}</div>
-              <div className="gst-text">
-                <h4>{doc.title}</h4>
-                <p>{doc.desc}</p>
+          <div className="opcd-column">
+            <div className="opcd-col-header opcd-col-header--office">
+              <div className="opcd-col-header-icon"><FaUser /></div>
+              <div>
+                <h3 className="opcd-col-title">Person &amp; Authorisation Documents</h3>
+                <p className="opcd-col-subtitle">Identity, signatory &amp; activity proofs</p>
               </div>
             </div>
-          ))}
+            <div className="opcd-col-body">
+              {personDocs.map((doc, i) => <DocItem key={i} doc={doc} />)}
+            </div>
+          </div>
+
         </div>
+
       </div>
-
-      {/* BOTTOM CONTENT */}
-      {/* <div className="gst-bottom">
-        <h2>
-         Simple Steps for GST Registration in India
-        </h2>
-        <p>
-          We take care of documentation, verification, and filing to ensure
-          quick and compliant GST registration for your business.
-        </p>
-
-        <button className="gst-btn">Apply for GST Registration</button>
-      </div> */}
     </section>
   );
 };
 
-export default GSTDocuments;
+export default GSTRegDocument;

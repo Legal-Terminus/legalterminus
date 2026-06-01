@@ -1,116 +1,69 @@
 import React from "react";
-import {
-  FiShield,
-  FiZap,
-  FiBarChart2,
-  FiLock,
-  FiTrendingUp,
-  FiAward,
-} from "react-icons/fi";
 import "./GSTRegAdvantages.css";
-import gstHero from "../../assets/img-1.webp";
-import gstBenefitsImg from "../../assets/img-3.webp";
 
-const benefits = [
-  {
-    title: "Legal Recognition & Market Expansion",
-    desc:
-      "GST registration gives businesses official recognition as suppliers of goods or services. It also allows them to sell on eCommerce platforms like Amazon or Flipkart, helping them reach more customers.",
-    icon: <FiShield />,
-  },
-  {
-    title: "Tax Benefits & No Double Taxation",
-    desc:
-      "Registered businesses can claim Input Tax Credit (ITC) on their purchases, reducing their tax burden. Additionally, GST eliminates double taxation by allowing tax credits across the supply chain, lowering costs for businesses and consumers.",
-    icon: <FiZap />,
-  },
-  {
-    title: "Simplified Tax Filing & Lower Tax for Small Businesses",
-    desc:
-      "GST has made tax filing easier with an online system for payments and returns. Small businesses can also opt for the Composition Scheme, which lets them pay tax at a lower, fixed rate, reducing paperwork and compliance hassles.",
-    icon: <FiBarChart2 />,
-  },
-  {
-    title: "Higher Exemption Limit for Small Businesses",
-    desc:
-      "Only businesses with a turnover above ₹40 lakh (₹20 lakh in some states) need to register for GST. This means many small businesses are exempt, making operations simpler and reducing compliance burdens.",
-    icon: <FiLock />,
-  },
-];
-
-const GSTBenefits = () => {
+const GSTRegAdvantages = () => {
   return (
-    <>
-      {/* ================= HERO SECTION ================= */}
-      <section className="gst-hero">
-        <div className="gst-hero-grid">
-          <div className="gst-hero-image">
-            <img src={gstHero} alt="GST Registration Certificate" />
-          </div>
+    <section className="req-section">
+      <div className="req-container">
+        <header className="req-header">
+          <h2 className="req-title">Benefits of GST Registration</h2>
+          <p className="req-subtitle">
+            Registering for GST is an important step for businesses in India. It comes with several advantages that make tax compliance easier and more beneficial.
+          </p>
+        </header>
 
-          <div className="gst-hero-content">
-            <h2>Who Needs to Register for GST?</h2>
-            <p>
-              Some businesses and individuals must register for GST to follow tax rules. Here’s who should apply:
+        <div className="req-grid">
+          <article className="req-card">
+            <h3 className="req-card-title">Legal Recognition &amp; Market Expansion</h3>
+            <div className="req-card-underline" />
+            <p className="req-card-text">
+              GST registration gives businesses official recognition as suppliers of goods or services. It also unlocks access to e-commerce platforms like Amazon, Flipkart, and Meesho — and allows you to sell to GST-registered businesses who require a valid GSTIN for ITC.
             </p>
-            <p>
-              ✅ Service Providers – If you provide services (like freelancing, consulting, or agency work) and earn more than ₹20 lakh per year (₹10 lakh in some special states), you need GST registration.
-              <br></br>
-              ✅ Other than Service Provider – If the turnover exceeds 40 lakh per year, you need GST registration.
-              <br></br>
-              ✅ Online Sellers – If you sell products or services on platforms like Amazon or Flipkart, you must register for GST, no matter how much you earn.
-              <br></br>
-              ✅ Inter-State Suppliers – If you sell goods or services across different states, GST registration is mandatory, even if your sales are low.
-              <br></br>
-              ✅ Input Service Distributors (ISD) – If your business distributes tax credits (GST paid on purchases) to different branches, you must register.
-              <br></br>
-              ✅ Voluntary Registration – You can already register your business under GST voluntarily as per your business need.
+          </article>
+
+          <article className="req-card">
+            <h3 className="req-card-title">Input Tax Credit (ITC)</h3>
+            <div className="req-card-underline" />
+            <p className="req-card-text">
+              Registered businesses can claim Input Tax Credit on purchases, reducing their total tax burden. ITC eliminates double taxation across the supply chain — lowering costs for both the business and the end consumer.
             </p>
-          </div>
+          </article>
+
+          <article className="req-card">
+            <h3 className="req-card-title">Simplified Tax Filing</h3>
+            <div className="req-card-underline" />
+            <p className="req-card-text">
+              GST consolidates multiple indirect taxes into one online system. GSTR-1 (sales) and GSTR-3B (summary + payment) are filed online. Small businesses can opt for the Composition Scheme — pay a flat rate, file quarterly, no ITC complexity.
+            </p>
+          </article>
+
+          <article className="req-card">
+            <h3 className="req-card-title">Higher Exemption Limit</h3>
+            <div className="req-card-underline" />
+            <p className="req-card-text">
+              Only businesses with turnover above ₹40 lakh (goods) or ₹20 lakh (services) are mandatorily covered — meaning most micro-businesses are exempt. Voluntary registration is available for those who want to claim ITC or project credibility.
+            </p>
+          </article>
+
+          <article className="req-card">
+            <h3 className="req-card-title">Inter-State Trade Without Barriers</h3>
+            <div className="req-card-underline" />
+            <p className="req-card-text">
+              IGST (Integrated GST) enables seamless inter-state trade. No state border checkposts, no multiple tax registrations per state for most businesses — just one GSTIN for the entire country, with IGST credits flowing cleanly.
+            </p>
+          </article>
+
+          <article className="req-card">
+            <h3 className="req-card-title">Business Credibility &amp; Compliance</h3>
+            <div className="req-card-underline" />
+            <p className="req-card-text">
+              A GSTIN on your invoice signals compliance and professionalism to clients, vendors, and lenders. Banks and NBFCs use GST returns as a proxy for business turnover when evaluating loan eligibility — registered businesses access credit faster.
+            </p>
+          </article>
         </div>
-      </section>
-
-      {/* ================= BENEFITS SECTION ================= */}
-      <section className="gst-benefits">
-        <h2 className="gst-section-title">
-          Benefits of GST Registration
-        </h2>
-        <p className="gst-section-subtitle">
-          Registering for GST is an important step for businesses in India. It comes with several advantages that make tax compliance easier and more beneficial.
-        </p>
-
-        <div className="gst-benefits-grid">
-          {/* LEFT SIDE – VISUAL CARD (YOUR CODE ADDED) */}
-          <div className="gst-benefits-left">
-            <div className="gst-visual-card">
-              <span className="gst-badge">GST Registration</span>
-              <img src={gstBenefitsImg} alt="GST Benefits" />
-              <h3>Why GST Registration?</h3>
-              <p>
-                GST registration gives your business legal recognition, better
-                credibility, and access to long-term growth opportunities.
-              </p>
-            </div>
-          </div>
-
-          {/* RIGHT SIDE – CARDS */}
-          <div className="gst-benefits-cards">
-            {benefits.map((item, index) => (
-              <div className="gst-benefit-card" key={index}>
-                <div className="gst-card-icon">{item.icon}</div>
-                <h4>{item.title}</h4>
-                <p>{item.desc}</p>
-              </div>
-            ))}
-
-            <div className="gst-cta">
-              {/* <button>Talk to a GST Expert</button> */}
-            </div>
-          </div>
-        </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 };
 
-export default GSTBenefits;
+export default GSTRegAdvantages;

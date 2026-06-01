@@ -1,193 +1,65 @@
-/* =========================
-   ROOT
-========================= */
-:root {
-  --green: #1aa91a;
-  --green-dark: #118011;
-  --bg: #f5f7fa;
-  --card: #ffffff;
-  --text: #1f2937;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --radius: 14px;
-  --transition: 0.25s ease;
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
+.pvt-tabs-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f8fafc;
+  padding: 32px 24px 16px;
 }
 
-/* =========================
-   WRAPPER
-========================= */
-.gst-tabs {
-  max-width: 1200px;
-  margin: auto;
-  padding: 32px 16px;
-}
+.pvt-tabs-container { max-width: 1200px; margin: 0 auto; }
 
-/* =========================
-   HEADER
-========================= */
-.gst-tabs-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.gst-tabs-header h1 {
-  font-size: 38px;
-  font-weight: 800;
-  color: var(--green);
-}
-
-.gst-tabs-header p {
-  color: var(--muted);
-  margin-top: 8px;
-}
-
-/* =========================
-   PROGRESS
-========================= */
-.gst-progress {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 24px;
-}
-
-.gst-progress-step {
-  flex: 1;
-  height: 4px;
-  background: var(--border);
-  border-radius: 4px;
-}
-
-.gst-progress-step.active {
-  background: var(--green);
-}
-
-/* =========================
-   TABS NAV
-========================= */
-.gst-tabs-nav {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  background: var(--card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
+.pvt-tabs-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(33, 89, 25, 0.08);
+  padding: 0;
   overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
-.gst-tabs-indicator {
-  position: absolute;
-  inset: 0;
-  width: 12.5%;
-  background: rgba(26, 169, 26, 0.08);
-  transition: transform var(--transition);
-  z-index: 0;
-}
-
-.gst-tab {
-  position: relative;
-  z-index: 1;
-  padding: 16px 10px;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: var(--muted);
-  transition: color var(--transition);
-}
-
-.gst-tab.active {
-  color: var(--green-dark);
-}
-
-/* =========================
-   CONTENT
-========================= */
-.gst-tab-content {
-  margin-top: 32px;
-  background: var(--card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  padding: 32px;
-}
-
-/* Header */
-.gst-tab-header {
+.pvt-tabs-list {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  justify-content: flex-start;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.gst-tab-header h2 {
-  font-size: 28px;
-  font-weight: 700;
-}
+.pvt-tabs-list::-webkit-scrollbar { display: none; }
 
-.gst-tab-header span {
-  background: var(--green);
-  color: #fff;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 14px;
-}
-
-/* Body */
-.gst-tab-body {
-  min-height: 300px;
-}
-
-/* =========================
-   ACTIONS
-========================= */
-.gst-tab-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 32px;
-}
-
-.gst-tab-actions button {
-  padding: 12px 22px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
+.pvt-tab {
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 18px 38px;
+  font-size: 14.5px;
+  font-weight: 500;
+  letter-spacing: 2.8px;
+  color: #0a0b17;
   cursor: pointer;
-  font-weight: 600;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.gst-tab-actions button.primary {
-  background: var(--green);
-  color: #fff;
-  border-color: var(--green);
+.pvt-tab.active {
+  background: #e9f0ff;
+  color: #1aa91a;
+  box-shadow: inset 0 3px 0 #16b646;
 }
 
-.gst-tab-actions button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.pvt-tab:not(.active):hover { background: rgba(245, 248, 255, 0.9); }
+
+@media (max-width: 768px) {
+  .pvt-tabs-section { padding: 24px 16px; }
+  .pvt-tab { padding: 16px 26px; font-size: 13.5px; }
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
-@media (max-width: 900px) {
-  .gst-tabs-nav {
-    grid-template-columns: repeat(4, 1fr);
-    row-gap: 4px;
-  }
-
-  .gst-tabs-indicator {
-    display: none;
-  }
-}
-
-@media (max-width: 600px) {
-  .gst-tabs-header h1 {
-    font-size: 28px;
-  }
-
-  .gst-tab-header h2 {
-    font-size: 22px;
-  }
-
-  .gst-tab-content {
-    padding: 20px;
-  }
+@media (max-width: 480px) {
+  .pvt-tabs-section { padding: 20px 12px; }
+  .pvt-tab { padding: 14px 20px; font-size: 12.5px; letter-spacing: 0.15px; }
 }

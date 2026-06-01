@@ -1,264 +1,156 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-/* ===============================
-   SECTION
-================================ */
-.gst-reg-section {
-  font-family: "Poppins", sans-serif;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  padding: 80px 20px;
-}
-
-.gst-reg-header {
-  text-align: center;
-  max-width: 1200px;
-  margin: 0 auto 64px;
-}
-
-.gst-reg-title {
-  font-size: 42px;
-  font-weight: 700;
-  margin-bottom: 14px;
-  color: #111827;
-}
-
-.gst-reg-title span {
-  color: #f2a93b;
-}
-
-.gst-reg-subtitle {
-  font-size: 16px;
-  line-height: 1.8;
-  color: #4b5563;
-}
-
-/* ===============================
-   GRID
-================================ */
-.gst-reg-grid {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
-}
-
-/* ===============================
-   CARD
-================================ */
-.gst-reg-card {
+/* Reuses OPCPlans design */
+.opc-pricing-section {
+  font-family: 'Poppins', sans-serif;
   background: #ffffff;
-  border-radius: 16px;
-  padding: 36px 30px 32px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  padding: 60px 24px 80px;
+}
+
+.opcpricing-container { max-width: 1200px; margin: 0 auto; }
+
+.opcpricing-header { text-align: center; margin-bottom: 40px; }
+
+.opcpricing-title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: #000;
+}
+
+.opcpricing-subtitle { font-size: 18px; font-weight: 500; color: #1bb33a; }
+
+.opcpricing-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.opcplan-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1.5px solid rgba(34, 197, 94, 0.45);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
+  padding: 28px;
   display: flex;
   flex-direction: column;
-  transition: all 0.35s ease;
+  justify-content: space-between;
 }
 
-.gst-reg-card:hover {
-  transform: translateY(-12px);
-  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.18);
+.opcplan-card--popular {
+  border-color: rgba(34, 197, 94, 0.75);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.14);
 }
 
-/* ===============================
-   HIGHLIGHT
-================================ */
-.gst-reg-card.highlight {
-  background: linear-gradient(180deg, #2b5c8a 0%, #1f4f7a 100%);
-  color: #ffffff;
-  border: none;
-  transform: scale(1.05);
-}
-
-.gst-reg-card.highlight:hover {
-  transform: scale(1.07) translateY(-8px);
-}
-
-.gst-reg-card.highlight h3,
-.gst-reg-card.highlight p,
-.gst-reg-card.highlight li,
-.gst-reg-card.highlight .gst-reg-price span {
-  color: #ffffff;
-}
-
-/* ===============================
-   HEADER
-================================ */
-.gst-reg-card-header h3 {
-  font-size: 22px;
+.opcplan-badge {
+  font-size: 11px;
   font-weight: 700;
-  margin-bottom: 10px;
-}
-
-.gst-reg-card-subtitle {
-  font-size: 14px;
-  line-height: 1.7;
-  color: #4b5563;
-  margin-bottom: 20px;
-}
-
-/* ===============================
-   BADGE
-================================ */
-.gst-reg-badge {
-  display: inline-block;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: #18b233;
+  border-radius: 20px;
+  padding: 3px 12px;
+  margin-bottom: 8px;
+  text-align: center;
   width: fit-content;
-  background: #22c55e;
-  color: #ffffff;
-  font-size: 12px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.opcplan-header { margin-bottom: 16px; }
+
+.opcplan-name {
+  font-size: 20px;
   font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 999px;
-  margin-bottom: 12px;
+  color: #18b233;
+  text-align: center;
+  margin-bottom: 8px;
 }
 
-.gst-reg-badge.gold {
-  background: #f2a93b;
-  color: #111827;
-}
-
-/* ===============================
-   PRICING
-================================ */
-.gst-reg-price-box {
-  margin: 20px 0 24px;
-}
-
-.gst-reg-old-price {
-  font-size: 14px;
+.opcplan-old-price {
+  font-size: 20px;
+  font-weight: 500;
+  text-align: center;
+  color: #ff3b3b;
   text-decoration: line-through;
-  color: #9ca3af;
+  margin-bottom: 2px;
 }
 
-.gst-reg-price {
-  font-size: 38px;
-  font-weight: 700;
-  color: #111827;
-}
+.opcplan-price { font-size: 32px; font-weight: 700; text-align: center; color: #000; }
+.opcplan-meta { font-size: 13px; text-align: center; color: #666; }
 
-.gst-reg-price span {
-  font-size: 14px;
-  font-weight: 400;
-  color: #6b7280;
-  margin-left: 6px;
-}
+.opcplan-body { margin-top: 20px; }
 
-/* ===============================
-   GUARANTEE
-================================ */
-.gst-reg-guarantee {
-  padding: 16px 0;
-  border-top: 1px dashed rgba(0, 0, 0, 0.12);
-  border-bottom: 1px dashed rgba(0, 0, 0, 0.12);
-  margin-bottom: 22px;
-}
+.opcplan-list { padding: 0; margin: 0; list-style: none; }
 
-.gst-reg-guarantee strong {
-  font-size: 14px;
-}
-
-.gst-reg-guarantee span {
+.opcplan-list-item {
   font-size: 13px;
-  color: #6b7280;
+  color: #111;
+  line-height: 1.6;
+  display: flex;
+  margin-bottom: 8px;
 }
 
-/* ===============================
-   FEATURES
-================================ */
-.gst-reg-features {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 18px;
-  flex-grow: 1;
+.opcplan-list-item::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: #19b43a;
+  border-radius: 50%;
+  margin-right: 10px;
+  margin-top: 6px;
+  flex-shrink: 0;
 }
 
-.gst-reg-features li {
-  position: relative;
-  padding-left: 26px;
-  font-size: 14px;
-  line-height: 1.9;
-  margin-bottom: 10px;
-  color: #111827;
-}
+.opcplan-footer { text-align: center; margin-top: 20px; }
 
-.gst-reg-features li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  font-weight: 700;
-  color: #22c55e;
-}
-
-.gst-reg-card.highlight .gst-reg-features li::before {
-  color: #f2a93b;
-}
-
-/* ===============================
-   READ MORE
-================================ */
-.gst-reg-readmore {
-  background: none;
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1f4f7a;
-  cursor: pointer;
-  margin-bottom: 18px;
-}
-
-.gst-reg-card.highlight .gst-reg-readmore {
-  color: #f2a93b;
-}
-
-/* ===============================
-   CTA BUTTON
-================================ */
-.gst-reg-btn {
-  margin-top: auto;
-  width: 100%;
-  border: none;
-  padding: 15px 18px;
-  font-size: 15px;
-  font-weight: 600;
-  border-radius: 10px;
-  cursor: pointer;
-  background: linear-gradient(135deg, #1f4f7a, #163b5c);
+.opcplan-button {
+  background: #21b738;
   color: #ffffff;
-  transition: all 0.3s ease;
+  padding: 10px 36px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.gst-reg-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+.opcplan-button:hover {
+  background: #1aa130;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
-.gst-reg-card.highlight .gst-reg-btn {
-  background: linear-gradient(135deg, #f2a93b, #f5b84f);
-  color: #111827;
+.opcplan-button--popular { background: #18b233; }
+.opcplan-button--popular:hover { background: #15961e; }
+
+@media (max-width: 1200px) {
+  .opcpricing-container { padding: 0 12px; }
+  .opcpricing-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .opcplan-card { padding: 24px; }
 }
 
-/* ===============================
-   RESPONSIVE
-================================ */
-@media (max-width: 1024px) {
-  .gst-reg-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .gst-reg-card.highlight {
-    transform: none;
-  }
+@media (max-width: 992px) {
+  .opcpricing-title { font-size: 28px; }
+  .opcpricing-subtitle { font-size: 16px; }
+  .opcpricing-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 768px) {
-  .gst-reg-grid {
-    grid-template-columns: 1fr;
-  }
+  .opcpricing-cards { grid-template-columns: 1fr; }
+  .opcplan-card { max-width: 480px; margin: 0 auto; }
 }
 
 @media (max-width: 480px) {
-  .gst-reg-title {
-    font-size: 28px;
-  }
+  .opc-pricing-section { padding: 32px 12px 48px; }
+  .opcpricing-title { font-size: 22px; letter-spacing: 0.5px; }
+  .opcpricing-subtitle { font-size: 14px; }
+  .opcplan-card { padding: 20px; }
+  .opcplan-price { font-size: 28px; }
+  .opcplan-old-price { font-size: 18px; }
+  .opcplan-button { width: 100%; padding: 10px 0; }
 }

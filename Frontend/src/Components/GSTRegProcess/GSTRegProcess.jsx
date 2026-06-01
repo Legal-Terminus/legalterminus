@@ -3,135 +3,69 @@ import "./GSTRegProcess.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
-    text:
-      "Provision of requisite mentioned documents/information to us",
+    title: "Document Collection & Verification",
+    day: "Day 1",
+    text: "Provide PAN, Aadhaar, registration certificate, address proof, and bank statement. Our team validates completeness and flags any mismatches before filing.",
   },
   {
-    title: "Step 2 – Documents Scrutinizing",
-    text:
-      "Validating the documents/information and processing the same",
+    title: "Application Preparation",
+    day: "Day 1–2",
+    text: "We prepare the GST REG-01 application — mapping your business activity to the correct HSN/SAC codes, filling principal place of business details, and drafting the authorisation letter.",
   },
   {
-    title: "Step 3 – Further Documentations",
-    text:
-      "Preparation of further documents for signature",
+    title: "Filing on GST Portal",
+    day: "Day 2–3",
+    text: "Application submitted on gst.gov.in. On submission, an Application Reference Number (ARN) is generated instantly. ARN is used to track application status.",
   },
   {
-    title: "Step 4 – Filing of Application",
-    text:
-      "Filing of application and submission of the same online",
+    title: "Aadhaar Authentication",
+    day: "Day 2–3",
+    text: "Aadhaar OTP-based e-KYC for the authorised signatory. This step fast-tracks processing — applications with Aadhaar auth are typically approved within 3 working days.",
   },
   {
-    title: "Step 5 – Process of ARN Generation",
-    text:
-      "Aadhaar authentication for generation of ARN through OTP",
+    title: "Government Review",
+    day: "Day 3–7",
+    text: "GST officer reviews the application. If a query is raised (GST REG-03), we respond within 7 working days. Clean applications are approved without queries.",
   },
   {
-    title: "Step 5 – Issue of Registration Certificate",
-    text:
-      "Processing of the application and issuance of registration certificate",
+    title: "GSTIN Certificate Delivery",
+    day: "Day 7",
+    text: "On approval, GSTIN is issued and the Registration Certificate (GST REG-06) is downloadable from the portal. We deliver it to you as a PDF along with a compliance checklist.",
   },
 ];
 
-const GSTProcess = () => {
+const GSTRegProcess = () => {
   return (
-    <section className="GSTProcess-wrapper">
-      <h2 className="GSTProcess-heading">
-         Steps for GST Registration in India
-         <br></br>
-         <br></br>
+    <section className="pvtltd-gst-wrapper">
+      <h2 className="gst-heading">
+        Steps for GST Registration in India
       </h2>
+      <p className="pv-gst-subheading">
+        Six steps. 7 working days end-to-end for a clean application with Aadhaar authentication.
+      </p>
 
-      {/* ================= SNAKE PROCESS ================= */}
-      <div className="GSTProcess-snake-grid">
-        {steps.map((step, index) => {
-          const isRight = index % 2 !== 0;
+      <div className="pvtltd-timeline">
+        <div className="pvtltd-timeline-line" />
 
-          return (
-            <div
-              key={index}
-              className={`GSTProcess-snake-step ${
-                isRight ? "GSTProcess-right" : "GSTProcess-left"
-              }`}
-            >
-              {/* Connector */}
-              <span
-                className={`GSTProcess-connector ${
-                  isRight
-                    ? "GSTProcess-from-right"
-                    : "GSTProcess-from-left"
-                }`}
-              />
+        {steps.map((step, index) => (
+          <div
+            key={index}
+            className={`pvtltd-timeline-item ${index % 2 === 0 ? "left" : "right"} ${index === 0 ? "first" : ""} ${index === steps.length - 1 ? "last" : ""}`}
+          >
+            <div className="pvtltd-timeline-dot">{index + 1}</div>
 
-              <div className="GSTProcess-step-card">
-                <span className="GSTProcess-step-badge">
-                  {index + 1}
-                </span>
-                <h4>{step.title}</h4>
-                <p>{step.text}</p>
-              </div>
+            <div className="pvtltd-timeline-card">
+              <h4>
+                {step.title}
+                {step.day && <span className="pvtltd-day-tag">{step.day}</span>}
+              </h4>
+              <p>{step.text}</p>
             </div>
-          );
-        })}
-      </div>
-
-      {/* ================= CONSEQUENCES =================
-      <h2 className="GSTProcess-heading">Consequences for Non-Compliance</h2> */}
-
-      <div className="GSTProcess-penalty-grid">
-        {/* <div className="GSTProcess-penalty-card GSTProcess-light">
-          <h3>Penalty for Violation in GST</h3>
-          <ul>
-            <li>10% penalty on unpaid tax</li>
-            <li>100% penalty on intentional evasion</li>
-            <li>Minimum penalty ₹10,000</li>
-            <li>Interest on outstanding tax</li>
-            <li>GST suspension or cancellation</li>
-          </ul>
-        </div> */}
-
-        {/* <div className="GSTProcess-penalty-card GSTProcess-dark">
-          <h3>Penalty for Not Registering GST</h3>
-          <ul>
-            <li>₹10,000 or tax evaded (whichever is higher)</li>
-            <li>Penalty up to ₹2 Lakhs</li>
-            <li>Legal action under CGST Act</li>
-          </ul>
-        </div> */}
-      </div>
-
-      {/* ================= COMPONENTS ================= */}
-      <h2 className="GSTProcess-heading">
-        Different Types of GST Registration
-      </h2>
-      
-     <div style={{ height: "30px" }}></div>
-
-      <div className="GSTProcess-components-grid">
-        <div className="GSTProcess-component-card">
-          <h4>Central GST (CGST)</h4>
-          <p>This tax is applied when goods or services are sold within the same state. The central government collects this tax.</p>
-        </div>
-
-        <div className="GSTProcess-component-card">
-          <h4>State GST (SGST)</h4>
-          <p>This is also charged on sales within a state, but the tax is collected by the state government.</p>
-        </div>
-
-        <div className="GSTProcess-component-card">
-          <h4>Integrated GST (IGST)</h4>
-          <p>This tax is applied when goods or services are sold from one state to another. The central government collects it and later shares it with the respective state.</p>
-        </div>
-      </div>
-
-      <div className="GSTProcess-cta-wrapper">
-        {/* <button className="GSTProcess-cta-btn">
-          Get Your GST Number Quickly
-        </button> */}
+          </div>
+        ))}
       </div>
     </section>
   );
 };
 
-export default GSTProcess;
+export default GSTRegProcess;

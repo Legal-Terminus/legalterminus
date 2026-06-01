@@ -1,130 +1,84 @@
 import React, { useState } from "react";
-import { FaCircleQuestion } from "react-icons/fa6";
 import "./GSTRegFAQ.css";
 
 const faqs = [
   {
-    question: "When will it become mandatory for an organization to obtain GST Registration?",
+    question: "When is GST registration mandatory?",
+    answer: "GST registration is mandatory when annual turnover exceeds ₹40 lakh (goods) or ₹20 lakh (services). E-commerce sellers must register regardless of turnover. Inter-state suppliers are also mandatorily covered. Voluntary registration is available for businesses below the threshold who want to claim ITC.",
+  },
+  {
+    question: "What documents are required for GST registration?",
     answer: (
-    <div>
-      <p>An organization shall be required to obtain GST Registration on fulfilment of prescribed criteria and some key/ basic criteria is mentioned below:-</p>
-      <ol>
-        <li>When the turnover of any organization exceeds Rs. 40 Lakh in case of supply of Goods</li>
-        <li>When the turnover of any organisation exceeds Rs. 20 Lakh in case of supply of Services</li>
-        <li>When an organisation makes any inter-state taxable supply</li>
-        <li>E-Commerce operator for supplying services as notified</li>
-        <li>Organization/ entity who supply goods or services or both through electronic commerce operator</li>
-        <li>Non-resident taxable persons making taxable supply</li>
-        <li>An organization who is required to deduct TDS as per GST Act</li>
-        <li>An organization can voluntarily also apply for GST Registration</li>
-      </ol>
-    </div>
-  ),
+      <span>
+        Key documents:<br />
+        • PAN + Aadhaar of proprietor / directors / partners<br />
+        • Business registration certificate (CoI / Partnership Deed / Trade Licence)<br />
+        • Registered office proof (rent agreement + electricity bill, or owned property proof)<br />
+        • Cancelled cheque + bank statement<br />
+        • Authorisation letter for the authorised signatory
+      </span>
+    ),
   },
   {
-    question: "What are some key/ basic documents/information required for GST Registration?",
+    question: "How long does GST registration take?",
+    answer: "With Aadhaar authentication: 3–7 working days for clean applications. Without Aadhaar auth: up to 30 days as the application goes to a GST officer for physical verification. We always recommend Aadhaar-linked registration for fastest approval.",
+  },
+  {
+    question: "Is the government fee for GST registration NIL?",
+    answer: "Yes. The Central Government does not charge any fee for GST registration. Our professional fee covers advisory, document review, HSN/SAC mapping, application filing, ARN tracking, and GSTIN delivery. All costs are quoted upfront — no surprises.",
+  },
+  {
+    question: "What is the difference between Regular and Composition scheme?",
     answer: (
-    <div>
-      <ol>
-        <li>Any registration certificate of an organization such as Certification of Incorporation/Partnership Deed/GST Registration Certificate/Trade License.</li>
-        <li>Rent agreement and any utility bill of the registered office address of the organization.</li>
-        <li>Photo, PAN card& Aadhar Card of the organization and all the Directors/Partners/Proprietors.</li>
-        <li>Photo, PAN card & Aadhar Card of the Authorised person who will be responsible under GST</li>
-        <li>Authorization letter/ Board Resolution for appointment of Authorised person</li>
-        <li>Bank statement (with Current transactions) of the organization along with 1 cancelled cheque.</li>
-        <li>Digital Signature of the applicant/authorized signatory.</li>
-        <li>Head office and branch office details</li>
-        <li>Type of business activity (details of goods/ services to be supplied)</li>
-      </ol>
-    </div>
-  ),
+      <span>
+        Regular scheme: charge GST on sales, claim ITC on purchases, file GSTR-1 + GSTR-3B monthly/quarterly.<br /><br />
+        Composition scheme: pay a flat low rate (1%–6%) on turnover, no ITC, file GSTR-4 annually. Eligible for businesses with turnover below ₹1.5 crore (goods) or ₹50L (services). Cannot supply inter-state.
+      </span>
+    ),
   },
   {
-  question: "What is the procedure to obtain GST Registration?",
-  answer: (
-    <div>
-      <p>The broad process of obtaining GST Registration involves following steps:</p>
-      <ol>
-        <li>STEP 1: Provision of requisite mentioned documents/information to us</li>
-        <li>STEP 2: Validating the documents/ information and processing the same.</li>
-        <li>STEP 3: Filing of application and submission of the same in online/offline manner, as the case may be</li>
-        <li>STEP 4: Payment of appropriate government fee as applicable</li>
-        <li>STEP 5: Processing of the application and issuance of registration certificate</li>
-      </ol>
-    </div>
-  ),
-},
-
-  {
-    question:
-      "What is the time period within which the GST Registration can be obtained?",
-    answer:
-      "The process of obtaining GST Registration can take anywhere between 5 to 7 working days, subject to submission of correct information and complete documentation."
+    question: "Can a proprietorship, freelancer, or home-based business register for GST?",
+    answer: "Yes. Any business structure — proprietorship, partnership, company, LLP, freelancer, home-based business — can register for GST. The structure does not matter; what matters is turnover threshold or mandatory coverage (e-commerce, inter-state).",
   },
   {
-    question: "How Legal Terminus can help you to obtain GST Registration?",
-    answer:
-      "Legal Terminus can help you with obtaining GST registration for your organization, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fees. To know more, please book a telephonic appointment with one of our consultants free of charge"
+    question: "How can Legal Terminus help with GST registration?",
+    answer: "Legal Terminus handles the full process — document review, HSN/SAC code mapping, application filing, Aadhaar authentication coordination, ARN tracking, and GSTIN certificate delivery. You provide the documents; we do everything else. Setup typically completed within 7 working days.",
   },
 ];
 
-const GSTFaq = () => {
-  const [activeIndex, setActiveIndex] = useState(null);
+const GSTRegFAQ = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const toggleFaq = (index) => {
-    setActiveIndex(index === activeIndex ? null : index);
+    setActiveIndex((prev) => (prev === index ? -1 : index));
   };
 
   return (
-    <section className="GSTFaq-section">
-      <div className="GSTFaq-container">
+    <section className="faq-section">
+      <div className="faq-container">
 
-        {/* LEFT CONTENT */}
-        <div className="GSTFaq-left">
-          <span className="GSTFaq-badge">FAQs</span>
-          <h2 className="GSTFaq-title">
-            FAQs on GST Registration
-          </h2>
-          <p className="GSTFaq-intro">
-            Clear answers to the most common questions about GST registration,
-            eligibility, timelines, and compliance requirements.
+        <div className="faq-header">
+          <h2 className="faq-title">GST Registration — FAQs</h2>
+          <p className="faq-intro">
+            Common questions about GST registration eligibility, documents, timelines, and compliance — answered honestly.
           </p>
         </div>
 
-        {/* RIGHT ACCORDION */}
-        <div className="GSTFaq-right">
-          {faqs.map((faq, index) => {
-            const isActive = activeIndex === index;
-
+        <div className="faq-list">
+          {faqs.map((item, index) => {
+            const isActive = index === activeIndex;
             return (
-              <div
-                key={index}
-                className={`GSTFaq-item ${isActive ? "active" : ""}`}
-              >
+              <div key={index} className={`faq-item ${isActive ? "active" : ""}`}>
                 <button
-                  className="GSTFaq-question"
+                  type="button"
+                  className="faq-question"
                   onClick={() => toggleFaq(index)}
                 >
-                  <div className="GSTFaq-q-left">
-                    <FaCircleQuestion className="GSTFaq-q-icon" />
-                    <span>{faq.question}</span>
-                  </div>
-
-                  <span
-                    className={`GSTFaq-arrow ${isActive ? "open" : ""}`}
-                  >
-                    ▾
-                  </span>
+                  <span>{item.question}</span>
+                  <span className={`faq-icon ${isActive ? "open" : ""}`}>▾</span>
                 </button>
-
-                <div
-                  className={`GSTFaq-answer-wrapper ${
-                    isActive ? "show" : ""
-                  }`}
-                >
-                  <div className="GSTFaq-answer">
-                    <p>{faq.answer}</p>
-                  </div>
+                <div className={`faq-answer ${isActive ? "open" : ""}`}>
+                  <div className="faq-answer-content">{item.answer}</div>
                 </div>
               </div>
             );
@@ -136,4 +90,4 @@ const GSTFaq = () => {
   );
 };
 
-export default GSTFaq;
+export default GSTRegFAQ;
