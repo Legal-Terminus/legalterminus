@@ -1,54 +1,65 @@
 import React from "react";
 import "./ProPvtTypes.css";
-import typesIllustration from "../../assets/pvtltd-types.png"
-
+import typesIllustration from "../../assets/pvtltd-types.png";
 
 const PvtTypes = () => {
   return (
     <section className="pvt-types-section">
       <div className="pvt-types-container">
-        {/* Left graphic */}
+
         <div className="pvt-types-illustration-wrap">
           <img
             src={typesIllustration}
-            alt="Types of Private Limited Company"
+            alt="Types of Proprietorship Firm"
             className="pvt-types-illustration"
           />
         </div>
 
-        {/* Right content */}
         <div className="pvt-types-content">
-          <h2 className="pvt-types-title">
-            Types of Private Limited Company Registration
-          </h2>
+          <h2 className="pvt-types-title">Types of Proprietorship Firm</h2>
 
-          <p className="pvt-types-intro">
-            Private Limited Companies can be registered in different forms based on ownership, liability, and business objectives. Choosing the right type helps ensure legal protection, smooth operations, and long-term growth.
-          </p>
-
-          {/* Type 1 */}
           <div className="pvt-types-block">
-            <h3 className="pvt-types-subtitle">Company limited by Shares</h3>
+            <h3 className="pvt-types-subtitle">1. Freelancer / Consultant Proprietorship</h3>
             <p className="pvt-types-text">
-              This is the most common type of Private Limited Company. The liability of shareholders is limited to the unpaid amount on their shares. It is ideal for startups and growing businesses looking to raise funds while protecting personal assets.
+              For solo professionals — designers, developers, writers, consultants, marketers. Registration stack: MSME (Udyam) + Shop &amp; Est + GST (mandatory if turnover &gt; ₹20L services). Section 44ADA presumptive taxation typically applicable. Lowest cost, fastest setup.
             </p>
           </div>
 
-          {/* Type 2 */}
           <div className="pvt-types-block">
-            <h3 className="pvt-types-subtitle">Company limited by Guarantee</h3>
+            <h3 className="pvt-types-subtitle">2. E-commerce / Online Seller Proprietorship</h3>
             <p className="pvt-types-text">
-              In this type, members agree to contribute a fixed amount in case of liquidation. It is generally suitable for non-profit or charitable organizations that do not require share capital.
+              For Amazon / Flipkart / Meesho / Shopify sellers. Registration stack: MSME + Shop &amp; Est + GST (mandatory regardless of turnover for inter-state sellers under Section 24) + Trade Licence. Marketplace requires GSTIN matching bank + Aadhaar.
             </p>
           </div>
 
-          {/* Type 3 */}
           <div className="pvt-types-block">
-            <h3 className="pvt-types-subtitle">Unlimited Companies</h3>
+            <h3 className="pvt-types-subtitle">3. Trading / Retail Shop Proprietorship</h3>
             <p className="pvt-types-text">
-              An unlimited company does not place any limit on members’ liability. Members are personally responsible for company debts. This structure is less common and is usually chosen by closely held businesses with full control over operations.
+              For brick-and-mortar shops, distributors, wholesalers. Registration stack: MSME + Shop &amp; Est + GST (if turnover &gt; ₹40L goods) + Trade Licence + Professional Tax. Section 44AD presumptive taxation typically applicable.
             </p>
           </div>
+
+          <div className="pvt-types-block">
+            <h3 className="pvt-types-subtitle">4. Manufacturing Proprietorship</h3>
+            <p className="pvt-types-text">
+              For micro-manufacturers, food processors, garment makers, artisans. Registration stack: MSME + Shop &amp; Est + GST + Trade Licence + Factory Licence (if applicable) + sectoral licences (BIS, FSSAI, drug).
+            </p>
+          </div>
+
+          <div className="pvt-types-block">
+            <h3 className="pvt-types-subtitle">5. Food Business Proprietorship</h3>
+            <p className="pvt-types-text">
+              For restaurants, cloud kitchens, food trucks, packaged food sellers. Registration stack: MSME + Shop &amp; Est + GST + FSSAI Basic / State / Central (turnover-based) + Trade Licence + Health Trade Licence (city-specific).
+            </p>
+          </div>
+
+          <div className="pvt-types-block">
+            <h3 className="pvt-types-subtitle">6. Professional Practice Proprietorship</h3>
+            <p className="pvt-types-text">
+              For doctors, CAs, lawyers, architects in solo practice. Registration stack: MSME + professional body registration (MCI / ICAI / BCI / COA) + GST (if turnover &gt; ₹20L) + Professional Tax. Section 44ADA presumptive (50% of receipts) typically applicable.
+            </p>
+          </div>
+
         </div>
       </div>
     </section>

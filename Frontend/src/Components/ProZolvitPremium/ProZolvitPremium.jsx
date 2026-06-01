@@ -8,77 +8,79 @@ const ZolvitPremium = () => {
       <div className="zp-container">
         <div className="zp-card">
 
-          {/* Left illustration */}
-          <div className="zp-illustration-wrapper">
-            <img
-              src={premiumIllustration}
-              alt="Private Limited Company Registration by Legal Terminus"
-              className="zp-illustration"
-            />
-          </div>
-
-          {/* Right content */}
-          <div className="zp-content">
-
-            {/* Title + subtitle */}
-            <header className="zp-header">
-              <h2 className="zp-title">
-                Legal Terminus{" "}
-                <span className="zp-title-highlight">Priority</span>{" "}
-                <span className="zp-title-icon">⚖️</span>
-              </h2>
-              <p className="zp-subtitle">
-               Get your Proprietorship registered quickly with Legal Terminus’ expert-assisted process—perfect for individuals who want a simple business setup without delays.
-              </p>
-            </header>
-
-            {/* Features */}
-            <section className="zp-section-block">
-              <h3 className="zp-label">What You Get:</h3>
-              <ul className="zp-list zp-features-list">
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">🧑‍⚖️</span>
-                  Fast Proprietorship Registration Support 
-                </li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">📑</span>
-                  Hassle-Free Documentation & Compliance Help
-                </li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">⏱️</span>
-                  Regular Updates & Reminder Support
-                </li>
-              </ul>
-            </section>
-
-            {/* Note */}
-            <section className="zp-section-block">
-              <h3 className="zp-label">Important Notes:</h3>
-              <div className="zp-note-box">
-                <ul className="zp-note-list">
-                  <li className="zp-note-item">
-                    We help you finalize the right business name and registration requirements based on your business activity.
-                  </li>
-                  <li className="zp-note-item">
-                    Our team ensures the process remains compliant and error-free to avoid unnecessary rejections or delays.
-                  </li>
-                </ul>
-              </div>
-            </section>
-
-            {/* CTA */}
-            <div className="zp-cta-row">
-              <button className="zp-cta-btn">
-                Consult a Legal Expert
-              </button>
+          <div className="zp-top-row">
+            <div className="zp-illustration-wrapper">
+              <img
+                src={premiumIllustration}
+                alt="Proprietorship Firm Registration by Legal Terminus"
+                className="zp-illustration"
+              />
             </div>
 
-            {/* Pricing
-            <p className="zp-pricing">
-              <span className="zp-label">Starts from ₹3,999 (excluding government fees)</span> for Private Limited Company Registration in India.{" "}The package includes name approval, incorporation, DIN for two directors, e-PAN, e-TAN, and bank account documents. Also covers auditor appointment documents, EPF and ESI registrations.
-              </p> */}
+            <div className="zp-content">
+              <header className="zp-header">
+                <h2 className="zp-title">
+                  Legal Terminus{" "}
+                  <span className="zp-title-highlight">Priority</span>{" "}
+                  <span className="zp-title-icon">⚖</span>
+                </h2>
+                <p className="zp-subtitle">
+                  Proprietorships are deceptively simple — until the bank refuses to open a current account because your MSME doesn't match your Shop &amp; Establishment, or until a marketplace rejects you because your GST address doesn't match your bank statement. Priority is what happens when a senior expert stitches all your registrations together as one coherent identity.
+                </p>
+              </header>
 
+              <section className="zp-section-block">
+                <h3 className="zp-label">What you get</h3>
+                <ul className="zp-list zp-features-list">
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">⚡</span>
+                    48-hour SLA on MSME + Shop &amp; Establishment filings — same-day if started before 11 AM.
+                  </li>
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">🛡</span>
+                    Senior expert reviewed registration map — no mismatches between MSME, Shop &amp; Est, GST, and bank docs.
+                  </li>
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">🔄</span>
+                    Regular updates on registration status via Mail &amp; WhatsApp.
+                  </li>
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">📞</span>
+                    Direct support from a dedicated expert whenever you need help.
+                  </li>
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">📑</span>
+                    Complete Registration Certificate, post-registration compliance guidance.
+                  </li>
+                </ul>
+              </section>
+            </div>
           </div>
+
+          <div className="zp-bottom-full">
+            <h3 className="zp-label">Important Notes</h3>
+            <div className="zp-note-box">
+              <ul className="zp-note-list">
+                <li className="zp-note-item">
+                  Banks are now strict about 'business existence proof' for current accounts. Most require BOTH a Shop &amp; Establishment certificate AND a GST registration (or MSME + GST). Proprietorships set up only on MSME often get rejected at the bank stage.
+                </li>
+                <li className="zp-note-item">
+                  Marketplace onboarding (Amazon, Flipkart, Meesho, Zomato) requires a GSTIN matching your bank statement and Aadhaar address. Mismatches between any of these = onboarding rejected. Plan the address consistency upfront.
+                </li>
+                <li className="zp-note-item">
+                  <strong>Section 44AD</strong> presumptive tax has a 5-year lock-in: if you opt in once and then opt out, you lose the benefit for the next 5 years. Don't toggle in and out — pick a regime and stick. We run the math on the discovery call.
+                </li>
+                <li className="zp-note-item">
+                  <strong>Proprietorship has UNLIMITED liability</strong> — your personal assets (house, savings, vehicle) are at risk for business debts. If you're operating in regulated, high-liability, or product-recall sectors, you should NOT be a proprietorship. We'll flag this honestly.
+                </li>
+              </ul>
+            </div>
+
+            <div className="zp-cta-row">
+              <button className="zp-cta-btn">Consult a Legal Expert</button>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

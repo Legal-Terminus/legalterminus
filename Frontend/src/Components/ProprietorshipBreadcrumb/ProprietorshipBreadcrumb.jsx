@@ -16,34 +16,30 @@ const Breadcrum = () => {
 
           <h1 className="lt-public-title">
             Proprietorship Firm Registration
-            <br>
-            </br>
-            <span> in India</span>
+            <span className="lt-title-india"> in India</span>
+            <br />
+            <span className="lt-title-tagline">Your Proprietorship business. Live in 3 days.</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus can help you in Sole proprietorship firms registration in India, as and when required. We provide hassle-free services within a reasonable timeframe and competitive professional fees starting from Rs.999/-. Whether you need help with the proprietorship company registration process, we’ve got you covered.
+            The fastest, cheapest way to start a real business in India. No partners, no MCA, no MOA — just a few registrations stitched together (MSME, Shop &amp; Establishment, GST if needed) and you're invoicing. Our professional fee starts at ₹999 + GST. Government and licence fees are billed separately at actuals — itemised, transparent, no markup.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Only 1 Directors Required</div>
-            <div className="lt-feature-item"> Very Easy to Form</div>
-            <div className="lt-feature-item"> Hassle Free</div>
-            <div className="lt-feature-item"> High Business Credibility</div>
+            <div className="lt-feature-item">Single Owner Control</div>
+            <div className="lt-feature-item">Easy &amp; Low-Cost Setup</div>
+            <div className="lt-feature-item">Minimal Compliance</div>
+            <div className="lt-feature-item">Quick Registration Process</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <h3>800+</h3>
+              <p>Proprietorships set up</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Process</p>
-            </div>
-            <div>
-              <h3>5+</h3>
-              <p>Years of Legal Expertise</p>
+              <h3>All States</h3>
+              <p>MSME, GST &amp; Shop &amp; Est</p>
             </div>
           </div>
 

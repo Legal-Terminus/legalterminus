@@ -1,82 +1,65 @@
 import React from "react";
 import "./ProCompanyTab.css";
 
-// Replace with your actual illustration
-import pvtIllustration from "../../assets/whypvt-imp.svg";
+import pvtIllustration from "../../assets/whypvt-imp1.svg";
 
 const PvtLtdFull = () => {
   return (
     <div className="pvt-full-wrapper">
 
-      {/* ===========================
-          SECTION 1 — OVERVIEW
-      ============================ */}
-      {/* <div className="overview-wrapper">
-        <h2 className="overview-title">Understanding the Basics
-</h2>
-        <p className="overview-text">
-A Private Limited Company is a legally registered business under the Companies Act, 2013, with its own separate identity from its owners. It protects the personal assets of its members, limits who can own shares, and must have a registered office address. </p>
-      </div> */}
-
-      {/* ===========================
-          SECTION 2 — INTRO
-      ============================ */}
       <section className="pvt-intro-section">
         <div className="pvt-intro-container">
-          {/* Illustration */}
           <div className="pvt-intro-illustration-wrap">
             <img
               src={pvtIllustration}
-              alt="Private limited company illustration"
+              alt="Proprietorship firm registration illustration"
               className="pvt-intro-illustration"
             />
           </div>
 
-          {/* Text */}
           <div className="pvt-intro-content">
             <h2 className="pvt-intro-title">
-              Why Choose Private Limited Company Registration
+              Why Choose a Proprietorship Firm
             </h2>
             <p className="pvt-intro-text">
-              
-Registering a company in India is the first step to legally starting your business. The Companies Act, 2013, sets the rules for company formation, and the Ministry of Corporate Affairs (MCA) oversees the process. Once registered, your business gets a legal identity, along with rights and protections under Indian law. 
-<br></br>
-<br></br>
-Choosing the right type of Private Limited Company is important, as it determines how your business is owned, managed, and legally protected. Different types of private limited companies suit different business needs, depending on factors such as ownership structure. Selecting the correct type also helps ensure smooth compliance with legal regulations. Proper registration with the Ministry of Corporate Affairs (MCA) allows your company to operate legally, access government benefits, and build strong credibility in the market.            </p>
+              Proprietorship is the simplest and most common business structure in India — over 70% of small businesses operate as proprietorships. Why? Because there's no central registration, no Act to comply with, no MCA filing, no DSC, no DIN, no MOA, no AOA. You stitch together a few essential registrations (MSME, GST if applicable, Shop &amp; Establishment) and you're a recognised business — invoicing clients, accepting payments, and getting onboarded by marketplaces.
+            </p>
+            <p className="pvt-intro-text" style={{ marginTop: "16px" }}>
+              The trade-offs are real: unlimited personal liability, no separate legal identity from the proprietor, and no ability to bring in a partner or external investor without converting. But for solo founders, freelancers, retailers, professionals, and bootstrap businesses below ₹40-50L turnover — the cost-benefit math overwhelmingly favours proprietorship in Year 1. Convert later when scale demands it.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ===========================
-          SECTION 3 — COMPANIES ACT
-      ============================ */}
-      <section className="companies-act-section">
-        <div className="companies-act-container">
-          <div className="companies-act-card">
-            <h3 className="companies-act-title">Companies Act, 2013</h3>
-
-            <p className="companies-act-text">
-              As per Section 2(68) of the Companies Act, 2013, a private limited
-              company means a company having a minimum paid-up share capital as
-              may be prescribed, and which by its articles of association:
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(a)</span>
-              Restricts the right to transfer its shares;
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(b)</span>
-              Limits the number of its members to 200 (excluding present and
-              former employees); and
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(c)</span>
-              Prohibits any invitation to the public to subscribe for any
-              securities of the company.
-            </p>
+      <section className="pvt-compare-section">
+        <div className="pvt-compare-container">
+          <h2 className="pvt-compare-title">Proprietorship vs OPC vs Partnership: The Deep Dive</h2>
+          <p className="pvt-compare-subtitle">
+            Three solo / small structures, three different trade-offs. Here's the honest 2026 comparison:
+          </p>
+          <div className="pvt-compare-table-wrapper">
+            <table className="pvt-compare-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Proprietorship</th>
+                  <th>OPC</th>
+                  <th>Partnership Firm</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Owners</td><td>1</td><td>1 + 1 nominee</td><td>2 – 50</td></tr>
+                <tr><td>Governing Law</td><td>No central Act</td><td>Companies Act 2013</td><td>Partnership Act 1932</td></tr>
+                <tr><td>Separate Legal Entity</td><td>No</td><td>Yes</td><td>No</td></tr>
+                <tr><td>Limited Liability</td><td>No (unlimited)</td><td>Yes</td><td>No (unlimited)</td></tr>
+                <tr><td>Min Capital</td><td>Nil</td><td>Nil</td><td>Nil</td></tr>
+                <tr><td>Income Tax</td><td>Slab rate (up to 30%)</td><td>30% flat (entity)</td><td>30% flat (entity)</td></tr>
+                <tr><td>Audit Threshold</td><td>Turnover &gt; ₹1cr (Sec 44AB)</td><td>Mandatory regardless</td><td>Turnover &gt; ₹1cr (Sec 44AB)</td></tr>
+                <tr><td>Annual Compliance</td><td>ITR + GSTR (if reg)</td><td>MGT-7A + AOC-4 + ITR</td><td>ITR-5 + GSTR (if reg)</td></tr>
+                <tr><td>Setup Cost (Total)</td><td>₹500 – ₹3,000</td><td>₹8K – ₹15K</td><td>₹3K – ₹8K</td></tr>
+                <tr><td>Setup Time</td><td>2 – 5 days</td><td>10 days</td><td>10 – 15 days</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

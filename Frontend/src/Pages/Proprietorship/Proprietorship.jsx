@@ -2,13 +2,12 @@ import React, { Suspense } from 'react'
 import ProprietorshipBreadcrumb from '../../Components/ProprietorshipBreadcrumb/ProprietorshipBreadcrumb'
 
 // Lazy load below-fold components
+const ProGovtCosts = React.lazy(() => import('../../Components/ProGovtCosts/ProGovtCosts'))
 const ProZolvitPremium = React.lazy(() => import('../../Components/ProZolvitPremium/ProZolvitPremium'))
 const Protabs = React.lazy(() => import('../../Components/Protabs/Protabs'))
-const ProCompanyTab = React.lazy(() => import('../../Components/PvtltdCompanyTab/PvtltdCompanyTab'))
-const ProPvtTypes = React.lazy(() => import('../../Components/PvtltdPvtTypes/PvtltdPvtTypes'))
+const ProCompanyTab = React.lazy(() => import('../../Components/ProCompanyTab/ProCompanyTab'))
+const ProPvtTypes = React.lazy(() => import('../../Components/ProPvtTypes/ProPvtTypes'))
 const ProRequirementsTab = React.lazy(() => import('../../Components/ProRequirementsTab/ProRequirementsTab'))
-const ProProcess = React.lazy(() => import('../../Components/ProProcess/ProProcess'))
-const ProDocument = React.lazy(() => import('../../Components/ProDocument/ProDocument'))
 const ProFAQ = React.lazy(() => import('../../Components/ProFAQ/ProFAQ'))
 const ProTermsCondition = React.lazy(() => import('../../Components/ProTermsCondition/ProTermsCondition'))
 const ProTestimonial = React.lazy(() => import('../../Components/ProTestimonial/ProTestimonial'))
@@ -26,6 +25,10 @@ const PrivateLimited = () => {
           <ProPlanandPricing />
         </Suspense>
       </div>
+
+      <Suspense fallback={<div />}>
+        <ProGovtCosts />
+      </Suspense>
 
       <Suspense fallback={<div />}>
         <ProTermsCondition/>
@@ -47,29 +50,17 @@ const PrivateLimited = () => {
         </Suspense>
       </div>
 
-      {/* <div id="types">
+      <div id="types">
         <Suspense fallback={<div />}>
           <ProPvtTypes/>
         </Suspense>
-      </div> */}
+      </div>
 
       <div id="requirements">
         <Suspense fallback={<div />}>
           <ProRequirementsTab />
         </Suspense>
       </div>
-
-      {/* <div id="process">
-        <Suspense fallback={<div />}>
-          <ProProcess/>
-        </Suspense>
-      </div> */}
-
-      {/* <div id="documents">
-        <Suspense fallback={<div />}>
-          <ProDocument />
-        </Suspense>
-      </div> */}
 
       <div id="faq">
         <Suspense fallback={<div />}>
