@@ -8,6 +8,7 @@ const GSTRegAdvantages = React.lazy(() => import('../../Components/GSTRegAdvanta
 const GSTRegTypes = React.lazy(() => import('../../Components/GSTRegTypes/GSTRegTypes'))
 const GSTRegProcess = React.lazy(() => import('../../Components/GSTRegProcess/GSTRegProcess'))
 const GSTRegTerms = React.lazy(() => import('../../Components/GSTRegTerms/GSTRegTerms'))
+const GSTRegPriority = React.lazy(() => import('../../Components/GSTRegPriority/GSTRegPriority'))
 const GSTRegDocument = React.lazy(() => import('../../Components/GSTRegDocument/GSTRegDocument'))
 const GSTRegFAQ = React.lazy(() => import('../../Components/GSTRegFAQ/GSTRegFAQ'))
 
@@ -25,6 +26,12 @@ const GSTRegistration = () => {
       <Suspense fallback={<div />}>
         <GSTRegTerms />
       </Suspense>
+
+      <div id="premium">
+        <Suspense fallback={<div />}>
+          <GSTRegPriority />
+        </Suspense>
+      </div>
 
       <Suspense fallback={<div />}>
         <GSTRegTabs />
