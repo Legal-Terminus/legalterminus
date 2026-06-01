@@ -1,13 +1,5 @@
 {
   "projects": {
     "default": "legal-terminus-web"
-  },
-  "targets": {
-    "legal-terminus-web": {
-      "hosting": {
-        "website": ["legal-terminus-web"],
-        "portal": ["legal-terminus-web"]
-      }
-    }
   }
 }

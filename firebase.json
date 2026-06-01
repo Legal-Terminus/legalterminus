@@ -3,30 +3,15 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "hosting": [
-    {
-      "target": "website",
-      "public": "Frontend/dist",
-      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-      "rewrites": [
-        {
-          "source": "/api/**",
-          "run": { "serviceId": "legal-terminus-qa", "region": "asia-south2" }
-        },
-        { "source": "**", "destination": "/index.html" }
-      ]
-    },
-    {
-      "target": "portal",
-      "public": "Portal/dist",
-      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-      "rewrites": [
-        {
-          "source": "/api/**",
-          "run": { "serviceId": "legal-terminus-qa", "region": "asia-south2" }
-        },
-        { "source": "**", "destination": "/index.html" }
-      ]
-    }
-  ]
+  "hosting": {
+    "public": "Frontend/dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": { "serviceId": "legal-terminus-qa", "region": "asia-south2" }
+      },
+      { "source": "**", "destination": "/index.html" }
+    ]
+  }
 }
