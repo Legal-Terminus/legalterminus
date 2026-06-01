@@ -56,9 +56,6 @@ const CopyPvtTypes = () => {
           ))}
         </div>
 
-        <p className="cpvt-note">
-          <strong>Note:</strong> For most founders and first-time entrepreneurs, the Standard Pvt Ltd is the right call. If your structure involves foreign shareholders, a holding arrangement, or a social mission, <strong>Book a Free Consultation</strong> and we'll help you decide.
-        </p>
 
       </div>
     </section>
