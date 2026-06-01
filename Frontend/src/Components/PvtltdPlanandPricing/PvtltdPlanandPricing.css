@@ -54,12 +54,14 @@
   hyphens: none;
 }
 
-.plan-card--popular {
+.plan-card--popular,
+.plan-card--fullservice {
   border: 2px solid #19b43a;
   padding-top: 44px;
 }
 
-.plan-popular-badge {
+.plan-popular-badge,
+.plan-fullservice-badge {
   position: absolute;
   top: 0;
   left: 0;

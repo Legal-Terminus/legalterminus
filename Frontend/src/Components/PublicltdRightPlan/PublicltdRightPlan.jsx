@@ -25,6 +25,9 @@ const PLANS = [
   {
     id: "enriched",
     name: "Enriched",
+    badge: "★ MOST POPULAR",
+    badgeClass: "pub-plan-card--badged",
+    popular: true,
     oldPrice: 44999,
     price: 29999,
     services: [
@@ -42,6 +45,8 @@ const PLANS = [
   {
     id: "supreme",
     name: "Supreme",
+    badge: "✦ 6 MONTH SERVICE",
+    badgeClass: "pub-plan-card--badged",
     oldPrice: 66999,
     price: 44999,
     services: [
@@ -55,6 +60,8 @@ const PLANS = [
   {
     id: "supreme-plus",
     name: "Supreme Plus",
+    badge: "✦ FULL-SERVICE",
+    badgeClass: "pub-plan-card--badged",
     oldPrice: 96999,
     price: 64999,
     services: [
@@ -93,8 +100,9 @@ const PricingSection = () => {
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
-                className="pub-plan-card"
+                className={`pub-plan-card${plan.badgeClass ? ` ${plan.badgeClass}` : ""}`}
               >
+                {plan.badge && <div className="pub-plan-banner-badge">{plan.badge}</div>}
                 <div>
                   <div className="pub-plan-card-header">
                       <div className="pub-plan-name">{plan.name}</div>

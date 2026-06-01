@@ -58,6 +58,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
@@ -135,6 +136,27 @@
   font-size: 12px;
   text-align: center;
   color: #666;
+}
+
+/* Banner badge — full-width top strip matching Private Limited design */
+.pub-plan-card--badged {
+  border: 2px solid #19b43a;
+  padding-top: 44px;
+}
+
+.pub-plan-banner-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #19b43a;
+  color: #fff;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 0;
+  border-radius: 10px 10px 0 0;
+  letter-spacing: 0.5px;
 }
 
 .pub-plan-card--popular {
@@ -223,6 +245,10 @@
 
   .pub-plan-card {
     padding: 24px;
+  }
+
+  .pub-plan-card--badged {
+    padding-top: 44px;
   }
 }
 

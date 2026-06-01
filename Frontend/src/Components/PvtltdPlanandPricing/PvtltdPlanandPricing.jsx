@@ -168,7 +168,8 @@ const PricingSection = () => {
             </article>
 
             {/* Supreme Plus */}
-            <article className="plan-card">
+            <article className="plan-card plan-card--fullservice">
+              <div className="plan-fullservice-badge">✦ FULL-SERVICE</div>
               <div>
                 <div className="plan-header">
                   <div className="plan-name">Supreme Plus</div>
