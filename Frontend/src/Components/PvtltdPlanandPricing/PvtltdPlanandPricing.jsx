@@ -87,7 +87,7 @@ const PricingSection = () => {
                 <div className="plan-header">
                   <div className="plan-name">Elemental</div>
                   <div className="plan-old-price">₹7,999</div>
-                  <div className="plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
+                  <div className="plan-price">₹{PLANS[0].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
 
@@ -119,7 +119,7 @@ const PricingSection = () => {
                 <div className="plan-header">
                   <div className="plan-name">Enriched</div>
                   <div className="plan-old-price">₹13,999</div>
-                  <div className="plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
+                  <div className="plan-price">₹{PLANS[1].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
 
@@ -146,7 +146,7 @@ const PricingSection = () => {
                 <div className="plan-header">
                   <div className="plan-name">Supreme</div>
                   <div className="plan-old-price">₹20,999</div>
-                  <div className="plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
+                  <div className="plan-price">₹{PLANS[2].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
 
@@ -173,7 +173,7 @@ const PricingSection = () => {
                 <div className="plan-header">
                   <div className="plan-name">Supreme Plus</div>
                   <div className="plan-old-price">₹37,499</div>
-                  <div className="plan-price">{PLANS[3].price.toLocaleString("en-IN")}</div>
+                  <div className="plan-price">₹{PLANS[3].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
 

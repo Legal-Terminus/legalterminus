@@ -67,7 +67,7 @@ const PricingSection = () => {
                 <div className="prf-planheader">
                   <div className="prf-pricingname">Elemental</div>
                   <div className="prf-pricingold-price">₹3,499</div>
-                  <div className="prf-pricingprice">{PLANS[0].price.toLocaleString("en-IN")}</div>
+                  <div className="prf-pricingprice">₹{PLANS[0].price.toLocaleString("en-IN")}</div>
                   <div className="prf-pricingmeta">+ Govt. fees &amp; GST extra</div>
                 </div>
 
@@ -95,7 +95,7 @@ const PricingSection = () => {
                 <div className="prf-planheader">
                   <div className="prf-pricingname">Enriched</div>
                   <div className="prf-pricingold-price">₹6,499</div>
-                  <div className="prf-pricingprice">{PLANS[1].price.toLocaleString("en-IN")}</div>
+                  <div className="prf-pricingprice">₹{PLANS[1].price.toLocaleString("en-IN")}</div>
                   <div className="prf-pricingmeta">+ Govt. fees &amp; GST extra</div>
                 </div>
 
@@ -121,7 +121,7 @@ const PricingSection = () => {
                 <div className="prf-planheader">
                   <div className="prf-pricingname">Supreme</div>
                   <div className="prf-pricingold-price">₹11,999</div>
-                  <div className="prf-pricingprice">{PLANS[2].price.toLocaleString("en-IN")}</div>
+                  <div className="prf-pricingprice">₹{PLANS[2].price.toLocaleString("en-IN")}</div>
                   <div className="prf-pricingmeta">+ Govt. fees &amp; GST extra</div>
                 </div>
 
