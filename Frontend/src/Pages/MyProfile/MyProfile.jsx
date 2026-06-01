@@ -206,6 +206,38 @@ export default function MyProfile() {
           </div>
         </div>
 
+        {/* Portal Access Card - Admin Only */}
+        {profile?.role === 'admin' && (
+          <div className="mp-card">
+            <div className="mp-card-header" style={{ backgroundColor: '#3b82f6', borderRadius: '20px 20px 0 0' }}>
+              <div className="mp-avatar" style={{ background: 'rgba(255, 255, 255, 0.3)' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+              </div>
+              <div className="mp-header-info" style={{ color: 'white' }}>
+                <h1>Admin Portal</h1>
+                <p>Manage users, clients, and tasks</p>
+              </div>
+            </div>
+            <div style={{ padding: '32px 40px' }}>
+              <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
+                Access the admin dashboard to manage team members, clients, and service configurations.
+              </p>
+              <a 
+                href="/portal" 
+                className="mp-btn-primary" 
+                style={{ display: 'inline-block', textDecoration: 'none', color: 'white', backgroundColor: '#3b82f6' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px', verticalAlign: 'middle' }}>
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Open Portal
+              </a>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

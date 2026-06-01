@@ -33,7 +33,8 @@ permissions:
 
 env:
   REGION: asia-south2
-  SERVICE_NAME: legal-terminus-qa
+  SERVICE_NAME: legal-terminus-api
+  PORTAL_SERVICE_NAME: legal-terminal-portal
   GAR_REPO: legal-terminus-qa
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -179,7 +180,7 @@ jobs:
       - name: 🚀 Deploy Portal to Cloud Run
         if: github.event.inputs.deploy_portal == 'true' || github.event_name == 'push'
         run: |
-          gcloud run deploy legal-terminus-qa-portal \
+          gcloud run deploy ${{ env.PORTAL_SERVICE_NAME }} \
             --image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:${{ github.sha }} \
             --region=${{ env.REGION }} \
             --platform=managed \
@@ -191,7 +192,7 @@ jobs:
             --cpu=1 \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
 
-          PORTAL_URL=$(gcloud run services describe legal-terminus-qa-portal \
+          PORTAL_URL=$(gcloud run services describe ${{ env.PORTAL_SERVICE_NAME }} \
             --region=${{ env.REGION }} \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
             --format='value(status.url)')

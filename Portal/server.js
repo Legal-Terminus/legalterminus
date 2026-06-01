@@ -15,6 +15,16 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Handle /portal path prefix when proxied via Firebase Hosting
+app.get('/portal', (req, res) => {
+  res.sendFile(join(__dirname, 'dist', 'index.html'), (err) => {
+    if (err) {
+      console.error('Error sending index.html:', err);
+      res.status(500).send('Error loading page');
+    }
+  });
+});
+
 // SPA fallback: route all requests to index.html for client-side routing
 app.get('*', (req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'), (err) => {
