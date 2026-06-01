@@ -48,28 +48,87 @@ A Private Limited Company is a legally registered business under the Companies A
       </section>
 
       {/* ===========================
-          SECTION 3 — COMPANIES ACT
+          SECTION 3 — COMPARISON TABLE
       ============================ */}
-      <section className="companies-act-section">
-        <div className="companies-act-container">
-          <div className="companies-act-card">
-            {/* <h3 className="companies-act-title">Companies Act, 2013</h3> */}
-
-            <p className="companies-act-text">
-             Designed for entrepreneurs and growing businesses looking for a smooth, quick, and hassle-free Private Limited Company registration process, with expert assistance at every step.</p>
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(a)</span>
-              PAN and Aadhaar of all Directors/Shareholders;
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(b)</span>
-              Registered office address proof along with latest utility bill (electricity/water/gas); and
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(c)</span>
-              Supporting documents (if applicable) such as rent agreement/ownership proof and NOC from the property owner.</p>
+      <section className="pvt-compare-section">
+        <div className="pvt-compare-container">
+          <h2 className="pvt-compare-title">Pvt Ltd vs LLP vs OPC: The Deep Dive</h2>
+          <p className="pvt-compare-subtitle">
+            Three corporate structures, three different best-fit profiles. Here's the honest 2026 comparison:
+          </p>
+          <div className="pvt-compare-table-wrapper">
+            <table className="pvt-compare-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Pvt Ltd</th>
+                  <th>LLP</th>
+                  <th>OPC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Min Owners / Members</td>
+                  <td>2 dirs + 2 shareholders</td>
+                  <td>2 designated partners</td>
+                  <td>1 + 1 nominee</td>
+                </tr>
+                <tr>
+                  <td>Max Members</td>
+                  <td>200</td>
+                  <td>Unlimited</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>Separate Legal Entity</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>Limited Liability</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>Income Tax</td>
+                  <td>22% (115BAA) / 25.17%</td>
+                  <td>30% flat</td>
+                  <td>22% (115BAA) / 25.17%</td>
+                </tr>
+                <tr>
+                  <td>Statutory Audit</td>
+                  <td>Mandatory regardless</td>
+                  <td>Turnover &gt; ₹40L OR Cap &gt; ₹25L</td>
+                  <td>Mandatory regardless</td>
+                </tr>
+                <tr>
+                  <td>External VC Funding</td>
+                  <td>Yes (preferred)</td>
+                  <td>Difficult (uncommon)</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>ESOP Friendly</td>
+                  <td>Yes (Sec 62(1)(b))</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>Annual Compliance Cost</td>
+                  <td>₹40K – ₹1L</td>
+                  <td>₹15K – ₹40K</td>
+                  <td>₹20K – ₹40K</td>
+                </tr>
+                <tr>
+                  <td>Setup Cost (Total)</td>
+                  <td>₹10K – ₹25K</td>
+                  <td>₹8K – ₹15K</td>
+                  <td>₹8K – ₹15K</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

@@ -151,6 +151,108 @@
 }
 
 /* --------------------------------------------------
+   COMPARISON TABLE
+-------------------------------------------------- */
+
+.pvt-compare-section {
+  font-family: "Poppins", sans-serif;
+  background: #ffffff;
+  padding: 24px 24px 60px;
+}
+
+.pvt-compare-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pvt-compare-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.pvt-compare-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 24px;
+  line-height: 1.7;
+}
+
+.pvt-compare-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+
+.pvt-compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 600px;
+}
+
+.pvt-compare-table thead tr {
+  background: #0f3d2e;
+}
+
+.pvt-compare-table thead th {
+  color: #fff;
+  font-weight: 600;
+  padding: 14px 20px;
+  text-align: left;
+  letter-spacing: 0.3px;
+}
+
+.pvt-compare-table thead th:first-child {
+  border-radius: 12px 0 0 0;
+}
+
+.pvt-compare-table thead th:last-child {
+  border-radius: 0 12px 0 0;
+}
+
+.pvt-compare-table tbody tr {
+  background: #fff;
+  border-bottom: 1px solid #e9f5ec;
+  transition: background 0.15s ease;
+}
+
+.pvt-compare-table tbody tr:hover {
+  background: #f0faf2;
+}
+
+.pvt-compare-table tbody td {
+  padding: 13px 20px;
+  color: #1e293b;
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+.pvt-compare-table tbody td:first-child {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.pvt-compare-table tbody tr:last-child td:first-child {
+  border-radius: 0 0 0 12px;
+}
+
+.pvt-compare-table tbody tr:last-child td:last-child {
+  border-radius: 0 0 12px 0;
+}
+
+@media (max-width: 640px) {
+  .pvt-compare-title {
+    font-size: 20px;
+  }
+
+  .pvt-compare-section {
+    padding: 16px 16px 40px;
+  }
+}
+
+/* --------------------------------------------------
    COMPANIES ACT CARD
 -------------------------------------------------- */
 
