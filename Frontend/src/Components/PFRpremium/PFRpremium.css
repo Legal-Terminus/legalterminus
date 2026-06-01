@@ -158,6 +158,8 @@
 
 .zp-cta-row {
   margin: 20px 0 16px;
+  display: flex;
+  justify-content: center;
 }
 
 .zp-cta-btn {
