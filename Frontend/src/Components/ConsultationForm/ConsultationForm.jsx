@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getServiceDisplayName } from '../../utils/serviceConfig.js';
 import './ConsultationForm.css';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
@@ -80,6 +81,7 @@ const ConsultationForm = ({
           subject: `Consultation request – ${source}`,
           message: `Lead from service page: ${source}`,
           source,
+          sourceLabel: getServiceDisplayName(source),
           whatsapp: form.whatsapp,
         }),
       });

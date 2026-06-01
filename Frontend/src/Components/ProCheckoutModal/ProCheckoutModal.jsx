@@ -8,6 +8,7 @@ import {
 } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
+import { getServiceDisplayName } from "../../utils/serviceConfig.js";
 import "./ProCheckoutModal.css";
 
 const STATES = [
@@ -101,7 +102,7 @@ function loadRazorpayScript() {
   return Promise.resolve();
 }
 
-const ProCheckoutModal = ({ plan, onClose }) => {
+const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
   const [step, setStep] = useState("order-summary");
   const [failureReason, setFailureReason] = useState(null);
   const [loggedInUser, setLoggedInUser] = useState(null);
@@ -362,10 +363,12 @@ const ProCheckoutModal = ({ plan, onClose }) => {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
-          amount:   plan.price,
-          planName: plan.name,
-          userId:   currentUser.uid,
+          amount:      plan.price,
+          planName:    plan.name,
+          userId:      currentUser.uid,
           form,
+          source,
+          sourceLabel: getServiceDisplayName(source),
         }),
       });
 

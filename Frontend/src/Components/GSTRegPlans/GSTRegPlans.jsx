@@ -113,7 +113,7 @@ const GSTRegistrationPackages = () => {
     </section>
 
       {activePlan && (
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="gst-registration" />
       )}
     </>
   );

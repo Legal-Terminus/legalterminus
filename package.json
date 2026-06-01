@@ -17,9 +17,14 @@
     "dev:portal-only": "lsof -ti :5173 | xargs kill -9 2>/dev/null || true; cd Portal && npm run dev"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.2.2"
   },
-  "keywords": ["legal", "workflow", "portal", "management"],
+  "keywords": [
+    "legal",
+    "workflow",
+    "portal",
+    "management"
+  ],
   "author": "Legal Terminus",
   "license": "ISC"
 }

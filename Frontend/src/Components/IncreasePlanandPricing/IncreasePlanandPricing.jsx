@@ -131,7 +131,7 @@ const IncreasePlanandPricing= () => {
 
       {activePlan && (
 
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="increase-capital" />
 
       )}
 

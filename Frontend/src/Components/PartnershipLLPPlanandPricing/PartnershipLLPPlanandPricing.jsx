@@ -134,7 +134,7 @@ const PartnershipLLPPlanandPricing = () => {
 
       {activePlan && (
 
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="partnership-to-llp" />
 
       )}
 

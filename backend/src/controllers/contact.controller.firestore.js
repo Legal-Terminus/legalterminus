@@ -26,6 +26,7 @@ const FIELD_LIMITS = {
   state: 60,
   preferredCallTime: 50,
   source: 80,
+  sourceLabel: 200,
 };
 
 /* ================= SUBMIT CONTACT FORM ================= */
@@ -42,6 +43,7 @@ export const createContactLead = async (req, res) => {
     const state            = stripTags(raw.state).slice(0, FIELD_LIMITS.state);
     const preferredCallTime = stripTags(raw.preferredCallTime).slice(0, FIELD_LIMITS.preferredCallTime);
     const source           = stripTags(raw.source).slice(0, FIELD_LIMITS.source) || "unknown";
+    const sourceLabel      = stripTags(raw.sourceLabel).slice(0, FIELD_LIMITS.sourceLabel) || "";
     const whatsapp         = raw.whatsapp === true || raw.whatsapp === "true";
 
     // Validate required fields
@@ -68,7 +70,8 @@ export const createContactLead = async (req, res) => {
       message,
       state,
       preferredCallTime,
-      source,
+      source,                      // internal key — never changes, used for filtering
+      sourceLabel,                 // user-customizable display name from serviceCategories
       whatsapp,
       status: "new",               // new | contacted | closed
       createdAt: new Date(),

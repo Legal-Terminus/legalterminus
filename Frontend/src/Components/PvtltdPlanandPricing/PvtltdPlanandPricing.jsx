@@ -199,7 +199,7 @@ const PricingSection = () => {
       </section>
 
       {activePlan && (
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="private-limited" />
       )}
     </>
   );

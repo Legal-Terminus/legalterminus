@@ -16,6 +16,7 @@ import contactRoutes from "./routes/contact.routes.js";
 import tasksRoutes from "./routes/tasks.routes.js";
 import reportsRoutes from "./routes/reports.routes.js";
 import teamMembersRoutes from "./routes/team-members.routes.js";
+import serviceConfigRoutes from "./routes/serviceConfig.routes.js";
 import initializeFirebase from "./config/firebase.js";
 
 // Load environment variables
@@ -64,6 +65,7 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/tasks", tasksRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/team-members", teamMembersRoutes);
+app.use("/api/service-config", serviceConfigRoutes);
 
 /* ================= HEALTH CHECK ================= */
 app.get("/health", (req, res) => res.json({ status: "ok" }));

@@ -122,7 +122,7 @@ const ProPlanandPricing = () => {
       </section>
 
       {activePlan && (
-        <ProCheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+        <ProCheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="proprietorship" />
       )}
     </>
   );

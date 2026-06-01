@@ -108,7 +108,7 @@ const DissolvePrivatePlanAndPricing = () => {
 
       {activePlan && (
 
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="dissolve-private-limited" />
 
       )}
 

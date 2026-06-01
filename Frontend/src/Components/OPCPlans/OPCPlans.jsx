@@ -130,7 +130,7 @@ const OPCPlan = () => {
 
       {activePlan && (
 
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="opc-registration" />
 
       )}
 

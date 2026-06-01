@@ -134,7 +134,7 @@ const PricingSection = () => {
 
       {activePlan && (
 
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="public-limited-company" />
 
       )}
 

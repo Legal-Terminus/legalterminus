@@ -134,7 +134,7 @@ const TradeLicensePlans = () => {
 
       {activePlan && (
 
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="trade-license" />
 
       )}
 

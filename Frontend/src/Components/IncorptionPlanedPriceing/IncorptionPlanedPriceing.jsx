@@ -139,7 +139,7 @@ const IncorporationPlanAndPricing = () => {
 
       {activePlan && (
 
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="incorporation" />
 
       )}
 

@@ -46,7 +46,7 @@ async function getAccessToken() {
  * and returns { redirectUrl, transactionId } to the frontend.
  */
 router.post('/initiate', async (req, res) => {
-  const { amount, planName, userId, form } = req.body;
+  const { amount, planName, userId, form, source, sourceLabel } = req.body;
 
   if (!amount || !planName) {
     return res.status(400).json({ error: 'Missing required fields: amount, planName' });
@@ -56,7 +56,7 @@ router.post('/initiate', async (req, res) => {
   const { BASE_URL, FRONTEND_URL } = process.env;
 
   // Backend redirect — we verify status here before sending user to frontend result page
-  const redirectUrl = `${BASE_URL}/api/payment/redirect?txnId=${transactionId}&planName=${encodeURIComponent(planName)}&userId=${encodeURIComponent(userId || '')}&amount=${amount}`;
+  const redirectUrl = `${BASE_URL}/api/payment/redirect?txnId=${transactionId}&planName=${encodeURIComponent(planName)}&userId=${encodeURIComponent(userId || '')}&amount=${amount}&source=${encodeURIComponent(source || 'unknown')}&sourceLabel=${encodeURIComponent(sourceLabel || '')}`;
 
   const payload = {
     merchantOrderId: transactionId,
@@ -114,8 +114,10 @@ router.post('/initiate', async (req, res) => {
  * then redirect the user to the frontend result page.
  */
 router.get('/redirect', async (req, res) => {
-  const { txnId, planName, userId, amount } = req.query;
+  const { txnId, planName, userId, amount, source, sourceLabel } = req.query;
   const { FRONTEND_URL } = process.env;
+
+  console.log(`PhonePe redirect: txnId=${txnId}, userId=${userId}, planName=${planName}, amount=${amount}, source=${source}, sourceLabel=${sourceLabel}`);
 
   if (!txnId) {
     return res.redirect(`${FRONTEND_URL}/payment/result?status=failed&reason=missing_transaction`);
@@ -139,14 +141,18 @@ router.get('/redirect', async (req, res) => {
     const paymentId = data?.paymentDetails?.[0]?.transactionId || txnId;
     const isSuccess = state === 'COMPLETED';
 
+    console.log(`[PhonePe Status Response] Full response:`, JSON.stringify(data, null, 2));
+    console.log(`PhonePe status: state=${state}, paymentId=${paymentId}, isSuccess=${isSuccess}`);
+
     if (isSuccess) {
-      await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, status: 'success' });
+      console.log(`Saving payment for userId=${userId}`);
+      await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, source, sourceLabel, status: 'success' });
       const query = new URLSearchParams({ status: 'success', order_id: txnId, amount, tracking_id: paymentId });
       return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
     }
 
     const reason = data?.errorCode || data?.message || 'Payment failed';
-    await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, status: 'failed', failureReason: reason });
+    await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, source, sourceLabel, status: 'failed', failureReason: reason });
     const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason });
     return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   } catch (err) {
@@ -176,30 +182,44 @@ router.post('/callback', express.json(), async (req, res) => {
 
 /* ─── helpers ─── */
 
-async function savePayment({ userId, transactionId, paymentId, amount, planName, status, failureReason }) {
-  if (!userId) return;
+async function savePayment({ userId, transactionId, paymentId, amount, planName, source, sourceLabel, status, failureReason }) {
+  console.log(`[savePayment] userId=${userId}, txnId=${transactionId}, status=${status}, source=${source}, sourceLabel=${sourceLabel}`);
+  
+  if (!userId) {
+    console.warn(`[savePayment] ⚠️  userId is missing! Payment NOT saved to database`);
+    return;
+  }
+  
   try {
     const db = getDb();
+    console.log(`[savePayment] Writing to users/${userId}/payments/${transactionId}`);
+    
     await db.collection('users').doc(userId).collection('payments').doc(transactionId).set({
       orderId:       transactionId,
       paymentId:     paymentId || '',
       amount:        parseFloat(amount) || 0,
       planName:      planName || '',
+      source:        source || 'unknown',        // internal key — never changes, used for filtering
+      sourceLabel:   sourceLabel || '',          // user-customisable display name from serviceCategories
       status,
       failureReason: failureReason || null,
       paymentDate:   new Date(),
       updatedAt:     new Date(),
     });
+    
+    console.log(`[savePayment] ✅ Payment saved successfully`);
+
 
     if (status === 'success') {
+      console.log(`[savePayment] Updating user subscription: ${planName}`);
       await db.collection('users').doc(userId).update({
         currentPlan:   planName,
         paidPlanStart: new Date(),
         updatedAt:     new Date(),
-      }).catch((err) => console.error('Error updating user subscription:', err));
+      }).catch((err) => console.error('[savePayment] Error updating user subscription:', err));
     }
   } catch (err) {
-    console.error('Error saving payment to Firestore:', err);
+    console.error('[savePayment] ❌ Error saving payment to Firestore:', err);
   }
 }
 

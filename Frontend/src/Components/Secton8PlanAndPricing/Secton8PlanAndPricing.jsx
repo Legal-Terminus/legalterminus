@@ -132,7 +132,7 @@ const Section8PlanAndPricing = () => {
 
       {activePlan && (
 
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="section8-company" />
 
       )}
 
