@@ -90,6 +90,7 @@
   font-weight: 600;
   color: #0f3d2e;
   white-space: nowrap;
+  min-width: 160px;
 }
 
 .pfrgc-total-row {

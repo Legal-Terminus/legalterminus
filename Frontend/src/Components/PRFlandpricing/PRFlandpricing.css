@@ -57,31 +57,17 @@
 }
 
 .prf-card--fullservice {
-  border: 2px solid #d9a520;
+  border: 2px solid #19b43a;
   padding-top: 44px;
 }
 
-.prf-popular-badge {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #19b43a;
-  color: #fff;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 0;
-  border-radius: 10px 10px 0 0;
-  letter-spacing: 0.5px;
-}
-
+.prf-popular-badge,
 .prf-fullservice-badge {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  background: #d9a520;
+  background: #19b43a;
   color: #fff;
   text-align: center;
   font-size: 12px;
