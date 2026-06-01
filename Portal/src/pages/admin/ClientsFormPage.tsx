@@ -9,7 +9,7 @@ interface Client {
   name: string;
   email: string;
   phone: string;
-  address?: string;
+  address: string;
   organisation?: string;
   businessName?: string;
   gstNumber?: string;
@@ -28,9 +28,7 @@ export default function ClientsFormPage() {
     queryKey: ['client', clientId],
     queryFn: async () => {
       if (!clientId) return null;
-      const res = await apiFetch(`/api/clients/${clientId}`);
-      if (!res.ok) throw new Error('Failed to fetch client');
-      return res.json();
+      return await apiFetch<Client>(`/api/clients/${clientId}`);
     },
     enabled: !!clientId,
   });

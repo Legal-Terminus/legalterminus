@@ -41,15 +41,10 @@ export default function ClientForm({ client, onClose, onSuccess, isFullPage = fa
     mutationFn: async (data: Client) => {
       const url = data.clientId ? `/api/clients/${data.clientId}` : '/api/clients';
       const method = data.clientId ? 'PATCH' : 'POST';
-      const res = await apiFetch(url, {
+      return await apiFetch<Client>(url, {
         method,
         body: JSON.stringify(data),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to save client');
-      }
-      return res.json();
     },
     onSuccess: () => {
       onSuccess();

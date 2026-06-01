@@ -33,16 +33,13 @@ export default function TeamMembersPage() {
   const { data: members = [], isLoading } = useQuery({
     queryKey: ['teamMembers'],
     queryFn: async () => {
-      const res = await apiFetch('/api/team-members');
-      return res.json();
+      return await apiFetch<TeamMember[]>('/api/team-members?limit=100');
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (uid: string) => {
-      const res = await apiFetch(`/api/team-members/${uid}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete team member');
-      return res.json();
+      return await apiFetch(`/api/team-members/${uid}`, { method: 'DELETE' });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teamMembers'] }),
   });

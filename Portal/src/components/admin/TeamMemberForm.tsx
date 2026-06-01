@@ -45,15 +45,10 @@ export default function TeamMemberForm({ member, onClose, onSuccess, isFullPage 
   const mutation = useMutation({
     mutationFn: async (data: TeamMember) => {
       // Always POST to /api/team-members for both create and update (upsert pattern)
-      const res = await apiFetch('/api/team-members', { 
+      return await apiFetch<TeamMember & { isUpdate?: boolean }>('/api/team-members', { 
         method: 'POST', 
         body: JSON.stringify(data) 
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || 'Failed to save team member');
-      }
-      return res.json();
     },
     onSuccess: (data) => {
       // Show appropriate message based on whether it was an update or create

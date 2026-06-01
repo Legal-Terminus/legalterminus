@@ -24,9 +24,7 @@ export default function TeamMembersFormPage() {
     queryKey: ['teamMember', uid],
     queryFn: async () => {
       if (!uid) return null;
-      const res = await apiFetch(`/api/team-members/${uid}`);
-      if (!res.ok) throw new Error('Failed to fetch team member');
-      return res.json();
+      return await apiFetch<TeamMember>(`/api/team-members/${uid}`);
     },
     enabled: !!uid,
   });

@@ -26,16 +26,13 @@ export default function ClientsPage() {
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ['clients'],
     queryFn: async () => {
-      const res = await apiFetch('/api/clients');
-      return res.json();
+      return await apiFetch<Client[]>('/api/clients?limit=100');
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (clientId: string) => {
-      const res = await apiFetch(`/api/clients/${clientId}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete client');
-      return res.json();
+      return await apiFetch(`/api/clients/${clientId}`, { method: 'DELETE' });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['clients'] }),
   });
