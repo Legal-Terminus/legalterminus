@@ -3,49 +3,49 @@ import "./LLPProcess.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
-    text:
-      "Provision of requisite documents/information to us (As per the checklist to be provided by us)",
+    title: "Discovery & Structuring Call",
+    day: "Day 0",
+    text: "30-min call with our CS to confirm: number of partners, designated partners (min 2, at least 1 resident), capital contribution, profit-share model, registered office state, and primary business activity.",
   },
   {
-    title: "Step 2 – LLP Name & Objects Finalization",
-    text:
-      "Finalisation of Objects along with Name of the proposed LLP (Name shall be finalised on the basis of a search report duly conducted & provided by our team)",
+    title: "Document Submission & DSC Procurement",
+    day: "Day 1–2",
+    text: "Share KYC documents and registered office address proof with us (as per checklist). This is your only job at the start — we handle everything from here. Class 3 Digital Signature Certificate issued to the sole director and the nominee. Same-day for resident Indians via Aadhaar e-KYC; 3–5 days for NRIs (apostille required).",
   },
   {
-    title: "Step 3 – Name Reservation Application",
-    text:
-      "Filing of application for name reservation in requisite e-form along with applicable government fees.",
+    title: "RUN-LLP — Name Reservation",
+    day: "Day 3–5",
+    text: "Filed with 2 proposed names (in order of preference) ending with 'LLP' through MCA21 V3. CRC reviews under Rule 18 of the LLP Rules, 2009. Approval: 2–3 working days typical. Reserved name valid for 3 months.",
   },
   {
-    title: "Step 4 – Digital Signature Certificates",
-    text:
-      "Preparation of requisite numbers of DSC with respect to the proposed Designated Partners/ Partners and Registration of DSC in MCA Portal",
+    title: "DPIN / DIN Application",
+    day: "Day 4",
+    text: "DPIN (Designated Partner Identification Number) — now unified with DIN — applied for the first 2 designated partners directly through the FiLLiP form.",
   },
   {
-    title: "Step 5 – Incorporation Document Preparation",
-    text:
-      "Preparation of further incorporation documents upon receipt of name approval letter from the department",
+    title: "FiLLiP Filing",
+    day: "Day 7–8",
+    text: "Master incorporation form (Form for Incorporation of LLP) filed: name + registered office + partner details + DPIN + capital. Includes integrated PAN/TAN application.",
   },
   {
-    title: "Step 6 – Form Upload and Fee Payment",
-    text:
-      "Uploading of Final Incorporation Forms to the MCA portal along with applicable government fees",
+    title: "CRC Examination & Clarifications",
+    day: "Day 8–12",
+    text: "Registrar reviews the application within 14 days under Rule 11. If a deficiency is raised (e.g., minor naming or address), we file a re-submission within 24 hours.",
   },
   {
-    title: "Step 7 – Registration Certificate Issuance",
-    text:
-      "Processing of the application by the department and issuance of the registration certificate",
+    title: "Certificate of Incorporation",
+    day: "Day 10–14",
+    text: "COI issued in Form 16 by the Registrar. PAN + TAN + LLPIN (LLP Identification Number) allotted simultaneously.",
   },
   {
-    title: "Step 8 – LLP Agreement Preparation",
-    text:
-      "Preparation, Execution & Notarisation of LLP agreement",
+    title: "LLP Agreement Drafting",
+    day: "Day 12–14",
+    text: "Custom LLP Agreement drafted: contribution schedule, profit-sharing, management rights, decision thresholds, exit clauses, IP assignment, dispute resolution. Two rounds of revision included.",
   },
   {
-    title: "Step 9 – LLP Agreement Filing",
-    text:
-      "Filing of LLP Agreement in requisite e-form within a period of 30 days of the incorporation of the LLP along with requisite Government Fees",
+    title: "Form 3 + Onboarding Kit",
+    day: "Day 14–15",
+    text: "LLP Agreement filed in Form 3 within 30 days (we file within 7 days of COI). Stamp duty paid online. We deliver: COI PDF, stamped LLP Agreement, statutory registers, audit-threshold tracker, and a 90-day compliance calendar.",
   },
 ];
 
@@ -56,7 +56,7 @@ const LLPProcess = () => {
         Steps For Limited Liability Partnership Registration In India
       </h2>
       <p className="llpproc-subheading">
-        The broad process of registering an LLP involves the following steps:
+        Nine steps. 10–15 working days end-to-end (assuming clean documents and a name that clears RUN-LLP on first try).
       </p>
 
       <div className="llpproc-timeline">
@@ -74,7 +74,10 @@ const LLPProcess = () => {
             <div className="llpproc-timeline-dot">{index + 1}</div>
 
             <div className="llpproc-timeline-card">
-              <h4>{step.title}</h4>
+              <h4>
+                {step.title}
+                {step.day && <span className="llpproc-day-tag">{step.day}</span>}
+              </h4>
               <p>{step.text}</p>
             </div>
           </div>

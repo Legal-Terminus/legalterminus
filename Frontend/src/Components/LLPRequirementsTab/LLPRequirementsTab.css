@@ -58,6 +58,17 @@
   transform: translateY(-3px);
 }
 
+.llp-req-subtitle {
+  font-size: 15px;
+  color: #4b5563;
+  line-height: 1.75;
+  margin-bottom: 36px;
+  text-align: center;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .llp-req-card-title {
   font-size: 17px;
   font-weight: 600;
