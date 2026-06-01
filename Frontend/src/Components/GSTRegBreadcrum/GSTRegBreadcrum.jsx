@@ -15,28 +15,28 @@ const GSTRegBreadcrum = () => {
             GST Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Your GSTIN. Live in 7 working days.</span>
+            <span className="lt-title-tagline">Quick, Easy &amp; 100% Online</span>
           </h1>
 
           <p className="lt-public-description">
-            GST registration gives your business a unique GSTIN — the gateway to legal tax compliance, Input Tax Credit, e-commerce marketplace access, and inter-state trade. 100% online through the GST portal. Government registration fee is NIL. Our professional fee starts at ₹1,999 + GST — transparent, no hidden charges.
+            Start your business the right way with hassle-free GST registration. Legal Terminus takes care of the entire process — from application filing to GSTIN approval — so you can focus on growing your business. Professional fees starting at ₹1499* (*Prices exclusive of 18% GST and applicable statutory charges.)
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">GSTIN Certificate Issuance</div>
-            <div className="lt-feature-item">Input Tax Credit Eligible</div>
-            <div className="lt-feature-item">100% Online Process</div>
-            <div className="lt-feature-item">All Business Types Covered</div>
+            <div className="lt-feature-item">Mandatory for Eligible Businesses</div>
+            <div className="lt-feature-item">PAN-Based Registration</div>
+            <div className="lt-feature-item">Input Tax Credit Benefits</div>
+            <div className="lt-feature-item">Nationwide Business Compliance</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>GST Registrations Done</p>
+              <h3>1,200+</h3>
+              <p>GST registrations filed</p>
             </div>
             <div>
-              <h3>All States</h3>
-              <p>Regular &amp; Composition Scheme</p>
+              <h3>100% Online</h3>
+              <p>Aadhaar e-KYC + DSC</p>
             </div>
             <div>
               <h3>7+</h3>
