@@ -6,7 +6,7 @@
     "legal-terminus-web": {
       "hosting": {
         "website": ["legal-terminus-web"],
-        "portal": ["legal-terminus-web-portal"]
+        "portal": ["legal-terminus-web"]
       }
     }
   }
