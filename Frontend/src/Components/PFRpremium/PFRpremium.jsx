@@ -71,16 +71,16 @@ const ZolvitPremium = () => {
             <div className="zp-note-box">
               <ul className="zp-note-list">
                 <li className="zp-note-item">
-                  <strong>Unregistered firms cannot SUE</strong> third parties or co-partners under Section 69 — but they CAN be sued. If a customer doesn't pay, you have no court remedy unless you register first. Strongly weigh this before opting Elemental tier.
+                  Unregistered firms cannot SUE third parties or co-partners under Section 69 — but they CAN be sued. If a customer doesn't pay, you have no court remedy unless you register first. Strongly weigh this before opting Elemental tier.
                 </li>
                 <li className="zp-note-item">
-                  <strong>The Partnership Deed is your firm's constitution</strong> — not a template. Generic deeds skip clauses on goodwill, IP ownership, partner-incapacity, dissolution triggers. Our custom Deed (Enriched / Supreme) covers all 12 standard contingency clauses.
+                  The Partnership Deed is your firm's constitution — not a template. Generic deeds skip clauses on goodwill, IP ownership, partner-incapacity, dissolution triggers. Our custom Deed (Enriched / Supreme) covers all 12 standard contingency clauses.
                 </li>
                 <li className="zp-note-item">
-                  <strong>Firm partners have UNLIMITED liability</strong> — personal assets are at risk for firm debts. If liability protection matters, you should be looking at LLP, not Partnership Firm. We flag this on the discovery call.
+                  Firm partners have UNLIMITED liability — personal assets are at risk for firm debts. If liability protection matters, you should be looking at LLP, not Partnership Firm. We flag this on the discovery call.
                 </li>
                 <li className="zp-note-item">
-                  <strong>Audit kicks in at turnover &gt; ₹1 crore</strong> (Section 44AB of the Income Tax Act). Below that, you can use Section 44ADA presumptive taxation if professional, or Section 44AD if business — much simpler than full audit.
+                  Audit kicks in at turnover &gt; ₹1 crore (Section 44AB of the Income Tax Act). Below that, you can use Section 44ADA presumptive taxation if professional, or Section 44AD if business — much simpler than full audit.
                 </li>
               </ul>
             </div>
