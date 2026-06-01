@@ -19,46 +19,55 @@ const RequirementsPvt = () => {
         <div className="req-grid">
           {/* 1 */}
           <article className="req-card">
-            <h3 className="req-card-title">Discovery &amp; Structuring Call <span className="req-day-tag">Day 0</span></h3>
+            <h3 className="req-card-title">Investor-Ready Structure</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              60-min call with our CS to confirm: directors (min 2), shareholders (min 2), state of registered office, authorised + paid-up capital, primary business activity (NIC code), and tax-regime preference (115BAA vs default). We pre-screen 4 name options.
+              Every VC term sheet you'll ever sign assumes a Pvt Ltd. Share classes, preference rights, anti-dilution, drag-along, tag-along, board observer seats — all written into your AOA. Pvt Ltd is the only structure where these clauses are enforceable by default.
             </p>
           </article>
 
           {/* 2 */}
           <article className="req-card">
-            <h3 className="req-card-title">Document Submission &amp; DSC Procurement <span className="req-day-tag">Day 1–3</span></h3>
+            <h3 className="req-card-title">Section 115BAA — 22% Concessional Tax</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Share KYC documents and registered office address proof with us (as per checklist). This is your only job at the start — we handle everything from here. Class 3 Digital Signature Certificates issued to all directors and subscribers via Aadhaar e-KYC. Same-day for resident Indians; 3–5 days for NRIs / foreign nationals (apostille documents required).
+              Domestic Pvt Ltd companies can opt for 22% tax under Section 115BAA (vs 25.17% default for turnover ≤ ₹400cr or 30% above). New manufacturing companies get an even better 15% under Section 115BAB. Massive long-term tax saving over LLP's flat 30%.
             </p>
           </article>
 
           {/* 3 */}
           <article className="req-card">
-            <h3 className="req-card-title">Company Name &amp; Objects Finalization</h3>
+            <h3 className="req-card-title">ESOP &amp; Sweat Equity Ready</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              We run a preliminary name availability check and help you finalize your company name and business objects (what your company will do). The name must comply with MCA naming guidelines and must not conflict with existing registered companies, LLPs, or trademarks.
+              Section 62(1)(b) of the Companies Act makes ESOPs cleanly issuable by Pvt Ltd companies. Sweat equity (Section 54), preferential allotment (Section 62), private placement (Section 42) — all available as fundraising and talent-acquisition tools. Critical from your first hire onwards.
             </p>
           </article>
 
           {/* 4 */}
           <article className="req-card">
-            <h3 className="req-card-title">SPICe+ Part A — Name Reservation <span className="req-day-tag">Day 4–6</span></h3>
+            <h3 className="req-card-title">Limited Liability + Separate Legal Entity</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Filed with 4 proposed names (in order of preference) ending with 'Private Limited' through MCA21 V3. CRC reviews under Rule 8 of the Companies (Incorporation) Rules. Approval: 2–3 working days typical. Reserved name valid for 20 days.
+              Founders' personal assets are insulated from company debts. The company can sue, be sued, hold property, sign contracts in its own name. Perpetual succession — directors and shareholders come and go, the entity continues.
             </p>
           </article>
 
           {/* 5 */}
           <article className="req-card">
-            <h3 className="req-card-title">MOA &amp; AOA Drafting <span className="req-day-tag">Day 4–7</span></h3>
+            <h3 className="req-card-title">Startup India / DPIIT Eligibility</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Memorandum of Association (object clause + capital + state) and Articles of Association (governance, share transfer, board powers, ESOP enablement, drag/tag, valuation, founder vesting) drafted. Two rounds of revision included.
+              Only Pvt Ltd, LLP, and Partnership Firms are eligible for DPIIT (Startup India) recognition. Pvt Ltd unlocks the full Startup India toolkit — Section 80-IAC tax holiday (3 of 10 years tax-free), angel tax exemption u/s 56(2)(viib), self-certification under labour &amp; environment laws, fast-track patent examination.
+            </p>
+          </article>
+
+          {/* 6 */}
+          <article className="req-card">
+            <h3 className="req-card-title">Credibility with Banks, Vendors, Enterprises</h3>
+            <div className="req-card-underline" />
+            <p className="req-card-text">
+              Banks underwrite working capital loans more readily to Pvt Ltd than to LLP or proprietorship. Enterprise procurement teams insist on a Pvt Ltd vendor for contracts above ₹25–50 lakh. The structure itself signals scale and governance maturity.
             </p>
           </article>
         </div>
