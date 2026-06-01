@@ -4,21 +4,33 @@ import "./PFRtypes.css";
 const types = [
   {
     number: "01",
-    title: "Partnership at Will",
-    subtitle: "Most Flexible",
-    text: "A partnership at will is formed without deciding any fixed time period. The partners can decide when they want to continue or dissolve the firm. The profit earned is considered income of each partner, and every partner is responsible for paying the firm's debts.",
+    title: "Registered Partnership Firm",
+    text: "Filed under Section 58 with the Registrar of Firms. Recommended for any firm that intends to enter contracts, recover dues, or face disputes. Section 69 grants the right to sue third parties and partners. Most professional firms register.",
   },
   {
     number: "02",
-    title: "Particular Partnership",
-    subtitle: "Fixed Purpose",
-    text: "A particular partnership is created for a specific purpose or project and is usually temporary in nature. It may end after the work is completed or on a decided date, but partners can also extend it with mutual agreement.",
+    title: "Unregistered Partnership Firm",
+    text: "A firm that operates without RoF / IGR registration. Legally valid and perfectly common, but loses the right to sue under Section 69. Suitable only for short-term ventures, family arrangements, or low-dispute trading where you don't expect to need court enforcement.",
   },
   {
     number: "03",
-    title: "Limited Liability Partnership",
-    subtitle: "Corporate Structure",
-    text: "An LLP is governed by the LLP Act, 2008 and works like a corporate business structure. Partners have limited liability — they are responsible only up to the amount invested. Personal assets are generally protected from business debts.",
+    title: "Partnership at Will",
+    text: "Defined under Section 7. The Deed does not specify a duration or termination event. Any partner can dissolve the firm by giving written notice to other partners. Default category for most general firms unless duration is fixed.",
+  },
+  {
+    number: "04",
+    title: "Particular Partnership",
+    text: "Defined under Section 8. Formed for a specific project, undertaking, or fixed duration (e.g., constructing a building, completing a contract). Auto-dissolves on completion of the venture or end of the term — no notice required.",
+  },
+  {
+    number: "05",
+    title: "Family Partnership Firm",
+    text: "A firm where all partners are members of the same Hindu Undivided Family (HUF) or extended family. Tax planning angle: profit can be distributed across family members in their respective slabs, not just at the firm's flat 30%. Drafting requires care to satisfy IT department scrutiny.",
+  },
+  {
+    number: "06",
+    title: "Professional Services Firm",
+    text: "Designed for professionals — chartered accountants, doctors, lawyers, architects, consultants. Eligible for Section 44ADA presumptive taxation (50% of receipts treated as income, no audit if receipts ≤ ₹75L). Often the most tax-efficient structure for solo + 1 professional set-ups.",
   },
 ];
 
@@ -33,21 +45,11 @@ const PFRTypes = () => {
           {types.map((type) => (
             <div className="pfr-types-card" key={type.number}>
               <div className="pfr-types-number">{type.number}</div>
-              <h3 className="pfr-types-card-title">
-                {type.title}
-                {type.subtitle && (
-                  <span className="pfr-types-card-subtitle"> ({type.subtitle})</span>
-                )}
-              </h3>
+              <h3 className="pfr-types-card-title">{type.title}</h3>
               <p className="pfr-types-card-text">{type.text}</p>
             </div>
           ))}
         </div>
-
-        <p className="pfr-types-note">
-          <strong>Note:</strong> Not sure which partnership type suits your business?{" "}
-          <strong>Book a Free Consultation</strong> and we'll help you decide.
-        </p>
 
       </div>
     </section>
