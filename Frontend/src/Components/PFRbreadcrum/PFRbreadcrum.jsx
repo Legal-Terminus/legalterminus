@@ -18,28 +18,28 @@ const Breadcrum = () => {
             Partnership Firm Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Fast, Hassle-Free &amp; 100% Online</span>
+            <span className="lt-title-tagline">Quick &amp; Professional</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus can assist you with partnership firm registration in India. We ensure a hassle-free process completed within a reasonable timeframe, with competitive professional fees starting from Rs. 2,499/-.
+            The simplest way for two or more co-founders to start trading — governed by the Indian Partnership Act, 1932. Cheap to set up, light on compliance, and (with registration) gives you the legal right to enforce your Partnership Deed in court. Our professional fee starts at ₹2,499 + GST. Stamp duty, RoF fees, and notarisation are billed separately at actuals.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Minimum 2 Directors Required</div>
-            <div className="lt-feature-item"> Separate Legal Entity</div>
-            <div className="lt-feature-item"> Limited Liability Protection</div>
-            <div className="lt-feature-item"> High Business Credibility</div>
+            <div className="lt-feature-item">Minimum 2 Partners Required</div>
+            <div className="lt-feature-item">Easy to Start &amp; Manage</div>
+            <div className="lt-feature-item">Flexible Profit Sharing</div>
+            <div className="lt-feature-item">Low Compliance Requirement</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <h3>500+</h3>
+              <p>Partnership Firms registered</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Process</p>
+              <h3>28 States</h3>
+              <p>RoF coverage across India</p>
             </div>
             <div>
               <h3>7+</h3>
