@@ -20,7 +20,7 @@
   display: grid;
   grid-template-columns: 1.05fr 1.3fr;
   gap: 48px;
-  align-items: center;
+  align-items: start;
 }
 
 /* Illustration */
@@ -28,7 +28,8 @@
 .zp-illustration-wrapper {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 8px;
 }
 
 .zp-illustration {
@@ -110,12 +111,6 @@
 
 /* Note box */
 
-.zp-note-intro {
-  font-size: 14px;
-  color: #64748b;
-  margin-bottom: 12px;
-  font-style: italic;
-}
 
 .zp-note-box {
   background-color: #f0fdf4;

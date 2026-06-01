@@ -41,7 +41,7 @@ const ZolvitPremium = () => {
                   72-hour SLA on first MOA/AOA draft — and a same-day name search before you commit.
                 </li>
                 <li className="zp-list-item">
-                  <span className="zp-list-icon">🛡</span>
+                  <span className="zp-list-icon">✅</span>
                   Senior expert reviewed your documents and provide the name availability percentage.
                 </li>
                 <li className="zp-list-item">
@@ -58,7 +58,6 @@ const ZolvitPremium = () => {
             {/* Note */}
             <section className="zp-section-block">
               <h3 className="zp-label">Important Notes</h3>
-              <p className="zp-note-intro">Heads up — these are the things that derail Pvt Ltd incorporations:</p>
               <div className="zp-note-box">
                 <ul className="zp-note-list">
                   <li className="zp-note-item">
