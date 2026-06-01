@@ -52,6 +52,19 @@
   margin-bottom: 16px;
 }
 
+.pfr-tc-sublist {
+  margin: 6px 0 0 20px;
+  padding: 0;
+  list-style: disc;
+}
+
+.pfr-tc-sublist li {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.7;
+  margin-bottom: 4px;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .pfr-tc-section { padding: 10px 20px 40px; }

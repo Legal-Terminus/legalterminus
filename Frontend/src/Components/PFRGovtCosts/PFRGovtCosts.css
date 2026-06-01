@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.pfrgc-section {
+  font-family: 'Poppins', sans-serif;
+  background: #f8fdf9;
+  padding: 60px 24px 70px;
+}
+
+.pfrgc-container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.pfrgc-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  text-align: center;
+}
+
+.pfrgc-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #19b43a;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.pfrgc-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 28px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.pfrgc-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+
+.pfrgc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 560px;
+}
+
+.pfrgc-table thead tr {
+  background: #0f3d2e;
+}
+
+.pfrgc-table thead th {
+  color: #fff;
+  font-weight: 600;
+  padding: 14px 20px;
+  text-align: left;
+  letter-spacing: 0.3px;
+}
+
+.pfrgc-table thead th:first-child { border-radius: 12px 0 0 0; }
+.pfrgc-table thead th:last-child  { border-radius: 0 12px 0 0; }
+
+.pfrgc-table tbody tr {
+  background: #fff;
+  border-bottom: 1px solid #e9f5ec;
+  transition: background 0.15s ease;
+}
+
+.pfrgc-table tbody tr:hover { background: #f0faf2; }
+
+.pfrgc-table tbody td {
+  padding: 14px 20px;
+  color: #1e293b;
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+.pfrgc-range {
+  font-weight: 600;
+  color: #0f3d2e;
+  white-space: nowrap;
+}
+
+.pfrgc-total-row {
+  background: #edfaf1 !important;
+  border-top: 2px solid #19b43a !important;
+}
+
+.pfrgc-total-row td { font-weight: 700; color: #0f3d2e; }
+.pfrgc-total-row td.pfrgc-range { color: #19b43a; }
+
+.pfrgc-table tbody tr:last-child td:first-child { border-radius: 0 0 0 12px; }
+.pfrgc-table tbody tr:last-child td:last-child  { border-radius: 0 0 12px 0; }
+
+@media (max-width: 640px) {
+  .pfrgc-title { font-size: 18px; }
+  .pfrgc-section { padding: 40px 16px 50px; }
+}

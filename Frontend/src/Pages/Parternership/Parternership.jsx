@@ -5,6 +5,7 @@ import PRFbreadcrum from '../../Components/PFRbreadcrum/PFRbreadcrum'
 // Lazy load below-fold components
 const PRFlandpricing = React.lazy(() => import('../../Components/PRFlandpricing/PRFlandpricing'))
 const PFRtermscondition = React.lazy(() => import('../../Components/PFRtermscondition/PFRtermscondition'))
+const PFRGovtCosts = React.lazy(() => import('../../Components/PFRGovtCosts/PFRGovtCosts'))
 const PFRpremium = React.lazy(() => import('../../Components/PFRpremium/PFRpremium'))
 const PFRtabs = React.lazy(() => import('../../Components/PFRtabs/PFRtabs'))
 const PFRcompanytab = React.lazy(() => import('../../Components/PFRcompanytab/PFRcompanytab'))
@@ -28,6 +29,12 @@ const PrivateLimited = () => {
           <PRFlandpricing />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <PFRGovtCosts />
+      </Suspense>
 
       <div className="section-divider" />
 

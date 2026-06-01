@@ -4,145 +4,152 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 
 const PLANS = [
-  { id: "elemental", name: "Elemental", price: 3999, services: ["Search Report of Name Availability", "1 RUN Name Approval Certificate", "Director Identification Number for 2 Individuals", "Certificate of Incorporation", "E-PAN", "E-TAN", "E-MOA", "E-AOA", "Documents for Bank Account Opening", "Documents for 1st Auditor Appointment", "EPF Registrations", "ESI Registrations"] },
-  { id: "enriched", name: "Enriched", price: 5999, services: ["Elemental Plan Plus", "Share Certificate", "Commencement of Business", "Udyam/MSME Registration"] },
-  { id: "supreme", name: "Supreme", price: 24999, services: ["Enriched Plan Plus", "Income tax filing of Company", "Preparation of Directors Report", "Preparation of Annual Return", "Preparation of Auditor Appointment Paperwork", "Preparation of List of Share Holders", "Preparation of Notice of AGM", "Preparation of Notice of BM", "Preparation of Extracts of AGM", "Filing of AOC - 4 (Financial Statements)", "Filing of MGT - 7 (Annual Return)", "Filing of ADT - 1 (Auditor Appointment)", "Minutes of Board Meeting for 1st FY", "Minutes of General Meeting for 1st FY", "Maintenance of Statutory E- Registers", "Filing of DPT - 3 Annual (If Applicable)", "Filing of MSME - 1 (If Applicable) for 1st FY", "DIR KYC (2 Directors)", "Income Tax Filing of 2 Directors", "Audit fees are excluded and to be paid directly to Auditor"] }
+  {
+    id: "elemental",
+    name: "Elemental",
+    price: 2499,
+    services: [
+      "Partnership Deed drafting (standard template)",
+      "Notarisation coordination",
+      "Stamp duty calculation (state-specific)",
+      "Firm PAN application",
+      "Firm TAN application",
+      "Bank account opening documents preparation",
+    ],
+  },
+  {
+    id: "enriched",
+    name: "Enriched",
+    price: 5499,
+    services: [
+      "Everything in Elemental",
+      "Custom Partnership Deed (profit share, exit, IP, dispute)",
+      "GSTIN allotment (1 state, optional)",
+      "MSME / Udyam registration coordination",
+    ],
+  },
+  {
+    id: "supreme",
+    name: "Supreme",
+    price: 8999,
+    services: [
+      "Everything in Enriched",
+      "Form 1 (RoF Application in IGR) preparation & filing",
+      "Affidavit & verification drafting",
+      "RoF coordination through Certificate of Registration",
+      "Trademark search + Class application (1 class, govt fee extra)",
+    ],
+  },
 ];
 
 const PricingSection = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
-
     <>
-    <section className="prf-pricingsection">
-      <div className="prf-pricingcontainer">
-        
-        {/* Upper part */}
-        <header className="prf-pricingheader">
-          <h2 className="prf-pricingtitle">CHOOSE YOUR PLAN</h2>
-          <p className="prf-pricingsubtitle">
-            Register your company with pocket-friendly prices
-          </p>
-        </header>
+      <section className="prf-pricingsection">
+        <div className="prf-pricingcontainer">
 
-        {/* Cards */}
-        <div className="prf-pricingcards">
+          {/* Upper part */}
+          <header className="prf-pricingheader">
+            <h2 className="prf-pricingtitle">CHOOSE YOUR PLAN</h2>
+            <p className="prf-pricingsubtitle">
+              Register your partnership firm with pocket-friendly prices
+            </p>
+          </header>
 
-          {/* Elemental */}
-          <article className="prf-pricingcard">
-            <div>
-              <div className="prf-planheader">
-                <div className="prf-pricingname">Elemental</div>
-                <div className="prf-pricingold-price">₹5,999</div>
-                <div className="prf-pricingprice">{PLANS[0].price.toLocaleString("en-IN")}</div>
-                <div className="prf-pricingmeta">Excluding gov fee</div>
-              </div>
+          {/* Cards */}
+          <div className="prf-pricingcards">
 
-              <div className="prf-pricingbody">
-                <ul className="prf-pricinglist">
-                  <li className="prf-pricinglist-item">Search Report of Name Availability</li>
-                  <li className="prf-pricinglist-item">1 RUN Name Approval Certificate</li>
-                  <li className="prf-pricinglist-item">Director Identification Number for 2 Individuals</li>
-                  <li className="prf-pricinglist-item">Certificate of Incorporation</li>
-                  <li className="prf-pricinglist-item">E-PAN</li>
-                  <li className="prf-pricinglist-item">E-TAN</li>
-                  <li className="prf-pricinglist-item">E-MOA</li>
-                  <li className="prf-pricinglist-item">E-AOA</li>
-                  <li className="prf-pricinglist-item">Documents for Bank Account Opening</li>
-                  <li className="prf-pricinglist-item">Documents for 1st Auditor Appointment</li>
-                  <li className="prf-pricinglist-item">EPF Registrations</li>
-                  <li className="prf-pricinglist-item">ESI Registrations</li>
-                </ul>
-              </div>
-            </div>
+            {/* Elemental */}
+            <article className="prf-pricingcard">
+              <div>
+                <div className="prf-planheader">
+                  <div className="prf-pricingname">Elemental</div>
+                  <div className="prf-pricingold-price">₹3,499</div>
+                  <div className="prf-pricingprice">{PLANS[0].price.toLocaleString("en-IN")}</div>
+                  <div className="prf-pricingmeta">+ Govt. fees &amp; GST extra</div>
+                </div>
 
-            <div className="prf-pricingfooter">
-              <button className="prf-pricingbutton" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Enriched */}
-          <article className="prf-pricingcard">
-            <div>
-              <div className="prf-planheader">
-                <div className="prf-pricingname">Enriched</div>
-                <div className="prf-pricingold-price">₹7,999</div>
-                <div className="prf-pricingprice">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="prf-pricingmeta">
-                  Excluding gov fee <span className="popular">(Popular)</span>
+                <div className="prf-pricingbody">
+                  <ul className="prf-pricinglist">
+                    <li className="prf-pricinglist-item">Partnership Deed drafting (standard template)</li>
+                    <li className="prf-pricinglist-item">Notarisation coordination</li>
+                    <li className="prf-pricinglist-item">Stamp duty calculation (state-specific)</li>
+                    <li className="prf-pricinglist-item">Firm PAN application</li>
+                    <li className="prf-pricinglist-item">Firm TAN application</li>
+                    <li className="prf-pricinglist-item">Bank account opening documents preparation</li>
+                  </ul>
                 </div>
               </div>
 
-              <div className="prf-pricingbody">
-                <ul className="prf-pricinglist">
-                  <li className="prf-pricinglist-item">Elemental Plan Plus</li>
-                  <li className="prf-pricinglist-item">Share Certificate</li>
-                  <li className="prf-pricinglist-item">Commencement of Business</li>
-                  <li className="prf-pricinglist-item">Udyam/MSME Registration</li>
-                </ul>
+              <div className="prf-pricingfooter">
+                <button className="prf-pricingbutton" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
               </div>
-            </div>
+            </article>
 
-            <div className="prf-pricingfooter">
-              <button className="prf-pricingbutton" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-            </div>
-          </article>
+            {/* Enriched */}
+            <article className="prf-pricingcard prf-card--popular">
+              <div className="prf-popular-badge">★ MOST POPULAR</div>
+              <div>
+                <div className="prf-planheader">
+                  <div className="prf-pricingname">Enriched</div>
+                  <div className="prf-pricingold-price">₹6,499</div>
+                  <div className="prf-pricingprice">{PLANS[1].price.toLocaleString("en-IN")}</div>
+                  <div className="prf-pricingmeta">+ Govt. fees &amp; GST extra</div>
+                </div>
 
-          {/* Supreme */}
-          <article className="prf-pricingcard">
-            <div>
-              <div className="prf-planheader">
-                <div className="prf-pricingname">Supreme</div>
-                <div className="prf-pricingold-price">₹29,999</div>
-                <div className="prf-pricingprice">{PLANS[2].price.toLocaleString("en-IN")}</div>
-                <div className="prf-pricingmeta">Excluding gov fee</div>
+                <div className="prf-pricingbody">
+                  <ul className="prf-pricinglist">
+                    <li className="prf-pricinglist-item">Everything in Elemental</li>
+                    <li className="prf-pricinglist-item">Custom Partnership Deed (profit share, exit, IP, dispute)</li>
+                    <li className="prf-pricinglist-item">GSTIN allotment (1 state, optional)</li>
+                    <li className="prf-pricinglist-item">MSME / Udyam registration coordination</li>
+                  </ul>
+                </div>
               </div>
 
-              <div className="prf-pricingbody">
-                <ul className="prf-pricinglist">
-                  <li className="prf-pricinglist-item">Enriched Plan Plus</li>
-                  <li className="prf-pricinglist-item">Income tax filing of Company</li>
-                  <li className="prf-pricinglist-item">Preparation of Directors Report</li>
-                  <li className="prf-pricinglist-item">Preparation of Annual Return</li>
-                  <li className="prf-pricinglist-item">Preparation of Auditor Appointment Paperwork</li>
-                  <li className="prf-pricinglist-item">Preparation of List of Share Holders</li>
-                  <li className="prf-pricinglist-item">Preparation of Notice of AGM</li>
-                  <li className="prf-pricinglist-item">Preparation of Notice of BM</li>
-                  <li className="prf-pricinglist-item">Preparation of Extracts of AGM</li>
-                  <li className="prf-pricinglist-item">Filing of AOC - 4 (Financial Statements)</li>
-                  <li className="prf-pricinglist-item">Filing of MGT - 7 (Annual Return)</li>
-                  <li className="prf-pricinglist-item">Filing of ADT - 1 (Auditor Appointment)</li>
-                  <li className="prf-pricinglist-item">Minutes of Board Meeting for 1st FY</li>
-                  <li className="prf-pricinglist-item">Minutes of General Meeting for 1st FY</li>
-                  <li className="prf-pricinglist-item">Maintenance of Statutory E- Registers</li>
-                  <li className="prf-pricinglist-item">Filing of DPT - 3 Annual (If Applicable)</li>
-                  <li className="prf-pricinglist-item">Filing of MSME - 1 (If Applicable) for 1st FY</li>
-                  <li className="prf-pricinglist-item">DIR KYC (2 Directors)</li>
-                  <li className="prf-pricinglist-item">Income Tax Filing of 2 Directors</li>
-                  <li className="prf-pricinglist-item">Audit fees are excluded and to be paid directly to Auditor</li>
-                </ul>
+              <div className="prf-pricingfooter">
+                <button className="prf-pricingbutton" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
               </div>
-            </div>
+            </article>
 
-            <div className="prf-pricingfooter">
-              <button className="prf-pricingbutton" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-            </div>
-          </article>
+            {/* Supreme */}
+            <article className="prf-pricingcard prf-card--fullservice">
+              <div className="prf-fullservice-badge">✦ FULL-SERVICE</div>
+              <div>
+                <div className="prf-planheader">
+                  <div className="prf-pricingname">Supreme</div>
+                  <div className="prf-pricingold-price">₹11,999</div>
+                  <div className="prf-pricingprice">{PLANS[2].price.toLocaleString("en-IN")}</div>
+                  <div className="prf-pricingmeta">+ Govt. fees &amp; GST extra</div>
+                </div>
 
+                <div className="prf-pricingbody">
+                  <ul className="prf-pricinglist">
+                    <li className="prf-pricinglist-item">Everything in Enriched</li>
+                    <li className="prf-pricinglist-item">Form 1 (RoF Application in IGR) preparation &amp; filing</li>
+                    <li className="prf-pricinglist-item">Affidavit &amp; verification drafting</li>
+                    <li className="prf-pricinglist-item">RoF coordination through Certificate of Registration</li>
+                    <li className="prf-pricinglist-item">Trademark search + Class application (1 class, govt fee extra)</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="prf-pricingfooter">
+                <button className="prf-pricingbutton" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
+              </div>
+            </article>
+
+          </div>
         </div>
-      </div>
-    </section>
-
+      </section>
 
       {activePlan && (
-
         <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="professional-tax" />
-
       )}
-
     </>
-
-  );};
+  );
+};
 
 export default PricingSection;
