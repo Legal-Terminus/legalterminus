@@ -1,95 +1,143 @@
 import React from "react";
+import {
+  FaIdCard,
+  FaMapMarkerAlt,
+  FaBuilding,
+  FaFileAlt,
+  FaUniversity,
+  FaCertificate,
+} from "react-icons/fa";
 import "./ProDocument.css";
 
-const docs = [
-  {
-    no: "1",
-    title: "Proprietor Identity",
-    items: [
-      "PAN card (mandatory).",
-      "Aadhaar card (mobile-linked + linked with PAN).",
-      "Voter ID / Driving Licence / Passport as second ID.",
-      "Passport-size photograph (jpeg, < 100 KB).",
-    ],
-  },
-  {
-    no: "2",
-    title: "Address Proof of Proprietor",
-    items: [
-      "Bank statement OR utility bill OR mobile postpaid bill — not older than 60 days.",
-      "Self-attested.",
-      "Address must match Aadhaar.",
-    ],
-  },
-  {
-    no: "3",
-    title: "Business Premises Proof",
-    items: [
-      "Owned: Latest property tax receipt + electricity bill.",
-      "Rented: Notarised rent agreement + landlord's NoC + electricity bill.",
-      "Home office: Self-declaration + utility bill in proprietor's name.",
-      "Co-working: Service agreement + operator NoC.",
-    ],
-  },
-  {
-    no: "4",
-    title: "Business Identity Proof (Existing or Proposed)",
-    items: [
-      "Trade name (proposed).",
-      "Business activity description.",
-      "NIC code mapping (we help).",
-      "Existing licences if any (e.g., previous Shop & Est, FSSAI, etc. — for renewal / migration).",
-    ],
-  },
-  {
-    no: "5",
-    title: "Bank Account Documents",
-    items: [
-      "Cancelled cheque OR first page of bank passbook OR bank statement with IFSC + account holder name (post-bank account opening).",
-      "For pre-existing personal account migration: NoC may be required.",
-    ],
-  },
-  {
-    no: "6",
-    title: "Sector-Specific Documents",
-    items: [
-      "For food: kitchen layout / FSSAI form.",
-      "For e-commerce: business website / marketplace plan.",
-      "For import-export: pro-forma invoices / IEC application.",
-      "For manufacturing: factory layout / pollution NoC.",
-      "For professionals: degree / professional body certificate.",
-    ],
-  },
+const steps = [
+  { no: "01", color: "beige" },
+  { no: "02", color: "teal" },
+  { no: "03", color: "orange" },
+  { no: "04", color: "red" },
+  { no: "05", color: "yellow" },
+  { no: "06", color: "violet" },
 ];
 
 const ProDocumentSection = () => {
   return (
-    <section className="pro-doc-section">
-      <div className="pro-doc-container">
-        <h2 className="pro-doc-title">
-          Documents Required for Proprietorship Firm Registration
+    <>
+      <div className="pvtltd-doc-header">
+        <h2 className="pvtltd-doc-title">
+          Documents Required for Proprietorship Firm Registration in India
         </h2>
-        <p className="pro-doc-subtitle">
-          Get these ready and we'll take care of the rest.
+        <p className="pv-gst-subheading">
+          Get these ready and we'll take care of the rest:
         </p>
+      </div>
 
-        <div className="pro-doc-grid">
-          {docs.map((doc) => (
-            <article key={doc.no} className="pro-doc-card">
-              <div className="pro-doc-card-header">
-                <span className="pro-doc-no">{doc.no}</span>
-                <h3 className="pro-doc-card-title">{doc.title}</h3>
+      <div className="infographic-wrapper">
+        <div className="infographic">
+
+          <div className="ring-wrapper">
+            <div className="center-box">
+              <h3>Documents Required</h3>
+            </div>
+
+            <div className="ring">
+              {steps.map((s, i) => (
+                <div
+                  key={i}
+                  className={`ring-segment ${s.color}`}
+                  style={{ transform: `rotate(${i * 60}deg)` }}
+                >
+                  <span style={{ transform: `rotate(-${i * 60}deg)` }}>
+                    {s.no}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="side left">
+            <div className="card pink">
+              <div className="icon"><FaIdCard /></div>
+              <div>
+                <h4><span className="step-no">1.</span>Proprietor Identity</h4>
+                <br />
+                <ul>
+                  <li>PAN card (mandatory)</li>
+                  <li>Aadhaar card (mobile-linked + linked with PAN)</li>
+                  <li>Voter ID / Driving Licence / Passport as second ID</li>
+                  <li>Passport-size photograph (jpeg, &lt; 100 KB)</li>
+                </ul>
               </div>
-              <ul className="pro-doc-list">
-                {doc.items.map((item, i) => (
-                  <li key={i} className="pro-doc-item">{item}</li>
-                ))}
-              </ul>
-            </article>
-          ))}
+            </div>
+
+            <div className="card pink">
+              <div className="icon"><FaMapMarkerAlt /></div>
+              <div>
+                <h4><span className="step-no">2.</span>Address Proof of Proprietor</h4>
+                <br />
+                <ul>
+                  <li>Bank statement OR utility bill OR mobile postpaid bill — not older than 60 days</li>
+                  <li>Self-attested. Address must match Aadhaar</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="card pink">
+              <div className="icon"><FaBuilding /></div>
+              <div>
+                <h4><span className="step-no">3.</span>Business Premises Proof</h4>
+                <br />
+                <ul>
+                  <li>Owned: Latest property tax receipt + electricity bill</li>
+                  <li>Rented: Notarised rent agreement + landlord's NoC + electricity bill</li>
+                  <li>Home office: Self-declaration + utility bill in proprietor's name</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="side right">
+            <div className="card pink">
+              <div className="icon"><FaFileAlt /></div>
+              <div>
+                <h4><span className="step-no">4.</span>Business Identity Proof</h4>
+                <br />
+                <ul>
+                  <li>Trade name (proposed)</li>
+                  <li>Business activity description + NIC code mapping</li>
+                  <li>Existing licences if any (Shop &amp; Est, FSSAI, etc.)</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="card pink">
+              <div className="icon"><FaUniversity /></div>
+              <div>
+                <h4><span className="step-no">5.</span>Bank Account Documents</h4>
+                <br />
+                <ul>
+                  <li>Cancelled cheque OR bank passbook first page OR bank statement with IFSC</li>
+                  <li>For personal account migration: NoC may be required</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="card pink">
+              <div className="icon"><FaCertificate /></div>
+              <div>
+                <h4><span className="step-no">6.</span>Sector-Specific Documents</h4>
+                <br />
+                <ul>
+                  <li>Food: kitchen layout / FSSAI form</li>
+                  <li>E-commerce: business website / marketplace plan</li>
+                  <li>Import-export: pro-forma invoices / IEC application</li>
+                  <li>Professionals: degree / professional body certificate</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
-    </section>
+    </>
   );
 };
 
