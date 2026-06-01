@@ -93,6 +93,8 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Priority**: P1 | **Complexity**: M | **Linked spec story**: US-1, US-3 | **Dependencies**: E01-S01
 
+**Status**: ✅ IMPLEMENTED with Hybrid Auth System (2026-06-01)
+
 **Rationale**: All portal screens require authentication. This story wires up:
 - Email/password login with Firebase Auth
 - Google OAuth sign-in (federated identity)
@@ -100,6 +102,7 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 - Forgot password / reset link flow
 - Zustand `authStore` with decoded user + role claim
 - Typed `apiFetch` client injecting Bearer tokens on every call
+- **NEW: Hybrid auth system supporting 3 user onboarding scenarios with email-based sync**
 
 **Acceptance Criteria**:
 - `LoginPage.tsx` — email/password form + "Sign in with Google" button; successful login stores Firebase user in `authStore` and redirects to role dashboard.
@@ -112,16 +115,31 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 - `setPersistence(auth, browserLocalPersistence)` called on app mount (survives page refresh).
 - Logout clears `authStore` and redirects to `/login`.
 
-**Implementation Notes** (Updated 2026-05-31):
-- Role is now stored in **Firestore** `/users/{uid}` document (not Firebase custom claims) for easier development testing
-- Backend `POST /api/auth/register` creates user document with `role: "client"` by default
+**Hybrid Auth System — 3 Scenarios** (NEW 2026-06-01):
+1. **Scenario 1: New Self-Signup (Email/Google)** → User without admin record → Creates with role='client'
+2. **Scenario 2: Admin Creates Team Member** → Admin creates joe@gmail.com with role='manager' → Joe receives password reset email → On login, role is preserved
+3. **Scenario 3: Admin + Google Merge** → Admin creates joe@gmail.com → Joe signs in via Google → Email-based Firestore lookup → Role preserved, profile synced, account linking attempted
+
+**Implementation Notes** (Updated 2026-06-01):
+- ✅ Hybrid auth system fully implemented in backend auth flow
+- ✅ `POST /api/auth/register` now implements email-based search:
+  - Searches Firestore by email FIRST (for admin-created users)
+  - If found: UPDATEs with provider sync, PRESERVEs role, tracks authProviders
+  - If not found: CREATEs as 'client'
+  - Returns scenario type for debugging: 'admin-created-merge' or 'new-self-signup'
+- ✅ LoginPage passes `provider: 'email'` or `provider: 'google'` parameter to registration endpoint
+- ✅ Firestore fields: `authProviders[]` (tracks ['email'] or ['google'] or ['email','google']), `signInMethod` ('email'|'google'|'both')
+- ✅ Profile sync on Google signin: name, mobile, profilePictureUrl synced from Google provider
+- ✅ Custom claims set automatically on role changes: `admin.auth().setCustomUserClaims(uid, { role })`
+- ✅ Firebase import fixed in auth.routes.js: Added `import { getDb }` for Firestore queries
+- Role is stored in **Firestore** `/users/{uid}` document (not Firebase custom claims) for easier development testing
+- Backend `POST /api/auth/register` creates user document with `role: "client"` by default (or admin-assigned role if found)
 - `useAuthListener()` reads role from Firestore via `getDoc(doc(db, 'users', uid))` instead of `getIdTokenResult().claims`
 - This allows changing role directly in Firestore console for testing without needing Firebase Console custom claims UI
-- Backend endpoint `PATCH /api/auth/set-role` (admin-only) can update roles in Firestore and sync to custom claims if needed later
 
 **Backend endpoints needed**:
-- `POST /api/auth/register` — creates `users/{uid}` with role = "client"; accepts { fullName, email?, mobile?, businessName?, state? }
-- `GET /api/auth/me` — verify token, return decoded claims + Firestore profile
+- ✅ `POST /api/auth/register` — creates `users/{uid}` with role; searches by email for admin-created users; accepts { fullName, email?, mobile?, businessName?, state?, provider }
+- ✅ `GET /api/auth/me` — verify token, return decoded claims + Firestore profile
 
 **Frontend screens/components**:
 - `Portal/src/pages/auth/LoginPage.tsx` — email/password form + Google button
@@ -998,27 +1016,56 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Priority**: P2 | **Complexity**: M | **Linked spec story**: US-8 | **Dependencies**: E01-S02
 
-**Rationale**: Team members must exist before tasks can be assigned to them. Admin creates them; Firebase Auth accounts are created server-side.
+**Status**: ✅ IMPLEMENTED with Hybrid Auth UPSERT (2026-06-01)
+
+**Rationale**: Team members must exist before tasks can be assigned to them. Admin creates them; Firebase Auth accounts are created server-side. **Updated: Now supports UPSERT pattern to handle existing users and hybrid auth scenarios.**
 
 **Acceptance Criteria**:
-- `NewUserPage.tsx` (role=team_member mode) — required fields: full name, mobile, email, designation, date of joining, role; optional: father's name, date of birth, address.
-- On submit, calls `POST /api/portal/users { ...fields, role: "team_member" }`; backend creates Firebase Auth account (`admin.auth().createUser`), sends password-reset email, writes `users/{uid}` with correct role and custom claim.
-- `UserListPage.tsx` — lists all team members (`GET /api/portal/users?role=team_member`); clickable rows go to `UserDetailPage.tsx`.
-- `UserDetailPage.tsx` — shows profile; edit fields; role change picker (admin only — `PATCH /api/portal/users/:uid/role`).
-- Manager cannot delete users — delete button hidden for manager role; delete (soft) available to admin via `DELETE /api/portal/users/:uid`.
+- `UserListPage.tsx` (role=team_member mode) — required fields: full name, mobile, email, designation, date of joining, role; optional: father's name, date of birth, address.
+- On submit, calls `POST /api/team-members { ...fields, role: "team_member" }`; backend implements UPSERT pattern:
+  - **If user exists** (by Firebase Auth email or Firestore email lookup) → UPDATE role, preserve auth providers, sync profile
+  - **If user is new** → CREATE Firebase Auth account, sends password-reset email, writes user profile
+  - Returns `{ isUpdate: boolean }` flag for frontend feedback
+- `TeamMembersPage.tsx` — lists all team members (`GET /api/team-members`); shows name, email, phone, designation, role (color-coded badge), joining date; clickable rows or edit button.
+- `TeamMemberForm.tsx` — modal form for creating/editing; email field disabled on edit (cannot change); role selector; all required and optional fields supported.
+- Manager cannot delete users — delete button only available to admin role; delete via `DELETE /api/team-members/{uid}`.
+- **NEW: Supports Scenario 3 merge** — If admin creates joe@gmail.com as manager and Joe later signs in via Google, the system:
+  1. Looks up joe@gmail.com in Firestore (finds admin-created record)
+  2. UPDATEs the record with authProviders=['email','google'], signInMethod='both'
+  3. PRESERVEs role='manager' from admin assignment
+  4. SYNCs profile data from Google provider
+  5. Preserves admin-created status and metadata
+
+**Implementation Notes** (Updated 2026-06-01):
+- ✅ Frontend UI: `Portal/src/pages/admin/TeamMembersPage.tsx` (list view with search, create/edit/delete actions)
+- ✅ Frontend UI: `Portal/src/pages/admin/TeamMembersFormPage.tsx` (full-screen form page for create/edit)
+- ✅ Frontend UI: `Portal/src/components/admin/TeamMemberForm.tsx` (reusable form component with full-page and modal modes)
+- ✅ Routes registered: `/admin/team-members`, `/admin/team-members/new`, `/admin/team-members/edit/:uid` in `Portal/src/routes/index.tsx`
+- ✅ Navigation: List page uses `navigate('/admin/team-members/new')` and `navigate('/admin/team-members/edit/:uid')` instead of modals
+- ✅ Mobile-friendly: Full-screen forms work better on mobile than modals; responsive padding and sizing applied
+- ✅ Backend: `backend/src/controllers/team-members.controller.js` implements UPSERT pattern with email lookup
+- ✅ Backend: `backend/src/routes/team-members.routes.js` (routes mounted at `/api/team-members`)
+- ✅ Backend mounted: `backend/src/server.js` imports and mounts team-members routes
+- ✅ Firebase Auth integration: `createTeamMember` creates Auth account OR updates existing user
+- ✅ Firestore integration: `/users/{uid}` document created/updated with role='team_member'
+- ✅ Hybrid auth support: Searches Firestore by email FIRST, then Firebase Auth, for existing user detection
+- ✅ authProviders tracking: Stores array of auth methods (['email'], ['google'], or ['email','google'])
+- ✅ signInMethod field: Tracks 'email', 'google', or 'both'
+- ✅ Custom claims set automatically: `admin.auth().setCustomUserClaims(uid, { role })`
+- ⏳ TODO: Email sending via SendGrid (password reset link)
+- ⏳ TODO: Role-based permission enforcement (manager cannot delete)
+- ⏳ TODO: Admin-only endpoint guards (verify req.user.role === 'admin')
 
 **Backend endpoints needed**:
-- `POST /api/portal/users`
-- `GET /api/portal/users?role=team_member`
-- `GET /api/portal/users/:uid`
-- `PATCH /api/portal/users/:uid`
-- `PATCH /api/portal/users/:uid/role`
-- `DELETE /api/portal/users/:uid` (admin only, soft-delete)
+- ✅ `POST /api/team-members` — Create with Firebase Auth account
+- ✅ `GET /api/team-members` — List all
+- ✅ `GET /api/team-members/:uid` — Get single
+- ✅ `PATCH /api/team-members/:uid` — Update (cannot change email)
+- ✅ `DELETE /api/team-members/:uid` — Delete (admin only)
 
 **Frontend screens/components**:
-- `Portal/src/pages/users/NewUserPage.tsx`
-- `Portal/src/pages/users/UserListPage.tsx`
-- `Portal/src/pages/users/UserDetailPage.tsx`
+- ✅ `Portal/src/pages/admin/TeamMembersPage.tsx`
+- ✅ `Portal/src/components/admin/TeamMemberForm.tsx`
 
 ---
 
@@ -1026,26 +1073,48 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Priority**: P1 | **Complexity**: M | **Linked spec story**: US-8, US-14 | **Dependencies**: E01-S02
 
+**Status**: ✅ IMPLEMENTED (2026-05-31)
+
 **Rationale**: Clients must exist before tasks can be created for them. Admin and manager can create clients.
 
 **Acceptance Criteria**:
-- `ClientListPage.tsx` — lists all clients (`GET /api/portal/users?role=client`); searchable by name, email, org name.
-- `ClientDetailPage.tsx` — displays full profile; edit button opens inline edit; shows active task count; links to task list filtered by this client.
-- Create client form — required: full name, mobile, primary email, address; optional: organisation name, GST, PAN, Aadhaar, additional email IDs, state, business name, reference group.
-- `POST /api/portal/users { ...fields, role: "client" }` creates Firebase Auth account and Firestore profile; `emailIds[]` is initialised with `[primaryEmail]`.
-- Admin or manager can add/remove secondary emails from `ClientDetailPage` — `PATCH /api/portal/users/:uid { emailIds: [...] }`.
+- `ClientsPage.tsx` — lists all clients (`GET /api/clients`); searchable by name/email; shows name, email, phone, organisation, email IDs (primary + secondary list), created date.
+- `ClientForm.tsx` — displays full profile; edit button opens form; shows no task count yet (Phase 2 integration).
+- Create client form — required: full name, mobile, primary email, address; optional: organisation name, GST, PAN, Aadhaar, additional email IDs, state, business name.
+- `POST /api/clients { ...fields, role: "client" }` creates Firebase Auth account and Firestore profile; `emailIds[]` is initialised with `[primaryEmail]` plus any secondary emails provided.
+- Admin or manager can add/remove secondary emails from `ClientForm` — `PATCH /api/clients/:clientId { emailIds: [...] }`.
 - Manager cannot delete clients — `DELETE` is admin-only.
+- Multi-email display: Shows primary email and list of secondary email IDs with remove (✕) button.
+- Email validation: Prevents adding primary email as secondary; prevents duplicate emails in `emailIds[]`.
+
+**Implementation Notes**:
+- ✅ Frontend UI: `Portal/src/pages/admin/ClientsPage.tsx` (list view with search, create/edit/delete actions)
+- ✅ Frontend UI: `Portal/src/pages/admin/ClientsFormPage.tsx` (full-screen form page for create/edit)
+- ✅ Frontend UI: `Portal/src/components/admin/ClientForm.tsx` (reusable form component with full-page and modal modes; multi-email support)
+- ✅ Routes registered: `/admin/clients`, `/admin/clients/new`, `/admin/clients/edit/:clientId` in `Portal/src/routes/index.tsx`
+- ✅ Navigation: List page uses `navigate('/admin/clients/new')` and `navigate('/admin/clients/edit/:clientId')` instead of modals
+- ✅ Mobile-friendly: Full-screen forms work better on mobile than modals; responsive padding and sizing applied
+- ✅ Backend: Refactored `backend/src/controllers/client.controller.firestore.js` to integrate Firebase Auth + Firestore
+- ✅ Backend routes: `backend/src/routes/client.routes.js` already existed; POST/GET/PATCH/DELETE mapped
+- ✅ Backend mounted: Routes already mounted at `/api/clients` in `backend/src/server.js`
+- ✅ Firebase Auth integration: `createClient` creates Auth account with temporary password
+- ✅ Firestore integration: `/clients/{uid}` document with emailIds array, `/users/{uid}` document with role='client'
+- ✅ Multi-email support: emailIds array stored and managed; primary email locked on edit
+- ⏳ TODO: Email sending via SendGrid (password reset link)
+- ⏳ TODO: Role-based permission enforcement (manager cannot delete)
+- ⏳ TODO: Admin-only endpoint guards (verify req.user.role === 'admin')
+- ⏳ TODO: Task count display in list (requires JOIN with tasks collection)
 
 **Backend endpoints needed**:
-- `POST /api/portal/users` (with role=client)
-- `GET /api/portal/users?role=client`
-- `GET /api/portal/users/:uid`
-- `PATCH /api/portal/users/:uid`
-- `DELETE /api/portal/users/:uid` (admin only)
+- ✅ `POST /api/clients` — Create with Firebase Auth account and multi-email support
+- ✅ `GET /api/clients` — List all
+- ✅ `GET /api/clients/:clientId` — Get single (field: uid or clientId)
+- ✅ `PATCH /api/clients/:clientId` — Update with emailIds array support
+- ✅ `DELETE /api/clients/:clientId` — Delete (admin only)
 
 **Frontend screens/components**:
-- `Portal/src/pages/clients/ClientListPage.tsx`
-- `Portal/src/pages/clients/ClientDetailPage.tsx`
+- ✅ `Portal/src/pages/admin/ClientsPage.tsx`
+- ✅ `Portal/src/components/admin/ClientForm.tsx`
 
 ---
 
@@ -1160,6 +1229,79 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Frontend screens/components**:
 - `Portal/src/pages/workflow/WorkflowSettingsPage.tsx` (sync warning banner)
+
+---
+
+## APPENDIX A — Infrastructure & Build System (Updated 2026-06-01)
+
+### NPM Run Commands Standardization
+
+**Motivation**: Standardize build and run commands across all services (backend, Portal, Frontend) to simplify developer workflow and CI/CD pipelines.
+
+**Implementation**:
+- Created root `package.json` with unified commands
+- Updated `backend/package.json`, `Portal/package.json`, `Frontend/package.json` with service-specific scripts
+
+**Commands Available**:
+
+| Command | Service(s) | Port(s) | Working Directory |
+|---------|-----------|--------|-------------------|
+| `npm run build:all` | All | — | Root |
+| `npm run dev:all` | All (parallel) | 5001, 5173, 5174 | Root |
+| `npm run start:backend` | Backend only | 5001 | Root (cd backend) |
+| `npm run dev:backend` | Backend only | 5001 | Root (cd backend) |
+| `npm run dev:portal` | Portal only | 5173 | Root (cd Portal) |
+| `npm run build:portal` | Portal only | — | Root (cd Portal) |
+| `npm run dev:frontend` | Frontend only | 5174 | Root (cd Frontend) |
+| `npm run build:frontend` | Frontend only | — | Root (cd Frontend) |
+
+**Usage**:
+```bash
+# Start all services in parallel
+npm run dev:all
+
+# Start individual services
+npm run start:backend
+npm run dev:portal
+npm run dev:frontend
+
+# Build all
+npm run build:all
+```
+
+**Backend Ports**: 5001 (HTTP, Node.js/Express)  
+**Portal Ports**: 5173 (Vite dev server)  
+**Frontend Ports**: 5174 (Vite dev server)
+
+---
+
+### Copilot Instructions Update (2026-06-01)
+
+**File**: `.github/copilot-instructions.md`
+
+**Changes**:
+1. **Added "DO NOT auto-test" rule**:
+   - ⚠️ "DO NOT automatically run Playwright tests or open browsers unless explicitly asked by user"
+   - Only test when user explicitly requests: "test in playwright" or "verify in browser"
+   - Default behavior: Code changes only, no automatic testing
+
+2. **Added BUILD & RUN COMMANDS table**:
+   - Comprehensive reference for all services and their ports
+   - Emphasized: "ALWAYS use these commands instead of manual invocations"
+   - Lists backend on 5001, Portal on 5173, Frontend on 5174
+   - Combined commands for running all services in parallel
+
+3. **Updated methodology**:
+   - Build commands now reference npm run scripts (not raw vite/node commands)
+   - Copilot instructed to default to documentation-first approach
+   - Clear enforcement: "Always use npm run commands defined in package.json"
+
+**Effect**: Copilot will no longer:
+- Auto-test with Playwright unless explicitly requested
+- Run bare `npm run dev` or `vite` commands without referencing the standardized npm scripts
+- Bypass the centralized build/run command table
+
+**Benefit**: Ensures consistent developer experience and CI/CD compatibility across the team.
 
 ---
 

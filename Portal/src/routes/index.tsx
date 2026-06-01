@@ -13,6 +13,10 @@ import AdminDashboard from '../pages/admin/DashboardPage';
 import AdminTasks from '../pages/admin/TasksPage';
 import AdminReports from '../pages/admin/ReportsPage';
 import AdminUsers from '../pages/admin/UsersPage';
+import TeamMembersPage from '../pages/admin/TeamMembersPage';
+import TeamMembersFormPage from '../pages/admin/TeamMembersFormPage';
+import ClientsPage from '../pages/admin/ClientsPage';
+import ClientsFormPage from '../pages/admin/ClientsFormPage';
 import WorkflowSettings from '../pages/admin/WorkflowSettingsPage';
 
 // Report sub-pages
@@ -54,6 +58,12 @@ export const router = createBrowserRouter([
           { path: '/admin/reports/pending', element: <PendingTasksReport /> },
           { path: '/admin/reports/master-sheet', element: <MasterSheetReport /> },
           { path: '/admin/users', element: <AdminUsers /> },
+          { path: '/admin/team-members', element: <TeamMembersPage /> },
+          { path: '/admin/team-members/new', element: <TeamMembersFormPage /> },
+          { path: '/admin/team-members/edit/:uid', element: <TeamMembersFormPage /> },
+          { path: '/admin/clients', element: <ClientsPage /> },
+          { path: '/admin/clients/new', element: <ClientsFormPage /> },
+          { path: '/admin/clients/edit/:clientId', element: <ClientsFormPage /> },
           { path: '/admin/workflow-settings', element: <WorkflowSettings /> },
         ],
       },

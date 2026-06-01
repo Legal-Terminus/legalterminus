@@ -62,4 +62,5 @@ export const getAuth = () => {
   return admin.auth();
 };
 
+export { admin };
 export default initializeFirebase;
