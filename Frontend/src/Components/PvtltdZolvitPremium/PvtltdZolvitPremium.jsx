@@ -25,40 +25,53 @@ const ZolvitPremium = () => {
               <h2 className="zp-title">
                 Legal Terminus{" "}
                 <span className="zp-title-highlight">Priority</span>{" "}
-                <span className="zp-title-icon">⚖️</span>
+                <span className="zp-title-icon">⚖</span>
               </h2>
               <p className="zp-subtitle">
-               Move fast without breaking compliance. Our expert-handled process is built for founders who don't have time to waste — zero back-and-forth, zero confusion.              </p>
+                A Pvt Ltd is the structure investors expect, lenders trust, and enterprise customers contract with. But the difference between a 'cheap registration' and a 'fundable company' is in the AOA — entrenchment, transfer restrictions, ESOP enabling, voting thresholds. Priority is what happens when a senior CS drafts your AOA like you'll be raising Series A in 18 months (because you might).
+              </p>
             </header>
 
             {/* Features */}
             <section className="zp-section-block">
-              <h3 className="zp-label">What You Get:</h3>
+              <h3 className="zp-label">What you get</h3>
               <ul className="zp-list zp-features-list">
                 <li className="zp-list-item">
-                  <span className="zp-list-icon">🧑‍⚖️</span>
-                 Expert-handled process from Day 1 — we own the paperwork so you don't have to.</li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">📑</span>
-                  Hassle-Free Compliance Support — one dedicated point of contact throughout.
+                  <span className="zp-list-icon">⚡</span>
+                  72-hour SLA on first MOA/AOA draft — and a same-day name search before you commit.
                 </li>
                 <li className="zp-list-item">
-                  <span className="zp-list-icon">⏱️</span>
-                  Proactive Reminder System — never miss a deadline or pay a late penalty.
+                  <span className="zp-list-icon">🛡</span>
+                  Senior expert reviewed your documents and provide the name availability percentage.
+                </li>
+                <li className="zp-list-item">
+                  <span className="zp-list-icon">🔄</span>
+                  Real-time CRC status updates on mail and WhatsApp — no refreshing the MCA portal at midnight.
+                </li>
+                <li className="zp-list-item">
+                  <span className="zp-list-icon">📑</span>
+                  Post-incorporation kit: COI, MOA, AOA and compliance calendar.
                 </li>
               </ul>
             </section>
 
             {/* Note */}
             <section className="zp-section-block">
-              <h3 className="zp-label">Important Notes:</h3>
+              <h3 className="zp-label">Important Notes</h3>
+              <p className="zp-note-intro">Heads up — these are the things that derail Pvt Ltd incorporations:</p>
               <div className="zp-note-box">
                 <ul className="zp-note-list">
                   <li className="zp-note-item">
-                    We prioritise your preferred company name and run a preliminary name check before submission to MCA.
+                    <strong>INC-20A</strong> (commencement of business) MUST be filed within 180 days of incorporation. If skipped, the company cannot operate its bank account, and ROC can strike it off. Penalty ₹50,000 on company + ₹1,000/day on every director (capped ₹1L). We file this in our Supreme tier; Elemental and Enriched clients get a reminder.
                   </li>
                   <li className="zp-note-item">
-                    In case of name rejection by the RoC, our experts will recommend legally compliant alternative names to ensure swift approval.
+                    <strong>Name rejection</strong> is the #1 delay. Avoid generic words ('India', 'Tech', 'Solutions'), check trademark conflicts, and have 4 backup names ready. We pre-screen, but the CRC is the final authority.
+                  </li>
+                  <li className="zp-note-item">
+                    <strong>Section 115BAA</strong> (22% concessional tax) requires you to opt in via Form 10-IC by the income tax filing deadline of the first relevant FY. Once opted in, you cannot opt out. Run the math before opting — older companies with carry-forward losses may prefer 25.17% with deductions.
+                  </li>
+                  <li className="zp-note-item">
+                    <strong>Statutory audit is MANDATORY</strong> for every Pvt Ltd from Day 1 — even if turnover is zero. This is the one place where Pvt Ltd is heavier than LLP / Partnership. Plan annual audit cost (₹15K – ₹50K) into your runway.
                   </li>
                 </ul>
               </div>

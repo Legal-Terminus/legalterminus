@@ -110,6 +110,13 @@
 
 /* Note box */
 
+.zp-note-intro {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 12px;
+  font-style: italic;
+}
+
 .zp-note-box {
   background-color: #f0fdf4;
   border: 1px solid rgba(34, 197, 94, 0.18);
