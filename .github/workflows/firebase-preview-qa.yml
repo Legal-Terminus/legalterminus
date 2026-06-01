@@ -148,7 +148,7 @@ jobs:
             --format='value(status.url)')
           
           # Update Backend with its own BASE_URL for PhonePe redirects
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
+          gcloud run services update ${{ env.SERVICE_NAME }} \
             --region=${{ env.REGION }} \
             --update-env-vars="BASE_URL=${BACKEND_URL}" \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
