@@ -19,63 +19,46 @@ const RequirementsPvt = () => {
         <div className="req-grid">
           {/* 1 */}
           <article className="req-card">
-            <h3 className="req-card-title">Separate Legal Identity</h3>
+            <h3 className="req-card-title">Discovery &amp; Structuring Call <span className="req-day-tag">Day 0</span></h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Once incorporated, your company is a legal person in its own right. It can own property, sign contracts, sue, and be sued — completely independently of you, its founder. Think of it as giving your startup its own legal superpower.
+              60-min call with our CS to confirm: directors (min 2), shareholders (min 2), state of registered office, authorised + paid-up capital, primary business activity (NIC code), and tax-regime preference (115BAA vs default). We pre-screen 4 name options.
             </p>
           </article>
 
           {/* 2 */}
           <article className="req-card">
-            <h3 className="req-card-title">Limited Liability Protection</h3>
+            <h3 className="req-card-title">Document Submission &amp; DSC Procurement <span className="req-day-tag">Day 1–3</span></h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Your personal assets — home, savings, car — are ring-fenced from company liabilities. Shareholders are only responsible for the unpaid value of their shares. That's the safety net that lets founders take bold bets.
+              Share KYC documents and registered office address proof with us (as per checklist). This is your only job at the start — we handle everything from here. Class 3 Digital Signature Certificates issued to all directors and subscribers via Aadhaar e-KYC. Same-day for resident Indians; 3–5 days for NRIs / foreign nationals (apostille documents required).
             </p>
           </article>
 
           {/* 3 */}
           <article className="req-card">
-            <h3 className="req-card-title">
-              Access to Government Schemes & Incentives
-            </h3>
+            <h3 className="req-card-title">Company Name &amp; Objects Finalization</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Registered Pvt Ltd companies can access Startup India benefits (tax exemptions under Section 80-IAC, angel tax relief under Section 56), Make in India incentives, DPIIT recognition, and government tenders — opportunities simply not available to unregistered entities.
+              We run a preliminary name availability check and help you finalize your company name and business objects (what your company will do). The name must comply with MCA naming guidelines and must not conflict with existing registered companies, LLPs, or trademarks.
             </p>
           </article>
 
           {/* 4 */}
           <article className="req-card">
-            <h3 className="req-card-title">
-              Increased Credibility & Bankability
-            </h3>
+            <h3 className="req-card-title">SPICe+ Part A — Name Reservation <span className="req-day-tag">Day 4–6</span></h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Clients, suppliers, and financial institutions trust registered entities. Banks are more likely to extend credit lines. Investors take you seriously. Partners want to deal with you. A Pvt Ltd tag signals that you mean business — literally.
+              Filed with 4 proposed names (in order of preference) ending with 'Private Limited' through MCA21 V3. CRC reviews under Rule 8 of the Companies (Incorporation) Rules. Approval: 2–3 working days typical. Reserved name valid for 20 days.
             </p>
           </article>
 
           {/* 5 */}
           <article className="req-card">
-            <h3 className="req-card-title">
-              Perpetual Succession
-            </h3>
+            <h3 className="req-card-title">MOA &amp; AOA Drafting <span className="req-day-tag">Day 4–7</span></h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              The company doesn't die with its founders. Even if a director resigns, passes away, or sells their stake, the company continues to exist. Continuity is baked in.
-            </p>
-          </article>
-
-          {/* 6 */}
-          <article className="req-card">
-            <h3 className="req-card-title">
-              Ease of Raising Capital
-            </h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              Issue shares, bring in investors, attract venture capital — equity fundraising is structured and clean for a Pvt Ltd. This is the single biggest advantage over proprietorships and partnerships when scaling.
+              Memorandum of Association (object clause + capital + state) and Articles of Association (governance, share transfer, board powers, ESOP enablement, drag/tag, valuation, founder vesting) drafted. Two rounds of revision included.
             </p>
           </article>
         </div>
