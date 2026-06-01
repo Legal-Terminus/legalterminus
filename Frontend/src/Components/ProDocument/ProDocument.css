@@ -1,206 +1,103 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
-/* ================= SECTION ================= */
-.hex-doc-section {
-  padding: 110px 20px;
-  background: #f7faff;
-  font-family: "Poppins", sans-serif;
-  text-align: center;
+.pro-doc-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f8fdf9;
+  padding: 72px 24px 64px;
 }
 
-/* TITLE */
-.hex-doc-title {
+.pro-doc-container { max-width: 1200px; margin: 0 auto; }
+
+.pro-doc-title {
   font-size: 34px;
   font-weight: 600;
-  margin-bottom: 70px;
-  color: #1f2937;
+  color: #111827;
+  text-align: center;
+  margin: 0 0 12px;
 }
 
-/* ================= RADIAL LAYOUT ================= */
-.hex-radial {
-  position: relative;
-  width: 520px;
-  height: 520px;
-  margin: 0 auto;
+.pro-doc-subtitle {
+  font-size: 15px;
+  color: #64748b;
+  text-align: center;
+  margin: 0 0 48px;
+  line-height: 1.7;
 }
 
-/* ================= CENTER ================= */
-.hex-center {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 170px;
-  height: 150px;
-  background: #5bb3f3;
-  color: #ffffff;
-  font-size: 20px;
+.pro-doc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.pro-doc-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.07);
+  border-top: 3px solid #19b43a;
+}
+
+.pro-doc-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pro-doc-no {
+  width: 32px;
+  height: 32px;
+  background: #19b43a;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.pro-doc-card-title {
+  font-size: 15px;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  clip-path: polygon(
-    25% 6%, 75% 6%,
-    100% 50%,
-    75% 94%, 25% 94%,
-    0% 50%
-  );
-  box-shadow: 0 18px 40px rgba(91, 179, 243, 0.35);
-  z-index: 5;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
 }
 
-/* ================= HEX CARD ================= */
-.hex-card {
+.pro-doc-list { list-style: none; padding: 0; margin: 0; }
+
+.pro-doc-item {
+  font-size: 13.5px;
+  color: #4b5563;
+  line-height: 1.8;
+  padding-left: 14px;
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.pro-doc-item::before {
+  content: "–";
   position: absolute;
-  width: 185px;
-  height: 165px;
-  clip-path: polygon(
-    25% 6%, 75% 6%,
-    100% 50%,
-    75% 94%, 25% 94%,
-    0% 50%
-  );
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.2s ease;
+  left: 0;
+  color: #19b43a;
+  font-weight: 600;
 }
 
-/* subtle hover only */
-.hex-card:hover {
-  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.12);
+@media (max-width: 1024px) {
+  .pro-doc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pro-doc-title { font-size: 28px; }
 }
 
-/* ICON */
-.hex-icon {
-  font-size: 28px;
-  color: #4a6cf7;
-}
-
-.hex-card h3 {
-  font-size: 14px;
-  font-weight: 500;
-  color: #1f2937;
-}
-
-/* ================= CARD COLORS ================= */
-.hex-1 { background: linear-gradient(135deg, #5979b9, #f3f6fb); }
-.hex-2 { background: linear-gradient(135deg, #55be86, #f3fbf7); }
-.hex-3 { background: linear-gradient(135deg, #c08c64, #fbf5f0); }
-.hex-4 { background: linear-gradient(135deg, #7f63cd, #f5f3fb); }
-.hex-5 { background: linear-gradient(135deg, #cfbc68, #fbf9ef); }
-.hex-6 { background: linear-gradient(135deg, #7bbcdf, #f1f8fc); }
-
-/* ================= POSITIONS ================= */
-.hex-1 { top: -10px; left: 50%; transform: translateX(-50%); }
-.hex-2 { top: 95px; right: -25px; }
-.hex-3 { bottom: 95px; right: -25px; }
-.hex-4 { bottom: -10px; left: 50%; transform: translateX(-50%); }
-.hex-5 { bottom: 95px; left: -25px; }
-.hex-6 { top: 95px; left: -25px; }
-
-/* ================= RESPONSIVE ================= */
-
-/* Tablet */
-@media (max-width: 992px) {
-  .hex-radial {
-    width: 420px;
-    height: 420px;
-  }
-
-  .hex-card {
-    width: 170px;
-    height: 150px;
-  }
-
-  .hex-center {
-    width: 155px;
-    height: 135px;
-    font-size: 18px;
-  }
-}
-
-/* Mobile */
 @media (max-width: 768px) {
-  .hex-radial {
-    position: relative;
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 28px;
-  }
-
-  .hex-center {
-    position: relative;
-    margin-bottom: 20px;
-  }
-
-  .hex-card {
-    position: relative;
-    inset: unset;
-    transform: none;
-    width: 220px;
-    height: 190px;
-  }
+  .pro-doc-section { padding: 52px 16px 48px; }
+  .pro-doc-title { font-size: 24px; }
+  .pro-doc-subtitle { font-size: 14px; margin-bottom: 32px; }
 }
 
-/* Small phones */
 @media (max-width: 480px) {
-  .hex-doc-section {
-    padding: 80px 16px;
-  }
-
-  .hex-doc-title {
-    font-size: 24px;
-    margin-bottom: 40px;
-  }
-
-  .hex-card {
-    width: 200px;
-    height: 175px;
-  }
-
-  .hex-center {
-    width: 180px;
-    height: 155px;
-    font-size: 17px;
-  }
-}
-
-/* ================= MICRO ANIMATIONS ================= */
-
-/* soft fade-in */
-.hex-center,
-.hex-card {
-  opacity: 0;
-  animation: fadeInSoft 0.6s ease forwards;
-}
-
-/* stagger timing */
-.hex-center { animation-delay: 0s; }
-.hex-1 { animation-delay: 0.05s; }
-.hex-2 { animation-delay: 0.1s; }
-.hex-3 { animation-delay: 0.15s; }
-.hex-4 { animation-delay: 0.2s; }
-.hex-5 { animation-delay: 0.25s; }
-.hex-6 { animation-delay: 0.3s; }
-
-/* icon micro float */
-.hex-icon {
-  animation: iconFloatSoft 4s ease-in-out infinite;
-}
-
-/* ================= KEYFRAMES ================= */
-@keyframes fadeInSoft {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes iconFloatSoft {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  .pro-doc-grid { grid-template-columns: 1fr; }
+  .pro-doc-title { font-size: 22px; }
 }

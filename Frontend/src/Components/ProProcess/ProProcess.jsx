@@ -3,39 +3,39 @@ import "./ProProcess.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
-    text:
-      "Provision of requisite documents / information to us (as per the checklist to be provided by us).",
+    title: "01  Discovery & Registration Map",
+    day: "Day 0",
+    text: "30-min call with our CA to confirm: business activity, projected turnover, state of operation, marketplace plans, food / import-export needs, and tax-regime preference. We map the exact registrations you need — no over-registering, no gaps.",
   },
   {
-    title: "Step 2 – Company Name & Objects Finalization",
-    text:
-      "Finalisation of objects along with name of the proposed company (based on a search report duly conducted and provided by our team).",
+    title: "02  PAN + Aadhaar Verification",
+    day: "Day 0–1",
+    text: "Confirm proprietor's PAN-Aadhaar linkage status. If not linked, we get it done first (without it, GST and bank account both fail).",
   },
   {
-    title: "Step 3 – Name Reservation Application",
-    text:
-      "Filing of application for name reservation in requisite e-form along with applicable government fees.",
+    title: "03  MSME / Udyam Registration",
+    day: "Day 1",
+    text: "Filed online at udyamregistration.gov.in. Free, instant. Registration number issued within 24 hours. Eligibility for MSME loan schemes, government tenders, and protection under the MSMED Act, 2006.",
   },
   {
-    title: "Step 4 – Digital Signature Certificates",
-    text:
-      "Preparation of requisite numbers of DSC with respect to the proposed promoters & directors and registration of DSC in the MCA portal.",
+    title: "04  Shop & Establishment Act Registration",
+    day: "Day 1–10",
+    text: "Filed with the State Labour Department. Required for any commercial premises (including home-office). Issued in 7–15 working days depending on state.",
   },
   {
-    title: "Step 5 – Incorporation Document Preparation",
-    text:
-      "Preparation of further incorporation documents upon receipt of the name approval letter from the department.",
+    title: "05  GST Registration (If Applicable)",
+    day: "Day 1–7",
+    text: "Filed at gst.gov.in if turnover threshold is crossed (₹40L goods / ₹20L services) OR if you're an e-commerce operator / inter-state supplier under Section 24. Voluntary registration available for ITC benefits. ARN issued instantly; GSTIN in 3–7 days.",
   },
   {
-    title: "Step 6 – Final Form Upload & Fee Payment",
-    text:
-      "Uploading of final incorporation forms to the MCA portal along with applicable government fees.",
+    title: "06  Trade Licence + Professional Tax + Sectoral",
+    day: "Day 3–15",
+    text: "Trade Licence from municipal corporation (where applicable). Professional Tax registration with State Government. Sectoral licences (FSSAI, IEC, drug, BIS, AYUSH) as relevant. Timelines vary 7–30 days.",
   },
   {
-    title: "Step 7 – Registration Certificate Issuance",
-    text:
-      "Processing of the application by the department and issuance of the registration certificate.",
+    title: "08  Onboarding Kit & Tax-Regime Setup",
+    day: "Day 10–15",
+    text: "We deliver: All registration certificates in one PDF, statutory compliance checklist, 90-day compliance calendar, ITR-3 vs ITR-4 (presumptive) recommendation, GSTR rhythm calendar, marketplace seller onboarding kit (if requested).",
   },
 ];
 
@@ -43,11 +43,10 @@ const GSTProcess = () => {
   return (
     <section className="pvtltd-gst-wrapper">
       <h2 className="gst-heading">
-        Steps For Proprietorship Firms Registration in India
+        Steps for Proprietorship Firm Registration in India
       </h2>
       <p className="pv-gst-subheading">
-        The broad process of registering a Proprietorship Firms involves
-        the following steps:
+        Eight steps. 5 – 15 working days end-to-end depending on the registration stack you choose.
       </p>
 
       <div className="pvtltd-timeline">
@@ -58,12 +57,17 @@ const GSTProcess = () => {
             key={index}
             className={`pvtltd-timeline-item ${
               index % 2 === 0 ? "left" : "right"
+            } ${index === 0 ? "first" : ""} ${
+              index === steps.length - 1 ? "last" : ""
             }`}
           >
             <div className="pvtltd-timeline-dot">{index + 1}</div>
 
             <div className="pvtltd-timeline-card">
-              <h4>{step.title}</h4>
+              <h4>
+                {step.title}
+                {step.day && <span className="pvtltd-day-tag">{step.day}</span>}
+              </h4>
               <p>{step.text}</p>
             </div>
           </div>

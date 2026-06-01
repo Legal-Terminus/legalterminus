@@ -1,38 +1,96 @@
 import React from "react";
-import {
-  FaFileAlt,
-  FaClipboardCheck,
-  FaCheckCircle,
-  FaHandsHelping,
-  FaFolderOpen,
-  FaFlagCheckered,
-} from "react-icons/fa";
 import "./ProDocument.css";
 
-const steps = [
-  { id: "01", title: "Document Review", icon: <FaFileAlt /> },
-  { id: "02", title: "Eligibility Check", icon: <FaClipboardCheck /> },
-  { id: "03", title: "Approval", icon: <FaCheckCircle /> },
-  { id: "04", title: "Final Validation", icon: <FaHandsHelping /> },
-  { id: "05", title: "Documentation", icon: <FaFolderOpen /> },
-  { id: "06", title: "Completion", icon: <FaFlagCheckered /> },
+const docs = [
+  {
+    no: "1",
+    title: "Proprietor Identity",
+    items: [
+      "PAN card (mandatory).",
+      "Aadhaar card (mobile-linked + linked with PAN).",
+      "Voter ID / Driving Licence / Passport as second ID.",
+      "Passport-size photograph (jpeg, < 100 KB).",
+    ],
+  },
+  {
+    no: "2",
+    title: "Address Proof of Proprietor",
+    items: [
+      "Bank statement OR utility bill OR mobile postpaid bill — not older than 60 days.",
+      "Self-attested.",
+      "Address must match Aadhaar.",
+    ],
+  },
+  {
+    no: "3",
+    title: "Business Premises Proof",
+    items: [
+      "Owned: Latest property tax receipt + electricity bill.",
+      "Rented: Notarised rent agreement + landlord's NoC + electricity bill.",
+      "Home office: Self-declaration + utility bill in proprietor's name.",
+      "Co-working: Service agreement + operator NoC.",
+    ],
+  },
+  {
+    no: "4",
+    title: "Business Identity Proof (Existing or Proposed)",
+    items: [
+      "Trade name (proposed).",
+      "Business activity description.",
+      "NIC code mapping (we help).",
+      "Existing licences if any (e.g., previous Shop & Est, FSSAI, etc. — for renewal / migration).",
+    ],
+  },
+  {
+    no: "5",
+    title: "Bank Account Documents",
+    items: [
+      "Cancelled cheque OR first page of bank passbook OR bank statement with IFSC + account holder name (post-bank account opening).",
+      "For pre-existing personal account migration: NoC may be required.",
+    ],
+  },
+  {
+    no: "6",
+    title: "Sector-Specific Documents",
+    items: [
+      "For food: kitchen layout / FSSAI form.",
+      "For e-commerce: business website / marketplace plan.",
+      "For import-export: pro-forma invoices / IEC application.",
+      "For manufacturing: factory layout / pollution NoC.",
+      "For professionals: degree / professional body certificate.",
+    ],
+  },
 ];
 
-export default function HexDocumentSection() {
+const ProDocumentSection = () => {
   return (
-    <section className="hex-doc-section">
-      <h2 className="hex-doc-title">Document Process Flow</h2>
+    <section className="pro-doc-section">
+      <div className="pro-doc-container">
+        <h2 className="pro-doc-title">
+          Documents Required for Proprietorship Firm Registration
+        </h2>
+        <p className="pro-doc-subtitle">
+          Get these ready and we'll take care of the rest.
+        </p>
 
-      <div className="hex-radial">
-        <div className="hex-center">PFR DOCS</div>
-
-        {steps.map((step, index) => (
-          <div key={step.id} className={`hex-card hex-${index + 1}`}>
-            <div className="hex-icon">{step.icon}</div>
-            <h3>{step.title}</h3>
-          </div>
-        ))}
+        <div className="pro-doc-grid">
+          {docs.map((doc) => (
+            <article key={doc.no} className="pro-doc-card">
+              <div className="pro-doc-card-header">
+                <span className="pro-doc-no">{doc.no}</span>
+                <h3 className="pro-doc-card-title">{doc.title}</h3>
+              </div>
+              <ul className="pro-doc-list">
+                {doc.items.map((item, i) => (
+                  <li key={i} className="pro-doc-item">{item}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );
-}
+};
+
+export default ProDocumentSection;

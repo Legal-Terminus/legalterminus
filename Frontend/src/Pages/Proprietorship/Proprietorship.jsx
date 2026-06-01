@@ -8,6 +8,8 @@ const Protabs = React.lazy(() => import('../../Components/Protabs/Protabs'))
 const ProCompanyTab = React.lazy(() => import('../../Components/ProCompanyTab/ProCompanyTab'))
 const ProPvtTypes = React.lazy(() => import('../../Components/ProPvtTypes/ProPvtTypes'))
 const ProRequirementsTab = React.lazy(() => import('../../Components/ProRequirementsTab/ProRequirementsTab'))
+const ProProcess = React.lazy(() => import('../../Components/ProProcess/ProProcess'))
+const ProDocument = React.lazy(() => import('../../Components/ProDocument/ProDocument'))
 const ProFAQ = React.lazy(() => import('../../Components/ProFAQ/ProFAQ'))
 const ProTermsCondition = React.lazy(() => import('../../Components/ProTermsCondition/ProTermsCondition'))
 const ProTestimonial = React.lazy(() => import('../../Components/ProTestimonial/ProTestimonial'))
@@ -59,6 +61,18 @@ const PrivateLimited = () => {
       <div id="requirements">
         <Suspense fallback={<div />}>
           <ProRequirementsTab />
+        </Suspense>
+      </div>
+
+      <div id="process">
+        <Suspense fallback={<div />}>
+          <ProProcess/>
+        </Suspense>
+      </div>
+
+      <div id="documents">
+        <Suspense fallback={<div />}>
+          <ProDocument />
         </Suspense>
       </div>
 

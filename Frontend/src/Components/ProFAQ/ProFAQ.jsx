@@ -3,48 +3,44 @@ import "./ProFAQ.css";
 
 const faqs = [
   {
-    question: "How many persons are required to form a Sole Proprietorship Firm?",
+    question: "Is there a single 'Proprietorship Registration' in India in 2026?",
     answer:
-      "Only one person is required to form a Sole Proprietorship Firm.",
+      "No, there is no single registration for a proprietorship. A proprietorship does not have a separate legal identity. Instead, you create your business identity by taking a few registrations like MSME (Udyam), Shop & Establishment, GST (if needed), Trade Licence, and other licences depending on your business.",
   },
   {
-    question: "Why should I choose to register a Sole Proprietorship Firm?",
+    question: "How long does it take to set up a proprietorship?",
     answer:
-      "A Sole Proprietorship Firm is very easy to form due to its minimal registration requirement and it requires only one person to incorporate.",
+      "It usually takes 3 to 7 working days, depending on the registrations required.",
   },
   {
-    question: "How can I register a Sole Proprietorship Firm?",
+    question: "Should I choose Proprietorship, OPC, or LLP?",
     answer:
-      "In India there is no mechanism for registration of a Proprietorship Firm. However, the proprietorship firm can be established through various registrations required to start and/ or operate a business in India as per the rules and regulations, i.e., GST Registration, Trade License, Food License, Aadhar Udyog etc.",
+      "It depends on your needs:\n• Want to protect personal assets? → Go for OPC or LLP\n• Low budget and small business (below ₹50 lakh)? → Proprietorship is best\n• Planning to raise funds or add partners? → OPC or LLP",
   },
   {
-    question:
-      "Can I choose any name as per my choice for my Sole Proprietorship Firm?",
+    question: "Do I need a separate PAN for my proprietorship?",
     answer:
-      "The proprietor can choose any business name as per his/her wish to create a Sole Proprietorship Firm. However, the business name should not be same as of a registered trade mark.",
+      "No. The proprietor's individual PAN is also the firm's PAN. There is no separate firm PAN. All invoices, GST registration, bank accounts, and tax filings use the proprietor's PAN. This is one of the reasons proprietorship is cheap and fast to set up — but also why you can't legally separate proprietor finances from firm finances (no separate legal entity).",
   },
   {
-    question: "Can I restrict others to use my Sole Proprietorship Firm’s name?",
+    question: "Is GST registration mandatory for a proprietorship?",
     answer:
-      "No, the Sole Proprietorship Firm cannot restrict any other person to use its business name, unless it gets its name registered under Trade Mark.",
+      "Not always. GST is required only if:\n• Turnover exceeds ₹40 lakh (goods) or ₹20 lakh (services), or\n• You fall under special cases (like inter-state sales or e-commerce)\nOtherwise, GST is optional but can be beneficial.",
   },
   {
-    question:
-      "What are the Income tax implications on me as a Sole Proprietorship Firm?",
+    question: "What's the unlimited liability risk in a proprietorship?",
     answer:
-      "Income earned by Sole Proprietorship Firm is considered as income earned by the owner and thus, taxed in its individual hand. Accordingly, the tax shall be computed as per slab. However, it is to be noted that Income-tax Act, 1961 provides (almost) common rules for the calculation of taxable business income for all entity structure (say, company, partnership, sole proprietorship firm etc.)",
+      "In a proprietorship, you and your business are the same. If the business has losses or legal issues, your personal assets (house, savings, etc.) can be at risk.",
   },
   {
-    question:
-      "To what extent the liability of a Sole Proprietorship Firm is limited?",
+    question: "Can I convert my proprietorship to a Pvt Ltd / LLP later?",
     answer:
-      "The liability of a sole proprietor is unlimited. As the Government does not differentiate between the Sole Proprietorship firm and a Sole Proprietor, the proprietor is personally liable for all the debts incurred by the Sole Proprietorship Firm.",
+      "Yes, a proprietorship can convert to a Private Limited Company or LLP later. Most successful proprietorships convert in Year 2-3 when liability or capital-raising needs arise.",
   },
   {
-    question:
-      "How Legal Terminus can help us registering a Sole Proprietorship Firm?",
+    question: "How can Legal Terminus help me set up my proprietorship?",
     answer:
-      "Legal Terminus can help you with registration of Sole Proprietorship Firm for you, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+      "Legal Terminus takes care of your entire proprietorship registration process from start to finish. We identify the right set of registrations for your business (such as MSME, Shop & Establishment, GST, and other licenses if required), handle all documentation and filings, and guide you at every step. Our pricing is transparent with no hidden charges, and we ensure a smooth and hassle-free setup, usually completed within 5 to 15 working days.",
   },
 ];
 
@@ -58,20 +54,13 @@ const FaqPvt = () => {
   return (
     <section className="faq-section">
       <div className="faq-container">
-        {/* Left side – static text */}
         <div className="faq-left">
-          <h2 className="faq-title">Proprietorship Firm Registration FAQ&apos;s</h2>
-
+          <h2 className="faq-title">Proprietorship Firm Registration FAQ's</h2>
           <p className="faq-intro">
-            Starting a Proprietorship Firm Registration in India is an important step for any business owner. With the right support, the process can be simple and stress-free.
-          </p>
-
-          <p className="faq-intro">
-            
+            Common questions about setting up a proprietorship firm in India — answered honestly.
           </p>
         </div>
 
-        {/* Right side – scrollable Q&A list */}
         <div className="faq-right">
           <div className="faq-list">
             {faqs.map((item, index) => {
@@ -87,15 +76,12 @@ const FaqPvt = () => {
                     onClick={() => toggleFaq(index)}
                   >
                     <span>{item.question}</span>
-                    <span className={`faq-icon ${isActive ? "open" : ""}`}>
-                      ▾
-                    </span>
+                    <span className={`faq-icon ${isActive ? "open" : ""}`}>▾</span>
                   </button>
                   {isActive && (
-                   <div className={`faq-answer ${isActive ? "open" : ""}`}>
-                    <p>{item.answer}</p>
-                  </div>
-
+                    <div className={`faq-answer ${isActive ? "open" : ""}`}>
+                      <p style={{ whiteSpace: "pre-line" }}>{item.answer}</p>
+                    </div>
                   )}
                 </div>
               );
