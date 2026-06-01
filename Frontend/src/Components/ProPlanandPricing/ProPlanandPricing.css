@@ -49,12 +49,25 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.opcplan-card:hover {
+  border-color: rgba(34, 197, 94, 0.85);
+  box-shadow: 0 12px 36px rgba(34, 197, 94, 0.18);
+  transform: translateY(-4px);
 }
 
 /* Popular card — stronger border + shadow */
 .opcplan-card--popular {
   border-color: rgba(34, 197, 94, 0.75);
   box-shadow: 0 4px 20px rgba(34, 197, 94, 0.14);
+}
+
+.opcplan-card--popular:hover {
+  border-color: #19b43a;
+  box-shadow: 0 16px 48px rgba(34, 197, 94, 0.25);
+  transform: translateY(-4px);
 }
 
 /* Pill badge — centered inside card */
