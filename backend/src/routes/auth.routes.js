@@ -1,7 +1,12 @@
 import express from "express";
 import admin from "firebase-admin";
 import { verifyToken } from "../middleware/auth.middleware.js";
-import { createDoc, getDoc, updateDoc } from "../config/firestore.js";
+import { getDb } from "../config/firebase.js";
+import {
+  upsertUser,
+  getUserByEmail,
+  updateUserRole,
+} from "../services/userService.js";
 
 const router = express.Router();
 
@@ -58,40 +63,69 @@ router.get("/firebase-config", (req, res) => {
 
 /**
  * POST /api/auth/register
- * Called after Firebase Auth account creation (client-side).
- * Creates the Firestore users/{uid} document with role = "client" by default.
+ * Handles user registration/sync for all scenarios:
+ * 1. New self-signup (Google/Email) → Create as 'client'
+ * 2. Admin creates user → Preserve admin-assigned role
+ * 3. Admin + Google merge → Link accounts, preserve admin role
+ * 
  * Auth: Bearer <firebase_id_token>
- * Body: { fullName, email?, mobile?, businessName?, state? }
+ * Body: { fullName, mobile, businessName, state, provider: 'google' | 'email' }
  */
 router.post("/register", verifyToken, async (req, res) => {
   try {
-    const { uid, email } = req.user;
-    const { fullName, mobile, businessName, state } = req.body;
+    const { uid, email, photoURL } = req.user;
+    const { fullName, mobile, businessName, state, provider = 'email' } = req.body;
 
-    const existing = await getDoc("users", uid);
-    if (existing) {
-      return res.status(200).json({ success: true, user: existing, created: false });
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email required' });
     }
 
-    const now = new Date().toISOString();
-    const userData = {
-      uid,
-      email: email || "",
-      fullName: String(fullName || "").slice(0, 200),
-      mobile: String(mobile || "").replace(/[^0-9+\-() ]/g, "").slice(0, 20),
-      businessName: String(businessName || "").slice(0, 200),
-      state: String(state || "").slice(0, 100),
-      role: "client",
-      status: "active",
-      createdAt: now,
-      updatedAt: now,
+    // Check if user exists with this email (admin-created scenario)
+    const existingUser = await getUserByEmail(email);
+
+    // Determine role:
+    // - If exists in our system: use their existing role
+    // - If new: default to 'client'
+    const role = existingUser?.role || 'client';
+
+    // Prepare profile data
+    const profileData = {
+      name: String(fullName || '').slice(0, 200),
+      fullName: String(fullName || '').slice(0, 200),
+      email,
+      mobile: String(mobile || '').replace(/[^0-9+\-() ]/g, '').slice(0, 20),
+      businessName: String(businessName || '').slice(0, 200),
+      state: String(state || '').slice(0, 100),
+      ...(photoURL && provider === 'google' && { profilePictureUrl: photoURL }),
     };
 
-    await createDoc("users", uid, userData);
-    await admin.auth().setCustomUserClaims(uid, { role: "client" });
+    // Call unified upsertUser service
+    const result = await upsertUser(
+      email,
+      role,
+      profileData,
+      {
+        sendEmail: false, // Don't send email on login
+        authProvider: provider,
+        createdBy: 'auth_register',
+      }
+    );
 
-    res.status(201).json({ success: true, user: userData, created: true });
+    res.status(result.isUpdate ? 200 : 201).json({
+      success: true,
+      user: {
+        uid: result.uid,
+        email: result.email,
+        name: result.name,
+        role: result.role,
+      },
+      created: !result.isUpdate,
+      scenario: result.scenario,
+      isUpdate: result.isUpdate,
+      message: result.message,
+    });
   } catch (error) {
+    console.error('[REGISTER_ERROR]', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -104,16 +138,17 @@ router.post("/register", verifyToken, async (req, res) => {
 router.get("/me", verifyToken, async (req, res) => {
   try {
     const { uid } = req.user;
-    const user = await getDoc("users", uid);
+    const db = getDb();
 
-    if (!user) {
+    const doc = await db.collection('users').doc(uid).get();
+    if (!doc.exists) {
       return res.status(404).json({
         success: false,
         error: "User profile not found. Call POST /api/auth/register first.",
       });
     }
 
-    res.json({ success: true, user });
+    res.json({ success: true, user: { uid, ...doc.data() } });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -139,10 +174,10 @@ router.patch("/set-role", verifyToken, async (req, res) => {
       });
     }
 
-    await updateDoc("users", targetUid, { role, updatedAt: new Date().toISOString() });
-    await admin.auth().setCustomUserClaims(targetUid, { role });
+    // Use unified service to update role
+    const result = await updateUserRole(targetUid, role);
 
-    res.json({ success: true, targetUid, role });
+    res.json({ success: true, ...result });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -150,7 +185,8 @@ router.patch("/set-role", verifyToken, async (req, res) => {
 
 /**
  * POST /api/auth/admin/create-user
- * Admin-only: create a team member or client account server-side with a set role.
+ * Admin-only: create a user account server-side with a set role.
+ * Now uses unified upsertUser service for consistency.
  * Auth: Bearer <firebase_id_token> with role = admin
  * Body: { email, fullName, role, mobile?, designation?, dateOfJoining? }
  */
@@ -169,37 +205,41 @@ router.post("/admin/create-user", verifyToken, async (req, res) => {
       });
     }
 
-    // Create Firebase Auth account; user sets own password via the reset link
-    const tempPassword = Math.random().toString(36).slice(-10) + "Aa1!";
-    const authUser = await admin.auth().createUser({
-      email: String(email).slice(0, 254),
-      password: tempPassword,
-      displayName: String(fullName).slice(0, 200),
-    });
-
-    await admin.auth().setCustomUserClaims(authUser.uid, { role });
-
     const now = new Date().toISOString();
-    const userData = {
-      uid: authUser.uid,
-      email: authUser.email,
-      fullName: String(fullName).slice(0, 200),
-      mobile: String(mobile || "").replace(/[^0-9+\-() ]/g, "").slice(0, 20),
-      designation: String(designation || "").slice(0, 100),
-      dateOfJoining: dateOfJoining || now,
+
+    // Use unified upsertUser service
+    const result = await upsertUser(
+      email,
       role,
-      status: "active",
-      createdAt: now,
-      updatedAt: now,
-      createdBy: req.user.uid,
-    };
+      {
+        name: String(fullName).slice(0, 200),
+        fullName: String(fullName).slice(0, 200),
+        email,
+        mobile: String(mobile || "").replace(/[^0-9+\-() ]/g, "").slice(0, 20),
+        designation: String(designation || "").slice(0, 100),
+        dateOfJoining: dateOfJoining || now,
+      },
+      {
+        sendEmail: true,
+        authProvider: 'email',
+        createdBy: req.user.uid,
+      }
+    );
 
-    await createDoc("users", authUser.uid, userData);
-
-    const resetLink = await admin.auth().generatePasswordResetLink(authUser.email);
-
-    res.status(201).json({ success: true, user: userData, resetLink });
+    res.status(result.isUpdate ? 200 : 201).json({
+      success: true,
+      user: {
+        uid: result.uid,
+        email: result.email,
+        name: result.name,
+        role: result.role,
+      },
+      isUpdate: result.isUpdate,
+      scenario: result.scenario,
+      message: result.message,
+    });
   } catch (error) {
+    console.error('[ADMIN_CREATE_USER_ERROR]', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

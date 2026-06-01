@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:frontend": "cd /Users/ankygoyal/Documents/git/legalterminus/Legal-Terminus/Frontend && npm run build",
+    "dev:frontend": "cd /Users/ankygoyal/Documents/git/legalterminus/Legal-Terminus/Frontend && npm run dev"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
