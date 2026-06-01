@@ -12,9 +12,6 @@ const ProProcess = React.lazy(() => import('../../Components/ProProcess/ProProce
 const ProDocument = React.lazy(() => import('../../Components/ProDocument/ProDocument'))
 const ProFAQ = React.lazy(() => import('../../Components/ProFAQ/ProFAQ'))
 const ProTermsCondition = React.lazy(() => import('../../Components/ProTermsCondition/ProTermsCondition'))
-const ProTestimonial = React.lazy(() => import('../../Components/ProTestimonial/ProTestimonial'))
-const ProVideoTestimonial = React.lazy(() => import('../../Components/ProVideoTestimonial/ProVideoTestimonial'))
-const ProOurclints = React.lazy(() => import('../../Components/ProOurclints/ProOurclints'))
 const ProPlanandPricing = React.lazy(() => import('../../Components/ProPlanandPricing/ProPlanandPricing'))
 
 const PrivateLimited = () => {
@@ -81,16 +78,6 @@ const PrivateLimited = () => {
           <ProFAQ/>
         </Suspense>
       </div>
-
-      <Suspense fallback={<div />}>
-        <ProTestimonial />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <ProVideoTestimonial />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <ProOurclints />
-      </Suspense>
     </div>
   );
 };
