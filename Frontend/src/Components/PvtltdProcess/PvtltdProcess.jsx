@@ -14,7 +14,7 @@ const steps = [
   },
   {
     title: "Company Name & Objects Finalization",
-    day: null,
+    day: "Day 3–4",
     text: "We run a preliminary name availability check and help you finalize your company name and business objects (what your company will do). The name must comply with MCA naming guidelines and must not conflict with existing registered companies, LLPs, or trademarks.",
   },
   {
