@@ -56,24 +56,24 @@
 
 .plan-card--popular,
 .plan-card--fullservice {
-  border: 2px solid #19b43a;
-  padding-top: 44px;
+  border-color: rgba(34, 197, 94, 0.75);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.14);
 }
 
+/* Pill badge — centered, matches OPC/Proprietorship/GST design */
 .plan-popular-badge,
 .plan-fullservice-badge {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #19b43a;
+  display: block;
+  width: fit-content;
+  margin: 0 auto 10px;
+  background: #18b233;
   color: #fff;
-  text-align: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 6px 0;
-  border-radius: 10px 10px 0 0;
   letter-spacing: 0.5px;
+  padding: 3px 12px;
+  border-radius: 20px;
+  text-align: center;
 }
 
 /* Plan header */
