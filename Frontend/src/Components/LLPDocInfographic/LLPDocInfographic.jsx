@@ -127,10 +127,6 @@ const DocumentsInfographic = () => {
 
         </div>
 
-        {/* Bottom note */}
-        <p className="llpdoc-bottom-note">
-          All documents must be self-attested. If you need help with document preparation or have any queries, our team at Legal Terminus is available to assist you at every step.
-        </p>
 
       </div>
     </section>
