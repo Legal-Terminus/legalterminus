@@ -1,23 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-.pvtltd-pricing-section {
+.opc-pricing-section {
   font-family: 'Poppins', sans-serif;
   background: #ffffff;
   padding: 60px 24px 80px;
 }
 
-.pricing-container {
+.opcpricing-container {
   max-width: 1200px;
   margin: 0 auto;
 }
 
 /* Header */
-.pricing-header {
+.opcpricing-header {
   text-align: center;
   margin-bottom: 40px;
 }
 
-.PvtLtd-pricing-title {
+.opcpricing-title {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -26,60 +26,64 @@
   color: #000;
 }
 
-.pricing-subtitle {
+.opcpricing-subtitle {
   font-size: 18px;
   font-weight: 500;
   color: #1bb33a;
 }
 
-/* Cards layout — 3 plans */
-.pricing-cards {
+/* Cards */
+.opcpricing-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
 
-/* Card */
-.plan-card {
+/* Card base — light green border on all cards */
+.opcplan-card {
   background: #fff;
   border-radius: 12px;
+  border: 1.5px solid rgba(34, 197, 94, 0.45);
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
   padding: 28px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  position: relative;
-  text-align: left;
-  word-spacing: normal;
-  hyphens: none;
 }
 
-.plan-card--popular {
-  border: 2px solid #19b43a;
-  padding-top: 44px;
+/* Popular card — stronger border + shadow */
+.opcplan-card--popular {
+  border-color: rgba(34, 197, 94, 0.75);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.14);
 }
 
-.plan-popular-badge {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #19b43a;
-  color: #fff;
-  text-align: center;
-  font-size: 12px;
+/* Pill badge — centered inside card */
+.opcplan-badge {
+  font-size: 11px;
   font-weight: 700;
-  padding: 6px 0;
-  border-radius: 10px 10px 0 0;
   letter-spacing: 0.5px;
+  color: #fff;
+  background: #18b233;
+  border-radius: 20px;
+  padding: 3px 12px;
+  margin-bottom: 8px;
+  text-align: center;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.opcplan-badge--popular {
+  background: #18b233;
 }
 
 /* Plan header */
-.plan-header {
+.opcplan-header {
   margin-bottom: 16px;
 }
 
-.plan-name {
+.opcplan-name {
   font-size: 20px;
   font-weight: 600;
   color: #18b233;
@@ -87,7 +91,7 @@
   margin-bottom: 8px;
 }
 
-.plan-old-price {
+.opcplan-old-price {
   font-size: 20px;
   font-weight: 500;
   text-align: center;
@@ -96,48 +100,39 @@
   margin-bottom: 2px;
 }
 
-.plan-price {
+.opcplan-price {
   font-size: 32px;
   font-weight: 700;
   text-align: center;
   color: #000;
 }
 
-.plan-meta {
+.opcplan-meta {
   font-size: 13px;
   text-align: center;
   color: #666;
 }
 
-.plan-meta .popular {
-  font-weight: 600;
-  color: #ff3b3b;
-  margin-left: 4px;
-}
-
 /* List */
-.plan-body {
+.opcplan-body {
   margin-top: 20px;
 }
 
-.plan-list {
+.opcplan-list {
   padding: 0;
   margin: 0;
   list-style: none;
 }
 
-.plan-list-item {
+.opcplan-list-item {
   font-size: 13px;
   color: #111;
   line-height: 1.6;
   display: flex;
   margin-bottom: 8px;
-  text-align: left;
-  word-spacing: normal;
-  hyphens: none;
 }
 
-.plan-list-item::before {
+.opcplan-list-item::before {
   content: "";
   width: 8px;
   height: 8px;
@@ -145,15 +140,16 @@
   border-radius: 50%;
   margin-right: 10px;
   margin-top: 6px;
+  flex-shrink: 0;
 }
 
 /* Button */
-.plan-footer {
+.opcplan-footer {
   text-align: center;
   margin-top: 20px;
 }
 
-.plan-button {
+.opcplan-button {
   background: #21b738;
   color: #ffffff;
   padding: 10px 36px;
@@ -165,84 +161,44 @@
   transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.plan-button:hover {
+.opcplan-button:hover {
   background: #1aa130;
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
-/* ---------------------------------
-   RESPONSIVE BREAKPOINTS
-   --------------------------------- */
+.opcplan-button--popular {
+  background: #18b233;
+}
 
+.opcplan-button--popular:hover {
+  background: #15961e;
+}
+
+/* Responsive */
 @media (max-width: 1200px) {
-  .pricing-container {
-    padding: 0 12px;
-  }
-
-  .pricing-cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-  }
-
-  .plan-card {
-    padding: 24px;
-  }
+  .opcpricing-container { padding: 0 12px; }
+  .opcpricing-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .opcplan-card { padding: 24px; }
 }
 
 @media (max-width: 992px) {
-  .PvtLtd-pricing-title {
-    font-size: 28px;
-  }
-
-  .pricing-subtitle {
-    font-size: 16px;
-  }
-
-  .pricing-cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  .opcpricing-title { font-size: 28px; }
+  .opcpricing-subtitle { font-size: 16px; }
+  .opcpricing-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 768px) {
-  .pricing-cards {
-    grid-template-columns: 1fr;
-  }
-
-  .plan-card {
-    max-width: 480px;
-    margin: 0 auto;
-  }
+  .opcpricing-cards { grid-template-columns: 1fr; }
+  .opcplan-card { max-width: 480px; margin: 0 auto; }
 }
 
 @media (max-width: 480px) {
-  .pvtltd-pricing-section {
-    padding: 32px 12px 48px;
-  }
-
-  .PvtLtd-pricing-title {
-    font-size: 22px;
-    letter-spacing: 0.5px;
-  }
-
-  .pricing-subtitle {
-    font-size: 14px;
-  }
-
-  .plan-card {
-    padding: 20px;
-  }
-
-  .plan-price {
-    font-size: 28px;
-  }
-
-  .plan-old-price {
-    font-size: 18px;
-  }
-
-  .plan-button {
-    width: 100%;
-    padding: 10px 0;
-  }
+  .opc-pricing-section { padding: 32px 12px 48px; }
+  .opcpricing-title { font-size: 22px; letter-spacing: 0.5px; }
+  .opcpricing-subtitle { font-size: 14px; }
+  .opcplan-card { padding: 20px; }
+  .opcplan-price { font-size: 28px; }
+  .opcplan-old-price { font-size: 18px; }
+  .opcplan-button { width: 100%; padding: 10px 0; }
 }
