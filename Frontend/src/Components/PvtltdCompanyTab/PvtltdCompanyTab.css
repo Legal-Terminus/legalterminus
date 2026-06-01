@@ -170,6 +170,7 @@
   font-weight: 700;
   color: #0f172a;
   margin-bottom: 8px;
+  text-align: center;
 }
 
 .pvt-compare-subtitle {
@@ -177,6 +178,7 @@
   color: #64748b;
   margin-bottom: 24px;
   line-height: 1.7;
+  text-align: center;
 }
 
 .pvt-compare-table-wrapper {
