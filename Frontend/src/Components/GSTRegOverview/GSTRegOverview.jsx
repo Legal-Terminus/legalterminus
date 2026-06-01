@@ -17,12 +17,12 @@ const GSTRegOverview = () => {
           </div>
 
           <div className="pvt-intro-content">
-            <h2 className="pvt-intro-title">What is GST Registration?</h2>
+            <h2 className="pvt-intro-title">Why Choose GST Registration</h2>
             <p className="pvt-intro-text">
-              GST registration gives your business a unique GSTIN — required to collect, file, and pay Goods and Services Tax. India's unified indirect tax replaced VAT, service tax, and excise duty in 2017. Once registered, you can claim Input Tax Credit, sell on e-commerce platforms, and trade inter-state legally.
+              GST registration isn't just a formality — it protects and strengthens your business. Once your aggregate annual turnover crosses ₹40 lakhs (goods, normal states) or ₹20 lakhs (services / special category states), it stops being optional. But beyond the threshold question, registration is what unlocks input tax credit, lets you sell on Amazon / Flipkart / Zomato, qualifies you for B2B contracts that demand a GSTIN on every invoice, and — let's be honest — makes you look like a real business when a procurement team is reviewing vendors.
             </p>
             <p className="pvt-intro-text" style={{ marginTop: "16px" }}>
-              Mandatory if annual turnover exceeds ₹40 lakh (goods) or ₹20 lakh (services). E-commerce sellers must register regardless of turnover. The process is 100% online — no office visits. ARN is issued within minutes of a correct submission; GSTIN follows within 3–7 working days.
+              Even if you're under the threshold, voluntary registration is a strategic move for D2C brands, SaaS founders billing international clients (LUT route), and anyone who wants to claim ITC on raw materials, software subscriptions, or office rent. Skip it, and you're effectively paying GST without ever recovering it.
             </p>
           </div>
         </div>

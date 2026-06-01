@@ -70,13 +70,14 @@
 
 @media (max-width: 768px) {
   .opc-features-section { padding: 48px 16px 56px; }
-  .opc-features-cards { grid-template-columns: 1fr; gap: 18px; }
+  .opc-features-cards { grid-template-columns: repeat(2, 1fr); gap: 18px; }
   .opc-features-title { font-size: 26px; margin-bottom: 32px; }
 }
 
 @media (max-width: 480px) {
   .opc-features-section { padding: 36px 14px 44px; }
   .opc-features-title { font-size: 22px; }
+  .opc-features-cards { grid-template-columns: 1fr; }
   .opc-features-card { padding: 24px 20px; }
   .opc-features-number { font-size: 38px; }
   .opc-features-card-title { font-size: 16px; }
