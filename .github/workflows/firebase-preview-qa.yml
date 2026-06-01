@@ -146,4 +146,44 @@ jobs:
             --format='value(status.url)')
           echo "✅ Backend live at: $URL"
 
+      # ── Build & Deploy Portal → Cloud Run ──────────────────────────────────
+      - name: Build and push Portal Docker image
+        if: github.event.inputs.deploy_portal == 'true' || github.event_name == 'push'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Portal.Dockerfile
+          push: true
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:buildcache
+          cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:buildcache,mode=max
+          build-args: |
+            VITE_FIREBASE_API_KEY=${{ secrets.FIREBASE_QA_API_KEY }}
+            VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_QA_AUTH_DOMAIN }}
+            VITE_FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_QA_PROJECT_ID }}
+            VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_QA_STORAGE_BUCKET }}
+            VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}
+            VITE_FIREBASE_APP_ID=${{ secrets.FIREBASE_QA_APP_ID }}
+            VITE_API_BASE_URL=https://${{ secrets.FIREBASE_QA_PROJECT_ID }}.web.app/api
+
+      - name: 🚀 Deploy Portal to Cloud Run
+        if: github.event.inputs.deploy_portal == 'true' || github.event_name == 'push'
+        run: |
+          gcloud run deploy legal-terminus-qa-portal \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --port=8080 \
+            --min-instances=0 \
+            --max-instances=5 \
+            --memory=512Mi \
+            --cpu=1 \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
+
+          PORTAL_URL=$(gcloud run services describe legal-terminus-qa-portal \
+            --region=${{ env.REGION }} \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
+            --format='value(status.url)')
+          echo "✅ Portal live at: $PORTAL_URL"
 
