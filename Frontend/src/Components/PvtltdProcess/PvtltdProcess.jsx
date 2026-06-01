@@ -3,39 +3,49 @@ import "./PvtltdProcess.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
-    text:
-      "Share KYC documents and registered office address proof with us (as per checklist). This is your only job at the start — we handle everything from here.",
+    title: "Discovery & Structuring Call",
+    day: "Day 0",
+    text: "60-min call with our CS to confirm: directors (min 2), shareholders (min 2), state of registered office, authorised + paid-up capital, primary business activity (NIC code), and tax-regime preference (115BAA vs default). We pre-screen 4 name options.",
   },
   {
-    title: "Step 2 – Company Name & Objects Finalisation",
-    text:
-      "We run a preliminary name availability check and help you finalise your company name and business objects (what your company will do). The name must comply with MCA naming guidelines and must not conflict with existing registered companies, LLPs, or trademarks.",
+    title: "Document Submission & DSC Procurement",
+    day: "Day 1–3",
+    text: "Share KYC documents and registered office address proof with us (as per checklist). This is your only job at the start — we handle everything from here. Class 3 Digital Signature Certificates issued to all 3 directors and all 7 subscribers via Aadhaar e-KYC. Same-day for resident Indians; 3–5 days for NRIs / foreign nationals (apostille documents required).",
   },
   {
-    title: "Step 3 – Name Reservation (SPICe+ Part A)",
-    text:
-      "We file for name reservation via SPICe+ Part A, proposing up to 2 names. Once approved, the name is reserved for 20 days within which incorporation must be completed.",
+    title: "Company Name & Objects Finalization",
+    day: null,
+    text: "We run a preliminary name availability check and help you finalize your company name and business objects (what your company will do). The name must comply with MCA naming guidelines and must not conflict with existing registered companies, LLPs, or trademarks.",
   },
   {
-    title: "Step 4 – Digital Signature Certificates (DSC)",
-    text:
-      "DSCs are obtained for all proposed directors and subscribers from authorised Certifying Authorities (e.g., eMudhra, NeSL). All MCA e-filings must be digitally signed — no physical signatures accepted.",
+    title: "SPICe+ Part A — Name Reservation",
+    day: "Day 4–6",
+    text: "Filed with 4 proposed names (in order of preference) ending with 'Private Limited' through MCA21 V3. CRC reviews under Rule 8 of the Companies (Incorporation) Rules. Approval: 2–3 working days typical. Reserved name valid for 20 days.",
   },
   {
-    title: "Step 5 – DIN for Directors",
-    text:
-      "Director Identification Numbers (DIN) are applied for via Form DIR-3 or auto-allotted through the SPICe+ form for new incorporations. Each director must have a unique DIN issued by the MCA",
+    title: "MOA & AOA Drafting",
+    day: "Day 4–7",
+    text: "Memorandum of Association (object clause + capital + state) and Articles of Association (governance, share transfer, board powers, ESOP enablement, drag/tag, valuation, founder vesting) drafted. Two rounds of revision included.",
   },
   {
-    title: "Step 6 – Filing SPICe+ Part B, e-MOA & e-AOA",
-    text:
-      "We prepare and file the full SPICe+ integrated form covering: company details, capital, registered office, subscribers, directors, PAN/TAN, GST (if applicable), EPFO, ESIC, and the Memorandum of Association (MOA) and Articles of Association (AOA) in electronic form.",
+    title: "SPICe+ Part B + AGILE-PRO-S Filing",
+    day: "Day 7–8",
+    text: "Master incorporation form filed: PAN, TAN, EPFO, ESIC, GSTIN, Professional Tax, Bank Account, Shops & Establishment — all in one shot via INC-32 + INC-33 + INC-34 + INC-35. Stamp duty paid online.",
   },
   {
-    title: "Step 7 – Processing & Certificate of Incorporation",
-    text:
-      "The MCA / Registrar of Companies (RoC) reviews the application. Upon approval, the Certificate of Incorporation (CoI) is issued digitally with the Company Identification Number (CIN), PAN, and TAN. Timeline: typically 7–15 working days from submission of complete documents.",
+    title: "CRC Examination & COI Issuance",
+    day: "Day 7–10",
+    text: "CRC reviews under Rule 12 — typically 3–7 working days for clean applications. If a deficiency is raised, we file a re-submission within 24 hours. COI issued under Section 7(2). PAN, TAN, and CIN allotted simultaneously.",
+  },
+  {
+    title: "Post-Incorporation Onboarding",
+    day: "Day 9–10",
+    text: "We deliver: COI PDF, MOA/AOA stamped copies, share certificate templates, statutory registers, first board meeting agenda + minutes, INC-20A (commencement) reminder, DIR-3 KYC reminder, and a 90-day compliance calendar.",
+  },
+  {
+    title: "Certificate of Incorporation Issued",
+    day: "Day 10–13",
+    text: "COI issued by CRC under Section 7(2). PAN and TAN allotted simultaneously. CIN (Corporate Identification Number) generated.",
   },
 ];
 
@@ -46,7 +56,7 @@ const GSTProcess = () => {
         Steps for Private Limited Company Registration in India
       </h2>
       <p className="pv-gst-subheading">
-        The registration process is entirely online via the MCA portal (www.mca.gov.in) — no physical visits required. Here's how it flows:
+        Nine steps. 7–10 working days end-to-end (assuming clean documents and a name that clears CRC on first try).
       </p>
 
       <div className="pvtltd-timeline">
@@ -64,7 +74,10 @@ const GSTProcess = () => {
             <div className="pvtltd-timeline-dot">{index + 1}</div>
 
             <div className="pvtltd-timeline-card">
-              <h4>{step.title}</h4>
+              <h4>
+                {step.title}
+                {step.day && <span className="pvtltd-day-tag">{step.day}</span>}
+              </h4>
               <p>{step.text}</p>
             </div>
           </div>
