@@ -5,28 +5,29 @@ import { FaUser, FaBuilding, FaIdCard, FaCamera, FaBolt, FaFileContract, FaShiel
 const partnerDocs = [
   {
     icon: <FaIdCard />,
-    title: "Identity Proof",
-    note: "Mandatory for all Proposed Designated Partners & Partners",
+    title: "Subscriber and Nominee Identity",
+    note: "Mandatory for all partners",
     items: [
-      "PAN Card (Mandatory)",
-      "Aadhaar Card / Passport / Voter ID / Driving License",
+      "Self-attested PAN card (mandatory)",
+      "Self-attested Aadhaar",
+      "Driving Licence / Passport",
+      "For foreign nationals / NRI: notarized + apostilled passport copy",
     ],
   },
   {
     icon: <FaFileAlt />,
-    title: "Address Proof",
-    note: "Not older than 2 months",
+    title: "Address Proof (Per Person)",
+    note: "Not older than 60 days from filing date",
     items: [
-      "Telephone Bill / Mobile Bill",
-      "Savings Bank Statement",
+      "Self-attested Bank statement OR Gas bill OR Mobile bill",
     ],
   },
   {
     icon: <FaCamera />,
-    title: "Passport Size Photograph",
-    note: "For all Proposed Designated Partners & Partners",
+    title: "Passport Size Photograph (Per Person)",
+    note: "For all proposed directors, shareholders and nominee",
     items: [
-      "Latest passport-size photograph of each proposed Designated Partner / Partner",
+      "Latest passport-size photograph of all Proposed Directors / Shareholders and Nominee",
     ],
   },
 ];
@@ -34,19 +35,20 @@ const partnerDocs = [
 const llpDocs = [
   {
     icon: <FaBolt />,
-    title: "Registered Office — Utility Bill",
-    note: "Not older than 2 months",
+    title: "Registered Office Proof",
+    note: "Latest utility bill — not older than 2 months",
     items: [
-      "Electricity Bill corresponding to the registered office address of the proposed LLP",
+      "Electricity Bill",
+      "Water Bill",
+      "Gas Bill",
     ],
   },
   {
     icon: <FaFileContract />,
-    title: "Registered Office — Ownership / Rental",
-    note: "As applicable",
+    title: "Rent Agreement (If Business Premises is Rented)",
+    note: "Duly notarized",
     items: [
-      "Duly Notarised Rent Agreement (if on rent)",
-      "Sale Deed / Property ownership document (if owned)",
+      "Duly Notarized Rent Agreement between the owner of the property and one of the director of the proposed company",
     ],
   },
   {
@@ -54,15 +56,8 @@ const llpDocs = [
     title: "No Objection Certificate (NOC)",
     note: "From property owner",
     items: [
-      "NOC from the owner permitting use of premises as Registered Office of the proposed LLP",
-    ],
-  },
-  {
-    icon: <FaFileAlt />,
-    title: "Other Documents",
-    note: "Prepared and provided by our team",
-    items: [
-      "All additional incorporation documents shall be prepared and provided by the Legal Terminus team",
+      "NOC from Property Owner permitting use of premises as Registered Office",
+      "Note: Residential property is permissible as Registered Office under MCA guidelines",
     ],
   },
 ];
@@ -119,8 +114,8 @@ const DocumentsInfographic = () => {
             <div className="llpdoc-col-header llpdoc-col-header--office">
               <div className="llpdoc-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="llpdoc-col-title">LLP & Registered Office Documents</h3>
-                <p className="llpdoc-col-subtitle">Office address proof & NOC</p>
+                <h3 className="llpdoc-col-title">LLP &amp; Registered Office Documents</h3>
+                <p className="llpdoc-col-subtitle">Office address proof &amp; NOC</p>
               </div>
             </div>
             <div className="llpdoc-col-body">
