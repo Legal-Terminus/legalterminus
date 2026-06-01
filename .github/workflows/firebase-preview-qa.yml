@@ -160,6 +160,11 @@ jobs:
             --set-env-vars="FIREBASE_CLIENT_ID=${{ secrets.BACKEND_FIREBASE_CLIENT_ID }}" \
             --set-env-vars="FIREBASE_CLIENT_CERT_URL=${{ secrets.BACKEND_FIREBASE_CLIENT_CERT_URL }}" \
             --set-env-vars="^||^FIREBASE_PRIVATE_KEY=${{ secrets.BACKEND_FIREBASE_PRIVATE_KEY }}" \
+            --set-env-vars="PHONEPE_CLIENT_ID=${{ secrets.BACKEND_PHONEPE_CLIENT_ID }}" \
+            --set-env-vars="PHONEPE_CLIENT_SECRET=${{ secrets.BACKEND_PHONEPE_CLIENT_SECRET }}" \
+            --set-env-vars="PHONEPE_API_BASE=${{ secrets.BACKEND_PHONEPE_API_BASE }}" \
+            --set-env-vars="PHONEPE_CLIENT_VERSION=1" \
+            --set-env-vars="FRONTEND_URL=${{ secrets.BACKEND_FRONTEND_URL }}" \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
 
           URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
