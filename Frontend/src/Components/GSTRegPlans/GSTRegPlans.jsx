@@ -6,14 +6,12 @@ const PLANS = [
   {
     id: "elemental",
     name: "Elemental",
-    oldPrice: 2999,
-    price: 1999,
+    oldPrice: 1999,
+    price: 1499,
     services: [
-      "GST Registration filing",
-      "HSN / SAC code mapping",
-      "ARN tracking + GSTIN delivery",
-      "GST certificate (PDF)",
-      "Email support during filing",
+      "GST registration filing for 1 GSTIN (Regular scheme)",
+      "Aadhaar e-KYC coordination",
+      "GST certificate (REG-06) delivered as PDF",
     ],
   },
   {
@@ -25,10 +23,8 @@ const PLANS = [
     price: 2999,
     services: [
       "Everything in Elemental",
-      "MSME / Udyam Registration",
-      "GST invoice template + walkthrough",
       "Bank account validation pre-check",
-      "30-day post-registration support",
+      "UDYAM / MSME Registration",
     ],
   },
   {
@@ -39,10 +35,8 @@ const PLANS = [
     price: 7999,
     services: [
       "Everything in Enriched",
-      "GSTR-1 + GSTR-3B filing (6 months)",
-      "e-invoicing readiness check",
-      "Composition scheme advisory",
-      "Dedicated CA support",
+      "GST invoice template + e-invoicing readiness check",
+      "GSTR-1 + GSTR-3B filing assistance (3 months)",
     ],
   },
 ];
