@@ -25,18 +25,18 @@ const PublicBreadcrum = () => {
             Public Limited Company Registration
             <span className="pub-ltd-title-india"> in India</span>
             <br />
-            <span className="pub-ltd-tagline">Fast, Compliant &amp; Built to Scale</span>
+            <span className="pub-ltd-tagline">Fast, Hassle-Free &amp; 100% Online</span>
           </h1>
 
           <p className="pub-ltd-description">
-            Legal Terminus can help you with Public Limited Company Registration in India, as and when required, in a hassle-free manner within a reasonable time span. We provide expert assistance to meet your business setup needs in India.
+            Build the structure VCs, lenders, and the BSE actually take seriously. Take your business to the next level with a Public Limited Company. Legal Terminus manages your entire incorporation process end to end on MCA21 V3 — SPICe+, AGILE-PRO-S, MOA, AOA, the works. Our fee starts at ₹19,999 + GST (Excluding Stamp Duty &amp; Govt Fees). Listed-grade governance, on day one.
           </p>
 
           <div className="pub-ltd-features">
-            <div className="pub-ltd-feature-item"> Minimum 7 Shareholders Required</div>
-            <div className="pub-ltd-feature-item"> Minimum 3 Directors Required</div>
-            <div className="pub-ltd-feature-item"> 15 to 20 Working Days</div>
-            <div className="pub-ltd-feature-item"> High Business Credibility</div>
+            <div className="pub-ltd-feature-item">Minimum 3 Directors Required</div>
+            <div className="pub-ltd-feature-item">Minimum 7 Shareholders Required</div>
+            <div className="pub-ltd-feature-item">Limited Liability Protection</div>
+            <div className="pub-ltd-feature-item">Suitable for Large-Scale Business &amp; Fundraising</div>
           </div>
 
           <div className="pub-ltd-highlights">
@@ -45,8 +45,8 @@ const PublicBreadcrum = () => {
               <p>Companies Registered</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Process</p>
+              <h3>100% Online</h3>
+              <p>MCA21 V3 + DSC</p>
             </div>
             <div>
               <h3>7+</h3>
