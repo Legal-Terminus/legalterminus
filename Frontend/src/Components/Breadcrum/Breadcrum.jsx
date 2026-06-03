@@ -18,13 +18,14 @@ const Breadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            PRIVATE LIMITED COMPANY REGISTRATION IN INDIA
+            Private Limited Company Registration
           </span>
 
           <h1 className="lt-public-title">
             Private Limited Company Registration
             <span className="lt-title-india"> in India</span>
           </h1>
+          <p className="lt-public-subtitle">Fast, Compliant &amp; Built to Scale</p>
 
           <p className="lt-public-description">
             A Private Limited Company (Pvt. Ltd.) is India's most investor-loved business structure — registered under the Companies Act, 2013 and governed by the Ministry of Corporate Affairs (MCA). It gives your venture a separate legal identity, shields personal assets via limited liability, and opens doors to institutional funding that no proprietorship or partnership can access. In 2026, the entire incorporation process is 100% online through the SPICe+ portal — no office visits, no paper chaos. Government registration fee is nil for companies with Authorised Capital up to ₹15 Lakhs; stamp duty is state-specific and charged at actuals.
