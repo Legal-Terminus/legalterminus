@@ -38,8 +38,9 @@ ENV VITE_FIREBASE_MESSAGING_SENDER_ID=$VITE_FIREBASE_MESSAGING_SENDER_ID
 ENV VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_PORTAL_STANDALONE=$VITE_PORTAL_STANDALONE
+ENV NODE_ENV=production
 
-RUN echo "Building Portal with Vite..." && npm run build && echo "✅ Build completed" && ls -la dist/
+RUN echo "Building Portal with Vite..." && echo "VITE_PORTAL_STANDALONE=$VITE_PORTAL_STANDALONE" && npm run build && echo "✅ Build completed" && ls -la dist/
 
 # Runtime stage
 FROM node:22-alpine

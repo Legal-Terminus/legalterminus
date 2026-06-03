@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' && !process.env.PORTAL_STANDALONE ? '/portal/' : '/',
+  base: !process.env.VITE_PORTAL_STANDALONE ? '/portal/' : '/',
   plugins: [react()],
   resolve: {
     alias: {
