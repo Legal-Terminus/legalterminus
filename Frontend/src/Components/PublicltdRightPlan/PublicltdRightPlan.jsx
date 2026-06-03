@@ -4,142 +4,149 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 
 const PLANS = [
-  { id: "elemental", name: "Elemental", price: 24999, services: ["1 RUN Name Approval Certificate", "DIN for 3 Individuals", "DSC for 7 Individuals", "Certificate of Incorporation", "E-PAN", "E-TAN", "E-MOA", "E-AOA", "Documents for Bank Account Opening", "Documents for 1st Auditor Appointment", "EPF Registrations", "ESI Registrations"] },
-  { id: "enriched", name: "Enriched", price: 27999, services: ["Elemental Plan Plus", "UDYAM Registration", "Share Certificate", "Commencement of Business", "GST Registration"] },
-  { id: "supreme", name: "Supreme", price: 39999, services: ["Enriched Plan Plus", "ITR Filing of 2 Directors", "ITR Filing of Company", "Preparation of Directors Report", "Preparation of Auditor Appointment Paperwork", "Preparation of List of Share Holders", "Preparation of Extracts of AGM", "Preparation of Notice of BM", "Preparation of Notice of AGM", "Preparation and filing of AOC-4 (Financial Statements)", "Preparation and filing of MGT-7 (Annual Return)", "Filing of ADT-1 (Auditor Appointment)", "Minutes of BM for 1st year", "Minutes of AGM for 1st year", "Maintenance of Statutory E-Registers", "DIR KYC - 2 Directors"] }
+  {
+    id: "elemental",
+    name: "Elemental",
+    badge: "★ BASIC",
+    oldPrice: 29999,
+    price: 19999,
+    discount: "33% off",
+    services: [
+      "Name Availability Search Report",
+      "SPICe+ Part A name reservation (2 attempts)",
+      "DIN application for up to 3 directors (via SPICe+)",
+      "DSC preparation coordination for all (3 dirs + 7 subscribers)",
+      "MOA & AOA drafting (standard template)",
+      "SPICe+ Part B + AGILE-PRO-S filing",
+      "Certificate of Incorporation (COI) delivery",
+      "e-PAN & e-TAN",
+      "e-MOA & e-AOA",
+      "EPF & ESI Registration",
+    ],
+  },
+  {
+    id: "enriched",
+    name: "Enriched",
+    badge: "★ MOST POPULAR",
+    oldPrice: 44999,
+    price: 29999,
+    discount: "33% off",
+    popular: true,
+    services: [
+      "Everything in Elemental",
+      "First Board Meeting kit (notice, agenda, minutes draft)",
+      "1st Auditor Appointment Docs and form filing",
+      "Bank account opening assistance",
+      "GSTIN allotment (1 state)",
+      "INC-20A filing assistance (govt fee extra)",
+      "Issuance of Share Certificate",
+      "Udyam / MSME Registration",
+      "30-day post-incorporation support",
+    ],
+  },
+  {
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ 6 MONTH SERVICE",
+    oldPrice: 66999,
+    price: 44999,
+    discount: "33% off",
+    services: [
+      "Everything in Enriched",
+      "Annual ITR Filing — Company",
+      "Financial Statements Filing — AOC-4",
+      "Annual Return Filing — MGT-7",
+      "Auditor Appointment Filing in 1st AGM — ADT-1",
+    ],
+  },
+  {
+    id: "supreme-plus",
+    name: "Supreme Plus",
+    badge: "✦ FULL-SERVICE",
+    oldPrice: 96999,
+    price: 64999,
+    discount: "33% off",
+    services: [
+      "Everything in Supreme",
+      "Statutory Registers Pack (Members, Directors, Charges)",
+      "First-year ROC compliance calendar + e-filing setup",
+      "Directors' Report Preparation",
+      "Minutes of Board & General Meetings (1st FY)",
+      "Statutory E-Register Maintenance",
+      "DPT-3 & MSME-1 Filing (if applicable)",
+      "ITR Filing for 2 Directors",
+      "Trademark search + Class application (1 class, govt fee extra)",
+      "90-day priority CS / CA helpline",
+    ],
+  },
 ];
 
 const PricingSection = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
-
     <>
-    <section className="pub-plan-section">
-      <div className="pub-plan-container">
+      <section className="pub-plan-section">
+        <div className="pub-plan-container">
 
-        {/* Header */}
-        <header className="pub-plan-header">
-          <h2 className="pub-plan-title">CHOOSE YOUR PLAN</h2>
-          <p className="pub-plan-subtitle">
-            Register your company with pocket-friendly prices
-          </p>
-        </header>
+          {/* Header */}
+          <header className="pub-plan-header">
+            <h2 className="pub-plan-title">CHOOSE YOUR PLAN</h2>
+            <p className="pub-plan-subtitle">
+              Register your company with pocket-friendly prices
+            </p>
+          </header>
 
-        {/* Cards */}
-        <div className="pub-plan-cards">
+          {/* Cards */}
+          <div className="pub-plan-cards">
+            {PLANS.map((plan) => (
+              <article
+                key={plan.id}
+                className={`pub-plan-card${plan.popular ? " pub-plan-card--popular" : ""}`}
+              >
+                <div>
+                  <div className="pub-plan-card-header">
+                    <div className={`pub-plan-badge${plan.popular ? " pub-plan-badge--popular" : ""}`}>
+                      {plan.badge}
+                    </div>
+                    <div className="pub-plan-name">{plan.name}</div>
+                    <div className="pub-plan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    <div className="pub-plan-discount-row">
+                      <span className="pub-plan-discount">{plan.discount}</span>
+                      <span className="pub-plan-price">₹{plan.price.toLocaleString("en-IN")}</span>
+                    </div>
+                    <div className="pub-plan-meta">Professional fee only &nbsp;•&nbsp; + 18% GST</div>
+                  </div>
 
-          {/* Elemental */}
-          <article className="pub-plan-card">
-            <div>
-              <div className="pub-plan-card-header">
-                <div className="pub-plan-name">Elemental</div>
-                <div className="pub-plan-old-price">₹29,999</div>
-                <div className="pub-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
-                <div className="pub-plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="pub-plan-body">
-                <ul className="pub-plan-list">
-                  <li className="pub-plan-list-item">1 RUN Name Approval Certificate</li>
-                  <li className="pub-plan-list-item">DIN for 3 Individuals</li>
-                  <li className="pub-plan-list-item">DSC for 7 Individuals</li>
-                  <li className="pub-plan-list-item">Certificate of Incorporation</li>
-                  <li className="pub-plan-list-item">E-PAN</li>
-                  <li className="pub-plan-list-item">E-TAN</li>
-                  <li className="pub-plan-list-item">E-MOA</li>
-                  <li className="pub-plan-list-item">E-AOA</li>
-                  <li className="pub-plan-list-item">Documents for Bank Account Opening</li>
-                  <li className="pub-plan-list-item">Documents for 1st Auditor Appointment</li>
-                  <li className="pub-plan-list-item">EPF Registrations</li>
-                  <li className="pub-plan-list-item">ESI Registrations</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="pub-plan-footer">
-              <button className="pub-plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Enriched */}
-          <article className="pub-plan-card">
-            <div>
-              <div className="pub-plan-card-header">
-                <div className="pub-plan-name">Enriched</div>
-                <div className="pub-plan-old-price">₹34,999</div>
-                <div className="pub-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="pub-plan-meta">
-                  Excluding gov fee <span className="pub-plan-popular">(Popular)</span>
+                  <div className="pub-plan-body">
+                    <ul className="pub-plan-list">
+                      {plan.services.map((s, i) => (
+                        <li key={i} className="pub-plan-list-item">{s}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-              </div>
 
-              <div className="pub-plan-body">
-                <ul className="pub-plan-list">
-                  <li className="pub-plan-list-item">Elemental Plan Plus</li>
-                  <li className="pub-plan-list-item">UDYAM Registration</li>
-                  <li className="pub-plan-list-item">Share Certificate</li>
-                  <li className="pub-plan-list-item">Commencement of Business</li>
-                  <li className="pub-plan-list-item">GST Registration</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="pub-plan-footer">
-              <button className="pub-plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Supreme */}
-          <article className="pub-plan-card">
-            <div>
-              <div className="pub-plan-card-header">
-                <div className="pub-plan-name">Supreme</div>
-                <div className="pub-plan-old-price">₹49,999</div>
-                <div className="pub-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
-                <div className="pub-plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="pub-plan-body">
-                <ul className="pub-plan-list">
-                  <li className="pub-plan-list-item">Enriched Plan Plus</li>
-                  <li className="pub-plan-list-item">ITR Filing of 2 Directors</li>
-                  <li className="pub-plan-list-item">ITR Filing of Company</li>
-                  <li className="pub-plan-list-item">Preparation of Directors Report</li>
-                  <li className="pub-plan-list-item">Preparation of Auditor Appointment Paperwork</li>
-                  <li className="pub-plan-list-item">Preparation of List of Share Holders</li>
-                  <li className="pub-plan-list-item">Preparation of Extracts of AGM</li>
-                  <li className="pub-plan-list-item">Preparation of Notice of BM</li>
-                  <li className="pub-plan-list-item">Preparation of Notice of AGM</li>
-                  <li className="pub-plan-list-item">Preparation and filing of AOC-4 (Financial Statements)</li>
-                  <li className="pub-plan-list-item">Preparation and filing of MGT-7 (Annual Return)</li>
-                  <li className="pub-plan-list-item">Filing of ADT-1 (Auditor Appointment)</li>
-                  <li className="pub-plan-list-item">Minutes of BM for 1st year</li>
-                  <li className="pub-plan-list-item">Minutes of AGM for 1st year</li>
-                  <li className="pub-plan-list-item">Maintenance of Statutory E-Registers</li>
-                  <li className="pub-plan-list-item">DIR KYC - 2 Directors</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="pub-plan-footer">
-              <button className="pub-plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-            </div>
-          </article>
+                <div className="pub-plan-footer">
+                  <button
+                    className={`pub-plan-button${plan.popular ? " pub-plan-button--popular" : ""}`}
+                    onClick={() => setActivePlan(plan)}
+                  >
+                    Buy Now
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
 
         </div>
-      </div>
-    </section>
-
+      </section>
 
       {activePlan && (
-
         <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="public-limited-company" />
-
       )}
-
     </>
-
-  );};
+  );
+};
 
 export default PricingSection;
