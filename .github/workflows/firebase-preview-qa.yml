@@ -146,6 +146,7 @@ jobs:
             VITE_API_BASE_URL=${{ steps.deploy-backend.outputs.BACKEND_URL || secrets.BACKEND_QA_URL }}
 
       - name: 🚀 Deploy Portal to Cloud Run
+        id: deploy-portal
         if: github.event.inputs.deploy_portal == 'true' || github.event_name == 'push'
         run: |
           gcloud run deploy ${{ env.PORTAL_SERVICE_NAME }} \
@@ -165,6 +166,7 @@ jobs:
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
             --format='value(status.url)')
           echo "✅ Portal live at: $PORTAL_URL"
+          echo "PORTAL_URL=${PORTAL_URL}" >> $GITHUB_OUTPUT
 
       # ── Build & Deploy Frontend → Firebase Hosting ─────────────────────────
       - name: Install Frontend dependencies
@@ -185,6 +187,7 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_QA_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_QA_MEASUREMENT_ID }}
           VITE_API_BASE_URL: https://${{ secrets.FIREBASE_QA_PROJECT_ID }}.web.app
+          VITE_PORTAL_URL: ${{ steps.deploy-portal.outputs.PORTAL_URL || secrets.PORTAL_QA_URL }}
 
       - name: 🔥 Install Firebase CLI
         if: github.event.inputs.deploy_frontend == 'true' || github.event_name == 'push'

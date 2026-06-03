@@ -11,14 +11,6 @@
         "source": "/api/**",
         "run": { "serviceId": "legal-terminus-api", "region": "asia-south2" }
       },
-      {
-        "source": "/portal/assets/**",
-        "run": { "serviceId": "legal-terminal-portal", "region": "asia-south2" }
-      },
-      {
-        "source": "/portal/**",
-        "run": { "serviceId": "legal-terminal-portal", "region": "asia-south2" }
-      },
       { "source": "**", "destination": "/index.html" }
     ]
   }
