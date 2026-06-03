@@ -52,16 +52,13 @@
 
 .lt-title-india {
   color: #ffffff;
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
 }
 
 
 /* DESCRIPTION */
 .lt-public-description {
-  font-size: 16px;
-  line-height: 29px;
+  font-size: 17px;
+  line-height: 1.8;
   color: #d1d5db;
   max-width: 640px;
   margin-bottom: 38px;
