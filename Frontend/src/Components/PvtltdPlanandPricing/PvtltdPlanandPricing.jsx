@@ -7,7 +7,7 @@ const PLANS = [
   {
     id: "elemental",
     name: "Elemental",
-    price: 4999,
+    price: 1,
     services: [
       "Name Search & Availability Report",
       "RUN Name Approval (up to 4 name choices)",

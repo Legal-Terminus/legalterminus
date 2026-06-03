@@ -5,7 +5,7 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 const packages = [
   {
     title: "Elemental",
-    price: "₹1999",
+    price: "₹1",
     highlight: false,
     features: [
       "GST Registration",
