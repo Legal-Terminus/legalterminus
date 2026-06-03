@@ -3,7 +3,9 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  base: !process.env.VITE_PORTAL_STANDALONE ? '/portal/' : '/',
+  // Firebase deployment: base should be '/portal/' so assets are at /portal/assets/...
+  // Direct Cloud Run access: would need base='/' but we prioritize Firebase
+  base: '/portal/',
   plugins: [react()],
   resolve: {
     alias: {
