@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ProFPLCBreadcrum from '../../Components/ProFOPCBreadcrum/ProFOPCBreadcrum'
-import ProFPLCPlanandPricing from '../../Components/ProFPLCPlanandPricing/ProFPLCPlanandPricing'
-import ProFPLCCondition from '../../Components/ProFPLCCondition/ProFPLCCondition'
-import ProFPLCZolvitPremium from '../../Components/ProFPLCZolvitPremium/ProFPLCZolvitPremium'
-import ProFPLCTabs from '../../Components/ProFPLCTabs/ProFPLCTabs'
-import ProFPLCCompanyTab from '../../Components/ProFPLCCompanyTab/ProFPLCCompanyTab'
-import ProFPLCTypes from '../../Components/ProFPLCTypes/ProFPLCTypes'
-import ProFPLCRequirementsTab from '../../Components/ProFPLCRequirementsTab/ProFPLCRequirementsTab'
-import ProFPLCProcess from '../../Components/ProFPLCProcess/ProFPLCProcess'
-import ProFPLCDocument from '../../Components/ProFPLCDocument/ProFPLCDocument'
-import ProFPLCFAQ from '../../Components/ProFPLCFAQ/ProFPLCFAQ'
-import ProFPLCTestimonial from '../../Components/ProFPLCTestimonial/ProFPLCTestimonial'
-import ProFPLCVideoTestimonial from '../../Components/ProFPLCVideoTestimonial/ProFPLCVideoTestimonial'
-import ProFPLCOurclints from '../../Components/ProFPLCOurclints/ProFPLCOurclints'
+
+// Lazy load below-fold components
+const ProFPLCPlanandPricing = React.lazy(() => import('../../Components/ProFPLCPlanandPricing/ProFPLCPlanandPricing'))
+const ProFPLCCondition = React.lazy(() => import('../../Components/ProFPLCCondition/ProFPLCCondition'))
+const ProFPLCZolvitPremium = React.lazy(() => import('../../Components/ProFPLCZolvitPremium/ProFPLCZolvitPremium'))
+const ProFPLCTabs = React.lazy(() => import('../../Components/ProFPLCTabs/ProFPLCTabs'))
+const ProFPLCCompanyTab = React.lazy(() => import('../../Components/ProFPLCCompanyTab/ProFPLCCompanyTab'))
+const ProFPLCTypes = React.lazy(() => import('../../Components/ProFPLCTypes/ProFPLCTypes'))
+const ProFPLCRequirementsTab = React.lazy(() => import('../../Components/ProFPLCRequirementsTab/ProFPLCRequirementsTab'))
+const ProFPLCProcess = React.lazy(() => import('../../Components/ProFPLCProcess/ProFPLCProcess'))
+const ProFPLCDocument = React.lazy(() => import('../../Components/ProFPLCDocument/ProFPLCDocument'))
+const ProFPLCFAQ = React.lazy(() => import('../../Components/ProFPLCFAQ/ProFPLCFAQ'))
+const ProFPLCTestimonial = React.lazy(() => import('../../Components/ProFPLCTestimonial/ProFPLCTestimonial'))
+const ProFPLCVideoTestimonial = React.lazy(() => import('../../Components/ProFPLCVideoTestimonial/ProFPLCVideoTestimonial'))
+const ProFPLCOurclints = React.lazy(() => import('../../Components/ProFPLCOurclints/ProFPLCOurclints'))
 
 const ProprietorshipPLC = () => {
   return (
@@ -26,39 +28,60 @@ const ProprietorshipPLC = () => {
        <ProFPLCCondition/> 
 
       <div id="premium">
-        <ProFPLCZolvitPremium />
+        <Suspense fallback={<div />}>
+          <ProFPLCZolvitPremium />
+        </Suspense>
       </div>
 
-       <ProFPLCTabs/>
+       <Suspense fallback={<div />}>
+         <ProFPLCTabs/>
+       </Suspense>
 
        <div id="company">
-        <ProFPLCCompanyTab />
+        <Suspense fallback={<div />}>
+          <ProFPLCCompanyTab />
+        </Suspense>
       </div>
 
        <div id="types">
-         <ProFPLCTypes /> 
+         <Suspense fallback={<div />}>
+           <ProFPLCTypes /> 
+         </Suspense>
       </div>
 
       <div id="requirements">
-        <ProFPLCRequirementsTab/>
+        <Suspense fallback={<div />}>
+          <ProFPLCRequirementsTab/>
+        </Suspense>
       </div>
 
       <div id="process">
-         <ProFPLCProcess/> 
+         <Suspense fallback={<div />}>
+           <ProFPLCProcess/> 
+         </Suspense>
         </div>
 
       <div id="documents">
-         <ProFPLCDocument/> 
+         <Suspense fallback={<div />}>
+           <ProFPLCDocument/> 
+         </Suspense>
       </div>
 
       <div id="faq">
-              <ProFPLCFAQ/>
+              <Suspense fallback={<div />}>
+                <ProFPLCFAQ/>
+              </Suspense>
             </div>
         
-        <ProFPLCTestimonial/>
-        <ProFPLCVideoTestimonial/>
-        <ProFPLCOurclints/>
-
+        <Suspense fallback={<div />}>
+          <ProFPLCTestimonial/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <ProFPLCVideoTestimonial/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <ProFPLCOurclints/>
+        </Suspense>
       
       
       

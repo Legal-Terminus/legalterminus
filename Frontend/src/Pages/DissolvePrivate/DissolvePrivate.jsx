@@ -1,18 +1,20 @@
-import React from "react";
+import React, { Suspense } from "react";
 import DissolvePrivateBreadcrum from "../../Components/DissolvePrivateBreadcrum/DissolvePrivateBreadcrum";
-import DissolvePrivatePlanAndPricing from "../../Components/DissolvePrivatePlanAndPricing/DissolvePrivatePlanAndPricing";
-import DissolvePrivateTermsCondition from "../../Components/DissolvePrivateTermsCondition/DissolvePrivateTermsCondition";
-import DissolvePrivatePremium from "../../Components/DissolvePrivatePremium/DissolvePrivatePremium";
-import DissolvePrivateTabs from "../../Components/DissolavePrivateTabs/DissolavePrivateTabs";
-import DissolvePrivateCompanyTabs from "../../Components/DissolvePrivateCompanyTabs/DissolvePrivateCompanyTabs";
-import DissolavePrivateTypesTabs from "../../Components/DissolvePrivatePvtTypes/DissolvePrivatePvtTypes";
-import DissolvePrivateRequirementsTab from "../../Components/DissolvePrivateRequirementsTab/DissolvePrivateRequirementsTab";
-import DissolvePrivateProcess from "../../Components/DissolvePrivateProcess/DissolvePrivateProcess";
-import DissolvePrivateDocument from "../../Components/DissolvePrivateDocument/DissolvePrivateDocument";
-import DissolvePrivateFAQ from "../../Components/DissolvePrivateFAQ/DissolvePrivateFAQ";
-import DissolavePrivatesTestimonial from "../../Components/DissolvePrivateTestimonial/DissolvePrivateTestimonial";
-import DissolveVideoTestimonial from "../../Components/DissolveVideoTestimonial/DissolveVideoTestimonial";
-import DissolaveOurClients from "../../Components/DissolaveOurClients/DissolaveOurClients";
+
+// Lazy load below-fold components
+const DissolvePrivatePlanAndPricing = React.lazy(() => import("../../Components/DissolvePrivatePlanAndPricing/DissolvePrivatePlanAndPricing"));
+const DissolvePrivateTermsCondition = React.lazy(() => import("../../Components/DissolvePrivateTermsCondition/DissolvePrivateTermsCondition"));
+const DissolvePrivatePremium = React.lazy(() => import("../../Components/DissolvePrivatePremium/DissolvePrivatePremium"));
+const DissolvePrivateTabs = React.lazy(() => import("../../Components/DissolavePrivateTabs/DissolavePrivateTabs"));
+const DissolvePrivateCompanyTabs = React.lazy(() => import("../../Components/DissolvePrivateCompanyTabs/DissolvePrivateCompanyTabs"));
+const DissolavePrivateTypesTabs = React.lazy(() => import("../../Components/DissolvePrivatePvtTypes/DissolvePrivatePvtTypes"));
+const DissolvePrivateRequirementsTab = React.lazy(() => import("../../Components/DissolvePrivateRequirementsTab/DissolvePrivateRequirementsTab"));
+const DissolvePrivateProcess = React.lazy(() => import("../../Components/DissolvePrivateProcess/DissolvePrivateProcess"));
+const DissolvePrivateDocument = React.lazy(() => import("../../Components/DissolvePrivateDocument/DissolvePrivateDocument"));
+const DissolvePrivateFAQ = React.lazy(() => import("../../Components/DissolvePrivateFAQ/DissolvePrivateFAQ"));
+const DissolavePrivatesTestimonial = React.lazy(() => import("../../Components/DissolvePrivateTestimonial/DissolvePrivateTestimonial"));
+const DissolveVideoTestimonial = React.lazy(() => import("../../Components/DissolveVideoTestimonial/DissolveVideoTestimonial"));
+const DissolaveOurClients = React.lazy(() => import("../../Components/DissolaveOurClients/DissolaveOurClients"));
 
 
 const DissolvePrivate = () => {
@@ -20,18 +22,28 @@ const DissolvePrivate = () => {
     <div>
       <DissolvePrivateBreadcrum />
       <div id="plans">
-        <DissolvePrivatePlanAndPricing />
+        <Suspense fallback={<div />}>
+          <DissolvePrivatePlanAndPricing />
+        </Suspense>
       </div>
-      <DissolvePrivateTermsCondition />
+      <Suspense fallback={<div />}>
+        <DissolvePrivateTermsCondition />
+      </Suspense>
 
       <div id="premium">
-        <DissolvePrivatePremium />
+        <Suspense fallback={<div />}>
+          <DissolvePrivatePremium />
+        </Suspense>
       </div>
 
-      <DissolvePrivateTabs />
+      <Suspense fallback={<div />}>
+        <DissolvePrivateTabs />
+      </Suspense>
       
       <div id="company">
-        <DissolvePrivateCompanyTabs />
+        <Suspense fallback={<div />}>
+          <DissolvePrivateCompanyTabs />
+        </Suspense>
       </div>
 
       <div id="types">
@@ -39,7 +51,9 @@ const DissolvePrivate = () => {
       </div>
 
       <div id="requirements">
-        <DissolvePrivateRequirementsTab />
+        <Suspense fallback={<div />}>
+          <DissolvePrivateRequirementsTab />
+        </Suspense>
       </div>
       <div id="process">
         {/* <DissolvePrivateProcess /> */}
@@ -49,11 +63,19 @@ const DissolvePrivate = () => {
         {/* <DissolvePrivateDocument/> */}
       </div>
       <div id="faq">
-        <DissolvePrivateFAQ/>
+        <Suspense fallback={<div />}>
+          <DissolvePrivateFAQ/>
+        </Suspense>
       </div>
-      <DissolavePrivatesTestimonial />
-      <DissolveVideoTestimonial/>
-      <DissolaveOurClients/>
+      <Suspense fallback={<div />}>
+        <DissolavePrivatesTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <DissolveVideoTestimonial/>
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <DissolaveOurClients/>
+      </Suspense>
       
 
     </div>

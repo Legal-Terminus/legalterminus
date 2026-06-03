@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import PartnershiptoPrivateBreadcrumb from '../../Components/PartnershiptoPrivateBreadcrumb/PartnershiptoPrivateBreadcrumb'
-import PartnershiptoPrivatePlanandPricing from '../../Components/PartnershiptoPrivatePlanandPricing/PartnershiptoPrivatePlanandPricing'
-import ParttoPriZolvitPremium from '../../Components/ParttoPriZolvitPremium/ParttoPriZolvitPremium'
-import ParttoPriTabs from '../../Components/ParttoPriTabs/ParttoPriTabs'
-import ParttoPriCompanyTab from '../../Components/ParttoPriCompanyTab/ParttoPriCompanyTab'
-import ParttoPriPvtTypes from '../../Components/ParttoPriPvtTypes/ParttoPriPvtTypes'
-import ParttoPriRequirementsTab from '../../Components/ParttoPriRequirementsTab/ParttoPriRequirementsTab'
-import ParttoPriProcess from '../../Components/ParttoPriProcess/ParttoPriProcess'
-import ParttoPriDocument from '../../Components/ParttoPriDocument/ParttoPriDocument'
-import ParttoPriFAQ from '../../Components/ParttoPriFAQ/ParttoPriFAQ'
-import ParttoPriTermsCondition from '../../Components/ParttoPriTermsCondition/ParttoPriTermsCondition'
-import ParttoPriTestimonial from '../../Components/ParttoPriTestimonial/ParttoPriTestimonial'
-import ParttoPriVideoTestimonial from '../../Components/ParttoPriVideoTestimonial/ParttoPriVideoTestimonial'
-import ParttoPriOurclints from '../../Components/ParttoPriOurclints/ParttoPriOurclints'
+
+// Lazy load below-fold components
+const PartnershiptoPrivatePlanandPricing = React.lazy(() => import('../../Components/PartnershiptoPrivatePlanandPricing/PartnershiptoPrivatePlanandPricing'))
+const ParttoPriZolvitPremium = React.lazy(() => import('../../Components/ParttoPriZolvitPremium/ParttoPriZolvitPremium'))
+const ParttoPriTabs = React.lazy(() => import('../../Components/ParttoPriTabs/ParttoPriTabs'))
+const ParttoPriCompanyTab = React.lazy(() => import('../../Components/ParttoPriCompanyTab/ParttoPriCompanyTab'))
+const ParttoPriPvtTypes = React.lazy(() => import('../../Components/ParttoPriPvtTypes/ParttoPriPvtTypes'))
+const ParttoPriRequirementsTab = React.lazy(() => import('../../Components/ParttoPriRequirementsTab/ParttoPriRequirementsTab'))
+const ParttoPriProcess = React.lazy(() => import('../../Components/ParttoPriProcess/ParttoPriProcess'))
+const ParttoPriDocument = React.lazy(() => import('../../Components/ParttoPriDocument/ParttoPriDocument'))
+const ParttoPriFAQ = React.lazy(() => import('../../Components/ParttoPriFAQ/ParttoPriFAQ'))
+const ParttoPriTermsCondition = React.lazy(() => import('../../Components/ParttoPriTermsCondition/ParttoPriTermsCondition'))
+const ParttoPriTestimonial = React.lazy(() => import('../../Components/ParttoPriTestimonial/ParttoPriTestimonial'))
+const ParttoPriVideoTestimonial = React.lazy(() => import('../../Components/ParttoPriVideoTestimonial/ParttoPriVideoTestimonial'))
+const ParttoPriOurclints = React.lazy(() => import('../../Components/ParttoPriOurclints/ParttoPriOurclints'))
 
 const PrivateLimited = () => {
   return (
@@ -27,13 +29,19 @@ const PrivateLimited = () => {
 
 
       <div id="premium">
-        <ParttoPriZolvitPremium />
+        <Suspense fallback={<div />}>
+          <ParttoPriZolvitPremium />
+        </Suspense>
       </div>
 
-      <ParttoPriTabs />
+      <Suspense fallback={<div />}>
+        <ParttoPriTabs />
+      </Suspense>
 
       <div id="company">
-        < ParttoPriCompanyTab/>
+        <Suspense fallback={<div />}>
+          < ParttoPriCompanyTab/>
+        </Suspense>
       </div>
 
       <div id="types">
@@ -41,7 +49,9 @@ const PrivateLimited = () => {
       </div>
 
       <div id="requirements">
-        <ParttoPriRequirementsTab />
+        <Suspense fallback={<div />}>
+          <ParttoPriRequirementsTab />
+        </Suspense>
       </div>
 
       <div id="process">
@@ -53,12 +63,20 @@ const PrivateLimited = () => {
       </div>
 
       <div id="faq">
-        <ParttoPriFAQ />
+        <Suspense fallback={<div />}>
+          <ParttoPriFAQ />
+        </Suspense>
       </div>
 
-      <ParttoPriTestimonial />
-      <ParttoPriVideoTestimonial />
-      <ParttoPriOurclints/>
+      <Suspense fallback={<div />}>
+        <ParttoPriTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ParttoPriVideoTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ParttoPriOurclints/>
+      </Suspense>
     </div>
   );
 };

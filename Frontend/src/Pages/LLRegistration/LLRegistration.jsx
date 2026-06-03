@@ -1,20 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import LLRbreadcrum from '../../Components/LLRbreadcrum/LLRbreadcrum'
-import LLRlandpricing from '../../Components/LLRlandpricing/LLRlandpricing'
-import LLRtermcondition from '../../Components/LLRtermcondition/LLRtermcondition'
-import LLRpremium from '../../Components/LLRpremium/LLRpremium'
-import LLRtabs from '../../Components/LLRtabs/LLRtabs'
-import LLRcompanytab from '../../Components/LLRcompanytab/LLRcompanytab'
-import LLRtypes from '../../Components/LLRtypes/LLRtypes'
-import LLRrequirments from '../../Components/LLRrequirments/LLRrequirments'
-import LLRprocess from '../../Components/LLRprocess/LLRprocess'
 
-import LLRdocument from '../../Components/LLRdocument/LLRdocument'
-
-import LLRfaq from '../../Components/LLRfaq/LLRfaq'
-import LLRtestimonial from '../../Components/LLRtestimonial/LLRtestimonial'
-import LLRvideotestimonial from '../../Components/LLRvideotestimonial/LLRvideotestimonial'
-import LLRclients from '../../Components/LLRclients/LLRclients'
+// Lazy load below-fold components
+const LLRlandpricing = React.lazy(() => import('../../Components/LLRlandpricing/LLRlandpricing'))
+const LLRtermcondition = React.lazy(() => import('../../Components/LLRtermcondition/LLRtermcondition'))
+const LLRpremium = React.lazy(() => import('../../Components/LLRpremium/LLRpremium'))
+const LLRtabs = React.lazy(() => import('../../Components/LLRtabs/LLRtabs'))
+const LLRcompanytab = React.lazy(() => import('../../Components/LLRcompanytab/LLRcompanytab'))
+const LLRtypes = React.lazy(() => import('../../Components/LLRtypes/LLRtypes'))
+const LLRrequirments = React.lazy(() => import('../../Components/LLRrequirments/LLRrequirments'))
+const LLRprocess = React.lazy(() => import('../../Components/LLRprocess/LLRprocess'))
+const LLRdocument = React.lazy(() => import('../../Components/LLRdocument/LLRdocument'))
+const LLRfaq = React.lazy(() => import('../../Components/LLRfaq/LLRfaq'))
+const LLRtestimonial = React.lazy(() => import('../../Components/LLRtestimonial/LLRtestimonial'))
+const LLRvideotestimonial = React.lazy(() => import('../../Components/LLRvideotestimonial/LLRvideotestimonial'))
+const LLRclients = React.lazy(() => import('../../Components/LLRclients/LLRclients'))
 
 const PrivateLimited = () => {
   return (
@@ -29,38 +29,60 @@ const PrivateLimited = () => {
 
 
       <div id="premium">
-       <LLRpremium />
+       <Suspense fallback={<div />}>
+         <LLRpremium />
+       </Suspense>
       </div>
 
-      <LLRtabs />
+      <Suspense fallback={<div />}>
+        <LLRtabs />
+      </Suspense>
 
       <div id="company">
-       <LLRcompanytab/>
+       <Suspense fallback={<div />}>
+         <LLRcompanytab/>
+       </Suspense>
       </div>
 
       <div id="types">
-        <LLRtypes />
+        <Suspense fallback={<div />}>
+          <LLRtypes />
+        </Suspense>
       </div>
 
       <div id="requirements">
-        <LLRrequirments />
+        <Suspense fallback={<div />}>
+          <LLRrequirments />
+        </Suspense>
       </div>
 
       <div id="process">
-        <LLRprocess />
+        <Suspense fallback={<div />}>
+          <LLRprocess />
+        </Suspense>
       </div>
 
       <div id="documents">
-        <LLRdocument />
+        <Suspense fallback={<div />}>
+          <LLRdocument />
+        </Suspense>
       </div>
 
       <div id="faq">
-       <LLRfaq />
+       <Suspense fallback={<div />}>
+         <LLRfaq />
+       </Suspense>
       </div>
 
-      <LLRtestimonial />
-     <LLRvideotestimonial />
-     <LLRclients />
+      <Suspense fallback={<div />}>
+        <LLRtestimonial />
+      </Suspense>
+     <Suspense fallback={<div />}>
+       <LLRvideotestimonial />
+     </Suspense>
+     <Suspense fallback={<div />}>
+       <LLRclients />
+     </Suspense>
     </div>
   );
 };

@@ -1,16 +1,18 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import "./Parternership.css";
 import PRFbreadcrum from '../../Components/PFRbreadcrum/PFRbreadcrum'
-import PRFlandpricing from '../../Components/PRFlandpricing/PRFlandpricing'
-import PFRtermscondition from '../../Components/PFRtermscondition/PFRtermscondition'
-import PFRpremium from '../../Components/PFRpremium/PFRpremium'
-import PFRtabs from '../../Components/PFRtabs/PFRtabs'
-import PFRcompanytab from '../../Components/PFRcompanytab/PFRcompanytab'
-import PFRtypes from '../../Components/PFRtypes/PFRtypes'
-import PFRrequirmentTabs from '../../Components/PFRrequirmentTabs/PFRrequirmentTabs'
-import PFRprocess from '../../Components/PFRprocess/PFRprocess'
-import PFRdocument from '../../Components/PFRdocument/PFRdocument'
-import PFRfaq from '../../Components/PFRfaq/PFRfaq'
+
+// Lazy load below-fold components
+const PRFlandpricing = React.lazy(() => import('../../Components/PRFlandpricing/PRFlandpricing'))
+const PFRtermscondition = React.lazy(() => import('../../Components/PFRtermscondition/PFRtermscondition'))
+const PFRpremium = React.lazy(() => import('../../Components/PFRpremium/PFRpremium'))
+const PFRtabs = React.lazy(() => import('../../Components/PFRtabs/PFRtabs'))
+const PFRcompanytab = React.lazy(() => import('../../Components/PFRcompanytab/PFRcompanytab'))
+const PFRtypes = React.lazy(() => import('../../Components/PFRtypes/PFRtypes'))
+const PFRrequirmentTabs = React.lazy(() => import('../../Components/PFRrequirmentTabs/PFRrequirmentTabs'))
+const PFRprocess = React.lazy(() => import('../../Components/PFRprocess/PFRprocess'))
+const PFRdocument = React.lazy(() => import('../../Components/PFRdocument/PFRdocument'))
+const PFRfaq = React.lazy(() => import('../../Components/PFRfaq/PFRfaq'))
 
 const PrivateLimited = () => {
   return (
@@ -22,55 +24,75 @@ const PrivateLimited = () => {
       <div className="section-divider" />
 
       <div id="plans" className="pfr-page-pricing">
-        <PRFlandpricing />
+        <Suspense fallback={<div />}>
+          <PRFlandpricing />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
-      <PFRtermscondition />
+      <Suspense fallback={<div />}>
+        <PFRtermscondition />
+      </Suspense>
 
       <div className="section-divider" />
 
       <div id="premium">
-        <PFRpremium />
+        <Suspense fallback={<div />}>
+          <PFRpremium />
+        </Suspense>
       </div>
 
-      <PFRtabs />
+      <Suspense fallback={<div />}>
+        <PFRtabs />
+      </Suspense>
 
       <div className="section-divider" />
 
       <div id="company">
-        <PFRcompanytab />
+        <Suspense fallback={<div />}>
+          <PFRcompanytab />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="types">
-        <PFRtypes />
+        <Suspense fallback={<div />}>
+          <PFRtypes />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="requirements">
-        <PFRrequirmentTabs />
+        <Suspense fallback={<div />}>
+          <PFRrequirmentTabs />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="process">
-        <PFRprocess />
+        <Suspense fallback={<div />}>
+          <PFRprocess />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="documents">
-        <PFRdocument />
+        <Suspense fallback={<div />}>
+          <PFRdocument />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="faq">
-        <PFRfaq />
+        <Suspense fallback={<div />}>
+          <PFRfaq />
+        </Suspense>
       </div>
     </div>
   );

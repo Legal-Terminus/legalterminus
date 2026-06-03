@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import PritoLlpBreadcrum from '../../Components/PritoLlpBreadcrum/PritoLlpBreadcrum'
-import PritoLlpPlanandPricing from '../../Components/PritoLlpPlanandPricing/PritoLlpPlanandPricing'
-import PritoLlpZolvitPremium from '../../Components/PritoLlpZolvitPremium/PritoLlpZolvitPremium'
-import PritoLlpTabs from '../../Components/PritopLlpTabs/PritopLlpTabs'
-import PritoLlpCompanyTab from '../../Components/PritoLlpCompanyTab/PritoLlpCompanyTab'
-import PritoLlpTypes from '../../Components/PritoLlpTypes/PritoLlpTypes'
-import PritoLlpRequirementsTab from '../../Components/PritoLlpRequirementsTab/PritoLlpRequirementsTab'
-import PritoLlpProcess from '../../Components/PritoLlpProcess/PritoLlpProcess'
-import PritoLlpDocument from '../../Components/PritoLlpDocument/PritoLlpDocument'
-import PritoLlpFAQ from '../../Components/PritoLlpFAQ/PritoLlpFAQ'
-import PritoLlpTermsCondition from '../../Components/PritoLlpTermsCondition/PritoLlpTermsCondition'
-import PritoLlpTestimonial from '../../Components/PritoLlpTestimonial/PritoLlpTestimonial'
-import PritoLlpVideoTestimonial from '../../Components/PritoLlpVideoTestimonial/PritoLlpVideoTestimonial'
-import PritoLlpOurclints from '../../Components/PritoLlpOurclints/PritoLlpOurclints'
+
+// Lazy load below-fold components
+const PritoLlpPlanandPricing = React.lazy(() => import('../../Components/PritoLlpPlanandPricing/PritoLlpPlanandPricing'))
+const PritoLlpZolvitPremium = React.lazy(() => import('../../Components/PritoLlpZolvitPremium/PritoLlpZolvitPremium'))
+const PritoLlpTabs = React.lazy(() => import('../../Components/PritopLlpTabs/PritopLlpTabs'))
+const PritoLlpCompanyTab = React.lazy(() => import('../../Components/PritoLlpCompanyTab/PritoLlpCompanyTab'))
+const PritoLlpTypes = React.lazy(() => import('../../Components/PritoLlpTypes/PritoLlpTypes'))
+const PritoLlpRequirementsTab = React.lazy(() => import('../../Components/PritoLlpRequirementsTab/PritoLlpRequirementsTab'))
+const PritoLlpProcess = React.lazy(() => import('../../Components/PritoLlpProcess/PritoLlpProcess'))
+const PritoLlpDocument = React.lazy(() => import('../../Components/PritoLlpDocument/PritoLlpDocument'))
+const PritoLlpFAQ = React.lazy(() => import('../../Components/PritoLlpFAQ/PritoLlpFAQ'))
+const PritoLlpTermsCondition = React.lazy(() => import('../../Components/PritoLlpTermsCondition/PritoLlpTermsCondition'))
+const PritoLlpTestimonial = React.lazy(() => import('../../Components/PritoLlpTestimonial/PritoLlpTestimonial'))
+const PritoLlpVideoTestimonial = React.lazy(() => import('../../Components/PritoLlpVideoTestimonial/PritoLlpVideoTestimonial'))
+const PritoLlpOurclints = React.lazy(() => import('../../Components/PritoLlpOurclints/PritoLlpOurclints'))
 
 const PrivateLimited = () => {
   return (
@@ -27,13 +29,19 @@ const PrivateLimited = () => {
 
 
       <div id="premium">
-        <PritoLlpZolvitPremium />
+        <Suspense fallback={<div />}>
+          <PritoLlpZolvitPremium />
+        </Suspense>
       </div>
 
-      <PritoLlpTabs/>
+      <Suspense fallback={<div />}>
+        <PritoLlpTabs/>
+      </Suspense>
 
       <div id="company">
-        <PritoLlpCompanyTab />
+        <Suspense fallback={<div />}>
+          <PritoLlpCompanyTab />
+        </Suspense>
       </div>
 
       <div id="types">
@@ -41,7 +49,9 @@ const PrivateLimited = () => {
       </div>
 
       <div id="requirements">
-        <PritoLlpRequirementsTab/>
+        <Suspense fallback={<div />}>
+          <PritoLlpRequirementsTab/>
+        </Suspense>
       </div>
 
       <div id="process">
@@ -53,12 +63,20 @@ const PrivateLimited = () => {
       </div>
 
       <div id="faq">
-        <PritoLlpFAQ />
+        <Suspense fallback={<div />}>
+          <PritoLlpFAQ />
+        </Suspense>
       </div>
 
-      <PritoLlpTestimonial />
-      <PritoLlpVideoTestimonial />
-      <PritoLlpOurclints />
+      <Suspense fallback={<div />}>
+        <PritoLlpTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <PritoLlpVideoTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <PritoLlpOurclints />
+      </Suspense>
     </div>
   );
 };

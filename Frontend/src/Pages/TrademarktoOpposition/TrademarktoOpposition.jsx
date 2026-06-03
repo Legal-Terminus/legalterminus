@@ -1,19 +1,21 @@
-import React from "react";
+import React, { Suspense } from "react";
 
 import TrademarktoOppositionBreadcrum from "../../Components/TrademarktoOppositionBreadcrum/TrademarktoOppositionBreadcrum";
-import TrademarktoOppositionPlans from "../../Components/TrademarktoOppositionBreadcrum/TrademarktoOppositionBreadcrum";
-import TrademarktoOppositionTermCondition from "../../Components/TrademarktoOppositionTermCondition/TrademarktoOppositionTermCondition";
-import TrademarktoOppositionZolvitPremium from "../../Components/TrademarktoOppositionZolvitPremium/TrademarktoOppositionZolvitPremium";
-import TrademarktoOppositionTabs from "../../Components/TrademarktoOppositionTabs/TrademarktoOppositionTabs";
-import TrademarktoOppositionOverview from "../../Components/TrademarktoOppositionOverview/TrademarktoOppositionOverview";
-import TrademarktoOppositionFeatures from "../../Components/TrademarktoOppositionFeatures/TrademarktoOppositionFeatures";
-import TrademarktoOppositionBenefits from "../../Components/TrademarktoOppositionBenefits/TrademarktoOppositionBenefits";
-import TrademarktoOppositionElegibility from "../../Components/TrademarktoOppositionElegibility/TrademarktoOppositionElegibility";
-import TrademarktoOppositionDocuments from "../../Components/TrademarktoOppositionDocuments/TrademarktoOppositionDocuments";
-import TrademarktoOppositionFAQ from "../../Components/TrademarktoOppositionFAQ/TrademarktoOppositionFAQ";
-import TrademarktoOppositionProcess from "../../Components/TrademarktoOppositionProcess/TrademarktoOppositionProcess";
-import TrademarktoOppositionWhy from "../../Components/TrademarktoOppositionWhy/TrademarktoOppositionWhy";
-import TrademarktoOppositionOurclients from "../../Components/TrademarktoOppositionOurclients/TrademarktoOppositionOurclients";
+
+// Lazy load below-fold components
+const TrademarktoOppositionPlans = React.lazy(() => import("../../Components/TrademarktoOppositionBreadcrum/TrademarktoOppositionBreadcrum"));
+const TrademarktoOppositionTermCondition = React.lazy(() => import("../../Components/TrademarktoOppositionTermCondition/TrademarktoOppositionTermCondition"));
+const TrademarktoOppositionZolvitPremium = React.lazy(() => import("../../Components/TrademarktoOppositionZolvitPremium/TrademarktoOppositionZolvitPremium"));
+const TrademarktoOppositionTabs = React.lazy(() => import("../../Components/TrademarktoOppositionTabs/TrademarktoOppositionTabs"));
+const TrademarktoOppositionOverview = React.lazy(() => import("../../Components/TrademarktoOppositionOverview/TrademarktoOppositionOverview"));
+const TrademarktoOppositionFeatures = React.lazy(() => import("../../Components/TrademarktoOppositionFeatures/TrademarktoOppositionFeatures"));
+const TrademarktoOppositionBenefits = React.lazy(() => import("../../Components/TrademarktoOppositionBenefits/TrademarktoOppositionBenefits"));
+const TrademarktoOppositionElegibility = React.lazy(() => import("../../Components/TrademarktoOppositionElegibility/TrademarktoOppositionElegibility"));
+const TrademarktoOppositionDocuments = React.lazy(() => import("../../Components/TrademarktoOppositionDocuments/TrademarktoOppositionDocuments"));
+const TrademarktoOppositionFAQ = React.lazy(() => import("../../Components/TrademarktoOppositionFAQ/TrademarktoOppositionFAQ"));
+const TrademarktoOppositionProcess = React.lazy(() => import("../../Components/TrademarktoOppositionProcess/TrademarktoOppositionProcess"));
+const TrademarktoOppositionWhy = React.lazy(() => import("../../Components/TrademarktoOppositionWhy/TrademarktoOppositionWhy"));
+const TrademarktoOppositionOurclients = React.lazy(() => import("../../Components/TrademarktoOppositionOurclients/TrademarktoOppositionOurclients"));
 
 const TradeLicense = () => {
   return (
@@ -21,44 +23,70 @@ const TradeLicense = () => {
       <TrademarktoOppositionBreadcrum />
 
       <div id="plans">
-        <TrademarktoOppositionPlans />
+        <Suspense fallback={<div />}>
+          <TrademarktoOppositionPlans />
+        </Suspense>
       </div>
 
-      <TrademarktoOppositionTermCondition />
+      <Suspense fallback={<div />}>
+        <TrademarktoOppositionTermCondition />
+      </Suspense>
 
       <div id="premium">
-        <TrademarktoOppositionZolvitPremium/>
+        <Suspense fallback={<div />}>
+          <TrademarktoOppositionZolvitPremium/>
+        </Suspense>
       </div>
 
-      <TrademarktoOppositionTabs />
+      <Suspense fallback={<div />}>
+        <TrademarktoOppositionTabs />
+      </Suspense>
 
       <div id="company">
-        <TrademarktoOppositionOverview />
+        <Suspense fallback={<div />}>
+          <TrademarktoOppositionOverview />
+        </Suspense>
       </div>
 
       <div id="types">
-        <TrademarktoOppositionFeatures/>
+        <Suspense fallback={<div />}>
+          <TrademarktoOppositionFeatures/>
+        </Suspense>
       </div>
 
       <div id="requirements">
-        <TrademarktoOppositionBenefits/>
+        <Suspense fallback={<div />}>
+          <TrademarktoOppositionBenefits/>
+        </Suspense>
       </div>
 
       <div id="process">
-        <TrademarktoOppositionElegibility />
+        <Suspense fallback={<div />}>
+          <TrademarktoOppositionElegibility />
+        </Suspense>
       </div>
 
      <div id="documents">
-        <TrademarktoOppositionDocuments/>
+        <Suspense fallback={<div />}>
+          <TrademarktoOppositionDocuments/>
+        </Suspense>
       </div>
 
       <div id="faq">
-        <TrademarktoOppositionFAQ/>
+        <Suspense fallback={<div />}>
+          <TrademarktoOppositionFAQ/>
+        </Suspense>
       </div>
 
-      <TrademarktoOppositionProcess />
-      <TrademarktoOppositionWhy />
-      <TrademarktoOppositionOurclients/>
+      <Suspense fallback={<div />}>
+        <TrademarktoOppositionProcess />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <TrademarktoOppositionWhy />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <TrademarktoOppositionOurclients/>
+      </Suspense>
     </div>
   );
 };

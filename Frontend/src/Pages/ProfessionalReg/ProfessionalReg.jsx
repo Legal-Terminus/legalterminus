@@ -1,18 +1,28 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ProfessionalRegBreadcrum from '../../Components/ProfessionalRegBreadcrum/ProfessionalRegBreadcrum'
-import ProffesionalRegProcess from '../../Components/ProffesionalRegProcess/ProffesionalRegProcess'
-import ProfessionalRegDocuments from '../../Components/ProfessionalRegDocuments/ProfessionalRegDocuments'
-import ProfessionalRegFAQ from '../../Components/ProfessionalRegFAQ/ProfessionalRegFAQ'
-import ProfessionalRegTerms from '../../Components/ProfessionalRegTerms/ProfessionalRegTerms'
+
+// Lazy load below-the-fold components
+const ProffesionalRegProcess = React.lazy(() => import('../../Components/ProffesionalRegProcess/ProffesionalRegProcess'))
+const ProfessionalRegDocuments = React.lazy(() => import('../../Components/ProfessionalRegDocuments/ProfessionalRegDocuments'))
+const ProfessionalRegFAQ = React.lazy(() => import('../../Components/ProfessionalRegFAQ/ProfessionalRegFAQ'))
+const ProfessionalRegTerms = React.lazy(() => import('../../Components/ProfessionalRegTerms/ProfessionalRegTerms'))
 
 const ProfessionalReg = () => {
   return (
     <div>
       <ProfessionalRegBreadcrum />
-      <ProffesionalRegProcess />
-      <ProfessionalRegDocuments />
-      <ProfessionalRegFAQ />
-      <ProfessionalRegTerms />
+      <Suspense fallback={<div />}>
+        <ProffesionalRegProcess />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ProfessionalRegDocuments />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ProfessionalRegFAQ />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ProfessionalRegTerms />
+      </Suspense>
     </div>
   )
 }

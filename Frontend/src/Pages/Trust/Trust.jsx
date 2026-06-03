@@ -1,56 +1,84 @@
-import React from "react";
+import React, { Suspense } from "react";
 import TrustBreadcrum from "../../Components/TrustBreadcrum/TrustBreadcrum";
-import TrustTabs from "../../Components/TrustTabs/TrustTabs";
-import TrustPlanAndPricing from "../../Components/TrustPlanAndPricing/TrustPlanAndPricing";
-import TrustTermsCondition from "../../Components/TrustTermsCondition/TrustTermsCondition";
-import TrustPremium from "../../Components/TrustPremium/TrustPremium";
-import TrustCompanyTabs from "../../Components/TrustCompanyTabs/TrustCompanyTabs";
-import TrustPvtTypes from "../../Components/TrustPvtTypes/TrustPvtTypes";
-import TrustRequirementsTab from "../../Components/TrustRequirementsTab/TrustRequirementsTab";
-import TrustProcess from "../../Components/TrustProcess/TrustProcess";
-import TrustFAQ from "../../Components/TrustFAQ/TrustFAQ";
-import TrustTestimonial from "../../Components/TrustTestimonial/TrustTestimonial";
-import TrustVideoTestimonial from "../../Components/TrustVideoTestimonial/TrustVideoTestimonial";
-import TrustOurClients from "../../Components/TrustOurClients/TrustOurClients";
-import TrustDocument from "../../Components/TrustDocument/TrustDocument";
+
+// Lazy load below-fold components
+const TrustTabs = React.lazy(() => import("../../Components/TrustTabs/TrustTabs"));
+const TrustPlanAndPricing = React.lazy(() => import("../../Components/TrustPlanAndPricing/TrustPlanAndPricing"));
+const TrustTermsCondition = React.lazy(() => import("../../Components/TrustTermsCondition/TrustTermsCondition"));
+const TrustPremium = React.lazy(() => import("../../Components/TrustPremium/TrustPremium"));
+const TrustCompanyTabs = React.lazy(() => import("../../Components/TrustCompanyTabs/TrustCompanyTabs"));
+const TrustPvtTypes = React.lazy(() => import("../../Components/TrustPvtTypes/TrustPvtTypes"));
+const TrustRequirementsTab = React.lazy(() => import("../../Components/TrustRequirementsTab/TrustRequirementsTab"));
+const TrustProcess = React.lazy(() => import("../../Components/TrustProcess/TrustProcess"));
+const TrustFAQ = React.lazy(() => import("../../Components/TrustFAQ/TrustFAQ"));
+const TrustTestimonial = React.lazy(() => import("../../Components/TrustTestimonial/TrustTestimonial"));
+const TrustVideoTestimonial = React.lazy(() => import("../../Components/TrustVideoTestimonial/TrustVideoTestimonial"));
+const TrustOurClients = React.lazy(() => import("../../Components/TrustOurClients/TrustOurClients"));
+const TrustDocument = React.lazy(() => import("../../Components/TrustDocument/TrustDocument"));
 
 const Trust = () => {
   return (
     <div>
       <TrustBreadcrum />
       <div id="plans">
-        {/* <TrustPlanAndPricing /> */}
+        <Suspense fallback={<div />}>
+          {/* <TrustPlanAndPricing /> */}
+        </Suspense>
       </div>
-      {/* <TrustTermsCondition /> */}
+      <Suspense fallback={<div />}>
+        {/* <TrustTermsCondition /> */}
+      </Suspense>
 
       <div id="premium">
-        <TrustPremium />
+        <Suspense fallback={<div />}>
+          <TrustPremium />
+        </Suspense>
       </div>
 
-      <TrustTabs />
+      <Suspense fallback={<div />}>
+        <TrustTabs />
+      </Suspense>
       <div id="company">
-        <TrustCompanyTabs />
+        <Suspense fallback={<div />}>
+          <TrustCompanyTabs />
+        </Suspense>
       </div>
 
       <div id="types">
-        <TrustPvtTypes />
+        <Suspense fallback={<div />}>
+          <TrustPvtTypes />
+        </Suspense>
       </div>
       
       <div id="requirements">
-        <TrustRequirementsTab />
+        <Suspense fallback={<div />}>
+          <TrustRequirementsTab />
+        </Suspense>
       </div>
       <div id="process">
-        {/* <TrustProcess /> */}
+        <Suspense fallback={<div />}>
+          {/* <TrustProcess /> */}
+        </Suspense>
       </div>
       <div id="documents">
-        {/* <TrustDocument /> */}
+        <Suspense fallback={<div />}>
+          {/* <TrustDocument /> */}
+        </Suspense>
       </div>
       <div id="faq">
-        <TrustFAQ />
+        <Suspense fallback={<div />}>
+          <TrustFAQ />
+        </Suspense>
       </div>
-      <TrustTestimonial />
-      <TrustVideoTestimonial />
-      <TrustOurClients />
+      <Suspense fallback={<div />}>
+        <TrustTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <TrustVideoTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <TrustOurClients />
+      </Suspense>
     </div>
   );
 };

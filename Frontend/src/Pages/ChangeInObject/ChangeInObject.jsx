@@ -1,20 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import CIObreadcrum from '../../Components/CIObreadcrum/CIObreadcrum'
-import CIOplans from '../../Components/CIOplans/CIOplans'
-import CIOtermconditions from '../../Components/CIOtermconditions/CIOtermconditions'
-import CIOpremium from '../../Components/CIOpremium/CIOpremium'
-import CIOtabs from '../../Components/CIOtabs/CIOtabs'
-import CIOcompany from '../../Components/CIOcompany/CIOcompany'
-import CIOtypes from '../../Components/CIOtypes/CIOtypes'
-import CIOrequirments from '../../Components/CIOrequirments/CIOrequirments'
-import CIOprocess from '../../Components/CIOprocess/CIOprocess'
 
-import CIOdocument from '../../Components/CIOdocument/CIOdocument'
-
-import CIOfaq from '../../Components/CIOfaq/CIOfaq'
-import CIOtestimonial from '../../Components/CIOtestimonial/CIOtestimonial'
-import CIOvideo from '../../Components/CIOvideo/CIOvideo'
-import CIOclients from '../../Components/CIOclients/CIOclients'
+// Lazy load below-fold components
+const CIOplans = React.lazy(() => import('../../Components/CIOplans/CIOplans'))
+const CIOtermconditions = React.lazy(() => import('../../Components/CIOtermconditions/CIOtermconditions'))
+const CIOpremium = React.lazy(() => import('../../Components/CIOpremium/CIOpremium'))
+const CIOtabs = React.lazy(() => import('../../Components/CIOtabs/CIOtabs'))
+const CIOcompany = React.lazy(() => import('../../Components/CIOcompany/CIOcompany'))
+const CIOtypes = React.lazy(() => import('../../Components/CIOtypes/CIOtypes'))
+const CIOrequirments = React.lazy(() => import('../../Components/CIOrequirments/CIOrequirments'))
+const CIOprocess = React.lazy(() => import('../../Components/CIOprocess/CIOprocess'))
+const CIOdocument = React.lazy(() => import('../../Components/CIOdocument/CIOdocument'))
+const CIOfaq = React.lazy(() => import('../../Components/CIOfaq/CIOfaq'))
+const CIOtestimonial = React.lazy(() => import('../../Components/CIOtestimonial/CIOtestimonial'))
+const CIOvideo = React.lazy(() => import('../../Components/CIOvideo/CIOvideo'))
+const CIOclients = React.lazy(() => import('../../Components/CIOclients/CIOclients'))
 
 const PrivateLimited = () => {
   return (
@@ -29,20 +29,30 @@ const PrivateLimited = () => {
 
 
       <div id="premium">
-       <CIOpremium />
+       <Suspense fallback={<div />}>
+         <CIOpremium />
+       </Suspense>
       </div>
 
-      <CIOtabs />
+      <Suspense fallback={<div />}>
+        <CIOtabs />
+      </Suspense>
       <div id="company">
-        <CIOcompany />
+        <Suspense fallback={<div />}>
+          <CIOcompany />
+        </Suspense>
       </div>
 
       <div id="types">
-       <CIOtypes />
+       <Suspense fallback={<div />}>
+         <CIOtypes />
+       </Suspense>
       </div>
 
       <div id="requirements">
-        <CIOrequirments />
+        <Suspense fallback={<div />}>
+          <CIOrequirments />
+        </Suspense>
       </div>
 
       <div id="process">
@@ -54,12 +64,20 @@ const PrivateLimited = () => {
       </div>
 
       <div id="faq">
-        <CIOfaq />
+        <Suspense fallback={<div />}>
+          <CIOfaq />
+        </Suspense>
       </div>
 
-     <CIOtestimonial />
-      <CIOvideo />
-      <CIOclients />
+     <Suspense fallback={<div />}>
+       <CIOtestimonial />
+     </Suspense>
+      <Suspense fallback={<div />}>
+        <CIOvideo />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <CIOclients />
+      </Suspense>
     </div>
   );
 };

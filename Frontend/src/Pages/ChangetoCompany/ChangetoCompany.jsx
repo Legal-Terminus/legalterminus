@@ -1,18 +1,20 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ChangetoCompanyBreadcrum from "../../Components/ChangetoComapnyBreadcrum/ChangetoComapnyBreadcrum";
-import ChangetoCompanyPlanandPrice from "../../Components/ChangetoCompanyPlanandPrice/ChangetoCompanyPlanandPrice";
-import ChangetoCompanyTermandCondn from "../../Components/ChangetoCompanyTermandCondn/ChangetoCompanyTermandCondn";
-import ChangetoCompanyZolvitPremium from "../../Components/ChangetoCompanyZolvitPremium/ChangetoCompanyZolvitPremium";
-import ChangetoCompanyTab from "../../Components/ChangetoCompanyTab/ChangetoCompanyTab";
-import ChangetoCompanyCompanyTab from "../../Components/ChangetoCompanyCompanyTab/ChangetoCompanyCompanyTab";
-import ChangetoCompanyTypes from "../../Components/ChangetoCompanyTypes/ChangetoCompanyTypes";
-import ChangetoCompanyRequirementsTab from "../../Components/ChangetoCompanyRequirementsTab/ChangetoCompanyRequirementsTab";
-import ChangetoCompanyProcess from "../../Components/ChangetoCompanyProcess/ChangetoCompanyProcess";
-import ChangetoCompanyDocInfographic from "../../Components/ChangetoCompanyDocInfographic/ChangetoCompanyDocInfographic";
-import ChangetoCompanyFAQ from "../../Components/ChangetoCompanyFAQ/ChangetoCompanyFAQ";
-import ChangetoCompanyTestimonial from "../../Components/ChangetoCompanyTestimonial/ChangetoCompanyTestimonial";
-import ChangetoCompanyVideoTestimonial from "../../Components/ChangetoCompanyVideoTestimonial/ChangetoCompanyVideoTestimonial";
-import ChangetoCompanyOurClients from "../../Components/ChangetoCompanyOurClients/ChangetoCompanyOurClients";
+
+// Lazy load below-fold components
+const ChangetoCompanyPlanandPrice = React.lazy(() => import("../../Components/ChangetoCompanyPlanandPrice/ChangetoCompanyPlanandPrice"));
+const ChangetoCompanyTermandCondn = React.lazy(() => import("../../Components/ChangetoCompanyTermandCondn/ChangetoCompanyTermandCondn"));
+const ChangetoCompanyZolvitPremium = React.lazy(() => import("../../Components/ChangetoCompanyZolvitPremium/ChangetoCompanyZolvitPremium"));
+const ChangetoCompanyTab = React.lazy(() => import("../../Components/ChangetoCompanyTab/ChangetoCompanyTab"));
+const ChangetoCompanyCompanyTab = React.lazy(() => import("../../Components/ChangetoCompanyCompanyTab/ChangetoCompanyCompanyTab"));
+const ChangetoCompanyTypes = React.lazy(() => import("../../Components/ChangetoCompanyTypes/ChangetoCompanyTypes"));
+const ChangetoCompanyRequirementsTab = React.lazy(() => import("../../Components/ChangetoCompanyRequirementsTab/ChangetoCompanyRequirementsTab"));
+const ChangetoCompanyProcess = React.lazy(() => import("../../Components/ChangetoCompanyProcess/ChangetoCompanyProcess"));
+const ChangetoCompanyDocInfographic = React.lazy(() => import("../../Components/ChangetoCompanyDocInfographic/ChangetoCompanyDocInfographic"));
+const ChangetoCompanyFAQ = React.lazy(() => import("../../Components/ChangetoCompanyFAQ/ChangetoCompanyFAQ"));
+const ChangetoCompanyTestimonial = React.lazy(() => import("../../Components/ChangetoCompanyTestimonial/ChangetoCompanyTestimonial"));
+const ChangetoCompanyVideoTestimonial = React.lazy(() => import("../../Components/ChangetoCompanyVideoTestimonial/ChangetoCompanyVideoTestimonial"));
+const ChangetoCompanyOurClients = React.lazy(() => import("../../Components/ChangetoCompanyOurClients/ChangetoCompanyOurClients"));
 
 function LLP() {
   return (
@@ -22,56 +24,82 @@ function LLP() {
 
       {/* Plans */}
       <div id="plans">
-        <ChangetoCompanyPlanandPrice/>
+        <Suspense fallback={<div />}>
+          <ChangetoCompanyPlanandPrice/>
+        </Suspense>
       </div>
 
       {/* Terms & Conditions */}
-      <ChangetoCompanyTermandCondn/>
+      <Suspense fallback={<div />}>
+        <ChangetoCompanyTermandCondn/>
+      </Suspense>
 
       {/* Premium */}
       <div id="premium">
-        <ChangetoCompanyZolvitPremium />
+        <Suspense fallback={<div />}>
+          <ChangetoCompanyZolvitPremium />
+        </Suspense>
       </div>
 
       {/* Tabs */}
-      <ChangetoCompanyTab />
+      <Suspense fallback={<div />}>
+        <ChangetoCompanyTab />
+      </Suspense>
 
       {/* Company */}
       <div id="company">
-        <ChangetoCompanyCompanyTab/>
+        <Suspense fallback={<div />}>
+          <ChangetoCompanyCompanyTab/>
+        </Suspense>
       </div>
 
       {/* Types */}
       <div id="types">
-        <ChangetoCompanyTypes/>
+        <Suspense fallback={<div />}>
+          <ChangetoCompanyTypes/>
+        </Suspense>
       </div>
 
       {/* Requirements */}
       <div id="requirements">
-        <ChangetoCompanyRequirementsTab />
+        <Suspense fallback={<div />}>
+          <ChangetoCompanyRequirementsTab />
+        </Suspense>
       </div>
 
       {/* Process */}
       <div id="process">
-        <ChangetoCompanyProcess />
+        <Suspense fallback={<div />}>
+          <ChangetoCompanyProcess />
+        </Suspense>
       </div>
 
       {/* Documents */}
       <div id="documents">
-        <ChangetoCompanyDocInfographic />
+        <Suspense fallback={<div />}>
+          <ChangetoCompanyDocInfographic />
+        </Suspense>
       </div>
 
       {/* FAQ */}
       <div id="faq">
-        <ChangetoCompanyFAQ />
+        <Suspense fallback={<div />}>
+          <ChangetoCompanyFAQ />
+        </Suspense>
       </div>
 
       {/* Testimonials */}
-      <ChangetoCompanyTestimonial />
-      <ChangetoCompanyVideoTestimonial />
+      <Suspense fallback={<div />}>
+        <ChangetoCompanyTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ChangetoCompanyVideoTestimonial />
+      </Suspense>
 
       {/* Our Clients */}
-      <ChangetoCompanyOurClients/>
+      <Suspense fallback={<div />}>
+        <ChangetoCompanyOurClients/>
+      </Suspense>
     </div>
   );
 }

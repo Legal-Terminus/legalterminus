@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import AddBreadcrum from '../../Components/AddBreadcrum/AddBreadcrum'
-import AddPlanandPricing from '../../Components/AddPlanandPricing/AddPlanandPricing'
-import AddZolvitPremium from '../../Components/AddZolvitPremium/AddZolvitPremium'
-import AddTabs from '../../Components/AddTabs/AddTabs'
-import AddCompanyTab from '../../Components/AddCompanyTab/AddCompanyTab'
-import AddTypes from '../../Components/AddTypes/AddTypes'
-import AddRequirementsTab from '../../Components/AddRequirementsTab/AddRequirementsTab'
-import AddProcess from '../../Components/AddProcess/AddProcess'
-import PvtltdDocument from '../../Components/PvtltdDocument/PvtltdDocument'
-import AddFAQ from '../../Components/AddFAQ/AddFAQ'
-import AddTermsCondition from '../../Components/AddTermsCondition/AddTermsCondition'
-import AddTestimonial from '../../Components/AddTestimonial/AddTestimonial'
-import AddVideoTestimonial from '../../Components/AddVideoTestimonial/AddVideoTestimonial'
-import AddOurclints from '../../Components/AddOurclints/AddOurClints'
+
+// Lazy load below-fold components
+const AddPlanandPricing = React.lazy(() => import('../../Components/AddPlanandPricing/AddPlanandPricing'))
+const AddZolvitPremium = React.lazy(() => import('../../Components/AddZolvitPremium/AddZolvitPremium'))
+const AddTabs = React.lazy(() => import('../../Components/AddTabs/AddTabs'))
+const AddCompanyTab = React.lazy(() => import('../../Components/AddCompanyTab/AddCompanyTab'))
+const AddTypes = React.lazy(() => import('../../Components/AddTypes/AddTypes'))
+const AddRequirementsTab = React.lazy(() => import('../../Components/AddRequirementsTab/AddRequirementsTab'))
+const AddProcess = React.lazy(() => import('../../Components/AddProcess/AddProcess'))
+const PvtltdDocument = React.lazy(() => import('../../Components/PvtltdDocument/PvtltdDocument'))
+const AddFAQ = React.lazy(() => import('../../Components/AddFAQ/AddFAQ'))
+const AddTermsCondition = React.lazy(() => import('../../Components/AddTermsCondition/AddTermsCondition'))
+const AddTestimonial = React.lazy(() => import('../../Components/AddTestimonial/AddTestimonial'))
+const AddVideoTestimonial = React.lazy(() => import('../../Components/AddVideoTestimonial/AddVideoTestimonial'))
+const AddOurclints = React.lazy(() => import('../../Components/AddOurclints/AddOurClints'))
 
 const PrivateLimited = () => {
   return (
@@ -20,28 +22,42 @@ const PrivateLimited = () => {
       <AddBreadcrum />
 
       <div id="plans">
-        <AddPlanandPricing />
+        <Suspense fallback={<div />}>
+          <AddPlanandPricing />
+        </Suspense>
       </div>
 
-      <AddTermsCondition/>
+      <Suspense fallback={<div />}>
+        <AddTermsCondition/>
+      </Suspense>
 
 
       <div id="premium">
-        <AddZolvitPremium />
+        <Suspense fallback={<div />}>
+          <AddZolvitPremium />
+        </Suspense>
       </div>
 
-      <AddTabs/>
+      <Suspense fallback={<div />}>
+        <AddTabs/>
+      </Suspense>
 
       <div id="company">
-        <AddCompanyTab />
+        <Suspense fallback={<div />}>
+          <AddCompanyTab />
+        </Suspense>
       </div>
 
       <div id="types">
-        <AddTypes />
+        <Suspense fallback={<div />}>
+          <AddTypes />
+        </Suspense>
       </div>
 
       <div id="requirements">
-        <AddRequirementsTab />
+        <Suspense fallback={<div />}>
+          <AddRequirementsTab />
+        </Suspense>
       </div>
 
       <div id="process">
@@ -53,12 +69,20 @@ const PrivateLimited = () => {
       </div>
 
       <div id="faq">
-        <AddFAQ/>
+        <Suspense fallback={<div />}>
+          <AddFAQ/>
+        </Suspense>
       </div>
 
-      <AddTestimonial />
-      <AddVideoTestimonial />
-      <AddOurclints />
+      <Suspense fallback={<div />}>
+        <AddTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <AddVideoTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <AddOurclints />
+      </Suspense>
       
     </div>
   );

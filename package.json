@@ -14,7 +14,9 @@
     "dev:backend": "lsof -ti :5001 | xargs kill -9 2>/dev/null || true; cd backend && npm run dev",
     "dev:frontend": "lsof -ti :5174 | xargs kill -9 2>/dev/null || true; cd Frontend && npm run dev",
     "dev:portal": "lsof -ti :5173 | xargs kill -9 2>/dev/null || true; cd Portal && npm run dev",
-    "dev:portal-only": "lsof -ti :5173 | xargs kill -9 2>/dev/null || true; cd Portal && npm run dev"
+    "dev:portal-only": "lsof -ti :5173 | xargs kill -9 2>/dev/null || true; cd Portal && npm run dev",
+    "test": "npm run cleanup:ports && concurrently --kill-others-on-success \"npm run start:backend\" \"npm run dev:frontend\" \"sleep 5 && cd Frontend && npm run test:pages\"",
+    "test:headed": "npm run cleanup:ports && concurrently --kill-others-on-success \"npm run start:backend\" \"npm run dev:frontend\" \"sleep 5 && cd Frontend && npm run test:pages:headed\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

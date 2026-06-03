@@ -1,19 +1,21 @@
-import React from "react";
+import React, { Suspense } from "react";
 
 import TradeLicenseBreadcrum from "../../Components/TradeLicenseBreadcrum/TradeLicenseBreadcrum";
-import TradeLicensePlans from "../../Components/TradeLicensePlans/TradeLicensePlans";
-import TradeLicenseTermCondition from "../../Components/TradeLicenseTermCondition/TradeLicenseTermCondition";
-import TradeLicenseZolvitPremium from "../../Components/TradeLicenseZolvitPremium/TradeLicenseZolvitPremium";
-import TradeLicenseTabs from "../../Components/TradeLicenseTabs/TradeLicenseTabs";
-import TradeLicenseOverview from "../../Components/TradeLicenseOverview/TradeLicenseOverview";
-import TradeLicenseFeatures from "../../Components/TradeLicenseFeatures/TradeLicenseFeatures";
-import TradeLicenseBenefits from "../../Components/TradeLicenseBenefits/TradeLicenseBenefits";
-import TradeLicenseElegibility from "../../Components/TradeLicenseElegibility/TradeLicenseElegibility";
-import TradeLicenseDocuments from "../../Components/TradeLicenseDocuments/TradeLicenseDocuments";
-import TradeLicenseFAQ from "../../Components/TradeLicenseFAQ/TradeLicenseFAQ";
-import TradeLicenseProcess from "../../Components/TradeLicenseProcess/TradeLicenseProcess";
-import TradeLicenseWhy from "../../Components/TradeLicenseWhy/TradeLicenseWhy";
-import TradeLicenseOurClients from "../../Components/TradeLicenseOurClients/TradeLicenseOurClients";
+
+// Lazy load below-fold components
+const TradeLicensePlans = React.lazy(() => import("../../Components/TradeLicensePlans/TradeLicensePlans"));
+const TradeLicenseTermCondition = React.lazy(() => import("../../Components/TradeLicenseTermCondition/TradeLicenseTermCondition"));
+const TradeLicenseZolvitPremium = React.lazy(() => import("../../Components/TradeLicenseZolvitPremium/TradeLicenseZolvitPremium"));
+const TradeLicenseTabs = React.lazy(() => import("../../Components/TradeLicenseTabs/TradeLicenseTabs"));
+const TradeLicenseOverview = React.lazy(() => import("../../Components/TradeLicenseOverview/TradeLicenseOverview"));
+const TradeLicenseFeatures = React.lazy(() => import("../../Components/TradeLicenseFeatures/TradeLicenseFeatures"));
+const TradeLicenseBenefits = React.lazy(() => import("../../Components/TradeLicenseBenefits/TradeLicenseBenefits"));
+const TradeLicenseElegibility = React.lazy(() => import("../../Components/TradeLicenseElegibility/TradeLicenseElegibility"));
+const TradeLicenseDocuments = React.lazy(() => import("../../Components/TradeLicenseDocuments/TradeLicenseDocuments"));
+const TradeLicenseFAQ = React.lazy(() => import("../../Components/TradeLicenseFAQ/TradeLicenseFAQ"));
+const TradeLicenseProcess = React.lazy(() => import("../../Components/TradeLicenseProcess/TradeLicenseProcess"));
+const TradeLicenseWhy = React.lazy(() => import("../../Components/TradeLicenseWhy/TradeLicenseWhy"));
+const TradeLicenseOurClients = React.lazy(() => import("../../Components/TradeLicenseOurClients/TradeLicenseOurClients"));
 
 const TradeLicense = () => {
   return (
@@ -27,21 +29,31 @@ const TradeLicense = () => {
       {/* <TradeLicenseTermCondition /> */}
 
       <div id="premium">
-        <TradeLicenseZolvitPremium />
+        <Suspense fallback={<div />}>
+          <TradeLicenseZolvitPremium />
+        </Suspense>
       </div>
 
-      <TradeLicenseTabs />
+      <Suspense fallback={<div />}>
+        <TradeLicenseTabs />
+      </Suspense>
 
       <div id="company">
-        <TradeLicenseOverview />
+        <Suspense fallback={<div />}>
+          <TradeLicenseOverview />
+        </Suspense>
       </div>
 
       <div id="types">
-        <TradeLicenseFeatures />
+        <Suspense fallback={<div />}>
+          <TradeLicenseFeatures />
+        </Suspense>
       </div>
 
       <div id="requirements">
-        <TradeLicenseBenefits />
+        <Suspense fallback={<div />}>
+          <TradeLicenseBenefits />
+        </Suspense>
       </div>
 
       <div id="process">
@@ -53,12 +65,20 @@ const TradeLicense = () => {
       </div>
 
       <div id="faq">
-        <TradeLicenseFAQ />
+        <Suspense fallback={<div />}>
+          <TradeLicenseFAQ />
+        </Suspense>
       </div>
 
-      <TradeLicenseProcess />
-      <TradeLicenseWhy />
-      <TradeLicenseOurClients />
+      <Suspense fallback={<div />}>
+        <TradeLicenseProcess />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <TradeLicenseWhy />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <TradeLicenseOurClients />
+      </Suspense>
     </div>
   );
 };

@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import FoodLicenseBreadcrum from '../../Components/FoodLicenseBreadcrum/FoodLicenseBreadcrum'
-import FoodLicensePlans from '../../Components/FoodLicensePlans/FoodLicensePlans'
-import FoodLicenseTermCondition from '../../Components/FoodLicenseTermCondition/FoodLicenseTermCondition'
-import FoodlicenseZolvitPremium from '../../Components/FoodlicenseZolvitPremium/FoodlicenseZolvitPremium'
-import FoodLicenseTabs from '../../Components/FoodLicenseTabs/FoodLicenseTabs'
-import FoodLicenseOverview from '../../Components/FoodLicenseOverview/FoodLicenseOverview'
-import FoodLicenseFeatures from '../../Components/FoodLicenseFeatures/FoodLicenseFeatures'
-import FoodLicenseBenefits from '../../Components/FoodLicenseBenefits/FoodLicenseBenefits'
-import FoodLicenseElegibility from '../../Components/FoodLicenseElegibility/FoodLicenseElegibility'
-import FoodLicenseDocuments from '../../Components/FoodLicenseDocuments/FoodLicenseDocuments'
-import FoodLicenseFAQ from '../../Components/FoodLicenseFAQ/FoodLicenseFAQ'
-import FoodLicenseProcess from '../../Components/FoodLicenseProcess/FoodLicenseProcess'
-import FoodLicenseWhy from '../../Components/FoodLicenseWhy/FoodLicenseWhy'
-import FoodLicenseOurClints from '../../Components/FoodLicenseOurClints/FoodLicenseOurClints'
+
+// Lazy load below-fold components
+const FoodLicensePlans = React.lazy(() => import('../../Components/FoodLicensePlans/FoodLicensePlans'))
+const FoodLicenseTermCondition = React.lazy(() => import('../../Components/FoodLicenseTermCondition/FoodLicenseTermCondition'))
+const FoodlicenseZolvitPremium = React.lazy(() => import('../../Components/FoodlicenseZolvitPremium/FoodlicenseZolvitPremium'))
+const FoodLicenseTabs = React.lazy(() => import('../../Components/FoodLicenseTabs/FoodLicenseTabs'))
+const FoodLicenseOverview = React.lazy(() => import('../../Components/FoodLicenseOverview/FoodLicenseOverview'))
+const FoodLicenseFeatures = React.lazy(() => import('../../Components/FoodLicenseFeatures/FoodLicenseFeatures'))
+const FoodLicenseBenefits = React.lazy(() => import('../../Components/FoodLicenseBenefits/FoodLicenseBenefits'))
+const FoodLicenseElegibility = React.lazy(() => import('../../Components/FoodLicenseElegibility/FoodLicenseElegibility'))
+const FoodLicenseDocuments = React.lazy(() => import('../../Components/FoodLicenseDocuments/FoodLicenseDocuments'))
+const FoodLicenseFAQ = React.lazy(() => import('../../Components/FoodLicenseFAQ/FoodLicenseFAQ'))
+const FoodLicenseProcess = React.lazy(() => import('../../Components/FoodLicenseProcess/FoodLicenseProcess'))
+const FoodLicenseWhy = React.lazy(() => import('../../Components/FoodLicenseWhy/FoodLicenseWhy'))
+const FoodLicenseOurClints = React.lazy(() => import('../../Components/FoodLicenseOurClints/FoodLicenseOurClints'))
 
 const FoodLicense = () => {
   return (
@@ -20,27 +22,41 @@ const FoodLicense = () => {
       <FoodLicenseBreadcrum />
 
       <div id="plans">
-        <FoodLicensePlans />
+        <Suspense fallback={<div />}>
+          <FoodLicensePlans />
+        </Suspense>
       </div>
 
-      <FoodLicenseTermCondition />
+      <Suspense fallback={<div />}>
+        <FoodLicenseTermCondition />
+      </Suspense>
 
       <div id="premium">
-        <FoodlicenseZolvitPremium />
+        <Suspense fallback={<div />}>
+          <FoodlicenseZolvitPremium />
+        </Suspense>
       </div>
 
-      <FoodLicenseTabs />
+      <Suspense fallback={<div />}>
+        <FoodLicenseTabs />
+      </Suspense>
 
       <div id="company">
-        <FoodLicenseOverview />
+        <Suspense fallback={<div />}>
+          <FoodLicenseOverview />
+        </Suspense>
       </div>
 
       <div id="types">
-        <FoodLicenseFeatures />
+        <Suspense fallback={<div />}>
+          <FoodLicenseFeatures />
+        </Suspense>
       </div>
 
       <div id="requirements">
-        <FoodLicenseBenefits />
+        <Suspense fallback={<div />}>
+          <FoodLicenseBenefits />
+        </Suspense>
       </div>
 
       <div id="process">
@@ -52,12 +68,20 @@ const FoodLicense = () => {
       </div>
 
       <div id="faq">
-        <FoodLicenseFAQ />
+        <Suspense fallback={<div />}>
+          <FoodLicenseFAQ />
+        </Suspense>
       </div>
 
-      <FoodLicenseProcess />
-      <FoodLicenseWhy />
-      <FoodLicenseOurClints />
+      <Suspense fallback={<div />}>
+        <FoodLicenseProcess />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <FoodLicenseWhy />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <FoodLicenseOurClints />
+      </Suspense>
      
     </div>
   )

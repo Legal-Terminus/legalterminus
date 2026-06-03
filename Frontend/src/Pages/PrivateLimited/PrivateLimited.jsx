@@ -1,17 +1,19 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import "./PrivateLimited.css";
 import Breadcrum from '../../Components/Breadcrum/Breadcrum'
-import PvtltdPlanandPricing from '../../Components/PvtltdPlanandPricing/PvtltdPlanandPricing'
-import PvtltdZolvitPremium from '../../Components/PvtltdZolvitPremium/PvtltdZolvitPremium'
-import PvtltdTabs from '../../Components/PvtltdTabs/PvtltdTabs'
-import PvtltdCompanyTab from '../../Components/PvtltdCompanyTab/PvtltdCompanyTab'
-import PvtltdPvtTypes from '../../Components/PvtltdPvtTypes/PvtltdPvtTypes'
-import PvtltdRequirementsTab from '../../Components/PvtltdRequirementsTab/PvtltdRequirementsTab'
-import PvtltdProcess from '../../Components/PvtltdProcess/PvtltdProcess'
-import PvtltdDocument from '../../Components/PvtltdDocument/PvtltdDocument'
-import PvtltdFAQ from '../../Components/PvtltdFAQ/PvtltdFAQ'
-import PvtltdTermsCondition from '../../Components/PvtltdTermsCondition/PvtltdTermsCondition'
-import PvtltdGovtCosts from '../../Components/PvtltdGovtCosts/PvtltdGovtCosts'
+
+// Lazy load below-fold components
+const PvtltdPlanandPricing = React.lazy(() => import('../../Components/PvtltdPlanandPricing/PvtltdPlanandPricing'))
+const PvtltdZolvitPremium = React.lazy(() => import('../../Components/PvtltdZolvitPremium/PvtltdZolvitPremium'))
+const PvtltdTabs = React.lazy(() => import('../../Components/PvtltdTabs/PvtltdTabs'))
+const PvtltdCompanyTab = React.lazy(() => import('../../Components/PvtltdCompanyTab/PvtltdCompanyTab'))
+const PvtltdPvtTypes = React.lazy(() => import('../../Components/PvtltdPvtTypes/PvtltdPvtTypes'))
+const PvtltdRequirementsTab = React.lazy(() => import('../../Components/PvtltdRequirementsTab/PvtltdRequirementsTab'))
+const PvtltdProcess = React.lazy(() => import('../../Components/PvtltdProcess/PvtltdProcess'))
+const PvtltdDocument = React.lazy(() => import('../../Components/PvtltdDocument/PvtltdDocument'))
+const PvtltdFAQ = React.lazy(() => import('../../Components/PvtltdFAQ/PvtltdFAQ'))
+const PvtltdTermsCondition = React.lazy(() => import('../../Components/PvtltdTermsCondition/PvtltdTermsCondition'))
+const PvtltdGovtCosts = React.lazy(() => import('../../Components/PvtltdGovtCosts/PvtltdGovtCosts'))
 
 const PrivateLimited = () => {
   return (
@@ -23,59 +25,81 @@ const PrivateLimited = () => {
       <div className="section-divider" />
 
       <div id="plans" className="pvtltd-page-pricing">
-        <PvtltdPlanandPricing />
+        <Suspense fallback={<div />}>
+          <PvtltdPlanandPricing />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
-      <PvtltdGovtCosts />
+      <Suspense fallback={<div />}>
+        <PvtltdGovtCosts />
+      </Suspense>
 
       <div className="section-divider" />
 
-      <PvtltdTermsCondition />
+      <Suspense fallback={<div />}>
+        <PvtltdTermsCondition />
+      </Suspense>
 
       <div className="section-divider" />
 
       <div id="premium">
-        <PvtltdZolvitPremium />
+        <Suspense fallback={<div />}>
+          <PvtltdZolvitPremium />
+        </Suspense>
       </div>
 
-      <PvtltdTabs />
+      <Suspense fallback={<div />}>
+        <PvtltdTabs />
+      </Suspense>
 
       <div className="section-divider" />
 
       <div id="company">
-        <PvtltdCompanyTab />
+        <Suspense fallback={<div />}>
+          <PvtltdCompanyTab />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="types">
-        <PvtltdPvtTypes />
+        <Suspense fallback={<div />}>
+          <PvtltdPvtTypes />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="requirements">
-        <PvtltdRequirementsTab />
+        <Suspense fallback={<div />}>
+          <PvtltdRequirementsTab />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="process">
-        <PvtltdProcess />
+        <Suspense fallback={<div />}>
+          <PvtltdProcess />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="documents">
-        <PvtltdDocument />
+        <Suspense fallback={<div />}>
+          <PvtltdDocument />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="faq">
-        <PvtltdFAQ />
+        <Suspense fallback={<div />}>
+          <PvtltdFAQ />
+        </Suspense>
       </div>
     </div>
   );

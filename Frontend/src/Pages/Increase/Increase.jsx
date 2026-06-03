@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import IncreaseBreadcrum from '../../Components/IncreaseBreadcrum/IncreaseBreadcrum'
-import IncreasePlanandPricing from '../../Components/IncreasePlanandPricing/IncreasePlanandPricing'
-import IncreaseZolvitPremium from '../../Components/IncreaseZolvitPremium/IncreaseZolvitPremium'
-import IncreaseTabs from '../../Components/IncreaseTabs/IncreaseTabs'
-import IncreaseCompanyTab from '../../Components/IncreaseCompanyTab/IncreaseCompanyTab'
-import IncreaseTypes from '../../Components/IncreaseTypes/IncreaseTypes'
-import IncreaseRequirementsTab from '../../Components/IncreaseRequirementsTab/IncreaseRequirementsTab'
-import IncreaseProcess from '../../Components/IncreaseProcess/IncreaseProcess'
-import PvtltdDocument from '../../Components/PvtltdDocument/PvtltdDocument'
-import IncreaseFAQ from '../../Components/IncreaseFAQ/IncreaseFAQ'
-import IncreaseTermsCondition from '../../Components/IncreaseTermsCondition/IncreaseTermsCondition'
-import IncreaseTestimonial from '../../Components/IncreaseTestimonial/IncreaseTestimonial'
-import IncreaseVideoTestimonial from '../../Components/IncreaseVideoTestimonial/IncreaseVideoTestimonial'
-import IncreaseOurclints from '../../Components/IncreaseOurclints/IncreaseOurclints'
+
+// Lazy load below-fold components
+const IncreasePlanandPricing = React.lazy(() => import('../../Components/IncreasePlanandPricing/IncreasePlanandPricing'))
+const IncreaseZolvitPremium = React.lazy(() => import('../../Components/IncreaseZolvitPremium/IncreaseZolvitPremium'))
+const IncreaseTabs = React.lazy(() => import('../../Components/IncreaseTabs/IncreaseTabs'))
+const IncreaseCompanyTab = React.lazy(() => import('../../Components/IncreaseCompanyTab/IncreaseCompanyTab'))
+const IncreaseTypes = React.lazy(() => import('../../Components/IncreaseTypes/IncreaseTypes'))
+const IncreaseRequirementsTab = React.lazy(() => import('../../Components/IncreaseRequirementsTab/IncreaseRequirementsTab'))
+const IncreaseProcess = React.lazy(() => import('../../Components/IncreaseProcess/IncreaseProcess'))
+const PvtltdDocument = React.lazy(() => import('../../Components/PvtltdDocument/PvtltdDocument'))
+const IncreaseFAQ = React.lazy(() => import('../../Components/IncreaseFAQ/IncreaseFAQ'))
+const IncreaseTermsCondition = React.lazy(() => import('../../Components/IncreaseTermsCondition/IncreaseTermsCondition'))
+const IncreaseTestimonial = React.lazy(() => import('../../Components/IncreaseTestimonial/IncreaseTestimonial'))
+const IncreaseVideoTestimonial = React.lazy(() => import('../../Components/IncreaseVideoTestimonial/IncreaseVideoTestimonial'))
+const IncreaseOurclints = React.lazy(() => import('../../Components/IncreaseOurclints/IncreaseOurclints'))
 
 const PrivateLimited = () => {
   return (
@@ -20,28 +22,42 @@ const PrivateLimited = () => {
       <IncreaseBreadcrum/>
 
       <div id="plans">
-        <IncreasePlanandPricing/>
+        <Suspense fallback={<div />}>
+          <IncreasePlanandPricing/>
+        </Suspense>
       </div>
 
-      <IncreaseTermsCondition />
+      <Suspense fallback={<div />}>
+        <IncreaseTermsCondition />
+      </Suspense>
 
 
       <div id="premium">
-        <IncreaseZolvitPremium />
+        <Suspense fallback={<div />}>
+          <IncreaseZolvitPremium />
+        </Suspense>
       </div>
 
-      <IncreaseTabs />
+      <Suspense fallback={<div />}>
+        <IncreaseTabs />
+      </Suspense>
 
       <div id="company">
-        <IncreaseCompanyTab />
+        <Suspense fallback={<div />}>
+          <IncreaseCompanyTab />
+        </Suspense>
       </div>
 
       <div id="types">
-        <IncreaseTypes/>
+        <Suspense fallback={<div />}>
+          <IncreaseTypes/>
+        </Suspense>
       </div>
 
       <div id="requirements">
-        <IncreaseRequirementsTab/>
+        <Suspense fallback={<div />}>
+          <IncreaseRequirementsTab/>
+        </Suspense>
       </div>
 
       <div id="process">
@@ -53,12 +69,20 @@ const PrivateLimited = () => {
       </div>
 
       <div id="faq">
-        <IncreaseFAQ/>
+        <Suspense fallback={<div />}>
+          <IncreaseFAQ/>
+        </Suspense>
       </div>
 
-      <IncreaseTestimonial/>
-      <IncreaseVideoTestimonial />
-      <IncreaseOurclints/>
+      <Suspense fallback={<div />}>
+        <IncreaseTestimonial/>
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <IncreaseVideoTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <IncreaseOurclints/>
+      </Suspense>
       
     </div>
   );

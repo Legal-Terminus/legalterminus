@@ -1,17 +1,18 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import "./OPC.css";
 import OPCBreadcrum from '../../Components/OPCBreadcrum/OPCBreadcrum'
-import OPCPlans from '../../Components/OPCPlans/OPCPlans'
-import OPCTermCondition from '../../Components/OPCTermCondition/OPCTermCondition'
-import OpcZolvitPremium from '../../Components/OpcZolvitPremium/OpcZolvitPremium'
-import OPCTabs from '../../Components/OPCTabs/OPCTabs'
-import OPCOverview from '../../Components/OPCOverview/OPCOverview'
-import OPCFeatures from '../../Components/OPCFeatures/OPCFeatures'
-import OPCBenefits from '../../Components/OPCBenefits/OPCBenefits'
-import OPCElegibility from '../../Components/OPCElegibility/OPCElegibility'
-import OPCDocuments from '../../Components/OPCDocuments/OPCDocuments'
-import OPCFAQ from '../../Components/OPCFAQ/OPCFAQ'
 
+// Lazy load below-fold components
+const OPCPlans = React.lazy(() => import('../../Components/OPCPlans/OPCPlans'))
+const OPCTermCondition = React.lazy(() => import('../../Components/OPCTermCondition/OPCTermCondition'))
+const OpcZolvitPremium = React.lazy(() => import('../../Components/OpcZolvitPremium/OpcZolvitPremium'))
+const OPCTabs = React.lazy(() => import('../../Components/OPCTabs/OPCTabs'))
+const OPCOverview = React.lazy(() => import('../../Components/OPCOverview/OPCOverview'))
+const OPCFeatures = React.lazy(() => import('../../Components/OPCFeatures/OPCFeatures'))
+const OPCBenefits = React.lazy(() => import('../../Components/OPCBenefits/OPCBenefits'))
+const OPCElegibility = React.lazy(() => import('../../Components/OPCElegibility/OPCElegibility'))
+const OPCDocuments = React.lazy(() => import('../../Components/OPCDocuments/OPCDocuments'))
+const OPCFAQ = React.lazy(() => import('../../Components/OPCFAQ/OPCFAQ'))
 
 const OPC = () => {
   return (
@@ -23,55 +24,75 @@ const OPC = () => {
       <div className="section-divider" />
 
       <div id="plans" className="opc-page-pricing">
-        <OPCPlans />
+        <Suspense fallback={<div />}>
+          <OPCPlans />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
-      <OPCTermCondition />
+      <Suspense fallback={<div />}>
+        <OPCTermCondition />
+      </Suspense>
 
       <div className="section-divider" />
 
       <div id="premium">
-        <OpcZolvitPremium />
+        <Suspense fallback={<div />}>
+          <OpcZolvitPremium />
+        </Suspense>
       </div>
 
-      <OPCTabs />
+      <Suspense fallback={<div />}>
+        <OPCTabs />
+      </Suspense>
 
       <div className="section-divider" />
 
       <div id="company">
-        <OPCOverview />
+        <Suspense fallback={<div />}>
+          <OPCOverview />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="types">
-        <OPCFeatures />
+        <Suspense fallback={<div />}>
+          <OPCFeatures />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="requirements">
-        <OPCBenefits />
+        <Suspense fallback={<div />}>
+          <OPCBenefits />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="process">
-        <OPCElegibility />
+        <Suspense fallback={<div />}>
+          <OPCElegibility />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="documents">
-        <OPCDocuments />
+        <Suspense fallback={<div />}>
+          <OPCDocuments />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="faq">
-        <OPCFAQ />
+        <Suspense fallback={<div />}>
+          <OPCFAQ />
+        </Suspense>
       </div>
 
     </div>

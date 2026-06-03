@@ -1,21 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import BCbreadcrum from '../../Components/BCbreadcrum/BCbreadcrum'
-import BCplanandpricing from '../../Components/BCplanandpricing/BCplanandpricing'
-import BCtermcondition from '../../Components/BCtermcondition/BCtermcondition'
-import BCpremium from '../../Components/BCpremium/BCpremium'
-import BCtabs from '../../Components/BCtabs/BCtabs'
-import BCcompany from '../../Components/BCcompany/BCcompany'
-import BCtypes from '../../Components/BCtypes/BCtypes'
-import BCrequirment from '../../Components/BCrequirment/BCrequirment'
-import BCprocess from '../../Components/BCprocess/BCprocess'
 
-
-import BCdocuments from '../../Components/BCdocuments/BCdocuments'
-
-import BCfaq from '../../Components/BCfaq/BCfaq'
-import BCtestimonial from '../../Components/BCtestimonial/BCtestimonial'
-import BCvideo from '../../Components/BCvideo/BCvideo'
-import BCclients from '../../Components/BCclients/BCclients'
+// Lazy load below-fold components
+const BCplanandpricing = React.lazy(() => import('../../Components/BCplanandpricing/BCplanandpricing'))
+const BCtermcondition = React.lazy(() => import('../../Components/BCtermcondition/BCtermcondition'))
+const BCpremium = React.lazy(() => import('../../Components/BCpremium/BCpremium'))
+const BCtabs = React.lazy(() => import('../../Components/BCtabs/BCtabs'))
+const BCcompany = React.lazy(() => import('../../Components/BCcompany/BCcompany'))
+const BCtypes = React.lazy(() => import('../../Components/BCtypes/BCtypes'))
+const BCrequirment = React.lazy(() => import('../../Components/BCrequirment/BCrequirment'))
+const BCprocess = React.lazy(() => import('../../Components/BCprocess/BCprocess'))
+const BCdocuments = React.lazy(() => import('../../Components/BCdocuments/BCdocuments'))
+const BCfaq = React.lazy(() => import('../../Components/BCfaq/BCfaq'))
+const BCtestimonial = React.lazy(() => import('../../Components/BCtestimonial/BCtestimonial'))
+const BCvideo = React.lazy(() => import('../../Components/BCvideo/BCvideo'))
+const BCclients = React.lazy(() => import('../../Components/BCclients/BCclients'))
 
 
 const PrivateLimited = () => {
@@ -24,27 +23,41 @@ const PrivateLimited = () => {
      <BCbreadcrum />
 
       <div id="plans">
-      <BCplanandpricing />
+      <Suspense fallback={<div />}>
+        <BCplanandpricing />
+      </Suspense>
       </div>
 
-      <BCtermcondition />
+      <Suspense fallback={<div />}>
+        <BCtermcondition />
+      </Suspense>
 
       <div id="premium">
-       <BCpremium />
+       <Suspense fallback={<div />}>
+         <BCpremium />
+       </Suspense>
       </div>
 
-     <BCtabs />
+     <Suspense fallback={<div />}>
+       <BCtabs />
+     </Suspense>
 
       <div id="company">
-       <BCcompany />
+       <Suspense fallback={<div />}>
+         <BCcompany />
+       </Suspense>
       </div>
 
       <div id="types">
-        <BCtypes />
+        <Suspense fallback={<div />}>
+          <BCtypes />
+        </Suspense>
       </div>
 
       <div id="requirements">
-        <BCrequirment />
+        <Suspense fallback={<div />}>
+          <BCrequirment />
+        </Suspense>
       </div>
 
       <div id="process">
@@ -56,12 +69,20 @@ const PrivateLimited = () => {
       </div>
 
       <div id="faq">
-      <BCfaq />
+      <Suspense fallback={<div />}>
+        <BCfaq />
+      </Suspense>
       </div>
 
-      <BCtestimonial />
-     <BCvideo />
-      <BCclients />
+      <Suspense fallback={<div />}>
+        <BCtestimonial />
+      </Suspense>
+     <Suspense fallback={<div />}>
+       <BCvideo />
+     </Suspense>
+      <Suspense fallback={<div />}>
+        <BCclients />
+      </Suspense>
     </div>
   );
 };

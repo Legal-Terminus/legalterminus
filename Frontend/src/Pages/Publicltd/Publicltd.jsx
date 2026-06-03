@@ -1,16 +1,18 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import "./Publicltd.css";
 import PublicBreadcrum from '../../Components/PublicBreadcrum/PublicBreadcrum'
-import PublicltdRightPlan from '../../Components/PublicltdRightPlan/PublicltdRightPlan'
-import PublicltdTermsCondition from '../../Components/PublicltdTermsCondition/PublicltdTermsCondition'
-import PublicltdZolvitPremium from '../../Components/PublicltdZolvitPremium/PublicltdZolvitPremium'
-import PublicltdTab from '../../Components/PublicltdTab/PublicltdTab'
-import PublicltdOverview from '../../Components/PublicltdOverview/PublicltdOverview'
-import PublicltdFeatures from '../../Components/PublicltdFeatures/PublicltdFeatures'
-import PublicltdBenifits from '../../Components/PublicltdBenifits/PublicltdBenifits'
-import PublicltdDocument from '../../Components/PublicltdDocument/PublicltdDocument'
-import PublicltdProcess from '../../Components/PublicltdProcess/PublicltdProcess'
-import PublicltdFAQ from '../../Components/PublicltdFAQ/PublicltdFAQ'
+
+// Lazy load below-fold components
+const PublicltdRightPlan = React.lazy(() => import('../../Components/PublicltdRightPlan/PublicltdRightPlan'))
+const PublicltdTermsCondition = React.lazy(() => import('../../Components/PublicltdTermsCondition/PublicltdTermsCondition'))
+const PublicltdZolvitPremium = React.lazy(() => import('../../Components/PublicltdZolvitPremium/PublicltdZolvitPremium'))
+const PublicltdTab = React.lazy(() => import('../../Components/PublicltdTab/PublicltdTab'))
+const PublicltdOverview = React.lazy(() => import('../../Components/PublicltdOverview/PublicltdOverview'))
+const PublicltdFeatures = React.lazy(() => import('../../Components/PublicltdFeatures/PublicltdFeatures'))
+const PublicltdBenifits = React.lazy(() => import('../../Components/PublicltdBenifits/PublicltdBenifits'))
+const PublicltdDocument = React.lazy(() => import('../../Components/PublicltdDocument/PublicltdDocument'))
+const PublicltdProcess = React.lazy(() => import('../../Components/PublicltdProcess/PublicltdProcess'))
+const PublicltdFAQ = React.lazy(() => import('../../Components/PublicltdFAQ/PublicltdFAQ'))
 
 const Publicltd = () => {
   return (
@@ -20,55 +22,75 @@ const Publicltd = () => {
       <div className="section-divider" />
 
       <div id="plans" className="pub-page-pricing">
-        <PublicltdRightPlan />
+        <Suspense fallback={<div />}>
+          <PublicltdRightPlan />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
-      <PublicltdTermsCondition />
+      <Suspense fallback={<div />}>
+        <PublicltdTermsCondition />
+      </Suspense>
 
       <div className="section-divider" />
 
       <div id="premium">
-        <PublicltdZolvitPremium />
+        <Suspense fallback={<div />}>
+          <PublicltdZolvitPremium />
+        </Suspense>
       </div>
 
-      <PublicltdTab />
+      <Suspense fallback={<div />}>
+        <PublicltdTab />
+      </Suspense>
 
       <div className="section-divider" />
 
       <div id="company">
-        <PublicltdOverview />
+        <Suspense fallback={<div />}>
+          <PublicltdOverview />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="features">
-        <PublicltdFeatures />
+        <Suspense fallback={<div />}>
+          <PublicltdFeatures />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="benefits">
-        <PublicltdBenifits />
+        <Suspense fallback={<div />}>
+          <PublicltdBenifits />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="process">
-        <PublicltdProcess />
+        <Suspense fallback={<div />}>
+          <PublicltdProcess />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="documents">
-        <PublicltdDocument />
+        <Suspense fallback={<div />}>
+          <PublicltdDocument />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="faq">
-        <PublicltdFAQ />
+        <Suspense fallback={<div />}>
+          <PublicltdFAQ />
+        </Suspense>
       </div>
     </div>
   )

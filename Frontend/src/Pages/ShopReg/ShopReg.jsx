@@ -1,18 +1,28 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ShopRegBreadcrum from '../../Components/ShopRegBreadcrum/ShopRegBreadcrum'
-import ShopRegProcess from '../../Components/ShopRegProcess/ShopRegProcess'
-import ShopRegDocuments from '../../Components/ShopRegDocuments/ShopRegDocuments'
-import ShopRegFAQ from '../../Components/ShopRegFAQ/ShopRegFAQ'
-import ShopRegTerms from '../../Components/ShopRegTerms/ShopRegTerms'
+
+// Lazy load below-fold components
+const ShopRegProcess = React.lazy(() => import('../../Components/ShopRegProcess/ShopRegProcess'))
+const ShopRegDocuments = React.lazy(() => import('../../Components/ShopRegDocuments/ShopRegDocuments'))
+const ShopRegFAQ = React.lazy(() => import('../../Components/ShopRegFAQ/ShopRegFAQ'))
+const ShopRegTerms = React.lazy(() => import('../../Components/ShopRegTerms/ShopRegTerms'))
 
 const ShopReg = () => {
   return (
     <div>
       <ShopRegBreadcrum />
-      <ShopRegProcess />
-      <ShopRegDocuments />
-      <ShopRegFAQ />
-      <ShopRegTerms />
+      <Suspense fallback={<div />}>
+        <ShopRegProcess />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ShopRegDocuments />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ShopRegFAQ />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ShopRegTerms />
+      </Suspense>
     </div>
   )
 }

@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import PartnershipLLPBreadcrum from '../../Components/PartnershipLLPBreadcrum/PartnershipLLPBreadcrum'
-import PartnershipLLPPlanandPricing from '../../Components/PartnershipLLPPlanandPricing/PartnershipLLPPlanandPricing'
-import PartnershipLLPTandC from '../../Components/PartnershipLLPTandC/PartnershipLLPTandC'
-import PartnershipLLPZolvitPremium from '../../Components/PartnershipLLPZolvitPremium/PartnershipLLPZolvitPremium'
-import PartnershipLLPTabs from '../../Components/PartnershipLLPTabs/PartnershipLLPTabs'
-import PartnershipLLPCompanyTab from '../../Components/PartnershipLLPCompanyTab/PartnershipLLPCompanyTab'
-import PartnershipLLPTypes from '../../Components/PartnershipLLPTypes/PartnershipLLPTypes'
-import PartnershipLLPRequirementsTab from '../../Components/PartnershipLLPRequirementsTab/PartnershipLLPRequirementsTab'
-import PartnershipLLPProcess from '../../Components/PartnershipLLPProcess/PartnershipLLPProcess'
-import PartnershipLLPDocument from '../../Components/PartnershipLLPDocument/PartnershipLLPDocument'
-import PartnershipLLPFAQ from '../../Components/PartnershipLLPFAQ/PartnershipLLPFAQ'
-import PartnershipLLPTestimonial from '../../Components/PartnershipLLPTestimonial/PartnershipLLPTestimonial'
-import PartnershipLLPVideoTestimonial from '../../Components/PartnershipLLPVideoTestimonial/PartnershipLLPVideoTestimonial'
-import PartnershipLLPOurclints from '../../Components/PartnershipLLPOurclints/PartnershipLLPOurclints'
+
+// Lazy load below-fold components
+const PartnershipLLPPlanandPricing = React.lazy(() => import('../../Components/PartnershipLLPPlanandPricing/PartnershipLLPPlanandPricing'))
+const PartnershipLLPTandC = React.lazy(() => import('../../Components/PartnershipLLPTandC/PartnershipLLPTandC'))
+const PartnershipLLPZolvitPremium = React.lazy(() => import('../../Components/PartnershipLLPZolvitPremium/PartnershipLLPZolvitPremium'))
+const PartnershipLLPTabs = React.lazy(() => import('../../Components/PartnershipLLPTabs/PartnershipLLPTabs'))
+const PartnershipLLPCompanyTab = React.lazy(() => import('../../Components/PartnershipLLPCompanyTab/PartnershipLLPCompanyTab'))
+const PartnershipLLPTypes = React.lazy(() => import('../../Components/PartnershipLLPTypes/PartnershipLLPTypes'))
+const PartnershipLLPRequirementsTab = React.lazy(() => import('../../Components/PartnershipLLPRequirementsTab/PartnershipLLPRequirementsTab'))
+const PartnershipLLPProcess = React.lazy(() => import('../../Components/PartnershipLLPProcess/PartnershipLLPProcess'))
+const PartnershipLLPDocument = React.lazy(() => import('../../Components/PartnershipLLPDocument/PartnershipLLPDocument'))
+const PartnershipLLPFAQ = React.lazy(() => import('../../Components/PartnershipLLPFAQ/PartnershipLLPFAQ'))
+const PartnershipLLPTestimonial = React.lazy(() => import('../../Components/PartnershipLLPTestimonial/PartnershipLLPTestimonial'))
+const PartnershipLLPVideoTestimonial = React.lazy(() => import('../../Components/PartnershipLLPVideoTestimonial/PartnershipLLPVideoTestimonial'))
+const PartnershipLLPOurclints = React.lazy(() => import('../../Components/PartnershipLLPOurclints/PartnershipLLPOurclints'))
 
 const PartnershipLLP = () => {
   return (
@@ -26,21 +28,31 @@ const PartnershipLLP = () => {
         {/* <PartnershipLLPTandC/> */}
 
         <div id="premium">
-        <PartnershipLLPZolvitPremium/>
+        <Suspense fallback={<div />}>
+          <PartnershipLLPZolvitPremium/>
+        </Suspense>
         </div>
 
-        <PartnershipLLPTabs/>
+        <Suspense fallback={<div />}>
+          <PartnershipLLPTabs/>
+        </Suspense>
       
         <div id="company">
-            <PartnershipLLPCompanyTab/>
+            <Suspense fallback={<div />}>
+              <PartnershipLLPCompanyTab/>
+            </Suspense>
         </div>
 
         <div id="types">
-        <PartnershipLLPTypes/>
+        <Suspense fallback={<div />}>
+          <PartnershipLLPTypes/>
+        </Suspense>
         </div>
 
         <div id="requirements">
-            <PartnershipLLPRequirementsTab/>
+            <Suspense fallback={<div />}>
+              <PartnershipLLPRequirementsTab/>
+            </Suspense>
         </div>
 
         <div id="process">
@@ -52,12 +64,20 @@ const PartnershipLLP = () => {
         </div>
 
         <div id="faq">
-            <PartnershipLLPFAQ/>
+            <Suspense fallback={<div />}>
+              <PartnershipLLPFAQ/>
+            </Suspense>
         </div>
 
-        <PartnershipLLPTestimonial/>
-        <PartnershipLLPVideoTestimonial/>
-        <PartnershipLLPOurclints/>
+        <Suspense fallback={<div />}>
+          <PartnershipLLPTestimonial/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <PartnershipLLPVideoTestimonial/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <PartnershipLLPOurclints/>
+        </Suspense>
     </div>
   )
 }

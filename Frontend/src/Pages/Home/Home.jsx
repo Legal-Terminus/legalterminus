@@ -1,31 +1,51 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import './Home.css'
 import Herosection from '../../Components/Herosection/Herosection'
 import Premiumbusiness from '../../Components/Premiumbusiness/Premiumbusiness'
-import Workingprocess from '../../Components/WorkingProcessPro/WorkingProcessPro'
-import Whoweare from '../../Components/Whoweare/Whoweare'
-import Featureslegalservice from '../../Components/Featureslegalservice/Featureslegalservice'
-import Legalhelp from '../../Components/Legalhelp/Legalhelp'
-import HomeCertisfiedClient from '../../Components/HomeCertisfiedClient/HomeCertisfiedClient'
-import HomeAboutExperiance from '../../Components/HomeAboutExperiance/HomeAboutExperiance'
-import Testimonials from '../../Components/Testimonials/Testimonials'
-import ContactUs from '../../Components/Contactus/Contactus'
-import HomeLatestBlog from '../../Components/HomeLatestBlog/HomeLatestBlog'
+
+// Lazy load below-fold components
+const Workingprocess = React.lazy(() => import('../../Components/WorkingProcessPro/WorkingProcessPro'))
+const Whoweare = React.lazy(() => import('../../Components/Whoweare/Whoweare'))
+const Featureslegalservice = React.lazy(() => import('../../Components/Featureslegalservice/Featureslegalservice'))
+const Legalhelp = React.lazy(() => import('../../Components/Legalhelp/Legalhelp'))
+const HomeCertisfiedClient = React.lazy(() => import('../../Components/HomeCertisfiedClient/HomeCertisfiedClient'))
+const HomeAboutExperiance = React.lazy(() => import('../../Components/HomeAboutExperiance/HomeAboutExperiance'))
+const Testimonials = React.lazy(() => import('../../Components/Testimonials/Testimonials'))
+const ContactUs = React.lazy(() => import('../../Components/Contactus/Contactus'))
+const HomeLatestBlog = React.lazy(() => import('../../Components/HomeLatestBlog/HomeLatestBlog'))
 
 const Home = () => {
   return (
     <>
         <Herosection/>
         <Premiumbusiness/>
-        <Workingprocess/>
-        <Legalhelp/>
-        <HomeCertisfiedClient />
-        <HomeAboutExperiance />
-        <Whoweare/>
-        <Featureslegalservice/>
-        <Testimonials />
-        <ContactUs />
-        <HomeLatestBlog />
+        <Suspense fallback={<div />}>
+          <Workingprocess/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <Legalhelp/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <HomeCertisfiedClient />
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <HomeAboutExperiance />
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <Whoweare/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <Featureslegalservice/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <Testimonials />
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <ContactUs />
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <HomeLatestBlog />
+        </Suspense>
     </>
   )
 }

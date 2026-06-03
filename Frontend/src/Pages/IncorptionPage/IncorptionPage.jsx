@@ -1,16 +1,18 @@
-import React from "react";
+import React, { Suspense } from "react";
 import "./IncorptionPage.css";
 import IncorptionBreadcrum from "../../Components/IncorptionBreadcrum/IncorptionBreadcrum";
-import IncorporationPlanAndPricing from "../../Components/IncorptionPlanedPriceing/IncorptionPlanedPriceing";
-import IncorporationTermsCondition from "../../Components/IncorptionTermsCondition/IncorptionTermsCondition";
-import IncorporationPremium from "../../Components/IncorporationPremium/IncorporationPremium";
-import IncorporationTabs from "../../Components/IncorporationTabs/IncorporationTabs";
-import IncorporationCompanyTabs from "../../Components/IncorporationCompanyTabs/IncorporationCompanyTabs";
-import IncorporationPvtTypes from "../../Components/IncorporationPvtTypes/IncorporationPvtTypes";
-import IncorporationRequirementsTab from "../../Components/IncorporationRequirementsTab/IncorporationRequirementsTab";
-import IncorporationProcess from "../../Components/IncorporationProcess/IncorporationProcess";
-import IncorporationDocuments from "../../Components/IncorporationDocuments/IncorporationDocuments";
-import IncorporationFAQ from "../../Components/IncorporationFAQ/IncorporationFAQ";
+
+// Lazy load below-fold components
+const IncorporationPlanAndPricing = React.lazy(() => import("../../Components/IncorptionPlanedPriceing/IncorptionPlanedPriceing"));
+const IncorporationTermsCondition = React.lazy(() => import("../../Components/IncorptionTermsCondition/IncorptionTermsCondition"));
+const IncorporationPremium = React.lazy(() => import("../../Components/IncorporationPremium/IncorporationPremium"));
+const IncorporationTabs = React.lazy(() => import("../../Components/IncorporationTabs/IncorporationTabs"));
+const IncorporationCompanyTabs = React.lazy(() => import("../../Components/IncorporationCompanyTabs/IncorporationCompanyTabs"));
+const IncorporationPvtTypes = React.lazy(() => import("../../Components/IncorporationPvtTypes/IncorporationPvtTypes"));
+const IncorporationRequirementsTab = React.lazy(() => import("../../Components/IncorporationRequirementsTab/IncorporationRequirementsTab"));
+const IncorporationProcess = React.lazy(() => import("../../Components/IncorporationProcess/IncorporationProcess"));
+const IncorporationDocuments = React.lazy(() => import("../../Components/IncorporationDocuments/IncorporationDocuments"));
+const IncorporationFAQ = React.lazy(() => import("../../Components/IncorporationFAQ/IncorporationFAQ"));
 
 const IncorptionPage = () => {
   return (
@@ -22,55 +24,75 @@ const IncorptionPage = () => {
       <div className="section-divider" />
 
       <div id="plans" className="incorp-page-pricing">
-        <IncorporationPlanAndPricing />
+        <Suspense fallback={<div />}>
+          <IncorporationPlanAndPricing />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
-      <IncorporationTermsCondition />
+      <Suspense fallback={<div />}>
+        <IncorporationTermsCondition />
+      </Suspense>
 
       <div className="section-divider" />
 
       <div id="premium">
-        <IncorporationPremium />
+        <Suspense fallback={<div />}>
+          <IncorporationPremium />
+        </Suspense>
       </div>
 
-      <IncorporationTabs />
+      <Suspense fallback={<div />}>
+        <IncorporationTabs />
+      </Suspense>
 
       <div className="section-divider" />
 
       <div id="company">
-        <IncorporationCompanyTabs />
+        <Suspense fallback={<div />}>
+          <IncorporationCompanyTabs />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="types">
-        <IncorporationPvtTypes />
+        <Suspense fallback={<div />}>
+          <IncorporationPvtTypes />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="requirements">
-        <IncorporationRequirementsTab />
+        <Suspense fallback={<div />}>
+          <IncorporationRequirementsTab />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="process">
-        <IncorporationProcess />
+        <Suspense fallback={<div />}>
+          <IncorporationProcess />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="documents">
-        <IncorporationDocuments />
+        <Suspense fallback={<div />}>
+          <IncorporationDocuments />
+        </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <div id="faq">
-        <IncorporationFAQ />
+        <Suspense fallback={<div />}>
+          <IncorporationFAQ />
+        </Suspense>
       </div>
     </div>
   );

@@ -1,28 +1,46 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import UdyamRegBreadcrum from '../../Components/UdyamRegBreadcrum/UdyamRegBreadcrum'
 import UdyamRegTabs from '../../Components/UdyamRegTabs/UdyamRegTabs'
-import UdyamRegAbout from '../../Components/UdyamRegAbout/UdyamRegAbout'
-import UdyamRegWho from '../../Components/UdyamRegWho/UdyamRegWho'
-import UdyamRegBenefits from '../../Components/UdyamRegBenefits/UdyamRegBenefits'
-import UdyamRegEligibility from '../../Components/UdyamRegEligibility/UdyamRegEligibility'
-import UdyamRegDocuments from '../../Components/UdyamRegDocuments/UdyamRegDocuments'
-import UdyamRegProcess from '../../Components/UdyamRegProcess/UdyamRegProcess'
-import UdyamRegWhy from '../../Components/UdyamRegWhy/UdyamRegWhy'
-import UdyamRegFAQ from '../../Components/UdyamRegFAQ/UdyamRegFAQ'
+
+// Lazy load below-the-fold components
+const UdyamRegAbout = React.lazy(() => import('../../Components/UdyamRegAbout/UdyamRegAbout'))
+const UdyamRegWho = React.lazy(() => import('../../Components/UdyamRegWho/UdyamRegWho'))
+const UdyamRegBenefits = React.lazy(() => import('../../Components/UdyamRegBenefits/UdyamRegBenefits'))
+const UdyamRegEligibility = React.lazy(() => import('../../Components/UdyamRegEligibility/UdyamRegEligibility'))
+const UdyamRegDocuments = React.lazy(() => import('../../Components/UdyamRegDocuments/UdyamRegDocuments'))
+const UdyamRegProcess = React.lazy(() => import('../../Components/UdyamRegProcess/UdyamRegProcess'))
+const UdyamRegWhy = React.lazy(() => import('../../Components/UdyamRegWhy/UdyamRegWhy'))
+const UdyamRegFAQ = React.lazy(() => import('../../Components/UdyamRegFAQ/UdyamRegFAQ'))
 
 const UdyamReg = () => {
   return (
     <div>
       <UdyamRegBreadcrum />
       <UdyamRegTabs />
-      <UdyamRegAbout />
-      <UdyamRegWho />
-      <UdyamRegBenefits />
-      <UdyamRegEligibility />
-      <UdyamRegDocuments />
-      <UdyamRegProcess />
-      <UdyamRegWhy />
-      <UdyamRegFAQ />
+      <Suspense fallback={<div />}>
+        <UdyamRegAbout />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <UdyamRegWho />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <UdyamRegBenefits />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <UdyamRegEligibility />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <UdyamRegDocuments />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <UdyamRegProcess />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <UdyamRegWhy />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <UdyamRegFAQ />
+      </Suspense>
     </div>
   )
 }

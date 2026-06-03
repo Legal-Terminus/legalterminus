@@ -1,19 +1,20 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ChangeLlpBreadcrum from "../../Components/ChangeLlpBreadcrum/ChangeLlpBreadcrum.jsx";
-import ChangeLlpPlanandPrice from "../../Components/ChangeLlpPlanandPrice/ChangeLlpPlanandPrice";
-import ChangeLlpTermandCondn from "../../Components/ChangeLlpTermandCondn/ChangeLlpTermandCondn";
-import ChangeLlpZolvitPremium from "../../Components/ChangeLlpZolvitPremium/ChangeLlpZolvitPremium";
-import ChangeLlpTabs from "../../Components/ChangeLlpTabs/ChangeLlpTabs";
-import ChangeLlpCompanyTab from "../../Components/ChangeLlpCompanyTab/ChangeLlpCompanyTab";
-import ChangeLlpTypes from "../../Components/ChangeLlpTypes/ChangeLlpTypes";
-import ChangeLlpRequirementsTab from "../../Components/ChangeLlpRequirementsTab/ChangeLlpRequirementsTab";
-import ChangeLlpProcess from "../../Components/ChangeLlpProcess/ChangeLlpProcess";
-import ChangeLlpFAQ from "../../Components/ChangeLlpFAQ/ChangeLlpFAQ";
-import ChangeLlpTestimonial from "../../Components/ChangeLlpTestimonial/ChangeLlpTestimonial";
-import ChangeLlpVideoTestimonial from "../../Components/ChangeLlpVideoTestimonial/ChangeLlpVideoTestimonial";
-import ChangeLlpOurClients from "../../Components/ChangeLlpOurClients/ChangeLlpOurClients";
 
-import ChangeNameInfographics from "../../Components/ChangeNameInfographics/ChangeNameInfographics.jsx";
+// Lazy load below-fold components
+const ChangeLlpPlanandPrice = React.lazy(() => import("../../Components/ChangeLlpPlanandPrice/ChangeLlpPlanandPrice"));
+const ChangeLlpTermandCondn = React.lazy(() => import("../../Components/ChangeLlpTermandCondn/ChangeLlpTermandCondn"));
+const ChangeLlpZolvitPremium = React.lazy(() => import("../../Components/ChangeLlpZolvitPremium/ChangeLlpZolvitPremium"));
+const ChangeLlpTabs = React.lazy(() => import("../../Components/ChangeLlpTabs/ChangeLlpTabs"));
+const ChangeLlpCompanyTab = React.lazy(() => import("../../Components/ChangeLlpCompanyTab/ChangeLlpCompanyTab"));
+const ChangeLlpTypes = React.lazy(() => import("../../Components/ChangeLlpTypes/ChangeLlpTypes"));
+const ChangeLlpRequirementsTab = React.lazy(() => import("../../Components/ChangeLlpRequirementsTab/ChangeLlpRequirementsTab"));
+const ChangeLlpProcess = React.lazy(() => import("../../Components/ChangeLlpProcess/ChangeLlpProcess"));
+const ChangeLlpFAQ = React.lazy(() => import("../../Components/ChangeLlpFAQ/ChangeLlpFAQ"));
+const ChangeLlpTestimonial = React.lazy(() => import("../../Components/ChangeLlpTestimonial/ChangeLlpTestimonial"));
+const ChangeLlpVideoTestimonial = React.lazy(() => import("../../Components/ChangeLlpVideoTestimonial/ChangeLlpVideoTestimonial"));
+const ChangeLlpOurClients = React.lazy(() => import("../../Components/ChangeLlpOurClients/ChangeLlpOurClients"));
+const ChangeNameInfographics = React.lazy(() => import("../../Components/ChangeNameInfographics/ChangeNameInfographics.jsx"));
 
 function LLP() {
   return (
@@ -23,33 +24,47 @@ function LLP() {
 
       {/* Plans */}
       <div id="plans">
-        <ChangeLlpPlanandPrice />
+        <Suspense fallback={<div />}>
+          <ChangeLlpPlanandPrice />
+        </Suspense>
       </div>
 
       {/* Terms & Conditions */}
-      <ChangeLlpTermandCondn/>
+      <Suspense fallback={<div />}>
+        <ChangeLlpTermandCondn/>
+      </Suspense>
 
       {/* Premium */}
       <div id="premium">
-        <ChangeLlpZolvitPremium />
+        <Suspense fallback={<div />}>
+          <ChangeLlpZolvitPremium />
+        </Suspense>
       </div>
 
       {/* Tabs */}
-      <ChangeLlpTabs />
+      <Suspense fallback={<div />}>
+        <ChangeLlpTabs />
+      </Suspense>
 
       {/* Company */}
       <div id="company">
-        <ChangeLlpCompanyTab />
+        <Suspense fallback={<div />}>
+          <ChangeLlpCompanyTab />
+        </Suspense>
       </div>
 
       {/* Types */}
       <div id="types">
-        <ChangeLlpTypes />
+        <Suspense fallback={<div />}>
+          <ChangeLlpTypes />
+        </Suspense>
       </div>
 
       {/* Requirements */}
       <div id="requirements">
-        <ChangeLlpRequirementsTab />
+        <Suspense fallback={<div />}>
+          <ChangeLlpRequirementsTab />
+        </Suspense>
       </div>
 
       {/* Process */}
@@ -57,19 +72,29 @@ function LLP() {
         {/* <ChangeLlpProcess /> */}
       </div>
        <div id="documents">
-       <ChangeNameInfographics />
+       <Suspense fallback={<div />}>
+         <ChangeNameInfographics />
+       </Suspense>
       </div>
       {/* FAQ */}
       <div id="faq">
-        <ChangeLlpFAQ />
+        <Suspense fallback={<div />}>
+          <ChangeLlpFAQ />
+        </Suspense>
       </div>
 
       {/* Testimonials */}
-      <ChangeLlpTestimonial />
-      <ChangeLlpVideoTestimonial />
+      <Suspense fallback={<div />}>
+        <ChangeLlpTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ChangeLlpVideoTestimonial />
+      </Suspense>
 
       {/* Our Clients */}
-      <ChangeLlpOurClients />
+      <Suspense fallback={<div />}>
+        <ChangeLlpOurClients />
+      </Suspense>
     </div>
   );
 }

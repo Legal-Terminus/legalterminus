@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ISObreadcrum from '../../Components/ISObreadcrum/ISObreadcrum'
-import ISOplan from '../../Components/ISOplan/ISOplan'
-import ISOtermandcondition from '../../Components/ISOtermandcondition/ISOtermandcondition'
-import ISOpremium from '../../Components/ISOpremium/ISOpremium'
-import ISOtabs from '../../Components/ISOtabs/ISOtabs'
-import ISOcompany from '../../Components/ISOcompany/ISOcompany'
-import ISOtypes from '../../Components/ISOtypes/ISOtypes'
-import ISOrequirments from '../../Components/ISOrequirments/ISOrequirments'
-import ISOprocess from '../../Components/ISOprocess/ISOprocess'
-import ISOdocument from '../../Components/ISOdocument/ISOdocument'
-import ISOfaq from '../../Components/ISOfaq/ISOfaq'
-import ISOtestimonial from '../../Components/ISOtestimonial/ISOtestimonial'
-import ISOvideo from '../../Components/ISOvideo/ISOvideo'
-import ISOclients from '../../Components/ISOclients/ISOclients'
+
+// Lazy load below-fold components
+const ISOplan = React.lazy(() => import('../../Components/ISOplan/ISOplan'))
+const ISOtermandcondition = React.lazy(() => import('../../Components/ISOtermandcondition/ISOtermandcondition'))
+const ISOpremium = React.lazy(() => import('../../Components/ISOpremium/ISOpremium'))
+const ISOtabs = React.lazy(() => import('../../Components/ISOtabs/ISOtabs'))
+const ISOcompany = React.lazy(() => import('../../Components/ISOcompany/ISOcompany'))
+const ISOtypes = React.lazy(() => import('../../Components/ISOtypes/ISOtypes'))
+const ISOrequirments = React.lazy(() => import('../../Components/ISOrequirments/ISOrequirments'))
+const ISOprocess = React.lazy(() => import('../../Components/ISOprocess/ISOprocess'))
+const ISOdocument = React.lazy(() => import('../../Components/ISOdocument/ISOdocument'))
+const ISOfaq = React.lazy(() => import('../../Components/ISOfaq/ISOfaq'))
+const ISOtestimonial = React.lazy(() => import('../../Components/ISOtestimonial/ISOtestimonial'))
+const ISOvideo = React.lazy(() => import('../../Components/ISOvideo/ISOvideo'))
+const ISOclients = React.lazy(() => import('../../Components/ISOclients/ISOclients'))
 
 const PrivateLimited = () => {
   return (
@@ -20,28 +22,42 @@ const PrivateLimited = () => {
       <ISObreadcrum />
 
       <div id="plans">
-       <ISOplan />
+       <Suspense fallback={<div />}>
+         <ISOplan />
+       </Suspense>
       </div>
 
-     <ISOtermandcondition />
+     <Suspense fallback={<div />}>
+       <ISOtermandcondition />
+     </Suspense>
 
 
       <div id="premium">
-        <ISOpremium />
+        <Suspense fallback={<div />}>
+          <ISOpremium />
+        </Suspense>
       </div>
 
-      <ISOtabs />
+      <Suspense fallback={<div />}>
+        <ISOtabs />
+      </Suspense>
 
       <div id="company">
-       <ISOcompany />
+       <Suspense fallback={<div />}>
+         <ISOcompany />
+       </Suspense>
       </div>
 
       <div id="types">
-      <ISOtypes />
+      <Suspense fallback={<div />}>
+        <ISOtypes />
+      </Suspense>
       </div>
 
       <div id="requirements">
-       <ISOrequirments />
+       <Suspense fallback={<div />}>
+         <ISOrequirments />
+       </Suspense>
       </div>
 
       <div id="process">
@@ -53,12 +69,20 @@ const PrivateLimited = () => {
       </div>
 
       <div id="faq">
-       <ISOfaq />
+       <Suspense fallback={<div />}>
+         <ISOfaq />
+       </Suspense>
       </div>
 
-     <ISOtestimonial />
-     <ISOvideo/>
-    <ISOclients />
+     <Suspense fallback={<div />}>
+       <ISOtestimonial />
+     </Suspense>
+     <Suspense fallback={<div />}>
+       <ISOvideo/>
+     </Suspense>
+    <Suspense fallback={<div />}>
+      <ISOclients />
+    </Suspense>
     </div>
   );
 };

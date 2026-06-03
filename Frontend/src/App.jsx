@@ -6,9 +6,7 @@ import Navbar from "./Components/Navbar/Navbar";
 import Footer from "./Components/Footer/Footer";
 import RouteLoaderWrapper from "./Components/PageLoader/RouteLoaderWrapper";
 import FloatIcon from "./Components/FloatIcon/FloatIcon";
-import PvtltdTestimonial from "./Components/PvtltdTestimonial/PvtltdTestimonial";
-import PvtltdVideoTestimonial from "./Components/PvtltdVideoTestimonial/PvtltdVideoTestimonial";
-import PvtltdOurclints from "./Components/PvtltdOurclints/PvtltdOurclints";
+import LazyServiceFooterSections from "./Components/LazyServiceFooterSections/LazyServiceFooterSections";
 import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
 
 const MyProfile = lazy(() => import("./Pages/MyProfile/MyProfile"));
@@ -88,42 +86,6 @@ const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
 const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
 const PrivateLimitedCopy2 = lazy(() => import("./Pages/PrivateLimitedCopy2/PrivateLimitedCopy2"));
 const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
-
-// Pages that are NOT service pages — testimonial/social proof sections are hidden here
-const NON_SERVICE_PATHS = new Set([
-  "/",
-  "/contact/us",
-  "/blog",
-  "/blog/details",
-  "/about",
-  "/media",
-  "/privacy-policy",
-  "/terms-conditions",
-  "/refund-policy",
-  "/confidentiality-policy",
-  "/policies/privacy",
-  "/policies/terms",
-  "/policies/refund",
-  "/policies/confidentiality",
-  "/login",
-  "/signup",
-  "/forgot-password",
-  "/my-profile",
-]);
-
-const isBlogPost = (pathname) => /^\/blog\/.+/.test(pathname);
-
-function ServiceFooterSections() {
-  const { pathname } = useLocation();
-  if (NON_SERVICE_PATHS.has(pathname) || isBlogPost(pathname)) return null;
-  return (
-    <>
-      <PvtltdTestimonial />
-      <PvtltdVideoTestimonial />
-      <PvtltdOurclints />
-    </>
-  );
-}
 
 // Store scroll positions keyed by location.key
 const scrollPositions = {};
@@ -256,7 +218,7 @@ function App() {
         </Suspense>
       </RouteLoaderWrapper>
 
-      <ServiceFooterSections />
+      <LazyServiceFooterSections />
       <FloatIcon />
       <Footer />
     </Router>

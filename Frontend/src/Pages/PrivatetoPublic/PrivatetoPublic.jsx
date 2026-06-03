@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import PritoPublicBreadcrum from '../../Components/PritoPublicBreadcrum/PritoPublicBreadcrum'
-import PritoPublicPlanandPricing from '../../Components/PritoPublicPlanandPricing/PritoPublicPlanandPricing'
-import PritoPublicZolvitPremium from '../../Components/PritoPublicZolvitPremium/PritoPublicZolvitPremium'
-import PritoPublicTabs from '../../Components/PritoPublicTabs/PritoPublicTabs'
-import PritoPublicCompanyTab from '../../Components/PritoPublicCompanyTab/PritoPublicCompanyTab'
-import PritoPublicPvtTypes from '../../Components/PritoPublicPvtTypes/PritoPublicPvtTypes'
-import PritoPublicRequirementsTab from '../../Components/PritoPublicRequirementsTab/PritoPublicRequirementsTab'
-import PritoPublicProcess from '../../Components/PritoPublicProcess/PritoPublicProcess'
-import PritoPublicDocument from '../../Components/PritoPublicDocument/PritoPublicDocument'
-import PritoPublicFAQ from '../../Components/PritoPublicFAQ/PritoPublicFAQ'
-import PritoPublicTermsCondition from '../../Components/PritoPublicTermsCondition/PritoPublicTermsCondition'
-import PritoPublicTestimonial from '../../Components/PritoPublicTestimonial/PritoPublicTestimonial'
-import PritoPublicVideoTestimonial from '../../Components/PritoPublicVideoTestimonial/PritoPublicVideoTestimonial'
-import PritoPublicOurclints from '../../Components/PritoPublicOurclints/PritoPublicOurcilnts'
+
+// Lazy load below-fold components
+const PritoPublicPlanandPricing = React.lazy(() => import('../../Components/PritoPublicPlanandPricing/PritoPublicPlanandPricing'))
+const PritoPublicZolvitPremium = React.lazy(() => import('../../Components/PritoPublicZolvitPremium/PritoPublicZolvitPremium'))
+const PritoPublicTabs = React.lazy(() => import('../../Components/PritoPublicTabs/PritoPublicTabs'))
+const PritoPublicCompanyTab = React.lazy(() => import('../../Components/PritoPublicCompanyTab/PritoPublicCompanyTab'))
+const PritoPublicPvtTypes = React.lazy(() => import('../../Components/PritoPublicPvtTypes/PritoPublicPvtTypes'))
+const PritoPublicRequirementsTab = React.lazy(() => import('../../Components/PritoPublicRequirementsTab/PritoPublicRequirementsTab'))
+const PritoPublicProcess = React.lazy(() => import('../../Components/PritoPublicProcess/PritoPublicProcess'))
+const PritoPublicDocument = React.lazy(() => import('../../Components/PritoPublicDocument/PritoPublicDocument'))
+const PritoPublicFAQ = React.lazy(() => import('../../Components/PritoPublicFAQ/PritoPublicFAQ'))
+const PritoPublicTermsCondition = React.lazy(() => import('../../Components/PritoPublicTermsCondition/PritoPublicTermsCondition'))
+const PritoPublicTestimonial = React.lazy(() => import('../../Components/PritoPublicTestimonial/PritoPublicTestimonial'))
+const PritoPublicVideoTestimonial = React.lazy(() => import('../../Components/PritoPublicVideoTestimonial/PritoPublicVideoTestimonial'))
+const PritoPublicOurclints = React.lazy(() => import('../../Components/PritoPublicOurclints/PritoPublicOurcilnts'))
 
 const PrivateLimited = () => {
   return (
@@ -20,45 +22,71 @@ const PrivateLimited = () => {
       <PritoPublicBreadcrum />
 
       <div id="plans">
-        <PritoPublicPlanandPricing/>
+        <Suspense fallback={<div />}>
+          <PritoPublicPlanandPricing/>
+        </Suspense>
       </div>
 
-      <PritoPublicTermsCondition />
+      <Suspense fallback={<div />}>
+        <PritoPublicTermsCondition />
+      </Suspense>
 
 
       <div id="premium">
-        <PritoPublicZolvitPremium/>
+        <Suspense fallback={<div />}>
+          <PritoPublicZolvitPremium/>
+        </Suspense>
       </div>
 
-      <PritoPublicTabs/>
+      <Suspense fallback={<div />}>
+        <PritoPublicTabs/>
+      </Suspense>
 
       <div id="company">
-        <PritoPublicCompanyTab/>
+        <Suspense fallback={<div />}>
+          <PritoPublicCompanyTab/>
+        </Suspense>
       </div>
 
       <div id="types">
-        <PritoPublicPvtTypes />
+        <Suspense fallback={<div />}>
+          <PritoPublicPvtTypes />
+        </Suspense>
       </div>
 
       <div id="requirements">
-        <PritoPublicRequirementsTab/>
+        <Suspense fallback={<div />}>
+          <PritoPublicRequirementsTab/>
+        </Suspense>
       </div>
 
       <div id="process">
-        <PritoPublicProcess/>
+        <Suspense fallback={<div />}>
+          <PritoPublicProcess/>
+        </Suspense>
       </div>
 
       <div id="documents">
-        <PritoPublicDocument />
+        <Suspense fallback={<div />}>
+          <PritoPublicDocument />
+        </Suspense>
       </div>
 
       <div id="faq">
-        <PritoPublicFAQ />
+        <Suspense fallback={<div />}>
+          <PritoPublicFAQ />
+        </Suspense>
       </div>
 
-      <PritoPublicTestimonial />
-      <PritoPublicVideoTestimonial/>
-      <PritoPublicOurclints />
+      <Suspense fallback={<div />}>
+        <PritoPublicTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <PritoPublicVideoTestimonial/>
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <PritoPublicOurclints />
+      </Suspense>
     </div>
   );
 };

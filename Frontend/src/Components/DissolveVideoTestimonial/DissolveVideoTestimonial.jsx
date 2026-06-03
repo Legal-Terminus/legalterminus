@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./DissolveVideoTestimonial.css";
 
 const videoTestimonials = [
@@ -23,6 +23,53 @@ const videoTestimonials = [
     videoUrl: "https://www.youtube.com/embed/oHg5SJYRHA0",
   },
 ];
+
+/**
+ * LazyIframe — Loads iframe only when visible to reduce initial load time
+ */
+const LazyIframe = ({ src, title }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const iframeRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { rootMargin: "50px" }
+    );
+
+    if (iframeRef.current) {
+      observer.observe(iframeRef.current);
+    }
+
+    return () => {
+      if (iframeRef.current) {
+        observer.unobserve(iframeRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div ref={iframeRef} className="Dissolve-video-testimonial-video-aspect">
+      {isVisible ? (
+        <iframe
+          className="Dissolve-video-testimonial-video"
+          src={src}
+          title={title}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      ) : (
+        <div style={{ width: "100%", paddingBottom: "56.25%", backgroundColor: "#f0f0f0" }} />
+      )}
+    </div>
+  );
+};
 
 const DissolveVideoTestimonial = () => {
   const sliderRef = useRef(null);
@@ -77,16 +124,7 @@ const DissolveVideoTestimonial = () => {
                 key={idx}
               >
                 <div className="Dissolve-video-testimonial-video-wrap">
-                  <div className="Dissolve-video-testimonial-video-aspect">
-                    <iframe
-                      className="Dissolve-video-testimonial-video"
-                      src={item.videoUrl}
-                      title={item.name}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                    />
-                  </div>
+                  <LazyIframe src={item.videoUrl} title={item.name} />
                 </div>
 
                 <h3 className="Dissolve-video-testimonial-name">

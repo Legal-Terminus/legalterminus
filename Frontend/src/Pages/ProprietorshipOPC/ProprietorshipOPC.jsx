@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ProFOPCBreadcrum from '../../Components/ProFOPCBreadcrum/ProFOPCBreadcrum'
-import ProFOPCPlanandPricing from '../../Components/ProFOPCPlanandPricing/ProFOPCPlanandPricing'
-import ProFOPCCondition from '../../Components/ProFOPCCondition/ProFOPCCondition'
-import ProFOPCZolvitPremium from '../../Components/ProFOPCZolvitPremium/ProFOPCZolvitPremium'
-import ProFOPCTabs from '../../Components/ProFOPCTabs/ProFOPCTabs'
-import ProFOPCCompanyTab from '../../Components/ProFOPCCompanyTab/ProFOPCCompanyTab'
-import ProFOPCTypes from '../../Components/ProFOPCTypes/ProFOPCTypes'
-import ProFOPCRequirementsTab from '../../Components/ProFOPCRequirementsTab/ProFOPCRequirementsTab'
-import ProFOPCProcess from '../../Components/ProFOPCProcess/ProFOPCProcess'
-import ProFOPCDocument from '../../Components/ProFOPCDocument/ProFOPCDocument'
-import ProFOPCFAQ from '../../Components/ProFOPCFAQ/ProFOPCFAQ'
-import ProFOPCTestimonial from '../../Components/ProFOPCTestimonial/ProFOPCTestimonial'
-import ProFOPCVideoTestimonial from '../../Components/ProFOPCVideoTestimonial/ProFOPCVideoTestimonial'
-import ProFOPCOurclints from '../../Components/ProFOPCOurclints/ProFOPCOurclints'
+
+// Lazy load below-fold components
+const ProFOPCPlanandPricing = React.lazy(() => import('../../Components/ProFOPCPlanandPricing/ProFOPCPlanandPricing'))
+const ProFOPCCondition = React.lazy(() => import('../../Components/ProFOPCCondition/ProFOPCCondition'))
+const ProFOPCZolvitPremium = React.lazy(() => import('../../Components/ProFOPCZolvitPremium/ProFOPCZolvitPremium'))
+const ProFOPCTabs = React.lazy(() => import('../../Components/ProFOPCTabs/ProFOPCTabs'))
+const ProFOPCCompanyTab = React.lazy(() => import('../../Components/ProFOPCCompanyTab/ProFOPCCompanyTab'))
+const ProFOPCTypes = React.lazy(() => import('../../Components/ProFOPCTypes/ProFOPCTypes'))
+const ProFOPCRequirementsTab = React.lazy(() => import('../../Components/ProFOPCRequirementsTab/ProFOPCRequirementsTab'))
+const ProFOPCProcess = React.lazy(() => import('../../Components/ProFOPCProcess/ProFOPCProcess'))
+const ProFOPCDocument = React.lazy(() => import('../../Components/ProFOPCDocument/ProFOPCDocument'))
+const ProFOPCFAQ = React.lazy(() => import('../../Components/ProFOPCFAQ/ProFOPCFAQ'))
+const ProFOPCTestimonial = React.lazy(() => import('../../Components/ProFOPCTestimonial/ProFOPCTestimonial'))
+const ProFOPCVideoTestimonial = React.lazy(() => import('../../Components/ProFOPCVideoTestimonial/ProFOPCVideoTestimonial'))
+const ProFOPCOurclints = React.lazy(() => import('../../Components/ProFOPCOurclints/ProFOPCOurclints'))
 
 
 
@@ -29,13 +31,19 @@ const ProprietorshipOPC = () => {
       <ProFOPCCondition/> 
 
        <div id="premium">
-        <ProFOPCZolvitPremium />
+        <Suspense fallback={<div />}>
+          <ProFOPCZolvitPremium />
+        </Suspense>
       </div>
 
-      <ProFOPCTabs/>
+      <Suspense fallback={<div />}>
+        <ProFOPCTabs/>
+      </Suspense>
 
       <div id="company">
-        <ProFOPCCompanyTab />
+        <Suspense fallback={<div />}>
+          <ProFOPCCompanyTab />
+        </Suspense>
       </div>
 
       <div id="types">
@@ -43,24 +51,38 @@ const ProprietorshipOPC = () => {
       </div>
 
       <div id="requirements">
-        <ProFOPCRequirementsTab />
+        <Suspense fallback={<div />}>
+          <ProFOPCRequirementsTab />
+        </Suspense>
       </div>
 
        <div id="process">
-         <ProFOPCProcess /> 
+         <Suspense fallback={<div />}>
+           <ProFOPCProcess /> 
+         </Suspense>
       </div>
 
       <div id="documents">
-         <ProFOPCDocument /> 
+         <Suspense fallback={<div />}>
+           <ProFOPCDocument /> 
+         </Suspense>
       </div>
 
        <div id="faq">
-        <ProFOPCFAQ />
+        <Suspense fallback={<div />}>
+          <ProFOPCFAQ />
+        </Suspense>
       </div>
 
-      <ProFOPCTestimonial />
-      <ProFOPCVideoTestimonial />
-      <ProFOPCOurclints />
+      <Suspense fallback={<div />}>
+        <ProFOPCTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ProFOPCVideoTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ProFOPCOurclints />
+      </Suspense>
 
     </div>
   )

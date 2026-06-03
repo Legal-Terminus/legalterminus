@@ -1,59 +1,87 @@
-import React from "react";
+import React, { Suspense } from "react";
 import SocietyBreadcrum from "../../Components/SocietyBreadcrum/SocietyBreadcrum";
-import SocietyPlanAndPricing from "../../Components/SccietyPlanAndPricing/SccietyPlanAndPricing";
-import SocietyTermsCondition from "../../Components/SocietyTermsCondition/SocietyTermsCondition";
-import SocietyPremium from "../../Components/SocietyPremium/SocietyPremium";
-import SocietyTabs from "../../Components/SocietyTabs/SocietyTabs";
-import SocietyCompanyTabs from "../../Components/SocietyCompanyTabs/SocietyCompanyTabs";
-import SocietyPvtTypes from "../../Components/SocietyPvtTypes/SocietyPvtTypes";
-import SocietyRequirementsTab from "../../Components/SocietyRequirementsTab/SocietyRequirementsTab";
-import SocietyProcess from "../../Components/SocietyProcess/SocietyProcess";
-import SocietyFAQ from "../../Components/SocietyFAQ/SocietyFAQ";
-import SocietyTestimonial from "../../Components/SocietyTestimonial/SocietyTestimonial";
-import SocietyVideoTestimonial from "../../Components/SocietyVideoTestimonial/SocietyVideoTestimonial";
-import SocietyOurClients from "../../Components/SocietyOurClients/SocietyOurClients";
-import SocietyDocument from "../../Components/SocietyDocument/SocietyDocument";
+
+// Lazy load below-fold components
+const SocietyPlanAndPricing = React.lazy(() => import("../../Components/SccietyPlanAndPricing/SccietyPlanAndPricing"));
+const SocietyTermsCondition = React.lazy(() => import("../../Components/SocietyTermsCondition/SocietyTermsCondition"));
+const SocietyPremium = React.lazy(() => import("../../Components/SocietyPremium/SocietyPremium"));
+const SocietyTabs = React.lazy(() => import("../../Components/SocietyTabs/SocietyTabs"));
+const SocietyCompanyTabs = React.lazy(() => import("../../Components/SocietyCompanyTabs/SocietyCompanyTabs"));
+const SocietyPvtTypes = React.lazy(() => import("../../Components/SocietyPvtTypes/SocietyPvtTypes"));
+const SocietyRequirementsTab = React.lazy(() => import("../../Components/SocietyRequirementsTab/SocietyRequirementsTab"));
+const SocietyProcess = React.lazy(() => import("../../Components/SocietyProcess/SocietyProcess"));
+const SocietyFAQ = React.lazy(() => import("../../Components/SocietyFAQ/SocietyFAQ"));
+const SocietyTestimonial = React.lazy(() => import("../../Components/SocietyTestimonial/SocietyTestimonial"));
+const SocietyVideoTestimonial = React.lazy(() => import("../../Components/SocietyVideoTestimonial/SocietyVideoTestimonial"));
+const SocietyOurClients = React.lazy(() => import("../../Components/SocietyOurClients/SocietyOurClients"));
+const SocietyDocument = React.lazy(() => import("../../Components/SocietyDocument/SocietyDocument"));
 const Society = () => {
   return (
     <div>
       <SocietyBreadcrum />
 
       <div id="plans">
-        {/* <SocietyPlanAndPricing /> */}
+        <Suspense fallback={<div />}>
+          {/* <SocietyPlanAndPricing /> */}
+        </Suspense>
       </div>
-      {/* <SocietyTermsCondition /> */}
+      <Suspense fallback={<div />}>
+        {/* <SocietyTermsCondition /> */}
+      </Suspense>
 
       <div id="premium">
-        <SocietyPremium />
+        <Suspense fallback={<div />}>
+          <SocietyPremium />
+        </Suspense>
       </div>
 
-      <SocietyTabs />
+      <Suspense fallback={<div />}>
+        <SocietyTabs />
+      </Suspense>
 
       <div id="company">
-        <SocietyCompanyTabs />
+        <Suspense fallback={<div />}>
+          <SocietyCompanyTabs />
+        </Suspense>
       </div>
 
       <div id="types">
-        <SocietyPvtTypes />
+        <Suspense fallback={<div />}>
+          <SocietyPvtTypes />
+        </Suspense>
       </div>
       
       <div id="requirements">
-        <SocietyRequirementsTab />
+        <Suspense fallback={<div />}>
+          <SocietyRequirementsTab />
+        </Suspense>
       </div>
 
       <div id="process">
-        {/* <SocietyProcess /> */}
+        <Suspense fallback={<div />}>
+          {/* <SocietyProcess /> */}
+        </Suspense>
       </div>
       
       <div id="documents">
-        {/* <SocietyDocument /> */}
+        <Suspense fallback={<div />}>
+          {/* <SocietyDocument /> */}
+        </Suspense>
       </div>
       <div id="faq">
-        <SocietyFAQ />
+        <Suspense fallback={<div />}>
+          <SocietyFAQ />
+        </Suspense>
       </div>
-      <SocietyTestimonial />
-      <SocietyVideoTestimonial />
-      <SocietyOurClients />
+      <Suspense fallback={<div />}>
+        <SocietyTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <SocietyVideoTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <SocietyOurClients />
+      </Suspense>
     </div>
   );
 };

@@ -29,6 +29,7 @@ logs/
 *.log
 npm-debug.log*
 yarn-error.log*
+test-output.txt
 
 # Uploads
 uploads/

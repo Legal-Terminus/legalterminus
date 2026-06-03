@@ -111,20 +111,51 @@
 
 **Always use these commands (from project root):**
 
-| Service | Build Command | Run Command | Port | Working Directory |
-|---------|---------------|------------|------|-------------------|
-| Backend | `npm run build:backend` | `npm run start:backend` | 5001 | `/backend` |
-| Frontend | `npm run build:frontend` | `npm run dev:frontend` | 5174 | `/Frontend` |
-| Portal | `npm run build:portal` | `npm run dev:portal` | 5173 | `/Portal` |
-| All Combined | `npm run build:all` | `npm run dev:all` | 5001/5173/5174 | Root |
+### Build Commands
+| Command | Purpose | Services |
+|---------|---------|----------|
+| `npm run build:all` | Build all services (backend, frontend, portal) | Backend, Frontend, Portal |
+| `npm run build:backend` | Build backend only | Backend |
+| `npm run build:frontend` | Build frontend marketing site only | Frontend |
+| `npm run build:portal` | Build portal admin app only | Portal |
 
+### Run/Dev Commands
+| Command | Purpose | Port(s) | Working Dir |
+|---------|---------|---------|-------------|
+| `npm run dev:all` | Start all services in parallel (kills existing processes first) | 5001/5173/5174 | Root |
+| `npm run start:backend` | Start backend (production mode) | 5001 | Backend |
+| `npm run dev:backend` | Start backend (development mode with hot reload) | 5001 | Backend |
+| `npm run dev:portal` | Start portal admin app | 5173 | Portal |
+| `npm run dev:portal-only` | Alias for dev:portal | 5173 | Portal |
+| `npm run dev:frontend` | Start frontend marketing site | 5174 | Frontend |
+
+### Testing Commands
+| Command | Purpose | Runs |
+|---------|---------|------|
+| `npm run test` | Run E2E tests (Playwright headless) with backend + frontend | Backend + Frontend + Tests |
+| `npm run test:headed` | Run E2E tests (Playwright visible browser) with backend + frontend | Backend + Frontend + Tests (browser visible) |
+
+### Utility Commands
+| Command | Purpose |
+|---------|---------|
+| `npm run cleanup:ports` | Kill processes on ports 5001, 5173, 5174 (useful if services hang) |
+
+### Quick Reference
 ```bash
-# From project root
-npm run build:all      # Build all services
-npm run dev:all        # Start all services in parallel
-npm run start:backend  # Backend only (5001)
-npm run dev:portal     # Portal only (5173)
-npm run dev:frontend   # Frontend only (5174)
+# Most common dev workflow
+npm run dev:all        # Start everything (backend, portal, frontend)
+
+# Individual services
+npm run start:backend  # Backend only
+npm run dev:portal     # Portal only
+npm run dev:frontend   # Frontend only
+
+# Testing
+npm run test           # Run automated E2E tests (headless)
+npm run test:headed    # Run E2E tests with visible browser
+
+# If ports are stuck
+npm run cleanup:ports  # Kill and release ports
 ```
 
 ---

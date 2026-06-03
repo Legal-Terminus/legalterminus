@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ProprietorshipBreadcrumb from '../../Components/ProprietorshipBreadcrumb/ProprietorshipBreadcrumb'
-import ProZolvitPremium from '../../Components/ProZolvitPremium/ProZolvitPremium'
-import Protabs from '../../Components/Protabs/Protabs'
-import ProCompanyTab from '../../Components/PvtltdCompanyTab/PvtltdCompanyTab'
-import ProPvtTypes from '../../Components/PvtltdPvtTypes/PvtltdPvtTypes'
-import ProRequirementsTab from '../../Components/ProRequirementsTab/ProRequirementsTab'
-import ProProcess from '../../Components/ProProcess/ProProcess'
-import ProDocument from '../../Components/ProDocument/ProDocument'
-import ProFAQ from '../../Components/ProFAQ/ProFAQ'
-import ProTermsCondition from '../../Components/ProTermsCondition/ProTermsCondition'
-import ProTestimonial from '../../Components/ProTestimonial/ProTestimonial'
-import ProVideoTestimonial from '../../Components/ProVideoTestimonial/ProVideoTestimonial'
-import ProOurclints from '../../Components/ProOurclints/ProOurclints'
-import ProPlanandPricing from '../../Components/ProPlanandPricing/ProPlanandPricing'
+
+// Lazy load below-fold components
+const ProZolvitPremium = React.lazy(() => import('../../Components/ProZolvitPremium/ProZolvitPremium'))
+const Protabs = React.lazy(() => import('../../Components/Protabs/Protabs'))
+const ProCompanyTab = React.lazy(() => import('../../Components/PvtltdCompanyTab/PvtltdCompanyTab'))
+const ProPvtTypes = React.lazy(() => import('../../Components/PvtltdPvtTypes/PvtltdPvtTypes'))
+const ProRequirementsTab = React.lazy(() => import('../../Components/ProRequirementsTab/ProRequirementsTab'))
+const ProProcess = React.lazy(() => import('../../Components/ProProcess/ProProcess'))
+const ProDocument = React.lazy(() => import('../../Components/ProDocument/ProDocument'))
+const ProFAQ = React.lazy(() => import('../../Components/ProFAQ/ProFAQ'))
+const ProTermsCondition = React.lazy(() => import('../../Components/ProTermsCondition/ProTermsCondition'))
+const ProTestimonial = React.lazy(() => import('../../Components/ProTestimonial/ProTestimonial'))
+const ProVideoTestimonial = React.lazy(() => import('../../Components/ProVideoTestimonial/ProVideoTestimonial'))
+const ProOurclints = React.lazy(() => import('../../Components/ProOurclints/ProOurclints'))
+const ProPlanandPricing = React.lazy(() => import('../../Components/ProPlanandPricing/ProPlanandPricing'))
 
 const PrivateLimited = () => {
   return (
@@ -20,45 +22,70 @@ const PrivateLimited = () => {
       <ProprietorshipBreadcrumb />
 
       <div id="plans">
-        <ProPlanandPricing />
+        <Suspense fallback={<div />}>
+          <ProPlanandPricing />
+        </Suspense>
       </div>
 
-      <ProTermsCondition/>
-
+      <Suspense fallback={<div />}>
+        <ProTermsCondition/>
+      </Suspense>
 
       <div id="premium">
-        <ProZolvitPremium />
+        <Suspense fallback={<div />}>
+          <ProZolvitPremium />
+        </Suspense>
       </div>
 
-      <Protabs />
+      <Suspense fallback={<div />}>
+        <Protabs />
+      </Suspense>
 
       <div id="company">
-        <ProCompanyTab />
+        <Suspense fallback={<div />}>
+          <ProCompanyTab />
+        </Suspense>
       </div>
 
       {/* <div id="types">
-        <ProPvtTypes/>
+        <Suspense fallback={<div />}>
+          <ProPvtTypes/>
+        </Suspense>
       </div> */}
 
       <div id="requirements">
-        <ProRequirementsTab />
+        <Suspense fallback={<div />}>
+          <ProRequirementsTab />
+        </Suspense>
       </div>
 
       {/* <div id="process">
-        <ProProcess/>
+        <Suspense fallback={<div />}>
+          <ProProcess/>
+        </Suspense>
       </div> */}
 
       {/* <div id="documents">
-        <ProDocument />
+        <Suspense fallback={<div />}>
+          <ProDocument />
+        </Suspense>
       </div> */}
 
       <div id="faq">
-        <ProFAQ/>
+        <Suspense fallback={<div />}>
+          <ProFAQ/>
+        </Suspense>
       </div>
 
-      <ProTestimonial />
-      <ProVideoTestimonial />
-      <ProOurclints />
+      <Suspense fallback={<div />}>
+        <ProTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ProVideoTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ProOurclints />
+      </Suspense>
     </div>
   );
 };

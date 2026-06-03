@@ -1,16 +1,18 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import PublictoPrivateBreadcrum from '../../Components/PublictoPrivateBreadcrum/PublictoPrivateBreadcrum'
- import PublictoPrivateRightPlan from '../../Components/PublictoPrivateRightPlan/PublictoPrivateRightPlan'
-import PublictoPriTermsCondition from '../../Components/PublictoPriTermsCondition/PublictoPriTermsCondition'
-import PublictoPriZolvitPremium from '../../Components/PublictoPriZolvitPremium/PublictoPriZolvitPremium'
-import PublictoPriTab from '../../Components/PublictoPriTab/PublictoPriTab'
-import PublictoPriOverview from '../../Components/PublictoPriOverview/PublictoPriOverview'
-import PublictoPriFeatures from '../../Components/PublictoPriFeatures/PublictoPriFeatures'
-import PublictoPriBenifits from '../../Components/PublictoPriBenifits/PublictoPriBenifits'
-import PublictoPriDocument from '../../Components/PublictoPriDocument/PublictoPriDocument'
-import PublictoPriProcess from '../../Components/PublictoPriProcess/PublictoPriProcess'
-import PublictoPriWhy from '../../Components/PublictoPriWhy/PublictoPriWhy'
-import PublictoPriFAQ from '../../Components/PublictoPriFAQ/PublictoPriFAQ'
+
+// Lazy load below-fold components
+const PublictoPrivateRightPlan = React.lazy(() => import('../../Components/PublictoPrivateRightPlan/PublictoPrivateRightPlan'))
+const PublictoPriTermsCondition = React.lazy(() => import('../../Components/PublictoPriTermsCondition/PublictoPriTermsCondition'))
+const PublictoPriZolvitPremium = React.lazy(() => import('../../Components/PublictoPriZolvitPremium/PublictoPriZolvitPremium'))
+const PublictoPriTab = React.lazy(() => import('../../Components/PublictoPriTab/PublictoPriTab'))
+const PublictoPriOverview = React.lazy(() => import('../../Components/PublictoPriOverview/PublictoPriOverview'))
+const PublictoPriFeatures = React.lazy(() => import('../../Components/PublictoPriFeatures/PublictoPriFeatures'))
+const PublictoPriBenifits = React.lazy(() => import('../../Components/PublictoPriBenifits/PublictoPriBenifits'))
+const PublictoPriDocument = React.lazy(() => import('../../Components/PublictoPriDocument/PublictoPriDocument'))
+const PublictoPriProcess = React.lazy(() => import('../../Components/PublictoPriProcess/PublictoPriProcess'))
+const PublictoPriWhy = React.lazy(() => import('../../Components/PublictoPriWhy/PublictoPriWhy'))
+const PublictoPriFAQ = React.lazy(() => import('../../Components/PublictoPriFAQ/PublictoPriFAQ'))
 
 
 
@@ -18,36 +20,58 @@ const Publicltd = () => {
   return (
     <div>
       <PublictoPrivateBreadcrum/>
-      <PublictoPrivateRightPlan />
-      <PublictoPriTermsCondition />
-      <PublictoPriZolvitPremium />
-      <PublictoPriTab />
+      <Suspense fallback={<div />}>
+        <PublictoPrivateRightPlan />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <PublictoPriTermsCondition />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <PublictoPriZolvitPremium />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <PublictoPriTab />
+      </Suspense>
 
       <div id="company">
-        < PublictoPriOverview/>
+        <Suspense fallback={<div />}>
+          < PublictoPriOverview/>
+        </Suspense>
       </div>
       
       <div id="features">
-        <PublictoPriFeatures/>
+        <Suspense fallback={<div />}>
+          <PublictoPriFeatures/>
+        </Suspense>
       </div>
 
       <div id="benefits">
-        <PublictoPriBenifits/>
+        <Suspense fallback={<div />}>
+          <PublictoPriBenifits/>
+        </Suspense>
       </div>
 
       
       <div id="documents">
-        <PublictoPriDocument/>
+        <Suspense fallback={<div />}>
+          <PublictoPriDocument/>
+        </Suspense>
       </div>
 
       <div id="process">
-        <PublictoPriProcess />
+        <Suspense fallback={<div />}>
+          <PublictoPriProcess />
+        </Suspense>
       </div>
 
-      <PublictoPriWhy />
+      <Suspense fallback={<div />}>
+        <PublictoPriWhy />
+      </Suspense>
 
       <div id="faq">
-        <PublictoPriFAQ />
+        <Suspense fallback={<div />}>
+          <PublictoPriFAQ />
+        </Suspense>
       </div>
       
 

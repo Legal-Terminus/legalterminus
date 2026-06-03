@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ReplyOfERBreadcrum from '../../Components/ReplyOfERBreadcrum/ReplyOfERBreadcrum'
-import ReplyOfERPlanandPricing from '../../Components/ReplyOfERPlanandPricing/ReplyOfERPlanandPricing'
-import ReplyOFERZolvitPremium from '../../Components/ReplyOFERZolvitPremium/ReplyOFERZolvitPremium'
-import ReplyOfERTabs from '../../Components/ReplyOfERTabs/ReplyOfERTabs'
-import ReplyOfERCompanyTab from '../../Components/ReplyOfERCompanyTab/ReplyOfERCompanyTab'
-import ReplyOfERTypes from '../../Components/ReplyOfERTypes/ReplyOfERTypes'
-import ReplyOfERTermsCondition from '../../Components/ReplyOfERTermsCondition/ReplyOfERTermsCondition'
-import ReplyOfERRequirementsTab from '../../Components/ReplyOfERRequirementsTab/ReplyOfERRequirementsTab'
-import ReplyOfERProcess from '../../Components/ReplyOfERProcess/ReplyOfERProcess'
-import ReplyOfERDocuments from '../../Components/ReplyOfERDocuments/ReplyOfERDocuments'
-import ReplyOfERFAQ from '../../Components/ReplyOfERFAQ/ReplyOfERFAQ'
-import ReplyOfERTestimonial from '../../Components/ReplyOfERTestimonial/ReplyOfERTestimonial'
-import ReplyOfERVideoTestimonial from '../../Components/ReplyOfERVideoTestimonial/ReplyOfERVideoTestimonial'
-import ReplyOfEROurclints from '../../Components/ReplyOfEROurclints/ReplyOfEROurclints'
+
+// Lazy load below-fold components
+const ReplyOfERPlanandPricing = React.lazy(() => import('../../Components/ReplyOfERPlanandPricing/ReplyOfERPlanandPricing'))
+const ReplyOFERZolvitPremium = React.lazy(() => import('../../Components/ReplyOFERZolvitPremium/ReplyOFERZolvitPremium'))
+const ReplyOfERTabs = React.lazy(() => import('../../Components/ReplyOfERTabs/ReplyOfERTabs'))
+const ReplyOfERCompanyTab = React.lazy(() => import('../../Components/ReplyOfERCompanyTab/ReplyOfERCompanyTab'))
+const ReplyOfERTypes = React.lazy(() => import('../../Components/ReplyOfERTypes/ReplyOfERTypes'))
+const ReplyOfERTermsCondition = React.lazy(() => import('../../Components/ReplyOfERTermsCondition/ReplyOfERTermsCondition'))
+const ReplyOfERRequirementsTab = React.lazy(() => import('../../Components/ReplyOfERRequirementsTab/ReplyOfERRequirementsTab'))
+const ReplyOfERProcess = React.lazy(() => import('../../Components/ReplyOfERProcess/ReplyOfERProcess'))
+const ReplyOfERDocuments = React.lazy(() => import('../../Components/ReplyOfERDocuments/ReplyOfERDocuments'))
+const ReplyOfERFAQ = React.lazy(() => import('../../Components/ReplyOfERFAQ/ReplyOfERFAQ'))
+const ReplyOfERTestimonial = React.lazy(() => import('../../Components/ReplyOfERTestimonial/ReplyOfERTestimonial'))
+const ReplyOfERVideoTestimonial = React.lazy(() => import('../../Components/ReplyOfERVideoTestimonial/ReplyOfERVideoTestimonial'))
+const ReplyOfEROurclints = React.lazy(() => import('../../Components/ReplyOfEROurclints/ReplyOfEROurclints'))
 
 const ReplyOfExaminationReport = () => {
   return (
@@ -20,44 +22,70 @@ const ReplyOfExaminationReport = () => {
       <ReplyOfERBreadcrum/>
 
       <div id="plans">
-        <ReplyOfERPlanandPricing/>
+        <Suspense fallback={<div />}>
+          <ReplyOfERPlanandPricing/>
+        </Suspense>
       </div>
 
-      <ReplyOfERTermsCondition/>
+      <Suspense fallback={<div />}>
+        <ReplyOfERTermsCondition/>
+      </Suspense>
 
       <div id="premium">
-        <ReplyOFERZolvitPremium/>
+        <Suspense fallback={<div />}>
+          <ReplyOFERZolvitPremium/>
+        </Suspense>
       </div>
 
-      <ReplyOfERTabs/>
+      <Suspense fallback={<div />}>
+        <ReplyOfERTabs/>
+      </Suspense>
 
       <div id="company">
-        <ReplyOfERCompanyTab/>
+        <Suspense fallback={<div />}>
+          <ReplyOfERCompanyTab/>
+        </Suspense>
       </div>
 
       <div id="types">
-        <ReplyOfERTypes/>
+        <Suspense fallback={<div />}>
+          <ReplyOfERTypes/>
+        </Suspense>
       </div>
 
       <div id="requirements">
-        <ReplyOfERRequirementsTab/>
+        <Suspense fallback={<div />}>
+          <ReplyOfERRequirementsTab/>
+        </Suspense>
       </div>
 
       <div id="process">
-        <ReplyOfERProcess/>
+        <Suspense fallback={<div />}>
+          <ReplyOfERProcess/>
+        </Suspense>
       </div>
 
        <div id="documents">
-        <ReplyOfERDocuments/>
+        <Suspense fallback={<div />}>
+          <ReplyOfERDocuments/>
+        </Suspense>
        </div>
 
       <div id="faq">
-        <ReplyOfERFAQ/>
+        <Suspense fallback={<div />}>
+          <ReplyOfERFAQ/>
+        </Suspense>
       </div>
 
-      <ReplyOfERTestimonial/>
-      <ReplyOfERVideoTestimonial/>
-      <ReplyOfEROurclints/>
+      <Suspense fallback={<div />}>
+        <ReplyOfERTestimonial/>
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ReplyOfERVideoTestimonial/>
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ReplyOfEROurclints/>
+      </Suspense>
     </div>
   )
 }

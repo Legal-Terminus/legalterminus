@@ -1,20 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import CICbreadcrum from '../../Components/CICbreadcrum/CICbreadcrum'
-import CICplan from '../../Components/CICplan/CICplan'
-import CICtermsconditions from '../../Components/CICtermsconditions/CICtermsconditions'
-import CICpremium from '../../Components/CICpremium/CICpremium'
-import CICtabs from '../../Components/CICtabs/CICtabs'
-import CICcompany from '../../Components/CICcompany/CICcompany'
-import CICtypes from '../../Components/CICtypes/CICtypes'
-import CICrequirment from '../../Components/CICrequirment/CICrequirment'
-import CICprocess from '../../Components/CICprocess/CICprocess'
 
-import CICdocuments from '../../Components/CICdocuments/CICdocuments'
-
-import CICfaq from '../../Components/CICfaq/CICfaq'
-import CICtestimonial from '../../Components/CICtestimonial/CICtestimonial'
-import CICvideo from '../../Components/CICvideo/CICvideo'
-import CICclients from '../../Components/CICclients/CICclients'
+// Lazy load below-fold components
+const CICplan = React.lazy(() => import('../../Components/CICplan/CICplan'))
+const CICtermsconditions = React.lazy(() => import('../../Components/CICtermsconditions/CICtermsconditions'))
+const CICpremium = React.lazy(() => import('../../Components/CICpremium/CICpremium'))
+const CICtabs = React.lazy(() => import('../../Components/CICtabs/CICtabs'))
+const CICcompany = React.lazy(() => import('../../Components/CICcompany/CICcompany'))
+const CICtypes = React.lazy(() => import('../../Components/CICtypes/CICtypes'))
+const CICrequirment = React.lazy(() => import('../../Components/CICrequirment/CICrequirment'))
+const CICprocess = React.lazy(() => import('../../Components/CICprocess/CICprocess'))
+const CICdocuments = React.lazy(() => import('../../Components/CICdocuments/CICdocuments'))
+const CICfaq = React.lazy(() => import('../../Components/CICfaq/CICfaq'))
+const CICtestimonial = React.lazy(() => import('../../Components/CICtestimonial/CICtestimonial'))
+const CICvideo = React.lazy(() => import('../../Components/CICvideo/CICvideo'))
+const CICclients = React.lazy(() => import('../../Components/CICclients/CICclients'))
 
 const PrivateLimited = () => {
   return (
@@ -22,27 +22,41 @@ const PrivateLimited = () => {
      <CICbreadcrum />
 
       <div id="plans">
-       <CICplan />
+       <Suspense fallback={<div />}>
+         <CICplan />
+       </Suspense>
       </div>
 
-      <CICtermsconditions />
+      <Suspense fallback={<div />}>
+        <CICtermsconditions />
+      </Suspense>
 
       <div id="premium">
-        <CICpremium />
+        <Suspense fallback={<div />}>
+          <CICpremium />
+        </Suspense>
       </div>
 
-      <CICtabs />
+      <Suspense fallback={<div />}>
+        <CICtabs />
+      </Suspense>
 
       <div id="company">
-       <CICcompany />
+       <Suspense fallback={<div />}>
+         <CICcompany />
+       </Suspense>
       </div>
 
       <div id="types">
-       <CICtypes />
+       <Suspense fallback={<div />}>
+         <CICtypes />
+       </Suspense>
       </div>
 
       <div id="requirements">
-       <CICrequirment />
+       <Suspense fallback={<div />}>
+         <CICrequirment />
+       </Suspense>
       </div>
 
       <div id="process">
@@ -54,12 +68,20 @@ const PrivateLimited = () => {
       </div>
 
       <div id="faq">
-       <CICfaq />
+       <Suspense fallback={<div />}>
+         <CICfaq />
+       </Suspense>
       </div>
 
-      <CICtestimonial />
-      <CICvideo />
-     <CICclients />
+      <Suspense fallback={<div />}>
+        <CICtestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <CICvideo />
+      </Suspense>
+     <Suspense fallback={<div />}>
+       <CICclients />
+     </Suspense>
     </div>
   );
 };

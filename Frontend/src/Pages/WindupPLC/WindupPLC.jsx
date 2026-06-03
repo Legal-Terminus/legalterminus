@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import WindupPLCBreadcrum from '../../Components/WindupPLCBreadcrum/WindupPLCBreadcrum';
-import WindupPLCPP from '../../Components/WindupPLCPP/WindupPLCPP';
-import WindupTC from '../../Components/WindupTC/WindupTC';
-import WindupZolvitPremium from '../../Components/WindupZolvitPremium/WindupZolvitPremium';
-import WindupPLCTabs from '../../Components/WindupPLCTabs/WindupPLCTabs';
-import WindupCompanyTab from '../../Components/WindupCompanyTab/WindupCompanyTab';
-import WindupTypes from '../../Components/WindupTypes/WindupTypes';
-import WindupPLCRequirements from '../../Components/WindupPLCRequirements/WindupPLCRequirements';
-import WindupPLCProcess from '../../Components/WindupPLCProcess/WindupPLCProcess';
-import WindupPLCFAQ from '../../Components/WindupPLCFAQ/WindupPLCFAQ';
-import WindupPLCTestimonial from '../../Components/WindupPLCTestimonial/WindupPLCTestimonial';
-import WindupPLCVideoTestimonial from '../../Components/WindupPLCVideoTestimonial/WindupPLCVideoTestimonial';
-import WindupPLCOurclints from '../../Components/WindupPLCOurclints/WindupPLCOurclints';
-import WindupPLCDocument from '../../Components/WindupPLCDocument/WindupPLCDocument';
+
+// Lazy load below-fold components
+const WindupPLCPP = React.lazy(() => import('../../Components/WindupPLCPP/WindupPLCPP'));
+const WindupTC = React.lazy(() => import('../../Components/WindupTC/WindupTC'));
+const WindupZolvitPremium = React.lazy(() => import('../../Components/WindupZolvitPremium/WindupZolvitPremium'));
+const WindupPLCTabs = React.lazy(() => import('../../Components/WindupPLCTabs/WindupPLCTabs'));
+const WindupCompanyTab = React.lazy(() => import('../../Components/WindupCompanyTab/WindupCompanyTab'));
+const WindupTypes = React.lazy(() => import('../../Components/WindupTypes/WindupTypes'));
+const WindupPLCRequirements = React.lazy(() => import('../../Components/WindupPLCRequirements/WindupPLCRequirements'));
+const WindupPLCProcess = React.lazy(() => import('../../Components/WindupPLCProcess/WindupPLCProcess'));
+const WindupPLCFAQ = React.lazy(() => import('../../Components/WindupPLCFAQ/WindupPLCFAQ'));
+const WindupPLCTestimonial = React.lazy(() => import('../../Components/WindupPLCTestimonial/WindupPLCTestimonial'));
+const WindupPLCVideoTestimonial = React.lazy(() => import('../../Components/WindupPLCVideoTestimonial/WindupPLCVideoTestimonial'));
+const WindupPLCOurclints = React.lazy(() => import('../../Components/WindupPLCOurclints/WindupPLCOurclints'));
+const WindupPLCDocument = React.lazy(() => import('../../Components/WindupPLCDocument/WindupPLCDocument'));
 
 const WindupPLC = () => {
   return (
@@ -21,45 +23,71 @@ const WindupPLC = () => {
         <WindupPLCBreadcrum/>
 
         <div id="plans">
-            <WindupPLCPP/>
+            <Suspense fallback={<div />}>
+              <WindupPLCPP/>
+            </Suspense>
         </div>
 
-        <WindupTC/>
+        <Suspense fallback={<div />}>
+          <WindupTC/>
+        </Suspense>
 
         <div id="premium">
-            <WindupZolvitPremium/>
+            <Suspense fallback={<div />}>
+              <WindupZolvitPremium/>
+            </Suspense>
         </div>
 
-        <WindupPLCTabs/>
+        <Suspense fallback={<div />}>
+          <WindupPLCTabs/>
+        </Suspense>
 
         <div id="company">
-            <WindupCompanyTab/>
+            <Suspense fallback={<div />}>
+              <WindupCompanyTab/>
+            </Suspense>
         </div>
 
         <div id="types">
-            <WindupTypes/>
+            <Suspense fallback={<div />}>
+              <WindupTypes/>
+            </Suspense>
         </div>
 
         <div id="requirements">
-            <WindupPLCRequirements/>
+            <Suspense fallback={<div />}>
+              <WindupPLCRequirements/>
+            </Suspense>
         </div>
 
         <div id="process">
-            <WindupPLCProcess/>
+            <Suspense fallback={<div />}>
+              <WindupPLCProcess/>
+            </Suspense>
         </div>
 
         <div id="documents">
-            <WindupPLCDocument/>
+            <Suspense fallback={<div />}>
+              <WindupPLCDocument/>
+            </Suspense>
         </div>
         
 
         <div id="faq">
-            <WindupPLCFAQ/>
+            <Suspense fallback={<div />}>
+              <WindupPLCFAQ/>
+            </Suspense>
         </div>
 
-        <WindupPLCTestimonial/>
-        <WindupPLCVideoTestimonial/>
-        <WindupPLCOurclints/>
+        <Suspense fallback={<div />}>
+          <WindupPLCTestimonial/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <WindupPLCVideoTestimonial/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <WindupPLCOurclints/>
+        </Suspense>
         
       
     </div>

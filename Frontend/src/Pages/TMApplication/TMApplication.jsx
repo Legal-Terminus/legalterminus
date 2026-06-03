@@ -1,18 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import TMApplicaBreadcrum from '../../Components/TMApplicaBreadcrum/TMApplicaBreadcrum'
-import TMApplicaPlanandPricing from '../../Components/TMApplicaPlanandPricing/TMApplicaPlanandPricing'
-import TMApplicaTandC from '../../Components/TMApplicaTandC/TMApplicaTandC'
-import TMApplicaZolvitPremium from '../../Components/TMApplicaZolvitPremium/TMApplicaZolvitPremium'
-import TMApplicaTabs from '../../Components/TMApplicaTabs/TMApplicaTabs'
-import TMApplicaCompanyTab from '../../Components/TMApplicaCompanyTab/TMApplicaCompanyTab'
-import TMApplicaTypes from '../../Components/TMApplicaTypes/TMApplicaTypes'
-import TMApplicaRequirementsTab from '../../Components/TMApplicaRequirementsTab/TMApplicaRequirementsTab'
-import TMApplicaProcess from '../../Components/TMApplicaProcess/TMApplicaProcess'
-import TMApplicaDocument from '../../Components/TMApplicaDocument/TMApplicaDocument'
-import TMApplicaFAQ from '../../Components/TMApplicaFAQ/TMApplicaFAQ'
-import TMApplicaTestimonial from '../../Components/TMApplicaTestimonial/TMApplicaTestimonial'
-import TMApplicaVideoTestimonial from '../../Components/TMApplicaVideoTestimonial/TMApplicaVideoTestimonial'
-import TMApplicaOurclints from '../../Components/TMApplicaOurclints/TMApplicaOurclints'
+
+// Lazy load below-fold components
+const TMApplicaPlanandPricing = React.lazy(() => import('../../Components/TMApplicaPlanandPricing/TMApplicaPlanandPricing'))
+const TMApplicaTandC = React.lazy(() => import('../../Components/TMApplicaTandC/TMApplicaTandC'))
+const TMApplicaZolvitPremium = React.lazy(() => import('../../Components/TMApplicaZolvitPremium/TMApplicaZolvitPremium'))
+const TMApplicaTabs = React.lazy(() => import('../../Components/TMApplicaTabs/TMApplicaTabs'))
+const TMApplicaCompanyTab = React.lazy(() => import('../../Components/TMApplicaCompanyTab/TMApplicaCompanyTab'))
+const TMApplicaTypes = React.lazy(() => import('../../Components/TMApplicaTypes/TMApplicaTypes'))
+const TMApplicaRequirementsTab = React.lazy(() => import('../../Components/TMApplicaRequirementsTab/TMApplicaRequirementsTab'))
+const TMApplicaProcess = React.lazy(() => import('../../Components/TMApplicaProcess/TMApplicaProcess'))
+const TMApplicaDocument = React.lazy(() => import('../../Components/TMApplicaDocument/TMApplicaDocument'))
+const TMApplicaFAQ = React.lazy(() => import('../../Components/TMApplicaFAQ/TMApplicaFAQ'))
+const TMApplicaTestimonial = React.lazy(() => import('../../Components/TMApplicaTestimonial/TMApplicaTestimonial'))
+const TMApplicaVideoTestimonial = React.lazy(() => import('../../Components/TMApplicaVideoTestimonial/TMApplicaVideoTestimonial'))
+const TMApplicaOurclints = React.lazy(() => import('../../Components/TMApplicaOurclints/TMApplicaOurclints'))
 
 const TMApplication = () => {
   return (
@@ -21,44 +23,70 @@ const TMApplication = () => {
         <TMApplicaBreadcrum/>
 
         <div id="plans">
-        <TMApplicaPlanandPricing/>
+        <Suspense fallback={<div />}>
+          <TMApplicaPlanandPricing/>
+        </Suspense>
         </div>
 
-        <TMApplicaTandC/>
+        <Suspense fallback={<div />}>
+          <TMApplicaTandC/>
+        </Suspense>
 
         <div id="premium">
-        <TMApplicaZolvitPremium/>
+        <Suspense fallback={<div />}>
+          <TMApplicaZolvitPremium/>
+        </Suspense>
         </div>
 
-        <TMApplicaTabs/>
+        <Suspense fallback={<div />}>
+          <TMApplicaTabs/>
+        </Suspense>
 
         <div id="company">
-        <TMApplicaCompanyTab/>
+        <Suspense fallback={<div />}>
+          <TMApplicaCompanyTab/>
+        </Suspense>
         </div>
 
         <div id="types">
-        <TMApplicaTypes />
+        <Suspense fallback={<div />}>
+          <TMApplicaTypes />
+        </Suspense>
         </div>
 
         <div id="requirements">
-        <TMApplicaRequirementsTab />
+        <Suspense fallback={<div />}>
+          <TMApplicaRequirementsTab />
+        </Suspense>
         </div>
 
         <div id="process">
-            <TMApplicaProcess/>
+            <Suspense fallback={<div />}>
+              <TMApplicaProcess/>
+            </Suspense>
         </div>
 
         <div id="documents">
-          <TMApplicaDocument/>
+          <Suspense fallback={<div />}>
+            <TMApplicaDocument/>
+          </Suspense>
         </div>
 
         <div id="faq">
-            <TMApplicaFAQ/>
+            <Suspense fallback={<div />}>
+              <TMApplicaFAQ/>
+            </Suspense>
         </div>
 
-        <TMApplicaTestimonial/>
-        <TMApplicaVideoTestimonial/>
-        <TMApplicaOurclints/>
+        <Suspense fallback={<div />}>
+          <TMApplicaTestimonial/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <TMApplicaVideoTestimonial/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <TMApplicaOurclints/>
+        </Suspense>
       
     </div>
   )

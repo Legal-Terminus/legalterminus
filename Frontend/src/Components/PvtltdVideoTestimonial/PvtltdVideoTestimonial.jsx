@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./PvtltdVideoTestimonial.css";
 
 const videoTestimonials = [
@@ -24,6 +24,53 @@ const videoTestimonials = [
   },
   // add more items as needed
 ];
+
+/**
+ * LazyIframe — Loads iframe only when visible to reduce initial load time
+ */
+const LazyIframe = ({ src, title }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const iframeRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { rootMargin: "50px" }
+    );
+
+    if (iframeRef.current) {
+      observer.observe(iframeRef.current);
+    }
+
+    return () => {
+      if (iframeRef.current) {
+        observer.unobserve(iframeRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div ref={iframeRef} className="vt-video-aspect">
+      {isVisible ? (
+        <iframe
+          className="vt-video"
+          src={src}
+          title={title}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        ></iframe>
+      ) : (
+        <div style={{ width: "100%", paddingBottom: "56.25%", backgroundColor: "#f0f0f0" }} />
+      )}
+    </div>
+  );
+};
 
 const VideoTestimonials = () => {
   const sliderRef = useRef(null);
@@ -67,16 +114,7 @@ const VideoTestimonials = () => {
             {videoTestimonials.map((item, idx) => (
               <article className="vt-card" key={idx}>
                 <div className="vt-video-wrap">
-                  <div className="vt-video-aspect">
-                    <iframe
-                      className="vt-video"
-                      src={item.videoUrl}
-                      title={item.name}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
+                  <LazyIframe src={item.videoUrl} title={item.name} />
                 </div>
 
                 <h3 className="vt-name">{item.name}</h3>

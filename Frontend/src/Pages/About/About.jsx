@@ -1,8 +1,6 @@
 import React from 'react'
 import './About.css'
-import DissolavePrivatesTestimonial from '../../Components/DissolvePrivateTestimonial/DissolvePrivateTestimonial'
-import DissolveVideoTestimonial from '../../Components/DissolveVideoTestimonial/DissolveVideoTestimonial'
-import DissolaveOurClients from '../../Components/DissolaveOurClients/DissolaveOurClients'
+import LazyAboutFooterSections from '../../Components/LazyAboutFooterSections/LazyAboutFooterSections'
 
 const About = () => {
   const standOutItems = [
@@ -116,13 +114,7 @@ const About = () => {
       </section>
 
       {/* Testimonials Section - Reused Component */}
-      <DissolavePrivatesTestimonial />
-
-      {/* Video Testimonials Section - Reused Component */}
-      <DissolveVideoTestimonial />
-
-      {/* Our Clients Section - Reused Component */}
-      <DissolaveOurClients />
+      <LazyAboutFooterSections />
 
       {/* CTA Section */}
       <section className="about-cta">

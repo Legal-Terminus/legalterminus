@@ -1,45 +1,61 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import TMRenewBreadcrum from '../../Components/TMRenewBreadcrum/TMRenewBreadcrum'
-import TMPlanandPricing from '../../Components/TMPlanandPricing/TMPlanandPricing'
-import TMTermandCondition from '../../Components/TMTermandCondition/TMTermandCondition'
-import TMZolvitPremium from '../../Components/TMZolvitPremium/TMZolvitPremium'
-import TMTabs from '../../Components/TMTabs/TMTabs'
-import TMCompanyTab from '../../Components/TMCompanyTab/TMCompanyTab'
-import TMRenewalTypes from '../../Components/TMRenewalTypes/TMRenewalTypes'
-import TMRequirementsTab from '../../Components/TMRequirementsTab/TMRequirementsTab'
-import TMProcess from '../../Components/TMProcess/TMProcess'
-import TMRenewalDocuments from '../../Components/TMRenewalDocuments/TMRenewalDocuments'
-import TMFAQ from '../../Components/TMFAQ/TMFAQ'
-import TMTestimonial from '../../Components/TMTestimonial/TMTestimonial'
-import TMVideoTestimonial from '../../Components/TMVideoTestimonial/TMVideoTestimonial'
-import TMOurclints from '../../Components/TMOurclints/TMOurclints'
+
+// Lazy load below-fold components
+const TMPlanandPricing = React.lazy(() => import('../../Components/TMPlanandPricing/TMPlanandPricing'))
+const TMTermandCondition = React.lazy(() => import('../../Components/TMTermandCondition/TMTermandCondition'))
+const TMZolvitPremium = React.lazy(() => import('../../Components/TMZolvitPremium/TMZolvitPremium'))
+const TMTabs = React.lazy(() => import('../../Components/TMTabs/TMTabs'))
+const TMCompanyTab = React.lazy(() => import('../../Components/TMCompanyTab/TMCompanyTab'))
+const TMRenewalTypes = React.lazy(() => import('../../Components/TMRenewalTypes/TMRenewalTypes'))
+const TMRequirementsTab = React.lazy(() => import('../../Components/TMRequirementsTab/TMRequirementsTab'))
+const TMProcess = React.lazy(() => import('../../Components/TMProcess/TMProcess'))
+const TMRenewalDocuments = React.lazy(() => import('../../Components/TMRenewalDocuments/TMRenewalDocuments'))
+const TMFAQ = React.lazy(() => import('../../Components/TMFAQ/TMFAQ'))
+const TMTestimonial = React.lazy(() => import('../../Components/TMTestimonial/TMTestimonial'))
+const TMVideoTestimonial = React.lazy(() => import('../../Components/TMVideoTestimonial/TMVideoTestimonial'))
+const TMOurclints = React.lazy(() => import('../../Components/TMOurclints/TMOurclints'))
 const TMRenewal = () => {
   return (
     <div>
       <TMRenewBreadcrum/>
 
        <div id="plans">
-        <TMPlanandPricing/>
+        <Suspense fallback={<div />}>
+          <TMPlanandPricing/>
+        </Suspense>
        </div>
         
-        <TMTermandCondition/>
+        <Suspense fallback={<div />}>
+          <TMTermandCondition/>
+        </Suspense>
 
         <div id="premium">
-            <TMZolvitPremium/>
+            <Suspense fallback={<div />}>
+              <TMZolvitPremium/>
+            </Suspense>
         </div>
 
-        <TMTabs/>
+        <Suspense fallback={<div />}>
+          <TMTabs/>
+        </Suspense>
         
         <div id="types">
-            <TMCompanyTab/>
+            <Suspense fallback={<div />}>
+              <TMCompanyTab/>
+            </Suspense>
         </div>
         
         <div id="types">
-            <TMRenewalTypes/>
+            <Suspense fallback={<div />}>
+              <TMRenewalTypes/>
+            </Suspense>
         </div>
 
         <div id="requirements">
-            <TMRequirementsTab/>
+            <Suspense fallback={<div />}>
+              <TMRequirementsTab/>
+            </Suspense>
         </div>
 
         <div id="process">
@@ -51,12 +67,20 @@ const TMRenewal = () => {
         </div>
         
         <div id="faq">
-            <TMFAQ/>
+            <Suspense fallback={<div />}>
+              <TMFAQ/>
+            </Suspense>
         </div>
 
-        <TMTestimonial/>
-        <TMVideoTestimonial/>
-        <TMOurclints/>
+        <Suspense fallback={<div />}>
+          <TMTestimonial/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <TMVideoTestimonial/>
+        </Suspense>
+        <Suspense fallback={<div />}>
+          <TMOurclints/>
+        </Suspense>
 
     </div>
   )

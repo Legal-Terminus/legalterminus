@@ -1,19 +1,20 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ChangeObjectComBreadcrum from '../../Components/ChangeObjectComBreadcrum/ChangeObjectComBreadcrum'
-import ChangeObjectComPlanandPricing from '../../Components/ChangeObjectComPlanandPricing/ChangeObjectComPlanandPricing'
-import ChangeObjectComZolvitPremium from '../../Components/ChangeObjectComZolvitPremium/ChangeObjectComZolvitPremium'
-import ChangeObjectComTabs from '../../Components/ChangeObjectComTabs/ChangeObjectComTabs'
-import ChangeObjectCompanyTab from '../../Components/ChangeObjectCompanyTab/ChangeObjectCompanyTab'
-import ChangeObjectComTypes from '../../Components/ChangeObjectComTypes/ChangeObjectComTypes'
-import ChangeObjectComRequirementsTab from '../../Components/ChangeObjectComRequirementsTab/ChangeObjectComRequirementsTab'
-import ChangeObjectComProcess from '../../Components/ChangeObjectComProcess/ChangeObjectComProcess'
 
-import ChangeObjectComFAQ from '../../Components/ChangeObjectComFAQ/ChangeObjectComFAQ'
-import ChangeObjectComTermsCondition from '../../Components/ChangeObjectComTermsCondition/ChangeObjectComTermsCondition'
-import ChangeObjectComTestimonial from '../../Components/ChangeObjectComTestimonial/ChangeObjectComTestimonial'
-import ChangeObjectComVideoTestimonial from '../../Components/ChangeObjectComVideoTestimonial/ChangeObjectComVideoTestimonial'
-import ChangeObjectComOurclints from '../../Components/ChangeObjectComOurclints/ChangeObjectComOurclints'
-import ChangeObjInfographics from '../../Components/ChangeObjInfographics/ChangeObjInfographics'
+// Lazy load below-fold components
+const ChangeObjectComPlanandPricing = React.lazy(() => import('../../Components/ChangeObjectComPlanandPricing/ChangeObjectComPlanandPricing'))
+const ChangeObjectComZolvitPremium = React.lazy(() => import('../../Components/ChangeObjectComZolvitPremium/ChangeObjectComZolvitPremium'))
+const ChangeObjectComTabs = React.lazy(() => import('../../Components/ChangeObjectComTabs/ChangeObjectComTabs'))
+const ChangeObjectCompanyTab = React.lazy(() => import('../../Components/ChangeObjectCompanyTab/ChangeObjectCompanyTab'))
+const ChangeObjectComTypes = React.lazy(() => import('../../Components/ChangeObjectComTypes/ChangeObjectComTypes'))
+const ChangeObjectComRequirementsTab = React.lazy(() => import('../../Components/ChangeObjectComRequirementsTab/ChangeObjectComRequirementsTab'))
+const ChangeObjectComProcess = React.lazy(() => import('../../Components/ChangeObjectComProcess/ChangeObjectComProcess'))
+const ChangeObjectComFAQ = React.lazy(() => import('../../Components/ChangeObjectComFAQ/ChangeObjectComFAQ'))
+const ChangeObjectComTermsCondition = React.lazy(() => import('../../Components/ChangeObjectComTermsCondition/ChangeObjectComTermsCondition'))
+const ChangeObjectComTestimonial = React.lazy(() => import('../../Components/ChangeObjectComTestimonial/ChangeObjectComTestimonial'))
+const ChangeObjectComVideoTestimonial = React.lazy(() => import('../../Components/ChangeObjectComVideoTestimonial/ChangeObjectComVideoTestimonial'))
+const ChangeObjectComOurclints = React.lazy(() => import('../../Components/ChangeObjectComOurclints/ChangeObjectComOurclints'))
+const ChangeObjInfographics = React.lazy(() => import('../../Components/ChangeObjInfographics/ChangeObjInfographics'))
 
 const PrivateLimited = () => {
   return (
@@ -21,28 +22,42 @@ const PrivateLimited = () => {
       <ChangeObjectComBreadcrum />
 
       <div id="plans">
-        <ChangeObjectComPlanandPricing />
+        <Suspense fallback={<div />}>
+          <ChangeObjectComPlanandPricing />
+        </Suspense>
       </div>
 
-      <ChangeObjectComTermsCondition/>
+      <Suspense fallback={<div />}>
+        <ChangeObjectComTermsCondition/>
+      </Suspense>
 
 
       <div id="premium">
-        <ChangeObjectComZolvitPremium />
+        <Suspense fallback={<div />}>
+          <ChangeObjectComZolvitPremium />
+        </Suspense>
       </div>
 
-      <ChangeObjectComTabs />
+      <Suspense fallback={<div />}>
+        <ChangeObjectComTabs />
+      </Suspense>
 
       <div id="company">
-        <ChangeObjectCompanyTab />
+        <Suspense fallback={<div />}>
+          <ChangeObjectCompanyTab />
+        </Suspense>
       </div>
 
       <div id="types">
-        <ChangeObjectComTypes />
+        <Suspense fallback={<div />}>
+          <ChangeObjectComTypes />
+        </Suspense>
       </div>
 
       <div id="requirements">
-        <ChangeObjectComRequirementsTab />
+        <Suspense fallback={<div />}>
+          <ChangeObjectComRequirementsTab />
+        </Suspense>
       </div>
 
       <div id="process">
@@ -50,16 +65,26 @@ const PrivateLimited = () => {
       </div>
 
       <div id="documents">
-        <ChangeObjInfographics />
+        <Suspense fallback={<div />}>
+          <ChangeObjInfographics />
+        </Suspense>
       </div>
 
       <div id="faq">
-        <ChangeObjectComFAQ/>
+        <Suspense fallback={<div />}>
+          <ChangeObjectComFAQ/>
+        </Suspense>
       </div>
 
-      <ChangeObjectComTestimonial />
-      <ChangeObjectComVideoTestimonial />
-      <ChangeObjectComOurclints />
+      <Suspense fallback={<div />}>
+        <ChangeObjectComTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ChangeObjectComVideoTestimonial />
+      </Suspense>
+      <Suspense fallback={<div />}>
+        <ChangeObjectComOurclints />
+      </Suspense>
       
     </div>
   );
