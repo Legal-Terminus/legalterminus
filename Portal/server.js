@@ -8,8 +8,13 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // Serve static files from dist
-// When Firebase rewrites /portal/** to this service, it strips /portal from the path
-// So we serve static files from root
+// Firebase Hosting forwards /portal/** to this service, preserving the full path
+// So requests arrive as /portal/assets/... and we need to strip the /portal prefix
+app.use('/portal', express.static(join(__dirname, 'dist'), {
+  maxAge: '1h',
+  etag: false,
+}));
+// Also serve without prefix for direct Cloud Run access
 app.use('/', express.static(join(__dirname, 'dist'), {
   maxAge: '1h',
   etag: false,
