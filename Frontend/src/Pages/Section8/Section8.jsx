@@ -79,14 +79,6 @@ const Section8 = () => {
       </Suspense>
     </div>
   )
-     
-      
-
-      
-      
-
-    </div>
-  )
 }
 
 export default Section8
