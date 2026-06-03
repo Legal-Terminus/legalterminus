@@ -42,8 +42,9 @@
   font-size: 48px;
   font-weight: 900;
   line-height: 1.1;
-  margin-bottom: 22px;
+  margin-bottom: 0;
   color: #ffffff;
+  text-align: left;
 }
 
 .lt-public-title span {
@@ -62,6 +63,7 @@
   text-align: left;
   font-size: 38px;
   font-weight: 900;
+  line-height: 1.1;
   margin-top: 4px;
   margin-bottom: 22px;
 }
