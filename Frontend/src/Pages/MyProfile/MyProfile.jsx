@@ -225,7 +225,7 @@ export default function MyProfile() {
                 Access the admin dashboard to manage team members, clients, and service configurations.
               </p>
               <a 
-                href={import.meta.env.VITE_PORTAL_URL || '/portal'} 
+                href="/portal" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mp-btn-primary" 

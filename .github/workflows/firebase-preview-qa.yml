@@ -187,7 +187,6 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_QA_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_QA_MEASUREMENT_ID }}
           VITE_API_BASE_URL: https://${{ secrets.FIREBASE_QA_PROJECT_ID }}.web.app
-          VITE_PORTAL_URL: ${{ steps.deploy-portal.outputs.PORTAL_URL || secrets.PORTAL_QA_URL }}
 
       - name: 🔥 Install Firebase CLI
         if: github.event.inputs.deploy_frontend == 'true' || github.event_name == 'push'
