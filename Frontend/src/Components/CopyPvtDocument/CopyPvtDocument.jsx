@@ -5,31 +5,28 @@ import { FaUser, FaBuilding, FaIdCard, FaFileAlt, FaCamera, FaBolt, FaFileContra
 const individualDocs = [
   {
     icon: <FaIdCard />,
-    title: "Identity Proof",
+    title: "Director & Subscriber Identity",
     note: "Mandatory for all directors & shareholders",
     items: [
-      "PAN Card (Mandatory for Indian Nationals)",
-      "Aadhaar Card (Indian Nationals)",
-      "Passport (Mandatory for Foreign Nationals / NRIs)",
+      "Self-attested PAN card (mandatory)",
+      "Self-attested Aadhaar",
+      "Driving Licence / Passport as ID for foreign nationals/NRI: notarized + apostilled passport copy",
     ],
   },
   {
     icon: <FaFileAlt />,
-    title: "Address Proof",
-    note: "Not older than 2 months",
+    title: "Address Proof (Per Person)",
+    note: "Not older than 60 days from filing date",
     items: [
-      "Bank Statement",
-      "Mobile Bill",
-      "Electricity Bill",
-      "Water Bill",
+      "Self-attested Bank statement OR Gas bill OR Mobile bill — not older than 60 days from filing date",
     ],
   },
   {
     icon: <FaCamera />,
-    title: "Passport Size Photograph",
+    title: "Passport Size Photograph (Per Person)",
     note: "For all proposed directors & shareholders",
     items: [
-      "Latest passport-size photograph of all Proposed Directors / Shareholders",
+      "Latest Passport-size Photograph of all Proposed Directors / Shareholders",
     ],
   },
 ];
@@ -37,20 +34,21 @@ const individualDocs = [
 const officeDocs = [
   {
     icon: <FaBolt />,
-    title: "Utility Bill for Office Address",
-    note: "Not older than 2 months",
+    title: "Registered Office Proof",
+    note: "Latest Utility Bill for Office Address (Not Older Than 2 Months)",
     items: [
       "Electricity Bill",
       "Water Bill",
       "Gas Bill",
-      "Property Tax Receipt",
     ],
   },
   {
     icon: <FaFileContract />,
-    title: "Rent Agreement",
-    note: "If premises is rented",
-    items: ["Duly Notarised Rent Agreement"],
+    title: "Rent Agreement (If Business Premises is Rented)",
+    note: "Duly notarized between property owner and a director",
+    items: [
+      "Duly Notarized Rent Agreement between the owner of the property and one of the directors of the proposed company",
+    ],
   },
   {
     icon: <FaShieldAlt />,
