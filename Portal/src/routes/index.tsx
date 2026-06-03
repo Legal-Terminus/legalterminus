@@ -38,7 +38,16 @@ import ClientDashboard from '../pages/client/DashboardPage';
 import TaskDetail from '../pages/client/TaskDetailPage';
 import Services from '../pages/client/ServicesPage';
 
-const basename = import.meta.env.MODE === 'production' && !import.meta.env.VITE_PORTAL_STANDALONE ? '/portal' : '';
+// Detect basename from current location for runtime flexibility
+// This supports both direct Cloud Run access (/) and Firebase Hosting rewrite (/portal/**)
+const getCurrentBasename = (): string => {
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/portal')) {
+    return '/portal';
+  }
+  return '';
+};
+
+const basename = getCurrentBasename();
 
 export const router = createBrowserRouter([
   { path: '/', element: <RootRedirect /> },
