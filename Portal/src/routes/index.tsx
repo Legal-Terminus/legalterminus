@@ -38,6 +38,8 @@ import ClientDashboard from '../pages/client/DashboardPage';
 import TaskDetail from '../pages/client/TaskDetailPage';
 import Services from '../pages/client/ServicesPage';
 
+const basename = import.meta.env.MODE === 'production' && !import.meta.env.VITE_PORTAL_STANDALONE ? '/portal' : '';
+
 export const router = createBrowserRouter([
   { path: '/', element: <RootRedirect /> },
   { path: '/login', element: <LoginPage /> },
@@ -107,4 +109,4 @@ export const router = createBrowserRouter([
     ],
   },
   { path: '*', element: <NotFoundPage /> },
-]);
+], { basename });
