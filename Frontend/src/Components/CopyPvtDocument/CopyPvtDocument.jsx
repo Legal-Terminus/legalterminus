@@ -126,10 +126,6 @@ const CopyPvtDocument = () => {
 
         </div>
 
-        {/* Bottom note */}
-        <p className="cpvd-bottom-note">
-          All documents should be self-attested. Foreign nationals must get documents apostilled from the competent authority.
-        </p>
 
       </div>
     </section>
