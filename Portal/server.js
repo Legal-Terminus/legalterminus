@@ -8,28 +8,24 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // Serve static files from dist
-app.use(express.static(join(__dirname, 'dist')));
+// When Firebase rewrites /portal/** to this service, it strips /portal from the path
+// So we serve static files from root
+app.use('/', express.static(join(__dirname, 'dist'), {
+  maxAge: '1h',
+  etag: false,
+}));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Handle /portal path prefix when proxied via Firebase Hosting
-app.get('/portal', (req, res) => {
-  res.sendFile(join(__dirname, 'dist', 'index.html'), (err) => {
-    if (err) {
-      console.error('Error sending index.html:', err);
-      res.status(500).send('Error loading page');
-    }
-  });
-});
-
 // SPA fallback: route all requests to index.html for client-side routing
-app.get('*', (req, res) => {
+// This handles all routes that don't match static files
+app.use((req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'), (err) => {
     if (err) {
-      console.error('Error sending index.html:', err);
+      console.error('Error sending index.html for', req.path, ':', err);
       res.status(500).send('Error loading page');
     }
   });
