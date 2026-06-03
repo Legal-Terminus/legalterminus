@@ -1,6 +1,3 @@
-/* FONT (load once for all sections) */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
-
 /* --------------------------------------------------
    OVERVIEW
 -------------------------------------------------- */
@@ -9,7 +6,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 24px 60px;
-  font-family: "Poppins", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .overview-title {
@@ -21,7 +18,7 @@
 
 .overview-text {
   font-size: 16px;
-  line-height: 1.85;
+  line-height: 29px;
   color: #374151;
   margin-bottom: 20px;
 }
@@ -42,8 +39,7 @@
 -------------------------------------------------- */
 
 .pvt-intro-section {
-  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: "Inter", sans-serif;
   background-color: #ffffff;
   padding: 64px 24px 56px;
 }
@@ -85,8 +81,9 @@
 
 .pvt-intro-text {
   margin: 0;
-  font-size: 15px;
-  line-height: 1.9;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 29px;
   color: #4b5563;
   text-align: justify;
 }
@@ -131,7 +128,7 @@
   }
 
   .pvt-intro-text {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 
@@ -145,8 +142,8 @@
   }
 
   .pvt-intro-text {
-    font-size: 13.5px;
-    line-height: 1.8;
+    font-size: 16px;
+    line-height: 29px;
   }
 }
 
@@ -155,7 +152,7 @@
 -------------------------------------------------- */
 
 .pvt-compare-section {
-  font-family: "Poppins", sans-serif;
+  font-family: "Inter", sans-serif;
   background: #ffffff;
   padding: 24px 24px 60px;
 }
@@ -174,10 +171,11 @@
 }
 
 .pvt-compare-subtitle {
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 400;
   color: #64748b;
   margin-bottom: 24px;
-  line-height: 1.7;
+  line-height: 29px;
   text-align: center;
 }
 
@@ -190,7 +188,7 @@
 .pvt-compare-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 16px;
   min-width: 600px;
 }
 
@@ -228,7 +226,9 @@
   padding: 13px 20px;
   color: #1e293b;
   vertical-align: top;
-  line-height: 1.6;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 29px;
 }
 
 .pvt-compare-table tbody td:first-child {
@@ -259,8 +259,7 @@
 -------------------------------------------------- */
 
 .companies-act-section {
-  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: "Inter", sans-serif;
   background-color: #ffffff;
   padding: 24px 24px 56px;
 }
@@ -289,16 +288,18 @@
 /* Main paragraph */
 .companies-act-text {
   margin: 0 0 18px;
-  font-size: 15px;
-  line-height: 1.9;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 29px;
   color: #4b5563;
 }
 
 /* Points (a)(b)(c) */
 .companies-act-point {
   margin: 0 0 10px;
-  font-size: 15px;
-  line-height: 1.9;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 29px;
   color: #4b5563;
 }
 
@@ -329,7 +330,7 @@
 
   .companies-act-text,
   .companies-act-point {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 

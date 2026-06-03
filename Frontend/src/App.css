@@ -10,7 +10,7 @@ body {
   background-color: #f8f9fa;
 }
 
-p, li, span, td, th, label, a, div {
+p, li, td, th, label, a {
   font-family: 'Inter', sans-serif;
   font-size: 16px;
   font-weight: 400;
@@ -19,6 +19,12 @@ p, li, span, td, th, label, a, div {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Inter', sans-serif;
+}
+
+h1 span, h2 span, h3 span, h4 span, h5 span, h6 span {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
 }
 
 .float-icons {
