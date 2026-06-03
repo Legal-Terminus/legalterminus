@@ -37,6 +37,12 @@
   letter-spacing: 0.5px;
 }
 
+/* TITLE WRAPPER — shrinks to heading's natural text width */
+.lt-title-wrapper {
+  display: table;
+  margin-bottom: 22px;
+}
+
 /* TITLE */
 .lt-public-title {
   font-size: 48px;
@@ -65,7 +71,7 @@
   font-weight: 900;
   line-height: 1.1;
   margin-top: 4px;
-  margin-bottom: 22px;
+  margin-bottom: 0;
 }
 
 /* DESCRIPTION */
