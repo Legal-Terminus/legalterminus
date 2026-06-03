@@ -3,59 +3,78 @@ import "./PvtltdFAQ.css";
 
 const faqs = [
   {
-    question: "How many people do I need to start a Private Limited Company?",
+    question: "How many directors and shareholders do I need for a Public Limited Company?",
     answer:
-      "A minimum of 2 persons are required — 2 directors and 2 shareholders (can be the same people). Maximum membership is capped at 200.",
+      "Minimum 3 directors (max 15 without special resolution) and minimum 7 subscribers / shareholders (no upper limit). Section 3(1)(a) and Section 149 of the Companies Act, 2013 govern this. Compare this to Private Limited which needs only 2 directors and 2 shareholders.",
   },
   {
-    question: "How many Directors are required?",
+    question: "Is there a minimum capital requirement to register a PLC in 2026?",
     answer:
-      "Minimum 2 directors, maximum 15 directors (extendable by special resolution). At least 1 director must be an Indian resident (must have been in India for at least 120 days in the previous financial year as per the Companies Act, 2013). Note: Earlier this was 182 days — this was amended.",
+      "No. The Companies (Amendment) Act, 2015 abolished the earlier ₹5 lakh minimum paid-up capital requirement for Public Limited Companies. You can start with any amount, but most companies choose ₹1 lakh to ₹5 lakh authorized capital based on their business needs.",
   },
   {
-    question: "Who is a Director vs. a Shareholder?",
+    question: "How long does it take to register a Public Limited Company?",
     answer:
-      "A Shareholder (also called a member/subscriber) is an owner of the company by virtue of holding shares. A Director manages the affairs of the company. The same person can be both — and often is, especially in startups.",
+      "On average, it takes 10–15 working days, depending on approvals and document accuracy. Delays usually happen due to name rejection or incorrect documents.",
   },
   {
-    question:
-      "What is the minimum capital required?",
-    answer:
-      "Zero. There is no minimum paid-up capital requirement under the Companies Act, 2013 (amended in 2015). You can technically start with ₹1 as paid-up capital. However, for practical banking and operational purposes, most companies start with ₹1 lakh authorised capital.",
+    question: "What's the difference between a Public Limited and a Private Limited Company?",
+    answer: (
+      <span>
+        Three big differences:<br />
+        (1) Min directors / subscribers — Public Limited needs 3 directors &amp; 7 shareholders; Private Limited needs 2 each.<br />
+        (2) Share transfer — PLC is free, Pvt Ltd is restricted by AOA.<br />
+        (3) Public fundraising — PLC can issue shares to the public and list on stock exchanges; Pvt Ltd cannot.
+      </span>
+    ),
   },
   {
-    question: "What are the key documents needed?",
-    answer:
-      "PAN + Aadhaar (or Passport for foreign nationals) for all directors and shareholders, office address proof (electricity/water bill not older than 2 months), and NOC from property owner if on rent.",
+    question: "Can I convert a Private Limited Company into a Public Limited Company later?",
+    answer: (
+      <span>
+        Yes. A Private Limited Company can be converted into a Public Limited Company by:
+        <ul style={{marginTop: "8px", paddingLeft: "20px"}}>
+          <li>Passing a special resolution</li>
+          <li>Amending MOA &amp; AOA</li>
+          <li>Filing required forms with MCA</li>
+        </ul>
+        The process usually takes 30–45 days.
+      </span>
+    ),
   },
   {
-    question: "How long does registration take?",
+    question: "What is SPICe+ and AGILE-PRO-S?",
     answer:
-    "Typically 7–15 working days from the date of submission of complete documents, subject to MCA/RoC processing timelines and document readiness at the client's end.",
+      "SPICe+ (INC-32) is the master incorporation form on MCA21 V3 — a single window that handles name reservation (Part A) and incorporation (Part B). AGILE-PRO-S (INC-35) is the linked form that bundles PAN, TAN, EPFO, ESIC, GST, Professional Tax, Shops & Establishment, and bank account opening. One filing, one set of forms — that's the post-2020 reform.",
   },
   {
-    question:
-      "Is the entire process online?",
+    question: "Are stamp duty charges included in the registration fees?",
     answer:
-      "Yes. 100% online via the MCA portal. No physical filing. No office visits. Just digital signatures and e-forms.",
+      "No. Stamp duty is charged separately and depends on your state and authorized capital. The exact amount is shown during filing and must be paid online.",
   },
   {
-    question:
-      "Can an NRI or Foreign National be a director or shareholder?",
+    question: "Do all 7 subscribers and 3 directors need a Digital Signature Certificate?",
     answer:
-      "Yes. NRIs and foreign nationals can be shareholders and directors in a Private Limited Company, subject to applicable Foreign Direct Investment (FDI) norms set by RBI and FEMA. However, at least 1 director must be a resident Indian (present in India for at least 120 days in the previous financial year).",
+      "Yes. All subscribers to the MOA must sign electronically using a Class 3 DSC. All directors also need DSCs to sign SPICe+, the consent letter (DIR-2) and eform-INC 9.",
   },
   {
-    question:
-      "What happens after registration?",
+    question: "What annual compliance does a PLC have to do after incorporation?",
     answer:
-      "Within 180 days of incorporation, the company must file Form INC-20A (Commencement of Business) with the RoC. Other immediate compliances include appointment of a Statutory Auditor within 30 days, opening a bank account, and holding the first Board Meeting within 30 days of incorporation. Our Supreme Plan covers these and more.",
+      "Unlisted PLC: AGM within 6 months of FY-end, Form MGT-7 (annual return), AOC-4 (financial statements), DIR-3 KYC for every director, INC-22A (ACTIVE) if not already filed, statutory audit, board meetings (4 per year minimum), and event-based filings (PAS-3, MGT-14, etc.) when triggered. Listed PLC adds quarterly results, LODR disclosures, insider trading code, related party transaction reporting — substantially heavier.",
   },
   {
-    question:
-      "What is the difference between MOA and AOA?",
-    answer:
-      "The Memorandum of Association (MOA) defines the company's relationship with the outside world — its name, registered office state, objectives, and liability clause. The Articles of Association (AOA) govern the internal management rules — director powers, meeting procedures, dividend policies, and share transfer rules.",
+    question: "How can Legal Terminus help with Public Limited Company registration?",
+    answer: (
+      <span>
+        Legal Terminus handles the complete process, including:
+        <ul style={{marginTop: "8px", paddingLeft: "20px"}}>
+          <li>Name approval and document preparation</li>
+          <li>Filing of all required forms</li>
+          <li>End-to-end coordination until Certificate of Incorporation</li>
+        </ul>
+        You also receive guidance on post-registration compliance to keep your company legally safe.
+      </span>
+    ),
   },
 ];
 
