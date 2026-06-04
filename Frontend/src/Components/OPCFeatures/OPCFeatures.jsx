@@ -5,14 +5,22 @@ const types = [
   {
     number: "01",
     title: "OPC Limited by Shares",
-    subtitle: "Most Common",
-    text: "This is the most widely used structure for a One Person Company. The owner's liability is limited only to the amount of share capital that is still unpaid. The owner holds shares to show ownership and investment in the business. This structure is best for businesses that want to earn profits and grow.",
+    text: "The default and most common structure. Member's liability is capped at the unpaid amount on shares held. Used by 95%+ of solo founders. Authorised capital typically ₹1L – ₹15L to keep stamp duty low.",
   },
   {
     number: "02",
     title: "OPC Limited by Guarantee",
-    subtitle: "Non-Profit / Social",
-    text: "Mostly used for non-profit organisations, social businesses, or professional groups. In this type, there are no shares. Instead, the owner promises to pay a fixed amount only if the company is wound up. The owner's liability is limited only to this guaranteed amount.",
+    text: "Member's liability is capped at a guarantee amount specified in the MOA, payable only on winding up. Rare in practice; relevant for member-driven not-for-profit-leaning ventures (though OPC cannot be Section 8).",
+  },
+  {
+    number: "03",
+    title: "OPC with Share Capital — Resident Indian",
+    text: "The standard format. Sole member is an Indian citizen who has stayed 120+ days in India during the preceding FY. Eligible for all OPC benefits (no AGM, MGT-7A, AOC-4 within 180 days).",
+  },
+  {
+    number: "04",
+    title: "OPC with Share Capital — NRI",
+    text: "Post-2021 amendment, NRIs holding an Indian passport can incorporate OPC. Same 120-day stay test in the preceding FY applies. FEMA / RBI reporting kicks in if foreign remittance is the source of capital.",
   },
 ];
 
@@ -27,21 +35,12 @@ const OPCFeatures = () => {
           {types.map((type) => (
             <div className="opc-features-card" key={type.number}>
               <div className="opc-features-number">{type.number}</div>
-              <h3 className="opc-features-card-title">
-                {type.title}
-                {type.subtitle && (
-                  <span className="opc-features-card-subtitle"> ({type.subtitle})</span>
-                )}
-              </h3>
+              <h3 className="opc-features-card-title">{type.title}</h3>
               <p className="opc-features-card-text">{type.text}</p>
             </div>
           ))}
         </div>
 
-        <p className="opc-features-note">
-          <strong>Note:</strong> For most solo founders and individual entrepreneurs, OPC Limited by Shares is the standard and most suitable choice. If you need guidance on the right structure,{" "}
-          <strong>Book a Free Consultation</strong> and our experts will help you decide.
-        </p>
 
       </div>
     </section>

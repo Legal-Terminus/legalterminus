@@ -11,66 +11,57 @@ const OPCBenefits = () => {
             Benefits of One Person Company Registration in India
           </h2>
           <p className="opcben-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company registration process
-            in India. It includes registering the business with the Registrar of Companies
-            (RoC) and obtaining a Digital Signature Certificate (DSC) and Director
-            Identification Number (DIN).
+            OPC isn’t just a smaller version of a Private Limited company. It’s specially designed for solo founders, with simpler rules and fewer compliances.
           </p>
         </header>
 
         {/* Cards */}
         <div className="opcben-grid">
-          {/* 1 */}
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Sole Ownership</h3>
+            <h3 className="opcben-card-title">Limited Liability for Solo Founders</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              An OPC is owned by only one person. The owner has full control and keeps all profits, with no need to take approvals from others.
+              Your personal assets — house, savings, car — are insulated from company debts. A creditor can chase the company, not you. Sole proprietorships don’t give you this protection.
             </p>
           </article>
 
-          {/* 2 */}
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Limited Liability</h3>
+            <h3 className="opcben-card-title">Separate Legal Identity</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              In OPC, the owner’s personal assets stay safe. Liability is limited only to the unpaid share capital, not personal property.
+              The OPC can sign contracts, sue and be sued, hold property, and open bank accounts in its own name. You stop being personally liable for every business contract you sign.
             </p>
           </article>
 
-          {/* 3 */}
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Easy Loan & Credit</h3>
+            <h3 className="opcben-card-title">Perpetual Succession via Nominee</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Since OPC is registered with MCA, it has better trust and can easily apply for business loans and credit facilities.
+              If something happens to you, the nominee you’ve named in INC-3 automatically takes over membership of the OPC. Sole proprietorships die with the proprietor — OPC doesn’t.
             </p>
           </article>
 
-          {/* 4 */}
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Easy Registration</h3>
+            <h3 className="opcben-card-title">Compliance Relaxations (vs Pvt Ltd)</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              OPC registration is fast and online through SPICe+ form. It reduces paperwork and saves time.
+              No AGM required (Section 96 exempts OPC). Annual return filed on MGT-7A (simpler than MGT-7). Cash flow statement not mandatory. Only 2 board meetings per year. No Company Secretary required up to ₹10cr paid-up capital.
             </p>
           </article>
 
-          {/* 5 */}
           <article className="opcben-card">
-            <h3 className="opcben-card-title">MSME Benefits</h3>
+            <h3 className="opcben-card-title">No Mandatory Conversion</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              OPCs can register under MSME and get benefits like low-interest loans, subsidies, and easier credit support.
+              Post-2021 amendment, the ₹2cr turnover / ₹50L paid-up capital trigger for forced conversion to Pvt Ltd was abolished. You can run OPC indefinitely — convert only when you’re ready (e.g., to add a co-founder).
             </p>
           </article>
 
-          {/* 6 */}
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Tax Benefits</h3>
+            <h3 className="opcben-card-title">Banking, Credit &amp; Tax Credibility</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              OPC gets company-level tax benefits and can claim deductions on business expenses, which helps reduce tax burden.
+              Banks lend more readily to OPCs than to sole proprietorships. Vendors extend longer credit terms. ITC under GST is cleanly claimable. Income tax return is straightforward (Section 115BAA new regime applies).
             </p>
           </article>
         </div>
