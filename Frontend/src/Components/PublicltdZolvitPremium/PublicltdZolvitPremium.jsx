@@ -8,87 +8,84 @@ const ZolvitPremium = () => {
       <div className="zp-container">
         <div className="zp-card">
 
-          {/* Left illustration */}
-          <div className="zp-illustration-wrapper">
-            <img
-              src={premiumIllustration}
-              alt="Private Limited Company Registration by Legal Terminus"
-              className="zp-illustration"
-            />
-          </div>
+          {/* Top two-column row: illustration + content */}
+          <div className="zp-top-row">
 
-          {/* Right content */}
-          <div className="zp-content">
+            {/* Left illustration */}
+            <div className="zp-illustration-wrapper">
+              <img
+                src={premiumIllustration}
+                alt="Public Limited Company Registration by Legal Terminus"
+                className="zp-illustration"
+              />
+            </div>
 
-            {/* Title + subtitle */}
-            <header className="zp-header">
-              <h2 className="zp-title">
-                Legal Terminus{" "}
-                <span className="zp-title-highlight">Priority</span>{" "}
-                <span className="zp-title-icon">⚖</span>
-              </h2>
-              <p className="zp-subtitle">
-                A Public Limited Company is heavier machinery than a Private Limited — 7 subscribers, 3 directors, deeper stamp duty, future-listing optics. Priority is what happens when a senior expert owns your incorporation file, front to back, with zero handoffs.
-              </p>
-            </header>
+            {/* Right content */}
+            <div className="zp-content">
 
-            {/* Features */}
-            <section className="zp-section-block">
-              <h3 className="zp-label">What you get</h3>
-              <ul className="zp-list zp-features-list">
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">⚡</span>
-                  72-hour SLA on first MOA/AOA draft — and a same-day name search before you commit.
-                </li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">🛡</span>
-                  Senior expert reviewed your documents and provide the name availability percentage.
-                </li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">🔄</span>
-                  Real-time CRC status updates on mail and WhatsApp — no refreshing the MCA portal at midnight.
-                </li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">📑</span>
-                  Post-incorporation kit: COI, MOA, AOA and compliance calendar.
-                </li>
-              </ul>
-            </section>
+              <header className="zp-header">
+                <h2 className="zp-title">
+                  Legal Terminus{" "}
+                  <span className="zp-title-highlight">Priority</span>{" "}
+                  <span className="zp-title-icon">⚖</span>
+                </h2>
+                <p className="zp-subtitle">
+                  A Public Limited Company is heavier machinery than a Private Limited — 7 subscribers, 3 directors, deeper stamp duty, future-listing optics. Priority is what happens when a senior expert owns your incorporation file, front to back, with zero handoffs.
+                </p>
+              </header>
 
-            {/* Note */}
-            <section className="zp-section-block">
-              <h3 className="zp-label">Important Notes (read before you click Pay)</h3>
-              <div className="zp-note-box">
-                <ul className="zp-note-list">
-                  <li className="zp-note-item">
-                    Name rejection is the #1 delay. Avoid generic words — follow our naming guidelines, check trademark conflicts, and have 4 backup names ready. We pre-screen, but the CRC is the final authority.
+              <section className="zp-section-block">
+                <h3 className="zp-label">What you get</h3>
+                <ul className="zp-list zp-features-list">
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">⚡</span>
+                    72-hour SLA on first MOA/AOA draft — and a same-day name search before you commit.
                   </li>
-                  <li className="zp-note-item">
-                    Registered office proof must be ≤ 60 days old. NoC from the property owner + utility bill (electricity / gas / telephone bill) — not a rent receipt. Co-working spaces need a service agreement plus the operator's NoC.
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">✅</span>
+                    Senior expert reviewed your documents and provide the name availability percentage.
                   </li>
-                  <li className="zp-note-item">
-                    All 7 subscribers and 3 directors need active DSCs and Aadhaar-linked mobiles. If any subscriber is an NRI / foreign national, expect a 5–7 day extension for apostille / notarisation.
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">🔄</span>
+                    Real-time CRC status updates on mail and WhatsApp — no refreshing the MCA portal at midnight.
                   </li>
-                  <li className="zp-note-item">
-                    INC-20A (commencement of business) must be filed within 180 days of incorporation. Skipping these blocks the PLC from operating bank accounts and triggers ₹10,000 penalties.
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">📑</span>
+                    Post-incorporation kit: COI, MOA, AOA and compliance calendar.
                   </li>
                 </ul>
-              </div>
-            </section>
+              </section>
 
-            {/* CTA */}
+            </div>
+          </div>
+
+          {/* Full-width bottom: Important Notes + CTA */}
+          <div className="zp-bottom-full">
+            <h3 className="zp-label">Important Notes</h3>
+            <div className="zp-note-box">
+              <ul className="zp-note-list">
+                <li className="zp-note-item">
+                  Name rejection is the #1 delay. Avoid generic words — follow our naming guidelines, check trademark conflicts, and have 4 backup names ready. We pre-screen, but the CRC is the final authority.
+                </li>
+                <li className="zp-note-item">
+                  Registered office proof must be ≤ 60 days old. NoC from the property owner + utility bill (electricity / gas / telephone bill) — not a rent receipt. Co-working spaces need a service agreement plus the operator's NoC.
+                </li>
+                <li className="zp-note-item">
+                  All 7 subscribers and 3 directors need active DSCs and Aadhaar-linked mobiles. If any subscriber is an NRI / foreign national, expect a 5–7 day extension for apostille / notarisation.
+                </li>
+                <li className="zp-note-item">
+                  INC-20A (commencement of business) must be filed within 180 days of incorporation. Skipping these blocks the PLC from operating bank accounts and triggers ₹10,000 penalties.
+                </li>
+              </ul>
+            </div>
+
             <div className="zp-cta-row">
               <button className="zp-cta-btn">
                 Consult a Legal Expert
               </button>
             </div>
-
-            {/* Pricing
-            <p className="zp-pricing">
-              <span className="zp-label">Starts from ₹3,999 (excluding government fees)</span> for Private Limited Company Registration in India.{" "}The package includes name approval, incorporation, DIN for two directors, e-PAN, e-TAN, and bank account documents. Also covers auditor appointment documents, EPF and ESI registrations.
-              </p> */}
-
           </div>
+
         </div>
       </div>
     </section>
