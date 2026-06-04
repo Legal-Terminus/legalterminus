@@ -5,26 +5,38 @@ const types = [
   {
     number: "01",
     title: "Listed Public Company",
-    subtitle: "Stock Exchange",
-    text: "These companies are registered on a stock exchange like BSE or NSE. People can buy and sell their shares during market hours. They must follow strict rules set by SEBI and other market authorities.",
+    subtitle: "IPO / Exchange-Traded",
+    text: "Shares listed on NSE / BSE or another SEBI-recognised exchange. Bound by SEBI (LODR) Regulations on top of the Companies Act. The 'gold standard' structure for IPO-bound businesses.",
   },
   {
     number: "02",
     title: "Unlisted Public Company",
-    subtitle: "Privately Held",
-    text: "These companies are not registered on a stock exchange. Their shares are not available for public trading. They can still issue shares to investors, but only in a limited or private way.",
+    subtitle: "Pre-IPO / Private PLC",
+    text: "Same PLC structure, no exchange listing. Most common starting point — gives you the 7-subscriber / 3-director template without the SEBI compliance overhead. Conversion to Listed via IPO at any time.",
   },
   {
     number: "03",
-    title: "Government Public Company",
-    subtitle: "State / Central Owned",
-    text: "In this type, the Central or State Government owns at least 51% of the company. Many government-owned enterprises and Public Sector Undertakings (PSUs) come under this category.",
+    title: "Government Company",
+    subtitle: "PSU / State-Owned",
+    text: "Public Sector Undertaking (PSU) where ≥ 51% of paid-up share capital is held by the Central / State Government or jointly. Defined under Section 2(45). Subject to CAG audit and special governance norms.",
   },
   {
     number: "04",
-    title: "Section 8 Company",
-    subtitle: "Non-Profit / Social Purpose",
-    text: "A Section 8 company is a non-profit entity created for social or charitable purposes like education, healthcare, or welfare. It can be registered as a public company, but its primary goal is service, not profit.",
+    title: "Foreign Subsidiary Public Company",
+    subtitle: "FDI / FEMA Governed",
+    text: "An Indian PLC where ≥ 50% of share capital is held by a foreign body corporate. Treated as 'Indian' for Companies Act purposes but triggers FEMA, RBI FDI reporting (FC-GPR), and transfer pricing compliance.",
+  },
+  {
+    number: "05",
+    title: "Holding Public Company",
+    subtitle: "Parent Entity",
+    text: "A PLC that controls (≥ 50% voting / board control) one or more subsidiary companies. Requires consolidated financials, related-party-transaction disclosure under Section 188, and a longer audit perimeter.",
+  },
+  {
+    number: "06",
+    title: "Statutory Public Company",
+    subtitle: "Act of Parliament",
+    text: "Created by a special Act of Parliament or State Legislature (e.g., LIC, RBI, IRCTC pre-listing). Governance is a hybrid of the parent statute + Companies Act. Rare; mostly relevant for legacy public sector reforms.",
   },
 ];
 
