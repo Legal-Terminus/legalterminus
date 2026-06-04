@@ -18,28 +18,28 @@ const Breadcrum = () => {
             One Person Company (OPC) Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Reliable, Compliant &amp; 100% Transparent</span>
+            <span className="lt-title-tagline">Simple, Fast &amp; 100% Online</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus can assist you with the one person company (OPC) registration in India. We ensure a hassle-free process completed within a reasonable timeframe, with competitive professional fees starting from Rs. 3,999/-.
+            Turn your solo business idea into a legally recognized company. Legal Terminus manages your complete One Person Company (OPC) registration — from name approval to Certificate of Incorporation — so you can focus on growing your business with confidence. Our professional fee starts at ₹4,999 + GST. Government fees, stamp duty, and DSC charges are billed separately at actuals. No partner. No padding. No surprises.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Single Owner Structure</div>
-            <div className="lt-feature-item"> Separate Legal Entity</div>
-            <div className="lt-feature-item"> Limited Liability Protection</div>
-            <div className="lt-feature-item"> Suitable for Small Business / Solo Founder</div>
+            <div className="lt-feature-item">Only 1 Director and shareholder Required</div>
+            <div className="lt-feature-item">Separate Legal Identity</div>
+            <div className="lt-feature-item">Limited Liability Protection</div>
+            <div className="lt-feature-item">Ideal for Solo Entrepreneurs</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <h3>800+</h3>
+              <p>OPCs incorporated</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Process</p>
+              <h3>100% Online</h3>
+              <p>MCA21 V3 + Aadhaar e-KYC</p>
             </div>
             <div>
               <h3>7+</h3>
