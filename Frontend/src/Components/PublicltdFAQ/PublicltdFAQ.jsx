@@ -3,49 +3,78 @@ import "./PublicltdFAQ.css";
 
 const FAQ_ITEMS = [
   {
-    question: "How many persons are required to form a Public Limited company?",
+    question: "How many directors and shareholders do I need for a Public Limited Company?",
     answer:
-      "Minimum Seven persons are required to form a Public Limited Company and there is no maximum limit to it.",
+      "Minimum 3 directors (max 15 without special resolution) and minimum 7 subscribers / shareholders (no upper limit). Section 3(1)(a) and Section 149 of the Companies Act, 2013 govern this. Compare this to Private Limited which needs only 2 directors and 2 shareholders.",
   },
   {
-    question: "How many Directors are required to form a Public Limited company?",
+    question: "Is there a minimum capital requirement to register a PLC in 2026?",
     answer:
-      "Minimum three directors are required in a Public Limited Company, with an upper cap of 15 directors.",
+      "No. The Companies (Amendment) Act, 2015 abolished the earlier ₹5 lakh minimum paid-up capital requirement for Public Limited Companies. You can start with any amount, but most companies choose ₹1 lakh to ₹5 lakh authorized capital based on their business needs.",
   },
   {
-    question: "Who are Directors of the company?",
+    question: "How long does it take to register a Public Limited Company?",
     answer:
-      "Directors are officers of the company who are responsible for managing the company and making decisions as to its operation on a day-to-day basis, for the benefit of the shareholders.",
+      "On average, it takes 10–15 working days, depending on approvals and document accuracy. Delays usually happen due to name rejection or incorrect documents.",
   },
   {
-    question: "What is a company shareholder?",
-    answer:
-      "Shareholders are the owners of companies limited by shares. They are also called 'members' and they agree to become part of a company by taking a minimum of one share in it. The quantity of shares held by each person represents how much of the business they own.",
+    question: "What's the difference between a Public Limited and a Private Limited Company?",
+    answer: (
+      <span>
+        Three big differences:<br />
+        (1) Min directors / subscribers — Public Limited needs 3 directors &amp; 7 shareholders; Private Limited needs 2 each.<br />
+        (2) Share transfer — PLC is free, Pvt Ltd is restricted by AOA.<br />
+        (3) Public fundraising — PLC can issue shares to the public and list on stock exchanges; Pvt Ltd cannot.
+      </span>
+    ),
   },
   {
-    question: "How much capital is required to incorporate a Public Limited Company?",
-    answer:
-      "A Public Limited Company can be incorporated with a minimum Authorised and paid-up capital of Rs. 5,00,000/-. There is no upper limit; however, ROC fees vary with an increase in Authorised Capital.",
+    question: "Can I convert a Private Limited Company into a Public Limited Company later?",
+    answer: (
+      <span>
+        Yes. A Private Limited Company can be converted into a Public Limited Company by:
+        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
+          <li>Passing a special resolution</li>
+          <li>Amending MOA &amp; AOA</li>
+          <li>Filing required forms with MCA</li>
+        </ul>
+        The process usually takes 30–45 days.
+      </span>
+    ),
   },
   {
-    question: "What are the key documents required for Public Limited Company Registration?",
+    question: "What is SPICe+ and AGILE-PRO-S?",
     answer:
-      "Key documents include: PAN Card, ID Proof (Passport / Voter ID / Aadhaar / Driving Licence), Address Proof (Telephone/Mobile Bill / Bank Statement), Passport-size photographs of all proposed directors & shareholders, Rent Agreement and Electricity Bill for the registered office, and an NOC from the property owner. All utility bills/bank statements must be less than 2 months old.",
+      "SPICe+ (INC-32) is the master incorporation form on MCA21 V3 — a single window that handles name reservation (Part A) and incorporation (Part B). AGILE-PRO-S (INC-35) is the linked form that bundles PAN, TAN, EPFO, ESIC, GST, Professional Tax, Shops & Establishment, and bank account opening. One filing, one set of forms — that's the post-2020 reform.",
   },
   {
-    question: "What is the procedure to register a Public Limited Company?",
+    question: "Are stamp duty charges included in the registration fees?",
     answer:
-      "The broad process involves: (1) Submission of documents, (2) Validating and processing the documents, (3) Filing of application for name reservation, (4) Preparation of DSCs and incorporation documents, (5) Uploading final forms to MCA portal with applicable fees, and (6) Issuance of the Certificate of Incorporation.",
+      "No. Stamp duty is charged separately and depends on your state and authorized capital. The exact amount is shown during filing and must be paid online.",
   },
   {
-    question: "What is the time period for incorporating a Public Limited Company?",
+    question: "Do all 7 subscribers and 3 directors need a Digital Signature Certificate?",
     answer:
-      "The process of incorporating a Public Limited Company can take anywhere between 15 to 20 working days, subject to submission of correct information and complete documentation.",
+      "Yes. All subscribers to the MOA must sign electronically using a Class 3 DSC. All directors also need DSCs to sign SPICe+, the consent letter (DIR-2) and eform-INC 9.",
   },
   {
-    question: "How can Legal Terminus help incorporate a Public Limited Company?",
+    question: "What annual compliance does a PLC have to do after incorporation?",
     answer:
-      "Legal Terminus can help you with the incorporation of a Public Limited Company in a hassle-free manner within a reasonable time span and for a competitive professional fee. To know more, book a free telephonic appointment with one of our consultants.",
+      "Unlisted PLC: AGM within 6 months of FY-end, Form MGT-7 (annual return), AOC-4 (financial statements), DIR-3 KYC for every director, INC-22A (ACTIVE) if not already filed, statutory audit, board meetings (4 per year minimum), and event-based filings (PAS-3, MGT-14, etc.) when triggered. Listed PLC adds quarterly results, LODR disclosures, insider trading code, related party transaction reporting — substantially heavier.",
+  },
+  {
+    question: "How can Legal Terminus help with Public Limited Company registration?",
+    answer: (
+      <span>
+        Legal Terminus handles the complete process, including:
+        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
+          <li>Name approval and document preparation</li>
+          <li>Filing of all required forms</li>
+          <li>End-to-end coordination until Certificate of Incorporation</li>
+        </ul>
+        You also receive guidance on post-registration compliance to keep your company legally safe.
+      </span>
+    ),
   },
 ];
 
