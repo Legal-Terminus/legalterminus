@@ -3,32 +3,44 @@ import "./PublicltdProcess.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
-    text: "Provision of requisite documents/information to us (As per the checklist to be provided by us)",
+    title: "Discovery & Structuring Call",
+    text: "60-min call with our expert to confirm subscribers (7 minimum), directors (3 minimum), state of registered office, authorised + paid-up capital, and primary business activity. We map you to NIC code and pre-screen 4 name options. Day 0.",
   },
   {
-    title: "Step 2 – Company Name & Objects Finalization",
-    text: "Finalisation of Objects along with Name of the proposed company (Name shall be finalised on the basis of a search report duly conducted & provided by our team)",
+    title: "Document Submission & DSC Procurement",
+    text: "Share KYC documents and registered office address proof with us (as per checklist). This is your only job at the start — we handle everything from here. Class 3 Digital Signature Certificates issued to all 3 directors and all 7 subscribers via Aadhaar e-KYC. Same-day for resident Indians; 3–5 days for NRIs / foreign nationals (apostille documents required). Day 1–3.",
   },
   {
-    title: "Step 3 – Name Reservation Application",
-    text: "Filing of Application for Name Reservation in requisite e-form along with applicable government fees",
+    title: "Company Name & Objects Finalisation",
+    text: "We run a preliminary name availability check and help you finalise your company name and business objects (what your company will do). The name must comply with MCA naming guidelines and must not conflict with existing registered companies, LLPs, or trademarks.",
   },
   {
-    title: "Step 4 – Digital Signature Certificates",
-    text: "Preparation of requisite numbers of DSC with respect to the proposed Promoters & Directors and Registration of DSC in MCA Portal",
+    title: "SPICe+ Part A — Name Reservation",
+    text: "Filed with 2 proposed names (in order of preference) through MCA21 V3. CRC reviews under Rule 8 of the Companies (Incorporation) Rules. Approval: 2–3 working days typical. Reserved name valid for 20 days. Day 4–6.",
   },
   {
-    title: "Step 5 – Incorporation Document Preparation",
-    text: "Preparation of further incorporation documents upon receipt of name approval letter from the department",
+    title: "MOA & AOA Drafting",
+    text: "Memorandum of Association (object clause + capital + state) and Articles of Association (governance, share transfer, board powers, ESOP enablement) drafted. Two rounds of revision included. Day 4–7.",
   },
   {
-    title: "Step 6 – Final Form Upload and Fee Payment",
-    text: "Uploading of Final Incorporation Forms to the MCA portal along with applicable government fees",
+    title: "SPICe+ Part B + AGILE-PRO-S Filing",
+    text: "Master incorporation form filed: PAN, TAN, EPFO, ESIC, GSTIN, Professional Tax, Bank Account, Shops & Establishment — all in one shot via INC-32 + INC-33 + INC-34 + INC-35. Day 8.",
   },
   {
-    title: "Step 7 – Registration Certificate Issuance",
-    text: "Processing of the application by the department and issuance of registration certificate",
+    title: "Stamp Duty Payment",
+    text: "State-specific stamp duty paid on MOA + AOA via the integrated SPICe+ workflow. Rates vary by state and authorised capital — paid through online portal, not physical paper anymore. Day 7.",
+  },
+  {
+    title: "CRC Examination & Clarifications",
+    text: "CRC reviews under Rule 12. If a deficiency is raised (e.g., minor MOA wording), we file a re-submission within 24 hours. Day 8–12.",
+  },
+  {
+    title: "Certificate of Incorporation Issued",
+    text: "COI issued by CRC under Section 7(2). PAN and TAN allotted simultaneously. CIN (Corporate Identification Number) generated. Day 10–13.",
+  },
+  {
+    title: "Post-Incorporation Onboarding",
+    text: "We deliver: COI, MOA, AOA stamped copies, PAN, TAN, EPF and ESI. Post-Incorporation Onboarding kit includes: share certificate templates, statutory registers, first board meeting agenda + minutes draft, INC-20A (commencement of business) filing reminder, and a 90-day compliance calendar. Day 13–15.",
   },
 ];
 
@@ -39,7 +51,7 @@ const GSTProcess = () => {
         Steps For Public Limited Company Registration in India
       </h2>
       <p className="pv-gst-subheading">
-        The broad process of registering a Public Limited company involves the following steps:
+        From your first call to Certificate of Incorporation — here's exactly what happens, step by step.
       </p>
 
       <div className="pv-timeline">
