@@ -58,20 +58,6 @@
   transform: translateY(-3px);
 }
 
-.req-grid--wide {
-  max-width: 1200px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.req-step-number {
-  font-size: 42px;
-  font-weight: 800;
-  color: rgba(27, 179, 58, 0.18);
-  line-height: 1;
-  margin-bottom: 14px;
-  letter-spacing: -1px;
-}
-
 .req-card-title {
   font-size: 17px;
   font-weight: 600;
