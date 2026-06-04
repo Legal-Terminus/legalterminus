@@ -11,71 +11,57 @@ const RequirementsPvt = () => {
             Benefits of Public Limited Company Registration in India
           </h2>
           <p className="req-subtitle">
-            A Public Limited Company is best for big businesses that want to grow fast and reach more customers, even in other countries. It has many benefits for owners, investors, and the business.
+            PLC isn't just a bigger version of Private Limited. It's a fundamentally different fundraising and credibility instrument. The benefits compound the moment you start raising real capital.
           </p>
         </header>
 
         {/* Cards */}
         <div className="req-grid">
-          {/* 1 */}
           <article className="req-card">
-            <h3 className="req-card-title">Easy to Raise Large Funds</h3>
+            <h3 className="req-card-title">Raise from the Public</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-             A public limited company can raise money by selling shares to the public. If the company is listed on the stock market, it can collect a large amount of funds.
+              Only a PLC can run an IPO, FPO, rights issue, or QIP. Even pre-listing, the PLC structure unlocks private placement to up to 200 investors per financial year — vs Pvt Ltd's hard cap of 200 lifetime members.
             </p>
           </article>
 
-          {/* 2 */}
           <article className="req-card">
-            <h3 className="req-card-title">More Shareholders = Less Risk</h3>
+            <h3 className="req-card-title">Free Transferability of Shares</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              A public limited company can have many shareholders. This means the business risk is not on one person—it is shared among many owners.
+              PLC shares are freely transferable by default under Section 58 — no AOA restrictions. Investors love this. Pvt Ltd shares are restricted by AOA; transfer requires board / shareholder consent.
             </p>
           </article>
 
-          {/* 3 */}
           <article className="req-card">
-            <h3 className="req-card-title">
-              More Ways to Get Money
-            </h3>
+            <h3 className="req-card-title">Perpetual Succession &amp; Limited Liability</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Apart from shares, a public limited company can also raise money through loans and other funding options. It becomes easier because the company is seen as more trustworthy.
+              The company is a separate legal person. Founders' personal assets are insulated; the entity survives directors / shareholders coming and going. This is table stakes for any funded business.
             </p>
           </article>
 
-          {/* 4 */}
           <article className="req-card">
-            <h3 className="req-card-title">
-              Higher Trust and Strong Image
-            </h3>
+            <h3 className="req-card-title">Institutional Credibility</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Public limited companies look more professional and established. This increases trust among customers, investors, banks, and business partners. Also, more people know about the company which helps in branding.
+              Banks lend more, vendors extend longer credit, and global enterprise customers onboard faster with a PLC vendor. The structure itself communicates scale and governance maturity.
             </p>
           </article>
 
-          {/* 5 */}
           <article className="req-card">
-            <h3 className="req-card-title">
-              Easy Share Transfer
-            </h3>
+            <h3 className="req-card-title">ESOP &amp; Sweat Equity Friendly</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Shares can be transferred easily in a public limited company. There are fewer restrictions compared to private companies.
+              PLC AOAs cleanly accommodate ESOP pools, sweat equity (Section 54), and preferential allotments. Critical when you start hiring from late-stage startups and need competitive equity packages.
             </p>
           </article>
 
-          {/* 4 */}
           <article className="req-card">
-            <h3 className="req-card-title">
-              Better Ideas and Support
-            </h3>
+            <h3 className="req-card-title">Listing Optionality</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Since there are many shareholders, the company can get new ideas, opinions, and support from people with different experience and knowledge.
+              Going from Pvt Ltd to Listed is a two-step conversion (Pvt Ltd → PLC → IPO). Starting as PLC saves 6–9 months and ₹3–8L in conversion costs when you decide to list.
             </p>
           </article>
         </div>

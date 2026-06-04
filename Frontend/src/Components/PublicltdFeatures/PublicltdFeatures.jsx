@@ -57,10 +57,6 @@ const PublicltdFeatures = () => {
           ))}
         </div>
 
-        <p className="pub-types-note">
-          <strong>Note:</strong> For most businesses, a Listed Public Company is chosen when they plan to raise funds from the public through the stock exchange. If you need guidance on the right structure,{" "}
-          <strong>Book a Free Consultation</strong> and our experts will help you decide.
-        </p>
 
       </div>
     </section>
