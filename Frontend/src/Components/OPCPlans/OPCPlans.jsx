@@ -2,141 +2,130 @@ import { useState } from "react";
 import "./OPCPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
-
 const PLANS = [
-  { id: "elemental", name: "Elemental", price: 3999, services: [] },
-  { id: "enriched", name: "Enriched", price: 5999, services: [] },
-  { id: "supreme", name: "Supreme", price: 24999, services: [] }
+  {
+    id: "elemental",
+    name: "Elemental",
+    oldPrice: 6499,
+    price: 4999,
+    services: [
+      "Name Availability Search Report",
+      "SPICe+ Part A name reservation (2 attempts)",
+      "DIN application for up to 3 directors (via SPICe+)",
+      "MOA & AOA drafting (standard template)",
+      "Nominee onboarding + INC-3 consent drafting",
+      "SPICe+ Part B + AGILE-PRO-S filing",
+      "Certificate of Incorporation (COI) delivery",
+      "e-PAN & e-TAN",
+      "e-MOA & e-AOA",
+      "Bank Account Opening Docs",
+      "1st Auditor Appointment Docs",
+      "EPF & ESI Registration",
+    ],
+  },
+  {
+    id: "enriched",
+    name: "Enriched",
+    badge: "★ MOST POPULAR",
+    popular: true,
+    oldPrice: 11999,
+    price: 8999,
+    services: [
+      "Everything in Elemental",
+      "Share Certificate (Form SH-1)",
+      "Commencement of Business (Form INC-20A)",
+      "UDYAM / MSME Registration",
+    ],
+  },
+  {
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ FULL-SERVICE",
+    oldPrice: 26999,
+    price: 24999,
+    services: [
+      "Everything in Enriched",
+      "Statutory Registers Pack (Members, Directors, Charges)",
+      "Trademark search + Class application (1 class, govt fee extra)",
+      "Income Tax Filing (Company)",
+      "Directors' Report Preparation",
+      "Annual Return (MGT-7)",
+      "Financial Statements (AOC-4)",
+      "Auditor Appointment in 1st AGM (ADT-1)",
+      "Preparation of Documents regarding AGM/BM Notice, Minutes & Extracts",
+      "DPT-3 (if applicable) for 1st FY",
+      "MSME-1 (if applicable) for 1st FY",
+      "DIR KYC of Director",
+      "Income Tax Filing of Director",
+      "Startup India / DPIIT registration assistance",
+      "First-year ROC compliance calendar + e-filing setup",
+    ],
+  },
 ];
 
 const OPCPlan = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
-
     <>
-    <section className="opc-pricing-section">
-      <div className="opcpricing-container">
-        
-        {/* Upper part */}
-        <header className="opcpricing-header">
-          <h2 className="opcpricing-title">CHOOSE YOUR PLAN</h2>
-          <p className="opcpricing-subtitle">
-            Register your OPC with pocket-friendly prices
-          </p>
-        </header>
+      <section className="opc-pricing-section">
+        <div className="opcpricing-container">
 
-        {/* Cards */}
-        <div className="opcpricing-cards">
+          <header className="opcpricing-header">
+            <h2 className="opcpricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="opcpricing-subtitle">
+              Register your OPC with pocket-friendly prices
+            </p>
+          </header>
 
-          {/* Elemental */}
-          <article className="opcplan-card">
-            <div>
-              <div className="opcplan-header">
-                <div className="opcplan-name">Elemental</div>
-                <div className="opcplan-old-price">₹5,999</div>
-                <div className="opcplan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
-                <div className="opcplan-meta">Excluding gov fee</div>
-              </div>
+          <div className="opcpricing-cards">
+            {PLANS.map((plan) => (
+              <article
+                key={plan.id}
+                className={`opcplan-card${plan.popular ? " opcplan-card--popular" : ""}`}
+              >
+                <div>
+                  <div className="opcplan-header">
+                    {plan.badge && (
+                      <div className={`opcplan-badge${plan.popular ? " opcplan-badge--popular" : ""}`}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    <div className="opcplan-name">{plan.name}</div>
+                    <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
+                  </div>
 
-              <div className="opcplan-body">
-                <ul className="opcplan-list">
-                  <li className="opcplan-list-item">1 RUN Name Approval Certificate</li>
-                  <li className="opcplan-list-item">DIN for 1 Individuals</li>
-                  <li className="opcplan-list-item">Certificate of Incorporation</li>
-                  <li className="opcplan-list-item">E-PAN</li>
-                  <li className="opcplan-list-item">E-TAN</li>
-                  <li className="opcplan-list-item">E-MOA</li>
-                  <li className="opcplan-list-item">E-AOA</li>
-                  <li className="opcplan-list-item">Documents for Bank Account Opening</li>
-                  <li className="opcplan-list-item">Documents for 1st Auditor Appointment</li>
-                  <li className="opcplan-list-item">EPF Registrations</li>
-                  <li className="opcplan-list-item">ESI Registrations</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="opcplan-footer">
-              <button className="opcplan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Enriched */}
-          <article className="opcplan-card">
-            <div>
-              <div className="opcplan-header">
-                <div className="opcplan-name">Enriched</div>
-                <div className="opcplan-old-price">₹7,999</div>
-                <div className="opcplan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="opcplan-meta">
-                  Excluding gov fee <span className="popular">(Popular)</span>
+                  <div className="opcplan-body">
+                    <ul className="opcplan-list">
+                      {plan.services.map((s, i) => (
+                        <li key={i} className="opcplan-list-item">{s}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-              </div>
 
-              <div className="opcplan-body">
-                <ul className="opcplan-list">
-                  <li className="opcplan-list-item">Elemental Plan Plus</li>
-                  <li className="opcplan-list-item">UDYAM Registration</li>
-                  <li className="opcplan-list-item">Share Certificate</li>
-                  <li className="opcplan-list-item">Commencement of Business</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="opcplan-footer">
-              <button className="opcplan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Supreme */}
-          <article className="opcplan-card">
-            <div>
-              <div className="opcplan-header">
-                <div className="opcplan-name">Supreme</div>
-                <div className="opcplan-old-price">₹29,999</div>
-                <div className="opcplan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
-                <div className="opcplan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="opcplan-body">
-                <ul className="opcplan-list">
-                  <li className="opcplan-list-item">Enriched Plan Plus</li>
-                  <li className="opcplan-list-item">ITR Filing of 1 Directors</li>
-                  <li className="opcplan-list-item">ITR Filing of Company</li>
-                  <li className="opcplan-list-item">Preparation of Directors Report</li>
-                  <li className="opcplan-list-item">Preparation of Auditor Appointment Paperwork</li>
-                  <li className="opcplan-list-item">Preparation of List of Share Holders</li>
-                  <li className="opcplan-list-item">Preparation of Notice of AGM</li>
-                  <li className="opcplan-list-item">Preparation of Notice of BM</li>
-                  <li className="opcplan-list-item">Preparation of Extracts of AGM</li>
-                  <li className="opcplan-list-item">Filing of AOC - 4 (Financial Statements)</li>
-                  <li className="opcplan-list-item">Filing of MGT - 7 (Annual Return)</li>
-                  <li className="opcplan-list-item">Filing of ADT - 1 (Auditor Appointment)</li>
-                  <li className="opcplan-list-item">Minutes of BM for 1st FY</li>
-                  <li className="opcplan-list-item">Minutes of AGM for 1st FY</li>
-                  <li className="opcplan-list-item">DIR KYC (1 Directors)</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="opcplan-footer">
-              <button className="opcplan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-            </div>
-          </article>
+                <div className="opcplan-footer">
+                  <button
+                    className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
+                    onClick={() => setActivePlan(plan)}
+                  >
+                    Buy Now
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
 
         </div>
-      </div>
-    </section>
-
+      </section>
 
       {activePlan && (
-
         <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="opc-registration" />
-
       )}
-
     </>
-
-  );};
+  );
+};
 
 export default OPCPlan;

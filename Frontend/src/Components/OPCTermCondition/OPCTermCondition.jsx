@@ -17,26 +17,31 @@ const OPCTermCondition = () => {
           {/* List */}
           <ol className="opctc-list">
             <li className="opctc-item">
-              DSC shall be from Sign X Class III only.
-            </li>
-
-            <li className="opctc-item">
-              The Stamp Duty varies from state to state and in states such as Andhra Pradesh, Bihar, Chandigarh, Chhattisgarh, Daman And Diu, Delhi, Goa, Gujarat, Karnataka, Kerala, Lakshadweep, Madhya Pradesh, Maharashtra, Punjab, Rajasthan, Telangana, Uttar Pradesh, Uttarakhand fees shall vary accordingly & shall be charged additionally as per actuals.
-            </li>
-
-            <li className="opctc-item">
-              The fees mentioned above are valid for Authorised Capital up to Rs. 15 Lakhs and in case Authorised Capital is above Rs. 15 Lakhs the additional fee shall be charged as per actuals.
-            </li>
-
-            <li className="opctc-item">
-              The above fee includes Name application for up to 4 choice names and in case all the 4 names are rejected by the department, an additional fee shall be charged as per actual.
-            </li>
-
-            <li className="opctc-item">
-              The Audit Fees shall not be a part of our professional fees and shall be payable directly to the Auditor.
+              Professional Fee Only: All quoted prices are exclusive of government fees, statutory levies, and out-of-pocket costs. Our fee covers professional services — advisory, MOA/AOA drafting, nominee onboarding, SPICe+ filing, AGILE-PRO-S coordination, and post-incorporation handover.
             </li>
             <li className="opctc-item">
-              In case the above plan does not qualify your requirements, kindly contact our executive, we shall be happy to customise a plan for you.
+              Government Fees Payable Separately: RUN name reservation fee (₹1,000 per attempt), SPICe+ filing fee, and state stamp duty on MOA/AOA (₹500 – ₹5,000 typical for OPC) are payable to MCA / state government and reimbursed at actuals.
+            </li>
+            <li className="opctc-item">
+              DSC &amp; DIN Charges: Class 3 DSC is billed at ₹1,999 + GST per person. OPC requires DSC for the sole director (mandatory) and the nominee (for digital INC-3 signing). DIN for the sole director is auto-applied via SPICe+.
+            </li>
+            <li className="opctc-item">
+              GST on Our Fee: All quoted prices are exclusive of GST @ 18%, charged at checkout.
+            </li>
+            <li className="opctc-item">
+              Eligibility Restrictions: As per Rule 3 of the Companies (Incorporation) Rules, 2014, only a natural person who is an Indian citizen (resident or NRI, post-2021 amendment) is eligible to incorporate or be a nominee in an OPC. A person can be a member or nominee of only one OPC at a time. Bodies corporate, LLPs, trusts, and foreign nationals are not eligible.
+            </li>
+            <li className="opctc-item">
+              Restricted Business Activities: OPCs cannot be incorporated or converted into a company carrying out Non-Banking Financial Investment activities, including investment in securities of any body corporate. Banking, insurance, and NBFC activities are also restricted.
+            </li>
+            <li className="opctc-item">
+              Name Approval: SPICe+ Part A name reservation includes 2 attempts within our professional fee. RUN government fees are payable per attempt (₹1,000 each). The name must end with '(OPC) Private Limited' as per Rule 8 of the Companies (Incorporation) Rules. We pre-screen names against MCA, IPR, and trademark databases.
+            </li>
+            <li className="opctc-item">
+              Refund Policy: Full refund of professional fee (less ₹1,499 documentation handling) is available if SPICe+ Part B is not filed within 7 working days from receipt of complete documents and information. Government fees and DSC charges which already paid are non-refundable.
+            </li>
+            <li className="opctc-item">
+              Out-of-Scope Items: NRI subscriber additional KYC, registered office shifting, voluntary conversion to Pvt Ltd / Public Ltd, change of nominee post-incorporation, FEMA / FDI compliance for NRI directors and sectoral licenses (FSSAI, IEC, RBI, etc.) are not included and quoted separately.
             </li>
           </ol>
         </div>

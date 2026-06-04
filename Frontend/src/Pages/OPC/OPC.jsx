@@ -4,6 +4,7 @@ import OPCBreadcrum from '../../Components/OPCBreadcrum/OPCBreadcrum'
 
 // Lazy load below-fold components
 const OPCPlans = React.lazy(() => import('../../Components/OPCPlans/OPCPlans'))
+const OPCGovtCosts = React.lazy(() => import('../../Components/OPCGovtCosts/OPCGovtCosts'))
 const OPCTermCondition = React.lazy(() => import('../../Components/OPCTermCondition/OPCTermCondition'))
 const OpcZolvitPremium = React.lazy(() => import('../../Components/OpcZolvitPremium/OpcZolvitPremium'))
 const OPCTabs = React.lazy(() => import('../../Components/OPCTabs/OPCTabs'))
@@ -28,6 +29,12 @@ const OPC = () => {
           <OPCPlans />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <OPCGovtCosts />
+      </Suspense>
 
       <div className="section-divider" />
 
