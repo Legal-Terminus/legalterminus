@@ -57,8 +57,8 @@
 }
 
 .opcplan-card--popular {
-    border-color: #ff3b3b;
-    box-shadow: 0 4px 20px rgba(255, 59, 59, 0.12);
+    border-color: rgba(34, 197, 94, 0.75);
+    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.14);
 }
 
 .opcplan-badge {
@@ -79,7 +79,7 @@
 }
 
 .opcplan-badge--popular {
-    background: #ff3b3b;
+    background: #18b233;
 }
 
 
@@ -183,11 +183,11 @@
 }
 
 .opcplan-button--popular {
-    background: #ff3b3b;
+    background: #18b233;
 }
 
 .opcplan-button--popular:hover {
-    background: #e02020;
+    background: #15961e;
 }
 
 
