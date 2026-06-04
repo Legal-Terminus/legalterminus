@@ -169,7 +169,7 @@
 
 .zp-cta-btn {
   display: inline-block;
-  background-color: #117c16; /* deep navy similar to reference */
+  background-color: #117c16;
   color: #ffffff;
   padding: 12px 40px;
   border-radius: 999px;
@@ -177,6 +177,7 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
   transition: background 0.2s ease, transform 0.15s ease,
     box-shadow 0.15s ease;
 }

@@ -82,9 +82,16 @@ const ZolvitPremium = () => {
             </div>
 
             <div className="zp-cta-row">
-              <button className="zp-cta-btn">
+              <a
+                href="#pvt-consult-form"
+                className="zp-cta-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("pvt-consult-form")?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
                 Consult a Legal Expert
-              </button>
+              </a>
             </div>
           </div>
 
