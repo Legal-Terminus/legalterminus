@@ -66,7 +66,6 @@ const OpcZolvitPremium = () => {
           {/* Full-width bottom: Important Notes + CTA */}
           <div className="opczp-bottom-full">
             <h3 className="opczp-label">Important Notes</h3>
-            <p className="opczp-notes-intro">Heads up — these are the things that derail OPC incorporations:</p>
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
