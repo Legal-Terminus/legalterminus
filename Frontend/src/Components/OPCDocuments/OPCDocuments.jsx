@@ -5,28 +5,28 @@ import { FaUser, FaBuilding, FaIdCard, FaCamera, FaBolt, FaFileContract, FaShiel
 const directorDocs = [
   {
     icon: <FaIdCard />,
-    title: "Identity Proof",
+    title: "Subscriber and Nominee Identity",
     note: "Mandatory for the proposed Director, Nominee & Shareholder",
     items: [
-      "PAN Card (Mandatory)",
-      "Aadhaar Card",
+      "Self-attested PAN card (mandatory)",
+      "Self-attested Aadhaar",
+      "Driving Licence / Passport as ID for foreign nationals/NRI: notarized + apostilled passport copy",
     ],
   },
   {
     icon: <FaFileAlt />,
-    title: "Address Proof",
-    note: "Not older than 2 months",
+    title: "Address Proof (Per Person)",
+    note: "Not older than 60 days from filing date",
     items: [
-      "Telephone Bill / Mobile Bill",
-      "Savings Bank Statement",
+      "Self-attested Bank statement OR Gas bill OR Mobile bill — not older than 60 days from filing date",
     ],
   },
   {
     icon: <FaCamera />,
-    title: "Passport Size Photograph",
+    title: "Passport Size Photograph (Per Person)",
     note: "For the proposed Director, Nominee & Shareholder",
     items: [
-      "Latest passport-size photograph of the proposed Director / Nominee / Shareholder",
+      "Latest Passport-size Photograph of all Proposed Directors / Shareholders and Nominee",
     ],
   },
 ];
@@ -34,19 +34,20 @@ const directorDocs = [
 const companyDocs = [
   {
     icon: <FaBolt />,
-    title: "Registered Office — Utility Bill",
-    note: "Not older than 2 months",
+    title: "Registered Office Proof",
+    note: "Latest Utility Bill for Office Address (Not Older Than 2 Months)",
     items: [
-      "Electricity Bill corresponding to the registered office address",
+      "Electricity Bill",
+      "Water Bill",
+      "Gas Bill",
     ],
   },
   {
     icon: <FaFileContract />,
-    title: "Registered Office — Ownership / Rental",
-    note: "As applicable",
+    title: "Rent Agreement (If Business Premises is Rented)",
+    note: "Duly notarized between property owner and a director",
     items: [
-      "Duly Notarised Rent Agreement (if on rent)",
-      "Sale Deed / Property ownership document (if owned)",
+      "Duly Notarized Rent Agreement between the owner of the property and one of the directors of the proposed company",
     ],
   },
   {
@@ -54,15 +55,8 @@ const companyDocs = [
     title: "No Objection Certificate (NOC)",
     note: "From property owner",
     items: [
-      "NOC from the owner permitting use of premises as Registered Office of the proposed company",
-    ],
-  },
-  {
-    icon: <FaFileAlt />,
-    title: "Other Documents",
-    note: "Prepared and provided by our team",
-    items: [
-      "All additional incorporation documents shall be prepared and provided by the Legal Terminus team",
+      "NOC from Property Owner permitting use of premises as Registered Office",
+      "Note: Residential property is permissible as Registered Office under MCA guidelines",
     ],
   },
 ];
@@ -132,10 +126,6 @@ const OPCDocuments = () => {
 
         </div>
 
-        {/* Bottom note */}
-        <p className="opcd-bottom-note">
-          All documents must be self-attested. If you need help with document preparation or have any queries, our team at Legal Terminus is available to assist you at every step.
-        </p>
 
       </div>
     </section>

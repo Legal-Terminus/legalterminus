@@ -3,39 +3,44 @@ import "./OPCElegibility.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
-    text:
-      "Provision of requisite documents/information to us (As per the checklist to be provided by us).",
+    title: "Discovery & Eligibility Check",
+    day: "Day 0",
+    text: "30-min call with our expert to confirm: Indian citizenship of the sole member, 120-day stay test, eligibility of the nominee, business activity (to flag restricted activities like NBFI), authorised capital, and registered office state.",
   },
   {
-    title: "Step 2 – Company Name & Objects Finalization",
-    text:
-      "Finalisation of Objects along with Name of the proposed company (Name shall be finalised on the basis of a search report duly conducted & provided by our team).",
+    title: "Document Submission & DSC Procurement",
+    day: "Day 1–2",
+    text: "Share KYC documents and registered office address proof with us (as per checklist). This is your only job at the start — we handle everything from here. Class 3 Digital Signature Certificate issued to the sole director and the nominee. Same-day for resident Indians via Aadhaar e-KYC; 3–5 days for NRIs (apostille required).",
   },
   {
-    title: "Step 3 – Name Reservation Application",
-    text:
-      "Filing of Application for Name Reservation in requisite e-form along with applicable government fees.",
+    title: "SPICe+ Part A — Name Reservation",
+    day: "Day 2–4",
+    text: "Filed with 2 proposed names (in order of preference) ending with '(OPC) Private Limited' through MCA21 V3. CRC reviews under Rule 8. Approval: 2–3 working days typical. Reserved name valid for 20 days.",
   },
   {
-    title: "Step 4 – Digital Signature Certificates",
-    text:
-      "Preparation of requisite numbers of DSC with respect to the proposed Promoter & Directors and Registration of DSC in MCA Portal.",
+    title: "MOA & AOA Drafting",
+    day: "Day 3–5",
+    text: "Memorandum of Association (object clause + capital + state) and Articles of Association (governance, share transfer, conversion-readiness clauses) drafted. One round of revision included.",
   },
   {
-    title: "Step 5 – Incorporation Document Preparation",
-    text:
-      "Preparation of further incorporation documents including e-form INC-3 (for nomination of nominee) upon receipt of name approval letter from the department.",
+    title: "Nominee Consent (Form INC-3)",
+    day: "Day 4–5",
+    text: "Nominee signs INC-3 declaring willingness to act as nominee on the member's death / incapacity. We draft, get it signed, and file PAN + Aadhaar + address proof of nominee.",
   },
   {
-    title: "Step 6 – Final Form Upload & Fee Payment",
-    text:
-      "Uploading of Final Incorporation Forms to the MCA portal along with applicable government fees.",
+    title: "SPICe+ Part B + AGILE-PRO-S Filing",
+    day: "Day 5–6",
+    text: "Master incorporation form filed: PAN, TAN, EPFO, ESIC, GSTIN (optional), Professional Tax, Bank Account, Shops & Establishment — all in one shot via INC-32 + INC-33 + INC-34 + INC-35. Stamp duty paid online.",
   },
   {
-    title: "Step 7 – Registration Certificate Issuance",
-    text:
-      "Processing of the application by the department and issuance of registration certificate.",
+    title: "CRC Examination & Clarifications",
+    day: "Day 6–9",
+    text: "CRC reviews under Rule 12. If a deficiency is raised (e.g., minor MOA wording or nominee KYC), we file a re-submission within 24 hours.",
+  },
+  {
+    title: "Certificate of Incorporation & Onboarding",
+    day: "Day 7–10",
+    text: "COI issued by CRC under Section 7(2). PAN, TAN, and CIN allotted. We deliver: COI PDF, MOA/AOA, share certificate template, statutory registers, INC-20A (commencement of business) reminder, and a 90-day compliance calendar.",
   },
 ];
 
@@ -46,8 +51,7 @@ const OPCElegibility = () => {
         Steps For One Person Company Registration in India
       </h2>
       <p className="opcelg-subheading">
-        The broad process of registering a One Person Company involves the
-        following steps:
+        Eight steps. 7–10 working days end-to-end (assuming clean documents, an eligible nominee, and a name that clears CRC on first try).
       </p>
 
       <div className="opcelg-timeline">
@@ -65,7 +69,10 @@ const OPCElegibility = () => {
             <div className="opcelg-timeline-dot">{index + 1}</div>
 
             <div className="opcelg-timeline-card">
-              <h4>{step.title}</h4>
+              <h4>
+                {step.title}
+                {step.day && <span className="opcelg-day-tag">{step.day}</span>}
+              </h4>
               <p>{step.text}</p>
             </div>
           </div>
