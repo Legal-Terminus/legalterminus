@@ -14,31 +14,28 @@ import {
 const directorDocs = [
   {
     icon: <FaIdCard />,
-    title: "Identity Proof",
-    note: "Mandatory for all proposed directors & shareholders",
+    title: "Director & Subscriber Identity",
+    note: "Mandatory for all directors & shareholders",
     items: [
-      "PAN Card (Mandatory for all Directors & Shareholders)",
-      "Aadhaar Card",
-      "Passport / Voter ID / Driving License",
+      "Self-attested PAN card (mandatory)",
+      "Self-attested Aadhaar",
+      "Driving Licence / Passport as ID for foreign nationals/NRI: notarized + apostilled passport copy",
     ],
   },
   {
     icon: <FaFileAlt />,
-    title: "Address Proof",
-    note: "Not older than 2 months",
+    title: "Address Proof (Per Person)",
+    note: "Not older than 60 days from filing date",
     items: [
-      "Bank Statement",
-      "Mobile Bill",
-      "Electricity Bill",
-      "Water Bill",
+      "Self-attested Bank statement OR Gas bill OR Mobile bill — not older than 60 days from filing date",
     ],
   },
   {
     icon: <FaCamera />,
-    title: "Passport Size Photograph",
+    title: "Passport Size Photograph (Per Person)",
     note: "For all proposed directors & shareholders",
     items: [
-      "Latest passport-size photograph of all Proposed Directors / Shareholders",
+      "Latest Passport-size Photograph of all Proposed Directors / Shareholders",
     ],
   },
 ];
@@ -46,22 +43,20 @@ const directorDocs = [
 const companyDocs = [
   {
     icon: <FaBolt />,
-    title: "Registered Office — Utility Bill",
-    note: "Not older than 2 months",
+    title: "Registered Office Proof",
+    note: "Latest Utility Bill for Office Address (Not Older Than 2 Months)",
     items: [
       "Electricity Bill",
       "Water Bill",
       "Gas Bill",
-      "Property Tax Receipt",
     ],
   },
   {
     icon: <FaFileContract />,
-    title: "Registered Office — Ownership / Rental",
-    note: "As applicable",
+    title: "Rent Agreement (If Business Premises is Rented)",
+    note: "Duly notarized between property owner and a director",
     items: [
-      "Duly Notarised Rent Agreement (if rented)",
-      "Sale Deed / Property ownership document (if owned)",
+      "Duly Notarized Rent Agreement between the owner of the property and one of the directors of the proposed company",
     ],
   },
   {
@@ -142,10 +137,6 @@ const PublicltdDocument = () => {
 
         </div>
 
-        {/* Bottom note */}
-        <p className="pubdoc-bottom-note">
-          All documents must be self-attested by the respective proposed directors / shareholders. All utility bills or bank statements must not be older than 2 months.
-        </p>
 
       </div>
     </section>
