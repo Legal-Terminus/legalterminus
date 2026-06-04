@@ -4,6 +4,7 @@ import PublicBreadcrum from '../../Components/PublicBreadcrum/PublicBreadcrum'
 
 // Lazy load below-fold components
 const PublicltdRightPlan = React.lazy(() => import('../../Components/PublicltdRightPlan/PublicltdRightPlan'))
+const PublicltdGovtCosts = React.lazy(() => import('../../Components/PublicltdGovtCosts/PublicltdGovtCosts'))
 const PublicltdTermsCondition = React.lazy(() => import('../../Components/PublicltdTermsCondition/PublicltdTermsCondition'))
 const PublicltdZolvitPremium = React.lazy(() => import('../../Components/PublicltdZolvitPremium/PublicltdZolvitPremium'))
 const PublicltdTab = React.lazy(() => import('../../Components/PublicltdTab/PublicltdTab'))
@@ -26,6 +27,12 @@ const Publicltd = () => {
           <PublicltdRightPlan />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <PublicltdGovtCosts />
+      </Suspense>
 
       <div className="section-divider" />
 
