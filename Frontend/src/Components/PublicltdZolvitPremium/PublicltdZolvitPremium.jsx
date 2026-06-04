@@ -25,42 +25,52 @@ const ZolvitPremium = () => {
               <h2 className="zp-title">
                 Legal Terminus{" "}
                 <span className="zp-title-highlight">Priority</span>{" "}
-                <span className="zp-title-icon">⚖️</span>
+                <span className="zp-title-icon">⚖</span>
               </h2>
               <p className="zp-subtitle">
-               Get your Public Limited Company registered seamlessly with our expert-led process, designed for businesses planning large-scale operations, public investments, and enhanced credibility—without unnecessary delays.
+                A Public Limited Company is heavier machinery than a Private Limited — 7 subscribers, 3 directors, deeper stamp duty, future-listing optics. Priority is what happens when a senior expert owns your incorporation file, front to back, with zero handoffs.
               </p>
             </header>
 
             {/* Features */}
             <section className="zp-section-block">
-              <h3 className="zp-label">What You Get:</h3>
+              <h3 className="zp-label">What you get</h3>
               <ul className="zp-list zp-features-list">
                 <li className="zp-list-item">
-                  <span className="zp-list-icon">🧑‍⚖️</span>
-                  Fast-track your Public Limited Company registration with expert assistance, ensuring accuracy, compliance, and timely filing at every step.
+                  <span className="zp-list-icon">⚡</span>
+                  72-hour SLA on first MOA/AOA draft — and a same-day name search before you commit.
+                </li>
+                <li className="zp-list-item">
+                  <span className="zp-list-icon">🛡</span>
+                  Senior expert reviewed your documents and provide the name availability percentage.
+                </li>
+                <li className="zp-list-item">
+                  <span className="zp-list-icon">🔄</span>
+                  Real-time CRC status updates on mail and WhatsApp — no refreshing the MCA portal at midnight.
                 </li>
                 <li className="zp-list-item">
                   <span className="zp-list-icon">📑</span>
-                  From incorporation to statutory compliances, we manage all legal requirements so you can focus on business growth.
-                </li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">⏱️</span>
-                  Never miss important filings or regulatory deadlines with our proactive reminder and compliance tracking system.
+                  Post-incorporation kit: COI, MOA, AOA and compliance calendar.
                 </li>
               </ul>
             </section>
 
             {/* Note */}
             <section className="zp-section-block">
-              <h3 className="zp-label">Important Notes:</h3>
+              <h3 className="zp-label">Important Notes (read before you click Pay)</h3>
               <div className="zp-note-box">
                 <ul className="zp-note-list">
                   <li className="zp-note-item">
-                    Your preferred company name is given priority, along with a preliminary name availability and compliance check before submission.
+                    Name rejection is the #1 delay. Avoid generic words — follow our naming guidelines, check trademark conflicts, and have 4 backup names ready. We pre-screen, but the CRC is the final authority.
                   </li>
                   <li className="zp-note-item">
-                    In case of name rejection, our experts will suggest legally compliant alternative names to improve approval chances.
+                    Registered office proof must be ≤ 60 days old. NoC from the property owner + utility bill (electricity / gas / telephone bill) — not a rent receipt. Co-working spaces need a service agreement plus the operator's NoC.
+                  </li>
+                  <li className="zp-note-item">
+                    All 7 subscribers and 3 directors need active DSCs and Aadhaar-linked mobiles. If any subscriber is an NRI / foreign national, expect a 5–7 day extension for apostille / notarisation.
+                  </li>
+                  <li className="zp-note-item">
+                    INC-20A (commencement of business) must be filed within 180 days of incorporation. Skipping these blocks the PLC from operating bank accounts and triggers ₹10,000 penalties.
                   </li>
                 </ul>
               </div>
