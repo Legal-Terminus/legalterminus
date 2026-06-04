@@ -7,10 +7,8 @@ const PLANS = [
   {
     id: "elemental",
     name: "Elemental",
-    badge: "★ BASIC",
     oldPrice: 29999,
     price: 19999,
-    discount: "33% off",
     services: [
       "Name Availability Search Report",
       "SPICe+ Part A name reservation (2 attempts)",
@@ -27,11 +25,8 @@ const PLANS = [
   {
     id: "enriched",
     name: "Enriched",
-    badge: "★ MOST POPULAR",
     oldPrice: 44999,
     price: 29999,
-    discount: "33% off",
-    popular: true,
     services: [
       "Everything in Elemental",
       "First Board Meeting kit (notice, agenda, minutes draft)",
@@ -47,10 +42,8 @@ const PLANS = [
   {
     id: "supreme",
     name: "Supreme",
-    badge: "✦ 6 MONTH SERVICE",
     oldPrice: 66999,
     price: 44999,
-    discount: "33% off",
     services: [
       "Everything in Enriched",
       "Annual ITR Filing — Company",
@@ -62,10 +55,8 @@ const PLANS = [
   {
     id: "supreme-plus",
     name: "Supreme Plus",
-    badge: "✦ FULL-SERVICE",
     oldPrice: 96999,
     price: 64999,
-    discount: "33% off",
     services: [
       "Everything in Supreme",
       "Statutory Registers Pack (Members, Directors, Charges)",
@@ -102,20 +93,14 @@ const PricingSection = () => {
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
-                className={`pub-plan-card${plan.popular ? " pub-plan-card--popular" : ""}`}
+                className="pub-plan-card"
               >
                 <div>
                   <div className="pub-plan-card-header">
-                    <div className={`pub-plan-badge${plan.popular ? " pub-plan-badge--popular" : ""}`}>
-                      {plan.badge}
-                    </div>
-                    <div className="pub-plan-name">{plan.name}</div>
+                      <div className="pub-plan-name">{plan.name}</div>
                     <div className="pub-plan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
-                    <div className="pub-plan-discount-row">
-                      <span className="pub-plan-discount">{plan.discount}</span>
-                      <span className="pub-plan-price">₹{plan.price.toLocaleString("en-IN")}</span>
-                    </div>
-                    <div className="pub-plan-meta">Professional fee only &nbsp;•&nbsp; + 18% GST</div>
+                    <div className="pub-plan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="pub-plan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="pub-plan-body">
