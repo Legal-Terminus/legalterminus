@@ -92,6 +92,21 @@
   font-weight: 600;
   margin-bottom: 6px;
   color: #0f172a;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pv-day-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #19b43a;
+  padding: 2px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 .pv-timeline-card p {
