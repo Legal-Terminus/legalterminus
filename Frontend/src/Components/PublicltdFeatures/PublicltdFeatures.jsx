@@ -51,12 +51,7 @@ const PublicltdFeatures = () => {
           {types.map((type) => (
             <div className="pub-types-card" key={type.number}>
               <div className="pub-types-number">{type.number}</div>
-              <h3 className="pub-types-card-title">
-                {type.title}
-                {type.subtitle && (
-                  <span className="pub-types-card-subtitle"> ({type.subtitle})</span>
-                )}
-              </h3>
+              <h3 className="pub-types-card-title">{type.title}</h3>
               <p className="pub-types-card-text">{type.text}</p>
             </div>
           ))}
