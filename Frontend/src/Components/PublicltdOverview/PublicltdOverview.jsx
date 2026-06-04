@@ -46,35 +46,6 @@ A Private Limited Company is a legally registered business under the Companies A
         </div>
       </section>
 
-      {/* ===========================
-          SECTION 3 — COMPANIES ACT
-      ============================ */}
-      <section className="companies-act-section">
-        <div className="companies-act-container">
-          <div className="companies-act-card">
-            <h3 className="companies-act-title">Companies Act, 2013</h3>
-
-            <p className="companies-act-text">
-              As per Section 2(71) of the Companies Act, 2013, a Public Limited Company means a company having a minimum paid-up share capital as may be prescribed, and which by its Articles of Association:
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(a)</span>
-              Does not restrict the right to transfer its shares;
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(b)</span>
-              Does not limit the number of its members; and
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(c)</span>
-              Invites the public to subscribe to its shares, debentures, or other securities in accordance with applicable laws.
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* ===========================
           SECTION 4 — LISTED vs UNLISTED
