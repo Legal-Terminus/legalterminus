@@ -16,10 +16,20 @@
   border-radius: 16px;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
   padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.opczp-top-row {
   display: grid;
   grid-template-columns: 1.05fr 1.3fr;
   gap: 48px;
-  align-items: center;
+  align-items: start;
+}
+
+.opczp-bottom-full {
+  width: 100%;
 }
 
 /* Illustration */
@@ -103,11 +113,22 @@
   margin-top: 1px;
 }
 
+/* Notes intro */
+.opczp-notes-intro {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 10px;
+  font-style: italic;
+}
+
 /* Note box */
 .opczp-note-box {
-  background-color: #f1f7ff;
+  background-color: #f0fdf4;
+  border: 1px solid rgba(34, 197, 94, 0.18);
   border-radius: 14px;
   padding: 16px 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .opczp-note-list {
@@ -141,6 +162,8 @@
 /* CTA */
 .opczp-cta-row {
   margin: 20px 0 16px;
+  display: flex;
+  justify-content: center;
 }
 
 .opczp-cta-btn {
@@ -153,6 +176,7 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
   transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -164,42 +188,19 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .opczp-section {
-    padding: 56px 20px;
-  }
-
-  .opczp-card {
-    padding: 32px 32px;
-    gap: 32px;
-    grid-template-columns: 1fr 1.2fr;
-  }
-
-  .opczp-title {
-    font-size: 24px;
-  }
+  .opczp-section { padding: 56px 20px; }
+  .opczp-card    { padding: 32px 32px; }
+  .opczp-top-row { gap: 32px; grid-template-columns: 1fr 1.2fr; }
+  .opczp-title   { font-size: 24px; }
 }
 
 @media (max-width: 768px) {
-  .opczp-section {
-    padding: 48px 16px;
-  }
-
-  .opczp-card {
-    grid-template-columns: 1fr;
-    padding: 28px 22px;
-  }
-
-  .opczp-illustration-wrapper {
-    order: 1;
-  }
-
-  .opczp-content {
-    order: 2;
-  }
-
-  .opczp-title {
-    font-size: 22px;
-  }
+  .opczp-section { padding: 48px 16px; }
+  .opczp-card    { padding: 28px 22px; }
+  .opczp-top-row { grid-template-columns: 1fr; }
+  .opczp-illustration-wrapper { order: 1; }
+  .opczp-content { order: 2; }
+  .opczp-title   { font-size: 22px; }
 }
 
 @media (max-width: 480px) {
