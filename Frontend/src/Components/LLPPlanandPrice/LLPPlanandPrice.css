@@ -78,15 +78,20 @@
 }
 
 .LLP-Plan--badge-popular {
-  background: #ff3b3b;
+  background: #18b233;
+}
+
+.LLP-Plan--card-popular {
+  border-color: rgba(34, 197, 94, 0.75);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.14);
 }
 
 .LLP-Plan--button-popular {
-  background: #ff3b3b;
+  background: #18b233;
 }
 
 .LLP-Plan--button-popular:hover {
-  background: #e02020;
+  background: #149a2a;
 }
 
 .LLP-Plan--name {

@@ -6,6 +6,7 @@ import LLPBreadcrum from "../../Components/LLPBreadcrum/LLPBreadcrum.jsx";
 const LLPPlanandPrice = React.lazy(() => import("../../Components/LLPPlanandPrice/LLPPlanandPrice"));
 const LLPGovtCosts = React.lazy(() => import("../../Components/LLPGovtCosts/LLPGovtCosts"));
 const LLPTermandCondn = React.lazy(() => import("../../Components/LLPTermandCondn/LLPTermandCondn"));
+const LLPTypes = React.lazy(() => import("../../Components/LLPTypes/LLPTypes"));
 const LLPZolvitPremium = React.lazy(() => import("../../Components/LLPZolvitPremium/LLPZolvitPremium"));
 const LLPTabs = React.lazy(() => import("../../Components/LLPTabs/LLPTabs"));
 const LLPCompanyTab = React.lazy(() => import("../../Components/LLPCompanyTab/LLPCompanyTab"));
@@ -58,6 +59,14 @@ function LLP() {
       <div id="company">
         <Suspense fallback={<div />}>
           <LLPCompanyTab />
+        </Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <div id="types">
+        <Suspense fallback={<div />}>
+          <LLPTypes />
         </Suspense>
       </div>
 

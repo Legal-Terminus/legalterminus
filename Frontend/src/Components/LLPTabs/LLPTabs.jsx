@@ -3,7 +3,7 @@ import "./LLPTabs.css";
 
 const tabs = [
   { label: "Why Choose LLP", id: "company" },
-  // { label: "Types", id: "types" },
+  { label: "Types", id: "types" },
   { label: "Benefits", id: "requirements" },
   { label: "Process & Steps", id: "process" },
   { label: "Documents", id: "documents" },
