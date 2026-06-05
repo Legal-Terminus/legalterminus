@@ -3,34 +3,39 @@ import "./GSTRegProcess.css";
 
 const steps = [
   {
-    title: "Document Collection & Verification",
+    title: "Document Collection",
+    day: "Day 0–1",
+    text: "Secure upload portal opens. Our checklist drives this — PAN, Aadhaar, business proof, bank details and photographs. We chase missing items proactively.",
+  },
+  {
+    title: "Document Vetting",
     day: "Day 1",
-    text: "Provide PAN, Aadhaar, registration certificate, address proof, and bank statement. Our team validates completeness and flags any mismatches before filing.",
+    text: "Our paralegals run a 12-point vetting checklist — PAN-Aadhaar linkage, IFSC validation, address proof recency (within 60 days), partnership deed pagination, board resolution wording. Defects flagged within 4 hours.",
   },
   {
-    title: "Application Preparation",
-    day: "Day 1–2",
-    text: "We prepare the GST REG-01 application — mapping your business activity to the correct HSN/SAC codes, filling principal place of business details, and drafting the authorisation letter.",
+    title: "Form REG-01 Filing",
+    day: "Day 2",
+    text: "Application filed on the GST portal. TRN (Temporary Reference Number) issued instantly. Aadhaar OTP authentication initiated for promoters / authorised signatories.",
   },
   {
-    title: "Filing on GST Portal",
+    title: "Aadhaar e-KYC & ARN",
     day: "Day 2–3",
-    text: "Application submitted on gst.gov.in. On submission, an Application Reference Number (ARN) is generated instantly. ARN is used to track application status.",
+    text: "OTP verification completed by you on your registered mobile. ARN (Application Reference Number) generated — your tracking ID for the rest of the process.",
   },
   {
-    title: "Aadhaar Authentication",
-    day: "Day 2–3",
-    text: "Aadhaar OTP-based e-KYC for the authorised signatory. This step fast-tracks processing — applications with Aadhaar auth are typically approved within 3 working days.",
-  },
-  {
-    title: "Government Review",
+    title: "Officer Examination",
     day: "Day 3–7",
-    text: "GST officer reviews the application. If a query is raised (GST REG-03), we respond within 7 working days. Clean applications are approved without queries.",
+    text: "Proper officer reviews the application within 7 working days under Rule 9. Auto-approval kicks in if no query is raised. We monitor the portal twice daily.",
   },
   {
-    title: "GSTIN Certificate Delivery",
-    day: "Day 7",
-    text: "On approval, GSTIN is issued and the Registration Certificate (GST REG-06) is downloadable from the portal. We deliver it to you as a PDF along with a compliance checklist.",
+    title: "Clarification (if any)",
+    day: "Day 4–9 (if triggered)",
+    text: "If a Notice for Seeking Clarification (REG-03) is issued, we draft and file the response (REG-04) within the 7-day deadline. 90% of our clients don't see this stage.",
+  },
+  {
+    title: "GSTIN & Certificate Issuance",
+    day: "Day 5–7",
+    text: "GSTIN allotted. Form REG-06 (Registration Certificate) generated — we download it, share it via email + WhatsApp, and send your post-registration onboarding kit.",
   },
 ];
 
@@ -41,7 +46,7 @@ const GSTRegProcess = () => {
         Steps for GST Registration in India
       </h2>
       <p className="pv-gst-subheading">
-        Six steps. 7 working days end-to-end for a clean application with Aadhaar authentication.
+        Seven steps. Five working days, end-to-end (assuming Aadhaar e-KYC passes first time).
       </p>
 
       <div className="pvtltd-timeline">
