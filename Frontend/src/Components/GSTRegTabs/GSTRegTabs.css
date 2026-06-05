@@ -22,7 +22,7 @@
 .pvt-tabs-list {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   white-space: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
