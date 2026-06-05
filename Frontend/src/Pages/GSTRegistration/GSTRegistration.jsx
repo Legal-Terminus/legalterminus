@@ -43,15 +43,15 @@ const GSTRegistration = () => {
         </Suspense>
       </div>
 
-      <div id="benefits">
-        <Suspense fallback={<div />}>
-          <GSTRegAdvantages />
-        </Suspense>
-      </div>
-
       <div id="types">
         <Suspense fallback={<div />}>
           <GSTRegTypes />
+        </Suspense>
+      </div>
+
+      <div id="benefits">
+        <Suspense fallback={<div />}>
+          <GSTRegAdvantages />
         </Suspense>
       </div>
 
