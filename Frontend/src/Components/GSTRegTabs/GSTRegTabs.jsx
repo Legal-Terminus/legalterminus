@@ -3,8 +3,8 @@ import "./GSTRegTabs.css";
 
 const tabs = [
   { label: "Overview", id: "overview" },
-  { label: "Benefits", id: "benefits" },
   { label: "Types", id: "types" },
+  { label: "Benefits", id: "benefits" },
   { label: "Process", id: "process" },
   { label: "Documents", id: "documents" },
   { label: "FAQ's", id: "faq" },
