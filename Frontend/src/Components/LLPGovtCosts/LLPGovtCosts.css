@@ -1,0 +1,105 @@
+.llp-govtcosts-section {
+  font-family: 'Poppins', sans-serif;
+  background: #f8fdf9;
+  padding: 60px 24px 70px;
+}
+
+.llp-govtcosts-container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.llp-govtcosts-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  text-align: center;
+}
+
+.llp-govtcosts-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #19b43a;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.llp-govtcosts-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 28px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.llp-govtcosts-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+
+.llp-govtcosts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 560px;
+}
+
+.llp-govtcosts-table thead tr { background: #0f3d2e; }
+
+.llp-govtcosts-table thead th {
+  color: #fff;
+  font-weight: 600;
+  padding: 14px 20px;
+  text-align: left;
+  letter-spacing: 0.3px;
+}
+
+.llp-govtcosts-table thead th:first-child { border-radius: 12px 0 0 0; }
+.llp-govtcosts-table thead th:last-child  { border-radius: 0 12px 0 0; }
+
+.llp-govtcosts-table tbody tr {
+  background: #fff;
+  border-bottom: 1px solid #e9f5ec;
+  transition: background 0.15s ease;
+}
+
+.llp-govtcosts-table tbody tr:hover { background: #f0faf2; }
+
+.llp-govtcosts-table tbody td {
+  padding: 14px 20px;
+  color: #1e293b;
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+.llp-govtcosts-range {
+  font-weight: 600;
+  color: #0f3d2e;
+  white-space: nowrap;
+}
+
+.llp-govtcosts-total-row {
+  background: #edfaf1 !important;
+  border-top: 2px solid #19b43a !important;
+}
+
+.llp-govtcosts-total-row td { font-weight: 700; color: #0f3d2e; }
+.llp-govtcosts-total-row td.llp-govtcosts-range { color: #19b43a; }
+
+.llp-govtcosts-table tbody tr:last-child td:first-child { border-radius: 0 0 0 12px; }
+.llp-govtcosts-table tbody tr:last-child td:last-child  { border-radius: 0 0 12px 0; }
+
+@media (max-width: 640px) {
+  .llp-govtcosts-title   { font-size: 18px; }
+  .llp-govtcosts-section { padding: 40px 16px 50px; }
+}

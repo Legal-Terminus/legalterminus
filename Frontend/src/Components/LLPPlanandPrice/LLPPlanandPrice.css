@@ -56,6 +56,39 @@
   margin-bottom: 16px;
 }
 
+.LLP-Plan--card-popular {
+  border-color: #ff3b3b;
+  box-shadow: 0 4px 20px rgba(255, 59, 59, 0.12);
+}
+
+.LLP-Plan--badge {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: #18b233;
+  border-radius: 20px;
+  padding: 3px 12px;
+  margin-bottom: 8px;
+  text-align: center;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.LLP-Plan--badge-popular {
+  background: #ff3b3b;
+}
+
+.LLP-Plan--button-popular {
+  background: #ff3b3b;
+}
+
+.LLP-Plan--button-popular:hover {
+  background: #e02020;
+}
+
 .LLP-Plan--name {
   font-size: 20px;
   font-weight: 600;

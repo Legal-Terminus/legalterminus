@@ -17,23 +17,34 @@ const TermsConditions = () => {
         {/* List */}
         <ol className="llp-tc-list">
           <li className="llp-tc-item">
-            DSC shall be from Sign X Class III only.
+            Professional Fee Only: All quoted prices are exclusive of government fees, statutory levies, and out-of-pocket costs. Our fee covers professional services — advisory, LLP Agreement drafting, FiLLiP filing, Form 3 coordination, and post-incorporation handover. Government costs are billed separately at actuals with prior approval.
           </li>
-
           <li className="llp-tc-item">
-            The fees mentioned above are valid for Contribution up to Rs. 1 Lakhs and in case Contribution is above Rs. 1 Lakhs the additional fee shall be charged as per actuals.
+            Government Fees Payable Separately: FiLLiP filing fee (₹500 – ₹5,000 slab-based on capital), RUN-LLP name reservation (₹200 – ₹1,000 per attempt), state stamp duty on LLP Agreement (₹500 – ₹5,000), and Form 3 filing fee (₹50 – ₹200) are payable to MCA / state government and reimbursed at actuals.
           </li>
-
           <li className="llp-tc-item">
-            The above fee includes Name application for up to 4 choice names and in case all the 4 names are rejected by the department, an additional fee shall be charged as per actuals.
+            DSC &amp; DPIN Charges: Class 3 DSC is billed at ₹1,999 + GST per designated partner. DPIN (now unified with DIN) is auto-applied via FiLLiP at ₹500 each (govt fee). DSC and DPIN for additional designated partners beyond the plan limits are billed separately.
           </li>
-
           <li className="llp-tc-item">
-            The Audit of accounts shall be applicable for the respective FY in which the contribution exceeds Rs. 25 Lakhs & Turnover exceeds Rs. 40 Lakhs. Further, the Audit Fees, if any, shall not be a part of our professional fees and shall be payable directly to the Auditor.
+            GSTIN is active, the GST component is fully eligible for input tax credit.
           </li>
-
           <li className="llp-tc-item">
-            In case the above plan does not qualify your requirements, kindly contact our executive, we shall be happy to customise a plan for you.
+            Designated Partners: An LLP requires a minimum of 2 designated partners under Section 7 of the LLP Act, 2008, with at least 1 being resident in India (stayed 120+ days in the preceding FY post-2021 amendment). There is no upper limit on the number of partners. Only natural persons can be designated partners.
+          </li>
+          <li className="llp-tc-item">
+            Name Approval: RUN-LLP name reservation includes 2 attempts within our professional fee. Government fees are payable per attempt. The name must end with 'LLP' or 'Limited Liability Partnership'. We pre-screen names against MCA, IPR, and trademark databases.
+          </li>
+          <li className="llp-tc-item">
+            Form 3 Filing Deadline: The LLP Agreement must be filed in Form 3 within 30 days of incorporation. Late filing attracts penalty of ₹100 per day with no upper cap (LLP Amendment Act, 2021). We file within 7 working days of incorporation as standard practice.
+          </li>
+          <li className="llp-tc-item">
+            Refund Policy: Full refund of professional fee (less ₹1,499 documentation handling) is available if FiLLiP is not filed within 7 working days from receipt of complete documents. Government fees and DSC charges already paid are non-refundable.
+          </li>
+          <li className="llp-tc-item">
+            Document Submission: All documents must be provided as per the checklist shared at the time of engagement. Any delay in document submission may affect the overall turnaround time.
+          </li>
+          <li className="llp-tc-item">
+            Out-of-Scope Items: Foreign LLP (FDI) compliance, FEMA / RBI reporting for foreign partners, change of designated partner post-incorporation, registered office shifting, conversion to / from Pvt Ltd, sectoral licences (FSSAI, IEC, RBI), and annual filings (Form 8, Form 11, ITR-5, DIR-3 KYC) are not included and quoted separately.
           </li>
         </ol>
         </div>

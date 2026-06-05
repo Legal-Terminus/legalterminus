@@ -4,6 +4,7 @@ import LLPBreadcrum from "../../Components/LLPBreadcrum/LLPBreadcrum.jsx";
 
 // Lazy load below-fold components
 const LLPPlanandPrice = React.lazy(() => import("../../Components/LLPPlanandPrice/LLPPlanandPrice"));
+const LLPGovtCosts = React.lazy(() => import("../../Components/LLPGovtCosts/LLPGovtCosts"));
 const LLPTermandCondn = React.lazy(() => import("../../Components/LLPTermandCondn/LLPTermandCondn"));
 const LLPZolvitPremium = React.lazy(() => import("../../Components/LLPZolvitPremium/LLPZolvitPremium"));
 const LLPTabs = React.lazy(() => import("../../Components/LLPTabs/LLPTabs"));
@@ -27,6 +28,12 @@ function LLP() {
           <LLPPlanandPrice />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <LLPGovtCosts />
+      </Suspense>
 
       <div className="section-divider" />
 
