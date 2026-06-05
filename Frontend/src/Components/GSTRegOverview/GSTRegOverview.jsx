@@ -30,6 +30,53 @@ const GSTRegOverview = () => {
 
       <section className="pvt-compare-section">
         <div className="pvt-compare-container">
+          <h2 className="pvt-compare-title">HSN / SAC: The Deep Dive</h2>
+          <p className="pvt-compare-subtitle">
+            Every GST registration needs you to declare what you sell using a Harmonised System of Nomenclature (HSN) code for goods, or a Services Accounting Code (SAC) for services. Get it wrong and you'll be issuing invoices at the wrong tax rate — a recoverable mistake that nonetheless invites an officer's attention. Get it right, and your ITC chain holds up under scrutiny.
+          </p>
+          <div className="pvt-compare-table-wrapper">
+            <table className="pvt-compare-table">
+              <thead>
+                <tr>
+                  <th>AATO Bracket</th>
+                  <th>HSN Digits Required</th>
+                  <th>Applies To</th>
+                  <th>Reporting</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Up to ₹5 crore</td>
+                  <td>4 digits (B2B), optional B2C</td>
+                  <td>Most SMEs</td>
+                  <td>Per invoice</td>
+                </tr>
+                <tr>
+                  <td>₹5 cr to ₹10 cr</td>
+                  <td>6 digits (mandatory) + e-invoice IRN in 30 days</td>
+                  <td>Mid-market</td>
+                  <td>Per invoice</td>
+                </tr>
+                <tr>
+                  <td>Above ₹10 crore</td>
+                  <td>6 digits + e-invoice IRN in 30 days</td>
+                  <td>Mid-market &amp; enterprise</td>
+                  <td>Per invoice + IRN</td>
+                </tr>
+                <tr>
+                  <td>Exports / SEZ</td>
+                  <td>8 digits (mandatory)</td>
+                  <td>All exporters</td>
+                  <td>Per shipping bill</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section className="pvt-compare-section">
+        <div className="pvt-compare-container">
           <h2 className="pvt-compare-title">GST vs Income Tax: Key Differences</h2>
           <p className="pvt-compare-subtitle">
             Both are mandatory taxes in India — but they work very differently. Here's the quick comparison:
