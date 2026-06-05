@@ -18,28 +18,28 @@ const LLPBreadcrum = () => {
             Limited Liability Partnership Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Flexible, Compliant &amp; 100% Transparent</span>
+            <span className="lt-title-tagline">Protect Your Future | 100% Online</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus can assist you with the Limited Liability Partnership (LLP) Registration in India. We ensure a hassle-free process completed within a reasonable timeframe, with competitive professional fees starting from Rs. 7,999/-.
+            All the upside of a partnership. None of the unlimited liability. LLP gives you a separate legal entity, limited partner liability, no minimum capital, and Small-LLP audit exemption — all under the LLP Act, 2008. Our professional fee starts at ₹4,499 + GST. Government fees, stamp duty, and DSC charges are billed separately at actuals. Co-founders welcome. Audits, mostly not.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Minimum 2 Directors Required</div>
-            <div className="lt-feature-item"> Separate Legal Entity</div>
-            <div className="lt-feature-item"> Limited Liability Protection</div>
-            <div className="lt-feature-item"> High Business Credibility</div>
+            <div className="lt-feature-item">Minimum 2 Designated Partners Required</div>
+            <div className="lt-feature-item">Separate Legal Entity</div>
+            <div className="lt-feature-item">Zero Minimum Capital</div>
+            <div className="lt-feature-item">Lower Compliance Burden</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <h3>400+</h3>
+              <p>LLPs incorporated</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Process</p>
+              <h3>100% Online</h3>
+              <p>MCA21 V3 + FiLLiP</p>
             </div>
             <div>
               <h3>7+</h3>
