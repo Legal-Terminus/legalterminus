@@ -57,103 +57,112 @@
   color: #4b5563;
 }
 
-/* ===============================
-   COMPANIES ACT SECTION
-   =============================== */
-.s8-act-section {
-  background-color: #ffffff;
-  padding: 24px 24px 56px;
+.s8-intro-text--mt {
+  margin-top: 16px;
 }
 
-.s8-act-container {
+/* ===============================
+   COMPARISON TABLE SECTION
+   =============================== */
+.s8-compare-section {
+  background-color: #ffffff;
+  padding: 24px 24px 64px;
+}
+
+.s8-compare-container {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.s8-act-card {
-  border-radius: 20px;
-  padding: 32px 40px;
-  background: linear-gradient(to bottom, #f4f8ff 0%, #ffffff 100%);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+.s8-compare-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+  margin: 0 0 10px;
+  line-height: 1.3;
 }
 
-.s8-act-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #273143;
-  margin-bottom: 14px;
-}
-
-.s8-act-text {
+.s8-compare-subtitle {
   font-size: 15px;
-  line-height: 1.9;
-  color: #4b5563;
-  margin-bottom: 18px;
+  color: #64748b;
+  text-align: center;
+  margin: 0 0 28px;
+  line-height: 1.7;
 }
 
-.s8-act-point {
-  font-size: 15px;
-  line-height: 1.9;
-  color: #4b5563;
-  margin-bottom: 10px;
+.s8-compare-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
 }
 
-.s8-act-point-label {
+.s8-compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 600px;
+}
+
+.s8-compare-table thead tr {
+  background: #0f3d2e;
+}
+
+.s8-compare-table thead th {
+  color: #fff;
   font-weight: 600;
-  margin-right: 4px;
+  padding: 14px 20px;
+  text-align: left;
+  letter-spacing: 0.3px;
 }
+
+.s8-compare-table thead th:first-child { border-radius: 12px 0 0 0; }
+.s8-compare-table thead th:last-child  { border-radius: 0 12px 0 0; }
+
+.s8-compare-table tbody tr {
+  background: #fff;
+  border-bottom: 1px solid #e9f5ec;
+  transition: background 0.15s ease;
+}
+
+.s8-compare-table tbody tr:hover { background: #f0faf2; }
+
+.s8-compare-table tbody td {
+  padding: 14px 20px;
+  color: #1e293b;
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+.s8-compare-param {
+  font-weight: 500;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.s8-compare-table tbody tr:last-child td:first-child { border-radius: 0 0 0 12px; }
+.s8-compare-table tbody tr:last-child td:last-child  { border-radius: 0 0 12px 0; }
 
 /* ===============================
    RESPONSIVE
    =============================== */
 @media (max-width: 1024px) {
-  .s8-intro-container {
-    gap: 40px;
-  }
-
-  .s8-intro-title {
-    font-size: 32px;
-  }
+  .s8-intro-container { gap: 40px; }
+  .s8-intro-title { font-size: 32px; }
+  .s8-compare-title { font-size: 24px; }
 }
 
 @media (max-width: 768px) {
-  .s8-intro-section {
-    padding: 40px 16px 36px;
-  }
-
-  .s8-intro-container {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-
-  .s8-intro-title {
-    font-size: 28px;
-  }
-
-  .s8-intro-text {
-    font-size: 14px;
-  }
-
-  .s8-act-card {
-    padding: 24px 20px;
-  }
-
-  .s8-act-text,
-  .s8-act-point {
-    font-size: 14px;
-  }
+  .s8-intro-section { padding: 40px 16px 36px; }
+  .s8-intro-container { grid-template-columns: 1fr; gap: 32px; }
+  .s8-intro-title { font-size: 28px; }
+  .s8-intro-text { font-size: 14px; }
+  .s8-compare-section { padding: 16px 16px 48px; }
+  .s8-compare-title { font-size: 22px; }
 }
 
 @media (max-width: 480px) {
-  .s8-intro-title {
-    font-size: 24px;
-  }
-
-  .s8-intro-text {
-    font-size: 13.5px;
-  }
-
-  .s8-act-title {
-    font-size: 18px;
-  }
+  .s8-intro-title { font-size: 24px; }
+  .s8-intro-text { font-size: 13.5px; }
+  .s8-compare-title { font-size: 20px; }
 }
