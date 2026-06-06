@@ -46,6 +46,12 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.udyam-plan-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
 }
 
 .udyam-plan-card--popular {
