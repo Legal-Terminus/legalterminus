@@ -104,6 +104,37 @@
 }
 
 /* ===============================
+   COMPARISON TABLE SECTION
+   =============================== */
+.incorp-compare-section {
+  background: #f8fdf9;
+  padding-top: 0;
+}
+
+/* 3-equal-column compare table */
+.wos-compare-table {
+  min-width: 620px;
+}
+
+.wos-compare-table th:first-child,
+.wos-compare-table td:first-child {
+  width: 34%;
+}
+
+.wos-compare-table th:nth-child(2),
+.wos-compare-table td:nth-child(2),
+.wos-compare-table th:nth-child(3),
+.wos-compare-table td:nth-child(3) {
+  width: 33%;
+}
+
+/* "Not applicable" muted grey */
+.wos-na {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* ===============================
    RESPONSIVE
    =============================== */
 @media (max-width: 1024px) {

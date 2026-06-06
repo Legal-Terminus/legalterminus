@@ -71,16 +71,16 @@ const IncorporationPremium = () => {
             <div className="zp-note-box">
               <ul className="zp-note-list">
                 <li className="zp-note-item">
-                  <strong>Indian-parent WOS:</strong> Section 188 (Related Party Transactions) kicks in from Day 1 — every inter-company transaction (services, royalty, lending, leases) must follow arm's-length pricing and (above thresholds) require board / shareholder approval. We draft the RPT policy in our Enriched and Supreme tiers.
+                  Indian-parent WOS: Section 188 (Related Party Transactions) kicks in from Day 1 — every inter-company transaction (services, royalty, lending, leases) must follow arm's-length pricing and (above thresholds) require board / shareholder approval. We draft the RPT policy in our Enriched and Supreme tiers.
                 </li>
                 <li className="zp-note-item">
-                  <strong>Foreign-parent WOS:</strong> FC-GPR within 30 days of share allotment is non-negotiable. Late filing attracts compounding under FEMA — typically 1% of investment per month, capped at 100%. Plan the AD-Bank inward remittance + share allotment + FC-GPR sequence carefully.
+                  Foreign-parent WOS: FC-GPR within 30 days of share allotment is non-negotiable. Late filing attracts compounding under FEMA — typically 1% of investment per month, capped at 100%. Plan the AD-Bank inward remittance + share allotment + FC-GPR sequence carefully.
                 </li>
                 <li className="zp-note-item">
-                  <strong>Resident director rule (Section 149(3))</strong> is strict for both tracks — 120 days in India in the preceding FY.
+                  Resident director rule (Section 149(3)) is strict for both tracks — 120 days in India in the preceding FY.
                 </li>
                 <li className="zp-note-item">
-                  <strong>FLA Return</strong> is the most-missed annual filing for foreign-parent WOS — due 15 July annually for any Indian company that has received foreign investment, regardless of whether new shares were allotted that year. Penalty under FEMA: compounding starts at ₹10,000+. The Track B Supreme tier includes Year-1 FLA filing.
+                  FLA Return is the most-missed annual filing for foreign-parent WOS — due 15 July annually for any Indian company that has received foreign investment, regardless of whether new shares were allotted that year. Penalty under FEMA: compounding starts at ₹10,000+. The Track B Supreme tier includes Year-1 FLA filing.
                 </li>
               </ul>
             </div>
