@@ -3,10 +3,10 @@ import "./EPFRegTabs.css";
 
 const tabs = [
   { label: "Overview", id: "overview" },
-  { label: "Benefits", id: "benefits" },
   { label: "Applicability", id: "applicability" },
-  { label: "Documents", id: "documents" },
+  { label: "Benefits", id: "benefits" },
   { label: "Process", id: "process" },
+  { label: "Documents", id: "documents" },
   { label: "Penalties", id: "penalties" },
   { label: "Why LegalTerminus", id: "why" },
   { label: "FAQ's", id: "faq" },
@@ -17,7 +17,6 @@ const EPFRegTabs = () => {
 
   const handleClick = (index, id) => {
     setActiveIndex(index);
-
     const section = document.getElementById(id);
     if (section) {
       const tabsEl = document.querySelector(".pvt-tabs-section");

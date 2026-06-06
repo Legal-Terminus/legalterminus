@@ -1,117 +1,106 @@
 import React from "react";
-import "./EPFRegOverview.css";
-import epfHeroImg from "../../assets/img-5.webp";
-import epfInfoImg from "../../assets/img-4.webp";
+import "../PvtltdCompanyTab/PvtltdCompanyTab.css";
+import epfIllustration from "../../assets/whypvt-imp.svg";
 
-const EPFRegistration = () => {
+const EPFRegOverview = () => {
   return (
-    <section className="epf-wrapper">
+    <div className="pvt-full-wrapper">
 
-      {/* ===== SECTION 1 : OVERVIEW ===== */}
-      <div className="epf-overview">
-        <div className="epf-overview-text">
-          <h2>EPF Registration – An Overview</h2>
-          <p>
-            For those who are working as an employee in an organization, the Employee Provident Fund (EPF) is a specialist fund that offers retirement and related benefits.
-          </p>
-          <p>
-            Under The Employees' Provident Funds and Miscellaneous Provisions Act, 1952, organizations that meet certain requirements—including all workers receiving fixed wages—must register for EPF. To avoid fines, employers must proceed with EPF registration within a month of recruiting more than 20 workers.
-          </p>
-          <p>
-            Every employee receives an EPF number and a Universal Account Number (UAN), which are unaffected by changes in employment. Section 2(3) of the Act applies to all establishments in India. EPF registration in India is mandatory for employers with 20+ employees.
-          </p>
-          <p>
-            Get employees provident fund organization registration along with easy epfo signup through our experts and streamline your company pf registration journey.
-          </p>
+      {/* INTRO SECTION */}
+      <section className="pvt-intro-section">
+        <div className="pvt-intro-container">
+          <div className="pvt-intro-illustration-wrap">
+            <img
+              src={epfIllustration}
+              alt="EPF Registration illustration"
+              className="pvt-intro-illustration"
+            />
+          </div>
+          <div className="pvt-intro-content">
+            <h2 className="pvt-intro-title">
+              Why EPF Registration Matters
+            </h2>
+            <p className="pvt-intro-text">
+              Employee Provident Fund (EPF) registration is not just a legal obligation — it is the foundation of your relationship with every employee you hire. Under the Employees' Provident Funds and Miscellaneous Provisions Act, 1952, any establishment with 20 or more employees is mandated to register with EPFO. But beyond compliance, EPF signals organizational maturity: it improves talent retention, builds employee trust, and positions your business for smoother inspections and statutory audits.
+            </p>
+            <p className="pvt-intro-text">
+              The EPF Act creates a three-scheme framework: the Employees' Provident Fund Scheme (savings), the Employees' Pension Scheme (EPS), and the Employees' Deposit-Linked Insurance Scheme (EDLI). Each operates through the same 12% + 12% contribution model but allocates funds differently across retirement savings, pension, and life cover. Understanding this structure upfront saves employers from costly payroll errors that compound over years.
+            </p>
+          </div>
         </div>
+      </section>
 
-        <div className="epf-overview-img">
-          <img src={epfHeroImg} alt="EPF Registration" />
-        </div>
-      </div>
-
-      {/* ===== SECTION 2 : WHAT IS EPF ===== */}
-      <div className="epf-info">
-        <div className="epf-info-img">
-          <img src={epfInfoImg} alt="What is EPF" />
-        </div>
-
-        <div className="epf-info-text">
-          <h2>What is an EPF?</h2>
-          <p>
-            The term "EPF" stands for Employee Provident Fund, a retirement savings plan popular in nations like India and Malaysia in which both the company and the employee contribute.
+      {/* COMPARISON / CONTRIBUTION TABLE */}
+      <section className="pvt-compare-section">
+        <div className="pvt-compare-container">
+          <h2 className="pvt-compare-title">EPF Contribution Breakdown</h2>
+          <p className="pvt-compare-subtitle">
+            Where does each rupee of contribution go? The full picture for employers and employees:
           </p>
-          <p>
-           The Employee Provident Fund Ordinance, which was later transformed into the Employees' Provident Funds & Miscellaneous Provisions Act, of 1952, which applied to all states, was how the Indian government founded the EPF in 1951.
-          </p>
-          <p>
-            Maintaining a strong relationship between employer and employee is the fund's primary goal. EPF provides EPS, risk coverage, and a uniform account to meet emergency needs and long-term goals. Businesses need to register with EPFO.
-          </p>
-
-          <button className="epf-primary-btn">
-            Book Free Consultation Now
-          </button>
+          <div className="pvt-compare-table-wrapper">
+            <table className="pvt-compare-table">
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Employer Share</th>
+                  <th>Employee Share</th>
+                  <th>Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>EPF (PF Account)</td>
+                  <td>3.67% of Basic</td>
+                  <td>12% of Basic</td>
+                  <td>Retirement Savings</td>
+                </tr>
+                <tr>
+                  <td>EPS (Pension Scheme)</td>
+                  <td>8.33% (capped ₹15K basic)</td>
+                  <td>Nil</td>
+                  <td>Monthly Pension</td>
+                </tr>
+                <tr>
+                  <td>EDLI (Insurance)</td>
+                  <td>0.5% (max ₹75/month)</td>
+                  <td>Nil</td>
+                  <td>Life Cover up to ₹7L</td>
+                </tr>
+                <tr>
+                  <td>EPF Admin Charges</td>
+                  <td>0.5% (min ₹500/month)</td>
+                  <td>Nil</td>
+                  <td>EPFO Administration</td>
+                </tr>
+                <tr>
+                  <td>Total Contribution</td>
+                  <td>~13% of Basic</td>
+                  <td>12% of Basic</td>
+                  <td>Combined</td>
+                </tr>
+                <tr>
+                  <td>Applicability</td>
+                  <td colSpan="2">20+ Employees (Mandatory) | &lt;20 (Voluntary)</td>
+                  <td>Basic salary ≤ ₹15,000/month mandatory</td>
+                </tr>
+                <tr>
+                  <td>ECR Filing Due Date</td>
+                  <td colSpan="2">15th of every month</td>
+                  <td>Delay = 12% p.a. interest</td>
+                </tr>
+                <tr>
+                  <td>Interest on EPF Balance</td>
+                  <td colSpan="2">8.25% p.a. (FY 2024–25)</td>
+                  <td>Tax-free up to ₹2.5L/year</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* ===== SECTION 3 : EMPLOYEE DEFINITION ===== */}
-      <div className="epf-employee">
-        <h2>
-          Meaning of Employee under EPF Registration
-        </h2>
-
-        <p>
-          As per Section 2(f) of the EPF Act, an employee includes any individual
-          earning wages directly or indirectly from an establishment.
-        </p>
-
-        <div className="epf-employee-grid">
-          {[
-            {
-              title: "Full-Time Employees",
-              desc: "Permanent employees working on a long-term basis with the organization."
-            },
-            {
-              title: "Part-Time Employees",
-              desc: "Employees working for limited hours but still covered under EPF."
-            },
-            {
-              title: "Work From Home Employees",
-              desc: "Remote employees working for a fixed duration under the employer."
-            },
-            {
-              title: "Contractors",
-              desc: "Individuals hired for specific projects under the establishment."
-            },
-            {
-              title: "Consultants",
-              desc: "Professionals providing consulting services for a defined period."
-            },
-            {
-              title: "Freelancers",
-              desc: "Freelancers included under EPF per Social Security Code amendments."
-            }
-          ].map((item, index) => (
-            <div className="epf-employee-card" key={index}>
-              <span className="epf-check">✔</span>
-              <div>
-                <h4>{item.title}</h4>
-                <p>{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ===== SECTION 4 : CTA ===== */}
-      <div className="epf-cta">
-        <button className="epf-secondary-btn">
-          Schedule a Call Now
-        </button>
-      </div>
-
-    </section>
+    </div>
   );
 };
 
-export default EPFRegistration;
+export default EPFRegOverview;
