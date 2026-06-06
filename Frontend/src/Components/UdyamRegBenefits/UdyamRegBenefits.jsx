@@ -48,7 +48,6 @@ const UdyamRegBenefits = () => {
         <div className="req-grid">
           {benefits.map((item, index) => (
             <article className="req-card" key={index}>
-              <div className="udyam-benefit-number">{item.num}</div>
               <h3 className="req-card-title">{item.title}</h3>
               <div className="req-card-underline" />
               <p className="req-card-text">{item.desc}</p>
