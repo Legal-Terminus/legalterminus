@@ -1,75 +1,65 @@
 import React from 'react';
-import './UdyamRegBreadcrum.css'
-import bgImage from '../../assets/breadcrum.png';
-
+import '../Breadcrum/Breadcrum.css';
 import ConsultationForm from '../ConsultationForm/ConsultationForm';
-const Breadcrum = () => {
+
+const UdyamRegBreadcrum = () => {
   return (
-    <section
-      className="breadcrum"
-      style={{ '--bg': `url(${bgImage})` }}
-    >
-      <div className="reg-breadcrum-inner">
-        {/* LEFT PANEL */}
-        <div className="reg-breadcrum-left-panel">
-         <h1 className="reg-breadcrum-title">
-              <span className="reg-breadcrum-orange">Udyam Registration Online </span>
-              <span className="reg-breadcrum-black">in India</span>
-            </h1>
+    <section className="lt-public-hero">
+      <div className="lt-public-container">
 
-          <h3 className="reg-breadcrum-subtitle">
-            <strong>Save 50% Today</strong>{' '}
-            <span>
-              on <strong>Professional Services</strong>
-            </span>
-          </h3>
+        {/* LEFT CONTENT */}
+        <div className="lt-public-content">
 
-          <p className="reg-breadcrum-desc">
-            Legal Terminus can help you with Private Limited Company registration, as and when required, in a hassle-free manner within a reasonable time span. We provide competitive professional fees starting at Rs. 3,999/- for your needs in private limited company registration in India. 
+          <span className="lt-public-tag">
+            Udyam / MSME Registration
+          </span>
+
+          <h1 className="lt-public-title">
+            Udyam / MSME Registration
+            <span className="lt-title-india"> in India</span>
+            <br />
+            <span className="lt-public-subtitle">Save 50% Today on Professional Services</span>
+          </h1>
+
+          <p className="lt-public-description">
+            Udyam Registration is the official government process for MSME recognition in India, governed by the Ministry of MSME. A Udyam certificate gives your business a unique 19-digit Udyam Registration Number (URN), unlocks priority sector lending, enables participation in government tenders, and protects you under the MSMED Act. The registration is completely free on the government portal — no fees, no renewals, lifetime validity.
           </p>
 
-          <h4 className="reg-breadcrum-included">What's Included?</h4>
-
-          <div className="reg-breadcrum-features">
-            <ul className="reg-breadcrum-col">
-              <li>Registration in 1-2 Weeks</li>
-              <li>MCA Name Approval</li>
-              <li>DSC in 2-4 Days</li>
-            </ul>
-            <ul className="reg-breadcrum-col">
-              <li>DIN, PAN, and SPICE+ Compliance</li>
-              <li>MOA &amp; AOA Drafting</li>
-            </ul>
+          <div className="lt-public-features">
+            <div className="lt-feature-item">Free Government Registration</div>
+            <div className="lt-feature-item">Lifetime MSME Certificate</div>
+            <div className="lt-feature-item">Priority Sector Lending Access</div>
+            <div className="lt-feature-item">Government Tender Eligibility</div>
           </div>
 
-          <p className="reg-breadcrum-note">
-            <span className="reg-breadcrum-star">★</span>
-            Register 100+ Companies Every Month + Save 18% with GST Registration
-          </p>
-
-          <div className="reg-breadcrum-cta-row">
-            <button className="reg-breadcrum-schedule-btn">Book a Schedule ➜</button>
-
-            <div className="reg-breadcrum-reviews">
-              <div className="reg-breadcrum-google">
-                <img src="https://corpbiz.io/img/google.webp" alt="" />
-              </div>
-              <div className="reg-breadcrum-trustpilot">
-                <img src="https://corpbiz.io/img/trustpilot.webp" alt="" />
-                
-              </div>
+          <div className="lt-public-highlights">
+            <div>
+              <h3>10,000+</h3>
+              <p>Udyam certificates issued</p>
+            </div>
+            <div>
+              <h3>₹0 Govt Fee</h3>
+              <p>Completely free registration</p>
+            </div>
+            <div>
+              <h3>1–2 Days</h3>
+              <p>End-to-end processing</p>
             </div>
           </div>
+
         </div>
 
         {/* RIGHT FORM */}
-        <ConsultationForm
-          source="udyam-registration"
-          subtitle="Talk to our expert"
-        />
+        <div id="udyam-consult-form">
+          <ConsultationForm
+            source="udyam-registration"
+            subtitle="Talk to our Udyam registration expert"
+          />
+        </div>
+
       </div>
     </section>
   );
 };
 
-export default Breadcrum;
+export default UdyamRegBreadcrum;
