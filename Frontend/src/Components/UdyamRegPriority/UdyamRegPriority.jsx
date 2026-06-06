@@ -26,7 +26,7 @@ const UdyamRegPriority = () => {
                   <span className="udyamzp-title-icon">⚖</span>
                 </h2>
                 <p className="udyamzp-subtitle">
-                  Udyam sounds straightforward — enter Aadhaar, pick a code, submit. The reality is messier: wrong NIC codes trigger classification disputes, unlinked Aadhaar mobiles block the OTP, and misdeclared turnover figures auto-flag under GSTR mismatch. Priority is what happens when a senior expert owns your file from document check to certificate delivery.
+                  Anyone can file a UDYAM in 30 minutes, for free. The reason most businesses still pay for it: the wrong NIC code reclassifies you later, future updates / corrections need professional handling, and bundling Udyam with GST and Trademark from the same expert keeps your name and address consistent across all certificates so banks and buyers don't reject KYC for mismatches.
                 </p>
               </header>
 
@@ -35,23 +35,27 @@ const UdyamRegPriority = () => {
                 <ul className="udyamzp-list udyamzp-features-list">
                   <li className="udyamzp-list-item">
                     <span className="udyamzp-list-icon">⚡</span>
-                    Same-day filing SLA — submit your documents before 5 PM and your Udyam Number is generated the same day.
+                    Same-day UDYAM Registration filing upon receipt of complete documents.
                   </li>
                   <li className="udyamzp-list-item">
-                    <span className="udyamzp-list-icon">✅</span>
-                    Expert NIC code review — we map your primary activity to the correct code to avoid classification disputes or scheme ineligibility.
-                  </li>
-                  <li className="udyamzp-list-item">
-                    <span className="udyamzp-list-icon">✅</span>
-                    Pre-filing document check — we verify your Aadhaar mobile linkage, PAN status, and entity proof before hitting the portal.
+                    <span className="udyamzp-list-icon">🎯</span>
+                    Expert review of your business activities and selection of appropriate NIC Codes.
                   </li>
                   <li className="udyamzp-list-item">
                     <span className="udyamzp-list-icon">🔄</span>
-                    Real-time status updates on email and WhatsApp — know exactly where your application stands without chasing us.
+                    Free support for UDYAM profile updates, corrections, and modifications for 1 year.
+                  </li>
+                  <li className="udyamzp-list-item">
+                    <span className="udyamzp-list-icon">📱</span>
+                    Real-time status updates via Email and WhatsApp throughout the registration process.
                   </li>
                   <li className="udyamzp-list-item">
                     <span className="udyamzp-list-icon">📑</span>
-                    Post-registration kit: Udyam Certificate PDF, NIC code summary, and MSME scheme eligibility checklist.
+                    Post-registration kit including UDYAM Certificate, MSME benefits guide, and compliance support resources.
+                  </li>
+                  <li className="udyamzp-list-item">
+                    <span className="udyamzp-list-icon">🤝</span>
+                    Single point of contact for UDYAM, GST, Trademark, Startup India, and other business registrations.
                   </li>
                 </ul>
               </section>
@@ -63,19 +67,16 @@ const UdyamRegPriority = () => {
             <div className="udyamzp-note-box">
               <ul className="udyamzp-note-list">
                 <li className="udyamzp-note-item">
-                  Only ONE Udyam Registration is allowed per enterprise (per PAN). If you operate multiple business activities, all must be covered under a single Udyam certificate — additional registrations under the same PAN are invalid and can lead to cancellation.
+                  Aadhaar must be mobile-linked for OTP. If your registered mobile number changed and you didn't update Aadhaar, the filing fails. Update at any UIDAI centre BEFORE applying. Takes 7–10 days.
                 </li>
                 <li className="udyamzp-note-item">
-                  Your Aadhaar mobile number must be linked to UIDAI for OTP authentication. If it is not, you must update it at an Aadhaar Seva Kendra before we can proceed — this is a mandatory portal requirement, not something we can bypass.
+                  PAN-Aadhaar linkage is now mandatory (post-30 June 2023 deadline). Unlinked PANs are inoperative — Udyam filing on an inoperative PAN gets rejected. Check at incometax.gov.in before applying.
                 </li>
                 <li className="udyamzp-note-item">
-                  Udyam is self-declaration-based, but turnover and investment figures are cross-verified against your ITR and GSTR data from FY 2020-21 onwards. Providing inflated or incorrect figures to get a lower classification constitutes misdeclaration and attracts penalties under Section 27 of the MSMED Act.
+                  NIC code matters more than people think. Pick wrong (e.g. trading code for a manufacturing business) and you become ineligible for manufacturing-only subsidies (PMEGP capital subsidy, ZED tier benefits). We map carefully against your activities.
                 </li>
                 <li className="udyamzp-note-item">
-                  MSME classification thresholds were revised upward by Budget 2025 (effective 1 April 2025). Micro is now up to Rs.2.5 Cr investment and Rs.10 Cr turnover. If you were previously classified as Small, you may now qualify as Micro — we will reassess your classification before filing.
-                </li>
-                <li className="udyamzp-note-item">
-                  Udyam Registration has lifetime validity but requires annual update of turnover and investment details based on your ITR filing. We recommend reviewing your classification every year to ensure you continue to avail correct scheme benefits.
+                  Udyam classification updates AUTOMATICALLY based on your ITR + GSTR data each year. If your investment + turnover crosses the slab during a year, you graduate to the next tier next FY (Micro → Small → Medium). Plan growth around this — some MSME benefits drop off above the Micro threshold.
                 </li>
               </ul>
             </div>

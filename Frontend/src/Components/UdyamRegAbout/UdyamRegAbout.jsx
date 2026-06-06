@@ -1,27 +1,68 @@
 import React from "react";
 import "./UdyamRegAbout.css";
+import udyamIllustration from "../../assets/whypvt-imp1.svg";
 
 const UdyamRegAbout = () => {
   return (
-    <section className="udyam-about-section">
-      <div className="udyam-about-container">
-        <h2 className="udyam-about-title">Introduction</h2>
+    <div className="udyam-full-wrapper">
 
-        <p className="udyam-about-text">
-          Micro, Small, and Medium Enterprises (MSMEs) play a pivotal role in India's economic growth. They employ over 11 crore (110 million) people, contribute approximately 29% to the country's GDP, and account for nearly 50% of India's total exports. Supporting MSMEs, therefore, is not merely about fostering a business category — it is about strengthening the backbone of the Indian economy and ensuring its continued vitality.
-        </p>
+      <section className="udyam-intro-section">
+        <div className="udyam-intro-container">
 
-        <h3 className="udyam-about-subtitle">What is Udyam Registration?</h3>
+          <div className="udyam-intro-illustration-wrap">
+            <img
+              src={udyamIllustration}
+              alt="Udyam MSME Registration illustration"
+              className="udyam-intro-illustration"
+            />
+          </div>
 
-        <p className="udyam-about-text">
-          Udyam Registration (also known as MSME registration) is an initiative by the Ministry of Micro, Small &amp; Medium Enterprises (MoMSME) designed to facilitate the online registration and certification of MSMEs. The program aims to simplify the registration process, making it easier for enterprises to gain official recognition and access to a range of government schemes, incentives, and support services.
-        </p>
+          <div className="udyam-intro-content">
+            <h2 className="udyam-intro-title">
+              What is Udyam / MSME Registration?
+            </h2>
+            <p className="udyam-intro-text">
+              Udyam Registration is the official MSME registration issued by the Ministry of Micro, Small &amp; Medium Enterprises (MoMSME), Government of India. Launched on 1 July 2020 as the successor to the Udyog Aadhaar system, it replaced all earlier registrations (EM-I / EM-II / UAM) and is now the only valid MSME certificate recognised for government schemes, bank priority lending, and tender participation.
+            </p>
+            <p className="udyam-intro-text">
+              MSMEs are the backbone of the Indian economy — contributing approximately 29% to GDP, employing over 11 crore people, and accounting for nearly 50% of total exports. Udyam Registration translates this economic significance into tangible business benefits: collateral-free loans, trademark fee waivers, delayed payment protections, and access to over 50 central and state government schemes. One self-declaration. One certificate. Lifetime validity.
+            </p>
+          </div>
+        </div>
+      </section>
 
-        <p className="udyam-about-highlight">
-          Get your Udyam Registration online with ease through Legal Terminus. Register now and take the first step toward official recognition and government support!
-        </p>
-      </div>
-    </section>
+      <section className="udyam-compare-section">
+        <div className="udyam-compare-container">
+          <h2 className="udyam-compare-title">Udyam vs Udyog Aadhaar vs Shops Act: What's Different</h2>
+          <p className="udyam-compare-subtitle">
+            Many business owners confuse these registrations. Here's the honest comparison:
+          </p>
+          <div className="udyam-compare-table-wrapper">
+            <table className="udyam-compare-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Udyam Registration</th>
+                  <th>Udyog Aadhaar (old)</th>
+                  <th>Shops &amp; Est. Act</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Issued by</td><td>MoMSME (Central Govt)</td><td>MoMSME (Central Govt)</td><td>State Government</td></tr>
+                <tr><td>Status</td><td>Active (current)</td><td>Discontinued (2020)</td><td>Active (state-specific)</td></tr>
+                <tr><td>Basis</td><td>PAN + Aadhaar OTP</td><td>Aadhaar self-declaration</td><td>Business premises</td></tr>
+                <tr><td>MSME Loans</td><td>Yes — Priority Sector</td><td>No longer valid</td><td>No</td></tr>
+                <tr><td>Trademark Fee Waiver</td><td>Yes — 50% subsidy</td><td>No longer accepted</td><td>No</td></tr>
+                <tr><td>Government Tenders</td><td>Eligible (EMD waiver)</td><td>No longer accepted</td><td>Not applicable</td></tr>
+                <tr><td>Annual Update Required</td><td>Yes (ITR-based)</td><td>N/A</td><td>Renewal varies by state</td></tr>
+                <tr><td>Government Fee</td><td>NIL</td><td>NIL (discontinued)</td><td>State-based fee</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
   );
 };
 
