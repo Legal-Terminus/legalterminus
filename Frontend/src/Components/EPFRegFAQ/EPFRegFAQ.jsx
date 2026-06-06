@@ -3,55 +3,55 @@ import "./EPFRegFAQ.css";
 
 const epfFaqs = [
   {
-    question: "What are the regulatory bodies for EPF Registration?",
+    question: "When is EPF Registration in India mandatory for an establishment?",
     answer:
-      "EPF Registration is regulated by the Employees' Provident Fund Organisation (EPFO). The Employees' Provident Funds and Miscellaneous Provisions Act, 1952 governs the functioning, management, and compliance of provident fund accounts in India."
+      "EPF Registration in India becomes mandatory once an establishment employs 20 or more employees under the Employees' Provident Funds and Miscellaneous Provisions Act, 1952. Certain notified establishments may require registration with 10 or more employees. Employers are required to complete registration within the prescribed timeline to avoid penalties and compliance issues.",
   },
   {
-    question: "Does the PF account change if an employee switches jobs?",
+    question: "Can I apply for voluntary EPF Registration in India with fewer than 20 employees?",
     answer:
-      "No. The PF account remains the same throughout an employee's career. The Universal Account Number (UAN) allows seamless transfer of PF balances when changing jobs."
+      "Yes. Businesses with fewer than 20 employees can also opt for voluntary EPF Registration in India with the consent of the employer and employees. Many businesses choose voluntary registration to provide better employee benefits, improve retention, and build professional credibility.",
   },
   {
-    question: "When is an organization required to get EPF Registration?",
+    question: "What is included in your EPF Registration in India service fee?",
     answer:
-      "An organization must register for EPF when it employs 20 or more employees. Voluntary registration is also permitted for establishments with fewer employees."
+      "Our professional fee for EPF Registration in India covers advisory, document review, Form 5A preparation, EPFO portal filing assistance, DSC coordination, employee UAN guidance, and post-registration support. The Government does not charge any registration fee for EPF Registration.",
   },
   {
-    question: "When is ESIC registration made necessary?",
+    question: "How long does EPF Registration in India take?",
     answer:
-      "ESIC registration becomes mandatory when an organization employs 10 or more employees (in most states) and the employee wages fall within the prescribed limit."
+      "EPF Registration in India generally takes around 5–7 working days, depending on document availability, DSC readiness, and verification processes. Timelines may vary based on the accuracy and completeness of the submitted documents.",
   },
   {
-    question: "Which employees get PF benefits?",
+    question: "What is the difference between EPF and EPS under EPF Registration in India?",
     answer:
-      "All salaried employees earning wages as defined under the EPF Act are eligible for PF benefits, including full-time, part-time, and contractual employees."
+      "Under EPF Registration in India, EPF (Employees' Provident Fund) is the employee's retirement savings contribution, while EPS (Employees' Pension Scheme) provides pension benefits after retirement. Both are managed under the EPF framework and form part of the employee social security system.",
   },
   {
-    question: "What is an Employee Deposit Linked Insurance Scheme?",
+    question: "What is included in the 1-year free support for EPF Registration in India?",
     answer:
-      "EDLI provides life insurance coverage to EPF members. In case of the employee's death during service, the nominee receives insurance benefits linked to PF contributions."
+      "Our EPF Registration in India plans include 1 year of support for profile updates and basic changes such as authorised signatory updates, address changes, DSC updates, and establishment detail modifications.",
   },
   {
-    question: "What is the time required to get the money from the EPF account?",
+    question: "Are employees earning above ₹15,000 mandatorily covered under EPF Registration in India?",
     answer:
-      "PF withdrawals typically take 7–20 working days once the claim is submitted and verified through the EPFO portal."
+      "Employees earning above the prescribed wage threshold at the time of joining may opt out of EPF coverage subject to applicable EPFO rules. However, many employees voluntarily continue EPF membership due to its long-term retirement and tax benefits.",
   },
   {
-    question: "Is the amount received as PF taxable?",
+    question: "What monthly compliance is required after EPF Registration in India?",
     answer:
-      "PF withdrawals are tax-free if the employee has completed 5 years of continuous service. Otherwise, tax may apply as per income tax rules."
+      "After EPF Registration in India, employers are required to file monthly EPF returns, deposit employee and employer contributions within due dates, maintain employee records, and ensure proper UAN and KYC management for employees.",
   },
   {
-    question: "How much time is required to obtain EPF Registration?",
+    question: "Why should businesses choose professional assistance for EPF Registration in India?",
     answer:
-      "EPF Registration usually takes 10–15 working days, provided all documents and details are correctly submitted."
+      "Professional assistance for EPF Registration in India helps businesses avoid errors in registration, employee onboarding, UAN setup, and compliance management. Proper guidance ensures smooth registration, accurate documentation, and hassle-free post-registration support.",
   },
   {
-    question: "What are the changes brought in PF contribution since COVID-19?",
+    question: "How can Legal Terminus help with EPF Registration in India?",
     answer:
-      "During COVID-19, the PF contribution rate was temporarily reduced from 12% to 10% for both employers and employees to provide financial relief."
-  }
+      "Legal Terminus provides end-to-end assistance for EPF Registration in India, including document review, Form 5A preparation, portal filing support, employee onboarding guidance, and post-registration assistance. Our team also supports profile updates, compliance guidance, and coordination for related labour law registrations through a single point of contact.",
+  },
 ];
 
 const EPFFaq = () => {
@@ -65,7 +65,6 @@ const EPFFaq = () => {
     <section className="faq-section">
       <div className="faq-container">
 
-        {/* Centered heading & subheading */}
         <div className="faq-header">
           <h2 className="faq-title">EPF Registration — FAQs</h2>
           <p className="faq-intro">
@@ -73,7 +72,6 @@ const EPFFaq = () => {
           </p>
         </div>
 
-        {/* Full-width staggered FAQ accordion */}
         <div className="faq-list">
           {epfFaqs.map((item, index) => {
             const isActive = index === activeIndex;

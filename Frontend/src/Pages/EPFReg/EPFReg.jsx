@@ -11,8 +11,6 @@ import EPFRegApplicability from '../../Components/EPFRegApplicability/EPFRegAppl
 import EPFRegBenefits from '../../Components/EPFRegBenefits/EPFRegBenefits'
 import EPFRegProcess from '../../Components/EPFRegProcess/EPFRegProcess'
 import EPFRegDocuments from '../../Components/EPFRegDocuments/EPFRegDocuments'
-import EPFRegPenalties from '../../Components/EPFRegPenalties/EPFRegPenalties'
-import EPFRegWhy from '../../Components/EPFRegWhy/EPFRegWhy'
 import EPFRegFAQ from '../../Components/EPFRegFAQ/EPFRegFAQ'
 
 const EPFReg = () => {
@@ -72,18 +70,6 @@ const EPFReg = () => {
 
       <div id="documents">
         <EPFRegDocuments />
-      </div>
-
-      <div className="section-divider" />
-
-      <div id="penalties">
-        <EPFRegPenalties />
-      </div>
-
-      <div className="section-divider" />
-
-      <div id="why">
-        <EPFRegWhy />
       </div>
 
       <div className="section-divider" />

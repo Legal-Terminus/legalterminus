@@ -1,65 +1,82 @@
 import React from "react";
 import "../CopyPvtDocument/CopyPvtDocument.css";
-import { FaUser, FaBuilding, FaIdCard, FaFileAlt, FaPen, FaBolt, FaFileContract, FaShieldAlt } from "react-icons/fa";
+import {
+  FaBuilding,
+  FaUser,
+  FaBolt,
+  FaMoneyBillWave,
+  FaIdCard,
+  FaFileContract,
+} from "react-icons/fa";
 
-const employerDocs = [
+const leftDocs = [
   {
-    icon: <FaIdCard />,
-    title: "Owner / Director Identity",
-    note: "Mandatory for all proprietors, directors, and partners",
+    icon: <FaBuilding />,
+    title: "Entity Identity",
+    note: "Mandatory for all entity types",
     items: [
-      "PAN Card of Proprietor / Directors / Partners (mandatory)",
-      "Aadhaar Card of Proprietor / Directors / Partners",
-      "Passport-size photograph of all authorized signatories",
+      "Entity PAN (mandatory)",
+      "Certificate of Incorporation (Pvt Ltd / LLP) OR Partnership Deed (firms) OR Trade Licence / GST Certificate (proprietorship)",
+      "MSME / Udyam certificate (if available)",
+      "GSTIN of entity",
     ],
   },
   {
-    icon: <FaFileAlt />,
-    title: "Address Proof (Per Person)",
-    note: "Not older than 60 days from date of filing",
+    icon: <FaUser />,
+    title: "Authorised Signatory Identity",
+    note: "Per signatory — mobile-linked Aadhaar required for OTP",
     items: [
-      "Bank statement, gas bill, or mobile bill — not older than 60 days from filing date",
+      "Aadhaar of authorised signatory (mobile-linked for OTP)",
+      "PAN",
+      "Photograph",
+      "Designation letter / Board Resolution authorizing signatory for EPF filings",
+      "Email + mobile number",
     ],
   },
   {
-    icon: <FaPen />,
-    title: "Digital Signature Certificate",
-    note: "Required for online EPFO portal submission",
+    icon: <FaBolt />,
+    title: "Establishment Address Proof",
+    note: "Utility bill not older than 60 days",
     items: [
-      "Class 2 or Class 3 DSC of the authorized signatory for online EPFO portal filing",
+      "Latest electricity / gas / municipal tax bill (≤ 60 days old)",
+      "Property owner NoC if rented",
+      "Rent agreement (notarised)",
+      "Photograph of office front-board",
+      "Branch addresses if multi-location",
     ],
   },
 ];
 
-const establishmentDocs = [
+const rightDocs = [
   {
-    icon: <FaBolt />,
-    title: "Business Registration Proof",
-    note: "Proof of the legal existence of the establishment",
+    icon: <FaMoneyBillWave />,
+    title: "Bank Account Details",
+    note: "Current account preferred; savings acceptable for proprietorship",
     items: [
-      "Certificate of Incorporation (for companies)",
-      "Partnership Deed (for partnerships / LLPs)",
-      "GST Registration Certificate (if registered)",
+      "Cancelled cheque OR first page of bank passbook with IFSC + account holder name",
+      "Current account preferred (savings account for proprietorship acceptable)",
+      "Bank details used for EPFO refunds and challan reconciliation",
+    ],
+  },
+  {
+    icon: <FaIdCard />,
+    title: "Employee KYC Pack",
+    note: "For each covered employee",
+    items: [
+      "PAN + Aadhaar (mobile-linked) + bank account with IFSC",
+      "Date of joining + designation + monthly basic + DA",
+      "UAN (if previously employed)",
     ],
   },
   {
     icon: <FaFileContract />,
-    title: "Business Address Proof",
-    note: "Utility bill not older than 2 months, or rent agreement",
+    title: "Salary Structure & Statutory Forms",
+    note: "Required for payroll and ECR setup",
     items: [
-      "Electricity Bill / Water Bill / Gas Bill (not older than 2 months)",
-      "Rent Agreement (if business premises is rented)",
-      "NOC from property owner (if applicable)",
-    ],
-  },
-  {
-    icon: <FaShieldAlt />,
-    title: "Financial & Statutory Documents",
-    note: "Bank account and entity-level tax documents",
-    items: [
-      "Cancelled Cheque or Bank Account Statement of the establishment",
-      "Entity PAN Card",
-      "Salary or wage register (if employees are already on payroll)",
+      "Wage structure for each employee (Basic + DA + HRA + Allowances + Bonus)",
+      "Appointment letters / wage register",
+      "Form 11 (Declaration) signed by each employee at joining — declaring previous PF / EPS / IW status",
+      "Form 2 (Nomination) for each employee",
     ],
   },
 ];
@@ -88,21 +105,23 @@ const EPFRegDocuments = () => {
 
         <div className="cpvd-header">
           <h2 className="cpvd-main-title">Documents Required for EPF Registration in India</h2>
-          <p className="cpvd-main-subtitle">Get these ready and we'll take care of the rest</p>
+          <p className="cpvd-main-subtitle">
+            Six categories. Establishment-level docs apply to the entity; per-employee docs apply to every covered employee. We send a personalised checklist after the discovery call.
+          </p>
         </div>
 
         <div className="cpvd-columns">
 
           <div className="cpvd-column">
             <div className="cpvd-col-header">
-              <div className="cpvd-col-header-icon"><FaUser /></div>
+              <div className="cpvd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="cpvd-col-title">Employer / Owner Documents</h3>
-                <p className="cpvd-col-subtitle">Required for each proprietor, director & partner</p>
+                <h3 className="cpvd-col-title">Entity, Signatory &amp; Address Documents</h3>
+                <p className="cpvd-col-subtitle">Identity, authorisations &amp; establishment proof</p>
               </div>
             </div>
             <div className="cpvd-col-body">
-              {employerDocs.map((doc, i) => (
+              {leftDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>
@@ -110,14 +129,14 @@ const EPFRegDocuments = () => {
 
           <div className="cpvd-column">
             <div className="cpvd-col-header cpvd-col-header--office">
-              <div className="cpvd-col-header-icon"><FaBuilding /></div>
+              <div className="cpvd-col-header-icon"><FaIdCard /></div>
               <div>
-                <h3 className="cpvd-col-title">Establishment Documents</h3>
-                <p className="cpvd-col-subtitle">Required for the registered business entity</p>
+                <h3 className="cpvd-col-title">Banking, Employee KYC &amp; Statutory Forms</h3>
+                <p className="cpvd-col-subtitle">Bank details, employee KYC &amp; payroll forms</p>
               </div>
             </div>
             <div className="cpvd-col-body">
-              {establishmentDocs.map((doc, i) => (
+              {rightDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>
