@@ -15,32 +15,35 @@ const Breadcrum = () => {
           </span>
 
           <h1 className="lt-public-title">
-            Section-8 Company Registration 
-            <span> in India</span>
+            Section-8 Company Registration
+            <span className="lt-title-india"> in India</span>
+            <br />
+            <span className="lt-public-subtitle">NGO Registration Made Professional</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus can help you with the section 8 company registration in India, also known as non-profit organizations. Our services ensure a hassle-free process, completed within a reasonable timeframe, and at a competitive professional fee starting from Rs. 7,999/- (excluding govt fee). Trust us to streamline your section 8 company registration in India, making the process efficient and seamless.
+            A Section 8 Company is the ideal legal structure for NGOs, non-profits, foundations, charitable organizations, and social impact ventures in India. Registered under the Companies Act, 2013, it offers a professional and credible structure with better governance and legal recognition compared to Trusts and Societies. Section 8 Companies are eligible to apply for important registrations and tax benefits such as 12A, 80G, CSR-1, and FCRA, subject to eligibility and approval from the respective authorities.
+            We provide complete assistance for Section 8 Company registration, including name approval, license application, incorporation filing, and post-registration compliance support.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Minimum 2 Persons Required</div>
-            <div className="lt-feature-item"> Minimum 2 Directors Required</div>
-            <div className="lt-feature-item"> 10 to 15 Working Days</div>
-            <div className="lt-feature-item"> High Business Credibility</div>
+            <div className="lt-feature-item">Ideal for NGOs &amp; Non-Profits</div>
+            <div className="lt-feature-item">12A, 80G &amp; CSR Eligible</div>
+            <div className="lt-feature-item">Fully Online Process</div>
+            <div className="lt-feature-item">Higher Legal Credibility</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <h3>500+</h3>
+              <p>Section 8 companies set up</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Process</p>
+              <h3>INC-12 + SPICe+</h3>
+              <p>central-govt licence handled</p>
             </div>
             <div>
-              <h3>5+</h3>
+              <h3>7+</h3>
               <p>Years of Legal Expertise</p>
             </div>
           </div>
