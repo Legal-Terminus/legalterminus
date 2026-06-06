@@ -1,54 +1,45 @@
 import React, { useState } from "react";
 import "../PvtltdPlanandPricing/PvtltdPlanandPricing.css";
+import "./EPFRegPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "elemental",
+    id: "epf-elemental",
     name: "Elemental",
-    price: 1499,
-    services: [
-      "EPF Registration with EPFO Portal",
-      "UAN Generation for up to 5 Employees",
-      "Digital Signature (if required)",
-      "EPFO Login Credentials Setup",
-      "Establishment Registration Certificate",
-    ],
-  },
-  {
-    id: "enriched",
-    name: "Enriched",
+    oldPrice: "₹3,999",
     price: 2999,
     services: [
-      "Everything in Elemental",
-      "ESI Registration",
-      "UAN Activation for All Employees",
-      "Monthly ECR Filing (1 Month)",
-      "Salary Structure Advisory",
+      "EPF Registration via EPFO unified portal",
+      "Form 5A filing for establishment registration",
+      "Establishment Code (Employer ID) allotment",
+      "DSC coordination for authorized signatory/e-sign approvals",
     ],
   },
   {
-    id: "supreme",
-    name: "Supreme",
+    id: "epf-enriched",
+    name: "Enriched",
+    badge: "popular",
+    oldPrice: "₹7,999",
     price: 5999,
     services: [
-      "Everything in Enriched",
-      "Quarterly ECR Filing Support",
-      "PF Withdrawal Assistance",
-      "Annual PF Audit Support",
-      "Employee Transfer Claim Support",
+      "Everything in Elemental",
+      "UAN activation for up to 10-15 employees",
+      "3 Month ECR (Electronic Challan-cum-Return) walkthrough",
     ],
   },
   {
-    id: "supreme-plus",
-    name: "Supreme Plus",
-    price: 9999,
+    id: "epf-supreme",
+    name: "Supreme",
+    badge: "fullservice",
+    oldPrice: "₹10,999",
+    price: 8999,
     services: [
-      "Everything in Supreme",
-      "Annual Compliance Management",
-      "EPFO Inspection Support",
-      "Employee Exit PF Settlement",
-      "Dedicated Account Manager",
+      "Everything in Enriched",
+      "UAN activation for up to 15-30 employees",
+      "6 Month ECR (Electronic Challan-cum-Return) walkthrough",
+      "Free EPF updates / changes for 3 Months",
+      "90-day priority payroll-expert helpline",
     ],
   },
 ];
@@ -58,7 +49,7 @@ const EPFRegPricing = () => {
 
   return (
     <>
-      <section className="pvtltd-pricing-section">
+      <section className="pvtltd-pricing-section epf-pricing-section">
         <div className="pricing-container">
 
           <header className="pricing-header">
@@ -69,103 +60,57 @@ const EPFRegPricing = () => {
           </header>
 
           <div className="pricing-cards">
+            {PLANS.map((plan) => {
+              const isPopular = plan.badge === "popular";
+              const isFullService = plan.badge === "fullservice";
+              const cardClass = [
+                "plan-card",
+                isPopular ? "plan-card--popular" : "",
+                isFullService ? "plan-card--fullservice" : "",
+              ]
+                .filter(Boolean)
+                .join(" ");
 
-            {/* Elemental */}
-            <article className="plan-card">
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Elemental</div>
-                  <div className="plan-old-price">₹2,999</div>
-                  <div className="plan-price">₹{PLANS[0].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
-                </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[0].services.map((s) => (
-                      <li key={s} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-              </div>
-            </article>
-
-            {/* Enriched */}
-            <article className="plan-card plan-card--popular">
-              <div className="plan-popular-badge">★ MOST POPULAR</div>
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Enriched</div>
-                  <div className="plan-old-price">₹4,999</div>
-                  <div className="plan-price">₹{PLANS[1].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
-                </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[1].services.map((s) => (
-                      <li key={s} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-              </div>
-            </article>
-
-            {/* Supreme */}
-            <article className="plan-card">
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Supreme</div>
-                  <div className="plan-old-price">₹9,999</div>
-                  <div className="plan-price">₹{PLANS[2].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
-                </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[2].services.map((s) => (
-                      <li key={s} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-              </div>
-            </article>
-
-            {/* Supreme Plus */}
-            <article className="plan-card plan-card--fullservice">
-              <div className="plan-fullservice-badge">✦ FULL-SERVICE</div>
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Supreme Plus</div>
-                  <div className="plan-old-price">₹14,999</div>
-                  <div className="plan-price">₹{PLANS[3].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
-                </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[3].services.map((s) => (
-                      <li key={s} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[3])}>Buy Now</button>
-              </div>
-            </article>
-
+              return (
+                <article key={plan.id} className={cardClass}>
+                  {isPopular && <div className="plan-popular-badge">★ MOST POPULAR</div>}
+                  {isFullService && <div className="plan-fullservice-badge">✦ FULL-SERVICE</div>}
+                  <div>
+                    <div className="plan-header">
+                      <div className="plan-name">{plan.name}</div>
+                      <div className="plan-old-price">{plan.oldPrice}</div>
+                      <div className="plan-price">
+                        ₹{plan.price.toLocaleString("en-IN")}
+                      </div>
+                      <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
+                    </div>
+                    <div className="plan-body">
+                      <ul className="plan-list">
+                        {plan.services.map((s, i) => (
+                          <li key={i} className="plan-list-item">{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="plan-footer">
+                    <button className="plan-button" onClick={() => setActivePlan(plan)}>
+                      Buy Now
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
           </div>
+
         </div>
       </section>
 
       {activePlan && (
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="epf-registration" />
+        <CheckoutModal
+          plan={activePlan}
+          onClose={() => setActivePlan(null)}
+          source="epf-registration"
+        />
       )}
     </>
   );
