@@ -5,10 +5,8 @@ const tabs = [
   { label: "About", id: "about" },
   { label: "Types", id: "who" },
   { label: "Benefits", id: "benefits" },
-  { label: "Eligibility", id: "eligibility" },
-  { label: "Documents", id: "documents" },
   { label: "Process", id: "process" },
-  { label: "Why Us", id: "why" },
+  { label: "Documents", id: "documents" },
   { label: "FAQ's", id: "faq" },
 ];
 

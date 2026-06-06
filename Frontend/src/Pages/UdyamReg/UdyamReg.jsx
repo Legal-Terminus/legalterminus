@@ -10,10 +10,8 @@ const UdyamRegPriority = React.lazy(() => import('../../Components/UdyamRegPrior
 const UdyamRegAbout = React.lazy(() => import('../../Components/UdyamRegAbout/UdyamRegAbout'))
 const UdyamRegWho = React.lazy(() => import('../../Components/UdyamRegWho/UdyamRegWho'))
 const UdyamRegBenefits = React.lazy(() => import('../../Components/UdyamRegBenefits/UdyamRegBenefits'))
-const UdyamRegEligibility = React.lazy(() => import('../../Components/UdyamRegEligibility/UdyamRegEligibility'))
 const UdyamRegDocuments = React.lazy(() => import('../../Components/UdyamRegDocuments/UdyamRegDocuments'))
 const UdyamRegProcess = React.lazy(() => import('../../Components/UdyamRegProcess/UdyamRegProcess'))
-const UdyamRegWhy = React.lazy(() => import('../../Components/UdyamRegWhy/UdyamRegWhy'))
 const UdyamRegFAQ = React.lazy(() => import('../../Components/UdyamRegFAQ/UdyamRegFAQ'))
 
 const UdyamReg = () => {
@@ -61,26 +59,14 @@ const UdyamReg = () => {
 
       <div className="section-divider" />
 
-      <div id="eligibility">
-        <Suspense fallback={<div />}><UdyamRegEligibility /></Suspense>
-      </div>
-
-      <div className="section-divider" />
-
-      <div id="documents">
-        <Suspense fallback={<div />}><UdyamRegDocuments /></Suspense>
-      </div>
-
-      <div className="section-divider" />
-
       <div id="process">
         <Suspense fallback={<div />}><UdyamRegProcess /></Suspense>
       </div>
 
       <div className="section-divider" />
 
-      <div id="why">
-        <Suspense fallback={<div />}><UdyamRegWhy /></Suspense>
+      <div id="documents">
+        <Suspense fallback={<div />}><UdyamRegDocuments /></Suspense>
       </div>
 
       <div className="section-divider" />
