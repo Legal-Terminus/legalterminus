@@ -4,33 +4,33 @@ import "./Section8PvtTypes.css";
 const types = [
   {
     num: "01",
-    title: "Education-Focused Section 8 Company",
-    text: "Established to promote formal and informal education, skill development, literacy, or vocational training. Eligible for 12A tax exemption and CSR grants from corporates with education as a Schedule VII activity. May run schools, e-learning platforms, scholarship programs, or teacher-training initiatives.",
+    title: "Education-Focused Section 8",
+    text: "For educational foundations, scholarship trusts, online learning non-profits, and digital literacy initiatives. Object clause focuses on advancement of education. Pairs with 12A + 80G + Section 35AC (where applicable). Often eligible for state-level education-grant schemes.",
   },
   {
     num: "02",
-    title: "Healthcare & Medical Relief",
-    text: "Set up to provide medical relief, preventive healthcare, mental health services, or support for persons with disabilities. Qualifies for 12A and 80G status and is eligible for health-sector CSR funding. May operate free or subsidized clinics, blood banks, or health-awareness campaigns.",
+    title: "Healthcare / Medical Relief Section 8",
+    text: "For hospitals, dispensaries, telemedicine non-profits, mental-health foundations, and disease-research orgs. Object clause focuses on medical relief / health. Eligible for CSR funding under Schedule VII(i). Pairs cleanly with FCRA for international medical donors.",
   },
   {
     num: "03",
-    title: "Environmental & Sustainability",
-    text: "Focused on environmental conservation, renewable energy, waste management, clean water access, or climate action. CSR funding from large corporates is readily available for environmental activities under Schedule VII, making this a well-funded operating space with strong institutional support.",
+    title: "Environmental / Sustainability Section 8",
+    text: "For climate orgs, conservation foundations, animal welfare, sustainable-agriculture non-profits. Object clause focuses on environment / animal welfare. CSR Schedule VII(iv) eligible. Often international-donor-funded — FCRA registration recommended.",
   },
   {
     num: "04",
-    title: "Arts, Culture & Heritage",
-    text: "Formed to preserve cultural heritage, promote classical arts, support folk traditions, or archive historical records. With 80G registration, donor contributions become tax-deductible. Receives funding from the Ministry of Culture, state cultural departments, and corporate CSR programs.",
+    title: "Arts / Culture / Heritage Section 8",
+    text: "For cultural foundations, heritage preservation trusts, performing-arts non-profits, and museum-style orgs. Object clause focuses on art / culture / heritage. CSR Schedule VII(v) eligible. Smaller donor base than other variants — 80G crucial for retail-donor traction.",
   },
   {
     num: "05",
-    title: "Sports & Youth Development",
-    text: "Dedicated to promoting sports infrastructure, training grassroots athletes, or running youth empowerment programs. Eligible for CSR funding under the 'promoting rural and nationally recognized sports' category in Schedule VII. Can partner with sports federations and government sports authorities.",
+    title: "Sports & Youth Development Section 8",
+    text: "For sports foundations, athlete-development non-profits, youth coaching academies, rural-sports orgs. Object clause focuses on promotion of sports. CSR Schedule VII(vii) eligible. Often paired with state sports authority partnerships.",
   },
   {
     num: "06",
-    title: "Social Welfare & Charity",
-    text: "The broadest category — set up for poverty alleviation, women empowerment, child welfare, rural development, or disaster relief. Organizations typically seek 12A, 80G, and FCRA registration to diversify funding from domestic donors, corporate CSR programs, and international foundations.",
+    title: "Social Welfare / Charity Section 8",
+    text: "The broadest category — poverty alleviation, women / children / elderly welfare, disability support, livelihood orgs, food security. Object clause is general charitable. Eligible across multiple CSR Schedule VII categories. Most donor-flexible structure.",
   },
 ];
 
@@ -43,6 +43,9 @@ const Section8PvtTypes = () => {
           <h2 className="s8-types-title">
             Types of Section 8 Company Registration in India
           </h2>
+          <p className="s8-types-intro">
+            Section 8 is one structure — but the object clause and the post-incorporation compliance stack change dramatically by activity. Six common variants we set up — pick the one that matches your mission.
+          </p>
         </header>
 
         <div className="s8-types-grid">
