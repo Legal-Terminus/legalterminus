@@ -2,142 +2,136 @@ import React, { useState } from "react";
 import "./Section8PlanAndPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
-
 const PLANS = [
-  { id: "elemental", name: "Elemental", price: 7999, services: ["1 RUN Name Approval Application", "DIN for 2 Individuals", "License for Sec 8", "Certificate from Professional", "Certificate of Incorporation", "E-PAN", "E-TAN", "E-MOA", "E-AOA", "Documents for Bank Account opening", "Documents for 1st Auditor Appointment", "EPF Registrations", "ESI Registrations"] },
-  { id: "enriched", name: "Enriched", price: 9999, services: ["Elemental Plan +", "Udyam Registration", "Share Certificate", "Commencement of Business"] },
-  { id: "supreme", name: "Supreme", price: 24999, services: ["Enriched Plan +", "ITR Filing of 2 Directors", "ITR Filing of Company", "Prepairation of Directors Report", "Prepairation of Auditor Appointment Paperwork", "Prepairation of List of Shareholders", "Prepairation of Notice of AGM", "Prepairation of Notice of BM", "Prepairation of Extracts of AGM", "Prepairation and filing of AOC-4 (Financial Statements)", "Prepairation and filing of MGT-7 (Annual Return)", "Filing of ADT-1 (Auditor Appointment)", "Minutes of BM for 1st year", "Minutes of AGM for 1st year", "Maintenance of Statutory E-Registers", "DIR KYC - 2 Directors", "Audit fees are excluded and to be paid directly to the Auditor’s account."] }
+  {
+    id: "elemental",
+    name: "Elemental",
+    oldPrice: "Rs.13,499",
+    price: 7999,
+    services: [
+      "Name Search & Availability Report",
+      "Section 8 license + SPICe+ Part A name reservation",
+      "DIN application for 2 directors (via SPICe+)",
+      "MOA & AOA drafting (charitable-object template)",
+      "INC-13 / Affidavit / INC-14 / INC-15 declarations drafting",
+      "SPICe+ Part B + AGILE-PRO-S filing",
+      "PAN + TAN + Certificate of Incorporation delivery",
+    ],
+  },
+  {
+    id: "enriched",
+    name: "Enriched",
+    badge: "★ MOST POPULAR",
+    popular: true,
+    oldPrice: "Rs.18,999",
+    price: 12999,
+    services: [
+      "Everything in Elemental",
+      "First Board Meeting kit (notice, agenda, minutes)",
+      "1st Auditor Appointment Documents",
+      "Bank account opening assistance",
+      "Share Certificate",
+      "Commencement of Business (INC-20A)",
+      "Udyam / MSME Registration",
+    ],
+  },
+  {
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ FULL-SERVICE",
+    oldPrice: "Rs.24,999",
+    price: 19999,
+    services: [
+      "Everything in Enriched",
+      "Annual ITR Filing — Company",
+      "Financial Statements Filing — AOC-4",
+      "Annual Return Filing — MGT-7",
+      "Auditor Appointment Filing — ADT-1 (in 1st AGM)",
+    ],
+  },
+  {
+    id: "supreme-plus",
+    name: "Supreme Plus",
+    badge: "✦ FULL-SERVICE",
+    oldPrice: "Rs.34,999",
+    price: 29999,
+    services: [
+      "Everything in Supreme",
+      "Directors' Report Preparation",
+      "Minutes of Board & General Meetings (1st FY)",
+      "Statutory E-Register Maintenance",
+      "DPT-3 & MSME-1 Filing (if applicable)",
+      "ITR Filing for 2 Directors",
+      "Section 12A / 35AC / 80G strategy advisory call",
+      "Form 10A application (12A registration — tax exemption)",
+      "Form 10AB application (80G registration — donor benefits)",
+    ],
+  },
 ];
 
 const Section8PlanAndPricing = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
-
     <>
-    <section className="s8-pricing-section">
-      <div className="s8-pricing-container">
+      <section className="s8-pricing-section">
+        <div className="s8-pricing-container">
 
-        {/* ================= HEADER ================= */}
-        <header className="s8-pricing-header">
-          <h2 className="s8-pricing-title">CHOOSE YOUR PLAN</h2>
-          <p className="s8-pricing-subtitle">
-            Register your company with pocket-friendly prices
-          </p>
-        </header>
+          <header className="s8-pricing-header">
+            <h2 className="s8-pricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="s8-pricing-subtitle">
+              Register your Section 8 Company with pocket-friendly prices
+            </p>
+          </header>
 
-        {/* ================= CARDS ================= */}
-        <div className="s8-pricing-cards">
+          <div className="s8-pricing-cards">
+            {PLANS.map((plan) => (
+              <article
+                key={plan.id}
+                className={`s8-plan-card${plan.popular ? " s8-plan-card--popular" : ""}`}
+              >
+                {plan.badge && (
+                  <span className="s8-plan-badge">{plan.badge}</span>
+                )}
+                <div>
+                  <div className="s8-plan-header">
+                    <div className="s8-plan-name">{plan.name}</div>
+                    <div className="s8-plan-old-price">{plan.oldPrice}</div>
+                    <div className="s8-plan-price">
+                      Rs.{plan.price.toLocaleString("en-IN")}
+                    </div>
+                    <div className="s8-plan-meta">+ Govt. fees &amp; GST extra</div>
+                  </div>
 
-          {/* ========== ELEMENTAL ========== */}
-          <article className="s8-plan-card">
-            <div>
-              <div className="s8-plan-header">
-                <div className="s8-plan-name">Elemental</div>
-                <div className="s8-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
-                <div className="s8-plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="s8-plan-body">
-                <ul className="s8-plan-list">
-                  <li className="s8-plan-list-item">1 RUN Name Approval Application</li>
-                  <li className="s8-plan-list-item">DIN for 2 Individuals</li>
-                  <li className="s8-plan-list-item">License for Sec 8</li>
-                  <li className="s8-plan-list-item">Certificate from Professional</li>
-                  <li className="s8-plan-list-item">Certificate of Incorporation</li>
-                  <li className="s8-plan-list-item">E-PAN</li>
-                  <li className="s8-plan-list-item">E-TAN</li>
-                  <li className="s8-plan-list-item">E-MOA</li>
-                  <li className="s8-plan-list-item">E-AOA</li>
-                  <li className="s8-plan-list-item">Documents for Bank Account opening</li>
-                  <li className="s8-plan-list-item">Documents for 1st Auditor Appointment</li>
-                  <li className="s8-plan-list-item">EPF Registrations</li>
-                  <li className="s8-plan-list-item">ESI Registrations</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="s8-plan-footer">
-              <button className="s8-plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* ========== ENRICHED ========== */}
-          <article className="s8-plan-card">
-            <div>
-              <div className="s8-plan-header">
-                <div className="s8-plan-name">Enriched</div>
-                <div className="s8-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="s8-plan-meta">
-                  Excluding gov fee <span className="s8-popular">Popular</span>
+                  <div className="s8-plan-body">
+                    <ul className="s8-plan-list">
+                      {plan.services.map((svc, i) => (
+                        <li key={i} className="s8-plan-list-item">{svc}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-              </div>
 
-              <div className="s8-plan-body">
-                <ul className="s8-plan-list">
-                  <li className="s8-plan-list-item">Elemental Plan +</li>
-                  <li className="s8-plan-list-item">Udyam Registration</li>
-                  <li className="s8-plan-list-item">Share Certificate</li>
-                  <li className="s8-plan-list-item">Commencement of Business</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="s8-plan-footer">
-              <button className="s8-plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* ========== SUPREME ========== */}
-          <article className="s8-plan-card">
-            <div>
-              <div className="s8-plan-header">
-                <div className="s8-plan-name">Supreme</div>
-                <div className="s8-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
-                <div className="s8-plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="s8-plan-body">
-                <ul className="s8-plan-list">
-                  <li className="s8-plan-list-item">Enriched Plan +</li>
-                  <li className="s8-plan-list-item">ITR Filing of 2 Directors</li>
-                  <li className="s8-plan-list-item">ITR Filing of Company</li>
-                  <li className="s8-plan-list-item">Prepairation of Directors Report</li>
-                  <li className="s8-plan-list-item">Prepairation of Auditor Appointment Paperwork</li>
-                  <li className="s8-plan-list-item">Prepairation of List of Shareholders</li>
-                  <li className="s8-plan-list-item">Prepairation of Notice of AGM</li>
-                  <li className="s8-plan-list-item">Prepairation of Notice of BM</li>
-                  <li className="s8-plan-list-item">Prepairation of Extracts of AGM</li>
-                  <li className="s8-plan-list-item">Prepairation and filing of AOC-4 (Financial Statements)</li>
-                  <li className="s8-plan-list-item">Prepairation and filing of MGT-7 (Annual Return)</li>
-                  <li className="s8-plan-list-item">Filing of ADT-1 (Auditor Appointment)</li>
-                  <li className="s8-plan-list-item">Minutes of BM for 1st year</li>
-                  <li className="s8-plan-list-item">Minutes of AGM for 1st year</li>
-                  <li className="s8-plan-list-item">Maintenance of Statutory E-Registers</li>
-                  <li className="s8-plan-list-item">DIR KYC - 2 Directors</li>
-                  <li className="s8-plan-list-item">Audit fees are excluded and to be paid directly to the Auditor’s account.</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="s8-plan-footer">
-              <button className="s8-plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-            </div>
-          </article>
+                <div className="s8-plan-footer">
+                  <button
+                    className={`s8-plan-button${plan.popular ? " s8-plan-button--popular" : ""}`}
+                    onClick={() => setActivePlan(plan)}
+                  >
+                    Buy Now
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
 
         </div>
-      </div>
-    </section>
-
+      </section>
 
       {activePlan && (
-
         <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="section8-company" />
-
       )}
-
     </>
-
-  );};
+  );
+};
 
 export default Section8PlanAndPricing;

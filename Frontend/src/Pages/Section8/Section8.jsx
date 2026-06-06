@@ -4,6 +4,7 @@ import Section8Breadcrum from '../../Components/Section8Breadcrum/Section8Breadc
 // Lazy load below-fold components
 const Section8FAQ = React.lazy(() => import('../../Components/Section8FAQ/Section8FAQ'))
 const Section8PlanAndPricing = React.lazy(() => import('../../Components/Secton8PlanAndPricing/Secton8PlanAndPricing'))
+const Section8GovtCosts = React.lazy(() => import('../../Components/Section8GovtCosts/Section8GovtCosts'))
 const Section8TermsCondition = React.lazy(() => import('../../Components/Section8TermsCondition/Section8TermsCondition'))
 const Section8Premium = React.lazy(() => import('../../Components/Section8Premium/Section8Premium'))
 const Section8Tabs = React.lazy(() => import('../../Components/Section8Tabs/Section8Tabs'))
@@ -25,6 +26,14 @@ const Section8 = () => {
           <Section8PlanAndPricing/>
         </Suspense>
       </div>
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <Section8GovtCosts/>
+      </Suspense>
+
+      <div className="section-divider" />
+
       <Suspense fallback={<div />}>
         <Section8TermsCondition/>
       </Suspense>
