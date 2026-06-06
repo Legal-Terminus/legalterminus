@@ -2,6 +2,7 @@ import React from 'react'
 import './EPFReg.css'
 import EPFRegBreadcrum from '../../Components/EPFRegBreadcrum/EPFRegBreadcrum'
 import EPFRegPricing from '../../Components/EPFRegPricing/EPFRegPricing'
+import EPFGovtCosts from '../../Components/EPFGovtCosts/EPFGovtCosts'
 import EPFRegTermsCondition from '../../Components/EPFRegTermsCondition/EPFRegTermsCondition'
 import EPFRegPriority from '../../Components/EPFRegPriority/EPFRegPriority'
 import EPFRegTabs from '../../Components/EPFRegTabs/EPFRegTabs'
@@ -26,6 +27,10 @@ const EPFReg = () => {
       <div id="plans" className="copy-page-pricing">
         <EPFRegPricing />
       </div>
+
+      <div className="section-divider" />
+
+      <EPFGovtCosts />
 
       <div className="section-divider" />
 

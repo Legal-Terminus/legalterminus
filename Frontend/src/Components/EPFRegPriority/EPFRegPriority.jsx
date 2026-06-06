@@ -27,7 +27,7 @@ const EPFRegPriority = () => {
                   <span className="zp-title-icon">⚖</span>
                 </h2>
                 <p className="zp-subtitle">
-                  EPF compliance is where most employers get caught — not at registration, but at monthly ECR filing, contribution accuracy, and exit settlements. Priority is what happens when a compliance specialist owns your EPFO onboarding: enrollment done once, correctly, with a verified salary structure, documented contribution registers, and an inspection-ready setup from Day 1.
+                  EPF Registration looks like a simple online form — until your first ECR fails because the UANs weren't properly linked, or the authorised signatory's DSC doesn't validate, or an employee's Aadhaar-bank mismatch holds up their PF account. Priority is what happens when a payroll-CA owns the file from Form 5A to first successful ECR.
                 </p>
               </header>
 
@@ -36,45 +36,31 @@ const EPFRegPriority = () => {
                 <ul className="zp-list zp-features-list">
                   <li className="zp-list-item">
                     <span className="zp-list-icon">⚡</span>
-                    72-hour EPF registration turnaround after complete document submission.
+                    Priority Processing of your EPF Registration application upon receipt of complete documents.
                   </li>
                   <li className="zp-list-item">
                     <span className="zp-list-icon">✅</span>
-                    Senior compliance specialist reviews your employee roster and contribution calculations.
+                    Senior payroll Expert reviewed Form 5A — correct establishment classification, NIC code, contribution start date.
                   </li>
                   <li className="zp-list-item">
                     <span className="zp-list-icon">🔄</span>
-                    Real-time EPFO portal status updates on WhatsApp and email — no manual portal refreshing.
+                    UAN activation handled for every employee + KYC linkage (Aadhaar / PAN / bank) verified before first ECR.
+                  </li>
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">📞</span>
+                    First ECR walkthrough included — so your first monthly contribution actually clears the EPFO portal.
                   </li>
                   <li className="zp-list-item">
                     <span className="zp-list-icon">📑</span>
-                    Post-registration kit: EPFO credentials, UAN activation guide, and ECR filing calendar.
+                    Real-time status updates via Email and WhatsApp throughout the registration process.
                   </li>
                 </ul>
               </section>
             </div>
           </div>
 
-          {/* Full-width bottom: Important Notes + CTA */}
+          {/* CTA */}
           <div className="zp-bottom-full">
-            <h3 className="zp-label">Important Notes</h3>
-            <div className="zp-note-box">
-              <ul className="zp-note-list">
-                <li className="zp-note-item">
-                  <strong>20-employee threshold</strong> — EPF becomes mandatory the moment your headcount crosses 20. It applies retroactively to all employees from the date of eligibility. Delayed registration means penalty + interest on all unpaid contribution arrears under Section 14B of the EPF Act.
-                </li>
-                <li className="zp-note-item">
-                  <strong>Contractor headcount counts</strong> — Workers engaged through a contractor count toward your 20-employee threshold under the EPF Act. Many employers miss this when calculating applicability, leading to unintentional non-compliance.
-                </li>
-                <li className="zp-note-item">
-                  <strong>Monthly ECR is the real compliance</strong> — Registration is one-time. Monthly ECR (Electronic Challan-cum-Return) by the 15th is the ongoing obligation. A missed filing triggers interest at 12% p.a. under Para 38 of the EPF Scheme, which compounds quickly.
-                </li>
-                <li className="zp-note-item">
-                  <strong>ESI runs parallel</strong> — If your establishment has 10+ employees in ESI-notified industries, ESI registration is separately mandatory. EPFO and ESIC are different portals — register for both simultaneously if applicable to avoid dual penalty exposure.
-                </li>
-              </ul>
-            </div>
-
             <div className="zp-cta-row">
               <a
                 href="#epf-consult-form"
