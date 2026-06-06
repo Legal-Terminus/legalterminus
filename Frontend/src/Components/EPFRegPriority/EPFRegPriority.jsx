@@ -59,8 +59,26 @@ const EPFRegPriority = () => {
             </div>
           </div>
 
-          {/* CTA */}
+          {/* Important Notes + CTA */}
           <div className="zp-bottom-full">
+            <h3 className="zp-label">Important Notes</h3>
+            <div className="zp-note-box">
+              <ul className="zp-note-list">
+                <li className="zp-note-item">
+                  Once your employee strength touches 20, you have to register within 30 days. Delayed registration attracts damages under Section 14B — typically 5–25% of arrears depending on delay period. Don't wait until inspection finds you.
+                </li>
+                <li className="zp-note-item">
+                  Every employee needs an Aadhaar-PAN-bank linkage that matches each other. Any mismatch (e.g. name spelling difference between Aadhaar and bank account) blocks UAN activation and the first ECR fails. We verify all KYC before filing.
+                </li>
+                <li className="zp-note-item">
+                  Once you register, you cannot opt out even if your headcount drops below 20. EPF coverage continues for as long as the establishment exists. Voluntary registrants under Section 1(4) are equally locked in.
+                </li>
+                <li className="zp-note-item">
+                  Section 17 exempted trusts (where the employer runs its own PF trust instead of EPFO) is heavily restricted post-2017 amendments — virtually no new exemptions granted. For new establishments, RPFC (EPFO-administered) is the only path.
+                </li>
+              </ul>
+            </div>
+
             <div className="zp-cta-row">
               <a
                 href="#epf-consult-form"
