@@ -4,6 +4,7 @@ import IncorptionBreadcrum from "../../Components/IncorptionBreadcrum/Incorption
 
 // Lazy load below-fold components
 const IncorporationPlanAndPricing = React.lazy(() => import("../../Components/IncorptionPlanedPriceing/IncorptionPlanedPriceing"));
+const IncorporationGovtCosts = React.lazy(() => import("../../Components/IncorporationGovtCosts/IncorporationGovtCosts"));
 const IncorporationTermsCondition = React.lazy(() => import("../../Components/IncorptionTermsCondition/IncorptionTermsCondition"));
 const IncorporationPremium = React.lazy(() => import("../../Components/IncorporationPremium/IncorporationPremium"));
 const IncorporationTabs = React.lazy(() => import("../../Components/IncorporationTabs/IncorporationTabs"));
@@ -28,6 +29,12 @@ const IncorptionPage = () => {
           <IncorporationPlanAndPricing />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <IncorporationGovtCosts />
+      </Suspense>
 
       <div className="section-divider" />
 

@@ -1,0 +1,34 @@
+.wos-govtcosts-container {
+  max-width: 1100px;
+}
+
+.wos-govtcosts-table {
+  min-width: 620px;
+}
+
+/* Even distribution across 3 columns */
+.wos-govtcosts-table th:first-child,
+.wos-govtcosts-table td:first-child {
+  width: 36%;
+}
+
+.wos-govtcosts-table th:nth-child(2),
+.wos-govtcosts-table td:nth-child(2),
+.wos-govtcosts-table th:nth-child(3),
+.wos-govtcosts-table td:nth-child(3) {
+  width: 32%;
+}
+
+/* Value cell: semi-bold, dark */
+.wos-cost-val {
+  font-weight: 600;
+  color: #0f3d2e;
+  white-space: nowrap;
+}
+
+/* "Not applicable" muted grey */
+.wos-na {
+  color: #9ca3af;
+  font-weight: 400;
+  font-style: italic;
+}
