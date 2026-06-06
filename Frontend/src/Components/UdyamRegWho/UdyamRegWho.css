@@ -23,6 +23,10 @@
   gap: 28px;
 }
 
+.opc-features-cards--3col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .opc-features-card {
   background: #ffffff;
   border: 1.5px solid #e2e8f0;
@@ -77,6 +81,7 @@
 @media (max-width: 1024px) {
   .opc-features-title { font-size: 30px; }
   .opc-features-cards { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .opc-features-cards--3col { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {

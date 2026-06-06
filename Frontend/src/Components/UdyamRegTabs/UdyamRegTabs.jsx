@@ -3,7 +3,7 @@ import "./UdyamRegTabs.css";
 
 const tabs = [
   { label: "About", id: "about" },
-  { label: "Who Needs", id: "who" },
+  { label: "Types", id: "who" },
   { label: "Benefits", id: "benefits" },
   { label: "Eligibility", id: "eligibility" },
   { label: "Documents", id: "documents" },
