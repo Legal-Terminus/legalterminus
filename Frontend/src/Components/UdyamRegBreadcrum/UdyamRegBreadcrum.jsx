@@ -43,6 +43,10 @@ const UdyamRegBreadcrum = () => {
               <h3>All 28 States</h3>
               <p>+ 8 Union Territories</p>
             </div>
+            <div>
+              <h3>7+</h3>
+              <p>Years of Legal Expertise</p>
+            </div>
           </div>
 
         </div>
