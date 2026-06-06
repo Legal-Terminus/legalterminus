@@ -1,59 +1,74 @@
 import React from "react";
-import "./EPFRegProcess.css";
+import "../PvtltdProcess/PvtltdProcess.css";
 
 const steps = [
   {
-    title: "Visit the EPFO Website",
-    text: "Visit the official EPFO website and click the 'Establishment Registration' button on the home page to start the registration process."
+    title: "Discovery & Trigger Check",
+    day: "Day 0",
+    text: "30-min call with our payroll-expert to confirm: current headcount, projected 12-month hiring, entity type (Pvt Ltd / LLP / Partnership / Proprietorship / Trust / Society), industry (to check Section 1(3)(b) notification), wage structure (basic vs gross), and existing GSTIN / PAN.",
   },
   {
-    title: "Register on USSP",
-    text: "After clicking the establishment registration button, the Unified Shram Suvidha Portal (USSP) sign-up page appears. Click the 'Sign Up' button to create your account."
+    title: "Documents & Checklist Collection",
+    day: "Day 1",
+    text: "Entity PAN, COI / Partnership Deed / GST Certificate, address proof of establishment, cancelled cheque, authorised signatory's Aadhaar + PAN + photo + appointment letter. For ESIC bundle: same set.",
   },
   {
-    title: "Log in to the USSP",
-    text: "Once the account is created on the USSP, log in with your credentials. Select 'Registration for EPFO-ESIC' and then click 'Apply for New Registration'."
+    title: "Documents Collection",
+    day: "Day 1–2",
+    text: "Entity PAN, COI / Partnership Deed / GST Certificate, address proof of establishment, cancelled cheque, authorised signatory's Aadhaar + PAN + photo + appointment letter. For ESIC bundle: same set.",
   },
   {
-    title: "Select the Applicable Act",
-    text: "You will see two options — the Employees' Provident Fund and Miscellaneous Provision Act, 1952 and the Employees State Insurance Act, 1948. Select the EPF option and click Submit."
+    title: "Form Filing Online",
+    day: "Day 3",
+    text: "Application filed on epfindia.gov.in. Establishment details, employer details, employee count, wage structure, contribution start date. DSC-signed submission.",
   },
   {
-    title: "Fill Out the Registration Form",
-    text: "The EPFO registration form will open. Fill in all required sections accurately — establishment details, employee count, address, and business information."
+    title: "Establishment Code Allotment",
+    day: "Day 3–5",
+    text: "EPFO regional office reviews the application. Establishment Code (Employer ID) allotted — typically 7-character alphanumeric (XX/XX/0000000). Issued in 3–5 working days.",
   },
   {
-    title: "Attach Digital Signature Certificate",
-    text: "After completing the form, attach the Digital Signature Certificate (DSC) by clicking the digital signature button on the next page."
+    title: "e-Sign Activation and Form 5A Filing",
+    day: "Day 5–6",
+    text: "Application filing for add DSC or e-sign along with the submission of Form 5A with relevant documents.",
   },
   {
-    title: "Receive Confirmation Message",
-    text: "After uploading the DSC, you will receive a successful completion message. A confirmation email will be sent from USSP confirming that EPFO registration is complete."
-  }
+    title: "UAN Activation for Employees",
+    day: "Day 7–10",
+    text: "For each employee, we either activate an existing UAN (Universal Account Number) or generate a fresh UAN. KYC linkage — Aadhaar, PAN, bank account — verified for each employee.",
+  },
+  {
+    title: "ECR Setup + Salary Structure Validation",
+    day: "Day 7–10",
+    text: "We help configure your payroll system for monthly ECR generation. Validate basic + DA + HRA + allowances split (only basic + DA attracts EPF).",
+  },
 ];
 
-const EPFProcess = () => {
+const EPFRegProcess = () => {
   return (
-    <section className="epf-timeline-wrapper">
-      <h2 className="epf-timeline-heading">
-        Employee PF Registration Process for Employers
+    <section className="pvtltd-gst-wrapper">
+      <h2 className="gst-heading">
+        EPF Registration Process for Employers
       </h2>
-      <p className="epf-timeline-subheading">
-        A step-by-step guide to completing EPF registration on the EPFO USSP portal. Average time: 10–15 working days.
+      <p className="pv-gst-subheading">
+        Eight steps. 7–10 working days end-to-end for EPF.
       </p>
 
-      <div className="epf-timeline">
-        <div className="epf-timeline-line" />
+      <div className="pvtltd-timeline">
+        <div className="pvtltd-timeline-line" />
 
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`epf-timeline-item ${index % 2 === 0 ? "left" : "right"} ${index === 0 ? "first" : ""} ${index === steps.length - 1 ? "last" : ""}`}
+            className={`pvtltd-timeline-item ${index % 2 === 0 ? "left" : "right"} ${index === 0 ? "first" : ""} ${index === steps.length - 1 ? "last" : ""}`}
           >
-            <div className="epf-timeline-dot">{index + 1}</div>
+            <div className="pvtltd-timeline-dot">{index + 1}</div>
 
-            <div className="epf-timeline-card">
-              <h4>{step.title}</h4>
+            <div className="pvtltd-timeline-card">
+              <h4>
+                {step.title}
+                {step.day && <span className="pvtltd-day-tag">{step.day}</span>}
+              </h4>
               <p>{step.text}</p>
             </div>
           </div>
@@ -63,4 +78,4 @@ const EPFProcess = () => {
   );
 };
 
-export default EPFProcess;
+export default EPFRegProcess;
