@@ -200,14 +200,12 @@ const IncorporationPlanAndPricing = () => {
             <div className="wos-track-label wos-track-label--a">
               TRACK A &bull; INDIAN-PARENT WOS
             </div>
-            <h2 className="PvtLtd-pricing-title">
-              Parent Is An Indian Company
-            </h2>
+            <h2 className="PvtLtd-pricing-title">CHOOSE YOUR PLAN</h2>
             <p className="pricing-subtitle">
               Standard WOS incorporation with complete ROC compliance support
             </p>
           </header>
-          <div className="pricing-cards pricing-cards--3col">
+          <div className="pricing-cards wos-pricing-cards">
             {TRACK_A_PLANS.map((plan, i) => (
               <PlanCard key={plan.id} plan={plan} onBuy={setActivePlan} index={i} />
             ))}
@@ -222,15 +220,13 @@ const IncorporationPlanAndPricing = () => {
             <div className="wos-track-label wos-track-label--b">
               TRACK B &bull; FOREIGN-PARENT WOS
             </div>
-            <h2 className="PvtLtd-pricing-title">
-              Parent Is A Foreign Company — Adds FEMA Scope
-            </h2>
+            <h2 className="PvtLtd-pricing-title">CHOOSE YOUR PLAN</h2>
             <p className="pricing-subtitle">
               Cross-border WOS with complete FEMA, FC-GPR &amp; RBI compliance
               coverage
             </p>
           </header>
-          <div className="pricing-cards pricing-cards--3col">
+          <div className="pricing-cards wos-pricing-cards">
             {TRACK_B_PLANS.map((plan, i) => (
               <PlanCard key={plan.id} plan={plan} onBuy={setActivePlan} index={i} />
             ))}
