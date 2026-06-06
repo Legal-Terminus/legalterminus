@@ -5,6 +5,7 @@ import UdyamRegTabs from '../../Components/UdyamRegTabs/UdyamRegTabs'
 const UdyamRegPlanAndPricing = React.lazy(() => import('../../Components/UdyamRegPlanAndPricing/UdyamRegPlanAndPricing'))
 const UdyamRegGovtCosts = React.lazy(() => import('../../Components/UdyamRegGovtCosts/UdyamRegGovtCosts'))
 const UdyamRegTermsCondition = React.lazy(() => import('../../Components/UdyamRegTermsCondition/UdyamRegTermsCondition'))
+const UdyamRegPriority = React.lazy(() => import('../../Components/UdyamRegPriority/UdyamRegPriority'))
 
 const UdyamRegAbout = React.lazy(() => import('../../Components/UdyamRegAbout/UdyamRegAbout'))
 const UdyamRegWho = React.lazy(() => import('../../Components/UdyamRegWho/UdyamRegWho'))
@@ -33,6 +34,10 @@ const UdyamReg = () => {
       <div className="section-divider" />
 
       <Suspense fallback={<div />}><UdyamRegTermsCondition /></Suspense>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}><UdyamRegPriority /></Suspense>
 
       <div className="section-divider" />
 

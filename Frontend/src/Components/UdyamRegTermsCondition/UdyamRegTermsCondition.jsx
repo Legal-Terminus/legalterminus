@@ -48,7 +48,7 @@ const UdyamRegTermsCondition = () => {
           <ol className="udyam-tc-list">
             {terms.map((item, i) => (
               <li className="udyam-tc-item" key={i}>
-                <strong>{item.label}:</strong> {item.text}
+                {item.label}: {item.text}
               </li>
             ))}
           </ol>

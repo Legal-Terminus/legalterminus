@@ -49,10 +49,6 @@
   margin-bottom: 16px;
 }
 
-.udyam-tc-item strong {
-  color: #0f172a;
-  font-weight: 600;
-}
 
 @media (max-width: 1024px) {
   .udyam-tc-section { padding: 10px 20px 40px; }

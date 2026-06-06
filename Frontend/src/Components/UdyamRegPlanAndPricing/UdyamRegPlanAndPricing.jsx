@@ -6,6 +6,7 @@ const PLANS = [
   {
     id: "elemental",
     name: "Elemental",
+    oldPrice: 1499,
     price: 999,
     services: [
       "Udyam Registration on udyamregistration.gov.in",
@@ -18,6 +19,9 @@ const PLANS = [
   {
     id: "enriched",
     name: "Enriched",
+    badge: "★ MOST POPULAR",
+    popular: true,
+    oldPrice: 3999,
     price: 2999,
     services: [
       "Everything in Elemental",
@@ -32,6 +36,8 @@ const PLANS = [
   {
     id: "supreme",
     name: "Supreme",
+    badge: "✦ FULL-SERVICE",
+    oldPrice: 9999,
     price: 5999,
     services: [
       "Everything in Enriched",
@@ -59,76 +65,43 @@ const UdyamRegPlanAndPricing = () => {
           </header>
 
           <div className="udyam-pricing-cards">
+            {PLANS.map((plan) => (
+              <article
+                key={plan.id}
+                className={`udyam-plan-card${plan.popular ? " udyam-plan-card--popular" : ""}`}
+              >
+                <div>
+                  <div className="udyam-plan-header">
+                    {plan.badge && (
+                      <div className={`udyam-plan-badge${plan.popular ? " udyam-plan-badge--popular" : ""}`}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    <div className="udyam-plan-name">{plan.name}</div>
+                    <div className="udyam-plan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    <div className="udyam-plan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="udyam-plan-meta">+ Govt. fees &amp; GST extra</div>
+                  </div>
 
-            {/* ELEMENTAL */}
-            <article className="udyam-plan-card">
-              <div className="udyam-plan-badge udyam-plan-badge--normal">★ NORMAL</div>
-              <div>
-                <div className="udyam-plan-header">
-                  <div className="udyam-plan-name">Elemental</div>
-                  <div className="udyam-plan-old-price">₹1,499</div>
-                  <div className="udyam-plan-price">₹{PLANS[0].price.toLocaleString("en-IN")}</div>
-                  <div className="udyam-plan-meta">+ Govt. fees &amp; GST extra</div>
+                  <div className="udyam-plan-body">
+                    <ul className="udyam-plan-list">
+                      {plan.services.map((s, i) => (
+                        <li key={i} className="udyam-plan-list-item">{s}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <div className="udyam-plan-body">
-                  <ul className="udyam-plan-list">
-                    {PLANS[0].services.map((s, i) => (
-                      <li className="udyam-plan-list-item" key={i}>{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="udyam-plan-footer">
-                <button className="udyam-plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-              </div>
-            </article>
 
-            {/* ENRICHED */}
-            <article className="udyam-plan-card udyam-plan-card--popular">
-              <div className="udyam-plan-badge udyam-plan-badge--popular">★ MOST POPULAR</div>
-              <div>
-                <div className="udyam-plan-header">
-                  <div className="udyam-plan-name">Enriched</div>
-                  <div className="udyam-plan-old-price">₹3,999</div>
-                  <div className="udyam-plan-price">₹{PLANS[1].price.toLocaleString("en-IN")}</div>
-                  <div className="udyam-plan-meta">+ Govt. fees &amp; GST extra</div>
+                <div className="udyam-plan-footer">
+                  <button
+                    className={`udyam-plan-button${plan.popular ? " udyam-plan-button--popular" : ""}`}
+                    onClick={() => setActivePlan(plan)}
+                  >
+                    Buy Now
+                  </button>
                 </div>
-                <div className="udyam-plan-body">
-                  <ul className="udyam-plan-list">
-                    {PLANS[1].services.map((s, i) => (
-                      <li className="udyam-plan-list-item" key={i}>{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="udyam-plan-footer">
-                <button className="udyam-plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-              </div>
-            </article>
-
-            {/* SUPREME */}
-            <article className="udyam-plan-card udyam-plan-card--fullservice">
-              <div className="udyam-plan-badge udyam-plan-badge--fullservice">✦ FULL-SERVICE</div>
-              <div>
-                <div className="udyam-plan-header">
-                  <div className="udyam-plan-name">Supreme</div>
-                  <div className="udyam-plan-old-price">₹9,999</div>
-                  <div className="udyam-plan-price">₹{PLANS[2].price.toLocaleString("en-IN")}</div>
-                  <div className="udyam-plan-meta">+ Govt. fees &amp; GST extra</div>
-                </div>
-                <div className="udyam-plan-body">
-                  <ul className="udyam-plan-list">
-                    {PLANS[2].services.map((s, i) => (
-                      <li className="udyam-plan-list-item" key={i}>{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="udyam-plan-footer">
-                <button className="udyam-plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-              </div>
-            </article>
-
+              </article>
+            ))}
           </div>
         </div>
       </section>
