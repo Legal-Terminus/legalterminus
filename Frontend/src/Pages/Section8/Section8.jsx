@@ -53,7 +53,7 @@ const Section8 = () => {
       </div>
       <div id="types">
         <Suspense fallback={<div />}>
-          {/* <Section8PvtTypes/> */}
+          <Section8PvtTypes/>
         </Suspense>
       </div>
       <div id="requirements">
