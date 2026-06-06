@@ -21,77 +21,62 @@ const EPFRegOverview = () => {
               Why EPF Registration Matters
             </h2>
             <p className="pvt-intro-text">
-              Employee Provident Fund (EPF) registration is not just a legal obligation — it is the foundation of your relationship with every employee you hire. Under the Employees' Provident Funds and Miscellaneous Provisions Act, 1952, any establishment with 20 or more employees is mandated to register with EPFO. But beyond compliance, EPF signals organizational maturity: it improves talent retention, builds employee trust, and positions your business for smoother inspections and statutory audits.
+              EPF Registration isn't a strategy choice — it's a statutory trigger. The moment your establishment employs 20 or more persons (or 10+ in certain notified categories), the Employees' Provident Funds and Miscellaneous Provisions Act, 1952 kicks in. You have 30 days to register on the EPFO unified portal, after which delayed registration attracts damages under Section 14B and the EPFO can initiate suo-motu coverage proceedings.
             </p>
             <p className="pvt-intro-text">
-              The EPF Act creates a three-scheme framework: the Employees' Provident Fund Scheme (savings), the Employees' Pension Scheme (EPS), and the Employees' Deposit-Linked Insurance Scheme (EDLI). Each operates through the same 12% + 12% contribution model but allocates funds differently across retirement savings, pension, and life cover. Understanding this structure upfront saves employers from costly payroll errors that compound over years.
+              Beyond the compliance trigger, EPF is also a strategic talent-attraction tool. Sub-20 employers can voluntarily register under Section 1(4) — this signals professionalism to senior hires, retains talent through long-term wealth accumulation (EPF interest rate has historically beaten most other guaranteed instruments), and provides free EDLI life insurance coverage up to ₹7 lakh per employee. Smart employers register before they cross 20.
             </p>
           </div>
         </div>
       </section>
 
-      {/* COMPARISON / CONTRIBUTION TABLE */}
+      {/* CONTRIBUTION TABLE */}
       <section className="pvt-compare-section">
         <div className="pvt-compare-container">
-          <h2 className="pvt-compare-title">EPF Contribution Breakdown</h2>
+          <h2 className="pvt-compare-title">EPF Contribution Structure: The Deep Dive</h2>
           <p className="pvt-compare-subtitle">
-            Where does each rupee of contribution go? The full picture for employers and employees:
+            The 12% you hear about is just the start. Here's the actual employer + employee split for FY 2025-26:
           </p>
           <div className="pvt-compare-table-wrapper">
             <table className="pvt-compare-table">
               <thead>
                 <tr>
                   <th>Component</th>
-                  <th>Employer Share</th>
-                  <th>Employee Share</th>
-                  <th>Purpose</th>
+                  <th>Employee</th>
+                  <th>Employer</th>
+                  <th>Notes</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>EPF (PF Account)</td>
-                  <td>3.67% of Basic</td>
-                  <td>12% of Basic</td>
-                  <td>Retirement Savings</td>
+                  <td>EPF (Provident Fund)</td>
+                  <td>12% of basic + DA</td>
+                  <td>3.67% of basic + DA</td>
+                  <td>Goes to employee's PF account</td>
                 </tr>
                 <tr>
-                  <td>EPS (Pension Scheme)</td>
-                  <td>8.33% (capped ₹15K basic)</td>
+                  <td>EPS (Pension)</td>
                   <td>Nil</td>
-                  <td>Monthly Pension</td>
+                  <td>8.33% of basic + DA (capped ₹15K wage)</td>
+                  <td>Goes to pension fund</td>
                 </tr>
                 <tr>
-                  <td>EDLI (Insurance)</td>
-                  <td>0.5% (max ₹75/month)</td>
+                  <td>EDLI (Life Insurance)</td>
                   <td>Nil</td>
-                  <td>Life Cover up to ₹7L</td>
+                  <td>0.50% of basic + DA (capped ₹15K wage)</td>
+                  <td>Free life cover up to ₹7L</td>
                 </tr>
                 <tr>
-                  <td>EPF Admin Charges</td>
-                  <td>0.5% (min ₹500/month)</td>
+                  <td>EPFO Admin Charges</td>
                   <td>Nil</td>
-                  <td>EPFO Administration</td>
+                  <td>0.50% of basic + DA (min ₹500)</td>
+                  <td>EPFO's running cost</td>
                 </tr>
                 <tr>
                   <td>Total Contribution</td>
-                  <td>~13% of Basic</td>
-                  <td>12% of Basic</td>
-                  <td>Combined</td>
-                </tr>
-                <tr>
-                  <td>Applicability</td>
-                  <td colSpan="2">20+ Employees (Mandatory) | &lt;20 (Voluntary)</td>
-                  <td>Basic salary ≤ ₹15,000/month mandatory</td>
-                </tr>
-                <tr>
-                  <td>ECR Filing Due Date</td>
-                  <td colSpan="2">15th of every month</td>
-                  <td>Delay = 12% p.a. interest</td>
-                </tr>
-                <tr>
-                  <td>Interest on EPF Balance</td>
-                  <td colSpan="2">8.25% p.a. (FY 2024–25)</td>
-                  <td>Tax-free up to ₹2.5L/year</td>
+                  <td>12.00%</td>
+                  <td>12.50% (effective ~13%)</td>
+                  <td>On basic + DA, paid monthly via ECR</td>
                 </tr>
               </tbody>
             </table>
