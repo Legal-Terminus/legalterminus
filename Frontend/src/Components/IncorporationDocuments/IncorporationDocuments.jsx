@@ -145,10 +145,6 @@ const IncorporationDocuments = () => {
 
         </div>
 
-        {/* Bottom note */}
-        <p className="incd-bottom-note">
-          All documents must be self-attested. Foreign parent company documents must be apostilled / notarised by the competent authority in the home country before submission. We send a detailed personalised checklist after the discovery call.
-        </p>
 
       </div>
     </section>

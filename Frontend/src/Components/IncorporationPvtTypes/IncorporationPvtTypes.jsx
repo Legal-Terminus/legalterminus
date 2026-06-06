@@ -51,12 +51,7 @@ const IncorporationPvtTypes = () => {
           {types.map((type) => (
             <div className="incorp-types-card" key={type.number}>
               <div className="incorp-types-number">{type.number}</div>
-              <h3 className="incorp-types-card-title">
-                {type.title}
-                {type.subtitle && (
-                  <span className="incorp-types-card-subtitle"> ({type.subtitle})</span>
-                )}
-              </h3>
+              <h3 className="incorp-types-card-title">{type.title}</h3>
               <p className="incorp-types-card-text">{type.text}</p>
             </div>
           ))}
