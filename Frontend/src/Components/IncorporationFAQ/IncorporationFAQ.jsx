@@ -1,51 +1,61 @@
 import React, { useState } from "react";
-import "./IncorporationFAQ.css";
+import "../PvtltdFAQ/PvtltdFAQ.css";
 
 const faqs = [
   {
-    question: "What is a Wholly Owned Subsidiary (WOS) in India?",
+    question: "What is a Wholly Owned Subsidiary (WOS)?",
     answer:
-      "A WOS is a private limited company in India where 100% of the shares are held by a foreign company. It operates as a separate legal entity.",
+      "A Wholly Owned Subsidiary (WOS) is a company in which 100% ownership and control remain with a single parent company. The parent company may be Indian or foreign. The subsidiary operates as a separate legal entity with its own directors, bank account, statutory compliance, and financial records, while the parent company retains complete ownership of shares.",
   },
   {
-    question: "Can a foreign company directly set up a WOS in India?",
+    question: "Can an Indian company also create a Wholly Owned Subsidiary?",
     answer:
-      "Yes, a foreign company can directly incorporate a WOS in India under the Companies Act, 2013.",
+      "Yes. Both Indian and foreign companies can establish a Wholly Owned Subsidiary in India. Indian companies commonly use WOS structures for expansion, new business verticals, asset protection, or group restructuring, while foreign companies use it to establish their business presence in India.",
   },
   {
-    question: "How many directors are needed to incorporate a WOS in India?",
+    question: "What is the difference between an Indian-parent WOS and a Foreign-parent WOS?",
     answer:
-      "You need at least two directors, and at least one must be an Indian resident (staying in India for at least 182 days in the previous year).",
+      "The incorporation process under the Companies Act remains largely similar for both structures. However, foreign-parent subsidiaries also require compliance under FEMA and RBI regulations, including foreign investment reporting, apostille/notarisation of documents, and banking compliance.",
   },
   {
-    question: "Is it necessary to visit India to incorporate a WOS?",
+    question: "What is the minimum shareholder requirement for a WOS?",
     answer:
-      "No physical visit is required. All documents can be signed and notarised and/or apostilled abroad and submitted electronically.",
+      "Under the Companies Act, a Private Limited Company must have at least two shareholders. Therefore, even in a Wholly Owned Subsidiary structure, one share is usually held by a nominee shareholder on behalf of the parent company, while the parent company retains beneficial ownership and full control.",
   },
   {
-    question: "What type of company structure is used for a WOS in India?",
+    question: "Is a resident director mandatory for a WOS in India?",
     answer:
-      "Most WOS entities are registered as Private Limited Companies due to limited liability and ease of operation.",
+      "Yes. Every company registered in India must have at least one resident director who has stayed in India for the prescribed period under the Companies Act. This requirement applies to both Indian-parent and foreign-parent subsidiaries.",
   },
   {
-    question: "What are the common business areas allowed for a WOS?",
+    question: "What is FC-GPR and when is it applicable?",
     answer:
-      "Almost all sectors are allowed, except a few like real estate, defence, or agriculture which have restrictions under FDI policy.",
+      "FC-GPR is an RBI reporting requirement applicable when a foreign investor invests in an Indian company. It is generally required for foreign-parent Wholly Owned Subsidiaries after share allotment. Indian-parent subsidiaries do not require FC-GPR filing.",
   },
   {
-    question: "Is approval from the Indian government needed for setting up a WOS?",
+    question: "How long does Wholly Owned Subsidiary registration take?",
     answer:
-      "In most sectors under the automatic route, no prior approval is required. In others, prior approval via the Government route is necessary.",
+      "An Indian-parent WOS generally takes around 10–15 working days, while a foreign-parent WOS may take around 20–30 working days depending on document readiness, apostille timelines, and regulatory approvals.",
   },
   {
-    question: "What is the process of remitting capital into India?",
+    question: "What are the annual compliance requirements for a WOS?",
     answer:
-      "The capital must be remitted through banking channels in foreign currency and reported to the RBI via Form FC-GPR within 30 days of share allotment.",
+      "A Wholly Owned Subsidiary must comply with regular company compliances such as ROC filings, annual returns, statutory audit, board meetings, Income Tax filings, and other applicable legal requirements. Foreign-owned subsidiaries may also have additional FEMA and RBI reporting obligations.",
   },
   {
-    question: "Is it mandatory to hold an Annual General Meeting (AGM) in India?",
+    question: "Can a foreign company own 100% shares in an Indian subsidiary?",
     answer:
-      "Yes, AGMs must be held, but can be conducted virtually (via VC) as per MCA Circulars — even if all shareholders are outside India.",
+      "Yes. Foreign companies can own 100% shares in many sectors under the automatic route, subject to applicable FEMA and FDI regulations. Certain sectors may require government approval or may have investment restrictions.",
+  },
+  {
+    question: "What documents are generally required for WOS registration?",
+    answer:
+      "The required documents generally include parent company incorporation documents, board resolution, identity and address proof of directors/shareholders, registered office proof, and KYC documents. Foreign documents may require notarisation and apostille depending on the country of origin.",
+  },
+  {
+    question: "How can Legal Terminus help with Wholly Owned Subsidiary registration?",
+    answer:
+      "Legal Terminus provides complete assistance for Wholly Owned Subsidiary registration in India, including company incorporation, document drafting, FEMA-related support, RBI reporting assistance, and post-incorporation compliance guidance. We assist both Indian and foreign parent companies with transparent pricing and dedicated professional support throughout the registration process.",
   },
 ];
 
@@ -57,34 +67,34 @@ const IncorporationFAQ = () => {
   };
 
   return (
-    <section className="incfaq-section">
-      <div className="incfaq-container">
+    <section className="faq-section">
+      <div className="faq-container">
 
-        <div className="incfaq-header">
-          <h2 className="incfaq-title">Incorporation Of Wholly Owned Subsidiary — FAQs</h2>
-          <p className="incfaq-intro">
+        <div className="faq-header">
+          <h2 className="faq-title">Incorporation Of Wholly Owned Subsidiary — FAQs</h2>
+          <p className="faq-intro">
             Got questions? We've got answers — straight, no-BS, legally accurate.
           </p>
         </div>
 
-        <div className="incfaq-list">
+        <div className="faq-list">
           {faqs.map((item, index) => {
             const isActive = index === activeIndex;
             return (
               <div
                 key={index}
-                className={`incfaq-item ${isActive ? "active" : ""}`}
+                className={`faq-item ${isActive ? "active" : ""}`}
               >
                 <button
                   type="button"
-                  className="incfaq-question"
+                  className="faq-question"
                   onClick={() => toggleFaq(index)}
                 >
                   <span>{item.question}</span>
-                  <span className={`incfaq-icon ${isActive ? "open" : ""}`}>▾</span>
+                  <span className={`faq-icon ${isActive ? "open" : ""}`}>▾</span>
                 </button>
-                <div className={`incfaq-answer ${isActive ? "open" : ""}`}>
-                  <div className="incfaq-answer-content">{item.answer}</div>
+                <div className={`faq-answer ${isActive ? "open" : ""}`}>
+                  <div className="faq-answer-content">{item.answer}</div>
                 </div>
               </div>
             );

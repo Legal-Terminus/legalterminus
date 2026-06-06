@@ -1,77 +1,79 @@
 import React from "react";
 import "./IncorporationDocuments.css";
-import { FaUser, FaBuilding, FaIdCard, FaFileAlt, FaCamera, FaBolt, FaFileContract, FaShieldAlt, FaPassport, FaStamp } from "react-icons/fa";
+import {
+  FaBuilding,
+  FaStamp,
+  FaFileAlt,
+  FaPassport,
+  FaUser,
+  FaBolt,
+  FaFileContract,
+  FaMoneyBillWave,
+} from "react-icons/fa";
 
-const directorDocs = [
+const parentDocs = [
   {
-    icon: <FaPassport />,
-    title: "Identity Proof",
-    note: "Mandatory for all proposed directors & shareholders",
+    icon: <FaBuilding />,
+    title: "Parent Identity & Existence",
+    note: "Indian-parent: domestic KYC. Foreign-parent: apostilled / notarised",
     items: [
-      "Passport (Mandatory for Foreign Nationals / NRIs)",
-      "PAN Card (Mandatory for Indian Resident Director)",
-      "Aadhaar Card (for Indian Resident Director)",
+      "Indian-parent: PAN, Certificate of Incorporation, MOA/AOA, latest 1–2 years audited financials, latest Board Resolution",
+      "Foreign-parent: same set apostilled / notarised, plus UBO declaration and parent's tax residency certificate (for DTAA benefits)",
     ],
   },
   {
-    icon: <FaFileAlt />,
-    title: "Address Proof",
-    note: "Not older than 2 months",
+    icon: <FaStamp />,
+    title: "Parent Authorisations",
+    note: "Foreign-parent docs require apostille",
     items: [
-      "Bank Statement",
-      "Mobile Bill",
-      "Electricity Bill",
-      "Water Bill",
+      "Indian-parent: Board Resolution authorising investment + appointing nominee director(s) + nominating authorised signatory",
+      "Foreign-parent: same Board Resolution apostilled, plus Power of Attorney for incorporation filings and bank reference letter from parent's primary bank",
     ],
   },
   {
-    icon: <FaCamera />,
-    title: "Passport Size Photograph",
-    note: "For all proposed directors & shareholders",
+    icon: <FaMoneyBillWave />,
+    title: "Capital Structure & Banking",
+    note: "Foreign-parent: FEMA-compliant subscription mode required",
     items: [
-      "Latest passport-size photograph of all Proposed Directors / Shareholders",
+      "Authorised + paid-up capital plan",
+      "Indian-parent: parent's bank statement + NEFT remittance plan",
+      "Foreign-parent: AD-Bank coordination details for FIRC + KYC retrieval",
+      "FDI valuation certificate (DCF / NAV / fair value by CA / Merchant Banker for inward share issue)",
     ],
   },
 ];
 
-const companyDocs = [
+const individualDocs = [
   {
-    icon: <FaStamp />,
-    title: "Parent Company Documents",
-    note: "Apostilled by competent authority in home country",
+    icon: <FaPassport />,
+    title: "Director Identity (Resident + Non-Resident)",
+    note: "Per person — all directors and nominee shareholder",
     items: [
-      "Certificate of Incorporation of the parent/holding company",
-      "Memorandum & Articles of Association (or equivalent charter document)",
-      "Board Resolution authorising incorporation of WOS in India",
+      "Resident director: PAN + Aadhaar + utility bill (≤ 60 days)",
+      "Non-resident / foreign director: apostilled passport + foreign address proof + visa copy (if visiting)",
+      "Photograph, email id and mobile number",
+      "DSC + DIN to follow",
+    ],
+  },
+  {
+    icon: <FaUser />,
+    title: "Nominee Shareholder Documents",
+    note: "Resident Indian individual holding 1 share on trust",
+    items: [
+      "PAN + Aadhaar + address proof + photograph + DSC",
+      "Section 187 declaration of nominee shareholding (declaration of trust executed in favour of parent)",
+      "Shareholder consent",
     ],
   },
   {
     icon: <FaBolt />,
-    title: "Registered Office — Utility Bill",
-    note: "Not older than 2 months",
+    title: "Registered Office Proof",
+    note: "Address must be in India",
     items: [
-      "Electricity Bill",
-      "Water Bill",
-      "Gas Bill",
-      "Property Tax Receipt",
-    ],
-  },
-  {
-    icon: <FaFileContract />,
-    title: "Registered Office — Ownership / Rental",
-    note: "As applicable",
-    items: [
-      "Duly Notarised Rent Agreement (if rented)",
-      "Sale Deed / Property ownership document (if owned)",
-    ],
-  },
-  {
-    icon: <FaShieldAlt />,
-    title: "No Objection Certificate (NOC)",
-    note: "From property owner",
-    items: [
-      "NOC from Property Owner permitting use of premises as Registered Office",
-      "Note: Residential property is permissible as Registered Office under MCA guidelines",
+      "Latest electricity / gas / municipal tax bill (≤ 60 days old)",
+      "NoC from the property owner",
+      "If rented: notarised rent agreement",
+      "If co-working / virtual: service agreement + operator NoC",
     ],
   },
 ];
@@ -101,39 +103,41 @@ const IncorporationDocuments = () => {
         {/* Header */}
         <div className="incd-header">
           <h2 className="incd-main-title">Documents Required for Incorporation of Wholly Owned Subsidiary in India</h2>
-          <p className="incd-main-subtitle">Get these ready and we'll take care of the rest</p>
+          <p className="incd-main-subtitle">
+            Six categories. Indian-parent docs are domestic KYC. Foreign-parent docs need apostille / notarisation. Per-person documents apply to all directors and the nominee shareholder. We send a personalised checklist after the discovery call.
+          </p>
         </div>
 
         {/* Two columns */}
         <div className="incd-columns">
 
-          {/* Director / Individual Documents */}
+          {/* Parent Company Documents */}
           <div className="incd-column">
             <div className="incd-col-header">
-              <div className="incd-col-header-icon"><FaUser /></div>
+              <div className="incd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="incd-col-title">Director / Promoter Documents</h3>
-                <p className="incd-col-subtitle">Required for each director & shareholder</p>
+                <h3 className="incd-col-title">Parent Company Documents</h3>
+                <p className="incd-col-subtitle">Identity, authorisations &amp; capital structure</p>
               </div>
             </div>
             <div className="incd-col-body">
-              {directorDocs.map((doc, i) => (
+              {parentDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>
           </div>
 
-          {/* Company / Office Documents */}
+          {/* Individual & Office Documents */}
           <div className="incd-column">
             <div className="incd-col-header incd-col-header--office">
-              <div className="incd-col-header-icon"><FaBuilding /></div>
+              <div className="incd-col-header-icon"><FaUser /></div>
               <div>
-                <h3 className="incd-col-title">Company & Registered Office Documents</h3>
-                <p className="incd-col-subtitle">Parent company records & office address proof</p>
+                <h3 className="incd-col-title">Director, Nominee &amp; Office Documents</h3>
+                <p className="incd-col-subtitle">Per-person KYC &amp; registered office proof</p>
               </div>
             </div>
             <div className="incd-col-body">
-              {companyDocs.map((doc, i) => (
+              {individualDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>
@@ -143,7 +147,7 @@ const IncorporationDocuments = () => {
 
         {/* Bottom note */}
         <p className="incd-bottom-note">
-          All documents must be self-attested. Documents of foreign nationals and the parent company must be apostilled / notarised by the competent authority in their home country before submission.
+          All documents must be self-attested. Foreign parent company documents must be apostilled / notarised by the competent authority in the home country before submission. We send a detailed personalised checklist after the discovery call.
         </p>
 
       </div>
