@@ -171,9 +171,12 @@
    WOS TWO-TRACK OVERRIDES
    =============================== */
 
-/* Full-width 3-col centered grid */
+/* 3-col centered grid */
 .wos-pricing-cards {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 1050px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Track label pill */
@@ -225,6 +228,7 @@
 @media (max-width: 992px) {
   .wos-pricing-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 680px;
   }
 }
 
@@ -232,6 +236,7 @@
 @media (max-width: 640px) {
   .wos-pricing-cards {
     grid-template-columns: 1fr;
+    max-width: 440px;
   }
 }
 
