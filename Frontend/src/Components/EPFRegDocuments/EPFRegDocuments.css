@@ -4,8 +4,8 @@
 
 .epf-doc-section {
   padding: 4rem 1.5rem;
-  background: linear-gradient(135deg, #f9fbff, #eef3ff);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #f8fafc;
+  font-family: "Poppins", sans-serif;
 }
 
 /* ===============================
@@ -40,7 +40,7 @@
 
 .epf-doc-image:hover img {
   transform: scale(1.05) rotate(-1deg);
-  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(0 15px 25px rgba(34, 197, 94, 0.15));
 }
 
 /* ===============================
@@ -63,7 +63,7 @@
   inset: 0;
   background: radial-gradient(
     circle at top right,
-    rgba(245, 158, 11, 0.18),
+    rgba(34, 197, 94, 0.12),
     transparent 60%
   );
   opacity: 0;
@@ -76,7 +76,7 @@
 
 .epf-doc-content:hover {
   transform: translateY(-8px);
-  box-shadow: 0 35px 70px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 35px 70px rgba(34, 197, 94, 0.12);
 }
 
 /* ===============================
@@ -129,18 +129,18 @@
   position: absolute;
   left: 0;
   top: 2px;
-  color: #2563eb;
+  color: #22c55e;
   font-size: 0.85rem;
 }
 
 .epf-doc-list li:hover {
   transform: translateX(6px);
-  color: #1e40af;
+  color: #16a34a;
 }
 
 /* Optional list color */
 .epf-doc-list.secondary li::before {
-  color: #f59e0b;
+  color: #4ade80;
 }
 
 /* ===============================
@@ -152,23 +152,22 @@
 }
 
 .epf-doc-cta button {
-  background: linear-gradient(135deg, #f59e0b, #fbbf24);
-  color: #ffffff;
+  background: linear-gradient(135deg, #22c55e, #4ade80);
+  color: #022c22;
   border: none;
   padding: 0.9rem 2.6rem;
   font-size: 1rem;
   font-weight: 600;
   border-radius: 30px;
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease,
-    background 0.3s ease;
-  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.30);
 }
 
 .epf-doc-cta button:hover {
-  background: linear-gradient(135deg, #d97706, #f59e0b);
+  background: linear-gradient(135deg, #16a34a, #22c55e);
   transform: translateY(-3px);
-  box-shadow: 0 18px 40px rgba(245, 158, 11, 0.45);
+  box-shadow: 0 18px 40px rgba(34, 197, 94, 0.40);
 }
 
 /* ===============================

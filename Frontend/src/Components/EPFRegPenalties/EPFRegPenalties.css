@@ -21,16 +21,18 @@
   box-shadow: 0 15px 45px rgba(0, 0, 0, 0.08);
   transition: all 0.35s ease;
   position: relative;
+  border: 1px solid #e2e8f0;
 }
 
 .epf-pv-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 25px 60px rgba(36, 83, 122, 0.2);
+  box-shadow: 0 25px 60px rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.35);
 }
 
 /* Accent card */
 .epf-pv-card.highlight {
-  border-left: 6px solid #f4a62a;
+  border-left: 6px solid #22c55e;
 }
 
 /* ================= TEXT ================= */
@@ -74,7 +76,7 @@
   position: absolute;
   left: 0;
   top: 0;
-  color: #f4a62a;
+  color: #22c55e;
   font-weight: bold;
 }
 

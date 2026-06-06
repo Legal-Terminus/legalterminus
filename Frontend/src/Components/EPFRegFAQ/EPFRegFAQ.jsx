@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import "./EPFRegFAQ.css"
+import "./EPFRegFAQ.css";
 
 const epfFaqs = [
   {
     question: "What are the regulatory bodies for EPF Registration?",
     answer:
-      "EPF Registration is regulated by the Employees’ Provident Fund Organisation (EPFO). The Employees’ Provident Funds and Miscellaneous Provisions Act, 1952 governs the functioning, management, and compliance of provident fund accounts in India."
+      "EPF Registration is regulated by the Employees' Provident Fund Organisation (EPFO). The Employees' Provident Funds and Miscellaneous Provisions Act, 1952 governs the functioning, management, and compliance of provident fund accounts in India."
   },
   {
     question: "Does the PF account change if an employee switches jobs?",
     answer:
-      "No. The PF account remains the same throughout an employee’s career. The Universal Account Number (UAN) allows seamless transfer of PF balances when changing jobs."
+      "No. The PF account remains the same throughout an employee's career. The Universal Account Number (UAN) allows seamless transfer of PF balances when changing jobs."
   },
   {
     question: "When is an organization required to get EPF Registration?",
@@ -30,7 +30,7 @@ const epfFaqs = [
   {
     question: "What is an Employee Deposit Linked Insurance Scheme?",
     answer:
-      "EDLI provides life insurance coverage to EPF members. In case of the employee’s death during service, the nominee receives insurance benefits linked to PF contributions."
+      "EDLI provides life insurance coverage to EPF members. In case of the employee's death during service, the nominee receives insurance benefits linked to PF contributions."
   },
   {
     question: "What is the time required to get the money from the EPF account?",
@@ -45,7 +45,7 @@ const epfFaqs = [
   {
     question: "How much time is required to obtain EPF Registration?",
     answer:
-      "EPF Registration usually takes 5–10 working days, provided all documents and details are correctly submitted."
+      "EPF Registration usually takes 10–15 working days, provided all documents and details are correctly submitted."
   },
   {
     question: "What are the changes brought in PF contribution since COVID-19?",
@@ -58,56 +58,46 @@ const EPFFaq = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const toggleFaq = (index) => {
-    setActiveIndex(activeIndex === index ? -1 : index);
+    setActiveIndex((prev) => (prev === index ? -1 : index));
   };
 
   return (
-    <section className="epf-faq-section">
-      <div className="epf-faq-container">
-        {/* LEFT SIDE */}
-        <div className="epf-faq-left">
-          <h2 className="epf-faq-title">
-            Helpful Questions About EPF Registration in India
-          </h2>
-          <p className="epf-faq-subtitle">
-            Have a look at the answers to the most asked questions about EPF
-            Registration, compliance, eligibility, and benefits in India.
+    <section className="faq-section">
+      <div className="faq-container">
+
+        {/* Centered heading & subheading */}
+        <div className="faq-header">
+          <h2 className="faq-title">EPF Registration — FAQs</h2>
+          <p className="faq-intro">
+            Answers to the most asked questions about EPF Registration, compliance, eligibility, and benefits in India.
           </p>
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="epf-faq-right">
-          <div className="epf-faq-list">
-            {epfFaqs.map((faq, index) => (
+        {/* Full-width staggered FAQ accordion */}
+        <div className="faq-list">
+          {epfFaqs.map((item, index) => {
+            const isActive = index === activeIndex;
+            return (
               <div
                 key={index}
-                className={`epf-faq-item ${
-                  activeIndex === index ? "active" : ""
-                }`}
+                className={`faq-item ${isActive ? "active" : ""}`}
               >
                 <button
-                  className="epf-faq-question"
+                  type="button"
+                  className="faq-question"
                   onClick={() => toggleFaq(index)}
                 >
-                  <span>{faq.question}</span>
-                  <span
-                    className={`epf-faq-arrow ${
-                      activeIndex === index ? "open" : ""
-                    }`}
-                  >
-                    ▾
-                  </span>
+                  <span>{item.question}</span>
+                  <span className={`faq-icon ${isActive ? "open" : ""}`}>▾</span>
                 </button>
-
-                {activeIndex === index && (
-                  <div className="epf-faq-answer">
-                    <p>{faq.answer}</p>
-                  </div>
-                )}
+                <div className={`faq-answer ${isActive ? "open" : ""}`}>
+                  <div className="faq-answer-content">{item.answer}</div>
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
+
       </div>
     </section>
   );

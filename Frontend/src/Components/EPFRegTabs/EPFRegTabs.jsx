@@ -1,35 +1,52 @@
 import React, { useState } from "react";
 import "./EPFRegTabs.css";
 
-const TABS = [
-  "Overview",
-  "Benefits",
-  "Applicability",
-  "Documents Required",
-  "Process",
-  "Penalties",
-  "Why LegalTerminus",
-  "FAQs",
+const tabs = [
+  { label: "Overview", id: "overview" },
+  { label: "Benefits", id: "benefits" },
+  { label: "Applicability", id: "applicability" },
+  { label: "Documents", id: "documents" },
+  { label: "Process", id: "process" },
+  { label: "Penalties", id: "penalties" },
+  { label: "Why LegalTerminus", id: "why" },
+  { label: "FAQ's", id: "faq" },
 ];
 
-const TabsBar = () => {
-  const [activeTab, setActiveTab] = useState("Overview");
+const EPFRegTabs = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const handleClick = (index, id) => {
+    setActiveIndex(index);
+
+    const section = document.getElementById(id);
+    if (section) {
+      const tabsEl = document.querySelector(".pvt-tabs-section");
+      const offset = tabsEl ? tabsEl.offsetHeight : 104;
+      const top = section.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
 
   return (
-    <div className="gis-wrapper">
-      <div className="gis-container">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            className={`tab-item ${activeTab === tab ? "active" : ""}`}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
+    <section className="pvt-tabs-section">
+      <div className="pvt-tabs-container">
+        <div className="pvt-tabs-card">
+          <div className="pvt-tabs-list">
+            {tabs.map((tab, index) => (
+              <button
+                key={tab.id}
+                type="button"
+                className={`pvt-tab ${index === activeIndex ? "active" : ""}`}
+                onClick={() => handleClick(index, tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
-export default TabsBar;
+export default EPFRegTabs;

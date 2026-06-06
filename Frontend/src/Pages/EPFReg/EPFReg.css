@@ -1,0 +1,91 @@
+/* ===== JUSTIFY ALL BODY TEXT ===== */
+div p,
+section p,
+article p,
+li {
+  text-align: justify;
+}
+
+/* ===== RESET NAV / MENU — never justify navigation ===== */
+nav li,
+nav a,
+nav p,
+header li,
+header a,
+header p,
+[class*="nav"] li,
+[class*="nav"] a,
+[class*="nav"] p,
+[class*="menu"] li,
+[class*="menu"] a,
+[class*="menu"] p,
+[class*="dropdown"] li,
+[class*="dropdown"] a,
+[class*="dropdown"] p,
+[class*="header"] li,
+[class*="header"] a,
+[class*="header"] p {
+  text-align: left;
+}
+
+/* ===== HEADINGS — keep as-is ===== */
+h1, h2, h3, h4, h5, h6 {
+  text-align: inherit;
+}
+
+/* ===== SPECIFIC OVERRIDES ===== */
+.faq-header p.faq-intro {
+  text-align: center;
+}
+
+.zp-content p.zp-subtitle {
+  text-align: left;
+}
+
+.lt-public-form-card p.lt-form-subtitle {
+  text-align: left;
+}
+
+/* ===== SUBHEADINGS — center align ===== */
+p[class*="subtitle"],
+p[class*="sub-title"],
+p[class*="subhead"],
+p[class*="sub-head"],
+p[class*="label"],
+p[class*="caption"],
+p[class*="-note"],
+p[class*="-sub"],
+p[class*="count"],
+p[class*="-title"],
+p[class*="heading"],
+p[class*="tagline"] {
+  text-align: center;
+}
+
+/* ===== SECTION DIVIDER ===== */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(34, 197, 94, 0.25) 20%,
+    rgba(34, 197, 94, 0.45) 50%,
+    rgba(34, 197, 94, 0.25) 80%,
+    transparent 100%
+  );
+  margin: 0 40px;
+}
+
+/* ===== FORM CARD — green glow shadow ===== */
+.copy-page-hero .cf-card {
+  border: 1px solid rgba(34, 197, 94, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.15) inset,
+    0 0 28px rgba(34, 197, 94, 0.4),
+    0 0 56px rgba(34, 197, 94, 0.18),
+    0 40px 90px rgba(0, 0, 0, 0.85);
+}
+
+.copy-page-hero .cf-input {
+  border: 1.5px solid #4ade80;
+}
