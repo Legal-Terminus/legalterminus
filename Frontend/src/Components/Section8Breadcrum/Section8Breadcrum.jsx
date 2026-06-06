@@ -4,7 +4,7 @@ import "./Section8Breadcrum.css";
 import ConsultationForm from '../ConsultationForm/ConsultationForm';
 const Breadcrum = () => {
   return (
-    <section className="lt-public-hero">
+    <section className="lt-public-hero s8-hero">
       <div className="lt-public-container">
 
         {/* LEFT CONTENT */}

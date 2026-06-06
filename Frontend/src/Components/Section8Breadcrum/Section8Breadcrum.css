@@ -81,6 +81,11 @@
   margin-bottom: 38px;
 }
 
+.s8-hero .lt-public-description {
+  max-width: 100%;
+  width: 100%;
+}
+
 /* ================= FEATURES ================= */
 .lt-public-features {
   display: grid;
