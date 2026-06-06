@@ -54,6 +54,15 @@
   color: #ffffff;
 }
 
+.lt-public-title .lt-title-india {
+  color: #ffffff;
+}
+
+.wos-hero .lt-public-description {
+  max-width: 100%;
+  width: 100%;
+}
+
 .lt-title-tagline {
   color: #4ade80;
   display: block;
