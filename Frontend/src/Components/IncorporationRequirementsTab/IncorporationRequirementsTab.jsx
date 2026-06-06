@@ -1,6 +1,33 @@
 import React from "react";
 import "./IncorporationRequirementsTab.css";
 
+const benefits = [
+  {
+    title: "100% Parent Control",
+    text: "The parent owns 100% of the WOS economically — every share, every vote, every dividend. The 1-share nominee in a Pvt Ltd is a structural formality (held under Section 187 declaration of nominee shareholding). Strategic decisions, board composition, exit — all sit with the parent.",
+  },
+  {
+    title: "Limited Liability for Parent",
+    text: "The parent's liability is limited to its investment in the WOS. Creditors of the WOS cannot pierce the corporate veil to chase the parent's other assets, except in narrow fraud / undercapitalisation cases. Critical for ring-fencing high-risk verticals or new market bets.",
+  },
+  {
+    title: "Section 115BAA — 22% Concessional Tax",
+    text: "Domestic WOS Pvt Ltd companies (Indian-parent or foreign-parent) can opt for 22% tax under Section 115BAA. Effective rate ~25.17% with surcharge + cess. New manufacturing companies can qualify for Section 115BAB (15%). Massive long-term tax saving — same rate as standalone Pvt Ltd.",
+  },
+  {
+    title: "Clean Group Structure & Consolidation",
+    text: "Indian-parent groups get a clean Section 129 consolidation perimeter — financials roll up cleanly to the holding company. Foreign-parent MNCs get a single-entity Indian P&L for global consolidation. Either way, the WOS is the cleanest balance-sheet vehicle for sub-aggregation.",
+  },
+  {
+    title: "Easy Capital Injection",
+    text: "Indian-parent: capital injected via fresh share allotment + Form PAS-3 filing. Foreign-parent: inward remittance via AD-Bank + share allotment + FC-GPR. Both routes are well-established and predictable. No public markets, no investor approvals, no valuation disputes — the parent decides.",
+  },
+  {
+    title: "Strategic Optionality (Sale, Spin-off, IPO)",
+    text: "Because WOS is a separate legal entity with clean ownership, it's straightforward to sell (share-sale exit), spin-off (transfer to another group entity), or IPO (convert to Public Ltd). Group restructuring is dramatically harder if the same business sits as a 'division' inside a parent.",
+  },
+];
+
 const IncorporationRequirementsTab = () => {
   return (
     <section className="incorp-req-section">
@@ -12,80 +39,21 @@ const IncorporationRequirementsTab = () => {
             Benefits of Incorporation Of Wholly Owned Subsidiary in India
           </h2>
           <p className="incorp-req-subtitle">
-            A Wholly Owned Subsidiary (WOS) in India is registered as a Private Limited Company under the Companies Act, 2013, with 100% shareholding held by the foreign parent company — giving you full control, limited liability, and direct access to India's rapidly growing market.
+            WOS isn't just a structural choice — it's a strategic instrument. Whether your parent is Indian or foreign, here's what genuinely matters once you're past Day 1:
           </p>
         </header>
 
         {/* ================= CARDS ================= */}
         <div className="incorp-req-grid">
-
-          {/* Card 1 */}
-          <article className="incorp-req-card">
-            <h3 className="incorp-req-card-title">
-              Full Control Over Business
-            </h3>
-            <div className="incorp-req-card-underline" />
-            <p className="incorp-req-card-text">
-              Unlike a joint venture where decisions are shared, a Wholly Owned Subsidiary (WOS) allows the foreign parent company to make all decisions independently. This helps in running operations smoothly without disagreements.
-            </p>
-          </article>
-
-          {/* Card 2 */}
-          <article className="incorp-req-card">
-            <h3 className="incorp-req-card-title">
-              100% Ownership Rights
-            </h3>
-            <div className="incorp-req-card-underline" />
-            <p className="incorp-req-card-text">
-              With a WOS, foreign investors can own the company fully. There is no need to involve an Indian partner, so ownership and profits remain completely with the parent company.
-            </p>
-          </article>
-
-          {/* Card 3 */}
-          <article className="incorp-req-card">
-            <h3 className="incorp-req-card-title">
-              Easy Entry into the Indian Market
-            </h3>
-            <div className="incorp-req-card-underline" />
-            <p className="incorp-req-card-text">
-              India is one of the largest and fastest-growing markets. A WOS helps foreign companies operate directly in India, adjust services/products for local customers, and grow their business.
-            </p>
-          </article>
-
-          {/* Card 4 */}
-          <article className="incorp-req-card">
-            <h3 className="incorp-req-card-title">
-              Government Benefits and Support
-            </h3>
-            <div className="incorp-req-card-underline" />
-            <p className="incorp-req-card-text">
-              India offers various tax benefits and business incentives for foreign companies, especially in selected industries. Programs like Make in India also support international businesses setting up in India.
-            </p>
-          </article>
-
-          {/* Card 5 */}
-          <article className="incorp-req-card">
-            <h3 className="incorp-req-card-title">
-              Smooth Profit Transfer to Parent Company
-            </h3>
-            <div className="incorp-req-card-underline" />
-            <p className="incorp-req-card-text">
-              After paying the required taxes, the company can send profits back to the foreign parent company, making it financially beneficial for foreign businesses.
-            </p>
-          </article>
-
-          {/* Card 6 */}
-          <article className="incorp-req-card">
-            <h3 className="incorp-req-card-title">
-              Separate Legal Identity
-            </h3>
-            <div className="incorp-req-card-underline" />
-            <p className="incorp-req-card-text">
-              A WOS is treated as a separate company in India. This means the parent company gets legal protection, and liabilities of the Indian entity usually remain with the subsidiary.
-            </p>
-          </article>
-
+          {benefits.map((benefit, i) => (
+            <article className="incorp-req-card" key={i}>
+              <h3 className="incorp-req-card-title">{benefit.title}</h3>
+              <div className="incorp-req-card-underline" />
+              <p className="incorp-req-card-text">{benefit.text}</p>
+            </article>
+          ))}
         </div>
+
       </div>
     </section>
   );

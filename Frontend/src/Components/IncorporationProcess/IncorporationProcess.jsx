@@ -3,39 +3,49 @@ import "./IncorporationProcess.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
-    text:
-      "Provision of requisite documents/information to us (As per the checklist to be provided by us)",
+    title: "Discovery & Parent-Type Lock",
+    day: "Day 0",
+    text: "60-min call with our CS to confirm: parent type (Indian / foreign), parent's existing structure, intended business activity (NIC code), authorised + paid-up capital, and (for foreign parents) sectoral FDI route + jurisdiction.",
   },
   {
-    title: "Step 2 – Company Name & Object Finalization",
-    text:
-      "Finalisation of Objects along with Name of the proposed company (Name shall be finalised on the basis of a search report duly conducted & provided by our team)",
+    title: "Parent KYC Pack Collection",
+    day: "Day 0–3",
+    text: "Indian-parent: parent's PAN, COI, MOA/AOA, latest financials, Board Resolution authorising investment + nominating director(s). Foreign-parent: same set apostilled / notarised, plus UBO declaration and AD-Bank reference letter.",
   },
   {
-    title: "Step 3 – Name Reservation Application",
-    text:
-      "Filing of Application for Name Reservation in requisite e-form along with applicable government fees",
+    title: "Apostille / Notarisation (Foreign Parent Only)",
+    day: "Day 1–10",
+    text: "Parent documents apostilled in home jurisdiction (Hague Convention) or notarised + Indian embassy attested (non-Hague). Run in parallel with name reservation. SKIPPED for Indian-parent WOS.",
   },
   {
-    title: "Step 4 – Digital Signature Certificates",
-    text:
-      "Preparation of requisite numbers of DSC with respect to the proposed Promoters & Directors and Registration of DSC in MCA Portal",
+    title: "DSC + DIN Procurement",
+    day: "Day 3–7",
+    text: "Class 3 DSC for 2 directors + 1 nominee shareholder. Aadhaar e-KYC (resident) or apostilled passport (non-resident). DIN auto-applied via SPICe+ for first 2 directors.",
   },
   {
-    title: "Step 5 – Incorporation Document Preparation",
-    text:
-      "Preparation of further incorporation documents upon receipt of name approval letter from the department",
+    title: "SPICe+ Part A — Name Reservation",
+    day: "Day 5–8",
+    text: "Filed with 4 proposed names. CRC reviews under Rule 8. 2–3 working days. Reserved name valid for 20 days.",
   },
   {
-    title: "Step 6 – Final Form Upload & Fee Payment",
-    text:
-      "Uploading of Final Incorporation Forms to the MCA portal along with applicable government fees",
+    title: "MOA & AOA Drafting (Track-Specific)",
+    day: "Day 6–10",
+    text: "Indian-parent: MOA + AOA with parent reserved matters, RPT framework, transfer restrictions. Foreign-parent: same plus FEMA carve-outs and FDI compliance clauses. Two rounds of revision.",
   },
   {
-    title: "Step 7 – Registration Certificate Issuance",
-    text:
-      "Processing of the application by the department and issuance of registration certificate",
+    title: "SPICe+ Part B + AGILE-PRO-S Filing",
+    day: "Day 8–14",
+    text: "Master incorporation form filed: PAN, TAN, EPFO, ESIC, GSTIN, Bank Account. Stamp duty paid online. Indian-parent: Day 8–14. Foreign-parent: Day 12–14.",
+  },
+  {
+    title: "CRC Examination & COI Issuance",
+    day: "Day 10–22",
+    text: "CRC reviews under Rule 12. Indian-parent files: 3–7 days. Foreign-parent files take longer due to foreign-document scrutiny: 5–10 days. COI issued under Section 7(2). PAN, TAN, CIN allotted.",
+  },
+  {
+    title: "Post-Incorporation Onboarding",
+    day: "Day 13–30",
+    text: "We deliver: COI PDF, MOA/AOA stamped, share certificates, PAS-3 / FC-GPR ack (track-specific), statutory registers, INC-20A reminder, FLA-tracker (foreign only), 90-day compliance calendar.",
   },
 ];
 
@@ -47,7 +57,7 @@ const IncorporationProcess = () => {
       </h2>
 
       <p className="incorp-process-subtitle">
-        The broad process of registering a Wholly Owned Subsidiary in India involves the following steps:
+        Indian-parent WOS: 10–15 working days. Foreign-parent WOS: 20–30 working days (apostille is the longest critical-path item). Both run on the same SPICe+ framework — only the documentation pack and post-step FEMA filing differ.
       </p>
 
       <div className="incorp-timeline">
@@ -65,7 +75,12 @@ const IncorporationProcess = () => {
             <div className="incorp-timeline-dot">{index + 1}</div>
 
             <div className="incorp-timeline-card">
-              <h4>{step.title}</h4>
+              <h4>
+                {step.title}
+                {step.day && (
+                  <span className="incorp-day-tag">{step.day}</span>
+                )}
+              </h4>
               <p>{step.text}</p>
             </div>
           </div>
