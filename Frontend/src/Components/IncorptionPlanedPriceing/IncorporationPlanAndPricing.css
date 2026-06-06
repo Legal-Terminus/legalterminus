@@ -206,6 +206,17 @@
   background: #f8faff;
 }
 
+/* Badge floats above the card border — doesn't push content down */
+.wos-pricing-section .plan-popular-badge,
+.wos-pricing-section .plan-fullservice-badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  white-space: nowrap;
+}
+
 /* ---- Card base: solid green border, Private Limited hover ---- */
 .wos-pricing-section .plan-card {
   border: 1px solid #22c55e;
