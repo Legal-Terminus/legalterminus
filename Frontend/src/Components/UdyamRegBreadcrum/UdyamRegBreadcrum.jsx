@@ -22,28 +22,30 @@ const UdyamRegBreadcrum = () => {
           </h1>
 
           <p className="lt-public-description">
-            Udyam Registration is the official government process for MSME recognition in India, governed by the Ministry of MSME. A Udyam certificate gives your business a unique 19-digit Udyam Registration Number (URN), unlocks priority sector lending, enables participation in government tenders, and protects you under the MSMED Act. The registration is completely free on the government portal — no fees, no renewals, lifetime validity.
+            UDYAM Registration is the Government of India's official registration for Micro, Small, and Medium Enterprises (MSMEs). It helps businesses avail various government benefits, improve credibility, and strengthen their position while dealing with customers, vendors, banks, and government departments.
+            <br /><br />
+            An UDYAM Certificate enables businesses to avail MSME-specific benefits such as easier access to bank loans and credit facilities, priority sector lending, government tender preferences, protection against delayed payments under MSME provisions, and various subsidies and support schemes offered by Central and State Governments. MSMEs can also avail a 50% concession in the official government fee for Trademark Registration applications.
+            <br /><br />
+            The Government does not charge any fee for UDYAM Registration. Our professional assistance starts from ₹999 + GST, ensuring a smooth and error-free registration process.
+            <br /><br />
+            Need multiple registrations? You can combine UDYAM Registration with GST Registration, Trademark Registration, Startup Registration, or other business compliance services through a single point of coordination.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Free Government Registration</div>
-            <div className="lt-feature-item">Lifetime MSME Certificate</div>
-            <div className="lt-feature-item">Priority Sector Lending Access</div>
-            <div className="lt-feature-item">Government Tender Eligibility</div>
+            <div className="lt-feature-item">Same-Day Filing</div>
+            <div className="lt-feature-item">Right NIC Mapped</div>
+            <div className="lt-feature-item">100% Online Process</div>
+            <div className="lt-feature-item">Lifetime Validity</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
               <h3>10,000+</h3>
-              <p>Udyam certificates issued</p>
+              <p>Udyam registrations filed</p>
             </div>
             <div>
-              <h3>₹0 Govt Fee</h3>
-              <p>Completely free registration</p>
-            </div>
-            <div>
-              <h3>1–2 Days</h3>
-              <p>End-to-end processing</p>
+              <h3>All 28 States</h3>
+              <p>+ 8 Union Territories</p>
             </div>
           </div>
 
