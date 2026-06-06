@@ -3,38 +3,48 @@ import "./UdyamRegProcess.css";
 
 const steps = [
   {
+    day: "Day 0",
+    title: "Discovery & Classification Check",
+    desc: "30-min call with our Expert to confirm: business activity, projected turnover + investment, sector (manufacturing / service / trading), key suppliers and buyers, scheme priorities (CGTMSE? PMEGP? GeM? Section 43B(h)?). We map the right NIC code(s).",
+  },
+  {
     day: "Day 0–1",
-    title: "Document & Information Collection",
-    desc: "Share your Aadhaar number, PAN, business address, NIC code, and investment/turnover figures. Our expert reviews your details for accuracy before filing.",
+    title: "Aadhaar Mobile-Linkage Verification",
+    desc: "Confirm proprietor / partner / authorised signatory's Aadhaar is linked to a working mobile number for OTP authentication. If not linked, sort that out at a UIDAI centre BEFORE we file.",
+  },
+  {
+    day: "Day 0–1",
+    title: "PAN + GSTIN Validation",
+    desc: "Confirm PAN-Aadhaar linkage status (post-30 June 2023, unlinked PANs are inoperative). Validate GSTIN if applicable. Both auto-fetch from CBDT / GSTN during the Udyam form filing.",
   },
   {
     day: "Day 1",
-    title: "Aadhaar OTP Verification",
-    desc: "Login to the Udyam portal using your Aadhaar-linked mobile number. A one-time OTP is sent to authenticate your identity — no physical visit required.",
+    title: "NIC Code Mapping",
+    desc: "Senior-CA reviewed NIC code selection — one primary, others secondary. The right NIC code unlocks the right schemes (PMEGP only for manufacturing; ZED Bronze/Silver/Gold based on activity).",
   },
   {
-    day: "Day 1–2",
-    title: "PAN & GST Validation",
-    desc: "The portal auto-fetches your business details from the Income Tax (PAN) and GSTIN databases. We verify these are correctly mapped to your activity.",
+    day: "Day 1",
+    title: "Investment + Turnover Declaration",
+    desc: "We help you declare investment in plant & machinery / equipment (net of GST) and turnover (excluding exports per amendment notification). Based on previous year's ITR and GSTR data; current-year self-declaration if newly started.",
   },
   {
-    day: "Day 2",
-    title: "NIC Code Mapping & Form Filing",
-    desc: "We select the correct NIC code for your primary business activity and complete the Udyam registration form with all required self-declarations.",
+    day: "Day 1",
+    title: "Form Submission + Aadhaar OTP",
+    desc: "Application filed on udyamregistration.gov.in. Aadhaar OTP sent to your registered mobile — you enter it within 10 minutes.",
   },
   {
-    day: "Day 2–3",
-    title: "Udyam Certificate Issuance",
-    desc: "Upon successful submission, the Udyam Registration Number and digital certificate are issued instantly by the Ministry of MSME. No fee is charged by the government.",
+    day: "Day 1",
+    title: "Udyam Number Issued & Certificate Delivered",
+    desc: "Udyam Registration Number (URN) and Certificate generated INSTANTLY on submission. PDF download available immediately. Format: UDYAM-XX-NN-NNNNNNN. We download it, share it via email + WhatsApp, and send your post-registration onboarding kit.",
   },
 ];
 
 const UdyamRegProcess = () => {
   return (
     <div className="pvtltd-udyam-wrapper">
-      <h2 className="udyam-process-heading">How to Get Udyam Registration</h2>
+      <h2 className="udyam-process-heading">Steps For Udyam / MSME Registration in India</h2>
       <p className="udyam-process-subheading">
-        Five steps. Typically done within 24–48 hours — end-to-end online with zero government fee.
+        Eight steps. Same-day filing in most cases. Udyam Number is generated INSTANTLY on submission — the rest is post-registration onboarding and scheme matching.
       </p>
       <div className="pvtltd-timeline">
         <div className="pvtltd-timeline-line" />
