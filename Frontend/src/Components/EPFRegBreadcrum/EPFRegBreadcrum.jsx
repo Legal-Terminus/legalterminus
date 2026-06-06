@@ -18,32 +18,32 @@ const EPFRegBreadcrum = () => {
             EPF Registration Online
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-public-subtitle">Fast, Secure &amp; 100% Online</span>
+            <span className="lt-public-subtitle">EPF Reg - That Keeps Your Business Compliant</span>
           </h1>
 
           <p className="lt-public-description">
-            Employee Provident Fund (EPF) Registration is mandatory for all establishments with 20 or more employees under the Employees' Provident Funds and Miscellaneous Provisions Act, 1952. Governed by the EPFO, every eligible employer must register within one month of crossing the 20-employee threshold to avoid heavy penalties. The entire registration process is 100% online through the Unified Shram Suvidha Portal (USSP). Upon registration, every employee is issued a Universal Account Number (UAN) that stays with them throughout their career.
+            EPF registration is a mandatory compliance for eligible establishments under the Employees' Provident Fund and Miscellaneous Provisions Act, 1952. Generally, it is mandatory the moment your employee strength touches 20 - and voluntary below that under Section 1(4) if you want to offer it as a benefit. The EPF scheme helps employees create long-term retirement savings through monthly contributions made by both the employer and employee. At the same time, it helps businesses stay legally compliant and employee-friendly. Legal Terminus simplifies the entire EPF registration process — from Form 5A filing and EPFO portal registration to Establishment Code generation, UAN activation, and ECR support. Free EPF-update support for 1 year - included in every plan.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Mandatory for 20+ Employees</div>
-            <div className="lt-feature-item">Lifetime Valid Certificate</div>
-            <div className="lt-feature-item">UAN for Every Employee</div>
-            <div className="lt-feature-item">EPFO Compliance Support</div>
+            <div className="lt-feature-item">Builds Employee Trust</div>
+            <div className="lt-feature-item">Legally Compliant Workplace</div>
+            <div className="lt-feature-item">Retirement Savings for Employees</div>
+            <div className="lt-feature-item">Social Security &amp; Pension Benefits</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>5,000+</h3>
-              <p>EPF registrations completed</p>
+              <h3>400+</h3>
+              <p>EPF establishments registered</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>EPFO USSP Portal Filing</p>
+              <h3>Pan-India</h3>
+              <p>EPFO regional offices covered</p>
             </div>
             <div>
-              <h3>10–15 Days</h3>
-              <p>Average registration time</p>
+              <h3>7+</h3>
+              <p>Years of Legal Expertise</p>
             </div>
           </div>
 
