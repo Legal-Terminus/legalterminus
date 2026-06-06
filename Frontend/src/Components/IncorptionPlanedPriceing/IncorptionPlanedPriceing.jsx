@@ -1,150 +1,232 @@
 import React, { useState } from "react";
+import "../PvtltdPlanandPricing/PvtltdPlanandPricing.css";
 import "./IncorporationPlanAndPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
-
-const PLANS = [
-  { id: "elemental", name: "Elemental", price: 3999, services: ["Search Report of Name Availability", "1 RUN Name Approval Certificate", "Director Identification Number for 2 Individuals", "Certificate of Incorporation", "E-PAN", "E-TAN", "E-MOA", "E-AOA", "Documents for Bank Account Opening", "Documents for 1st Auditor Appointment", "EPF Registrations", "ESI Registrations"] },
-  { id: "enriched", name: "Enriched", price: 5999, services: ["Elemental Plan Plus", "Share Certificate", "Commencement of Business", "Udyam/MSME Registration"] },
-  { id: "supreme", name: "Supreme", price: 24999, services: ["Enriched Plan Plus", "Income tax filing of Company", "Preparation of Directors Report", "Preparation of Annual Return", "Preparation of Auditor Appointment Paperwork", "Preparation of List of Share Holders", "Preparation of Notice of AGM", "Preparation of Notice of BM", "Preparation of Extracts of AGM", "Filing of AOC - 4 (Financial Statements)", "Filing of MGT - 7 (Annual Return)", "Filing of ADT - 1 (Auditor Appointment)", "Minutes of Board Meeting for 1st FY", "Minutes of General Meeting for 1st FY", "Maintenance of Statutory E- Registers", "Filing of DPT - 3 Annual (If Applicable)", "Filing of MSME - 1 (If Applicable) for 1st FY", "DIR KYC (2 Directors)", "Income Tax Filing of 2 Directors", "Audit fees are excluded and to be paid directly to Auditor"] }
+const TRACK_A_PLANS = [
+  {
+    id: "wos-a-elemental",
+    name: "Elemental",
+    oldPrice: "₹10,999",
+    price: 7999,
+    services: [
+      "Name Search & Availability Report",
+      "SPICe+ Part A name reservation (2 attempts)",
+      "DIN application for 2 directors (via SPICe+)",
+      "MOA & AOA drafting (Indian-parent WOS template)",
+      "Parent Board Resolution + Authorised Signatory drafting",
+      "Nominee shareholder declaration (Section 187)",
+      "Other documents preparation for Incorporation of WOS",
+      "SPICe+ Part B + AGILE-PRO-S filing",
+      "PAN + TAN + Certificate of Incorporation delivery",
+      "ESIC + EPFO registration",
+      "Govt fees, DSC, stamp duty at actuals",
+    ],
+  },
+  {
+    id: "wos-a-enriched",
+    name: "Enriched",
+    badge: "popular",
+    oldPrice: "₹17,999",
+    price: 14999,
+    services: [
+      "Everything in Elemental",
+      "1st Board Resolution documentation",
+      "Bank account opening assistance",
+      "1st Auditor Appointment Documents",
+      "Share Certificate",
+      "Commencement of Business (INC-20A)",
+      "Udyam / MSME Registration",
+      "GST Registration Assistance",
+    ],
+  },
+  {
+    id: "wos-a-supreme",
+    name: "Supreme",
+    badge: "fullservice",
+    oldPrice: "₹29,999",
+    price: 26999,
+    services: [
+      "Everything in Enriched",
+      "Directors' Report Preparation",
+      "Minutes of Board & General Meetings (1st FY)",
+      "Statutory E-Register Maintenance",
+      "Preparation of Auditor Appointment Paperwork",
+      "Preparation of List of Share Holders",
+      "Preparation of Extracts of AGM",
+      "Annual ITR Filing — Company",
+      "Financial Statements Filing — AOC-4",
+      "Annual Return Filing — MGT-7A",
+      "Auditor Appointment Filing — ADT-1",
+      "DPT-3 & MSME-1 Filing (if applicable)",
+      "ITR Filing for 2 Directors",
+    ],
+  },
 ];
+
+const TRACK_B_PLANS = [
+  {
+    id: "wos-b-elemental",
+    name: "Elemental",
+    oldPrice: "₹26,999",
+    price: 19999,
+    services: [
+      "Sectoral FDI eligibility check (auto vs approval route)",
+      "Name Search & Availability Report",
+      "SPICe+ Part A name reservation (2 attempts)",
+      "DIN application for 2 directors (via SPICe+)",
+      "MOA & AOA drafting (foreign-parent WOS template)",
+      "Apostille / notarisation coordination (parent docs)",
+      "SPICe+ Part B + AGILE-PRO-S filing",
+      "PAN + TAN + Certificate of Incorporation delivery",
+      "ESIC + EPFO registration",
+      "Govt fees, DSC, apostille, AD-Bank at actuals",
+    ],
+  },
+  {
+    id: "wos-b-enriched",
+    name: "Enriched",
+    badge: "popular",
+    oldPrice: "₹47,999",
+    price: 34999,
+    services: [
+      "Everything in Elemental",
+      "1st Board Resolution documentation",
+      "1st Auditor Appointment Documents",
+      "AD-Bank coordination (FIRC + KYC pull-out)",
+      "Form FC-GPR filing within 30 days of allotment",
+      "UDYAM / MSME Registration",
+      "GST Registration Assistance",
+      "INC-20A (commencement) filing",
+      "30-day post-incorporation FEMA support",
+    ],
+  },
+  {
+    id: "wos-b-supreme",
+    name: "Supreme",
+    badge: "fullservice",
+    oldPrice: "₹74,999",
+    price: 54999,
+    services: [
+      "Everything in Enriched",
+      "Transfer pricing structure advisory (parent-WOS)",
+      "First-year FLA Return filing (by July 15)",
+      "ESOP / sweat equity scheme review (cross-border)",
+      "Statutory Registers Pack + share certificates printed",
+      "Trademark search + Class application (1 class)",
+      "IEC registration",
+      "Section 115BAA / 115BAB tax-regime advisory call",
+      "90-day priority CA / CS / FEMA-counsel helpline",
+    ],
+  },
+];
+
+const PlanCard = ({ plan, onBuy }) => {
+  const isPopular = plan.badge === "popular";
+  const isFullService = plan.badge === "fullservice";
+  const cardClass = [
+    "plan-card",
+    isPopular ? "plan-card--popular" : "",
+    isFullService ? "plan-card--fullservice" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <article className={cardClass}>
+      <div>
+        {isPopular && (
+          <span className="plan-popular-badge">★ MOST POPULAR</span>
+        )}
+        {isFullService && (
+          <span className="plan-fullservice-badge">✦ FULL-SERVICE</span>
+        )}
+        <div className="plan-header">
+          <div className="plan-name">{plan.name}</div>
+          <div className="plan-old-price">{plan.oldPrice}</div>
+          <div className="plan-price">
+            ₹{plan.price.toLocaleString("en-IN")}
+          </div>
+          <div className="plan-meta">Excluding govt. fees &amp; actuals</div>
+        </div>
+        <div className="plan-body">
+          <ul className="plan-list">
+            {plan.services.map((service, i) => (
+              <li key={i} className="plan-list-item">
+                {service}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className="plan-footer">
+        <button className="plan-button" onClick={() => onBuy(plan)}>
+          Buy Now
+        </button>
+      </div>
+    </article>
+  );
+};
 
 const IncorporationPlanAndPricing = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
-
     <>
-    <section className="incorp-pricing-section">
-      <div className="incorp-pricing-container">
-
-        {/* ================= HEADER ================= */}
-        <header className="incorp-pricing-header">
-          <h2 className="incorp-pricing-title">CHOOSE YOUR PLAN</h2>
-          <p className="incorp-pricing-subtitle">
-            Register your company with pocket-friendly prices
-          </p>
-        </header>
-
-        {/* ================= CARDS ================= */}
-        <div className="incorp-pricing-cards">
-
-          {/* ========== ELEMENTAL ========== */}
-          <article className="incorp-plan-card">
-            <div>
-              <div className="incorp-plan-header">
-                <div className="incorp-plan-name">Elemental</div>
-                <div className="incorp-plan-old-price">₹5,999</div>
-                <div className="incorp-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
-                <div className="incorp-plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="incorp-plan-body">
-                <ul className="incorp-plan-list">
-                  <li className="incorp-plan-list-item">Search Report of Name Availability</li>
-                  <li className="incorp-plan-list-item">1 RUN Name Approval Certificate</li>
-                  <li className="incorp-plan-list-item">Director Identification Number for 2 Individuals</li>
-                  <li className="incorp-plan-list-item">Certificate of Incorporation</li>
-                  <li className="incorp-plan-list-item">E-PAN</li>
-                  <li className="incorp-plan-list-item">E-TAN</li>
-                  <li className="incorp-plan-list-item">E-MOA</li>
-                  <li className="incorp-plan-list-item">E-AOA</li>
-                  <li className="incorp-plan-list-item">Documents for Bank Account Opening</li>
-                  <li className="incorp-plan-list-item">Documents for 1st Auditor Appointment</li>
-                  <li className="incorp-plan-list-item">EPF Registrations</li>
-                  <li className="incorp-plan-list-item">ESI Registrations</li>
-                </ul>
-              </div>
+      {/* ====== TRACK A : INDIAN-PARENT WOS ====== */}
+      <section className="pvtltd-pricing-section wos-pricing-section">
+        <div className="pricing-container">
+          <header className="pricing-header">
+            <div className="wos-track-label wos-track-label--a">
+              TRACK A &bull; INDIAN-PARENT WOS
             </div>
-
-            <div className="incorp-plan-footer">
-              <button className="incorp-plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* ========== ENRICHED (POPULAR) ========== */}
-          <article className="incorp-plan-card">
-            <div>
-              <div className="incorp-plan-header">
-                <div className="incorp-plan-name">Enriched</div>
-                <div className="incorp-plan-old-price">₹7,999</div>
-                <div className="incorp-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="incorp-plan-meta">
-                  Excluding gov fee <span className="popular">(Popular)</span>
-                </div>
-              </div>
-
-              <div className="incorp-plan-body">
-                <ul className="incorp-plan-list">
-                  <li className="incorp-plan-list-item">Elemental Plan Plus</li>
-                  <li className="incorp-plan-list-item">Share Certificate</li>
-                  <li className="incorp-plan-list-item">Commencement of Business</li>
-                  <li className="incorp-plan-list-item">Udyam/MSME Registration</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="incorp-plan-footer">
-              <button className="incorp-plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* ========== SUPREME ========== */}
-          <article className="incorp-plan-card">
-            <div>
-              <div className="incorp-plan-header">
-                <div className="incorp-plan-name">Supreme</div>
-                <div className="incorp-plan-old-price">₹29,999</div>
-                <div className="incorp-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
-                <div className="incorp-plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="incorp-plan-body">
-                <ul className="incorp-plan-list">
-                  <li className="incorp-plan-list-item">Enriched Plan Plus</li>
-                  <li className="incorp-plan-list-item">Income tax filing of Company</li>
-                  <li className="incorp-plan-list-item">Preparation of Directors Report</li>
-                  <li className="incorp-plan-list-item">Preparation of Annual Return</li>
-                  <li className="incorp-plan-list-item">Preparation of Auditor Appointment Paperwork</li>
-                  <li className="incorp-plan-list-item">Preparation of List of Share Holders</li>
-                  <li className="incorp-plan-list-item">Preparation of Notice of AGM</li>
-                  <li className="incorp-plan-list-item">Preparation of Notice of BM</li>
-                  <li className="incorp-plan-list-item">Preparation of Extracts of AGM</li>
-                  <li className="incorp-plan-list-item">Filing of AOC - 4 (Financial Statements)</li>
-                  <li className="incorp-plan-list-item">Filing of MGT - 7 (Annual Return)</li>
-                  <li className="incorp-plan-list-item">Filing of ADT - 1 (Auditor Appointment)</li>
-                  <li className="incorp-plan-list-item">Minutes of Board Meeting for 1st FY</li>
-                  <li className="incorp-plan-list-item">Minutes of General Meeting for 1st FY</li>
-                  <li className="incorp-plan-list-item">Maintenance of Statutory E- Registers</li>
-                  <li className="incorp-plan-list-item">Filing of DPT - 3 Annual (If Applicable)</li>
-                  <li className="incorp-plan-list-item">Filing of MSME - 1 (If Applicable) for 1st FY</li>
-                  <li className="incorp-plan-list-item">DIR KYC (2 Directors)</li>
-                  <li className="incorp-plan-list-item">Income Tax Filing of 2 Directors</li>
-                  <li className="incorp-plan-list-item">
-                    Audit fees are excluded and to be paid directly to Auditor
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="incorp-plan-footer">
-              <button className="incorp-plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-            </div>
-          </article>
-
+            <h2 className="PvtLtd-pricing-title">
+              Parent Is An Indian Company
+            </h2>
+            <p className="pricing-subtitle">
+              Standard WOS incorporation with complete ROC compliance support
+            </p>
+          </header>
+          <div className="pricing-cards pricing-cards--3col">
+            {TRACK_A_PLANS.map((plan) => (
+              <PlanCard key={plan.id} plan={plan} onBuy={setActivePlan} />
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
+      {/* ====== TRACK B : FOREIGN-PARENT WOS ====== */}
+      <section className="pvtltd-pricing-section wos-pricing-section wos-pricing-section--b">
+        <div className="pricing-container">
+          <header className="pricing-header">
+            <div className="wos-track-label wos-track-label--b">
+              TRACK B &bull; FOREIGN-PARENT WOS
+            </div>
+            <h2 className="PvtLtd-pricing-title">
+              Parent Is A Foreign Company — Adds FEMA Scope
+            </h2>
+            <p className="pricing-subtitle">
+              Cross-border WOS with complete FEMA, FC-GPR &amp; RBI compliance
+              coverage
+            </p>
+          </header>
+          <div className="pricing-cards pricing-cards--3col">
+            {TRACK_B_PLANS.map((plan) => (
+              <PlanCard key={plan.id} plan={plan} onBuy={setActivePlan} />
+            ))}
+          </div>
+        </div>
+      </section>
 
       {activePlan && (
-
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="incorporation" />
-
+        <CheckoutModal
+          plan={activePlan}
+          onClose={() => setActivePlan(null)}
+          source="incorporation"
+        />
       )}
-
     </>
-
-  );};
+  );
+};
 
 export default IncorporationPlanAndPricing;
