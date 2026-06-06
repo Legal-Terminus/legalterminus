@@ -2,6 +2,10 @@ import React, { Suspense } from 'react'
 import UdyamRegBreadcrum from '../../Components/UdyamRegBreadcrum/UdyamRegBreadcrum'
 import UdyamRegTabs from '../../Components/UdyamRegTabs/UdyamRegTabs'
 
+const UdyamRegPlanAndPricing = React.lazy(() => import('../../Components/UdyamRegPlanAndPricing/UdyamRegPlanAndPricing'))
+const UdyamRegGovtCosts = React.lazy(() => import('../../Components/UdyamRegGovtCosts/UdyamRegGovtCosts'))
+const UdyamRegTermsCondition = React.lazy(() => import('../../Components/UdyamRegTermsCondition/UdyamRegTermsCondition'))
+
 const UdyamRegAbout = React.lazy(() => import('../../Components/UdyamRegAbout/UdyamRegAbout'))
 const UdyamRegWho = React.lazy(() => import('../../Components/UdyamRegWho/UdyamRegWho'))
 const UdyamRegBenefits = React.lazy(() => import('../../Components/UdyamRegBenefits/UdyamRegBenefits'))
@@ -15,6 +19,23 @@ const UdyamReg = () => {
   return (
     <div>
       <UdyamRegBreadcrum />
+
+      <div className="section-divider" />
+
+      <div id="plans">
+        <Suspense fallback={<div />}><UdyamRegPlanAndPricing /></Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}><UdyamRegGovtCosts /></Suspense>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}><UdyamRegTermsCondition /></Suspense>
+
+      <div className="section-divider" />
+
       <UdyamRegTabs />
 
       <div id="about">

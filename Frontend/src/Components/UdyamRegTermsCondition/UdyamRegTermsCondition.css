@@ -1,0 +1,75 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+.udyam-tc-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: #f8fafc;
+  padding: 10px 24px 48px;
+}
+
+.udyam-tc-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.udyam-tc-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  padding: 40px 48px;
+}
+
+.udyam-tc-title {
+  text-align: center;
+  font-size: 32px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 16px;
+}
+
+.udyam-tc-subtitle {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1aa91a;
+  margin: 0 0 32px;
+}
+
+.udyam-tc-list {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding-left: 18px;
+}
+
+.udyam-tc-item {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.udyam-tc-item strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .udyam-tc-section { padding: 10px 20px 40px; }
+  .udyam-tc-card    { padding: 32px 32px; }
+  .udyam-tc-title   { font-size: 28px; }
+}
+
+@media (max-width: 768px) {
+  .udyam-tc-section { padding: 10px 16px 36px; }
+  .udyam-tc-card    { padding: 28px 22px; }
+  .udyam-tc-title   { font-size: 24px; }
+  .udyam-tc-subtitle { font-size: 14px; }
+  .udyam-tc-item    { font-size: 14px; }
+}
+
+@media (max-width: 480px) {
+  .udyam-tc-section { padding: 10px 12px 28px; }
+  .udyam-tc-card    { padding: 24px 16px; }
+  .udyam-tc-title   { font-size: 20px; letter-spacing: 1px; }
+}
