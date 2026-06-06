@@ -12,9 +12,6 @@ const Section8CompanyTabs = React.lazy(() => import('../../Components/Section8Co
 const Section8PvtTypes = React.lazy(() => import('../../Components/Section8PvtTypes/Section8PvtTypes'))
 const Section8RequirementsTab = React.lazy(() => import('../../Components/Section8RequirementsTab/Section8RequirementsTab'))
 const Section8Process = React.lazy(() => import('../../Components/Section8Process/Section8Process'))
-const Section8Testimonial = React.lazy(() => import('../../Components/Section8Testimonial/Section8Testimonial'))
-const Section8VideoTestimonial = React.lazy(() => import('../../Components/Section8VideoTestimonial/Section8VideoTestimonial'))
-const Section8OurClients = React.lazy(() => import('../../Components/Section8OurClients/Section8OurClients'))
 const Section8Document = React.lazy(() => import('../../Components/Section8Document/Section8Document'))
 
 const Section8 = () => {
@@ -77,15 +74,6 @@ const Section8 = () => {
         </Suspense>
       </div>
 
-      <Suspense fallback={<div />}>
-        <Section8Testimonial/>
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <Section8VideoTestimonial/>
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <Section8OurClients/>
-      </Suspense>
     </div>
   )
 }

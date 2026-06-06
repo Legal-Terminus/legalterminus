@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./Section8FAQ.css";
+import "../PvtltdFAQ/PvtltdFAQ.css";
 
 const faqs = [
   {
@@ -21,14 +21,14 @@ const faqs = [
   {
     question: "What is 12A and 80G and why is everyone talking about them?",
     answer: (
-      <div>
-        <p>12A and 80G are registrations under the Income Tax Act, 1961.</p>
-        <ul>
+      <span>
+        12A and 80G are registrations under the Income Tax Act, 1961.
+        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
           <li>12A registration helps eligible non-profit organizations claim income tax exemption.</li>
           <li>80G registration allows donors to claim tax deductions on eligible donations made to the organization.</li>
         </ul>
-        <p>These registrations are separate from Section 8 incorporation and can be applied for after incorporation.</p>
-      </div>
+        These registrations are separate from Section 8 incorporation and can be applied for after incorporation.
+      </span>
     ),
   },
   {
@@ -61,53 +61,38 @@ const Section8FAQ = () => {
   };
 
   return (
-    <section className="s8faq-section">
-      <div className="s8faq-container">
+    <section className="faq-section">
+      <div className="faq-container">
 
-        {/* LEFT */}
-        <div className="s8faq-left">
-          <h2 className="s8faq-title">
-            Section 8 Company Registration FAQ's
-          </h2>
-
-          <p className="s8faq-intro">
-            Starting a Section 8 Company in India is an important step for any
-            founder building a non-profit or social impact organization. With
-            the right support, the process can be simple and stress-free.
-            <br /><br />
-            Below are answers to the most common questions about Section 8
-            company registration, tax exemptions, donor deductions, and
-            post-incorporation compliance.
+        <div className="faq-header">
+          <h2 className="faq-title">Section 8 Company Registration — FAQs</h2>
+          <p className="faq-intro">
+            Got questions? We've got answers — straight, no-BS, legally accurate.
           </p>
         </div>
 
-        {/* RIGHT */}
-        <div className="s8faq-right">
-          <div className="s8faq-list">
-            {faqs.map((item, index) => {
-              const isActive = index === activeIndex;
-              return (
-                <div
-                  key={index}
-                  className={`s8faq-item ${isActive ? "active" : ""}`}
+        <div className="faq-list">
+          {faqs.map((item, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <div
+                key={index}
+                className={`faq-item ${isActive ? "active" : ""}`}
+              >
+                <button
+                  type="button"
+                  className="faq-question"
+                  onClick={() => toggleFaq(index)}
                 >
-                  <button
-                    className="s8faq-question"
-                    onClick={() => toggleFaq(index)}
-                  >
-                    <span>{item.question}</span>
-                    <span className={`s8faq-icon ${isActive ? "open" : ""}`}>
-                      ▾
-                    </span>
-                  </button>
-
-                  <div className={`s8faq-answer ${isActive ? "open" : ""}`}>
-                    <div className="s8faq-answer-body">{item.answer}</div>
-                  </div>
+                  <span>{item.question}</span>
+                  <span className={`faq-icon ${isActive ? "open" : ""}`}>▾</span>
+                </button>
+                <div className={`faq-answer ${isActive ? "open" : ""}`}>
+                  <div className="faq-answer-content">{item.answer}</div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
 
       </div>
