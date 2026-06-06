@@ -1,83 +1,71 @@
 import React from "react";
-import "./UdyamRegProcess.css"
+import "./UdyamRegProcess.css";
 
 const steps = [
   {
-    title: "Start Registration",
-    points: [
-      "Visit the official Udyam Registration portal",
-      "Choose new entrepreneur registration option",
-      "Proceed to the registration form",
-    ],
+    day: "Day 0–1",
+    title: "Document & Information Collection",
+    desc: "Share your Aadhaar number, PAN, business address, NIC code, and investment/turnover figures. Our expert reviews your details for accuracy before filing.",
   },
   {
-    title: "Aadhaar Verification",
-    points: [
-      "Enter Aadhaar number and name",
-      "Validate OTP received on registered mobile",
-      "Accept declaration and continue",
-    ],
+    day: "Day 1",
+    title: "Aadhaar OTP Verification",
+    desc: "Login to the Udyam portal using your Aadhaar-linked mobile number. A one-time OTP is sent to authenticate your identity — no physical visit required.",
   },
   {
-    title: "PAN Verification",
-    points: [
-      "Select organization type",
-      "Enter PAN details as per records",
-      "Validate PAN and accept declaration",
-    ],
+    day: "Day 1–2",
+    title: "PAN & GST Validation",
+    desc: "The portal auto-fetches your business details from the Income Tax (PAN) and GSTIN databases. We verify these are correctly mapped to your activity.",
   },
   {
-    title: "Business Details",
-    points: [
-      "Fill enterprise and owner details",
-      "Enter plant/unit address and activity",
-      "Select NIC code and employee details",
-    ],
+    day: "Day 2",
+    title: "NIC Code Mapping & Form Filing",
+    desc: "We select the correct NIC code for your primary business activity and complete the Udyam registration form with all required self-declarations.",
   },
   {
-    title: "Final Submission",
-    points: [
-      "Confirm additional registrations if required",
-      "Submit application with OTP",
-      "Download Udyam Registration Certificate",
-    ],
+    day: "Day 2–3",
+    title: "Udyam Certificate Issuance",
+    desc: "Upon successful submission, the Udyam Registration Number and digital certificate are issued instantly by the Ministry of MSME. No fee is charged by the government.",
   },
 ];
 
-const UdyamProcess = () => {
+const UdyamRegProcess = () => {
   return (
-    <section className="udyam-process-section">
-      <div className="udyam-process-container">
-        <h2 className="udyam-process-heading">
-          How to Apply for MSME (Udyam) Registration
-        </h2>
-
-        <div className="udyam-process-grid">
-          {steps.map((step, index) => (
-            <div key={index} className="udyam-step-wrapper">
-              <div className="udyam-step-card">
-                <div className="udyam-step-badge">
-                  Step {index + 1}
-                </div>
-
-                <h3 className="udyam-step-title">{step.title}</h3>
-
-                <ul className="udyam-step-list">
-                  {step.points.map((point, idx) => (
-                    <li key={idx}>{point}</li>
-                  ))}
-                </ul>
+    <div className="pvtltd-udyam-wrapper">
+      <h2 className="udyam-process-heading">How to Get Udyam Registration</h2>
+      <p className="udyam-process-subheading">
+        Five steps. Typically done within 24–48 hours — end-to-end online with zero government fee.
+      </p>
+      <div className="pvtltd-timeline">
+        <div className="pvtltd-timeline-line" />
+        {steps.map((step, i) => {
+          const isLeft = i % 2 === 0;
+          const isFirst = i === 0;
+          const isLast = i === steps.length - 1;
+          const cls = [
+            "pvtltd-timeline-item",
+            isLeft ? "left" : "right",
+            isFirst ? "first" : "",
+            isLast ? "last" : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
+          return (
+            <div className={cls} key={i}>
+              <div className="pvtltd-timeline-dot">{i + 1}</div>
+              <div className="pvtltd-timeline-card">
+                <h4>
+                  {step.title}
+                  <span className="pvtltd-day-tag">{step.day}</span>
+                </h4>
+                <p>{step.desc}</p>
               </div>
-
-              {index !== steps.length - 1 && (
-                <div className="udyam-step-arrow">➜</div>
-              )}
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
-    </section>
+    </div>
   );
 };
 
-export default UdyamProcess;
+export default UdyamRegProcess;

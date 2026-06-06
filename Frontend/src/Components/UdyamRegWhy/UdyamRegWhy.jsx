@@ -1,51 +1,52 @@
 import React from "react";
-import "./UdyamRegWhy.css"
+import "./UdyamRegWhy.css";
 
-const benefits = [
+const reasons = [
   {
-    title: "Complete Online Registration",
-    desc: "We handle your entire MSME/Udyam registration process online, from document verification to final submission, ensuring a smooth experience without paperwork hassles.",
+    icon: "⚡",
+    title: "Same-Day Filing",
+    desc: "We file your Udyam registration on the same day you share your details. No queues, no delays — your certificate is issued by the Ministry of MSME within hours.",
   },
   {
-    title: "Fast Processing",
-    desc: "Get your Udyam Registration done quickly, often within 1 day, so you can access government benefits without delay.",
+    icon: "🎯",
+    title: "Correct NIC Code, Always",
+    desc: "NIC code errors are the #1 reason for MSME classification disputes. Our experts map your primary activity to the exact correct NIC code the first time.",
   },
   {
-    title: "Expert Guidance",
-    desc: "Receive professional assistance on eligibility, required documents, and form filling to avoid errors and rejections.",
+    icon: "🔒",
+    title: "100% Secure & Compliant",
+    desc: "Your Aadhaar and PAN details are handled with complete confidentiality. We use official government portals only — no third-party intermediaries.",
   },
   {
-    title: "Official Udyam Certificate",
-    desc: "Obtain your digitally signed Udyam Certificate with QR code, issued directly by the Ministry of MSME.",
+    icon: "🏆",
+    title: "7+ Years of MSME Experience",
+    desc: "With over 10,000 Udyam registrations filed across all 28 states and 8 union territories, we understand the nuances of MSME compliance better than anyone.",
   },
   {
-    title: "Lifetime Validity",
-    desc: "Your certificate is valid for life with no renewal needed, saving you time and effort in the future.",
+    icon: "📞",
+    title: "Post-Registration Support",
+    desc: "Questions after registration? Need to update your Udyam details? Our team is available for guidance on amendments, renewals, and MSME scheme applications.",
   },
 ];
 
-const DigiLawyerUdyamHelp = () => {
+const UdyamRegWhy = () => {
   return (
-    <section className="dl-udyam-help-section">
-      <div className="dl-udyam-help-container">
-        <h2 className="dl-udyam-help-heading">
-          How Can DigiLawyer Help with Udyam Registration?
-        </h2>
-
-        <p className="dl-udyam-help-intro">
-          DigiLawyer offers a fast, reliable, and 100% online MSME/Udyam
-          Registration service, helping your business get officially recognized
-          under the Government of India’s Ministry of MSME. Our expert team
-          guides you through the entire process, ensuring quick and hassle-free
-          registration.
-        </p>
-
-        <div className="dl-udyam-help-grid">
-          {benefits.map((item, index) => (
-            <div key={index} className="dl-udyam-help-card">
-              <h3 className="dl-udyam-help-title">{item.title}</h3>
-              <p className="dl-udyam-help-desc">{item.desc}</p>
-            </div>
+    <section className="udyam-why-section">
+      <div className="udyam-why-container">
+        <header className="udyam-why-header">
+          <h2 className="udyam-why-title">Why Choose Legal Terminus for Udyam Registration?</h2>
+          <p className="udyam-why-subtitle">
+            Thousands of Indian businesses trust us for their Udyam MSME registration. Here is why.
+          </p>
+        </header>
+        <div className="udyam-why-grid">
+          {reasons.map((item, i) => (
+            <article className="udyam-why-card" key={i}>
+              <div className="udyam-why-icon">{item.icon}</div>
+              <h3 className="udyam-why-card-title">{item.title}</h3>
+              <div className="udyam-why-underline" />
+              <p className="udyam-why-card-text">{item.desc}</p>
+            </article>
           ))}
         </div>
       </div>
@@ -53,4 +54,4 @@ const DigiLawyerUdyamHelp = () => {
   );
 };
 
-export default DigiLawyerUdyamHelp;
+export default UdyamRegWhy;

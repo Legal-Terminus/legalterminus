@@ -1,92 +1,74 @@
 import React, { useState } from "react";
-import "./UdyamRegFAQ.css"
+import "./UdyamRegFAQ.css";
 
 const faqs = [
   {
-    question: "What is Udyog Aadhaar number?",
-    answer:
-      "Udyog Aadhaar was the earlier MSME registration system issued by the Government of India. It has now been replaced by Udyam Registration. Existing Udyog Aadhaar holders must migrate to the Udyam portal."
+    q: "What is Udyam Registration and is it mandatory?",
+    a: "Udyam Registration is the official government registration for Micro, Small, and Medium Enterprises (MSMEs) in India, issued by the Ministry of MSME. It is not mandatory for all businesses, but it is required to avail MSME benefits such as priority sector lending, government tender participation, and scheme subsidies.",
   },
   {
-    question: "How can I verify my Udyam Registration Number online?",
-    answer:
-      "You can verify your Udyam Registration Number by visiting the official Udyam portal and using the 'Verify Udyam Registration Number' option with your Udyam number and registered mobile OTP."
+    q: "What are the MSME thresholds for 2025–26?",
+    a: "Micro: Investment up to ₹1 Crore, Turnover up to ₹5 Crore. Small: Investment up to ₹10 Crore, Turnover up to ₹50 Crore. Medium: Investment up to ₹50 Crore, Turnover up to ₹250 Crore. Both investment and turnover must be within the limits simultaneously.",
   },
   {
-    question:
-      "How long does it take to receive the Udyam certificate after registration?",
-    answer:
-      "In most cases, the Udyam Registration Certificate is generated immediately after successful submission. In some cases, it may take up to 1–2 working days."
+    q: "Is there a government fee for Udyam Registration?",
+    a: "No. The Government of India charges zero fee for Udyam Registration. Any platform charging a government fee is misrepresenting. Our professional service fee covers expert NIC code mapping, verification, and post-registration support.",
   },
   {
-    question: "How to check MSME registration by PAN number?",
-    answer:
-      "You can check MSME/Udyam registration details using the PAN number through the official Udyam portal by selecting the PAN-based search option."
+    q: "How long does Udyam Registration take?",
+    a: "Once you share your details and complete Aadhaar OTP verification, the Udyam certificate is typically issued within the same business day. Legal Terminus files same-day for all clients who submit before 5:00 PM IST.",
   },
   {
-    question: "How to download Udyam certificate?",
-    answer:
-      "You can download the Udyam Registration Certificate from the official Udyam portal by entering your Udyam Registration Number and verifying via OTP."
-  }
+    q: "Does Udyam Registration expire?",
+    a: "No. Udyam Registration has lifetime validity. However, you are required to update your turnover and investment details annually on the Udyam portal based on your ITR filings to maintain accurate classification.",
+  },
+  {
+    q: "Can a Pvt Ltd company or LLP get Udyam Registration?",
+    a: "Yes. Udyam Registration is available to all legal entity types including Proprietorships, Partnership Firms, LLPs, Private Limited Companies, Public Limited Companies, co-operative societies, and Hindu Undivided Families (HUFs).",
+  },
+  {
+    q: "What if my Aadhaar is not linked to my mobile number?",
+    a: "The Udyam portal requires OTP-based Aadhaar authentication. If your mobile is not registered with UIDAI, you need to update it at an Aadhaar Seva Kendra before proceeding. Our team will guide you through this step.",
+  },
+  {
+    q: "What is an NIC code and why does it matter?",
+    a: "NIC (National Industrial Classification) code identifies your primary business activity. An incorrect NIC code can lead to classification disputes, missed scheme eligibility, or cancellation. Legal Terminus ensures the correct NIC code is mapped for your specific activity.",
+  },
+  {
+    q: "Can I have multiple Udyam Registrations for different businesses?",
+    a: "No. A single PAN can have only one Udyam Registration. However, if you have multiple business activities or locations under the same entity, they should all be covered under a single Udyam certificate.",
+  },
+  {
+    q: "How does Legal Terminus help with Udyam Registration?",
+    a: "We handle the entire process for you: reviewing your details, selecting the correct NIC code, completing Aadhaar OTP verification, filing on the government portal, and delivering your signed Udyam certificate. We also provide post-registration support for amendments and MSME scheme applications.",
+  },
 ];
 
-const UdyamFaq = () => {
-  const [activeIndex, setActiveIndex] = useState(null);
-
-  const toggleFaq = (index) => {
-    setActiveIndex(activeIndex === index ? null : index);
-  };
+const UdyamRegFAQ = () => {
+  const [open, setOpen] = useState(null);
+  const toggle = (i) => setOpen(open === i ? null : i);
 
   return (
-    <section className="udyamfaq-section">
-      <div className="udyamfaq-container">
-        {/* LEFT SIDE */}
-        <div className="udyamfaq-left">
-          <h2 className="udyamfaq-title">
-            FAQs Related to Udyam Registration
-          </h2>
-          <p className="udyamfaq-intro">
-            Find answers to the most frequently asked questions related to
-            Udyam (MSME) Registration, verification, and certificate download.
-          </p>
-        </div>
-
-        {/* RIGHT SIDE */}
-        <div className="udyamfaq-right">
-          <div className="udyamfaq-list">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className={`udyamfaq-item ${
-                  activeIndex === index ? "active" : ""
-                }`}
-              >
-                <button
-                  className="udyamfaq-question"
-                  onClick={() => toggleFaq(index)}
-                >
-                  <span>{faq.question}</span>
-                  <span
-                    className={`udyamfaq-arrow ${
-                      activeIndex === index ? "open" : ""
-                    }`}
-                  >
-                    ▾
-                  </span>
-                </button>
-
-                {activeIndex === index && (
-                  <div className="udyamfaq-answer">
-                    <p>{faq.answer}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+    <section className="faq-section">
+      <div className="faq-container">
+        <header className="faq-header">
+          <h2 className="faq-title">Frequently Asked Questions</h2>
+          <p className="faq-subtitle">Everything you need to know about Udyam / MSME Registration.</p>
+        </header>
+        <div className="faq-list">
+          {faqs.map((item, i) => (
+            <div className={`faq-item${open === i ? " faq-item--open" : ""}`} key={i}>
+              <button className="faq-question" onClick={() => toggle(i)} aria-expanded={open === i}>
+                <span>{item.q}</span>
+                <span className="faq-icon">{open === i ? "−" : "+"}</span>
+              </button>
+              {open === i && <div className="faq-answer"><p>{item.a}</p></div>}
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 };
 
-export default UdyamFaq;
+export default UdyamRegFAQ;

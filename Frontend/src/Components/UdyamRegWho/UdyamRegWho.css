@@ -1,126 +1,96 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
 
-.udyam-who-section {
+.opc-features-section {
   font-family: "Poppins", sans-serif;
-  background: #fafafa;
-  padding: 80px 24px;
+  background: #f8fafc;
+  padding: 60px 24px 70px;
 }
 
-.udyam-who-container {
-  max-width: 1200px;
-  margin: auto;
-}
+.opc-features-container { max-width: 1200px; margin: 0 auto; }
 
-.udyam-who-title {
+.opc-features-title {
   font-size: 36px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 16px;
+  font-weight: 700;
+  color: #151821;
+  text-align: center;
+  margin: 0 0 48px;
+  line-height: 1.3;
 }
 
-.udyam-who-intro {
-  font-size: 15.5px;
-  color: #4b5563;
-  line-height: 1.8;
-  max-width: 900px;
-  margin-bottom: 48px;
-}
-
-.udyam-who-grid {
+.opc-features-cards {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 28px;
 }
 
-.udyam-who-card {
+.opc-features-card {
   background: #ffffff;
-  border-radius: 16px;
-  padding: 28px 26px 30px;
-  border: 1px solid #e5e7eb;
-  position: relative;
-  transition: all 0.35s ease;
+  border: 1.5px solid #e2e8f0;
+  border-top: 3px solid #22c55e;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  padding: 32px 28px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.udyam-who-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
-  border-color: #f59e0b;
+.opc-features-card:hover {
+  border-color: #22c55e;
+  box-shadow: 0 8px 28px rgba(34, 197, 94, 0.14);
+  transform: translateY(-3px);
 }
 
-.udyam-who-index {
-  position: absolute;
-  top: -14px;
-  left: -14px;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #f59e0b, #fbbf24);
-  color: #fff;
-  font-weight: 600;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.opc-features-number {
+  font-size: 48px;
+  font-weight: 800;
+  color: rgba(27, 179, 58, 0.18);
+  line-height: 1;
+  margin-bottom: 16px;
+  letter-spacing: -1px;
 }
 
-.udyam-who-card h3 {
+.opc-features-card-title {
   font-size: 17px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 10px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+  line-height: 1.4;
 }
 
-.udyam-who-card p {
-  font-size: 14.5px;
+.opc-features-card-text {
+  font-size: 14px;
+  line-height: 1.85;
   color: #4b5563;
-  line-height: 1.75;
+  margin: 0;
 }
 
 .udyam-who-footer {
-  margin-top: 48px;
+  text-align: center;
+  margin-top: 40px;
   font-size: 15px;
-  color: #374151;
-  max-width: 900px;
+  color: #64748b;
+  line-height: 1.7;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* =======================
-   RESPONSIVE
-======================= */
-
 @media (max-width: 1024px) {
-  .udyam-who-grid {
-    gap: 22px;
-  }
+  .opc-features-title { font-size: 30px; }
+  .opc-features-cards { grid-template-columns: repeat(2, 1fr); gap: 20px; }
 }
 
 @media (max-width: 768px) {
-  .udyam-who-title {
-    font-size: 28px;
-  }
-
-  .udyam-who-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .udyam-who-card {
-    padding: 26px 22px;
-  }
+  .opc-features-section { padding: 48px 16px 56px; }
+  .opc-features-cards { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .opc-features-title { font-size: 26px; margin-bottom: 32px; }
 }
 
 @media (max-width: 480px) {
-  .udyam-who-section {
-    padding: 60px 16px;
-  }
-
-  .udyam-who-title {
-    font-size: 24px;
-  }
-
-  .udyam-who-card h3 {
-    font-size: 16px;
-  }
-
-  .udyam-who-card p {
-    font-size: 14px;
-  }
+  .opc-features-section { padding: 36px 14px 44px; }
+  .opc-features-title { font-size: 22px; }
+  .opc-features-cards { grid-template-columns: 1fr; }
+  .opc-features-card { padding: 24px 20px; }
+  .opc-features-number { font-size: 38px; }
+  .opc-features-card-title { font-size: 16px; }
+  .opc-features-card-text { font-size: 13.5px; }
 }

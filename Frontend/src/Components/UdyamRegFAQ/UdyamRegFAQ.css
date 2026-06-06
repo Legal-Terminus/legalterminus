@@ -1,159 +1,100 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
-/* ===============================
-   SECTION
-================================ */
-
-.udyamfaq-section {
+.faq-section {
   font-family: "Poppins", sans-serif;
+  background: #f8fafc;
+  padding: 72px 24px 80px;
+}
+
+.faq-container { max-width: 860px; margin: 0 auto; }
+
+.faq-header { text-align: center; margin-bottom: 44px; }
+
+.faq-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+.faq-subtitle {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.7;
+}
+
+.faq-list { display: flex; flex-direction: column; gap: 12px; }
+
+.faq-item {
   background: #ffffff;
-  padding: 72px 24px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.udyamfaq-container {
-  max-width: 1200px;
-  margin: auto;
-  display: grid;
-  grid-template-columns: 0.9fr 1.2fr;
-  gap: 72px;
+.faq-item--open {
+  border-color: #22c55e;
+  box-shadow: 0 4px 18px rgba(34, 197, 94, 0.12);
 }
 
-/* ===============================
-   LEFT
-================================ */
-
-.udyamfaq-left {
-  color: #1f2937;
-}
-
-.udyamfaq-title {
-  font-size: 38px;
-  font-weight: 600;
-  margin-bottom: 20px;
-}
-
-.udyamfaq-intro {
-  font-size: 15px;
-  line-height: 1.9;
-  color: #4b5563;
-}
-
-/* ===============================
-   RIGHT
-================================ */
-
-.udyamfaq-right {
-  max-height: 540px;
-  display: flex;
-}
-
-.udyamfaq-list {
+.faq-question {
   width: 100%;
-  overflow-y: auto;
-  padding-right: 6px;
-}
-
-/* Scrollbar */
-.udyamfaq-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.udyamfaq-list::-webkit-scrollbar-thumb {
-  background: #1aa91a;
-  border-radius: 20px;
-}
-
-/* ===============================
-   FAQ ITEM
-================================ */
-
-.udyamfaq-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.udyamfaq-question {
-  width: 100%;
-  padding: 18px 0;
-  background: none;
-  border: none;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 15px;
-  font-weight: 500;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  background: transparent;
+  border: none;
   cursor: pointer;
+  text-align: left;
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
   color: #111827;
+  line-height: 1.5;
 }
 
-.udyamfaq-question:hover {
-  color: #1aa91a;
-}
+.faq-question:hover { background: #f0fdf4; }
 
-.udyamfaq-arrow {
+.faq-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 18px;
-  transition: transform 0.25s ease;
+  font-weight: 700;
+  line-height: 1;
 }
 
-.udyamfaq-arrow.open {
-  transform: rotate(180deg);
+.faq-answer {
+  padding: 0 22px 20px;
+  border-top: 1px solid #f1f5f9;
 }
 
-/* ===============================
-   ANSWER
-================================ */
-
-.udyamfaq-answer {
-  padding-bottom: 16px;
-}
-
-.udyamfaq-answer p {
+.faq-answer p {
+  margin: 14px 0 0;
   font-size: 14px;
-  line-height: 1.8;
+  line-height: 1.85;
   color: #4b5563;
-}
-
-/* ===============================
-   ACTIVE
-================================ */
-
-.udyamfaq-item.active .udyamfaq-question {
-  color: #1aa91a;
-}
-
-/* ===============================
-   RESPONSIVE
-================================ */
-
-@media (max-width: 1024px) {
-  .udyamfaq-container {
-    gap: 40px;
-  }
 }
 
 @media (max-width: 768px) {
-  .udyamfaq-container {
-    grid-template-columns: 1fr;
-  }
-
-  .udyamfaq-right {
-    max-height: none;
-  }
-
-  .udyamfaq-list {
-    overflow: visible;
-  }
+  .faq-section { padding: 56px 16px 64px; }
+  .faq-title { font-size: 28px; }
+  .faq-question { font-size: 14px; padding: 16px 18px; }
+  .faq-answer { padding: 0 18px 18px; }
 }
 
 @media (max-width: 480px) {
-  .udyamfaq-title {
-    font-size: 26px;
-  }
-
-  .udyamfaq-question {
-    font-size: 14px;
-  }
-
-  .udyamfaq-answer p {
-    font-size: 13.5px;
-  }
+  .faq-title { font-size: 24px; }
+  .faq-question { font-size: 13.5px; }
 }

@@ -1,71 +1,64 @@
 import React from "react";
-import "./UdyamRegEligibility.css"
+import "./UdyamRegEligibility.css";
 
-const eligibilityData = [
+const categories = [
   {
-    type: "Micro",
-    investment: "Does not exceed ₹1 Crore",
-    turnover: "Does not exceed ₹5 Crore",
+    type: "Micro Enterprise",
+    investment: "Up to ₹1 Crore",
+    turnover: "Up to ₹5 Crore",
+    color: "#22c55e",
   },
   {
-    type: "Small",
-    investment: "Does not exceed ₹10 Crore",
-    turnover: "Does not exceed ₹50 Crore",
+    type: "Small Enterprise",
+    investment: "Up to ₹10 Crore",
+    turnover: "Up to ₹50 Crore",
+    color: "#3b82f6",
   },
   {
-    type: "Medium",
-    investment: "Does not exceed ₹50 Crore",
-    turnover: "Does not exceed ₹250 Crore",
+    type: "Medium Enterprise",
+    investment: "Up to ₹50 Crore",
+    turnover: "Up to ₹250 Crore",
+    color: "#f59e0b",
   },
 ];
 
-const UdyamEligibility = () => {
+const UdyamRegEligibility = () => {
   return (
-    <section className="udyam-eligibility-section">
-      <div className="udyam-eligibility-container">
-        <h2 className="udyam-eligibility-title">
-          Eligibility Criteria for Udyam Registration
-        </h2>
+    <section className="pvt-compare-section udyam-eligibility-section">
+      <div className="pvt-compare-container">
+        <header className="pvt-compare-header">
+          <h2 className="pvt-compare-title">Udyam Eligibility Criteria (2025–26)</h2>
+          <p className="pvt-compare-subtitle">
+            The MSME classification is based on annual investment in plant &amp; machinery and annual turnover. All entities —
+            manufacturing or service — use the same thresholds.
+          </p>
+        </header>
 
-        <p className="udyam-eligibility-intro">
-          To be eligible for MSME (Udyam) registration in 2025, an enterprise
-          must meet the following criteria:
-        </p>
-
-        <ul className="udyam-eligibility-points">
-          <li>
-            <strong>For manufacturing enterprises:</strong> Investment in plant
-            and machinery or equipment.
-          </li>
-          <li>
-            <strong>For service enterprises:</strong> Annual turnover.
-          </li>
-        </ul>
-
-        <p className="udyam-eligibility-note">
-          This classification helps identify businesses that qualify as micro,
-          small, or medium enterprises under current MSME guidelines.
-        </p>
-
-        {/* GRID TABLE */}
-        <div className="udyam-eligibility-grid">
-          <div className="udyam-eligibility-grid-header">
-            <span>Classification</span>
-            <span>Investment in Plant & Machinery / Equipment</span>
-            <span>Turnover</span>
-          </div>
-
-          {eligibilityData.map((item, index) => (
-            <div className="udyam-eligibility-grid-row" key={index}>
-              <span className="udyam-eligibility-type">{item.type}</span>
-              <span>{item.investment}</span>
-              <span>{item.turnover}</span>
+        <div className="udyam-eligibility-cards">
+          {categories.map((cat, i) => (
+            <div className="udyam-eligibility-card" key={i} style={{ borderTopColor: cat.color }}>
+              <h3 className="udyam-eligibility-card-title" style={{ color: cat.color }}>{cat.type}</h3>
+              <div className="udyam-eligibility-row">
+                <span className="udyam-eligibility-label">Investment</span>
+                <span className="udyam-eligibility-value">{cat.investment}</span>
+              </div>
+              <div className="udyam-eligibility-divider" />
+              <div className="udyam-eligibility-row">
+                <span className="udyam-eligibility-label">Annual Turnover</span>
+                <span className="udyam-eligibility-value">{cat.turnover}</span>
+              </div>
             </div>
           ))}
+        </div>
+
+        <div className="udyam-eligibility-notes">
+          <p><strong>Note 1:</strong> Both investment AND turnover criteria must be satisfied simultaneously.</p>
+          <p><strong>Note 2:</strong> Udyam Registration is open to Proprietorships, Partnerships, LLPs, Private Limited Companies, and other legal entities.</p>
+          <p><strong>Note 3:</strong> Self-declaration on the Udyam portal is sufficient — no document upload required at the time of registration.</p>
         </div>
       </div>
     </section>
   );
 };
 
-export default UdyamEligibility;
+export default UdyamRegEligibility;

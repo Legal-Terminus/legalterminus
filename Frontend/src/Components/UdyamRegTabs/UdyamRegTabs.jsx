@@ -1,36 +1,48 @@
 import React, { useState } from "react";
 import "./UdyamRegTabs.css";
 
-const TABS = [
-  "About",
-  "Who Needs",
-  "Benefits",
-  "Eligibility",
-  "Documents",
-  "Fee",
-  "Process",
-  "Why Us",
-  "FAQs",
+const tabs = [
+  { label: "About", id: "about" },
+  { label: "Who Needs", id: "who" },
+  { label: "Benefits", id: "benefits" },
+  { label: "Eligibility", id: "eligibility" },
+  { label: "Documents", id: "documents" },
+  { label: "Process", id: "process" },
+  { label: "Why Us", id: "why" },
+  { label: "FAQ's", id: "faq" },
 ];
 
-const TabsBar = () => {
-  const [activeTab, setActiveTab] = useState("Overview");
+const UdyamRegTabs = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const handleClick = (index, id) => {
+    setActiveIndex(index);
+    const section = document.getElementById(id);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
-    <div className="reg-wrapper">
-      <div className="reg-container">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            className={`tab-item ${activeTab === tab ? "active" : ""}`}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
+    <section className="pvt-tabs-section">
+      <div className="pvt-tabs-container">
+        <div className="pvt-tabs-card">
+          <div className="pvt-tabs-list">
+            {tabs.map((tab, index) => (
+              <button
+                key={tab.id}
+                type="button"
+                className={`pvt-tab ${index === activeIndex ? "active" : ""}`}
+                onClick={() => handleClick(index, tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
-export default TabsBar;
+export default UdyamRegTabs;

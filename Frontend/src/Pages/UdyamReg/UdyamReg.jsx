@@ -2,7 +2,6 @@ import React, { Suspense } from 'react'
 import UdyamRegBreadcrum from '../../Components/UdyamRegBreadcrum/UdyamRegBreadcrum'
 import UdyamRegTabs from '../../Components/UdyamRegTabs/UdyamRegTabs'
 
-// Lazy load below-the-fold components
 const UdyamRegAbout = React.lazy(() => import('../../Components/UdyamRegAbout/UdyamRegAbout'))
 const UdyamRegWho = React.lazy(() => import('../../Components/UdyamRegWho/UdyamRegWho'))
 const UdyamRegBenefits = React.lazy(() => import('../../Components/UdyamRegBenefits/UdyamRegBenefits'))
@@ -17,30 +16,52 @@ const UdyamReg = () => {
     <div>
       <UdyamRegBreadcrum />
       <UdyamRegTabs />
-      <Suspense fallback={<div />}>
-        <UdyamRegAbout />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <UdyamRegWho />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <UdyamRegBenefits />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <UdyamRegEligibility />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <UdyamRegDocuments />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <UdyamRegProcess />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <UdyamRegWhy />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <UdyamRegFAQ />
-      </Suspense>
+
+      <div id="about">
+        <Suspense fallback={<div />}><UdyamRegAbout /></Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <div id="who">
+        <Suspense fallback={<div />}><UdyamRegWho /></Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <div id="benefits">
+        <Suspense fallback={<div />}><UdyamRegBenefits /></Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <div id="eligibility">
+        <Suspense fallback={<div />}><UdyamRegEligibility /></Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <div id="documents">
+        <Suspense fallback={<div />}><UdyamRegDocuments /></Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <div id="process">
+        <Suspense fallback={<div />}><UdyamRegProcess /></Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <div id="why">
+        <Suspense fallback={<div />}><UdyamRegWhy /></Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <div id="faq">
+        <Suspense fallback={<div />}><UdyamRegFAQ /></Suspense>
+      </div>
     </div>
   )
 }
