@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../PvtltdPlanandPricing/PvtltdPlanandPricing.css";
 import "./IncorporationPlanAndPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
@@ -121,11 +121,31 @@ const TRACK_B_PLANS = [
   },
 ];
 
-const PlanCard = ({ plan, onBuy }) => {
+const PlanCard = ({ plan, onBuy, index }) => {
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.style.animationDelay = `${index * 0.12}s`;
+          el.classList.add("wos-plan-visible");
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.12 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [index]);
+
   const isPopular = plan.badge === "popular";
   const isFullService = plan.badge === "fullservice";
   const cardClass = [
     "plan-card",
+    "wos-plan-card",
     isPopular ? "plan-card--popular" : "",
     isFullService ? "plan-card--fullservice" : "",
   ]
@@ -133,21 +153,21 @@ const PlanCard = ({ plan, onBuy }) => {
     .join(" ");
 
   return (
-    <article className={cardClass}>
+    <article ref={cardRef} className={cardClass}>
+      {isPopular && (
+        <div className="plan-popular-badge">★ MOST POPULAR</div>
+      )}
+      {isFullService && (
+        <div className="plan-fullservice-badge">✦ FULL-SERVICE</div>
+      )}
       <div>
-        {isPopular && (
-          <span className="plan-popular-badge">★ MOST POPULAR</span>
-        )}
-        {isFullService && (
-          <span className="plan-fullservice-badge">✦ FULL-SERVICE</span>
-        )}
         <div className="plan-header">
           <div className="plan-name">{plan.name}</div>
           <div className="plan-old-price">{plan.oldPrice}</div>
           <div className="plan-price">
             ₹{plan.price.toLocaleString("en-IN")}
           </div>
-          <div className="plan-meta">Excluding govt. fees &amp; actuals</div>
+          <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
         </div>
         <div className="plan-body">
           <ul className="plan-list">
@@ -188,8 +208,8 @@ const IncorporationPlanAndPricing = () => {
             </p>
           </header>
           <div className="pricing-cards pricing-cards--3col">
-            {TRACK_A_PLANS.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} onBuy={setActivePlan} />
+            {TRACK_A_PLANS.map((plan, i) => (
+              <PlanCard key={plan.id} plan={plan} onBuy={setActivePlan} index={i} />
             ))}
           </div>
         </div>
@@ -211,8 +231,8 @@ const IncorporationPlanAndPricing = () => {
             </p>
           </header>
           <div className="pricing-cards pricing-cards--3col">
-            {TRACK_B_PLANS.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} onBuy={setActivePlan} />
+            {TRACK_B_PLANS.map((plan, i) => (
+              <PlanCard key={plan.id} plan={plan} onBuy={setActivePlan} index={i} />
             ))}
           </div>
         </div>
