@@ -1,5 +1,5 @@
 import React from 'react';
-import '../Breadcrum/Breadcrum.css';
+import './UdyamRegBreadcrum.css';
 import ConsultationForm from '../ConsultationForm/ConsultationForm';
 
 const UdyamRegBreadcrum = () => {
