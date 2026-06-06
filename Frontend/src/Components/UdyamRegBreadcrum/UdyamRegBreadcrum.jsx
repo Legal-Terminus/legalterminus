@@ -22,13 +22,9 @@ const UdyamRegBreadcrum = () => {
           </h1>
 
           <p className="lt-public-description">
-            UDYAM Registration is the Government of India's official registration for Micro, Small, and Medium Enterprises (MSMEs). It helps businesses avail various government benefits, improve credibility, and strengthen their position while dealing with customers, vendors, banks, and government departments.
+            UDYAM Registration is the official MSME registration issued by the Government of India, helping businesses access government benefits, enhance credibility, and improve opportunities with banks, customers, and government departments. An UDYAM Certificate offers benefits such as easier loan approvals, government tender preferences, MSME payment protection, subsidies, and a 50% concession on Trademark Registration government fees.
             <br /><br />
-            An UDYAM Certificate enables businesses to avail MSME-specific benefits such as easier access to bank loans and credit facilities, priority sector lending, government tender preferences, protection against delayed payments under MSME provisions, and various subsidies and support schemes offered by Central and State Governments. MSMEs can also avail a 50% concession in the official government fee for Trademark Registration applications.
-            <br /><br />
-            The Government does not charge any fee for UDYAM Registration. Our professional assistance starts from ₹999 + GST, ensuring a smooth and error-free registration process.
-            <br /><br />
-            Need multiple registrations? You can combine UDYAM Registration with GST Registration, Trademark Registration, Startup Registration, or other business compliance services through a single point of coordination.
+            The Government does not charge any fee for UDYAM Registration. Our professional assistance starts at ₹999 + GST for a hassle-free registration process.
           </p>
 
           <div className="lt-public-features">
