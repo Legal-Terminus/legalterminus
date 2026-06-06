@@ -3,70 +3,53 @@ import "./Section8FAQ.css";
 
 const faqs = [
   {
-    question: "How many persons are required to form a Sec 8 company?",
-    answer:
-      "Minimum two persons are required to form a Sec 8 Company if it incorporated as a Private Limited Company and minimum 7 persons are required if is incorporated as Public Company. Further, a maximum number of up to 200 persons can be a member of a single Sec 8 Company if it is incorporated as Public company and there is no maximum limit of members if it is incorporated as Public company.",
+    question: "What is a Section 8 Company?",
+    answer: "A Section 8 Company is a non-profit organization registered under the Companies Act, 2013 for charitable, social, educational, environmental, cultural, religious, or similar objectives. Unlike regular companies, a Section 8 Company cannot distribute profits to its members or directors. Any income earned must be used only for promoting the organization's objectives and activities. It is one of the most credible and professionally recognized legal structures for NGOs and non-profit organizations in India.",
   },
   {
-    question: "How many Directors are required to form a Sec 8 company?",
-    answer:
-      "Minimum two directors are required in a Sec 8 Company if is incorporated as private limited and minimum 3 directors are required if it incorporated as public limited company.",
+    question: "What will be the total cost of Section 8 Company registration?",
+    answer: "The total cost depends on factors such as the number of directors, DSC requirements, authorized capital, and state-wise stamp duty. Our professional fee covers drafting, filing, advisory, and registration support. Government fees, DSC charges, DIN fees, and stamp duty are charged separately on actuals with complete transparency. The complete cost estimate is shared before starting the registration process.",
   },
   {
-    question: "Who are Directors of the company?",
-    answer:
-      "Directors are officers of the company who are responsible for managing the company and making the decisions as to its operation on a day to day basis, for the benefit of the shareholders.",
+    question: "How long does Section 8 Company registration take?",
+    answer: "Section 8 Company registration usually takes around 20–25 working days, subject to document readiness and government approval timelines.",
   },
   {
-    question: "What is a company shareholder?",
-    answer:
-      "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in day-to-day management or financial affairs. They are also called 'members' and they agree to become part of a company by taking a minimum of one share in it. The quantity of shares held by each person represents how much of the business they own.",
+    question: "Should I register as a Section 8 Company, a Trust, or a Society?",
+    answer: "Three quick filters. (1) Are you targeting institutional donors (CSR teams, foreign foundations, government grants)? Section 8 wins on credibility. (2) Is your operation small, family-driven, low-budget, no institutional donors? Trust or Society is cheaper to set up and run. (3) Will you scale to multiple states / hundreds of crores in budget? Section 8 — structured governance is essential. We run this analysis live on the discovery call.",
   },
   {
-    question: "How much capital is required to form a Sec 8 company?",
-    answer:
-      "The Sec 8 company can be incorporated with any amount of capital and there is no lower or upper limit to it, if it is incorporated as Private Limited company. However, minimum of Rs. 5,00,000/- capital shall be required to incorporate a Sec 8 Company as a Public Limited Company.",
+    question: "What is 12A and 80G and why is everyone talking about them?",
+    answer: (
+      <div>
+        <p>12A and 80G are registrations under the Income Tax Act, 1961.</p>
+        <ul>
+          <li>12A registration helps eligible non-profit organizations claim income tax exemption.</li>
+          <li>80G registration allows donors to claim tax deductions on eligible donations made to the organization.</li>
+        </ul>
+        <p>These registrations are separate from Section 8 incorporation and can be applied for after incorporation.</p>
+      </div>
+    ),
   },
   {
-    question: "What documents are required to incorporate a Private Limited Company?",
-    answer:(
-    <div>
-      <ul>
-        <li>PAN Card (All the Proposed Directors and/or Shareholders)</li>
-        <li>ID Proof (All the Proposed Directors and/or Shareholders)(Passport/ Voter ID/ Aadhar Card/ Driving License)</li>
-        <li>Address Proof (All the Proposed Directors and/or Shareholders)(Telephone Bill/ Mobile Bill/ Savings Bank Statement)</li>
-        <li>Passport size Photograph (All the Proposed Directors and/or Shareholders)</li>
-        <li>Rent Agreement (For proposed company Address)</li>
-        <li>Electricity bill</li>
-        <li>A permission letter from the owner about use of his premises for registered office of the proposed company. All the documents mentioned above in point no 1 to 3 need to be self-signed by the respective proposed directors/ members/ shareholders *All the utility bills or bank statements shall be less the 2 months old</li>
-      </ul>
-    </div>
-  ),
-},
-  {
-    question: "What is the procedure to register a Sec 8 Company?",
-    answer:(
-    <div>
-      <p><strong>The broad process of registering a Sec 8 Company involves following steps:</strong></p>
-      <ul>
-        <li>STEP 1: Provision of requisite mentioned documents/information to us</li>
-        <li>STEP 2: Validating the documents/ information and processing the same</li>
-        <li>STEP 3: Filing of application and submission of the same in online manner</li>
-        <li>STEP 4: Payment of appropriate government fee as applicable</li>
-        <li>STEP 5: Processing of the application and issuance of registration certificate</li>
-      </ul>
-    </div>
-  ),
+    question: "Can directors or founders receive salary in a Section 8 Company?",
+    answer: "Yes. Directors or founders can receive reasonable remuneration for genuine services provided to the organization. However, profit distribution, dividends, or personal benefit from the organization's income is not permitted under Section 8 regulations.",
   },
   {
-    question: "What is the time period within which a Sec 8 Company can be incorporated?",
-    answer:
-      "The process of incorporating a Sec 8 Company can take anywhere between 10 to 15 working days, subject to submission of correct information and complete documentation.",
+    question: "What's CSR-1 and how do I become eligible for CSR funding?",
+    answer: "CSR-1 is a one-time registration with the MCA (Form CSR-1 under Rule 4 of the Companies (CSR Policy) Rules) that any non-profit must complete to become eligible to receive CSR funds from Indian companies. Without CSR-1, no Indian company can give you CSR money — regardless of how good your project is. Required documents: PAN, registration certificate (COI for Section 8), 12A, 80G, and last 3 years' annual reports / audited accounts (or shorter if newer). The Supreme tier includes CSR-1 filing.",
   },
   {
-    question: "How Legal Terminus can help you incorporate a Sec 8 Company in India?",
-    answer:
-      "Legal Terminus can help you with incorporation of Sec 8 Company for you, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+    question: "Can a Section 8 Company receive foreign donations?",
+    answer: "Yes, but foreign donations can only be accepted after obtaining approval or registration under the Foreign Contribution Regulation Act (FCRA), subject to eligibility conditions. Newly incorporated organizations may apply for prior permission in specific cases.",
+  },
+  {
+    question: "Can I convert my Section 8 Company into a regular Pvt Ltd later?",
+    answer: "Technically yes, but it's heavily restricted. Conversion requires Central Government approval, surrender of accumulated charitable assets to another Section 8 company, settlement of any pending tax / FCRA dues, and a special resolution. The process takes 6–12 months and is only granted in genuine cases (e.g., the original charitable purpose has become impossible). In practice, most Section 8 companies dissolve rather than convert. Pick this structure only if you're committed to a non-profit operating model.",
+  },
+  {
+    question: "How can Legal Terminus help me set up my Section 8 Company?",
+    answer: "Legal Terminus provides complete support for Section 8 Company incorporation, including name approval, MOA & AOA drafting, Section 8 license filing, incorporation, and post-registration compliance guidance. We also assist with 12A, 80G, CSR-1, and other non-profit registrations through dedicated professional support and transparent pricing.",
   },
 ];
 
@@ -84,16 +67,17 @@ const Section8FAQ = () => {
         {/* LEFT */}
         <div className="s8faq-left">
           <h2 className="s8faq-title">
-            Incorporation Company Registration FAQ&apos;s
+            Section 8 Company Registration FAQ's
           </h2>
 
           <p className="s8faq-intro">
-            Starting a Section 8 Company Registration in India is an important step for
-            any business owner. With the right support, the process can be simple
-            and stress-free.
+            Starting a Section 8 Company in India is an important step for any
+            founder building a non-profit or social impact organization. With
+            the right support, the process can be simple and stress-free.
             <br /><br />
-            Below are answers to the most common questions related to section 8 company
-            registration.
+            Below are answers to the most common questions about Section 8
+            company registration, tax exemptions, donor deductions, and
+            post-incorporation compliance.
           </p>
         </div>
 
@@ -117,12 +101,8 @@ const Section8FAQ = () => {
                     </span>
                   </button>
 
-                  <div
-                    className={`s8faq-answer ${
-                      isActive ? "open" : ""
-                    }`}
-                  >
-                    <p>{item.answer}</p>
+                  <div className={`s8faq-answer ${isActive ? "open" : ""}`}>
+                    <div className="s8faq-answer-body">{item.answer}</div>
                   </div>
                 </div>
               );

@@ -93,16 +93,38 @@
 }
 
 .s8faq-answer.open {
-  max-height: 500px;
+  max-height: 1000px;
   opacity: 1;
   transform: translateY(0);
 }
 
-.s8faq-answer p {
+.s8faq-answer-body {
+  padding-bottom: 16px;
+}
+
+.s8faq-answer-body p,
+.s8faq-answer-body {
   font-size: 14px;
   line-height: 1.9;
   color: #4b5563;
-  margin-bottom: 16px;
+}
+
+.s8faq-answer-body p { margin-bottom: 10px; }
+.s8faq-answer-body p:last-child { margin-bottom: 0; }
+
+.s8faq-answer-body ul {
+  margin: 8px 0 10px 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.s8faq-answer-body ul li {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #4b5563;
+  list-style: disc;
 }
 
 /* Active */
