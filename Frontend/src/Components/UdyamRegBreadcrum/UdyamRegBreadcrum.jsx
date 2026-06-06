@@ -18,7 +18,7 @@ const UdyamRegBreadcrum = () => {
             Udyam / MSME Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-public-subtitle">Save 50% Today on Professional Services</span>
+            <span className="lt-title-tagline">Save 50% Today on Professional Services</span>
           </h1>
 
           <p className="lt-public-description">
