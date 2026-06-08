@@ -10,7 +10,7 @@ const StartupIndiaBenefits = () => {
             Benefits of Startup India Registration
           </h2>
           <p className="req-subtitle">
-            DPIIT recognition is the single most impactful government registration an early-stage Indian startup can obtain — it unlocks tax savings, regulatory ease, and funding access in one shot.
+            DPIIT recognition isn't a vanity certificate - it's a rupee-quantifiable benefit stack. Here's what genuinely matters once you're recognised:
           </p>
         </header>
 

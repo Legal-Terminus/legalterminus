@@ -77,7 +77,7 @@ const StartupIndiaOverview = () => {
             <p className="pvt-intro-text">
               Startup India is a flagship initiative of the Government of India designed to promote innovation, entrepreneurship, and startup growth. Eligible Private Limited Companies, LLPs, and Registered Partnership Firms can obtain DPIIT Startup Recognition, which serves as an official recognition of their innovative and scalable business model. The recognition process is completely online and does not involve any government filing fee.
             </p>
-            <p className="pvt-intro-text">
+            <p className="pvt-intro-text" style={{ marginTop: "20px" }}>
               DPIIT-recognized startups can access various government benefits, including funding opportunities, intellectual property support, easier compliance procedures, and participation in Startup India initiatives. Recognized startups may also be eligible to apply for tax exemptions under Section 80-IAC, subject to approval, along with benefits such as patent and trademark fee rebates, GeM portal access, and support schemes offered through Startup India and SIDBI. DPIIT recognition helps startups build credibility, attract investors, and accelerate business growth.
             </p>
           </div>
