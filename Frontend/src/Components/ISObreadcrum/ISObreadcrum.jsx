@@ -16,7 +16,9 @@ const Breadcrum = () => {
 
           <h1 className="lt-public-title">
             ISO Certification
-            <span> in India</span>
+            <span className="lt-title-india"> in India</span>
+            <br />
+            <span className="lt-public-subtitle">Trusted, Accredited &amp; 100% Online</span>
           </h1>
 
           <p className="lt-public-description">

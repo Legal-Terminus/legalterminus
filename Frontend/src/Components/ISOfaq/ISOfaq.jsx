@@ -5,64 +5,60 @@ const faqs = [
   {
     question: "Is ISO Certification mandatory for all business organizations?",
     answer:
-      "The ISO Certification is not a mandatory requirement for any organization; however, it certainly provides a competitive not to any organization.",
+      "ISO Certification is not a mandatory requirement for any organization. However, it provides a significant competitive advantage, improves quality management, and is often required by enterprise clients and government tenders.",
   },
   {
     question: "Can an organization obtain multiple ISO Certifications?",
     answer:
-      "Yes, an organization can obtain multiple ISO Certification as per its requirement.",
+      "Yes, an organization can obtain multiple ISO Certifications as per its requirements. For example, a company can hold ISO 9001 (Quality Management), ISO 14001 (Environmental), and ISO 27001 (Information Security) simultaneously.",
   },
   {
     question: "What is the validity of ISO Certificates?",
     answer:
-      "The validity of the ISO Certificate depends on the issuing organization or Board and generally certificates are valid for period of 1 to 3 years and are required to be renewed thereafter.",
+      "The validity of an ISO Certificate generally ranges from 1 to 3 years depending on the certifying body. Certificates require annual surveillance audits and a recertification audit at the end of the validity period to maintain the certification.",
   },
   {
-    question:
-      "What are the documents required for ISO Certification?",
+    question: "What are the documents required for ISO Certification?",
     answer: (
       <div>
         <ol>
-          <li>Any registration proof of the organization</li>
+          <li>Any registration proof of the organization (GST, MSME, CIN, etc.)</li>
           <li>One Letter Head of the Organization</li>
           <li>One or more Sale or Purchase Invoices of the organization</li>
+          <li>Details of business activity and processes</li>
+          <li>Any existing quality/process documentation (if available)</li>
         </ol>
       </div>
     ),
   },
   {
-    question: "What is the time period within which the ISO Certification can be obtained?",
+    question: "What is the time period within which ISO Certification can be obtained?",
     answer:
-      "The process of obtaining ISO Certification can take anywhere between 7 to 10 working days, subject to submission of correct information and complete documentation.",
+      "The process of obtaining ISO Certification typically takes 7 to 10 working days from submission of correct information and complete documentation. Complex certifications like ISO 27001 may take longer depending on the size and complexity of the organization.",
   },
   {
-    question:
-      "What is the procedure to obtain ISO Certification?",
+    question: "What is the procedure to obtain ISO Certification?",
     answer: (
       <div>
-        <p>
-          The broad process of obtaining ISO Certification involves following steps:
-        </p>
-
+        <p>The broad process of obtaining ISO Certification involves the following steps:</p>
         <ol>
-          <li>STEP 1: Provide the above-mentioned documents/information of your organization to one of our consultants.</li>
-          <li>STEP 2: Our consultant will process the above documents/ information and validate the same.</li>
-          <li>STEP 3: The application for ISO CERTIFICATION shall be filled</li>
-          <li>STEP 4: The application shall be submitted with requisite fees</li>
-          <li>STEP 5: The issuing Board/ Organization shall issue ISO Certificate</li>
+          <li>STEP 1: Share your organization details and documents with our ISO consultant.</li>
+          <li>STEP 2: Our consultant reviews, validates, and prepares the application.</li>
+          <li>STEP 3: Application is filed with the relevant certifying body.</li>
+          <li>STEP 4: Certifying body reviews the application and may conduct an audit.</li>
+          <li>STEP 5: ISO Certificate is issued after successful review/audit.</li>
         </ol>
       </div>
     ),
   },
   {
-    question:
-      "How Legal Terminus can help you to obtain ISO Certification?",
+    question: "How can Legal Terminus help you obtain ISO Certification?",
     answer:
-      "Legal Terminus can help you with obtaining ISO CERTIFICATION for your organization, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+      "Legal Terminus handles the complete ISO certification process — from document preparation and application filing to follow-up with the certifying body. We ensure a smooth, hassle-free process within a competitive professional fee. Contact us for a free consultation.",
   },
 ];
 
-const FaqPvt = () => {
+const FaqISO = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const toggleFaq = (index) => {
@@ -70,55 +66,45 @@ const FaqPvt = () => {
   };
 
   return (
-    <section className="faq-section">
-      <div className="faq-container">
-        {/* Left side – static text */}
-        <div className="faq-left">
-          <h2 className="faq-title">ISO Certification FAQ&apos;s</h2>
+    <section className="isofaq-section">
+      <div className="isofaq-container">
 
-          <p className="faq-intro">
-            Here, we’ve answered the most common questions about ISO certification covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
-          </p>
-
-          <p className="faq-intro">
-            
+        {/* Centered heading & subheading */}
+        <div className="isofaq-header">
+          <h2 className="isofaq-title">ISO Certification — FAQs</h2>
+          <p className="isofaq-intro">
+            Got questions? We've got answers — straight, no-BS, legally accurate.
           </p>
         </div>
 
-        {/* Right side – scrollable Q&A list */}
-        <div className="faq-right">
-          <div className="faq-list">
-            {faqs.map((item, index) => {
-              const isActive = index === activeIndex;
-              return (
-                <div
-                  key={index}
-                  className={`faq-item ${isActive ? "active" : ""}`}
+        {/* Full-width FAQ accordion */}
+        <div className="isofaq-list">
+          {faqs.map((item, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <div
+                key={index}
+                className={`isofaq-item ${isActive ? "active" : ""}`}
+              >
+                <button
+                  type="button"
+                  className="isofaq-question"
+                  onClick={() => toggleFaq(index)}
                 >
-                  <button
-                    type="button"
-                    className="faq-question"
-                    onClick={() => toggleFaq(index)}
-                  >
-                    <span>{item.question}</span>
-                    <span className={`faq-icon ${isActive ? "open" : ""}`}>
-                      ▾
-                    </span>
-                  </button>
-                  {isActive && (
-                   <div className={`faq-answer ${isActive ? "open" : ""}`}>
-                    <p>{item.answer}</p>
-                  </div>
-
-                  )}
+                  <span>{item.question}</span>
+                  <span className={`isofaq-icon ${isActive ? "open" : ""}`}>▾</span>
+                </button>
+                <div className={`isofaq-answer ${isActive ? "open" : ""}`}>
+                  <div className="isofaq-answer-content">{item.answer}</div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
+
       </div>
     </section>
   );
 };
 
-export default FaqPvt;
+export default FaqISO;

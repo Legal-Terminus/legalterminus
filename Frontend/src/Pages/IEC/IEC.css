@@ -1,0 +1,83 @@
+/* ===== SECTION DIVIDER ===== */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(34, 197, 94, 0.25) 20%,
+    rgba(34, 197, 94, 0.45) 50%,
+    rgba(34, 197, 94, 0.25) 80%,
+    transparent 100%
+  );
+  margin: 0 40px;
+}
+
+/* ===== HERO — navy blue background (matches Private Limited) ===== */
+.iec-page-hero .lt-public-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 900px 500px at 8% 25%, rgba(34, 197, 94, 0.12), transparent 60%),
+    radial-gradient(ellipse 600px 400px at 94% 80%, rgba(34, 197, 94, 0.09), transparent 60%),
+    linear-gradient(160deg, #0a1628 0%, #0d1f3c 55%, #0f2545 100%);
+}
+
+/* Decorative concentric rings — top right */
+.iec-page-hero .lt-public-hero::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 460px;
+  height: 460px;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 197, 94, 0.18);
+  box-shadow:
+    0 0 0 70px rgba(34, 197, 94, 0.05),
+    0 0 0 140px rgba(34, 197, 94, 0.03);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Decorative circle — bottom left */
+.iec-page-hero .lt-public-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -80px;
+  left: -80px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 197, 94, 0.12);
+  box-shadow: 0 0 0 55px rgba(34, 197, 94, 0.04);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Lift content above decorative rings */
+.iec-page-hero .lt-public-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== LEFT CONTENT ===== */
+.iec-page-hero .lt-public-content { color: #e5e7eb; }
+.iec-page-hero .lt-public-title { color: #ffffff; }
+.iec-page-hero .lt-title-india { color: #ffffff; }
+.iec-page-hero .lt-public-subtitle { color: #4ade80; }
+.iec-page-hero .lt-public-description { color: #d1d5db; }
+.iec-page-hero .lt-feature-item { color: #f1f5f9; border-left-color: #22c55e; }
+.iec-page-hero .lt-public-highlights { border-top-color: rgba(34, 197, 94, 0.2); }
+.iec-page-hero .lt-public-highlights h3 { color: #22c55e; }
+.iec-page-hero .lt-public-highlights p { color: #9ca3af; }
+
+/* ===== PRICING CARDS — solid green border, hover lift ===== */
+.iec-page-pricing .iecplan-card {
+  border: 1px solid #22c55e;
+  box-shadow: none;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.iec-page-pricing .iecplan-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
+}
