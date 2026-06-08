@@ -9,6 +9,7 @@
 
 .iso-pricing-section .plan-card {
   border: 2px solid rgba(34, 197, 94, 0.45);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
   transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
