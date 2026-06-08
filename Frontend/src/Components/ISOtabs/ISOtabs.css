@@ -32,7 +32,7 @@
 .pvt-tabs-list {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   white-space: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
@@ -60,9 +60,10 @@
   color: #0a0b17;
   cursor: pointer;
 
-  flex: 0 0 auto;       /* tab width = text width */
+  flex: 1;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
 
   transition: background 0.15s ease, color 0.15s ease;
 }
