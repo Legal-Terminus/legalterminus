@@ -4,6 +4,7 @@ import ISObreadcrum from '../../Components/ISObreadcrum/ISObreadcrum'
 
 // Lazy load below-fold components
 const ISOplan = React.lazy(() => import('../../Components/ISOplan/ISOplan'))
+const ISOGovtCosts = React.lazy(() => import('../../Components/ISOGovtCosts/ISOGovtCosts'))
 const ISOtermandcondition = React.lazy(() => import('../../Components/ISOtermandcondition/ISOtermandcondition'))
 const ISOpremium = React.lazy(() => import('../../Components/ISOpremium/ISOpremium'))
 const ISOtabs = React.lazy(() => import('../../Components/ISOtabs/ISOtabs'))
@@ -28,6 +29,12 @@ const ISOCertification = () => {
           <ISOplan />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <ISOGovtCosts />
+      </Suspense>
 
       <div className="section-divider" />
 

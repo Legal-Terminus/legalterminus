@@ -16,33 +16,33 @@ const Breadcrum = () => {
 
           <h1 className="lt-public-title">
             ISO Certification
-            <span className="lt-title-india"> in India</span>
+            <span className="lt-title-india"> In India</span>
             <br />
-            <span className="lt-public-subtitle">Trusted, Accredited &amp; 100% Online</span>
+            <span className="lt-public-subtitle">Build Trust, Grow Your Business</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus can help you with obtaining ISO certification in India for your organization, as and when required, in a hassle-free manner within a reasonable time span and for a competitive professional fee which starts from Rs. 9,999/-
+            ISO Certification is a globally recognised quality mark that validates your processes, boosts customer confidence, and positions your business for tenders, contracts, and international markets. Legal Terminus offers end-to-end ISO certification support — from standard selection and documentation to CB liaison and post-certification compliance — making the entire process simple, transparent, and affordable.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Improves business quality standards</div>
-            <div className="lt-feature-item"> Builds customer trust & credibility</div>
-            <div className="lt-feature-item"> Helps in tender & contract eligibility</div>
-            <div className="lt-feature-item"> High Business Credibility</div>
+            <div className="lt-feature-item">Enhances Business Credibility</div>
+            <div className="lt-feature-item">Improves Process Efficiency</div>
+            <div className="lt-feature-item">Eligible for Tenders &amp; Contracts</div>
+            <div className="lt-feature-item">3-Year Validity</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <h3>1,650+</h3>
+              <p>ISO Certifications Delivered</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Process</p>
+              <h3>3–5 Days</h3>
+              <p>Process Timeline</p>
             </div>
             <div>
-              <h3>5+</h3>
+              <h3>7+</h3>
               <p>Years of Legal Expertise</p>
             </div>
           </div>

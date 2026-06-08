@@ -2,261 +2,136 @@ import React, { useState } from "react";
 import "./ISOplan.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
-
 const PLANS = [
-  { id: "elemental", name: "Elemental", price: 9999, services: ["ISO 9001 (UKAC)", "Free Consultation", "Application Preparation & Filing"] },
-  { id: "popular", name: "Popular", price: 11999, services: ["ISO 9001 (IAF)", "Free Consultation", "Application Preparation & Filing"] },
-  { id: "elemental", name: "Elemental", price: 11999, services: ["ISO 14001", "Free Consultation", "Application Preparation & Filing"] },
-  { id: "elemental", name: "Elemental", price: 11999, services: ["ISO 18001/45001", "Free Consultation", "Application Preparation & Filing"] },
-  { id: "elemental", name: "Elemental", price: 13999, services: ["ISO 27001", "Free Consultation", "Application Preparation & Filing"] },
-  { id: "elemental", name: "Elemental", price: 13999, services: ["ISO 22000", "Free Consultation", "Application Preparation & Filing"] },
-  { id: "elemental", name: "Elemental", price: 11999, services: ["ISO 45000", "Free Consultation", "Application Preparation & Filing"] },
-  { id: "elemental", name: "Elemental", price: 13999, services: ["ISO HACCP", "Free Consultation", "Application Preparation & Filing"] },
-  { id: "elemental", name: "Elemental", price: 13999, services: ["ISO 20000", "Free Consultation", "Application Preparation & Filing"] }
+  {
+    id: "iso-elemental",
+    name: "Elemental",
+    oldPrice: "₹17,999",
+    price: 12999,
+    services: [
+      "ISO Standard Selection & Advisory",
+      "Gap Analysis & Current State Assessment",
+      "SOP & Policy Documentation Support",
+      "Certification Body (CB) Selection Assistance",
+      "Stage 1 & Stage 2 Audit Preparation Support",
+      "CB Application Filing Support",
+      "Certificate Follow-up & Delivery",
+    ],
+  },
+  {
+    id: "iso-enriched",
+    name: "Enriched",
+    badge: "popular",
+    oldPrice: "₹32,999",
+    price: 22999,
+    services: [
+      "Everything in Elemental",
+      "Internal Audit Checklist & Preparation",
+      "Corrective Action Plan (CAP) Drafting",
+      "Stage 2 Audit Readiness Review",
+      "Annual Surveillance Audit Advisory (Y1 & Y2)",
+      "Dedicated Expert Project Manager",
+      "Priority Email & Call Support",
+    ],
+  },
+  {
+    id: "iso-supreme",
+    name: "Supreme",
+    badge: "fullservice",
+    oldPrice: "₹49,999",
+    price: 34999,
+    services: [
+      "Everything in Enriched",
+      "Multi-Standard ISO Support",
+      "On-Site Documentation Review (1 Visit)",
+      "Management Review Meeting Support",
+      "MSME Subsidy Application Assistance",
+      "Custom ISO Manual & Quality Policy Drafting",
+      "1-Year Post-Certification Compliance Support",
+    ],
+  },
 ];
 
 const PricingSection = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
-
     <>
-    <section className="pvtltd-pricing-section">
-      <div className="pricing-container">
-        
-        {/* Upper part */}
-        <header className="pricing-header">
-          <h2 className="PvtLtd-pricing-title">CHOOSE YOUR PLAN</h2>
-          <p className="pricing-subtitle">
-            Register your ISO Certification with pocket friendly-prices
-          </p>
-        </header>
+      <section className="pvtltd-pricing-section iso-pricing-section">
+        <div className="pricing-container">
 
-        {/* Cards */}
-        <div className="pricing-cards">
+          <header className="pricing-header">
+            <h2 className="PvtLtd-pricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="pricing-subtitle">
+              Get ISO Certified with expert support at every step
+            </p>
+          </header>
 
-          {/* Elemental */}
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Elemental</div>
-                <div className="plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">Excluding gov fee</div>
-              </div>
+          <div className="pricing-cards">
 
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">ISO 9001 (UKAC)</li>
-                  <li className="plan-list-item">Free Consultation</li>
-                  <li className="plan-list-item">Application Preparation & Filing</li>
-                </ul>
-              </div>
-            </div>
+            {PLANS.map((plan) => {
+              const isPopular = plan.badge === "popular";
+              const isFullService = plan.badge === "fullservice";
 
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-            </div>
-          </article>
+              return (
+                <article
+                  key={plan.id}
+                  className={`plan-card${isPopular ? " plan-card--popular" : ""}${isFullService ? " plan-card--fullservice" : ""}`}
+                  style={{ position: "relative" }}
+                >
+                  {isPopular && (
+                    <div className="plan-popular-badge">★ MOST POPULAR</div>
+                  )}
+                  {isFullService && (
+                    <div className="plan-fullservice-badge">✦ FULL-SERVICE</div>
+                  )}
 
-          {/* Enriched */}
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Popular</div>
-                <div className="plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">
-                  Excluding gov fee <span className="popular"></span>
-                </div>
-              </div>
+                  <div>
+                    <div className="plan-header">
+                      <div className="plan-name">{plan.name}</div>
+                      {plan.oldPrice && (
+                        <div className="plan-old-price">{plan.oldPrice}</div>
+                      )}
+                      <div className="plan-price">
+                        ₹{plan.price.toLocaleString("en-IN")}
+                      </div>
+                      <div className="plan-meta">Excluding CB &amp; govt fees</div>
+                    </div>
 
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">ISO 9001 (IAF)</li>
-                  <li className="plan-list-item">Free Consultation</li>
-                  <li className="plan-list-item">Application Preparation & Filing</li>
-                </ul>
-              </div>
-            </div>
+                    <div className="plan-body">
+                      <ul className="plan-list">
+                        {plan.services.map((s, i) => (
+                          <li key={i} className="plan-list-item">{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
 
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-            </div>
-          </article>
+                  <div className="plan-footer">
+                    <button
+                      className="plan-button"
+                      onClick={() => setActivePlan(plan)}
+                    >
+                      Buy Now
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
 
-          {/* Supreme */}
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Elemental</div>
-                <div className="plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">ISO 14001</li>
-                  <li className="plan-list-item">Free Consultation</li>
-                  <li className="plan-list-item">Application Preparation & Filing</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Supreme */}
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Elemental</div>
-                <div className="plan-price">{PLANS[3].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">ISO 18001/45001</li>
-                  <li className="plan-list-item">Free Consultation</li>
-                  <li className="plan-list-item">Application Preparation & Filing</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[3])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Supreme */}
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Elemental</div>
-                <div className="plan-price">{PLANS[4].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">ISO 27001</li>
-                  <li className="plan-list-item">Free Consultation</li>
-                  <li className="plan-list-item">Application Preparation & Filing</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[4])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Supreme */}
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Elemental</div>
-                <div className="plan-price">{PLANS[5].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">ISO 22000</li>
-                  <li className="plan-list-item">Free Consultation</li>
-                  <li className="plan-list-item">Application Preparation & Filing</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[5])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Supreme */}
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Elemental</div>
-                <div className="plan-price">{PLANS[6].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">ISO 45000</li>
-                  <li className="plan-list-item">Free Consultation</li>
-                  <li className="plan-list-item">Application Preparation & Filing</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[6])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Supreme */}
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Elemental</div>
-                <div className="plan-price">{PLANS[7].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">ISO HACCP</li>
-                  <li className="plan-list-item">Free Consultation</li>
-                  <li className="plan-list-item">Application Preparation & Filing</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[7])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Supreme */}
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Elemental</div>
-                <div className="plan-price">{PLANS[8].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">ISO 20000</li>
-                  <li className="plan-list-item">Free Consultation</li>
-                  <li className="plan-list-item">Application Preparation & Filing</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[8])}>Buy Now</button>
-            </div>
-          </article>
-
+          </div>
         </div>
-      </div>
-    </section>
-
+      </section>
 
       {activePlan && (
-
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="iso-certification" />
-
+        <CheckoutModal
+          plan={activePlan}
+          onClose={() => setActivePlan(null)}
+          source="iso-certification"
+        />
       )}
-
     </>
-
-  );};
+  );
+};
 
 export default PricingSection;

@@ -1,5 +1,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
+/* ===== ISO scoped 3-col grid + card styling ===== */
+.iso-pricing-section .pricing-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.iso-pricing-section .plan-card {
+  border: 2px solid rgba(34, 197, 94, 0.45);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.iso-pricing-section .plan-card--popular,
+.iso-pricing-section .plan-card--fullservice {
+  border: 2px solid rgba(34, 197, 94, 0.45);
+}
+
+.iso-pricing-section .plan-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(27, 179, 58, 0.18);
+}
+
+.iso-pricing-section .plan-popular-badge,
+.iso-pricing-section .plan-fullservice-badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  white-space: nowrap;
+}
+
 .pvtltd-pricing-section {
   font-family: 'Poppins', sans-serif;
   background: #ffffff;
