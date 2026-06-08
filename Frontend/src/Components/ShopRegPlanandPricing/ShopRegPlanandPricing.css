@@ -1,0 +1,208 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.shopreg-pricing-section {
+  font-family: 'Poppins', sans-serif;
+  background: #ffffff;
+  padding: 60px 24px 80px;
+}
+
+.shopreg-pricing-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.shopreg-pricing-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.shopreg-pricing-title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: #000;
+}
+
+.shopreg-pricing-subtitle {
+  font-size: 18px;
+  font-weight: 500;
+  color: #1bb33a;
+}
+
+.shopreg-pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.shopreg-plan-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #22c55e;
+  box-shadow: none;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  text-align: left;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.shopreg-plan-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
+}
+
+.shopreg-plan-card--popular,
+.shopreg-plan-card--fullservice {
+  border-color: rgba(34, 197, 94, 0.75);
+}
+
+.shopreg-plan-popular-badge,
+.shopreg-plan-fullservice-badge {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 10px;
+  background: #18b233;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 12px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.shopreg-plan-header {
+  margin-bottom: 16px;
+}
+
+.shopreg-plan-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #18b233;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.shopreg-plan-old-price {
+  font-size: 20px;
+  font-weight: 500;
+  text-align: center;
+  color: #ff3b3b;
+  text-decoration: line-through;
+  margin-bottom: 2px;
+}
+
+.shopreg-plan-price {
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  color: #000;
+}
+
+.shopreg-plan-meta {
+  font-size: 13px;
+  text-align: center;
+  color: #666;
+}
+
+.shopreg-plan-body {
+  margin-top: 20px;
+}
+
+.shopreg-plan-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.shopreg-plan-list-item {
+  font-size: 13px;
+  color: #111;
+  line-height: 1.6;
+  display: flex;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.shopreg-plan-list-item::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: #19b43a;
+  border-radius: 50%;
+  margin-right: 10px;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.shopreg-plan-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.shopreg-plan-button {
+  background: #21b738;
+  color: #ffffff;
+  padding: 10px 36px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.shopreg-plan-button:hover {
+  background: #1aa130;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .shopreg-pricing-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .shopreg-plan-card {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .shopreg-pricing-cards {
+    grid-template-columns: 1fr;
+  }
+  .shopreg-plan-card {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .shopreg-pricing-section {
+    padding: 32px 12px 48px;
+  }
+  .shopreg-pricing-title {
+    font-size: 22px;
+    letter-spacing: 0.5px;
+  }
+  .shopreg-pricing-subtitle {
+    font-size: 14px;
+  }
+  .shopreg-plan-card {
+    padding: 20px;
+  }
+  .shopreg-plan-price {
+    font-size: 28px;
+  }
+  .shopreg-plan-button {
+    width: 100%;
+    padding: 10px 0;
+  }
+}

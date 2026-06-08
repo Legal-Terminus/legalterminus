@@ -1,0 +1,99 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+.shopben-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: #ffffff;
+  padding: 72px 24px 64px;
+}
+
+.shopben-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.shopben-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.shopben-title {
+  font-size: 40px;
+  font-weight: 600;
+  color: #151821;
+  margin: 0 0 12px;
+}
+
+.shopben-subtitle {
+  max-width: 900px;
+  margin: 0 auto;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+.shopben-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.shopben-card {
+  background-color: #ffffff;
+  border-radius: 14px;
+  padding: 28px 28px 26px;
+  border: 1.5px solid #e2e8f0;
+  border-top: 3px solid #22c55e;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.shopben-card:hover {
+  border-color: #22c55e;
+  box-shadow: 0 8px 28px rgba(34, 197, 94, 0.14);
+  transform: translateY(-3px);
+}
+
+.shopben-card-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 12px;
+}
+
+.shopben-card-underline {
+  height: 2px;
+  width: 40px;
+  background: #22c55e;
+  border-radius: 2px;
+  margin-bottom: 14px;
+}
+
+.shopben-card-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.9;
+  color: #4b5563;
+}
+
+@media (max-width: 1024px) {
+  .shopben-section { padding: 60px 20px 56px; }
+  .shopben-title { font-size: 34px; }
+  .shopben-grid { gap: 22px; }
+}
+
+@media (max-width: 768px) {
+  .shopben-section { padding: 48px 16px 48px; }
+  .shopben-title { font-size: 30px; }
+  .shopben-subtitle { font-size: 14px; }
+  .shopben-grid { grid-template-columns: 1fr; }
+  .shopben-card { padding: 24px 22px 22px; }
+}
+
+@media (max-width: 480px) {
+  .shopben-section { padding: 40px 14px 40px; }
+  .shopben-title { font-size: 26px; }
+  .shopben-card-title { font-size: 17px; }
+  .shopben-card-text { font-size: 13.5px; }
+}

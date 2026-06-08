@@ -1,0 +1,88 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+
+.shoptype-section {
+  font-family: "Poppins", sans-serif;
+  background: #f8fafc;
+  padding: 60px 24px 70px;
+}
+
+.shoptype-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.shoptype-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #151821;
+  text-align: center;
+  margin: 0 0 48px;
+  line-height: 1.3;
+}
+
+.shoptype-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  margin-bottom: 40px;
+}
+
+.shoptype-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-top: 3px solid #22c55e;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  padding: 32px 28px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.shoptype-card:hover {
+  border-color: #22c55e;
+  box-shadow: 0 8px 28px rgba(34, 197, 94, 0.14);
+  transform: translateY(-3px);
+}
+
+.shoptype-number {
+  font-size: 48px;
+  font-weight: 800;
+  color: rgba(27, 179, 58, 0.18);
+  line-height: 1;
+  margin-bottom: 16px;
+  letter-spacing: -1px;
+}
+
+.shoptype-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
+.shoptype-card-text {
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: #4b5563;
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .shoptype-title { font-size: 30px; }
+  .shoptype-cards { gap: 20px; }
+}
+
+@media (max-width: 768px) {
+  .shoptype-section { padding: 48px 16px 56px; }
+  .shoptype-cards { grid-template-columns: 1fr; gap: 18px; }
+  .shoptype-title { font-size: 26px; margin-bottom: 32px; }
+}
+
+@media (max-width: 480px) {
+  .shoptype-section { padding: 36px 14px 44px; }
+  .shoptype-title { font-size: 22px; }
+  .shoptype-card { padding: 24px 20px; }
+  .shoptype-number { font-size: 38px; }
+  .shoptype-card-title { font-size: 16px; }
+  .shoptype-card-text { font-size: 13.5px; }
+}

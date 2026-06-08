@@ -3,71 +3,73 @@ import "./ShopRegProcess.css";
 
 const steps = [
   {
-    title: "Document Submission",
-    description:
-      "Provision of requisite documents and information required for registration."
+    title: "Expert Consultation & Document Checklist",
+    day: "Day 0",
+    text: "Brief call with our expert to understand your establishment type, state, number of employees, and premises details. We share a customised document checklist specific to your state's Shop & Establishment Act.",
   },
   {
-    title: "Further Documentation",
-    description:
-      "Validation of documents and processing of the information submitted."
+    title: "Document Collection & Verification",
+    day: "Day 1",
+    text: "Submit your documents as per the checklist — identity proof (PAN + Aadhaar) of proprietor/partners/directors, address proof of the premises (rent agreement + electricity bill), photograph of the signboard, and number of employees.",
   },
   {
-    title: "Filing of Application",
-    description:
-      "Filing of the application online or offline, as applicable."
+    title: "Preparation of Application",
+    day: "Day 1–2",
+    text: "Our team prepares the registration application form as per the applicable state rules. We verify all details — establishment name, address, nature of business, working hours, and employee count — before filing.",
   },
   {
-    title: "Payment",
-    description:
-      "Payment of the appropriate government fee as applicable."
+    title: "Filing of Application with Local Authority",
+    day: "Day 2–3",
+    text: "The application is filed online (or in person at the local labour office / municipal body, as applicable for your state). For states with online portals, we handle the submission directly.",
   },
   {
-    title: "Issue of Registration Certificate",
-    description:
-      "Processing of the application and issuance of the registration certificate."
-  }
+    title: "Payment of Government Fee",
+    day: "Day 2–3",
+    text: "Government fees are paid online at actuals as per the state fee schedule (typically based on employee count). In Odisha the fee is capped at approximately ₹600 per branch per year.",
+  },
+  {
+    title: "Verification by Authorities",
+    day: "Day 3–7",
+    text: "The local authority (labour inspector / municipal office) verifies the application and documents. In most online-portal states, this process is automated; in others, a physical inspection may be required.",
+  },
+  {
+    title: "Registration Certificate Issued",
+    day: "Day 7–8",
+    text: "The Registration Certificate is issued by the competent authority and delivered to you digitally. This certificate must be displayed prominently at the business premises at all times.",
+  },
 ];
 
-const ShopEstablishmentSteps = () => {
+const ShopRegProcess = () => {
   return (
-    <section className="shopstep-section">
-      <h2 className="shopstep-main-title">
-        Steps for Shop & Establishment Registration in India
+    <section className="shopreg-gst-wrapper">
+      <h2 className="shopreg-gst-heading">
+        Steps for Shop &amp; Establishment Registration in India
       </h2>
-
-      <p className="shopstep-subtext">
-        Applicable only for Municipal Areas and each branch in Odisha <br />
-        <strong>Government Fee: Up to ₹600</strong>
+      <p className="shopreg-gst-subheading">
+        Seven steps. 7–8 working days end-to-end (assuming clean documents and online portal availability in your state).
       </p>
 
-      <div className="shopstep-timeline">
+      <div className="shopreg-timeline">
+        <div className="shopreg-timeline-line" />
+
         {steps.map((step, index) => (
-          <div className="shopstep-item" key={index}>
-            <div className="shopstep-left">
-              <span className="shopstep-step">Step {index + 1}</span>
-            </div>
-
-            <div className="shopstep-center">
-              <div className="shopstep-circle">{index + 1}</div>
-              {index < steps.length - 1 && (
-                <div className="shopstep-line"></div>
-              )}
-            </div>
-
-            <div className="shopstep-right">
-              <h3>{step.title}</h3>
-              <p>{step.description}</p>
+          <div
+            key={index}
+            className={`shopreg-timeline-item ${index % 2 === 0 ? "left" : "right"} ${index === 0 ? "first" : ""} ${index === steps.length - 1 ? "last" : ""}`}
+          >
+            <div className="shopreg-timeline-dot">{index + 1}</div>
+            <div className="shopreg-timeline-card">
+              <h4>
+                {step.title}
+                {step.day && <span className="shopreg-day-tag">{step.day}</span>}
+              </h4>
+              <p>{step.text}</p>
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="shopstep-timebox">
-        ⏱ Total Time: Approximately 7–8 Working Days
       </div>
     </section>
   );
 };
 
-export default ShopEstablishmentSteps;
+export default ShopRegProcess;
