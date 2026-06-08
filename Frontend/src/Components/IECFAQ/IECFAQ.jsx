@@ -3,56 +3,54 @@ import "./IECFAQ.css";
 
 const faqs = [
   {
-    question: "Is Import Export Code mandatory for all business organizations?",
+    question: "What is IEC and who needs it?",
     answer:
-      "The Import Export Code is mandatory for those organizations who are engaged in the business of Import Export of goods or services. Individuals and entities exempt from IEC include those importing/exporting for personal use not connected with trade, and entities covered under specific exemptions notified by DGFT.",
+      "IEC (Import Export Code) is a registration issued by DGFT for businesses or individuals involved in import or export activities. It is mandatory for importing goods, exporting goods, exporting services, or receiving foreign currency payments from outside India. The IEC number is generally the same as the PAN of the business or individual.",
   },
   {
-    question: "What is the validity of IE Code?",
+    question: "Do service exporters need IEC?",
     answer:
-      "An Import Export Code once issued is valid for lifetime. However, it must be updated annually (between April and June) on the DGFT portal — failure to update results in deactivation of the IEC.",
+      "Yes. If you receive payment in foreign currency for services provided to clients outside India, IEC is required. This includes IT services, software development, freelancing, consulting, digital marketing, design services, BPO, and other professional services. Banks often require IEC details to process foreign inward remittances smoothly.",
   },
   {
-    question: "What is the due date of renewal of IE Code?",
+    question: "What is the total cost of IEC registration?",
     answer:
-      "Since IEC Certificate is granted for lifetime, no renewal is required. However, annual updation (even with no changes) is mandatory every April–June. DGFT deactivates IEC for entities that do not complete the annual update.",
+      "The DGFT government fee for IEC registration is ₹500. Professional fees depend on the plan selected by you. DSC charges, if required, are additional. We provide complete pricing details before starting the application process.",
   },
   {
-    question: "What if one wishes to carry on import/export business without obtaining IEC Registration?",
+    question: "How long does IEC registration take?",
     answer:
-      "Import or Export of Goods and/or Services is not possible without having Import Export Code Certificate. Customs authorities and DGFT require a valid IEC for every import/export consignment. Violation can attract penalties under the Foreign Trade (Development & Regulation) Act, 1992.",
+      "IEC registration is usually completed within 1–3 working days, subject to successful document verification and DGFT approval. Delays may occur due to PAN-Aadhaar mismatch, incorrect bank details, or incomplete documents.",
   },
   {
-    question: "What are the documents required for obtaining Import Export Code?",
-    answer: (
-      <div>
-        <ol>
-          <li>Copy of PAN of the organization/applicant</li>
-          <li>Address Proof of the business premises (Electricity Bill / Lease Agreement)</li>
-          <li>Cancelled cheque or Bank Certificate in the name of the organization</li>
-          <li>Certificate of Incorporation / Partnership Deed / MSME Certificate (as applicable)</li>
-          <li>Copy of PAN of all Directors/Partners/Proprietor</li>
-          <li>Copy of Address proof of all Directors/Partners/Proprietor</li>
-          <li>Bank Statement of last 2 months of the operating account</li>
-          <li>Email ID &amp; Mobile number of the organization</li>
-        </ol>
-      </div>
-    ),
+    question: "Is IEC PAN-based now? Can I have multiple IECs?",
+    answer:
+      "Only one IEC can be issued against one PAN. Separate business entities with different PANs require separate IEC registrations.",
   },
   {
-    question: "What is the time period within which the Import Export Code can be obtained?",
+    question: "What is the mandatory annual IEC update?",
     answer:
-      "The process of obtaining IEC Registration typically takes 5 to 7 working days from submission of complete and correct documents. DGFT processes the application online and issues the IEC code electronically.",
+      "Every IEC holder MUST update their IEC details online at dgft.gov.in between 1 April and 30 June each year - even if there are no changes. The update is FREE (no govt fee). Failure to update by 30 June leads to AUTOMATIC DEACTIVATION of the IEC - no exports / imports / foreign-currency receipts possible until reactivated. Reactivation is done by simply completing the missed update; no penalty fee but no business possible during deactivated period. We send reminder + handle the update free for 1 year.",
   },
   {
-    question: "What is the government fee for IEC registration?",
+    question: "What's the 1-year free IEC update support?",
     answer:
-      "The government fee for IEC registration is ₹500, payable online on the DGFT portal at the time of application. This is separate from the professional fee charged by Legal Terminus.",
+      "Every plan includes free professional support for 1 year for any update / change / correction to your IEC - the mandatory April-June annual update, address changes, bank account changes (very common), authorised signatory changes, branch additions, telephone / email updates. Counted from the date of IEC issuance. Beyond 1 year, updates are billed at Rs.499 per change.",
   },
   {
-    question: "How can Legal Terminus help you obtain Import Export Code?",
+    question: "What is AD Code and is it the same as IEC?",
     answer:
-      "Legal Terminus handles the complete IEC registration process — from document verification and application preparation to DGFT filing and follow-up. We ensure zero rejection risk by pre-verifying all documents before submission. Contact us for a free consultation with one of our IEC experts.",
+      "No. IEC and AD Code are different. IEC is issued by DGFT, whereas AD Code is issued by your bank for customs and export transactions. AD Code registration on ICEGATE is required for export clearance and shipping bill processing. Enriched and Supreme plans include AD Code registration support.",
+  },
+  {
+    question: "What's RoDTEP and how do I claim it?",
+    answer:
+      "RoDTEP (Remission of Duties and Taxes on Exported Products) is an export incentive scheme introduced by the Government of India. Eligible exporters can claim benefits on export transactions subject to product eligibility and correct documentation. Our Supreme plan includes basic RoDTEP guidance and first-claim support.",
+  },
+  {
+    question: "How can Legal Terminus help me with IEC registration?",
+    answer:
+      "Legal Terminus provides complete assistance for IEC registration, document verification, DGFT filing, ICEGATE support, AD Code registration, and annual IEC updates. Our team helps businesses across India with fast processing, professional support, and end-to-end guidance for import-export compliance.",
   },
 ];
 
@@ -67,7 +65,6 @@ const IECFAQ = () => {
     <section className="iecfaq-section">
       <div className="iecfaq-container">
 
-        {/* Centered heading & subheading */}
         <div className="iecfaq-header">
           <h2 className="iecfaq-title">IEC Registration — FAQs</h2>
           <p className="iecfaq-intro">
@@ -75,7 +72,6 @@ const IECFAQ = () => {
           </p>
         </div>
 
-        {/* Full-width FAQ accordion */}
         <div className="iecfaq-list">
           {faqs.map((item, index) => {
             const isActive = index === activeIndex;

@@ -10,56 +10,56 @@ const IECBenefits = () => {
             Benefits of IEC Registration in India
           </h2>
           <p className="iecben-subtitle">
-            IEC is the gateway to global trade. Once registered, it unlocks export incentives, international payment channels, and government scheme eligibility — for the lifetime of your business with zero renewal.
+            IEC isn't a strategic choice - it's a mandatory gateway. But the downstream unlocks are where the real value sits. Here's what genuinely matters:
           </p>
         </header>
 
         <div className="iecben-grid">
           <article className="iecben-card">
-            <h3 className="iecben-card-title">Lifetime Validity — Zero Renewal</h3>
+            <h3 className="iecben-card-title">Mandatory for Any Cross-Border Trade</h3>
             <div className="iecben-card-underline" />
             <p className="iecben-card-text">
-              IEC is issued once and valid for the lifetime of the entity. No annual renewal, no compliance filing, no fee after issuance. Update it only if your business details change. Most registrations are completed in 1–2 working days.
+              Without IEC, you legally cannot export goods, import goods, export services billed in foreign currency, or receive foreign-currency payments. Customs will reject your shipping bills, banks will reject your FIRC. IEC is the first thing every international business does.
             </p>
           </article>
 
           <article className="iecben-card">
-            <h3 className="iecben-card-title">Export Incentive Schemes</h3>
+            <h3 className="iecben-card-title">Foreign Exchange Compliance</h3>
             <div className="iecben-card-underline" />
             <p className="iecben-card-text">
-              IEC is mandatory to claim government export incentives under MEIS, SEIS, RoDTEP, and DGFT reward schemes. Without IEC, exporters are ineligible for duty drawback, freight subsidies, and state export promotion grants.
+              Banks need your IEC to credit Foreign Inward Remittance Certificates (FIRC) for export receipts and to release Bank Realisation Certificates (BRC) confirming proceeds. Without IEC, foreign-currency receipts get held up in the bank's suspense account.
             </p>
           </article>
 
           <article className="iecben-card">
-            <h3 className="iecben-card-title">International Banking &amp; Payments</h3>
+            <h3 className="iecben-card-title">Export Incentive Access</h3>
             <div className="iecben-card-underline" />
             <p className="iecben-card-text">
-              Open a foreign currency account (EEFC account) and receive international wire transfers (SWIFT / FEMA-compliant). Banks and RBI-authorised payment gateways require IEC to process import payments and export remittances above thresholds.
+              RoDTEP (Remission of Duties &amp; Taxes on Exported Products), Advance Authorisation (duty-free input imports), EPCG (capital goods at concessional duty), Duty Drawback - all require valid IEC. The schemes that actually move the needle on export profitability all start with IEC.
             </p>
           </article>
 
           <article className="iecben-card">
-            <h3 className="iecben-card-title">Customs &amp; Port Clearance</h3>
+            <h3 className="iecben-card-title">Customs Clearance via ICEGATE</h3>
             <div className="iecben-card-underline" />
             <p className="iecben-card-text">
-              Without IEC, goods cannot clear customs at any Indian port, airport, or land border. IEC is the mandatory identifier on all shipping bills and bills of entry. Goods get cleared faster under ICEGATE with a valid, DGFT-verified IEC.
+              Shipping bills (exports) and bills of entry (imports) on the ICEGATE customs portal require IEC + AD Code linkage. Without IEC, your shipment sits at port. With IEC, you (or your Customs House Agent) can file documents and clear cargo in hours.
             </p>
           </article>
 
           <article className="iecben-card">
-            <h3 className="iecben-card-title">Global Market Credibility</h3>
+            <h3 className="iecben-card-title">Lifetime Validity, No Renewal</h3>
             <div className="iecben-card-underline" />
             <p className="iecben-card-text">
-              International buyers, procurement teams, and trade platforms (Alibaba, IndiaMART, Amazon Global) require IEC for vendor KYC. IEC registration signals regulatory compliance and builds credibility with overseas clients and suppliers.
+              Once issued, IEC has lifetime validity - no renewal, no expiry. The only ongoing requirement is the FREE annual update in April-June every year (confirming details are current). This is the most low-friction lifelong registration in India.
             </p>
           </article>
 
           <article className="iecben-card">
-            <h3 className="iecben-card-title">Government Tender Eligibility</h3>
+            <h3 className="iecben-card-title">Foundational for RCMC + Export Promotion</h3>
             <div className="iecben-card-underline" />
             <p className="iecben-card-text">
-              Central and state government tenders for import/export of goods and services mandate IEC as a basic eligibility criterion. Defence, railways, and PSU procurement portals list IEC as a mandatory document in their vendor registration checklist.
+              Export Promotion Councils (FIEO, EEPC, APEDA, EPCH, GJEPC etc.) issue RCMC (Registration-cum-Membership Certificate) only to IEC holders. RCMC unlocks tender preferences, trade-show subsidies, market-development assistance, and DGFT incentive schemes.
             </p>
           </article>
         </div>

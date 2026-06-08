@@ -4,18 +4,33 @@ import "../CopyPvtTypes/CopyPvtTypes.css";
 const types = [
   {
     number: "01",
-    title: "Individual / Proprietorship IEC",
-    text: "Issued to individual traders or sole proprietors who import or export goods in their personal name. The IEC is linked to the proprietor's PAN. Ideal for small business owners, freelancers, and self-employed professionals engaging in international trade — no minimum turnover required.",
+    title: "Proprietorship IEC",
+    text: "Most common variant. PAN + Aadhaar of proprietor, address proof, bank account, photograph. Can be filed via Aadhaar OTP without DSC. Fastest path - typically 1 working day. Suitable for freelancers exporting services, solo traders, online sellers shipping to foreign customers.",
   },
   {
     number: "02",
     title: "Partnership / LLP IEC",
-    text: "Issued to registered partnership firms or Limited Liability Partnerships (LLPs) engaged in international trade. The IEC is issued in the firm's name using its PAN. Partners gain legal recognition for imports and exports under the firm's identity and can access DGFT export promotion schemes.",
+    text: "Requires partnership deed / LLP Agreement + authorised signatory's DSC. Authorised signatory's PAN + Aadhaar. Bank account in firm's name. Slightly more documentation, same timeline. Standard for two-or-more partner trading firms and professional service exporters.",
   },
   {
     number: "03",
-    title: "Company / Organisation IEC",
-    text: "Issued to Private Limited, Public Limited, One Person Companies, and other organisations engaging in import/export. Corporate IEC unlocks access to global markets, DGFT trade benefits, MEIS/SEIS export incentive schemes, and international payment gateway integration.",
+    title: "Pvt Ltd / Public Ltd IEC",
+    text: "Requires Certificate of Incorporation + Board Resolution authorising the signatory + signatory's DSC. Bank account in company's name. Most common for established exporters / importers - the DGFT verification is tighter, expect 1-2 days. Standard for IT services, manufacturers, e-commerce.",
+  },
+  {
+    number: "04",
+    title: "HUF (Hindu Undivided Family) IEC",
+    text: "Requires HUF PAN + karta's Aadhaar + karta's PAN + bank account in HUF name + HUF declaration. Less common; typically used by family-owned trading businesses. Karta acts as the authorised signatory.",
+  },
+  {
+    number: "05",
+    title: "Trust / Society IEC",
+    text: "For registered trusts and societies engaged in import / export (typically NGOs importing relief material, educational trusts importing equipment, religious bodies importing artefacts). Requires trust deed / society registration + signatory authorisation + tightly-scoped object clause.",
+  },
+  {
+    number: "06",
+    title: "Government Entity IEC",
+    text: "For government departments, PSUs, government-owned undertakings importing / exporting on government account. Requires GoI / state government notification + authorising letter. Filed by the designated department officer, not commercial.",
   },
 ];
 

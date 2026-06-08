@@ -3,56 +3,80 @@ import "../CopyPvtDocument/CopyPvtDocument.css";
 import {
   FaIdCard,
   FaBuilding,
-  FaBolt,
   FaUniversity,
   FaUserCheck,
+  FaBolt,
+  FaListUl,
 } from "react-icons/fa";
 
 const leftDocs = [
   {
     icon: <FaIdCard />,
-    title: "Entity Identity Documents",
-    note: "Legal existence of the entity applying for IEC",
+    title: "PAN of Applicant",
+    note: "Must be active — inoperative PAN blocks IEC application",
     items: [
-      "Entity PAN card (mandatory — IEC is PAN-based)",
-      "For Pvt Ltd / LLP: Certificate of Incorporation + MOA/AOA",
-      "For Partnership Firm: Registered Partnership Deed",
-      "For Proprietorship: Proprietor's PAN + GST Certificate / MSME Udyam",
-      "GST Registration Certificate (if GST registered)",
+      "PAN card of the applicant entity",
+      "For proprietorship: proprietor's individual PAN (mandatory)",
+      "For Partnership / LLP / Pvt Ltd / HUF / Trust / Society: entity's PAN",
+      "PAN must be active (not inoperative due to PAN-Aadhaar non-linkage)",
     ],
   },
   {
     icon: <FaUserCheck />,
     title: "Authorised Signatory Identity",
-    note: "Director / Partner / Proprietor — Aadhaar must be mobile-linked",
+    note: "Aadhaar must be mobile-linked for OTP or DSC for entities",
     items: [
       "Aadhaar of authorised signatory (mobile-linked for OTP)",
-      "PAN of authorised signatory",
-      "Passport-size photograph (jpeg format)",
-      "Board Resolution / Authorisation Letter (for companies and LLPs)",
+      "Signatory's PAN",
+      "Passport-size photograph (jpeg, < 100 KB)",
+      "Email + mobile number (used for IEC certificate delivery)",
+    ],
+  },
+  {
+    icon: <FaBuilding />,
+    title: "Address Proof of Business",
+    note: "Utility bill not older than 2 months",
+    items: [
+      "Electricity / telephone / mobile postpaid bill in business name (≤ 2 months old)",
+      "For rented premises: rent agreement + landlord's NoC",
+      "For owned premises: property tax receipt",
+      "Address must match PAN / GSTIN where available",
     ],
   },
 ];
 
 const rightDocs = [
   {
-    icon: <FaBuilding />,
-    title: "Registered Office Address Proof",
-    note: "Business address — utility bill not older than 60 days",
+    icon: <FaUniversity />,
+    title: "Bank Account Details",
+    note: "Account must be in entity's name",
     items: [
-      "Electricity / gas / telephone bill (not older than 60 days)",
-      "Owned premises: property tax receipt or sale deed",
-      "Rented premises: registered rent agreement + landlord NoC",
+      "Cancelled cheque OR first page of bank passbook OR bank certificate (Format ANF 2A Appendix) on bank's letterhead",
+      "Account must be in entity's name (or proprietor's name for proprietorship)",
+      "IFSC code captured for AD Code linkage",
     ],
   },
   {
-    icon: <FaUniversity />,
-    title: "Bank Account Details",
-    note: "Current account in the entity's name",
+    icon: <FaBolt />,
+    title: "Entity-Specific Documents",
+    note: "Varies by entity type",
     items: [
-      "Cancelled cheque (current account in business name)",
-      "OR bank certificate / passbook first page with IFSC + account number",
-      "Bank account must match the entity name on the IEC application",
+      "Proprietorship: nil additional",
+      "Partnership: Partnership Deed",
+      "LLP: LLP Agreement + COI",
+      "Pvt Ltd / Public Ltd: COI + MOA + AOA + Board Resolution",
+      "HUF: HUF declaration + karta details",
+      "Trust / Society: registration certificate + trust deed / society bye-laws + authorising letter",
+    ],
+  },
+  {
+    icon: <FaListUl />,
+    title: "Optional / Sector-Specific",
+    note: "For regulated products or incentive claims",
+    items: [
+      "Relevant licence reference if applying for IEC for a specific product needing sectoral approval (chemicals, drugs, food, jewellery)",
+      "EPC membership preference if you intend to claim export incentives",
+      "Indicative HSN / SAC codes (we map)",
     ],
   },
 ];
@@ -83,7 +107,7 @@ const IECRequiredDocs = () => {
             Documents Required for IEC Registration in India
           </h2>
           <p className="cpvd-main-subtitle">
-            Get these ready and we'll take care of the rest. We send a personalised checklist after the consultation call.
+            Six categories. Documentation is deliberately light because IEC is a self-declaration-based registration with PAN-Aadhaar-bank validation. We send a personalised checklist after the discovery call.
           </p>
         </div>
 
@@ -92,8 +116,8 @@ const IECRequiredDocs = () => {
             <div className="cpvd-col-header">
               <div className="cpvd-col-header-icon"><FaIdCard /></div>
               <div>
-                <h3 className="cpvd-col-title">Entity Identity &amp; Signatory Documents</h3>
-                <p className="cpvd-col-subtitle">Legal identity &amp; authorisation proof</p>
+                <h3 className="cpvd-col-title">Identity &amp; Signatory Documents</h3>
+                <p className="cpvd-col-subtitle">PAN, Aadhaar, photograph &amp; address proof</p>
               </div>
             </div>
             <div className="cpvd-col-body">
@@ -105,10 +129,10 @@ const IECRequiredDocs = () => {
 
           <div className="cpvd-column">
             <div className="cpvd-col-header cpvd-col-header--office">
-              <div className="cpvd-col-header-icon"><FaBuilding /></div>
+              <div className="cpvd-col-header-icon"><FaUniversity /></div>
               <div>
-                <h3 className="cpvd-col-title">Address &amp; Bank Account Documents</h3>
-                <p className="cpvd-col-subtitle">Registered office address &amp; bank verification</p>
+                <h3 className="cpvd-col-title">Bank, Entity &amp; Optional Documents</h3>
+                <p className="cpvd-col-subtitle">Bank account, entity-specific &amp; sector docs</p>
               </div>
             </div>
             <div className="cpvd-col-body">
