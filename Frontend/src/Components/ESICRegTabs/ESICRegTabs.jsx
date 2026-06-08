@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "../PvtltdTabs/PvtltdTabs.css";
+import "./ESICRegTabs.css";
 
 const tabs = [
   { label: "Overview", id: "overview" },

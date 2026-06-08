@@ -12,25 +12,26 @@ import {
 const leftDocs = [
   {
     icon: <FaBuilding />,
-    title: "Entity Registration Proof",
+    title: "Entity Identity",
     note: "Legal existence of the establishment",
     items: [
-      "Certificate of Incorporation (Pvt Ltd / LLP) OR Partnership Deed OR Trade Licence",
-      "MOA & AOA (for companies)",
-      "GST Registration Certificate",
-      "Entity PAN Card",
+      "Entity PAN (mandatory)",
+      "Certificate of Incorporation (Pvt Ltd / LLP) OR Partnership Deed (firms) OR Trade Licence / GST Certificate (proprietorship)",
+      "MSME / Udyam certificate (if available)",
+      "GSTIN of entity",
+      "Factory Licence (if applicable)",
     ],
   },
   {
     icon: <FaUser />,
-    title: "Authorised Signatory Documents",
+    title: "Authorised Signatory Identity",
     note: "Per signatory — Aadhaar must be mobile-linked",
     items: [
-      "Aadhaar of authorised signatory (mobile-linked for OTP / DSC)",
-      "PAN Card",
+      "Aadhaar of authorised signatory (mobile-linked for OTP)",
+      "PAN",
       "Photograph",
-      "Board Resolution or designation letter authorising signatory",
-      "Email ID + mobile number",
+      "Designation letter / Board Resolution authorising signatory for ESIC filings",
+      "Email + mobile number",
     ],
   },
   {
@@ -38,10 +39,11 @@ const leftDocs = [
     title: "Establishment Address Proof",
     note: "Utility bill not older than 60 days",
     items: [
-      "Latest electricity / gas / municipal bill (≤ 60 days old)",
-      "Rent agreement (if rented)",
-      "NoC from property owner",
-      "Photograph of establishment front-board",
+      "Latest electricity / gas / municipal tax bill (≤ 60 days old)",
+      "Property owner NoC if rented",
+      "Rent agreement (notarised)",
+      "Photograph of office / factory front-board",
+      "Branch addresses if multi-location",
     ],
   },
 ];
@@ -50,34 +52,30 @@ const rightDocs = [
   {
     icon: <FaMoneyBillWave />,
     title: "Bank Account Details",
-    note: "Used for ESIC refunds and challan reconciliation",
+    note: "Used for ESIC challan reconciliation and refunds",
     items: [
-      "Cancelled cheque OR bank passbook first page (with IFSC + account holder name)",
-      "Current account preferred (savings acceptable for proprietorship)",
+      "Cancelled cheque OR first page of bank passbook with IFSC + account holder name",
     ],
   },
   {
     icon: <FaIdCard />,
-    title: "Employee Details (per employee)",
+    title: "Covered Employee KYC + Family Pack",
     note: "For all covered employees earning ≤ ₹21,000/month",
     items: [
-      "Name + Father's/Husband's name + Date of Birth",
-      "Aadhaar number (mobile-linked)",
+      "PAN + Aadhaar (mobile-linked) + bank account + photograph",
       "Date of joining + Designation + Monthly gross wages",
-      "Bank account with IFSC",
-      "Nominee details",
-      "Insurance Number (if previously registered with ESIC)",
+      "Family declaration: spouse, dependent parents, dependent children (with Aadhaar / birth certificate / age proof)",
     ],
   },
   {
     icon: <FaFileContract />,
-    title: "Wage & Attendance Records",
-    note: "Required for payroll verification and ECR setup",
+    title: "Wage Structure & Statutory Forms",
+    note: "Required for payroll verification and contribution calculation",
     items: [
-      "Attendance register",
-      "Wage register (basic + DA + HRA + allowances)",
-      "Appointment letters",
-      "List of all employees with designations",
+      "Wage structure for each employee (basic + DA + HRA + allowances — the 'gross wages' figure is what counts for ESIC)",
+      "Form 1 (Declaration) for establishment",
+      "Form 1A (Declaration) for each covered employee",
+      "Form 3 (Return of Contributions) template ready",
     ],
   },
 ];
@@ -107,7 +105,7 @@ const ESICRegListicles = () => {
         <div className="cpvd-header">
           <h2 className="cpvd-main-title">Documents Required for ESIC Registration in India</h2>
           <p className="cpvd-main-subtitle">
-            Six categories. Establishment-level docs apply to the entity; per-employee docs apply to every covered employee (earning ≤ ₹21,000/month). We send a personalised checklist after the discovery call.
+            Six categories. Establishment-level docs apply to the entity; per-employee docs apply to every covered employee plus their family. We send a personalised checklist after the discovery call.
           </p>
         </div>
 
@@ -132,8 +130,8 @@ const ESICRegListicles = () => {
             <div className="cpvd-col-header cpvd-col-header--office">
               <div className="cpvd-col-header-icon"><FaIdCard /></div>
               <div>
-                <h3 className="cpvd-col-title">Banking, Employee &amp; Payroll Records</h3>
-                <p className="cpvd-col-subtitle">Bank details, employee KYC &amp; wage records</p>
+                <h3 className="cpvd-col-title">Banking, Employee KYC &amp; Payroll Records</h3>
+                <p className="cpvd-col-subtitle">Bank details, employee KYC &amp; wage structure</p>
               </div>
             </div>
             <div className="cpvd-col-body">

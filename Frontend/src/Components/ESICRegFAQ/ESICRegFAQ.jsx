@@ -3,54 +3,49 @@ import "../PvtltdFAQ/PvtltdFAQ.css";
 
 const faqs = [
   {
-    question: "Is it compulsory for establishments to obtain ESIC Registration?",
+    question: "When is ESIC registration mandatory for a business?",
     answer:
-      "Yes. Every establishment covered under the Employees' State Insurance Act, 1948 must register with ESIC once it employs 10 or more employees (in most states and notified industries). Registration must be completed within 15 days of becoming eligible. Failure to register attracts penalties and recovery of unpaid contributions with interest.",
+      "ESIC registration becomes mandatory for eligible establishments once the employee strength reaches the prescribed limit under the ESI Act, 1948. In most states, registration is required when the establishment employs 10 or more employees. The registration should generally be obtained within the prescribed time after crossing the threshold limit.",
   },
   {
-    question: "What is the ESIC Code and how is it used?",
+    question: "Which employees are covered under ESIC?",
     answer:
-      "The ESIC Code is a unique 17-digit employer identification number allotted after successful registration on the ESIC portal. It is used for all compliance activities — monthly contribution filing, employee IP number generation, challan payments, and correspondence with ESIC regional offices.",
+      "Employees earning gross monthly wages up to ₹21,000 are generally covered under the ESI scheme. For persons with disabilities, the wage limit is ₹25,000 per month. Employees earning above the prescribed wage limit are usually not eligible for ESIC coverage.",
   },
   {
-    question: "What are the current employer and employee ESIC contribution rates?",
+    question: "What is included in the total cost of ESIC registration?",
     answer:
-      "The employer contributes 3.25% of the employee's gross wages, and the employee contributes 0.75% of gross wages. Employees earning up to ₹137 per day (approximately ₹3,500 per month) are exempted from the employee contribution, though the employer's share remains payable.",
+      "There is no government fee for ESIC registration. Our professional fee covers advisory, document support, portal filing, Employer Code registration, employee IP registration assistance, and compliance guidance. Additional charges may apply for DSC procurement, if required.",
   },
   {
-    question: "On what salary is ESIC applicable?",
+    question: "How long does ESIC registration take?",
     answer:
-      "ESIC is applicable to employees drawing a monthly gross salary of up to ₹21,000 (₹25,000 for persons with disabilities). Employees earning above this threshold are not covered under ESIC.",
+      "ESIC registration is generally completed within 5–7 working days, subject to document availability and successful verification on the ESIC portal.",
   },
   {
-    question: "What benefits do employees get after ESIC Registration?",
+    question: "Why is employee family information important in ESIC registration?",
     answer:
-      "Covered employees and their families receive sickness benefit (70% of wages), maternity benefit, disablement benefit (90% of wages), medical care with no expenditure ceiling, funeral expenses (₹10,000), and unemployment allowance. These benefits apply from the date of coverage.",
+      "ESIC benefits are not limited to employees alone. Eligible family members may also receive medical and related benefits under the scheme. Therefore, proper family declaration and employee details are important for smooth benefit access and future claim support.",
   },
   {
-    question: "Are there any provisions relating to compliance after ESIC registration?",
+    question: "What benefits are available under the ESIC scheme?",
     answer:
-      "Yes. After registration, employers must file monthly ESI returns, deposit contributions by the 15th of every month, maintain attendance and wage registers, an inspection book, and an accident register. Delayed contributions attract interest and damages as prescribed by ESIC.",
+      "Eligible employees covered under ESIC may receive various benefits such as medical treatment, maternity benefits, sickness benefits, disablement benefits, dependent benefits, and other social security support as provided under the ESI Act. In many cases, medical benefits also extend to eligible family members of the insured employee.",
   },
   {
-    question: "What are the penal provisions for delayed ESIC payments?",
+    question: "Is ESIC registration mandatory in all locations in India?",
     answer:
-      "Delayed contributions attract simple interest at 12% per annum under Section 85B. Additionally, damages may be levied at 5–25% of arrears depending on the delay period. Failure to register can attract imprisonment of up to 3 years and/or fine under Section 85.",
+      "ESIC applicability may depend on the notified areas and categories prescribed by the government. In some locations or establishment categories, ESIC may not yet be applicable. Applicability should always be checked based on the establishment's location and nature of business.",
   },
   {
-    question: "Who regulates the ESI Scheme?",
+    question: "What are the ongoing compliances after ESIC registration?",
     answer:
-      "The Employees' State Insurance Scheme is regulated by the Employees' State Insurance Corporation (ESIC) under the Ministry of Labour and Employment, Government of India. ESIC operates through regional offices across India.",
+      "After registration, employers are generally required to maintain employee records, file monthly contributions, update employee details, and comply with periodic ESIC return filing and other applicable compliance requirements under the ESI Act.",
   },
   {
-    question: "Can an establishment with fewer than 10 employees register voluntarily?",
+    question: "How can Legal Terminus help with ESIC registration?",
     answer:
-      "Yes. Establishments with fewer than 10 employees can voluntarily register under ESIC with mutual consent of the employer and employees. Voluntary registration is often adopted to provide better benefits and attract talent. Once registered, compliance becomes mandatory.",
-  },
-  {
-    question: "How can Legal Terminus help with ESIC Registration?",
-    answer:
-      "Legal Terminus provides complete assistance for ESIC Registration — Form-1 filing, DSC coordination, employer code allotment, employee IP number generation, first contribution walkthrough, and ongoing compliance guidance. We handle both ESIC and EPF registrations simultaneously to reduce your compliance setup time.",
+      "Legal Terminus provides complete assistance for ESIC registration, including Employer Code registration, employee IP registration support, document preparation, portal filing, and compliance guidance. We also provide support for profile updates, employee corrections, and initial ESIC compliance assistance through dedicated professional support and transparent pricing.",
   },
 ];
 

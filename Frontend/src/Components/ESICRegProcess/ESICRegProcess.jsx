@@ -3,34 +3,39 @@ import "../PvtltdProcess/PvtltdProcess.css";
 
 const steps = [
   {
-    title: "Discovery & Eligibility Check",
+    title: "Discovery & Coverage Check",
     day: "Day 0",
-    text: "30-min call to confirm: current headcount, state of operations (10-employee threshold vs 20-employee states), industry category (factories, shops, restaurants, cinemas etc.), wage structure, and any existing EPFO registration (for simultaneous bundle).",
+    text: "30-min call with our payroll-expert to confirm: current headcount, projected hiring, entity type, industry (Factory / Shop / Notified), location (verify ESIC-notified area), wage structure (gross wages of each employee against ₹21K threshold), and existing GSTIN / PAN.",
   },
   {
     title: "Documents Collection",
-    day: "Day 1",
-    text: "Entity PAN, COI / Partnership Deed / GST Certificate, establishment address proof, cancelled cheque, authorised signatory's Aadhaar + PAN + photo. Employee roster with names, DOB, DOJ, wages, and Aadhaar numbers.",
+    day: "Day 1–2",
+    text: "Entity PAN, COI / Partnership Deed / GST Certificate, address proof of establishment, cancelled cheque, authorised signatory's Aadhaar + PAN + photo + appointment letter, list of covered employees with KYC.",
   },
   {
-    title: "ESIC Portal Sign-Up & Form-1 Filing",
-    day: "Day 2–3",
-    text: "Employer account created on the ESIC portal. Employer Registration Form-1 filed with establishment details, unit type, employee count, and wage structure. DSC-signed submission by authorised signatory.",
+    title: "Form 1 Filing on ESIC Portal",
+    day: "Day 3",
+    text: "Application filed on the ESIC portal. Establishment details, employer details, employee count, wage structure, contribution start date, industry classification. DSC-signed submission.",
   },
   {
     title: "Employer Code Allotment",
     day: "Day 3–5",
-    text: "ESIC regional office reviews Form-1. 17-digit Employer Code (ESIC Registration Number) allotted and sent via email. Registration Letter C-11 issued — acts as valid proof of ESIC registration.",
+    text: "ESIC regional office reviews the application. Employer Code (17-digit alphanumeric) allotted within 3–5 working days. Provisional code may be issued immediately, with permanent code following document verification.",
   },
   {
-    title: "Employee IP Number Generation",
-    day: "Day 5–7",
-    text: "For each covered employee, an Insurance Number (IP Number) is generated. Employee details — Aadhaar, bank account, nominee — linked to the IP number. ESIC Pehchan cards facilitated for covered employees.",
+    title: "Insurance Number (IP) Generation",
+    day: "Day 5–6",
+    text: "For each covered employee, we generate Insurance Number via Form 1A (Declaration). KYC linkage — Aadhaar + bank account — captured. Family declaration (spouse, parents, children) recorded for dependants' benefits.",
   },
   {
-    title: "First Contribution Challan Walkthrough",
-    day: "Day 7–10",
-    text: "We walk you through generating and paying the first monthly ESI challan on the portal. Contribution amount calculated as 3.25% (employer) + 0.75% (employee) of each covered employee's gross wages. Due by the 15th of every month.",
+    title: "Dispensary / Hospital Mapping",
+    day: "Day 6",
+    text: "Each employee mapped to the nearest ESIC dispensary based on residential address. Pehchan Card (photo identity for ESIC medical facilities) generated for employee + each dependent family member.",
+  },
+  {
+    title: "First Contribution Walkthrough + Onboarding Kit",
+    day: "Day 7",
+    text: "We walk you through the first monthly contribution (due by 15th of next month). Deliver onboarding kit: Employer Code certificate, IP list, Pehchan tracker, ESIC compliance calendar (monthly + half-yearly RC returns), 1-year free-update tracker.",
   },
 ];
 
@@ -41,7 +46,7 @@ const ESICRegProcess = () => {
         ESIC Registration Process for Employers
       </h2>
       <p className="pv-gst-subheading">
-        Six steps. 7–10 working days end-to-end for ESIC.
+        Seven steps. 5–7 working days end-to-end from kick-off to first successful monthly contribution.
       </p>
 
       <div className="pvtltd-timeline">
