@@ -6,6 +6,22 @@
   margin-right: auto;
 }
 
+/* Card border + hover lift animation */
+.epf-pricing-section .plan-card {
+  border: 1.5px solid rgba(34, 197, 94, 0.3);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.epf-pricing-section .plan-card--popular,
+.epf-pricing-section .plan-card--fullservice {
+  border: 2px solid rgba(34, 197, 94, 0.75);
+}
+
+.epf-pricing-section .plan-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(27, 179, 58, 0.18);
+}
+
 /* Badge floats above card border */
 .epf-pricing-section .plan-popular-badge,
 .epf-pricing-section .plan-fullservice-badge {
