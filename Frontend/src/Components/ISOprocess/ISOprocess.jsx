@@ -3,34 +3,54 @@ import "../PvtltdProcess/PvtltdProcess.css";
 
 const steps = [
   {
-    title: "Gap Analysis & Standard Selection",
+    title: "Discovery & Standard Selection",
     day: "Day 0",
-    text: "Our ISO consultant conducts a gap analysis of your existing processes against the chosen ISO standard (ISO 9001, 14001, 27001, 45001, or 22000). We identify areas of non-conformance, recommend the right standard for your business scope, and provide a personalised action plan.",
+    text: "60-min call with our senior consultant to confirm: business model, sector, customer expectations (which standard does your target customer / tender actually require?), employee count, sites, existing process maturity. We recommend single vs IMS approach.",
   },
   {
-    title: "Documentation & Management System Setup",
+    title: "Gap Analysis",
     day: "Day 1–7",
-    text: "Develop and document your Quality / Environmental / ISMS Management System: quality manual, Standard Operating Procedures (SOPs), process flow charts, work instructions, and mandatory records. We prepare all documentation required by the specific ISO standard and your audit scope.",
+    text: "On-site (or virtual) review of your existing processes against the chosen standard's requirements. We deliver a gap report listing what exists, what needs documentation, what needs new implementation.",
   },
   {
-    title: "Internal Audit & Management Review",
-    day: "Day 8–10",
-    text: "Conduct an internal audit against ISO standard requirements to identify any remaining non-conformities before the certifying body audit. Management review meeting is held to validate the system, confirm objectives are met, and sign off on audit-readiness.",
+    title: "Documentation Development",
+    day: "Day 8–21",
+    text: "Quality Manual + SOPs + Work Instructions + Forms + Records drafted — customised to your processes (not template-pasted). Process owners review each document.",
   },
   {
-    title: "Stage 1 Audit — Document Review",
-    day: "Day 11–14",
-    text: "The accredited ISO certifying body conducts a Stage 1 audit — a desk review of your management system documentation. Auditors confirm that scope, objectives, and documented processes meet the ISO standard requirements. Observations are raised and addressed before Stage 2.",
+    title: "Implementation & Training",
+    day: "Day 18–30",
+    text: "Process owners trained on the new SOPs. Quality Policy communicated. Document control + record-keeping rituals initiated. Risk register populated (Clause 6.1).",
   },
   {
-    title: "Stage 2 Audit — Certification Audit",
-    day: "Day 15–21",
-    text: "On-site certification audit by the accredited certifying body. Auditors verify that your management system is implemented effectively across all locations and functions covered in the scope. Corrective actions from Stage 1 must be closed before or during Stage 2.",
+    title: "Internal Audit",
+    day: "Day 30–35",
+    text: "We facilitate (or our trained internal auditor conducts) a full internal audit against the standard. Findings documented. Corrective actions agreed with process owners.",
   },
   {
-    title: "ISO Certificate Issued",
-    day: "Day 22–30",
-    text: "Upon successful Stage 2 audit and closure of all non-conformities, the accredited certifying body issues your ISO certificate. Valid for 3 years with mandatory annual surveillance audits. You can immediately use the ISO mark on proposals, packaging, and marketing materials.",
+    title: "Management Review",
+    day: "Day 35–37",
+    text: "Top management review meeting documented per the standard's requirement (Clause 9.3). KPIs reviewed, audit findings discussed, resource decisions taken. MoM signed.",
+  },
+  {
+    title: "CB Selection & Application",
+    day: "Day 37–40",
+    text: "We recommend 2–3 NABCB-accredited Certification Bodies appropriate to your size + sector + budget. You choose; we file the application with the chosen CB.",
+  },
+  {
+    title: "Stage 1 Audit (Documentation Review)",
+    day: "Day 40–45",
+    text: "CB auditor reviews your documentation, internal audit, management review — typically at your premises (1 day). Stage 1 closes with a brief report identifying any major gaps before Stage 2.",
+  },
+  {
+    title: "Stage 2 Audit (Implementation Review)",
+    day: "Day 45–55",
+    text: "CB auditor verifies that your documentation is actually being implemented — interviews staff, walks the floor, samples records. Typically 2–3 days. Closes with a closing meeting + nonconformity report.",
+  },
+  {
+    title: "Certificate Issuance + MSME Subsidy",
+    day: "Day 55–60",
+    text: "After NC closure (if any), CB issues the ISO Certificate — valid for 3 years. We help you prepare the MSME subsidy application (where eligible). Annual surveillance schedule confirmed.",
   },
 ];
 
@@ -39,7 +59,7 @@ const ISOProcess = () => {
     <section className="pvtltd-gst-wrapper">
       <h2 className="gst-heading">Steps for ISO Certification in India</h2>
       <p className="pv-gst-subheading">
-        Six steps. 22–30 days end-to-end (assuming audit-ready documentation and an experienced certification body).
+        Ten steps. 45–60 working days end-to-end (gap analysis to certificate). Sector + size + standard complexity drives the timeline.
       </p>
       <div className="pvtltd-timeline">
         <div className="pvtltd-timeline-line" />

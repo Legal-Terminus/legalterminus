@@ -3,58 +3,79 @@ import "../CopyPvtDocument/CopyPvtDocument.css";
 import {
   FaBuilding,
   FaClipboardList,
-  FaIdCard,
-  FaBolt,
+  FaUsers,
+  FaMapMarkerAlt,
+  FaHandshake,
+  FaFileAlt,
 } from "react-icons/fa";
 
 const leftDocs = [
   {
     icon: <FaBuilding />,
-    title: "Business Registration Documents",
-    note: "Legal existence of the organisation",
+    title: "Business Identity",
+    note: "Legal existence of the establishment",
     items: [
-      "Entity PAN card (mandatory)",
-      "Certificate of Incorporation / Partnership Deed / Proprietorship proof",
-      "GST Registration Certificate (if GST registered)",
-      "MSME Udyam Certificate (if applicable)",
-      "Scope of certification: description of products / services / processes",
+      "Entity PAN + Certificate of Incorporation / Partnership Deed / Proprietorship proof",
+      "GST Certificate",
+      "MSME / Udyam Certificate (critical for subsidy eligibility)",
+      "Trade Licence / Factory Licence / Shop & Establishment Certificate",
     ],
   },
   {
     icon: <FaClipboardList />,
-    title: "Management System Documents",
-    note: "Specific to the ISO standard being applied for",
+    title: "Existing Process Documentation",
+    note: "We adapt rather than replace wherever possible",
     items: [
-      "Quality / Environmental / ISMS Manual",
-      "Standard Operating Procedures (SOPs) & Work Instructions",
-      "Process flow charts and risk assessment / treatment records",
-      "Internal audit reports and corrective action records",
-      "Management review meeting minutes",
+      "Any existing SOPs, work instructions, quality manuals",
+      "ISO certificates (if renewing or upgrading)",
+      "Audit reports (internal or external, if any)",
+      "Whatever process documentation already exists",
+    ],
+  },
+  {
+    icon: <FaUsers />,
+    title: "Organisational Structure",
+    note: "Identification of Management Representative (MR) required",
+    items: [
+      "Org chart with designations + reporting lines",
+      "List of all departments / functions",
+      "Total employee count + breakdown by function",
+      "Identification of Management Representative (MR) — the person who will own the QMS internally",
     ],
   },
 ];
 
 const rightDocs = [
   {
-    icon: <FaIdCard />,
-    title: "Applicant Identity & Signatory Proof",
-    note: "Management representative / authorised signatory",
+    icon: <FaMapMarkerAlt />,
+    title: "Premises Layout & Sites",
+    note: "Each site in scope requires separate audit coverage",
     items: [
-      "Aadhaar and PAN of authorised signatory",
-      "Passport-size photograph (jpeg format)",
-      "Designation letter / Board Resolution authorising signatory",
-      "Email ID + mobile number (OTP-linked)",
+      "Office / factory layout plan",
+      "List of all operational sites (multiple sites = multiple audits)",
+      "For manufacturing: floor plan showing process flow + storage areas + waste management",
     ],
   },
   {
-    icon: <FaBolt />,
-    title: "Establishment Address Proof",
-    note: "Office / factory / facility address — not older than 60 days",
+    icon: <FaHandshake />,
+    title: "Customer & Supplier Profile",
+    note: "As on registration date",
     items: [
-      "Latest electricity / gas / utility bill (≤ 60 days old)",
-      "Owned premises: property tax receipt or sale deed",
-      "Rented premises: registered rent agreement + landlord NoC",
-      "Photograph of premises / facility for on-site audit",
+      "List of top 10–20 customers (sector, volume, criticality)",
+      "List of top 10–20 suppliers (critical inputs)",
+      "Customer complaint register (if any)",
+      "Customer satisfaction tracking method (if any)",
+    ],
+  },
+  {
+    icon: <FaFileAlt />,
+    title: "Quality / Statutory Declarations",
+    note: "We help draft these during implementation",
+    items: [
+      "Quality Policy statement (we will help draft)",
+      "Top management commitment letter",
+      "Compliance obligations list (legal / regulatory requirements applicable to your business)",
+      "Risk register (we will help populate per Clause 6.1)",
     ],
   },
 ];
@@ -85,7 +106,7 @@ const IsoInfographic = () => {
             Documents Required for ISO Certification in India
           </h2>
           <p className="cpvd-main-subtitle">
-            Get these ready and we'll take care of the rest. We send a standard-specific personalised checklist after the gap analysis call.
+            Six categories. Most documents come from the implementation (Quality Manual, SOPs, records); these are the inputs we need to start. We send a personalised checklist after the discovery call.
           </p>
         </div>
 
@@ -94,8 +115,8 @@ const IsoInfographic = () => {
             <div className="cpvd-col-header">
               <div className="cpvd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="cpvd-col-title">Business &amp; Management System Documents</h3>
-                <p className="cpvd-col-subtitle">Registration proof &amp; ISO-standard-specific documentation</p>
+                <h3 className="cpvd-col-title">Business Identity, Processes &amp; People</h3>
+                <p className="cpvd-col-subtitle">Registration proof, existing documentation &amp; org structure</p>
               </div>
             </div>
             <div className="cpvd-col-body">
@@ -107,10 +128,10 @@ const IsoInfographic = () => {
 
           <div className="cpvd-column">
             <div className="cpvd-col-header cpvd-col-header--office">
-              <div className="cpvd-col-header-icon"><FaIdCard /></div>
+              <div className="cpvd-col-header-icon"><FaHandshake /></div>
               <div>
-                <h3 className="cpvd-col-title">Applicant Identity &amp; Address Documents</h3>
-                <p className="cpvd-col-subtitle">Signatory proof &amp; establishment address documents</p>
+                <h3 className="cpvd-col-title">Premises, Customer Profile &amp; Declarations</h3>
+                <p className="cpvd-col-subtitle">Site layout, stakeholder info &amp; quality declarations</p>
               </div>
             </div>
             <div className="cpvd-col-body">
