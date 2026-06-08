@@ -19,13 +19,13 @@
 
 /* Card border + hover lift animation */
 .esic-pricing-section .plan-card {
-  border: 1.5px solid rgba(34, 197, 94, 0.3);
+  border: 2px solid rgba(34, 197, 94, 0.45);
   transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 .esic-pricing-section .plan-card--popular,
 .esic-pricing-section .plan-card--fullservice {
-  border: 2px solid rgba(34, 197, 94, 0.75);
+  border: 2px solid rgba(34, 197, 94, 0.45);
 }
 
 .esic-pricing-section .plan-card:hover {
