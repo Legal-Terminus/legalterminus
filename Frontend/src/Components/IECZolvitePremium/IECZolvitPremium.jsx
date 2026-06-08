@@ -41,27 +41,15 @@ const IECZolvitPremium = () => {
                 <ul className="ieczp-list ieczp-features-list">
                   <li className="ieczp-list-item">
                     <span className="ieczp-list-icon">⚡</span>
-                    IEC Registration filing on DGFT portal within 24 hours of receiving complete documents.
-                  </li>
-                  <li className="ieczp-list-item">
-                    <span className="ieczp-list-icon">✅</span>
-                    Expert verification of PAN, Aadhaar linkage, business details, and document readiness before filing.
+                    Expert verification of PAN, Aadhaar linkage, and document readiness — followed by IEC filing on the DGFT portal within 24 hours of receiving complete documents.
                   </li>
                   <li className="ieczp-list-item">
                     <span className="ieczp-list-icon">📱</span>
-                    Real-time application updates via Email and WhatsApp throughout the registration process.
-                  </li>
-                  <li className="ieczp-list-item">
-                    <span className="ieczp-list-icon">📑</span>
-                    Post-registration support including IEC Certificate, ICEGATE guidance, and basic import-export compliance resources.
+                    Real-time updates via Email and WhatsApp throughout the process, with post-registration support including IEC Certificate delivery and ICEGATE guidance.
                   </li>
                   <li className="ieczp-list-item">
                     <span className="ieczp-list-icon">🤝</span>
-                    Single point of contact for IEC, ICEGATE, AD Code, GST, Trademark, and other business registrations.
-                  </li>
-                  <li className="ieczp-list-item">
-                    <span className="ieczp-list-icon">🌐</span>
-                    Assistance in making your business import-export ready with smooth DGFT filing support.
+                    Single point of contact for IEC, ICEGATE, AD Code, GST, Trademark, and other registrations — helping your business become fully import-export ready.
                   </li>
                   <li className="ieczp-list-item">
                     <span className="ieczp-list-icon">⏱️</span>
