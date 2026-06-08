@@ -62,7 +62,6 @@ const StartupIndiaPricing = () => {
           <div className="pricing-cards si-three-plans">
 
             <article className="plan-card">
-              <div className="plan-normal-badge">NORMAL</div>
               <div>
                 <div className="plan-header">
                   <div className="plan-name">Elemental</div>

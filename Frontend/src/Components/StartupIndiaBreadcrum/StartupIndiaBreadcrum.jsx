@@ -16,7 +16,7 @@ const StartupIndiaBreadcrum = () => {
           <h1 className="lt-public-title">
             Startup India Registration
             <br />
-            <span className="lt-title-india">Get Startup India Recognition</span>
+            <span className="lt-public-subtitle">Get Startup India Recognition</span>
           </h1>
 
           <p className="lt-public-description">
