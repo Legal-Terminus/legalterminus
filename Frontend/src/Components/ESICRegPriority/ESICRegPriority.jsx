@@ -27,7 +27,7 @@ const ESICRegPriority = () => {
                   <span className="zp-title-icon">⚖</span>
                 </h2>
                 <p className="zp-subtitle">
-                  ESIC Registration looks like a simple portal form — until your first contribution bounces because an employee's Aadhaar isn't mobile-linked, or the employer code is mapped to the wrong regional office, or the DSC validation fails at submission. Priority is what happens when a compliance specialist owns your ESIC setup from Form-1 to first successful challan.
+                  ESIC Registration looks deceptively simple — until an Aadhaar mismatch blocks an Insurance Number at generation, or a wrong family declaration leaves an employee's dependent ineligible for medical benefits at the moment they need it most. Details that seem minor at the filing stage become compliance failures during inspections or employee grievances. LT Priority is a premium, fast-track service where a senior payroll expert owns your file end-to-end — from Form 1 submission to your first successful monthly contribution clearing without a rejection.
                 </p>
               </header>
 
@@ -36,23 +36,23 @@ const ESICRegPriority = () => {
                 <ul className="zp-list zp-features-list">
                   <li className="zp-list-item">
                     <span className="zp-list-icon">⚡</span>
-                    Priority processing of your ESIC Registration application upon receipt of complete documents.
+                    5-day SLA on Employer Code — Employer Code targeted for allotment within 5 working days of complete document submission.
                   </li>
                   <li className="zp-list-item">
                     <span className="zp-list-icon">✅</span>
-                    Senior compliance expert reviews Form-1 — correct establishment classification, industry type, wage ceiling, and contribution start date.
+                    Same-day file review and submission — documents verified and application submitted to ESIC on the same working day.
                   </li>
-                  <li className="zp-list-icon">
+                  <li className="zp-list-item">
                     <span className="zp-list-icon">🔄</span>
-                    Employee IP number activation + Aadhaar-bank KYC verification for every covered employee before first challan.
+                    Senior Payroll-expert ownership — one senior expert handles your file from Form 1 to final Employer Code, with full accountability.
                   </li>
                   <li className="zp-list-item">
                     <span className="zp-list-icon">📞</span>
-                    First ESI contribution challan walkthrough included — so your first monthly payment actually clears the ESIC portal.
+                    IP generation and family declaration within 3 days of Employer Code — all covered employees registered and dependants declared without delay.
                   </li>
                   <li className="zp-list-item">
                     <span className="zp-list-icon">📑</span>
-                    Real-time status updates via Email and WhatsApp throughout the registration process.
+                    Priority helpdesk — 4-hour response — any ESIC query or compliance issue addressed within 4 business hours.
                   </li>
                 </ul>
               </section>
@@ -65,16 +65,16 @@ const ESICRegPriority = () => {
             <div className="zp-note-box">
               <ul className="zp-note-list">
                 <li className="zp-note-item">
-                  ESIC registration must be completed within 15 days of becoming eligible (crossing 10-employee threshold). Delayed registration triggers Section 85B interest at 12% p.a. plus damages of 5–25% on arrears — calculated from the date of eligibility, not registration.
+                  Once your headcount touches 10, you have 15 days to register. Delayed registration attracts interest under Section 39(5) + damages under Section 85B — up to 25% of arrears. Don't wait until an Inspector visit catches you.
                 </li>
                 <li className="zp-note-item">
-                  Contract workers and temporary employees also count toward the 10-employee threshold under the ESI Act. Many employers miss this when calculating applicability, leading to unintentional non-compliance and retrospective liability.
+                  Family declaration matters more than people think. Dependants listed in the declaration are eligible for ESIC medical benefits + dependants' benefit (90% wages) in case of employment-related death. Wrong declaration = denied claims. We capture this carefully for every covered employee.
                 </li>
                 <li className="zp-note-item">
-                  Once registered, ESI coverage continues even if your headcount drops below the threshold. You cannot de-register unless the establishment closes. Plan your ESIC registration with long-term compliance costs in mind.
+                  ESIC coverage is geographic — implemented in stages. Some new industrial estates / Tier-3 cities may not yet be notified. If you're in an un-notified area but voluntarily covered, scope can be limited. We verify notified-area status before filing.
                 </li>
                 <li className="zp-note-item">
-                  ESIC and EPF registrations are often required simultaneously. We handle both in a single engagement — if you need EPF registration as well, mention it at the discovery call and we'll bundle the process to save time and cost.
+                  ESIC wage threshold (₹21,000) hasn't been revised since January 2017 — and is widely expected to be increased. When it is, more employees will become covered overnight without separate notification. Plan your payroll structure with this expansion risk in mind.
                 </li>
               </ul>
             </div>

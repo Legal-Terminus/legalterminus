@@ -18,13 +18,13 @@ const ESICRegOverview = () => {
           </div>
           <div className="pvt-intro-content">
             <h2 className="pvt-intro-title">
-              Overview of ESI Registration
+              Why Register for ESIC
             </h2>
             <p className="pvt-intro-text">
-              The Employees' State Insurance Act, 1948 is India's most comprehensive social security legislation for the organised workforce. It covers sickness, maternity, disability, and death risks for employees earning up to ₹21,000 per month. Once an establishment crosses 10 employees (or 20 in certain states), ESIC registration becomes mandatory — and the employer must contribute 3.25% of gross wages while the employee contributes 0.75%.
+              ESIC Registration isn't optional once you cross 10 employees in a notified area. The Employees' State Insurance Act, 1948 was India's first social security legislation — it provides covered employees and their families with comprehensive medical care, cash benefits during sickness / maternity / disability, and dependants' benefits in case of employment-related death. For employers, ESIC compliance is a statutory must-do; for employees earning gross wages up to ₹21,000, it's a genuine social-security net that they often only realise the value of when they actually need it.
             </p>
             <p className="pvt-intro-text">
-              ESIC is not just a compliance checkbox. It provides genuine value: unlimited medical care for the employee and family, 70% wage replacement during sickness, 90% of wages during permanent disability, and ₹10,000 funeral benefit. For employers, being ESIC-compliant signals a professional workplace — and avoids the heavy interest and damages that ESIC levies on non-compliant establishments.
+              ESIC contribution is also low for the employer — just 3.25% of gross wages. For that, your covered employees get free OPD + IPD care at ESIC dispensaries and hospitals for themselves and their family (spouse, parents, children), cash benefits during sickness (70% wages for up to 91 days), maternity benefits (100% wages for 26 weeks), disablement benefits (90% wages), dependants' benefits, and funeral expenses. Rupee-for-rupee, ESIC is one of the highest-value social-security contributions an employer makes.
             </p>
           </div>
         </div>
@@ -33,48 +33,54 @@ const ESICRegOverview = () => {
       {/* CONTRIBUTION TABLE */}
       <section className="pvt-compare-section">
         <div className="pvt-compare-container">
-          <h2 className="pvt-compare-title">ESI Contribution Structure &amp; Eligible Entities</h2>
+          <h2 className="pvt-compare-title">ESIC Contribution &amp; Coverage: The Deep Dive</h2>
           <p className="pvt-compare-subtitle">
-            Current rates for FY 2025-26. Contributions are on gross wages (basic + DA + allowances).
+            Lower contribution, broader benefit. Here's the actual structure for FY 2025-26:
           </p>
           <div className="pvt-compare-table-wrapper">
             <table className="pvt-compare-table">
               <thead>
                 <tr>
+                  <th>Parameter</th>
                   <th>Detail</th>
-                  <th>Employer</th>
-                  <th>Employee</th>
                   <th>Notes</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Contribution Rate</td>
+                  <td>Mandatory Coverage Threshold</td>
+                  <td>10+ employees in notified area</td>
+                  <td>Section 1(5); 20+ in some states</td>
+                </tr>
+                <tr>
+                  <td>Wage Coverage Limit</td>
+                  <td>Gross wages up to ₹21,000/month</td>
+                  <td>₹25,000 for persons with disabilities</td>
+                </tr>
+                <tr>
+                  <td>Employer Contribution</td>
                   <td>3.25% of gross wages</td>
+                  <td>On covered employees only</td>
+                </tr>
+                <tr>
+                  <td>Employee Contribution</td>
                   <td>0.75% of gross wages</td>
-                  <td>Revised periodically by ESIC</td>
+                  <td>Deducted from monthly salary</td>
                 </tr>
                 <tr>
-                  <td>Wage Ceiling</td>
-                  <td>Applicable up to ₹21,000/month</td>
-                  <td>Applicable up to ₹21,000/month</td>
-                  <td>₹25,000 for persons with disability</td>
+                  <td>Contribution Period</td>
+                  <td>April–September; October–March</td>
+                  <td>Half-yearly contribution periods</td>
                 </tr>
                 <tr>
-                  <td>Low-wage exemption</td>
-                  <td>Employer still contributes</td>
-                  <td>Nil (if ≤ ₹137/day)</td>
-                  <td>Employer's share always payable</td>
+                  <td>Monthly Remittance</td>
+                  <td>By 15th of next month</td>
+                  <td>Via ESIC challan</td>
                 </tr>
                 <tr>
-                  <td>Monthly due date</td>
-                  <td colSpan="2">15th of the following month</td>
-                  <td>Late payment = 12% p.a. interest</td>
-                </tr>
-                <tr>
-                  <td>Contribution period</td>
-                  <td colSpan="2">April–September / October–March</td>
-                  <td>Bi-annual benefit periods follow</td>
+                  <td>Half-Yearly Return</td>
+                  <td>By 11 May / 11 November</td>
+                  <td>Form 5 + 6 + 7</td>
                 </tr>
               </tbody>
             </table>
