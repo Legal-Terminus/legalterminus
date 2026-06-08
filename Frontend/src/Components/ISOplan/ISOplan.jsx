@@ -6,48 +6,51 @@ const PLANS = [
   {
     id: "iso-elemental",
     name: "Elemental",
-    oldPrice: "₹17,999",
+    oldPrice: "Rs.17,999",
     price: 12999,
     services: [
-      "ISO Standard Selection & Advisory",
-      "Gap Analysis & Current State Assessment",
-      "SOP & Policy Documentation Support",
-      "Certification Body (CB) Selection Assistance",
-      "Stage 1 & Stage 2 Audit Preparation Support",
-      "CB Application Filing Support",
-      "Certificate Follow-up & Delivery",
+      "Single standard: ISO 9001 / 14001 / 45001 (your choice)",
+      "Gap analysis + scope finalisation",
+      "Quality Manual + SOP drafting (process documentation)",
+      "Implementation training (1 session, on-site or virtual)",
+      "Internal audit + management review facilitation",
+      "Certification Body shortlisting + Stage 1 + 2 coordination",
+      "Certificate handover + MSME subsidy filing assistance",
+      "CB fees + travel at actuals (typically Rs.15K - 30K)",
     ],
   },
   {
     id: "iso-enriched",
     name: "Enriched",
     badge: "popular",
-    oldPrice: "₹32,999",
+    oldPrice: "Rs.32,999",
     price: 22999,
     services: [
       "Everything in Elemental",
-      "Internal Audit Checklist & Preparation",
-      "Corrective Action Plan (CAP) Drafting",
-      "Stage 2 Audit Readiness Review",
-      "Annual Surveillance Audit Advisory (Y1 & Y2)",
-      "Dedicated Expert Project Manager",
-      "Priority Email & Call Support",
+      "TWO standards: ISO 9001 + 14001 OR 9001 + 45001",
+      "Integrated Management System (IMS) documentation",
+      "Audit cycle synchronisation (one audit, two standards)",
+      "Sector-specific SOPs (manufacturing / service / retail)",
+      "Internal auditor training (1 staff member certified)",
+      "Surveillance Year-1 audit prep included",
+      "CB fees + travel at actuals (typically Rs.25K - 50K)",
     ],
   },
   {
     id: "iso-supreme",
     name: "Supreme",
     badge: "fullservice",
-    oldPrice: "₹49,999",
+    oldPrice: "Rs.49,999",
     price: 34999,
     services: [
       "Everything in Enriched",
-      "Multi-Standard ISO Support",
-      "On-Site Documentation Review (1 Visit)",
-      "Management Review Meeting Support",
-      "MSME Subsidy Application Assistance",
-      "Custom ISO Manual & Quality Policy Drafting",
-      "1-Year Post-Certification Compliance Support",
+      "THREE standards: ISO 9001 + 14001 + 45001 (full QHSE)",
+      "Or sector-specific: 9001 + 22000 (food) / 9001 + 27001 (IT)",
+      "Risk & opportunity register (Clause 6.1)",
+      "Process flow mapping + control of nonconformity SOPs",
+      "Lead Auditor training certification (1 staff)",
+      "Surveillance Year-1 + Year-2 audit prep included",
+      "CB fees + travel at actuals (typically Rs.45K - 90K)",
     ],
   },
 ];
@@ -95,7 +98,7 @@ const PricingSection = () => {
                       <div className="plan-price">
                         ₹{plan.price.toLocaleString("en-IN")}
                       </div>
-                      <div className="plan-meta">Excluding CB &amp; govt fees</div>
+                      <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                     </div>
 
                     <div className="plan-body">

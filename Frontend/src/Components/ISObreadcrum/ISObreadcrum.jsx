@@ -22,7 +22,7 @@ const Breadcrum = () => {
           </h1>
 
           <p className="lt-public-description">
-            ISO Certification is a globally recognised quality mark that validates your processes, boosts customer confidence, and positions your business for tenders, contracts, and international markets. Legal Terminus offers end-to-end ISO certification support — from standard selection and documentation to CB liaison and post-certification compliance — making the entire process simple, transparent, and affordable.
+            ISO Certification helps your business demonstrate quality, reliability, and professionalism. It can improve customer confidence, strengthen internal processes, and increase eligibility for government tenders, corporate contracts, and international business opportunities. At Legal Terminus, we provide end-to-end support for obtaining ISO Certification. Our team assists you with gap analysis, documentation preparation, process implementation, employee training, internal audits, and coordination with the Certification Body throughout the certification process. Our professional fee starts from ₹9,999 + GST. Certification Body (CB) fees are charged separately at actuals, and we help you choose a suitable accredited Certification Body based on your business requirements.
           </p>
 
           <div className="lt-public-features">

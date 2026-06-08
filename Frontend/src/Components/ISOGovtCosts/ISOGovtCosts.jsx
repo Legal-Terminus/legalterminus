@@ -3,45 +3,45 @@ import "../Section8GovtCosts/Section8GovtCosts.css";
 
 const rows = [
   {
-    head: "Government Registration Fee",
-    range: "₹0",
-    notes: "ISO certification has no government registration fee in India",
+    head: "Government Fee",
+    range: "Rs.0",
+    notes: "ISO is NOT a government registration - no govt fee anywhere",
   },
   {
-    head: "CB Audit — Stage 1 & 2 (Initial Certification)",
-    range: "₹15,000–₹90,000",
-    notes: "Charged by the Certification Body (CB); varies by standard, scope & employee count",
+    head: "Certification Body (Stage 1+2)",
+    range: "Rs.15,000 - Rs.90,000",
+    notes: "Varies by standard, employee count, accreditation (NABCB / UKAS / ANAB)",
   },
   {
-    head: "CB Surveillance Audit (Annual — Year 1 & Year 2)",
-    range: "₹5,000–₹40,000",
-    notes: "Approx. 50% of Stage 1+2 fees; payable directly to the CB each year",
+    head: "CB Surveillance Audit (per year)",
+    range: "Rs.5,000 - Rs.40,000",
+    notes: "Year 1 + Year 2; mandatory to keep certificate valid",
   },
   {
-    head: "CB Re-Certification Audit (End of 3-Year Cycle)",
-    range: "₹15,000–₹90,000",
-    notes: "Required at the end of Year 3 to renew the certificate for the next cycle",
+    head: "CB Re-Certification (Year 3)",
+    range: "Rs.15,000 - Rs.90,000",
+    notes: "Full re-audit at end of 3-year cycle",
   },
   {
-    head: "CB Auditor Travel & Per Diem (if applicable)",
-    range: "₹5,000–₹20,000",
-    notes: "Charged on actuals for on-site audits; not applicable for remote/desk audits",
+    head: "CB Auditor Travel + Per Diem",
+    range: "Rs.5,000 - Rs.20,000",
+    notes: "Borne by client; varies by location",
   },
   {
-    head: "MSME Subsidy on CB Fees (if eligible)",
-    range: "Up to ₹75,000",
-    notes: "Available to MSME-registered entities under government scheme; subject to approval",
+    head: "MSME Subsidy Reimbursement",
+    range: "Up to Rs.75,000",
+    notes: "Subsidy CLAIMED post-certification via MSME Office (75% reimbursement)",
   },
   {
-    head: "Net OOP — Elemental Plan (MSME entity)",
-    range: "₹5,000–₹10,000",
-    notes: "After MSME subsidy applied on CB fees; approximate out-of-pocket CB cost",
+    head: "Net Out-of-Pocket (Elemental, MSME)",
+    range: "Rs.5,000 - Rs.10,000",
+    notes: "After subsidy reimbursement; net of CB fees",
     isTotal: true,
   },
   {
-    head: "Net OOP — Supreme Plan (non-MSME)",
-    range: "₹45,000–₹90,000",
-    notes: "Total CB cost without subsidy; includes Stage 1+2 + travel for full-service scope",
+    head: "Net Out-of-Pocket (Supreme, non-MSME)",
+    range: "Rs.45,000 - Rs.90,000",
+    notes: "No subsidy for non-MSME; full CB cost",
     isTotal: true,
   },
 ];
@@ -50,11 +50,10 @@ const ISOGovtCosts = () => (
   <section className="govtcosts-section">
     <div className="govtcosts-container">
       <h2 className="govtcosts-title">
-        Government &amp; Certification Body Costs
-        <span className="govtcosts-badge">Transparent Pricing</span>
+        Indicative CB &amp; Out-of-Pocket Costs (Billed at Actuals)
       </h2>
       <p className="govtcosts-subtitle">
-        Legal Terminus professional fees are separate from Certification Body (CB) fees. The table below shows actual CB and government costs so you know the full picture before you commit.
+        Legal Terminus professional fees are separate from Certification Body (CB) fees. The table below shows typical CB and government costs so you have full clarity before committing.
       </p>
 
       <div className="govtcosts-table-wrapper">
@@ -62,7 +61,7 @@ const ISOGovtCosts = () => (
           <thead>
             <tr>
               <th>Cost Head</th>
-              <th>Amount / Range</th>
+              <th>Typical Range</th>
               <th>Notes</th>
             </tr>
           </thead>
