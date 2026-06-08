@@ -28,7 +28,7 @@ const StartupIndiaTabs = () => {
     <section className="pvt-tabs-section">
       <div className="pvt-tabs-container">
         <div className="pvt-tabs-card">
-          <div className="pvt-tabs-list">
+          <div className="pvt-tabs-list" style={{ justifyContent: "center" }}>
             {tabs.map((tab, index) => (
               <button
                 key={tab.id}
