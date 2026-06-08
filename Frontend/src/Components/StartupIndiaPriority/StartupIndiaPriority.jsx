@@ -26,7 +26,7 @@ const StartupIndiaPriority = () => {
                   <span className="opczp-title-highlight">Priority</span>{" "}
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
-                <p className="opczp-subtitle">
+                <p className="opczp-subtitle" style={{ textAlign: "left" }}>
                   LT Priority is designed for startups that want faster processing, priority handling, and dedicated professional support for their Startup India (DPIIT) Recognition application. While DPIIT recognition is an online process, many applications face delays or rejection due to weak business descriptions, improper documentation, or incorrect startup classification. With LT Priority, your application receives priority attention, faster coordination, and professional review before submission.
                 </p>
               </header>
@@ -36,23 +36,15 @@ const StartupIndiaPriority = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    Priority Application Filing – Faster drafting, review, and submission of your DPIIT application.
+                    Priority Application Filing – Faster drafting, review, submission and dedicated follow-up of your DPIIT application.
                   </li>
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">✅</span>
                     Expert Startup Profile Review – Business activity and innovation details professionally reviewed before filing.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    Faster Processing Support – Dedicated follow-up and priority coordination for quicker application handling.
-                  </li>
-                  <li className="opczp-list-item">
                     <span className="opczp-list-icon">📲</span>
-                    Real-Time Status Updates – Regular updates through Email and WhatsApp during the registration process.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">👨‍💼</span>
-                    Dedicated Professional Assistance – Direct support from assigned startup compliance professionals.
+                    Real-Time Updates &amp; Dedicated Assistance – Regular updates through Email and WhatsApp; direct support from assigned startup compliance professionals.
                   </li>
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">📑</span>

@@ -116,68 +116,6 @@ const StartupIndiaOverview = () => {
         </div>
       </section>
 
-      <section className="pvt-compare-section">
-        <div className="pvt-compare-container">
-          <h2 className="pvt-compare-title">DPIIT-Recognised vs. Unrecognised Startup: The Real Difference</h2>
-          <p className="pvt-compare-subtitle">
-            Here's what you're leaving on the table if you skip DPIIT recognition:
-          </p>
-          <div className="pvt-compare-table-wrapper">
-            <table className="pvt-compare-table">
-              <thead>
-                <tr>
-                  <th>Parameter</th>
-                  <th>DPIIT Recognised Startup</th>
-                  <th>Unrecognised Startup</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Income Tax</td>
-                  <td>0% for 3 of first 10 years (80-IAC, IMB approval)</td>
-                  <td>22–30% from Day 1</td>
-                </tr>
-                <tr>
-                  <td>Angel Tax (Sec 56(2)(viib))</td>
-                  <td>Exempt after filing Form 2 with DPIIT</td>
-                  <td>30% tax on premium above FMV on Indian investor rounds</td>
-                </tr>
-                <tr>
-                  <td>Patent Filing Fee</td>
-                  <td>80% rebate on government fee</td>
-                  <td>Full fee — up to ₹1.5L for a complete patent</td>
-                </tr>
-                <tr>
-                  <td>Labour Law Compliance</td>
-                  <td>Self-certification under 6 laws — no inspector visits</td>
-                  <td>Full compliance inspections from Day 1</td>
-                </tr>
-                <tr>
-                  <td>Government Tenders</td>
-                  <td>Priority access &amp; relaxed prior experience norms</td>
-                  <td>Standard rules — no relaxation</td>
-                </tr>
-                <tr>
-                  <td>SIDBI Fund of Funds</td>
-                  <td>Eligible for VC investment via SEBI-registered AIFs</td>
-                  <td>Not eligible</td>
-                </tr>
-                <tr>
-                  <td>Credit Guarantee Scheme</td>
-                  <td>CGSS covers up to ₹10 crore per borrower</td>
-                  <td>Not eligible for DPIIT-linked guarantee schemes</td>
-                </tr>
-                <tr>
-                  <td>Government Fee</td>
-                  <td>Nil (no fee for DPIIT recognition)</td>
-                  <td>N/A</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
     </div>
   );
 };

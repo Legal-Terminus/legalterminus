@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "../OPCPlans/OPCPlans.css";
+import "./StartupIndiaPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [

@@ -1,7 +1,10 @@
-.si-three-plans {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  max-width: 960px;
-  margin: 0 auto;
+.opcplan-card {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.opcplan-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(25, 180, 58, 0.18);
 }
 
 .plan-normal-badge {
@@ -16,16 +19,4 @@
   padding: 3px 12px;
   border-radius: 20px;
   text-align: center;
-}
-
-@media (max-width: 992px) {
-  .si-three-plans {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .si-three-plans {
-    grid-template-columns: 1fr;
-  }
 }
