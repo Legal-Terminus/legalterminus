@@ -11,6 +11,7 @@ const IECOverview = React.lazy(() => import('../../Components/IECOverview/IECOve
 const IECFeatures = React.lazy(() => import('../../Components/IECFeatures/IECFeatures'));
 const IECBenefits = React.lazy(() => import('../../Components/IECBenefits/IECBenefits'));
 const IECDocuments = React.lazy(() => import('../../Components/IECDocuments/IECDocuments'));
+const IECRequiredDocs = React.lazy(() => import('../../Components/IECRequiredDocs/IECRequiredDocs'));
 const IECFAQ = React.lazy(() => import('../../Components/IECFAQ/IECFAQ'));
 
 const IEC = () => {
@@ -75,6 +76,14 @@ const IEC = () => {
       <div id="process">
         <Suspense fallback={<div />}>
           <IECDocuments />
+        </Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <div id="documents">
+        <Suspense fallback={<div />}>
+          <IECRequiredDocs />
         </Suspense>
       </div>
 

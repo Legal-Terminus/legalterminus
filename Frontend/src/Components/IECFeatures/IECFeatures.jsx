@@ -1,62 +1,37 @@
 import React from "react";
-import "./IECFeatures.css";
-import featuresIllustration from "../../assets/iec.png";
+import "../CopyPvtTypes/CopyPvtTypes.css";
+
+const types = [
+  {
+    number: "01",
+    title: "Individual / Proprietorship IEC",
+    text: "Issued to individual traders or sole proprietors who import or export goods in their personal name. The IEC is linked to the proprietor's PAN. Ideal for small business owners, freelancers, and self-employed professionals engaging in international trade — no minimum turnover required.",
+  },
+  {
+    number: "02",
+    title: "Partnership / LLP IEC",
+    text: "Issued to registered partnership firms or Limited Liability Partnerships (LLPs) engaged in international trade. The IEC is issued in the firm's name using its PAN. Partners gain legal recognition for imports and exports under the firm's identity and can access DGFT export promotion schemes.",
+  },
+  {
+    number: "03",
+    title: "Company / Organisation IEC",
+    text: "Issued to Private Limited, Public Limited, One Person Companies, and other organisations engaging in import/export. Corporate IEC unlocks access to global markets, DGFT trade benefits, MEIS/SEIS export incentive schemes, and international payment gateway integration.",
+  },
+];
 
 const IECFeatures = () => {
   return (
-    <section className="iec-features-section">
-      <div className="iec-features-container">
-        {/* Left graphic */}
-        <div className="iec-features-illustration-wrap">
-          <img
-            src={featuresIllustration}
-            alt="Types of Import Export Code Registration"
-            className="iec-features-illustration"
-          />
-        </div>
-
-        {/* Right content */}
-        <div className="iec-features-content">
-          <h2 className="iec-features-title">
-            Types of Importer Exporter Code Registration in India
-          </h2>
-
-          <p className="iec-features-intro">
-            Importer Exporter Code (IEC) can be categorized based on the nature of business 
-            and the type of entity applying. Choosing the right registration ensures 
-            smooth compliance with DGFT and customs authorities while supporting 
-            your international trade goals.
-          </p>
-
-          {/* Type 1 */}
-          <div className="iec-features-block">
-            <h3 className="iec-features-subtitle">Individual / Proprietorship IEC</h3>
-            <p className="iec-features-text">
-              Ideal for small business owners or freelancers dealing with imports 
-              or exports in their own name. The IEC is issued using the proprietor’s 
-              PAN and business details, simplifying compliance for solo traders.
-            </p>
-          </div>
-
-          {/* Type 2 */}
-          <div className="iec-features-block">
-            <h3 className="iec-features-subtitle">Partnership / LLP IEC</h3>
-            <p className="iec-features-text">
-              This type is issued to registered partnership firms or LLPs engaging 
-              in international trade. The firm’s PAN is used, and partners gain 
-              legal recognition for imports and exports under the firm’s name.
-            </p>
-          </div>
-
-          {/* Type 3 */}
-          <div className="iec-features-block">
-            <h3 className="iec-features-subtitle">Company / Organization IEC</h3>
-            <p className="iec-features-text">
-              Designed for Private Limited, Public Limited, or One Person Companies 
-              that import or export goods and services. It allows access to global 
-              markets, trade benefits, and DGFT schemes for corporate entities.
-            </p>
-          </div>
+    <section className="cpvt-section">
+      <div className="cpvt-container">
+        <h2 className="cpvt-title">Types of IEC Registration in India</h2>
+        <div className="cpvt-cards">
+          {types.map((type) => (
+            <div className="cpvt-card" key={type.number}>
+              <div className="cpvt-number">{type.number}</div>
+              <h3 className="cpvt-card-title">{type.title}</h3>
+              <p className="cpvt-card-text">{type.text}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -1,82 +1,124 @@
 import React from "react";
-import "./ISOdocument.css";
+import "../CopyPvtDocument/CopyPvtDocument.css";
 import {
-  FaFileAlt,
   FaBuilding,
-  FaUserCheck,
   FaClipboardList,
-  FaCertificate,
+  FaIdCard,
+  FaBolt,
 } from "react-icons/fa";
 
-const isoData = [
+const leftDocs = [
   {
-    title: "Application Form",
-    desc: "Filled ISO certification application form with basic business details.",
-    icon: <FaFileAlt />,
-    color: "green",
-  },
-  {
-    title: "Business Address Proof",
-    desc: "Electricity bill, rent agreement or ownership proof.",
     icon: <FaBuilding />,
-    color: "teal",
+    title: "Business Registration Documents",
+    note: "Legal existence of the organisation",
+    items: [
+      "Entity PAN card (mandatory)",
+      "Certificate of Incorporation / Partnership Deed / Proprietorship proof",
+      "GST Registration Certificate (if GST registered)",
+      "MSME Udyam Certificate (if applicable)",
+      "Scope of certification: description of products / services / processes",
+    ],
   },
   {
-    title: "Identity Proof",
-    desc: "PAN, Aadhaar or Passport of business owner.",
-    icon: <FaUserCheck />,
-    color: "red",
-  },
-  {
-    title: "Process Documents",
-    desc: "Process flow, quality manual and SOP documents.",
     icon: <FaClipboardList />,
-    color: "orange",
-  },
-  {
-    title: "Certificate Copy",
-    desc: "Existing ISO certificate (if applying for renewal).",
-    icon: <FaCertificate />,
-    color: "blue",
+    title: "Management System Documents",
+    note: "Specific to the ISO standard being applied for",
+    items: [
+      "Quality / Environmental / ISMS Manual",
+      "Standard Operating Procedures (SOPs) & Work Instructions",
+      "Process flow charts and risk assessment / treatment records",
+      "Internal audit reports and corrective action records",
+      "Management review meeting minutes",
+    ],
   },
 ];
 
+const rightDocs = [
+  {
+    icon: <FaIdCard />,
+    title: "Applicant Identity & Signatory Proof",
+    note: "Management representative / authorised signatory",
+    items: [
+      "Aadhaar and PAN of authorised signatory",
+      "Passport-size photograph (jpeg format)",
+      "Designation letter / Board Resolution authorising signatory",
+      "Email ID + mobile number (OTP-linked)",
+    ],
+  },
+  {
+    icon: <FaBolt />,
+    title: "Establishment Address Proof",
+    note: "Office / factory / facility address — not older than 60 days",
+    items: [
+      "Latest electricity / gas / utility bill (≤ 60 days old)",
+      "Owned premises: property tax receipt or sale deed",
+      "Rented premises: registered rent agreement + landlord NoC",
+      "Photograph of premises / facility for on-site audit",
+    ],
+  },
+];
+
+const DocItem = ({ doc }) => (
+  <div className="cpvd-doc-item">
+    <div className="cpvd-doc-item-top">
+      <div className="cpvd-doc-icon">{doc.icon}</div>
+      <div className="cpvd-doc-meta">
+        <h4 className="cpvd-doc-title">{doc.title}</h4>
+        <span className="cpvd-doc-note">{doc.note}</span>
+      </div>
+    </div>
+    <ul className="cpvd-doc-list">
+      {doc.items.map((item, i) => (
+        <li key={i} className="cpvd-doc-list-item">{item}</li>
+      ))}
+    </ul>
+  </div>
+);
+
 const IsoInfographic = () => {
   return (
-    <section className="iso-infographic-section">
-      <h2 className="iso-main-heading">
-        Documents Required for ISO Certification In India
-      </h2>
-
-      <div className="iso-infographic-wrapper">
-        {/* CENTER CIRCLE */}
-        <div className="iso-center-circle">
-          <h3>
-            Documents Required
-            
-          </h3>
+    <section className="cpvd-section">
+      <div className="cpvd-container">
+        <div className="cpvd-header">
+          <h2 className="cpvd-main-title">
+            Documents Required for ISO Certification in India
+          </h2>
+          <p className="cpvd-main-subtitle">
+            Get these ready and we'll take care of the rest. We send a standard-specific personalised checklist after the gap analysis call.
+          </p>
         </div>
 
-        {/* ARC LINE */}
-        <div className="iso-arc-line"></div>
-
-        {/* DOTS ON ARC */}
-        <span className="iso-dot dot1"></span>
-        <span className="iso-dot dot2"></span>
-        <span className="iso-dot dot3"></span>
-        <span className="iso-dot dot4"></span>
-        <span className="iso-dot dot5"></span>
-
-        {/* INFOGRAPHIC ITEMS */}
-        <div className="iso-items">
-          {isoData.map((item, index) => (
-            <div className={`iso-card iso-${item.color}`} key={index}>
-              <div className="iso-icon">{item.icon}</div>
-              <h4>{item.title}</h4>
-              <p>{item.desc}</p>
-              <span className="iso-line"></span>
+        <div className="cpvd-columns">
+          <div className="cpvd-column">
+            <div className="cpvd-col-header">
+              <div className="cpvd-col-header-icon"><FaBuilding /></div>
+              <div>
+                <h3 className="cpvd-col-title">Business &amp; Management System Documents</h3>
+                <p className="cpvd-col-subtitle">Registration proof &amp; ISO-standard-specific documentation</p>
+              </div>
             </div>
-          ))}
+            <div className="cpvd-col-body">
+              {leftDocs.map((doc, i) => (
+                <DocItem key={i} doc={doc} />
+              ))}
+            </div>
+          </div>
+
+          <div className="cpvd-column">
+            <div className="cpvd-col-header cpvd-col-header--office">
+              <div className="cpvd-col-header-icon"><FaIdCard /></div>
+              <div>
+                <h3 className="cpvd-col-title">Applicant Identity &amp; Address Documents</h3>
+                <p className="cpvd-col-subtitle">Signatory proof &amp; establishment address documents</p>
+              </div>
+            </div>
+            <div className="cpvd-col-body">
+              {rightDocs.map((doc, i) => (
+                <DocItem key={i} doc={doc} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

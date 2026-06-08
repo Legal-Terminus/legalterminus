@@ -1,69 +1,59 @@
 import React from "react";
-import "./ISOprocess.css";
+import "../PvtltdProcess/PvtltdProcess.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
-    text:
-      "Provision of requisite documents / information to us (as per the checklist to be provided by us).",
+    title: "Gap Analysis & Standard Selection",
+    day: "Day 0",
+    text: "Our ISO consultant conducts a gap analysis of your existing processes against the chosen ISO standard (ISO 9001, 14001, 27001, 45001, or 22000). We identify areas of non-conformance, recommend the right standard for your business scope, and provide a personalised action plan.",
   },
   {
-    title: "Step 2 – Company Name & Objects Finalization",
-    text:
-      "Finalisation of objects along with name of the proposed company (based on a search report duly conducted and provided by our team).",
+    title: "Documentation & Management System Setup",
+    day: "Day 1–7",
+    text: "Develop and document your Quality / Environmental / ISMS Management System: quality manual, Standard Operating Procedures (SOPs), process flow charts, work instructions, and mandatory records. We prepare all documentation required by the specific ISO standard and your audit scope.",
   },
   {
-    title: "Step 3 – Name Reservation Application",
-    text:
-      "Filing of application for name reservation in requisite e-form along with applicable government fees.",
+    title: "Internal Audit & Management Review",
+    day: "Day 8–10",
+    text: "Conduct an internal audit against ISO standard requirements to identify any remaining non-conformities before the certifying body audit. Management review meeting is held to validate the system, confirm objectives are met, and sign off on audit-readiness.",
   },
   {
-    title: "Step 4 – Digital Signature Certificates",
-    text:
-      "Preparation of requisite numbers of DSC with respect to the proposed promoters & directors and registration of DSC in the MCA portal.",
+    title: "Stage 1 Audit — Document Review",
+    day: "Day 11–14",
+    text: "The accredited ISO certifying body conducts a Stage 1 audit — a desk review of your management system documentation. Auditors confirm that scope, objectives, and documented processes meet the ISO standard requirements. Observations are raised and addressed before Stage 2.",
   },
   {
-    title: "Step 5 – Incorporation Document Preparation",
-    text:
-      "Preparation of further incorporation documents upon receipt of the name approval letter from the department.",
+    title: "Stage 2 Audit — Certification Audit",
+    day: "Day 15–21",
+    text: "On-site certification audit by the accredited certifying body. Auditors verify that your management system is implemented effectively across all locations and functions covered in the scope. Corrective actions from Stage 1 must be closed before or during Stage 2.",
   },
   {
-    title: "Step 6 – Final Form Upload & Fee Payment",
-    text:
-      "Uploading of final incorporation forms to the MCA portal along with applicable government fees.",
-  },
-  {
-    title: "Step 7 – Registration Certificate Issuance",
-    text:
-      "Processing of the application by the department and issuance of the registration certificate.",
+    title: "ISO Certificate Issued",
+    day: "Day 22–30",
+    text: "Upon successful Stage 2 audit and closure of all non-conformities, the accredited certifying body issues your ISO certificate. Valid for 3 years with mandatory annual surveillance audits. You can immediately use the ISO mark on proposals, packaging, and marketing materials.",
   },
 ];
 
-const GSTProcess = () => {
+const ISOProcess = () => {
   return (
     <section className="pvtltd-gst-wrapper">
-      <h2 className="gst-heading">
-        STEPS FOR ISO CERTIFICATION IN INDIA
-      </h2>
+      <h2 className="gst-heading">Steps for ISO Certification in India</h2>
       <p className="pv-gst-subheading">
-        The broad process of registering a Private Limited company involves
-        the following steps:
+        Six steps. 22–30 days end-to-end (assuming audit-ready documentation and an experienced certification body).
       </p>
-
       <div className="pvtltd-timeline">
         <div className="pvtltd-timeline-line" />
-
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`pvtltd-timeline-item ${
-              index % 2 === 0 ? "left" : "right"
-            }`}
+            className={`pvtltd-timeline-item ${index % 2 === 0 ? "left" : "right"} ${index === 0 ? "first" : ""} ${index === steps.length - 1 ? "last" : ""}`}
           >
             <div className="pvtltd-timeline-dot">{index + 1}</div>
-
             <div className="pvtltd-timeline-card">
-              <h4>{step.title}</h4>
+              <h4>
+                {step.title}
+                {step.day && <span className="pvtltd-day-tag">{step.day}</span>}
+              </h4>
               <p>{step.text}</p>
             </div>
           </div>
@@ -73,4 +63,4 @@ const GSTProcess = () => {
   );
 };
 
-export default GSTProcess;
+export default ISOProcess;
