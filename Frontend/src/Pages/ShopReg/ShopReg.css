@@ -76,7 +76,7 @@ p[class*="tagline"] {
 }
 
 /* ===== FORM CARD — green glow shadow ===== */
-.shop-page-hero .lt-public-form-card {
+.shop-page-hero .cf-card {
   border: 1px solid rgba(34, 197, 94, 0.55);
   box-shadow:
     0 0 0 1px rgba(34, 197, 94, 0.15) inset,
@@ -86,9 +86,8 @@ p[class*="tagline"] {
 }
 
 /* Form inputs & selects — green border */
-.shop-page-hero .lt-public-form input,
-.shop-page-hero .lt-public-form select {
-  border: 1px solid #4ade80;
+.shop-page-hero .cf-input {
+  border: 1.5px solid #4ade80;
 }
 
 /* ===== PRICING CARDS — solid green border ===== */

@@ -1,75 +1,65 @@
-import React from 'react';
-import './ShopRegBreadcrum.css';
-import bgImage from '../../assets/breadcrum.png';
+import React from "react";
+import "../Breadcrum/Breadcrum.css";
+import ConsultationForm from "../ConsultationForm/ConsultationForm";
 
-import ConsultationForm from '../ConsultationForm/ConsultationForm';
-const Breadcrum = () => {
+const ShopRegBreadcrum = () => {
   return (
-    <section
-      className="breadcrum"
-      style={{ '--bg': `url(${bgImage})` }}
-    >
-      <div className="reg-breadcrum-inner">
-        {/* LEFT PANEL */}
-        <div className="reg-breadcrum-left-panel">
-         <h1 className="reg-breadcrum-title">
-              <span className="reg-breadcrum-orange">SHOP & COMMERCIAL ESTABLISHMENTS Registration Online</span>{' '}
-              <span className="reg-breadcrum-black">in India</span>
-            </h1>
+    <section className="lt-public-hero">
+      <div className="lt-public-container">
 
-          <h3 className="reg-breadcrum-subtitle">
-            <strong>Save 50% Today</strong>{' '}
-            <span>
-              on <strong>Professional Services</strong>
-            </span>
-          </h3>
+        {/* LEFT CONTENT */}
+        <div className="lt-public-content">
 
-          <p className="reg-breadcrum-desc">
-            Legal Terminus can help you with Private Limited Company registration, as and when required, in a hassle-free manner within a reasonable time span. We provide competitive professional fees starting at Rs. 3,999/- for your needs in private limited company registration in India. 
+          <span className="lt-public-tag">
+            Shop &amp; Commercial Establishments Registration
+          </span>
+
+          <h1 className="lt-public-title">
+            Shop &amp; Commercial Establishments Registration
+            <span className="lt-title-india"> in India</span>
+            <br />
+            <span className="lt-public-subtitle">Fast, Secure &amp; 100% Online</span>
+          </h1>
+
+          <p className="lt-public-description">
+            The Shop &amp; Commercial Establishments Act is a state-level labour law that mandates every shop, office, hotel, restaurant, warehouse, and place of public entertainment to register with the local government authority. The registration certificate is your business's first official identity — required for opening a current bank account, obtaining GST, applying for trade licences, and qualifying for MSME / Udyam benefits. Government fee in Odisha is capped at ₹600 per branch per year. Registration is 100% online in most states.
           </p>
 
-          <h4 className="reg-breadcrum-included">What's Included?</h4>
-
-          <div className="reg-breadcrum-features">
-            <ul className="reg-breadcrum-col">
-              <li>Registration in 1-2 Weeks</li>
-              <li>MCA Name Approval</li>
-              <li>DSC in 2-4 Days</li>
-            </ul>
-            <ul className="reg-breadcrum-col">
-              <li>DIN, PAN, and SPICE+ Compliance</li>
-              <li>MOA &amp; AOA Drafting</li>
-            </ul>
+          <div className="lt-public-features">
+            <div className="lt-feature-item">State Government Certificate</div>
+            <div className="lt-feature-item">Legal Business Identity</div>
+            <div className="lt-feature-item">Labour Law Compliance</div>
+            <div className="lt-feature-item">Bank Account &amp; GST Ready</div>
           </div>
 
-          <p className="reg-breadcrum-note">
-            <span className="reg-breadcrum-star">★</span>
-            Register 100+ Companies Every Month + Save 18% with GST Registration
-          </p>
-
-          <div className="reg-breadcrum-cta-row">
-            <button className="reg-breadcrum-schedule-btn">Book a Schedule ➜</button>
-
-            <div className="reg-breadcrum-reviews">
-              <div className="reg-breadcrum-google">
-                <img src="https://corpbiz.io/img/google.webp" alt="" />
-              </div>
-              <div className="reg-breadcrum-trustpilot">
-                <img src="https://corpbiz.io/img/trustpilot.webp" alt="" />
-                
-              </div>
+          <div className="lt-public-highlights">
+            <div>
+              <h3>500+</h3>
+              <p>Establishments registered</p>
+            </div>
+            <div>
+              <h3>All States</h3>
+              <p>Pan-India coverage</p>
+            </div>
+            <div>
+              <h3>7+</h3>
+              <p>Years of Legal Expertise</p>
             </div>
           </div>
+
         </div>
 
         {/* RIGHT FORM */}
-        <ConsultationForm
-          source="shop-establishment"
-          subtitle="Talk to our expert"
-        />
+        <div id="shop-consult-form">
+          <ConsultationForm
+            source="shop-establishment"
+            subtitle="Talk to our Shop & Establishment registration expert"
+          />
+        </div>
+
       </div>
     </section>
   );
 };
 
-export default Breadcrum;
+export default ShopRegBreadcrum;
