@@ -1,75 +1,65 @@
-import React from 'react';
-import './EsicRegBreadcrum.css';
-import bgImage from '../../assets/breadcrum.png';
+import React from "react";
+import "../EPFRegBreadcrum/EPFRegBreadcrum.css";
+import ConsultationForm from "../ConsultationForm/ConsultationForm";
 
-import ConsultationForm from '../ConsultationForm/ConsultationForm';
-const Breadcrum = () => {
+const EsicRegBreadcrum = () => {
   return (
-    <section
-      className="breadcrum"
-      style={{ '--bg': `url(${bgImage})` }}
-    >
-      <div className="reg-breadcrum-inner">
-        {/* LEFT PANEL */}
-        <div className="reg-breadcrum-left-panel">
-         <h1 className="reg-breadcrum-title">
-              <span className="reg-breadcrum-orange">ESIC Registration Online</span>{' '}
-              <span className="reg-breadcrum-black">in India</span>
-            </h1>
+    <section className="lt-public-hero">
+      <div className="lt-public-container">
 
-          <h3 className="reg-breadcrum-subtitle">
-            <strong>Save 50% Today</strong>{' '}
-            <span>
-              on <strong>Professional Services</strong>
-            </span>
-          </h3>
+        {/* LEFT CONTENT */}
+        <div className="lt-public-content">
 
-          <p className="reg-breadcrum-desc">
-            Legal Terminus can help you with Private Limited Company registration, as and when required, in a hassle-free manner within a reasonable time span. We provide competitive professional fees starting at Rs. 3,999/- for your needs in private limited company registration in India. 
+          <span className="lt-public-tag">
+            ESIC Registration Online
+          </span>
+
+          <h1 className="lt-public-title">
+            ESIC Registration Online
+            <span className="lt-title-india"> in India</span>
+            <br />
+            <span className="lt-public-subtitle">ESI Reg — That Keeps Your Workforce Protected</span>
+          </h1>
+
+          <p className="lt-public-description">
+            ESIC Registration is mandatory for establishments employing 10 or more employees (in most states) under the Employees' State Insurance Act, 1948. Once registered, every eligible employee gets access to comprehensive medical care, sickness benefits, maternity benefits, disability cover, and EDLI-style insurance — all funded through a combined employer (3.25%) + employee (0.75%) contribution on basic wages. Legal Terminus handles the entire ESIC registration process — from portal sign-up and Form-1 filing to 17-digit Employer Code allotment, employee IP number generation, and first contribution walkthrough.
           </p>
 
-          <h4 className="reg-breadcrum-included">What's Included?</h4>
-
-          <div className="reg-breadcrum-features">
-            <ul className="reg-breadcrum-col">
-              <li>Registration in 1-2 Weeks</li>
-              <li>MCA Name Approval</li>
-              <li>DSC in 2-4 Days</li>
-            </ul>
-            <ul className="reg-breadcrum-col">
-              <li>DIN, PAN, and SPICE+ Compliance</li>
-              <li>MOA &amp; AOA Drafting</li>
-            </ul>
+          <div className="lt-public-features">
+            <div className="lt-feature-item">Mandatory for 10+ Employees</div>
+            <div className="lt-feature-item">17-Digit Employer Code</div>
+            <div className="lt-feature-item">Medical & Sickness Benefits</div>
+            <div className="lt-feature-item">Monthly ESI Compliance Support</div>
           </div>
 
-          <p className="reg-breadcrum-note">
-            <span className="reg-breadcrum-star">★</span>
-            Register 100+ Companies Every Month + Save 18% with GST Registration
-          </p>
-
-          <div className="reg-breadcrum-cta-row">
-            <button className="reg-breadcrum-schedule-btn">Book a Schedule ➜</button>
-
-            <div className="reg-breadcrum-reviews">
-              <div className="reg-breadcrum-google">
-                <img src="https://corpbiz.io/img/google.webp" alt="" />
-              </div>
-              <div className="reg-breadcrum-trustpilot">
-                <img src="https://corpbiz.io/img/trustpilot.webp" alt="" />
-                
-              </div>
+          <div className="lt-public-highlights">
+            <div>
+              <h3>300+</h3>
+              <p>ESIC establishments registered</p>
+            </div>
+            <div>
+              <h3>Pan-India</h3>
+              <p>ESIC regional offices covered</p>
+            </div>
+            <div>
+              <h3>7+</h3>
+              <p>Years of Legal Expertise</p>
             </div>
           </div>
+
         </div>
 
         {/* RIGHT FORM */}
-        <ConsultationForm
-          source="esic-registration"
-          subtitle="Talk to our expert"
-        />
+        <div id="esic-consult-form">
+          <ConsultationForm
+            source="esic-registration"
+            subtitle="Talk to our ESIC Registration expert"
+          />
+        </div>
+
       </div>
     </section>
   );
 };
 
-export default Breadcrum;
+export default EsicRegBreadcrum;

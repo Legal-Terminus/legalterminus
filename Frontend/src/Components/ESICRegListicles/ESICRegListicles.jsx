@@ -1,93 +1,148 @@
 import React from "react";
-import "./ESICRegListicles.css";
+import "../CopyPvtDocument/CopyPvtDocument.css";
+import {
+  FaBuilding,
+  FaUser,
+  FaBolt,
+  FaMoneyBillWave,
+  FaIdCard,
+  FaFileContract,
+} from "react-icons/fa";
 
-const ESIDocuments = () => {
+const leftDocs = [
+  {
+    icon: <FaBuilding />,
+    title: "Entity Registration Proof",
+    note: "Legal existence of the establishment",
+    items: [
+      "Certificate of Incorporation (Pvt Ltd / LLP) OR Partnership Deed OR Trade Licence",
+      "MOA & AOA (for companies)",
+      "GST Registration Certificate",
+      "Entity PAN Card",
+    ],
+  },
+  {
+    icon: <FaUser />,
+    title: "Authorised Signatory Documents",
+    note: "Per signatory — Aadhaar must be mobile-linked",
+    items: [
+      "Aadhaar of authorised signatory (mobile-linked for OTP / DSC)",
+      "PAN Card",
+      "Photograph",
+      "Board Resolution or designation letter authorising signatory",
+      "Email ID + mobile number",
+    ],
+  },
+  {
+    icon: <FaBolt />,
+    title: "Establishment Address Proof",
+    note: "Utility bill not older than 60 days",
+    items: [
+      "Latest electricity / gas / municipal bill (≤ 60 days old)",
+      "Rent agreement (if rented)",
+      "NoC from property owner",
+      "Photograph of establishment front-board",
+    ],
+  },
+];
+
+const rightDocs = [
+  {
+    icon: <FaMoneyBillWave />,
+    title: "Bank Account Details",
+    note: "Used for ESIC refunds and challan reconciliation",
+    items: [
+      "Cancelled cheque OR bank passbook first page (with IFSC + account holder name)",
+      "Current account preferred (savings acceptable for proprietorship)",
+    ],
+  },
+  {
+    icon: <FaIdCard />,
+    title: "Employee Details (per employee)",
+    note: "For all covered employees earning ≤ ₹21,000/month",
+    items: [
+      "Name + Father's/Husband's name + Date of Birth",
+      "Aadhaar number (mobile-linked)",
+      "Date of joining + Designation + Monthly gross wages",
+      "Bank account with IFSC",
+      "Nominee details",
+      "Insurance Number (if previously registered with ESIC)",
+    ],
+  },
+  {
+    icon: <FaFileContract />,
+    title: "Wage & Attendance Records",
+    note: "Required for payroll verification and ECR setup",
+    items: [
+      "Attendance register",
+      "Wage register (basic + DA + HRA + allowances)",
+      "Appointment letters",
+      "List of all employees with designations",
+    ],
+  },
+];
+
+const DocItem = ({ doc }) => (
+  <div className="cpvd-doc-item">
+    <div className="cpvd-doc-item-top">
+      <div className="cpvd-doc-icon">{doc.icon}</div>
+      <div className="cpvd-doc-meta">
+        <h4 className="cpvd-doc-title">{doc.title}</h4>
+        <span className="cpvd-doc-note">{doc.note}</span>
+      </div>
+    </div>
+    <ul className="cpvd-doc-list">
+      {doc.items.map((item, i) => (
+        <li key={i} className="cpvd-doc-list-item">{item}</li>
+      ))}
+    </ul>
+  </div>
+);
+
+const ESICRegListicles = () => {
   return (
-    <section className="esi-doc-section">
-      <div className="esi-doc-container">
+    <section className="cpvd-section">
+      <div className="cpvd-container">
 
-        {/* PART 1 */}
-        <div className="esi-doc-block">
-          <h2 className="esi-doc-title">
-            What are the Documents Required for ESI Registration in India?
-          </h2>
-
-          <p className="esi-doc-intro">
-            Since the registration process is completely online, no physical
-            documents are required. The following documents are needed during
-            online filing:
+        <div className="cpvd-header">
+          <h2 className="cpvd-main-title">Documents Required for ESIC Registration in India</h2>
+          <p className="cpvd-main-subtitle">
+            Six categories. Establishment-level docs apply to the entity; per-employee docs apply to every covered employee (earning ≤ ₹21,000/month). We send a personalised checklist after the discovery call.
           </p>
-
-          <ul className="esi-doc-list">
-            <li>Registration certificate under Factories Act / Shops Act</li>
-            <li>Company registration certificate / Partnership deed</li>
-            <li>Copy of Bank Statement</li>
-            <li>Copy of License issued in establishment name</li>
-            <li>MOA & AOA of the Company</li>
-            <li>List of all employees</li>
-            <li>Electricity Bill copy</li>
-            <li>Rent / Lease Agreement</li>
-            <li>PAN of business and employees</li>
-            <li>Board Resolution</li>
-            <li>Employee compensation details</li>
-            <li>Cancelled cheque of company bank account</li>
-            <li>List of Directors & Shareholders</li>
-            <li>Attendance register of employees</li>
-          </ul>
         </div>
 
-        {/* PART 2 */}
-        <div className="esi-doc-block">
-          <h3 className="esi-doc-subtitle">
-            If any employee is already registered under ESIC
-          </h3>
+        <div className="cpvd-columns">
 
-          <ul className="esi-doc-list">
-            <li>Employee Insurance Number</li>
-            <li>Date of Appointment</li>
-          </ul>
+          <div className="cpvd-column">
+            <div className="cpvd-col-header">
+              <div className="cpvd-col-header-icon"><FaBuilding /></div>
+              <div>
+                <h3 className="cpvd-col-title">Entity, Signatory &amp; Address Documents</h3>
+                <p className="cpvd-col-subtitle">Identity, authorisations &amp; establishment proof</p>
+              </div>
+            </div>
+            <div className="cpvd-col-body">
+              {leftDocs.map((doc, i) => (
+                <DocItem key={i} doc={doc} />
+              ))}
+            </div>
+          </div>
 
-          <h3 className="esi-doc-subtitle">
-            If employee is not registered with ESIC
-          </h3>
+          <div className="cpvd-column">
+            <div className="cpvd-col-header cpvd-col-header--office">
+              <div className="cpvd-col-header-icon"><FaIdCard /></div>
+              <div>
+                <h3 className="cpvd-col-title">Banking, Employee &amp; Payroll Records</h3>
+                <p className="cpvd-col-subtitle">Bank details, employee KYC &amp; wage records</p>
+              </div>
+            </div>
+            <div className="cpvd-col-body">
+              {rightDocs.map((doc, i) => (
+                <DocItem key={i} doc={doc} />
+              ))}
+            </div>
+          </div>
 
-          <ul className="esi-doc-list">
-            <li>Name of employee</li>
-            <li>Father’s / Husband’s name</li>
-            <li>Address</li>
-            <li>Date of Birth</li>
-            <li>Date of Appointment</li>
-            <li>Nominee details</li>
-            <li>Bank account details (IFSC, branch, account number)</li>
-            <li>Employer code number</li>
-          </ul>
-        </div>
-
-        {/* PART 3 */}
-        <div className="esi-doc-block">
-          <h3 className="esi-doc-subtitle">
-            Details of Previous Employer
-          </h3>
-
-          <ul className="esi-doc-list">
-            <li>Name of employer</li>
-            <li>Employer Insurance Number</li>
-            <li>Employer code number</li>
-            <li>Contact number</li>
-            <li>Address of employer</li>
-          </ul>
-
-          <h3 className="esi-doc-subtitle">
-            Details of Current Employer
-          </h3>
-
-          <ul className="esi-doc-list">
-            <li>Employer code number</li>
-            <li>Employer Insurance Number</li>
-            <li>Name of employer</li>
-            <li>Address of employer</li>
-            <li>Contact number of employee</li>
-          </ul>
         </div>
 
       </div>
@@ -95,4 +150,4 @@ const ESIDocuments = () => {
   );
 };
 
-export default ESIDocuments;
+export default ESICRegListicles;

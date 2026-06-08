@@ -1,77 +1,74 @@
 import React from "react";
-import "./ESICRegPenalties.css";
+import "../Section8GovtCosts/Section8GovtCosts.css";
 
-const ESICompliance = () => {
+const rows = [
+  {
+    head: "Non-registration penalty",
+    detail: "Up to ₹10,000 under Section 85(a)",
+    notes: "Per instance; ESIC can also initiate suo-motu coverage",
+  },
+  {
+    head: "Delayed contribution — interest",
+    detail: "12% per annum under Section 85B",
+    notes: "Calculated daily on outstanding amount",
+  },
+  {
+    head: "Delayed contribution — damages",
+    detail: "5% (≤2 months) / 10% (2–4 m) / 15% (4–6 m) / 25% (>6 m)",
+    notes: "On arrears of contribution; compounds quickly",
+  },
+  {
+    head: "False return / concealment",
+    detail: "Fine up to ₹2,000 + imprisonment up to 1 year",
+    notes: "Section 85(c) — intentional non-disclosure",
+  },
+  {
+    head: "Obstruction of ESIC inspector",
+    detail: "Fine up to ₹2,000",
+    notes: "Section 85(d)",
+  },
+  {
+    head: "Monthly compliance (post-registration)",
+    detail: "Contribution by 15th of following month",
+    notes: "Form 6 register, attendance register, accident register",
+  },
+];
+
+const ESICRegPenalties = () => {
   return (
-    <section className="esi-comp-section">
-      <div className="esi-comp-container">
+    <section className="govtcosts-section">
+      <div className="govtcosts-container">
+        <h2 className="govtcosts-title">
+          Penalties &amp; Post-Registration Compliance
+          <span className="govtcosts-badge">Section 85 / 85B</span>
+        </h2>
+        <p className="govtcosts-subtitle">
+          Non-compliance with ESIC is expensive. Here's the penalty structure and ongoing compliance obligations once you're registered:
+        </p>
 
-        {/* BLOCK 1 – PENALTY & COMPLIANCE */}
-        <div className="esi-comp-card">
-          <h2 className="esi-comp-title">
-            Penalty in Failure to get ESI Registration & Returns
-          </h2>
-
-          <p className="esi-comp-text">
-            In case of non-compliance such as failure to obtain ESIC employer
-            registration or non-filing of ESI returns, the employer is liable to
-            a penalty of <strong>₹10,000</strong>.
-          </p>
-
-          <h3 className="esi-comp-subtitle">
-            Post-Registration Compliances under ESI
-          </h3>
-
-          <ul className="esi-comp-list">
-            <li>Maintenance of attendance register</li>
-            <li>Complete register of wages</li>
-            <li>Inspection book</li>
-            <li>Monthly return & challan by 15th of succeeding month</li>
-            <li>Accident register for incidents on premises</li>
-          </ul>
+        <div className="govtcosts-table-wrapper">
+          <table className="govtcosts-table">
+            <thead>
+              <tr>
+                <th>Non-Compliance / Obligation</th>
+                <th>Penalty / Requirement</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, i) => (
+                <tr key={i}>
+                  <td>{row.head}</td>
+                  <td>{row.detail}</td>
+                  <td>{row.notes}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-
-        {/* BLOCK 2 – CONTRIBUTION & RETURNS */}
-        <div className="esi-comp-card">
-          <h2 className="esi-comp-title">
-            What do You Mean by ESI Monthly Contribution?
-          </h2>
-
-          <p className="esi-comp-text">
-            ESI is a contributory scheme where both employer and employee must
-            contribute at prescribed rates, which may be revised periodically.
-          </p>
-
-          <ul className="esi-comp-list">
-            <li>
-              <strong>Employee Contribution:</strong> 0.75% of basic wages
-            </li>
-            <li>
-              <strong>Employer Contribution:</strong> 3.25% of basic wages
-            </li>
-          </ul>
-
-          <p className="esi-comp-text">
-            Employees earning up to ₹137 per day are exempted from contribution.
-            However, the employer must still pay their own share.
-          </p>
-
-          <h3 className="esi-comp-subtitle">
-            Returns Filed After Registration
-          </h3>
-
-          <ul className="esi-comp-list">
-            <li>Attendance register</li>
-            <li>Form 6 – Register</li>
-            <li>Register of wages</li>
-            <li>Accident register</li>
-            <li>Monthly returns & challans</li>
-          </ul>
-        </div>
-
       </div>
     </section>
   );
 };
 
-export default ESICompliance;
+export default ESICRegPenalties;

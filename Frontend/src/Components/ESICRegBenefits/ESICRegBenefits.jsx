@@ -1,117 +1,58 @@
 import React from "react";
-import "./ESICRegBenefits.css";
+import "../PvtltdRequirementsTab/PvtltdRequirementsTab.css";
 
-const benefitList = [
-  "Unemployment Benefits",
-  "Medical Benefits",
-  "Maternity Benefits",
-  "Deceased Employee",
-  "Funeral Expenses",
-  "Retirement Benefits",
-  "Benefits for Permanent Disablement",
-  "Sickness Benefits"
+const benefits = [
+  {
+    title: "Comprehensive Medical Care",
+    text: "Insured employees and their dependants receive unlimited medical care — outpatient, inpatient, specialist, surgery, and emergency — at ESIC hospitals and dispensaries. No ceiling on medical expenditure. Medical benefits extend to retired employees on a nominal annual payment.",
+  },
+  {
+    title: "Sickness Benefit",
+    text: "70% of average daily wages paid for up to 91 days per year during certified sickness. Extended sickness benefit available at 80% of wages for certain long-term illnesses (TB, malignancy, mental illness etc.) for up to 2 years with treatment at ESIC facilities.",
+  },
+  {
+    title: "Maternity Benefit",
+    text: "Paid maternity leave at full wages for 26 weeks (for the first two children). Extendable by one month on medical advice. Miscarriage and tubectomy benefits also available. One of the most employer-friendly and employee-valued benefits under ESIC.",
+  },
+  {
+    title: "Disablement & Death Benefit",
+    text: "Permanent disablement benefit at 90% of wages paid as a monthly pension for life. In case of death due to employment injury, 90% of wages paid to dependants. Funeral expenses of ₹10,000 paid to the person performing last rites.",
+  },
+  {
+    title: "Unemployment Allowance",
+    text: "Under the Rajiv Gandhi Shramik Kalyan Yojana, insured persons involuntarily unemployed after 3 years of continuous coverage receive 50% of wages for up to 1 year, plus medical care for self and family during the unemployment period.",
+  },
+  {
+    title: "Statutory Compliance & Penalty Avoidance",
+    text: "Being ESIC-registered avoids damages of 5–25% of arrears under Section 85B, prosecution under Section 85, and suo-motu coverage proceedings by ESIC. For compliant employers, ESIC inspections are routine. For non-compliant ones, they trigger recovery + interest + prosecution.",
+  },
 ];
 
-const ESIBenefits = () => {
+const ESICRegBenefits = () => {
   return (
-    <section className="esi-benefits-section">
-      <div className="esi-benefits-container">
-
-        {/* LEFT – BENEFITS LIST */}
-        <div className="esi-benefits-list">
-          <h2 className="esi-benefits-title">
-            What are the Benefits of ESI Registration
+    <section className="req-section">
+      <div className="req-container">
+        <header className="req-header">
+          <h2 className="req-title">
+            Benefits of ESIC Registration in India
           </h2>
+          <p className="req-subtitle">
+            ESIC isn't just a deduction — it's a comprehensive social security net for employees and a compliance shield for employers. Here's what actually matters once you're registered:
+          </p>
+        </header>
 
-          <ul className="esi-benefits-points">
-            {benefitList.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        {/* RIGHT – DETAILS */}
-        <div className="esi-benefits-details">
-
-          <div className="esi-benefit-card">
-            <h3>Sickness Benefits</h3>
-            <p>
-              Sickness benefits are provided at the rate of 70% of salary if the
-              sickness continues for more than 91 days in a year and is duly
-              certified.
-            </p>
-          </div>
-
-          <div className="esi-benefit-card">
-            <h3>Medical Benefits</h3>
-            <p>
-              Comprehensive medical care is provided to insured persons and
-              their family members with no ceiling on medical expenditure.
-              Medical benefits also extend to retired and permanently disabled
-              persons on nominal annual contribution.
-            </p>
-          </div>
-
-          <div className="esi-benefit-card">
-            <h3>Maternity Benefits</h3>
-            <p>
-              Paid maternity leave for women employees is provided for three
-              months, extendable by one additional month on medical advice,
-              subject to contribution requirements.
-            </p>
-          </div>
-
-          <div className="esi-benefit-card">
-            <h3>Deceased Employee</h3>
-            <p>
-              In case of death during employment, 90% of the insured person’s
-              salary is payable to the family members.
-            </p>
-          </div>
-
-          <div className="esi-benefit-card">
-            <h3>Funeral Expenses</h3>
-            <p>
-              An amount of ₹10,000 is payable towards funeral expenses to the
-              dependents or the person performing the last rites.
-            </p>
-          </div>
-
-          <div className="esi-benefit-card">
-            <h3>Retirement Benefits</h3>
-            <p>
-              Medical care and benefits continue after retirement or in old age
-              for insured persons.
-            </p>
-          </div>
-
-          <div className="esi-benefit-card">
-            <h3>Benefits for Permanent Disablement</h3>
-            <p>
-              In case of permanent disablement, 90% of salary is provided as a
-              monthly insurance benefit.
-            </p>
-          </div>
-
-          <div className="esi-benefit-card">
-            <h3>Unemployment Benefits</h3>
-            <p>
-              Insured persons unemployed after three years of insurance are
-              eligible for unemployment allowance under the Rajiv Gandhi
-              Shramik Kalyan Yojana.
-            </p>
-
-            <ul className="esi-sub-points">
-              <li>50% of wages payable for up to one year</li>
-              <li>Medical care for self and family during unemployment</li>
-              <li>Vocational training with expenses borne by ESIC</li>
-            </ul>
-          </div>
-
+        <div className="req-grid">
+          {benefits.map((benefit, i) => (
+            <article key={i} className="req-card">
+              <h3 className="req-card-title">{benefit.title}</h3>
+              <div className="req-card-underline" />
+              <p className="req-card-text">{benefit.text}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
   );
 };
 
-export default ESIBenefits;
+export default ESICRegBenefits;

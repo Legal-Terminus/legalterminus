@@ -1,0 +1,32 @@
+/* 3-col centered grid */
+.esic-pricing-section .pricing-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Badge floats above card border */
+.esic-pricing-section .plan-popular-badge,
+.esic-pricing-section .plan-fullservice-badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 992px) {
+  .esic-pricing-section .pricing-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 660px;
+  }
+}
+
+@media (max-width: 640px) {
+  .esic-pricing-section .pricing-cards {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+  }
+}
