@@ -8,10 +8,8 @@ const ISOPremium = () => {
       <div className="zp-container">
         <div className="zp-card">
 
-          {/* Top two-column row: illustration + content */}
           <div className="zp-top-row">
 
-            {/* Left illustration */}
             <div className="zp-illustration-wrapper">
               <img
                 src={premiumIllustration}
@@ -20,10 +18,8 @@ const ISOPremium = () => {
               />
             </div>
 
-            {/* Right content */}
             <div className="zp-content">
 
-              {/* Title + subtitle */}
               <header className="zp-header">
                 <h2 className="zp-title">
                   Legal Terminus{" "}
@@ -31,29 +27,28 @@ const ISOPremium = () => {
                   <span className="zp-title-icon">⚖</span>
                 </h2>
                 <p className="zp-subtitle">
-                  Get your ISO Certification done faster with Legal Terminus' expert-handled process — designed for businesses that want to improve quality standards, build customer trust, and win government tenders without delays.
+                  An ISO certificate is more than a document — it is proof that your business follows defined processes and quality standards. While obtaining a certificate is relatively straightforward, building a management system that can withstand customer audits, tender evaluations, and supplier assessments requires expertise. Priority is what happens when experienced ISO professionals guide your certification journey from gap analysis to successful certification.
                 </p>
               </header>
 
-              {/* Features */}
               <section className="zp-section-block">
                 <h3 className="zp-label">What you get</h3>
                 <ul className="zp-list zp-features-list">
                   <li className="zp-list-item">
                     <span className="zp-list-icon">🧑‍⚖️</span>
-                    Complete guidance from documentation to ISO certification — we recommend the right standard for your business.
+                    Gap analysis in 5 days — so you know exactly what you need to build vs document.
                   </li>
                   <li className="zp-list-item">
                     <span className="zp-list-icon">📑</span>
-                    Hassle-free documentation preparation and application filing with the certifying body.
+                    Senior ISO expert-reviewed Quality Manual + SOPs — aligned to your actual processes, not generic.
                   </li>
                   <li className="zp-list-item">
                     <span className="zp-list-icon">⏱️</span>
-                    Fast processing with real-time status updates on mail and WhatsApp.
+                    NABCB-accredited CB shortlist (not the cheap unaccredited variety) — so your certificate holds up everywhere.
                   </li>
                   <li className="zp-list-item">
                     <span className="zp-list-icon">📋</span>
-                    Post-certification kit: ISO certificate, surveillance audit calendar, and renewal reminders.
+                    Internal audit + management review facilitation — so Stage 1 and Stage 2 audits are non-events.
                   </li>
                 </ul>
               </section>
@@ -61,22 +56,21 @@ const ISOPremium = () => {
             </div>
           </div>
 
-          {/* Full-width bottom: Important Notes + CTA */}
           <div className="zp-bottom-full">
             <h3 className="zp-label">Important Notes</h3>
             <div className="zp-note-box">
               <ul className="zp-note-list">
                 <li className="zp-note-item">
-                  <strong>Surveillance audits</strong> are required annually to maintain ISO certification. Failure to undergo surveillance audits results in suspension or withdrawal of the certificate.
+                  Not all ISO certificates are equal. NABCB / IAF-accredited CBs issue certificates that pass enterprise / export / GeM scrutiny. Unaccredited 'paper mills' issue certificates that get rejected when checked on the IAF database. We only recommend accredited CBs.
                 </li>
                 <li className="zp-note-item">
-                  <strong>ISO certification scope</strong> must accurately describe your business activities. Misrepresentation of scope can lead to certificate cancellation and legal consequences.
+                  Template-only consultants give you a Quality Manual that doesn't match your actual processes — which fails Stage 2 audit when the auditor walks the floor and finds reality doesn't match documentation. Our SOPs are customised to your processes.
                 </li>
                 <li className="zp-note-item">
-                  <strong>Recertification</strong> is required every 3 years (for most standards). We send timely reminders and assist with renewal to ensure uninterrupted certification.
+                  MSME subsidy reimbursement requires specific paperwork — certification by an MSME-Office-approved CB, particular invoice formats, evidence of payment. We pre-validate the CB and structure invoices for clean subsidy claim.
                 </li>
                 <li className="zp-note-item">
-                  <strong>Government fee</strong> varies by certifying body and ISO standard. We will communicate the exact amount before you proceed with payment.
+                  ISO is a 3-year commitment, not a one-time exercise. Annual surveillance audits are mandatory in Year 1 + 2; re-certification at Year 3. Skipping a surveillance audit = certificate withdrawn. Plan the ongoing cost in your budget.
                 </li>
               </ul>
             </div>

@@ -1,6 +1,33 @@
 import React from "react";
 import "./ISOrequirments.css";
 
+const benefits = [
+  {
+    title: "Tender & Empanelment Eligibility",
+    text: "ISO 9001 is a hard requirement for most central government tenders, PSU contracts, and large enterprise vendor empanelments. Without it, you don't get past the technical-qualification stage. With it, you're on the shortlist. Direct revenue impact.",
+  },
+  {
+    title: "Enterprise & Export Credibility",
+    text: "Tata / Reliance / Infosys / TCS / global enterprise customers run vendor due-diligence checklists. ISO certifications appear on every one of them. Export markets (especially EU and Japan) treat ISO as the floor, not the ceiling, of supplier credibility.",
+  },
+  {
+    title: "Operational Efficiency Gains",
+    text: "Implementation forces process documentation, role clarity, KPI definition, nonconformity tracking. Companies typically report 15–30% reduction in process defects + customer complaints in Year 1. Improvement compounds via the Plan-Do-Check-Act cycle baked into every ISO standard.",
+  },
+  {
+    title: "MSME Subsidy Reimbursement",
+    text: "MSME-registered businesses can claim up to 75% reimbursement of certification costs (capped at Rs.75,000) via the MSME Office's Quality Upgradation / ZED / IPR schemes. For Elemental tier clients, this often makes the net cost effectively negligible after subsidy.",
+  },
+  {
+    title: "Risk Reduction & Insurance Discounts",
+    text: "ISO 45001 (OH&S) reduces workplace accident rates — many insurers offer lower workmen's compensation premiums for certified workplaces. ISO 27001 reduces cyber-incident likelihood + makes cyber-insurance underwriters comfortable. Concrete, measurable risk reduction.",
+  },
+  {
+    title: "Global Recognition + 3-Year Validity",
+    text: "ISO certificates issued by IAF-accredited CBs are recognised in 165+ countries. 3-year validity (with annual surveillance audits) keeps the cost predictable. Re-certification at Year 3 is typically smoother than initial certification.",
+  },
+];
+
 const RequirementsPvt = () => {
   return (
     <section className="req-section">
@@ -10,58 +37,18 @@ const RequirementsPvt = () => {
             Benefits of ISO Certification in India
           </h2>
           <p className="req-subtitle">
-            ISO Certification is a competitive advantage, not just a compliance badge. It unlocks government tenders, international buyers, and builds a quality-driven culture that reduces operational errors and customer complaints.
+            ISO Certification isn't a vanity wall plaque — it's a measurable lever for revenue, operational efficiency, and risk reduction. Here's what genuinely matters:
           </p>
         </header>
 
         <div className="req-grid">
-          <article className="req-card">
-            <h3 className="req-card-title">Government Tender Eligibility</h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              Most central and state government tenders — especially in construction, IT, defence, healthcare, and manufacturing — mandate ISO certification as a baseline eligibility criterion. Without ISO, your bids are rejected at the technical qualification stage.
-            </p>
-          </article>
-
-          <article className="req-card">
-            <h3 className="req-card-title">International Recognition &amp; Export Readiness</h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              ISO is accepted in 165+ countries. Overseas buyers, importers, and global procurement platforms require ISO-certified suppliers. Having ISO certification accelerates vendor empanelment with international enterprises and qualifies you for export incentive schemes.
-            </p>
-          </article>
-
-          <article className="req-card">
-            <h3 className="req-card-title">Improved Quality &amp; Process Efficiency</h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              ISO implementation forces a systematic review of all business processes — identifying bottlenecks, redundancies, and error-prone workflows. Post-certification businesses typically see 20–40% reduction in rework, returns, and customer complaints.
-            </p>
-          </article>
-
-          <article className="req-card">
-            <h3 className="req-card-title">Enhanced Customer Trust &amp; Credibility</h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              The ISO mark on your products, proposals, and website signals third-party verified quality. Enterprise procurement teams and individual customers prefer ISO-certified vendors — directly improving win rates on competitive bids and retail shelf placement.
-            </p>
-          </article>
-
-          <article className="req-card">
-            <h3 className="req-card-title">Regulatory Compliance Foundation</h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              ISO standards are aligned with BIS, FSSAI, MCA, and labour regulation frameworks. ISO-certified organisations find regulatory audits (factory inspections, FSSAI renewals, pollution control consents) significantly smoother — auditors recognise ISO as evidence of systematic compliance.
-            </p>
-          </article>
-
-          <article className="req-card">
-            <h3 className="req-card-title">Better Loan &amp; Investment Access</h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              Banks and NBFCs (Lendingkart, FlexiLoans, SIDBI schemes) factor ISO certification into credit underwriting as a quality and governance signal. Investors and PE funds use ISO as a due diligence proxy for operational maturity in mid-market businesses.
-            </p>
-          </article>
+          {benefits.map((benefit, i) => (
+            <article key={i} className="req-card">
+              <h3 className="req-card-title">{benefit.title}</h3>
+              <div className="req-card-underline" />
+              <p className="req-card-text">{benefit.text}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>

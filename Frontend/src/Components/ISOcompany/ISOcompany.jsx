@@ -1,80 +1,105 @@
 import React from "react";
-import "./ISOcompany.css";
-
-// Replace with your actual illustration
+import "../PvtltdCompanyTab/PvtltdCompanyTab.css";
 import pvtIllustration from "../../assets/whypvt-imp.svg";
 
-const PvtLtdFull = () => {
+const ISOCompany = () => {
   return (
     <div className="pvt-full-wrapper">
 
-      {/* ===========================
-          SECTION 1 — OVERVIEW
-      ============================ */}
-      {/* <div className="overview-wrapper">
-        <h2 className="overview-title">Understanding the Basics
-</h2>
-        <p className="overview-text">
-A Private Limited Company is a legally registered business under the Companies Act, 2013, with its own separate identity from its owners. It protects the personal assets of its members, limits who can own shares, and must have a registered office address. </p>
-      </div> */}
-
-      {/* ===========================
-          SECTION 2 — INTRO
-      ============================ */}
+      {/* INTRO SECTION */}
       <section className="pvt-intro-section">
         <div className="pvt-intro-container">
-          {/* Illustration */}
           <div className="pvt-intro-illustration-wrap">
             <img
               src={pvtIllustration}
-              alt="Private limited company illustration"
+              alt="ISO Certification illustration"
               className="pvt-intro-illustration"
             />
           </div>
-
-          {/* Text */}
           <div className="pvt-intro-content">
-            <h2 className="pvt-intro-title">
-              Why Choose ISO Certification In india
-            </h2>
+            <h2 className="pvt-intro-title">Why Get ISO Certified</h2>
             <p className="pvt-intro-text">
-              ISO refers to the International Organization for Standardization which is an autonomous body who sets global standards for quality, safety and efficiency of products and services. In the competitive global market, ISO certification in India plays a vital role as it provides an edge to the organization having ISO certification with respect to quality, efficiency and safety.
+              ISO Certification is an internationally recognized standard that demonstrates your business follows structured processes, quality controls, and continuous improvement practices. It helps build trust among customers, suppliers, investors, and regulatory authorities.
+            </p>
+            <p className="pvt-intro-text">
+              For businesses in India, ISO Certification offers several advantages, including:
+            </p>
+            <p className="pvt-intro-text">
+              ✔ Eligibility for Government and PSU Tenders<br />
+              ✔ Improved Business Credibility<br />
+              ✔ Enterprise Vendor Registration<br />
+              ✔ Better Export and Global Business Opportunities<br />
+              ✔ Competitive Advantage on GeM and Other Marketplaces
             </p>
           </div>
         </div>
       </section>
 
-      {/* ===========================
-          SECTION 3 — COMPANIES ACT
-      ============================ */}
-      <section className="companies-act-section">
-        <div className="companies-act-container">
-          <div className="companies-act-card">
-            <h3 className="companies-act-title">ISO Certification</h3>
-
-            <p className="companies-act-text">
-              ISO Certification is an internationally recognised certification that confirms a business follows standard quality and operational practices. It helps organisations improve performance, ensure customer satisfaction, and build market credibility.
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(a)</span>
-              Follows defined quality standards and process systems;
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(b)</span>
-              Improves efficiency, consistency, and customer trust through structured working methods; and
-            </p>
-
-            <p className="companies-act-point">
-              <span className="companies-act-point-label">(c)</span>
-              Enhances business credibility and increases eligibility for tenders, contracts, and global opportunities.
-            </p>
+      {/* ISO STANDARDS TABLE */}
+      <section className="pvt-compare-section">
+        <div className="pvt-compare-container">
+          <h2 className="pvt-compare-title">Major ISO Standards in India: The Deep Dive</h2>
+          <p className="pvt-compare-subtitle">
+            Not every business needs every standard. Here's the 2026 picture of the most-deployed ISO standards in India and who they fit:
+          </p>
+          <div className="pvt-compare-table-wrapper">
+            <table className="pvt-compare-table">
+              <thead>
+                <tr>
+                  <th>Standard</th>
+                  <th>Full Name</th>
+                  <th>Best Fit For</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>ISO 9001:2015</td>
+                  <td>Quality Management Systems</td>
+                  <td>All businesses; mandatory for most government tenders</td>
+                </tr>
+                <tr>
+                  <td>ISO 14001:2015</td>
+                  <td>Environmental Management Systems</td>
+                  <td>Manufacturing, chemicals, energy, real estate</td>
+                </tr>
+                <tr>
+                  <td>ISO 45001:2018</td>
+                  <td>Occupational Health &amp; Safety MS</td>
+                  <td>Manufacturing, construction, mining, factories</td>
+                </tr>
+                <tr>
+                  <td>ISO 22000:2018</td>
+                  <td>Food Safety Management Systems</td>
+                  <td>Food businesses (often with FSSAI)</td>
+                </tr>
+                <tr>
+                  <td>ISO 27001:2022</td>
+                  <td>Information Security MS</td>
+                  <td>IT services, SaaS, BPO, data-handling businesses</td>
+                </tr>
+                <tr>
+                  <td>ISO 13485:2016</td>
+                  <td>Medical Devices QMS</td>
+                  <td>Medical device manufacturers / distributors</td>
+                </tr>
+                <tr>
+                  <td>ISO 50001:2018</td>
+                  <td>Energy Management Systems</td>
+                  <td>Energy-intensive industries; sustainability-focused</td>
+                </tr>
+                <tr>
+                  <td>ISO 37001:2016</td>
+                  <td>Anti-Bribery MS</td>
+                  <td>Government contractors, financial services, large corporates</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
+
     </div>
   );
 };
 
-export default PvtLtdFull;
+export default ISOCompany;
