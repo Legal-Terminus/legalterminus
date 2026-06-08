@@ -11,30 +11,32 @@ const EsicRegBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            ESIC Registration Online
+            ESIC Registration
           </span>
 
           <h1 className="lt-public-title">
-            ESIC Registration Online
+            ESIC Registration
             <span className="lt-title-india"> in India</span>
             <br />
             <span className="lt-public-subtitle">ESI Reg — That Keeps Your Workforce Protected</span>
           </h1>
 
           <p className="lt-public-description">
-            ESIC Registration is mandatory for establishments employing 10 or more employees (in most states) under the Employees' State Insurance Act, 1948. Once registered, every eligible employee gets access to comprehensive medical care, sickness benefits, maternity benefits, disability cover, and EDLI-style insurance — all funded through a combined employer (3.25%) + employee (0.75%) contribution on basic wages. Legal Terminus handles the entire ESIC registration process — from portal sign-up and Form-1 filing to 17-digit Employer Code allotment, employee IP number generation, and first contribution walkthrough.
+            ESIC Registration is mandatory for establishments employing 10 or more employees under the Employees' State Insurance Act, 1948. Employees earning up to ₹21,000 per month (₹25,000 for persons with disabilities) are covered and receive medical, sickness, maternity, disability, and dependent benefits. Contributions are shared between the employer (3.25%) and employee (0.75%).
+            <br /><br />
+            For companies incorporated through SPICe+, ESIC registration is issued automatically during incorporation. We provide end-to-end support for employer registration, employee IP registration, contribution filing, return filing, and ongoing ESIC compliance.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Mandatory for 10+ Employees</div>
-            <div className="lt-feature-item">17-Digit Employer Code</div>
-            <div className="lt-feature-item">Medical & Sickness Benefits</div>
-            <div className="lt-feature-item">Monthly ESI Compliance Support</div>
+            <div className="lt-feature-item">Medical Benefits for Employees</div>
+            <div className="lt-feature-item">Family also Coverage Under ESIC</div>
+            <div className="lt-feature-item">Fully Online</div>
+            <div className="lt-feature-item">Contribution Walkthrough</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>300+</h3>
+              <h3>3,100+</h3>
               <p>ESIC establishments registered</p>
             </div>
             <div>
