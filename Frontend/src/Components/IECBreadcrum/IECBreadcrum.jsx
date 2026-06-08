@@ -18,28 +18,28 @@ const IECBreadcrum = () => {
             Importer Exporter Code (IEC) Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-public-subtitle">Fast, Simple &amp; 100% Online</span>
+            <span className="lt-public-subtitle">Expand Globally with IEC Registration</span>
           </h1>
 
           <p className="lt-public-description">
-            An Importer Exporter Code (IEC) is a 10-digit business identification number mandatory for any entity engaged in the import or export of goods and services from India. Issued by the Directorate General of Foreign Trade (DGFT) under the Ministry of Commerce, an IEC is a one-time registration with lifetime validity — no renewal required. The entire application process is 100% online through the DGFT portal. Government fee: ₹500 only.
+            Planning to import or export from India? An IEC (Import Export Code) is a mandatory registration issued by DGFT for businesses involved in international trade of goods, services, or technology. The IEC is issued based on the PAN of the business, and the IEC number is generally the same as the PAN of the organization. We help you obtain your IEC quickly and hassle-free through the DGFT portal. Our team handles the complete filing process, documentation support, and annual IEC update compliance to keep your IEC active and valid.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Mandatory for Import/Export</div>
+            <div className="lt-feature-item">2-Day IEC</div>
+            <div className="lt-feature-item">PAN-Based Code</div>
+            <div className="lt-feature-item">1-Yr Free Updates</div>
             <div className="lt-feature-item">Lifetime Validity</div>
-            <div className="lt-feature-item">Online Application Process</div>
-            <div className="lt-feature-item">Easy Renewal and Updates</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>IEC registrations completed</p>
+              <h3>400+</h3>
+              <p>IEC registrations filed</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>DGFT Portal Process</p>
+              <h3>All 28 States</h3>
+              <p>+ 8 Union Territories</p>
             </div>
             <div>
               <h3>7+</h3>
