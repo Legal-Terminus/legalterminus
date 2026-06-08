@@ -43,7 +43,7 @@ const ESICRegProcess = () => {
   return (
     <section className="pvtltd-gst-wrapper">
       <h2 className="gst-heading">
-        ESIC Registration Process for Employers
+        Steps for ESIC Registration in India
       </h2>
       <p className="pv-gst-subheading">
         Seven steps. 5–7 working days end-to-end from kick-off to first successful monthly contribution.

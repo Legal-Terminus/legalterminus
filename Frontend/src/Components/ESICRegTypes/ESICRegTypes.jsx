@@ -38,7 +38,7 @@ const ESICRegTypes = () => {
   return (
     <section className="cpvt-section">
       <div className="cpvt-container">
-        <h2 className="cpvt-title">Types of ESIC Coverage in India</h2>
+        <h2 className="cpvt-title">Types of ESIC Registration in India</h2>
         <div className="cpvt-cards">
           {types.map((type) => (
             <div className="cpvt-card" key={type.number}>

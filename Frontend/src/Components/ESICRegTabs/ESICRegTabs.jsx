@@ -8,7 +8,6 @@ const tabs = [
   { label: "Benefits", id: "benefits" },
   { label: "Process", id: "process" },
   { label: "Documents", id: "documents" },
-  { label: "Penalties", id: "penalties" },
   { label: "FAQ", id: "faq" },
 ];
 
