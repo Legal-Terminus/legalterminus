@@ -39,6 +39,21 @@ const eligibilityRows = [
     criterion: "80% rebate on government fee",
     notes: "From Rs.8K to Rs.1,600 for individual filing",
   },
+  {
+    parameter: "Trademark Fee Rebate",
+    criterion: "50% rebate on government fee",
+    notes: "From Rs.9,000 to Rs.4,500 per class",
+  },
+  {
+    parameter: "Self-Certification",
+    criterion: "9 labour + 3 environment laws",
+    notes: "Self-certify compliance for first 5 years",
+  },
+  {
+    parameter: "SIDBI Fund-of-Funds",
+    criterion: "Rs.10,000 crore corpus access (indirect)",
+    notes: "Via SEBI-registered VC / AIF investors",
+  },
 ];
 
 const StartupIndiaOverview = () => {
