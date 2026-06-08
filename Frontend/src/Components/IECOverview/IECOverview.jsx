@@ -1,6 +1,6 @@
 import React from "react";
 import "./IECOverview.css";
-import iecIllustration from "../../assets/whypvt-imp1.svg"; // Replace with your actual image if needed
+import iecIllustration from "../../assets/whypvt-imp1.svg";
 
 const IECOverview = () => {
   return (
@@ -23,40 +23,23 @@ const IECOverview = () => {
           {/* Text */}
           <div className="iec-intro-content">
             <h2 className="iec-intro-title">
-              Why Choose Importer Exporter Code Registration in India
+              Why Get an IEC
             </h2>
             <p className="iec-intro-text">
-              Every organization wishing to engage in the import-export of goods or services in India must obtain an Import Export Code (IEC). This code is issued by the Director General of Foreign Trade (DGFT). Below are some frequently asked questions related to importer exporter code registration:
+              Import Export Code (IEC) is the 10-digit alphanumeric code issued by the Directorate General of Foreign Trade (DGFT) under the Ministry of Commerce, governed by the Foreign Trade (Development &amp; Regulation) Act, 1992. It's the foundational compliance for ANY cross-border trade out of or into India - goods exports, goods imports, service exports billed in foreign currency, and software / technology transfers. Without IEC, banks cannot process your foreign exchange receipts, customs cannot clear your shipments, and DGFT cannot extend any export incentive to you.
             </p>
           </div>
         </div>
       </section>
 
       {/* ===========================
-          SECTION 2 — DGFT REGULATION
+          SECTION 2 — DGFT REFORM
       ============================ */}
       <section className="iec-act-section">
         <div className="iec-act-container">
           <div className="iec-act-card">
-            <h3 className="iec-act-title">DGFT and IEC Regulation</h3>
-
             <p className="iec-act-text">
-              As per DGFT regulations, every business entity involved in importing or exporting goods or services is required to obtain a valid Import Export Code (IEC).
-            </p>
-
-            <p className="iec-act-point">
-              <span className="iec-act-point-label">(a)</span>
-              Enables businesses to carry out international trade legally under Government of India guidelines;
-            </p>
-
-            <p className="iec-act-point">
-              <span className="iec-act-point-label">(b)</span>
-              Simplifies import/export compliance procedures and documentation requirements; and
-            </p>
-
-            <p className="iec-act-point">
-              <span className="iec-act-point-label">(c)</span>
-              Helps businesses access export promotion benefits, incentives, and global trade opportunities.
+              Since the 1 July 2017 DGFT reform, IEC is PAN-based - your 10-digit IEC number IS your 10-character PAN. One PAN can have only one IEC. The 1-2 day online issuance + lifetime validity + free annual update (in April-June window) makes IEC one of the easiest mandatory registrations in India - provided you actually keep up with the annual update. Missed updates = IEC deactivated = export operations frozen until reactivated.
             </p>
           </div>
         </div>

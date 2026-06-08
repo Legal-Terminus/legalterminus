@@ -4,10 +4,12 @@ import IECBreadcrum from '../../Components/IECBreadcrum/IECBreadcrum';
 
 // Lazy load below-fold components
 const IECPlans = React.lazy(() => import('../../Components/IECPlans/IECPlans'));
+const IECGovtCosts = React.lazy(() => import('../../Components/IECGovtCosts/IECGovtCosts'));
 const IECTermCondition = React.lazy(() => import('../../Components/IECTermCondition/IECTermCondition'));
 const IECZolvitpremium = React.lazy(() => import('../../Components/IECZolvitePremium/IECZolvitPremium'));
 const IECTabs = React.lazy(() => import('../../Components/IECTabs/IECTabs'));
 const IECOverview = React.lazy(() => import('../../Components/IECOverview/IECOverview'));
+const IECAdjacentRegs = React.lazy(() => import('../../Components/IECAdjacentRegs/IECAdjacentRegs'));
 const IECFeatures = React.lazy(() => import('../../Components/IECFeatures/IECFeatures'));
 const IECBenefits = React.lazy(() => import('../../Components/IECBenefits/IECBenefits'));
 const IECDocuments = React.lazy(() => import('../../Components/IECDocuments/IECDocuments'));
@@ -28,6 +30,12 @@ const IEC = () => {
           <IECPlans />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <IECGovtCosts />
+      </Suspense>
 
       <div className="section-divider" />
 
@@ -54,6 +62,12 @@ const IEC = () => {
           <IECOverview />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <IECAdjacentRegs />
+      </Suspense>
 
       <div className="section-divider" />
 

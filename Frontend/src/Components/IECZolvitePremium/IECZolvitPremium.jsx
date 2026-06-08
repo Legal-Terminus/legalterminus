@@ -31,7 +31,7 @@ const IECZolvitPremium = () => {
                   <span className="ieczp-title-icon">⚖</span>
                 </h2>
                 <p className="ieczp-subtitle">
-                  Get your IEC Registration completed faster with Legal Terminus' expert-handled process — designed for businesses who want smooth import/export setup with quick approval and zero rejection risk.
+                  Getting an IEC registration is simple when your documents and Aadhaar-PAN linkage are properly in place. However, many businesses face delays due to portal errors, DSC issues, missed annual updates, or lack of guidance for ICEGATE, AD Code, and export incentive setup. At Legal Terminus, we do more than just file your IEC application. We provide end-to-end support to help your business become fully ready for import and export operations.
                 </p>
               </header>
 
@@ -40,20 +40,32 @@ const IECZolvitPremium = () => {
                 <h3 className="ieczp-label">What you get</h3>
                 <ul className="ieczp-list ieczp-features-list">
                   <li className="ieczp-list-item">
-                    <span className="ieczp-list-icon">🧑‍⚖️</span>
-                    End-to-end IEC registration handled by our legal experts to ensure quick approval and zero rejection risk.
+                    <span className="ieczp-list-icon">⚡</span>
+                    IEC Registration filing on DGFT portal within 24 hours of receiving complete documents.
+                  </li>
+                  <li className="ieczp-list-item">
+                    <span className="ieczp-list-icon">✅</span>
+                    Expert verification of PAN, Aadhaar linkage, business details, and document readiness before filing.
+                  </li>
+                  <li className="ieczp-list-item">
+                    <span className="ieczp-list-icon">📱</span>
+                    Real-time application updates via Email and WhatsApp throughout the registration process.
                   </li>
                   <li className="ieczp-list-item">
                     <span className="ieczp-list-icon">📑</span>
-                    Hassle-free documentation support and DGFT application filing with document pre-verification.
+                    Post-registration support including IEC Certificate, ICEGATE guidance, and basic import-export compliance resources.
+                  </li>
+                  <li className="ieczp-list-item">
+                    <span className="ieczp-list-icon">🤝</span>
+                    Single point of contact for IEC, ICEGATE, AD Code, GST, Trademark, and other business registrations.
+                  </li>
+                  <li className="ieczp-list-item">
+                    <span className="ieczp-list-icon">🌐</span>
+                    Assistance in making your business import-export ready with smooth DGFT filing support.
                   </li>
                   <li className="ieczp-list-item">
                     <span className="ieczp-list-icon">⏱️</span>
-                    Fast processing with real-time status updates on mail and WhatsApp.
-                  </li>
-                  <li className="ieczp-list-item">
-                    <span className="ieczp-list-icon">📋</span>
-                    Post-registration kit: IEC certificate and compliance guidance delivered to your inbox.
+                    Fast processing with IEC Certificate delivery in 1–2 working days in most cases.
                   </li>
                 </ul>
               </section>
@@ -67,16 +79,16 @@ const IECZolvitPremium = () => {
             <div className="ieczp-note-box">
               <ul className="ieczp-note-list">
                 <li className="ieczp-note-item">
-                  <strong>DGFT document verification</strong> is mandatory before submission. We pre-check all documents (PAN, address proof, bank certificate, cancel cheque) to prevent rejection or delay.
+                  Mandatory Annual Update is the single biggest gotcha. EVERY IEC must be updated online between 1 April and 30 June each year - even with zero changes. Miss it = IEC deactivated = no shipping bills, no bills of entry, no foreign payments. We send the reminder and handle the update free for 1 year.
                 </li>
                 <li className="ieczp-note-item">
-                  <strong>IEC annual update</strong> is required every year (April–June) on the DGFT portal, even if there are no changes — failure to update results in deactivation of the IEC code.
+                  Service exporters often think they don't need IEC because they're not shipping physical goods. Wrong. If you receive payment in foreign currency for services (IT, consulting, design, BPO, freelancing for foreign clients), IEC is mandatory for the bank to credit FIRC and process the inward remittance correctly.
                 </li>
                 <li className="ieczp-note-item">
-                  <strong>Government fee of ₹500</strong> is payable at actuals directly on the DGFT portal and is not included in the professional fee. We assist with the payment process.
+                  AD Code registration is separate from IEC - it links your bank account to your IEC on the customs portal (ICEGATE). Without AD Code, your shipping bill won't process and your export proceeds won't flow back to you. Enriched and Supreme tiers handle this.
                 </li>
                 <li className="ieczp-note-item">
-                  <strong>IEC modification</strong> (change in address, bank, activity) requires a fresh DGFT application. Modifications are not covered in the base plan — additional charges apply.
+                  PAN-Aadhaar linkage must be valid (post 30 June 2023 deadline). Inoperative PANs cannot complete IEC application - the DGFT portal rejects them. Check at incometax.gov.in before applying.
                 </li>
               </ul>
             </div>
