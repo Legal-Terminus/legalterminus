@@ -4,33 +4,33 @@ import "../CopyPvtTypes/CopyPvtTypes.css";
 const types = [
   {
     number: "01",
-    title: "Private Limited Company",
-    text: "The most common entity for Startup India recognition. Eligible if incorporated less than 10 years ago with turnover under ₹100 crore. Pvt Ltd unlocks the full Startup India toolkit — 80-IAC tax holiday, angel tax exemption, ESOP-ready structure, and VC funding compatibility. Ideal for startups planning to raise institutional capital.",
+    title: "Tech / SaaS / IT Startup",
+    text: "Software platforms, SaaS products, IT services with proprietary tech, AI / ML platforms, fintech, deeptech. The largest sector in DPIIT registrations. Innovation framing typically around proprietary tech / IP / data moat / network effects. Angel tax exemption critical given VC-heavy funding pattern.",
   },
   {
     number: "02",
-    title: "Limited Liability Partnership (LLP)",
-    text: "LLPs incorporated in India are eligible for DPIIT recognition. However, LLPs cannot issue ESOPs or preference shares, which limits their investor appeal. If your startup is currently an LLP and you're approaching seed or pre-Series A, consider converting to Pvt Ltd before or alongside getting DPIIT recognition.",
+    title: "D2C / Consumer Brand Startup",
+    text: "Direct-to-consumer brands - beauty, FMCG, fashion, food & beverages, home, baby. Innovation framing around brand IP, supply chain, customer experience, sustainability angle, or category creation. GeM marketplace access valuable. Trademark filing typically priority - 50% rebate helps.",
   },
   {
     number: "03",
-    title: "Registered Partnership Firm",
-    text: "Registered Partnership Firms (under the Indian Partnership Act, 1932) are eligible for Startup India recognition provided they meet the age and turnover criteria. Note: simple proprietorship / solo traders are NOT eligible — the business must have 2+ partners formally registered with the Registrar of Firms.",
+    title: "AgriTech / Rural Innovation Startup",
+    text: "Agri-input platforms, farm management SaaS, drone-as-a-service for agriculture, agri-finance, FPO-tech, post-harvest tech, agri-commerce. Strong DPIIT alignment - rural innovation is policy priority. Often eligible for NABARD-backed financing in addition to SIDBI FFS.",
   },
   {
     number: "04",
-    title: "One Person Company (OPC)",
-    text: "OPCs registered under Companies Act, 2013 are technically a form of Private Limited Company and are eligible for DPIIT recognition. The single-member structure does not bar recognition. OPCs aiming for the 80-IAC tax holiday must ensure the business meets IMB's innovation threshold criteria.",
+    title: "HealthTech / BioTech Startup",
+    text: "Telemedicine platforms, health SaaS, medical devices, diagnostics, biotech research, healthcare AI. Innovation framing typically clear (medical IP / clinical evidence / patent-heavy). Patent rebate (80%) is genuinely material. Section 80-IAC tax holiday timing aligned with revenue ramp.",
   },
   {
     number: "05",
-    title: "Startup with Foreign Investment",
-    text: "A Private Limited Company with foreign shareholders (FDI under auto route) can apply for DPIIT recognition. The entity must still meet the 10-year age and ₹100 crore turnover criteria. For angel tax exemption (Form 2), only shares issued to Indian residents trigger the exemption requirement — foreign investor rounds are not covered by angel tax.",
+    title: "EdTech / Skilling Startup",
+    text: "Online education platforms, K-12 / higher-ed tech, professional skilling, certification platforms, language learning, vernacular content. Innovation framing around personalisation / engagement / outcome measurement / scalable pedagogy. Public procurement (GeM) for government skilling contracts.",
   },
   {
     number: "06",
-    title: "Biotech / Deep-Tech Startup",
-    text: "For startups in biotech, medtech, cleantech, or deep-tech, DPIIT recognition is a prerequisite for accessing the BIRAC BIG grant, NIDHI PRAYAS grant, and DST SEED grants. These startups also qualify for an extended 80-IAC window and additional IP support programmes. Category selection in the DPIIT application is critical for these verticals.",
+    title: "Climate / Social Impact / Renewables Startup",
+    text: "Climate tech, renewable energy, EV / mobility, circular economy, sanitation, financial inclusion, women empowerment, education access. Strong DPIIT + IMB alignment. Often eligible for additional grants / impact-investor matchmaking. ESG-focused investors actively fund this sector.",
   },
 ];
 
@@ -39,7 +39,7 @@ const StartupIndiaTypes = () => {
     <section className="cpvt-section">
       <div className="cpvt-container">
 
-        <h2 className="cpvt-title">Entities Eligible for Startup India (DPIIT) Recognition</h2>
+        <h2 className="cpvt-title">Types of Startup India Registration</h2>
 
         <div className="cpvt-cards">
           {types.map((type) => (

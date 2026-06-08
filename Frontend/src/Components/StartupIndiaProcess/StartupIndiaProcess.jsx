@@ -3,39 +3,39 @@ import "../PvtltdProcess/PvtltdProcess.css";
 
 const steps = [
   {
-    title: "Eligibility Check & Discovery Call",
+    title: "Discovery & Eligibility Check",
     day: "Day 0",
-    text: "30-min call to confirm: entity type (Pvt Ltd / LLP / Partnership), date of incorporation, current annual turnover, business activity, and whether the entity has been formed by splitting an existing business. We run a quick innovation-narrative assessment to gauge 80-IAC prospects before you commit.",
+    text: "30-min call with our startup-expert to confirm: entity type (Pvt Ltd / OPC / LLP / Partnership / Cooperative Society), incorporation date (10-year cap; 20 years for Deep Tech), current + projected turnover (Rs.200 cr cap; Rs.300 cr for Deep Tech), business activity, innovation thesis, sector, IP status, funding history. We pre-screen DPIIT eligibility honestly.",
   },
   {
-    title: "Document Collection",
-    day: "Day 1–2",
-    text: "We send you a specific checklist: COI / LLP agreement / partnership deed, PAN, GSTIN (if applicable), authorised signatory's Aadhaar + PAN, director/partner details, and a brief description of the innovative product/process/service. No physical documents required — all digital.",
+    title: "Entity Documents Verification",
+    day: "Day 1",
+    text: "Confirm COI / LLP Agreement / Partnership Deed + PAN + GSTIN + DSC of authorised signatory. Identify gaps (e.g. PAN-Aadhaar non-linkage) that would block filing.",
   },
   {
-    title: "Innovation Narrative Drafting",
-    day: "Day 2–3",
-    text: "We draft the 'Nature of Business' and 'How is it innovative' description that DPIIT reviewers read. This is the most critical piece of the application — generic descriptions get rejected or delayed. Our senior team reviews the narrative and aligns it with DPIIT's category classifications.",
+    title: "Innovation Pitch Reviewing",
+    day: "Day 1–3",
+    text: "Brief write-up about your business + innovation thesis, scalability mechanism, employment / wealth creation impact, customer validation. This is the soul of the DPIIT application - generic write-ups get rejected. Senior-expert reviewed before filing.",
   },
   {
-    title: "DPIIT Portal Application Filing",
+    title: "Create User Account",
+    day: "Day 3",
+    text: "Create user account on the NSWS portal (nsws.gov.in). Verify mobile + email. Add entity details. Navigate to 'Add Approvals' → 'Central Approvals' → search 'Registration as a Startup'.",
+  },
+  {
+    title: "DPIIT Recognition Application Filing",
     day: "Day 3–4",
-    text: "Application filed on the Startup India portal (startupindia.gov.in) with all required details: entity information, authorised signatory, innovation description, revenue and funding details, and sector/category. Supporting documents uploaded. Application submitted for DPIIT review.",
+    text: "Application filed with: entity details, founders / directors / partners, business description, innovation write-up, supporting documents (incorporation, business plan, IP, awards, funding).",
   },
   {
-    title: "DPIIT Review & Query Response",
-    day: "Day 5–18",
-    text: "DPIIT reviews the application typically within 2–4 weeks. If any clarification or additional document is requested, we respond within 24 hours on your behalf. DPIIT may ask for additional proof of innovation, IP filings, or entity documents.",
+    title: "DPIIT Review + Recognition Certificate",
+    day: "Day 4–7",
+    text: "DPIIT auto-system + manual review processes the application. Recognition Certificate issued in 3-5 working days for clean applications.",
   },
   {
-    title: "DPIIT Recognition Certificate Issued",
-    day: "Day 14–28",
-    text: "DPIIT issues the recognition certificate electronically via the Startup India portal. Certificate includes your DPIIT number, entity name, date of recognition, and sector. This certificate is the gateway to all Startup India benefits. We deliver a post-recognition kit with next steps.",
-  },
-  {
-    title: "80-IAC & Angel Tax Filing (Optional)",
-    day: "Day 28+",
-    text: "If you're on Supreme or Supreme Plus plan, we proceed with the 80-IAC application to the IMB (Inter-Ministerial Board) and Form 2 filing for angel tax exemption. IMB review takes 30-90 days. Angel tax Form 2 processing is typically 2-4 weeks. Both are filed immediately after recognition.",
+    title: "Recognition Certificate Delivered",
+    day: "Day 4–7",
+    text: "We download the Start-Up India Recognition Certificate, and share it via email + WhatsApp.",
   },
 ];
 
@@ -43,10 +43,10 @@ const StartupIndiaProcess = () => {
   return (
     <section className="pvtltd-gst-wrapper">
       <h2 className="gst-heading">
-        Steps to Get Startup India (DPIIT) Recognition
+        Steps For Startup India Registration
       </h2>
       <p className="pv-gst-subheading">
-        Seven steps. 2–4 weeks end-to-end (assuming clean documents and a strong innovation narrative).
+        Ten steps. 3-5 working days for DPIIT recognition itself. Section 80-IAC IMB approval is a separate 3-6 month process that we run in parallel.
       </p>
 
       <div className="pvtltd-timeline">
