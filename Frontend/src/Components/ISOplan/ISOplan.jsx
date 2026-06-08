@@ -6,7 +6,7 @@ const PLANS = [
   {
     id: "iso-elemental",
     name: "Elemental",
-    oldPrice: "Rs.17,999",
+    oldPrice: "₹17,999",
     price: 12999,
     services: [
       "Single standard: ISO 9001 / 14001 / 45001 (your choice)",
@@ -23,7 +23,7 @@ const PLANS = [
     id: "iso-enriched",
     name: "Enriched",
     badge: "popular",
-    oldPrice: "Rs.32,999",
+    oldPrice: "₹32,999",
     price: 22999,
     services: [
       "Everything in Elemental",
@@ -40,7 +40,7 @@ const PLANS = [
     id: "iso-supreme",
     name: "Supreme",
     badge: "fullservice",
-    oldPrice: "Rs.49,999",
+    oldPrice: "₹49,999",
     price: 34999,
     services: [
       "Everything in Enriched",
@@ -86,7 +86,7 @@ const PricingSection = () => {
                     <div className="plan-popular-badge">★ MOST POPULAR</div>
                   )}
                   {isFullService && (
-                    <div className="plan-fullservice-badge">✦ FULL-SERVICE</div>
+                    <div className="plan-fullservice-badge">+ FULL-SERVICE</div>
                   )}
 
                   <div>
