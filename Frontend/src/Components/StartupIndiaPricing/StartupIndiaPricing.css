@@ -1,0 +1,29 @@
+.si-three-plans {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.plan-normal-badge {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 10px;
+  background: #64748b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 12px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+@media (max-width: 992px) {
+  .si-three-plans {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .si-three-plans {
+    grid-template-columns: 1fr;
+  }
+}

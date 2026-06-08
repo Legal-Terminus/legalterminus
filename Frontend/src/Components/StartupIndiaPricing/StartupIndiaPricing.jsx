@@ -1,58 +1,45 @@
 import React, { useState } from "react";
 import "../PvtltdPlanandPricing/PvtltdPlanandPricing.css";
+import "./StartupIndiaPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
     id: "elemental",
     name: "Elemental",
-    price: 1,
+    oldPrice: 4999,
+    price: 2999,
     services: [
-      "DPIIT Startup India Application Filing",
-      "Document checklist & verification",
-      "Entity incorporation certificate review",
-      "Startup India portal registration",
-      "DPIIT Recognition Certificate delivery",
-      "Business description & innovation summary drafting",
-      "Category classification (Technology / Non-Technology)",
-      "Expert advisory call (30 min)",
+      "Eligibility check (entity type, age, turnover, innovation)",
+      "Innovation pitch / business write-up checking",
+      "DPIIT application filing",
+      "Document curation + upload (incorporation, business plan, IP)",
+      "DPIIT recognition certificate delivery (3-5 days)",
+      "Innovation-tag mapping (IT / DeepTech / Social etc.)",
     ],
   },
   {
     id: "enriched",
     name: "Enriched",
-    price: 4999,
+    oldPrice: 8999,
+    price: 5999,
     services: [
       "Everything in Elemental",
-      "Udyam / MSME Registration",
-      "GST Registration Assistance",
-      "80-IAC tax holiday eligibility assessment",
-      "Startup India profile & pitch deck guidance",
+      "Preparation of Authorization letter for organizational DSC",
+      "Processing of Organizational DSC",
     ],
   },
   {
     id: "supreme",
     name: "Supreme",
-    price: 8999,
+    oldPrice: 10999,
+    price: 7499,
     services: [
       "Everything in Enriched",
-      "Section 80-IAC Tax Holiday Application (IMB)",
-      "Angel tax exemption documentation (Form 2)",
-      "Fast-track patent filing assistance (80% fee rebate)",
-      "Self-certification drafts under labour & environment laws",
-    ],
-  },
-  {
-    id: "supreme-plus",
-    name: "Supreme Plus",
-    price: 14999,
-    services: [
-      "Everything in Supreme",
-      "Annual ITR Filing — Startup entity",
-      "Annual compliance filing (ROC / MCA)",
-      "Directors' Report & Board Minutes (1st FY)",
-      "Statutory E-Register Maintenance",
-      "ITR Filing for 2 Directors / Partners",
+      "Trademark Search Report",
+      "Form TM-A Filing (1 Class)",
+      "Government Filing Fee (Individuals/MSME/Startups: ₹4,500 | Companies: ₹9,000)",
+      "TM Application Challan and acknowledgement provided",
     ],
   },
 ];
@@ -72,15 +59,16 @@ const StartupIndiaPricing = () => {
             </p>
           </header>
 
-          <div className="pricing-cards">
+          <div className="pricing-cards si-three-plans">
 
             <article className="plan-card">
+              <div className="plan-normal-badge">NORMAL</div>
               <div>
                 <div className="plan-header">
                   <div className="plan-name">Elemental</div>
-                  <div className="plan-old-price">₹2,999</div>
-                  <div className="plan-price">₹{PLANS[0].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ GST extra</div>
+                  <div className="plan-old-price">Rs.{PLANS[0].oldPrice.toLocaleString("en-IN")}</div>
+                  <div className="plan-price">Rs.{PLANS[0].price.toLocaleString("en-IN")}</div>
+                  <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
                 <div className="plan-body">
                   <ul className="plan-list">
@@ -100,9 +88,9 @@ const StartupIndiaPricing = () => {
               <div>
                 <div className="plan-header">
                   <div className="plan-name">Enriched</div>
-                  <div className="plan-old-price">₹7,999</div>
-                  <div className="plan-price">₹{PLANS[1].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ GST extra</div>
+                  <div className="plan-old-price">Rs.{PLANS[1].oldPrice.toLocaleString("en-IN")}</div>
+                  <div className="plan-price">Rs.{PLANS[1].price.toLocaleString("en-IN")}</div>
+                  <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
                 <div className="plan-body">
                   <ul className="plan-list">
@@ -117,13 +105,14 @@ const StartupIndiaPricing = () => {
               </div>
             </article>
 
-            <article className="plan-card">
+            <article className="plan-card plan-card--fullservice">
+              <div className="plan-fullservice-badge">✦ FULL SERVICE</div>
               <div>
                 <div className="plan-header">
                   <div className="plan-name">Supreme</div>
-                  <div className="plan-old-price">₹13,999</div>
-                  <div className="plan-price">₹{PLANS[2].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ GST extra</div>
+                  <div className="plan-old-price">Rs.{PLANS[2].oldPrice.toLocaleString("en-IN")}</div>
+                  <div className="plan-price">Rs.{PLANS[2].price.toLocaleString("en-IN")}</div>
+                  <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
                 <div className="plan-body">
                   <ul className="plan-list">
@@ -135,28 +124,6 @@ const StartupIndiaPricing = () => {
               </div>
               <div className="plan-footer">
                 <button className="plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-              </div>
-            </article>
-
-            <article className="plan-card plan-card--fullservice">
-              <div className="plan-fullservice-badge">✦ FULL-SERVICE</div>
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Supreme Plus</div>
-                  <div className="plan-old-price">₹22,999</div>
-                  <div className="plan-price">₹{PLANS[3].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ GST extra</div>
-                </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[3].services.map((s, i) => (
-                      <li key={i} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[3])}>Buy Now</button>
               </div>
             </article>
 

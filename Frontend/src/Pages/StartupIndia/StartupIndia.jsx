@@ -3,6 +3,7 @@ import '../PrivateLimitedCopy/PrivateLimitedCopy.css'
 import StartupIndiaBreadcrum from '../../Components/StartupIndiaBreadcrum/StartupIndiaBreadcrum'
 import StartupIndiaPricing from '../../Components/StartupIndiaPricing/StartupIndiaPricing'
 import StartupIndiaTnC from '../../Components/StartupIndiaTnC/StartupIndiaTnC'
+import StartupIndiaGovtCosts from '../../Components/StartupIndiaGovtCosts/StartupIndiaGovtCosts'
 import StartupIndiaPriority from '../../Components/StartupIndiaPriority/StartupIndiaPriority'
 import StartupIndiaTabs from '../../Components/StartupIndiaTabs/StartupIndiaTabs'
 
@@ -25,6 +26,10 @@ const StartupIndia = () => {
       <div id="plans" className="copy-page-pricing">
         <StartupIndiaPricing />
       </div>
+
+      <div className="section-divider" />
+
+      <StartupIndiaGovtCosts />
 
       <div className="section-divider" />
 

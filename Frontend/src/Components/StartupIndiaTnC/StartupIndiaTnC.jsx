@@ -15,43 +15,35 @@ const StartupIndiaTnC = () => {
 
           <ol className="pvtltd-tc-list">
             <li className="pvtltd-tc-item">
-              DPIIT recognition is granted by the Department for Promotion of Industry and Internal Trade, Government of India. Legal Terminus provides consultancy and application assistance — the recognition certificate is issued directly by DPIIT and not by Legal Terminus.
+              <strong>Government Fee:</strong> DPIIT Recognition application fee is NIL - filed online at nsws.gov.in (National Single Window System). Our fee covers professional services - eligibility advisory, innovation pitch drafting and review, application filing.
             </li>
 
             <li className="pvtltd-tc-item">
-              The entity must be incorporated in India as a Private Limited Company, LLP, or Registered Partnership Firm. Sole proprietorships and public limited companies are not eligible for Startup India recognition.
+              <strong>GST on Our Fee:</strong> All quoted prices are exclusive of GST @ 18%, charged at checkout.
             </li>
 
             <li className="pvtltd-tc-item">
-              The entity must not be more than 10 years old from the date of incorporation or registration. Annual turnover must not have exceeded ₹100 crore in any preceding financial year. Legal Terminus will assess eligibility before filing.
+              <strong>Eligibility Requirements:</strong> As per the revised DPIIT Notification (2026): (a) Entity must be a Private Limited Company (including OPC), LLP, Registered Partnership Firm, or Cooperative Society. (b) Not older than 10 years from incorporation date (20 years for Deep Tech startups). (c) Annual turnover not exceeding Rs.200 crores in any previous FY (Rs.300 crores for Deep Tech startups). (d) Working on innovation / development / improvement of products / processes / services OR a scalable business model with high potential for employment / wealth creation. (e) Not formed by splitting up / reconstructing an existing entity. Note: Section 56(2)(viib) angel tax has been abolished from FY 2025-26 - no separate exemption filing needed for new fundraises.
             </li>
 
             <li className="pvtltd-tc-item">
-              Section 80-IAC tax holiday (3 years of income tax exemption out of first 10 years) requires separate approval from the Inter-Ministerial Board (IMB). DPIIT recognition does not automatically grant 80-IAC benefits. Our Supreme and Supreme Plus plans include IMB application support.
+              <strong>Section 80-IAC Tax Exemption:</strong> Startup India (DPIIT) Recognition and Section 80-IAC tax exemption are separate processes. Recognition under DPIIT does not automatically grant tax exemption benefits. Eligible startups may separately apply for Section 80-IAC approval subject to government eligibility and approval conditions.
             </li>
 
             <li className="pvtltd-tc-item">
-              Angel tax exemption under Section 56(2)(viib) requires filing Form 2 with DPIIT and satisfying additional criteria. Our Supreme and above plans include documentation support for angel tax exemption.
+              <strong>Annual Compliance &amp; Reporting:</strong> Recognized startups may be required to submit declarations, reports, or updates on the Startup India portal from time to time. Annual reporting or compliance filings are not included unless specifically mentioned in the selected plan.
             </li>
 
             <li className="pvtltd-tc-item">
-              18% GST is applicable on all professional/consultancy fees charged by Legal Terminus.
+              <strong>Refund Policy:</strong> A refund of professional fees may be considered only if the application process has not been initiated from our end. Once drafting, review, or filing work has started, professional fees become non-refundable. Government fees, Organizational DSC charges (if applied), and any third-party costs are non-refundable under all circumstances.
             </li>
 
             <li className="pvtltd-tc-item">
-              The Elemental plan fee includes preparation and submission of one DPIIT application. If the application is rejected by DPIIT due to incorrect information provided by the client, resubmission fees will apply.
+              <strong>DPIIT Discretion:</strong> DPIIT may seek clarifications, additional documentation, or reject applications that don't meet innovation / scalability criteria. We pre-screen for eligibility before filing; one free resubmission is included if DPIIT raises objections from documentation drafted by us.
             </li>
 
             <li className="pvtltd-tc-item">
-              Processing time for DPIIT recognition is typically 2–4 weeks from the date of submission. Timelines depend on DPIIT's internal processing and are not within Legal Terminus's control.
-            </li>
-
-            <li className="pvtltd-tc-item">
-              DPIIT recognition is valid for a period as specified in the recognition order. Renewal requirements, if any, are the client's responsibility. Legal Terminus offers ongoing compliance support under Supreme Plus plans.
-            </li>
-
-            <li className="pvtltd-tc-item">
-              Legal Terminus Private Limited is a private consultancy firm and is not affiliated with any government authority, DPIIT, or the Ministry of Commerce. All government certificates are issued directly by the respective departments. Our fees are exclusively for consultancy, documentation assistance, and application support services.
+              <strong>Out-of-Scope Items:</strong> The following services are not included unless specifically mentioned in the selected plan or quoted separately: Patent registration or prosecution, Trademark objection or hearing response, GeM registration, Startup funding advisory or investor pitch support, Company incorporation services, Legal agreements or policy drafting, and Tax filing or ROC compliance services. Entities not meeting DPIIT eligibility conditions may not qualify for Startup India recognition.
             </li>
           </ol>
         </div>
