@@ -7,6 +7,7 @@ import ESICRegPriority from '../../Components/ESICRegPriority/ESICRegPriority'
 import ESICRegTabs from '../../Components/ESICRegTabs/ESICRegTabs'
 
 const ESICRegOverview = React.lazy(() => import('../../Components/ESICRegOverview/ESICRegOverview'))
+const ESICRegTypes = React.lazy(() => import('../../Components/ESICRegTypes/ESICRegTypes'))
 const ESICRegBenefits = React.lazy(() => import('../../Components/ESICRegBenefits/ESICRegBenefits'))
 const ESICRegProcess = React.lazy(() => import('../../Components/ESICRegProcess/ESICRegProcess'))
 const ESICRegListicles = React.lazy(() => import('../../Components/ESICRegListicles/ESICRegListicles'))
@@ -47,6 +48,14 @@ const ESICReg = () => {
       <div id="overview">
         <Suspense fallback={<div />}>
           <ESICRegOverview />
+        </Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <div id="types">
+        <Suspense fallback={<div />}>
+          <ESICRegTypes />
         </Suspense>
       </div>
 

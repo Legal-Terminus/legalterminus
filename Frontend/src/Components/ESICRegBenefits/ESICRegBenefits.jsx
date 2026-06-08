@@ -3,28 +3,28 @@ import "../PvtltdRequirementsTab/PvtltdRequirementsTab.css";
 
 const benefits = [
   {
-    title: "Comprehensive Medical Care",
-    text: "Insured employees and their dependants receive unlimited medical care — outpatient, inpatient, specialist, surgery, and emergency — at ESIC hospitals and dispensaries. No ceiling on medical expenditure. Medical benefits extend to retired employees on a nominal annual payment.",
+    title: "Free Medical Care (OPD + IPD)",
+    text: "Covered employees + their family members (spouse, dependent parents, dependent children up to age 25) get free outpatient care, hospitalisation, surgery, and specialist consultations at ESIC dispensaries and tie-up hospitals. No cost ceiling. Effectively a fully-loaded health insurance plan at 0.75% employee contribution.",
   },
   {
-    title: "Sickness Benefit",
-    text: "70% of average daily wages paid for up to 91 days per year during certified sickness. Extended sickness benefit available at 80% of wages for certain long-term illnesses (TB, malignancy, mental illness etc.) for up to 2 years with treatment at ESIC facilities.",
+    title: "Sickness Benefit (70% Wages)",
+    text: "Cash payment of 70% of average wages for up to 91 days in a year for non-employment-related sickness (with medical certificate). Extended Sickness Benefit available for chronic conditions (TB, cancer, leprosy etc.) — up to 80% wages for up to 2 years.",
   },
   {
-    title: "Maternity Benefit",
-    text: "Paid maternity leave at full wages for 26 weeks (for the first two children). Extendable by one month on medical advice. Miscarriage and tubectomy benefits also available. One of the most employer-friendly and employee-valued benefits under ESIC.",
+    title: "Maternity Benefit (100% Wages)",
+    text: "Female covered employees receive 100% of average wages for 26 weeks (12 weeks for confinement, balance for prenatal + postnatal). Additional 1 month extra in case of complication / miscarriage. Plus confinement expenses of ₹7,500 where ESIC facility not used.",
   },
   {
-    title: "Disablement & Death Benefit",
-    text: "Permanent disablement benefit at 90% of wages paid as a monthly pension for life. In case of death due to employment injury, 90% of wages paid to dependants. Funeral expenses of ₹10,000 paid to the person performing last rites.",
+    title: "Temporary & Permanent Disablement Benefit",
+    text: "90% of average wages paid for any temporary disablement from an employment injury (no minimum period). For permanent disablement, lifetime monthly pension based on loss of earning capacity. Far better than statutory minimums under workmen's compensation.",
   },
   {
-    title: "Unemployment Allowance",
-    text: "Under the Rajiv Gandhi Shramik Kalyan Yojana, insured persons involuntarily unemployed after 3 years of continuous coverage receive 50% of wages for up to 1 year, plus medical care for self and family during the unemployment period.",
+    title: "Dependants' Benefit + Funeral Expenses",
+    text: "If a covered employee dies due to employment injury, dependants receive 90% of average wages as monthly pension — widow lifelong, children till age 25, dependent parents on means basis. Plus ₹15,000 funeral expenses to whoever performed the funeral.",
   },
   {
-    title: "Statutory Compliance & Penalty Avoidance",
-    text: "Being ESIC-registered avoids damages of 5–25% of arrears under Section 85B, prosecution under Section 85, and suo-motu coverage proceedings by ESIC. For compliant employers, ESIC inspections are routine. For non-compliant ones, they trigger recovery + interest + prosecution.",
+    title: "Unemployment Allowance (ABVKY / RGSKY)",
+    text: "Atal Bimit Vyakti Kalyan Yojana (ABVKY) — covered employees who lose their job due to retrenchment / closure receive unemployment allowance of 50% of average wages for up to 90 days. Rajiv Gandhi Shramik Kalyan Yojana provides up to 12 months unemployment allowance + medical care during the period.",
   },
 ];
 
@@ -37,7 +37,7 @@ const ESICRegBenefits = () => {
             Benefits of ESIC Registration in India
           </h2>
           <p className="req-subtitle">
-            ESIC isn't just a deduction — it's a comprehensive social security net for employees and a compliance shield for employers. Here's what actually matters once you're registered:
+            ESIC isn't just a deduction — it's a comprehensive social-security cover for your covered employees and their families. Here's what genuinely matters once you're registered:
           </p>
         </header>
 

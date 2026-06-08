@@ -3,6 +3,7 @@ import "../PvtltdTabs/PvtltdTabs.css";
 
 const tabs = [
   { label: "Overview", id: "overview" },
+  { label: "Types", id: "types" },
   { label: "Benefits", id: "benefits" },
   { label: "Process", id: "process" },
   { label: "Documents", id: "documents" },
