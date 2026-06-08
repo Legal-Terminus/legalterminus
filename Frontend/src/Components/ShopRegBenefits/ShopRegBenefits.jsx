@@ -1,69 +1,54 @@
 import React from "react";
-import "./ShopRegBenefits.css";
+import "../PvtltdRequirementsTab/PvtltdRequirementsTab.css";
+
+const benefits = [
+  {
+    title: "Bank Current Account Opening",
+    text: "Most banks (ICICI / HDFC / Axis / SBI / Kotak / IDFC First etc.) demand SHOP & ESTABLISHMENT Registration as PROOF OF BUSINESS for opening a current account in the business name. Without it, you're stuck with savings account routing — which is operationally limiting + tax-suboptimal.",
+  },
+  {
+    title: "Marketplace / Enterprise Vendor KYC",
+    text: "Amazon, Flipkart, Meesho, Zomato, Swiggy seller onboarding all require SHOP & ESTABLISHMENT Registration in their KYC. Same for enterprise client procurement teams empanelling vendors — SHOP & ESTABLISHMENT is a standard checklist item alongside PAN / GST / MSME.",
+  },
+  {
+    title: "Statutory Compliance with State Labour Law",
+    text: "Avoids penalties under the respective State SHOP & ESTABLISHMENT Act — typically ₹100 to ₹500 per day of non-registration, plus Inspector visit, plus closure risk for repeat offenders. Cheap insurance against an avoidable hassle.",
+  },
+  {
+    title: "Worker Welfare Compliance Foundation",
+    text: "SHOP & ESTABLISHMENT sets the foundation for working hours regulation, weekly off, annual leave, holiday schedule, wage payment timing, and conditions of employment — all subsequently picked up by adjacent state labour laws (LWF, ESIC, Professional Tax).",
+  },
+  {
+    title: "Government Scheme / Subsidy Eligibility",
+    text: "Many state and central schemes (MSME schemes, sector subsidies, women-entrepreneur grants etc.) require SHOP & ESTABLISHMENT Registration as basic proof-of-business eligibility. Standard checklist item in subsidy / grant applications.",
+  },
+  {
+    title: "Loan & Credit Eligibility",
+    text: "Banks underwriting working capital loans, business loans, term loans — all routinely demand SHOP & ESTABLISHMENT Registration as part of the loan KYC pack. Fintech lenders (Lendingkart, FlexiLoans etc.) also include SHOP & ESTABLISHMENT in their underwriting workflow.",
+  },
+];
 
 const ShopRegBenefits = () => {
   return (
-    <section className="shopben-section">
-      <div className="shopben-container">
-        <header className="shopben-header">
-          <h2 className="shopben-title">
+    <section className="req-section">
+      <div className="req-container">
+        <header className="req-header">
+          <h2 className="req-title">
             Benefits of Shop &amp; Establishment Registration in India
           </h2>
-          <p className="shopben-subtitle">
-            Registration under the Shop &amp; Establishment Act provides your business with legal identity, compliance protection, and access to key government services — all through a single certificate.
+          <p className="req-subtitle">
+            SHOP &amp; ESTABLISHMENT Registration is the most under-appreciated business document in India. Here's what it actually unlocks once you have it:
           </p>
         </header>
 
-        <div className="shopben-grid">
-
-          <article className="shopben-card">
-            <h3 className="shopben-card-title">Legal Identity &amp; Recognition</h3>
-            <div className="shopben-card-underline" />
-            <p className="shopben-card-text">
-              The registration certificate is issued by the state government and serves as the official proof of existence of your commercial establishment. It is the first government-issued document your business receives, and is universally accepted by banks, government bodies, and courts as evidence of your business address and activity.
-            </p>
-          </article>
-
-          <article className="shopben-card">
-            <h3 className="shopben-card-title">Easy Bank Account Opening</h3>
-            <div className="shopben-card-underline" />
-            <p className="shopben-card-text">
-              Most banks require a Shop &amp; Establishment certificate as the primary address proof for opening a current account. Without it, proprietors and small business owners often struggle to get their current accounts opened. The certificate resolves this instantly and is accepted by all scheduled and cooperative banks.
-            </p>
-          </article>
-
-          <article className="shopben-card">
-            <h3 className="shopben-card-title">Enables GST &amp; Other Registrations</h3>
-            <div className="shopben-card-underline" />
-            <p className="shopben-card-text">
-              The registration certificate is accepted as a valid address/business proof for GST registration, FSSAI (food licence), trade licence, and drug licence applications. It dramatically speeds up downstream registrations and reduces the document burden when applying for multiple licences simultaneously.
-            </p>
-          </article>
-
-          <article className="shopben-card">
-            <h3 className="shopben-card-title">MSME / Udyam Registration Eligibility</h3>
-            <div className="shopben-card-underline" />
-            <p className="shopben-card-text">
-              MSME / Udyam registration — which unlocks priority sector lending, government subsidies, and tender preferences — requires proof of business existence. The Shop &amp; Establishment certificate is accepted as this proof for proprietorships and partnerships, making it an essential first step toward MSME benefits.
-            </p>
-          </article>
-
-          <article className="shopben-card">
-            <h3 className="shopben-card-title">Employee Welfare &amp; Labour Law Compliance</h3>
-            <div className="shopben-card-underline" />
-            <p className="shopben-card-text">
-              The Act mandates working hours, overtime pay, leaves (casual, sick, earned), public holidays, and rest intervals. A registered establishment demonstrates compliance with these standards, protecting the employer from labour disputes and providing employees with enforceable rights. Inspections by the Labour Department focus exclusively on registered establishments.
-            </p>
-          </article>
-
-          <article className="shopben-card">
-            <h3 className="shopben-card-title">Avoidance of Penalties &amp; Closure</h3>
-            <div className="shopben-card-underline" />
-            <p className="shopben-card-text">
-              Operating without a valid Shop &amp; Establishment certificate is a punishable offence under state law — penalties include fines per day of default and, in repeated cases, directed closure by local municipal or labour authorities. Annual renewal keeps you compliant year-round and eliminates this risk entirely.
-            </p>
-          </article>
-
+        <div className="req-grid">
+          {benefits.map((benefit, i) => (
+            <article key={i} className="req-card">
+              <h3 className="req-card-title">{benefit.title}</h3>
+              <div className="req-card-underline" />
+              <p className="req-card-text">{benefit.text}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>

@@ -1,92 +1,99 @@
 import React from "react";
-import "./ShopRegDocuments.css";
-import { FaUser, FaBuilding, FaIdCard, FaFileAlt, FaCamera, FaBolt, FaFileContract, FaShieldAlt, FaUsers } from "react-icons/fa";
+import "../CopyPvtDocument/CopyPvtDocument.css";
+import {
+  FaBuilding,
+  FaUser,
+  FaBolt,
+  FaMoneyBillWave,
+  FaIdCard,
+  FaFileContract,
+} from "react-icons/fa";
 
-const ownerDocs = [
+const leftDocs = [
   {
-    icon: <FaIdCard />,
-    title: "Identity Proof of Owner / Partners / Directors",
-    note: "Mandatory for all proprietors, partners, or directors",
+    icon: <FaBuilding />,
+    title: "Entity Identity",
+    note: "Legal existence of the establishment",
     items: [
-      "Self-attested PAN Card (mandatory)",
-      "Self-attested Aadhaar Card",
-      "Passport-size Photograph of each proprietor / partner / director",
+      "Entity PAN (mandatory)",
+      "For Pvt Ltd / LLP: COI + MOA / AOA / LLP Agreement",
+      "For Partnership: Partnership Deed",
+      "For Proprietorship: proprietor's PAN + GST Certificate / MSME Udyam / professional certificate (if relevant)",
+      "GSTIN (if registered)",
     ],
   },
   {
-    icon: <FaFileAlt />,
-    title: "Organisation PAN Card",
-    note: "PAN of the business entity (firm, company, LLP, etc.)",
+    icon: <FaUser />,
+    title: "Authorised Signatory / Employer Identity",
+    note: "Per signatory — Aadhaar must be mobile-linked",
     items: [
-      "PAN Card of the Organisation (if applicable — proprietorship may use owner's PAN)",
+      "Aadhaar of authorised signatory / employer (mobile-linked)",
+      "PAN",
+      "Photograph (passport-size, jpeg)",
+      "Designation letter / Board Resolution authorising signatory for SHOP & ESTABLISHMENT filings",
+      "Email + mobile number",
     ],
   },
   {
-    icon: <FaUsers />,
-    title: "Employee Details",
-    note: "Required for determining applicable government fee",
+    icon: <FaBolt />,
+    title: "Establishment Address Proof",
+    note: "Utility bill not older than 60 days",
     items: [
-      "Number of Employees (male and female separately, if applicable)",
-      "Board Resolution for Authorised Person (for companies and LLPs)",
-    ],
-  },
-  {
-    icon: <FaCamera />,
-    title: "Specimen Signature",
-    note: "For the authorised signatory of the application",
-    items: [
-      "Specimen Signature of the Applicant / Authorised Signatory",
+      "Latest electricity / gas / municipal tax bill (≤ 60 days old) for the establishment",
+      "Owned: property tax receipt",
+      "Rented: notarised rent agreement + landlord NoC + landlord's electricity bill",
+      "Photograph of establishment front-board / signage (some states require)",
     ],
   },
 ];
 
-const premisesDocs = [
+const rightDocs = [
   {
-    icon: <FaBolt />,
-    title: "Electricity Bill of Business Premises",
-    note: "Not older than 2 months from date of application",
+    icon: <FaMoneyBillWave />,
+    title: "Bank Account Details (Where Required)",
+    note: "Some states require at registration; others only at renewal",
     items: [
-      "Latest Electricity Bill of the registered office / business premises",
+      "Cancelled cheque OR bank passbook page with IFSC",
+    ],
+  },
+  {
+    icon: <FaIdCard />,
+    title: "Employee / Worker List",
+    note: "As on registration date",
+    items: [
+      "List of all employees / workers: name, designation, date of joining, monthly wages",
+      "Total count (male / female / others)",
+      "Working hours schedule",
+      "Weekly off day",
+      "Annual holiday list",
+      "National & festival holidays",
     ],
   },
   {
     icon: <FaFileContract />,
-    title: "Rent Agreement (if Premises is Rented)",
-    note: "Duly executed between property owner and applicant",
+    title: "State-Specific Supporting Docs",
+    note: "We send the exact state checklist after the discovery call",
     items: [
-      "Registered or notarized Rent Agreement between the property owner and the applicant",
-    ],
-  },
-  {
-    icon: <FaShieldAlt />,
-    title: "Registration / Incorporation Certificate",
-    note: "Proof of the organisation's legal existence",
-    items: [
-      "Certificate of Incorporation / Partnership Deed / GST Certificate / UDYAM Certificate (any one applicable)",
-    ],
-  },
-  {
-    icon: <FaCamera />,
-    title: "Signboard Photograph",
-    note: "Mandatory under Odisha S&E Rules",
-    items: [
-      "Photograph of the Sign Board displaying the business name and complete address in both Odia and English languages",
+      "Maharashtra Gumasta: photo of premises with signboard",
+      "Karnataka: NoC from neighbours (rare)",
+      "Delhi: hard-copy attested documents",
+      "Tamil Nadu: signed working-hours declaration",
     ],
   },
 ];
 
 const DocItem = ({ doc }) => (
-  <div className="shopdoc-doc-item">
-    <div className="shopdoc-doc-item-top">
-      <div className="shopdoc-doc-icon">{doc.icon}</div>
-      <div className="shopdoc-doc-meta">
-        <h4 className="shopdoc-doc-title">{doc.title}</h4>
-        <span className="shopdoc-doc-note">{doc.note}</span>
+  <div className="cpvd-doc-item">
+    <div className="cpvd-doc-item-top">
+      <div className="cpvd-doc-icon">{doc.icon}</div>
+      <div className="cpvd-doc-meta">
+        <h4 className="cpvd-doc-title">{doc.title}</h4>
+        <span className="cpvd-doc-note">{doc.note}</span>
       </div>
     </div>
-    <ul className="shopdoc-doc-list">
+    <ul className="cpvd-doc-list">
       {doc.items.map((item, i) => (
-        <li key={i} className="shopdoc-doc-list-item">{item}</li>
+        <li key={i} className="cpvd-doc-list-item">{item}</li>
       ))}
     </ul>
   </div>
@@ -94,41 +101,43 @@ const DocItem = ({ doc }) => (
 
 const ShopDocuments = () => {
   return (
-    <section className="shopdoc-section">
-      <div className="shopdoc-container">
+    <section className="cpvd-section">
+      <div className="cpvd-container">
 
-        <div className="shopdoc-header">
-          <h2 className="shopdoc-main-title">Documents Required for Shop &amp; Establishment Registration in India</h2>
-          <p className="shopdoc-main-subtitle">Get these ready and we'll take care of the rest. A detailed checklist will also be shared by our team.</p>
+        <div className="cpvd-header">
+          <h2 className="cpvd-main-title">Documents Required for Shop &amp; Establishment Registration in India</h2>
+          <p className="cpvd-main-subtitle">
+            Six categories. Documentation is light — this is one of the most accessible registrations. We send a state-specific personalised checklist after the discovery call.
+          </p>
         </div>
 
-        <div className="shopdoc-columns">
+        <div className="cpvd-columns">
 
-          <div className="shopdoc-column">
-            <div className="shopdoc-col-header">
-              <div className="shopdoc-col-header-icon"><FaUser /></div>
+          <div className="cpvd-column">
+            <div className="cpvd-col-header">
+              <div className="cpvd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="shopdoc-col-title">Owner / Business Documents</h3>
-                <p className="shopdoc-col-subtitle">Required for the proprietor, partners, or directors</p>
+                <h3 className="cpvd-col-title">Entity, Signatory &amp; Address Documents</h3>
+                <p className="cpvd-col-subtitle">Identity, authorisations &amp; establishment proof</p>
               </div>
             </div>
-            <div className="shopdoc-col-body">
-              {ownerDocs.map((doc, i) => (
+            <div className="cpvd-col-body">
+              {leftDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>
           </div>
 
-          <div className="shopdoc-column">
-            <div className="shopdoc-col-header shopdoc-col-header--office">
-              <div className="shopdoc-col-header-icon"><FaBuilding /></div>
+          <div className="cpvd-column">
+            <div className="cpvd-col-header cpvd-col-header--office">
+              <div className="cpvd-col-header-icon"><FaIdCard /></div>
               <div>
-                <h3 className="shopdoc-col-title">Premises &amp; Business Documents</h3>
-                <p className="shopdoc-col-subtitle">Required for the establishment's registered address</p>
+                <h3 className="cpvd-col-title">Bank, Employee &amp; State-Specific Docs</h3>
+                <p className="cpvd-col-subtitle">Bank details, worker list &amp; state requirements</p>
               </div>
             </div>
-            <div className="shopdoc-col-body">
-              {premisesDocs.map((doc, i) => (
+            <div className="cpvd-col-body">
+              {rightDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>

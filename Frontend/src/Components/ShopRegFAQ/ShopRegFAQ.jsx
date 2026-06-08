@@ -1,69 +1,61 @@
 import React, { useState } from "react";
-import "./ShopRegFAQ.css";
+import "../PvtltdFAQ/PvtltdFAQ.css";
 
 const faqs = [
   {
-    question: "Is Shop & Establishment Registration mandatory for all businesses?",
+    question: "What is Shop & Establishment Registration?",
     answer:
-      "Yes. Shop & Establishment registration is mandatory for every organisation operating as a shop, commercial establishment, hotel, restaurant, theatre, or place of public entertainment in municipal areas — irrespective of size or number of employees. Exemptions (hospitals, educational institutions, government establishments) vary by state.",
+      "Shop & Establishment Registration is a state-level labour law registration required for businesses operating from commercial establishments such as shops, offices, restaurants, startups, hotels, IT companies, consultancies, and other business premises. The registration is governed by the respective State Shop & Establishment Act and helps regulate working conditions, employee records, holidays, working hours, and other labour-related requirements.",
   },
   {
-    question: "Which law governs Shop & Establishment Registration in Odisha?",
+    question: "Is Shop & Establishment Registration mandatory in every state?",
     answer:
-      "In Odisha, the Odisha Shops & Commercial Establishments Act, 1956 governs registrations. Each state has its own Act — for example, the Maharashtra Shops and Establishments (Regulation of Employment and Conditions of Service) Act, 2017 applies in Maharashtra.",
+      "Yes, but the rules, applicability, fees, and validity period differ from state to state. Every state in India has its own Shop & Establishment Act and registration process. Businesses operating in multiple states may require separate registrations for each state or branch location.",
   },
   {
-    question: "What is the government fee for Shop & Establishment Registration?",
+    question: "Who should apply for Shop & Establishment Registration?",
     answer:
-      "In Odisha, the government fee is capped at approximately ₹600 per branch per year and is based on the number of employees. Fees differ by state — some charge a flat fee, others charge based on employee count or type of establishment.",
+      "Most commercial establishments, including proprietorships, partnership firms, LLPs, private limited companies, freelancers, consultants, startups, retail shops, and online businesses operating from a commercial premises generally require Shop & Establishment Registration, subject to the applicable state laws.",
   },
   {
-    question: "How long does it take to get the registration certificate?",
+    question: "Is Shop & Establishment Registration required for online businesses or home offices?",
     answer:
-      "In most states with online portals, the registration certificate is issued within 7–8 working days after submission of a complete and accurate application. States without online portals may require a physical visit and can take up to 15 working days.",
+      "In many states, yes. If you are operating a business from a fixed place, including a home office, coworking space, or commercial premises, Shop & Establishment Registration may be required depending on the applicable state rules and business activities.",
   },
   {
-    question: "Does a home-based business need Shop & Establishment Registration?",
+    question: "Is Shop & Establishment Registration the same as a Trade Licence?",
     answer:
-      "It depends on the state. In most states, businesses operating exclusively from a residence (home) with no commercial signage or employees may be exempt. However, if you have employees working from your home or display a signboard, registration is typically required. Consult our expert to confirm applicability for your state.",
+      "No. Shop & Establishment Registration and Trade Licence are different registrations issued under different laws and authorities. Shop & Establishment Registration is generally issued under the State Labour Department, whereas a Trade Licence is usually issued by the local Municipal Authority or Corporation.",
   },
   {
-    question: "Is Shop & Establishment Registration needed for each branch separately?",
+    question: "How much does Shop & Establishment Registration cost?",
     answer:
-      "Yes. Each branch located at a separate premises — even in the same city — requires its own individual Shop & Establishment registration. The certificate is premises-specific, not entity-specific.",
+      "Government fees vary from state to state and may depend on employee count, nature of business, and validity period. Our professional fee covers advisory, application preparation, filing assistance, and registration support. Any applicable government fee is charged separately on actuals.",
   },
   {
-    question: "What happens if I operate without registration?",
+    question: "How long does Shop & Establishment Registration take?",
     answer:
-      "Operating without a valid Shop & Establishment certificate is a punishable offence. Penalties include fines per day of default and, in cases of repeated non-compliance, directed closure by the local authority or labour department. Banks may also reject your current account application without the certificate.",
+      "The registration process generally takes around 5–10 working days, depending on the state, document verification process, and Labour Department portal timelines.",
   },
   {
-    question: "Does the registration need to be renewed annually?",
+    question: "Is renewal required for Shop & Establishment Registration?",
     answer:
-      "Yes. Annual renewal is mandatory under most state Shop & Establishment Acts. Failure to renew on time attracts late fees. Our Supreme plan includes renewal reminders to ensure you never miss the deadline.",
+      "The validity and renewal requirements depend on the respective state laws. Some states provide lifetime registration, while others require annual or periodic renewal. We provide renewal reminder support based on the applicable state requirements.",
   },
   {
-    question: "Can Legal Terminus handle registrations across multiple states?",
-    answer: (
-      <span>
-        Yes. Legal Terminus handles Shop &amp; Establishment registrations across multiple Indian states. Our team is familiar with state-specific procedures, portals, and document requirements. Contact us for a multi-state registration quote.
-      </span>
-    ),
+    question: "Do I need separate registration for multiple branches?",
+    answer:
+      "In most cases, yes. Separate Shop & Establishment Registration may be required for each business location or branch, even within the same state, depending on the applicable state rules.",
+  },
+  {
+    question: "What documents are generally required for Shop & Establishment Registration?",
+    answer:
+      "The required documents generally include business address proof, identity proof of the proprietor/directors/partners, PAN card, business incorporation documents (if applicable), employee details, and utility bills or rent agreement of the business premises.",
   },
   {
     question: "How can Legal Terminus help with Shop & Establishment Registration?",
-    answer: (
-      <span>
-        Legal Terminus handles the complete process, including:
-        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
-          <li>Customised document checklist for your state</li>
-          <li>Document verification and application preparation</li>
-          <li>Online filing with the local authority</li>
-          <li>Government fee coordination</li>
-          <li>Certificate delivery + annual renewal reminders</li>
-        </ul>
-      </span>
-    ),
+    answer:
+      "Legal Terminus provides complete assistance for Shop & Establishment Registration across different Indian states, including document preparation, Labour Department filing, registration certificate support, and post-registration guidance. We also assist with profile updates, amendment support, and renewal reminders through dedicated professional support and transparent pricing.",
   },
 ];
 
@@ -75,34 +67,34 @@ const ShopRegFAQ = () => {
   };
 
   return (
-    <section className="shopfaq-section">
-      <div className="shopfaq-container">
+    <section className="faq-section">
+      <div className="faq-container">
 
-        <div className="shopfaq-header">
-          <h2 className="shopfaq-title">Shop &amp; Establishment Registration — FAQs</h2>
-          <p className="shopfaq-intro">
-            Got questions? We've got answers — straight, no-BS, legally accurate.
+        <div className="faq-header">
+          <h2 className="faq-title">Shop &amp; Establishment Registration — FAQs</h2>
+          <p className="faq-intro">
+            Answers to the most asked questions about Shop &amp; Establishment Registration, compliance, eligibility, and process in India.
           </p>
         </div>
 
-        <div className="shopfaq-list">
+        <div className="faq-list">
           {faqs.map((item, index) => {
             const isActive = index === activeIndex;
             return (
               <div
                 key={index}
-                className={`shopfaq-item ${isActive ? "active" : ""}`}
+                className={`faq-item ${isActive ? "active" : ""}`}
               >
                 <button
                   type="button"
-                  className="shopfaq-question"
+                  className="faq-question"
                   onClick={() => toggleFaq(index)}
                 >
                   <span>{item.question}</span>
-                  <span className={`shopfaq-icon ${isActive ? "open" : ""}`}>▾</span>
+                  <span className={`faq-icon ${isActive ? "open" : ""}`}>▾</span>
                 </button>
-                <div className={`shopfaq-answer ${isActive ? "open" : ""}`}>
-                  <div className="shopfaq-answer-content">{item.answer}</div>
+                <div className={`faq-answer ${isActive ? "open" : ""}`}>
+                  <div className="faq-answer-content">{item.answer}</div>
                 </div>
               </div>
             );

@@ -1,67 +1,72 @@
 import React from "react";
-import "./ShopRegProcess.css";
+import "../PvtltdProcess/PvtltdProcess.css";
 
 const steps = [
   {
-    title: "Expert Consultation & Document Checklist",
+    title: "Discovery & State Check",
     day: "Day 0",
-    text: "Brief call with our expert to understand your establishment type, state, number of employees, and premises details. We share a customised document checklist specific to your state's Shop & Establishment Act.",
+    text: "30-min call with our state-labour expert to confirm: state(s) of operation, establishment type (shop / office / restaurant / cinema etc.), employee count, business activity, address, and existing registrations (PAN / GST / MSME). We map state-specific SHOP & ESTABLISHMENT requirements and fee slab.",
   },
   {
-    title: "Document Collection & Verification",
-    day: "Day 1",
-    text: "Submit your documents as per the checklist — identity proof (PAN + Aadhaar) of proprietor/partners/directors, address proof of the premises (rent agreement + electricity bill), photograph of the signboard, and number of employees.",
-  },
-  {
-    title: "Preparation of Application",
+    title: "Documents Collection",
     day: "Day 1–2",
-    text: "Our team prepares the registration application form as per the applicable state rules. We verify all details — establishment name, address, nature of business, working hours, and employee count — before filing.",
+    text: "Entity PAN, COI / Partnership Deed / Trade Licence / Proprietorship proof, address proof (electricity bill, rent agreement, NoC), photograph of establishment, authorised signatory's Aadhaar + PAN, employee list summary.",
   },
   {
-    title: "Filing of Application with Local Authority",
+    title: "State Portal Registration",
+    day: "Day 2",
+    text: "Create user account on the State Labour Department portal (state-specific URL — Maharashtra: aaplesarkar.mahaonline.gov.in, Karnataka: shopsce.karnataka.gov.in, Delhi: labourcis.nic.in etc.). Email + mobile OTP verification.",
+  },
+  {
+    title: "State-Specific Form Filing",
     day: "Day 2–3",
-    text: "The application is filed online (or in person at the local labour office / municipal body, as applicable for your state). For states with online portals, we handle the submission directly.",
+    text: "Application form filed (Form A / Form 1 / LM-1 / LM-2 depending on state). Establishment details, employer details, employee count, working hours, weekly off schedule, holiday list. DSC-signed where required.",
   },
   {
-    title: "Payment of Government Fee",
-    day: "Day 2–3",
-    text: "Government fees are paid online at actuals as per the state fee schedule (typically based on employee count). In Odisha the fee is capped at approximately ₹600 per branch per year.",
+    title: "Government Fee Payment",
+    day: "Day 3",
+    text: "State government fee paid online via the portal (net banking / debit card / UPI). Receipt auto-generated. Fee slab depends on employee count + establishment type per state schedule.",
   },
   {
-    title: "Verification by Authorities",
-    day: "Day 3–7",
-    text: "The local authority (labour inspector / municipal office) verifies the application and documents. In most online-portal states, this process is automated; in others, a physical inspection may be required.",
+    title: "Inspector Verification (Some States)",
+    day: "Day 4–7",
+    text: "Some states (e.g., Tamil Nadu, West Bengal) require Inspector visit for physical verification of the establishment before issuing the Certificate. Inspector is typically allocated within 3–5 working days.",
   },
   {
-    title: "Registration Certificate Issued",
-    day: "Day 7–8",
-    text: "The Registration Certificate is issued by the competent authority and delivered to you digitally. This certificate must be displayed prominently at the business premises at all times.",
+    title: "Registration Certificate Issuance",
+    day: "Day 5–10",
+    text: "State Labour Department issues the Registration Certificate (Gumasta / SHOP & ESTABLISHMENT Cert / Trade Licence / etc.) — PDF downloadable from the portal. Some states still issue physical certificates by post.",
+  },
+  {
+    title: "Onboarding Kit + Renewal Calendar",
+    day: "Day 7–10",
+    text: "We deliver: Registration Certificate, state-specific renewal calendar (lifetime / 1-year / 3-year / 5-year depending on state), statutory register templates (Enriched / Supreme), display-board template, 1-year free-update tracker.",
   },
 ];
 
 const ShopRegProcess = () => {
   return (
-    <section className="shopreg-gst-wrapper">
-      <h2 className="shopreg-gst-heading">
+    <section className="pvtltd-gst-wrapper">
+      <h2 className="gst-heading">
         Steps for Shop &amp; Establishment Registration in India
       </h2>
-      <p className="shopreg-gst-subheading">
-        Seven steps. 7–8 working days end-to-end (assuming clean documents and online portal availability in your state).
+      <p className="pv-gst-subheading">
+        Eight steps. 5–10 working days end-to-end (state-dependent). Some states issue certificates same-day post-payment; others take 7–10 days for Inspector clearance.
       </p>
 
-      <div className="shopreg-timeline">
-        <div className="shopreg-timeline-line" />
+      <div className="pvtltd-timeline">
+        <div className="pvtltd-timeline-line" />
 
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`shopreg-timeline-item ${index % 2 === 0 ? "left" : "right"} ${index === 0 ? "first" : ""} ${index === steps.length - 1 ? "last" : ""}`}
+            className={`pvtltd-timeline-item ${index % 2 === 0 ? "left" : "right"} ${index === 0 ? "first" : ""} ${index === steps.length - 1 ? "last" : ""}`}
           >
-            <div className="shopreg-timeline-dot">{index + 1}</div>
-            <div className="shopreg-timeline-card">
+            <div className="pvtltd-timeline-dot">{index + 1}</div>
+            <div className="pvtltd-timeline-card">
               <h4>
                 {step.title}
-                {step.day && <span className="shopreg-day-tag">{step.day}</span>}
+                {step.day && <span className="pvtltd-day-tag">{step.day}</span>}
               </h4>
               <p>{step.text}</p>
             </div>
