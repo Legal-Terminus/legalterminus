@@ -3,7 +3,7 @@ import "../PvtltdTabs/PvtltdTabs.css";
 
 const tabs = [
   { label: "Why Startup India", id: "overview" },
-  { label: "Eligible Entities", id: "types" },
+  { label: "Types", id: "types" },
   { label: "Benefits", id: "benefits" },
   { label: "Process", id: "process" },
   { label: "Documents", id: "documents" },
