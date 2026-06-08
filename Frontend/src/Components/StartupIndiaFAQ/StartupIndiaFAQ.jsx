@@ -3,76 +3,59 @@ import "../PvtltdFAQ/PvtltdFAQ.css";
 
 const faqs = [
   {
-    question: "What is Startup India (DPIIT) recognition and who can apply?",
+    question: "What is Startup India / DPIIT Recognition?",
     answer:
-      "Startup India recognition is issued by DPIIT (Department for Promotion of Industry and Internal Trade) to startups that meet specific criteria: incorporated as a Private Limited Company, LLP, or Registered Partnership Firm; not older than 10 years from date of incorporation; annual turnover under ₹100 crore in any preceding FY; working towards innovation, development, or improvement of products/processes/services; and not formed by splitting or reconstruction of an existing business.",
+      "Startup India is an initiative launched by the Government of India to support innovation and entrepreneurship. DPIIT Recognition is an official recognition issued by the Department for Promotion of Industry and Internal Trade (DPIIT) to eligible startups. Recognized startups may become eligible for various benefits such as tax exemptions, startup funding support, trademark and patent fee rebates, easier government tender participation, and Startup India scheme benefits.",
   },
   {
-    question: "Is there a government fee for DPIIT recognition?",
+    question: "Who is eligible for DPIIT recognition in 2026?",
+    answer: (
+      <span>
+        To apply for DPIIT Startup Recognition, the entity must meet the following conditions:
+        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
+          <li>Must be a Private Limited Company, LLP, or Registered Partnership Firm</li>
+          <li>Should not be older than 10 years from incorporation</li>
+          <li>Annual turnover should not exceed Rs.200 Crores in any financial year (Rs.300 Crores for Deep Tech startups)</li>
+          <li>Must be working towards innovation, development, improvement, or a scalable business model</li>
+        </ul>
+        Sole Proprietorships are not eligible for DPIIT recognition.
+      </span>
+    ),
+  },
+  {
+    question: "What is the total cost of Startup India Registration?",
     answer:
-      "No. The DPIIT recognition application is entirely free of government fees. You only pay our professional consultancy fee for application preparation, innovation narrative drafting, portal filing, and follow-up. There is no stamp duty, registration fee, or government charge for Startup India recognition.",
+      "There is no government fee for DPIIT Startup Recognition. Our professional fee covers eligibility review, startup profile drafting, document support, and application filing. Additional charges may apply for DSC, trademark filing, or other services depending on the selected plan.",
   },
   {
     question: "How long does DPIIT recognition take?",
     answer:
-      "Typically 2–4 weeks from the date of application submission. DPIIT reviews applications online and may request clarifications. Applications with clear innovation descriptions and complete documents are processed faster. Our team ensures your application is DPIIT-ready before submission to minimise back-and-forth.",
+      "DPIIT Startup Recognition is generally processed within 3–5 working days after successful submission of documents and application details. Approval timelines may vary depending on document verification and DPIIT review.",
   },
   {
-    question: "What is the Section 80-IAC tax holiday and how do I get it?",
-    answer: (
-      <span>
-        Section 80-IAC provides a 100% income tax exemption for 3 consecutive years out of your first 10 years of incorporation. To claim it:
-        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
-          <li>First get DPIIT recognition (mandatory prerequisite)</li>
-          <li>Then apply to the Inter-Ministerial Board (IMB) — a committee that reviews your innovation claim</li>
-          <li>IMB approval typically takes 30–90 days</li>
-          <li>You must choose 3 consecutive years within the first 10 years (can't skip years)</li>
-        </ul>
-        The 80-IAC exemption is not automatic with DPIIT recognition — it requires a separate IMB application.
-      </span>
-    ),
-  },
-  {
-    question: "What is angel tax and how does DPIIT recognition help?",
+    question: "What's Section 80-IAC and how do I claim the 3-year tax holiday?",
     answer:
-      "Angel tax (Section 56(2)(viib)) is a 30% tax imposed on a startup when it receives equity funding from Indian investors at a valuation higher than Fair Market Value (FMV). DPIIT-recognised startups can file Form 2 with DPIIT to get an exemption from angel tax. This is critical for startups raising from Indian angel networks, HNIs, and family offices — without the exemption, a ₹1 crore round at 3x FMV premium could trigger ₹6 lakh in angel tax on the startup.",
+      "Section 80-IAC provides eligible DPIIT-recognized startups with income tax benefits for a specified period, subject to approval from the Inter-Ministerial Board (IMB). This approval process is separate from DPIIT Recognition and depends on government eligibility criteria.",
   },
   {
-    question: "Can a company that already has revenue apply for Startup India?",
+    question: "What's the Section 56(2)(viib) angel tax exemption?",
     answer:
-      "Yes, as long as your annual turnover has not exceeded ₹100 crore in ANY preceding financial year. There is no minimum revenue requirement — even zero-revenue startups can apply. The key eligibility filters are: age (< 10 years), turnover cap (< ₹100 crore peak year), entity type, and innovation criterion.",
+      "Section 56(2)(viib) of the Income Tax Act, 1961 - the 'angel tax' - has been ABOLISHED with effect from 1 April 2025 via the Finance Act, 2024. The provision that taxed share premium above fair market value at 30% in a startup's hands no longer exists for FY 2025-26 onwards. This applies to all investors - domestic and foreign. No Form 2 declaration, no DPIIT exemption certificate, and no merchant banker valuation is required for new fundraises. If your startup received angel tax demand notices for AY 2024-25 or earlier years, those assessments continue under the old law and need to be addressed separately with a tax advisor.",
   },
   {
-    question: "What happens if my DPIIT application is rejected?",
+    question: "Can a sole proprietorship apply for DPIIT recognition?",
     answer:
-      "DPIIT typically provides a reason for rejection (usually: not sufficiently innovative, incorrect entity type, or age/turnover mismatch). Rejected startups can re-apply after addressing the issues. Our team reviews all rejection reasons and prepares a stronger resubmission. Most rejections are due to weak innovation narratives — something our Priority service specifically addresses.",
+      "No. Sole Proprietorships are not eligible for DPIIT Recognition. Only Private Limited Companies, LLPs, and Registered Partnership Firms can apply under the Startup India scheme.",
   },
   {
-    question: "Can a startup with foreign investors or foreign directors apply?",
+    question: "Once recognised, are there ongoing compliance requirements?",
     answer:
-      "Yes. A Private Limited Company with foreign shareholders (FDI under auto route) or foreign directors can apply for DPIIT recognition. The foreign investment does not affect eligibility. However, the angel tax exemption (Form 2) only covers shares issued to Indian resident investors — foreign investor rounds are governed by FEMA and are not subject to angel tax anyway.",
+      "Yes. Recognized startups may need to update their Startup India profile, submit declarations, and maintain regular compliance with applicable laws such as ROC filings, GST filings, Income Tax returns, and other statutory requirements. DPIIT recognition may lapse once the entity crosses the eligibility limits prescribed under the Startup India scheme.",
   },
   {
-    question: "Does DPIIT recognition need to be renewed?",
+    question: "How can Legal Terminus help me with Startup India recognition?",
     answer:
-      "DPIIT recognition itself does not have a fixed renewal date — it remains valid as long as the startup continues to meet the eligibility criteria (age < 10 years and turnover < ₹100 crore). However, the 80-IAC tax holiday election must be renewed each year it's claimed, and the angel tax Form 2 exemption covers only shares issued after the filing date.",
-  },
-  {
-    question: "How can Legal Terminus help with Startup India recognition?",
-    answer: (
-      <span>
-        Legal Terminus handles the complete process, including:
-        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
-          <li>Eligibility assessment and entity type review</li>
-          <li>Innovation narrative drafting (the most critical element)</li>
-          <li>DPIIT portal application filing and document upload</li>
-          <li>Query response and DPIIT follow-up</li>
-          <li>Post-recognition 80-IAC and Form 2 filings (Supreme plans)</li>
-          <li>Annual compliance support (Supreme Plus plan)</li>
-        </ul>
-        Our team combines legal, tax, and company secretarial expertise to ensure your application is built for approval — not just submission.
-      </span>
-    ),
+      "Legal Terminus provides complete assistance for Startup India registration, including eligibility review, startup profile drafting, document support, DPIIT filing, and post-recognition guidance. We also assist startups with DSC coordination, trademark filing, and profile update support based on the selected plan.",
   },
 ];
 
