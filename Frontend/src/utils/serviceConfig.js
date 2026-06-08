@@ -50,6 +50,10 @@ export const SERVICE_CONFIG = {
   'llp-registration':           { displayName: 'LLP Registration',                        category: 'LLP' },
   'llr-registration':           { displayName: 'LLP (Land/Property) Registration',        category: 'LLP' },
 
+  // Startup
+  'startup-india':              { displayName: 'Startup India (DPIIT) Registration',       category: 'Startup' },
+  'startup-odisha':             { displayName: 'Startup Odisha Registration',              category: 'Startup' },
+
   // Proprietorship
   'proprietorship':             { displayName: 'Proprietorship Registration',             category: 'Proprietorship' },
   'udyam-registration':         { displayName: 'Udyam / MSME Registration',               category: 'Proprietorship' },
