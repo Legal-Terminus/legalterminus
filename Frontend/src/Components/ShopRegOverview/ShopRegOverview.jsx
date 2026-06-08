@@ -96,6 +96,18 @@ const ShopRegOverview = () => {
                   <td>1+ employee</td>
                   <td>Annual</td>
                 </tr>
+                <tr>
+                  <td>Uttar Pradesh</td>
+                  <td>Dookan Aur Vanijya Adhishthan Act 1962</td>
+                  <td>1+ employee</td>
+                  <td>Annual</td>
+                </tr>
+                <tr>
+                  <td>Madhya Pradesh</td>
+                  <td>SHOP &amp; ESTABLISHMENT Act 1958</td>
+                  <td>1+ employee</td>
+                  <td>Annual</td>
+                </tr>
               </tbody>
             </table>
           </div>

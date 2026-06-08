@@ -26,7 +26,7 @@ const ShopRegPriority = () => {
                   <span className="zp-title-highlight">Priority</span>{" "}
                   <span className="zp-title-icon">⚖</span>
                 </h2>
-                <p className="zp-subtitle">
+                <p className="zp-subtitle" style={{ textAlign: "left" }}>
                   Shop &amp; Establishment Registration may look simple, but every state in India follows its own rules, forms, fee structure, validity period, and renewal process. For businesses operating in multiple states, handling state-specific labour compliance can quickly become complicated. With LT Priority, your application is handled on a faster and priority basis by experienced professionals who understand the practical requirements of different State Labour Department portals and registration procedures.
                 </p>
               </header>
@@ -39,7 +39,7 @@ const ShopRegPriority = () => {
                     Priority processing for faster registration support and certificate issuance.
                   </li>
                   <li className="zp-list-item">
-                    <span className="zp-list-icon">🛡</span>
+                    <span className="zp-list-icon">📋</span>
                     State-specific application review and filing assistance by experienced compliance professionals.
                   </li>
                   <li className="zp-list-item">
