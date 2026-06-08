@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import "../PvtltdPlanandPricing/PvtltdPlanandPricing.css";
-import "./StartupIndiaPricing.css";
+import "../OPCPlans/OPCPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
@@ -21,6 +20,8 @@ const PLANS = [
   {
     id: "enriched",
     name: "Enriched",
+    badge: "★ MOST POPULAR",
+    popular: true,
     oldPrice: 8999,
     price: 5999,
     services: [
@@ -32,6 +33,7 @@ const PLANS = [
   {
     id: "supreme",
     name: "Supreme",
+    badge: "✦ FULL SERVICE",
     oldPrice: 10999,
     price: 7499,
     services: [
@@ -49,84 +51,56 @@ const StartupIndiaPricing = () => {
 
   return (
     <>
-      <section className="pvtltd-pricing-section">
-        <div className="pricing-container">
+      <section className="opc-pricing-section">
+        <div className="opcpricing-container">
 
-          <header className="pricing-header">
-            <h2 className="PvtLtd-pricing-title">CHOOSE YOUR PLAN</h2>
-            <p className="pricing-subtitle">
+          <header className="opcpricing-header">
+            <h2 className="opcpricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="opcpricing-subtitle">
               Get your Startup India recognition with pocket-friendly plans
             </p>
           </header>
 
-          <div className="pricing-cards si-three-plans">
+          <div className="opcpricing-cards">
+            {PLANS.map((plan) => (
+              <article
+                key={plan.id}
+                className={`opcplan-card${plan.popular ? " opcplan-card--popular" : ""}`}
+              >
+                <div>
+                  <div className="opcplan-header">
+                    {plan.badge && (
+                      <div className={`opcplan-badge${plan.popular ? " opcplan-badge--popular" : ""}`}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    <div className="opcplan-name">{plan.name}</div>
+                    <div className="opcplan-old-price">Rs.{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-price">Rs.{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
+                  </div>
 
-            <article className="plan-card">
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Elemental</div>
-                  <div className="plan-old-price">Rs.{PLANS[0].oldPrice.toLocaleString("en-IN")}</div>
-                  <div className="plan-price">Rs.{PLANS[0].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
+                  <div className="opcplan-body">
+                    <ul className="opcplan-list">
+                      {plan.services.map((s, i) => (
+                        <li key={i} className="opcplan-list-item">{s}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[0].services.map((s, i) => (
-                      <li key={i} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-              </div>
-            </article>
 
-            <article className="plan-card plan-card--popular">
-              <div className="plan-popular-badge">★ MOST POPULAR</div>
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Enriched</div>
-                  <div className="plan-old-price">Rs.{PLANS[1].oldPrice.toLocaleString("en-IN")}</div>
-                  <div className="plan-price">Rs.{PLANS[1].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
+                <div className="opcplan-footer">
+                  <button
+                    className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
+                    onClick={() => setActivePlan(plan)}
+                  >
+                    Buy Now
+                  </button>
                 </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[1].services.map((s, i) => (
-                      <li key={i} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-              </div>
-            </article>
-
-            <article className="plan-card plan-card--fullservice">
-              <div className="plan-fullservice-badge">✦ FULL SERVICE</div>
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Supreme</div>
-                  <div className="plan-old-price">Rs.{PLANS[2].oldPrice.toLocaleString("en-IN")}</div>
-                  <div className="plan-price">Rs.{PLANS[2].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
-                </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[2].services.map((s, i) => (
-                      <li key={i} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-              </div>
-            </article>
-
+              </article>
+            ))}
           </div>
+
         </div>
       </section>
 
