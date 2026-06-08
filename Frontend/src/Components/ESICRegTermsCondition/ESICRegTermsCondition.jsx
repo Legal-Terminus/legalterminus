@@ -15,34 +15,28 @@ const ESICRegTermsCondition = () => {
 
           <ol className="pvtltd-tc-list">
             <li className="pvtltd-tc-item">
-              Government Fee: There is no government fee for ESIC Registration under the ESIC portal. Our professional fee covers advisory, establishment profile preparation, Form-1 filing, DSC coordination, employee IP number guidance, and post-registration support.
+              Government Fee: ESIC Registration government fee is NIL under the ESIC unified portal. Our fee covers professional services — advisory, Form 1 drafting, portal filing, Insurance Number (IP) generation, family declaration capture, and post-registration support.
             </li>
             <li className="pvtltd-tc-item">
-              GST on Our Fee: All quoted prices are exclusive of GST @ 18%, which will be charged at checkout. Once your business GSTIN is active, the GST component paid on our services may be eligible for input tax credit, subject to applicable GST provisions.
+              GST on Our Fee: All quoted prices are exclusive of GST @ 18%, charged at checkout.
             </li>
             <li className="pvtltd-tc-item">
-              DSC Charges: A valid Digital Signature Certificate (DSC) is required for ESIC portal filing. If you do not already possess one, it will be arranged separately at actual cost (currently ₹1,499 + GST per signatory).
+              Mandatory Registration Trigger: ESIC Registration is mandatory under Section 1(5) of the ESI Act, 1948 once your non-seasonal establishment has 10 or more employees (20 in certain states — we verify on the discovery call). Registration must be filed within 15 days of crossing the threshold.
             </li>
             <li className="pvtltd-tc-item">
-              Mandatory Registration Trigger: ESIC Registration becomes mandatory under the Employees' State Insurance Act, 1948 when an establishment employs 10 or more employees (in most states and notified industries). Certain states may have a 20-employee threshold. Once registered, ESIC coverage continues irrespective of subsequent headcount reduction.
+              Wage Threshold for Mandatory Coverage: Employees earning gross wages up to ₹21,000 / month are mandatorily covered under ESIC (₹25,000 for persons with disabilities). Employees earning above ₹21,000 are not covered, even if they want to opt in — the cap is statutory.
             </li>
             <li className="pvtltd-tc-item">
-              Wage Ceiling for ESIC Coverage: Employees drawing gross wages up to ₹21,000 per month (₹25,000 for persons with disabilities) are covered under ESIC. Employees earning above this threshold are not covered and do not contribute to ESIC.
+              Contribution Rates (FY 2025-26): Employer contribution 3.25% of gross wages. Employee contribution 0.75% of gross wages. Total 4% of gross wages, deducted monthly and remitted by the 15th of next month.
             </li>
             <li className="pvtltd-tc-item">
-              Employee IP Numbers: Generation of employee Insurance Numbers (IP Numbers) depends on Aadhaar-linked mobile verification for each employee. Delays arising from employees' KYC non-compliance or Aadhaar-bank mismatches are outside Legal Terminus's control.
+              Employee Capacity per Plan: Elemental covers IP generation for up to 10 employees. Enriched up to 10–30 employees. Supreme up to 30–50 employees. Additional employees beyond plan limits shall be decided upon negotiation.
             </li>
             <li className="pvtltd-tc-item">
-              Monthly Compliance Not Included: The registration package covers only the ESIC Registration process. It does not include monthly ESI return filing, contribution calculations, challan generation, employee onboarding, grievance handling, or ESIC inspections. Such services are available separately.
+              Monthly Compliance Out-of-Scope: Plans do NOT include ongoing monthly contribution filing (beyond the included first-1 walkthrough in Enriched / first-3 in Supreme), annual returns, grievance handling, benefit claim assistance for individual employees, Section 45A determination representation, or Inspector visits / inquiries. These are billed under our monthly Payroll Compliance retainer (starting ₹1,999 / month for ESIC only).
             </li>
             <li className="pvtltd-tc-item">
-              Free ESIC Update Support (1 Year — Supreme Plan): The Supreme plan includes one year of support for routine updates such as authorised signatory changes, address updates, employee additions, and DSC remapping. Support period begins from the date of Employer Code allotment.
-            </li>
-            <li className="pvtltd-tc-item">
-              Information &amp; Documentation Responsibility: The employer is responsible for providing accurate establishment details, employee information, and other documents required for registration. Delays from incomplete or inaccurate information may impact processing timelines.
-            </li>
-            <li className="pvtltd-tc-item">
-              Out-of-Scope Items: ESIC court matters, recovery proceedings, inspection representation, Section 85 prosecution defence, exempted establishment applications, and international worker compliance are not included and quoted separately on request.
+              Out-of-Scope Items: Sub-code registration for branches (quoted separately), inter-state contractor compliance, Atal Bimit Vyakti Kalyan Yojana / RGSKY claim assistance for terminated employees, ESIC inspection representation, Section 75 cases (Insurance Court matters), Section 85 prosecution defence, and conversion of exempted to unexempted establishment are not included and quoted separately on request.
             </li>
           </ol>
 

@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react'
 import EsicRegBreadcrum from '../../Components/EsicRegBreadcrum/EsicRegBreadcrum'
 import ESICRegPricing from '../../Components/ESICRegPricing/ESICRegPricing'
+import ESICGovtCosts from '../../Components/ESICGovtCosts/ESICGovtCosts'
 import ESICRegTermsCondition from '../../Components/ESICRegTermsCondition/ESICRegTermsCondition'
 import ESICRegPriority from '../../Components/ESICRegPriority/ESICRegPriority'
 import ESICRegTabs from '../../Components/ESICRegTabs/ESICRegTabs'
@@ -24,6 +25,10 @@ const ESICReg = () => {
       <div id="plans" className="copy-page-pricing">
         <ESICRegPricing />
       </div>
+
+      <div className="section-divider" />
+
+      <ESICGovtCosts />
 
       <div className="section-divider" />
 
