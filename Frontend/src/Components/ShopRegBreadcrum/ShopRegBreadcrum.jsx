@@ -1,5 +1,5 @@
 import React from "react";
-import "../Breadcrum/Breadcrum.css";
+import "../EPFRegBreadcrum/EPFRegBreadcrum.css";
 import ConsultationForm from "../ConsultationForm/ConsultationForm";
 
 const ShopRegBreadcrum = () => {
@@ -18,28 +18,30 @@ const ShopRegBreadcrum = () => {
             Shop &amp; Commercial Establishments Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-public-subtitle">Fast, Secure &amp; 100% Online</span>
+            <span className="lt-public-subtitle">Quick &amp; Hassle-Free Shop Act Registration</span>
           </h1>
 
           <p className="lt-public-description">
-            The Shop &amp; Commercial Establishments Act is a state-level labour law that mandates every shop, office, hotel, restaurant, warehouse, and place of public entertainment to register with the local government authority. The registration certificate is your business's first official identity — required for opening a current bank account, obtaining GST, applying for trade licences, and qualifying for MSME / Udyam benefits. Government fee in Odisha is capped at ₹600 per branch per year. Registration is 100% online in most states.
+            Shop &amp; Establishment Registration is one of the basic labour law registrations required for businesses operating from a commercial establishment in India, including shops, offices, restaurants, startups, IT companies, hotels, and other commercial entities. The registration is governed by the respective State Shop &amp; Establishment Act and helps businesses maintain legal compliance related to working hours, employee records, wages, leave policies, and workplace conditions.
+            <br /><br />
+            We provide complete assistance for Shop &amp; Establishment Registration, including application filing on the respective State Labour Department portal, document preparation, registration certificate support, and compliance guidance.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">State Government Certificate</div>
-            <div className="lt-feature-item">Legal Business Identity</div>
-            <div className="lt-feature-item">Labour Law Compliance</div>
-            <div className="lt-feature-item">Bank Account &amp; GST Ready</div>
+            <div className="lt-feature-item">Labour Compliance</div>
+            <div className="lt-feature-item">Online Registration</div>
+            <div className="lt-feature-item">Multi-State Support</div>
+            <div className="lt-feature-item">Fast Processing</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>500+</h3>
-              <p>Establishments registered</p>
+              <h3>4,000+</h3>
+              <p>SHOP &amp; ESTABLISHMENT registrations filed</p>
             </div>
             <div>
-              <h3>All States</h3>
-              <p>Pan-India coverage</p>
+              <h3>28 States + 8 UTs</h3>
+              <p>all state portals covered</p>
             </div>
             <div>
               <h3>7+</h3>

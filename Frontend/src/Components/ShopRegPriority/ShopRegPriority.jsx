@@ -1,82 +1,88 @@
 import React from "react";
-import "./ShopRegPriority.css";
-import premiumIllustration from "../../assets/lt-company.svg";
+import "../PvtltdZolvitPremium/PvtltdZolvitPremium.css";
+import priorityIllustration from "../../assets/lt-companys.svg";
 
 const ShopRegPriority = () => {
   return (
-    <section className="srp-section">
-      <div className="srp-container">
-        <div className="srp-card">
+    <section className="zp-section">
+      <div className="zp-container">
+        <div className="zp-card">
 
-          <div className="srp-top-row">
+          {/* Top two-column row: illustration + content */}
+          <div className="zp-top-row">
 
-            <div className="srp-illustration-wrapper">
+            <div className="zp-illustration-wrapper">
               <img
-                src={premiumIllustration}
+                src={priorityIllustration}
                 alt="Shop & Establishment Registration by Legal Terminus"
-                className="srp-illustration"
+                className="zp-illustration"
               />
             </div>
 
-            <div className="srp-content">
-              <header className="srp-header">
-                <h2 className="srp-title">
+            <div className="zp-content">
+              <header className="zp-header">
+                <h2 className="zp-title">
                   Legal Terminus{" "}
-                  <span className="srp-title-highlight">Priority</span>{" "}
-                  <span className="srp-title-icon">⚖</span>
+                  <span className="zp-title-highlight">Priority</span>{" "}
+                  <span className="zp-title-icon">⚖</span>
                 </h2>
-                <p className="srp-subtitle">
-                  A Shop &amp; Establishment Certificate is not just a formality — it is the first piece of official identity your business receives from the state government. It legitimises your premises, regulates working conditions for employees, and is the foundational document for GST, trade licences, and bank account opening. Priority is what happens when an expert files it right the first time and hands you a compliance calendar so you never miss a renewal.
+                <p className="zp-subtitle">
+                  Shop &amp; Establishment Registration may look simple, but every state in India follows its own rules, forms, fee structure, validity period, and renewal process. For businesses operating in multiple states, handling state-specific labour compliance can quickly become complicated. With LT Priority, your application is handled on a faster and priority basis by experienced professionals who understand the practical requirements of different State Labour Department portals and registration procedures.
                 </p>
               </header>
 
-              <section className="srp-section-block">
-                <h3 className="srp-label">What you get</h3>
-                <ul className="srp-list srp-features-list">
-                  <li className="srp-list-item">
-                    <span className="srp-list-icon">⚡</span>
-                    Same-day document checklist and application initiation — no back-and-forth.
+              <section className="zp-section-block">
+                <h3 className="zp-label">What You Get</h3>
+                <ul className="zp-list zp-features-list">
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">⚡</span>
+                    Priority processing for faster registration support and certificate issuance.
                   </li>
-                  <li className="srp-list-item">
-                    <span className="srp-list-icon">✅</span>
-                    Expert reviewed documents with real-time feedback before submission.
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">🛡</span>
+                    State-specific application review and filing assistance by experienced compliance professionals.
                   </li>
-                  <li className="srp-list-item">
-                    <span className="srp-list-icon">🔄</span>
-                    Real-time application status updates via mail and WhatsApp.
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">🌐</span>
+                    Registration support across all Indian States and Union Territories.
                   </li>
-                  <li className="srp-list-item">
-                    <span className="srp-list-icon">📑</span>
-                    Post-registration kit: Certificate, compliance calendar, and renewal reminders.
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">🔄</span>
+                    Free Shop &amp; Establishment profile update support for 1 year.
+                  </li>
+                  <li className="zp-list-item">
+                    <span className="zp-list-icon">📅</span>
+                    Renewal reminder support based on your applicable state validity and renewal cycle.
                   </li>
                 </ul>
               </section>
             </div>
           </div>
 
-          <div className="srp-bottom-full">
-            <h3 className="srp-label">Important Notes</h3>
-            <div className="srp-note-box">
-              <ul className="srp-note-list">
-                <li className="srp-note-item">
-                  <strong>State-specific law</strong> governs Shop &amp; Establishment registration — each state has its own Act (Odisha Shops &amp; Commercial Establishments Act, 1956 for Odisha). Procedure, fees, and renewal periods differ state by state.
+          {/* Important Notes + CTA */}
+          <div className="zp-bottom-full">
+            <h3 className="zp-label">Important Notes</h3>
+            <div className="zp-note-box">
+              <ul className="zp-note-list">
+                <li className="zp-note-item">
+                  SHOP &amp; ESTABLISHMENT is state-specific — NOT central. Each state has its own Act (Maharashtra SHOP &amp; ESTABLISHMENT Act 2017, Karnataka S&amp;CE Act 1961, Delhi SHOP &amp; ESTABLISHMENT Act 1954, Tamil Nadu SHOP &amp; ESTABLISHMENT Act 1947, etc.). If you operate in multiple states, you need separate registrations in each. Single-state registration doesn't extend to others.
                 </li>
-                <li className="srp-note-item">
-                  <strong>Applicability</strong> covers every shop, commercial establishment, hotel, restaurant, theatre, and place of public entertainment, regardless of the number of employees. Exemptions (hospitals, educational institutions, government offices) vary by state rules.
+                <li className="zp-note-item">
+                  Registration trigger varies by state. Maharashtra: registration required from 1 employee. Karnataka and Delhi: from 1 employee. Some states require it only above 10 employees. Most banks demand SHOP &amp; ESTABLISHMENT for current account opening — effectively making it functionally mandatory even for solo-employee businesses.
                 </li>
-                <li className="srp-note-item">
-                  <strong>Government fee</strong> is calculated based on the number of employees and the type of establishment. In Odisha it is capped at approximately ₹600 per year per branch.
+                <li className="zp-note-item">
+                  Validity periods vary dramatically. Maharashtra Gumasta is one-time / lifetime. Karnataka is 5 years. Tamil Nadu and Delhi are annual. Missing renewal can lead to small per-day penalties + Inspector visits. Set the renewal calendar carefully — we provide one in the onboarding kit.
                 </li>
-                <li className="srp-note-item">
-                  <strong>Annual renewal</strong> is mandatory. Failure to renew attracts late fees and can result in cancellation. Set a calendar reminder or subscribe to our renewal reminder service.
+                <li className="zp-note-item">
+                  SHOP &amp; ESTABLISHMENT Registration is NOT the same as Trade Licence, Factory Licence, or Professional Tax. Many founders confuse these — they're separate registrations under separate state Acts. We map your full state-labour stack on the discovery call but file ONLY SHOP &amp; ESTABLISHMENT under this service.
                 </li>
               </ul>
             </div>
 
-            <div className="srp-cta-row">
+            <div className="zp-cta-row">
               <a
                 href="#shop-consult-form"
-                className="srp-cta-btn"
+                className="zp-cta-btn"
                 onClick={(e) => {
                   e.preventDefault();
                   document.getElementById("shop-consult-form")?.scrollIntoView({ behavior: "smooth" });

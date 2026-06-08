@@ -2,6 +2,7 @@ import React, { Suspense } from 'react'
 import './ShopReg.css'
 import ShopRegBreadcrum from '../../Components/ShopRegBreadcrum/ShopRegBreadcrum'
 import ShopRegPlanandPricing from '../../Components/ShopRegPlanandPricing/ShopRegPlanandPricing'
+import ShopGovtCosts from '../../Components/ShopGovtCosts/ShopGovtCosts'
 
 // Lazy load below-fold components
 const ShopRegTerms = React.lazy(() => import('../../Components/ShopRegTerms/ShopRegTerms'))
@@ -26,6 +27,10 @@ const ShopReg = () => {
       <div id="shop-plans" className="shop-page-pricing">
         <ShopRegPlanandPricing />
       </div>
+
+      <div className="section-divider" />
+
+      <ShopGovtCosts />
 
       <div className="section-divider" />
 

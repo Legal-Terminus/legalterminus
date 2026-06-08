@@ -1,51 +1,48 @@
 import React from "react";
-import "./ShopRegTerms.css";
+import "../PvtltdTermsCondition/PvtltdTermsCondition.css";
 
 const ShopRegTerms = () => {
   return (
-    <section className="shopreg-tc-section">
-      <div className="shopreg-tc-container">
-        <div className="shopreg-tc-card">
+    <section className="pvtltd-tc-section">
+      <div className="pvtltd-tc-container">
+        <div className="pvtltd-tc-card">
 
-          <h2 className="shopreg-tc-title">TERMS &amp; CONDITIONS</h2>
+          <h2 className="pvtltd-tc-title">TERMS &amp; CONDITIONS</h2>
 
-          <p className="shopreg-tc-subtitle">
+          <p className="pvtltd-tc-subtitle">
             By subscribing to any of the above plans, you agree to the following terms and conditions. Please read them carefully before proceeding.
           </p>
 
-          <ol className="shopreg-tc-list">
-            <li className="shopreg-tc-item">
-              The fee mentioned above does not include government fees, if any, which shall be payable over and above the professional fee mentioned. Government fees are charged at actuals as per the applicable state schedule.
+          <ol className="pvtltd-tc-list">
+            <li className="pvtltd-tc-item">
+              Government Fee — State-Specific: Shop &amp; Establishment Registration is a STATE-LEVEL registration. Government fees vary widely by state (₹50 to ₹5,000+) and depend on employee count, establishment type, and state's fee schedule. Fees are payable directly to the State Labour Department and reimbursed at actuals. Our professional fee covers advisory, application drafting, portal filing, and post-registration support.
             </li>
-
-            <li className="shopreg-tc-item">
-              Professional fees and government fees may vary from state to state. Kindly contact our executive to receive the best quotation as per your requirement and jurisdiction.
+            <li className="pvtltd-tc-item">
+              GST on Our Fee: All quoted prices are exclusive of GST @ 18%, charged at checkout.
             </li>
-
-            <li className="shopreg-tc-item">
-              The plan fee is applicable per branch / establishment. Each branch located in a separate premises or different municipal limits will require a separate registration and will be charged accordingly.
+            <li className="pvtltd-tc-item">
+              DSC Charges: Class 3 DSC may be required for digital signing depending on the state portal. Billed at ₹1,999 + GST at actuals if needed.
             </li>
-
-            <li className="shopreg-tc-item">
-              Annual renewal of the Shop &amp; Establishment registration is mandatory under state law. Renewal fees are not included in the one-time registration plan fee and will be communicated separately before renewal.
+            <li className="pvtltd-tc-item">
+              Mandatory Registration Trigger: SHOP &amp; ESTABLISHMENT Registration is mandatory under the respective State Shops &amp; Commercial Establishments Act. The threshold and timing vary by state — some states (e.g., Maharashtra) trigger registration from 1 employee, others from 10+ employees. Registration is typically required within 30 days of establishment commencing operations. We confirm state-specific triggers on the discovery call.
             </li>
-
-            <li className="shopreg-tc-item">
-              18% GST is applicable on all professional and consultancy fees charged by Legal Terminus Private Limited.
+            <li className="pvtltd-tc-item">
+              State Coverage Per Plan: All plans cover ONE state. Each state has its own Act, form, fee, and validity period — they are NOT interchangeable.
             </li>
-
-            <li className="shopreg-tc-item">
-              A detailed document checklist specific to your state will be shared by our team immediately upon plan confirmation. Accuracy and completeness of the documents provided by the client are the client's responsibility.
+            <li className="pvtltd-tc-item">
+              Validity &amp; Renewal: SHOP &amp; ESTABLISHMENT Registration validity varies by state. Maharashtra (Gumasta): lifetime (one-time fee). Karnataka: 5 years. Delhi: annual renewal. Tamil Nadu: annual renewal. Odisha: 3 years. Plan accordingly — we share state-specific renewal cycles on the discovery call. Free renewal-filing reminder included.
             </li>
-
-            <li className="shopreg-tc-item">
-              In case of rejection or deficiency by the local authority, Legal Terminus will assist in resubmission at no additional charge, provided the rejection is not due to incorrect information or documents furnished by the client.
+            <li className="pvtltd-tc-item">
+              Refund Policy: Full refund of professional fee (less ₹999 documentation handling) is available if SHOP &amp; ESTABLISHMENT application is not filed within 7 working days from receipt of complete documents. Government fees already paid to the State Labour Department are non-refundable.
             </li>
-
-            <li className="shopreg-tc-item">
-              Legal Terminus Private Limited is a private consultancy firm and is not affiliated with any government authority. All registration certificates are issued directly by the respective state/local government authority. Our fees are exclusively for consultancy, documentation assistance, and application support services.
+            <li className="pvtltd-tc-item">
+              Statutory Compliance Out-of-Scope: Plans do NOT include ongoing compliance — register maintenance, leave card maintenance, weekly off scheduling, wage register filing, monthly / quarterly returns where applicable, Inspector visit defence beyond initial briefing, labour court matters, or worker grievance handling. These are billed under our state-labour Compliance retainer.
+            </li>
+            <li className="pvtltd-tc-item">
+              Out-of-Scope Items: Trade Licence (separate municipal registration in some states), Factory Licence (Factories Act 1948 — separate registration for factories), Professional Tax registration, ESIC, EPF, Labour Welfare Fund (LWF), Pollution Control Board NOC, FSSAI, Drug Licence, BIS registration, and any worker-side benefit claims are NOT included under this service. We can advise on adjacent registrations on the discovery call.
             </li>
           </ol>
+
         </div>
       </div>
     </section>
