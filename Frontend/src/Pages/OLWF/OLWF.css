@@ -132,7 +132,7 @@
 }
 
 /* ===== TABS — center-align tab text ===== */
-.opc-tabs-list {
+.opc-tabs-section .opc-tabs-list {
   justify-content: center;
 }
 
