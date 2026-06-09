@@ -30,6 +30,10 @@
   margin: 0 0 18px;
 }
 
+.cf-card .cf-subtitle {
+  text-align: left;
+}
+
 /* Form */
 .cf-form {
   display: flex;
