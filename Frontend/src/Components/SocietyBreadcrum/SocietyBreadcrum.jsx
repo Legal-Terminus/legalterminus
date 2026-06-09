@@ -11,36 +11,40 @@ const Breadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Society  Registration
+            Society Registration
           </span>
 
           <h1 className="lt-public-title">
-            Society Registration
-            <span> in India</span>
+            Society Registration in India
+            <br />
+            <span className="lt-title-tagline">Get Your Society Registered Today</span>
           </h1>
 
-          <p className="lt-public-description">
-            Legal Terminus can help you with society registration in India, offering hassle-free services within a reasonable timeframe and for competitive professional fees starting from Rs. 14,999/-. We assist with society registration promptly and efficiently to meet your requirements.
+          <p className="lt-public-description" style={{ marginBottom: "0" }}>
+            Society Registration in India is one of the most commonly used legal structures for charitable, educational, cultural, religious, social welfare, scientific, literary, and non-profit organizations. A Society is generally registered under the Societies Registration Act, 1860 and requires a minimum of 7 members for registration. We provide complete assistance for Society Registration in India, including drafting of the Memorandum of Association (MoA), Rules & Regulations, document preparation, and filing before the Registrar of Societies.
+          </p>
+          <p className="lt-public-description" style={{ marginTop: "12px" }}>
+            Depending on your requirements, we also assist with additional registrations such as MSME (UDYAM) Registration and GST Registration to help your Society operate smoothly for vendor onboarding, grants, projects, and compliance purposes.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Minimum 7 Members Required</div>
-            <div className="lt-feature-item"> 7 to 10 Working Days</div>
-            <div className="lt-feature-item"> 5 Simple Steps</div>
-            <div className="lt-feature-item"> High Business Credibility</div>
+            <div className="lt-feature-item">At-least 7 Members</div>
+            <div className="lt-feature-item">All-State Coverage</div>
+            <div className="lt-feature-item">Online Filing</div>
+            <div className="lt-feature-item">Legal Recognition</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <h3>500+</h3>
+              <p>Societies registered</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Processess</p>
+              <h3>Pan-India</h3>
+              <p>Registrar of Societies coverage</p>
             </div>
             <div>
-              <h3>5+</h3>
+              <h3>7+</h3>
               <p>Years of Legal Expertise</p>
             </div>
           </div>
