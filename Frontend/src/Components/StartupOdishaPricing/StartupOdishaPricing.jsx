@@ -1,58 +1,52 @@
 import React, { useState } from "react";
-import "../PvtltdPlanandPricing/PvtltdPlanandPricing.css";
+import "../OPCPlans/OPCPlans.css";
+import "./StartupOdishaPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
     id: "elemental",
     name: "Elemental",
-    price: 1,
+    oldPrice: 3999,
+    price: 2499,
     services: [
-      "Startup Odisha portal registration",
-      "Entity eligibility assessment",
-      "Document checklist & verification",
-      "Application preparation & filing",
-      "Startup Odisha Recognition Certificate",
-      "Business plan review & feedback",
-      "Sector classification advisory",
-      "Expert advisory call (30 min)",
+      "Eligibility check (Odisha-based, entity type, age / 5-yr cap, turnover / Rs.25 cr cap)",
+      "Innovation pitch drafting + senior expert review",
+      "Documents preparation, curation + upload (if any)",
+      "Application filing for recognition",
+      "Startup Cell query response handling",
     ],
   },
   {
     id: "enriched",
     name: "Enriched",
+    badge: "★ MOST POPULAR",
+    popular: true,
+    oldPrice: 7999,
     price: 5999,
     services: [
       "Everything in Elemental",
-      "Capital subsidy application preparation",
-      "Udyam / MSME Registration",
-      "GST Registration Assistance",
-      "Incubation centre application support",
+      "Central DPIIT Startup India recognition (startupindia.gov.in)",
+      "DPIIT eligibility analysis + pitch alignment",
+      "Application filing on Startup India portal",
+      "DPIIT query response handling (until recognition issued)",
+      "Class 3 Organizational DSC procurement",
+      "DSC pairing with both portals (state + central)",
     ],
   },
   {
     id: "supreme",
     name: "Supreme",
-    price: 9999,
+    badge: "✦ FULL BUNDLE",
+    oldPrice: 10999,
+    price: 7999,
     services: [
       "Everything in Enriched",
-      "Capital subsidy claim management",
-      "Odisha startup scheme documentation",
-      "DPIIT Startup India recognition (dual benefit)",
-      "Mentor network introduction & onboarding",
-    ],
-  },
-  {
-    id: "supreme-plus",
-    name: "Supreme Plus",
-    price: 16999,
-    services: [
-      "Everything in Supreme",
-      "Annual ITR Filing — Startup entity",
-      "Annual compliance filing (ROC / MCA)",
-      "Directors' Report & Board Minutes (1st FY)",
-      "Statutory E-Register Maintenance",
-      "ITR Filing for 2 Directors / Partners",
+      "Trademark application - in 1 class",
+      "Trademark search across IP India + WIPO databases",
+      "Class selection + goods/services description drafting",
+      "TM document preparation + application filing",
+      "Application acknowledgement + TM number delivery",
     ],
   },
 ];
@@ -62,105 +56,56 @@ const StartupOdishaPricing = () => {
 
   return (
     <>
-      <section className="pvtltd-pricing-section">
-        <div className="pricing-container">
+      <section className="opc-pricing-section">
+        <div className="opcpricing-container">
 
-          <header className="pricing-header">
-            <h2 className="PvtLtd-pricing-title">CHOOSE YOUR PLAN</h2>
-            <p className="pricing-subtitle">
+          <header className="opcpricing-header">
+            <h2 className="opcpricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="opcpricing-subtitle">
               Get your Startup Odisha recognition with pocket-friendly plans
             </p>
           </header>
 
-          <div className="pricing-cards">
+          <div className="opcpricing-cards">
+            {PLANS.map((plan) => (
+              <article
+                key={plan.id}
+                className={`opcplan-card${plan.popular ? " opcplan-card--popular" : ""}`}
+              >
+                <div>
+                  <div className="opcplan-header">
+                    {plan.badge && (
+                      <div className={`opcplan-badge${plan.popular ? " opcplan-badge--popular" : ""}`}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    <div className="opcplan-name">{plan.name}</div>
+                    <div className="opcplan-old-price">Rs.{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-price">Rs.{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
+                  </div>
 
-            <article className="plan-card">
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Elemental</div>
-                  <div className="plan-old-price">₹3,999</div>
-                  <div className="plan-price">₹{PLANS[0].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ GST extra</div>
+                  <div className="opcplan-body">
+                    <ul className="opcplan-list">
+                      {plan.services.map((s, i) => (
+                        <li key={i} className="opcplan-list-item">{s}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[0].services.map((s, i) => (
-                      <li key={i} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-              </div>
-            </article>
 
-            <article className="plan-card plan-card--popular">
-              <div className="plan-popular-badge">★ MOST POPULAR</div>
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Enriched</div>
-                  <div className="plan-old-price">₹8,999</div>
-                  <div className="plan-price">₹{PLANS[1].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ GST extra</div>
+                <div className="opcplan-footer">
+                  <button
+                    className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
+                    onClick={() => setActivePlan(plan)}
+                  >
+                    Buy Now
+                  </button>
                 </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[1].services.map((s, i) => (
-                      <li key={i} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-              </div>
-            </article>
-
-            <article className="plan-card">
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Supreme</div>
-                  <div className="plan-old-price">₹14,999</div>
-                  <div className="plan-price">₹{PLANS[2].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ GST extra</div>
-                </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[2].services.map((s, i) => (
-                      <li key={i} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-              </div>
-            </article>
-
-            <article className="plan-card plan-card--fullservice">
-              <div className="plan-fullservice-badge">✦ FULL-SERVICE</div>
-              <div>
-                <div className="plan-header">
-                  <div className="plan-name">Supreme Plus</div>
-                  <div className="plan-old-price">₹25,999</div>
-                  <div className="plan-price">₹{PLANS[3].price.toLocaleString("en-IN")}</div>
-                  <div className="plan-meta">+ GST extra</div>
-                </div>
-                <div className="plan-body">
-                  <ul className="plan-list">
-                    {PLANS[3].services.map((s, i) => (
-                      <li key={i} className="plan-list-item">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="plan-footer">
-                <button className="plan-button" onClick={() => setActivePlan(PLANS[3])}>Buy Now</button>
-              </div>
-            </article>
-
+              </article>
+            ))}
           </div>
+
         </div>
       </section>
 
