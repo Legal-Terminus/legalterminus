@@ -15,43 +15,35 @@ const StartupOdishaTnC = () => {
 
           <ol className="pvtltd-tc-list">
             <li className="pvtltd-tc-item">
-              Startup Odisha recognition is granted by the Government of Odisha through the Startup Odisha programme. Legal Terminus provides consultancy and application assistance — the recognition certificate and subsidy approvals are issued directly by the Government of Odisha and not by Legal Terminus.
+              Government Fee: Startup Odisha Recognition application fee is NIL. Central DPIIT Startup India application fee is NIL. Class 3 Organizational DSC procurement cost (Rs.2,500 - Rs.4,000, 2-yr validity) is billed at actuals (Enriched / Supreme). Trademark government fee Rs.4,500 per class (with DPIIT/UDYAM 50% rebate for recognised startups, from base Rs.9,000) is billed at actuals (Supreme only). Our fee covers professional services - advisory, document preparation, pitch drafting or reviewing, application filing, and query response handling across the included registrations.
             </li>
 
             <li className="pvtltd-tc-item">
-              The entity must be registered or incorporated in Odisha (registered office must be in the state of Odisha). Entities with registered offices outside Odisha are not eligible for Startup Odisha benefits, even if promoters are Odisha residents.
+              GST on Our Fee: All quoted prices are exclusive of GST @ 18%, charged at checkout.
             </li>
 
             <li className="pvtltd-tc-item">
-              Eligibility for capital subsidy (up to ₹50 lakhs) requires meeting additional criteria under the Odisha Startup Policy 2022, including minimum investment, minimum headcount, and sector-specific requirements. Subsidy quantum and eligibility vary by category and are subject to government guidelines.
+              Scope - What's Included: This service covers application filing and registration only - (a) Startup Odisha Recognition (all tiers), (b) Central DPIIT Startup India recognition (Enriched / Supreme), (c) Class 3 Organizational DSC procurement (Enriched / Supreme), (d) Trademark application in 1 class on proposed-to-be-used basis under Section 18 of the Trade Marks Act, 1999 - search + document preparation + filing on IP India portal (Supreme only).
             </li>
 
             <li className="pvtltd-tc-item">
-              Processing time for Startup Odisha recognition is typically 3–6 weeks. Capital subsidy disbursement timelines are subject to government processing and are not within Legal Terminus's control.
+              Scope - What's NOT Included: We do NOT provide advisory, application support, or assistance for any of the following: (a) Odisha Startup Policy benefit applications - need-based grants up to Rs.10L, marketing assistance up to Rs.5L, patent reimbursement, trademark fee reimbursement, stamp duty exemption, power tariff subsidy, state GST reimbursement, incubation centre matchmaking, state tender preference applications, Startup India Showcase nominations. (b) Section 80-IAC IMB tax-holiday application. (c) Section 56(2)(viib) angel tax declaration. (d) GeM seller registration, SIDBI loan applications. (e) Patent filing / prosecution / opposition. (f) Trademark examination response / hearing / opposition / renewal. (g) Trademarks beyond the 1 class included in Supreme.
             </li>
 
             <li className="pvtltd-tc-item">
-              Our Supreme plan includes dual registration — both Startup Odisha and DPIIT (Startup India) recognition. The Startup India recognition is subject to DPIIT's eligibility criteria, which may differ from Startup Odisha criteria. Both recognitions are beneficial but are independent of each other.
+              Eligibility Requirements: Per the Odisha Startup Policy: (a) Entity must be Pvt Ltd / LLP / Registered Partnership Firm - sole proprietorships and OPCs are NOT eligible for Startup Odisha recognition. Entity must be registered in Odisha OR employ at least 50% of total qualified workforce in Odisha. (b) Not older than 5 years from incorporation (10 years for Biotechnology startups). (c) Annual turnover not exceeding Rs.25 crores in any preceding FY. (d) Working towards innovation / development / deployment or commercialisation of new products, processes or services driven by technology or IP - scalable for commercial success. (e) Must not be an extension of an existing family business or formed by splitting / reconstruction of an existing business.
             </li>
 
             <li className="pvtltd-tc-item">
-              18% GST is applicable on all professional/consultancy fees charged by Legal Terminus.
+              Trademark Scope (Supreme Tier): Includes 1 trademark application in 1 class on PROPOSED-TO-BE-USED basis only (Section 18 declaration). Includes trademark search across IP India + WIPO databases, class selection, goods/services description drafting, document preparation, and online application filing. EXCLUDES: examination response, hearing representation, opposition handling, oppositions filed by third parties, registration of additional classes, used-mark proof preparation, and renewal (every 10 years). These are quoted separately if needed.
             </li>
 
             <li className="pvtltd-tc-item">
-              The Elemental plan fee includes preparation and submission of one Startup Odisha application. If the application is rejected due to incorrect information provided by the client, resubmission fees will apply.
+              Refund Policy: Full refund of professional fee (less Rs.999 documentation handling) is available if Startup Odisha application is not filed within 7 working days from receipt of complete documents + clear innovation pitch. Pro-rata refund applies after partial milestone completion. DSC and Trademark government fees once paid are non-refundable.
             </li>
 
             <li className="pvtltd-tc-item">
-              Capital subsidy application support is included in Enriched and above plans. Actual subsidy disbursement is the government's decision and is not guaranteed. Legal Terminus provides application and documentation support only.
-            </li>
-
-            <li className="pvtltd-tc-item">
-              Startup Odisha recognition may be subject to periodic review by the State Government. Recognised startups must continue to operate in Odisha and meet the ongoing criteria under the Startup Policy. Non-compliance can lead to recognition withdrawal.
-            </li>
-
-            <li className="pvtltd-tc-item">
-              Legal Terminus Private Limited is a private consultancy firm and is not affiliated with any government authority, the Government of Odisha, or the Department of MSME. All government certificates and subsidies are issued directly by the respective departments. Our fees are exclusively for consultancy, documentation assistance, and application support services.
+              Out-of-Scope Items (Explicit List): GeM seller registration, SIDBI loan applications, MSME / Udyam registration, GST registration, EPF / ESIC registration, Section 80-IAC IMB application, Section 56(2)(viib) angel tax filing, ROC annual compliance, Patent filing, additional Trademark classes, trademark used-mark proof preparation, post-filing TM examination response / opposition / renewal, and ALL benefit / grant / subsidy / reimbursement applications under any state or central startup policy are NOT included and are NOT offered by us under this service.
             </li>
           </ol>
         </div>

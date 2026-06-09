@@ -3,6 +3,7 @@ import '../PrivateLimitedCopy/PrivateLimitedCopy.css'
 import StartupOdishaBreadcrum from '../../Components/StartupOdishaBreadcrum/StartupOdishaBreadcrum'
 import StartupOdishaPricing from '../../Components/StartupOdishaPricing/StartupOdishaPricing'
 import StartupOdishaTnC from '../../Components/StartupOdishaTnC/StartupOdishaTnC'
+import StartupOdishaGovtCosts from '../../Components/StartupOdishaGovtCosts/StartupOdishaGovtCosts'
 import StartupOdishaPriority from '../../Components/StartupOdishaPriority/StartupOdishaPriority'
 import StartupOdishaTabs from '../../Components/StartupOdishaTabs/StartupOdishaTabs'
 
@@ -25,6 +26,10 @@ const StartupOdisha = () => {
       <div id="plans" className="copy-page-pricing">
         <StartupOdishaPricing />
       </div>
+
+      <div className="section-divider" />
+
+      <StartupOdishaGovtCosts />
 
       <div className="section-divider" />
 

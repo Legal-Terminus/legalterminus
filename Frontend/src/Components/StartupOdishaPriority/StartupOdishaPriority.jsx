@@ -1,54 +1,54 @@
 import React from "react";
-import "../PvtltdZolvitPremium/PvtltdZolvitPremium.css";
+import "../OpcZolvitPremium/OpcZolvitPremium.css";
 import premiumIllustration from "../../assets/lt-company.svg";
 
 const StartupOdishaPriority = () => {
   return (
-    <section className="zp-section">
-      <div className="zp-container">
-        <div className="zp-card">
+    <section className="opczp-section">
+      <div className="opczp-container">
+        <div className="opczp-card">
 
-          <div className="zp-top-row">
+          <div className="opczp-top-row">
 
-            <div className="zp-illustration-wrapper">
+            <div className="opczp-illustration-wrapper">
               <img
                 src={premiumIllustration}
                 alt="Startup Odisha Registration by Legal Terminus"
-                className="zp-illustration"
+                className="opczp-illustration"
               />
             </div>
 
-            <div className="zp-content">
+            <div className="opczp-content">
 
-              <header className="zp-header">
-                <h2 className="zp-title">
+              <header className="opczp-header">
+                <h2 className="opczp-title">
                   Legal Terminus{" "}
-                  <span className="zp-title-highlight">Priority</span>{" "}
-                  <span className="zp-title-icon">⚖</span>
+                  <span className="opczp-title-highlight">Priority</span>{" "}
+                  <span className="opczp-title-icon">⚖</span>
                 </h2>
-                <p className="zp-subtitle">
-                  Startup Odisha recognition is a state-level gateway to capital subsidy, incubation, and government market access — but the subsidy application is where most startups leave money on the table. The capital subsidy requires a business plan, investment proof, and sector-specific documentation that the portal alone won't guide you through. Priority is what happens when a senior CS combines your Startup Odisha application with a dual DPIIT filing — because getting both recognitions in one shot maximises your benefits.
+                <p className="opczp-subtitle" style={{ textAlign: "left" }}>
+                  LT Priority is designed for startups that want faster processing, priority handling, and dedicated professional support for Startup Odisha Recognition. Startup Odisha applications are carefully reviewed by the Startup Cell based on innovation, scalability, and business potential. With LT Priority, your application receives professional drafting support, priority coordination, and dedicated assistance throughout the recognition process.
                 </p>
               </header>
 
-              <section className="zp-section-block">
-                <h3 className="zp-label">What you get</h3>
-                <ul className="zp-list zp-features-list">
-                  <li className="zp-list-item">
-                    <span className="zp-list-icon">⚡</span>
-                    48-hour SLA on Startup Odisha application draft — including business plan summary and sector classification.
+              <section className="opczp-section-block">
+                <h3 className="opczp-label">What You Get</h3>
+                <ul className="opczp-list opczp-features-list">
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">⚡</span>
+                    Priority Application Drafting &amp; Filing Support for faster processing and submission.
                   </li>
-                  <li className="zp-list-item">
-                    <span className="zp-list-icon">✅</span>
-                    Senior CS-reviewed eligibility assessment for both Startup Odisha and DPIIT (Startup India) before filing.
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">✅</span>
+                    Professional Review of startup profile, innovation details, and application documents before filing.
                   </li>
-                  <li className="zp-list-item">
-                    <span className="zp-list-icon">🔄</span>
-                    Real-time portal status updates on WhatsApp — no refreshing government dashboards.
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📞</span>
+                    Dedicated Support for Startup Odisha queries, clarification responses, and application coordination.
                   </li>
-                  <li className="zp-list-item">
-                    <span className="zp-list-icon">📑</span>
-                    Post-recognition kit: recognition certificate, capital subsidy application checklist, compliance calendar, incubation centre shortlist.
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">🔄</span>
+                    Real-Time Status Updates through Email and WhatsApp during the registration process.
                   </li>
                 </ul>
               </section>
@@ -56,29 +56,29 @@ const StartupOdishaPriority = () => {
             </div>
           </div>
 
-          <div className="zp-bottom-full">
-            <h3 className="zp-label">Important Notes</h3>
-            <div className="zp-note-box">
-              <ul className="zp-note-list">
-                <li className="zp-note-item">
-                  <strong>Odisha-registered office is mandatory</strong> — the startup must have its registered office in the state of Odisha to qualify for Startup Odisha benefits. A startup with a founder who is an Odisha resident but whose entity is registered in another state is NOT eligible.
+          <div className="opczp-bottom-full">
+            <h3 className="opczp-label">Important Notes</h3>
+            <div className="opczp-note-box">
+              <ul className="opczp-note-list">
+                <li className="opczp-note-item">
+                  Recognition is NOT the same as benefits. Once you have the Startup Odisha Recognition Certificate, you still need to APPLY SEPARATELY for each benefit (grant, marketing assistance, patent reimbursement, etc.) - and most have their own application forms, evaluation criteria, and approval timelines. We do not handle these applications under this service.
                 </li>
-                <li className="zp-note-item">
-                  <strong>Capital subsidy is not automatic</strong> — Startup Odisha recognition opens the door to subsidy application, but the actual subsidy quantum depends on investment type, employment generated, and sector. Budget ₹10–15K for detailed subsidy application documentation.
+                <li className="opczp-note-item">
+                  Odisha presence requirement is real. The Startup Cell verifies that the entity is registered in Odisha OR operates substantively in Odisha (Odisha address, Odisha bank account, Odisha team, Odisha customers). A 'paper' Odisha entity with no real presence will be rejected.
                 </li>
-                <li className="zp-note-item">
-                  <strong>Dual recognition benefit</strong> — Startup Odisha and DPIIT (Startup India) recognitions are separate and complementary. Startup Odisha gives you state-level benefits (subsidy, incubation, mentorship); DPIIT gives you central government benefits (80-IAC tax holiday, angel tax exemption). Our Supreme plan covers both.
+                <li className="opczp-note-item">
+                  Innovation pitch MUST be substantive. The Startup Cell rejects me-too businesses, generic consultancies, and resellers dressed up as innovation. We do a brutal honesty check on the discovery call - if you don't meet the innovation bar, we'll tell you before filing.
                 </li>
-                <li className="zp-note-item">
-                  <strong>Incubation centre application</strong> — STPI Bhubaneswar, IIT Bhubaneswar Technology Business Incubator, and KIIT-TBI are the key incubation centres under Startup Odisha. Space is limited and applications are competitive. We help with the application narrative and pitch for incubation.
+                <li className="opczp-note-item">
+                  Central DPIIT Recognition is SEPARATE. Startup Odisha is a state-level recognition; central DPIIT Startup India is a separate central-government recognition (which we file under our Startup India service). Many founders pursue both - we can file the central DPIIT in parallel under that separate service.
                 </li>
               </ul>
             </div>
 
-            <div className="zp-cta-row">
+            <div className="opczp-cta-row">
               <a
                 href="#startup-odisha-consult-form"
-                className="zp-cta-btn"
+                className="opczp-cta-btn"
                 onClick={(e) => {
                   e.preventDefault();
                   document.getElementById("startup-odisha-consult-form")?.scrollIntoView({ behavior: "smooth" });
