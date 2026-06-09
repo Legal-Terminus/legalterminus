@@ -43,10 +43,6 @@ const OLWFGovtCosts = () => {
           Indicative Government &amp; Out-of-Pocket Costs
           <span className="opc-govtcosts-badge">Billed at Actuals</span>
         </h2>
-        <p className="opc-govtcosts-subtitle">
-          These are estimated government fees and contributions charged over and above our professional fee. Actual amounts are notified by the Odisha Labour Welfare Board.
-        </p>
-
         <div className="opc-govtcosts-table-wrapper">
           <table className="opc-govtcosts-table">
             <thead>

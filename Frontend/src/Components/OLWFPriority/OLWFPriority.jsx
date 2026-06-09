@@ -27,7 +27,7 @@ const OLWFPriority = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  ODISHA LABOUR WELFARE FUND (OLWF) Registration may look simple, but incorrect employee classification, delayed registration, or missed contributions can create compliance issues and unnecessary notices from the Labour Department. Proper registration and timely contribution filing help establishments stay compliant under the Odisha Labour Welfare Fund Act.
+                  Odisha Labour Welfare Fund (Olwf) Registration may look simple, but incorrect employee classification, delayed registration, or missed contributions can create compliance issues and unnecessary notices from the Labour Department. Proper registration and timely contribution filing help establishments stay compliant under the Odisha Labour Welfare Fund Act.
                   <br /><br />
                   With LT Priority, your OLWF Registration is handled on a fast-track basis with dedicated professional support, priority filing, and continuous coordination throughout the process.
                 </p>
