@@ -3,39 +3,44 @@ import "../PvtltdProcess/PvtltdProcess.css";
 
 const steps = [
   {
-    title: "Eligibility Check & Discovery Call",
+    title: "Discovery & Eligibility Check",
     day: "Day 0",
-    text: "30-min call to confirm: entity type (Pvt Ltd / LLP / Partnership), registered office state (must be Odisha), date of incorporation, current investment and headcount, business activity, and sector classification. We also assess eligibility for dual recognition (Startup Odisha + DPIIT) and capital subsidy potential.",
+    text: "30-min call with our startup-expert to confirm: entity type (Pvt Ltd / LLP / Registered Partnership - sole proprietorships not eligible), Odisha presence (registration / operations / 50% workforce), incorporation date (5-year cap; 10 years for Biotech), turnover history (Rs.25 cr cap), business activity, innovation thesis, sector. Honest eligibility review - we tell you upfront if you don't qualify.",
   },
   {
-    title: "Document Collection",
-    day: "Day 1–2",
-    text: "We send you a specific checklist: COI / LLP agreement / Partnership deed with Odisha address, PAN, GSTIN (if applicable), Aadhaar + PAN of authorised signatory, investment details (capital invested, assets), employee list, and a brief business description. No physical documents required — all digital.",
+    title: "Entity & Odisha-Presence Verification",
+    day: "Day 1",
+    text: "Confirm Certificate of Incorporation / LLP Agreement / Partnership Deed, PAN, GSTIN (if registered), and evidence of Odisha presence (registered office address, Odisha bank account, Odisha team / operations, OR payroll evidence of 50% Odisha-based workforce).",
   },
   {
-    title: "Business Plan & Innovation Summary",
-    day: "Day 2–4",
-    text: "We draft the 'Business Innovation Description' and 'How does it benefit Odisha's economy' narrative for the Startup Odisha portal. We also prepare a capital subsidy application summary (investment, employment, sector impact) for use in the subsidy application post-recognition.",
+    title: "Innovation Pitch Reviewing",
+    day: "Day 1–4",
+    text: "Brief description of business + innovation thesis + scalability framework + Odisha-context positioning (how the business fits Odisha's economy / state priorities / employment goals). Sector-tuned narrative. Senior-expert reviewed for Enriched / Supreme.",
   },
   {
-    title: "Startup Odisha Portal Application Filing",
+    title: "Create User Account",
+    day: "Day 3",
+    text: "Create user account on the Startup Odisha portal (startupodisha.gov.in). Verify mobile + email. Add entity details.",
+  },
+  {
+    title: "Application Form Filing",
+    day: "Day 3–5",
+    text: "Application filed with: entity details, founders / directors / partners, business description, innovation write-up, sector classification, Odisha presence details, supporting documents.",
+  },
+  {
+    title: "Document Upload",
     day: "Day 4–5",
-    text: "Application filed on the Startup Odisha portal with entity details, promoter information, innovation description, investment details, and sector classification. Supporting documents uploaded. Application submitted to the State Government for review by the Startup Odisha Evaluation Committee.",
+    text: "Curated document pack uploaded: COI / LLP Agreement / Partnership Deed, PAN, GSTIN, address proof, founder KYC, IP evidence (if any), awards / recognitions (if any), pitch deck.",
   },
   {
-    title: "State Evaluation & Query Response",
-    day: "Day 6–21",
-    text: "The Startup Odisha Evaluation Committee reviews applications typically within 2–4 weeks. If any clarification is requested, we respond within 24 hours. The committee may request additional proof of investment, innovation, or Odisha operations.",
+    title: "Startup Cell Review + Query Response",
+    day: "Day 5–12",
+    text: "The Startup Odisha Cell reviews the application. If clarifications / additional documentation is sought, we handle the response (Elemental: client handles; Enriched: 1 round included; Supreme: up to 3 rounds).",
   },
   {
-    title: "Startup Odisha Recognition Certificate",
-    day: "Day 21–42",
-    text: "The State Government issues the Startup Odisha recognition certificate electronically. The certificate activates your eligibility for all policy benefits — incubation, capital subsidy application, mentor access, and procurement preference. We deliver a post-recognition action plan.",
-  },
-  {
-    title: "Capital Subsidy & Incubation Application",
-    day: "Day 42+",
-    text: "If you're on Enriched or above plans, we proceed with the capital subsidy application (requires investment proof, bank statements, asset list) and incubation centre application (STPI / KIIT-TBI / IIT TBI). Capital subsidy disbursement timelines are set by the government — typically 3–6 months after application.",
+    title: "Recognition Certificate + Onboarding Kit",
+    day: "Day 7–15",
+    text: "Startup Odisha Cell issues the Recognition Certificate (digital PDF). We deliver: Certificate, profile screenshot of the startupodisha.gov.in listing. NO grant / benefit application kit - that's out of scope.",
   },
 ];
 
@@ -43,10 +48,10 @@ const StartupOdishaProcess = () => {
   return (
     <section className="pvtltd-gst-wrapper">
       <h2 className="gst-heading">
-        Steps to Get Startup Odisha Recognition
+        Steps For Startup Odisha Registration
       </h2>
       <p className="pv-gst-subheading">
-        Seven steps. 3–6 weeks for recognition (capital subsidy disbursement takes longer — subject to government timelines).
+        Eight steps. 7-15 working days end-to-end from kick-off to Recognition Certificate.
       </p>
 
       <div className="pvtltd-timeline">

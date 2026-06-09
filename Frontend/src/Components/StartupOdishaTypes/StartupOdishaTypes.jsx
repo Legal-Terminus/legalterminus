@@ -4,33 +4,33 @@ import "../CopyPvtTypes/CopyPvtTypes.css";
 const types = [
   {
     number: "01",
-    title: "Private Limited Company (Odisha-Registered)",
-    text: "The most funding-ready structure for Startup Odisha. A Pvt Ltd with its registered office in Odisha is eligible for the full benefits under the Odisha Startup Policy 2022 — capital subsidy, incubation, and procurement preference. Also eligible for dual recognition: Startup Odisha + DPIIT. Preferred entity type for venture-backed startups.",
+    title: "IT / SaaS / Software Startup",
+    text: "Software platforms, SaaS products, IT services with proprietary tech, AI / ML applications, fintech, deeptech. Often headquartered in Bhubaneswar / Cuttack. Innovation framing around proprietary tech / IP / data moat. Strong fit with Odisha's IT Policy alignment.",
   },
   {
     number: "02",
-    title: "Limited Liability Partnership (LLP)",
-    text: "LLPs registered with the ROC having their registered office in Odisha are eligible for Startup Odisha recognition. Capital subsidy and incubation benefits are available. However, LLPs cannot issue ESOPs, which limits talent acquisition in later stages. If you're an LLP considering Startup Odisha, evaluate conversion to Pvt Ltd for scaling.",
+    title: "Agri / Aqua / Fishery Startup",
+    text: "Agri-input platforms, farm management SaaS, drone-as-a-service for agriculture, agri-finance, FPO-tech, aquaculture, marine fisheries, post-harvest tech. Strong sectoral priority for Odisha given coastal + agrarian economy. Often pairs well with state agri-schemes.",
   },
   {
     number: "03",
-    title: "Registered Partnership Firm",
-    text: "Firms registered under the Indian Partnership Act, 1932 with a registered office in Odisha are eligible. For the capital subsidy, the firm must have a minimum capital investment and meet employment generation criteria. Note: sole proprietorships are NOT eligible for Startup Odisha recognition.",
+    title: "Handloom / Handicraft / Tribal Startup",
+    text: "Sambalpuri textiles, Pattachitra art, silver filigree, tribal craft enterprises, brand-led handloom D2C. State priority sector. Innovation framing around supply chain digitisation, brand IP, market access, weaver empowerment.",
   },
   {
     number: "04",
-    title: "Technology Startup",
-    text: "Technology-sector startups (IT/ITES, SaaS, AI/ML, IoT, drone tech, fintech) are prioritised under Startup Odisha. STPI Bhubaneswar offers dedicated T-Hub incubation space for tech startups. Technology startups may also qualify for additional STPI scheme benefits and export incentives alongside Startup Odisha recognition.",
+    title: "Tourism / Hospitality Startup",
+    text: "Tourism tech, homestay platforms, eco-tourism, religious tourism (Jagannath circuit, Konark), wildlife tourism (Similipal, Bhitarkanika), MICE platforms, hospitality SaaS. Aligned with Odisha Tourism Policy + state Vision 2036.",
   },
   {
     number: "05",
-    title: "Agri-Tech / Rural Startup",
-    text: "Under the Odisha Startup Policy 2022, agri-tech and rural innovation startups serving the state's farming community get priority access to government agri-procurement schemes and NABARD-linked funding. Startups working on fisheries, aquaculture, organic farming, and post-harvest technology are particularly encouraged.",
+    title: "Manufacturing / Industrial Startup",
+    text: "Steel-allied manufacturing, aluminium downstream, electronics manufacturing, automotive components, MSME-scale industrial innovation. State priority given Odisha's industrial base. Often pairs with industrial corridor schemes.",
   },
   {
     number: "06",
-    title: "Social Enterprise / Impact Startup",
-    text: "Startups focused on social impact — healthcare access, education, clean water, sanitation, or women empowerment — can register under Startup Odisha and access impact-linked grants from the state government. These startups may also qualify for CSR funding from Odisha-based PSUs like NALCO, NTPC, and SAIL under government mandate.",
+    title: "Climate / Renewables / Mining-Tech Startup",
+    text: "Renewable energy startups, EV / mobility, climate tech, mining-tech (Odisha has significant mineral reserves), sustainability platforms. State priority alignment - Odisha is pursuing both industrial growth + climate goals.",
   },
 ];
 
@@ -39,7 +39,7 @@ const StartupOdishaTypes = () => {
     <section className="cpvt-section">
       <div className="cpvt-container">
 
-        <h2 className="cpvt-title">Entities &amp; Sectors Eligible for Startup Odisha</h2>
+        <h2 className="cpvt-title">Types of Startup Odisha Registration</h2>
 
         <div className="cpvt-cards">
           {types.map((type) => (

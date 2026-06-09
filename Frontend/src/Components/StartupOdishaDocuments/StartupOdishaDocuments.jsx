@@ -1,71 +1,80 @@
 import React from "react";
 import "../CopyPvtDocument/CopyPvtDocument.css";
-import { FaUser, FaBuilding, FaIdCard, FaFileAlt, FaCamera, FaBolt, FaFileContract, FaShieldAlt } from "react-icons/fa";
+import { FaUser, FaBuilding, FaIdCard, FaFileAlt, FaShieldAlt, FaFileContract } from "react-icons/fa";
 
 const entityDocs = [
   {
-    icon: <FaIdCard />,
-    title: "Entity Registration Certificate",
-    note: "Must show Odisha registered office address",
+    icon: <FaBuilding />,
+    title: "Entity Identity",
+    note: "Mandatory — the entity must be legally incorporated",
     items: [
-      "Certificate of Incorporation with Odisha address (for Pvt Ltd / OPC)",
-      "LLP Agreement + Certificate of Incorporation (for LLP)",
-      "Registered Partnership Deed with Odisha address (for Partnership Firm)",
+      "Certificate of Incorporation (Pvt Ltd) OR LLP Agreement OR Partnership Deed",
+      "MOA, AOA, Startup India recognition certificate (if any), LOGO",
+      "Entity PAN",
+      "GSTIN (if registered)",
+      "MSME / Udyam certificate (if any)",
+    ],
+  },
+  {
+    icon: <FaUser />,
+    title: "Authorised Signatory Identity",
+    note: "For the person signing the Startup Odisha application",
+    items: [
+      "Aadhaar of authorised signatory / founder",
+      "PAN",
+      "Photograph",
+      "Designation letter / Board Resolution (where applicable)",
+      "Email + mobile (used for portal registration)",
     ],
   },
   {
     icon: <FaFileAlt />,
-    title: "PAN, GST & MSME Documents",
-    note: "Entity PAN is mandatory",
+    title: "Innovation Pitch & Business Plan",
+    note: "The heart of the application — critical for recognition approval",
     items: [
-      "Entity PAN Card (mandatory)",
-      "GSTIN Certificate (if registered)",
-      "Udyam / MSME Certificate (if obtained)",
-      "Shops & Establishment Certificate (if applicable)",
-    ],
-  },
-  {
-    icon: <FaBolt />,
-    title: "Investment & Financial Details",
-    note: "Required for capital subsidy eligibility",
-    items: [
-      "Fixed asset list with values (machinery, equipment, computers)",
-      "Bank statements (last 3 months) showing capital investment",
-      "Audited or provisional P&L and Balance Sheet (if available)",
+      "Brief description of business (50–500 words)",
+      "Innovation thesis (300–1000 words)",
+      "Scalability framework",
+      "Quantified employment / wealth creation impact for Odisha",
+      "Sector tagging",
+      "Pitch deck / business plan (PDF)",
     ],
   },
 ];
 
 const founderDocs = [
   {
-    icon: <FaUser />,
-    title: "Authorised Signatory Identity",
-    note: "For the person signing the Startup Odisha application",
+    icon: <FaIdCard />,
+    title: "Odisha-Presence Proof",
+    note: "At least one must be substantive",
     items: [
-      "Aadhaar Card of Authorised Signatory (Director / Designated Partner / Partner)",
-      "PAN Card of Authorised Signatory",
-      "Mobile number linked to Aadhaar (for OTP verification on portal)",
+      "Registered office address proof in Odisha (electricity bill / rent agreement / property tax)",
+      "OR operations evidence (Odisha bank account statement / Odisha team payroll / Odisha-based customer evidence)",
     ],
   },
   {
-    icon: <FaCamera />,
-    title: "Business & Innovation Description",
-    note: "Critical for recognition approval",
+    icon: <FaShieldAlt />,
+    title: "Supporting Evidence (Optional but Helpful)",
+    note: "Strengthens the application — not mandatory",
     items: [
-      "Description of the innovative product, process, or service",
-      "How the startup addresses a specific market or social problem",
-      "Revenue model and target market description",
-      "Employment details — current headcount and projected hiring",
+      "Patents filed / granted (any)",
+      "Trademarks",
+      "Awards / accelerator selections",
+      "Customer testimonials",
+      "Media coverage",
+      "Government contracts / pilots",
+      "NGO / academic / corporate partnerships",
+      "Funding history (if raised)",
     ],
   },
   {
     icon: <FaFileContract />,
-    title: "Premises & Operations Documents",
-    note: "Proof of Odisha-based operations",
+    title: "Authorisation",
+    note: "For application filing and declaration",
     items: [
-      "Registered office address proof (electricity bill / rent agreement / NOC from owner)",
-      "Any incubation letter from STPI / IIT TBI / KIIT-TBI (if already incubated)",
-      "IP filings or awards related to innovation (optional but strengthens application)",
+      "Authorisation letter for filing professional (us)",
+      "Declaration confirming all submitted information is true",
+      "No specific notarisation typically required - but Startup Cell can request it",
     ],
   },
 ];
@@ -94,7 +103,7 @@ const StartupOdishaDocuments = () => {
 
         <div className="cpvd-header">
           <h2 className="cpvd-main-title">Documents Required for Startup Odisha Registration</h2>
-          <p className="cpvd-main-subtitle">Get these ready and we'll handle the rest — all online, no physical submissions required</p>
+          <p className="cpvd-main-subtitle">Six categories. We send a personalised checklist after the discovery call. Document burden is moderate — the innovation pitch is the heart of the application.</p>
         </div>
 
         <div className="cpvd-columns">
@@ -103,8 +112,8 @@ const StartupOdishaDocuments = () => {
             <div className="cpvd-col-header">
               <div className="cpvd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="cpvd-col-title">Entity & Investment Documents</h3>
-                <p className="cpvd-col-subtitle">Required for the startup entity and capital subsidy</p>
+                <h3 className="cpvd-col-title">Entity & Innovation Documents</h3>
+                <p className="cpvd-col-subtitle">Required for the startup entity and application</p>
               </div>
             </div>
             <div className="cpvd-col-body">
@@ -116,10 +125,10 @@ const StartupOdishaDocuments = () => {
 
           <div className="cpvd-column">
             <div className="cpvd-col-header cpvd-col-header--office">
-              <div className="cpvd-col-header-icon"><FaUser /></div>
+              <div className="cpvd-col-header-icon"><FaIdCard /></div>
               <div>
-                <h3 className="cpvd-col-title">Founder & Operations Documents</h3>
-                <p className="cpvd-col-subtitle">Required for signatory identity and business description</p>
+                <h3 className="cpvd-col-title">Presence, Evidence & Authorisation</h3>
+                <p className="cpvd-col-subtitle">Odisha presence proof and supporting documents</p>
               </div>
             </div>
             <div className="cpvd-col-body">

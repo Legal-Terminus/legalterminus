@@ -10,56 +10,56 @@ const StartupOdishaBenefits = () => {
             Benefits of Startup Odisha Registration
           </h2>
           <p className="req-subtitle">
-            The Odisha Startup Policy 2022 provides one of India's most comprehensive state-level support packages for startups — combining direct financial assistance with infrastructure, mentorship, and market access.
+            DPIIT recognition isn't a vanity certificate - it's a rupee-quantifiable benefit stack. Here's what genuinely matters once you're recognised:
           </p>
         </header>
 
         <div className="req-grid">
           <article className="req-card">
-            <h3 className="req-card-title">Capital Subsidy up to ₹50 Lakhs</h3>
+            <h3 className="req-card-title">Recognized Status in Odisha Ecosystem</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Eligible startups registered under Startup Odisha can receive a direct capital subsidy of up to ₹50 lakhs on capital investment (plant, machinery, equipment). The subsidy quantum varies by sector, investment amount, and employment generation. Technology and agri-tech startups get higher subsidy rates. This is a direct grant — not a loan, not a tax benefit.
+              Your startup appears on the official startupodisha.gov.in directory, visible to state-level investors, ecosystem partners, accelerators, and the Startup Odisha Conclave organisers. State-level credibility that purely-private startups don't have.
             </p>
           </article>
 
           <article className="req-card">
-            <h3 className="req-card-title">Subsidised Incubation Office Space</h3>
+            <h3 className="req-card-title">Eligibility to Apply for State Benefits</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Startup Odisha-recognised startups get priority access to subsidised office space at STPI Bhubaneswar, IIT Bhubaneswar's Technology Business Incubator (TBI), and KIIT-TBI. Rents are 50-80% below market rates. These centres also provide high-speed internet, meeting rooms, prototyping labs, and co-working infrastructure — critical for early-stage startups minimising fixed costs.
+              Recognition is the GATEWAY - it makes you eligible to APPLY for the Odisha Startup Policy benefits: need-based grants up to Rs.10L, marketing assistance up to Rs.5L, patent reimbursement, GST reimbursement, power tariff subsidy, stamp duty exemption. Note: we do NOT handle these benefit applications under this service.
             </p>
           </article>
 
           <article className="req-card">
-            <h3 className="req-card-title">Mentorship &amp; Expert Network</h3>
+            <h3 className="req-card-title">State Tender Preference Eligibility</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Startup Odisha maintains a network of 100+ mentors — experienced entrepreneurs, industry veterans, and domain experts. Recognised startups get structured access to 1:1 mentoring sessions, pitch preparation support, and introductions to the state's investor network. Monthly Startup Odisha events also provide peer networking and investor connect opportunities.
+              Recognised startups are eligible to claim relaxations on state government tenders - exemption from EMD, relaxed turnover / prior-experience requirements, and reservation in select procurement categories. Application to claim these preferences is done at the tender level by the startup.
             </p>
           </article>
 
           <article className="req-card">
-            <h3 className="req-card-title">Priority Government Procurement</h3>
+            <h3 className="req-card-title">Startup Odisha Conclave &amp; Events</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Startup Odisha-recognised startups are exempt from prior experience and prior turnover criteria in Odisha government procurement. They can directly access tenders from state PSUs (NTPC, NALCO, SAIL, OPGC), Odisha government departments, and district-level procurement. The state reserves a minimum percentage of procurement for DPIIT/Startup Odisha-recognised entities.
+              Recognition gives you access to participate in the annual Startup Odisha Conclave, sectoral demo days, mentor connect programmes, and state-sponsored cohorts. Networking + visibility within the Odisha ecosystem - free participation for recognised startups.
             </p>
           </article>
 
           <article className="req-card">
-            <h3 className="req-card-title">Regulatory Fast-Track &amp; Single Window</h3>
+            <h3 className="req-card-title">Incubation Centre Pathway</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Startup Odisha-recognised startups go through Odisha's Industry 4.0 Single Window Clearance System for all business licenses and approvals. This reduces the time to obtain factory license, fire NOC, pollution clearance, and trade license from months to weeks. Dedicated Startup Odisha relationship managers assist with state-level regulatory navigation.
+              Recognised startups can apply for residency at state-supported incubation centres (KIIT-TBI, IIT Bhubaneswar Incubator, OUTR, NIT-RKL etc.) - subject to centre-specific admission processes. Recognition is one of the credibility signals these centres look for.
             </p>
           </article>
 
           <article className="req-card">
-            <h3 className="req-card-title">Patent &amp; IP Support</h3>
+            <h3 className="req-card-title">Central DPIIT Compatibility</h3>
             <div className="req-card-underline" />
             <p className="req-card-text">
-              Startups recognised under Startup Odisha who also have DPIIT recognition qualify for the 80% patent fee rebate at the national level. Additionally, Startup Odisha provides state-funded IP awareness workshops and connects startups with the National Law Institute (NLU Odisha) for pro-bono IP legal support. Odisha also reimburses a portion of patent filing costs under the state innovation fund.
+              Startup Odisha and central DPIIT Startup India recognitions are independent and complementary. Holding both increases your credibility footprint - state-level for Odisha-specific benefits + ecosystem, central-level for Section 80-IAC tax holiday, Section 56(2)(viib) angel tax exemption, and IP rebates.
             </p>
           </article>
         </div>
