@@ -1,4 +1,5 @@
 import React, { Suspense } from "react";
+import "./Trust.css";
 import TrustBreadcrum from "../../Components/TrustBreadcrum/TrustBreadcrum";
 
 // Lazy load below-fold components
@@ -19,15 +20,23 @@ const TrustDocument = React.lazy(() => import("../../Components/TrustDocument/Tr
 const Trust = () => {
   return (
     <div>
-      <TrustBreadcrum />
+      <div className="trust-page-hero">
+        <TrustBreadcrum />
+      </div>
+
+      <div className="section-divider" />
+
       <div id="plans">
         <Suspense fallback={<div />}>
           {/* <TrustPlanAndPricing /> */}
         </Suspense>
       </div>
+
       <Suspense fallback={<div />}>
         {/* <TrustTermsCondition /> */}
       </Suspense>
+
+      <div className="section-divider" />
 
       <div id="premium">
         <Suspense fallback={<div />}>
@@ -38,44 +47,61 @@ const Trust = () => {
       <Suspense fallback={<div />}>
         <TrustTabs />
       </Suspense>
+
+      <div className="section-divider" />
+
       <div id="company">
         <Suspense fallback={<div />}>
           <TrustCompanyTabs />
         </Suspense>
       </div>
 
+      <div className="section-divider" />
+
       <div id="types">
         <Suspense fallback={<div />}>
           <TrustPvtTypes />
         </Suspense>
       </div>
-      
+
+      <div className="section-divider" />
+
       <div id="requirements">
         <Suspense fallback={<div />}>
           <TrustRequirementsTab />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
       <div id="process">
         <Suspense fallback={<div />}>
           {/* <TrustProcess /> */}
         </Suspense>
       </div>
+
       <div id="documents">
         <Suspense fallback={<div />}>
           {/* <TrustDocument /> */}
         </Suspense>
       </div>
+
       <div id="faq">
         <Suspense fallback={<div />}>
           <TrustFAQ />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
       <Suspense fallback={<div />}>
         <TrustTestimonial />
       </Suspense>
+
       <Suspense fallback={<div />}>
         <TrustVideoTestimonial />
       </Suspense>
+
       <Suspense fallback={<div />}>
         <TrustOurClients />
       </Suspense>

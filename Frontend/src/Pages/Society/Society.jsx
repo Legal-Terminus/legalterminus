@@ -1,4 +1,5 @@
 import React, { Suspense } from "react";
+import "./Society.css";
 import SocietyBreadcrum from "../../Components/SocietyBreadcrum/SocietyBreadcrum";
 
 // Lazy load below-fold components
@@ -15,19 +16,27 @@ const SocietyTestimonial = React.lazy(() => import("../../Components/SocietyTest
 const SocietyVideoTestimonial = React.lazy(() => import("../../Components/SocietyVideoTestimonial/SocietyVideoTestimonial"));
 const SocietyOurClients = React.lazy(() => import("../../Components/SocietyOurClients/SocietyOurClients"));
 const SocietyDocument = React.lazy(() => import("../../Components/SocietyDocument/SocietyDocument"));
+
 const Society = () => {
   return (
     <div>
-      <SocietyBreadcrum />
+      <div className="society-page-hero">
+        <SocietyBreadcrum />
+      </div>
+
+      <div className="section-divider" />
 
       <div id="plans">
         <Suspense fallback={<div />}>
           {/* <SocietyPlanAndPricing /> */}
         </Suspense>
       </div>
+
       <Suspense fallback={<div />}>
         {/* <SocietyTermsCondition /> */}
       </Suspense>
+
+      <div className="section-divider" />
 
       <div id="premium">
         <Suspense fallback={<div />}>
@@ -39,46 +48,60 @@ const Society = () => {
         <SocietyTabs />
       </Suspense>
 
+      <div className="section-divider" />
+
       <div id="company">
         <Suspense fallback={<div />}>
           <SocietyCompanyTabs />
         </Suspense>
       </div>
 
+      <div className="section-divider" />
+
       <div id="types">
         <Suspense fallback={<div />}>
           <SocietyPvtTypes />
         </Suspense>
       </div>
-      
+
+      <div className="section-divider" />
+
       <div id="requirements">
         <Suspense fallback={<div />}>
           <SocietyRequirementsTab />
         </Suspense>
       </div>
 
+      <div className="section-divider" />
+
       <div id="process">
         <Suspense fallback={<div />}>
           {/* <SocietyProcess /> */}
         </Suspense>
       </div>
-      
+
       <div id="documents">
         <Suspense fallback={<div />}>
           {/* <SocietyDocument /> */}
         </Suspense>
       </div>
+
       <div id="faq">
         <Suspense fallback={<div />}>
           <SocietyFAQ />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
       <Suspense fallback={<div />}>
         <SocietyTestimonial />
       </Suspense>
+
       <Suspense fallback={<div />}>
         <SocietyVideoTestimonial />
       </Suspense>
+
       <Suspense fallback={<div />}>
         <SocietyOurClients />
       </Suspense>

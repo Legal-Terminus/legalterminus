@@ -1,108 +1,104 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
-/* ===============================
-   SECTION
-   =============================== */
-.trust-premium-section {
-  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+.trusczp-section {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background-color: #f7fafc;
   padding: 48px 24px;
 }
 
-.trust-premium-container {
+.trusczp-container {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-/* ===============================
-   CARD
-   =============================== */
-.trust-premium-card {
+.trusczp-card {
   background-color: #ffffff;
   border-radius: 16px;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
   padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.trusczp-top-row {
   display: grid;
   grid-template-columns: 1.05fr 1.3fr;
   gap: 48px;
-  align-items: center;
+  align-items: start;
 }
 
-/* ===============================
-   ILLUSTRATION
-   =============================== */
-.trust-premium-illustration-wrapper {
+.trusczp-bottom-full {
+  width: 100%;
+}
+
+/* Illustration */
+.trusczp-illustration-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.trust-premium-illustration {
+.trusczp-illustration {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
-/* ===============================
-   CONTENT
-   =============================== */
-.trust-premium-content {
+/* Content */
+.trusczp-content {
   display: flex;
   flex-direction: column;
 }
 
-.trust-premium-header {
+.trusczp-header {
   margin-bottom: 24px;
 }
 
-.trust-premium-title {
+.trusczp-title {
   font-size: 28px;
   font-weight: 600;
   color: #111827;
   margin: 0 0 8px;
 }
 
-.trust-premium-title-highlight {
+.trusczp-title-highlight {
   color: #d9a520;
   font-weight: 700;
 }
 
-.trust-premium-title-icon {
+.trusczp-title-icon {
   font-size: 22px;
   vertical-align: middle;
 }
 
-.trust-premium-subtitle {
+.trusczp-subtitle {
+  margin: 0;
   font-size: 14px;
   line-height: 1.7;
   color: #4b5563;
 }
 
-/* ===============================
-   BLOCKS
-   =============================== */
-.trust-premium-block {
+/* Sections */
+.trusczp-section-block {
   margin-bottom: 20px;
 }
 
-.trust-premium-label {
+.trusczp-label {
   font-size: 14px;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 8px;
+  margin: 0 0 8px;
 }
 
-/* ===============================
-   LIST
-   =============================== */
-.trust-premium-list {
+/* Features list */
+.trusczp-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.trust-premium-list-item {
+.trusczp-list-item {
   display: flex;
   align-items: flex-start;
   font-size: 14px;
@@ -111,28 +107,29 @@
   margin-bottom: 8px;
 }
 
-.trust-premium-list-icon {
+.trusczp-list-icon {
   font-size: 18px;
   margin-right: 10px;
   margin-top: 1px;
 }
 
-/* ===============================
-   NOTE BOX
-   =============================== */
-.trust-premium-note-box {
-  background-color: #f1f7ff;
+/* Note box */
+.trusczp-note-box {
+  background-color: #f0fdf4;
+  border: 1px solid rgba(34, 197, 94, 0.18);
   border-radius: 14px;
   padding: 16px 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.trust-premium-note-list {
+.trusczp-note-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.trust-premium-note-item {
+.trusczp-note-item {
   position: relative;
   padding-left: 18px;
   font-size: 13px;
@@ -140,27 +137,29 @@
   line-height: 1.7;
 }
 
-.trust-premium-note-item + .trust-premium-note-item {
+.trusczp-note-item + .trusczp-note-item {
   margin-top: 4px;
 }
 
-.trust-premium-note-item::before {
+.trusczp-note-item::before {
   content: "•";
   position: absolute;
   left: 0;
   top: 0;
   font-size: 18px;
+  line-height: 1;
   color: #9ca3af;
 }
 
-/* ===============================
-   CTA
-   =============================== */
-.trust-premium-cta-row {
-  margin-top: 20px;
+/* CTA */
+.trusczp-cta-row {
+  margin: 20px 0 16px;
+  display: flex;
+  justify-content: center;
 }
 
-.trust-premium-cta-btn {
+.trusczp-cta-btn {
+  display: inline-block;
   background-color: #117c16;
   color: #ffffff;
   padding: 12px 40px;
@@ -169,52 +168,41 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.trust-premium-cta-btn:hover {
+.trusczp-cta-btn:hover {
   background-color: #001f46;
   transform: translateY(-1px);
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
 }
 
-/* ===============================
-   RESPONSIVE
-   =============================== */
+/* Responsive */
 @media (max-width: 1024px) {
-  .trust-premium-card {
-    padding: 32px;
-    gap: 32px;
-  }
-
-  .trust-premium-title {
-    font-size: 24px;
-  }
+  .trusczp-section { padding: 56px 20px; }
+  .trusczp-card    { padding: 32px 32px; }
+  .trusczp-top-row { gap: 32px; grid-template-columns: 1fr 1.2fr; }
+  .trusczp-title   { font-size: 24px; }
 }
 
 @media (max-width: 768px) {
-  .trust-premium-card {
-    grid-template-columns: 1fr;
-    padding: 28px 22px;
-  }
-
-  .trust-premium-title {
-    font-size: 22px;
-  }
+  .trusczp-section { padding: 48px 16px; }
+  .trusczp-card    { padding: 28px 22px; }
+  .trusczp-top-row { grid-template-columns: 1fr; }
+  .trusczp-illustration-wrapper { order: 1; }
+  .trusczp-content { order: 2; }
+  .trusczp-title   { font-size: 22px; }
 }
 
 @media (max-width: 480px) {
-  .trust-premium-card {
-    padding: 24px 18px;
-  }
-
-  .trust-premium-title {
-    font-size: 20px;
-  }
-
-  .trust-premium-cta-btn {
+  .trusczp-section { padding: 40px 12px; }
+  .trusczp-card    { padding: 24px 18px; }
+  .trusczp-title   { font-size: 20px; }
+  .trusczp-subtitle { font-size: 13px; }
+  .trusczp-list-item { font-size: 13px; }
+  .trusczp-cta-btn {
     width: 100%;
+    text-align: center;
     padding: 11px 0;
   }
 }
