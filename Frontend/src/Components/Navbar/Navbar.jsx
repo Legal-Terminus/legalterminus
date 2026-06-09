@@ -292,11 +292,15 @@ export default function NavbarAdvanced() {
 
   // Initialize Firebase and listen for auth state changes
   useEffect(() => {
-    const auth = getFirebaseAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setLoggedIn(!!user);
-    });
-    return () => unsubscribe();
+    try {
+      const auth = getFirebaseAuth();
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        setLoggedIn(!!user);
+      });
+      return () => unsubscribe();
+    } catch {
+      // Firebase not configured in this environment — continue unauthenticated
+    }
   }, []);
   const [scrolled, setScrolled] = useState(false);
   const [megaOpenFor, setMegaOpenFor] = useState(null);
