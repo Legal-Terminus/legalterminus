@@ -14,9 +14,9 @@ const OLWFBreadcrum = () => {
           </span>
 
           <h1 className="lt-public-title">
-            Odisha Labour Welfare Fund (OLWF) Registration
+            Odisha Labour Welfare Fund Registration
             <br />
-            <span className="lt-title-tagline">A Small Contribution Towards Employee Welfare</span>
+            <span className="lt-title-tagline">Contribution Towards Employee Welfare</span>
           </h1>
 
           <p className="lt-public-description">
