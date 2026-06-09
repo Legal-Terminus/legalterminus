@@ -52,10 +52,10 @@ const TrustTabs = () => {
     return () => wrapper.classList.remove("trust-sections-shifted");
   }, [sidebarOpen]);
 
-  // Keep horizontal active tab centred when sidebar is closed
+  // Keep horizontal active tab centred
   useEffect(() => {
-    if (!sidebarOpen) scrollActiveTabIntoView(activeIndex);
-  }, [activeIndex, sidebarOpen]);
+    scrollActiveTabIntoView(activeIndex);
+  }, [activeIndex]);
 
   // Update active index while scrolling
   useEffect(() => {
@@ -79,35 +79,27 @@ const TrustTabs = () => {
 
   return (
     <>
-      {/* ── Horizontal sticky bar (compact label when sidebar open) ── */}
+      {/* ── Horizontal sticky bar (always visible) ── */}
       <section className={`new-trusted-tabs-section${sidebarOpen ? " sidebar-open-mode" : ""}`}>
         <div className="new-trusted-tabs-container">
           <div className="new-trusted-tabs-card">
-            {sidebarOpen ? (
-              <div className="trust-compact-bar">
-                <span className="trust-compact-label">
-                  {tabs[activeIndex]?.label}
-                </span>
-              </div>
-            ) : (
-              <div
-                ref={tabListRef}
-                className="new-trusted-tabs-list"
-                style={{ justifyContent: "center" }}
-              >
-                {tabs.map((tab, index) => (
-                  <button
-                    key={tab.id}
-                    ref={(el) => (tabRefs.current[index] = el)}
-                    type="button"
-                    className={`new-trusted-tab${index === activeIndex ? " active" : ""}`}
-                    onClick={() => handleTabClick(index, tab.id)}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div
+              ref={tabListRef}
+              className="new-trusted-tabs-list"
+              style={{ justifyContent: "center" }}
+            >
+              {tabs.map((tab, index) => (
+                <button
+                  key={tab.id}
+                  ref={(el) => (tabRefs.current[index] = el)}
+                  type="button"
+                  className={`new-trusted-tab${index === activeIndex ? " active" : ""}`}
+                  onClick={() => handleTabClick(index, tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>

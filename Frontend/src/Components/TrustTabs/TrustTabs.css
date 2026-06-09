@@ -81,27 +81,13 @@
 }
 
 /* ===============================
-   COMPACT BAR (sidebar mode)
+   SIDEBAR OPEN — offset tab bar
    =============================== */
 .new-trusted-tabs-section.sidebar-open-mode .new-trusted-tabs-card {
   padding-left: 160px;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   transition: padding-left 0.3s ease;
-}
-
-.trust-compact-bar {
-  display: flex;
-  align-items: center;
-  min-height: 58px;
-  padding: 0 24px;
-}
-
-.trust-compact-label {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #16b646;
-  letter-spacing: 0.4px;
 }
 
 /* ===============================
@@ -149,23 +135,25 @@
 }
 
 .trust-slim-close {
-  background: transparent;
-  border: none;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
   cursor: pointer;
-  font-size: 11px;
-  color: #94a3b8;
-  width: 22px;
-  height: 22px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  transition: background 0.2s, color 0.2s;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
   flex-shrink: 0;
 }
 
 .trust-slim-close:hover {
   background: #fee2e2;
+  border-color: #fca5a5;
   color: #dc2626;
 }
 
