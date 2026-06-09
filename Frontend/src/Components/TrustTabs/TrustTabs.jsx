@@ -104,19 +104,16 @@ const TrustTabs = () => {
         </div>
       </section>
 
-      {/* ── Slim sticky sidebar ── */}
+      {/* ── Slim sidebar card ── */}
       {sidebarOpen && (
         <aside className="trust-slim-sidebar" role="navigation" aria-label="Page sections">
-          <div className="trust-slim-header">
-            <span className="trust-slim-title">Sections</span>
-            <button
-              className="trust-slim-close"
-              onClick={() => setSidebarOpen(false)}
-              aria-label="Close sidebar"
-            >
-              ✕
-            </button>
-          </div>
+          <button
+            className="trust-slim-close"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+          >
+            ✕
+          </button>
           <nav className="trust-slim-nav">
             {tabs.map((tab, index) => (
               <button
@@ -125,7 +122,6 @@ const TrustTabs = () => {
                 className={`trust-slim-item${index === activeIndex ? " active" : ""}`}
                 onClick={() => handleSidebarNav(index, tab.id)}
               >
-                <span className="trust-slim-dot" />
                 {tab.label}
               </button>
             ))}
