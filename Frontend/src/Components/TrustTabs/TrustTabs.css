@@ -161,6 +161,7 @@
 .trust-slim-nav {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   overflow-y: auto;
   flex: 1;
   padding: 8px 0;
