@@ -63,15 +63,14 @@ const TrustPlanAndPricing = () => {
           </article>
 
           {/* ========== ENRICHED (POPULAR) ========== */}
-          <article className="trust-plan-card">
+          <article className="trust-plan-card trust-plan-card--popular">
             <div>
               <div className="trust-plan-header">
+                <div className="trust-plan-badge trust-plan-badge--popular">★ MOST POPULAR</div>
                 <div className="trust-plan-name">Enriched</div>
                 <div className="trust-plan-old-price">₹7,999</div>
                 <div className="trust-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="trust-plan-meta">
-                  Excluding gov fee <span className="trust-popular">(Popular)</span>
-                </div>
+                <div className="trust-plan-meta">Excluding gov fee</div>
               </div>
 
               <div className="trust-plan-body">
@@ -85,7 +84,7 @@ const TrustPlanAndPricing = () => {
             </div>
 
             <div className="trust-plan-footer">
-              <button className="trust-plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
+              <button className="trust-plan-button trust-plan-button--popular" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 

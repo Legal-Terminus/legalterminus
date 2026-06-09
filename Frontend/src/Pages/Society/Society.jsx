@@ -2,7 +2,6 @@ import React, { Suspense } from "react";
 import "./Society.css";
 import SocietyBreadcrum from "../../Components/SocietyBreadcrum/SocietyBreadcrum";
 
-// Lazy load below-fold components
 const SocietyPlanAndPricing = React.lazy(() => import("../../Components/SccietyPlanAndPricing/SccietyPlanAndPricing"));
 const SocietyTermsCondition = React.lazy(() => import("../../Components/SocietyTermsCondition/SocietyTermsCondition"));
 const SocietyPremium = React.lazy(() => import("../../Components/SocietyPremium/SocietyPremium"));
@@ -11,11 +10,11 @@ const SocietyCompanyTabs = React.lazy(() => import("../../Components/SocietyComp
 const SocietyPvtTypes = React.lazy(() => import("../../Components/SocietyPvtTypes/SocietyPvtTypes"));
 const SocietyRequirementsTab = React.lazy(() => import("../../Components/SocietyRequirementsTab/SocietyRequirementsTab"));
 const SocietyProcess = React.lazy(() => import("../../Components/SocietyProcess/SocietyProcess"));
+const SocietyDocument = React.lazy(() => import("../../Components/SocietyDocument/SocietyDocument"));
 const SocietyFAQ = React.lazy(() => import("../../Components/SocietyFAQ/SocietyFAQ"));
 const SocietyTestimonial = React.lazy(() => import("../../Components/SocietyTestimonial/SocietyTestimonial"));
 const SocietyVideoTestimonial = React.lazy(() => import("../../Components/SocietyVideoTestimonial/SocietyVideoTestimonial"));
 const SocietyOurClients = React.lazy(() => import("../../Components/SocietyOurClients/SocietyOurClients"));
-const SocietyDocument = React.lazy(() => import("../../Components/SocietyDocument/SocietyDocument"));
 
 const Society = () => {
   return (
@@ -26,14 +25,14 @@ const Society = () => {
 
       <div className="section-divider" />
 
-      <div id="plans">
+      <div id="plans" className="society-page-pricing">
         <Suspense fallback={<div />}>
-          {/* <SocietyPlanAndPricing /> */}
+          <SocietyPlanAndPricing />
         </Suspense>
       </div>
 
       <Suspense fallback={<div />}>
-        {/* <SocietyTermsCondition /> */}
+        <SocietyTermsCondition />
       </Suspense>
 
       <div className="section-divider" />
@@ -76,15 +75,19 @@ const Society = () => {
 
       <div id="process">
         <Suspense fallback={<div />}>
-          {/* <SocietyProcess /> */}
+          <SocietyProcess />
         </Suspense>
       </div>
 
+      <div className="section-divider" />
+
       <div id="documents">
         <Suspense fallback={<div />}>
-          {/* <SocietyDocument /> */}
+          <SocietyDocument />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
 
       <div id="faq">
         <Suspense fallback={<div />}>

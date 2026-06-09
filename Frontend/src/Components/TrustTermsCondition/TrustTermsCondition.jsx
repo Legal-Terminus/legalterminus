@@ -5,6 +5,7 @@ const TrustTermsCondition = () => {
   return (
     <section className="trust-tc-section">
       <div className="trust-tc-container">
+        <div className="trust-tc-card">
 
         {/* ================= HEADING ================= */}
         <h2 className="trust-tc-title">TERMS &amp; CONDITIONS</h2>
@@ -46,6 +47,7 @@ const TrustTermsCondition = () => {
           </li>
         </ol>
 
+        </div>
       </div>
     </section>
   );

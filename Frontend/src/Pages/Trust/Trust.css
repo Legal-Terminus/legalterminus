@@ -103,3 +103,9 @@
 }
 .trust-page-hero .lt-whatsapp-text { color: #1e293b; }
 .trust-page-hero .lt-form-note     { color: #64748b; }
+
+/* ===== PLANS — green border override (like OPC page-level) ===== */
+.trust-page-pricing .trust-plan-card {
+  border: 1px solid #22c55e;
+  box-shadow: none;
+}

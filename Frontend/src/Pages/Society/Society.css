@@ -103,3 +103,9 @@
 }
 .society-page-hero .lt-whatsapp-text { color: #1e293b; }
 .society-page-hero .lt-form-note     { color: #64748b; }
+
+/* ===== PLANS — green border override (like OPC page-level) ===== */
+.society-page-pricing .Society-plan-card {
+  border: 1px solid #22c55e;
+  box-shadow: none;
+}

@@ -1,146 +1,90 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
 
-/* ===============================
-   SECTION
-   =============================== */
-.trust-types-section {
-  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background-color: #ffffff;
-  padding: 20px 24px;
+.trutyp-section {
+  font-family: "Poppins", sans-serif;
+  background: #f8fafc;
+  padding: 60px 24px 70px;
 }
 
-/* ===============================
-   CONTAINER
-   =============================== */
-.trust-types-container {
+.trutyp-container {
   max-width: 1200px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 0.85fr 1.4fr;
-  gap: 72px;
-  align-items: flex-start;
 }
 
-/* ===============================
-   ILLUSTRATION
-   =============================== */
-.trust-types-illustration-wrap {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 12px;
-}
-
-.trust-types-illustration {
-  max-width: 115%;
-  height: auto;
-  display: block;
-}
-
-/* ===============================
-   CONTENT
-   =============================== */
-.trust-types-content {
-  max-width: 760px;
-  max-height: 520px;
-  overflow-y: auto;
-  padding-right: 14px;
-}
-
-.trust-types-title {
-  font-size: 40px;
-  line-height: 1.25;
-  font-weight: 600;
+.trutyp-title {
+  font-size: 36px;
+  font-weight: 700;
   color: #151821;
-  margin-bottom: 18px;
+  text-align: center;
+  margin: 0 0 48px;
+  line-height: 1.3;
 }
 
-.trust-types-intro {
-  margin-bottom: 24px;
-  font-size: 15px;
-  line-height: 1.9;
-  color: #4b5563;
+.trutyp-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.trust-types-block {
-  margin-bottom: 24px;
+.trutyp-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-top: 3px solid #22c55e;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  padding: 32px 28px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.trust-types-subtitle {
-  margin-bottom: 8px;
+.trutyp-card:hover {
+  border-color: #22c55e;
+  box-shadow: 0 8px 28px rgba(34, 197, 94, 0.14);
+  transform: translateY(-3px);
+}
+
+.trutyp-number {
+  font-size: 48px;
+  font-weight: 800;
+  color: rgba(27, 179, 58, 0.18);
+  line-height: 1;
+  margin-bottom: 16px;
+  letter-spacing: -1px;
+}
+
+.trutyp-card-title {
   font-size: 18px;
-  font-weight: 600;
-  color: #374151;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+  line-height: 1.4;
 }
 
-.trust-types-text {
-  font-size: 15px;
-  line-height: 1.9;
+.trutyp-card-text {
+  font-size: 14.5px;
+  line-height: 1.85;
   color: #4b5563;
+  margin: 0;
 }
 
-/* ===============================
-   RESPONSIVE
-   =============================== */
 @media (max-width: 1024px) {
-  .trust-types-section {
-    padding: 52px 20px 44px;
-  }
-
-  .trust-types-container {
-    gap: 40px;
-    grid-template-columns: 0.9fr 1.3fr;
-  }
-
-  .trust-types-title {
-    font-size: 32px;
-  }
+  .trutyp-title { font-size: 30px; }
+  .trutyp-cards { gap: 20px; }
 }
 
 @media (max-width: 768px) {
-  .trust-types-section {
-    padding: 40px 16px 36px;
-  }
-
-  .trust-types-container {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-
-  .trust-types-illustration-wrap {
-    order: 1;
-  }
-
-  .trust-types-content {
-    order: 2;
-    max-height: none;
-    overflow: visible;
-    padding-right: 0;
-  }
-
-  .trust-types-title {
-    font-size: 28px;
-  }
-
-  .trust-types-intro,
-  .trust-types-text {
-    font-size: 14px;
-  }
+  .trutyp-section { padding: 48px 16px 56px; }
+  .trutyp-cards   { grid-template-columns: 1fr; gap: 18px; }
+  .trutyp-title   { font-size: 26px; margin-bottom: 32px; }
 }
 
 @media (max-width: 480px) {
-  .trust-types-section {
-    padding: 32px 14px 28px;
-  }
-
-  .trust-types-title {
-    font-size: 24px;
-  }
-
-  .trust-types-intro,
-  .trust-types-text {
-    font-size: 13.5px;
-    line-height: 1.85;
-  }
+  .trutyp-section    { padding: 36px 14px 44px; }
+  .trutyp-title      { font-size: 22px; }
+  .trutyp-card       { padding: 24px 20px; }
+  .trutyp-number     { font-size: 38px; }
+  .trutyp-card-title { font-size: 16px; }
+  .trutyp-card-text  { font-size: 13.5px; }
 }

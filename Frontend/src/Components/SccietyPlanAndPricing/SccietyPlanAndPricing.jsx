@@ -63,15 +63,14 @@ const SocietyPlanAndPricing = () => {
           </article>
 
           {/* ========== ENRICHED (POPULAR) ========== */}
-          <article className="Society-plan-card">
+          <article className="Society-plan-card Society-plan-card--popular">
             <div>
               <div className="Society-plan-header">
+                <div className="Society-plan-badge Society-plan-badge--popular">★ MOST POPULAR</div>
                 <div className="Society-plan-name">Enriched</div>
                 <div className="Society-plan-old-price">₹7,999</div>
                 <div className="Society-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="Society-plan-meta">
-                  Excluding gov fee <span className="popular">(Popular)</span>
-                </div>
+                <div className="Society-plan-meta">Excluding gov fee</div>
               </div>
 
               <div className="Society-plan-body">
@@ -85,7 +84,7 @@ const SocietyPlanAndPricing = () => {
             </div>
 
             <div className="Society-plan-footer">
-              <button className="Society-plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
+              <button className="Society-plan-button Society-plan-button--popular" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 

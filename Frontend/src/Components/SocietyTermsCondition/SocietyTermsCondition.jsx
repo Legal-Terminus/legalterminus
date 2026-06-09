@@ -5,6 +5,7 @@ const SocietyTermsCondition = () => {
   return (
     <section className="socity-tc-section">
       <div className="socity-tc-container">
+        <div className="socity-tc-card">
 
         {/* ================= HEADING ================= */}
         <h2 className="socity-tc-title">TERMS &amp; CONDITIONS</h2>
@@ -46,6 +47,7 @@ const SocietyTermsCondition = () => {
           </li>
         </ol>
 
+        </div>
       </div>
     </section>
   );

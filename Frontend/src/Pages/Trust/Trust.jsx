@@ -2,7 +2,6 @@ import React, { Suspense } from "react";
 import "./Trust.css";
 import TrustBreadcrum from "../../Components/TrustBreadcrum/TrustBreadcrum";
 
-// Lazy load below-fold components
 const TrustTabs = React.lazy(() => import("../../Components/TrustTabs/TrustTabs"));
 const TrustPlanAndPricing = React.lazy(() => import("../../Components/TrustPlanAndPricing/TrustPlanAndPricing"));
 const TrustTermsCondition = React.lazy(() => import("../../Components/TrustTermsCondition/TrustTermsCondition"));
@@ -11,11 +10,11 @@ const TrustCompanyTabs = React.lazy(() => import("../../Components/TrustCompanyT
 const TrustPvtTypes = React.lazy(() => import("../../Components/TrustPvtTypes/TrustPvtTypes"));
 const TrustRequirementsTab = React.lazy(() => import("../../Components/TrustRequirementsTab/TrustRequirementsTab"));
 const TrustProcess = React.lazy(() => import("../../Components/TrustProcess/TrustProcess"));
+const TrustDocument = React.lazy(() => import("../../Components/TrustDocument/TrustDocument"));
 const TrustFAQ = React.lazy(() => import("../../Components/TrustFAQ/TrustFAQ"));
 const TrustTestimonial = React.lazy(() => import("../../Components/TrustTestimonial/TrustTestimonial"));
 const TrustVideoTestimonial = React.lazy(() => import("../../Components/TrustVideoTestimonial/TrustVideoTestimonial"));
 const TrustOurClients = React.lazy(() => import("../../Components/TrustOurClients/TrustOurClients"));
-const TrustDocument = React.lazy(() => import("../../Components/TrustDocument/TrustDocument"));
 
 const Trust = () => {
   return (
@@ -26,14 +25,14 @@ const Trust = () => {
 
       <div className="section-divider" />
 
-      <div id="plans">
+      <div id="plans" className="trust-page-pricing">
         <Suspense fallback={<div />}>
-          {/* <TrustPlanAndPricing /> */}
+          <TrustPlanAndPricing />
         </Suspense>
       </div>
 
       <Suspense fallback={<div />}>
-        {/* <TrustTermsCondition /> */}
+        <TrustTermsCondition />
       </Suspense>
 
       <div className="section-divider" />
@@ -76,15 +75,19 @@ const Trust = () => {
 
       <div id="process">
         <Suspense fallback={<div />}>
-          {/* <TrustProcess /> */}
+          <TrustProcess />
         </Suspense>
       </div>
 
+      <div className="section-divider" />
+
       <div id="documents">
         <Suspense fallback={<div />}>
-          {/* <TrustDocument /> */}
+          <TrustDocument />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
 
       <div id="faq">
         <Suspense fallback={<div />}>
