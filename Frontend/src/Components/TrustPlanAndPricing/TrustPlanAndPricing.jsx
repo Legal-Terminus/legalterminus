@@ -2,148 +2,122 @@ import React, { useState } from "react";
 import "./TrustPlanAndPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
-
 const PLANS = [
-  { id: "elemental", name: "Elemental", price: 3999, services: ["Search Report of Name Availability", "1 RUN Name Approval Certificate", "Director Identification Number for 2 Individuals", "Certificate of Incorporation", "E-PAN", "E-TAN", "E-MOA", "E-AOA", "Documents for Bank Account Opening", "Documents for 1st Auditor Appointment", "EPF Registrations", "ESI Registrations"] },
-  { id: "enriched", name: "Enriched", price: 5999, services: ["Elemental Plan Plus", "Share Certificate", "Commencement of Business", "Udyam/MSME Registration"] },
-  { id: "supreme", name: "Supreme", price: 24999, services: ["Enriched Plan Plus", "Income tax filing of Company", "Preparation of Directors Report", "Preparation of Annual Return", "Preparation of Auditor Appointment Paperwork", "Preparation of List of Share Holders", "Preparation of Notice of AGM", "Preparation of Notice of BM", "Preparation of Extracts of AGM", "Filing of AOC - 4 (Financial Statements)", "Filing of MGT - 7 (Annual Return)", "Filing of ADT - 1 (Auditor Appointment)", "Minutes of Board Meeting for 1st FY", "Minutes of General Meeting for 1st FY", "Maintenance of Statutory E- Registers", "Filing of DPT - 3 Annual (If Applicable)", "Filing of MSME - 1 (If Applicable) for 1st FY", "DIR KYC (2 Directors)", "Income Tax Filing of 2 Directors", "Audit fees are excluded and to be paid directly to Auditor"] }
+  {
+    id: "elemental",
+    name: "Elemental",
+    oldPrice: "Rs.11,999",
+    price: "Rs.9,999",
+    services: [
+      "Discovery call + Trust object lock",
+      "Custom Trust Deed drafting (objects, trustees, succession)",
+      "Stamp duty calculation (state-specific)",
+      "Notarisation coordination",
+      "Sub-Registrar / Charity Commissioner registration filing",
+      "Registration Certificate handover",
+      "Trust PAN application coordination",
+      "Free Trust updates / changes for 1 year",
+    ],
+  },
+  {
+    id: "enriched",
+    name: "Enriched",
+    badge: "★ MOST POPULAR",
+    popular: true,
+    oldPrice: "Rs.18,999",
+    price: "Rs.14,999",
+    services: [
+      "Everything in Elemental",
+      "Form 10A (12A registration) - income tax exemption",
+      "Form 10AB (80G registration) - donor tax deduction",
+      "Activity / mission write-up for IT department",
+      "Bank account opening assistance (trust account)",
+      "First Board / Trustees meeting kit (notice, agenda, minutes)",
+    ],
+  },
+  {
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ FULL-SERVICE",
+    oldPrice: "Rs.23,999",
+    price: "Rs.16,999",
+    services: [
+      "Everything in Enriched",
+      "Udyam (MSME) Registration on udyamregistration.gov.in",
+      "NIC code mapping (up to 3 codes)",
+      "Investment + turnover declaration",
+      "Udyam Certificate delivery (PDF)",
+      "GST Registration in 1 state (Regular scheme)",
+      "HSN / SAC code mapping (up to 10 codes)",
+      "Aadhaar e-KYC + bank validation",
+      "GST certificate (REG-06) delivered as PDF",
+    ],
+  },
 ];
 
 const TrustPlanAndPricing = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
-
     <>
-    <section className="trust-pricing-section">
-      <div className="trust-pricing-container">
+      <section className="trust-pricing-section">
+        <div className="trust-pricing-container">
 
-        {/* ================= HEADER ================= */}
-        <header className="trust-pricing-header">
-          <h2 className="trust-pricing-title">CHOOSE YOUR PLAN</h2>
-          <p className="trust-pricing-subtitle">
-            Register your company with pocket-friendly prices
-          </p>
-        </header>
+          <header className="trust-pricing-header">
+            <h2 className="trust-pricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="trust-pricing-subtitle">
+              Register your trust with pocket-friendly plans
+            </p>
+          </header>
 
-        {/* ================= CARDS ================= */}
-        <div className="trust-pricing-cards">
+          <div className="trust-pricing-cards">
+            {PLANS.map((plan) => (
+              <article
+                key={plan.id}
+                className={`trust-plan-card${plan.popular ? " trust-plan-card--popular" : ""}`}
+              >
+                <div>
+                  <div className="trust-plan-header">
+                    {plan.badge && (
+                      <div className={`trust-plan-badge${plan.popular ? " trust-plan-badge--popular" : ""}`}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    <div className="trust-plan-name">{plan.name}</div>
+                    <div className="trust-plan-old-price">{plan.oldPrice}</div>
+                    <div className="trust-plan-price">{plan.price}</div>
+                    <div className="trust-plan-meta">+ Govt. fees &amp; GST extra</div>
+                  </div>
 
-          {/* ========== ELEMENTAL ========== */}
-          <article className="trust-plan-card">
-            <div>
-              <div className="trust-plan-header">
-                <div className="trust-plan-name">Elemental</div>
-                <div className="trust-plan-old-price">₹5,999</div>
-                <div className="trust-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
-                <div className="trust-plan-meta">Excluding gov fee</div>
-              </div>
+                  <div className="trust-plan-body">
+                    <ul className="trust-plan-list">
+                      {plan.services.map((s, i) => (
+                        <li key={i} className="trust-plan-list-item">{s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
 
-              <div className="trust-plan-body">
-                <ul className="trust-plan-list">
-                  <li className="trust-plan-list-item">Search Report of Name Availability</li>
-                  <li className="trust-plan-list-item">1 RUN Name Approval Certificate</li>
-                  <li className="trust-plan-list-item">Director Identification Number for 2 Individuals</li>
-                  <li className="trust-plan-list-item">Certificate of Incorporation</li>
-                  <li className="trust-plan-list-item">E-PAN</li>
-                  <li className="trust-plan-list-item">E-TAN</li>
-                  <li className="trust-plan-list-item">E-MOA</li>
-                  <li className="trust-plan-list-item">E-AOA</li>
-                  <li className="trust-plan-list-item">Documents for Bank Account Opening</li>
-                  <li className="trust-plan-list-item">Documents for 1st Auditor Appointment</li>
-                  <li className="trust-plan-list-item">EPF Registrations</li>
-                  <li className="trust-plan-list-item">ESI Registrations</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="trust-plan-footer">
-              <button className="trust-plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* ========== ENRICHED (POPULAR) ========== */}
-          <article className="trust-plan-card trust-plan-card--popular">
-            <div>
-              <div className="trust-plan-header">
-                <div className="trust-plan-badge trust-plan-badge--popular">★ MOST POPULAR</div>
-                <div className="trust-plan-name">Enriched</div>
-                <div className="trust-plan-old-price">₹7,999</div>
-                <div className="trust-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="trust-plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="trust-plan-body">
-                <ul className="trust-plan-list">
-                  <li className="trust-plan-list-item">Elemental Plan Plus</li>
-                  <li className="trust-plan-list-item">Share Certificate</li>
-                  <li className="trust-plan-list-item">Commencement of Business</li>
-                  <li className="trust-plan-list-item">Udyam/MSME Registration</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="trust-plan-footer">
-              <button className="trust-plan-button trust-plan-button--popular" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* ========== SUPREME ========== */}
-          <article className="trust-plan-card">
-            <div>
-              <div className="trust-plan-header">
-                <div className="trust-plan-name">Supreme</div>
-                <div className="trust-plan-old-price">₹29,999</div>
-                <div className="trust-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
-                <div className="trust-plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="trust-plan-body">
-                <ul className="trust-plan-list">
-                  <li className="trust-plan-list-item">Enriched Plan Plus</li>
-                  <li className="trust-plan-list-item">Income tax filing of Company</li>
-                  <li className="trust-plan-list-item">Preparation of Directors Report</li>
-                  <li className="trust-plan-list-item">Preparation of Annual Return</li>
-                  <li className="trust-plan-list-item">Preparation of Auditor Appointment Paperwork</li>
-                  <li className="trust-plan-list-item">Preparation of List of Share Holders</li>
-                  <li className="trust-plan-list-item">Preparation of Notice of AGM</li>
-                  <li className="trust-plan-list-item">Preparation of Notice of BM</li>
-                  <li className="trust-plan-list-item">Preparation of Extracts of AGM</li>
-                  <li className="trust-plan-list-item">Filing of AOC - 4 (Financial Statements)</li>
-                  <li className="trust-plan-list-item">Filing of MGT - 7 (Annual Return)</li>
-                  <li className="trust-plan-list-item">Filing of ADT - 1 (Auditor Appointment)</li>
-                  <li className="trust-plan-list-item">Minutes of Board Meeting for 1st FY</li>
-                  <li className="trust-plan-list-item">Minutes of General Meeting for 1st FY</li>
-                  <li className="trust-plan-list-item">Maintenance of Statutory E- Registers</li>
-                  <li className="trust-plan-list-item">Filing of DPT - 3 Annual (If Applicable)</li>
-                  <li className="trust-plan-list-item">Filing of MSME - 1 (If Applicable) for 1st FY</li>
-                  <li className="trust-plan-list-item">DIR KYC (2 Directors)</li>
-                  <li className="trust-plan-list-item">Income Tax Filing of 2 Directors</li>
-                  <li className="trust-plan-list-item">
-                    Audit fees are excluded and to be paid directly to Auditor
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="trust-plan-footer">
-              <button className="trust-plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-            </div>
-          </article>
+                <div className="trust-plan-footer">
+                  <button
+                    className={`trust-plan-button${plan.popular ? " trust-plan-button--popular" : ""}`}
+                    onClick={() => setActivePlan({ ...plan, price: parseInt(plan.price.replace(/[^0-9]/g, ""), 10) })}
+                  >
+                    Buy Now
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
 
         </div>
-      </div>
-    </section>
-
+      </section>
 
       {activePlan && (
-
         <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="trust-registration" />
-
       )}
-
     </>
-
-  );};
+  );
+};
 
 export default TrustPlanAndPricing;

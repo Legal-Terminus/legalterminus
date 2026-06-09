@@ -154,6 +154,8 @@
   line-height: 1.6;
   display: flex;
   margin-bottom: 8px;
+  text-align: left;
+  word-spacing: normal;
 }
 
 .trust-plan-list-item::before {

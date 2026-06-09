@@ -11,36 +11,39 @@ const Breadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-             Trust Registration
+            Trust Registration
           </span>
 
           <h1 className="lt-public-title">
-             Trust Registration Online
-            <span> in India</span>
+            Trust Registration in India
           </h1>
+          <span className="lt-title-tagline">Register Your Trust Hassle-Free</span>
 
-          <p className="lt-public-description">
-            Legal Terminus can help you with trust registration in India, ensuring a hassle-free process within a reasonable timeframe and competitive professional fees starting from Rs. 9,999/-. Trust registration services are offered promptly and efficiently to meet your needs.
+          <p className="lt-public-description" style={{ marginBottom: "0" }}>
+            Trust Registration in India is one of the most commonly used legal structures for charitable, religious, educational, social welfare, and family-purpose organizations. Public Charitable Trusts are generally governed by state-specific trust laws, while private trusts are governed by the Indian Trusts Act, 1882. We provide complete assistance for Trust Registration in India, including Trust Deed drafting, stamp duty guidance, document preparation, and registration before the Sub-Registrar or relevant authority.
+          </p>
+          <p className="lt-public-description" style={{ marginTop: "12px" }}>
+            Depending on your selected plan, we also assist with registrations such as 12A and 80G to help eligible trusts obtain income tax exemption and donor tax-benefit eligibility.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item"> Minimum 3 Members Required</div>
-            <div className="lt-feature-item"> 5 Steps Registration Process</div>
-            <div className="lt-feature-item"> 7 - 10 Working Days</div>
-            <div className="lt-feature-item"> High Business Credibility</div>
+            <div className="lt-feature-item">15-Day Filing</div>
+            <div className="lt-feature-item">12A/80G Ready</div>
+            <div className="lt-feature-item">Trust Deed Drafting Assistance</div>
+            <div className="lt-feature-item">All-State Coverage</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
               <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <p>Trusts registered</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Processes</p>
+              <h3>Public + Private</h3>
+              <p>structures both covered</p>
             </div>
             <div>
-              <h3>5+</h3>
+              <h3>7+</h3>
               <p>Years of Legal Expertise</p>
             </div>
           </div>

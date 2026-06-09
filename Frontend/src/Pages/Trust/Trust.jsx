@@ -11,6 +11,7 @@ const TrustPvtTypes = React.lazy(() => import("../../Components/TrustPvtTypes/Tr
 const TrustRequirementsTab = React.lazy(() => import("../../Components/TrustRequirementsTab/TrustRequirementsTab"));
 const TrustProcess = React.lazy(() => import("../../Components/TrustProcess/TrustProcess"));
 const TrustDocument = React.lazy(() => import("../../Components/TrustDocument/TrustDocument"));
+const TrustGovtCosts = React.lazy(() => import("../../Components/TrustGovtCosts/TrustGovtCosts"));
 const TrustFAQ = React.lazy(() => import("../../Components/TrustFAQ/TrustFAQ"));
 
 const Trust = () => {
@@ -27,6 +28,10 @@ const Trust = () => {
           <TrustPlanAndPricing />
         </Suspense>
       </div>
+
+      <Suspense fallback={<div />}>
+        <TrustGovtCosts />
+      </Suspense>
 
       <Suspense fallback={<div />}>
         <TrustTermsCondition />
