@@ -6,60 +6,62 @@ const SocietyRequirementsTab = () => {
     <section className="society-req-section">
       <div className="society-req-container">
 
-        {/* ================= HEADER ================= */}
         <header className="society-req-header">
           <h2 className="society-req-title">
             Benefits of Society Registration in India
           </h2>
           <p className="society-req-subtitle">
-            Society registration gives legal recognition, protects members from personal liability, and allows the society to open a bank account and own property. It also helps in getting tax benefits, government grants, and building trust among donors and the public.
+            Society isn't just a cheap non-profit setup - it's the right governance model for member-driven missions. Here's what genuinely matters once registered:
           </p>
         </header>
 
-        {/* ================= CARDS ================= */}
         <div className="society-req-grid">
 
-          {/* Card 1 */}
           <article className="society-req-card">
-            <h3 className="society-req-card-title">
-              Legal Identity
-            </h3>
+            <h3 className="society-req-card-title">Member-Driven Democratic Governance</h3>
             <div className="society-req-card-underline" />
             <p className="society-req-card-text">
-              Once registered, the society becomes legally recognized. It can sign agreements, open a bank account, and buy or own property in its own name.
+              Office Bearers (President, Secretary, Treasurer) are elected periodically per the Rules. Decisions flow through General Body meetings and Executive Committee meetings. The membership IS the institution - this is unique among non-profit structures and is the right fit for associations + collectives.
             </p>
           </article>
 
-          {/* Card 2 */}
           <article className="society-req-card">
-            <h3 className="society-req-card-title">
-              Continued Existence
-            </h3>
+            <h3 className="society-req-card-title">Separate Legal Identity</h3>
             <div className="society-req-card-underline" />
             <p className="society-req-card-text">
-              The society continues to exist even if members leave or pass away.
+              A registered society has a distinct legal existence for practical purposes — it can own property, open bank accounts, enter into contracts, and sue or be sued in the name of its office bearers. However, unlike a Private Limited Company or LLP, a registered society is not a body corporate and does not confer the same level of limited liability protection on its members.
             </p>
           </article>
 
-          {/* Card 3 */}
           <article className="society-req-card">
-            <h3 className="society-req-card-title">
-              Protection of Members
-            </h3>
+            <h3 className="society-req-card-title">Section 43B(h) 45-Day Payment Protection (with Udyam)</h3>
             <div className="society-req-card-underline" />
             <p className="society-req-card-text">
-              In most cases, members are not personally responsible for the society’s debts or legal issues.
+              With Udyam Registration (Enriched / Supreme), your Society becomes an MSME entitled to Section 43B(h) protection - B2B buyers MUST pay you within 45 days or lose the tax deduction. Genuinely powerful for Societies generating revenue from services / training / events.
             </p>
           </article>
 
-          {/* Card 4 */}
           <article className="society-req-card">
-            <h3 className="society-req-card-title">
-              Tax Benefits
-            </h3>
+            <h3 className="society-req-card-title">Government Tender Access (with Udyam)</h3>
             <div className="society-req-card-underline" />
             <p className="society-req-card-text">
-              A registered society can apply to save income tax under 12A. Donors can also get tax benefits under 80G.
+              Udyam-registered Societies qualify for the 25% reservation in central government procurement plus exemption from EMD on most tenders. Many state schemes prefer registered Societies in education / health / sports sectors with MSME / Udyam status.
+            </p>
+          </article>
+
+          <article className="society-req-card">
+            <h3 className="society-req-card-title">12A + 80G + CSR-1 + FCRA Eligibility</h3>
+            <div className="society-req-card-underline" />
+            <p className="society-req-card-text">
+              Registered Societies are eligible to apply for 12A (income tax exemption), 80G (donor deduction eligibility), CSR-1 (CSR funding from corporates), and FCRA (foreign donations). These four registrations collectively unlock government grants, institutional funding, corporate CSR budgets, and international donor money — none of which are accessible without a registered society as the base entity.
+            </p>
+          </article>
+
+          <article className="society-req-card">
+            <h3 className="society-req-card-title">Lower Setup vs Section 8 Co + Stronger Governance vs Trust</h3>
+            <div className="society-req-card-underline" />
+            <p className="society-req-card-text">
+              Society costs Rs.6K-Rs.14K total (vs Rs.15K-Rs.30K for Section 8). Has structured member-elected governance (vs Trust where Settlor-trustees dominate). Sweet spot for groups wanting collective ownership + reasonable cost.
             </p>
           </article>
 

@@ -3,65 +3,48 @@ import "./SocietyFAQ.css";
 
 const faqs = [
   {
-    question: "What is a Society?",
-    answer: (
-      <div>
-        <p><strong>Society registration in India takes place under The Societies Registration Act, 1860. A society is an entity that works for promoting any of the below-mentioned activities or purposes.</strong></p>
-        <ul>
-          <li>Science</li>
-          <li>Art</li>
-          <li>Literature</li>
-          <li>Education</li>
-          <li>Charity</li>
-          <li>Public museums</li>
-          <li>Libraries</li>
-          <li>Creating military orphan funds etc.</li>
-        </ul>
-      </div>
-    ),
+    question: "What is Society Registration and who should register a Society?",
+    answer: "Society Registration in India is the legal process of registering a member-based non-profit organization under the Societies Registration Act, 1860. A Society is commonly formed for charitable, educational, cultural, scientific, religious, sports, social welfare, or professional purposes. It requires a minimum of 7 members and is managed through elected office bearers and governing body members. Society Registration is generally suitable for NGOs, associations, clubs, alumni groups, welfare organizations, and community-based initiatives that prefer a democratic and member-driven structure.",
   },
   {
-    question: "How many persons are required to register a Society?",
-    answer: "Minimum of 7 members are required to form a Society.",
+    question: "How is your pricing model exclusive of government fees? What will I actually pay in total?",
+    answer: "Our professional fee covers our work - MoA + Rules drafting, member onboarding, Registrar coordination, PAN + (Enriched / Supreme) Udyam + (Supreme) GST filing. State government costs (Registrar fee Rs.50 - Rs.500, stamp paper Rs.100 - Rs.500, notarisation Rs.300 - Rs.1,000) are billed separately at actuals. Udyam and GST government fees are NIL. Total out-of-pocket for a Delhi Society in Elemental: Rs.500 - Rs.1,500. For Enriched / Supreme: same total (Udyam + GST are free).",
   },
   {
-    question: "What are some basic/ key documents required to register a Society in India?",
-    answer: (
-      <div>
-        <ul>
-          <li>PAN Card (All the Members)</li>
-          <li>ID Proof (All the Members) — Passport / Voter ID / Aadhar Card / Driving License</li>
-          <li>Address Proof (All the Members &amp; office of the proposed society) — Telephone Bill / Mobile Bill / Savings Bank Statement</li>
-          <li>Passport size Photograph (All the Members)</li>
-          <li>All utility bills or bank statements shall be less than 2 months old</li>
-        </ul>
-      </div>
-    ),
+    question: "How long does Society Registration take?",
+    answer: "Society Registration generally takes around 15–22 working days, depending on the state and document readiness. The timeline includes drafting of documents, member verification, notarization, filing before the Registrar of Societies, and issuance of the Registration Certificate. Additional registrations such as PAN, UDYAM, or GST may require a few extra days.",
   },
   {
-    question: "What is the procedure to register a Society in India?",
-    answer: (
-      <div>
-        <p><strong>The broad process of registering a Society involves following steps:</strong></p>
-        <ul>
-          <li>STEP 1: Provision of requisite mentioned documents/information to us</li>
-          <li>STEP 2: Validating the documents / information and processing the same</li>
-          <li>STEP 3: Filing of application and submission of the same</li>
-          <li>STEP 4: Payment of appropriate government fee as applicable</li>
-          <li>STEP 5: Processing of the application and issuance of registration certificate</li>
-        </ul>
-      </div>
-    ),
+    question: "Why does Enriched bundle UDYAM Registration?",
+    answer: "UDYAM Registration helps eligible Societies obtain MSME recognition. This can be beneficial for societies involved in training, consultancy, educational services, skill development, events, or other revenue-generating activities. UDYAM Registration may help in government tenders, vendor onboarding, MSME benefits, and better payment protection under MSME provisions.",
   },
   {
-    question: "What is the time period within which a Society can be registered?",
-    answer:
-      "The process of registration of Society can take anywhere between 7 to 10 working days, subject to submission of correct information and complete documentation.",
+    question: "Why does Supreme bundle GST Registration?",
+    answer: "GST Registration may become necessary if the Society provides taxable services, conducts commercial activities, or crosses the prescribed GST turnover limit. Many organizations also prefer GST Registration for vendor empanelment, invoicing, and smoother business operations. The Supreme Plan includes GST Registration support with basic guidance on applicable service classifications and registration formalities.",
   },
   {
-    question: "How Legal Terminus can help you to register a Society in India?",
-    answer:
-      "Legal Terminus can help you to register a Society, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+    question: "Should I register a Society, Trust, or Section 8 Company?",
+    answer: "The right structure depends on your objective and management style. A Society is generally suitable for democratic and member-driven organizations. A Trust is usually preferred for founder-controlled charitable activities. A Section 8 Company is often chosen where higher corporate governance and stronger institutional credibility are required. We help clients choose the most suitable structure based on their activities and future plans.",
+  },
+  {
+    question: "How many members do I really need?",
+    answer: "A minimum of 7 members is required for Society Registration in most states. Certain states may have additional conditions regarding member composition or family relations. Additional members can also be admitted later as per the Rules & Regulations of the Society.",
+  },
+  {
+    question: "Does a Society need PAN and bank account opening support?",
+    answer: "Yes. After registration, the Society generally requires a PAN card to open a bank account, receive donations, and manage financial transactions. We also assist clients with PAN application support and provide guidance for bank account opening formalities.",
+  },
+  {
+    question: "Can my Society receive foreign donations or CSR funds?",
+    answer: "With SEPARATE additional registrations - yes. FCRA registration (for foreign donations) requires the Society to exist for 3+ years and have spent Rs.15L+ on charitable objects. CSR-1 registration with MCA (for CSR funds) requires PAN + 12A + 80G + last 3 years' annual reports. These are NOT included under THIS Society Registration service - they're separate quoted engagements. Society Registration is the foundational prerequisite.",
+  },
+  {
+    question: "Can a Society apply for 12A and 80G Registration?",
+    answer: "Yes. Registered Societies involved in charitable activities can apply for 12A and 80G Registration under the Income Tax Act. These registrations help the Society claim tax exemptions and allow donors to claim tax benefits on eligible donations.",
+  },
+  {
+    question: "How can Legal Terminus help me with Society Registration?",
+    answer: "We provide complete assistance for Society Registration in India, including MoA drafting, Rules & Regulations preparation, member documentation, Registrar filing, PAN support, and post-registration guidance. Depending on the selected plan, we also assist with UDYAM and GST Registration. Every file is professionally reviewed to ensure smooth registration and proper documentation support.",
   },
 ];
 
@@ -79,7 +62,7 @@ const SocietyFAQ = () => {
         <div className="socfaq-header">
           <h2 className="socfaq-title">Society Registration in India — FAQs</h2>
           <p className="socfaq-intro">
-            Find clear answers to the most common questions about society registration, documents required, process, fees, and benefits.
+            Clear answers to the most common questions about society registration — from members and documents to timelines, tax benefits, and structure comparisons.
           </p>
         </div>
 

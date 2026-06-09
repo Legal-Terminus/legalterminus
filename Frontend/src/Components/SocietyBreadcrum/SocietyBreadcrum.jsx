@@ -52,10 +52,12 @@ const Breadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <ConsultationForm
-          source="society-registration"
-          subtitle="Talk to our Society Registration expert"
-        />
+        <div id="society-consult-form">
+          <ConsultationForm
+            source="society-registration"
+            subtitle="Talk to our Society Registration expert"
+          />
+        </div>
 
       </div>
     </section>

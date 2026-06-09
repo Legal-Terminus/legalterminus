@@ -11,6 +11,7 @@ const SocietyPvtTypes = React.lazy(() => import("../../Components/SocietyPvtType
 const SocietyRequirementsTab = React.lazy(() => import("../../Components/SocietyRequirementsTab/SocietyRequirementsTab"));
 const SocietyProcess = React.lazy(() => import("../../Components/SocietyProcess/SocietyProcess"));
 const SocietyDocument = React.lazy(() => import("../../Components/SocietyDocument/SocietyDocument"));
+const SocietyGovtCosts = React.lazy(() => import("../../Components/SocietyGovtCosts/SocietyGovtCosts"));
 const SocietyFAQ = React.lazy(() => import("../../Components/SocietyFAQ/SocietyFAQ"));
 
 const Society = () => {
@@ -27,6 +28,10 @@ const Society = () => {
           <SocietyPlanAndPricing />
         </Suspense>
       </div>
+
+      <Suspense fallback={<div />}>
+        <SocietyGovtCosts />
+      </Suspense>
 
       <Suspense fallback={<div />}>
         <SocietyTermsCondition />

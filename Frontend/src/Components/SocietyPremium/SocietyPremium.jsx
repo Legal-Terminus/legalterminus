@@ -29,7 +29,10 @@ const SocietyPremium = () => {
                   <span className="soczp-title-icon">⚖</span>
                 </h2>
                 <p className="soczp-subtitle">
-                  Society registration sounds straightforward — but objections to the society name, incomplete MOA/bylaws, or missing member signatures can stall your application for weeks. Priority is what happens when a senior legal expert owns your file from name verification to registration certificate.
+                  Society Registration may look simple, but the real strength of a Society depends on properly drafted Rules & Regulations and clear governance structure. The MoA and Rules define how the Society will operate, manage members, appoint office bearers, conduct meetings, and handle future decisions.
+                </p>
+                <p className="soczp-subtitle" style={{ marginTop: "10px" }}>
+                  With LT Priority, your application is handled on a fast-track basis with dedicated professional support, quicker drafting, priority filing, and faster coordination throughout the registration process.
                 </p>
               </header>
 
@@ -38,23 +41,23 @@ const SocietyPremium = () => {
                 <ul className="soczp-list soczp-features-list">
                   <li className="soczp-list-item">
                     <span className="soczp-list-icon">⚡</span>
-                    Priority handling by society registration experts with same-day name verification.
-                  </li>
-                  <li className="soczp-list-item">
-                    <span className="soczp-list-icon">✅</span>
-                    Complete documentation support — MOA, bylaws, member declarations reviewed by a senior expert.
-                  </li>
-                  <li className="soczp-list-item">
-                    <span className="soczp-list-icon">✅</span>
-                    Pre-screening of society name against existing registrations to avoid rejections.
-                  </li>
-                  <li className="soczp-list-item">
-                    <span className="soczp-list-icon">🔄</span>
-                    Real-time status updates on mail and WhatsApp — no chasing the registrar's office yourself.
+                    Priority processing for faster Society Registration filing and follow-up
                   </li>
                   <li className="soczp-list-item">
                     <span className="soczp-list-icon">📑</span>
-                    Post-registration kit: registration certificate, MOA, bylaws, and compliance checklist.
+                    Professionally drafted MoA &amp; Rules with proper governance clauses
+                  </li>
+                  <li className="soczp-list-item">
+                    <span className="soczp-list-icon">✅</span>
+                    Senior professional review of documents before final submission
+                  </li>
+                  <li className="soczp-list-item">
+                    <span className="soczp-list-icon">📲</span>
+                    Real-time updates and dedicated coordination support
+                  </li>
+                  <li className="soczp-list-item">
+                    <span className="soczp-list-icon">📂</span>
+                    Post-registration kit with Registration Certificate and compliance guidance
                   </li>
                 </ul>
               </section>
@@ -67,24 +70,33 @@ const SocietyPremium = () => {
             <div className="soczp-note-box">
               <ul className="soczp-note-list">
                 <li className="soczp-note-item">
-                  A minimum of 7 members is required to register a society under the Societies Registration Act, 1860. All members must provide valid identity and address proof.
+                  7-member minimum is statutory - and in some states (AP, Telangana), members must be from at least 7 different families. Plan member composition carefully before drafting the MoA. We confirm state-specific rules on the discovery call.
                 </li>
                 <li className="soczp-note-item">
-                  Society name rejection is the most common delay. Avoid names that are too generic or already in use. We pre-check your preferred name and suggest alternatives if needed.
+                  Rules & Regulations determine 30-year governance. Wrong drafting (e.g., no clear quorum rules, no replacement-of-office-bearer mechanism, no member-expulsion procedure) creates governance disputes years later. Senior-professional drafting matters.
                 </li>
                 <li className="soczp-note-item">
-                  Society registration is state-governed — rules, fees, and timelines vary by state. Our experts are familiar with local requirements across all major states.
+                  Society is STATE-LEVEL. The Society is registered in the state of its registered office - and that state's Societies Act + procedural variations apply. Multi-state operations need either (a) the parent Society + state branches (procedurally complex) or (b) multiple Societies (one per state).
                 </li>
                 <li className="soczp-note-item">
-                  Post-registration, the society must file annual returns with the Registrar of Societies. Failure to comply can result in cancellation of registration.
+                  Society vs Trust vs Section 8 Company - they're NOT interchangeable. Societies are member-driven (democratic governance via Office Bearers election). Trusts are founder/trustee-driven. Section 8 Companies are board/director-driven. Pick based on your governance preference - we advise on the discovery call.
                 </li>
               </ul>
             </div>
 
             <div className="soczp-cta-row">
-              <button className="soczp-cta-btn">
+              <a
+                href="#society-consult-form"
+                className="soczp-cta-btn"
+                style={{ textDecoration: "none" }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById("society-consult-form");
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+              >
                 Consult a Legal Expert
-              </button>
+              </a>
             </div>
           </div>
 
