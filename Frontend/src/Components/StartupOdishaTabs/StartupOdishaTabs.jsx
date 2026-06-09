@@ -3,7 +3,7 @@ import "../PvtltdTabs/PvtltdTabs.css";
 
 const tabs = [
   { label: "Why Startup Odisha", id: "overview" },
-  { label: "Eligible Entities", id: "types" },
+  { label: "Types", id: "types" },
   { label: "Benefits", id: "benefits" },
   { label: "Process", id: "process" },
   { label: "Documents", id: "documents" },
@@ -28,7 +28,7 @@ const StartupOdishaTabs = () => {
     <section className="pvt-tabs-section">
       <div className="pvt-tabs-container">
         <div className="pvt-tabs-card">
-          <div className="pvt-tabs-list">
+          <div className="pvt-tabs-list" style={{ justifyContent: "center" }}>
             {tabs.map((tab, index) => (
               <button
                 key={tab.id}
