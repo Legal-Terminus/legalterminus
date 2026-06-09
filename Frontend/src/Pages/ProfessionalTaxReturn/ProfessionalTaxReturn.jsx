@@ -1,15 +1,106 @@
-import React from 'react'
-import './ProfessionalTaxReturn.css'
+import React, { Suspense } from 'react'
+import "./ProfessionalTaxReturn.css";
+import ProfTaxBreadcrum from '../../Components/ProfTaxBreadcrum/ProfTaxBreadcrum'
+
+const ProfTaxPlans = React.lazy(() => import('../../Components/ProfTaxPlans/ProfTaxPlans'))
+const ProfTaxGovtCosts = React.lazy(() => import('../../Components/ProfTaxGovtCosts/ProfTaxGovtCosts'))
+const ProfTaxTermCondition = React.lazy(() => import('../../Components/ProfTaxTermCondition/ProfTaxTermCondition'))
+const ProfTaxPremium = React.lazy(() => import('../../Components/ProfTaxPremium/ProfTaxPremium'))
+const ProfTaxTabs = React.lazy(() => import('../../Components/ProfTaxTabs/ProfTaxTabs'))
+const ProfTaxOverview = React.lazy(() => import('../../Components/ProfTaxOverview/ProfTaxOverview'))
+const ProfTaxTypes = React.lazy(() => import('../../Components/ProfTaxTypes/ProfTaxTypes'))
+const ProfTaxBenefits = React.lazy(() => import('../../Components/ProfTaxBenefits/ProfTaxBenefits'))
+const ProfTaxProcess = React.lazy(() => import('../../Components/ProfTaxProcess/ProfTaxProcess'))
+const ProfTaxDocuments = React.lazy(() => import('../../Components/ProfTaxDocuments/ProfTaxDocuments'))
+const ProfTaxFAQ = React.lazy(() => import('../../Components/ProfTaxFAQ/ProfTaxFAQ'))
 
 const ProfessionalTaxReturn = () => {
   return (
-    <div className="professional-tax-return-page">
-      <div className="page-header">
-        <h1>Professional Tax Return Filing</h1>
+    <div>
+      <div className="proftax-page-hero">
+        <ProfTaxBreadcrum />
       </div>
-      <div className="page-content">
-        <p>Content to be added...</p>
+
+      <div className="proftax-section-divider" />
+
+      <div id="plans" className="proftax-page-pricing">
+        <Suspense fallback={<div />}>
+          <ProfTaxPlans />
+        </Suspense>
       </div>
+
+      <div className="proftax-section-divider" />
+
+      <Suspense fallback={<div />}>
+        <ProfTaxGovtCosts />
+      </Suspense>
+
+      <div className="proftax-section-divider" />
+
+      <Suspense fallback={<div />}>
+        <ProfTaxTermCondition />
+      </Suspense>
+
+      <div className="proftax-section-divider" />
+
+      <div id="premium">
+        <Suspense fallback={<div />}>
+          <ProfTaxPremium />
+        </Suspense>
+      </div>
+
+      <Suspense fallback={<div />}>
+        <ProfTaxTabs />
+      </Suspense>
+
+      <div className="proftax-section-divider" />
+
+      <div id="company">
+        <Suspense fallback={<div />}>
+          <ProfTaxOverview />
+        </Suspense>
+      </div>
+
+      <div className="proftax-section-divider" />
+
+      <div id="types">
+        <Suspense fallback={<div />}>
+          <ProfTaxTypes />
+        </Suspense>
+      </div>
+
+      <div className="proftax-section-divider" />
+
+      <div id="requirements">
+        <Suspense fallback={<div />}>
+          <ProfTaxBenefits />
+        </Suspense>
+      </div>
+
+      <div className="proftax-section-divider" />
+
+      <div id="process">
+        <Suspense fallback={<div />}>
+          <ProfTaxProcess />
+        </Suspense>
+      </div>
+
+      <div className="proftax-section-divider" />
+
+      <div id="documents">
+        <Suspense fallback={<div />}>
+          <ProfTaxDocuments />
+        </Suspense>
+      </div>
+
+      <div className="proftax-section-divider" />
+
+      <div id="faq">
+        <Suspense fallback={<div />}>
+          <ProfTaxFAQ />
+        </Suspense>
+      </div>
+
     </div>
   )
 }
