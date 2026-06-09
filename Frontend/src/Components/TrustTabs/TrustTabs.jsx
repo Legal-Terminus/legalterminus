@@ -23,130 +23,122 @@ const TrustTabs = () => {
     const listWidth = list.offsetWidth;
     const btnLeft = btn.offsetLeft;
     const btnWidth = btn.offsetWidth;
-    const targetScroll = btnLeft - listWidth / 2 + btnWidth / 2;
-    list.scrollTo({ left: targetScroll, behavior: "smooth" });
+    list.scrollTo({ left: btnLeft - listWidth / 2 + btnWidth / 2, behavior: "smooth" });
   };
 
   const scrollToSection = (id) => {
-    const section = document.getElementById(id);
-    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // Click on horizontal tab bar → open sidebar and navigate
+  // Click on horizontal tab → open sidebar + scroll
   const handleTabClick = (index, id) => {
     setActiveIndex(index);
     setSidebarOpen(true);
     scrollToSection(id);
   };
 
-  // Click inside sidebar → navigate then close
+  // Click inside sidebar → scroll only (sidebar stays open)
   const handleSidebarNav = (index, id) => {
     setActiveIndex(index);
     scrollToSection(id);
-    setTimeout(() => setSidebarOpen(false), 350);
   };
 
-  const closeSidebar = () => setSidebarOpen(false);
+  // Shift the sections wrapper right when sidebar opens/closes
+  useEffect(() => {
+    const wrapper = document.getElementById("trust-nav-sections");
+    if (!wrapper) return;
+    wrapper.classList.toggle("trust-sections-shifted", sidebarOpen);
+    return () => wrapper.classList.remove("trust-sections-shifted");
+  }, [sidebarOpen]);
 
-  // Keep horizontal bar's active tab in view when sidebar is closed
+  // Keep horizontal active tab centred when sidebar is closed
   useEffect(() => {
     if (!sidebarOpen) scrollActiveTabIntoView(activeIndex);
   }, [activeIndex, sidebarOpen]);
 
-  // Intersection observer: update active tab as user scrolls
+  // Update active index while scrolling
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const index = tabs.findIndex((tab) => tab.id === entry.target.id);
-            if (index !== -1) setActiveIndex(index);
+            const idx = tabs.findIndex((t) => t.id === entry.target.id);
+            if (idx !== -1) setActiveIndex(idx);
           }
         });
       },
       { rootMargin: "-50% 0px -40% 0px", threshold: 0 }
     );
-
-    tabs.forEach((tab) => {
-      const section = document.getElementById(tab.id);
-      if (section) observer.observe(section);
+    tabs.forEach((t) => {
+      const el = document.getElementById(t.id);
+      if (el) observer.observe(el);
     });
-
     return () => observer.disconnect();
   }, []);
 
   return (
     <>
-      {/* ── Horizontal sticky tab bar ── */}
-      <section className="new-trusted-tabs-section">
+      {/* ── Horizontal sticky bar (compact label when sidebar open) ── */}
+      <section className={`new-trusted-tabs-section${sidebarOpen ? " sidebar-open-mode" : ""}`}>
         <div className="new-trusted-tabs-container">
           <div className="new-trusted-tabs-card">
-            <div
-              ref={tabListRef}
-              className="new-trusted-tabs-list"
-              style={{ justifyContent: "center" }}
-            >
-              {tabs.map((tab, index) => (
-                <button
-                  key={tab.id}
-                  ref={(el) => (tabRefs.current[index] = el)}
-                  type="button"
-                  className={`new-trusted-tab ${index === activeIndex ? "active" : ""}`}
-                  onClick={() => handleTabClick(index, tab.id)}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+            {sidebarOpen ? (
+              <div className="trust-compact-bar">
+                <span className="trust-compact-label">
+                  {tabs[activeIndex]?.label}
+                </span>
+              </div>
+            ) : (
+              <div
+                ref={tabListRef}
+                className="new-trusted-tabs-list"
+                style={{ justifyContent: "center" }}
+              >
+                {tabs.map((tab, index) => (
+                  <button
+                    key={tab.id}
+                    ref={(el) => (tabRefs.current[index] = el)}
+                    type="button"
+                    className={`new-trusted-tab${index === activeIndex ? " active" : ""}`}
+                    onClick={() => handleTabClick(index, tab.id)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* ── Sidebar overlay ── */}
+      {/* ── Slim sticky sidebar ── */}
       {sidebarOpen && (
-        <>
-          <div
-            className="trust-sidebar-backdrop"
-            onClick={closeSidebar}
-            aria-hidden="true"
-          />
-          <aside className="trust-sidebar" role="navigation" aria-label="Page sections">
-            <div className="trust-sidebar-header">
-              <div className="trust-sidebar-header-left">
-                <span className="trust-sidebar-icon">☰</span>
-                <span className="trust-sidebar-title">Sections</span>
-              </div>
+        <aside className="trust-slim-sidebar" role="navigation" aria-label="Page sections">
+          <div className="trust-slim-header">
+            <span className="trust-slim-title">Sections</span>
+            <button
+              className="trust-slim-close"
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Close sidebar"
+            >
+              ✕
+            </button>
+          </div>
+          <nav className="trust-slim-nav">
+            {tabs.map((tab, index) => (
               <button
-                className="trust-sidebar-close"
-                onClick={closeSidebar}
-                aria-label="Close navigation"
+                key={tab.id}
+                type="button"
+                className={`trust-slim-item${index === activeIndex ? " active" : ""}`}
+                onClick={() => handleSidebarNav(index, tab.id)}
               >
-                ✕
+                <span className="trust-slim-dot" />
+                {tab.label}
               </button>
-            </div>
-
-            <nav className="trust-sidebar-nav">
-              {tabs.map((tab, index) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`trust-sidebar-item ${index === activeIndex ? "active" : ""}`}
-                  onClick={() => handleSidebarNav(index, tab.id)}
-                >
-                  <span className="trust-sidebar-dot" />
-                  <span className="trust-sidebar-label">{tab.label}</span>
-                  {index === activeIndex && (
-                    <span className="trust-sidebar-arrow">›</span>
-                  )}
-                </button>
-              ))}
-            </nav>
-
-            <div className="trust-sidebar-footer">
-              <span>Tap a section to navigate</span>
-            </div>
-          </aside>
-        </>
+            ))}
+          </nav>
+        </aside>
       )}
     </>
   );

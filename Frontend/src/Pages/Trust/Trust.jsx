@@ -49,52 +49,56 @@ const Trust = () => {
         <TrustTabs />
       </Suspense>
 
-      <div className="section-divider" />
+      <div id="trust-nav-sections">
 
-      <div id="company">
-        <Suspense fallback={<div />}>
-          <TrustCompanyTabs />
-        </Suspense>
-      </div>
+        <div className="section-divider" />
 
-      <div className="section-divider" />
+        <div id="company">
+          <Suspense fallback={<div />}>
+            <TrustCompanyTabs />
+          </Suspense>
+        </div>
 
-      <div id="types">
-        <Suspense fallback={<div />}>
-          <TrustPvtTypes />
-        </Suspense>
-      </div>
+        <div className="section-divider" />
 
-      <div className="section-divider" />
+        <div id="types">
+          <Suspense fallback={<div />}>
+            <TrustPvtTypes />
+          </Suspense>
+        </div>
 
-      <div id="requirements">
-        <Suspense fallback={<div />}>
-          <TrustRequirementsTab />
-        </Suspense>
-      </div>
+        <div className="section-divider" />
 
-      <div className="section-divider" />
+        <div id="requirements">
+          <Suspense fallback={<div />}>
+            <TrustRequirementsTab />
+          </Suspense>
+        </div>
 
-      <div id="process">
-        <Suspense fallback={<div />}>
-          <TrustProcess />
-        </Suspense>
-      </div>
+        <div className="section-divider" />
 
-      <div className="section-divider" />
+        <div id="process">
+          <Suspense fallback={<div />}>
+            <TrustProcess />
+          </Suspense>
+        </div>
 
-      <div id="documents">
-        <Suspense fallback={<div />}>
-          <TrustDocument />
-        </Suspense>
-      </div>
+        <div className="section-divider" />
 
-      <div className="section-divider" />
+        <div id="documents">
+          <Suspense fallback={<div />}>
+            <TrustDocument />
+          </Suspense>
+        </div>
 
-      <div id="faq">
-        <Suspense fallback={<div />}>
-          <TrustFAQ />
-        </Suspense>
+        <div className="section-divider" />
+
+        <div id="faq">
+          <Suspense fallback={<div />}>
+            <TrustFAQ />
+          </Suspense>
+        </div>
+
       </div>
 
     </div>
