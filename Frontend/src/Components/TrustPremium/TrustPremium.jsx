@@ -29,7 +29,10 @@ const TrustPremium = () => {
                   <span className="trusczp-title-icon">⚖</span>
                 </h2>
                 <p className="trusczp-subtitle">
-                  Trust registration involves drafting a precise trust deed, selecting the right type of trust, and ensuring the deed is properly stamped and registered with the Sub-Registrar. A single error in the deed can lead to rejection or disputes. Priority is what happens when a senior legal expert manages your file from start to finish.
+                  Trust Registration may appear simple, but a properly drafted Trust Deed is extremely important for the long-term functioning of the Trust. The object clauses, trustee powers, succession process, and management rules play a major role in future compliance, governance, and eligibility for registrations such as 12A and 80G.
+                </p>
+                <p className="trusczp-subtitle" style={{ marginTop: "10px" }}>
+                  With LT Priority, your Trust Registration is handled on a fast-track basis with dedicated professional support, priority drafting, quicker coordination, and faster filing support throughout the process.
                 </p>
               </header>
 
@@ -38,23 +41,23 @@ const TrustPremium = () => {
                 <ul className="trusczp-list trusczp-features-list">
                   <li className="trusczp-list-item">
                     <span className="trusczp-list-icon">⚡</span>
-                    Priority handling by trust law experts with a 48-hour SLA on trust deed draft.
-                  </li>
-                  <li className="trusczp-list-item">
-                    <span className="trusczp-list-icon">✅</span>
-                    Senior expert reviewed trust deed — object clause, trustee details, and beneficiary provisions checked thoroughly.
-                  </li>
-                  <li className="trusczp-list-item">
-                    <span className="trusczp-list-icon">✅</span>
-                    Pre-verification of trustee eligibility and documentation before filing.
-                  </li>
-                  <li className="trusczp-list-item">
-                    <span className="trusczp-list-icon">🔄</span>
-                    Real-time status updates on mail and WhatsApp — no follow-up with the Sub-Registrar office needed.
+                    Priority processing for faster Trust Registration and document handling
                   </li>
                   <li className="trusczp-list-item">
                     <span className="trusczp-list-icon">📑</span>
-                    Post-registration kit: registered trust deed, compliance calendar, and guidance on 12A/80G registration.
+                    Professionally drafted Trust Deed with clear object and governance clauses
+                  </li>
+                  <li className="trusczp-list-item">
+                    <span className="trusczp-list-icon">✅</span>
+                    Senior expert review before final registration filing
+                  </li>
+                  <li className="trusczp-list-item">
+                    <span className="trusczp-list-icon">🏛</span>
+                    12A &amp; 80G registration support included in Enriched &amp; Supreme Plans
+                  </li>
+                  <li className="trusczp-list-item">
+                    <span className="trusczp-list-icon">📂</span>
+                    Post-registration kit with Trust Deed, Registration Certificate, PAN, and compliance guidance
                   </li>
                 </ul>
               </section>
@@ -67,16 +70,16 @@ const TrustPremium = () => {
             <div className="trusczp-note-box">
               <ul className="trusczp-note-list">
                 <li className="trusczp-note-item">
-                  A minimum of 3 members (1 settler + at least 2 trustees) is required to register a public trust. Private trusts may have different requirements depending on state law.
+                  Object clause must be SPECIFIC and CHARITABLE. Generic 'social welfare' clauses get rejected for 12A. Education, healthcare, environment, poverty alleviation - each demands precise framing. We stress-test the object before drafting.
                 </li>
                 <li className="trusczp-note-item">
-                  Trust registration rules vary significantly by state. Public charitable trusts are governed by state-specific Acts (e.g., Maharashtra Public Trusts Act, Rajasthan Public Trust Act). Our experts are familiar with requirements across all major states.
+                  Stamp duty is state-specific and depends on the trust's property value. Maharashtra: Rs.500 typically; Karnataka: Rs.1,000 typically; some states with sizeable trust corpus may attract higher slabs. We calculate precisely on the discovery call.
                 </li>
                 <li className="trusczp-note-item">
-                  The trust deed must be executed on non-judicial stamp paper of appropriate value (varies by state and trust property value) and registered with the local Sub-Registrar's office.
+                  Minimum 2 trustees required. Same person CAN be both settlor AND trustee - but can't be the SOLE trustee (the Trust would lack legal capacity). Plan trustee composition before drafting the Deed.
                 </li>
                 <li className="trusczp-note-item">
-                  For tax exemptions (12A and 80G), a separate application must be filed with the Income Tax Department after registration. We guide you through this process as part of our post-registration support.
+                  12A and 80G are SEPARATE applications (under the Income Tax Act, not Indian Trusts Act). Without them, your Trust pays 30% income tax and donors get no tax benefit. Apply within 1 year of registration for cleanest treatment. The Enriched tier handles this.
                 </li>
               </ul>
             </div>
