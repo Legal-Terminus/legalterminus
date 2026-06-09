@@ -16,8 +16,9 @@ const Breadcrum = () => {
 
           <h1 className="lt-public-title">
             Trust Registration in India
+            <br />
+            <span className="lt-title-tagline">Register Your Trust Hassle-Free</span>
           </h1>
-          <span className="lt-title-tagline">Register Your Trust Hassle-Free</span>
 
           <p className="lt-public-description" style={{ marginBottom: "0" }}>
             Trust Registration in India is one of the most commonly used legal structures for charitable, religious, educational, social welfare, and family-purpose organizations. Public Charitable Trusts are generally governed by state-specific trust laws, while private trusts are governed by the Indian Trusts Act, 1882. We provide complete assistance for Trust Registration in India, including Trust Deed drafting, stamp duty guidance, document preparation, and registration before the Sub-Registrar or relevant authority.
