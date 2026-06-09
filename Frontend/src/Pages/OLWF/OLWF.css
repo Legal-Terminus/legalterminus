@@ -131,6 +131,11 @@
   color: #64748b;
 }
 
+/* ===== TABS — center-align tab text ===== */
+.opc-tabs-list {
+  justify-content: center;
+}
+
 /* ===== PRICING CARDS — solid green border, no shadow ===== */
 .opc-page-pricing .opcplan-card {
   border: 1px solid #22c55e;
