@@ -12,9 +12,6 @@ const TrustRequirementsTab = React.lazy(() => import("../../Components/TrustRequ
 const TrustProcess = React.lazy(() => import("../../Components/TrustProcess/TrustProcess"));
 const TrustDocument = React.lazy(() => import("../../Components/TrustDocument/TrustDocument"));
 const TrustFAQ = React.lazy(() => import("../../Components/TrustFAQ/TrustFAQ"));
-const TrustTestimonial = React.lazy(() => import("../../Components/TrustTestimonial/TrustTestimonial"));
-const TrustVideoTestimonial = React.lazy(() => import("../../Components/TrustVideoTestimonial/TrustVideoTestimonial"));
-const TrustOurClients = React.lazy(() => import("../../Components/TrustOurClients/TrustOurClients"));
 
 const Trust = () => {
   return (
@@ -95,19 +92,6 @@ const Trust = () => {
         </Suspense>
       </div>
 
-      <div className="section-divider" />
-
-      <Suspense fallback={<div />}>
-        <TrustTestimonial />
-      </Suspense>
-
-      <Suspense fallback={<div />}>
-        <TrustVideoTestimonial />
-      </Suspense>
-
-      <Suspense fallback={<div />}>
-        <TrustOurClients />
-      </Suspense>
     </div>
   );
 };

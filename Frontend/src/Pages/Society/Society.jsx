@@ -12,9 +12,6 @@ const SocietyRequirementsTab = React.lazy(() => import("../../Components/Society
 const SocietyProcess = React.lazy(() => import("../../Components/SocietyProcess/SocietyProcess"));
 const SocietyDocument = React.lazy(() => import("../../Components/SocietyDocument/SocietyDocument"));
 const SocietyFAQ = React.lazy(() => import("../../Components/SocietyFAQ/SocietyFAQ"));
-const SocietyTestimonial = React.lazy(() => import("../../Components/SocietyTestimonial/SocietyTestimonial"));
-const SocietyVideoTestimonial = React.lazy(() => import("../../Components/SocietyVideoTestimonial/SocietyVideoTestimonial"));
-const SocietyOurClients = React.lazy(() => import("../../Components/SocietyOurClients/SocietyOurClients"));
 
 const Society = () => {
   return (
@@ -95,19 +92,6 @@ const Society = () => {
         </Suspense>
       </div>
 
-      <div className="section-divider" />
-
-      <Suspense fallback={<div />}>
-        <SocietyTestimonial />
-      </Suspense>
-
-      <Suspense fallback={<div />}>
-        <SocietyVideoTestimonial />
-      </Suspense>
-
-      <Suspense fallback={<div />}>
-        <SocietyOurClients />
-      </Suspense>
     </div>
   );
 };
