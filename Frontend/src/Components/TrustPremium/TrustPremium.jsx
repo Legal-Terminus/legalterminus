@@ -85,9 +85,9 @@ const TrustPremium = () => {
             </div>
 
             <div className="trusczp-cta-row">
-              <button className="trusczp-cta-btn">
+              <a href="#trust-consult-form" className="trusczp-cta-btn">
                 Consult a Legal Expert
-              </button>
+              </a>
             </div>
           </div>
 
