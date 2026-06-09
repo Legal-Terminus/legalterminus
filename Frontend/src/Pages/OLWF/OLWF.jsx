@@ -1,13 +1,13 @@
 import React, { Suspense } from 'react'
 import "./OLWF.css";
-import OPCBreadcrum from '../../Components/OPCBreadcrum/OPCBreadcrum'
+import OLWFBreadcrum from '../../Components/OLWFBreadcrum/OLWFBreadcrum'
 
-const OPCPlans = React.lazy(() => import('../../Components/OPCPlans/OPCPlans'))
-const OPCGovtCosts = React.lazy(() => import('../../Components/OPCGovtCosts/OPCGovtCosts'))
-const OPCTermCondition = React.lazy(() => import('../../Components/OPCTermCondition/OPCTermCondition'))
-const OpcZolvitPremium = React.lazy(() => import('../../Components/OpcZolvitPremium/OpcZolvitPremium'))
+const OLWFPlans = React.lazy(() => import('../../Components/OLWFPlans/OLWFPlans'))
+const OLWFGovtCosts = React.lazy(() => import('../../Components/OLWFGovtCosts/OLWFGovtCosts'))
+const OLWFTermCondition = React.lazy(() => import('../../Components/OLWFTermCondition/OLWFTermCondition'))
+const OLWFPriority = React.lazy(() => import('../../Components/OLWFPriority/OLWFPriority'))
 const OPCTabs = React.lazy(() => import('../../Components/OPCTabs/OPCTabs'))
-const OPCOverview = React.lazy(() => import('../../Components/OPCOverview/OPCOverview'))
+const OLWFOverview = React.lazy(() => import('../../Components/OLWFOverview/OLWFOverview'))
 const OPCFeatures = React.lazy(() => import('../../Components/OPCFeatures/OPCFeatures'))
 const OPCBenefits = React.lazy(() => import('../../Components/OPCBenefits/OPCBenefits'))
 const OPCElegibility = React.lazy(() => import('../../Components/OPCElegibility/OPCElegibility'))
@@ -18,34 +18,34 @@ const OLWF = () => {
   return (
     <div>
       <div className="opc-page-hero">
-        <OPCBreadcrum />
+        <OLWFBreadcrum />
       </div>
 
       <div className="section-divider" />
 
       <div id="plans" className="opc-page-pricing">
         <Suspense fallback={<div />}>
-          <OPCPlans />
+          <OLWFPlans />
         </Suspense>
       </div>
 
       <div className="section-divider" />
 
       <Suspense fallback={<div />}>
-        <OPCGovtCosts />
+        <OLWFGovtCosts />
       </Suspense>
 
       <div className="section-divider" />
 
       <Suspense fallback={<div />}>
-        <OPCTermCondition />
+        <OLWFTermCondition />
       </Suspense>
 
       <div className="section-divider" />
 
       <div id="premium">
         <Suspense fallback={<div />}>
-          <OpcZolvitPremium />
+          <OLWFPriority />
         </Suspense>
       </div>
 
@@ -57,7 +57,7 @@ const OLWF = () => {
 
       <div id="company">
         <Suspense fallback={<div />}>
-          <OPCOverview />
+          <OLWFOverview />
         </Suspense>
       </div>
 
