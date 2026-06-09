@@ -10,9 +10,6 @@ const StartupOdishaBenefits = () => {
             Benefits of Startup Odisha Registration
           </h2>
           <p className="req-subtitle">
-            DPIIT recognition isn't a vanity certificate - it's a rupee-quantifiable benefit stack. Here's what genuinely matters once you're recognised:
-          </p>
-          <p className="req-subtitle" style={{ marginTop: "12px" }}>
             The benefits below describe what the Startup Odisha RECOGNITION itself unlocks. The downstream benefits (grants, subsidies, reimbursements) are POLICY entitlements that recognised startups can apply for SEPARATELY - we do not handle those applications under this service.
           </p>
         </header>
