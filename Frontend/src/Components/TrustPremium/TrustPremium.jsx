@@ -85,7 +85,15 @@ const TrustPremium = () => {
             </div>
 
             <div className="trusczp-cta-row">
-              <a href="#trust-consult-form" className="trusczp-cta-btn">
+              <a
+                href="#trust-consult-form"
+                className="trusczp-cta-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById("trust-consult-form");
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+              >
                 Consult a Legal Expert
               </a>
             </div>
