@@ -8,11 +8,11 @@ const OLWFTermCondition = React.lazy(() => import('../../Components/OLWFTermCond
 const OLWFPriority = React.lazy(() => import('../../Components/OLWFPriority/OLWFPriority'))
 const OPCTabs = React.lazy(() => import('../../Components/OPCTabs/OPCTabs'))
 const OLWFOverview = React.lazy(() => import('../../Components/OLWFOverview/OLWFOverview'))
-const OPCFeatures = React.lazy(() => import('../../Components/OPCFeatures/OPCFeatures'))
-const OPCBenefits = React.lazy(() => import('../../Components/OPCBenefits/OPCBenefits'))
-const OPCElegibility = React.lazy(() => import('../../Components/OPCElegibility/OPCElegibility'))
-const OPCDocuments = React.lazy(() => import('../../Components/OPCDocuments/OPCDocuments'))
-const OPCFAQ = React.lazy(() => import('../../Components/OPCFAQ/OPCFAQ'))
+const OLWFFeatures = React.lazy(() => import('../../Components/OLWFFeatures/OLWFFeatures'))
+const OLWFBenefits = React.lazy(() => import('../../Components/OLWFBenefits/OLWFBenefits'))
+const OLWFElegibility = React.lazy(() => import('../../Components/OLWFElegibility/OLWFElegibility'))
+const OLWFDocuments = React.lazy(() => import('../../Components/OLWFDocuments/OLWFDocuments'))
+const OLWFFAQ = React.lazy(() => import('../../Components/OLWFFAQ/OLWFFAQ'))
 
 const OLWF = () => {
   return (
@@ -65,7 +65,7 @@ const OLWF = () => {
 
       <div id="types">
         <Suspense fallback={<div />}>
-          <OPCFeatures />
+          <OLWFFeatures />
         </Suspense>
       </div>
 
@@ -73,7 +73,7 @@ const OLWF = () => {
 
       <div id="requirements">
         <Suspense fallback={<div />}>
-          <OPCBenefits />
+          <OLWFBenefits />
         </Suspense>
       </div>
 
@@ -81,7 +81,7 @@ const OLWF = () => {
 
       <div id="process">
         <Suspense fallback={<div />}>
-          <OPCElegibility />
+          <OLWFElegibility />
         </Suspense>
       </div>
 
@@ -89,7 +89,7 @@ const OLWF = () => {
 
       <div id="documents">
         <Suspense fallback={<div />}>
-          <OPCDocuments />
+          <OLWFDocuments />
         </Suspense>
       </div>
 
@@ -97,7 +97,7 @@ const OLWF = () => {
 
       <div id="faq">
         <Suspense fallback={<div />}>
-          <OPCFAQ />
+          <OLWFFAQ />
         </Suspense>
       </div>
 
