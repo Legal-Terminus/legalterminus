@@ -97,7 +97,7 @@ const OLWFDocuments = () => {
 
         <div className="opcd-header">
           <h2 className="opcd-main-title">Documents Required for OLWF Registration</h2>
-          <p className="opcd-main-subtitle">Six categories. We send a personalised checklist after the discovery call.</p>
+          <p className="opcd-main-subtitle">Six categories. Establishment-level docs apply to the entity; worker-level docs apply to each covered worker. We send a personalised checklist after the discovery call.</p>
         </div>
 
         <div className="opcd-columns">

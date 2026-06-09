@@ -6,7 +6,7 @@ const OLWFPlans = React.lazy(() => import('../../Components/OLWFPlans/OLWFPlans'
 const OLWFGovtCosts = React.lazy(() => import('../../Components/OLWFGovtCosts/OLWFGovtCosts'))
 const OLWFTermCondition = React.lazy(() => import('../../Components/OLWFTermCondition/OLWFTermCondition'))
 const OLWFPriority = React.lazy(() => import('../../Components/OLWFPriority/OLWFPriority'))
-const OPCTabs = React.lazy(() => import('../../Components/OPCTabs/OPCTabs'))
+const OLWFTabs = React.lazy(() => import('../../Components/OLWFTabs/OLWFTabs'))
 const OLWFOverview = React.lazy(() => import('../../Components/OLWFOverview/OLWFOverview'))
 const OLWFFeatures = React.lazy(() => import('../../Components/OLWFFeatures/OLWFFeatures'))
 const OLWFBenefits = React.lazy(() => import('../../Components/OLWFBenefits/OLWFBenefits'))
@@ -50,7 +50,7 @@ const OLWF = () => {
       </div>
 
       <Suspense fallback={<div />}>
-        <OPCTabs />
+        <OLWFTabs />
       </Suspense>
 
       <div className="section-divider" />
