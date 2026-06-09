@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./TrustTabs.css";
 
 const tabs = [
@@ -12,9 +12,24 @@ const tabs = [
 
 const TrustTabs = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const tabListRef = useRef(null);
+  const tabRefs = useRef([]);
+
+  const scrollActiveTabIntoView = (index) => {
+    const list = tabListRef.current;
+    const btn = tabRefs.current[index];
+    if (!list || !btn) return;
+    const listLeft = list.scrollLeft;
+    const listWidth = list.offsetWidth;
+    const btnLeft = btn.offsetLeft;
+    const btnWidth = btn.offsetWidth;
+    const targetScroll = btnLeft - listWidth / 2 + btnWidth / 2;
+    list.scrollTo({ left: targetScroll, behavior: "smooth" });
+  };
 
   const handleClick = (index, id) => {
     setActiveIndex(index);
+    scrollActiveTabIntoView(index);
     const section = document.getElementById(id);
     if (section) {
       section.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -29,7 +44,10 @@ const TrustTabs = () => {
             const index = tabs.findIndex(
               (tab) => tab.id === entry.target.id
             );
-            if (index !== -1) setActiveIndex(index);
+            if (index !== -1) {
+              setActiveIndex(index);
+              scrollActiveTabIntoView(index);
+            }
           }
         });
       },
@@ -51,10 +69,15 @@ const TrustTabs = () => {
     <section className="new-trusted-tabs-section">
       <div className="new-trusted-tabs-container">
         <div className="new-trusted-tabs-card">
-          <div className="new-trusted-tabs-list" style={{ justifyContent: "center" }}>
+          <div
+            ref={tabListRef}
+            className="new-trusted-tabs-list"
+            style={{ justifyContent: "center" }}
+          >
             {tabs.map((tab, index) => (
               <button
                 key={tab.id}
+                ref={(el) => (tabRefs.current[index] = el)}
                 type="button"
                 className={`new-trusted-tab ${
                   index === activeIndex ? "active" : ""
