@@ -1,26 +1,26 @@
 import React from "react";
-import "../OPCFeatures/OPCFeatures.css";
+import "./ProfTaxTypes.css";
 
 const types = [
   {
     number: "01",
-    title: "Employer Registration (RC — Registration Certificate)",
-    text: "Any person or entity employing one or more employees must obtain an RC from the state PT authority. The employer deducts PT from employee salaries per the applicable slab and remits the total amount via challan. Monthly returns are filed reporting headcount and deductions.",
+    title: "Employer Certificate of Registration (EC)",
+    text: "Mandatory for every employer who pays salary or wages. The EC authorises the employer to deduct PT from employee salaries and deposit it to the state government. Must be obtained before the first payroll run. Failure to register attracts retrospective assessment plus penalty.",
   },
   {
     number: "02",
-    title: "Self-Employed / Professional Registration (EC — Enrolment Certificate)",
-    text: "Self-employed individuals — lawyers, doctors, architects, CAs, consultants, traders — must register independently through an EC. PT is self-assessed and paid annually or in installments. The maximum is ₹2,500/year per constitutional cap.",
+    title: "Employee Certificate of Enrollment (RC)",
+    text: "Required for individual employees and self-employed professionals earning above the state threshold. In most states, the employer obtains the RC on behalf of employees. Self-employed persons (doctors, CAs, architects, consultants) enroll independently and pay PT directly.",
   },
   {
     number: "03",
-    title: "Company / LLP Registration",
-    text: "Companies and LLPs are treated as employers and must obtain an RC. Directors drawing salary from the company are subject to employer deduction at source. Partners in LLPs may need both EC (self) and RC (employer) depending on state rules.",
+    title: "PTEC — Maharashtra Employer Enrollment",
+    text: "Unique to Maharashtra: in addition to PTRC (employee deduction), the employer itself must obtain a PTEC and pay ₹2,500/year on its own income. PTEC is not a deduction — it is a direct levy on the business entity. Applies to companies, LLPs, firms, and sole proprietors in Maharashtra.",
   },
   {
     number: "04",
-    title: "Freelancer / Contract Worker Compliance",
-    text: "Freelancers and gig workers engaging clients in PT-applicable states may be liable for EC registration. State-by-state applicability applies — some states exempt freelancers below a threshold. We assess your situation and advise on the applicable registration category.",
+    title: "Self-Employed / Professional PT",
+    text: "Freelancers, consultants, and professionals in PT-applicable states must self-enroll and pay PT annually or as per the state schedule. Applicable professions vary by state — lawyers, doctors, engineers, chartered accountants, and architects are commonly included. The self-employed PT rate is typically ₹2,500/year.",
   },
 ];
 

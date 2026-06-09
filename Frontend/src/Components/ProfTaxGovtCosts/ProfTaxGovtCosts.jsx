@@ -1,41 +1,36 @@
 import React from "react";
-import "../OPCGovtCosts/OPCGovtCosts.css";
+import "./ProfTaxGovtCosts.css";
 
 const rows = [
   {
-    head: "PT Registration Fee (Employer)",
+    head: "PT Registration Fee",
     range: "₹0 – ₹2,500",
-    note: "Varies by state; some states charge nil, others levy a one-time or annual registration fee",
+    note: "Varies by state; many states charge ₹0 for online registration",
   },
   {
-    head: "Annual Renewal / Enrolment Fee",
+    head: "PTEC (Employer Enrollment)",
     range: "₹2,500 / year",
-    note: "Maximum per constitutional cap; applicable in states that have enrolment for self-employed",
+    note: "Maharashtra PTEC annual payment; other states have similar levies",
   },
   {
-    head: "Monthly PT Challan (per employee)",
-    range: "₹0 – ₹208",
-    note: "Monthly deduction per employee per salary slab; employer remits to state government",
+    head: "PTRC (Employee Deduction)",
+    range: "₹0 – ₹200 / employee",
+    note: "Per-employee slab tax; max ₹200/month for salary ≥ ₹10,000",
   },
   {
-    head: "Late Return Filing Penalty",
-    range: "₹200 – ₹1,000",
-    note: "Per month of delay; state-specific; Maharashtra levies ₹1,000/month, Karnataka ₹50/day",
-  },
-  {
-    head: "Non-Registration Penalty",
-    range: "₹1,000 – ₹5,000",
-    note: "Levied for failure to register within the due period; varies by state",
-  },
-  {
-    head: "Interest on Unpaid Tax",
+    head: "Late Payment Penalty",
     range: "1% – 2% per month",
-    note: "Charged on outstanding PT dues from due date; compounded monthly in most states",
+    note: "Charged on unpaid PT amount; state-specific rates apply",
   },
   {
-    head: "Total Annual Cost (typical 10-employee firm)",
-    range: "₹5,000 – ₹25,000",
-    note: "Includes challan remittances + return filing costs; excludes penalty (if compliant)",
+    head: "Digital Signature (if required)",
+    range: "₹1,999 / person",
+    note: "Needed in some states for online portal submission",
+  },
+  {
+    head: "Total Out-of-Pocket (typical)",
+    range: "₹2,500 – ₹8,000",
+    note: "Depends on state, number of employees, and registration type",
     isTotal: true,
   },
 ];
@@ -45,11 +40,11 @@ const ProfTaxGovtCosts = () => {
     <section className="opc-govtcosts-section">
       <div className="opc-govtcosts-container">
         <h2 className="opc-govtcosts-title">
-          Indicative Government &amp; Statutory Costs
+          Indicative Government &amp; Out-of-Pocket Costs
           <span className="opc-govtcosts-badge">Billed at Actuals</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          These are estimated government fees and statutory costs over and above our professional fee. Actual amounts vary by state and employee headcount.
+          These are estimated government fees charged over and above our professional fee. Actual amounts vary by state and number of employees.
         </p>
 
         <div className="opc-govtcosts-table-wrapper">

@@ -1,55 +1,52 @@
 import { useState } from "react";
-import "../OPCPlans/OPCPlans.css";
+import "./ProfTaxPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "elemental",
-    name: "Elemental",
+    id: "basic",
+    name: "Basic",
     oldPrice: 1999,
     price: 999,
     services: [
-      "Eligibility & state applicability check",
-      "Employer PT Registration (1 state)",
-      "Registration Certificate delivery",
-      "Challan generation guidance",
-      "Employee slab chart (state-specific)",
-      "Monthly deduction template (Excel)",
-      "Compliance calendar for first year",
+      "Applicability check (state + business type)",
+      "Employer Certificate of Registration (EC)",
+      "State portal registration assistance",
+      "Government fee payment coordination",
+      "Registration certificate delivery",
+      "First return filing guidance",
     ],
   },
   {
-    id: "enriched",
-    name: "Enriched",
+    id: "standard",
+    name: "Standard",
     badge: "★ MOST POPULAR",
     popular: true,
-    oldPrice: 5999,
-    price: 2999,
+    oldPrice: 3999,
+    price: 1999,
     services: [
-      "Everything in Elemental",
-      "PT Return Filing — 12 months (monthly/quarterly)",
-      "Challan payment coordination",
-      "Employee headcount updates — unlimited",
-      "Penalty notice response (1 notice)",
-      "Annual compliance report",
+      "Everything in Basic",
+      "Employee Certificate of Enrollment (RC) — up to 10 employees",
+      "Monthly challan preparation (3 months)",
+      "Salary slab mapping as per state schedule",
+      "PTRC + PTEC registration (Maharashtra)",
     ],
   },
   {
-    id: "supreme",
-    name: "Supreme",
+    id: "comprehensive",
+    name: "Comprehensive",
     badge: "✦ FULL-SERVICE",
-    oldPrice: 12999,
-    price: 6999,
+    oldPrice: 7999,
+    price: 4999,
     services: [
-      "Everything in Enriched",
+      "Everything in Standard",
+      "RC for unlimited employees",
+      "Annual PT return filing (all employees)",
       "Multi-state PT registration (up to 3 states)",
-      "PT Return Filing — 36 months",
-      "New employee onboarding PT mapping",
-      "Penalty notices — unlimited responses",
-      "Self-employed PT registration (1 person)",
-      "Director / Partner PT compliance",
-      "Annual PT reconciliation statement",
-      "Priority support via WhatsApp & email",
+      "Salary slab revision advisory",
+      "PT amendment / surrender support",
+      "Dedicated compliance calendar",
+      "Priority CA / CS support for 6 months",
     ],
   },
 ];
@@ -65,7 +62,7 @@ const ProfTaxPlans = () => {
           <header className="opcpricing-header">
             <h2 className="opcpricing-title">CHOOSE YOUR PLAN</h2>
             <p className="opcpricing-subtitle">
-              Manage Professional Tax compliance with pocket-friendly prices
+              Get Professional Tax Registration at pocket-friendly prices
             </p>
           </header>
 
@@ -113,7 +110,7 @@ const ProfTaxPlans = () => {
       </section>
 
       {activePlan && (
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="professional-tax-registration" />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="professional-tax" />
       )}
     </>
   );

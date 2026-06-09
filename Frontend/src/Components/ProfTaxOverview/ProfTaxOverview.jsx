@@ -1,6 +1,6 @@
 import React from "react";
-import "../OPCOverview/OPCOverview.css";
-import illustration from "../../assets/whypvt-imp1.svg";
+import "./ProfTaxOverview.css";
+import illustration from "../../assets/whypvt-imp.svg";
 
 const ProfTaxOverview = () => {
   return (
@@ -9,63 +9,57 @@ const ProfTaxOverview = () => {
       {/* SECTION 1 — INTRO */}
       <section className="opc-intro-section">
         <div className="opc-intro-container">
-          {/* Illustration */}
           <div className="opc-intro-illustration-wrap">
             <img
               src={illustration}
-              alt="Professional Tax overview illustration"
+              alt="Professional Tax Registration illustration"
               className="opc-intro-illustration"
             />
           </div>
 
-          {/* Text */}
           <div className="opc-intro-content">
             <h2 className="opc-intro-title">
-              What is Professional Tax?
+              Why Professional Tax Registration Matters
             </h2>
             <p className="opc-intro-text">
-              Professional Tax (PT) is a direct tax levied by state governments on individuals earning income through employment, professions, trades, callings, or businesses. It is one of the oldest taxes in India — authorized under Article 276 of the Constitution — and is constitutionally capped at ₹2,500 per person per year.
+              Professional Tax (PT) is a state-level tax levied under Article 276 of the Constitution on individuals who earn income through employment, trade, or profession. Contrary to the name, it is not restricted to professionals — any person earning a salary above the state-prescribed threshold is liable to pay PT, and every employer is obligated to deduct and deposit it monthly.
               <br /><br />
-              Despite its name, Professional Tax applies to salaried employees (not just professionals). Every employer is legally obligated to deduct PT from employee salaries per the applicable state slab and remit it to the state government. Self-employed professionals, sole proprietors, and partners of firms must also register and pay PT independently through an "Enrolment Certificate."
-              <br /><br />
-              Non-compliance carries compounding penalties — ₹1,000/month in Maharashtra, ₹50/day in Karnataka — and can result in recovery proceedings against the employer personally. Registration is mandatory from Day 1 of hiring, not when payroll crosses a threshold.
+              Non-registration is not an option once you cross the salary threshold — penalties compound quickly (1%–2% per month) and state tax authorities are increasingly active in enforcement, especially post-GST rollout. For employers, PT registration is a day-1 compliance requirement: you need the Employer Certificate (EC) before your first payroll run, and the Employee Certificate (RC) before you deduct PT from any employee's salary.
             </p>
           </div>
         </div>
       </section>
 
-      {/* SECTION 2 — STATE COMPARISON TABLE */}
+      {/* SECTION 2 — COMPARISON TABLE */}
       <section className="opc-compare-section">
         <div className="opc-compare-container">
-          <h2 className="opc-compare-title">Professional Tax Slabs — State Comparison</h2>
+          <h2 className="opc-compare-title">PT vs No Registration: The Honest Comparison</h2>
           <p className="opc-compare-subtitle">
-            PT slabs, due dates, and filing frequency differ significantly across states. Here's a quick reference:
+            What happens when you delay or skip Professional Tax Registration:
           </p>
           <div className="opc-compare-table-wrapper">
             <table className="opc-compare-table">
               <thead>
                 <tr>
-                  <th>State</th>
-                  <th>Max PT / Year</th>
-                  <th>Filing Frequency</th>
-                  <th>Applies To</th>
+                  <th>Parameter</th>
+                  <th>Registered (EC + RC)</th>
+                  <th>Not Registered</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>Maharashtra</td><td>₹2,500</td><td>Monthly</td><td>Employers &amp; Employees</td></tr>
-                <tr><td>Karnataka</td><td>₹2,400</td><td>Monthly</td><td>Employers; Annual for Self-Employed</td></tr>
-                <tr><td>Andhra Pradesh</td><td>₹2,500</td><td>Monthly</td><td>Employers &amp; Self-Employed</td></tr>
-                <tr><td>Telangana</td><td>₹2,500</td><td>Monthly</td><td>Employers &amp; Self-Employed</td></tr>
-                <tr><td>Tamil Nadu</td><td>₹2,500</td><td>Half-Yearly</td><td>Employers &amp; Self-Employed</td></tr>
-                <tr><td>West Bengal</td><td>₹2,500</td><td>Monthly</td><td>Employers &amp; Employees</td></tr>
-                <tr><td>Gujarat</td><td>₹2,500</td><td>Monthly</td><td>Employers &amp; Self-Employed</td></tr>
-                <tr><td>Kerala</td><td>₹2,400</td><td>Half-Yearly</td><td>Employers &amp; Professionals</td></tr>
-                <tr><td>Assam</td><td>₹2,500</td><td>Monthly</td><td>Employers &amp; Employees</td></tr>
+                <tr><td>Legal Status</td><td>Compliant under state PT Act</td><td>In violation; liable to prosecution</td></tr>
+                <tr><td>Employee Deduction</td><td>Lawfully deducted from salary</td><td>Cannot deduct — employer pays from pocket</td></tr>
+                <tr><td>Penalty Exposure</td><td>None (if returns filed on time)</td><td>1%–2% per month + interest + arrears</td></tr>
+                <tr><td>GST / IT Audit Risk</td><td>Low (compliance shown)</td><td>Higher — non-PT flags non-compliance</td></tr>
+                <tr><td>Bank / Investor Scrutiny</td><td>Clean compliance record</td><td>Demerits in due diligence checks</td></tr>
+                <tr><td>Return Filing</td><td>Monthly challan + annual return</td><td>Retrospective filing + penalty + interest</td></tr>
+                <tr><td>Setup Cost (total)</td><td>₹2,000 – ₹10,000</td><td>₹5,000 – ₹50,000+ (arrears + penalties)</td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </section>
+
     </div>
   );
 };

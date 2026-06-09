@@ -1,94 +1,66 @@
 import React, { useState } from "react";
-import "../OPCFAQ/OPCFAQ.css";
+import "./ProfTaxFAQ.css";
 
 const faqs = [
   {
-    question: "What is Professional Tax and who is liable to pay it?",
-    answer:
-      "Professional Tax (PT) is a state-level direct tax levied on persons earning income from employment, profession, trade, or calling. It applies to salaried employees (deducted by employer), self-employed professionals like doctors, lawyers, CAs, architects, and sole proprietors. Companies, LLPs, and partnership firms must also register as employers and deduct PT from employee salaries.",
+    question: "Which states levy Professional Tax in India?",
+    answer: "Professional Tax is currently levied in Andhra Pradesh, Assam, Gujarat, Karnataka, Kerala, Madhya Pradesh, Maharashtra, Meghalaya, Odisha, Sikkim, Tamil Nadu, Telangana, and West Bengal. Central government employees and armed forces are exempt. If your state is not in this list, PT does not apply to you.",
   },
   {
-    question: "Which states in India have Professional Tax?",
+    question: "What is the difference between PTEC and PTRC in Maharashtra?",
     answer: (
       <span>
-        As of 2026, Professional Tax is levied in the following states:
+        Maharashtra has two distinct PT certificates:
         <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
-          <li>Maharashtra, Karnataka, Andhra Pradesh, Telangana</li>
-          <li>Tamil Nadu, West Bengal, Gujarat, Kerala</li>
-          <li>Assam, Meghalaya, Odisha, Tripura, Jharkhand, Sikkim</li>
+          <li><strong>PTRC (Professional Tax Registration Certificate)</strong> — Employer-level certificate authorising deduction of PT from employees' salaries. Monthly filing of Form III-B required.</li>
+          <li><strong>PTEC (Professional Tax Enrollment Certificate)</strong> — The employer / entity pays ₹2,500/year on its own income. Separate from employee deductions. Due by 30 June each year.</li>
         </ul>
-        States like Delhi, Rajasthan, UP, Haryana, Punjab, and MP do NOT have Professional Tax.
+        Both are mandatory for companies operating in Maharashtra.
       </span>
     ),
   },
   {
-    question: "What is the maximum Professional Tax that can be levied?",
-    answer:
-      "Article 276 of the Indian Constitution caps Professional Tax at ₹2,500 per person per year. No state can legally levy more than this. If you see a PT deduction that exceeds ₹208/month (which annualizes to ₹2,496 — close to the cap), flag it for review immediately.",
+    question: "What is the maximum Professional Tax an employee can be charged?",
+    answer: "The constitutional cap under Article 276 is ₹2,500 per year per person. Most states impose ₹200/month (₹2,400/year) for the highest slab. The exact amount depends on the state PT slab schedule and the employee's monthly salary bracket.",
   },
   {
-    question: "What is the difference between Registration Certificate (RC) and Enrolment Certificate (EC)?",
+    question: "What happens if I don't register for PT?",
+    answer: "Non-registration after becoming liable results in: (a) retrospective PT assessment on all employees for the unregistered period, (b) penalty of 1%–2% per month on unpaid PT, (c) interest charges, and in severe cases (d) prosecution under the state PT Act. The total liability can far exceed the original tax amount.",
+  },
+  {
+    question: "Is PT applicable to work-from-home employees?",
+    answer: "Generally, PT liability follows the state where the employee physically works. A remote employee working from Maharashtra is liable under Maharashtra PT even if the employer's HO is in a non-PT state. The employer must obtain a Maharashtra PTRC for such employees. State-specific rules vary — we confirm applicability during the discovery call.",
+  },
+  {
+    question: "How often do PT returns need to be filed?",
     answer: (
       <span>
+        Filing frequency varies by state and turnover:
         <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
-          <li><strong>Registration Certificate (RC):</strong> Required for employers who employ at least one person and must deduct PT from employee salaries.</li>
-          <li><strong>Enrolment Certificate (EC):</strong> Required for self-employed individuals, professionals, traders, and proprietors who pay PT on their own income (not as employers).</li>
+          <li><strong>Monthly</strong> — Maharashtra PTRC (if annual PT liability &gt; ₹50,000)</li>
+          <li><strong>Quarterly</strong> — Maharashtra PTRC (if annual PT liability ≤ ₹50,000)</li>
+          <li><strong>Annual</strong> — Karnataka, Tamil Nadu, Kerala (most states)</li>
+          <li><strong>Half-yearly</strong> — Gujarat, West Bengal</li>
         </ul>
-        A company with employees needs an RC. A sole proprietor with no employees needs an EC. An LLP with employees and partners may need both.
+        Our compliance calendar specifies exact due dates for your state.
       </span>
     ),
   },
   {
-    question: "When must an employer register for Professional Tax?",
-    answer:
-      "Registration is mandatory from the date you hire your first employee — not when your payroll crosses a threshold. Most states require registration within 30 days of employing the first person. Delayed registration triggers a penalty for the entire unregistered period, retroactively.",
+    question: "Can a self-employed professional register for PT themselves?",
+    answer: "Yes. Freelancers, consultants, doctors, chartered accountants, architects, and engineers earning above the state PT threshold must self-enroll. Self-employed PT is typically ₹2,500/year payable in a single annual instalment. No employer deduction is involved — you pay directly to the state government.",
   },
   {
-    question: "Is Professional Tax deductible for income tax purposes?",
+    question: "How can Legal Terminus help with Professional Tax Registration?",
     answer: (
       <span>
-        Yes — for employees:
+        Legal Terminus handles:
         <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
-          <li>PT deducted from salary is deductible under Section 16(iii) of the Income Tax Act</li>
-          <li>This reduces the employee's gross salary before computing income tax</li>
-          <li>Employer must provide Form 16 showing PT deducted</li>
-        </ul>
-        For self-employed individuals, PT paid as an EC holder is deductible as a business expense.
-      </span>
-    ),
-  },
-  {
-    question: "What are the penalties for late filing or non-registration?",
-    answer: (
-      <span>
-        Penalties vary by state but are significant:
-        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
-          <li>Maharashtra: ₹1,000/month for late returns; 10% penalty on unpaid tax</li>
-          <li>Karnataka: ₹50/day for late returns; 10% + 1.5%/month interest on dues</li>
-          <li>West Bengal: ₹200/month penalty; 12% p.a. interest on arrears</li>
-          <li>Non-registration: ₹2,000 – ₹5,000 flat penalty in most states</li>
-        </ul>
-        These compound fast. A missed return in Maharashtra costs ₹12,000/year in penalties alone, far exceeding the actual PT liability.
-      </span>
-    ),
-  },
-  {
-    question: "If I have employees in multiple states, do I need separate PT registrations?",
-    answer:
-      "Yes — each state where you have employees or a place of business requires a separate PT registration with that state's tax authority. There is no central or unified PT registration. Our Supreme plan covers up to 3 states; additional states are quoted separately.",
-  },
-  {
-    question: "How can Legal Terminus help with my Professional Tax compliance?",
-    answer: (
-      <span>
-        Legal Terminus handles everything:
-        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
-          <li>State applicability check and registration category assessment</li>
-          <li>RC and/or EC application preparation and portal filing</li>
-          <li>Slab mapping and monthly deduction template</li>
-          <li>Monthly / quarterly return filing after you share challan acknowledgement</li>
-          <li>Penalty notice responses and regularization of past non-compliance</li>
-          <li>Annual compliance calendar with WhatsApp and email reminders</li>
+          <li>Applicability check across all PT-applicable states</li>
+          <li>EC and RC registration on the correct state portal</li>
+          <li>Government fee payment and acknowledgement</li>
+          <li>Monthly / annual PT return filing (Standard + Comprehensive plans)</li>
+          <li>Compliance calendar so you never miss a due date</li>
         </ul>
       </span>
     ),
@@ -109,7 +81,7 @@ const ProfTaxFAQ = () => {
         <div className="opcfaq-header">
           <h2 className="opcfaq-title">Professional Tax Registration — FAQs</h2>
           <p className="opcfaq-intro">
-            Got questions? We've got answers — straight, no-BS, legally accurate.
+            Clear answers to the most common PT registration questions — no jargon, legally accurate.
           </p>
         </div>
 

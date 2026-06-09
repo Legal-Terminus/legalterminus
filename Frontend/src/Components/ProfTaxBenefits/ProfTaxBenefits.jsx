@@ -1,5 +1,5 @@
 import React from "react";
-import "../OPCBenefits/OPCBenefits.css";
+import "./ProfTaxBenefits.css";
 
 const ProfTaxBenefits = () => {
   return (
@@ -7,59 +7,59 @@ const ProfTaxBenefits = () => {
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of Professional Tax Compliance in India
+            Benefits of Professional Tax Registration in India
           </h2>
           <p className="opcben-subtitle">
-            Timely PT compliance is not just a legal obligation — it protects employers from liability and keeps the business credible with employees, banks, and regulators.
+            PT registration is not just a legal obligation — it actively protects your business from penalties and builds a clean compliance track record.
           </p>
         </header>
 
         <div className="opcben-grid">
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Avoid Compounding Penalties</h3>
+            <h3 className="opcben-card-title">Legal Compliance &amp; Penalty-Free Operations</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Late PT returns attract monthly penalties that compound fast — ₹1,000/month in Maharashtra, ₹50/day in Karnataka. A single year of non-compliance can result in penalties that dwarf the actual PT amount. Proactive filing eliminates this risk entirely.
+              Registered employers operate under a valid EC and RC, eliminating exposure to retrospective assessment, prosecution, and compound penalties. A clean PT record avoids surprise demands during GST or income tax audits.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Personal Liability Protection for Employers</h3>
+            <h3 className="opcben-card-title">Lawful Salary Deduction from Employees</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Employers who deduct PT from salaries but fail to remit it to the state become personally liable — not just the company. Directors of companies and partners of firms can be held personally accountable. Timely remittance is the only protection.
+              Only a PT-registered employer with a valid RC can legally deduct PT from employee salaries. Without registration, the PT liability remains the employer's — payable out of your own pocket even if employees earn above the threshold.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Tax Deduction for Employees</h3>
+            <h3 className="opcben-card-title">Business Credibility &amp; Due Diligence</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              PT paid by employees is deductible under Section 16(iii) of the Income Tax Act. Compliant employers provide employees with a proper PT deduction certificate, which reduces their taxable income. This is a real benefit employees value.
+              Investors, banks, and acquirers check PT compliance as part of due diligence. A missing EC or RC — and especially accumulated arrears — is a red flag that can delay funding rounds, loan approvals, or M&amp;A closings.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Regulatory Credibility &amp; Audit Readiness</h3>
+            <h3 className="opcben-card-title">Tax Deductibility</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              A clean PT compliance record demonstrates to banks, investors, and regulators that your business runs properly. During due diligence for funding or acquisitions, PT non-compliance is a red flag that can derail deals or trigger escrow holdbacks.
+              Under Section 16(iii) of the Income Tax Act, PT paid by an employee is deductible from gross salary for income tax computation. This small but real saving is available only if PT is correctly deducted and deposited.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Smooth Labour Inspections</h3>
+            <h3 className="opcben-card-title">State Licensing &amp; Shop Establishment Link</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              State labour departments conduct surprise PT audits. If you're registered and filing returns, inspections are resolved quickly with a compliance certificate. Unregistered employers face immediate closure notices and recovery proceedings in most states.
+              In several states (Maharashtra, Karnataka, Tamil Nadu), PT registration is a prerequisite or a co-requirement for Shop &amp; Establishment renewal. An expired or missing PT certificate can block your shop license renewal.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Multi-State Expansion Without Compliance Gaps</h3>
+            <h3 className="opcben-card-title">Structured Payroll Compliance</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Each state where you have employees requires a separate PT registration. Growing businesses often miss this — especially remote-first companies. We map every state where employees work and ensure all registrations and returns are filed before any audit risk arises.
+              Obtaining PT registration forces a clean payroll structure: salary slabs mapped to PT schedules, monthly deduction discipline, and an annual return reconciliation. This payroll hygiene reduces errors in PF, ESI, and TDS calculations too.
             </p>
           </article>
         </div>

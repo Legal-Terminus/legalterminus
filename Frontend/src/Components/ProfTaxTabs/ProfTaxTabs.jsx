@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import "../OPCTabs/OPCTabs.css";
+import "./ProfTaxTabs.css";
 
 const tabs = [
-  { label: "What is Professional Tax", id: "company" },
+  { label: "What is PT", id: "company" },
   { label: "Types", id: "types" },
   { label: "Benefits", id: "requirements" },
   { label: "Process & Steps", id: "process" },
@@ -15,13 +15,9 @@ const ProfTaxTabs = () => {
 
   const handleClick = (index, id) => {
     setActiveIndex(index);
-
     const section = document.getElementById(id);
     if (section) {
-      section.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 

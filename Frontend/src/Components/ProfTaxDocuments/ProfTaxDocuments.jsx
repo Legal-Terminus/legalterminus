@@ -1,24 +1,27 @@
 import React from "react";
-import "../OPCDocuments/OPCDocuments.css";
-import { FaUser, FaBuilding, FaIdCard, FaCamera, FaBolt, FaFileContract, FaShieldAlt, FaFileAlt } from "react-icons/fa";
+import "./ProfTaxDocuments.css";
+import { FaUser, FaBuilding, FaIdCard, FaFileAlt, FaCamera, FaBolt, FaFileContract, FaUsers } from "react-icons/fa";
 
-const applicantDocs = [
+const employerDocs = [
   {
     icon: <FaIdCard />,
-    title: "Proprietor / Director / Partner Identity",
-    note: "Mandatory for the authorised signatory of the entity",
+    title: "Business Owner / Authorized Signatory Identity",
+    note: "Mandatory for all Directors / Partners / Proprietors",
     items: [
       "Self-attested PAN card (mandatory)",
       "Self-attested Aadhaar card",
-      "Passport / Driving Licence (for NRI authorised signatories)",
+      "Passport / Driving Licence (for foreign nationals — notarised + apostilled)",
     ],
   },
   {
     icon: <FaFileAlt />,
-    title: "Address Proof (Individual)",
-    note: "Not older than 60 days from application date",
+    title: "Business Registration Certificate",
+    note: "Any one of the following",
     items: [
-      "Bank statement OR electricity bill OR mobile bill — not older than 60 days",
+      "Certificate of Incorporation (COI) for companies",
+      "Partnership Deed / LLP Agreement",
+      "GST Registration Certificate",
+      "UDYAM / Shop & Establishment Certificate",
     ],
   },
   {
@@ -26,41 +29,39 @@ const applicantDocs = [
     title: "Passport Size Photograph",
     note: "For the authorised signatory",
     items: [
-      "Latest passport-size photograph of the proprietor / director / partner signing the application",
+      "Latest passport-size photograph of proprietor / director / partner",
     ],
   },
 ];
 
-const businessDocs = [
+const officeDocs = [
   {
     icon: <FaBolt />,
-    title: "Business Registration Proof",
-    note: "Principal registration document of the entity",
+    title: "Registered Office Proof",
+    note: "Latest utility bill — not older than 2 months",
     items: [
-      "Certificate of Incorporation (for companies & LLPs)",
-      "Partnership Deed (for firms)",
-      "GST Registration Certificate (if applicable)",
-      "Udyam / MSME Registration Certificate (if applicable)",
+      "Electricity Bill",
+      "Water Bill",
+      "Gas Bill",
     ],
   },
   {
     icon: <FaFileContract />,
-    title: "Office / Business Address Proof",
-    note: "Latest utility bill or registered lease agreement",
+    title: "Rent Agreement (if office is rented)",
+    note: "Duly notarised rent agreement",
     items: [
-      "Electricity Bill / Water Bill / Gas Bill (not older than 2 months)",
-      "Registered Rent or Lease Agreement (if premises are rented)",
-      "NOC from property owner (if residential address used as business address)",
+      "Notarised Rent Agreement between property owner and the company / employer",
+      "NOC from property owner permitting commercial use",
     ],
   },
   {
-    icon: <FaShieldAlt />,
-    title: "Employee & Salary Information (for RC)",
-    note: "Required only for Employer Registration Certificate",
+    icon: <FaUsers />,
+    title: "Employee Details",
+    note: "For Employee Certificate (RC)",
     items: [
-      "Employee count as of the registration date",
-      "Salary range / band structure (for slab mapping)",
-      "Payroll register or HR sheet (optional but speeds up slab configuration)",
+      "Number of employees on rolls",
+      "Monthly salary range / slab breakdown",
+      "State(s) where employees work",
     ],
   },
 ];
@@ -94,33 +95,31 @@ const ProfTaxDocuments = () => {
 
         <div className="opcd-columns">
 
-          {/* Applicant / Individual Documents */}
           <div className="opcd-column">
             <div className="opcd-col-header">
               <div className="opcd-col-header-icon"><FaUser /></div>
               <div>
-                <h3 className="opcd-col-title">Individual / Authorised Signatory Documents</h3>
-                <p className="opcd-col-subtitle">Required for the person signing the PT application</p>
+                <h3 className="opcd-col-title">Employer / Business Documents</h3>
+                <p className="opcd-col-subtitle">Required for EC and owner KYC</p>
               </div>
             </div>
             <div className="opcd-col-body">
-              {applicantDocs.map((doc, i) => (
+              {employerDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>
           </div>
 
-          {/* Business / Office Documents */}
           <div className="opcd-column">
             <div className="opcd-col-header opcd-col-header--office">
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="opcd-col-title">Business &amp; Office Documents</h3>
-                <p className="opcd-col-subtitle">Entity proof, address proof &amp; payroll data</p>
+                <h3 className="opcd-col-title">Office &amp; Employee Documents</h3>
+                <p className="opcd-col-subtitle">Office address proof and employee slab details</p>
               </div>
             </div>
             <div className="opcd-col-body">
-              {businessDocs.map((doc, i) => (
+              {officeDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>

@@ -1,6 +1,7 @@
 import React from "react";
+import "./ProfTaxBreadcrum.css";
 import "../OPCBreadcrum/OPCBreadcrum.css";
-import ConsultationForm from "../ConsultationForm/ConsultationForm";
+import ConsultationForm from '../ConsultationForm/ConsultationForm';
 
 const ProfTaxBreadcrum = () => {
   return (
@@ -11,35 +12,35 @@ const ProfTaxBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Professional Tax Registration &amp; Return Filing
+            Professional Tax Registration
           </span>
 
           <h1 className="lt-public-title">
-            Professional Tax Registration
+            Professional Tax (PT) Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Simple, Fast &amp; 100% Online</span>
+            <span className="lt-title-tagline">State-Wise, Fast &amp; 100% Online</span>
           </h1>
 
           <p className="lt-public-description">
-            Stay compliant with state Professional Tax laws — from employer registration and employee deductions to timely return filing. Legal Terminus manages your complete Professional Tax compliance so you never miss a deadline. Our professional fee starts at ₹999 + GST. Government fees are billed separately at actuals. No hidden charges. No surprises.
+            Legal Terminus manages your end-to-end Professional Tax Registration — Employer Certificate (EC) and Employee Certificate (RC) — across all PT-applicable states. We handle documentation, state portal filing, and government fee payment so you stay compliant from day one. Our professional fee starts at ₹999 + GST. Government fees vary by state and are billed separately at actuals.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Employer &amp; Self-Employed Registration</div>
-            <div className="lt-feature-item">All Major States Covered</div>
-            <div className="lt-feature-item">Monthly &amp; Quarterly Return Filing</div>
-            <div className="lt-feature-item">Penalty Protection &amp; Compliance Calendar</div>
+            <div className="lt-feature-item">Employer &amp; Employee Certificate</div>
+            <div className="lt-feature-item">All PT-Applicable States Covered</div>
+            <div className="lt-feature-item">Monthly / Annual Return Filing</div>
+            <div className="lt-feature-item">Avoid Penalties &amp; Stay Compliant</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
               <h3>1,200+</h3>
-              <p>PT registrations handled</p>
+              <p>PT registrations done</p>
             </div>
             <div>
               <h3>100% Online</h3>
-              <p>State portal e-filing</p>
+              <p>State portal filing</p>
             </div>
             <div>
               <h3>7+</h3>
@@ -50,10 +51,10 @@ const ProfTaxBreadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <div id="proftax-consult-form">
+        <div id="pt-consult-form">
           <ConsultationForm
-            source="professional-tax-registration"
-            subtitle="Talk to our Professional Tax expert"
+            source="professional-tax"
+            subtitle="Talk to our PT registration expert"
           />
         </div>
 
