@@ -111,12 +111,13 @@
 
 /* --------------------------------------------------
    MUNICIPAL ACT CARD
+   (restyled to share OPC compare-section design tokens)
 -------------------------------------------------- */
 
 .trade-act-section {
-    font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background-color: #ffffff;
-    padding: 24px 24px 56px;
+    font-family: "Poppins", sans-serif;
+    background: #ffffff;
+    padding: 24px 24px 60px;
 }
 
 .trade-act-container {
@@ -125,23 +126,25 @@
 }
 
 
-/* Card */
+/* Title — matches .opc-compare-title typography */
 
-.trade-act-card {
-    border-radius: 20px;
-    padding: 32px 40px;
-    background: linear-gradient(to bottom, #f4f8ff 0%, #ffffff 100%);
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+.trade-act-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 8px;
+    text-align: center;
 }
 
 
-/* Title */
+/* Card — matches .opc-compare-table-wrapper surface treatment */
 
-.trade-act-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #273143;
-    margin: 0 0 14px;
+.trade-act-card {
+    border-radius: 12px;
+    padding: 28px 40px 30px;
+    background: #ffffff;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+    border-top: 4px solid #0f3d2e;
 }
 
 
@@ -161,12 +164,13 @@
     margin: 0 0 10px;
     font-size: 15px;
     line-height: 1.9;
-    color: #4b5563;
+    color: #1e293b;
 }
 
 .trade-act-point-label {
     font-weight: 600;
     margin-right: 4px;
+    color: #0f3d2e;
 }
 
 
@@ -174,19 +178,19 @@
 
 @media (max-width: 992px) {
     .trade-act-section {
-        padding: 20px 20px 44px;
+        padding: 20px 20px 48px;
     }
     .trade-act-card {
-        padding: 28px 28px;
+        padding: 26px 28px 28px;
     }
 }
 
 @media (max-width: 768px) {
     .trade-act-section {
-        padding: 16px 16px 36px;
+        padding: 16px 16px 40px;
     }
     .trade-act-card {
-        padding: 24px 20px;
+        padding: 24px 20px 22px;
     }
     .trade-act-text,
     .trade-act-point {
@@ -194,15 +198,18 @@
     }
 }
 
+@media (max-width: 640px) {
+    .trade-act-title {
+        font-size: 20px;
+    }
+}
+
 @media (max-width: 480px) {
     .trade-act-section {
-        padding: 12px 14px 28px;
+        padding: 12px 14px 32px;
     }
     .trade-act-card {
         padding: 20px 18px;
-    }
-    .trade-act-title {
-        font-size: 18px;
     }
     .trade-act-text,
     .trade-act-point {

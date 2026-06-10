@@ -81,10 +81,9 @@ const TradeLicenseFAQ = () => {
   return (
     <section className="tradefaq-section">
       <div className="tradefaq-container">
-        {/* Left side – static text */}
-        <div className="tradefaq-left">
-          <h2 className="tradefaq-title">Trade License Registration FAQ&apos;s</h2>
 
+        <div className="tradefaq-header">
+          <h2 className="tradefaq-title">Trade License Registration FAQ&apos;s</h2>
           <p className="tradefaq-intro">
             Here, we’ve answered some of the most common questions about Trade
             License registration, process, and documentation to guide you
@@ -92,38 +91,30 @@ const TradeLicenseFAQ = () => {
           </p>
         </div>
 
-        {/* Right side – scrollable Q&A list */}
-        <div className="tradefaq-right">
-          <div className="tradefaq-list">
-            {faqs.map((item, index) => {
-              const isActive = index === activeIndex;
-              return (
-                <div
-                  key={index}
-                  className={`tradefaq-item ${isActive ? "active" : ""}`}
+        <div className="tradefaq-list">
+          {faqs.map((item, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <div
+                key={index}
+                className={`tradefaq-item ${isActive ? "active" : ""}`}
+              >
+                <button
+                  type="button"
+                  className="tradefaq-question"
+                  onClick={() => toggleFaq(index)}
                 >
-                  <button
-                    type="button"
-                    className="tradefaq-question"
-                    onClick={() => toggleFaq(index)}
-                  >
-                    <span>{item.question}</span>
-                    <span className={`tradefaq-icon ${isActive ? "open" : ""}`}>
-                      ▾
-                    </span>
-                  </button>
-                  {isActive && (
-                    <div
-                      className={`tradefaq-answer ${isActive ? "open" : ""}`}
-                    >
-                      <p>{item.answer}</p>
-                    </div>
-                  )}
+                  <span>{item.question}</span>
+                  <span className={`tradefaq-icon ${isActive ? "open" : ""}`}>▾</span>
+                </button>
+                <div className={`tradefaq-answer ${isActive ? "open" : ""}`}>
+                  <div className="tradefaq-answer-content">{item.answer}</div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
+
       </div>
     </section>
   );

@@ -37,9 +37,8 @@ const TradeLicenseOverview = () => {
       ============================ */}
       <section className="trade-act-section">
         <div className="trade-act-container">
+          <h3 className="trade-act-title">Municipal Trade License Regulation</h3>
           <div className="trade-act-card">
-            <h3 className="trade-act-title">Municipal Trade License Regulation</h3>
-
             <p className="trade-act-text">
               As per local municipal rules, every business involved in trade or commercial activity must obtain a valid Trade License before starting operations.
             </p>

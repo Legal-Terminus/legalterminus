@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-
+import "./TradeLicense.css";
 import TradeLicenseBreadcrum from "../../Components/TradeLicenseBreadcrum/TradeLicenseBreadcrum";
 
 // Lazy load below-fold components
@@ -13,20 +13,29 @@ const TradeLicenseBenefits = React.lazy(() => import("../../Components/TradeLice
 const TradeLicenseElegibility = React.lazy(() => import("../../Components/TradeLicenseElegibility/TradeLicenseElegibility"));
 const TradeLicenseDocuments = React.lazy(() => import("../../Components/TradeLicenseDocuments/TradeLicenseDocuments"));
 const TradeLicenseFAQ = React.lazy(() => import("../../Components/TradeLicenseFAQ/TradeLicenseFAQ"));
-const TradeLicenseProcess = React.lazy(() => import("../../Components/TradeLicenseProcess/TradeLicenseProcess"));
-const TradeLicenseWhy = React.lazy(() => import("../../Components/TradeLicenseWhy/TradeLicenseWhy"));
-const TradeLicenseOurClients = React.lazy(() => import("../../Components/TradeLicenseOurClients/TradeLicenseOurClients"));
 
 const TradeLicense = () => {
   return (
     <div>
-      <TradeLicenseBreadcrum />
-
-      <div id="plans">
-        {/* <TradeLicensePlans /> */}
+      <div className="trade-page-hero">
+        <TradeLicenseBreadcrum />
       </div>
 
-      {/* <TradeLicenseTermCondition /> */}
+      <div className="section-divider" />
+
+      <div id="plans" className="trade-page-pricing">
+        <Suspense fallback={<div />}>
+          <TradeLicensePlans />
+        </Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <TradeLicenseTermCondition />
+      </Suspense>
+
+      <div className="section-divider" />
 
       <div id="premium">
         <Suspense fallback={<div />}>
@@ -38,11 +47,15 @@ const TradeLicense = () => {
         <TradeLicenseTabs />
       </Suspense>
 
+      <div className="section-divider" />
+
       <div id="company">
         <Suspense fallback={<div />}>
           <TradeLicenseOverview />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
 
       <div id="types">
         <Suspense fallback={<div />}>
@@ -50,19 +63,31 @@ const TradeLicense = () => {
         </Suspense>
       </div>
 
+      <div className="section-divider" />
+
       <div id="requirements">
         <Suspense fallback={<div />}>
           <TradeLicenseBenefits />
         </Suspense>
       </div>
 
+      <div className="section-divider" />
+
       <div id="process">
-        {/* <TradeLicenseElegibility /> */}
+        <Suspense fallback={<div />}>
+          <TradeLicenseElegibility />
+        </Suspense>
       </div>
 
-     <div id="documents">
-        {/* <TradeLicenseDocuments /> */}
+      <div className="section-divider" />
+
+      <div id="documents">
+        <Suspense fallback={<div />}>
+          <TradeLicenseDocuments />
+        </Suspense>
       </div>
+
+      <div className="section-divider" />
 
       <div id="faq">
         <Suspense fallback={<div />}>
@@ -70,15 +95,6 @@ const TradeLicense = () => {
         </Suspense>
       </div>
 
-      <Suspense fallback={<div />}>
-        <TradeLicenseProcess />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <TradeLicenseWhy />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <TradeLicenseOurClients />
-      </Suspense>
     </div>
   );
 };

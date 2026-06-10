@@ -61,7 +61,7 @@ const TradeLicensePlans = () => {
           </article>
 
           {/* ===== Enriched Plan ===== */}
-          <article className="tradeplan-card">
+          <article className="tradeplan-card tradeplan-card--popular">
             <div>
               <div className="tradeplan-header">
                 <div className="tradeplan-name">Enriched</div>
@@ -83,7 +83,7 @@ const TradeLicensePlans = () => {
             </div>
 
             <div className="tradeplan-footer">
-              <button className="tradeplan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
+              <button className="tradeplan-button tradeplan-button--popular" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
           </article>
 

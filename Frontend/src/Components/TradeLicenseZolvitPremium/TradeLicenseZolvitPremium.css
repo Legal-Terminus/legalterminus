@@ -1,233 +1,232 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
 .tradezp-section {
-    font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background-color: #f7fafc;
-    padding: 48px 24px;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: #f7fafc;
+  padding: 48px 24px;
 }
 
 .tradezp-container {
-    max-width: 1200px;
-    margin: 0 auto;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .tradezp-card {
-    background-color: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
-    padding: 40px 48px;
-    display: grid;
-    grid-template-columns: 1.05fr 1.3fr;
-    gap: 48px;
-    align-items: center;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
+.tradezp-top-row {
+  display: grid;
+  grid-template-columns: 1.05fr 1.3fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.tradezp-bottom-full {
+  width: 100%;
+}
 
 /* Illustration */
-
 .tradezp-illustration-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .tradezp-illustration {
-    max-width: 100%;
-    height: auto;
-    display: block;
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
-
 /* Content */
-
 .tradezp-content {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .tradezp-header {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .tradezp-title {
-    font-size: 28px;
-    font-weight: 600;
-    color: #111827;
-    margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px;
 }
 
 .tradezp-title-highlight {
-    color: #d9a520;
-    font-weight: 700;
+  color: #d9a520;
+  font-weight: 700;
 }
 
 .tradezp-title-icon {
-    font-size: 22px;
-    vertical-align: middle;
+  font-size: 22px;
+  vertical-align: middle;
 }
 
 .tradezp-subtitle {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.7;
-    color: #4b5563;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #4b5563;
 }
 
-
 /* Sections */
-
 .tradezp-section-block {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .tradezp-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #111827;
-    margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px;
 }
 
-
 /* Features list */
-
 .tradezp-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .tradezp-list-item {
-    display: flex;
-    align-items: flex-start;
-    font-size: 14px;
-    color: #374151;
-    line-height: 1.7;
-    margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.7;
+  margin-bottom: 8px;
 }
 
 .tradezp-list-icon {
-    font-size: 18px;
-    margin-right: 10px;
-    margin-top: 1px;
+  font-size: 18px;
+  margin-right: 10px;
+  margin-top: 1px;
 }
 
+/* Notes intro */
+.tradezp-notes-intro {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 10px;
+  font-style: italic;
+}
 
 /* Note box */
-
 .tradezp-note-box {
-    background-color: #f1f7ff;
-    border-radius: 14px;
-    padding: 16px 20px;
+  background-color: #f0fdf4;
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  border-radius: 14px;
+  padding: 16px 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .tradezp-note-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .tradezp-note-item {
-    position: relative;
-    padding-left: 18px;
-    font-size: 13px;
-    color: #4b5563;
-    line-height: 1.7;
+  position: relative;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.7;
 }
 
-.tradezp-note-item+.tradezp-note-item {
-    margin-top: 4px;
+.tradezp-note-item + .tradezp-note-item {
+  margin-top: 4px;
 }
 
 .tradezp-note-item::before {
-    content: "•";
-    position: absolute;
-    left: 0;
-    top: 0;
-    font-size: 18px;
-    line-height: 1;
-    color: #9ca3af;
+  content: "•";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 18px;
+  line-height: 1;
+  color: #9ca3af;
 }
 
-
 /* CTA */
-
 .tradezp-cta-row {
-    margin: 20px 0 16px;
+  margin: 20px 0 16px;
+  display: flex;
+  justify-content: center;
 }
 
 .tradezp-cta-btn {
-    display: inline-block;
-    background-color: #117c16;
-    color: #ffffff;
-    padding: 12px 40px;
-    border-radius: 999px;
-    border: none;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  display: inline-block;
+  background-color: #117c16;
+  color: #ffffff;
+  padding: 12px 40px;
+  border-radius: 999px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .tradezp-cta-btn:hover {
-    background-color: #001f46;
-    transform: translateY(-1px);
-    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
+  background-color: #001f46;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
 }
 
-
 /* Responsive */
-
 @media (max-width: 1024px) {
-    .tradezp-section {
-        padding: 56px 20px;
-    }
-    .tradezp-card {
-        padding: 32px 32px;
-        gap: 32px;
-        grid-template-columns: 1fr 1.2fr;
-    }
-    .tradezp-title {
-        font-size: 24px;
-    }
+  .tradezp-section { padding: 56px 20px; }
+  .tradezp-card    { padding: 32px 32px; }
+  .tradezp-top-row { gap: 32px; grid-template-columns: 1fr 1.2fr; }
+  .tradezp-title   { font-size: 24px; }
 }
 
 @media (max-width: 768px) {
-    .tradezp-section {
-        padding: 48px 16px;
-    }
-    .tradezp-card {
-        grid-template-columns: 1fr;
-        padding: 28px 22px;
-    }
-    .tradezp-illustration-wrapper {
-        order: 1;
-    }
-    .tradezp-content {
-        order: 2;
-    }
-    .tradezp-title {
-        font-size: 22px;
-    }
+  .tradezp-section { padding: 48px 16px; }
+  .tradezp-card    { padding: 28px 22px; }
+  .tradezp-top-row { grid-template-columns: 1fr; }
+  .tradezp-illustration-wrapper { order: 1; }
+  .tradezp-content { order: 2; }
+  .tradezp-title   { font-size: 22px; }
 }
 
 @media (max-width: 480px) {
-    .tradezp-section {
-        padding: 40px 12px;
-    }
-    .tradezp-card {
-        padding: 24px 18px;
-    }
-    .tradezp-title {
-        font-size: 20px;
-    }
-    .tradezp-subtitle {
-        font-size: 13px;
-    }
-    .tradezp-list-item {
-        font-size: 13px;
-    }
-    .tradezp-cta-btn {
-        width: 100%;
-        text-align: center;
-        padding: 11px 0;
-    }
+  .tradezp-section {
+    padding: 40px 12px;
+  }
+
+  .tradezp-card {
+    padding: 24px 18px;
+  }
+
+  .tradezp-title {
+    font-size: 20px;
+  }
+
+  .tradezp-subtitle {
+    font-size: 13px;
+  }
+
+  .tradezp-list-item {
+    font-size: 13px;
+  }
+
+  .tradezp-cta-btn {
+    width: 100%;
+    text-align: center;
+    padding: 11px 0;
+  }
 }

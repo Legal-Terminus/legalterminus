@@ -58,30 +58,39 @@ const steps = [
 const TradeLicenseDocuments = () => {
   return (
     <section className="trade-doc-section">
-      <h2 className="trade-doc-title">Trade License Documents</h2>
-
       <div className="trade-doc-container">
-        {/* Center Hexagon */}
+
+        {/* Header */}
+        <div className="trade-doc-header">
+          <h2 className="trade-doc-title">Trade License Documents</h2>
+        </div>
+
+        {/* Intro card */}
         <div className="trade-doc-center">
+          <div className="trade-doc-center-icon">
+            <FaHeart />
+          </div>
           <div className="trade-doc-content">
-            <FaHeart className="trade-doc-center-icon" />
             <h3>TRADE LICENSE</h3>
           </div>
         </div>
 
-        {/* Surrounding Hexagons */}
+        {/* Step cards */}
         <div className="trade-doc-grid">
           {steps.map((step, index) => (
             <div key={index} className={`trade-doc-item ${step.colorClass}`}>
               <div className="trade-doc-inner">
-                <div className="trade-doc-num">{step.num}</div>
-                <div className="trade-doc-icon">{step.icon}</div>
+                <div className="trade-doc-item-top">
+                  <div className="trade-doc-icon">{step.icon}</div>
+                  <span className="trade-doc-num">{step.num}</span>
+                </div>
                 <h4 className="trade-doc-subtitle">{step.title}</h4>
                 <p className="trade-doc-desc">{step.desc}</p>
               </div>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );

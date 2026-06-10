@@ -58,12 +58,17 @@ const TradeLicenseElegibility = () => {
             key={index}
             className={`tradeelg-timeline-item ${
               index % 2 === 0 ? "left" : "right"
+            } ${index === 0 ? "first" : ""} ${
+              index === steps.length - 1 ? "last" : ""
             }`}
           >
             <div className="tradeelg-timeline-dot">{index + 1}</div>
 
             <div className="tradeelg-timeline-card">
-              <h4>{step.title}</h4>
+              <h4>
+                {step.title}
+                {step.day && <span className="tradeelg-day-tag">{step.day}</span>}
+              </h4>
               <p>{step.text}</p>
             </div>
           </div>
