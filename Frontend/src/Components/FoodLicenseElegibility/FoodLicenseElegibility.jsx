@@ -3,66 +3,62 @@ import "./FoodLicenseElegibility.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
-    text:
-      "Submit all the necessary business and personal documents required for Food License (FSSAI) registration as per the provided checklist.",
+    title: "Discovery & License Type Confirmation",
+    day: "Day 0",
+    text: "30-min call to confirm: your annual turnover, business type (manufacturer, trader, restaurant, etc.), whether you need Basic Registration, State License, or Central License, and whether an inspection is likely. We also check if any prior FSSAI registration exists that needs migration or renewal.",
   },
   {
-    title: "Step 2 – Application Preparation",
-    text:
-      "We prepare your FSSAI application in accordance with the Food Safety and Standards Authority of India (FSSAI) guidelines using your business and address details.",
+    title: "Document Collection",
+    day: "Day 1",
+    text: "We share an FSSAI-specific document checklist. You submit: business owner KYC (PAN + Aadhaar), business registration certificate, office/premise address proof, food product list, and premise photos (for State/Central). This is your only task — we handle the rest.",
   },
   {
-    title: "Step 3 – Digital Signature Certificate (DSC)",
-    text:
-      "If the applicant does not have a Digital Signature Certificate (DSC), one will be generated and used to sign the FSSAI registration application online.",
+    title: "Application Preparation & FBO Category Mapping",
+    day: "Day 1–2",
+    text: "We prepare your FoSCoS application with the correct FBO category, food product categories, and premise details. Documents are verified against FSSAI requirements. We also draft the Food Safety Management System (FSMS) undertaking if required for State/Central license.",
   },
   {
-    title: "Step 4 – Application Filing with FSSAI",
-    text:
-      "We submit the FSSAI registration form on the official portal along with the applicable government fees for verification and processing.",
+    title: "FoSCoS Portal Filing & Govt Fee Payment",
+    day: "Day 2–3",
+    text: "Application filed on the FoSCoS portal (foscos.fssai.gov.in). Government fee paid on your behalf at actuals. Filing acknowledgement and Application Reference Number (ARN) shared with you immediately after submission.",
   },
   {
-    title: "Step 5 – Inspection and Verification",
-    text:
-      "The FSSAI authority may inspect the premises or review the submitted details. Our experts coordinate to respond to any clarifications promptly.",
+    title: "FSSAI Review, Inspection & Clarifications",
+    day: "Day 3–15",
+    text: "For Basic Registration: typically approved in 7–10 days. For State/Central: FSSAI may conduct a physical inspection of premises within 30 days of filing. If a deficiency or inspection query is raised, we respond within 24 hours and prepare you for the inspection visit.",
   },
   {
-    title: "Step 6 – Approval and License Generation",
-    text:
-      "Upon successful verification, the FSSAI issues a valid Food License number for your business operations.",
-  },
-  {
-    title: "Step 7 – License Certificate Delivery",
-    text:
-      "Your FSSAI license certificate will be emailed to you and can be downloaded directly from the official FSSAI portal for display at your business location.",
+    title: "License Certificate Issuance & Delivery",
+    day: "Day 10–30",
+    text: "FSSAI issues your Registration Certificate or License. We deliver: FSSAI certificate (PDF), 14-digit FSSAI number for label printing, compliance calendar (renewal due dates), display notice for your premises, and food safety guidelines for your business category.",
   },
 ];
 
 const FoodLicenseElegibility = () => {
   return (
-    <section className="foodelg-wrapper">
-      <h2 className="foodelg-heading">
-        STEPS FOR FOOD LICENSE (FSSAI) REGISTRATION IN INDIA
+    <section className="opcelg-wrapper">
+      <h2 className="opcelg-heading">
+        Steps for FSSAI Food License Registration in India
       </h2>
-      <p className="foodelg-subheading">
-        The process for obtaining a Food License (FSSAI) registration in India includes the following steps:
+      <p className="opcelg-subheading">
+        Six steps. 10–30 working days end-to-end depending on license type and FSSAI inspection schedule.
       </p>
 
-      <div className="foodelg-timeline">
-        <div className="foodelg-timeline-line" />
+      <div className="opcelg-timeline">
+        <div className="opcelg-timeline-line" />
 
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`foodelg-timeline-item ${
-              index % 2 === 0 ? "left" : "right"
-            }`}
+            className={`opcelg-timeline-item ${index % 2 === 0 ? "left" : "right"} ${index === 0 ? "first" : ""} ${index === steps.length - 1 ? "last" : ""}`}
           >
-            <div className="foodelg-timeline-dot">{index + 1}</div>
+            <div className="opcelg-timeline-dot">{index + 1}</div>
 
-            <div className="foodelg-timeline-card">
-              <h4>{step.title}</h4>
+            <div className="opcelg-timeline-card">
+              <h4>
+                {step.title}
+                {step.day && <span className="opcelg-day-tag">{step.day}</span>}
+              </h4>
               <p>{step.text}</p>
             </div>
           </div>

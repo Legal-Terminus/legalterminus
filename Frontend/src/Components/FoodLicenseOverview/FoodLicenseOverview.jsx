@@ -1,67 +1,63 @@
 import React from "react";
 import "./FoodLicenseOverview.css";
-import foodlicenseIllustration from "../../assets/whypvt-imp1.svg"; // Replace with your actual image if needed
+import illustration from "../../assets/whypvt-imp1.svg";
 
 const FoodLicenseOverview = () => {
   return (
-    <div className="foodlicense-full-wrapper">
+    <div className="opc-full-wrapper">
 
-      {/* ===========================
-          SECTION 1 — INTRO
-      ============================ */}
-      <section className="foodlicense-intro-section">
-        <div className="foodlicense-intro-container">
-          {/* Illustration */}
-          <div className="foodlicense-intro-illustration-wrap">
+      <section className="opc-intro-section">
+        <div className="opc-intro-container">
+          <div className="opc-intro-illustration-wrap">
             <img
-              src={foodlicenseIllustration}
-              alt="Food License illustration"
-              className="foodlicense-intro-illustration"
+              src={illustration}
+              alt="FSSAI Food License Registration illustration"
+              className="opc-intro-illustration"
             />
           </div>
 
-          {/* Text */}
-          <div className="foodlicense-intro-content">
-            <h2 className="foodlicense-intro-title">
-              Why Choose Food License Registration in India
+          <div className="opc-intro-content">
+            <h2 className="opc-intro-title">
+              Why FSSAI Food License Registration Matters
             </h2>
-            <p className="foodlicense-intro-text">
-              Food Safety Compliance System (FoSCoS) is an enhanced version of the Food License and Registration System (FLRS) which was launched in 2012 for the issuance of pan-India FSSAI licenses and registrations. It is an autonomous body established under the Ministry of Health and Family Welfare, Government of India. This authority monitors the food business operators in India and promotes food hygiene and safety in India.
+            <p className="opc-intro-text">
+              The Food Safety and Standards Authority of India (FSSAI) is an autonomous body established under the Ministry of Health &amp; Family Welfare, Government of India, under the Food Safety and Standards Act, 2006. Every Food Business Operator (FBO) — regardless of size or turnover — is legally required to obtain FSSAI registration or license before commencing any food-related activity in India.
+              <br /><br />
+              Operating without FSSAI registration is a criminal offence under the FSS Act. Penalties range from ₹5 lakh for operating without a license to up to ₹10 lakh for unsafe food products causing injury. Beyond legal risk, unlicensed food businesses are rejected by retail chains, e-commerce platforms (Swiggy, Zomato, BigBasket), and institutional buyers — making FSSAI compliance a commercial necessity, not just a legal one.
             </p>
           </div>
         </div>
       </section>
 
-      {/* ===========================
-          SECTION 2 — FSSAI REGULATION
-      ============================ */}
-      <section className="foodlicense-act-section">
-        <div className="foodlicense-act-container">
-          <div className="foodlicense-act-card">
-            <h3 className="foodlicense-act-title">FSSAI and Food License Regulation</h3>
-
-            <p className="foodlicense-act-text">
-              As per FSSAI regulations, every food business operator (FBO) must obtain a valid
-              Food License before commencing operations in India.
-            </p>
-
-            <p className="foodlicense-act-point">
-              <span className="foodlicense-act-point-label">(a)</span>
-              Ensures that food products meet safety and hygiene standards as prescribed by FSSAI;
-            </p>
-
-            <p className="foodlicense-act-point">
-              <span className="foodlicense-act-point-label">(b)</span>
-              Builds trust among customers, suppliers, and regulatory authorities; and
-            </p>
-
-            <p className="foodlicense-act-point">
-              <span className="foodlicense-act-point-label">(c)</span>
-              Allows businesses to operate legally and participate in food supply chains and government schemes.
-            </p>
+      <section className="opc-compare-section">
+        <div className="opc-compare-container">
+          <h2 className="opc-compare-title">FSSAI Licensed vs Unlicensed: The Honest Comparison</h2>
+          <p className="opc-compare-subtitle">
+            What happens when you operate a food business without a valid FSSAI license:
+          </p>
+          <div className="opc-compare-table-wrapper">
+            <table className="opc-compare-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>FSSAI Licensed</th>
+                  <th>No FSSAI License</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Legal Status</td><td>Fully compliant under FSS Act 2006</td><td>Criminal offence; liable to prosecution</td></tr>
+                <tr><td>Penalty Exposure</td><td>None (if license is current)</td><td>₹5 lakh for operating without license</td></tr>
+                <tr><td>E-Commerce Listing</td><td>Accepted on Swiggy, Zomato, BigBasket, Amazon</td><td>Rejected — FSSAI number mandatory</td></tr>
+                <tr><td>Retail / Modern Trade</td><td>Accepted by supermarkets &amp; D-Mart</td><td>Product rejected at shelf entry point</td></tr>
+                <tr><td>Export Eligibility</td><td>Valid for export to most markets</td><td>Blocked — FSSAI certificate required</td></tr>
+                <tr><td>Consumer Trust</td><td>FSSAI logo &amp; number on label — visible trust signal</td><td>No trust signal; returns &amp; complaints higher</td></tr>
+                <tr><td>Setup Cost (total)</td><td>₹100 – ₹7,500 / year (govt fee)</td><td>₹5 lakh+ penalty + shutdown + restart cost</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
+
     </div>
   );
 };

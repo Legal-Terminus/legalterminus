@@ -3,53 +3,63 @@ import "./FoodLicenseBenefits.css";
 
 const FoodLicenseBenefits = () => {
   return (
-    <section className="foodben-section">
-      <div className="foodben-container">
-        {/* Heading + intro */}
-        <header className="foodben-header">
-          <h2 className="foodben-title">
-            Benefits of Food License Registration in India
+    <section className="opcben-section">
+      <div className="opcben-container">
+        <header className="opcben-header">
+          <h2 className="opcben-title">
+            Benefits of FSSAI Food License Registration in India
           </h2>
-          <p className="foodben-subtitle">
-            FSSAI registration ensures your food business follows proper safety and quality standards. It keeps your business legally compliant, builds customer trust, and supports future growth.
+          <p className="opcben-subtitle">
+            FSSAI registration is not just a legal requirement — it actively protects your business from penalties, opens major sales channels, and builds lasting consumer trust.
           </p>
         </header>
 
-        {/* Cards */}
-        <div className="foodben-grid">
-          {/* 1 */}
-          <article className="foodben-card">
-            <h3 className="foodben-card-title">Legal Approval</h3>
-            <div className="foodben-card-underline" />
-            <p className="foodben-card-text">
-              TFSSAI license helps your food business run legally in India. Without it, you may face penalties, heavy fines, or even business closure.
+        <div className="opcben-grid">
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Legal Compliance &amp; Penalty-Free Operations</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              A valid FSSAI license ensures your food business operates lawfully under the FSS Act 2006, eliminating exposure to prosecution, product seizure, and penalties up to ₹5 lakh for unlicensed operations. It also protects you during food safety audits and inspections.
             </p>
           </article>
 
-          {/* 2 */}
-          <article className="foodben-card">
-            <h3 className="foodben-card-title">Builds Customer Trust</h3>
-            <div className="foodben-card-underline" />
-            <p className="foodben-card-text">
-              An FSSAI license shows customers that your food is safe and follows hygiene rules. It increases confidence and improves your business image.
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Access to E-Commerce &amp; Food Delivery Platforms</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              Swiggy, Zomato, BigBasket, Amazon, Flipkart, and Blinkit require a valid FSSAI number to list food products or restaurants. Without it, your business cannot be onboarded or will be delisted. FSSAI registration is the gateway to India's ₹10 trillion food e-commerce market.
             </p>
           </article>
 
-          {/* 3 */}
-          <article className="foodben-card">
-            <h3 className="foodben-card-title">Helps Business Growth</h3>
-            <div className="foodben-card-underline" />
-            <p className="foodben-card-text">
-              Many big companies, restaurants, retailers, and buyers prefer to work only with FSSAI licensed businesses. It also helps when you want to expand or sell in new markets.
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Consumer Trust &amp; Brand Credibility</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              The FSSAI logo and 14-digit license number on your product label is an immediately recognisable food safety trust signal. It assures consumers that your product meets mandated hygiene, quality, and safety standards, directly improving brand perception and repeat purchases.
             </p>
           </article>
 
-          {/* 4 */}
-          <article className="foodben-card">
-            <h3 className="foodben-card-title">Better Brand Reputation</h3>
-            <div className="foodben-card-underline" />
-            <p className="foodben-card-text">
-              FSSAI licensing makes your brand look more professional and reliable, which increases customer loyalty.
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Retail &amp; Modern Trade Access</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              Supermarkets (Reliance Smart, D-Mart, Spencer's), modern retail chains, and institutional buyers mandate FSSAI certification before onboarding any food product. A valid FSSAI license is the single most critical document in any retail vendor registration or B2B food supply agreement.
+            </p>
+          </article>
+
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Export Readiness</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              FSSAI certification is a prerequisite for food export. Importers in the EU, USA, Middle East, and South-East Asia require FSSAI compliance documentation. Combined with an IEC (Import Export Code), a valid Central FSSAI License is the baseline for entering international food markets.
+            </p>
+          </article>
+
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Bank Loans &amp; Government Schemes</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              FSSAI registration is required for accessing PMFME scheme benefits, NABARD food processing loans, and MSME credit under CGTMSE. Banks and NBFCs ask for FSSAI certification as part of food business loan documentation.
             </p>
           </article>
         </div>

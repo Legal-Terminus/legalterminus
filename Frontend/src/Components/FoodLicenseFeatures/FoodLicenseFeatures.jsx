@@ -1,60 +1,41 @@
 import React from "react";
 import "./FoodLicenseFeatures.css";
-import featuresIllustration from "../../assets/foodlicense.png";
+
+const types = [
+  {
+    number: "01",
+    title: "FSSAI Basic Registration",
+    text: "Applicable for small food businesses and petty food manufacturers with an annual turnover below ₹12 lakhs. This covers home-based food makers, small vendors, temporary stalls, hawkers, and cottage food industries. Issues a 14-digit FSSAI Registration Number. Valid for 1–5 years with renewal before expiry.",
+  },
+  {
+    number: "02",
+    title: "State FSSAI License",
+    text: "Required for medium-sized food businesses with annual turnover between ₹12 lakhs and ₹20 crores, operating within a single state. Covers restaurants, hotels, food manufacturers, distributors, transporters, retailers, caterers, and food processing units. Issued by the State Food Safety Authority. Subject to inspection.",
+  },
+  {
+    number: "03",
+    title: "Central FSSAI License",
+    text: "Mandatory for large food businesses with turnover above ₹20 crores, or those operating across multiple states, or involved in import/export of food products. Also required for food manufacturers supplying to defence, railways, or government canteens. Issued by the Central Licensing Authority (FSSAI HQ). Requires full FSMS compliance documentation.",
+  },
+];
 
 const FoodLicenseFeatures = () => {
   return (
-    <section className="food-license-features-section">
-      <div className="food-license-features-container">
-        {/* Left graphic */}
-        <div className="food-license-features-illustration-wrap">
-          <img
-            src={featuresIllustration}
-            alt="Types of Food License"
-            className="food-license-features-illustration"
-          />
+    <section className="opc-features-section">
+      <div className="opc-features-container">
+
+        <h2 className="opc-features-title">Types of FSSAI License / Registration in India</h2>
+
+        <div className="opc-features-cards">
+          {types.map((type) => (
+            <div className="opc-features-card" key={type.number}>
+              <div className="opc-features-number">{type.number}</div>
+              <h3 className="opc-features-card-title">{type.title}</h3>
+              <p className="opc-features-card-text">{type.text}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Right content */}
-        <div className="food-license-features-content">
-          <h2 className="food-license-features-title">
-            Types of FSSAI Licenses in India
-          </h2>
-
-          <p className="food-license-features-intro">
-            If you run any food-related business in India, getting an FSSAI license/registration is mandatory. The type of license depends on your business size and yearly turnover
-          </p>
-
-          {/* Type 1 */}
-          <div className="food-license-features-block">
-            <h3 className="food-license-features-subtitle">Basic FSSAI License Registration</h3>
-            <p className="food-license-features-text">
-              Suitable for small-scale food businesses and startups with an annual turnover 
-              below ₹12 lakhs. This license is ideal for small vendors, cottage industries, 
-              and home-based food manufacturers.
-            </p>
-          </div>
-
-          {/* Type 2 */}
-          <div className="food-license-features-block">
-            <h3 className="food-license-features-subtitle">State FSSAI License Registration</h3>
-            <p className="food-license-features-text">
-              Applicable for medium-sized food businesses with an annual turnover 
-              between ₹12 lakhs and ₹20 crores. It covers manufacturers, distributors, 
-              and transporters operating within a specific state.
-            </p>
-          </div>
-
-          {/* Type 3 */}
-          <div className="food-license-features-block">
-            <h3 className="food-license-features-subtitle">Central FSSAI License Registration</h3>
-            <p className="food-license-features-text">
-              Designed for large-scale food manufacturers, importers, or exporters 
-              with operations in multiple states or turnover above ₹20 crores. 
-              It is mandatory for businesses involved in international trade.
-            </p>
-          </div>
-        </div>
       </div>
     </section>
   );

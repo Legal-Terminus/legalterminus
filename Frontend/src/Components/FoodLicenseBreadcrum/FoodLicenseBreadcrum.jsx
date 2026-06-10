@@ -1,57 +1,60 @@
 import React from "react";
 import "./FoodLicenseBreadcrum.css";
-
+import "../OPCBreadcrum/OPCBreadcrum.css";
 import ConsultationForm from '../ConsultationForm/ConsultationForm';
+
 const FoodLicenseBreadcrum = () => {
   return (
-    <section className="lt-foodlicense-hero">
-      <div className="lt-foodlicense-container">
+    <section className="lt-public-hero">
+      <div className="lt-public-container">
 
-        {/* LEFT CONTENT */}
-        <div className="lt-foodlicense-content">
+        <div className="lt-public-content">
 
-          <span className="lt-foodlicense-tag">
+          <span className="lt-public-tag">
             Food License (FSSAI) Registration
           </span>
 
-          <h1 className="lt-foodlicense-title">
-            Food License And Registration
-            <span> in India</span>
+          <h1 className="lt-public-title">
+            Food License (FSSAI) Registration
+            <span className="lt-title-india"> in India</span>
+            <br />
+            <span className="lt-title-tagline">FSSAI-Certified, Fast &amp; 100% Online</span>
           </h1>
 
-          <p className="lt-foodlicense-description">
-            Legal Terminus can help you with obtaining Food License and Registration for your organization, as and when required, in a hassle-free manner within a reasonable time span and for a competitive professional fee that starts from Rs. 1,499/-
+          <p className="lt-public-description">
+            Legal Terminus manages your end-to-end FSSAI Food License Registration — Basic Registration, State License, and Central License — across all food business categories. We handle documentation, FoSCoS portal filing, and government fee payment so your food business is legally compliant from day one. Our professional fee starts at ₹1,499 + GST. Government fees are billed separately at actuals per the FSSAI tariff.
           </p>
 
-          <div className="lt-foodlicense-features">
-            <div className="lt-feature-item"> Mandatory for Food Businesses</div>
-            <div className="lt-feature-item"> Nationwide Validity</div>
-            <div className="lt-feature-item"> Online Application Process</div>
-            <div className="lt-feature-item"> Easy Renewal and Modifications</div>
+          <div className="lt-public-features">
+            <div className="lt-feature-item">Mandatory for All Food Businesses (FBOs)</div>
+            <div className="lt-feature-item">Basic, State &amp; Central License Covered</div>
+            <div className="lt-feature-item">FoSCoS Portal Filing &amp; Govt Fee Coordination</div>
+            <div className="lt-feature-item">Renewal, Amendment &amp; Compliance Support</div>
           </div>
 
-          <div className="lt-foodlicense-highlights">
+          <div className="lt-public-highlights">
             <div>
               <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <p>FSSAI licenses obtained</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Process</p>
+              <h3>100% Online</h3>
+              <p>FoSCoS portal filing</p>
             </div>
             <div>
-              <h3>5+</h3>
+              <h3>7+</h3>
               <p>Years of Legal Expertise</p>
             </div>
           </div>
 
         </div>
 
-        {/* RIGHT FORM */}
-        <ConsultationForm
-          source="food-license-fssai"
-          subtitle="Talk to our Food License registration expert"
-        />
+        <div id="fl-consult-form">
+          <ConsultationForm
+            source="food-license-fssai"
+            subtitle="Talk to our FSSAI registration expert"
+          />
+        </div>
 
       </div>
     </section>
