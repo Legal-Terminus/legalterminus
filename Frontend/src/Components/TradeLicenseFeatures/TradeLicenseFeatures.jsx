@@ -1,6 +1,5 @@
 import React from "react";
 import "./TradeLicenseFeatures.css";
-import featuresIllustration from "../../assets/tradelicense.jpg";
 
 const types = [
   {
@@ -47,21 +46,6 @@ const TradeLicenseFeatures = () => {
         <h2 className="trade-features-title">
           Types of Trade License Registration in India
         </h2>
-
-        <p className="trade-features-intro">
-          Trade Licenses can be registered in different categories based on the
-          nature of business, operations, and applicable municipal regulations.
-          Choosing the right type ensures legal compliance, smooth operations,
-          and long-term business credibility.
-        </p>
-
-        <div className="trade-features-illustration-wrap">
-          <img
-            src={featuresIllustration}
-            alt="Types of Trade License"
-            className="trade-features-illustration"
-          />
-        </div>
 
         <div className="trade-features-cards">
           {types.map((type) => (

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cd \"c:\\\\Users\\\\Shipra\\\\OneDrive\\\\Desktop\\\\Legal-Terminus Project\"; $env:PATH = \"C:\\\\Users\\\\Shipra\\\\AppData\\\\Roaming\\\\npm;$env:PATH\"; firebase deploy --only hosting 2>&1)",
+      "Read(//c/Users/Shipra/AppData/Roaming/**)",
+      "PowerShell(gh run list --repo Legal-Terminus/legalterminus --limit 5 2>&1)",
+      "PowerShell($env:PATH = \"$env:APPDATA\\\\npm;\" + $env:PATH; cd \"c:\\\\Users\\\\Shipra\\\\OneDrive\\\\Desktop\\\\Legal-Terminus Project\"; firebase deploy --only hosting 2>&1)",
+      "Bash(git commit -m ' *)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Shipra\\OneDrive\\Desktop\\Legal-Terminus Project\\Frontend\\public"
+    ]
+  }
+}

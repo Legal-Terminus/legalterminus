@@ -43,7 +43,7 @@ const TradeLicenseElegibility = () => {
   return (
     <section className="tradeelg-wrapper">
       <h2 className="tradeelg-heading">
-        STEPS FOR TRADE LICENSE REGISTRATION IN INDIA
+        Steps For Trade License Registration in India
       </h2>
       <p className="tradeelg-subheading">
         The broad process of obtaining a Trade License involves the

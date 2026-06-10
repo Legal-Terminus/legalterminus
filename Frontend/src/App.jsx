@@ -44,7 +44,7 @@ const TradeLicense = lazy(() => import("./Pages/TradeLicense/TradeLicense"));
 const ProprietorshipOPC = lazy(() => import("./Pages/ProprietorshipOPC/ProprietorshipOPC"));
 const PropritorshipPLC = lazy(() => import("./Pages/ProprietorshipPLC/ProprietorshipPLC"));
 const PartnershipLLP = lazy(() => import("./Pages/PartnershipLLP/PartnershipLLP"));
-const LLRegistration = lazy(() => import("./Pages/LLRegistration/LLRegistration"));
+const LabourLicense = lazy(() => import("./Pages/LabourLicense/LabourLicense"));
 const BCRegistration = lazy(() => import("./Pages/BCRegistration/BCRegistration"));
 const ISOCertification = lazy(() => import("./Pages/ISOCertification/ISOCertification"));
 const DissolveLLP = lazy(() => import("./Pages/DissolveLLP/DissolveLLP"));
@@ -166,7 +166,7 @@ function App() {
             <Route path="/conversion/partnership-to-private" element={<PartnershiptoPrivate />} />
             <Route path="/conversion/llp-to-private" element={<LlptoPrivate />} />
             <Route path="/conversion/private-to-llp" element={<PritoLlp />} />
-            <Route path="/labour-license" element={<LLRegistration />} />
+            <Route path="/labour-license" element={<LabourLicense />} />
             <Route path="/bar-code" element={<BCRegistration />} />
             <Route path="/iso" element={<ISOCertification />} />
             <Route path="/conversion/proprietorship-to-opc" element={<ProprietorshipOPC />} />
