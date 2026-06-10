@@ -23,39 +23,13 @@ const TradeLicenseOverview = () => {
           {/* Text */}
           <div className="trade-intro-content">
             <h2 className="trade-intro-title">
-              Why Choose Trade License Registration in India
+              Why You Need a Trade License
             </h2>
             <p className="trade-intro-text">
-              Trade License is issued by the local municipal corporation to a person/organization in order to commence business activity/operations. This license empowers an organization only to carry on the business activity for which it is granted and it does not empower any transfer of property. The license can be issued to an individual having no criminal record, has attained the age of 18 and wishes to carry on a legal business activity. Below are some frequently asked questions related to trade license registration:
+              A Trade License is an official approval issued by the Municipal Corporation or local authority that allows a business to operate legally from a specific location. It is commonly required for shops, offices, restaurants, clinics, factories, warehouses, and other commercial establishments to ensure compliance with local regulations and safety standards.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ===========================
-          SECTION 2 — GOVERNING ACT
-      ============================ */}
-      <section className="trade-act-section">
-        <div className="trade-act-container">
-          <h3 className="trade-act-title">Municipal Trade License Regulation</h3>
-          <div className="trade-act-card">
-            <p className="trade-act-text">
-              As per local municipal rules, every business involved in trade or commercial activity must obtain a valid Trade License before starting operations.
-            </p>
-
-            <p className="trade-act-point">
-              <span className="trade-act-point-label">(a)</span>
-              Grants legal permission to run the business within municipal/city limits;
-            </p>
-
-            <p className="trade-act-point">
-              <span className="trade-act-point-label">(b)</span>
-              Ensures the business follows basic health, safety, and environmental guidelines; and
-            </p>
-
-            <p className="trade-act-point">
-              <span className="trade-act-point-label">(c)</span>
-              Helps maintain fair business practices while protecting public interest.
+            <p className="trade-intro-text">
+              Operating without a valid Trade License may lead to penalties or regulatory issues. Since licensing requirements vary based on business activity and location, we help you identify the correct category, prepare the application, and obtain the license smoothly.
             </p>
           </div>
         </div>

@@ -15,33 +15,37 @@ const TradeLicenseBreadcrum = () => {
           </span>
 
           <h1 className="lt-trade-title">
-            Trade License Registration
+            Trade License Registration In India
             <br></br>
-            <span> in India</span>
+            <span className="lt-trade-tagline">Get approved. Start operating legally</span>
           </h1>
 
           <p className="lt-trade-description">
-            Legal Terminus can help you with the Trade License Registration for your organization, as and when required, in a hassle-free manner within a reasonable time span and for a competitive professional fee which starts from Rs. 2,999/- (excluding government fees).
+            Trade License Registration in India is the permission issued by the local Municipal Corporation or Urban Local Body allowing a business to operate from a specific commercial premises. It is generally required for shops, restaurants, offices, factories, warehouses, clinics, salons, hotels, and other commercial establishments under the respective State Municipal laws.
+          </p>
+
+          <p className="lt-trade-description">
+            We help you with complete Trade License Registration in India — from application drafting and document preparation to municipal portal filing, inspection coordination, and license approval support. Our team handles registrations across major municipal authorities such as MCD, BMC, BBMP, GHMC, KMC, and others.
           </p>
 
           <div className="lt-trade-features">
-            <div className="lt-feature-item"> Required 7 to 10 Working Days</div>
-            <div className="lt-feature-item"> 1 Year Validity</div>
-            <div className="lt-feature-item"> 5 Steps Processes</div>
-            <div className="lt-feature-item"> Renewal at before 31st March of Every Year</div>
+            <div className="lt-feature-item">City-Specific Filing</div>
+            <div className="lt-feature-item">Municipal Approval</div>
+            <div className="lt-feature-item">Renewal Calendar</div>
+            <div className="lt-feature-item">Multi-Establishment</div>
           </div>
 
           <div className="lt-trade-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <h3>2,100+</h3>
+              <p>Trade licenses filed</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Process</p>
+              <h3>All Major Cities</h3>
+              <p>MCD + BMC + BBMP + GCC + GHMC + KMC</p>
             </div>
             <div>
-              <h3>5+</h3>
+              <h3>7+</h3>
               <p>Years of Legal Expertise</p>
             </div>
           </div>

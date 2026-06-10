@@ -4,6 +4,8 @@ import TradeLicenseBreadcrum from "../../Components/TradeLicenseBreadcrum/TradeL
 
 // Lazy load below-fold components
 const TradeLicensePlans = React.lazy(() => import("../../Components/TradeLicensePlans/TradeLicensePlans"));
+const TradeLicenseMunicipalFees = React.lazy(() => import("../../Components/TradeLicenseMunicipalFees/TradeLicenseMunicipalFees"));
+const TradeLicenseArchitecture = React.lazy(() => import("../../Components/TradeLicenseArchitecture/TradeLicenseArchitecture"));
 const TradeLicenseTermCondition = React.lazy(() => import("../../Components/TradeLicenseTermCondition/TradeLicenseTermCondition"));
 const TradeLicenseZolvitPremium = React.lazy(() => import("../../Components/TradeLicenseZolvitPremium/TradeLicenseZolvitPremium"));
 const TradeLicenseTabs = React.lazy(() => import("../../Components/TradeLicenseTabs/TradeLicenseTabs"));
@@ -32,6 +34,12 @@ const TradeLicense = () => {
       <div className="section-divider" />
 
       <Suspense fallback={<div />}>
+        <TradeLicenseMunicipalFees />
+      </Suspense>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
         <TradeLicenseTermCondition />
       </Suspense>
 
@@ -54,6 +62,12 @@ const TradeLicense = () => {
           <TradeLicenseOverview />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <TradeLicenseArchitecture />
+      </Suspense>
 
       <div className="section-divider" />
 

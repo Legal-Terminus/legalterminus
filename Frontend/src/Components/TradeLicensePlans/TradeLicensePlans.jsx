@@ -4,142 +4,122 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 
 const PLANS = [
-  { id: "elemental", name: "Elemental", price: 2999, services: [] },
-  { id: "enriched", name: "Enriched", price: 5999, services: [] },
-  { id: "supreme", name: "Supreme", price: 24999, services: [] }
+  {
+    id: "elemental",
+    name: "Elemental",
+    oldPrice: 3999,
+    price: 2999,
+    services: [
+      "City + trade-category identification",
+      "Municipal portal account setup (city-specific)",
+      "Application drafting + KOB / trade-code mapping",
+      "Documents curation (PAN, premises proof, NOC, etc.)",
+      "Government fee computation + payment coordination",
+      "Filing on the relevant ULB portal",
+      "Trade License Certificate delivery",
+      "Annual renewal reminder (90 / 30 / 7 days before expiry)",
+      "Govt fee at actuals",
+    ],
+  },
+  {
+    id: "enriched",
+    name: "Enriched",
+    badge: "★ MOST POPULAR",
+    popular: true,
+    oldPrice: 5499,
+    price: 3999,
+    services: [
+      "Everything in Elemental",
+      "Udyam Registration on udyamregistration.gov.in",
+      "Aadhaar OTP + PAN verification coordination",
+      "NIC code mapping",
+      "Udyam Number + Certificate delivery (PDF)",
+      "Email support during filing window",
+    ],
+  },
+  {
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ FULL-SERVICE",
+    oldPrice: 7999,
+    price: 5999,
+    services: [
+      "Everything in Enriched",
+      "GST Registration filing for 1 GSTIN (Regular scheme)",
+      "HSN / SAC code mapping",
+      "ARN tracking + GSTIN delivery support for 1 year",
+      "90-day priority compliance helpline",
+      "Govt fee at actuals across all licenses",
+      "GST invoice template + first-month walkthrough",
+      "Bank account validation pre-check",
+      "30-day post-registration support",
+    ],
+  },
 ];
 
 const TradeLicensePlans = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
-
     <>
-    <section className="trade-pricing-section">
-      <div className="tradepricing-container">
-        {/* Header Section */}
-        <header className="tradepricing-header">
-          <h2 className="tradepricing-title">CHOOSE YOUR PLAN</h2>
-          <p className="tradepricing-subtitle">
-            Register your company with pocket-friendly prices
-          </p>
-        </header>
+      <section className="trade-pricing-section">
+        <div className="tradepricing-container">
+          {/* Header Section */}
+          <header className="tradepricing-header">
+            <h2 className="tradepricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="tradepricing-subtitle">
+              Register your Trade License with pocket-friendly prices
+            </p>
+          </header>
 
-        {/* Pricing Cards */}
-        <div className="tradepricing-cards">
+          {/* Pricing Cards */}
+          <div className="tradepricing-cards">
+            {PLANS.map((plan) => (
+              <article
+                key={plan.id}
+                className={`tradeplan-card${plan.popular ? " tradeplan-card--popular" : ""}`}
+              >
+                <div>
+                  <div className="tradeplan-header">
+                    {plan.badge && (
+                      <div className={`tradeplan-badge${plan.popular ? " tradeplan-badge--popular" : ""}`}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    <div className="tradeplan-name">{plan.name}</div>
+                    <div className="tradeplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    <div className="tradeplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="tradeplan-meta">+ Govt. fees &amp; GST extra</div>
+                  </div>
 
-          {/* ===== Elemental Plan ===== */}
-          <article className="tradeplan-card">
-            <div>
-              <div className="tradeplan-header">
-                <div className="tradeplan-name">Elemental</div>
-                <div className="tradeplan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
-                <div className="tradeplan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="tradeplan-body">
-                <ul className="tradeplan-list">
-                  <li className="tradeplan-list-item">Search Report of Name Availability</li>
-                  <li className="tradeplan-list-item">1 RUN Name Approval Certificate</li>
-                  <li className="tradeplan-list-item">Director Identification Number for 2 Individuals</li>
-                  <li className="tradeplan-list-item">Certificate of Incorporation</li>
-                  <li className="tradeplan-list-item">E-PAN</li>
-                  <li className="tradeplan-list-item">E-TAN</li>
-                  <li className="tradeplan-list-item">E-MOA</li>
-                  <li className="tradeplan-list-item">E-AOA</li>
-                  <li className="tradeplan-list-item">Documents for Bank Account Opening</li>
-                  <li className="tradeplan-list-item">Documents for 1st Auditor Appointment</li>
-                  <li className="tradeplan-list-item">EPF Registrations</li>
-                  <li className="tradeplan-list-item">ESI Registrations</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="tradeplan-footer">
-              <button className="tradeplan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* ===== Enriched Plan ===== */}
-          <article className="tradeplan-card tradeplan-card--popular">
-            <div>
-              <div className="tradeplan-header">
-                <div className="tradeplan-name">Enriched</div>
-                <div className="tradeplan-old-price">₹7,999</div>
-                <div className="tradeplan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="tradeplan-meta">
-                  Excluding gov fee <span className="popular">(Popular)</span>
+                  <div className="tradeplan-body">
+                    <ul className="tradeplan-list">
+                      {plan.services.map((s, i) => (
+                        <li key={i} className="tradeplan-list-item">{s}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-              </div>
 
-              <div className="tradeplan-body">
-                <ul className="tradeplan-list">
-                  <li className="tradeplan-list-item">Elemental Plan Plus</li>
-                  <li className="tradeplan-list-item">Share Certificate</li>
-                  <li className="tradeplan-list-item">Commencement of Business</li>
-                  <li className="tradeplan-list-item">Udyam/MSME Registration</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="tradeplan-footer">
-              <button className="tradeplan-button tradeplan-button--popular" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* ===== Supreme Plan ===== */}
-          <article className="tradeplan-card">
-            <div>
-              <div className="tradeplan-header">
-                <div className="tradeplan-name">Supreme</div>
-                <div className="tradeplan-old-price">₹29,999</div>
-                <div className="tradeplan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
-                <div className="tradeplan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="tradeplan-body">
-                <ul className="tradeplan-list">
-                  <li className="tradeplan-list-item">Enriched Plan Plus</li>
-                  <li className="tradeplan-list-item">Income tax filing of Company</li>
-                  <li className="tradeplan-list-item">Preparation of Directors Report</li>
-                  <li className="tradeplan-list-item">Preparation of Annual Return</li>
-                  <li className="tradeplan-list-item">Preparation of Auditor Appointment Paperwork</li>
-                  <li className="tradeplan-list-item">Preparation of List of Share Holders</li>
-                  <li className="tradeplan-list-item">Preparation of Notice of AGM</li>
-                  <li className="tradeplan-list-item">Preparation of Notice of BM</li>
-                  <li className="tradeplan-list-item">Preparation of Extracts of AGM</li>
-                  <li className="tradeplan-list-item">Filing of AOC - 4 (Financial Statements)</li>
-                  <li className="tradeplan-list-item">Filing of MGT - 7 (Annual Return)</li>
-                  <li className="tradeplan-list-item">Filing of ADT - 1 (Auditor Appointment)</li>
-                  <li className="tradeplan-list-item">Minutes of Board Meeting for 1st FY</li>
-                  <li className="tradeplan-list-item">Minutes of General Meeting for 1st FY</li>
-                  <li className="tradeplan-list-item">Maintenance of Statutory E-Registers</li>
-                  <li className="tradeplan-list-item">Filing of DPT - 3 Annual (If Applicable)</li>
-                  <li className="tradeplan-list-item">Filing of MSME - 1 (If Applicable) for 1st FY</li>
-                  <li className="tradeplan-list-item">DIR KYC (2 Directors)</li>
-                  <li className="tradeplan-list-item">Income Tax Filing of 2 Directors</li>
-                  <li className="tradeplan-list-item">Audit fees are excluded and to be paid directly to Auditor</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="tradeplan-footer">
-              <button className="tradeplan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-            </div>
-          </article>
+                <div className="tradeplan-footer">
+                  <button
+                    className={`tradeplan-button${plan.popular ? " tradeplan-button--popular" : ""}`}
+                    onClick={() => setActivePlan(plan)}
+                  >
+                    Buy Now
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
-
+      </section>
 
       {activePlan && (
-
         <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="trade-license" />
-
       )}
-
     </>
-
-  );};
+  );
+};
 
 export default TradeLicensePlans;

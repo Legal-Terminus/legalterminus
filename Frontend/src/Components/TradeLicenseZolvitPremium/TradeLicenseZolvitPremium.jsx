@@ -30,7 +30,7 @@ const TradeLicenseZolvitPremium = () => {
                   <span className="tradezp-title-icon">⚖️</span>
                 </h2>
                 <p className="tradezp-subtitle">
-                  Get your Trade License Registration completed faster with Legal Terminus’ expert-handled process — made for business owners who value time and want a smooth, delay-free setup.
+                  Trade License Registration may look simple, but every Municipal Corporation follows its own rules, portal system, trade categories, inspection process, and renewal requirements. Even a small mistake in business category selection, document filing, or inspection coordination can lead to delays, rejection, penalties, or renewal issues. With LT Priority, your Trade License Registration is handled by experienced municipal compliance professionals who manage the process carefully from application filing to final approval and renewal guidance.
                 </p>
               </header>
 
@@ -38,16 +38,20 @@ const TradeLicenseZolvitPremium = () => {
                 <h3 className="tradezp-label">What You Get:</h3>
                 <ul className="tradezp-list tradezp-features-list">
                   <li className="tradezp-list-item">
-                    <span className="tradezp-list-icon">🧑‍⚖️</span>
-                    End-to-end Trade License registration handled by our legal experts for quick approval and minimal delay risk.
+                    <span className="tradezp-list-icon">⚡</span>
+                    Priority application processing and faster filing support
                   </li>
                   <li className="tradezp-list-item">
                     <span className="tradezp-list-icon">📑</span>
-                    Hassle-free documentation & application filing as per local municipal requirements
+                    Correct trade category selection and professional document review
                   </li>
                   <li className="tradezp-list-item">
-                    <span className="tradezp-list-icon">⏱️</span>
-                    Fast processing with regular updates until your license is issued
+                    <span className="tradezp-list-icon">🏛</span>
+                    Support across major municipal corporations with inspection coordination and premises readiness guidance
+                  </li>
+                  <li className="tradezp-list-item">
+                    <span className="tradezp-list-icon">📅</span>
+                    Annual renewal reminders, compliance tracking, and dedicated real-time status updates throughout the process
                   </li>
                 </ul>
               </section>
@@ -61,10 +65,16 @@ const TradeLicenseZolvitPremium = () => {
             <div className="tradezp-note-box">
               <ul className="tradezp-note-list">
                 <li className="tradezp-note-item">
-                  We review your details and documents properly before submission to avoid rejection or delays.
+                  Operating WITHOUT a Trade License = the Municipal Corporation can SEAL your premises, issue closure notices, refuse / disconnect utility connections (water, sewerage, sometimes electricity), levy penalty + per-day surcharge, and prosecute under the State Municipal Act. Don&apos;t operate ungazed — file before you open the shutter.
                 </li>
                 <li className="tradezp-note-item">
-                  If any clarification is required by the municipal authority, our team handles the follow-up on your behalf for smooth approval.
+                  Trade License is DIFFERENT from Shop &amp; Establishment Registration. Trade License = municipal compliance (under your State&apos;s Municipal Act). Shop &amp; Estd = State labour compliance (under State S&amp;E Act). Many businesses need BOTH. We assess overlap in the discovery call and avoid double-paying.
+                </li>
+                <li className="tradezp-note-item">
+                  Trade categories matter. A &apos;general trade&apos; license can NOT be used for food / hazardous / manufacturing / hospitality activities — each has its own category, its own fee, and often its own inspection regime. Wrong category = license cancellation + re-application. We map the right code first time.
+                </li>
+                <li className="tradezp-note-item">
+                  Annual renewal is mandatory — many cities by 31 March, others 30 days before expiry. Late renewal triggers penalty of 50-100% of fee + per-day surcharge in some cities. Two consecutive missed renewals can trigger cancellation — then you re-apply from scratch.
                 </li>
               </ul>
             </div>
