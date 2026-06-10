@@ -38,10 +38,11 @@
 .trade-tabs-list {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     white-space: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
+    scroll-behavior: smooth;
 }
 
 .trade-tabs-list::-webkit-scrollbar {
@@ -84,12 +85,143 @@
 }
 
 
+/* ===============================
+   SIDEBAR OPEN — offset tab bar
+   =============================== */
+.trade-tabs-section.sidebar-open-mode .trade-tabs-card {
+    padding-left: 200px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    transition: padding-left 0.3s ease;
+}
+
+
+/* ===============================
+   SLIM SIDEBAR CARD
+   =============================== */
+.trade-slim-sidebar {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 200px;
+    background: #f0f0f0;
+    box-shadow: 4px 4px 24px rgba(0, 0, 0, 0.13);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0 10px 10px 0;
+    overflow: hidden;
+    animation: tradeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    font-family: "Poppins", sans-serif;
+}
+
+@keyframes tradeSlideIn {
+    from { transform: translateY(-50%) translateX(-100%); }
+    to   { transform: translateY(-50%) translateX(0); }
+}
+
+
+/* ── Close button ── */
+.trade-slim-close {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: #888;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+    z-index: 1;
+}
+
+.trade-slim-close:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+
+/* ── Nav ── */
+.trade-slim-nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.trade-slim-item {
+    padding: 15px 16px 15px 18px;
+    border: none;
+    border-bottom: 1px solid #d8d8d8;
+    border-left: 4px solid transparent;
+    background: #f0f0f0;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: #333;
+    line-height: 1.4;
+    transition: background 0.15s, color 0.15s;
+}
+
+.trade-slim-item:last-child {
+    border-bottom: none;
+}
+
+.trade-slim-item:hover:not(.active) {
+    background: #e4e4e4;
+    color: #111;
+}
+
+.trade-slim-item.active {
+    background: #dce8dd;
+    border-left-color: #16b646;
+    color: #1aa91a;
+    font-weight: 500;
+    padding-left: 14px;
+}
+
+
+/* ===============================
+   SECTIONS CONTENT SHIFT
+   =============================== */
+#trade-nav-sections {
+    transition: margin-left 0.3s ease;
+}
+
+#trade-nav-sections.trade-sections-shifted {
+    margin-left: 200px;
+}
+
+
 /* -------------------------------
       RESPONSIVE
 --------------------------------*/
 
 
 /* Tablets */
+
+@media (max-width: 1024px) {
+    .trade-slim-sidebar {
+        width: 180px;
+    }
+
+    .trade-tabs-section.sidebar-open-mode .trade-tabs-card {
+        padding-left: 180px;
+    }
+
+    #trade-nav-sections.trade-sections-shifted {
+        margin-left: 180px;
+    }
+}
 
 @media (max-width: 768px) {
     .trade-tabs-section {
@@ -98,6 +230,23 @@
     .trade-tab {
         padding: 16px 26px;
         font-size: 13.5px;
+    }
+
+    .trade-slim-sidebar {
+        width: 155px;
+    }
+
+    .trade-tabs-section.sidebar-open-mode .trade-tabs-card {
+        padding-left: 155px;
+    }
+
+    #trade-nav-sections.trade-sections-shifted {
+        margin-left: 155px;
+    }
+
+    .trade-slim-item {
+        font-size: 12px;
+        padding: 13px 12px 13px 14px;
     }
 }
 
@@ -112,5 +261,22 @@
         padding: 14px 20px;
         font-size: 12.5px;
         letter-spacing: 0.15px;
+    }
+
+    .trade-slim-sidebar {
+        width: 140px;
+    }
+
+    .trade-tabs-section.sidebar-open-mode .trade-tabs-card {
+        padding-left: 140px;
+    }
+
+    #trade-nav-sections.trade-sections-shifted {
+        margin-left: 140px;
+    }
+
+    .trade-slim-item {
+        font-size: 11.5px;
+        padding: 12px 10px 12px 12px;
     }
 }

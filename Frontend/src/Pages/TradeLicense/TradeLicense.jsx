@@ -55,6 +55,8 @@ const TradeLicense = () => {
         <TradeLicenseTabs />
       </Suspense>
 
+      <div id="trade-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -107,6 +109,8 @@ const TradeLicense = () => {
         <Suspense fallback={<div />}>
           <TradeLicenseFAQ />
         </Suspense>
+      </div>
+
       </div>
 
     </div>
