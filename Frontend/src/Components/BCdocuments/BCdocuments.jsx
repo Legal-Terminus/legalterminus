@@ -30,9 +30,10 @@ const entityDocs = [
     title: "Turnover Proof + Slab Mapping",
     note: "To map the correct GS1 India turnover slab",
     items: [
-      "Audited financials of the latest financial year",
+      "Audited financials of the latest financial year — to map you to the correct GS1 India turnover slab",
       "Alternatively: GST returns / CA certificate of turnover",
       "For new entities: self-declaration with projected turnover",
+      "Wrong slab declaration triggers GS1 India recovery + interest",
     ],
   },
 ];
@@ -44,8 +45,8 @@ const complianceDocs = [
     note: "Required for GST invoicing and MSME claim",
     items: [
       "GSTIN (required for GST invoicing of GS1 fees)",
-      "Udyam Registration Certificate confirming Micro Manufacturing Enterprise status (for MSME 80% reimbursement claim)",
-      "IEC linkage helpful for exporters / importers (for downstream SSCC / export advisory)",
+      "For MSME 80% reimbursement claim: valid UDYAM REGISTRATION CERTIFICATE confirming Micro Manufacturing Enterprise status",
+      "For exporters / importers: IEC linkage helpful for downstream SSCC / export advisory",
     ],
   },
   {
@@ -53,7 +54,8 @@ const complianceDocs = [
     title: "Product / SKU List",
     note: "One GTIN required per unique product variant",
     items: [
-      "Product name, brand, category, variant (size / colour / flavour), packaging (consumer unit / case / multi-pack)",
+      "List of products / SKUs to be assigned GTINs",
+      "For each SKU: product name, brand, category, variant (size / colour / flavour), packaging (consumer unit / case / multi-pack)",
       "For pharma: brand name + dosage + pack count",
       "Used for: right pack-size sizing + DataKart onboarding template",
     ],
@@ -66,6 +68,7 @@ const complianceDocs = [
       "Brand logo (vector / high-res)",
       "Product photographs (front / back / side per SKU)",
       "Product description, ingredients (food), composition (cosmetics / pharma), nutritional information (food), MRP, manufacturing details",
+      "Required for DataKart upload in Enriched / Supreme. Optional but increasingly expected by modern trade chains",
     ],
   },
 ];
