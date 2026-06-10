@@ -52,7 +52,7 @@ const rightDocs = [
   {
     icon: <FaMoneyBillWave />,
     title: "Bank Account Details",
-    note: "Used for ESIC challan reconciliation and refunds",
+    note: "Used for ESIC challan reconciliation and (in rare cases) refunds",
     items: [
       "Cancelled cheque OR first page of bank passbook with IFSC + account holder name",
     ],

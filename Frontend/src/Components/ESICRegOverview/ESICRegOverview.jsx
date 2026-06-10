@@ -23,7 +23,7 @@ const ESICRegOverview = () => {
             <p className="pvt-intro-text">
               ESIC Registration isn't optional once you cross 10 employees in a notified area. The Employees' State Insurance Act, 1948 was India's first social security legislation — it provides covered employees and their families with comprehensive medical care, cash benefits during sickness / maternity / disability, and dependants' benefits in case of employment-related death. For employers, ESIC compliance is a statutory must-do; for employees earning gross wages up to ₹21,000, it's a genuine social-security net that they often only realise the value of when they actually need it.
             </p>
-            <p className="pvt-intro-text">
+            <p className="pvt-intro-text" style={{ marginTop: "20px" }}>
               ESIC contribution is also low for the employer — just 3.25% of gross wages. For that, your covered employees get free OPD + IPD care at ESIC dispensaries and hospitals for themselves and their family (spouse, parents, children), cash benefits during sickness (70% wages for up to 91 days), maternity benefits (100% wages for 26 weeks), disablement benefits (90% wages), dependants' benefits, and funeral expenses. Rupee-for-rupee, ESIC is one of the highest-value social-security contributions an employer makes.
             </p>
           </div>
