@@ -37,8 +37,7 @@ const parentDocs = [
     items: [
       "Authorised + paid-up capital plan",
       "Indian-parent: parent's bank statement + NEFT remittance plan",
-      "Foreign-parent: AD-Bank coordination details for FIRC + KYC retrieval",
-      "FDI valuation certificate (DCF / NAV / fair value by CA / Merchant Banker for inward share issue)",
+      "Foreign-parent: AD-Bank coordination details for FIRC + KYC retrieval, FDI valuation certificate (Discounted Cash Flow / NAV / fair value by CA / Merchant Banker for inward share issue), FEMA-compliant subscription mode",
     ],
   },
 ];
