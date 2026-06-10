@@ -1,66 +1,49 @@
 import React from "react";
 import "./BCtypes.css";
-import typesIllustration from "../../assets/pvtltd-types.png"
 
+const types = [
+  {
+    number: "01",
+    title: "EAN-13 Barcode",
+    text: "The most widely used barcode in India and globally. EAN-13 encodes a 13-digit GTIN and is mandatory for all retail products sold in supermarkets, modern trade, and e-commerce platforms like Amazon and Flipkart. The prefix '890' identifies the product as registered through GS1 India.",
+  },
+  {
+    number: "02",
+    title: "UPC-A Barcode",
+    text: "A 12-digit barcode primarily used for retail products exported to the USA, Canada, UK, and Australia. If you sell on Amazon.com or international retail chains, your products require UPC-A barcodes. GS1 India can issue GTINs compatible with UPC-A encoding.",
+  },
+  {
+    number: "03",
+    title: "GS1-128 & ITF-14 (Logistics Barcodes)",
+    text: "Used for labelling cartons, pallets, and outer packaging in the supply chain. GS1-128 encodes additional data like batch number, expiry date, and serial number. ITF-14 is used on corrugated cartons (outer packaging). Both are mandatory for B2B logistics and distribution networks.",
+  },
+  {
+    number: "04",
+    title: "GS1 DataMatrix & Databar (Regulated Products)",
+    text: "GS1 DataMatrix is a 2D barcode mandated for pharmaceutical products, medical devices, and fresh food under track-and-trace regulations. Databar is used for variable-measure items (fresh produce, deli products) where weight or price changes at every scan. Both can encode serial numbers and expiry dates.",
+  },
+];
 
-const PvtTypes = () => {
+const BCtypes = () => {
   return (
-    <section className="pvt-types-section">
-      <div className="pvt-types-container">
-        {/* Left graphic */}
-        <div className="pvt-types-illustration-wrap">
-          <img
-            src={typesIllustration}
-            alt="Types of Private Limited Company"
-            className="pvt-types-illustration"
-          />
+    <section className="opc-features-section">
+      <div className="opc-features-container">
+
+        <h2 className="opc-features-title">Types of GS1 Barcodes for Product Registration in India</h2>
+
+        <div className="opc-features-cards">
+          {types.map((type) => (
+            <div className="opc-features-card" key={type.number}>
+              <div className="opc-features-number">{type.number}</div>
+              <h3 className="opc-features-card-title">{type.title}</h3>
+              <p className="opc-features-card-text">{type.text}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Right content */}
-        <div className="pvt-types-content">
-          <h2 className="pvt-types-title">
-            Types of Bar Code Registration in India
-          </h2>
-
-          <p className="pvt-types-intro">
-            There are different types of barcodes used in India depending on the product and purpose:
-          </p>
-
-          {/* Type 1 */}
-          <div className="pvt-types-block">
-            <h3 className="pvt-types-subtitle">EAN-13 Barcode</h3>
-            <p className="pvt-types-text">
-              This is a 13-digit barcode commonly used in India, Europe, and many other countries. It is mostly used for regular retail products.
-            </p>
-          </div>
-
-          {/* Type 2 */}
-          <div className="pvt-types-block">
-            <h3 className="pvt-types-subtitle">UPC-A Barcode</h3>
-            <p className="pvt-types-text">
-              This is a 12-digit barcode mainly used in countries like the USA, Canada, UK, Australia, and New Zealand.
-            </p>
-          </div>
-
-          {/* Type 3 */}
-          <div className="pvt-types-block">
-            <h3 className="pvt-types-subtitle">Databar Barcode</h3>
-            <p className="pvt-types-text">
-              This barcode is mostly used for fresh food items. It can store extra details like expiry date, product size, and item number.
-            </p>
-          </div>
-
-          {/* Type 4 */}
-          <div className="pvt-types-block">
-            <h3 className="pvt-types-subtitle">One-Dimensional (1D) Barcodes (GS1-128 & ITF-14)</h3>
-            <p className="pvt-types-text">
-              These are used for tracking products during transport and supply chain.
-            </p>
-          </div>
-        </div>
       </div>
     </section>
   );
 };
 
-export default PvtTypes;
+export default BCtypes;

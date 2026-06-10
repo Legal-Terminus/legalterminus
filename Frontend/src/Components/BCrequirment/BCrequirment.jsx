@@ -1,81 +1,65 @@
 import React from "react";
 import "./BCrequirment.css";
 
-const RequirementsPvt = () => {
+const BCBenefits = () => {
   return (
-    <section className="req-section">
-      <div className="req-container">
-        {/* Heading + intro */}
-        <header className="req-header">
-          <h2 className="req-title">
-            Benefits of Bar Code Registration in India
+    <section className="opcben-section">
+      <div className="opcben-container">
+        <header className="opcben-header">
+          <h2 className="opcben-title">
+            Benefits of GS1 Barcode Registration for Your Business
           </h2>
-          <p className="req-subtitle">
-            A barcode is a unique code printed on products. It can be scanned to quickly get product details from the system. Businesses use barcode registration for many useful reasons:
+          <p className="opcben-subtitle">
+            GS1 barcode registration is not just a compliance step — it opens your products to every major retail platform, supply chain, and export market in the world.
           </p>
         </header>
 
-        {/* Cards */}
-        <div className="req-grid">
-          {/* 1 */}
-          <article className="req-card">
-            <h3 className="req-card-title">Easy Inventory Management</h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-             Stores can manage and track thousands of products easily using barcodes, from manufacturing to final sale.
+        <div className="opcben-grid">
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Mandatory for Amazon, Flipkart &amp; Retail Listing</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              Amazon India, Flipkart, and most organised retail chains require a valid GS1 GTIN for every product listing. Without a GS1-registered barcode, your product catalogue cannot be listed, and existing listings may be suppressed or removed.
             </p>
           </article>
 
-          {/* 2 */}
-          <article className="req-card">
-            <h3 className="req-card-title">Better Asset Tracking</h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              Barcodes help businesses label and track assets like computers, machines, and other office equipment.
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Globally Unique Product Identity</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              Each GS1 GTIN is unique across the entire world — no two products share the same barcode. This prevents product identity confusion, enables accurate billing at POS systems, and protects your brand from counterfeit product scanning.
             </p>
           </article>
 
-          {/* 3 */}
-          <article className="req-card">
-            <h3 className="req-card-title">
-              Simple Return Tracking
-            </h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              Barcodes make it easy to track product returns, especially in online shopping. They also help track invoices and payments.
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Streamlined Inventory &amp; Warehouse Management</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              GS1 barcodes allow real-time tracking of stock levels, batch numbers, and expiry dates across your warehouse. Integration with ERP and WMS systems becomes seamless, reducing manual entry errors and enabling just-in-time restocking.
             </p>
           </article>
 
-          {/* 4 */}
-          <article className="req-card">
-            <h3 className="req-card-title">
-              Fewer Mistakes
-            </h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              Since barcode scanning is automatic, it reduces manual data entry and lowers the chance of errors.
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Supply Chain Visibility &amp; Traceability</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              GS1-128 and ITF-14 barcodes on outer packaging enable full track-and-trace from manufacturer to retailer. Distributors and logistics partners can scan carton-level codes to verify delivery, reducing disputes and theft in the supply chain.
             </p>
           </article>
 
-          {/* 5 */}
-          <article className="req-card">
-            <h3 className="req-card-title">
-              Affordable and Convenient
-            </h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              Barcodes are low-cost, easy to create, and simple to print on product packaging.
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Export Readiness &amp; International Compliance</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              GS1 is the global standard accepted in 115+ countries. A GS1-registered GTIN makes your products importable by foreign retailers and compliant with international trade regulations — essential for export to the EU, USA, Middle East, and South-East Asia.
             </p>
           </article>
 
-          {/* 4 */}
-          <article className="req-card">
-            <h3 className="req-card-title">
-              Product Details & Authenticity
-            </h3>
-            <div className="req-card-underline" />
-            <p className="req-card-text">
-              Barcodes store useful info like product number, batch number, and serial number, helping confirm product genuineness.
+          <article className="opcben-card">
+            <h3 className="opcben-card-title">Anti-Counterfeiting &amp; Brand Protection</h3>
+            <div className="opcben-card-underline" />
+            <p className="opcben-card-text">
+              GS1 barcodes can be serialised to create unique identifiers per product unit. Consumers and retailers can verify authenticity by scanning the barcode against the GS1 India registry (GEPIR), reducing the risk of counterfeit products reaching your customers.
             </p>
           </article>
         </div>
@@ -84,4 +68,4 @@ const RequirementsPvt = () => {
   );
 };
 
-export default RequirementsPvt;
+export default BCBenefits;

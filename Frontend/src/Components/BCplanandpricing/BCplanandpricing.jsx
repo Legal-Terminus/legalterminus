@@ -1,147 +1,122 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./BCplanandpricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
-
 const PLANS = [
-  { id: "elemental", name: "Elemental", price: 3999, services: ["Search Report of Name Availability", "1 RUN Name Approval Certificate", "Director Identification Number for 2 Individuals", "Certificate of Incorporation", "E-PAN", "E-TAN", "E-MOA", "E-AOA", "Documents for Bank Account Opening", "Documents for 1st Auditor Appointment", "EPF Registrations", "ESI Registrations"] },
-  { id: "enriched", name: "Enriched", price: 9999, services: ["Professional Fees", "Free Consultation", "Application Preparation & Filing", "Consultation on generation of Bar Codes"] },
-  { id: "supreme", name: "Supreme", price: 24999, services: ["Enriched Plan Plus", "Income tax filing of Company", "Preparation of Directors Report", "Preparation of Annual Return", "Preparation of Auditor Appointment Paperwork", "Preparation of List of Share Holders", "Preparation of Notice of AGM", "Preparation of Notice of BM", "Preparation of Extracts of AGM", "Filing of AOC - 4 (Financial Statements)", "Filing of MGT - 7 (Annual Return)", "Filing of ADT - 1 (Auditor Appointment)", "Minutes of Board Meeting for 1st FY", "Minutes of General Meeting for 1st FY", "Maintenance of Statutory E- Registers", "Filing of DPT - 3 Annual (If Applicable)", "Filing of MSME - 1 (If Applicable) for 1st FY", "DIR KYC (2 Directors)", "Income Tax Filing of 2 Directors", "Audit fees are excluded and to be paid directly to Auditor"] }
+  {
+    id: "starter",
+    name: "Starter",
+    oldPrice: 14999,
+    price: 9999,
+    services: [
+      "GS1 India Company Prefix allocation",
+      "Up to 10 GTINs (product barcodes)",
+      "EAN-13 barcode image generation",
+      "GS1 portal registration & filing",
+      "Annual GS1 subscription coordination",
+      "Product data entry on GS1 India registry",
+      "Barcode image files (PNG + SVG)",
+      "Usage guide for packaging & e-commerce",
+    ],
+  },
+  {
+    id: "business",
+    name: "Business",
+    badge: "★ MOST POPULAR",
+    popular: true,
+    oldPrice: 24999,
+    price: 17999,
+    services: [
+      "Everything in Starter",
+      "Up to 100 GTINs",
+      "ITF-14 (case/outer carton) barcodes",
+      "GS1-128 logistics barcode generation",
+      "Amazon / Flipkart barcode compliance check",
+      "1-year GS1 annual renewal reminder",
+    ],
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    badge: "✦ FULL-SERVICE",
+    oldPrice: 49999,
+    price: 39999,
+    services: [
+      "Everything in Business",
+      "Unlimited GTINs for 1 year",
+      "Databar / QR code generation (fresh food / pharma)",
+      "2D barcode (GS1 DataMatrix) for regulated products",
+      "GS1 product data syndication support",
+      "Multi-category catalogue setup",
+      "2-year GS1 renewal & compliance management",
+      "Priority CA / legal support for product compliance",
+    ],
+  },
 ];
 
-const PricingSection = () => {
+const BCPricingSection = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
-
     <>
-    <section className="pvtltd-pricing-section">
-      <div className="pricing-container">
-        
-        {/* Upper part */}
-        <header className="pricing-header">
-          <h2 className="PvtLtd-pricing-title">CHOOSE YOUR PLAN</h2>
-          <p className="pricing-subtitle">
-            Register your Bar Code Registration with pocket friendly-prices
-          </p>
-        </header>
+      <section className="opc-pricing-section">
+        <div className="opcpricing-container">
 
-        {/* Cards */}
-        <div className="pricing-cards">
+          <header className="opcpricing-header">
+            <h2 className="opcpricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="opcpricing-subtitle">
+              Get GS1 Barcode Registration at pocket-friendly prices
+            </p>
+          </header>
 
-          {/* Elemental
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Elemental</div>
-                <div className="plan-old-price">₹5,999</div>
-                <div className="plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">Excluding gov fee</div>
-              </div>
+          <div className="opcpricing-cards">
+            {PLANS.map((plan) => (
+              <article
+                key={plan.id}
+                className={`opcplan-card${plan.popular ? " opcplan-card--popular" : ""}`}
+              >
+                <div>
+                  <div className="opcplan-header">
+                    {plan.badge && (
+                      <div className={`opcplan-badge${plan.popular ? " opcplan-badge--popular" : ""}`}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    <div className="opcplan-name">{plan.name}</div>
+                    <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-meta">+ GS1 subscription &amp; GST extra</div>
+                  </div>
 
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">Search Report of Name Availability</li>
-                  <li className="plan-list-item">1 RUN Name Approval Certificate</li>
-                  <li className="plan-list-item">Director Identification Number for 2 Individuals</li>
-                  <li className="plan-list-item">Certificate of Incorporation</li>
-                  <li className="plan-list-item">E-PAN</li>
-                  <li className="plan-list-item">E-TAN</li>
-                  <li className="plan-list-item">E-MOA</li>
-                  <li className="plan-list-item">E-AOA</li>
-                  <li className="plan-list-item">Documents for Bank Account Opening</li>
-                  <li className="plan-list-item">Documents for 1st Auditor Appointment</li>
-                  <li className="plan-list-item">EPF Registrations</li>
-                  <li className="plan-list-item">ESI Registrations</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-            </div>
-          </article> */}
-
-          {/* Enriched */}
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Enriched</div>
-                <div className="plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">
-                  Excluding gov fee <span className="popular">(Popular)</span>
+                  <div className="opcplan-body">
+                    <ul className="opcplan-list">
+                      {plan.services.map((s, i) => (
+                        <li key={i} className="opcplan-list-item">{s}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-              </div>
 
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">Professional Fees</li>
-                  <li className="plan-list-item">Free Consultation</li>
-                  <li className="plan-list-item">Application Preparation & Filing</li>
-                  <li className="plan-list-item">Consultation on generation of Bar Codes</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Supreme
-          <article className="plan-card">
-            <div>
-              <div className="plan-header">
-                <div className="plan-name">Supreme</div>
-                <div className="plan-old-price">₹29,999</div>
-                <div className="plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
-                <div className="plan-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="plan-body">
-                <ul className="plan-list">
-                  <li className="plan-list-item">Enriched Plan Plus</li>
-                  <li className="plan-list-item">Income tax filing of Company</li>
-                  <li className="plan-list-item">Preparation of Directors Report</li>
-                  <li className="plan-list-item">Preparation of Annual Return</li>
-                  <li className="plan-list-item">Preparation of Auditor Appointment Paperwork</li>
-                  <li className="plan-list-item">Preparation of List of Share Holders</li>
-                  <li className="plan-list-item">Preparation of Notice of AGM</li>
-                  <li className="plan-list-item">Preparation of Notice of BM</li>
-                  <li className="plan-list-item">Preparation of Extracts of AGM</li>
-                  <li className="plan-list-item">Filing of AOC - 4 (Financial Statements)</li>
-                  <li className="plan-list-item">Filing of MGT - 7 (Annual Return)</li>
-                  <li className="plan-list-item">Filing of ADT - 1 (Auditor Appointment)</li>
-                  <li className="plan-list-item">Minutes of Board Meeting for 1st FY</li>
-                  <li className="plan-list-item">Minutes of General Meeting for 1st FY</li>
-                  <li className="plan-list-item">Maintenance of Statutory E- Registers</li>
-                  <li className="plan-list-item">Filing of DPT - 3 Annual (If Applicable)</li>
-                  <li className="plan-list-item">Filing of MSME - 1 (If Applicable) for 1st FY</li>
-                  <li className="plan-list-item">DIR KYC (2 Directors)</li>
-                  <li className="plan-list-item">Income Tax Filing of 2 Directors</li>
-                  <li className="plan-list-item">Audit fees are excluded and to be paid directly to Auditor</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plan-footer">
-              <button className="plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-            </div>
-          </article> */}
+                <div className="opcplan-footer">
+                  <button
+                    className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
+                    onClick={() => setActivePlan(plan)}
+                  >
+                    Buy Now
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
 
         </div>
-      </div>
-    </section>
-
+      </section>
 
       {activePlan && (
-
         <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="bc-registration" />
-
       )}
-
     </>
+  );
+};
 
-  );};
-
-export default PricingSection;
+export default BCPricingSection;

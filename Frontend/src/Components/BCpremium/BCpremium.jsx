@@ -2,85 +2,80 @@ import React from "react";
 import "./BCpremium.css";
 import premiumIllustration from "../../assets/lt-company.svg";
 
-const ZolvitPremium = () => {
+const BCPriority = () => {
   return (
-    <section className="zp-section">
-      <div className="zp-container">
-        <div className="zp-card">
+    <section className="opczp-section">
+      <div className="opczp-container">
+        <div className="opczp-card">
 
-          {/* Left illustration */}
-          <div className="zp-illustration-wrapper">
+          <div className="opczp-illustration-wrapper">
             <img
               src={premiumIllustration}
-              alt="Private Limited Company Registration by Legal Terminus"
-              className="zp-illustration"
+              alt="GS1 Barcode Registration by Legal Terminus"
+              className="opczp-illustration"
             />
           </div>
 
-          {/* Right content */}
-          <div className="zp-content">
+          <div className="opczp-content">
 
-            {/* Title + subtitle */}
-            <header className="zp-header">
-              <h2 className="zp-title">
+            <header className="opczp-header">
+              <h2 className="opczp-title">
                 Legal Terminus{" "}
-                <span className="zp-title-highlight">Priority</span>{" "}
-                <span className="zp-title-icon">⚖️</span>
+                <span className="opczp-title-highlight">Priority</span>{" "}
+                <span className="opczp-title-icon">⚖️</span>
               </h2>
-              <p className="zp-subtitle">
-               Get your Barcode Registration done faster with Legal Terminus expert-handled process, made for businesses who want smooth product listing and hassle-free compliance.
+              <p className="opczp-subtitle">
+                Get your GS1 Barcode Registration completed faster with our expert-handled process — designed for businesses that need scan-ready product codes for retail, e-commerce, and global supply chains without the paperwork hassle.
               </p>
             </header>
 
-            {/* Features */}
-            <section className="zp-section-block">
-              <h3 className="zp-label">What You Get:</h3>
-              <ul className="zp-list zp-features-list">
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">🧑‍⚖️</span>
-                  Quick Barcode Registration Support – Complete guidance from start to finish.
+            <section className="opczp-section-block">
+              <h3 className="opczp-label">What You Get:</h3>
+              <ul className="opczp-list opczp-features-list">
+                <li className="opczp-list-item">
+                  <span className="opczp-list-icon">🧑‍⚖️</span>
+                  End-to-End GS1 Registration — from Company Prefix application to GTIN assignment
                 </li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">📑</span>
-                  Hassle-Free Documentation & Filing
+                <li className="opczp-list-item">
+                  <span className="opczp-list-icon">📑</span>
+                  Document preparation, GS1 India portal filing &amp; annual subscription coordination
                 </li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">⏱️</span>
-                  Barcode for Product Identification & Sales
+                <li className="opczp-list-item">
+                  <span className="opczp-list-icon">🏷️</span>
+                  EAN-13 / UPC-A barcode image files (PNG + SVG) for packaging &amp; online listing
                 </li>
-                <li className="zp-list-item">
-                  <span className="zp-list-icon">⏱️</span>
-                  Timely Updates & Reminder Support
+                <li className="opczp-list-item">
+                  <span className="opczp-list-icon">⏱️</span>
+                  Timely updates, renewal reminders &amp; post-registration compliance support
                 </li>
               </ul>
             </section>
 
-            {/* Note */}
-            <section className="zp-section-block">
-              <h3 className="zp-label">Important Notes:</h3>
-              <div className="zp-note-box">
-                <ul className="zp-note-list">
-                  <li className="zp-note-item">
-                    We verify your business details and product category before proceeding.
+            <section className="opczp-section-block">
+              <h3 className="opczp-label">Important Notes:</h3>
+              <div className="opczp-note-box">
+                <ul className="opczp-note-list">
+                  <li className="opczp-note-item">
+                    We verify your business details and product category before initiating the GS1 registration to ensure correct prefix allocation.
                   </li>
-                  <li className="zp-note-item">
-                    In case of any mismatch in documents, our team will guide you with the correct format to ensure approval.
+                  <li className="opczp-note-item">
+                    In case of any document mismatch, our team will guide you with the correct format to ensure smooth GS1 India approval.
                   </li>
                 </ul>
               </div>
             </section>
 
-            {/* CTA */}
-            <div className="zp-cta-row">
-              <button className="zp-cta-btn">
+            <div className="opczp-cta-row">
+              <button
+                className="opczp-cta-btn"
+                onClick={() => {
+                  const el = document.getElementById("bc-consult-form");
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+                }}
+              >
                 Consult a Legal Expert
               </button>
             </div>
-
-            {/* Pricing
-            <p className="zp-pricing">
-              <span className="zp-label">Starts from ₹3,999 (excluding government fees)</span> for Private Limited Company Registration in India.{" "}The package includes name approval, incorporation, DIN for two directors, e-PAN, e-TAN, and bank account documents. Also covers auditor appointment documents, EPF and ESI registrations.
-              </p> */}
 
           </div>
         </div>
@@ -89,4 +84,4 @@ const ZolvitPremium = () => {
   );
 };
 
-export default ZolvitPremium;
+export default BCPriority;

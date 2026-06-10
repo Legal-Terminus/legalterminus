@@ -3,67 +3,62 @@ import "./BCprocess.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
-    text:
-      "Provision of requisite documents / information to us (as per the checklist to be provided by us).",
+    title: "Discovery &amp; Product Count",
+    day: "Day 0",
+    text: "30-minute call to confirm: number of unique products (SKUs) you need GTINs for, whether you need EAN-13, GS1-128, ITF-14, or DataMatrix, and the correct GS1 Company Prefix tier (number of digits). We also confirm GSTIN linkage and check if your company is already registered with GS1 India.",
   },
   {
-    title: "Step 2 – Company Name & Objects Finalization",
-    text:
-      "Finalisation of objects along with name of the proposed company (based on a search report duly conducted and provided by our team).",
+    title: "Document Collection",
+    day: "Day 1",
+    text: "We share a GS1-specific checklist. You submit: business owner KYC (PAN + Aadhaar), business registration (COI / GST Certificate / UDYAM), office address proof, cancelled cheque, and product list with brief descriptions. This is your only task — we handle the rest.",
   },
   {
-    title: "Step 3 – Name Reservation Application",
-    text:
-      "Filing of application for name reservation in requisite e-form along with applicable government fees.",
+    title: "GS1 India Application Preparation",
+    day: "Day 1–2",
+    text: "We prepare your GS1 India membership application with the correct Company Prefix tier based on your product count. Documents are verified against GS1 India's requirements. We also draft the request letter on company letterhead and compile the complete application package.",
   },
   {
-    title: "Step 4 – Digital Signature Certificates",
-    text:
-      "Preparation of requisite numbers of DSC with respect to the proposed promoters & directors and registration of DSC in the MCA portal.",
+    title: "GS1 Portal Filing &amp; Subscription Payment",
+    day: "Day 2–3",
+    text: "Application filed on the GS1 India portal. Annual GS1 subscription fee paid on your behalf (billed at actuals, per GS1 India's current schedule). Filing acknowledgement and payment receipt shared with you immediately after submission.",
   },
   {
-    title: "Step 5 – Incorporation Document Preparation",
-    text:
-      "Preparation of further incorporation documents upon receipt of the name approval letter from the department.",
+    title: "GS1 India Review &amp; Company Prefix Issuance",
+    day: "Day 5–10",
+    text: "GS1 India reviews your application and issues your unique Company Prefix (the first 7–9 digits of all your GTINs). If GS1 raises a deficiency query, we respond within 24 hours. Most straightforward applications are processed within 7–10 working days.",
   },
   {
-    title: "Step 6 – Final Form Upload & Fee Payment",
-    text:
-      "Uploading of final incorporation forms to the MCA portal along with applicable government fees.",
-  },
-  {
-    title: "Step 7 – Registration Certificate Issuance",
-    text:
-      "Processing of the application by the department and issuance of the registration certificate.",
+    title: "GTIN Generation &amp; Barcode Image Delivery",
+    day: "Day 10–15",
+    text: "Once the Company Prefix is issued, we generate GTINs for each of your products and create print-ready barcode image files (PNG + SVG) in EAN-13 or required format. We deliver: all barcode files, product data entry on GS1 registry, GS1 renewal calendar, and usage guide for packaging and online listing.",
   },
 ];
 
-const GSTProcess = () => {
+const BCProcess = () => {
   return (
-    <section className="pvtltd-gst-wrapper">
-      <h2 className="gst-heading">
-        STEPS FOR BAR CODE REGISTRATION IN INDIA
+    <section className="opcelg-wrapper">
+      <h2 className="opcelg-heading">
+        Steps for GS1 Barcode Registration in India
       </h2>
-      <p className="pv-gst-subheading">
-        The broad process of registering a Private Limited company involves
-        the following steps:
+      <p className="opcelg-subheading">
+        Six steps. 10–15 working days end-to-end (assuming clean documents and standard GS1 India processing).
       </p>
 
-      <div className="pvtltd-timeline">
-        <div className="pvtltd-timeline-line" />
+      <div className="opcelg-timeline">
+        <div className="opcelg-timeline-line" />
 
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`pvtltd-timeline-item ${
-              index % 2 === 0 ? "left" : "right"
-            }`}
+            className={`opcelg-timeline-item ${index % 2 === 0 ? "left" : "right"} ${index === 0 ? "first" : ""} ${index === steps.length - 1 ? "last" : ""}`}
           >
-            <div className="pvtltd-timeline-dot">{index + 1}</div>
+            <div className="opcelg-timeline-dot">{index + 1}</div>
 
-            <div className="pvtltd-timeline-card">
-              <h4>{step.title}</h4>
+            <div className="opcelg-timeline-card">
+              <h4>
+                <span dangerouslySetInnerHTML={{ __html: step.title }} />
+                {step.day && <span className="opcelg-day-tag">{step.day}</span>}
+              </h4>
               <p>{step.text}</p>
             </div>
           </div>
@@ -73,4 +68,4 @@ const GSTProcess = () => {
   );
 };
 
-export default GSTProcess;
+export default BCProcess;

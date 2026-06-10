@@ -1,62 +1,137 @@
 import React from "react";
 import "./BCdocuments.css";
-import {
-  FaBullhorn,
-  FaBrain,
-  FaLightbulb,
-  FaUsers,
-  FaChartPie,
-  FaChessKing,
-} from "react-icons/fa";
+import { FaUser, FaBuilding, FaIdCard, FaFileAlt, FaCamera, FaBolt, FaFileContract, FaBoxOpen } from "react-icons/fa";
 
-const data = [
-  { no: "01", title: "KYC Documents", icon: <FaBullhorn />, color: "red" },
-  { no: "02", title: "Passport Photograph", icon: <FaBrain />, color: "orange" },
-  { no: "03", title: "Electricity Bill", icon: <FaLightbulb />, color: "yellow" },
-  { no: "04", title: "Rent Agreement", icon: <FaUsers />, color: "green" },
-  { no: "05", title: "No Objection Certificate", icon: <FaChartPie />, color: "cyan" },
-  { no: "06", title: "Other Documents", icon: <FaChessKing />, color: "blue" },
+const businessDocs = [
+  {
+    icon: <FaIdCard />,
+    title: "Business Owner / Authorised Signatory KYC",
+    note: "Mandatory for Proprietor / Director / Partner",
+    items: [
+      "Self-attested PAN card (mandatory)",
+      "Self-attested Aadhaar card",
+      "Passport-size photograph",
+    ],
+  },
+  {
+    icon: <FaFileAlt />,
+    title: "Business Registration Certificate",
+    note: "Any one of the following",
+    items: [
+      "Certificate of Incorporation (COI) for companies",
+      "Partnership Deed / LLP Agreement",
+      "GST Registration Certificate (mandatory — GS1 is GSTIN-linked)",
+      "UDYAM / Shops & Establishment Certificate",
+    ],
+  },
+  {
+    icon: <FaFileContract />,
+    title: "Company Letterhead Request Letter",
+    note: "On official letterhead, signed by authorised signatory",
+    items: [
+      "Request letter to GS1 India for Company Prefix allocation",
+      "Specifying number of products and category",
+    ],
+  },
 ];
 
-const BarcodeInfographic = () => {
-  return (
-    <section className="bci5-section">
-      <h2 className="bci5-heading">
-        Documents Required for Bar Code Registration in India
-      </h2>
+const officeDocs = [
+  {
+    icon: <FaBolt />,
+    title: "Registered Office Address Proof",
+    note: "Latest utility bill — not older than 2 months",
+    items: [
+      "Electricity Bill",
+      "Water Bill",
+      "Gas Bill",
+    ],
+  },
+  {
+    icon: <FaBuilding />,
+    title: "Bank Details",
+    note: "For GS1 subscription payment processing",
+    items: [
+      "Cancelled cheque (company account)",
+      "Copy of latest bank statement (optional — some states)",
+    ],
+  },
+  {
+    icon: <FaBoxOpen />,
+    title: "Product List",
+    note: "For GTIN assignment — one GTIN per unique product",
+    items: [
+      "Product names and brief descriptions",
+      "Number of distinct SKUs / product variants",
+      "Product category (food, pharma, electronics, apparel, etc.)",
+      "Approximate pack size / unit of measure for each product",
+    ],
+  },
+];
 
-      <div className="bci5-wrapper">
-        {/* LEFT INFOGRAPHIC */}
-        <div className="bci5-left">
-          <div className="bci5-circle">
-            <h3>Documents Required</h3>
-            
+const DocItem = ({ doc }) => (
+  <div className="opcd-doc-item">
+    <div className="opcd-doc-item-top">
+      <div className="opcd-doc-icon">{doc.icon}</div>
+      <div className="opcd-doc-meta">
+        <h4 className="opcd-doc-title">{doc.title}</h4>
+        <span className="opcd-doc-note">{doc.note}</span>
+      </div>
+    </div>
+    <ul className="opcd-doc-list">
+      {doc.items.map((item, i) => (
+        <li key={i} className="opcd-doc-list-item">{item}</li>
+      ))}
+    </ul>
+  </div>
+);
+
+const BCDocuments = () => {
+  return (
+    <section className="opcd-section" id="documents">
+      <div className="opcd-container">
+
+        <div className="opcd-header">
+          <h2 className="opcd-main-title">Documents Required for GS1 Barcode Registration in India</h2>
+          <p className="opcd-main-subtitle">Get these ready and we'll take care of the rest</p>
+        </div>
+
+        <div className="opcd-columns">
+
+          <div className="opcd-column">
+            <div className="opcd-col-header">
+              <div className="opcd-col-header-icon"><FaUser /></div>
+              <div>
+                <h3 className="opcd-col-title">Business &amp; KYC Documents</h3>
+                <p className="opcd-col-subtitle">Required for GS1 India membership and owner verification</p>
+              </div>
+            </div>
+            <div className="opcd-col-body">
+              {businessDocs.map((doc, i) => (
+                <DocItem key={i} doc={doc} />
+              ))}
+            </div>
           </div>
 
-          {/* TRUE LEFT HALF CIRCLE */}
-          <svg viewBox="0 0 300 300" className="bci5-arc">
-            <path d="M150 10 A140 140 0 0 0 150 290" className="arc red" />
-            <path d="M150 10 A140 140 0 0 0 150 290" className="arc orange" />
-            <path d="M150 10 A140 140 0 0 0 150 290" className="arc yellow" />
-            <path d="M150 10 A140 140 0 0 0 150 290" className="arc green" />
-            <path d="M150 10 A140 140 0 0 0 150 290" className="arc cyan" />
-            <path d="M150 10 A140 140 0 0 0 150 290" className="arc blue" />
-          </svg>
+          <div className="opcd-column">
+            <div className="opcd-col-header opcd-col-header--office">
+              <div className="opcd-col-header-icon"><FaBuilding /></div>
+              <div>
+                <h3 className="opcd-col-title">Office, Bank &amp; Product Documents</h3>
+                <p className="opcd-col-subtitle">Address proof, payment details, and product catalogue</p>
+              </div>
+            </div>
+            <div className="opcd-col-body">
+              {officeDocs.map((doc, i) => (
+                <DocItem key={i} doc={doc} />
+              ))}
+            </div>
+          </div>
+
         </div>
 
-        {/* RIGHT CARDS */}
-        <div className="bci5-right">
-          {data.map((item, i) => (
-            <div key={i} className={`bci5-card ${item.color}`}>
-              <span className="bci5-num">{item.no}</span>
-              <h4>{item.title}</h4>
-              <i>{item.icon}</i>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );
 };
 
-export default BarcodeInfographic;
+export default BCDocuments;

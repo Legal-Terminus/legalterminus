@@ -3,56 +3,71 @@ import "./BCfaq.css";
 
 const faqs = [
   {
-    question: "Is Bar Code Registration mandatory for all business organizations?",
-    answer:
-      "The Bar Code Registration is not a mandatory requirement for any organization; however, In order to capture a wider market place as well as audience it is recommended to obtain Bar Code Registration for your products.",
+    question: "Is GS1 barcode registration mandatory in India?",
+    answer: "GS1 barcode registration is not mandated by a specific Indian law, but it is effectively mandatory for business: Amazon India, Flipkart, Meesho, and most organised retail chains (Reliance, D-Mart, Big Bazaar) require a valid GS1 GTIN for every product listing. Without GS1, your products cannot be listed on these platforms or scanned at POS systems in supermarkets.",
   },
   {
-    question: "What are some basic/ key documents required for Bar Code Registration?",
+    question: "What is the difference between a GTIN, EAN-13, and Company Prefix?",
     answer: (
-      <div>
-        <ol>
-          <li>Applicant Company’s PAN card</li>
-          <li>Copy of audited balance sheet latest</li>
-          <li>Letter on company letterhead requesting bar code allotment</li>
-          <li>Registration Proof of Organisation along with GST Registration Certificate</li>
-          <li>Cancelled cheque copy of the Organisation</li>
-        </ol>
-      </div>
+      <span>
+        These three terms refer to different levels of the same system:
+        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
+          <li><strong>Company Prefix</strong> — A unique number (7–11 digits) assigned by GS1 India to your business. The prefix starts with '890' (India country code). All your product barcodes begin with this prefix.</li>
+          <li><strong>GTIN (Global Trade Item Number)</strong> — A 13-digit number assigned to each unique product variant. Built by appending a product reference and check digit to your Company Prefix.</li>
+          <li><strong>EAN-13</strong> — The physical barcode symbol that encodes the 13-digit GTIN in a scannable format for retail POS systems.</li>
+        </ul>
+      </span>
     ),
   },
   {
-    question: "Who are Directors of the company?",
+    question: "How many products can one GS1 Company Prefix cover?",
     answer: (
-      <div>
-        <p>
-          The broad process of obtaining Bar Code Registration involves following steps:
-        </p>
-
-        <ol>
-          <li>STEP 1: Provide the above-mentioned documents/information of your organization to one of our consultants.</li>
-          <li>STEP 2: Our consultant will process the above documents/ information and validate the same.</li>
-          <li>STEP 3: The application for BAR CODE REGISTRATION shall be filled</li>
-          <li>STEP 4: The application shall be submitted with requisite fees</li>
-          <li>STEP 5: The issuing Board/ Organization shall issue Bar Codes Registration Certificate</li>
-        </ol>
-      </div>
+      <span>
+        The number of GTINs depends on the prefix digit count:
+        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
+          <li><strong>7-digit prefix</strong> — Up to 99,999 GTINs (for large product catalogues)</li>
+          <li><strong>9-digit prefix</strong> — Up to 999 GTINs (for medium brands)</li>
+          <li><strong>11-digit prefix</strong> — Up to 9 GTINs (for small businesses with few products)</li>
+        </ul>
+        GS1 India's annual subscription fee increases with more GTINs. Legal Terminus recommends the right tier based on your product count.
+      </span>
     ),
   },
   {
-    question:
-      "What is the time period within which the Bar Code Registration can be obtained?",
-    answer:
-      "The process of obtaining Bar Code Registration can take anywhere between 7 to 10 working days, subject to submission of correct information and complete documentation.",
+    question: "Do I need a separate barcode for each product variant (size, colour, flavour)?",
+    answer: "Yes. GS1 standards require a unique GTIN for each distinct product variant — every different size, colour, flavour, or packaging type must have its own barcode. For example, a 100ml bottle and a 250ml bottle of the same product are two different GTINs. This ensures accurate scanning and inventory tracking across the supply chain.",
   },
   {
-    question: "How Legal Terminus can help you to obtain Bar Code Registration?",
-    answer:
-      "Legal Terminus can help you with obtaining BAR CODE REGISTRATION for your organization, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+    question: "What happens if I don't renew my GS1 subscription annually?",
+    answer: "GS1 India requires annual subscription renewal to maintain your Company Prefix and associated GTINs. If you fail to renew, GS1 India may deactivate your Company Prefix, which means your barcodes become invalid globally. Retailers and e-commerce platforms may reject listings with deactivated GTINs. Legal Terminus includes renewal reminders and assistance in our Standard and Enterprise plans.",
+  },
+  {
+    question: "Can I use a non-GS1 barcode generator to create barcodes for Amazon?",
+    answer: "No. Amazon India, Amazon.com, and Flipkart explicitly require GS1-registered GTINs for product listings. Barcodes generated by non-GS1 tools (random number generators, local barcode software) are not globally unique and will be rejected during product listing or flagged as policy violations, which can result in listing suppression or account suspension.",
+  },
+  {
+    question: "How long does GS1 barcode registration take in India?",
+    answer: "GS1 India typically processes new Company Prefix applications within 7–15 working days from the date of complete document submission and fee payment. After the prefix is issued, barcode image generation takes 1–2 additional days. Legal Terminus tracks the application status and responds to any GS1 queries within 24 hours, ensuring no unnecessary delays.",
+  },
+  {
+    question: "How can Legal Terminus help with GS1 Barcode Registration?",
+    answer: (
+      <span>
+        Legal Terminus handles the entire GS1 registration process:
+        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
+          <li>Determining the correct GS1 prefix tier based on your product count</li>
+          <li>Document preparation and GS1 India portal filing</li>
+          <li>GS1 subscription fee payment at actuals</li>
+          <li>GTIN generation for each product and EAN-13/UPC barcode image files</li>
+          <li>Product data entry on GS1 India registry</li>
+          <li>Annual renewal reminders and ongoing compliance support</li>
+        </ul>
+      </span>
+    ),
   },
 ];
 
-const FaqPvt = () => {
+const BCFaq = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const toggleFaq = (index) => {
@@ -60,55 +75,43 @@ const FaqPvt = () => {
   };
 
   return (
-    <section className="faq-section">
-      <div className="faq-container">
-        {/* Left side – static text */}
-        <div className="faq-left">
-          <h2 className="faq-title">Bar Code Registration FAQ&apos;s</h2>
+    <section className="opcfaq-section">
+      <div className="opcfaq-container">
 
-          <p className="faq-intro">
-            Here, we’ve answered the most common questions about barcode registration covering documents, steps, and what happens after registration. These FAQs will help you understand everything clearly and move ahead with confidence.
-          </p>
-
-          <p className="faq-intro">
-            
+        <div className="opcfaq-header">
+          <h2 className="opcfaq-title">GS1 Barcode Registration — FAQs</h2>
+          <p className="opcfaq-intro">
+            Clear answers to the most common questions about GS1 barcode registration in India — covering GTINs, Amazon requirements, annual renewal, and timelines.
           </p>
         </div>
 
-        {/* Right side – scrollable Q&A list */}
-        <div className="faq-right">
-          <div className="faq-list">
-            {faqs.map((item, index) => {
-              const isActive = index === activeIndex;
-              return (
-                <div
-                  key={index}
-                  className={`faq-item ${isActive ? "active" : ""}`}
+        <div className="opcfaq-list">
+          {faqs.map((item, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <div
+                key={index}
+                className={`opcfaq-item ${isActive ? "active" : ""}`}
+              >
+                <button
+                  type="button"
+                  className="opcfaq-question"
+                  onClick={() => toggleFaq(index)}
                 >
-                  <button
-                    type="button"
-                    className="faq-question"
-                    onClick={() => toggleFaq(index)}
-                  >
-                    <span>{item.question}</span>
-                    <span className={`faq-icon ${isActive ? "open" : ""}`}>
-                      ▾
-                    </span>
-                  </button>
-                  {isActive && (
-                   <div className={`faq-answer ${isActive ? "open" : ""}`}>
-                    <p>{item.answer}</p>
-                  </div>
-
-                  )}
+                  <span>{item.question}</span>
+                  <span className={`opcfaq-icon ${isActive ? "open" : ""}`}>▾</span>
+                </button>
+                <div className={`opcfaq-answer ${isActive ? "open" : ""}`}>
+                  <div className="opcfaq-answer-content">{item.answer}</div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
+
       </div>
     </section>
   );
 };
 
-export default FaqPvt;
+export default BCFaq;

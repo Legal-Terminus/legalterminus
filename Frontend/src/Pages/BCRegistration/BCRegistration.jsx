@@ -1,8 +1,9 @@
 import React, { Suspense } from 'react'
+import "./BCRegistration.css";
 import BCbreadcrum from '../../Components/BCbreadcrum/BCbreadcrum'
 
-// Lazy load below-fold components
 const BCplanandpricing = React.lazy(() => import('../../Components/BCplanandpricing/BCplanandpricing'))
+const BCGovtCosts = React.lazy(() => import('../../Components/BCGovtCosts/BCGovtCosts'))
 const BCtermcondition = React.lazy(() => import('../../Components/BCtermcondition/BCtermcondition'))
 const BCpremium = React.lazy(() => import('../../Components/BCpremium/BCpremium'))
 const BCtabs = React.lazy(() => import('../../Components/BCtabs/BCtabs'))
@@ -12,41 +13,55 @@ const BCrequirment = React.lazy(() => import('../../Components/BCrequirment/BCre
 const BCprocess = React.lazy(() => import('../../Components/BCprocess/BCprocess'))
 const BCdocuments = React.lazy(() => import('../../Components/BCdocuments/BCdocuments'))
 const BCfaq = React.lazy(() => import('../../Components/BCfaq/BCfaq'))
-const BCtestimonial = React.lazy(() => import('../../Components/BCtestimonial/BCtestimonial'))
-const BCvideo = React.lazy(() => import('../../Components/BCvideo/BCvideo'))
-const BCclients = React.lazy(() => import('../../Components/BCclients/BCclients'))
 
-
-const PrivateLimited = () => {
+const BCRegistration = () => {
   return (
     <div>
-     <BCbreadcrum />
-
-      <div id="plans">
-      <Suspense fallback={<div />}>
-        <BCplanandpricing />
-      </Suspense>
+      <div className="opc-page-hero">
+        <BCbreadcrum />
       </div>
+
+      <div className="section-divider" />
+
+      <div id="plans" className="opc-page-pricing">
+        <Suspense fallback={<div />}>
+          <BCplanandpricing />
+        </Suspense>
+      </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <BCGovtCosts />
+      </Suspense>
+
+      <div className="section-divider" />
 
       <Suspense fallback={<div />}>
         <BCtermcondition />
       </Suspense>
 
+      <div className="section-divider" />
+
       <div id="premium">
-       <Suspense fallback={<div />}>
-         <BCpremium />
-       </Suspense>
+        <Suspense fallback={<div />}>
+          <BCpremium />
+        </Suspense>
       </div>
 
-     <Suspense fallback={<div />}>
-       <BCtabs />
-     </Suspense>
+      <Suspense fallback={<div />}>
+        <BCtabs />
+      </Suspense>
+
+      <div className="section-divider" />
 
       <div id="company">
-       <Suspense fallback={<div />}>
-         <BCcompany />
-       </Suspense>
+        <Suspense fallback={<div />}>
+          <BCcompany />
+        </Suspense>
       </div>
+
+      <div className="section-divider" />
 
       <div id="types">
         <Suspense fallback={<div />}>
@@ -54,37 +69,39 @@ const PrivateLimited = () => {
         </Suspense>
       </div>
 
+      <div className="section-divider" />
+
       <div id="requirements">
         <Suspense fallback={<div />}>
           <BCrequirment />
         </Suspense>
       </div>
 
+      <div className="section-divider" />
+
       <div id="process">
-      {/* <BCprocess /> */}
+        <Suspense fallback={<div />}>
+          <BCprocess />
+        </Suspense>
       </div>
+
+      <div className="section-divider" />
 
       <div id="documents">
-        {/* <BCdocuments /> */}
+        <Suspense fallback={<div />}>
+          <BCdocuments />
+        </Suspense>
       </div>
+
+      <div className="section-divider" />
 
       <div id="faq">
-      <Suspense fallback={<div />}>
-        <BCfaq />
-      </Suspense>
+        <Suspense fallback={<div />}>
+          <BCfaq />
+        </Suspense>
       </div>
-
-      <Suspense fallback={<div />}>
-        <BCtestimonial />
-      </Suspense>
-     <Suspense fallback={<div />}>
-       <BCvideo />
-     </Suspense>
-      <Suspense fallback={<div />}>
-        <BCclients />
-      </Suspense>
     </div>
   );
 };
 
-export default PrivateLimited
+export default BCRegistration;
