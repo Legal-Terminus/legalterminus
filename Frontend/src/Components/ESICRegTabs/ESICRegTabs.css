@@ -1,4 +1,4 @@
 /* Center-align tabs for ESIC page */
-.pvt-tabs-list {
+.pvt-tabs-section .pvt-tabs-list {
   justify-content: center;
 }
