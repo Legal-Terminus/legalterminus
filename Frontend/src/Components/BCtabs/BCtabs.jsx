@@ -3,7 +3,7 @@ import "./BCtabs.css";
 
 const tabs = [
   { label: "What is Barcode (GS1)", id: "company" },
-  { label: "Types of Barcodes", id: "types" },
+  { label: "Types", id: "types" },
   { label: "Benefits", id: "requirements" },
   { label: "Process & Steps", id: "process" },
   { label: "Documents", id: "documents" },
