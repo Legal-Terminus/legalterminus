@@ -3,34 +3,39 @@ import "./BCprocess.css";
 
 const steps = [
   {
-    title: "Discovery &amp; Product Count",
+    title: "Discovery & Pack-Size Sizing",
     day: "Day 0",
-    text: "30-minute call to confirm: number of unique products (SKUs) you need GTINs for, whether you need EAN-13, GS1-128, ITF-14, or DataMatrix, and the correct GS1 Company Prefix tier (number of digits). We also confirm GSTIN linkage and check if your company is already registered with GS1 India.",
+    text: "30-min call with our GS1 specialist to confirm: current SKU count + 3-year SKU expansion plan, business turnover (for slab), Udyam status (for MSME 80% claim), channel mix (e-commerce / modern trade / export / institutional), tenure preference (1–10 years). Output: right pack size (100/1000/10000/100000) + tenure + total cost estimate.",
   },
   {
     title: "Document Collection",
-    day: "Day 1",
-    text: "We share a GS1-specific checklist. You submit: business owner KYC (PAN + Aadhaar), business registration (COI / GST Certificate / UDYAM), office address proof, cancelled cheque, and product list with brief descriptions. This is your only task — we handle the rest.",
-  },
-  {
-    title: "GS1 India Application Preparation",
     day: "Day 1–2",
-    text: "We prepare your GS1 India membership application with the correct Company Prefix tier based on your product count. Documents are verified against GS1 India's requirements. We also draft the request letter on company letterhead and compile the complete application package.",
+    text: "Personalised checklist: business PAN, GSTIN, address proof, Certificate of Incorporation / Partnership Deed / Trust Deed, authorised signatory KYC, turnover proof (audited financials / GST returns / CA certificate), Udyam Certificate (for MSME claim), product list / SKU sheet, brand logo.",
   },
   {
-    title: "GS1 Portal Filing &amp; Subscription Payment",
+    title: "GS1 India Application Drafting",
     day: "Day 2–3",
-    text: "Application filed on the GS1 India portal. Annual GS1 subscription fee paid on your behalf (billed at actuals, per GS1 India's current schedule). Filing acknowledgement and payment receipt shared with you immediately after submission.",
+    text: "Online membership application drafted on the GS1 India portal with KOB / industry classification, selected pack size, selected tenure, turnover slab, and applicant entity details. Cross-verified before submission.",
   },
   {
-    title: "GS1 India Review &amp; Company Prefix Issuance",
-    day: "Day 5–10",
-    text: "GS1 India reviews your application and issues your unique Company Prefix (the first 7–9 digits of all your GTINs). If GS1 raises a deficiency query, we respond within 24 hours. Most straightforward applications are processed within 7–10 working days.",
+    title: "Fee Computation + Payment Coordination",
+    day: "Day 3",
+    text: "Total fee computed per the GS1 India GCP Fee Structure: Registration Fee + Annual Subscription + 18% GST + Rs.3,000 Security Deposit (Nil for 10-yr). You make the payment via GS1 India portal payment gateway.",
   },
   {
-    title: "GTIN Generation &amp; Barcode Image Delivery",
-    day: "Day 10–15",
-    text: "Once the Company Prefix is issued, we generate GTINs for each of your products and create print-ready barcode image files (PNG + SVG) in EAN-13 or required format. We deliver: all barcode files, product data entry on GS1 registry, GS1 renewal calendar, and usage guide for packaging and online listing.",
+    title: "Application Submission on GS1 India Portal",
+    day: "Day 3–4",
+    text: "Application + supporting documents uploaded on www.gs1india.org. Payment receipt attached. Acknowledgement + reference number captured.",
+  },
+  {
+    title: "GS1 India Processing + Query Reply",
+    day: "Day 4–7",
+    text: "GS1 India verifies documents, validates turnover slab, and processes the membership. Any queries (often turnover proof or KOB mismatch) responded to within 24–48 hours.",
+  },
+  {
+    title: "GCP + GTIN Range Issuance",
+    day: "Day 7–10",
+    text: "GS1 India issues the GS1 Company Prefix (GCP) — your unique 6–10 digit prefix — along with the GTIN range allocated under it (100 / 1,000 / 10,000 / 1,00,000 numbers). Membership certificate + GCP allocation letter delivered digitally.",
   },
 ];
 
@@ -41,7 +46,7 @@ const BCProcess = () => {
         Steps for GS1 Barcode Registration in India
       </h2>
       <p className="opcelg-subheading">
-        Six steps. 10–15 working days end-to-end (assuming clean documents and standard GS1 India processing).
+        Seven steps. 7–10 working days end-to-end from kick-off to GCP + GTIN delivery (subject to GS1 India processing). DataKart onboarding adds 5–7 days for product upload + verification.
       </p>
 
       <div className="opcelg-timeline">
@@ -56,7 +61,7 @@ const BCProcess = () => {
 
             <div className="opcelg-timeline-card">
               <h4>
-                <span dangerouslySetInnerHTML={{ __html: step.title }} />
+                {step.title}
                 {step.day && <span className="opcelg-day-tag">{step.day}</span>}
               </h4>
               <p>{step.text}</p>

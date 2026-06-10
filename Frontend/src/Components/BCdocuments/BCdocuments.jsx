@@ -1,69 +1,71 @@
 import React from "react";
 import "./BCdocuments.css";
-import { FaUser, FaBuilding, FaIdCard, FaFileAlt, FaCamera, FaBolt, FaFileContract, FaBoxOpen } from "react-icons/fa";
+import { FaUser, FaBuilding, FaIdCard, FaFileAlt, FaBolt, FaShieldAlt, FaBoxOpen, FaCamera } from "react-icons/fa";
 
-const businessDocs = [
+const entityDocs = [
   {
     icon: <FaIdCard />,
-    title: "Business Owner / Authorised Signatory KYC",
-    note: "Mandatory for Proprietor / Director / Partner",
+    title: "Applicant / Entity Identity",
+    note: "Mandatory for all entity types",
     items: [
-      "Self-attested PAN card (mandatory)",
-      "Self-attested Aadhaar card",
-      "Passport-size photograph",
+      "Entity PAN",
+      "Certificate of Incorporation (Companies / LLPs)",
+      "Partnership Deed (Partnerships)",
+      "Proprietor's PAN + Aadhaar (Proprietorships)",
+      "Trust Deed / Society Registration Certificate (Trust / Society)",
+      "Authorised signatory's KYC + photograph + designation letter",
+    ],
+  },
+  {
+    icon: <FaBolt />,
+    title: "Business Premises Proof",
+    note: "Not older than 90 days",
+    items: [
+      "Registered office address proof — electricity bill / rent agreement / ownership document (within 90 days)",
+      "For multiple manufacturing units / warehouses (for GLN setup in Supreme tier): list of locations with addresses",
     ],
   },
   {
     icon: <FaFileAlt />,
-    title: "Business Registration Certificate",
-    note: "Any one of the following",
+    title: "Turnover Proof + Slab Mapping",
+    note: "To map the correct GS1 India turnover slab",
     items: [
-      "Certificate of Incorporation (COI) for companies",
-      "Partnership Deed / LLP Agreement",
-      "GST Registration Certificate (mandatory — GS1 is GSTIN-linked)",
-      "UDYAM / Shops & Establishment Certificate",
-    ],
-  },
-  {
-    icon: <FaFileContract />,
-    title: "Company Letterhead Request Letter",
-    note: "On official letterhead, signed by authorised signatory",
-    items: [
-      "Request letter to GS1 India for Company Prefix allocation",
-      "Specifying number of products and category",
+      "Audited financials of the latest financial year",
+      "Alternatively: GST returns / CA certificate of turnover",
+      "For new entities: self-declaration with projected turnover",
     ],
   },
 ];
 
-const officeDocs = [
+const complianceDocs = [
   {
-    icon: <FaBolt />,
-    title: "Registered Office Address Proof",
-    note: "Latest utility bill — not older than 2 months",
+    icon: <FaShieldAlt />,
+    title: "Tax & Statutory Registrations",
+    note: "Required for GST invoicing and MSME claim",
     items: [
-      "Electricity Bill",
-      "Water Bill",
-      "Gas Bill",
-    ],
-  },
-  {
-    icon: <FaBuilding />,
-    title: "Bank Details",
-    note: "For GS1 subscription payment processing",
-    items: [
-      "Cancelled cheque (company account)",
-      "Copy of latest bank statement (optional — some states)",
+      "GSTIN (required for GST invoicing of GS1 fees)",
+      "Udyam Registration Certificate confirming Micro Manufacturing Enterprise status (for MSME 80% reimbursement claim)",
+      "IEC linkage helpful for exporters / importers (for downstream SSCC / export advisory)",
     ],
   },
   {
     icon: <FaBoxOpen />,
-    title: "Product List",
-    note: "For GTIN assignment — one GTIN per unique product",
+    title: "Product / SKU List",
+    note: "One GTIN required per unique product variant",
     items: [
-      "Product names and brief descriptions",
-      "Number of distinct SKUs / product variants",
-      "Product category (food, pharma, electronics, apparel, etc.)",
-      "Approximate pack size / unit of measure for each product",
+      "Product name, brand, category, variant (size / colour / flavour), packaging (consumer unit / case / multi-pack)",
+      "For pharma: brand name + dosage + pack count",
+      "Used for: right pack-size sizing + DataKart onboarding template",
+    ],
+  },
+  {
+    icon: <FaCamera />,
+    title: "Brand Assets (for DataKart)",
+    note: "Required for Enriched / Supreme — optional for Elemental",
+    items: [
+      "Brand logo (vector / high-res)",
+      "Product photographs (front / back / side per SKU)",
+      "Product description, ingredients (food), composition (cosmetics / pharma), nutritional information (food), MRP, manufacturing details",
     ],
   },
 ];
@@ -92,7 +94,7 @@ const BCDocuments = () => {
 
         <div className="opcd-header">
           <h2 className="opcd-main-title">Documents Required for GS1 Barcode Registration in India</h2>
-          <p className="opcd-main-subtitle">Get these ready and we'll take care of the rest</p>
+          <p className="opcd-main-subtitle">Six categories. Documentation is moderate — mostly identity + turnover + product details. We send a personalised checklist after the discovery call.</p>
         </div>
 
         <div className="opcd-columns">
@@ -101,12 +103,12 @@ const BCDocuments = () => {
             <div className="opcd-col-header">
               <div className="opcd-col-header-icon"><FaUser /></div>
               <div>
-                <h3 className="opcd-col-title">Business &amp; KYC Documents</h3>
-                <p className="opcd-col-subtitle">Required for GS1 India membership and owner verification</p>
+                <h3 className="opcd-col-title">Entity &amp; Compliance Documents</h3>
+                <p className="opcd-col-subtitle">Identity, address proof &amp; turnover slab mapping</p>
               </div>
             </div>
             <div className="opcd-col-body">
-              {businessDocs.map((doc, i) => (
+              {entityDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>
@@ -116,12 +118,12 @@ const BCDocuments = () => {
             <div className="opcd-col-header opcd-col-header--office">
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="opcd-col-title">Office, Bank &amp; Product Documents</h3>
-                <p className="opcd-col-subtitle">Address proof, payment details, and product catalogue</p>
+                <h3 className="opcd-col-title">Tax, Product &amp; Brand Documents</h3>
+                <p className="opcd-col-subtitle">GST, SKU list &amp; DataKart assets</p>
               </div>
             </div>
             <div className="opcd-col-body">
-              {officeDocs.map((doc, i) => (
+              {complianceDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>

@@ -4,52 +4,54 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "starter",
-    name: "Starter",
-    oldPrice: 14999,
+    id: "elemental",
+    name: "Elemental",
+    oldPrice: 11999,
     price: 9999,
     services: [
-      "GS1 India Company Prefix allocation",
-      "Up to 10 GTINs (product barcodes)",
-      "EAN-13 barcode image generation",
-      "GS1 portal registration & filing",
-      "Annual GS1 subscription coordination",
-      "Product data entry on GS1 India registry",
-      "Barcode image files (PNG + SVG)",
-      "Usage guide for packaging & e-commerce",
+      "Eligibility check + GS1 India pack recommendation",
+      "100-barcode pack, 1-year tenure (right-sized for SME / D2C)",
+      "GS1 India membership application drafting",
+      "Document curation: PAN, GST, business proof, turnover dec.",
+      "Filing on www.gs1india.org",
+      "GS1 Company Prefix (GCP) + GTIN range delivery",
+      "Barcode image generation guidance (EAN-13 format)",
+      "30-day post-issuance support",
     ],
   },
   {
-    id: "business",
-    name: "Business",
+    id: "enriched",
+    name: "Enriched",
     badge: "★ MOST POPULAR",
     popular: true,
-    oldPrice: 24999,
-    price: 17999,
+    oldPrice: 15999,
+    price: 11999,
     services: [
-      "Everything in Starter",
-      "Up to 100 GTINs",
-      "ITF-14 (case/outer carton) barcodes",
-      "GS1-128 logistics barcode generation",
-      "Amazon / Flipkart barcode compliance check",
-      "1-year GS1 annual renewal reminder",
+      "Everything in Elemental",
+      "100 or 1,000-barcode pack",
+      "GS1 India membership application drafting",
+      "Document curation: PAN, GST, business proof, turnover dec.",
+      "Filing on www.gs1india.org",
+      "GS1 Company Prefix (GCP) + GTIN range delivery",
+      "Barcode image generation guidance (EAN-13 format)",
+      "30-day post-issuance support",
     ],
   },
   {
-    id: "enterprise",
-    name: "Enterprise",
-    badge: "✦ FULL-SERVICE",
-    oldPrice: 49999,
-    price: 39999,
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ ENTERPRISE",
+    oldPrice: 17999,
+    price: 13999,
     services: [
-      "Everything in Business",
-      "Unlimited GTINs for 1 year",
-      "Databar / QR code generation (fresh food / pharma)",
-      "2D barcode (GS1 DataMatrix) for regulated products",
-      "GS1 product data syndication support",
-      "Multi-category catalogue setup",
-      "2-year GS1 renewal & compliance management",
-      "Priority CA / legal support for product compliance",
+      "Everything in Enriched (extended to large packs)",
+      "1000 or 100,000-barcode pack",
+      "GS1 India membership application drafting",
+      "Document curation: PAN, GST, business proof, turnover dec.",
+      "Filing on www.gs1india.org",
+      "GS1 Company Prefix (GCP) + GTIN range delivery",
+      "Barcode image generation guidance (EAN-13 format)",
+      "30-day post-issuance support",
     ],
   },
 ];
@@ -85,7 +87,7 @@ const BCPricingSection = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ GS1 subscription &amp; GST extra</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">

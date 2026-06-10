@@ -8,7 +8,6 @@ const BCPriority = () => {
       <div className="opczp-container">
         <div className="opczp-card">
 
-          {/* Top two-column row: illustration + content */}
           <div className="opczp-top-row">
 
             <div className="opczp-illustration-wrapper">
@@ -28,7 +27,9 @@ const BCPriority = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  GS1 registration sounds straightforward — but prefix tier selection, GSTIN linkage errors, and GS1 portal rejections cause delays. Priority is what happens when a senior expert owns your file from document check to barcode image delivery.
+                  Bar Code Registration may look simple, but choosing the wrong barcode capacity, incorrect product mapping, or incomplete DataKart setup can create problems later while selling on marketplaces, retail chains, or export platforms. Proper GS1 registration helps businesses avoid future barcode expansion costs and ensures smoother product onboarding across platforms.
+                  <br /><br />
+                  With LT Priority, your Bar Code Registration is handled on a fast-track basis with dedicated professional support, priority filing, and complete coordination from application to barcode activation.
                 </p>
               </header>
 
@@ -37,23 +38,19 @@ const BCPriority = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    Same-day GS1 prefix tier recommendation — so you never over-pay or under-allocate GTINs.
+                    Priority processing for faster GS1 India registration and barcode allocation
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📦</span>
+                    Professional guidance for selecting the correct barcode package based on your product range
                   </li>
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">✅</span>
-                    Senior expert reviewed document package to prevent GS1 India rejection on first submission.
+                    Senior expert review before final application submission
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    GSTIN linkage verified before portal filing — the #1 cause of GS1 application delays.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    Real-time GS1 portal status updates on mail and WhatsApp throughout the process.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">📑</span>
-                    Delivery kit: barcode image files (PNG + SVG), product data on GS1 registry, and renewal calendar.
+                    <span className="opczp-list-icon">📲</span>
+                    Real-time updates and dedicated coordination support throughout the process
                   </li>
                 </ul>
               </section>
@@ -61,25 +58,21 @@ const BCPriority = () => {
             </div>
           </div>
 
-          {/* Full-width bottom: Important Notes + CTA */}
           <div className="opczp-bottom-full">
             <h3 className="opczp-label">Important Notes</h3>
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  GS1 India's annual subscription is mandatory and billed at actuals over and above our professional fee. The subscription amount depends on the prefix tier (number of GTINs) you select — we confirm this before filing.
+                  Only GS1 India can issue legitimate GS1 barcodes in India. Third-party services selling 'discount barcodes' for Rs.500–2,000 are NOT GS1 barcodes — they will fail at Amazon / Flipkart / modern trade / customs / global retail. Cheap up-front = expensive at the shelf. We file only via the official GS1 India portal (https://www.gs1india.org).
                 </li>
                 <li className="opczp-note-item">
-                  Each unique product variant (size, colour, flavour, pack size) requires a separate GTIN. A 100ml and 250ml pack of the same product are two different barcodes. Ensure your product list is finalised before we begin.
+                  Each unique SKU = one GTIN. A T-shirt in 5 sizes x 4 colours = 20 GTINs, not 1. Bulk packs / multipacks need their own GTIN. Wrong pack size at registration = either over-payment (you pay for 1,000 when 100 suffice) or expensive top-up (you bought 100 but need 1,000 — have to pay incremental). We audit your SKU plan first.
                 </li>
                 <li className="opczp-note-item">
-                  Annual renewal of the GS1 subscription is non-negotiable. Non-renewal deactivates your Company Prefix and all associated GTINs globally — Amazon and retail POS systems will reject your products. We send renewal reminders 60 days before due date.
+                  MSME 80% reimbursement is NOT automatic. The applicant must be Udyam-registered AND must file the reimbursement claim in the prescribed manner. Many small manufacturers miss the deadline / form and forfeit up to Rs.50,650 of reimbursement. Enriched + Supreme tiers handle the claim.
                 </li>
                 <li className="opczp-note-item">
-                  Barcode scan performance depends on correct printing: bar width tolerance, quiet zones, and contrast ratio per GS1 print quality specification. We provide print-ready files, but final print quality is the responsibility of your packaging vendor.
-                </li>
-                <li className="opczp-note-item">
-                  Non-GS1 barcodes (random number generators, local barcode tools) are not valid for Amazon, Flipkart, or international retail chains. If you currently use non-GS1 barcodes, we will migrate your listings to GS1 GTINs as part of the engagement.
+                  GS1 Sunrise 2027 transition: GS1 Global is moving global retail from 1D linear barcodes (EAN-13) to 2D barcodes / QR codes by 2027. Pharma in India has already mandated 2D barcoding for Top 300 brands since Aug 2023 (DCGI Order). Plan ahead — Supreme tier includes 2D transition advisory.
                 </li>
               </ul>
             </div>

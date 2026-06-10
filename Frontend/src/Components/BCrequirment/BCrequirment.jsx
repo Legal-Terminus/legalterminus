@@ -7,59 +7,59 @@ const BCBenefits = () => {
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of GS1 Barcode Registration for Your Business
+            Benefits of GS1 Barcode Registration in India
           </h2>
           <p className="opcben-subtitle">
-            GS1 barcode registration is not just a compliance step — it opens your products to every major retail platform, supply chain, and export market in the world.
+            A GS1 barcode isn't a sticker — it's your product's passport to global retail. Here's what matters:
           </p>
         </header>
 
         <div className="opcben-grid">
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Mandatory for Amazon, Flipkart &amp; Retail Listing</h3>
+            <h3 className="opcben-card-title">Modern Trade + E-Commerce Access</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Amazon India, Flipkart, and most organised retail chains require a valid GS1 GTIN for every product listing. Without a GS1-registered barcode, your product catalogue cannot be listed, and existing listings may be suppressed or removed.
+              Amazon, Flipkart, BigBasket, Blinkit, Zepto, Reliance Retail, DMart, More, Spencer's, Vishal Mega Mart — all require valid GS1 GTIN at product onboarding. No GTIN = no listing = no shelf space. The single most important supply-chain prerequisite for any consumer brand in India.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Globally Unique Product Identity</h3>
+            <h3 className="opcben-card-title">Globally Unique Identification</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Each GS1 GTIN is unique across the entire world — no two products share the same barcode. This prevents product identity confusion, enables accurate billing at POS systems, and protects your brand from counterfeit product scanning.
+              GS1 India GTINs are globally unique across 117+ countries and millions of trading partners. Your product is identifiable everywhere from a corner shop in Delhi to a Walmart in California. Critical for exports — DGFT and overseas customers accept only GS1 GTINs.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Streamlined Inventory &amp; Warehouse Management</h3>
+            <h3 className="opcben-card-title">MSME 80% Reimbursement</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              GS1 barcodes allow real-time tracking of stock levels, batch numbers, and expiry dates across your warehouse. Integration with ERP and WMS systems becomes seamless, reducing manual entry errors and enabling just-in-time restocking.
+              Udyam-registered micro-manufacturers qualify for 80% reimbursement of GS1 India Registration + Annual Subscription fees for the first 3 years — up to Rs.50,650 in one go (Ministry of MSME). For a 100-barcode pack: effective cost drops from ~Rs.48k+ to under Rs.10k for the first 3 years. We file the claim for you.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Supply Chain Visibility &amp; Traceability</h3>
+            <h3 className="opcben-card-title">Supply Chain Traceability</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              GS1-128 and ITF-14 barcodes on outer packaging enable full track-and-trace from manufacturer to retailer. Distributors and logistics partners can scan carton-level codes to verify delivery, reducing disputes and theft in the supply chain.
+              GTIN + GLN + SSCC together enable end-to-end traceability — from manufacturer to warehouse to retail shelf to consumer. Essential for food recalls (FSSAI), pharma serialisation (DCGI), institutional supplies (Government tenders), and modern 3PL logistics.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Export Readiness &amp; International Compliance</h3>
+            <h3 className="opcben-card-title">DataKart — National Product Catalogue</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              GS1 is the global standard accepted in 115+ countries. A GS1-registered GTIN makes your products importable by foreign retailers and compliant with international trade regulations — essential for export to the EU, USA, Middle East, and South-East Asia.
+              GS1 India runs DataKart, India's authoritative product information catalogue. Your product's GTIN + image + nutritional info is shared with onboarded retailers and the GS1 SmartConsumer app. Modern trade chains increasingly require DataKart presence.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Anti-Counterfeiting &amp; Brand Protection</h3>
+            <h3 className="opcben-card-title">Export + DGFT Compliance</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              GS1 barcodes can be serialised to create unique identifiers per product unit. Consumers and retailers can verify authenticity by scanning the barcode against the GS1 India registry (GEPIR), reducing the risk of counterfeit products reaching your customers.
+              Export consignments under DGFT increasingly require SSCC at carton / pallet level for shipment tracking. Customs systems globally read GS1 barcodes. International buyers (especially in EU, UK, US, Middle East) demand GS1 GTIN as a basic onboarding requirement. Supreme tier covers SSCC + export advisory.
             </p>
           </article>
         </div>

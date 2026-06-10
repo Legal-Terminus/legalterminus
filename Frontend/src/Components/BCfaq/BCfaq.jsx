@@ -3,67 +3,64 @@ import "./BCfaq.css";
 
 const faqs = [
   {
-    question: "Is GS1 barcode registration mandatory in India?",
-    answer: "GS1 barcode registration is not mandated by a specific Indian law, but it is effectively mandatory for business: Amazon India, Flipkart, Meesho, and most organised retail chains (Reliance, D-Mart, Big Bazaar) require a valid GS1 GTIN for every product listing. Without GS1, your products cannot be listed on these platforms or scanned at POS systems in supermarkets.",
+    question: "What is Bar Code Registration in India?",
+    answer: "Bar Code Registration in India is the process of obtaining unique GS1 barcodes (GTINs) for your products through GS1 India. These barcodes help identify your products globally and are commonly required for selling on Amazon, Flipkart, supermarkets, retail stores, and export markets. In India, only GS1 India is authorized to issue genuine GS1 barcodes.",
   },
   {
-    question: "What is the difference between a GTIN, EAN-13, and Company Prefix?",
-    answer: (
-      <span>
-        These three terms refer to different levels of the same system:
-        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
-          <li><strong>Company Prefix</strong> — A unique number (7–11 digits) assigned by GS1 India to your business. The prefix starts with '890' (India country code). All your product barcodes begin with this prefix.</li>
-          <li><strong>GTIN (Global Trade Item Number)</strong> — A 13-digit number assigned to each unique product variant. Built by appending a product reference and check digit to your Company Prefix.</li>
-          <li><strong>EAN-13</strong> — The physical barcode symbol that encodes the 13-digit GTIN in a scannable format for retail POS systems.</li>
-        </ul>
-      </span>
-    ),
+    question: "Who needs a GS1 barcode?",
+    answer: "Any business selling physical products through retail stores, supermarkets, e-commerce platforms, distributors, or exports should obtain GS1 barcodes. This includes manufacturers, FMCG brands, cosmetics companies, apparel brands, food businesses, electronics sellers, pharmaceutical companies, and D2C brands. Service businesses generally do not require barcodes.",
   },
   {
-    question: "How many products can one GS1 Company Prefix cover?",
-    answer: (
-      <span>
-        The number of GTINs depends on the prefix digit count:
-        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
-          <li><strong>7-digit prefix</strong> — Up to 99,999 GTINs (for large product catalogues)</li>
-          <li><strong>9-digit prefix</strong> — Up to 999 GTINs (for medium brands)</li>
-          <li><strong>11-digit prefix</strong> — Up to 9 GTINs (for small businesses with few products)</li>
-        </ul>
-        GS1 India's annual subscription fee increases with more GTINs. Legal Terminus recommends the right tier based on your product count.
-      </span>
-    ),
+    question: "Is GS1 India a government organization?",
+    answer: "GS1 India is not a government department, but it is the officially authorized organization for barcode issuance in India. It was established by the Ministry of Commerce & Industry along with major industry bodies such as CII, FICCI, ASSOCHAM, and FIEO. All genuine barcode registrations in India are issued only through GS1 India.",
   },
   {
-    question: "Do I need a separate barcode for each product variant (size, colour, flavour)?",
-    answer: "Yes. GS1 standards require a unique GTIN for each distinct product variant — every different size, colour, flavour, or packaging type must have its own barcode. For example, a 100ml bottle and a 250ml bottle of the same product are two different GTINs. This ensures accurate scanning and inventory tracking across the supply chain.",
+    question: "Why are GS1 barcodes important for online selling?",
+    answer: "Most e-commerce platforms and retail chains require genuine GS1 barcodes to verify product authenticity. Without valid barcodes, products may face listing rejection, catalogue issues, or delisting from platforms like Amazon, Flipkart, BigBasket, Blinkit, and modern retail stores.",
   },
   {
-    question: "What happens if I don't renew my GS1 subscription annually?",
-    answer: "GS1 India requires annual subscription renewal to maintain your Company Prefix and associated GTINs. If you fail to renew, GS1 India may deactivate your Company Prefix, which means your barcodes become invalid globally. Retailers and e-commerce platforms may reject listings with deactivated GTINs. Legal Terminus includes renewal reminders and assistance in our Standard and Enterprise plans.",
+    question: "How many barcodes do I need?",
+    answer: "You need one unique barcode for every product variation. Different sizes, colours, flavours, pack quantities, or variants all require separate GTINs. For example, one T-shirt available in 5 sizes and 4 colours will require 20 separate barcodes.",
   },
   {
-    question: "Can I use a non-GS1 barcode generator to create barcodes for Amazon?",
-    answer: "No. Amazon India, Amazon.com, and Flipkart explicitly require GS1-registered GTINs for product listings. Barcodes generated by non-GS1 tools (random number generators, local barcode software) are not globally unique and will be rejected during product listing or flagged as policy violations, which can result in listing suppression or account suspension.",
+    question: "How long does Bar Code Registration take?",
+    answer: "Usually, GS1 barcode registration takes around 7–10 working days after successful document submission and fee payment. DataKart onboarding or advanced barcode setup may take a few additional days depending on the scope.",
   },
   {
-    question: "How long does GS1 barcode registration take in India?",
-    answer: "GS1 India typically processes new Company Prefix applications within 7–15 working days from the date of complete document submission and fee payment. After the prefix is issued, barcode image generation takes 1–2 additional days. Legal Terminus tracks the application status and responds to any GS1 queries within 24 hours, ensuring no unnecessary delays.",
+    question: "What is included in your service?",
+    answer: "Our service includes barcode requirement analysis, GS1 India application filing, document preparation, portal coordination, barcode pack selection guidance, query handling, and complete support until your GS1 Company Prefix (GCP) and GTIN range are issued. Enriched and Supreme plans also include DataKart onboarding and MSME reimbursement support.",
   },
   {
-    question: "How can Legal Terminus help with GS1 Barcode Registration?",
-    answer: (
-      <span>
-        Legal Terminus handles the entire GS1 registration process:
-        <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
-          <li>Determining the correct GS1 prefix tier based on your product count</li>
-          <li>Document preparation and GS1 India portal filing</li>
-          <li>GS1 subscription fee payment at actuals</li>
-          <li>GTIN generation for each product and EAN-13/UPC barcode image files</li>
-          <li>Product data entry on GS1 India registry</li>
-          <li>Annual renewal reminders and ongoing compliance support</li>
-        </ul>
-      </span>
-    ),
+    question: "What is the MSME barcode reimbursement scheme?",
+    answer: "Micro manufacturing enterprises having valid Udyam Registration may claim up to 80% reimbursement of eligible GS1 India fees under the MSME support scheme, subject to government conditions and limits. We assist eligible clients with the reimbursement filing process.",
+  },
+  {
+    question: "What is DataKart and why is it important?",
+    answer: "DataKart is GS1 India's official product data platform where product details, images, and barcode information are uploaded. Many retailers and e-commerce platforms prefer or require DataKart-linked products for smoother product listing and catalogue verification.",
+  },
+  {
+    question: "Can I buy cheap barcodes from third-party websites?",
+    answer: "It is strongly recommended to avoid unofficial barcode sellers. Many low-cost barcodes sold online are not issued by GS1 India and may fail during retailer or marketplace verification. Genuine GS1 barcodes help avoid future listing, scanning, and export problems.",
+  },
+  {
+    question: "Can I use the same barcode for multiple products?",
+    answer: "No. Each unique product or product variant must have its own barcode. Using the same barcode for multiple products can create inventory, billing, and retailer compliance issues.",
+  },
+  {
+    question: "Do barcodes expire?",
+    answer: "GS1 barcode membership is generally issued for a selected subscription period and must remain active with GS1 India. Renewal requirements depend on the chosen plan and current GS1 India policy.",
+  },
+  {
+    question: "Can I generate barcode images myself?",
+    answer: "Yes. Once your GTINs are issued, barcode images can be generated using compatible barcode software or through your packaging designer / printer. We also guide clients regarding barcode size, placement, and printing standards.",
+  },
+  {
+    question: "What additional services are useful after Bar Code Registration?",
+    answer: "Many businesses also require Trademark Registration, GST Registration, FSSAI License, Import Export Code (IEC), MSME/Udyam Registration, Amazon Brand Registry, and Packaging Compliance support along with barcode registration. We can help you with these services under a single workflow.",
+  },
+  {
+    question: "How can Legal Terminus help me with Bar Code Registration?",
+    answer: "Legal Terminus provides complete support for genuine GS1 India barcode registration. We help businesses choose the correct barcode package, file applications on the official GS1 India portal, coordinate documentation, assist with MSME reimbursement eligibility, and support DataKart onboarding for smooth retail and e-commerce operations. Our goal is to make the entire process simple, accurate, and hassle-free for your business.",
   },
 ];
 
@@ -79,9 +76,9 @@ const BCFaq = () => {
       <div className="opcfaq-container">
 
         <div className="opcfaq-header">
-          <h2 className="opcfaq-title">GS1 Barcode Registration — FAQs</h2>
+          <h2 className="opcfaq-title">Bar Code Registration — FAQs</h2>
           <p className="opcfaq-intro">
-            Clear answers to the most common questions about GS1 barcode registration in India — covering GTINs, Amazon requirements, annual renewal, and timelines.
+            Got questions? We've got answers — straight, no-BS, legally accurate.
           </p>
         </div>
 

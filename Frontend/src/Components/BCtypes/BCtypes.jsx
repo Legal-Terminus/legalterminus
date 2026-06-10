@@ -4,23 +4,33 @@ import "./BCtypes.css";
 const types = [
   {
     number: "01",
-    title: "EAN-13 Barcode",
-    text: "The most widely used barcode in India and globally. EAN-13 encodes a 13-digit GTIN and is mandatory for all retail products sold in supermarkets, modern trade, and e-commerce platforms like Amazon and Flipkart. The prefix '890' identifies the product as registered through GS1 India.",
+    title: "EAN-13 / GTIN-13 (Standard Product Barcode)",
+    text: "The 13-digit linear barcode printed on consumer-facing product packaging worldwide. Default GTIN format issued by GS1 India for retail products. Scannable at every POS system globally. Covered under all plans — Elemental / Enriched / Supreme.",
   },
   {
     number: "02",
-    title: "UPC-A Barcode",
-    text: "A 12-digit barcode primarily used for retail products exported to the USA, Canada, UK, and Australia. If you sell on Amazon.com or international retail chains, your products require UPC-A barcodes. GS1 India can issue GTINs compatible with UPC-A encoding.",
+    title: "GTIN-14 (Outer Carton / Case Barcode)",
+    text: "14-digit GTIN for shipping cases / cartons / multipacks (encoded as ITF-14 or GS1-128 barcode). Used by distributors, wholesalers, and modern trade chains for case-level scanning. Allocated from your GCP — we configure in Enriched / Supreme.",
   },
   {
     number: "03",
-    title: "GS1-128 & ITF-14 (Logistics Barcodes)",
-    text: "Used for labelling cartons, pallets, and outer packaging in the supply chain. GS1-128 encodes additional data like batch number, expiry date, and serial number. ITF-14 is used on corrugated cartons (outer packaging). Both are mandatory for B2B logistics and distribution networks.",
+    title: "GTIN-8 (Small Item Barcode)",
+    text: "8-digit GTIN for items too small for EAN-13 (e.g., small cosmetics, candies, single-use sachets). Allocated by GS1 India on application basis only — we file the GTIN-8 request in Enriched / Supreme tier where required.",
   },
   {
     number: "04",
-    title: "GS1 DataMatrix & Databar (Regulated Products)",
-    text: "GS1 DataMatrix is a 2D barcode mandated for pharmaceutical products, medical devices, and fresh food under track-and-trace regulations. Databar is used for variable-measure items (fresh produce, deli products) where weight or price changes at every scan. Both can encode serial numbers and expiry dates.",
+    title: "GLN (Global Location Number)",
+    text: "13-digit identifier for physical locations — factories, warehouses, distribution centres, branches, retail stores. Required for advanced supply chain traceability, EDI integration, and export logistics. Configured in Supreme tier for multi-location operators.",
+  },
+  {
+    number: "05",
+    title: "SSCC (Serial Shipping Container Code)",
+    text: "18-digit unique identifier for each logistics unit (pallet, container) — tracks individual shipments end-to-end. Mandatory for export consignments under DGFT, modern trade DC operations, and 3PL logistics. Supreme tier.",
+  },
+  {
+    number: "06",
+    title: "2D Barcodes / QR Codes (GS1 DataMatrix, QR Code)",
+    text: "Compact 2D codes encoding GTIN + additional data (batch, expiry, serial number). Already mandatory for Top 300 pharma brands in India since 1 Aug 2023 per DCGI Order. GS1 Sunrise 2027 will move retail globally to 2D / QR codes — Supreme tier includes transition advisory and DCGI compliance handling.",
   },
 ];
 
@@ -29,7 +39,7 @@ const BCtypes = () => {
     <section className="opc-features-section">
       <div className="opc-features-container">
 
-        <h2 className="opc-features-title">Types of GS1 Barcodes for Product Registration in India</h2>
+        <h2 className="opc-features-title">Types of GS1 Barcode Registration in India</h2>
 
         <div className="opc-features-cards">
           {types.map((type) => (
