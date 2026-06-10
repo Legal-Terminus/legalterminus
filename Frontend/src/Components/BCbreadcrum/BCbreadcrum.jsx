@@ -10,7 +10,7 @@ const BCbreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Bar Code Registration In India
+            Bar Code Registration
           </span>
 
           <h1 className="lt-public-title">
