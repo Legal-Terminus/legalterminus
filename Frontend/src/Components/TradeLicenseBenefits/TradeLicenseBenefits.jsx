@@ -11,7 +11,7 @@ const TradeLicenseBenefits = () => {
             Benefits of Trade License Registration in India
           </h2>
           <p className="tradeben-subtitle">
-            A Trade License is an important document for running a business legally in a city/municipal area. It not only keeps your business compliant but also gives many practical benefits.
+            Trade License is not bureaucratic friction — it&apos;s the civic green-light that unlocks your premises. Here&apos;s what matters:
           </p>
         </header>
 
@@ -19,55 +19,55 @@ const TradeLicenseBenefits = () => {
         <div className="tradeben-grid">
           {/* 1 */}
           <article className="tradeben-card">
-            <h3 className="tradeben-card-title">Builds Trust & Credibility</h3>
+            <h3 className="tradeben-card-title">Legal Right to Operate from the Premises</h3>
             <div className="tradeben-card-underline" />
             <p className="tradeben-card-text">
-              A trade license shows that your business is registered and approved by the local authority. This makes customers feel more confident and helps your business look genuine and professional.
+              The Trade License is the Municipal Corporation&apos;s express authorisation that your activity is permitted at that premises + zone. Without it, the Corporation can SEAL your premises any time, refuse / disconnect utility connections, and prosecute under the State Municipal Act.
             </p>
           </article>
 
           {/* 2 */}
           <article className="tradeben-card">
-            <h3 className="tradeben-card-title">Helps You Get Loans & Financial Support</h3>
+            <h3 className="tradeben-card-title">Utility Connection Eligibility</h3>
             <div className="tradeben-card-underline" />
             <p className="tradeben-card-text">
-              When your business has a trade license, it becomes easier to apply for bank loans, business funding, and finance options. Most banks prefer businesses that follow all required rules.
+              Commercial electricity, water, and sewerage connections in most cities require either a valid Trade License at application OR are tied to it for tariff / category determination. No Trade License = either no commercial connection or higher-tariff domestic connection (which itself may be illegal for business use).
             </p>
           </article>
 
           {/* 3 */}
           <article className="tradeben-card">
-            <h3 className="tradeben-card-title">Improves Business Reputation</h3>
+            <h3 className="tradeben-card-title">Brand + Premises Credibility</h3>
             <div className="tradeben-card-underline" />
             <p className="tradeben-card-text">
-              Licensed businesses get better acceptance in the market. It helps you build a good image and stronger reputation over time compared to unlicensed businesses.
+              Modern landlords + co-working operators + property managers REQUIRE valid Trade License before lease execution / renewal. B2B clients, government tender authorities, modern-trade buyers, and large customers conducting vendor due-diligence routinely ask for the trade license copy.
             </p>
           </article>
 
           {/* 4 */}
           <article className="tradeben-card">
-            <h3 className="tradeben-card-title">Increases Investor Confidence</h3>
+            <h3 className="tradeben-card-title">Investor + Loan Readiness</h3>
             <div className="tradeben-card-underline" />
             <p className="tradeben-card-text">
-              Investors usually choose businesses that are legally registered and properly managed. A trade license helps show that your business is serious and safe to invest in.
+              Banks, NBFCs, and investors evaluate Trade License compliance as part of standard due-diligence on the business premises. A missing or lapsed license is a deal-killer for working capital loans, MSME credit, and venture funding. Renewed Trade License = compliance discipline signal.
             </p>
           </article>
 
           {/* 5 */}
           <article className="tradeben-card">
-            <h3 className="tradeben-card-title">Fewer Legal Issues</h3>
+            <h3 className="tradeben-card-title">Avoid Civic Penalties + Sealing Risk</h3>
             <div className="tradeben-card-underline" />
             <p className="tradeben-card-text">
-              With a trade license, your business is less likely to face fines, notices, or legal action from municipal authorities. It keeps your operations smooth.
+              Operating without Trade License = per-day penalty + sealing risk + utility disconnection + prosecution. Cost of compliance (Rs.500-Rs.50,000/year) is a fraction of the cost of non-compliance (revenue loss from sealing alone runs into lakhs / week for retail / restaurants).
             </p>
           </article>
 
           {/* 6 */}
           <article className="tradeben-card">
-            <h3 className="tradeben-card-title">Promotes Hygiene & Safety</h3>
+            <h3 className="tradeben-card-title">Co-ordination with Adjacent Compliances</h3>
             <div className="tradeben-card-underline" />
             <p className="tradeben-card-text">
-              Trade license rules ensure that businesses maintain cleanliness and safety standards at the workplace. This creates a better environment for customers and employees.
+              The Trade License often anchors a wider compliance stack — Fire NOC, Pollution NOC, FSSAI, Shop &amp; Estd. Holding a valid Trade License simplifies the others (most ask for the Trade License number / copy as supporting evidence). Supreme tier co-ordinates the full stack so nothing slips.
             </p>
           </article>
         </div>

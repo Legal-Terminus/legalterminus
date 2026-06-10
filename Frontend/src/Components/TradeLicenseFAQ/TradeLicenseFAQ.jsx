@@ -3,71 +3,101 @@ import "./TradeLicenseFAQ.css";
 
 const faqs = [
   {
-    question: "Is Trade License mandatory for all business organizations?",
+    question: "What is a Trade License and who issues it?",
     answer:
-      "The Trade License is mandatory for all business operations who carry on the business activity under any municipal limit.",
+      "A Trade License is an approval issued by the local Municipal Corporation or Urban Local Body that allows a business to operate from a specific commercial premises. It is regulated under the respective State Municipal Laws and is generally required for shops, offices, restaurants, warehouses, clinics, factories, salons, and most commercial establishments.",
   },
   {
-    question: "What is the validity of license?",
+    question: "Is Trade License the same as Shop & Establishment Registration?",
     answer:
-      "A license granted shall be valid for a period of 1 year.",
+      "No. Both are different registrations issued by different departments. A Trade License is issued by the Municipal Corporation for permission to carry on a business activity from a premises. Shop & Establishment Registration is issued by the State Labour Department and regulates employee working conditions, holidays, and labour compliance. Many businesses may require both registrations.",
   },
   {
-    question: "What is the due date of renewal of license?",
+    question: "Who needs a Trade License?",
     answer:
-      "The renewal of license shall be completed at before 31st March of every year.",
+      "Any person or business carrying on commercial activity from a physical premises may require a Trade License. This includes retail shops, restaurants, cloud kitchens, offices, gyms, clinics, warehouses, hotels, workshops, salons, manufacturing units, and service businesses.",
   },
   {
-    question: "What if we do not renew the license before 31st March?",
+    question: "Is Trade License mandatory for home-based or online businesses?",
     answer:
-      "The renewal can be done with the penalty as may be levied by the respective municipal corporation.",
+      "In many cities, yes. Even online businesses or home offices may require a Trade License if commercial activity is being conducted from the premises. Rules vary from city to city, so we verify the applicability based on your business activity and location.",
   },
   {
-    question: "What are the documents required for Trade license?",
+    question: "How much does Trade License Registration cost?",
     answer: (
       <div>
-        <ol>
-          <li>Address Proof (preferably Electricity Bill) of premise(s) from where the business to be carried on in Odisha</li>
-          <li>Copy of PAN &Registration certificate of the organisation</li>
-          <li>Proof of possession of premises (Rental Agreement/ Utility Bill)</li>
-          <li>Copy of PAN of all the Directors/partners/proprietor</li>
-          <li>Copy of Address proof of all the Directors/partners/proprietor</li>
-          <li>Bank details & Bank Statement of the organisation of last 2 Months (from which it operates)</li>
-          <li>PAN, photo & Address proof of the person authorized to represent at the Trade License Department</li>
-          <li>Authorization letter for the above</li>
-          <li>Details of business activity to be carried out by the applicant</li>
-          <li>Email id & Mobile number</li>
-          <li>Commercial Holding tax Receipt</li>
-        </ol>
+        <p>Trade License cost has two parts:</p>
+        <ul>
+          <li>Professional Fee – charged for documentation, filing, coordination, and support</li>
+          <li>Municipal Fee – charged by the local authority based on city, business type, area, and category</li>
+        </ul>
+        <p>Municipal fees vary widely depending on the location and nature of business.</p>
       </div>
     ),
   },
   {
-    question: "What is the time period within which the Trade License can be obtained?",
+    question: "How long does Trade License Registration take?",
     answer:
-      "The process of obtaining Trade License can take anywhere between 07 to 10 working days, subject to submission of correct information and complete documentation in metro cities and in case of non-metro cities it takes relatively longer time period to obtain the license.",
+      "In most cities, general trade licenses are issued within 10–15 working days. Businesses requiring physical inspection — such as restaurants, manufacturing units, clinics, hotels, or hazardous trades — may take 20–30 working days depending on municipal inspection schedules.",
   },
   {
-    question: "What is the procedure to obtain Trade License?",
+    question: "Why is selecting the correct trade category important?",
+    answer:
+      "Every Municipal Corporation has separate categories for different businesses. Filing under the wrong category can lead to rejection, penalties, cancellation, or fresh application requirements. We help identify the correct category before filing.",
+  },
+  {
+    question: "Does the Municipal Corporation inspect the premises?",
+    answer:
+      "For many general businesses, licenses may be issued online without inspection. However, food businesses, factories, clinics, warehouses, hotels, and hazardous trades usually require physical inspection by municipal or fire authorities before approval.",
+  },
+  {
+    question: "How long is a Trade License valid?",
+    answer:
+      "In most cities, a Trade License is valid for one financial year and must be renewed annually. Some Municipal Corporations issue multi-year licenses depending on the category and local rules.",
+  },
+  {
+    question: "What happens if I do not renew my Trade License?",
+    answer:
+      "Late renewal may attract penalties, additional fees, or cancellation of the license. In some cases, the Municipal Corporation may issue notices or seal the premises for non-compliance.",
+  },
+  {
+    question: "Can I operate a business without a Trade License?",
+    answer:
+      "Operating without a valid Trade License may lead to penalties, sealing of premises, utility disconnection, or municipal action under the applicable State Municipal Act. It is always advisable to obtain the required approvals before starting operations.",
+  },
+  {
+    question: "Can one Trade License cover multiple branches?",
+    answer:
+      "Generally, no. Separate branches or business premises usually require separate Trade Licenses from the respective Municipal Corporation or local authority.",
+  },
+  {
+    question: "What documents are usually required for Trade License Registration?",
     answer: (
       <div>
-        <p>
-          The broad process of obtaining Trade Licenseinvolves following steps:
-        </p>
-        <ol>
-          <li>STEP 1: Provide the above-mentioned documents/information of your organization to one of our consultants.</li>
-          <li>STEP 2: Our consultant will process the above documents/ information and validate the same.</li>
-          <li>STEP 3: The application for Trade License shall be filled online or offline as the case may be.</li>
-          <li>STEP 4: The application shall be submitted with required attachments.</li>
-          <li>STEP 5: The department shall process the application and issue a registration certificate</li>
-        </ol>
+        <p>Commonly required documents include:</p>
+        <ul>
+          <li>PAN Card of applicant/entity</li>
+          <li>Aadhaar Card or ID proof</li>
+          <li>Address proof of business premises</li>
+          <li>Rent Agreement or Ownership Proof</li>
+          <li>Electricity Bill or Property Tax Receipt</li>
+          <li>Passport-size photograph</li>
+          <li>NOC from owner (if rented premises)</li>
+          <li>Business incorporation documents (if company/LLP)</li>
+        </ul>
+        <p>Additional documents may be required depending on the business category.</p>
       </div>
     ),
   },
   {
-    question: "How Legal Terminus can help you to obtain Trade License?",
+    question: "Is Trade License required for GST Registration or current account opening?",
     answer:
-      "Legal Terminus can help you with obtaining Trade License for your organization, as and when required, in a hassle-free manner within a reasonable time span and for competitive professional fee. To know more, please book a telephonic appointment with one of our consultants free of charge.",
+      "Many banks, marketplaces, municipal authorities, and government departments ask for a valid Trade License as address and business proof. It also supports smoother GST registration and vendor onboarding in many cases.",
+  },
+  {
+    question: "How can Legal Terminus help with Trade License Registration in India?",
+    answer:
+      "Legal Terminus provides complete support for Trade License Registration in India — including business category identification, document preparation, municipal portal filing, inspection coordination, query handling, renewal tracking, and amendment support. We assist businesses across multiple cities and help ensure smooth and compliant registration from start to finish.",
   },
 ];
 

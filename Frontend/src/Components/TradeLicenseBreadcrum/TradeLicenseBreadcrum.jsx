@@ -53,10 +53,12 @@ const TradeLicenseBreadcrum = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <ConsultationForm
-          source="trade-license"
-          subtitle="Talk to our Trade License registration expert"
-        />
+        <div id="trade-consult-form">
+          <ConsultationForm
+            source="trade-license"
+            subtitle="Talk to our Trade License registration expert"
+          />
+        </div>
 
       </div>
     </section>

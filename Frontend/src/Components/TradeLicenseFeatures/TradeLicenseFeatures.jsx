@@ -4,37 +4,51 @@ import "./TradeLicenseFeatures.css";
 const types = [
   {
     number: "01",
-    title: "Industrial Trade License",
-    text: (
-      <>
-        Required for businesses involved in manufacturing or production work.
-        <br />
-        Examples: factories, manufacturing units, processing plants.
-      </>
-    ),
+    title: "General Trade License",
+    text:
+      "For shops, retail outlets, showrooms, service offices, agencies, brokers, consultancies, and other general commercial activities not falling in special categories. The most common ask — typically the lowest fee bracket and lightest inspection routine.",
   },
   {
     number: "02",
-    title: "Shop and Establishment License",
-    text: (
-      <>
-        Needed for businesses running a shop or service outlet.
-        <br />
-        Examples: clothing stores, general stores, salons, repair/service centers.
-      </>
-    ),
+    title: "Food Establishment License",
+    text:
+      "Restaurants, dhabas, cloud kitchens, bakeries, sweet shops, juice bars, cafes, tea stalls, food trucks, caterers, and any premises preparing / serving food. Often requires concurrent FSSAI Food License + Fire NOC + Health Officer inspection. Higher fee bracket; mandatory premises inspection.",
   },
   {
     number: "03",
-    title: "Food and Health Trade License",
-    text: (
-      <>
-        Required for businesses that sell or supply food and beverages in an area.
-        <br />
-        Examples: restaurants, cafes, catering services, food trucks. For larger
-        operations, an FSSAI license may also be required.
-      </>
-    ),
+    title: "Industrial / Manufacturing License",
+    text:
+      "Factories, workshops, processing units, assembly lines, micro / small / medium manufacturing units. Requires concurrent Pollution Control Board NOC, sometimes Factories Act licensing (units above scale thresholds). Inspection by Industrial Officer + Pollution Officer.",
+  },
+  {
+    number: "04",
+    title: "Hazardous / Storage License",
+    text:
+      "Petrol pumps, gas / cylinder storage, chemical storage, paint / solvent storage, fireworks, timber yards, scrap dealers. Requires concurrent Fire NOC + Explosives Department NOC (where applicable) + Pollution NOC. Highest fee bracket; multi-agency inspection.",
+  },
+  {
+    number: "05",
+    title: "Hospitality / Lodging License",
+    text:
+      "Hotels, lodges, guest houses, service apartments, bed & breakfast establishments, banquet halls. Requires concurrent Fire NOC + Health Officer inspection + (for food service) FSSAI Food License + (for liquor service) Excise license.",
+  },
+  {
+    number: "06",
+    title: "Health & Wellness License",
+    text:
+      "Hospitals, nursing homes, clinics, diagnostic centres, pathology labs, dental clinics, fitness centres, gymnasiums, spa / massage parlours. Requires concurrent Clinical Establishments Act registration + Biomedical Waste Authorisation (medical premises). Inspection by Municipal Health Officer.",
+  },
+  {
+    number: "07",
+    title: "Entertainment / Public Place License",
+    text:
+      "Cinema halls, multiplexes, video parlours, gaming arcades, cyber cafes, amusement parks, banquet halls, marriage gardens, event venues. Requires concurrent Fire NOC + Police NOC (some categories) + Entertainment Tax registration (some states).",
+  },
+  {
+    number: "08",
+    title: "Renewal / Amendment / Surrender Filings",
+    text:
+      "Existing licensees needing: annual renewal, address change, trade-category change, partner / proprietor change, premises area change, or voluntary surrender. Same Corporation portal, separate workflow. Late renewal recovery handled in Enriched / Supreme tiers.",
   },
 ];
 

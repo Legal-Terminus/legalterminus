@@ -3,39 +3,52 @@ import "./TradeLicenseElegibility.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
+    title: "Discovery & City / Category Identification",
+    day: "Day 0",
     text:
-      "Submission of required documents and details to our team as per the checklist provided for Trade License registration.",
+      "30-min call with our municipal-compliance specialist to confirm: business activity, exact trade category (general / food / industrial / hazardous / hospitality / health / entertainment), city + zone of premises (commercial / residential / industrial / mixed-use), premises area in sq ft, entity type, and the list of adjacent licenses (FSSAI / Fire / Pollution / S&E).",
   },
   {
-    title: "Step 2 – Application Preparation",
+    title: "Municipal Portal Account Setup",
+    day: "Day 1",
     text:
-      "Preparation of your trade license application along with necessary attachments based on the business type and municipal zone.",
+      "Account creation on the relevant Corporation's portal — MCD (mcdonline.nic.in), BMC (portal.mcgm.gov.in), BBMP (bbmp.gov.in), GCC (chennaicorporation.gov.in), GHMC (ghmc.gov.in), KMC (kmcgov.in), or other city ULB portal. KYC + entity profile configured.",
   },
   {
-    title: "Step 3 – Fee Payment & Verification",
+    title: "Document Collection",
+    day: "Day 1-3",
     text:
-      "Payment of applicable government or municipal fees followed by internal verification of the application and documents.",
+      "Personalised checklist: PAN, entity Certificate of Incorporation / Partnership Deed, premises proof (rent agreement + ownership document / sale deed), latest property tax receipt, owner's NOC (for rented premises), electricity bill, authorised signatory KYC, recent photographs of premises (interior + exterior + signage), and trade-specific NOC (Fire / Pollution / Police / FSSAI where applicable).",
   },
   {
-    title: "Step 4 – Site Inspection (If Required)",
+    title: "Application Drafting + Fee Computation",
+    day: "Day 3-5",
     text:
-      "In some cases, a physical site inspection may be conducted by municipal officials to verify business premises and operations.",
+      "Application drafted with the correct trade category code, premises area, zone classification, declared activity, and supporting annexures. Municipal fee computed per the Corporation's current tariff (varies by city / category / area).",
   },
   {
-    title: "Step 5 – Departmental Review",
+    title: "Municipal Fee Payment + Portal Submission",
+    day: "Day 5-6",
     text:
-      "Your application is reviewed by the municipal authority for compliance with safety, health, and environmental guidelines.",
+      "You pay the municipal fee via the Corporation's online payment gateway. Application + all annexures uploaded. Acknowledgement with application number + timestamp captured.",
   },
   {
-    title: "Step 6 – License Approval",
+    title: "Inspection (Category-Dependent)",
+    day: "Day 6-15",
     text:
-      "Once approved, your trade license number is generated and issued electronically by the respective local authority.",
+      "For general trade in metros: many cities now auto-approve low-risk categories without physical inspection. For food / industrial / hazardous / hospitality / health: mandatory physical inspection by Municipal Health Officer / Fire Department / Sanitation Officer / Industrial Officer.",
   },
   {
-    title: "Step 7 – Certificate Issuance",
+    title: "Query Reply + Inspector Report",
+    day: "Day 10-20",
     text:
-      "You receive your official Trade License certificate — legally permitting your business operations within the specified jurisdiction.",
+      "If any queries / observations are raised by the Corporation or inspector, they are addressed within 7 days and we resubmit the application.",
+  },
+  {
+    title: "Trade License Certificate + Renewal Calendar Handover",
+    day: "Day 12-30",
+    text:
+      "Trade License Certificate issued by the Corporation — downloadable from the portal + posted to registered address (in some cities). We deliver: certificate PDF + annual renewal calendar (90 / 30 / 7-day reminders) + post-issuance support pack + (where applicable) compliance map showing adjacent linked licenses + their renewal cycles.",
   },
 ];
 
@@ -46,8 +59,9 @@ const TradeLicenseElegibility = () => {
         Steps For Trade License Registration in India
       </h2>
       <p className="tradeelg-subheading">
-        The broad process of obtaining a Trade License involves the
-        following key steps:
+        Eight steps. 10-15 working days for general trade categories in metros;
+        20-30 days for inspection-linked categories (food / industrial /
+        hazardous / hospitality / health).
       </p>
 
       <div className="tradeelg-timeline">

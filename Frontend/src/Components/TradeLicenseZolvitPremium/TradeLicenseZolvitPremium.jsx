@@ -80,9 +80,16 @@ const TradeLicenseZolvitPremium = () => {
             </div>
 
             <div className="tradezp-cta-row">
-              <button className="tradezp-cta-btn">
+              <a
+                href="#trade-consult-form"
+                className="tradezp-cta-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("trade-consult-form")?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
                 Consult a Legal Expert
-              </button>
+              </a>
             </div>
           </div>
 

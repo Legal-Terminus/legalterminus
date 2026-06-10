@@ -56,6 +56,10 @@
     color: #4b5563;
 }
 
+.trade-intro-text + .trade-intro-text {
+    margin-top: 16px;
+}
+
 
 /* Responsive */
 

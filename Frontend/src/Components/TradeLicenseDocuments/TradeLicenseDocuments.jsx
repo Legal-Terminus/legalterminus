@@ -14,66 +14,74 @@ import {
 const applicantDocs = [
   {
     icon: <FaIdCard />,
-    title: "Identity Proof of Applicant",
-    note: "Mandatory for the proprietor / authorised applicant",
+    title: "Applicant / Entity Identity",
+    note: "Identity of applicant / entity & authorised signatory",
     items: [
-      "Self-attested PAN card (mandatory)",
-      "Self-attested Aadhaar card",
-      "Voter ID / Passport / Driving Licence (any one as additional ID)",
+      "Applicant's PAN + Aadhaar (for individuals / proprietors)",
+      "For entities: entity PAN + Certificate of Incorporation / Partnership Deed / Trust Deed / Registration Certificate",
+      "Authorised signatory's photograph + KYC + designation letter",
+      "Board Resolution / Authorisation Letter where applicable",
     ],
   },
   {
     icon: <FaFileAlt />,
-    title: "Address Proof of Applicant",
-    note: "Not older than 2 months from the date of filing",
+    title: "Activity / Trade Declaration",
+    note: "Declared activity, category & premises details",
     items: [
-      "Latest bank statement OR electricity / mobile bill in the applicant's name",
+      "List of trade activities to be conducted at the premises",
+      "Trade-category code per the Corporation's published tariff",
+      "Premises area (carpet / built-up in sq ft)",
+      "Zone classification (commercial / residential / industrial / mixed)",
+      "For food / hospitality: menu / service list. For industrial: machinery list + production capacity",
     ],
   },
   {
-    icon: <FaCamera />,
-    title: "Passport Size Photograph",
-    note: "Recent photograph of the applicant",
+    icon: <FaShieldAlt />,
+    title: "Authority / Other Documents",
+    note: "Affidavits, declarations & prior licenses",
     items: [
-      "Latest passport-size photograph of the proprietor / authorised applicant",
+      "Affidavit / self-declaration on stamp paper declaring no encroachment / no nuisance / compliance with bye-laws (most cities)",
+      "Property tax up-to-date certificate",
+      "Previous Trade License copy (for renewal / amendment / surrender)",
+      "For multi-establishment portfolio (Supreme): list of all premises with addresses + corresponding existing licenses",
     ],
   },
 ];
 
 const businessDocs = [
   {
-    icon: <FaBolt />,
-    title: "Business Premises Proof",
-    note: "Latest utility bill / receipt (not older than 2 months)",
-    items: [
-      "Electricity Bill",
-      "Water Bill",
-      "Latest Property Tax Receipt of the business premises",
-    ],
-  },
-  {
     icon: <FaFileContract />,
-    title: "Rent Agreement (If Premises is Rented)",
-    note: "Between the property owner and the applicant",
+    title: "Premises Proof",
+    note: "Ownership / tenancy & latest utility records",
     items: [
-      "Registered / notarised rent or lease agreement for the business premises",
+      "Rent agreement (registered, if state requires) OR property ownership document / sale deed",
+      "Latest property tax receipt issued by the Municipal Corporation",
+      "Recent electricity bill (within 90 days)",
+      "Premises layout / floor plan (some cities)",
+      "For rented premises: owner's NOC on stamp paper + owner's KYC + owner's property tax receipt",
     ],
   },
   {
-    icon: <FaShieldAlt />,
-    title: "No Objection Certificate (NOC)",
-    note: "From property owner / concerned department",
+    icon: <FaCamera />,
+    title: "Premises Photographs",
+    note: "Recent colour photographs (within 30 days)",
     items: [
-      "NOC from the property owner permitting commercial use of the premises",
-      "NOC from neighbours / fire & pollution department (as applicable to the trade)",
+      "Premises exterior + interior + signage / hoarding + entry / exit",
+      "For food / industrial / hazardous categories: work areas, kitchen / production zone, storage area, sanitation facilities",
+      "Some Corporations require GPS-tagged photographs uploaded via mobile app",
     ],
   },
   {
-    icon: <FaFileAlt />,
-    title: "Business Registration Proof",
-    note: "Entity constitution document, as applicable",
+    icon: <FaBolt />,
+    title: "Linked Statutory Documents",
+    note: "Category-specific NOCs & registrations",
     items: [
-      "Certificate of Incorporation / Partnership Deed / GST Registration (as applicable)",
+      "GSTIN (most Corporations now require)",
+      "For food categories: FSSAI License (or application receipt)",
+      "For hospitality / inflammable / industrial: Fire Safety NOC",
+      "For industrial: Pollution Control Board NOC (CTE / CTO)",
+      "For medical / clinical: Clinical Establishments Act registration + biomedical waste authorisation",
+      "For petrol pump / explosives: Explosives Department NOC",
     ],
   },
 ];
@@ -106,7 +114,7 @@ const TradeLicenseDocuments = () => {
             Documents Required for Trade License Registration in India
           </h2>
           <p className="trade-doc-subtitle-main">
-            Keep these ready and we'll handle the entire filing for you
+            Six categories. Documentation is moderate — identity + premises + activity. Each Corporation has minor variations; we send a personalised, city-specific checklist after the discovery call.
           </p>
         </div>
 
@@ -118,8 +126,8 @@ const TradeLicenseDocuments = () => {
             <div className="trade-doc-col-header">
               <div className="trade-doc-col-header-icon"><FaUser /></div>
               <div>
-                <h3 className="trade-doc-col-title">Applicant / Promoter Documents</h3>
-                <p className="trade-doc-col-subtitle">Required for the proprietor / applicant</p>
+                <h3 className="trade-doc-col-title">Applicant & Activity Documents</h3>
+                <p className="trade-doc-col-subtitle">Identity, declared activity & declarations</p>
               </div>
             </div>
             <div className="trade-doc-col-body">
@@ -134,8 +142,8 @@ const TradeLicenseDocuments = () => {
             <div className="trade-doc-col-header trade-doc-col-header--office">
               <div className="trade-doc-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="trade-doc-col-title">Business & Premises Documents</h3>
-                <p className="trade-doc-col-subtitle">Premises proof, NOC & business registration</p>
+                <h3 className="trade-doc-col-title">Premises & Statutory Documents</h3>
+                <p className="trade-doc-col-subtitle">Premises proof, photos & linked NOCs</p>
               </div>
             </div>
             <div className="trade-doc-col-body">
