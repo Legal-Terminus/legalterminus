@@ -78,6 +78,7 @@ const rightDocs = [
       "Karnataka: NoC from neighbours (rare)",
       "Delhi: hard-copy attested documents",
       "Tamil Nadu: signed working-hours declaration",
+      "We send the exact state-specific checklist after the discovery call",
     ],
   },
 ];
