@@ -53,7 +53,7 @@ const rightDocs = [
     title: "Bank Account Details (Where Required)",
     note: "Some states require at registration; others only at renewal",
     items: [
-      "Cancelled cheque OR bank passbook page with IFSC",
+      "Cancelled cheque OR bank passbook page with IFSC. Some states require bank details at registration; others only at renewal",
     ],
   },
   {
