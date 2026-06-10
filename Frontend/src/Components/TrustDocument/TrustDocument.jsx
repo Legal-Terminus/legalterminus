@@ -50,6 +50,7 @@ const rightDocs = [
       "NoC from property owner",
       "If rented: notarised rent agreement",
       "Photograph of registered office front-board",
+      "Address must be in the registration state (not multi-state)",
     ],
   },
   {
