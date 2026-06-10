@@ -47,7 +47,7 @@ const complianceDocs = [
     title: "Bank Account Details",
     note: "For OLWF challan / contribution payment reconciliation",
     items: [
-      "Cancelled cheque OR first page of bank passbook with IFSC + account holder name",
+      "Cancelled cheque OR first page of bank passbook with IFSC + account holder name. Used for OLWF challan / contribution payment reconciliation",
     ],
   },
   {
