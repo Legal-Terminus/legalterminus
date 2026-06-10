@@ -53,52 +53,56 @@ const BCRegistration = () => {
         <BCtabs />
       </Suspense>
 
-      <div className="section-divider" />
+      <div id="bc-nav-sections">
 
-      <div id="company">
-        <Suspense fallback={<div />}>
-          <BCcompany />
-        </Suspense>
-      </div>
+        <div className="section-divider" />
 
-      <div className="section-divider" />
+        <div id="company">
+          <Suspense fallback={<div />}>
+            <BCcompany />
+          </Suspense>
+        </div>
 
-      <div id="types">
-        <Suspense fallback={<div />}>
-          <BCtypes />
-        </Suspense>
-      </div>
+        <div className="section-divider" />
 
-      <div className="section-divider" />
+        <div id="types">
+          <Suspense fallback={<div />}>
+            <BCtypes />
+          </Suspense>
+        </div>
 
-      <div id="requirements">
-        <Suspense fallback={<div />}>
-          <BCrequirment />
-        </Suspense>
-      </div>
+        <div className="section-divider" />
 
-      <div className="section-divider" />
+        <div id="requirements">
+          <Suspense fallback={<div />}>
+            <BCrequirment />
+          </Suspense>
+        </div>
 
-      <div id="process">
-        <Suspense fallback={<div />}>
-          <BCprocess />
-        </Suspense>
-      </div>
+        <div className="section-divider" />
 
-      <div className="section-divider" />
+        <div id="process">
+          <Suspense fallback={<div />}>
+            <BCprocess />
+          </Suspense>
+        </div>
 
-      <div id="documents">
-        <Suspense fallback={<div />}>
-          <BCdocuments />
-        </Suspense>
-      </div>
+        <div className="section-divider" />
 
-      <div className="section-divider" />
+        <div id="documents">
+          <Suspense fallback={<div />}>
+            <BCdocuments />
+          </Suspense>
+        </div>
 
-      <div id="faq">
-        <Suspense fallback={<div />}>
-          <BCfaq />
-        </Suspense>
+        <div className="section-divider" />
+
+        <div id="faq">
+          <Suspense fallback={<div />}>
+            <BCfaq />
+          </Suspense>
+        </div>
+
       </div>
     </div>
   );
