@@ -19,7 +19,7 @@ const partnerDocs = [
     title: "Address Proof (Per Person)",
     note: "Not older than 60 days from filing date",
     items: [
-      "Self-attested Bank statement OR Gas bill OR Mobile bill",
+      "Self-attested Bank statement OR Gas bill OR Mobile bill — not older than 60 days from filing date",
     ],
   },
   {
