@@ -54,6 +54,8 @@ const ISOCertification = () => {
         <ISOtabs />
       </Suspense>
 
+      <div id="iso-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -100,6 +102,8 @@ const ISOCertification = () => {
         <Suspense fallback={<div />}>
           <ISOfaq />
         </Suspense>
+      </div>
+
       </div>
     </div>
   );

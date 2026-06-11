@@ -53,6 +53,8 @@ const LabourLicense = () => {
         <LabourLicenseTabs />
       </Suspense>
 
+      <div id="labour-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -99,6 +101,8 @@ const LabourLicense = () => {
         <Suspense fallback={<div />}>
           <LabourLicenseFAQ />
         </Suspense>
+      </div>
+
       </div>
     </div>
   )

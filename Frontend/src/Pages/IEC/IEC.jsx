@@ -55,6 +55,8 @@ const IEC = () => {
         <IECTabs />
       </Suspense>
 
+      <div id="iec-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -107,6 +109,8 @@ const IEC = () => {
         <Suspense fallback={<div />}>
           <IECFAQ />
         </Suspense>
+      </div>
+
       </div>
     </div>
   );

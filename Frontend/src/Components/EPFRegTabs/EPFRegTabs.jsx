@@ -3,7 +3,7 @@ import "./EPFRegTabs.css";
 
 const tabs = [
   { label: "Why Choose EPF", id: "overview" },
-  { label: "Applicability", id: "applicability" },
+  { label: "Types", id: "applicability" },
   { label: "Benefits", id: "benefits" },
   { label: "Steps", id: "process" },
   { label: "Documents", id: "documents" },

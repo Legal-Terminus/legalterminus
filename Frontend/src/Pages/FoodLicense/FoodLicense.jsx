@@ -53,6 +53,8 @@ const FoodLicense = () => {
         <FoodLicenseTabs />
       </Suspense>
 
+      <div id="food-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -99,6 +101,8 @@ const FoodLicense = () => {
         <Suspense fallback={<div />}>
           <FoodLicenseFAQ />
         </Suspense>
+      </div>
+
       </div>
     </div>
   )
