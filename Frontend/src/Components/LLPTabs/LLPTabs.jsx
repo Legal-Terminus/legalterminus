@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "./LLPTabs.css";
 
 const tabs = [
-  { label: "Why", id: "company" },
+  { label: "Why Choose LLP", id: "company" },
   { label: "Types", id: "types" },
   { label: "Benefits", id: "requirements" },
   { label: "Steps", id: "process" },
