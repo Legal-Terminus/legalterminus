@@ -2,10 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import "./BCtabs.css";
 
 const tabs = [
-  { label: "What is Barcode (GS1)", id: "company" },
+  { label: "Why Choose Barcode", id: "company" },
   { label: "Types", id: "types" },
   { label: "Benefits", id: "requirements" },
-  { label: "Process & Steps", id: "process" },
+  { label: "Steps", id: "process" },
   { label: "Documents", id: "documents" },
   { label: "FAQ's", id: "faq" },
 ];
