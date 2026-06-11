@@ -72,7 +72,7 @@ const OLWF = lazy(() => import("./Pages/OLWF/OLWF"));
 const StartupIndia = lazy(() => import("./Pages/StartupIndia/StartupIndia"));
 const StartupOdisha = lazy(() => import("./Pages/StartupOdisha/StartupOdisha"));
 const ITRIndividual = lazy(() => import("./Pages/ITRIndividual/ITRIndividual"));
-const ITRBusiness = lazy(() => import("./Pages/ITRBusiness/ITRBusiness"));
+const ITRBusiness = lazy(() => import("./Pages/ITRBusinessNew/ITRBusinessNew"));
 const AnnualFilingCompany = lazy(() => import("./Pages/AnnualFilingCompany/AnnualFilingCompany"));
 const AnnualFilingLLP = lazy(() => import("./Pages/AnnualFilingLLP/AnnualFilingLLP"));
 const EPFReturn = lazy(() => import("./Pages/EPFReturn/EPFReturn"));
