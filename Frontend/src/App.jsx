@@ -27,7 +27,7 @@ const Society = lazy(() => import("./Pages/Society/Society"));
 const Section8 = lazy(() => import("./Pages/Section8/Section8"));
 const LLP = lazy(() => import("./Pages/LLP/LLP"));
 const GSTRegistration = lazy(() => import("./Pages/GSTRegistration/GSTRegistration"));
-const GSTReturn = lazy(() => import("./Pages/GSTReturn/GSTReturn"));
+const GSTReturn = lazy(() => import("./Pages/GSTReturnFiling/GSTReturnFiling"));
 const EPFReg = lazy(() => import("./Pages/EPFReg/EPFReg"));
 const UdyamReg = lazy(() => import("./Pages/UdyamReg/UdyamReg"));
 const ESICReg = lazy(() => import("./Pages/ESICReg/ESICReg"));
