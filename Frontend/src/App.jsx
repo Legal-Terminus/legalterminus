@@ -49,7 +49,7 @@ const BCRegistration = lazy(() => import("./Pages/BCRegistration/BCRegistration"
 const ISOCertification = lazy(() => import("./Pages/ISOCertification/ISOCertification"));
 const DissolveLLP = lazy(() => import("./Pages/DissolveLLP/DissolveLLP"));
 const DissolvePartnership = lazy(() => import("./Pages/DissolvePartnership/DissolvePartnership"));
-const TMRenewal = lazy(() => import("./Pages/TMRenewal/TMRenewal"));
+const TMRenewal = lazy(() => import("./Pages/TMRenewalNew/TMRenewalNew"));
 const TMApplication = lazy(() => import("./Pages/TMApplicationNew/TMApplicationNew"));
 const ReplyOfExaminationReport = lazy(() => import("./Pages/ReplyOfExaminationReport/ReplyOfExaminationReport"));
 const ChangeInCompany = lazy(() => import("./Pages/ChangeInCompany/ChangeInCompany"));
