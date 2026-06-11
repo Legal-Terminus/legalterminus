@@ -42,6 +42,8 @@ const ESICReg = () => {
 
       <ESICRegTabs />
 
+      <div id="esic-nav-sections">
+
       <div className="section-divider" />
 
       <div id="overview">
@@ -88,6 +90,8 @@ const ESICReg = () => {
         <Suspense fallback={<div />}>
           <ESICRegFAQ />
         </Suspense>
+      </div>
+
       </div>
     </div>
   )

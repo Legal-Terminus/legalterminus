@@ -2,7 +2,7 @@
 
 /* Section wrapper */
 
-.esic-tabs-section {
+.sto-tabs-section {
     font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: #f5f9ff;
     padding: 32px 24px 16px;
@@ -11,7 +11,7 @@
 
 /* Container width */
 
-.esic-tabs-container {
+.sto-tabs-container {
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -19,7 +19,7 @@
 
 /* White card */
 
-.esic-tabs-card {
+.sto-tabs-card {
     background: #ffffff;
     border-radius: 14px;
     box-shadow: 0 18px 40px rgba(33, 89, 25, 0.08);
@@ -35,7 +35,7 @@
 
 /* Tabs wrapper */
 
-.esic-tabs-list {
+.sto-tabs-list {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -45,14 +45,14 @@
     scroll-behavior: smooth;
 }
 
-.esic-tabs-list::-webkit-scrollbar {
+.sto-tabs-list::-webkit-scrollbar {
     display: none;
 }
 
 
 /* Individual Tab */
 
-.esic-tab {
+.sto-tab {
     border: none;
     outline: none;
     background: transparent;
@@ -71,7 +71,7 @@
 
 /* Active tab styling */
 
-.esic-tab.active {
+.sto-tab.active {
     background: #e9f0ff;
     color: #1aa91a;
     box-shadow: inset 0 3px 0 #16b646;
@@ -80,7 +80,7 @@
 
 /* Hover (inactive tabs) */
 
-.esic-tab:not(.active):hover {
+.sto-tab:not(.active):hover {
     background: rgba(245, 248, 255, 0.9);
 }
 
@@ -88,7 +88,7 @@
 /* ===============================
    SIDEBAR OPEN — offset tab bar
    =============================== */
-.esic-tabs-section.sidebar-open-mode .esic-tabs-card {
+.sto-tabs-section.sidebar-open-mode .sto-tabs-card {
     padding-left: 200px;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
@@ -99,7 +99,7 @@
 /* ===============================
    SLIM SIDEBAR CARD
    =============================== */
-.esic-slim-sidebar {
+.sto-slim-sidebar {
     position: fixed;
     top: 50%;
     left: 0;
@@ -112,18 +112,18 @@
     flex-direction: column;
     border-radius: 0 10px 10px 0;
     overflow: hidden;
-    animation: esicSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: stoSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     font-family: "Poppins", sans-serif;
 }
 
-@keyframes esicSlideIn {
+@keyframes stoSlideIn {
     from { transform: translateY(-50%) translateX(-100%); }
     to   { transform: translateY(-50%) translateX(0); }
 }
 
 
 /* ── Close button ── */
-.esic-slim-close {
+.sto-slim-close {
     position: absolute;
     top: 6px;
     right: 8px;
@@ -143,19 +143,19 @@
     z-index: 1;
 }
 
-.esic-slim-close:hover {
+.sto-slim-close:hover {
     background: #fee2e2;
     color: #dc2626;
 }
 
 
 /* ── Nav ── */
-.esic-slim-nav {
+.sto-slim-nav {
     display: flex;
     flex-direction: column;
 }
 
-.esic-slim-item {
+.sto-slim-item {
     padding: 15px 16px 15px 18px;
     border: none;
     border-bottom: 1px solid #d8d8d8;
@@ -172,16 +172,16 @@
     transition: background 0.15s, color 0.15s;
 }
 
-.esic-slim-item:last-child {
+.sto-slim-item:last-child {
     border-bottom: none;
 }
 
-.esic-slim-item:hover:not(.active) {
+.sto-slim-item:hover:not(.active) {
     background: #e4e4e4;
     color: #111;
 }
 
-.esic-slim-item.active {
+.sto-slim-item.active {
     background: #dce8dd;
     border-left-color: #16b646;
     color: #1aa91a;
@@ -193,11 +193,11 @@
 /* ===============================
    SECTIONS CONTENT SHIFT
    =============================== */
-#esic-nav-sections {
+#sto-nav-sections {
     transition: margin-left 0.3s ease;
 }
 
-#esic-nav-sections.esic-sections-shifted {
+#sto-nav-sections.sto-sections-shifted {
     margin-left: 200px;
 }
 
@@ -210,41 +210,41 @@
 /* Tablets */
 
 @media (max-width: 1024px) {
-    .esic-slim-sidebar {
+    .sto-slim-sidebar {
         width: 180px;
     }
 
-    .esic-tabs-section.sidebar-open-mode .esic-tabs-card {
+    .sto-tabs-section.sidebar-open-mode .sto-tabs-card {
         padding-left: 180px;
     }
 
-    #esic-nav-sections.esic-sections-shifted {
+    #sto-nav-sections.sto-sections-shifted {
         margin-left: 180px;
     }
 }
 
 @media (max-width: 768px) {
-    .esic-tabs-section {
+    .sto-tabs-section {
         padding: 24px 16px;
     }
-    .esic-tab {
+    .sto-tab {
         padding: 16px 26px;
         font-size: 13.5px;
     }
 
-    .esic-slim-sidebar {
+    .sto-slim-sidebar {
         width: 155px;
     }
 
-    .esic-tabs-section.sidebar-open-mode .esic-tabs-card {
+    .sto-tabs-section.sidebar-open-mode .sto-tabs-card {
         padding-left: 155px;
     }
 
-    #esic-nav-sections.esic-sections-shifted {
+    #sto-nav-sections.sto-sections-shifted {
         margin-left: 155px;
     }
 
-    .esic-slim-item {
+    .sto-slim-item {
         font-size: 12px;
         padding: 13px 12px 13px 14px;
     }
@@ -254,28 +254,28 @@
 /* Small Phones */
 
 @media (max-width: 480px) {
-    .esic-tabs-section {
+    .sto-tabs-section {
         padding: 20px 12px;
     }
-    .esic-tab {
+    .sto-tab {
         padding: 14px 20px;
         font-size: 12.5px;
         letter-spacing: 0.15px;
     }
 
-    .esic-slim-sidebar {
+    .sto-slim-sidebar {
         width: 140px;
     }
 
-    .esic-tabs-section.sidebar-open-mode .esic-tabs-card {
+    .sto-tabs-section.sidebar-open-mode .sto-tabs-card {
         padding-left: 140px;
     }
 
-    #esic-nav-sections.esic-sections-shifted {
+    #sto-nav-sections.sto-sections-shifted {
         margin-left: 140px;
     }
 
-    .esic-slim-item {
+    .sto-slim-item {
         font-size: 11.5px;
         padding: 12px 10px 12px 12px;
     }

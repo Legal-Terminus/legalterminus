@@ -50,6 +50,8 @@ const ShopReg = () => {
         <ShopRegTabs />
       </Suspense>
 
+      <div id="shopreg-nav-sections">
+
       <div className="section-divider" />
 
       <Suspense fallback={<div />}>
@@ -97,6 +99,8 @@ const ShopReg = () => {
           <ShopRegFAQ />
         </div>
       </Suspense>
+
+      </div>
 
     </div>
   )

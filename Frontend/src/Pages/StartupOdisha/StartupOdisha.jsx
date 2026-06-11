@@ -43,6 +43,8 @@ const StartupOdisha = () => {
 
       <StartupOdishaTabs />
 
+      <div id="sto-nav-sections">
+
       <div className="section-divider" />
 
       <div id="overview">
@@ -89,6 +91,8 @@ const StartupOdisha = () => {
         <Suspense fallback={<div />}>
           <StartupOdishaFAQ />
         </Suspense>
+      </div>
+
       </div>
     </div>
   )

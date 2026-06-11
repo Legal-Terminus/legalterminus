@@ -43,6 +43,8 @@ const StartupIndia = () => {
 
       <StartupIndiaTabs />
 
+      <div id="sti-nav-sections">
+
       <div className="section-divider" />
 
       <div id="overview">
@@ -89,6 +91,8 @@ const StartupIndia = () => {
         <Suspense fallback={<div />}>
           <StartupIndiaFAQ />
         </Suspense>
+      </div>
+
       </div>
     </div>
   )

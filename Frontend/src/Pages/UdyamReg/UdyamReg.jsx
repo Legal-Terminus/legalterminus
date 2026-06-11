@@ -41,6 +41,8 @@ const UdyamReg = () => {
 
       <UdyamRegTabs />
 
+      <div id="udyam-nav-sections">
+
       <div id="about">
         <Suspense fallback={<div />}><UdyamRegAbout /></Suspense>
       </div>
@@ -73,6 +75,8 @@ const UdyamReg = () => {
 
       <div id="faq">
         <Suspense fallback={<div />}><UdyamRegFAQ /></Suspense>
+      </div>
+
       </div>
     </div>
   )

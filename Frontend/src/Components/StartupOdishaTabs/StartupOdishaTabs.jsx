@@ -1,48 +1,134 @@
-import React, { useState } from "react";
-import "../PvtltdTabs/PvtltdTabs.css";
+import React, { useEffect, useRef, useState } from "react";
+import "./StartupOdishaTabs.css";
 
 const tabs = [
-  { label: "Why Startup Odisha", id: "overview" },
+  { label: "Why Choose Startup Odisha", id: "overview" },
   { label: "Types", id: "types" },
   { label: "Benefits", id: "benefits" },
-  { label: "Process", id: "process" },
+  { label: "Steps", id: "process" },
   { label: "Documents", id: "documents" },
   { label: "FAQ's", id: "faq" },
 ];
 
 const StartupOdishaTabs = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const tabListRef = useRef(null);
+  const tabRefs = useRef([]);
 
-  const handleClick = (index, id) => {
-    setActiveIndex(index);
-    const section = document.getElementById(id);
-    if (section) {
-      const tabsEl = document.querySelector(".pvt-tabs-section");
-      const offset = tabsEl ? tabsEl.offsetHeight : 104;
-      const top = section.getBoundingClientRect().top + window.pageYOffset - offset;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
+  const scrollActiveTabIntoView = (index) => {
+    const list = tabListRef.current;
+    const btn = tabRefs.current[index];
+    if (!list || !btn) return;
+    const listWidth = list.offsetWidth;
+    const btnLeft = btn.offsetLeft;
+    const btnWidth = btn.offsetWidth;
+    list.scrollTo({ left: btnLeft - listWidth / 2 + btnWidth / 2, behavior: "smooth" });
   };
 
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // Click on horizontal tab → open sidebar + scroll
+  const handleTabClick = (index, id) => {
+    setActiveIndex(index);
+    setSidebarOpen(true);
+    scrollToSection(id);
+  };
+
+  // Click inside sidebar → scroll only (sidebar stays open)
+  const handleSidebarNav = (index, id) => {
+    setActiveIndex(index);
+    scrollToSection(id);
+  };
+
+  // Shift the sections wrapper right when sidebar opens/closes
+  useEffect(() => {
+    const wrapper = document.getElementById("sto-nav-sections");
+    if (!wrapper) return;
+    wrapper.classList.toggle("sto-sections-shifted", sidebarOpen);
+    return () => wrapper.classList.remove("sto-sections-shifted");
+  }, [sidebarOpen]);
+
+  // Keep horizontal active tab centred
+  useEffect(() => {
+    scrollActiveTabIntoView(activeIndex);
+  }, [activeIndex]);
+
+  // Update active index while scrolling
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const idx = tabs.findIndex((t) => t.id === entry.target.id);
+            if (idx !== -1) setActiveIndex(idx);
+          }
+        });
+      },
+      { rootMargin: "-50% 0px -40% 0px", threshold: 0 }
+    );
+    tabs.forEach((t) => {
+      const el = document.getElementById(t.id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="pvt-tabs-section">
-      <div className="pvt-tabs-container">
-        <div className="pvt-tabs-card">
-          <div className="pvt-tabs-list" style={{ justifyContent: "center" }}>
+    <>
+      {/* ── Horizontal sticky bar (always visible) ── */}
+      <section className={`sto-tabs-section${sidebarOpen ? " sidebar-open-mode" : ""}`}>
+        <div className="sto-tabs-container">
+          <div className="sto-tabs-card">
+            <div
+              ref={tabListRef}
+              className="sto-tabs-list"
+              style={{ justifyContent: "center" }}
+            >
+              {tabs.map((tab, index) => (
+                <button
+                  key={tab.id}
+                  ref={(el) => (tabRefs.current[index] = el)}
+                  type="button"
+                  className={`sto-tab${index === activeIndex ? " active" : ""}`}
+                  onClick={() => handleTabClick(index, tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Slim sidebar card ── */}
+      {sidebarOpen && (
+        <aside className="sto-slim-sidebar" role="navigation" aria-label="Page sections">
+          <button
+            className="sto-slim-close"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+          >
+            ✕
+          </button>
+          <nav className="sto-slim-nav">
             {tabs.map((tab, index) => (
               <button
                 key={tab.id}
                 type="button"
-                className={`pvt-tab ${index === activeIndex ? "active" : ""}`}
-                onClick={() => handleClick(index, tab.id)}
+                className={`sto-slim-item${index === activeIndex ? " active" : ""}`}
+                onClick={() => handleSidebarNav(index, tab.id)}
               >
                 {tab.label}
               </button>
             ))}
-          </div>
-        </div>
-      </div>
-    </section>
+          </nav>
+        </aside>
+      )}
+    </>
   );
 };
 

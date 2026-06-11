@@ -53,6 +53,8 @@ const ProfessionalTaxReturn = () => {
         <ProfTaxTabs />
       </Suspense>
 
+      <div id="proftax-nav-sections">
+
       <div className="proftax-section-divider" />
 
       <div id="company">
@@ -99,6 +101,8 @@ const ProfessionalTaxReturn = () => {
         <Suspense fallback={<div />}>
           <ProfTaxFAQ />
         </Suspense>
+      </div>
+
       </div>
 
     </div>

@@ -37,6 +37,8 @@ const GSTRegistration = () => {
         <GSTRegTabs />
       </Suspense>
 
+      <div id="gst-nav-sections">
+
       <div id="overview">
         <Suspense fallback={<div />}>
           <GSTRegOverview />
@@ -71,6 +73,8 @@ const GSTRegistration = () => {
         <Suspense fallback={<div />}>
           <GSTRegFAQ />
         </Suspense>
+      </div>
+
       </div>
     </div>
   )

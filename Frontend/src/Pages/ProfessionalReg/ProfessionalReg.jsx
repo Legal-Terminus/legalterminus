@@ -53,6 +53,8 @@ const ProfessionalReg = () => {
         <ProfTaxTabs />
       </Suspense>
 
+      <div id="proftax-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -99,6 +101,8 @@ const ProfessionalReg = () => {
         <Suspense fallback={<div />}>
           <ProfTaxFAQ />
         </Suspense>
+      </div>
+
       </div>
 
     </div>

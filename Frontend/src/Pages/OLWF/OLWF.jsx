@@ -53,6 +53,8 @@ const OLWF = () => {
         <OLWFTabs />
       </Suspense>
 
+      <div id="olwf-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -99,6 +101,8 @@ const OLWF = () => {
         <Suspense fallback={<div />}>
           <OLWFFAQ />
         </Suspense>
+      </div>
+
       </div>
 
     </div>
