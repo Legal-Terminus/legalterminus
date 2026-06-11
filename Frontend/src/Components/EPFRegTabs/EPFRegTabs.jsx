@@ -7,8 +7,6 @@ const tabs = [
   { label: "Benefits", id: "benefits" },
   { label: "Steps", id: "process" },
   { label: "Documents", id: "documents" },
-  { label: "Penalties", id: "penalties" },
-  { label: "Why LegalTerminus", id: "why" },
   { label: "FAQ's", id: "faq" },
 ];
 
