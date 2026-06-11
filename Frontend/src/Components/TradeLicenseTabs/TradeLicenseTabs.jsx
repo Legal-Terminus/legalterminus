@@ -2,10 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import "./TradeLicenseTabs.css";
 
 const tabs = [
-  { label: "Why Trade License", id: "company" },
+  { label: "Why", id: "company" },
   { label: "Types", id: "types" },
   { label: "Benefits", id: "requirements" },
-  { label: "Process & Steps", id: "process" },
+  { label: "Steps", id: "process" },
   { label: "Documents", id: "documents" },
   { label: "FAQ's", id: "faq" },
 ];

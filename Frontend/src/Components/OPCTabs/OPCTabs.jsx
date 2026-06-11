@@ -2,10 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import "./OPCTabs.css";
 
 const tabs = [
-  { label: "Why Choose OPC", id: "company" },
+  { label: "Why", id: "company" },
   { label: "Types", id: "types" },
   { label: "Benefits", id: "requirements" },
-  { label: "Process & Steps", id: "process" },
+  { label: "Steps", id: "process" },
   { label: "Documents", id: "documents" },
   { label: "FAQ's", id: "faq" },
 ];
