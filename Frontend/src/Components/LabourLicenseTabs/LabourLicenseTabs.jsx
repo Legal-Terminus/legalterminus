@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "./LabourLicenseTabs.css";
 
 const tabs = [
-  { label: "Why Choose CLRA", id: "company" },
+  { label: "Why Choose Labour License", id: "company" },
   { label: "Types", id: "types" },
   { label: "Benefits", id: "requirements" },
   { label: "Steps", id: "process" },
