@@ -54,6 +54,8 @@ const PrivateLimited = () => {
         <PFRtabs />
       </Suspense>
 
+      <div id="pfr-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -100,6 +102,8 @@ const PrivateLimited = () => {
         <Suspense fallback={<div />}>
           <PFRfaq />
         </Suspense>
+      </div>
+
       </div>
     </div>
   );

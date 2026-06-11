@@ -54,6 +54,8 @@ function LLP() {
         <LLPTabs />
       </Suspense>
 
+      <div id="llp-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -100,6 +102,8 @@ function LLP() {
         <Suspense fallback={<div />}>
           <LLPFAQ />
         </Suspense>
+      </div>
+
       </div>
     </div>
   );

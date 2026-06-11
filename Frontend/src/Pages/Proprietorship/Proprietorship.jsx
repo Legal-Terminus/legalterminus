@@ -43,6 +43,8 @@ const PrivateLimited = () => {
         <Protabs />
       </Suspense>
 
+      <div id="pro-nav-sections">
+
       <div id="company">
         <Suspense fallback={<div />}>
           <ProCompanyTab />
@@ -77,6 +79,8 @@ const PrivateLimited = () => {
         <Suspense fallback={<div />}>
           <ProFAQ/>
         </Suspense>
+      </div>
+
       </div>
     </div>
   );

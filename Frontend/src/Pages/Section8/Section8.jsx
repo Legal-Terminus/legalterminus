@@ -43,6 +43,7 @@ const Section8 = () => {
       <Suspense fallback={<div />}>
         <Section8Tabs/>
       </Suspense>
+      <div id="section8-nav-sections">
       <div id="company">
         <Suspense fallback={<div />}>
           <Section8CompanyTabs/>
@@ -72,6 +73,7 @@ const Section8 = () => {
         <Suspense fallback={<div />}>
           <Section8FAQ/>
         </Suspense>
+      </div>
       </div>
 
     </div>

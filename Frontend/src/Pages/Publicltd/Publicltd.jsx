@@ -52,6 +52,8 @@ const Publicltd = () => {
         <PublicltdTab />
       </Suspense>
 
+      <div id="publicltd-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -98,6 +100,8 @@ const Publicltd = () => {
         <Suspense fallback={<div />}>
           <PublicltdFAQ />
         </Suspense>
+      </div>
+
       </div>
     </div>
   )

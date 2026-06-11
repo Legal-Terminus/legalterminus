@@ -49,6 +49,8 @@ const Society = () => {
         <SocietyTabs />
       </Suspense>
 
+      <div id="society-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -95,6 +97,8 @@ const Society = () => {
         <Suspense fallback={<div />}>
           <SocietyFAQ />
         </Suspense>
+      </div>
+
       </div>
 
     </div>

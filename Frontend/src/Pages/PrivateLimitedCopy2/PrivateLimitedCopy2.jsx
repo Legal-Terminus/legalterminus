@@ -42,6 +42,8 @@ const PrivateLimitedCopy2 = () => {
 
       <PvtltdTabs />
 
+      <div id="pvtltd-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -76,6 +78,8 @@ const PrivateLimitedCopy2 = () => {
 
       <div id="faq">
         <PvtltdFAQ />
+      </div>
+
       </div>
     </div>
   );

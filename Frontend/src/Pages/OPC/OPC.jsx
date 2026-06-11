@@ -54,6 +54,8 @@ const OPC = () => {
         <OPCTabs />
       </Suspense>
 
+      <div id="opc-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -100,6 +102,8 @@ const OPC = () => {
         <Suspense fallback={<div />}>
           <OPCFAQ />
         </Suspense>
+      </div>
+
       </div>
 
     </div>

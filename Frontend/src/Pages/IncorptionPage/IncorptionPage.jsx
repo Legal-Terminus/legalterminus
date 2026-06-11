@@ -54,6 +54,8 @@ const IncorptionPage = () => {
         <IncorporationTabs />
       </Suspense>
 
+      <div id="incorp-nav-sections">
+
       <div className="section-divider" />
 
       <div id="company">
@@ -100,6 +102,8 @@ const IncorptionPage = () => {
         <Suspense fallback={<div />}>
           <IncorporationFAQ />
         </Suspense>
+      </div>
+
       </div>
     </div>
   );
