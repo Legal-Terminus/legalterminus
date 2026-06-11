@@ -75,7 +75,7 @@ const ITRIndividual = lazy(() => import("./Pages/ITRIndividualNew/ITRIndividualN
 const ITRBusiness = lazy(() => import("./Pages/ITRBusinessNew/ITRBusinessNew"));
 const AnnualFilingCompany = lazy(() => import("./Pages/AnnualFilingCompanyNew/AnnualFilingCompanyNew"));
 const AnnualFilingLLP = lazy(() => import("./Pages/AnnualFilingLLPNew/AnnualFilingLLPNew"));
-const EPFReturn = lazy(() => import("./Pages/EPFReturn/EPFReturn"));
+const EPFReturn = lazy(() => import("./Pages/EPFReturnNew/EPFReturnNew"));
 const ESIReturn = lazy(() => import("./Pages/ESIReturn/ESIReturn"));
 const ProfessionalTaxReturn = lazy(() => import("./Pages/ProfessionalTaxReturn/ProfessionalTaxReturn"));
 const About = lazy(() => import("./Pages/About/About"));
