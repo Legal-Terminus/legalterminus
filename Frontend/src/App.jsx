@@ -55,7 +55,7 @@ const ReplyOfExaminationReport = lazy(() => import("./Pages/TMExamReplyNew/TMExa
 const ChangeInCompany = lazy(() => import("./Pages/ChangeInCompany/ChangeInCompany"));
 const CIROfficeAddress = lazy(() => import("./Pages/CIROfficeAddress/CIROfficeAddress"));
 const ChangeInObject = lazy(() => import("./Pages/ChangeInObject/ChangeInObject"));
-const TrademarktoOpposition = lazy(() => import("./Pages/TrademarktoOpposition/TrademarktoOpposition"));
+const TrademarktoOpposition = lazy(() => import("./Pages/TMOppositionNew/TMOppositionNew"));
 const TrademarktoHearing = lazy(() => import("./Pages/TrademarktoHearing/TrademarktoHearing"));
 const WindupPLC = lazy(() => import("./Pages/WindupPLC/WindupPLC"));
 const ChangeLlp = lazy(() => import("./Pages/ChangeLlp/ChangeLlp"));
