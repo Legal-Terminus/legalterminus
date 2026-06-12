@@ -48,7 +48,7 @@ const LabourLicense = lazy(() => import("./Pages/LabourLicense/LabourLicense"));
 const BCRegistration = lazy(() => import("./Pages/BCRegistration/BCRegistration"));
 const ISOCertification = lazy(() => import("./Pages/ISOCertification/ISOCertification"));
 const DissolveLLP = lazy(() => import("./Pages/DissolveLLPNew/DissolveLLPNew"));
-const DissolvePartnership = lazy(() => import("./Pages/DissolvePartnership/DissolvePartnership"));
+const DissolvePartnership = lazy(() => import("./Pages/DissolvePartnershipNew/DissolvePartnershipNew"));
 const TMRenewal = lazy(() => import("./Pages/TMRenewalNew/TMRenewalNew"));
 const TMApplication = lazy(() => import("./Pages/TMApplicationNew/TMApplicationNew"));
 const ReplyOfExaminationReport = lazy(() => import("./Pages/TMExamReplyNew/TMExamReplyNew"));
