@@ -27,7 +27,7 @@ const LabourlicenseZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  Labour licensing sounds simple — but wrong registration type, missing Form V from the principal employer, and incorrect workmen counts cause rejections and inspection trouble. Priority is what happens when a senior expert owns your CLRA file from discovery call to certificate delivery.
+                  Labour License Registration may look straightforward under the new OSH Code framework, but proper compliance involves much more than filing an application. Contractor details, Principal Employer documentation, Form V certification, worker strength calculation, and welfare compliance all play an important role in smooth approval and future inspections. With LT Priority, your Labour License Registration is handled by experienced labour-law professionals who manage the process carefully from documentation to final approval — helping you avoid delays, rejection, and compliance issues.
                 </p>
               </header>
 
@@ -36,23 +36,19 @@ const LabourlicenseZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    Same-day applicability check — do you need a Principal Employer RC, a Contractor Licence, or both — based on your actual role and workmen count, before you commit.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Senior expert reviewed Form I / IV package and workmen mapping to prevent department rejection on first submission.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Form V coordination with the principal employer and security deposit calculation done before filing — no last-minute surprises.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    Real-time application status updates on mail and WhatsApp — no following up with the labour office yourself.
+                    Priority application processing and faster filing support
                   </li>
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">📑</span>
-                    Post-licence kit: Certificate of Registration / Licence, compliance calendar, register templates, and renewal due-date alert.
+                    Proper drafting and verification of Form V and labour documents
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">🧑‍⚖️</span>
+                    Senior labour-law expert review before submission
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📅</span>
+                    5-year compliance calendar with renewal and return reminders
                   </li>
                 </ul>
               </section>
@@ -65,16 +61,16 @@ const LabourlicenseZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  Registration type selection is the #1 reason for CLRA application rejection. A principal employer applying as a contractor — or a contractor filing without the principal employer's Form V — will face rejection. We confirm the correct route on a discovery call before a single form is submitted.
+                  REFORM ALERT: OSH Code 2020 raised the threshold from 20 to 50 workers, extended license validity to 5 years, allowed single license for all establishments, and consolidated CLRA + ISMW + BOCW under one umbrella. Many businesses below 50 workers earlier needing license are now exempted. We audit your worker count carefully - intra-day variations matter.
                 </li>
                 <li className="opczp-note-item">
-                  The labour department may inspect the worksite. Statutory welfare amenities must be in place: canteen (where applicable), restrooms, drinking water, first-aid, and proper wage records. We prepare your compliance checklist in advance.
+                  PRINCIPAL EMPLOYER + CONTRACTOR JOINT LIABILITY: If the contractor fails to pay wages or provide welfare facilities, the PRINCIPAL EMPLOYER bears the liability. Engaging an unlicensed contractor exposes the PE to the same penalty - up to Rs.1 lakh + repeat-offender Rs.2 lakh + imprisonment up to 6 months under OSH Code Chapter XIII. Always demand and verify the contractor's license + Form V chain.
                 </li>
                 <li className="opczp-note-item">
-                  Workmen count accuracy matters. The licence is issued for a maximum number of workmen and the fee/deposit scale with it. Engaging more workmen than licensed requires an amendment (paid). Plan your peak headcount before filing — we help you future-proof it.
+                  TRANSITION COMPLEXITY: In States where State Rules under OSH Code 2020 are not yet notified, the existing CLRA Act 1970 + corresponding State Rules continue to apply during transition. We track State-by-State notification status and apply the right regime at filing.
                 </li>
                 <li className="opczp-note-item">
-                  Renewal is non-negotiable. A lapsed labour licence means you cannot legally engage contract labour until reactivated, exposing the principal employer to liability. We send renewal reminders 90/60/30 days before expiry under the relevant plans.
+                  Form V CERTIFICATE IS MANDATORY: Before a contractor can apply for License, the Principal Employer must issue Form V (Certificate by PE) confirming the engagement of contract labour. Our base plan co-drafts Form V from both sides (PE + Contractor) to ensure consistency and prevent downstream rejection.
                 </li>
               </ul>
             </div>

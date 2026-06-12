@@ -4,51 +4,24 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "principal",
-    name: "Principal Employer Registration",
-    oldPrice: 9999,
-    price: 4999,
-    services: [
-      "Certificate of Registration (RC) under CLRA Act, 1970",
-      "Form I application preparation & department filing",
-      "Government registration fee coordination at actuals",
-      "Contractor & workmen mapping in the registration",
-      "Registration Certificate (RC) issuance support",
-      "Basic compliance checklist & display obligations",
-      "Email delivery of the Certificate of Registration",
-    ],
-  },
-  {
-    id: "contractor",
-    name: "Contractor Labour Licence",
-    badge: "★ MOST POPULAR",
+    id: "single",
+    name: "Single Plan",
+    badge: "★ SENIOR LABOUR-LAW SPECIALIST LED",
     popular: true,
-    oldPrice: 14999,
-    price: 7999,
+    oldPrice: 17999,
+    price: 11999,
     services: [
-      "Everything in Principal Employer Registration",
-      "Contractor Licence (Form VI) under CLRA Act, 1970",
-      "Form IV application & Form V from Principal Employer",
-      "Security deposit & licence fee coordination per workman",
-      "Department query response & clarification handling",
-      "Workmen welfare compliance checklist (canteen, restroom, etc.)",
-      "1-year renewal reminder & compliance calendar",
-    ],
-  },
-  {
-    id: "full",
-    name: "Full Compliance Pack",
-    badge: "✦ FULL-SERVICE",
-    oldPrice: 24999,
-    price: 14999,
-    services: [
-      "Everything in Contractor Labour Licence",
-      "Both RC + Contractor Licence handled together",
-      "Half-yearly & annual returns (Form XXIV / Form XXV) setup",
-      "Muster roll, wage register & statutory register guidance",
-      "EPF / ESI alignment for contract workmen",
-      "2-year compliance calendar & renewal management",
-      "Priority legal support for inspection representation",
+      "Eligibility + threshold mapping (50+ workers under OSH Code 2020)",
+      "Shram Suvidha portal account setup + DSC integration",
+      "Contractor License OR Principal Employer Registration (one filing)",
+      "Form V Certificate co-drafted — PE side + Contractor side",
+      "Worker schedule + wage register format (statutory)",
+      "Welfare facility audit — canteen, restrooms, creche, first-aid, drinking water",
+      "Government fee + security deposit computation",
+      "Filing on https://shramsuvidha.gov.in",
+      "Labour Department query handling",
+      "5-year License Certificate / PE Registration delivery",
+      "5-year compliance calendar + annual return reminders",
     ],
   },
 ];
@@ -68,11 +41,12 @@ const LabourLicensePlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards" style={{ display: "flex", justifyContent: "center" }}>
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
                 className={`opcplan-card${plan.popular ? " opcplan-card--popular" : ""}`}
+                style={{ maxWidth: "440px", width: "100%" }}
               >
                 <div>
                   <div className="opcplan-header">
@@ -84,7 +58,7 @@ const LabourLicensePlans = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ Govt fee, security deposit &amp; GST extra</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">

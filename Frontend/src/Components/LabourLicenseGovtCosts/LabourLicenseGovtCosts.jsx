@@ -3,35 +3,34 @@ import "./LabourLicenseGovtCosts.css";
 
 const rows = [
   {
-    head: "Principal Employer Registration Fee",
-    range: "₹60 – ₹2,250 (one-time)",
-    note: "Slab-based on the number of contract workmen engaged; varies by state schedule",
+    head: "Contractor License – per worker",
+    range: "Rs.20 – Rs.100 per worker (varies by State)",
+    note: "Rs.30 – Rs.90 per worker",
   },
   {
-    head: "Contractor Licence Fee",
-    range: "₹15 – ₹90 / workman",
-    note: "Per-workman slab fee under CLRA; depends on maximum number of workmen and state",
+    head: "Principal Employer Registration",
+    range: "Rs.20 – Rs.100 per worker engaged",
+    note: "Not applicable",
   },
   {
-    head: "Security Deposit (Contractor)",
-    range: "₹20 – ₹90 / workman",
-    note: "Refundable deposit paid to the licensing authority; rate varies by state",
+    head: "License Validity",
+    range: "5 YEARS (OSH Code 2020) / 1 year (CLRA in transition states)",
+    note: "Refundable on surrender",
   },
   {
-    head: "Renewal Fee",
-    range: "Same as licence fee",
-    note: "Payable each year; licence is valid for 1 year and must be renewed before expiry",
+    head: "Indicative total for 50-worker license",
+    range: "~Rs.2,500 to Rs.5,000 fee",
+    note: "~Rs.2,500 to Rs.4,500 deposit",
   },
   {
-    head: "Late Renewal Surcharge",
-    range: "25% of fee",
-    note: "Applies if renewal is filed after the due date — per CLRA Central Rules / state rules",
+    head: "Annual Return Filing",
+    range: "Nil (filing fee) / per State penalty if late",
+    note: "Not applicable",
   },
   {
-    head: "Total Out-of-Pocket (typical, 50 workmen)",
-    range: "₹5,000 – ₹12,000",
-    note: "Govt. fee + refundable security deposit; billed at actuals, varies by state & workmen count",
-    isTotal: true,
+    head: "Amendment – Worker Scaling",
+    range: "Differential per-worker fee",
+    note: "Differential deposit",
   },
 ];
 
@@ -40,25 +39,25 @@ const LabourLicenseGovtCosts = () => {
     <section className="opc-govtcosts-section">
       <div className="opc-govtcosts-container">
         <h2 className="opc-govtcosts-title">
-          Indicative Government &amp; Out-of-Pocket Costs
-          <span className="opc-govtcosts-badge">Billed at Actuals</span>
+          Indicative Government Fees + Security Deposits
+          <span className="opc-govtcosts-badge">At Actuals</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          CLRA government fees and the refundable security deposit are charged over and above our professional fee. Actual amounts depend on the number of contract workmen and the state in which the establishment operates — billed at actuals per the applicable state schedule.
+          Per OSH Code 2020 + State Rules (or, in transition states, the existing CLRA Rules). Fees + deposits are billed at actuals and confirmed at filing.
         </p>
 
         <div className="opc-govtcosts-table-wrapper">
           <table className="opc-govtcosts-table">
             <thead>
               <tr>
-                <th>Cost Head</th>
-                <th>Typical Range</th>
-                <th>Notes</th>
+                <th>Filing</th>
+                <th>Government Fee Indicative</th>
+                <th>Security Deposit</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row, i) => (
-                <tr key={i} className={row.isTotal ? "opc-govtcosts-total-row" : ""}>
+                <tr key={i}>
                   <td>{row.head}</td>
                   <td className="opc-govtcosts-range">{row.range}</td>
                   <td>{row.note}</td>

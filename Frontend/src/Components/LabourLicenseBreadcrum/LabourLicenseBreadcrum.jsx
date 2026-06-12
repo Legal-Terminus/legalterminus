@@ -11,35 +11,39 @@ const LabourLicenseBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Labour Licence (CLRA) Registration
+            Labour Licence Registration
           </span>
 
           <h1 className="lt-public-title">
             Labour Licence Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">CLRA-Compliant, Fast &amp; 100% Online</span>
+            <span className="lt-title-tagline">Engaging contract labour? Get licensed first</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus manages your end-to-end Labour Licence under the Contract Labour (Regulation &amp; Abolition) Act, 1970 — Principal Employer Registration (Certificate of Registration) and Contractor Labour Licence. We handle Form I / IV / V drafting, department filing, security deposit and government fee coordination so your contract-labour engagement is legally compliant from day one. Our professional fee starts at ₹4,999 + GST. Government fees and security deposits are billed separately at actuals per the applicable state tariff.
+            Labour License Registration in India is mandatory for contractors employing 50 or more contract workers under the Occupational Safety, Health and Working Conditions (OSH) Code, 2020. The Principal Employer is also required to obtain registration for the establishment before engaging contract labour. The new labour law regime has simplified compliance by increasing the threshold from 20 workers to 50 workers, introducing a unified licensing system, and extending license validity up to 5 years in many cases. A single Labour License can now cover multiple establishments, making compliance easier for growing businesses and contractors.
+          </p>
+
+          <p className="lt-public-description">
+            We help contractors, construction companies, manpower suppliers, factories, infrastructure businesses, and service providers complete Labour License Registration in India through the Shram Suvidha Portal and the respective Labour Department. Our support includes application drafting, document preparation, portal filing, department coordination, and compliance guidance.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Mandatory for 20+ Contract Workmen</div>
-            <div className="lt-feature-item">Principal Employer RC &amp; Contractor Licence</div>
-            <div className="lt-feature-item">Form I / IV / V Filing &amp; Govt Fee Coordination</div>
-            <div className="lt-feature-item">Renewal, Amendment &amp; Compliance Support</div>
+            <div className="lt-feature-item">Shram Suvidha Filed</div>
+            <div className="lt-feature-item">5-Year Validity</div>
+            <div className="lt-feature-item">Single License</div>
+            <div className="lt-feature-item">PE + Contractor Bundled</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>Labour licences obtained</p>
+              <h3>950+</h3>
+              <p>Labour licenses filed</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>End-to-end filing</p>
+              <h3>All Major States</h3>
+              <p>+ Central Sphere</p>
             </div>
             <div>
               <h3>7+</h3>
