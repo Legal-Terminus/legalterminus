@@ -37,6 +37,11 @@ const rows = [
     range: "Self-certified; late = penalty under Sec 125",
     note: "Per Section 50",
   },
+  {
+    head: "3-YEAR TIME-BAR (effective FY 2026-27)",
+    range: "Returns CANNOT be filed beyond 3 years from due date",
+    note: "ITC permanently forfeited",
+  },
 ];
 
 const GstFilingGovtCosts = () => {
