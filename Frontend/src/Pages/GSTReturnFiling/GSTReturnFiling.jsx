@@ -8,6 +8,7 @@ const GstFilingTermCondition = React.lazy(() => import('../../Components/GstFili
 const GstFilingZolvitPremium = React.lazy(() => import('../../Components/GstFilingZolvitPremium/GstFilingZolvitPremium'))
 const GstFilingTabs = React.lazy(() => import('../../Components/GstFilingTabs/GstFilingTabs'))
 const GstFilingOverview = React.lazy(() => import('../../Components/GstFilingOverview/GstFilingOverview'))
+const GstFilingArchitecture = React.lazy(() => import('../../Components/GstFilingArchitecture/GstFilingArchitecture'))
 const GstFilingFeatures = React.lazy(() => import('../../Components/GstFilingFeatures/GstFilingFeatures'))
 const GstFilingBenefits = React.lazy(() => import('../../Components/GstFilingBenefits/GstFilingBenefits'))
 const GstFilingElegibility = React.lazy(() => import('../../Components/GstFilingElegibility/GstFilingElegibility'))
@@ -62,6 +63,12 @@ const GSTReturnFiling = () => {
           <GstFilingOverview />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <GstFilingArchitecture />
+      </Suspense>
 
       <div className="section-divider" />
 

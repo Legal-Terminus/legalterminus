@@ -3,49 +3,135 @@ import "./GstFilingFAQ.css";
 
 const faqs = [
   {
-    question: "Who is required to file GST returns?",
+    question: "Who needs to file GST returns in India?",
     answer:
-      "Every person registered under GST must file returns — regular taxpayers, composition dealers, e-commerce operators, Input Service Distributors, TDS/TCS deductors, and non-resident taxpayers. Returns must be filed even for periods with no transactions (a Nil return). Filing frequency and the specific returns depend on your turnover, taxpayer category, and scheme.",
+      "Every business or person registered under GST must file GST returns, even if there were no sales or purchases during the period/month. Nil returns are also mandatory. Different types of taxpayers file different returns — such as GSTR-1, GSTR-3B, CMP-08, GSTR-4, GSTR-9, and others — depending on their registration type and turnover.",
   },
   {
-    question: "What are the main GST returns and their due dates?",
-    answer:
-      "For regular monthly taxpayers: GSTR-1 (outward supplies) is due by the 11th of the next month and GSTR-3B (summary & tax) by the 20th. Under the QRMP scheme, GSTR-1 and GSTR-3B are quarterly (13th / 22nd or 24th) with monthly tax via PMT-06. The annual return GSTR-9 (and GSTR-9C reconciliation, where applicable) is due by 31st December of the following financial year.",
+    question: "Which GST Return Filing plan is suitable for my business?",
+    answer: (
+      <div>
+        <p>Our plans are designed based on business size and invoice volume:</p>
+        <ul>
+          <li>Elemental – Best for nil return filers</li>
+          <li>Enriched – Suitable for businesses with limited monthly invoices</li>
+          <li>Supreme – Ideal for growing SMEs with regular GST activity</li>
+          <li>Supreme+ – Designed for high-volume or multi-service businesses requiring advanced reconciliation and annual return support</li>
+        </ul>
+        <p>We help you choose the right plan during onboarding.</p>
+      </div>
+    ),
   },
   {
-    question: "What is the difference between GSTR-1, GSTR-2B, and GSTR-3B?",
+    question: "What is GSTR-3B hard-locking?",
     answer:
-      "GSTR-1 is your outward (sales) return filed with invoice-level detail. GSTR-2B is an auto-drafted, static statement of the Input Tax Credit available to you, based on what your suppliers filed. GSTR-3B is the monthly summary return where you declare total outward supply, claim eligible ITC (matched to GSTR-2B), and pay the net tax.",
+      "Under the latest GST system updates, important tax details in GSTR-3B are automatically taken from GSTR-1 and cannot be edited manually later. This means errors in sales reporting can directly affect your tax liability. Proper reconciliation before filing has now become extremely important.",
   },
   {
-    question: "What is the QRMP scheme?",
+    question: "What is IMS (Invoice Management System)?",
     answer:
-      "The Quarterly Return Monthly Payment (QRMP) scheme is available to taxpayers with aggregate turnover up to ₹5 crore. You file GSTR-1 and GSTR-3B quarterly but pay tax monthly through a simple challan (PMT-06) for the first two months of the quarter. It reduces filing frequency while keeping tax payments current.",
+      "IMS is a system where buyers can review and accept or reject supplier invoices uploaded under GST. Incorrect invoice details can impact your customer's input tax credit (ITC) and may create disputes or compliance issues. Regular invoice matching is now essential for smooth GST compliance.",
   },
   {
-    question: "What are the late fees and interest for delayed GST returns?",
+    question: "What is GSTR-1A?",
     answer:
-      "Late filing attracts a late fee of ₹50 per day (₹20 per day for Nil returns), split equally between CGST and SGST, subject to a cap based on turnover. In addition, interest at 18% per annum is charged on the net tax paid late, calculated from the due date to the date of actual payment.",
+      "GSTR-1A is a correction facility that allows businesses to amend mistakes in GSTR-1 before filing GSTR-3B for the same period. It helps businesses avoid tax mismatches and incorrect GST liability.",
   },
   {
-    question: "Can a GST return be revised after filing?",
-    answer:
-      "No. Once filed, a GST return cannot be revised. Any error or omission is corrected by making an amendment in a subsequent period's return (for example, amending an invoice in the next GSTR-1), within the time limits allowed under GST law. This is why first-time accuracy and pre-filing review matter.",
+    question: "What are the due dates for GST returns?",
+    answer: (
+      <div>
+        <p>Common GST due dates are:</p>
+        <ul>
+          <li>GSTR-1 – 11th of next month</li>
+          <li>GSTR-3B – 20th of next month</li>
+          <li>CMP-08 – Quarterly</li>
+          <li>GSTR-9 (Annual Return) – 31st December of next financial year</li>
+        </ul>
+        <p>Due dates may vary for QRMP taxpayers and special categories.</p>
+      </div>
+    ),
   },
   {
-    question: "How is Input Tax Credit (ITC) claimed correctly?",
+    question: "Are government late fees included in your plans?",
     answer:
-      "ITC is claimed in GSTR-3B strictly to the extent it appears in your GSTR-2B and is eligible under Section 16 of the CGST Act — you must have a valid tax invoice, have received the goods/services, and the supplier must have paid the tax. We reconcile GSTR-2B against your purchase register every period so you claim all eligible credit and avoid wrongful claims that get reversed with interest.",
+      "No. Our plans cover professional services such as reconciliation, return preparation, and filing support. Government late fees, penalties, and interest (if any) are paid directly on the GST portal by the taxpayer.",
   },
   {
-    question: "What happens if I don't file GST returns for several periods?",
+    question: "What is the 3-year GST return time limit?",
     answer:
-      "Continuous non-filing escalates quickly: late fees and interest accumulate, you cannot file later returns until earlier ones are filed, your e-way bill generation can be blocked, your buyers lose ITC on your invoices, and ultimately your GSTIN can be suspended or cancelled. Restoring compliance later is costlier than staying current.",
+      "Under recent GST updates, returns cannot be filed after 3 years from their original due date. Pending old GST returns should be filed as early as possible to avoid permanent loss of input tax credit and compliance complications.",
   },
   {
-    question: "How does Legal Terminus handle my GST return filing?",
+    question: "What if I have multiple GST registrations?",
     answer:
-      "We manage the entire cycle end-to-end: maintaining your due-date calendar, collecting your sales and purchase data, reconciling ITC against GSTR-2B, computing tax, preparing GSTR-1 and GSTR-3B (and annual GSTR-9/9C), getting your approval, and filing on the portal before the deadline — with the ARN and a tax summary shared after every filing. Book a free consultation to get started.",
+      "Each GSTIN is treated separately under GST law and requires separate return filing. We also provide support for businesses operating in multiple states with multiple GST registrations.",
+  },
+  {
+    question: "What is QRMP Scheme?",
+    answer:
+      "QRMP (Quarterly Return Monthly Payment) allows eligible businesses with turnover up to ₹5 crore to file GST returns quarterly instead of monthly while paying tax monthly. It reduces filing frequency and is beneficial for many small businesses.",
+  },
+  {
+    question: "Do I need to file GSTR-9 and GSTR-9C?",
+    answer:
+      "GSTR-9 (Annual Return) is generally applicable for businesses crossing the prescribed turnover limit. GSTR-9C is applicable for higher turnover businesses requiring reconciliation with financial statements. We guide you based on your turnover and GST category.",
+  },
+  {
+    question: "Are E-Way Bill and E-Invoice included in GST compliance?",
+    answer: (
+      <div>
+        <p>Yes, they are important parts of GST compliance for eligible businesses.</p>
+        <ul>
+          <li>E-Way Bill is required for movement of goods beyond prescribed limits.</li>
+          <li>E-Invoicing is mandatory for businesses crossing notified turnover thresholds.</li>
+        </ul>
+        <p>We also assist businesses with these compliances.</p>
+      </div>
+    ),
+  },
+  {
+    question: "What happens if GST returns are not filed?",
+    answer: (
+      <div>
+        <p>Non-filing of GST returns may lead to:</p>
+        <ul>
+          <li>Late fees and interest</li>
+          <li>Blocking of Input Tax Credit (ITC)</li>
+          <li>GST notice and penalties</li>
+          <li>Suspension or cancellation of GST registration</li>
+          <li>Difficulty in business operations and vendor relationships</li>
+        </ul>
+        <p>Timely filing helps avoid unnecessary compliance risks.</p>
+      </div>
+    ),
+  },
+  {
+    question: "Can I file NIL GST returns?",
+    answer:
+      "Yes. Even if there are no sales or purchases during the month or quarter, GST-registered businesses must still file NIL returns to keep the GST registration active and compliant.",
+  },
+  {
+    question: "What documents are required for GST Return Filing?",
+    answer: (
+      <div>
+        <p>Generally, businesses need:</p>
+        <ul>
+          <li>Sales invoices</li>
+          <li>Purchase invoices</li>
+          <li>Bank statements</li>
+          <li>Expense details</li>
+          <li>Previous GST returns</li>
+          <li>E-way bill or e-invoice data (if applicable)</li>
+        </ul>
+        <p>The exact requirement depends on your business type and GST activity.</p>
+      </div>
+    ),
+  },
+  {
+    question: "How can Legal Terminus help with GST Return Filing?",
+    answer:
+      "Legal Terminus provides end-to-end GST Return Filing support for businesses across India. Our team handles return preparation, invoice reconciliation, GST portal filing, GSTR-2B matching, annual return support, and regular compliance tracking. We help businesses file accurate GST returns on time while reducing errors, notices, ITC mismatches, and late filing risks. Whether you are a small business, growing startup, trader, contractor, or multi-state enterprise, we provide structured GST compliance support based on your business needs.",
   },
 ];
 

@@ -7,59 +7,59 @@ const GstFilingBenefits = () => {
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of Timely GST Return Filing
+            Benefits of GST Return Filing in India
           </h2>
           <p className="opcben-subtitle">
-            On-time, accurate GST returns are more than compliance — they protect your cash flow, unlock input credit, and keep your business credible with banks, buyers, and the department.
+            Timely, accurate GST returns aren&apos;t compliance overhead - they&apos;re the foundation of cash flow, ITC claims, and customer trust. Here&apos;s what disciplined GST return filing delivers:
           </p>
         </header>
 
         <div className="opcben-grid">
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Avoid Late Fees &amp; 18% Interest</h3>
+            <h3 className="opcben-card-title">Full ITC Claim - No Money Left on the Table</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Every day a return is late adds a fee (₹20–₹50/day), and unpaid tax accrues interest at 18% per annum. Filing on time eliminates both — a recurring saving that compounds across twelve filing periods a year.
+              Accurate GSTR-1 + GSTR-2B reconciliation + IMS discipline ensures you claim EVERY rupee of Input Tax Credit you're entitled to. Under the 2026 hard-locking regime, mismatched / missing invoices = ITC permanently lost. Our reconciliation discipline preserves your working capital.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Seamless Input Tax Credit</h3>
+            <h3 className="opcben-card-title">Late-Fee Zero (and Interest Zero)</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Filing GSTR-3B in sync with a reconciled GSTR-2B lets you claim every eligible rupee of ITC and reverse what you can't. Clean, timely credit directly lowers your working-capital outflow each month.
+              GSTR-1 + GSTR-3B late fees compound fast - Rs.50 / day (capped per turnover slab) PLUS 18% p.a. interest on tax dues. For a regular filer with Rs.50 lakh / month turnover, even a 1-week delay can cost Rs.5,000-Rs.10,000 + interest. We file on time, every time - the cheapest insurance you can buy.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Keeps Your GSTIN Active</h3>
+            <h3 className="opcben-card-title">Compliance Rating + Refund Speed</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Continuous non-filing can lead to suspension or cancellation of your GST registration and blocking of e-way bills. Regular filing keeps your GSTIN active so you can invoice, move goods, and trade without interruption.
+              GST's compliance rating system (Section 149 CGST Act) tracks return-filing discipline. Higher rating = faster refund processing, lower audit risk, smoother registration amendments. Refunds for exporters / inverted-duty filers can be expedited by 60-90 days with clean filing history.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Protects Your Buyers' Credit</h3>
+            <h3 className="opcben-card-title">Avoid GSTIN Suspension + Cancellation</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Your buyers can only claim ITC on your invoices once you've filed GSTR-1. Timely filing keeps your customers' credit flowing, strengthens B2B relationships, and makes you a preferred, dependable vendor.
+              Section 29 + Rule 21A CGST Rules empower the Department to SUSPEND a GSTIN after 2 consecutive defaults (composition) or 6 consecutive defaults (regular). Suspended GSTINs can't issue tax invoices, claim ITC, or transact - revenue stops immediately. We prevent this entirely.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Loan &amp; Tender Readiness</h3>
+            <h3 className="opcben-card-title">Lender + Investor + Tender Eligibility</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Banks, NBFCs, and tendering authorities review GST returns to gauge turnover and compliance. A clean, uninterrupted filing history improves creditworthiness and qualifies you for working-capital loans and government contracts.
+              Banks, NBFCs, investors, and Government tender authorities ALL pull GST return history from the public GST portal during due-diligence. Erratic filings = working capital loan rejection, lower credit limits, tender disqualification. Clean filing record = best terms.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Fewer Notices &amp; Scrutiny</h3>
+            <h3 className="opcben-card-title">Notice / Litigation Defence</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Mismatches between GSTR-1, GSTR-3B, and GSTR-2B are the leading trigger for departmental notices (DRC-01, scrutiny). Reconciled, accurate returns keep your record clean and reduce the risk of demands and audits.
+              Department notices (DRC-01A, DRC-01, ASMT-10, GST audit) inevitably reference return data. Clean, reconciled, archived returns + working papers = strong defence. Sloppy filings = the Department reconstructs your liability with adverse assumptions and you pay first, dispute later. We maintain the audit trail.
             </p>
           </article>
         </div>
