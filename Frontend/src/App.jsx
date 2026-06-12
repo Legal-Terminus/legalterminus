@@ -61,7 +61,7 @@ const WindupPLC = lazy(() => import("./Pages/WindupPLC/WindupPLC"));
 const ChangeLlp = lazy(() => import("./Pages/ChangeLlpNameNew/ChangeLlpNameNew"));
 const ChangeaddCom = lazy(() => import("./Pages/ChangeAddrCompanyNew/ChangeAddrCompanyNew"));
 const ChangeObjectCom = lazy(() => import("./Pages/ChangeObjectCompanyNew/ChangeObjectCompanyNew"));
-const Increase = lazy(() => import("./Pages/Increase/Increase"));
+const Increase = lazy(() => import("./Pages/IncreaseCapitalNew/IncreaseCapitalNew"));
 const Add = lazy(() => import("./Pages/Add/Add"));
 const DissolvePrivate = lazy(() => import("./Pages/DissolvePrivateNew/DissolvePrivateNew"));
 const PrivatetoPublic = lazy(() => import("./Pages/PrivatetoPublic/PrivatetoPublic"));
