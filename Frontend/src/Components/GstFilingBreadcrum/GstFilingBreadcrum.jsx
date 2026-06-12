@@ -11,35 +11,39 @@ const GstFilingBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            GST Return Filing Services
+            GST Return Filing
           </span>
 
           <h1 className="lt-public-title">
             GST Return Filing
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Accurate, On-Time &amp; 100% Online</span>
+            <span className="lt-title-tagline">Accurate. Timely. Hassle-Free</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus manages your end-to-end GST return filing — GSTR-1, GSTR-3B, the QRMP quarterly returns, composition GSTR-4, and the annual GSTR-9 / 9C. We reconcile your sales, purchases, and Input Tax Credit (ITC), prepare the returns, and file on the GST portal before every due date so you stay penalty-free. Our professional fee starts at ₹999 + GST per filing period. Any government late fees or interest are billed separately at actuals.
+            Every GST-registered business in India is required to file GST returns monthly, quarterly, or annually based on its registration type and turnover. Timely and accurate GST Return Filing is important to avoid penalties, ITC mismatch issues, notices, and compliance risks. With recent GST updates like GSTR-3B auto-locking with GSTR-1 data, Invoice Management System (IMS), and stricter return filing timelines, maintaining proper sales and purchase reconciliation has become more important than ever.
+          </p>
+
+          <p className="lt-public-description">
+            At Legal Terminus, we handle end-to-end GST Return Filing services including GSTR-1, GSTR-3B, GSTR-9, GSTR-9C, CMP-08, and annual return compliance. Our team ensures proper reconciliation, accurate reporting, and timely filing on the official GST portal.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Monthly, Quarterly &amp; Annual Returns Covered</div>
-            <div className="lt-feature-item">ITC Reconciliation (GSTR-2B vs Books)</div>
-            <div className="lt-feature-item">Due-Date Tracking &amp; Late-Fee Prevention</div>
-            <div className="lt-feature-item">Notice, Amendment &amp; Compliance Support</div>
+            <div className="lt-feature-item">Timely Filing</div>
+            <div className="lt-feature-item">GSTR-3B Hard-Lock Ready</div>
+            <div className="lt-feature-item">ITC Reconciled</div>
+            <div className="lt-feature-item">Late-Fee Zero</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>10,000+</h3>
-              <p>Returns filed</p>
+              <h3>12,000+</h3>
+              <p>GST returns filed</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>GST portal filing</p>
+              <h3>All Return Types</h3>
+              <p>GSTR-1 / 3B / 9 / 9C / 4 / IMS</p>
             </div>
             <div>
               <h3>7+</h3>

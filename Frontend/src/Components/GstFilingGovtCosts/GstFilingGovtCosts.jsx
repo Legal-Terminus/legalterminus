@@ -3,35 +3,39 @@ import "./GstFilingGovtCosts.css";
 
 const rows = [
   {
-    head: "Late Fee — GSTR-3B / GSTR-1 (with tax)",
-    range: "₹50 / day",
-    note: "₹25 CGST + ₹25 SGST per day of delay; capped per return as per turnover slab",
+    head: "GSTR-1 / GSTR-3B - Nil return",
+    range: "Rs.20 / day (max Rs.500)",
+    note: "Not applicable (nil)",
   },
   {
-    head: "Late Fee — Nil Return",
-    range: "₹20 / day",
-    note: "₹10 CGST + ₹10 SGST per day where there is no outward supply / tax liability",
+    head: "GSTR-1 / GSTR-3B - Non-nil (turnover up to Rs.5 Cr)",
+    range: "Rs.50 / day (max Rs.2,000)",
+    note: "18% p.a. on tax dues",
   },
   {
-    head: "Interest on Late Tax Payment",
-    range: "18% p.a.",
-    note: "Charged on the net tax liability paid in cash, from the due date until actual payment",
+    head: "GSTR-1 / GSTR-3B - Non-nil (turnover Rs.5 Cr to Rs.20 Cr)",
+    range: "Rs.50 / day (max Rs.5,000)",
+    note: "18% p.a. on tax dues",
   },
   {
-    head: "Late Fee — Annual Return (GSTR-9)",
-    range: "₹100 – ₹200 / day",
-    note: "₹50–₹100 each under CGST & SGST per day; capped at a % of state turnover by slab",
+    head: "GSTR-1 / GSTR-3B - Non-nil (turnover above Rs.20 Cr)",
+    range: "Rs.50 / day (max Rs.10,000)",
+    note: "18% p.a. on tax dues",
   },
   {
-    head: "Maximum Late Fee Cap (per return)",
-    range: "₹500 – ₹10,000",
-    note: "Depends on annual aggregate turnover slab as notified by CBIC",
+    head: "GSTR-9 (Annual) - Turnover up to Rs.5 Cr",
+    range: "Rs.50 / day (max 0.04% of T/O)",
+    note: "Per Section 50",
   },
   {
-    head: "Total Out-of-Pocket (typical, on-time filing)",
-    range: "₹0 govt fee",
-    note: "GST returns themselves carry no government filing fee — only late fees / interest if delayed",
-    isTotal: true,
+    head: "GSTR-9 (Annual) - Turnover Rs.5 Cr to Rs.20 Cr",
+    range: "Rs.100 / day (max 0.04% of T/O)",
+    note: "Per Section 50",
+  },
+  {
+    head: "GSTR-9C (Reconciliation) - Required > Rs.5 Cr T/O",
+    range: "Self-certified; late = penalty under Sec 125",
+    note: "Per Section 50",
   },
 ];
 
@@ -40,25 +44,25 @@ const GstFilingGovtCosts = () => {
     <section className="opc-govtcosts-section">
       <div className="opc-govtcosts-container">
         <h2 className="opc-govtcosts-title">
-          Indicative Government Late Fees &amp; Interest
-          <span className="opc-govtcosts-badge">Billed at Actuals</span>
+          Indicative GST Late-Fees + Penalties
+          <span className="opc-govtcosts-badge">Pass-Through at Actuals</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          Filing a GST return carries no government fee when done on time. Late fees and 18% interest apply only on delayed filing or tax payment, and are charged over and above our professional fee — billed at actuals per CBIC notifications.
+          Per CGST Act Section 47 + Section 50 + Notification 75/2018-CT (as amended). We plan filings to ensure ZERO late fees - but here&apos;s the official schedule:
         </p>
 
         <div className="opc-govtcosts-table-wrapper">
           <table className="opc-govtcosts-table">
             <thead>
               <tr>
-                <th>Cost Head</th>
-                <th>Typical Range</th>
-                <th>Notes</th>
+                <th>Return / Default</th>
+                <th>Late Fee</th>
+                <th>Interest on Tax</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row, i) => (
-                <tr key={i} className={row.isTotal ? "opc-govtcosts-total-row" : ""}>
+                <tr key={i}>
                   <td>{row.head}</td>
                   <td className="opc-govtcosts-range">{row.range}</td>
                   <td>{row.note}</td>

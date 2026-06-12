@@ -27,7 +27,7 @@ const GstFilingZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  GST filing sounds routine — but a missed due date, an ITC mismatch, or a wrong GSTR-3B figure triggers late fees, blocked credit, and notices. Priority is what happens when a dedicated GST accountant owns your returns calendar from invoice to filed ARN, every period.
+                  GST Return Filing may look simple, but proper GST compliance involves much more than uploading sales data on the portal. Invoice matching, GSTR-1 accuracy, GSTR-3B reconciliation, ITC verification, IMS updates, and timely filing all play a major role in avoiding notices, penalties, and input tax credit mismatches. With LT Priority, your GST Return Filing is handled by experienced GST professionals who carefully manage the complete filing process — helping your business maintain accurate compliance and avoid costly filing errors.
                 </p>
               </header>
 
@@ -36,23 +36,23 @@ const GstFilingZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    A locked filing calendar — GSTR-1, GSTR-3B, QRMP, and annual dates tracked for you, with reminders well before every deadline.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Full ITC reconciliation — GSTR-2B matched against your purchase register so you claim every eligible rupee and reverse what you can't.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Senior-reviewed GSTR-3B tax computation to prevent under/over-payment and the interest that follows.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    Vendor-mismatch alerts and follow-up guidance so suppliers upload your invoices before you file.
+                    Priority return processing and timely filing support
                   </li>
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">📑</span>
-                    Filed-return kit: ARN, tax summary, ITC ledger snapshot, and a running compliance log for the financial year.
+                    Proper reconciliation of sales, purchase, and ITC data
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">🧑‍⚖️</span>
+                    Senior GST expert review before return submission
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📊</span>
+                    GSTR-2B and IMS matching support for better ITC accuracy
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📅</span>
+                    Compliance tracking support to help avoid late fees and penalties
                   </li>
                 </ul>
               </section>
@@ -65,16 +65,16 @@ const GstFilingZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  Due dates are non-negotiable. GSTR-1 (11th), GSTR-3B (20th, or 22nd/24th under QRMP), and the annual GSTR-9 (31st Dec) each carry a daily late fee plus 18% interest on unpaid tax. We file ahead of time so a public holiday or portal outage never costs you.
+                  GSTR-3B HARD-LOCKING: From July 2025, Tables 3.1 + 3.2 of GSTR-3B are AUTO-POPULATED from GSTR-1 / GSTR-1A / IFF and NOT EDITABLE. If your GSTR-1 has errors, you fix them in GSTR-1A BEFORE filing GSTR-3B - or your liability is locked at the wrong number. ITC Table 4 hard-locking is next (targeted ~July 2026).
                 </li>
                 <li className="opczp-note-item">
-                  ITC is only as good as your vendors. Credit not appearing in your GSTR-2B cannot be claimed. We reconcile every period and flag defaulting suppliers so you recover blocked credit before it lapses under the Section 16 time limit.
+                  IMS PUTS YOUR BUYERS IN CONTROL: Every invoice you upload in GSTR-1 flows to your buyer's IMS dashboard. The buyer can ACCEPT / REJECT / KEEP PENDING. Rejected / pending invoices DON'T enter their GSTR-2B (their ITC blocked) and are PUSHED BACK to YOUR downstream GSTR-3B liability. Translation: bad invoice data = lose buyer goodwill + carry the tax liability yourself.
                 </li>
                 <li className="opczp-note-item">
-                  A GST return cannot be revised once filed. Errors are corrected only in a later period's return. That makes first-time accuracy critical — our returns are reviewed before submission, not after a notice.
+                  3-YEAR TIME-BAR LOCKS FOREVER: From FY 2026-27, you CANNOT file any GST return more than 3 YEARS after its original due date. Old / pending returns must be filed within the 3-year window or ITC is permanently lost + non-filing prosecution risk continues. Backlog clean-up has a hard deadline.
                 </li>
                 <li className="opczp-note-item">
-                  Continuous non-filing has consequences. Missing returns can block your e-way bills, suspend your GSTIN, and stop your buyers from claiming credit on your invoices. Staying current protects your whole supply chain.
+                  JANUARY 2026 LEDGER VALIDATIONS: Effective Jan 2026, the GST portal enforces stricter ledger checks - cash + credit ledger balance validations BEFORE GSTR-3B can be filed. ITC claims that fail ledger validations are blocked. Sloppy invoice booking = filing failure.
                 </li>
               </ul>
             </div>
