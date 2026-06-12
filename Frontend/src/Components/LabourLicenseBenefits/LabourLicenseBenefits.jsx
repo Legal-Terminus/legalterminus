@@ -10,56 +10,56 @@ const LabourLicenseBenefits = () => {
             Benefits of Labour Licence (CLRA) Registration in India
           </h2>
           <p className="opcben-subtitle">
-            A valid CLRA registration is not just a legal requirement — it shields the principal employer from liability, unlocks large contracts, and proves you run a compliant, audit-ready workforce.
+            Labour licensing isn&apos;t just statutory tick-the-box - it&apos;s the foundation of a defensible contract labour engagement. Here&apos;s what matters in the 2026 Labour Code era:
           </p>
         </header>
 
         <div className="opcben-grid">
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Legal Compliance &amp; Penalty-Free Operations</h3>
+            <h3 className="opcben-card-title">Lawful Contract Labour Engagement</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              A valid RC and contractor licence ensures contract labour is engaged lawfully under the CLRA Act 1970, eliminating exposure to prosecution under Sections 23 &amp; 24 — imprisonment up to 3 months, fines, and continuing daily penalties — and protecting you during labour-department inspections.
+              The Labour License is the express statutory authorisation to engage contract workers - without it, the engagement is unlawful and exposes both Principal Employer and Contractor to Chapter XIII penalties under OSH Code 2020 (up to Rs.1 lakh fine + imprisonment up to 6 months). With it, you operate clean.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Eligibility for PSU &amp; Government Tenders</h3>
+            <h3 className="opcben-card-title">Threshold Relief Under OSH Code (50 vs 20)</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Most PSU, government, railway, and large-corporate tenders mandate a valid CLRA registration or contractor licence as a pre-qualification condition. Without it, your bid is rejected at the compliance stage. CLRA proof is the gateway to high-value institutional contracts.
+              The 2026 reform raised the threshold from 20 to 50 workers. Many small / medium businesses earlier requiring license now sit BELOW the threshold and are exempt - a material compliance + cost relief. We audit your worker count carefully (including peak / seasonal / split-shift) to confirm threshold applicability.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Protection from Contractor Liabilities</h3>
+            <h3 className="opcben-card-title">5-Year Validity (vs 1-Year Renewal Treadmill)</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              When the contractor is licensed, wage, PF, and ESI obligations rest with the contractor. Engaging labour through an unlicensed contractor shifts those liabilities onto the principal employer. Proper registration ring-fences your business from the contractor's statutory dues.
+              Under OSH Code 2020, Contractor License is valid for 5 YEARS - vs annual renewal under CLRA 1970. One-time filing, five years of operation. The compliance discipline shifts to welfare facilities + annual returns + amendment-only updates.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Worker Welfare &amp; Statutory Amenities</h3>
+            <h3 className="opcben-card-title">Single License - All Establishments</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              The licensing framework ensures contract workmen receive mandated welfare amenities — canteen, restrooms, drinking water, first-aid, and timely wages. Compliance demonstrates responsible employment, reduces disputes, and improves workforce stability on site.
+              Under OSH Code 2020 Section 47, a Contractor's License is valid for ALL establishments where the contractor places workers. Earlier (CLRA), separate licenses were required per establishment - a massive compliance burden for multi-location contractors. Now: one license, full coverage.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Smooth EPF / ESI Integration</h3>
+            <h3 className="opcben-card-title">Institutional + Tender Eligibility</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              CLRA compliance dovetails with EPF and ESI obligations for contract workmen. A registered engagement makes it straightforward to map contributions, maintain muster rolls and wage registers, and pass joint inspections without back-liability surprises.
+              PSU contracts, government tenders, defence procurement, large corporate vendor onboarding, EPC contracts, FM (facilities management) contracts ALL demand evidence of valid Labour License at bid submission / onboarding. Without it, you cannot bid for or fulfil these contracts.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Credibility with Principal Employers</h3>
+            <h3 className="opcben-card-title">Defence Against Joint-Liability Exposure</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              For contractors, a valid labour licence is the single most important document in any vendor-onboarding or manpower-supply agreement. Large principal employers screen for it before awarding work — a licence signals you are an organised, compliant, and bankable contractor.
+              The Principal Employer is jointly + severally liable for wage default + welfare gaps of the Contractor. Engaging an UNLICENSED contractor = direct exposure of the PE to penalty + back-wages + welfare claims. Holding both licenses (Contractor + PE) + verified Form V chain = strong defence in any compliance audit / inspection / dispute.
             </p>
           </article>
         </div>

@@ -3,54 +3,178 @@ import "./LabourLicenseFAQ.css";
 
 const faqs = [
   {
-    question: "Who needs a Labour Licence under the CLRA Act?",
-    answer:
-      "The Contract Labour (Regulation & Abolition) Act, 1970 applies to every establishment (the principal employer) and every contractor that engages 20 or more contract workmen on any day of the preceding 12 months. The principal employer must obtain a Certificate of Registration (RC) and the contractor must hold a Labour Licence. Some states have notified lower thresholds, so applicability is confirmed against the relevant state amendment.",
+    question: "What is Labour License Registration in India?",
+    answer: (
+      <div>
+        <p>Labour License Registration in India is a mandatory compliance for contractors and principal employers engaging contract labour under the Occupational Safety, Health and Working Conditions (OSH) Code, 2020.</p>
+        <p>Under the new labour law framework:</p>
+        <ul>
+          <li>Contractors engaging 50 or more contract workers must obtain a Labour License.</li>
+          <li>Principal Employers engaging contract workers through contractors must obtain Registration.</li>
+          <li>The registration helps ensure proper wage payment, worker welfare, safety, and legal compliance.</li>
+        </ul>
+      </div>
+    ),
   },
   {
-    question: "What is the difference between Principal Employer Registration and a Contractor Licence?",
-    answer:
-      "The Principal Employer Registration (Certificate of Registration / RC in Form I → certificate) is taken by the establishment that engages contract labour through contractors. The Contractor Licence (Form IV → Licence in Form VI) is taken by the contractor who actually supplies and employs the workmen. Both are required for a fully compliant engagement — the contractor's licence application even depends on Form V issued by the registered principal employer.",
+    question: "What changed after the new Labour Codes came into force?",
+    answer: (
+      <div>
+        <p>The new OSH Code, 2020 replaced the earlier Contract Labour (Regulation &amp; Abolition) Act, 1970 and introduced major reforms:</p>
+        <ul>
+          <li>Threshold increased from 20 workers to 50 workers</li>
+          <li>License validity increased from 1 year to 5 years</li>
+          <li>One license can cover multiple establishments</li>
+          <li>Filing shifted to the unified Shram Suvidha Portal</li>
+          <li>Simplified compliance structure for businesses</li>
+        </ul>
+        <p>These reforms made labour licensing more streamlined and business-friendly.</p>
+      </div>
+    ),
   },
   {
-    question: "Who is the 'Principal Employer' and who is the 'Contractor'?",
-    answer:
-      "The principal employer is the person responsible for the supervision and control of the establishment — the owner/occupier/manager of a factory, the head of a government office, or the person in charge of any other establishment. The contractor is the person who employs or supplies contract labour to the principal employer to carry out work.",
+    question: "Who needs a Labour License?",
+    answer: (
+      <div>
+        <p>You need a Labour License if:</p>
+        <ul>
+          <li>You are a contractor engaging 50 or more contract workers</li>
+          <li>You supply manpower, labour, housekeeping, security, construction, facility management, or staffing services</li>
+        </ul>
+        <p>Principal Employers engaging contract workers may also require registration under the OSH Code.</p>
+      </div>
+    ),
   },
   {
-    question: "What is the validity of a labour licence?",
+    question: "Is Labour License required for every state?",
     answer:
-      "A labour licence (and registration) is valid for a period of 1 year and must be renewed before expiry. Renewal applications can be filed up to 30 days before the date of expiry to ensure continuous compliance and to avoid the late-renewal surcharge.",
+      "Yes. Labour law implementation is state-specific. While the OSH Code is central legislation, each state may issue its own rules and procedures. Some states have fully adopted the new system, while others are still transitioning from the old CLRA framework. We help you identify the correct process applicable in your state.",
   },
   {
-    question: "How long does it take to obtain a labour licence?",
-    answer:
-      "The Registering / Licensing Officer issues the registration or licence within about 30 working days of receiving a complete application. Timelines can extend if the department raises clarifications or schedules a worksite inspection — we respond to any query within 24 hours on your behalf to keep the file moving.",
+    question: "What is Form V and why is it important?",
+    answer: (
+      <div>
+        <p>Form V is a certificate issued by the Principal Employer to the Contractor confirming:</p>
+        <ul>
+          <li>Nature of work</li>
+          <li>Worker count</li>
+          <li>Work location</li>
+          <li>Contract duration</li>
+        </ul>
+        <p>It is one of the most important documents for Labour License approval. Incorrect or incomplete Form V is one of the biggest reasons for rejection.</p>
+      </div>
+    ),
   },
   {
-    question: "What are the government fees for a labour licence?",
-    answer:
-      "CLRA fees are slab-based and vary by state. They typically include a one-time principal-employer registration fee, a per-workman contractor licence fee, and a refundable security deposit per workman. For a 50-workman engagement the total government outlay (fee + deposit) is usually ₹5,000–₹12,000, billed at actuals. These are over and above our professional fee.",
+    question: "How long does Labour License Registration take?",
+    answer: (
+      <div>
+        <p>The registration process generally takes:</p>
+        <ul>
+          <li>15–20 working days in states with active online processing</li>
+          <li>20–30 working days in states with inspection or manual verification</li>
+        </ul>
+        <p>The timeline depends on document readiness and labour department processing.</p>
+      </div>
+    ),
   },
   {
-    question: "What is Form V and why is it needed?",
-    answer:
-      "Form V is a certificate issued by the principal employer confirming that the establishment is registered under the CLRA Act and that the principal employer has authorised the contractor to employ contract labour. The contractor must attach Form V to the licence application (Form IV) — without it the contractor licence cannot be granted. We coordinate Form V as part of our service.",
+    question: "What documents are required for Labour License Registration?",
+    answer: (
+      <div>
+        <p>Common documents include:</p>
+        <ul>
+          <li>PAN &amp; Aadhaar of applicant</li>
+          <li>GST Registration</li>
+          <li>Establishment proof</li>
+          <li>Form V Certificate</li>
+          <li>Agreement / Work Order</li>
+          <li>Employee details</li>
+          <li>Passport-size photographs</li>
+          <li>Digital Signature (DSC)</li>
+        </ul>
+        <p>Additional documents may vary by state.</p>
+      </div>
+    ),
   },
   {
-    question: "What happens if contract labour is engaged without registration or a licence?",
+    question: "What is the validity of a Labour License?",
     answer:
-      "Engaging contract labour without the required registration or licence is an offence under Sections 23 and 24 of the CLRA Act. Penalties include imprisonment up to 3 months and/or a fine up to ₹1,000, with an additional fine for each day the contravention continues. The principal employer may also inherit the contractor's wage, PF, and ESI liabilities.",
+      "Under the OSH Code framework, Labour License is generally valid for 5 years. However, validity may vary in states that are still operating under transitional rules.",
   },
   {
-    question: "Does the licence need to be renewed and what are the registers to maintain?",
-    answer:
-      "Yes — the licence is renewed annually, before expiry. Alongside the licence, contractors and principal employers must maintain statutory registers and records such as the register of contractors, muster roll, wage register, register of workmen, and file half-yearly/annual returns. Our compliance plans include reminders and templates for these.",
+    question: "What happens if I operate without a Labour License?",
+    answer: (
+      <div>
+        <p>Operating without a valid Labour License may result in:</p>
+        <ul>
+          <li>Heavy penalties</li>
+          <li>Labour department notices</li>
+          <li>Legal proceedings</li>
+          <li>Tender disqualification</li>
+          <li>Wage liability on the Principal Employer</li>
+          <li>Business and compliance risks</li>
+        </ul>
+        <p>Timely registration helps avoid unnecessary legal complications.</p>
+      </div>
+    ),
   },
   {
-    question: "How can Legal Terminus help me obtain a labour licence?",
+    question: "Is Labour License different from EPF and ESIC?",
+    answer: (
+      <div>
+        <p>Yes. Labour License, EPF, and ESIC are completely different compliances.</p>
+        <ul>
+          <li>Labour License → Contract labour regulation</li>
+          <li>EPF → Provident Fund compliance</li>
+          <li>ESIC → Employee insurance compliance</li>
+        </ul>
+        <p>A business may require all three depending on employee count and nature of work.</p>
+      </div>
+    ),
+  },
+  {
+    question: "Does the Principal Employer also have responsibilities?",
+    answer: (
+      <div>
+        <p>Yes. Under the OSH Code, the Principal Employer and Contractor share responsibility for:</p>
+        <ul>
+          <li>Wage payment</li>
+          <li>Worker welfare</li>
+          <li>Safety facilities</li>
+          <li>Basic labour compliance</li>
+        </ul>
+        <p>This is why proper documentation and contractor verification are very important.</p>
+      </div>
+    ),
+  },
+  {
+    question: "What welfare facilities are mandatory for contract workers?",
+    answer: (
+      <div>
+        <p>Depending on worker count and state rules, businesses may need to provide:</p>
+        <ul>
+          <li>Drinking water</li>
+          <li>Restrooms</li>
+          <li>Washing facilities</li>
+          <li>First-aid</li>
+          <li>Rest shelters</li>
+          <li>Canteen</li>
+          <li>Creche facilities (in applicable cases)</li>
+        </ul>
+        <p>We help businesses understand these requirements before filing.</p>
+      </div>
+    ),
+  },
+  {
+    question: "Can one Labour License cover multiple sites?",
     answer:
-      "Legal Terminus handles the entire CLRA process end-to-end — applicability check, Form I/IV/V drafting, Form V coordination with the principal employer, security deposit calculation, department filing, query response, and certificate delivery — for a competitive professional fee. Book a free telephonic appointment with one of our consultants to get started.",
+      "Under the new OSH Code framework, a single Labour License can cover multiple establishments of the contractor, subject to applicable rules and approvals. This reduces repeated licensing and simplifies compliance management.",
+  },
+  {
+    question: "How can Legal Terminus help with Labour License Registration?",
+    answer:
+      "Legal Terminus provides end-to-end professional support for Labour License Registration in India for both Contractors and Principal Employers. Our team assists with eligibility assessment, worker-threshold evaluation, Form V drafting support, document preparation, Shram Suvidha Portal filing, and coordination with the Labour Department for smooth processing of the application. We also help businesses understand welfare and compliance requirements under the OSH Code, 2020, including basic worker facilities and statutory obligations. From application filing to license approval, query handling, amendment support, and compliance guidance, we ensure the entire process is handled accurately, professionally, and within the applicable timelines.",
   },
 ];
 

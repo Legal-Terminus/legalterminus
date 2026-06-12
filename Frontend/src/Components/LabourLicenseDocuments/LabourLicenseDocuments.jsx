@@ -4,32 +4,37 @@ import { FaUser, FaBuilding, FaIdCard, FaUsers, FaBolt, FaFileContract, FaFileSi
 
 const ownerDocs = [
   {
-    icon: <FaFileAlt />,
-    title: "Entity Registration Proof",
-    note: "Any one, as applicable to your business type",
-    items: [
-      "Certificate of Incorporation (Company / LLP) + MOA/AOA",
-      "Partnership Deed (Partnership firm)",
-      "GST Registration / Trade Licence (Proprietorship)",
-    ],
-  },
-  {
     icon: <FaIdCard />,
-    title: "Promoter / Authorised Person KYC",
-    note: "For all Directors / Partners / Proprietor",
+    title: "Applicant / Entity Identity",
+    note: "Identity of applicant / entity & authorised signatory",
     items: [
-      "PAN card (self-attested)",
-      "Aadhaar card (self-attested)",
-      "Passport-size photograph",
+      "Applicant's PAN + Aadhaar (individuals / proprietors)",
+      "Entities: entity PAN + Certificate of Incorporation / Partnership Deed / Trust Deed / Registration Certificate",
+      "Authorised signatory's photograph + KYC + Board Resolution / Authorisation Letter",
+      "Digital Signature Certificate (DSC) for portal filing",
     ],
   },
   {
     icon: <FaFileSignature />,
-    title: "Authorisation & Digital Signature",
-    note: "For the signatory filing the application",
+    title: "Form V Certificate (PE → Contractor)",
+    note: "Mandatory pre-condition for Contractor License",
     items: [
-      "Board Resolution / Authorisation letter (provided by us)",
-      "Digital Signature (DSC) of the authorised signatory",
+      "Principal Employer issues Form V certifying the work covered, worker count, period and nature of work",
+      "Confirms PE readiness to engage the contractor",
+      "We co-draft Form V from both PE + Contractor sides for chain consistency",
+    ],
+  },
+  {
+    icon: <FaList />,
+    title: "Linked Statutory / Tax Registrations",
+    note: "Separate / add-on registrations as applicable",
+    items: [
+      "GSTIN (for invoicing)",
+      "EPFO Code (Code on Social Security 2020 - separate filing)",
+      "ESIC Code (Code on Social Security 2020 - separate filing)",
+      "Professional Tax Registration (state-specific)",
+      "Construction (add-on): BOCW Cess registration with State BOCW Welfare Board",
+      "Inter-state ISMW (add-on): registration of recruitment activity in the home State",
     ],
   },
 ];
@@ -37,31 +42,34 @@ const ownerDocs = [
 const premiseDocs = [
   {
     icon: <FaBolt />,
-    title: "Establishment Address Proof",
-    note: "Registered office / worksite address",
+    title: "Premises / Establishment Proof",
+    note: "Address of principal establishment / worksite",
     items: [
-      "Latest Electricity / Utility bill (not older than 2 months)",
-      "Rent agreement (if premises are rented)",
+      "Address proof of the principal establishment - rent agreement OR ownership document",
+      "Latest property tax receipt / electricity bill (within 90 days)",
+      "Contractor: address proof of office + any workmen accommodation / camp",
+      "PE: address of premises where contract labour will be deployed",
     ],
   },
   {
     icon: <FaUsers />,
-    title: "Workforce & Wage Details",
-    note: "Required to fix the licensed workmen count",
+    title: "Worker Schedule + Wage Details",
+    note: "Required to fix the licensed worker count",
     items: [
-      "Total contract-workmen strength (maximum on any day)",
-      "Workmen details — Aadhaar, name, father's name, DOB, address",
-      "Salary break-up (basic + other components) & holiday list",
+      "List of contract workers - name, gender, age, address, designation, daily wages, working hours",
+      "Categorisation: skilled / semi-skilled / unskilled",
+      "Inter-state migrant workmen: home State + journey allowance details",
+      "Muster roll / wage register format (statutory)",
     ],
   },
   {
     icon: <FaFileContract />,
-    title: "Contract & Principal-Employer Documents",
-    note: "Core to the CLRA licence application",
+    title: "Welfare Facility Plan",
+    note: "Section 24 of OSH Code 2020 + State Rules",
     items: [
-      "Work Order from the Principal Employer",
-      "Form V (certificate from Principal Employer) for contractor licence",
-      "Bank statement with current transactions + 1 cancelled cheque",
+      "Plan / layout of welfare facilities: canteen (50+ workers), restrooms / latrines / urinals (separate men + women)",
+      "Drinking water points, first-aid box, creche (50+ women workers), washing facilities, rest shelters",
+      "Premises layout drawing helpful",
     ],
   },
 ];
@@ -89,8 +97,8 @@ const LabourLicenseDocuments = () => {
       <div className="opcd-container">
 
         <div className="opcd-header">
-          <h2 className="opcd-main-title">Documents Required for Labour Licence (CLRA) Registration in India</h2>
-          <p className="opcd-main-subtitle">Get these ready and we'll take care of the rest</p>
+          <h2 className="opcd-main-title">Documents Required for Labour Licence Registration in India</h2>
+          <p className="opcd-main-subtitle">Six categories. Documentation is moderate - identity, premises, worker schedule, Form V, welfare plan, linked statutory registrations. We send a personalised checklist after the discovery call.</p>
         </div>
 
         <div className="opcd-columns">
@@ -99,8 +107,8 @@ const LabourLicenseDocuments = () => {
             <div className="opcd-col-header">
               <div className="opcd-col-header-icon"><FaUser /></div>
               <div>
-                <h3 className="opcd-col-title">Entity &amp; Applicant KYC Documents</h3>
-                <p className="opcd-col-subtitle">Required for principal employer &amp; contractor</p>
+                <h3 className="opcd-col-title">Applicant, Form V &amp; Statutory</h3>
+                <p className="opcd-col-subtitle">Identity, Form V chain &amp; linked registrations</p>
               </div>
             </div>
             <div className="opcd-col-body">
@@ -114,8 +122,8 @@ const LabourLicenseDocuments = () => {
             <div className="opcd-col-header opcd-col-header--office">
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="opcd-col-title">Premise, Workforce &amp; Contract Documents</h3>
-                <p className="opcd-col-subtitle">Address, workmen &amp; principal-employer proofs</p>
+                <h3 className="opcd-col-title">Premises, Workforce &amp; Welfare</h3>
+                <p className="opcd-col-subtitle">Address, worker schedule &amp; welfare plan</p>
               </div>
             </div>
             <div className="opcd-col-body">

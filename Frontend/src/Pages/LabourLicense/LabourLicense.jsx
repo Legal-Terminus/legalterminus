@@ -8,6 +8,7 @@ const LabourLicenseTermCondition = React.lazy(() => import('../../Components/Lab
 const LabourlicenseZolvitPremium = React.lazy(() => import('../../Components/LabourlicenseZolvitPremium/LabourlicenseZolvitPremium'))
 const LabourLicenseTabs = React.lazy(() => import('../../Components/LabourLicenseTabs/LabourLicenseTabs'))
 const LabourLicenseOverview = React.lazy(() => import('../../Components/LabourLicenseOverview/LabourLicenseOverview'))
+const LabourLicenseReform = React.lazy(() => import('../../Components/LabourLicenseReform/LabourLicenseReform'))
 const LabourLicenseFeatures = React.lazy(() => import('../../Components/LabourLicenseFeatures/LabourLicenseFeatures'))
 const LabourLicenseBenefits = React.lazy(() => import('../../Components/LabourLicenseBenefits/LabourLicenseBenefits'))
 const LabourLicenseElegibility = React.lazy(() => import('../../Components/LabourLicenseElegibility/LabourLicenseElegibility'))
@@ -62,6 +63,12 @@ const LabourLicense = () => {
           <LabourLicenseOverview />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <LabourLicenseReform />
+      </Suspense>
 
       <div className="section-divider" />
 
