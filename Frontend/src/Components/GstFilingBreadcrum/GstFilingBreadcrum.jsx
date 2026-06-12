@@ -22,7 +22,7 @@ const GstFilingBreadcrum = () => {
           </h1>
 
           <p className="lt-public-description">
-            Every GST-registered business in India is required to file GST returns monthly, quarterly, or annually based on its registration type and turnover. Timely and accurate GST Return Filing is important to avoid penalties, ITC mismatch issues, notices, and compliance risks. With recent GST updates like GSTR-3B auto-locking with GSTR-1 data, Invoice Management System (IMS), and stricter return filing timelines, maintaining proper sales and purchase reconciliation has become more important than ever.
+            Every GST-registered business in India must file GST returns monthly, quarterly, or annually based on its registration type and turnover. Timely and accurate GST Return Filing is essential to avoid penalties, ITC mismatches, notices, and compliance risks. With updates such as GSTR-3B auto-locking, the Invoice Management System (IMS), and stricter filing timelines, proper sales and purchase reconciliation has become more important than ever.
           </p>
 
           <p className="lt-public-description">
