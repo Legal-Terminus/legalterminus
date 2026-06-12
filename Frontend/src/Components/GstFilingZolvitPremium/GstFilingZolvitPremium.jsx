@@ -27,7 +27,9 @@ const GstFilingZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  GST Return Filing may look simple, but proper GST compliance involves much more than uploading sales data on the portal. Invoice matching, GSTR-1 accuracy, GSTR-3B reconciliation, ITC verification, IMS updates, and timely filing all play a major role in avoiding notices, penalties, and input tax credit mismatches. With LT Priority, your GST Return Filing is handled by experienced GST professionals who carefully manage the complete filing process — helping your business maintain accurate compliance and avoid costly filing errors.
+                  GST Return Filing may look simple, but proper GST compliance involves much more than uploading sales data on the portal. Invoice matching, GSTR-1 accuracy, GSTR-3B reconciliation, ITC verification, IMS updates, and timely filing all play a major role in avoiding notices, penalties, and input tax credit mismatches.
+                  <br /><br />
+                  With LT Priority, your GST Return Filing is handled by experienced GST professionals who carefully manage the complete filing process — helping your business maintain accurate compliance and avoid costly filing errors.
                 </p>
               </header>
 
