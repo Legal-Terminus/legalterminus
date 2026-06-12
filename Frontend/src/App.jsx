@@ -63,7 +63,7 @@ const ChangeaddCom = lazy(() => import("./Pages/ChangeaddCom/ChangeaddCom"));
 const ChangeObjectCom = lazy(() => import("./Pages/ChangeObjectCom/ChangeObjectCom"));
 const Increase = lazy(() => import("./Pages/Increase/Increase"));
 const Add = lazy(() => import("./Pages/Add/Add"));
-const DissolvePrivate = lazy(() => import("./Pages/DissolvePrivate/DissolvePrivate"));
+const DissolvePrivate = lazy(() => import("./Pages/DissolvePrivateNew/DissolvePrivateNew"));
 const PrivatetoPublic = lazy(() => import("./Pages/PrivatetoPublic/PrivatetoPublic"));
 const PublictoPrivate = lazy(() => import("./Pages/PublictoPrivate/PublictoPrivate"));
 const ChangetoCompany = lazy(() => import("./Pages/ChangetoCompany/ChangetoCompany"));
