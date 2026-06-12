@@ -22,11 +22,11 @@ const LabourLicenseBreadcrum = () => {
           </h1>
 
           <p className="lt-public-description">
-            Labour License Registration in India is mandatory for contractors employing 50 or more contract workers under the Occupational Safety, Health and Working Conditions (OSH) Code, 2020. The Principal Employer is also required to obtain registration for the establishment before engaging contract labour. The new labour law regime has simplified compliance by increasing the threshold from 20 workers to 50 workers, introducing a unified licensing system, and extending license validity up to 5 years in many cases. A single Labour License can now cover multiple establishments, making compliance easier for growing businesses and contractors.
+            Labour License Registration in India is mandatory for contractors employing 50 or more contract workers under the OSH Code, 2020. The new labour law framework has simplified compliance by increasing the worker threshold, introducing a unified licensing system, and allowing longer license validity periods.
           </p>
 
           <p className="lt-public-description">
-            We help contractors, construction companies, manpower suppliers, factories, infrastructure businesses, and service providers complete Labour License Registration in India through the Shram Suvidha Portal and the respective Labour Department. Our support includes application drafting, document preparation, portal filing, department coordination, and compliance guidance.
+            We assist contractors, construction companies, manpower suppliers, factories, and service providers with complete Labour License Registration through the Shram Suvidha Portal and Labour Department. Our services include document preparation, application filing, department coordination, and compliance support for smooth approval.
           </p>
 
           <div className="lt-public-features">
