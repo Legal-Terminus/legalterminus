@@ -41,7 +41,7 @@ const LabourLicenseTermCondition = () => {
               Refund Policy: Full refund of professional fee (less Rs.1,499 documentation handling) is available if the Shram Suvidha portal filing is not submitted within 7 working days from receipt of all required information + government fee. Government fees + security deposits already paid are non-refundable (security deposit is refundable on surrender per portal policy).
             </li>
             <li className="opctc-item">
-              Out-of-Scope Items: EPF / ESIC Registration (separate services - filed under Code on Social Security 2020), Professional Tax (state-specific), Standing Orders (Industrial Relations Code 2020), labour-court / labour-tribunal litigation, prosecution defence, minimum wage disputes, gratuity / bonus calculations.
+              Out-of-Scope Items: EPF / ESIC Registration (separate services - filed under Code on Social Security 2020), Professional Tax (state-specific), Standing Orders (Industrial Relations Code 2020), labour-court / labour-tribunal litigation, prosecution defence, minimum wage disputes, gratuity / bonus calculations, audit of wage payments, contract drafting between PE and Contractor, and welfare-facility construction / fit-out work are NOT included.
             </li>
           </ol>
         </div>
