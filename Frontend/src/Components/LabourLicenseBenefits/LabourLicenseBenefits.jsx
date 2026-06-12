@@ -7,7 +7,7 @@ const LabourLicenseBenefits = () => {
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of Labour Licence (CLRA) Registration in India
+            Benefits of Labour Licence Registration in India
           </h2>
           <p className="opcben-subtitle">
             Labour licensing isn&apos;t just statutory tick-the-box - it&apos;s the foundation of a defensible contract labour engagement. Here&apos;s what matters in the 2026 Labour Code era:
