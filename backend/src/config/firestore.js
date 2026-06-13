@@ -34,8 +34,11 @@ export const getDoc = async (collection, docId) => {
   }
 };
 
-// READ ALL
-export const getAllDocs = async (collection, filters = []) => {
+// READ ALL (bounded)
+// opts: { orderBy?: { field, direction='desc' }, limit?: number }
+// Pushes ordering + a hard cap to Firestore so callers never scan an unbounded
+// collection or sort in memory. `limit` defaults to 500 as a safety cap.
+export const getAllDocs = async (collection, filters = [], opts = {}) => {
   try {
     const db = getDb();
     let query = db.collection(collection);
@@ -45,6 +48,11 @@ export const getAllDocs = async (collection, filters = []) => {
       const { field, operator, value } = filter;
       query = query.where(field, operator, value);
     }
+
+    if (opts.orderBy) {
+      query = query.orderBy(opts.orderBy.field, opts.orderBy.direction || "desc");
+    }
+    query = query.limit(opts.limit ?? 500);
 
     const snapshot = await query.get();
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));

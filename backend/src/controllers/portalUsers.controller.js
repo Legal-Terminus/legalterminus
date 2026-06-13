@@ -1,8 +1,8 @@
 import { db } from '../config/firebase.js';
 import { VALID_ROLES, isValidRole, canAssignRole } from '../config/roles.js';
+import { logger } from "../config/logger.js";
 import {
   upsertUser,
-  validateProfileData,
   getUserByUid,
   deleteUser,
   normalizeUserProfile,
@@ -25,27 +25,55 @@ const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => 
 // GET /api/portal/users?role=client|team_member|manager|admin  (role optional)
 export const listUsers = async (req, res) => {
   try {
-    const { role } = req.query;
+    // limit/cursor validated+coerced by paginationSchema; role is a free filter.
+    const { role, limit, cursor } = req.query;
 
     let query = db.collection(COLLECTION);
     if (role && isValidRole(role)) {
       query = query.where('role', '==', role);
     }
 
+    // Order + paginate in Firestore (no full-collection scan, no in-memory sort).
+    // The role filter + orderBy needs a composite index (firestore.indexes.json).
+    query = query.orderBy('createdAt', 'desc').limit(limit);
+
+    if (cursor) {
+      const cursorDoc = await db.collection(COLLECTION).doc(cursor).get();
+      if (cursorDoc.exists) query = query.startAfter(cursorDoc);
+    }
+
     const snapshot = await query.get();
-    const users = snapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
+    const data = snapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
+    const nextCursor = snapshot.docs.length === limit
+      ? snapshot.docs[snapshot.docs.length - 1].id
+      : null;
 
-    // Sort by createdAt desc in memory (avoids composite index need for the
-    // optional role filter; revisit under the indexing TD task).
-    users.sort((a, b) => {
-      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return tb - ta;
-    });
-
-    res.status(200).json(users);
+    res.status(200).json({ data, nextCursor });
   } catch (error) {
-    console.error('Error listing users:', error);
+    logger.error({ err: error }, 'Error listing users:');
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+/* ================= USER COUNTS ================= */
+// GET /api/portal/users/counts → { all, admin, manager, team_member, client }
+// Uses Firestore count() aggregation: one cheap query per group, no doc reads,
+// accurate at any scale (powers the role tabs without fetching all users).
+export const getUserCounts = async (req, res) => {
+  try {
+    const base = db.collection(COLLECTION);
+    const groups = ['all', ...VALID_ROLES];
+
+    const results = await Promise.all(
+      groups.map((g) => {
+        const q = g === 'all' ? base : base.where('role', '==', g);
+        return q.count().get().then((snap) => [g, snap.data().count]);
+      })
+    );
+
+    res.status(200).json(Object.fromEntries(results));
+  } catch (error) {
+    logger.error({ err: error }, 'Error counting users:');
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -58,7 +86,7 @@ export const getUser = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.status(200).json(user);
   } catch (error) {
-    console.error('Error fetching user:', error);
+    logger.error({ err: error }, 'Error fetching user:');
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -68,30 +96,17 @@ export const getUser = async (req, res) => {
 export const createUser = async (req, res) => {
   try {
     const adminUid = req.user?.uid || 'admin';
+    // Body shape, required fields, role enum, and formats are guaranteed by
+    // createUserSchema (validate middleware). Only authorization remains here.
     const {
       name, email, phone, role,
-      // team-member fields
       designation, joiningDate, fathersName, dateOfBirth, address,
-      // client fields
       organisation, businessName, gstNumber, panNumber, aadhaarNumber, state, emailIds,
     } = req.body;
-
-    if (!isValidRole(role)) {
-      return res.status(400).json({ message: `role must be one of: ${VALID_ROLES.join(', ')}` });
-    }
 
     // Privilege guard: a manager cannot create admin/manager accounts (escalation).
     if (!canAssignRole(req.user?.role, role)) {
       return res.status(403).json({ message: `You are not allowed to assign the role '${role}'.` });
-    }
-
-    // Required fields depend on role.
-    const required = role === 'client'
-      ? ['name', 'email', 'phone']
-      : ['name', 'email', 'phone', 'designation', 'role'];
-    const validation = validateProfileData(req.body, required);
-    if (!validation.valid) {
-      return res.status(400).json({ message: 'Missing required fields', missing: validation.missing });
     }
 
     // Build role-appropriate profile (clean() strips undefined for the other role's fields).
@@ -120,7 +135,7 @@ export const createUser = async (req, res) => {
       message: result.message,
     });
   } catch (error) {
-    console.error('Error creating user:', error);
+    logger.error({ err: error }, 'Error creating user:');
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -164,20 +179,20 @@ export const updateUser = async (req, res) => {
 
     await db.collection(COLLECTION).doc(uid).set(updates, { merge: true });
 
-    // Sync custom claims + type only when a role was actually (and legitimately) written.
+    // Sync the Firebase custom claim only when a role was actually (and
+    // legitimately) written. `role` itself is already persisted in `updates`.
     if (writableRole) {
-      await db.collection(COLLECTION).doc(uid).set({ type: writableRole }, { merge: true });
       const { admin } = await import('../config/firebase.js');
       try {
         await admin.auth().setCustomUserClaims(uid, { role: writableRole });
       } catch (e) {
-        console.warn(`[updateUser] Could not set claims for ${uid}:`, e.message);
+        logger.warn({ err: e }, `[updateUser] Could not set claims for ${uid}:`);
       }
     }
 
     res.status(200).json({ uid, message: 'User updated successfully', roleChanged: !!role && role !== current.role });
   } catch (error) {
-    console.error('Error updating user:', error);
+    logger.error({ err: error }, 'Error updating user:');
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -193,7 +208,7 @@ export const removeUser = async (req, res) => {
     await deleteUser(uid);
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
-    console.error('Error deleting user:', error);
+    logger.error({ err: error }, 'Error deleting user:');
     res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -5,6 +5,7 @@ import {
   updateDoc,
   deleteDoc,
 } from "../config/firestore.js";
+import { logger } from "../config/logger.js";
 
 const COLLECTION = "testimonials";
 
@@ -19,7 +20,7 @@ export const createTestimonial = async (req, res) => {
 
     res.status(201).json(testimonial);
   } catch (error) {
-    console.error("[TESTIMONIAL_ERROR]", error);
+    logger.error({ err: error }, "[TESTIMONIAL_ERROR]");
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -27,18 +28,11 @@ export const createTestimonial = async (req, res) => {
 /* ================= GET ALL TESTIMONIALS ================= */
 export const getAllTestimonials = async (req, res) => {
   try {
-    const testimonials = await getAllDocs(COLLECTION);
-
-    // Sort by createdAt descending
-    testimonials.sort((a, b) => {
-      const dateA = a.createdAt?.toMillis?.() || a.createdAt || 0;
-      const dateB = b.createdAt?.toMillis?.() || b.createdAt || 0;
-      return dateB - dateA;
-    });
-
+    // Ordered + capped in Firestore (no full scan, no in-memory sort).
+    const testimonials = await getAllDocs(COLLECTION, [], { orderBy: { field: "createdAt", direction: "desc" } });
     res.status(200).json(testimonials);
   } catch (error) {
-    console.error("[TESTIMONIAL_ERROR]", error);
+    logger.error({ err: error }, "[TESTIMONIAL_ERROR]");
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -55,7 +49,7 @@ export const getTestimonial = async (req, res) => {
 
     res.status(200).json(testimonial);
   } catch (error) {
-    console.error("[TESTIMONIAL_ERROR]", error);
+    logger.error({ err: error }, "[TESTIMONIAL_ERROR]");
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -76,7 +70,7 @@ export const updateTestimonial = async (req, res) => {
 
     res.status(200).json({ id, ...testimonial, ...req.body });
   } catch (error) {
-    console.error("[TESTIMONIAL_ERROR]", error);
+    logger.error({ err: error }, "[TESTIMONIAL_ERROR]");
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -95,7 +89,7 @@ export const deleteTestimonial = async (req, res) => {
 
     res.status(200).json({ message: "Testimonial deleted successfully" });
   } catch (error) {
-    console.error("[TESTIMONIAL_ERROR]", error);
+    logger.error({ err: error }, "[TESTIMONIAL_ERROR]");
     res.status(500).json({ message: "Internal server error" });
   }
 };

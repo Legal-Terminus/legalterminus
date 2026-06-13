@@ -9,6 +9,7 @@ import {
   deleteDoc,
 } from "../config/firestore.js";
 import { getAuth } from "../config/firebase.js";
+import { logger } from "../config/logger.js";
 
 const COLLECTION = "employees";
 
@@ -50,11 +51,9 @@ export const createEmployee = async (req, res) => {
       });
     }
 
-    /* 2️⃣ Check duplicate email - Query Firestore */
-    const employees = await getAllDocs(COLLECTION);
-    const existingEmployee = employees.find(emp => emp.email === email);
-    
-    if (existingEmployee) {
+    /* 2️⃣ Check duplicate email - targeted query (no full-collection scan) */
+    const dupes = await getAllDocs(COLLECTION, [{ field: "email", operator: "==", value: email }], { limit: 1 });
+    if (dupes.length > 0) {
       return res.status(409).json({
         success: false,
         message: "Employee already exists with this email",
@@ -105,7 +104,7 @@ export const createEmployee = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Employee Create Error:", error);
+    logger.error({ err: error }, "Employee Create Error:");
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -116,21 +115,14 @@ export const createEmployee = async (req, res) => {
 /* ================= GET ALL EMPLOYEES ================= */
 export const getAllEmployees = async (req, res) => {
   try {
-    const employees = await getAllDocs(COLLECTION);
-    
-    // Sort by createdAt descending
-    employees.sort((a, b) => {
-      const dateA = a.createdAt?.toMillis?.() || a.createdAt || 0;
-      const dateB = b.createdAt?.toMillis?.() || b.createdAt || 0;
-      return dateB - dateA;
-    });
-
+    // Ordered + capped in Firestore (no full scan, no in-memory sort).
+    const employees = await getAllDocs(COLLECTION, [], { orderBy: { field: "createdAt", direction: "desc" } });
     res.status(200).json({
       success: true,
       data: employees,
     });
   } catch (error) {
-    console.error("Get Employees Error:", error);
+    logger.error({ err: error }, "Get Employees Error:");
     res.status(500).json({
       success: false,
       message: "Failed to fetch employees",
@@ -156,7 +148,7 @@ export const getEmployee = async (req, res) => {
       data: employee,
     });
   } catch (error) {
-    console.error("Get Employee Error:", error);
+    logger.error({ err: error }, "Get Employee Error:");
     res.status(500).json({
       success: false,
       message: "Failed to fetch employee",
@@ -196,7 +188,7 @@ export const updateEmployee = async (req, res) => {
       data: { id, ...employee, ...req.body },
     });
   } catch (error) {
-    console.error("Update Employee Error:", error);
+    logger.error({ err: error }, "Update Employee Error:");
     res.status(500).json({
       success: false,
       message: "Failed to update employee",
@@ -237,7 +229,7 @@ export const deleteEmployee = async (req, res) => {
       message: "Employee deleted successfully",
     });
   } catch (error) {
-    console.error("Delete Employee Error:", error);
+    logger.error({ err: error }, "Delete Employee Error:");
     res.status(500).json({
       success: false,
       message: "Failed to delete employee",

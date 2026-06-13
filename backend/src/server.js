@@ -1,10 +1,15 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+
+import pinoHttp from "pino-http";
+
+import { FirestoreStore } from "./middleware/firestoreRateLimitStore.js";
+import { logger } from "./config/logger.js";
 
 import blogRoutes from "./routes/blog.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
@@ -41,6 +46,11 @@ const allowedOrigins = [
   /legalterminus\.com$/,
 ];
 
+/* ================= REQUEST LOGGING ================= */
+// Structured per-request logs with an auto-generated request id (req.id),
+// available as req.log inside handlers for correlated logging.
+app.use(pinoHttp({ logger }));
+
 app.use(
   cors({
     origin: allowedOrigins,
@@ -76,11 +86,18 @@ app.use("/api", globalLimiter);
 
 // Strict limiter for abuse-prone / unauthenticated-entry endpoints
 // (contact form, payment initiation, auth register).
+// - Backed by Firestore so the limit is SHARED across instances and survives
+//   deploys (the default memory store is per-instance).
+// - Keyed by the authenticated uid when present, else the client IP — so users
+//   behind a shared NAT aren't throttled as one, and an attacker can't dodge by
+//   rotating IPs once authenticated.
 const sensitiveLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  store: new FirestoreStore(),
+  keyGenerator: (req) => req.user?.uid || ipKeyGenerator(req.ip),
   message: { success: false, error: "Too many attempts, please try again later." },
 });
 
@@ -116,7 +133,7 @@ app.use((req, res) => {
 // (4-arg signature is required for Express to treat this as an error handler.)
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error("[UNHANDLED ERROR]", err);
+  (req.log || logger).error({ err }, "Unhandled error");
   const status = err.status || err.statusCode || 500;
   res.status(status).json({
     success: false,
@@ -132,7 +149,7 @@ const startServer = () => {
   initializeFirebase();
 
   app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    logger.info({ port: PORT }, `Server running on http://localhost:${PORT}`);
   });
 };
 

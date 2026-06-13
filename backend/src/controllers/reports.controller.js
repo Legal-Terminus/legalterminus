@@ -1,4 +1,5 @@
 import { db } from '../config/firebase.js';
+import { logger } from "../config/logger.js";
 
 // ─── Helper: map Firestore doc → plain object ──────────────────────────────
 function docToTask(doc) {
@@ -22,7 +23,7 @@ export async function getAllTasks(req, res) {
     const snap = await query.get();
     res.json(snap.docs.map(docToTask));
   } catch (err) {
-    console.error('getAllTasks report error:', err);
+    logger.error({ err: err }, 'getAllTasks report error:');
     res.status(500).json({ message: 'Failed to fetch all-tasks report' });
   }
 }
@@ -43,7 +44,7 @@ export async function getCompletedTasks(req, res) {
     const snap = await query.get();
     res.json(snap.docs.map(docToTask));
   } catch (err) {
-    console.error('getCompletedTasks report error:', err);
+    logger.error({ err: err }, 'getCompletedTasks report error:');
     res.status(500).json({ message: 'Failed to fetch completed-tasks report' });
   }
 }
@@ -74,7 +75,7 @@ export async function getPendingTasks(req, res) {
     });
     res.json(tasks);
   } catch (err) {
-    console.error('getPendingTasks report error:', err);
+    logger.error({ err: err }, 'getPendingTasks report error:');
     res.status(500).json({ message: 'Failed to fetch pending-tasks report' });
   }
 }
@@ -152,7 +153,7 @@ export async function getMasterSheet(req, res) {
 
     res.json(rows);
   } catch (err) {
-    console.error('getMasterSheet error:', err);
+    logger.error({ err: err }, 'getMasterSheet error:');
     res.status(500).json({ message: 'Failed to fetch master sheet' });
   }
 }

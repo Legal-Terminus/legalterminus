@@ -2,6 +2,7 @@ import admin from "firebase-admin";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import { logger } from "./logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,29 +37,37 @@ const initializeFirebase = () => {
       projectId: process.env.FIREBASE_PROJECT_ID,
     });
 
-    console.log("✅ Firebase Admin SDK initialized");
+    logger.info("✅ Firebase Admin SDK initialized");
   }
 };
 
 /**
- * Get Firestore database instance
+ * Get Firestore database instance (memoized — admin.firestore() is created once).
  */
+let _firestore;
 export const getDb = () => {
-  initializeFirebase();
-  return admin.firestore();
+  if (!_firestore) {
+    initializeFirebase();
+    _firestore = admin.firestore();
+  }
+  return _firestore;
 };
 
 // Lazy Firestore handle: behaves like a Firestore instance for existing callers
 // (`db.collection(...)`), but initialization is deferred until first use instead
 // of running as an import-time side-effect. This avoids crashing at import if env
-// vars aren't loaded yet, and keeps the module importable in tests.
+// vars aren't loaded yet, and keeps the module importable in tests. Bound methods
+// are cached so repeated `db.collection(...)` access doesn't re-bind each time.
+const _boundCache = new Map();
 export const db = new Proxy(
   {},
   {
     get(_target, prop) {
       const instance = getDb();
       const value = instance[prop];
-      return typeof value === "function" ? value.bind(instance) : value;
+      if (typeof value !== "function") return value;
+      if (!_boundCache.has(prop)) _boundCache.set(prop, value.bind(instance));
+      return _boundCache.get(prop);
     },
   }
 );

@@ -17,6 +17,7 @@
  */
 
 import { getDb } from '../config/firebase.js';
+import { logger } from "../config/logger.js";
 
 const CATEGORIES = [
   {
@@ -163,11 +164,11 @@ async function seed() {
   }
 
   await batch.commit();
-  console.log(`✅ Seeded ${CATEGORIES.length} categories with ${totalServices} services into Firestore serviceCategories.`);
+  logger.info(`✅ Seeded ${CATEGORIES.length} categories with ${totalServices} services into Firestore serviceCategories.`);
 }
 
 seed().catch((err) => {
-  console.error('❌ Seed failed:', err);
+  logger.error({ err: err }, '❌ Seed failed:');
   process.exit(1);
 });
 

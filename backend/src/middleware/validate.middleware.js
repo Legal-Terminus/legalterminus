@@ -1,0 +1,28 @@
+import { ZodError } from "zod";
+
+/**
+ * Request-validation middleware factory.
+ *
+ * Usage: router.post("/", validate(createUserSchema), handler)
+ *
+ * Validates `req.body` against the given Zod schema. On success the parsed
+ * (and coerced/stripped) value REPLACES `req.body`, so handlers receive clean,
+ * typed input and never see unknown fields. On failure responds 400 with the
+ * field-level issues — these are safe, caller-facing validation messages.
+ *
+ * Pass `source: "query"` to validate query params instead (used for pagination).
+ */
+export const validate = (schema, source = "body") => (req, res, next) => {
+  try {
+    req[source] = schema.parse(req[source]);
+    next();
+  } catch (err) {
+    if (err instanceof ZodError) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: err.issues.map((i) => ({ field: i.path.join("."), message: i.message })),
+      });
+    }
+    next(err);
+  }
+};

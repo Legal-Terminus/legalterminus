@@ -3,6 +3,7 @@ import admin from "firebase-admin";
 import { verifyToken, requireRole } from "../middleware/auth.middleware.js";
 import { getDb } from "../config/firebase.js";
 import { VALID_ROLES, canAssignRole } from "../config/roles.js";
+import { logger } from "../config/logger.js";
 import {
   upsertUser,
   getUserByEmail,
@@ -53,7 +54,7 @@ router.get("/firebase-config", (req, res) => {
       config: firebaseConfig,
     });
   } catch (error) {
-    console.error('[FIREBASE_CONFIG_ERROR]', error);
+    logger.error({ err: error }, '[FIREBASE_CONFIG_ERROR]');
     res.status(500).json({
       success: false,
       error: "Internal server error",
@@ -125,7 +126,7 @@ router.post("/register", verifyToken, async (req, res) => {
       message: result.message,
     });
   } catch (error) {
-    console.error('[REGISTER_ERROR]', error);
+    logger.error({ err: error }, '[REGISTER_ERROR]');
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
@@ -150,7 +151,7 @@ router.get("/me", verifyToken, async (req, res) => {
 
     res.json({ success: true, user: { uid, ...doc.data() } });
   } catch (error) {
-    console.error('[GET_ME_ERROR]', error);
+    logger.error({ err: error }, '[GET_ME_ERROR]');
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
@@ -184,7 +185,7 @@ router.patch("/set-role", verifyToken, requireRole("admin"), async (req, res) =>
 
     res.json({ success: true, ...result });
   } catch (error) {
-    console.error('[SET_ROLE_ERROR]', error);
+    logger.error({ err: error }, '[SET_ROLE_ERROR]');
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
@@ -249,7 +250,7 @@ router.post("/admin/create-user", verifyToken, requireRole("admin"), async (req,
       message: result.message,
     });
   } catch (error) {
-    console.error('[ADMIN_CREATE_USER_ERROR]', error);
+    logger.error({ err: error }, '[ADMIN_CREATE_USER_ERROR]');
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 });

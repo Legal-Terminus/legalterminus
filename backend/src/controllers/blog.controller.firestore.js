@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { processImage } from "../middleware/upload.middleware.js";
+import { logger } from "../config/logger.js";
 import {
   createDoc,
   getDoc,
@@ -91,7 +92,7 @@ export const createBlog = async (req, res) => {
       fs.unlinkSync(path.join("uploads/blogs", imageName));
     }
 
-    console.error(error);
+    logger.error({ err: error });
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -133,7 +134,7 @@ export const updateBlog = async (req, res) => {
       fs.unlinkSync(path.join("uploads/blogs", newImage));
     }
 
-    console.error(error);
+    logger.error({ err: error });
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -158,7 +159,7 @@ export const deleteBlog = async (req, res) => {
 
     res.json({ message: "Blog deleted successfully" });
   } catch (error) {
-    console.error(error);
+    logger.error({ err: error });
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -166,15 +167,11 @@ export const deleteBlog = async (req, res) => {
 /* ================= GET ALL BLOGS ================= */
 export const getAllBlogs = async (req, res) => {
   try {
-    const blogs = await getAllDocs(COLLECTION);
-    // Sort by createdAt descending
-    blogs.sort((a, b) => {
-      const dateA = a.createdAt?.toMillis?.() || a.createdAt || 0;
-      const dateB = b.createdAt?.toMillis?.() || b.createdAt || 0;
-      return dateB - dateA;
-    });
+    // Ordered + capped in Firestore (no full scan, no in-memory sort).
+    const blogs = await getAllDocs(COLLECTION, [], { orderBy: { field: "createdAt", direction: "desc" } });
     res.json(blogs);
   } catch (err) {
+    logger.error({ err }, "Failed to fetch blogs");
     res.status(500).json({ message: "Failed to fetch blogs" });
   }
 };

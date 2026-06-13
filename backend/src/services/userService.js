@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { db, admin } from '../config/firebase.js';
+import { logger } from "../config/logger.js";
 
 const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 
@@ -66,10 +67,10 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
     // ===== 1. Check Firebase Auth by email =====
     try {
       userRecord = await admin.auth().getUserByEmail(email);
-      console.log(`[UPSERT] Firebase Auth found for ${email}`);
+      logger.info(`[UPSERT] Firebase Auth found for ${email}`);
     } catch (authError) {
       // User doesn't exist in Firebase Auth
-      console.log(`[UPSERT] No Firebase Auth for ${email}, checking Firestore...`);
+      logger.info(`[UPSERT] No Firebase Auth for ${email}, checking Firestore...`);
     }
 
     // ===== 2. Check Firestore by email (for users who signed in via Google only) =====
@@ -84,7 +85,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
         const doc = snapshot.docs[0];
         existingFirestoreUser = { uid: doc.id, ...doc.data() };
         userRecord = { uid: doc.id }; // Placeholder for update logic
-        console.log(`[UPSERT] Firestore user found for ${email}`);
+        logger.info(`[UPSERT] Firestore user found for ${email}`);
       }
     } else if (userRecord) {
       // Fetch existing Firestore doc if Firebase user exists
@@ -94,14 +95,14 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
           existingFirestoreUser = { uid: userRecord.uid, ...doc.data() };
         }
       } catch (e) {
-        console.log(`[UPSERT] No Firestore doc yet for Firebase user ${email}`);
+        logger.info(`[UPSERT] No Firestore doc yet for Firebase user ${email}`);
       }
     }
 
     // ===== 3. USER EXISTS → UPDATE (MERGE) =====
     if (userRecord) {
       const uid = userRecord.uid || existingFirestoreUser?.uid;
-      console.log(`[UPSERT] User exists (${uid}). Merging: role=${role}, provider=${authProvider}`);
+      logger.info(`[UPSERT] User exists (${uid}). Merging: role=${role}, provider=${authProvider}`);
 
       // Derive existing providers from Firestore doc if available; otherwise
       // inspect the Firebase Auth record's providerData so we don't incorrectly
@@ -123,8 +124,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
       const updates = {
         ...profileData, // name, phone, address, designation, etc.
         email,
-        role,
-        type: role, // Store role as type as well
+        role, // `role` is the single source of truth (legacy `type` mirror removed)
         status: 'active',
         updatedAt: now,
         updatedBy: createdBy,
@@ -143,7 +143,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
       try {
         await admin.auth().setCustomUserClaims(uid, { role });
       } catch (claimsErr) {
-        console.warn(`[UPSERT] Could not set claims for ${uid} (no Auth record yet):`, claimsErr.message);
+        logger.warn({ err: claimsErr }, `[UPSERT] Could not set claims for ${uid} (no Auth record yet):`);
       }
 
       // Send password reset email only if:
@@ -157,10 +157,10 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
       ) {
         try {
           await admin.auth().generatePasswordResetLink(email);
-          console.log(`[EMAIL] Password reset link generated for ${email} (delivery not yet implemented)`);
+          logger.info(`[EMAIL] Password reset link generated for ${email} (delivery not yet implemented)`);
           // TODO: send via SendGrid.
         } catch (e) {
-          console.warn(`[EMAIL] Could not generate password reset for ${email}:`, e.message);
+          logger.warn({ err: e }, `[EMAIL] Could not generate password reset for ${email}:`);
         }
       }
 
@@ -179,7 +179,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
     }
 
     // ===== 4. NEW USER → CREATE =====
-    console.log(`[CREATE] New user: ${email}, role=${role}, provider=${authProvider}`);
+    logger.info(`[CREATE] New user: ${email}, role=${role}, provider=${authProvider}`);
 
     // Create Firebase Auth account
     const newUserRecord = await admin.auth().createUser({
@@ -194,8 +194,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
       uid: newUid,
       email,
       ...profileData, // name, phone, address, designation, etc.
-      role,
-      type: role,
+      role, // single source of truth (legacy `type` mirror removed)
       status: 'active',
 
       // Authentication tracking
@@ -220,10 +219,10 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
     if (sendEmail && authProvider === 'email') {
       try {
         await admin.auth().generatePasswordResetLink(email);
-        console.log(`[EMAIL] Password reset link generated for ${email} (delivery not yet implemented)`);
+        logger.info(`[EMAIL] Password reset link generated for ${email} (delivery not yet implemented)`);
         // TODO: send via SendGrid, then set resetEmailSent = true on success.
       } catch (e) {
-        console.warn(`[EMAIL] Could not generate password reset for ${email}:`, e.message);
+        logger.warn({ err: e }, `[EMAIL] Could not generate password reset for ${email}:`);
       }
     }
 
@@ -240,7 +239,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
         : `${role} created. Ask them to use "Forgot password" to set their password.`,
     };
   } catch (error) {
-    console.error('[UPSERT] Error:', error);
+    logger.error({ err: error }, '[UPSERT] Error:');
     throw error;
   }
 };
@@ -295,7 +294,7 @@ export const getUserByUid = async (uid) => {
     if (!doc.exists) return null;
     return { uid: doc.id, ...doc.data() };
   } catch (error) {
-    console.error(`[getUserByUid] Error fetching ${uid}:`, error);
+    logger.error({ err: error }, `[getUserByUid] Error fetching ${uid}:`);
     throw error;
   }
 };
@@ -317,7 +316,7 @@ export const getUserByEmail = async (email) => {
     const doc = snapshot.docs[0];
     return { uid: doc.id, ...doc.data() };
   } catch (error) {
-    console.error(`[getUserByEmail] Error fetching ${email}:`, error);
+    logger.error({ err: error }, `[getUserByEmail] Error fetching ${email}:`);
     throw error;
   }
 };
@@ -341,11 +340,11 @@ export const updateUserRole = async (uid, newRole) => {
     // Update custom claims
     await admin.auth().setCustomUserClaims(uid, { role: newRole });
 
-    console.log(`[updateUserRole] ${uid} → ${newRole}`);
+    logger.info(`[updateUserRole] ${uid} → ${newRole}`);
 
     return { uid, role: newRole, updated: true };
   } catch (error) {
-    console.error(`[updateUserRole] Error for ${uid}:`, error);
+    logger.error({ err: error }, `[updateUserRole] Error for ${uid}:`);
     throw error;
   }
 };
@@ -363,10 +362,10 @@ export const deleteUser = async (uid) => {
     // Delete Firestore document
     await db.collection('users').doc(uid).delete();
 
-    console.log(`[deleteUser] User ${uid} deleted`);
+    logger.info(`[deleteUser] User ${uid} deleted`);
     return { deleted: true };
   } catch (error) {
-    console.error(`[deleteUser] Error for ${uid}:`, error);
+    logger.error({ err: error }, `[deleteUser] Error for ${uid}:`);
     throw error;
   }
 };
