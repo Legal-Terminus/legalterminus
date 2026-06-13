@@ -235,3 +235,139 @@
     padding: 20px 18px;
   }
 }
+
+/* ===== CATEGORIES LAYOUT ===== */
+.opcd-categories {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.opcd-category {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.opcd-category:hover {
+  border-color: #22c55e;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.12);
+}
+
+.opcd-category-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #f0fdf4, #ffffff);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.opcd-category-number {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.opcd-category-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.opcd-category-list {
+  list-style: none;
+  margin: 0;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.opcd-category-item {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-left: 0;
+}
+
+.opcd-category-item::before {
+  content: "✓";
+  width: 20px;
+  min-width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #dcfce7;
+  color: #16a34a;
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 4px;
+  margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+  .opcd-category-header {
+    padding: 16px 20px;
+    gap: 12px;
+  }
+
+  .opcd-category-number {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .opcd-category-title {
+    font-size: 15px;
+  }
+
+  .opcd-category-list {
+    padding: 14px 20px;
+    gap: 8px;
+  }
+
+  .opcd-category-item {
+    font-size: 13px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .opcd-category {
+    border-radius: 10px;
+  }
+
+  .opcd-category-header {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .opcd-category-title {
+    font-size: 14px;
+  }
+
+  .opcd-category-list {
+    padding: 12px 16px;
+  }
+
+  .opcd-category-item {
+    font-size: 12.5px;
+  }
+}
