@@ -5,7 +5,8 @@ export type Role = 'admin' | 'manager' | 'team_member' | 'client';
 /** Unified user shape across all roles (backed by the `users` collection). */
 export interface PortalUser {
   uid: string;
-  name: string;
+  name?: string;       // may be absent on older/Google-only docs → use displayName()
+  fullName?: string;   // legacy/alternate name field
   email: string;
   phone?: string;
   role: Role;
@@ -35,6 +36,10 @@ export interface UpsertUserResult {
   scenario?: string;
   message?: string;
 }
+
+/** Best display name for a user, tolerating missing/legacy fields. */
+export const displayName = (u: Pick<PortalUser, 'name' | 'fullName' | 'email'>): string =>
+  (u.name?.trim() || u.fullName?.trim() || u.email || 'Unknown');
 
 const BASE = '/api/portal/users';
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import PageShell from '../../components/common/PageShell';
-import { getUsers, deleteUser, type PortalUser } from '../../api/users';
+import { getUsers, deleteUser, displayName, type PortalUser } from '../../api/users';
 import { useAuthStore } from '../../store/authStore';
 import {
   ROLES, roleLabel, roleBadgeClass, roleAvatarClass, can, USER_DELETE_ROLES,
@@ -19,8 +19,10 @@ const ROLE_TABS: { value: RoleFilter; label: string }[] = [
   ...ROLES.map((r) => ({ value: r.key as RoleFilter, label: r.pluralLabel })),
 ];
 
-function initials(name: string) {
-  return name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+function initials(name?: string) {
+  const n = (name ?? '').trim();
+  if (!n) return '?';
+  return n.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
 export default function UsersPage() {
@@ -42,7 +44,7 @@ export default function UsersPage() {
     const q = search.toLowerCase();
     const matchSearch =
       !q ||
-      u.name.toLowerCase().includes(q) ||
+      displayName(u).toLowerCase().includes(q) ||
       u.email.toLowerCase().includes(q) ||
       u.designation?.toLowerCase().includes(q) ||
       u.organisation?.toLowerCase().includes(q);
@@ -60,7 +62,7 @@ export default function UsersPage() {
   }
 
   function handleDelete(user: PortalUser) {
-    if (!window.confirm(`Delete ${user.name}?`)) return;
+    if (!window.confirm(`Delete ${displayName(user)}?`)) return;
     deleteUserMutation.mutate(user.uid);
   }
 
@@ -146,9 +148,9 @@ export default function UsersPage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${roleAvatarClass(user.role)}`}>
-                          <span className="text-sm font-bold">{initials(user.name)}</span>
+                          <span className="text-sm font-bold">{initials(displayName(user))}</span>
                         </div>
-                        <p className="text-sm font-semibold text-ink">{user.name}</p>
+                        <p className="text-sm font-semibold text-ink">{displayName(user)}</p>
                       </div>
                     </td>
                     <td className="px-5 py-4">
@@ -217,7 +219,7 @@ export default function UsersPage() {
                       <span className="text-sm font-bold">{initials(user.name)}</span>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-ink truncate">{user.name}</p>
+                      <p className="text-sm font-semibold text-ink truncate">{displayName(user)}</p>
                       {(user.designation || user.organisation) && (
                         <p className="text-xs text-ink-faint truncate">{user.designation ?? user.organisation}</p>
                       )}

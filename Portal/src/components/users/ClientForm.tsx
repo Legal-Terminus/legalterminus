@@ -33,7 +33,7 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
   const id = client?.clientId ?? client?.uid;
 
   const [formData, setFormData] = useState<Client>({
-    name: client?.name ?? '',
+    name: client?.name ?? (client as { fullName?: string })?.fullName ?? '',
     email: client?.email ?? '',
     phone: client?.phone ?? '',
     address: client?.address ?? '',

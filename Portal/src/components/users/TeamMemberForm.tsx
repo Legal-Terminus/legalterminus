@@ -47,7 +47,7 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
   const selectableRoles = ROLES.filter((r) => allowedRoleKeys.includes(r.value));
 
   const [formData, setFormData] = useState<TeamMember>({
-    name: member?.name ?? '',
+    name: member?.name ?? (member as { fullName?: string })?.fullName ?? '',
     email: member?.email ?? '',
     phone: member?.phone ?? '',
     designation: member?.designation ?? '',

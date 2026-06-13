@@ -1,5 +1,6 @@
 import express from "express";
 import { upload } from "../middleware/upload.middleware.js";
+import { verifyToken, requireRole } from "../middleware/auth.middleware.js";
 import {
   createBlog,
   updateBlog,
@@ -9,10 +10,13 @@ import {
 
 const router = express.Router();
 
-router.post("/create", upload.single("image"), createBlog);
-router.put("/update/:id", upload.single("image"), updateBlog);
-router.delete("/delete/:id", deleteBlog);
+// Public read — consumed by the marketing site.
 router.get("/all", getAllBlogs);
 
+// Content management — admin + manager only.
+const manage = [verifyToken, requireRole("admin", "manager")];
+router.post("/create", ...manage, upload.single("image"), createBlog);
+router.put("/update/:id", ...manage, upload.single("image"), updateBlog);
+router.delete("/delete/:id", ...manage, deleteBlog);
 
 export default router;

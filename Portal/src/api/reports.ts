@@ -53,8 +53,11 @@ export const getMasterSheet = (filters: ReportFilters = {}) =>
   apiFetch<MasterSheetRow[]>(`/api/reports/master-sheet${buildQuery(filters)}`);
 
 // ─── Contact Leads report ───────────────────────────────────────────────────
+export type LeadStatus = 'new' | 'contacted' | 'closed';
+
 export interface ContactLead {
   id: string;
+  refId: string;
   fullName: string;
   company: string;
   email: string;
@@ -66,16 +69,40 @@ export interface ContactLead {
   source: string;
   sourceLabel: string;
   whatsapp: boolean;
-  status: 'new' | 'contacted' | 'closed';
+  status: LeadStatus;
+  notes: string;
   createdAt: string | null;
   updatedAt: string | null;
+  contactedAt: string | null;
   registered: boolean;
   registeredUid: string | null;
   registeredRole: string | null;
 }
 
+export interface LeadInput {
+  fullName?: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  state?: string;
+  preferredCallTime?: string;
+  sourceLabel?: string;
+  message?: string;
+  notes?: string;
+  status?: LeadStatus;
+}
+
 export const getContactLeadsReport = () =>
   apiFetch<ContactLead[]>('/api/leads');
+
+export const createLead = (body: LeadInput) =>
+  apiFetch<ContactLead>('/api/leads', { method: 'POST', body: JSON.stringify(body) });
+
+export const updateLead = (id: string, body: LeadInput) =>
+  apiFetch<Partial<ContactLead>>(`/api/leads/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+
+export const deleteLead = (id: string) =>
+  apiFetch<void>(`/api/leads/${id}`, { method: 'DELETE' });
 
 /** Navigates browser to download CSV — no fetch needed (binary stream) */
 export const downloadMasterSheetCSV = (filters: ReportFilters = {}) => {

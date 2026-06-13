@@ -23,6 +23,16 @@ build/
 .env.*.local
 *.env
 *.env.local
+!.env.example
+
+# Secrets / credentials / keys
+*serviceAccount*.json
+*service-account*.json
+*firebase-adminsdk*.json
+*-credentials.json
+*.pem
+*.key
+*.p12
 
 # Logs
 logs/

@@ -1498,6 +1498,51 @@ These are non-feature engineering tasks captured during development. **Scheduled
 
 ---
 
+### TD-04 — CORS Allowed-Origins Hardening [Critical]
+
+**Priority**: P0 (security) | **Complexity**: S | **Raised**: 2026-06-13
+
+**Rationale**: The CORS `allowedOrigins` list in `backend/src/server.js` uses unanchored / overly-broad regular expressions, so origins outside our control are accepted:
+- `/legalterminus\.com$/` matches attacker-controlled domains like `https://evil-legalterminus.com` and `https://notlegalterminus.com` (no `.`/start-of-host boundary before `legalterminus`).
+- `/\.firebaseapp\.com$/` and `/\.web\.app$/` match **any** project on those shared Firebase/Google hosting domains, not just ours.
+
+Combined with `credentials: true`, a malicious origin that matches these patterns can make authenticated cross-origin requests with the user's credentials. This is a genuine cross-origin attack surface and should be treated as critical.
+
+**Acceptance Criteria**:
+- Anchor the primary domain to a host boundary, e.g. `/(^|\.)legalterminus\.com$/`, so only `legalterminus.com` and its subdomains match.
+- Replace the broad `.firebaseapp.com` / `.web.app` patterns with our exact project hostnames (e.g. `https://<project-id>.web.app`, `https://<project-id>.firebaseapp.com`).
+- Keep `localhost` / Capacitor origins only for non-production environments; gate them behind `NODE_ENV !== 'production'`.
+- Add a regression note/test asserting `evil-legalterminus.com` and an unrelated `*.web.app` are rejected.
+
+---
+
+### TD-05 — Server-Side Price Catalog & Payment Amount Validation [Critical]
+
+**Priority**: P0 (security/financial) | **Complexity**: L | **Raised**: 2026-06-13
+
+**Rationale**: `POST /api/payment/initiate` trusts the client-supplied `amount` and signs it straight into the PayU request hash, so a user can pay an arbitrary amount (e.g. ₹1) for any plan. The proper fix is a server-authoritative price catalog: the backend looks up the price for `(source, planName)` and ignores the client `amount`.
+
+This was **partially mitigated** on 2026-06-13 (auth + userId binding — see below), which closes pay-as-another-user and entitlement spoofing, but **NOT** amount tampering. Amount tampering remains open until this catalog exists.
+
+**Blocker discovered**: prices are currently defined inline across ~71 frontend plan components, keyed by a `source` prop. Auditing them surfaced data-integrity problems that must be resolved before a catalog can be trusted:
+- **Duplicate `source` keys with conflicting prices** — the same `source` maps to different plan sets/prices in two components, e.g. `trademark-application` (`TmarkPlans`: 1499/3499/7999 vs `TMApplicaPlanandPricing`: **1**/7499/24499), `professional-tax`, `dissolve-llp`, `trademark-renewal`, `trademark-hearing`, `trademark-opposition`, `proprietorship-to-opc`.
+- **Suspicious values** — `TMApplicaPlanandPricing` has a plan priced at `₹1` (likely a test value left in prod).
+- **`source` defined in a parent (breadcrumb) component, prices in a sibling** for: `proprietorship-to-company`, `director-partner`, `gst-returns`, `pf-registration`, `society-registration`, `trust-registration`.
+
+**Acceptance Criteria**:
+- Reconcile duplicate `source` keys to a single canonical plan set + price each (product decision required).
+- Model the catalog in Firestore (extend `serviceCategories`, or a new `plans` collection) keyed by `source` → `{ planName → { price, label } }`.
+- `/initiate` looks up price server-side by `(source, planName)`; reject if not found; ignore client `amount`.
+- On the PayU callback, cross-check the verified `amount`/`productinfo` against the looked-up plan before granting entitlement.
+- Migrate frontend plan components to read prices from the catalog API (price field only — no other content changes) so displayed and validated prices cannot diverge.
+
+**Done so far (2026-06-13, partial)**:
+- `/api/payment/initiate` now requires `verifyToken`; `userId` is derived from `req.user.uid`, not the request body.
+- The PayU callback (`/redirect`) credits the hash-protected `udf1` (userId), `udf2` (planName) and `amount` from the verified PayU body rather than the unsigned query string.
+- Frontend `ProCheckoutModal` sends the Firebase ID token and no longer sends `userId`.
+
+---
+
 ## Phase 2 Stories (Out of Sprint 1–4 Scope)
 
 The following stories are tagged `[Phase 2]` and are scoped for the next planning cycle after the web app is stable:

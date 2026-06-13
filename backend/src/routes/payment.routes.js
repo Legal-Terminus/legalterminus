@@ -2,6 +2,7 @@ import express from 'express';
 import crypto from 'crypto';
 import axios from 'axios';
 import { getDb } from '../config/firebase.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -39,8 +40,13 @@ function verifyResponseHash(params) {
  * Returns PayU form fields (key, txnid, hash, etc.) to the frontend,
  * which then auto-submits a hidden form to PayU's payment page.
  */
-router.post('/initiate', async (req, res) => {
-  const { amount, planName, userId, form, source, sourceLabel } = req.body;
+router.post('/initiate', verifyToken, async (req, res) => {
+  const { amount, planName, form, source, sourceLabel } = req.body;
+
+  // userId is taken from the verified token — never from the request body — so a
+  // user cannot initiate a payment that records against another user's account.
+  // The value is signed into udf1 below and re-verified on the PayU callback.
+  const userId = req.user.uid;
 
   if (!amount || !planName) {
     return res.status(400).json({ error: 'Missing required fields: amount, planName' });
@@ -122,15 +128,22 @@ router.post('/redirect', express.urlencoded({ extended: true }), async (req, res
   const paymentId  = body.mihpayid || txnId;
   const isSuccess  = payuStatus === 'success';
 
+  // Use the hash-protected udf1/udf2/amount from the verified PayU body as the
+  // authoritative values. The query-string copies are unsigned and must not be
+  // trusted to decide whose account gets credited or how much.
+  const trustedUserId   = body.udf1   || userId;
+  const trustedPlanName = body.udf2   || planName;
+  const trustedAmount   = body.amount || amount;
+
   try {
     if (isSuccess) {
-      await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, source, sourceLabel, status: 'success' });
-      const query = new URLSearchParams({ status: 'success', order_id: txnId, amount, tracking_id: paymentId });
+      await savePayment({ userId: trustedUserId, transactionId: txnId, paymentId, amount: trustedAmount, planName: trustedPlanName, source, sourceLabel, status: 'success' });
+      const query = new URLSearchParams({ status: 'success', order_id: txnId, amount: trustedAmount, tracking_id: paymentId });
       return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
     }
 
     const reason = body.error_Message || body.field9 || 'Payment failed';
-    await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, source, sourceLabel, status: 'failed', failureReason: reason });
+    await savePayment({ userId: trustedUserId, transactionId: txnId, paymentId, amount: trustedAmount, planName: trustedPlanName, source, sourceLabel, status: 'failed', failureReason: reason });
     const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason });
     return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   } catch (err) {
@@ -175,16 +188,23 @@ router.get('/redirect', async (req, res) => {
     const paymentId = txnData?.mihpayid || txnId;
     const isSuccess = status === 'success';
 
+    // Prefer the authoritative values returned by PayU's Verify API over the
+    // unsigned query params, which the user controls. udf1=userId, udf2=planName
+    // were set server-side from the verified token at /initiate.
+    const trustedUserId   = txnData?.udf1 || userId;
+    const trustedPlanName = txnData?.udf2 || planName;
+    const trustedAmount   = txnData?.amt  || txnData?.amount || amount;
+
     console.log(`[PayU Verify] txnId=${txnId}, status=${status}`);
 
     if (isSuccess) {
-      await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, source, sourceLabel, status: 'success' });
-      const query = new URLSearchParams({ status: 'success', order_id: txnId, amount, tracking_id: paymentId });
+      await savePayment({ userId: trustedUserId, transactionId: txnId, paymentId, amount: trustedAmount, planName: trustedPlanName, source, sourceLabel, status: 'success' });
+      const query = new URLSearchParams({ status: 'success', order_id: txnId, amount: trustedAmount, tracking_id: paymentId });
       return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
     }
 
     const reason = txnData?.error_Message || 'Payment failed';
-    await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, source, sourceLabel, status: 'failed', failureReason: reason });
+    await savePayment({ userId: trustedUserId, transactionId: txnId, paymentId, amount: trustedAmount, planName: trustedPlanName, source, sourceLabel, status: 'failed', failureReason: reason });
     const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason });
     return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   } catch (err) {
