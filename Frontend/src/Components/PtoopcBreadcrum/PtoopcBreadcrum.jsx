@@ -18,28 +18,32 @@ const PtoopcBreadcrum = () => {
             Convert Proprietorship to OPC
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Stay Solo, Gain Limited Liability</span>
+            <span className="lt-title-tagline">One founder, full corporate shield</span>
           </h1>
 
           <p className="lt-public-description">
-            Run your business alone but want a corporate shield? Legal Terminus converts your sole proprietorship into a One Person Company (OPC) under the Companies Act, 2013 — incorporating a fresh OPC through SPICe+, with your nominee on record (Form INC-3), and transferring the proprietorship's assets and liabilities through a takeover agreement. You keep full control as the single owner, but gain limited liability and a separate legal identity. Our professional fee starts at ₹6,999 + GST. Government fees &amp; stamp duty are billed separately at actuals.
+            A Proprietorship is easy to start, but as your business grows, it comes with limitations such as unlimited personal liability, no separate legal identity, and lower business credibility. Proprietorship firm to OPC conversion helps you upgrade your business into a legally recognized corporate structure while keeping complete ownership in the hands of a single founder. A One Person Company (OPC) under the Companies Act, 2013 offers limited liability protection, separate legal identity, better brand credibility, and improved business continuity.
+          </p>
+
+          <p className="lt-public-description">
+            At Legal Terminus, we handle the complete Proprietorship firm to OPC conversion process — including OPC incorporation through the MCA portal, PAN &amp; TAN application, GST migration support, and assistance with updating bank accounts and business registrations. Supreme Plans also include 12 months of compliance support.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Single Owner Keeps Full Control</div>
-            <div className="lt-feature-item">Limited Liability &amp; Separate Legal Entity</div>
-            <div className="lt-feature-item">SPICe+ Incorporation + Nominee (INC-3)</div>
-            <div className="lt-feature-item">Business Takeover &amp; Registration Transfer</div>
+            <div className="lt-feature-item">URC-1 + URC-2 Filed</div>
+            <div className="lt-feature-item">Section 366 Compliant</div>
+            <div className="lt-feature-item">Limited Liability</div>
+            <div className="lt-feature-item">100% Founder-Held</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>3,000+</h3>
-              <p>Conversions handled</p>
+              <h3>500+</h3>
+              <p>OPC + URC-1 conversions</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>End-to-end MCA filing</p>
+              <h3>End-to-End Transition</h3>
+              <p>GST + Bank + Licenses + IP</p>
             </div>
             <div>
               <h3>7+</h3>
