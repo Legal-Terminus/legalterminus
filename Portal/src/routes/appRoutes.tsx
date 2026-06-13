@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Settings,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Settings, Layers,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 
@@ -75,8 +75,8 @@ export const APP_ROUTES: AppRoute[] = [
   // ── Admin-only (per BMAD E10-S01 workflow config) ──
   { path: '/workflow-settings', element: <WorkflowSettings />, roles: ['admin'], nav: { label: 'Workflow Settings', mobileLabel: 'Settings', icon: Settings } },
 
-  // ── Client-only ──
-  { path: '/services', element: <Services />, roles: ['client'], nav: { label: 'Services', icon: Settings, mobile: true } },
+  // ── Service catalog — staff only (clients excluded; staff can customise table fields) ──
+  { path: '/services', element: <Services />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Services', icon: Layers, mobile: true } },
 
   // ── Shared (multi-role) — reached via Reports tile / dashboard tile; no sidebar entry ──
   { path: '/reports/leads', element: <ContactLeadsReport />, roles: ['admin', 'manager', 'team_member'] },

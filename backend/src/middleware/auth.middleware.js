@@ -47,22 +47,27 @@ export const verifyToken = async (req, res, next) => {
     const decoded = await admin.auth().verifyIdToken(token);
     req.user = decoded; // { uid, email, role?, ... }
 
-    // Fall back to Firestore role if the token has no role claim. Cached briefly
-    // so this costs at most one read per uid per TTL window, not one per request.
-    if (!req.user.role && decoded.uid) {
+    // Firestore is the AUTHORITATIVE role source — NOT the token claim. A cached
+    // ID token carries the role from when it was minted (valid up to ~1h), so a
+    // role up/down-grade wouldn't take effect until the token refreshed. Reading
+    // the current role from Firestore (cached 60s) makes role changes propagate
+    // within the TTL for everyone, with no token-refresh/revocation dance.
+    // Falls back to the token claim only if the Firestore read fails.
+    if (decoded.uid) {
       const cached = getCachedRole(decoded.uid);
       if (cached) {
         req.user.role = cached;
       } else {
         try {
           const doc = await getDb().collection("users").doc(decoded.uid).get();
-          if (doc.exists) {
-            const role = doc.data()?.role;
+          const role = doc.exists ? doc.data()?.role : undefined;
+          if (role) {
             req.user.role = role;
-            if (role) setCachedRole(decoded.uid, role);
+            setCachedRole(decoded.uid, role);
           }
+          // else: keep whatever role the token claim had (fallback)
         } catch (e) {
-          logger.warn({ err: e }, `[verifyToken] Could not read Firestore role for ${decoded.uid}:`);
+          logger.warn({ err: e }, `[verifyToken] Could not read Firestore role for ${decoded.uid}; using token claim:`);
         }
       }
     }

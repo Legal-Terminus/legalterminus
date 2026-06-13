@@ -78,6 +78,16 @@ export const statusOnlySchema = z.object({
   status: z.enum(["draft", "published", "active", "inactive"]),
 }).strict();
 
+/* ── Service catalog (staff edit of a service's editable fields) ───────── */
+// Per-service editable fields stored in serviceCategories/{categoryId}.services[key].
+// `key`, `category` and `categoryId` are immutable identity and never edited here.
+export const serviceUpdateSchema = z.object({
+  displayName: shortText.optional(),
+  active: z.boolean().optional(),
+}).strict().refine((o) => Object.keys(o).length > 0, {
+  message: "At least one field (displayName or active) is required",
+});
+
 /* ── Contact lead (public submit) ─────────────────────────────────────── */
 export const contactCreateSchema = z.object({
   fullName: z.string().trim().max(100).optional(),

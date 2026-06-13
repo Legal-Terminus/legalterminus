@@ -71,10 +71,15 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
   const [error, setError] = useState('');
 
   const mutation = useMutation({
-    mutationFn: (data: TeamMember) =>
-      data.uid
-        ? updateUser(data.uid, data)
-        : createUser({ ...data, role: data.role }),
+    mutationFn: (data: TeamMember) => {
+      if (data.uid) {
+        // PATCH accepts only updatable fields — `uid` is in the URL and `email`
+        // is immutable; sending them trips the strict schema ("Unrecognized keys").
+        const { uid, email: _email, ...updates } = data;
+        return updateUser(uid, updates);
+      }
+      return createUser({ ...data, role: data.role });
+    },
     onSuccess: () => onSuccess(),
     onError: (err: Error) => setError(err.message),
   });

@@ -53,8 +53,13 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
   const mutation = useMutation({
     mutationFn: async (data: Client) => {
       const allEmails = [data.email, ...data.emailIds.filter((e) => e !== data.email)];
-      const payload = { ...data, emailIds: allEmails, role: 'client' as const };
-      return id ? updateUser(id, payload) : createUser(payload);
+      if (id) {
+        // PATCH accepts only updatable fields — `uid` is in the URL and `email`
+        // is immutable; sending them trips the strict schema ("Unrecognized keys").
+        const { uid: _uid, email: _email, ...rest } = data;
+        return updateUser(id, { ...rest, emailIds: allEmails });
+      }
+      return createUser({ ...data, emailIds: allEmails, role: 'client' as const });
     },
     onSuccess: () => onSuccess(),
     onError: (err: Error) => setError(err.message),

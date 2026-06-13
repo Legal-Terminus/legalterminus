@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -11,7 +11,6 @@ import {
   type SortingState,
   type ColumnFiltersState,
 } from '@tanstack/react-table';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import PageShell from '../../components/common/PageShell';
 import ErrorBoundary from '../../components/common/ErrorBoundary';
 import {
@@ -76,9 +75,11 @@ export default function UsersPage() {
   const [sorting, setSorting] = useState<SortingState>([{ id: 'createdAt', desc: true }]);
 
   // Load all users once; the grid does sorting/filtering/search client-side.
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['portalUsers'],
     queryFn: getAllUsers,
+    retry: 1,            // fail fast & visibly instead of hammering on a bad token
+    staleTime: 30_000,
   });
 
   // Counts for the role tabs — derived from the loaded set (single source).
@@ -240,18 +241,6 @@ export default function UsersPage() {
   });
 
   const rows = table.getRowModel().rows;
-
-  // Virtualize the desktop rows so the DOM only holds what's visible. Rows are
-  // absolutely positioned, so columns are kept aligned via explicit per-column
-  // widths (col `size`) applied to both header and body cells + table-fixed.
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const ROW_HEIGHT = 73;
-  const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => ROW_HEIGHT,
-    overscan: 10,
-  });
   const totalWidth = table.getTotalSize();
 
   return (
@@ -302,6 +291,12 @@ export default function UsersPage() {
           <div className="w-7 h-7 border-2 border-hairline border-t-ink rounded-full animate-spin" />
           <span className="text-sm">Loading users…</span>
         </div>
+      ) : error ? (
+        <div className="card p-16 flex flex-col items-center gap-3 text-ink-faint">
+          <Users className="w-10 h-10 text-red-300" />
+          <p className="text-sm font-medium text-red-600">Couldn’t load users</p>
+          <p className="text-xs text-ink-faint">{(error as Error).message}</p>
+        </div>
       ) : rows.length === 0 ? (
         <div className="card p-16 flex flex-col items-center gap-3 text-ink-faint">
           <Users className="w-10 h-10 text-hairline" />
@@ -343,32 +338,24 @@ export default function UsersPage() {
                   </div>
                 ))}
 
-                {/* Virtualized body */}
-                <div ref={scrollRef} className="max-h-[70vh] overflow-y-auto">
-                  <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}>
-                    {rowVirtualizer.getVirtualItems().map((vr) => {
-                      const row = rows[vr.index];
-                      return (
+                {/* Body — plain scroll (no virtualization; fine at this scale) */}
+                <div className="max-h-[70vh] overflow-y-auto">
+                  {rows.map((row) => (
+                    <div
+                      key={row.id}
+                      className="flex items-start border-b border-gray-50 hover:bg-surface-soft transition-colors group"
+                    >
+                      {row.getVisibleCells().map((cell) => (
                         <div
-                          key={row.id}
-                          data-index={vr.index}
-                          ref={rowVirtualizer.measureElement}
-                          className="flex items-start border-b border-gray-50 hover:bg-surface-soft transition-colors group absolute left-0 w-full"
-                          style={{ transform: `translateY(${vr.start}px)` }}
+                          key={cell.id}
+                          style={{ width: cell.column.getSize() }}
+                          className="px-5 py-4 shrink-0"
                         >
-                          {row.getVisibleCells().map((cell) => (
-                            <div
-                              key={cell.id}
-                              style={{ width: cell.column.getSize() }}
-                              className="px-5 py-4 shrink-0"
-                            >
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </div>
-                          ))}
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
