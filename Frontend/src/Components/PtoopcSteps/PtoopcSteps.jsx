@@ -46,7 +46,7 @@ const PtoopcSteps = () => {
   ];
 
   return (
-    <section className="opcsteps-section" id="process">
+    <section className="opcsteps-section">
       <div className="opcsteps-container">
         <header className="opcsteps-header">
           <h2 className="opcsteps-title">Steps for Converting Proprietorship to an OPC</h2>

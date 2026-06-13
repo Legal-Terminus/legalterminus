@@ -26,7 +26,7 @@ const PtoopcTypes = () => {
     {
       form: "Form INC-3 - Nominee Consent",
       badge: "All Plans",
-      description: "Mandatory under Section 3(1)(c) + Rule 3. Nominee must be Indian citizen + Indian resident + adult + must consent on Form INC-3. We co-draft the nominee declaration + secure the consent + file with SPICe+. Nominee can be changed later via Form INC-4.",
+      description: "Mandatory under Section 3(1)(c) + Rule 3. Nominee must be Indian citizen + Indian resident + adult + must consent on Form INC-3. We co-draft the nominee declaration + secure the consent + file with SPICe+. Nominees can be changed later via Form INC-4.",
     },
     {
       form: "GST Migration",
@@ -41,12 +41,12 @@ const PtoopcTypes = () => {
     {
       form: "Trademark Assignment via Form TM-P",
       badge: "Supreme Plus Only",
-      description: "Proprietorship-held trademarks assigned to the OPC via Form TM-P (Application for assignment) on the IP India portal. Maintains brand continuity + protects the OPC's IP. Goodwill / without-goodwill structure advised based on business model. Stamp duty on assignment deed at State actuals.",
+      description: "Proprietorship-held trademarks assigned to the OPC via Form TM-P (Application for assignment) on the IP India portal. Maintains brand continuity + protects the OPC's IP. Goodwill / without-goodwill structure advised based on business model. Stamp duty on assignment deeds at State actuals.",
     },
   ];
 
   return (
-    <section className="opctypes-section" id="types">
+    <section className="opctypes-section">
       <div className="opctypes-container">
         <header className="opctypes-header">
           <h2 className="opctypes-title">Types of Converting Proprietorship to an OPC</h2>

@@ -8,9 +8,9 @@ const PtoopcTermCondition = React.lazy(() => import('../../Components/PtoopcTerm
 const PtoopcZolvitPremium = React.lazy(() => import('../../Components/PtoopcZolvitPremium/PtoopcZolvitPremium'))
 const PtoopcTabs = React.lazy(() => import('../../Components/PtoopcTabs/PtoopcTabs'))
 const PtoopcOverview = React.lazy(() => import('../../Components/PtoopcOverview/PtoopcOverview'))
-const PtoopcFeatures = React.lazy(() => import('../../Components/PtoopcFeatures/PtoopcFeatures'))
+const PtoopcTypes = React.lazy(() => import('../../Components/PtoopcTypes/PtoopcTypes'))
 const PtoopcBenefits = React.lazy(() => import('../../Components/PtoopcBenefits/PtoopcBenefits'))
-const PtoopcElegibility = React.lazy(() => import('../../Components/PtoopcElegibility/PtoopcElegibility'))
+const PtoopcSteps = React.lazy(() => import('../../Components/PtoopcSteps/PtoopcSteps'))
 const PtoopcDocuments = React.lazy(() => import('../../Components/PtoopcDocuments/PtoopcDocuments'))
 const PtoopcFAQ = React.lazy(() => import('../../Components/PtoopcFAQ/PtoopcFAQ'))
 
@@ -67,7 +67,7 @@ const PropToOpcNew = () => {
 
       <div id="types">
         <Suspense fallback={<div />}>
-          <PtoopcFeatures />
+          <PtoopcTypes />
         </Suspense>
       </div>
 
@@ -83,7 +83,7 @@ const PropToOpcNew = () => {
 
       <div id="process">
         <Suspense fallback={<div />}>
-          <PtoopcElegibility />
+          <PtoopcSteps />
         </Suspense>
       </div>
 
