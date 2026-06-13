@@ -17,6 +17,7 @@ export interface TaskStep {
 export interface Task {
   id: string;
   workflowType: string;
+  serviceName?: string;
   clientUid: string;
   clientName?: string;
   assignedTo?: string;
@@ -25,7 +26,8 @@ export interface Task {
   amountPaid?: number;
   amountDue?: number;
   currentStepNumber: number;
-  steps: TaskStep[];
+  totalSteps?: number;
+  steps?: TaskStep[];
   isUrgent?: boolean;
   createdAt: string;
   updatedAt: string;

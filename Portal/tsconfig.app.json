@@ -24,8 +24,12 @@
 
     /* Path aliases */
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/*"],
+      "@shared/*": ["../shared/*"]
+    },
+
+    /* Allow importing the plain-JS shared workflow module (typed via .d.ts files) */
+    "allowJs": true
   },
-  "include": ["src"]
+  "include": ["src", "../shared"]
 }

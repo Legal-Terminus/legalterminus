@@ -109,7 +109,9 @@ export async function getMasterSheet(req, res) {
     const rows = await Promise.all(
       snap.docs.map(async (doc) => {
         const d = doc.data();
-        const totalSteps = d.steps?.length ?? 0;
+        // Prefer the denormalized count (steps now live in a subcollection);
+        // fall back to legacy inline steps[] length.
+        const totalSteps = d.totalSteps ?? d.steps?.length ?? 0;
         return {
           taskId: doc.id,
           clientName: await resolveClient(d.clientUid),

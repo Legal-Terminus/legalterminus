@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Layers, Pencil, Loader2, Workflow } from 'lucide-react';
+import { Layers, Pencil, Loader2, Workflow, Search } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import {
   getServiceCatalog, groupByCategory, updateService,
@@ -17,22 +17,47 @@ import {
  * place: click a card to edit, Enter/blur to save, Escape to cancel.
  */
 export default function ServicesPage() {
+  const [search, setSearch] = useState('');
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ['service-catalog'],
     queryFn: getServiceCatalog,
     staleTime: 5 * 60 * 1000, // backend caches 5 min; mirror it client-side
   });
 
-  const categories = useMemo(
-    () => (data ? groupByCategory(data.services) : []),
-    [data]
-  );
+  // Filter by service name / category / key, then group the matches.
+  const categories = useMemo(() => {
+    if (!data) return [];
+    const q = search.trim().toLowerCase();
+    const services = !q
+      ? data.services
+      : Object.fromEntries(
+          Object.entries(data.services).filter(([key, svc]) =>
+            svc.displayName.toLowerCase().includes(q) ||
+            svc.category.toLowerCase().includes(q) ||
+            key.toLowerCase().includes(q)
+          )
+        );
+    return groupByCategory(services);
+  }, [data, search]);
 
   return (
     <PageShell
       title="Service Catalog"
       subtitle="Every service Legal Terminus offers, grouped by category. Click a card to rename it."
     >
+      {/* Text search */}
+      <div className="relative mb-5">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
+        <input
+          type="text"
+          placeholder="Search services by name or category…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="input-field pl-10"
+        />
+      </div>
+
       {isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -49,7 +74,9 @@ export default function ServicesPage() {
 
       {data && categories.length === 0 && (
         <div className="card p-12 text-center text-ink-muted text-sm">
-          No services are available yet.
+          {search.trim()
+            ? `No services match “${search.trim()}”.`
+            : 'No services are available yet.'}
         </div>
       )}
 

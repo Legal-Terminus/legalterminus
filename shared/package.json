@@ -1,0 +1,10 @@
+{
+  "name": "@legal-terminus/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Framework-agnostic code shared by Portal and backend (workflow definitions).",
+  "peerDependencies": {
+    "xstate": "^5"
+  }
+}

@@ -211,6 +211,25 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Goal**: Implement the XState v5 Company Incorporation machine, the backend transition endpoint, and task creation with config-layer merge so that workflow state is reliably instantiated, persisted, and advanced through all 41 steps including payment gates, parallel groups, and resubmission branches.
 
+> **⚠️ STATUS UPDATE (2026-06-13) — workflows are DATA-DRIVEN; see architecture.md §1.3.**
+> - **E02-S01 (machine):** ✅ done, but **re-architected from code to data.** The 41-step
+>   incorporation machine now lives as a Firestore **definition** (`workflowDefinitions/company-incorporation`)
+>   compiled to XState at runtime by the shared `compileDefinition.js` (verified behaviourally
+>   equivalent). New flows are documents, not code files. The hardcoded `companyIncorporation.machine.ts`
+>   is retained only as the seed source; the spec's parallel `incorporation_docs` region and the
+>   `__tests__` Vitest file are NOT implemented (incorporation modelled as linear+branch).
+> - **E02-S03 (task creation):** ✅ **`POST /api/tasks`** built (admin/manager, Zod-validated). Creates a
+>   task from the compiled definition; pins `workflowDefinitionId`+`workflowVersion` (immutable per task);
+>   writes per-step instance state to a `tasks/{id}/steps/{n}` **subcollection** (+ denormalized `totalSteps`).
+>   "Config-layer merge" is now "instance state from definition steps."
+> - **E02-S02 (transition endpoint):** ⏳ NOT built yet — `POST /api/tasks/:id/transition` is **Phase 2**
+>   (step execution). Tasks can be created/assigned but not yet advanced.
+> - **E03-S03 (task creation UI):** ✅ Entry point is **"Assign Service" on the client profile**
+>   ([ClientForm.tsx](../../Portal/src/components/users/ClientForm.tsx)) → lists workflow-backed services →
+>   creates the task; appears in the Tasks list ([TasksPage.tsx](../../Portal/src/pages/tasks/TasksPage.tsx)).
+> - **Assignment:** `step.assignedRole` (role, from definition) vs `task/step.assignedTo` (user UID). Today
+>   `assignedTo` is **null** on create — assigning to a specific user/role is **Phase 4**, not built.
+
 ---
 
 ### E02-S01 — XState Machine — Company Incorporation (Code Layer) [Phase 1]

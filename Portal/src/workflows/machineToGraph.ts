@@ -64,6 +64,22 @@ function titleCase(snake: string): string {
     .join(' ');
 }
 
+// Resolve node kind from explicit meta first, then fall back to heuristics.
+function metaKind(
+  meta: { type?: NodeKind } | undefined,
+  stateId: string,
+  def: { type?: string },
+  outgoing: RawTransition[],
+): NodeKind {
+  if (def?.type === 'final' || stateId === 'completed') return 'final';
+  // Compiler emits paired waiting states keyed `await_<n>` with a `waitingFor` meta.
+  if (/^await_/.test(stateId)) return 'waiting';
+  if (meta?.type && (['step', 'payment_gate', 'branch', 'final'] as NodeKind[]).includes(meta.type)) {
+    return meta.type;
+  }
+  return kindForState(stateId, def, outgoing);
+}
+
 function kindForState(stateId: string, def: { type?: string }, outgoing: RawTransition[]): NodeKind {
   if (def?.type === 'final' || stateId === 'completed') return 'final';
   if (/payment_gate/.test(stateId)) return 'payment_gate';
@@ -120,11 +136,16 @@ export function machineToGraph(machine: AnyStateMachine): WorkflowGraph {
 
   for (const [stateId, stateDef] of Object.entries(states)) {
     const transitions = outgoingTransitions(stateDef);
-    nodes.push({
-      id: stateId,
-      label: labelForState(stateId),
-      kind: kindForState(stateId, stateDef as { type?: string }, transitions),
-    });
+    // Prefer EXPLICIT identity from the compiled definition's `meta` (title/type);
+    // fall back to key-parsing only for legacy machines without meta (Finding #4).
+    const meta = (stateDef.meta ?? undefined) as
+      | { stepNumber?: number; title?: string; type?: NodeKind }
+      | undefined;
+    const label = meta?.title
+      ? (meta.stepNumber != null ? `${meta.stepNumber}. ${meta.title}` : meta.title)
+      : labelForState(stateId);
+    const kind = metaKind(meta, stateId, stateDef as { type?: string }, transitions);
+    nodes.push({ id: stateId, label, kind });
 
     for (const t of transitions) {
       const targets = normalizeTargets(t.target);

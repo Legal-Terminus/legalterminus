@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createUser, updateUser, type PortalUser } from '../../api/users';
+import { getServiceCatalog } from '../../api/services';
+import { assignServiceToClient } from '../../api/tasks';
+import { getWorkflowDefinitions } from '../../api/workflowDefinitions';
 import { useAuthStore } from '../../store/authStore';
 import { assignableRolesFor, isStaffRole, roleLabel, type Role } from '../../lib/roles';
 import {
   ArrowLeft, User, Mail, Phone, MapPin, Building2, Briefcase, Shield,
-  FileText, AlertCircle, Save, X, Plus,
+  FileText, AlertCircle, Save, X, Plus, Workflow, CheckCircle2,
 } from 'lucide-react';
 
 interface Client {
@@ -430,6 +433,112 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
           </div>
         </form>
       </div>
+
+      {/* Assign a service workflow — only for existing clients */}
+      {id && <AssignServiceSection clientUid={id} clientName={formData.name} />}
+    </div>
+  );
+}
+
+/**
+ * Assign a workflow-backed service to a client → creates a task. Lists only
+ * services that have a configured workflow (registry ∩ catalog).
+ */
+function AssignServiceSection({ clientUid, clientName }: { clientUid: string; clientName: string }) {
+  const queryClient = useQueryClient();
+  const [selected, setSelected] = useState('');
+  const [done, setDone] = useState<string | null>(null);
+  const [error, setError] = useState('');
+
+  const { data: catalog } = useQuery({
+    queryKey: ['service-catalog'],
+    queryFn: getServiceCatalog,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Which service keys have a configured workflow definition (data-driven).
+  const { data: defs } = useQuery({
+    queryKey: ['workflow-definitions'],
+    queryFn: getWorkflowDefinitions,
+    staleTime: 5 * 60 * 1000,
+  });
+  const workflowServiceKeys = new Set((defs ?? []).flatMap((d) => d.serviceKeys));
+
+  // Workflow-backed, active services only.
+  const services = catalog
+    ? Object.values(catalog.services)
+        .filter((s) => s.active && workflowServiceKeys.has(s.key))
+        .sort((a, b) => a.displayName.localeCompare(b.displayName))
+    : [];
+
+  const assignMutation = useMutation({
+    mutationFn: (svc: { key: string; displayName: string }) =>
+      assignServiceToClient({ clientUid, serviceKey: svc.key, serviceName: svc.displayName }),
+    onSuccess: (_task, svc) => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      setDone(svc.displayName);
+      setSelected('');
+    },
+    onError: (err: Error) => setError(err.message || 'Failed to assign service.'),
+  });
+
+  function handleAssign() {
+    setError('');
+    const svc = services.find((s) => s.key === selected);
+    if (!svc) { setError('Please select a service.'); return; }
+    assignMutation.mutate({ key: svc.key, displayName: svc.displayName });
+  }
+
+  return (
+    <div className="card p-6 mt-4">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-6 h-6 bg-brand-100 rounded-lg flex items-center justify-center">
+          <Workflow className="w-3.5 h-3.5 text-brand-600" />
+        </div>
+        <h3 className="text-sm font-semibold text-gray-700">Assign Service</h3>
+        <div className="flex-1 h-px bg-gray-100" />
+      </div>
+
+      {done && (
+        <div className="mb-3 flex items-start gap-2.5 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+          <p className="text-sm text-emerald-700">
+            “{done}” assigned to {clientName}. A task has been created.
+          </p>
+        </div>
+      )}
+      {error && (
+        <div className="mb-3 flex items-start gap-2.5 p-3 bg-red-50 border border-red-100 rounded-xl">
+          <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
+      {services.length === 0 ? (
+        <p className="text-sm text-ink-muted">No services with a configured workflow are available yet.</p>
+      ) : (
+        <div className="flex flex-col sm:flex-row gap-3">
+          <select
+            value={selected}
+            onChange={(e) => setSelected(e.target.value)}
+            className="input-field flex-1"
+          >
+            <option value="">Select a service…</option>
+            {services.map((s) => (
+              <option key={s.key} value={s.key}>{s.displayName}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={handleAssign}
+            disabled={assignMutation.isPending || !selected}
+            className="btn-primary sm:w-auto disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4" />
+            {assignMutation.isPending ? 'Assigning…' : 'Assign'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

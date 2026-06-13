@@ -93,6 +93,59 @@ Both apps share the **same Cloud Run backend** and the same **Firebase project**
 
 ---
 
+## 1.3 ⚠️ IMPLEMENTATION UPDATE (2026-06-13) — Workflows are DATA-DRIVEN
+
+> This supersedes the "hardcoded XState machine" framing in §2.5, §4, and §4.7 below.
+> The XState **engine** is unchanged; what changed is that workflow **definitions are
+> stored as data and compiled to machines at runtime**, so new flows (50+ planned) are
+> documents — not code — and are editable without a deploy. Decided during an architecture
+> review of the workflow Phase 1 (reusability/scalability for 50 flows). Multi-tenancy was
+> explicitly **rejected** (system stays single-tenant).
+
+**Shared module (`shared/workflows/`, plain ESM, imported by BOTH Portal and backend):**
+- `definitionSchema.js` — the data shape of a workflow + `validateDefinition()`. A definition
+  is `{ id, name, version, initialStep, steps[] }`; each step has explicit `stepNumber`,
+  `title`, `type` (`step|payment_gate|branch|final`), optional `assignedRole`, `effects[]`,
+  `gate{requires,onPass,onWait}`, and `transitions[{event,to,branch?}]`.
+- `compileDefinition.js` — **compiles a definition → XState v5 machine** (gates → `always`
+  guard + paired waiting state; branches → guarded `BRANCH_DECISION`; tracks `currentStepNumber`).
+  Verified behaviourally **equivalent** to the legacy hand-written machine.
+- `convertMachineToDefinition.js` — one-time converter (legacy machine → definition) used by the seed.
+- `companyIncorporation.machine.js` — legacy machine, retained only as the seed source.
+
+**Storage:** Firestore `workflowDefinitions/{id}` (e.g. `company-incorporation`, v1, 41 steps,
+`serviceKeys:['incorporation']`). Seeded via `backend/src/scripts/seedWorkflowDefinitions.js`
+(part of `npm run db:setup`). Editable from the UI in the upcoming Workflow Editor (BMAD E10-S01).
+
+**Backend** (`backend/src/services/workflowDefinitions.service.js`): loads a definition by
+`serviceKey` or `id`, compiles + caches by `id@version`. New endpoints:
+`GET /api/workflow-definitions`, `GET /api/workflow-definitions/:id` (staff-only).
+
+**Task model (created via `POST /api/tasks`, admin/manager):**
+- Pins **`workflowDefinitionId` + `workflowVersion`** (immutable per task) — NOT the service key —
+  so editing/versioning a flow never alters in-flight tasks. (`workflowType` kept as a back-compat
+  mirror for reports.)
+- Per-step **instance state** lives in a **subcollection** `tasks/{id}/steps/{stepNumber}`
+  (status/assignee/title/assignedRole) — not an array on the task doc (avoids whole-array write
+  races). A denormalized `totalSteps` is kept on the task for cheap list/report display.
+- `GET /api/tasks` is paginated (`{ data, nextCursor }`) + role-scoped; composite indexes for
+  role-scope × filter × `updatedAt` are in `firestore.indexes.json`.
+- Zod validation on task endpoints (`backend/src/schemas/task.schema.js`).
+
+**Assignment model (IMPORTANT — current state):**
+- **`step.assignedRole`** (from the definition) = the *default responsible ROLE* (e.g. `team_member`).
+- **`task.assignedTo` / `step.assignedTo`** = a specific USER (UID). `team_member` task-list
+  scoping filters on `assignedTo == uid`.
+- **As of this update, `assignedTo` is `null` on creation** — assigning a task/step to a specific
+  USER is **not built yet** (planned as the "Assign step to member" action, Phase 4). So tasks are
+  currently assigned to **neither a role nor a user** until that phase ships.
+
+**Visualizer:** the service detail page (`/services/:serviceKey`) fetches the definition from
+`/api/workflow-definitions/:id` and compiles it client-side (read-only). Step identity (title/kind)
+comes from the definition's explicit `meta`, not regex on state-key strings.
+
+---
+
 ## 2. Portal Frontend Architecture
 
 ### 2.1 Directory Structure

@@ -25,6 +25,7 @@ import leadsRoutes from "./routes/leads.routes.js";
 import portalUsersRoutes from "./routes/portalUsers.routes.js";
 import serviceConfigRoutes from "./routes/serviceConfig.routes.js";
 import notificationsRoutes from "./routes/notifications.routes.js";
+import workflowDefinitionsRoutes from "./routes/workflowDefinitions.routes.js";
 import initializeFirebase from "./config/firebase.js";
 
 // Load environment variables
@@ -120,6 +121,7 @@ app.use("/api/leads", leadsRoutes);
 app.use("/api/portal/users", portalUsersRoutes);
 app.use("/api/service-config", serviceConfigRoutes);
 app.use("/api/notifications", notificationsRoutes);
+app.use("/api/workflow-definitions", workflowDefinitionsRoutes);
 
 /* ================= HEALTH CHECK ================= */
 app.get("/health", (req, res) => res.json({ status: "ok" }));
