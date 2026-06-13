@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { createUser, updateUser } from '../../api/users';
+import { createUser, updateUser, type PortalUser } from '../../api/users';
 import {
   ArrowLeft, User, Mail, Phone, MapPin, Building2,
   FileText, AlertCircle, Save, X, Plus,
@@ -23,17 +23,18 @@ interface Client {
 }
 
 interface ClientFormProps {
-  client: Partial<Client> | null | undefined;
+  // Accepts the unified PortalUser shape; the form re-derives its own formData.
+  client: Partial<PortalUser> | null | undefined;
   onClose: () => void;
   onSuccess: () => void;
   isFullPage?: boolean;
 }
 
 export default function ClientForm({ client, onClose, onSuccess }: ClientFormProps) {
-  const id = client?.clientId ?? client?.uid;
+  const id = client?.uid;
 
   const [formData, setFormData] = useState<Client>({
-    name: client?.name ?? (client as { fullName?: string })?.fullName ?? '',
+    name: client?.name ?? client?.fullName ?? '',
     email: client?.email ?? '',
     phone: client?.phone ?? '',
     address: client?.address ?? '',
@@ -41,10 +42,10 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
     businessName: client?.businessName,
     gstNumber: client?.gstNumber,
     panNumber: client?.panNumber,
-    aadharNumber: client?.aadharNumber,
+    aadharNumber: client?.aadhaarNumber,
     state: client?.state,
     emailIds: client?.emailIds ?? [],
-    uid: client?.uid ?? client?.clientId,
+    uid: client?.uid,
   });
   const [secondaryEmail, setSecondaryEmail] = useState('');
   const [error, setError] = useState('');

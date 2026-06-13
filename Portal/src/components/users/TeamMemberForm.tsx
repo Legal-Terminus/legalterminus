@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { createUser, updateUser } from '../../api/users';
+import { createUser, updateUser, type PortalUser } from '../../api/users';
 import { useAuthStore } from '../../store/authStore';
 import { assignableRolesFor } from '../../lib/roles';
 import {
@@ -8,13 +8,15 @@ import {
   Shield, Calendar, AlertCircle, Save, X,
 } from 'lucide-react';
 
+type StaffRole = 'admin' | 'manager' | 'team_member';
+
 interface TeamMember {
   uid?: string;
   name: string;
   email: string;
   phone: string;
   designation: string;
-  role: 'admin' | 'manager' | 'team_member';
+  role: StaffRole;
   joiningDate: string;
   fathersName?: string;
   dateOfBirth?: string;
@@ -22,7 +24,9 @@ interface TeamMember {
 }
 
 interface TeamMemberFormProps {
-  member: Partial<TeamMember> | null | undefined;
+  // Accepts the unified PortalUser shape (role may be 'client'); the form
+  // re-derives its own staff-only formData below.
+  member: Partial<PortalUser> | null | undefined;
   onClose: () => void;
   onSuccess: () => void;
   isFullPage?: boolean; // kept for API compatibility — always renders full-page
@@ -46,12 +50,18 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
   const allowedRoleKeys = assignableRolesFor(currentRole);
   const selectableRoles = ROLES.filter((r) => allowedRoleKeys.includes(r.value));
 
+  const incomingRole = member?.role;
+  const initialRole: StaffRole =
+    incomingRole === 'admin' || incomingRole === 'manager' || incomingRole === 'team_member'
+      ? incomingRole
+      : 'team_member';
+
   const [formData, setFormData] = useState<TeamMember>({
-    name: member?.name ?? (member as { fullName?: string })?.fullName ?? '',
+    name: member?.name ?? member?.fullName ?? '',
     email: member?.email ?? '',
     phone: member?.phone ?? '',
     designation: member?.designation ?? '',
-    role: (member?.role as TeamMember['role']) ?? 'team_member',
+    role: initialRole,
     joiningDate: member?.joiningDate ?? new Date().toISOString().split('T')[0],
     fathersName: member?.fathersName,
     dateOfBirth: member?.dateOfBirth,

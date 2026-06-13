@@ -14,7 +14,7 @@
 - [ ] **Requirements updated if changed:** `spec.md` (user stories, workflows, Firestore schema, roles/permissions)
 - [ ] **Technical decisions documented:** `_bmad-output/planning-artifacts/architecture.md` (service layers, components, database changes, integrations)
 - [ ] Error messages are user-friendly (no Firebase error codes)
-- [ ] Build passes clean (no TypeScript errors)
+- [ ] Build passes clean — run `npm run build` (Portal uses `tsc -b && vite build`). ⚠️ `tsc --noEmit` is NOT sufficient: `tsc -b` is stricter (unused vars, project refs) and is what CI runs. Always verify with the real build command before declaring done.
 - [ ] Backend/Frontend/Portal are all in sync if applicable
 
 **Key Rule:** Every commit must reference the related epic/story ID (e.g., "E01-S02: Implement Google Sign-In")
