@@ -377,11 +377,24 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
         throw new Error(errData.error || 'Failed to initiate payment');
       }
 
-      const { redirectUrl } = await res.json();
+      const { payuUrl, params } = await res.json();
 
-      // Show the redirecting step briefly, then navigate to PhonePe
+      // Build and auto-submit a hidden form to PayU's payment page
       setStep('redirecting');
-      setTimeout(() => { window.location.href = redirectUrl; }, 800);
+      setTimeout(() => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = payuUrl;
+        Object.entries(params).forEach(([k, v]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = k;
+          input.value = v ?? '';
+          form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        form.submit();
+      }, 800);
     } catch (err) {
       console.error('Payment initiation error:', err);
       setIsProcessing(false);
@@ -697,7 +710,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
             <div className="pco-secured-row">
               <span className="pco-secured-text">Secured by</span>
               <div className="pco-payment-badges">
-                <span className="pco-badge pco-badge-razorpay">PhonePe</span>
+                <span className="pco-badge pco-badge-razorpay">PayU</span>
                 <span className="pco-badge pco-badge-upi">UPI</span>
                 <span className="pco-badge pco-badge-visa">VISA</span>
                 <span className="pco-badge pco-badge-mc">MC</span>
@@ -706,13 +719,13 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
           </div>
         )}
 
-        {/* ── STEP 3: REDIRECTING TO PHONEPE ── */}
+        {/* ── STEP 3: REDIRECTING TO PAYU ── */}
         {step === "redirecting" && (
           <div className="pco-step" style={{ textAlign: 'center', padding: '48px 24px' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
-            <h2 className="pco-step-heading">Redirecting to PhonePe…</h2>
+            <h2 className="pco-step-heading">Redirecting to PayU…</h2>
             <p style={{ color: '#666', marginTop: 8 }}>
-              You are being securely redirected to PhonePe to complete your payment.
+              You are being securely redirected to PayU to complete your payment.
             </p>
           </div>
         )}

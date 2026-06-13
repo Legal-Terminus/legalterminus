@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { getFirebaseAuth, getFirebaseDb } from "../../utils/firebase";
 import "./MyProfile.css";
@@ -11,6 +11,9 @@ export default function MyProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -70,6 +73,48 @@ export default function MyProfile() {
     return () => unsubscribe();
   }, [navigate]);
 
+  // Fetch orders when activeTab changes to "orders"
+  useEffect(() => {
+    if (activeTab === "orders" && user && !loadingOrders) {
+      fetchOrders();
+    }
+  }, [activeTab, user]);
+
+  const fetchOrders = async () => {
+    try {
+      setLoadingOrders(true);
+      const db = getFirebaseDb();
+      
+      // Query for tasks/orders belonging to the current user
+      // Assuming tasks are stored with clientId field matching user.uid
+      const tasksRef = collection(db, "tasks");
+      const q = query(tasksRef, where("clientId", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+      
+      const ordersList = [];
+      querySnapshot.forEach((doc) => {
+        ordersList.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      // Sort by creation date (newest first)
+      ordersList.sort((a, b) => {
+        const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt) || new Date(0);
+        const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt) || new Date(0);
+        return dateB - dateA;
+      });
+
+      setOrders(ordersList);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      setOrders([]);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -128,7 +173,41 @@ export default function MyProfile() {
     <div className="mp-page">
       <div className="mp-container">
 
-        {/* ── Profile card ── */}
+        {/* ── Tab Navigation ── */}
+        <div className="mp-tabs">
+          <button 
+            className={`mp-tab ${activeTab === "profile" ? "mp-tab--active" : ""}`}
+            onClick={() => setActiveTab("profile")}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            Profile
+          </button>
+          <button 
+            className={`mp-tab ${activeTab === "orders" ? "mp-tab--active" : ""}`}
+            onClick={() => setActiveTab("orders")}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            Orders
+          </button>
+          {profile?.role === 'admin' && (
+            <button 
+              className={`mp-tab ${activeTab === "admin" ? "mp-tab--active" : ""}`}
+              onClick={() => setActiveTab("admin")}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              Admin
+            </button>
+          )}
+        </div>
+
+        {/* ── Profile Tab ── */}
+        {activeTab === "profile" && (
         <div className="mp-card">
           {/* card header */}
           <div className="mp-card-header">
@@ -205,39 +284,110 @@ export default function MyProfile() {
             )}
           </div>
         </div>
+        )}
 
-        {/* Portal Access Card - Admin Only */}
-        {profile?.role === 'admin' && (
-          <div className="mp-card">
-            <div className="mp-card-header" style={{ backgroundColor: '#3b82f6', borderRadius: '20px 20px 0 0' }}>
-              <div className="mp-avatar" style={{ background: 'rgba(255, 255, 255, 0.3)' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-                </svg>
-              </div>
-              <div className="mp-header-info" style={{ color: 'white' }}>
-                <h1>Admin Portal</h1>
-                <p>Manage users, clients, and tasks</p>
-              </div>
+        {/* ── Orders Tab ── */}
+        {activeTab === "orders" && (
+        <div className="mp-card">
+          <div className="mp-card-header">
+            <div className="mp-avatar" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
             </div>
-            <div style={{ padding: '32px 40px' }}>
-              <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
-                Access the admin dashboard to manage team members, clients, and service configurations.
-              </p>
-              <a 
-                href="/portal" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mp-btn-primary" 
-                style={{ display: 'inline-block', textDecoration: 'none', color: 'white', backgroundColor: '#3b82f6' }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px', verticalAlign: 'middle' }}>
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                Open Portal
-              </a>
+            <div className="mp-header-info" style={{ color: 'white' }}>
+              <h1>My Orders</h1>
+              <p>{orders.length} {orders.length === 1 ? 'order' : 'orders'} total</p>
             </div>
           </div>
+
+          {loadingOrders ? (
+            <div className="mp-orders-loading">
+              <div className="mp-spinner"></div>
+              <p>Loading your orders...</p>
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="mp-orders-empty">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
+              <p>No orders yet</p>
+              <span>Once you place an order, it will appear here</span>
+            </div>
+          ) : (
+            <div className="mp-orders-list">
+              {orders.map((order) => (
+                <div key={order.id} className="mp-order-item">
+                  <div className="mp-order-header">
+                    <div className="mp-order-info">
+                      <h3 className="mp-order-title">{order.serviceName || order.workflowType || 'Service Order'}</h3>
+                      <p className="mp-order-id">Order ID: {order.id.substring(0, 8)}</p>
+                    </div>
+                    <div className={`mp-order-status mp-order-status--${order.status || 'pending'}`}>
+                      {(order.status || 'pending').toUpperCase()}
+                    </div>
+                  </div>
+                  <div className="mp-order-details">
+                    <div className="mp-order-detail-item">
+                      <span className="mp-order-label">Amount</span>
+                      <span className="mp-order-value">₹{order.amount || order.totalAmount || 0}</span>
+                    </div>
+                    <div className="mp-order-detail-item">
+                      <span className="mp-order-label">Date</span>
+                      <span className="mp-order-value">
+                        {order.createdAt ? new Date(order.createdAt.toDate?.() || order.createdAt).toLocaleDateString('en-IN', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        }) : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="mp-order-detail-item">
+                      <span className="mp-order-label">Payment Status</span>
+                      <span className={`mp-order-payment-status mp-order-payment-status--${order.paymentStatus || 'pending'}`}>
+                        {(order.paymentStatus || 'pending').replace('_', ' ').toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        )}
+
+        {/* ── Admin Tab ── */}
+        {activeTab === "admin" && profile?.role === 'admin' && (
+        <div className="mp-card">
+          <div className="mp-card-header" style={{ backgroundColor: '#3b82f6' }}>
+            <div className="mp-avatar" style={{ background: 'rgba(255, 255, 255, 0.3)' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+            </div>
+            <div className="mp-header-info" style={{ color: 'white' }}>
+              <h1>Admin Portal</h1>
+              <p>Manage users, clients, and tasks</p>
+            </div>
+          </div>
+          <div style={{ padding: '32px 40px' }}>
+            <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
+              Access the admin dashboard to manage team members, clients, and service configurations.
+            </p>
+            <a 
+              href="/portal/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mp-btn-primary" 
+              style={{ display: 'inline-block', textDecoration: 'none', color: 'white', backgroundColor: '#3b82f6' }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px', verticalAlign: 'middle' }}>
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              Open Portal
+            </a>
+          </div>
+        </div>
         )}
 
       </div>

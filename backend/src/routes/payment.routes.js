@@ -1,49 +1,43 @@
 import express from 'express';
+import crypto from 'crypto';
 import axios from 'axios';
 import { getDb } from '../config/firebase.js';
 
 const router = express.Router();
 
-const PHONEPE_API_BASE = process.env.PHONEPE_API_BASE || 'https://api-preprod.phonepe.com/apis/pg-sandbox';
-const CLIENT_ID        = () => process.env.PHONEPE_CLIENT_ID;
-const CLIENT_SECRET    = () => process.env.PHONEPE_CLIENT_SECRET;
-const CLIENT_VERSION   = () => process.env.PHONEPE_CLIENT_VERSION || '1';
+const PAYU_KEY      = () => process.env.PAYU_KEY;
+const PAYU_SALT     = () => process.env.PAYU_SALT;
+const PAYU_BASE_URL = () => process.env.PAYU_API_BASE || 'https://secure.payu.in/_payment';
+const PAYU_VERIFY_URL = () => process.env.PAYU_VERIFY_URL || 'https://info.payu.in/merchant/postservice?form=2';
 
-/* ─── OAuth2 token cache ─── */
-let _tokenCache = { token: null, expiresAt: 0 };
+function sha512(str) {
+  return crypto.createHash('sha512').update(str).digest('hex');
+}
 
-async function getAccessToken() {
-  const now = Date.now();
-  if (_tokenCache.token && now < _tokenCache.expiresAt - 60_000) {
-    return _tokenCache.token;
-  }
+/**
+ * Compute PayU request hash:
+ * sha512(key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||salt)
+ */
+function computeRequestHash({ key, txnid, amount, productinfo, firstname, email, udf1 = '', udf2 = '', udf3 = '' }) {
+  const hashString = `${key}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|${udf1}|${udf2}|${udf3}||||||||${PAYU_SALT()}`;
+  return sha512(hashString);
+}
 
-  const params = new URLSearchParams({
-    client_id:      CLIENT_ID(),
-    client_secret:  CLIENT_SECRET(),
-    client_version: CLIENT_VERSION(),
-    grant_type:     'client_credentials',
-  });
-
-  const response = await axios.post(
-    `${PHONEPE_API_BASE}/v1/oauth/token`,
-    params.toString(),
-    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
-  );
-
-  const { access_token, expires_in } = response.data;
-  _tokenCache = {
-    token:     access_token,
-    expiresAt: now + (expires_in || 900) * 1000,
-  };
-  return access_token;
+/**
+ * Verify PayU response hash:
+ * sha512(salt|status||||||udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key)
+ */
+function verifyResponseHash(params) {
+  const { key, txnid, amount, productinfo, firstname, email, udf1 = '', udf2 = '', udf3 = '', udf4 = '', udf5 = '', status, hash } = params;
+  const hashString = `${PAYU_SALT()}|${status}||||||${udf5}|${udf4}|${udf3}|${udf2}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
+  return sha512(hashString) === hash;
 }
 
 /**
  * POST /api/payment/initiate
  *
- * Obtains an OAuth2 bearer token, calls PhonePe v2 checkout,
- * and returns { redirectUrl, transactionId } to the frontend.
+ * Returns PayU form fields (key, txnid, hash, etc.) to the frontend,
+ * which then auto-submits a hidden form to PayU's payment page.
  */
 router.post('/initiate', async (req, res) => {
   const { amount, planName, userId, form, source, sourceLabel } = req.body;
@@ -52,166 +46,182 @@ router.post('/initiate', async (req, res) => {
     return res.status(400).json({ error: 'Missing required fields: amount, planName' });
   }
 
-  const transactionId = `LT-${Date.now()}`;
+  const key       = PAYU_KEY();
+  const txnid     = `LT-${Date.now()}`;
+  const amountStr = Number(amount).toFixed(2);
   const { BASE_URL, FRONTEND_URL } = process.env;
 
-  // Backend redirect — we verify status here before sending user to frontend result page
-  const redirectUrl = `${BASE_URL}/api/payment/redirect?txnId=${transactionId}&planName=${encodeURIComponent(planName)}&userId=${encodeURIComponent(userId || '')}&amount=${amount}&source=${encodeURIComponent(source || 'unknown')}&sourceLabel=${encodeURIComponent(sourceLabel || '')}`;
+  const surl = `${BASE_URL}/api/payment/redirect?txnId=${txnid}&planName=${encodeURIComponent(planName)}&userId=${encodeURIComponent(userId || '')}&amount=${amount}&source=${encodeURIComponent(source || 'unknown')}&sourceLabel=${encodeURIComponent(sourceLabel || '')}&status_type=success`;
+  const furl = `${BASE_URL}/api/payment/redirect?txnId=${txnid}&planName=${encodeURIComponent(planName)}&userId=${encodeURIComponent(userId || '')}&amount=${amount}&source=${encodeURIComponent(source || 'unknown')}&sourceLabel=${encodeURIComponent(sourceLabel || '')}&status_type=failure`;
 
-  const payload = {
-    merchantOrderId: transactionId,
-    amount: Math.round(Number(amount) * 100), // paise
-    expireAfter: 1200,
-    metaInfo: {
-      udf1: userId || '',
-      udf2: planName,
-      udf3: form?.mobile || '',
-    },
-    paymentFlow: {
-      type: 'PG_CHECKOUT',
-      message: `LegalTerminus ${planName} plan`,
-      merchantUrls: {
-        redirectUrl,
-      },
-    },
+  const payuParams = {
+    key,
+    txnid,
+    amount:      amountStr,
+    productinfo: `LegalTerminus ${planName} Plan`,
+    firstname:   form?.fullName   || '',
+    email:       form?.email      || '',
+    phone:       form?.mobile     || '',
+    surl,
+    furl,
+    udf1:        userId           || '',
+    udf2:        planName,
+    udf3:        form?.mobile     || '',
   };
 
+  const hash = computeRequestHash(payuParams);
+
+  return res.json({
+    payuUrl: PAYU_BASE_URL(),
+    params:  { ...payuParams, hash },
+    transactionId: txnid,
+  });
+});
+
+/**
+ * POST /api/payment/redirect
+ *
+ * PayU POSTs back here after payment (both success and failure).
+ * We verify the hash, save to Firestore, then redirect to the frontend result page.
+ */
+router.post('/redirect', express.urlencoded({ extended: true }), async (req, res) => {
+  const body = req.body;
+  const { txnId, planName, userId, amount, source, sourceLabel } = req.query;
+  const { FRONTEND_URL } = process.env;
+
+  console.log(`PayU redirect: txnId=${txnId}, status=${body.status}, userId=${userId}`);
+
+  if (!txnId) {
+    return res.redirect(`${FRONTEND_URL}/payment/result?status=failed&reason=missing_transaction`);
+  }
+
+  // Verify response hash to prevent tampering
+  const hashValid = verifyResponseHash({
+    key:         body.key         || PAYU_KEY(),
+    txnid:       body.txnid       || txnId,
+    amount:      body.amount      || amount,
+    productinfo: body.productinfo || '',
+    firstname:   body.firstname   || '',
+    email:       body.email       || '',
+    udf1:        body.udf1        || userId || '',
+    udf2:        body.udf2        || planName || '',
+    udf3:        body.udf3        || '',
+    udf4:        body.udf4        || '',
+    udf5:        body.udf5        || '',
+    status:      body.status,
+    hash:        body.hash,
+  });
+
+  if (!hashValid) {
+    console.error('PayU hash verification failed for txnId:', txnId);
+    const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason: 'Hash verification failed' });
+    return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
+  }
+
+  const payuStatus = body.status;           // 'success' | 'failure' | 'pending'
+  const paymentId  = body.mihpayid || txnId;
+  const isSuccess  = payuStatus === 'success';
+
   try {
-    const token = await getAccessToken();
-
-    const response = await axios.post(
-      `${PHONEPE_API_BASE}/checkout/v2/pay`,
-      payload,
-      {
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': `O-Bearer ${token}`,
-        },
-      },
-    );
-
-    const phonepeRedirectUrl = response.data?.redirectUrl;
-    if (!phonepeRedirectUrl) {
-      console.error('PhonePe v2 initiate response:', JSON.stringify(response.data));
-      return res.status(502).json({ error: 'PhonePe did not return a redirect URL' });
+    if (isSuccess) {
+      await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, source, sourceLabel, status: 'success' });
+      const query = new URLSearchParams({ status: 'success', order_id: txnId, amount, tracking_id: paymentId });
+      return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
     }
 
-    return res.json({ redirectUrl: phonepeRedirectUrl, transactionId });
+    const reason = body.error_Message || body.field9 || 'Payment failed';
+    await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, source, sourceLabel, status: 'failed', failureReason: reason });
+    const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason });
+    return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   } catch (err) {
-    const errData = err.response?.data;
-    console.error('PhonePe v2 initiate error:', JSON.stringify(errData || err.message));
-    // Invalidate token cache on auth errors so the next request fetches a fresh one
-    if (err.response?.status === 401) _tokenCache = { token: null, expiresAt: 0 };
-    return res.status(502).json({ error: errData?.message || 'Failed to initiate PhonePe payment' });
+    console.error('PayU redirect handler error:', err.message);
+    const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason: 'Server error' });
+    return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   }
 });
 
 /**
  * GET /api/payment/redirect
  *
- * PhonePe redirects the user's browser here after payment.
- * We check order status via v2 API, save to Firestore,
- * then redirect the user to the frontend result page.
+ * Fallback for browser GET redirects (some PayU configurations send a GET).
+ * Reads status from query params appended by us in surl/furl.
  */
 router.get('/redirect', async (req, res) => {
-  const { txnId, planName, userId, amount, source, sourceLabel } = req.query;
+  const { txnId, planName, userId, amount, source, sourceLabel, status_type } = req.query;
   const { FRONTEND_URL } = process.env;
 
-  console.log(`PhonePe redirect: txnId=${txnId}, userId=${userId}, planName=${planName}, amount=${amount}, source=${source}, sourceLabel=${sourceLabel}`);
+  console.log(`PayU GET redirect: txnId=${txnId}, status_type=${status_type}`);
 
   if (!txnId) {
     return res.redirect(`${FRONTEND_URL}/payment/result?status=failed&reason=missing_transaction`);
   }
 
+  // For GET redirects we can't verify hash (PayU doesn't send it on GET).
+  // Do a server-side status check via PayU Verify API instead.
   try {
-    const token = await getAccessToken();
+    const key    = PAYU_KEY();
+    const salt   = PAYU_SALT();
+    const cmdStr = 'verify_payment';
+    const verifyHash = sha512(`${key}|${cmdStr}|${txnId}|${salt}`);
 
-    const response = await axios.get(
-      `${PHONEPE_API_BASE}/checkout/v2/order/${txnId}/status`,
-      {
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': `O-Bearer ${token}`,
-        },
-      },
+    const verifyRes = await axios.post(
+      PAYU_VERIFY_URL(),
+      new URLSearchParams({ key, command: cmdStr, var1: txnId, hash: verifyHash }).toString(),
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
     );
 
-    const data      = response.data;
-    const state     = data?.state;          // COMPLETED | FAILED | PENDING
-    const paymentId = data?.paymentDetails?.[0]?.transactionId || txnId;
-    const isSuccess = state === 'COMPLETED';
+    const txnData  = verifyRes.data?.transaction_details?.[txnId];
+    const status   = txnData?.status;
+    const paymentId = txnData?.mihpayid || txnId;
+    const isSuccess = status === 'success';
 
-    console.log(`[PhonePe Status Response] Full response:`, JSON.stringify(data, null, 2));
-    console.log(`PhonePe status: state=${state}, paymentId=${paymentId}, isSuccess=${isSuccess}`);
+    console.log(`[PayU Verify] txnId=${txnId}, status=${status}`);
 
     if (isSuccess) {
-      console.log(`Saving payment for userId=${userId}`);
       await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, source, sourceLabel, status: 'success' });
       const query = new URLSearchParams({ status: 'success', order_id: txnId, amount, tracking_id: paymentId });
       return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
     }
 
-    const reason = data?.errorCode || data?.message || 'Payment failed';
+    const reason = txnData?.error_Message || 'Payment failed';
     await savePayment({ userId, transactionId: txnId, paymentId, amount, planName, source, sourceLabel, status: 'failed', failureReason: reason });
     const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason });
     return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   } catch (err) {
-    console.error('PhonePe v2 status check error:', err.response?.data || err.message);
+    console.error('PayU verify error:', err.response?.data || err.message);
     const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason: 'Status check failed' });
     return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
-  }
-});
-
-/**
- * POST /api/payment/callback
- *
- * Server-to-server callback from PhonePe (optional in local dev).
- * PhonePe v2 sends a JSON body — just acknowledge it.
- */
-router.post('/callback', express.json(), async (req, res) => {
-  try {
-    const event = req.body;
-    console.log('PhonePe v2 callback event:', JSON.stringify(event));
-    // Actual status is confirmed via /redirect; callback is best-effort
-    res.status(200).send('OK');
-  } catch (err) {
-    console.error('PhonePe callback error:', err.message);
-    res.status(200).send('OK'); // always 200 to PhonePe
   }
 });
 
 /* ─── helpers ─── */
 
 async function savePayment({ userId, transactionId, paymentId, amount, planName, source, sourceLabel, status, failureReason }) {
-  console.log(`[savePayment] userId=${userId}, txnId=${transactionId}, status=${status}, source=${source}, sourceLabel=${sourceLabel}`);
-  
+  console.log(`[savePayment] userId=${userId}, txnId=${transactionId}, status=${status}, source=${source}`);
+
   if (!userId) {
-    console.warn(`[savePayment] ⚠️  userId is missing! Payment NOT saved to database`);
+    console.warn('[savePayment] userId is missing — payment NOT saved to database');
     return;
   }
-  
+
   try {
     const db = getDb();
-    console.log(`[savePayment] Writing to users/${userId}/payments/${transactionId}`);
-    
     await db.collection('users').doc(userId).collection('payments').doc(transactionId).set({
       orderId:       transactionId,
       paymentId:     paymentId || '',
       amount:        parseFloat(amount) || 0,
       planName:      planName || '',
-      source:        source || 'unknown',        // internal key — never changes, used for filtering
-      sourceLabel:   sourceLabel || '',          // user-customisable display name from serviceCategories
+      source:        source || 'unknown',
+      sourceLabel:   sourceLabel || '',
       status,
       failureReason: failureReason || null,
       paymentDate:   new Date(),
       updatedAt:     new Date(),
     });
-    
-    console.log(`[savePayment] ✅ Payment saved successfully`);
 
+    console.log('[savePayment] Payment saved successfully');
 
     if (status === 'success') {
-      console.log(`[savePayment] Updating user subscription: ${planName}`);
       await db.collection('users').doc(userId).update({
         currentPlan:   planName,
         paidPlanStart: new Date(),
@@ -219,7 +229,7 @@ async function savePayment({ userId, transactionId, paymentId, amount, planName,
       }).catch((err) => console.error('[savePayment] Error updating user subscription:', err));
     }
   } catch (err) {
-    console.error('[savePayment] ❌ Error saving payment to Firestore:', err);
+    console.error('[savePayment] Error saving payment to Firestore:', err);
   }
 }
 
