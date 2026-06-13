@@ -1160,6 +1160,11 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 - ✅ `Portal/src/pages/admin/TeamMembersPage.tsx`
 - ✅ `Portal/src/components/admin/TeamMemberForm.tsx`
 
+> **⚠️ SESSION UPDATE (2026-06-13) — supersedes the stale notes above.** The
+> separate `/api/team-members` + `/api/clients` endpoints and the role-prefixed
+> `/admin/*` paths described above **no longer exist**. See the consolidated
+> current state in the shared note under E09-S02.
+
 ---
 
 ### E09-S02 — Create & Edit Clients [Phase 1]
@@ -1211,6 +1216,26 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 **Frontend screens/components**:
 - ✅ `Portal/src/pages/admin/ClientsPage.tsx`
 - ✅ `Portal/src/components/admin/ClientForm.tsx`
+
+> **⚠️ SESSION UPDATE (2026-06-13) — current state of user management (E09-S01 + E09-S02).**
+> Supersedes the stale `/api/team-members`, `/api/clients`, `/clients/{uid}`,
+> and `/admin/*` references in both stories above.
+>
+> **Unified, role-neutral API + UI:**
+> - Single endpoint `/api/portal/users` ([portalUsers.controller.js](../../backend/src/controllers/portalUsers.controller.js), [portalUsers.routes.js](../../backend/src/routes/portalUsers.routes.js)) for ALL roles. `GET /` (list, paginated), `GET /counts`, `GET /:uid`, `POST /`, `PATCH /:uid`, `DELETE /:uid`. Backed by the single `users` collection (the `clients` collection is gone). GET/POST/PATCH require `admin|manager`; DELETE is `admin` only.
+> - Single page [Portal/src/pages/users/UsersPage.tsx](../../Portal/src/pages/users/UsersPage.tsx) at role-neutral `/users` (not `/admin/users`). Forms at `/users/new/:type` and `/users/edit/:type/:uid`. Components under `Portal/src/components/users/`.
+> - Role logic is centralized in the role services ([Portal/src/lib/roles.ts](../../Portal/src/lib/roles.ts), [backend/src/config/roles.js](../../backend/src/config/roles.js)); privilege-escalation guards via `canAssignRole` (manager cannot mint admin/manager).
+>
+> **Data grid (2026-06-13):** UsersPage now uses **TanStack Table + TanStack Virtual** (replaced the hand-rolled virtualized table). Sortable columns, global search (name/email/role/phone/designation/org), role-tab filtering, virtualized scroll (~70vh, no pagination), Cal.com styling. Column order: User → Role → Contact → Added → Actions (actions always visible).
+>
+> **Delete now cleans up related data (E09-S01/S02 delete path):**
+> - Refuses to delete a user who still has tasks (`clientUid` or `assignedTo`) → `409` with task count; admin must reassign/close first.
+> - Deletes the `users/{uid}/payments` subcollection (Firestore does not cascade), then the user doc, then the Auth account.
+> - Firestore-first ordering (no orphan on partial failure); tolerates `auth/user-not-found` so legacy/Google-only docs without an Auth account can still be deleted.
+>
+> **Critical bug fixed (2026-06-13):** the Users list returned **0 rows / 500** — root cause was the `validate(paginationSchema,'query')` middleware doing `req.query = ...`, which throws in **Express 5** (getter-only `req.query`). Fixed in [validate.middleware.js](../../backend/src/middleware/validate.middleware.js) via `Object.defineProperty`. Also fixed: role-filtered list 500'd needing a `role+createdAt` composite index → now sorts in memory when filtering (see TD-01). Backfilled missing `role`/`createdAt` on legacy docs.
+>
+> **Source-of-drift fix:** the marketing Frontend wrote `users` docs directly via client SDK (Signup/Login/ProCheckoutModal), bypassing `upsertUser` — producing docs with no `role` and Timestamp-vs-ISO `createdAt` drift. Those now route through `POST /api/auth/register` → `upsertUser` ([Frontend/src/utils/registerUser.js](../../Frontend/src/utils/registerUser.js)).
 
 ---
 
@@ -1497,6 +1522,7 @@ These are non-feature engineering tasks captured during development. **Scheduled
 **Acceptance Criteria**:
 - Audit all Firestore queries across `backend/src/controllers/*` for: (a) missing composite indexes (capture the exact warnings), (b) full-collection reads that should be server-side filtered, (c) N+1 patterns.
 - Add all required composite indexes to `firestore.indexes.json` (align with `architecture.md` §5.2 Indexing Strategy table); deploy via `firebase deploy --only firestore:indexes`.
+  - **Known needed index (2026-06-13):** `users` collection `role ASC, createdAt DESC` — the role-filtered Users list currently sorts in memory specifically to avoid this missing composite index (it 500'd with `FAILED_PRECONDITION`). Once the index exists, move `listUsers` role-filter ordering back to Firestore.
 - Replace in-memory filter/sort with indexed Firestore queries where data volume warrants it.
 - For enrichment joins (leads↔users), evaluate denormalisation or a cached lookup vs. full-collection scan.
 - Document final index set and any deliberate in-memory-by-design choices in `architecture.md` §5.2.
@@ -1593,6 +1619,24 @@ This was **partially mitigated** on 2026-06-13 (auth + userId binding — see be
 - Mask on read by default (e.g. `XXXX-XXXX-1234`); expose the full value only to a narrowly-scoped role and log every access (audit trail).
 - Ensure the values are never written to logs (the structured logger already redacts common secret keys — extend the redact list to these fields).
 - Document the data-handling policy in `architecture.md`.
+
+---
+
+### TD-07 — User-Delete Related-Data Cascade [Deferred]
+
+**Priority**: P2 | **Complexity**: M | **Raised**: 2026-06-13
+
+**Rationale**: Deleting a user (`DELETE /api/portal/users/:uid`) currently cleans up the user doc, the `users/{uid}/payments` subcollection, and the Auth account, and **blocks** the delete (`409`) if the user still has tasks (`clientUid` or `assignedTo`). The block is the safe interim choice, but it means an admin cannot remove a user with any task history without manual reassignment/closure, and other references aren't considered. A fuller policy is needed.
+
+**Acceptance Criteria**:
+- Decide and document the policy per reference type: tasks (block vs. reassign vs. soft-delete), task subcollections (steps/documents/payments), notifications, and any audit trail.
+- Consider **soft-delete** (status = `deleted`/`deactivated`) instead of hard delete, so history is preserved and reports don't show ghosts — likely the better default for a compliance-sensitive app.
+- If hard delete is kept, implement a transactional cascade (or a background cleanup job) so a partial failure can't orphan related data.
+- Leads enrichment (`registeredUid`) re-derives at read time, so it needs no cleanup — confirm this stays true.
+- Add tests for: delete blocked by tasks (409), payments subcollection removed, Auth-missing tolerated.
+
+**Files likely touched**:
+- `backend/src/controllers/portalUsers.controller.js` (`removeUser`), `backend/src/services/userService.js` (`deleteUser`)
 
 ---
 
