@@ -1,4 +1,5 @@
 import { getDb } from '../config/firebase.js';
+import { logger } from "../config/logger.js";
 
 const LEADS_COLLECTION = 'contactLeads';
 const USERS_COLLECTION = 'users';
@@ -23,27 +24,58 @@ const refIdFor = (docId) => `LD-${String(docId).slice(0, 6).toUpperCase()}`;
  * the lead's email already exists in the users collection (as primary email or
  * in the emailIds[] secondary list). Accessible to admin and team_member.
  */
+// Split an array into chunks of `size` (Firestore `in`/`array-contains-any`
+// accept at most 30 values per query).
+const chunk = (arr, size) => {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+};
+
 export const getContactLeadsReport = async (req, res) => {
   try {
     const db = getDb();
 
-    const [leadsSnap, usersSnap] = await Promise.all([
-      db.collection(LEADS_COLLECTION).get(),
-      db.collection(USERS_COLLECTION).get(),
-    ]);
+    // Ordered + capped in Firestore. (Pagination of the report itself is tracked
+    // separately; this bounds the read so it can't grow unbounded.)
+    const leadsSnap = await db
+      .collection(LEADS_COLLECTION)
+      .orderBy('createdAt', 'desc')
+      .limit(1000)
+      .get();
 
-    // Build a lookup of every known user email → { uid, role } for fast matching
+    // Collect the DISTINCT emails actually present in the leads. We only need to
+    // resolve those against the users collection — not scan every user. This makes
+    // the cost scale with the number of leads, not the size of the user base.
+    const leadEmails = [
+      ...new Set(
+        leadsSnap.docs
+          .map((d) => String(d.data().email ?? '').toLowerCase())
+          .filter(Boolean)
+      ),
+    ];
+
+    // Look up matching users by primary email and by emailIds[] (secondary),
+    // in chunks of 30. Build email → { uid, role, name }.
     const emailToUser = new Map();
-    usersSnap.forEach((doc) => {
-      const u = doc.data();
-      const entry = { uid: doc.id, role: u.role ?? 'client', name: u.name ?? u.fullName ?? '' };
-      if (u.email) emailToUser.set(String(u.email).toLowerCase(), entry);
-      if (Array.isArray(u.emailIds)) {
-        u.emailIds.forEach((e) => {
-          if (e) emailToUser.set(String(e).toLowerCase(), entry);
+    if (leadEmails.length) {
+      const queries = [];
+      for (const c of chunk(leadEmails, 30)) {
+        queries.push(db.collection(USERS_COLLECTION).where('email', 'in', c).get());
+        queries.push(db.collection(USERS_COLLECTION).where('emailIds', 'array-contains-any', c).get());
+      }
+      const snaps = await Promise.all(queries);
+      for (const snap of snaps) {
+        snap.forEach((doc) => {
+          const u = doc.data();
+          const entry = { uid: doc.id, role: u.role ?? 'client', name: u.name ?? u.fullName ?? '' };
+          if (u.email) emailToUser.set(String(u.email).toLowerCase(), entry);
+          if (Array.isArray(u.emailIds)) {
+            u.emailIds.forEach((e) => { if (e) emailToUser.set(String(e).toLowerCase(), entry); });
+          }
         });
       }
-    });
+    }
 
     const leads = leadsSnap.docs.map((doc) => {
       const data = doc.data();
@@ -76,11 +108,10 @@ export const getContactLeadsReport = async (req, res) => {
       };
     });
 
-    leads.sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
-
+    // Already ordered by createdAt desc in the Firestore query above.
     res.status(200).json(leads);
   } catch (error) {
-    console.error('Error fetching leads report:', error);
+    logger.error({ err: error }, 'Error fetching leads report:');
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -131,7 +162,7 @@ export const createLead = async (req, res) => {
     const ref = await db.collection(LEADS_COLLECTION).add(doc);
     res.status(201).json({ id: ref.id, refId: refIdFor(ref.id), ...doc, createdAt: toISO(now), updatedAt: toISO(now) });
   } catch (error) {
-    console.error('Error creating lead:', error);
+    logger.error({ err: error }, 'Error creating lead:');
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -181,7 +212,7 @@ export const updateLead = async (req, res) => {
       updatedAt: toISO(d.updatedAt),
     });
   } catch (error) {
-    console.error('Error updating lead:', error);
+    logger.error({ err: error }, 'Error updating lead:');
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -200,7 +231,7 @@ export const deleteLead = async (req, res) => {
     await ref.delete();
     res.status(200).json({ message: 'Lead deleted', id });
   } catch (error) {
-    console.error('Error deleting lead:', error);
+    logger.error({ err: error }, 'Error deleting lead:');
     res.status(500).json({ message: "Internal server error" });
   }
 };

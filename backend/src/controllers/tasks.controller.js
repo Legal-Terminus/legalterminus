@@ -1,4 +1,5 @@
 import { db } from '../config/firebase.js';
+import { logger } from "../config/logger.js";
 
 // ─── GET /api/tasks ────────────────────────────────────────────────────────
 export async function listTasks(req, res) {
@@ -25,7 +26,7 @@ export async function listTasks(req, res) {
     const snap = await query.get();
     res.json(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
   } catch (err) {
-    console.error('listTasks error:', err);
+    logger.error({ err: err }, 'listTasks error:');
     res.status(500).json({ message: 'Failed to list tasks' });
   }
 }
@@ -43,7 +44,7 @@ export async function getTask(req, res) {
     }
     res.json({ id: doc.id, ...data });
   } catch (err) {
-    console.error('getTask error:', err);
+    logger.error({ err: err }, 'getTask error:');
     res.status(500).json({ message: 'Failed to get task' });
   }
 }
@@ -68,7 +69,7 @@ export async function patchTask(req, res) {
     await db.collection('tasks').doc(req.params.taskId).update(update);
     res.json({ success: true });
   } catch (err) {
-    console.error('patchTask error:', err);
+    logger.error({ err: err }, 'patchTask error:');
     res.status(500).json({ message: 'Failed to update task' });
   }
 }
@@ -114,7 +115,7 @@ export async function patchStep(req, res) {
     await taskRef.update({ steps, updatedAt: new Date().toISOString() });
     res.json({ success: true });
   } catch (err) {
-    console.error('patchStep error:', err);
+    logger.error({ err: err }, 'patchStep error:');
     res.status(500).json({ message: 'Failed to update step' });
   }
 }

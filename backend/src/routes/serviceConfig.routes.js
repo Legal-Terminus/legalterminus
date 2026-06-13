@@ -14,6 +14,7 @@
 
 import express from 'express';
 import { getDb } from '../config/firebase.js';
+import { logger } from "../config/logger.js";
 
 const router = express.Router();
 
@@ -51,7 +52,7 @@ router.get('/', async (req, res) => {
     _cacheTime = now;
     res.json({ services });
   } catch (err) {
-    console.error('[serviceConfig] Failed to fetch:', err.message);
+    logger.error({ err }, '[serviceConfig] Failed to fetch:');
     res.status(500).json({ error: 'Failed to load service config.' });
   }
 });

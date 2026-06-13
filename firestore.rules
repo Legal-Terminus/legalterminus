@@ -30,6 +30,15 @@ service cloud.firestore {
       allow read: if isCurrentUser(uid) || isAdmin();
       // Only admin can create/update user records (role management is server-side)
       allow write: if isAdmin();
+
+      // ── users/{uid}/payments/{txnId} ─────────────────────────────────────
+      // Payments are stored as a subcollection on the user (written by the
+      // backend Admin SDK, which bypasses these rules). The owner may read their
+      // own payment history; admin/manager may read all. No client writes.
+      match /payments/{txnId} {
+        allow read: if isCurrentUser(uid) || isAdminOrManager();
+        allow write: if false;
+      }
     }
 
     // ── tasks/{taskId} ─────────────────────────────────────────────────────
@@ -66,13 +75,10 @@ service cloud.firestore {
       }
     }
 
-    // ── payments/{paymentId} ──────────────────────────────────────────────
-    match /payments/{paymentId} {
-      allow read: if isAdminOrManager()
-        || (isSignedIn() && role() == 'client' && resource.data.clientUid == request.auth.uid);
-      allow create, update: if isAdminOrManager();
-      allow delete: if isAdmin();
-    }
+    // ── payments ──────────────────────────────────────────────────────────
+    // NOTE: There is no top-level `payments` collection. Payments live under
+    // `users/{uid}/payments/{txnId}` — see the rule inside the users match above.
+    // Any top-level /payments doc is denied by the catch-all at the bottom.
 
     // ── notifications/{notifId} ───────────────────────────────────────────
     match /notifications/{notifId} {

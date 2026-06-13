@@ -1,5 +1,27 @@
 import admin from "firebase-admin";
 import { getDb } from "../config/firebase.js";
+import { logger } from "../config/logger.js";
+
+/**
+ * Short-lived cache for the Firestore role fallback (uid → { role, expires }).
+ * The custom claim is the primary source; this only covers the window where a
+ * freshly-set claim hasn't propagated to the token yet. Caching avoids a
+ * per-request Firestore read for those users. TTL is intentionally short so a
+ * role change takes effect quickly.
+ */
+const ROLE_CACHE_TTL_MS = 60 * 1000;
+const roleCache = new Map();
+
+const getCachedRole = (uid) => {
+  const hit = roleCache.get(uid);
+  if (hit && hit.expires > Date.now()) return hit.role;
+  roleCache.delete(uid);
+  return undefined;
+};
+
+const setCachedRole = (uid, role) => {
+  roleCache.set(uid, { role, expires: Date.now() + ROLE_CACHE_TTL_MS });
+};
 
 /**
  * Middleware: verify Firebase ID token from Authorization: Bearer <token> header.
@@ -25,13 +47,23 @@ export const verifyToken = async (req, res, next) => {
     const decoded = await admin.auth().verifyIdToken(token);
     req.user = decoded; // { uid, email, role?, ... }
 
-    // Fall back to Firestore role if the token has no role claim.
+    // Fall back to Firestore role if the token has no role claim. Cached briefly
+    // so this costs at most one read per uid per TTL window, not one per request.
     if (!req.user.role && decoded.uid) {
-      try {
-        const doc = await getDb().collection("users").doc(decoded.uid).get();
-        if (doc.exists) req.user.role = doc.data()?.role;
-      } catch (e) {
-        console.warn(`[verifyToken] Could not read Firestore role for ${decoded.uid}:`, e.message);
+      const cached = getCachedRole(decoded.uid);
+      if (cached) {
+        req.user.role = cached;
+      } else {
+        try {
+          const doc = await getDb().collection("users").doc(decoded.uid).get();
+          if (doc.exists) {
+            const role = doc.data()?.role;
+            req.user.role = role;
+            if (role) setCachedRole(decoded.uid, role);
+          }
+        } catch (e) {
+          logger.warn({ err: e }, `[verifyToken] Could not read Firestore role for ${decoded.uid}:`);
+        }
       }
     }
 

@@ -1581,6 +1581,21 @@ This was **partially mitigated** on 2026-06-13 (auth + userId binding — see be
 
 ---
 
+### TD-06 — Sensitive PII Encryption / Masking (Aadhaar, PAN, GST) [Critical]
+
+**Priority**: P0 (privacy/compliance) | **Complexity**: L | **Raised**: 2026-06-13
+
+**Rationale**: User documents store `aadhaarNumber`, `panNumber`, and `gstNumber` as plaintext in the `users` Firestore collection (`portalUsers.controller.js`). Aadhaar in particular is sensitive personal data under India's DPDP Act; storing it unencrypted, queryable, and readable by every admin/manager is a compliance liability and would fail a privacy review.
+
+**Acceptance Criteria**:
+- Confirm each field is actually required; drop any that aren't (data minimization).
+- Encrypt sensitive identifiers at rest with a KMS-managed key (Google Cloud KMS), or tokenize them; never store raw Aadhaar in a queryable field.
+- Mask on read by default (e.g. `XXXX-XXXX-1234`); expose the full value only to a narrowly-scoped role and log every access (audit trail).
+- Ensure the values are never written to logs (the structured logger already redacts common secret keys — extend the redact list to these fields).
+- Document the data-handling policy in `architecture.md`.
+
+---
+
 ## Phase 2 Stories (Out of Sprint 1–4 Scope)
 
 The following stories are tagged `[Phase 2]` and are scoped for the next planning cycle after the web app is stable:

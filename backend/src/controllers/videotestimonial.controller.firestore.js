@@ -5,6 +5,7 @@ import {
   updateDoc,
   deleteDoc,
 } from "../config/firestore.js";
+import { logger } from "../config/logger.js";
 
 const COLLECTION = "videotestimonials";
 
@@ -20,7 +21,7 @@ export const createVideoTestimonial = async (req, res) => {
 
     return res.status(201).json(video);
   } catch (error) {
-    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    logger.error({ err: error }, "[VIDEO_TESTIMONIAL_ERROR]");
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -28,18 +29,11 @@ export const createVideoTestimonial = async (req, res) => {
 /* ================= GET ALL VIDEO TESTIMONIALS ================= */
 export const getVideoTestimonials = async (req, res) => {
   try {
-    const videos = await getAllDocs(COLLECTION);
-
-    // Sort by createdAt descending
-    videos.sort((a, b) => {
-      const dateA = a.createdAt?.toMillis?.() || a.createdAt || 0;
-      const dateB = b.createdAt?.toMillis?.() || b.createdAt || 0;
-      return dateB - dateA;
-    });
-
+    // Ordered + capped in Firestore (no full scan, no in-memory sort).
+    const videos = await getAllDocs(COLLECTION, [], { orderBy: { field: "createdAt", direction: "desc" } });
     return res.status(200).json(videos);
   } catch (error) {
-    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    logger.error({ err: error }, "[VIDEO_TESTIMONIAL_ERROR]");
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -56,7 +50,7 @@ export const getVideoTestimonial = async (req, res) => {
 
     return res.status(200).json(video);
   } catch (error) {
-    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    logger.error({ err: error }, "[VIDEO_TESTIMONIAL_ERROR]");
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -77,7 +71,7 @@ export const updateVideoTestimonial = async (req, res) => {
 
     return res.status(200).json({ id, ...video, ...req.body });
   } catch (error) {
-    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    logger.error({ err: error }, "[VIDEO_TESTIMONIAL_ERROR]");
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -96,7 +90,7 @@ export const deleteVideoTestimonial = async (req, res) => {
 
     return res.status(200).json({ message: "Deleted successfully" });
   } catch (error) {
-    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    logger.error({ err: error }, "[VIDEO_TESTIMONIAL_ERROR]");
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -121,7 +115,7 @@ export const toggleVideoTestimonialStatus = async (req, res) => {
 
     return res.status(200).json({ id, ...video, status: newStatus });
   } catch (error) {
-    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    logger.error({ err: error }, "[VIDEO_TESTIMONIAL_ERROR]");
     return res.status(500).json({ message: "Internal server error" });
   }
 };

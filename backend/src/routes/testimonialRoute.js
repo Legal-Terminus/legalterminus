@@ -1,5 +1,7 @@
 import express from "express";
 import { verifyToken, requireRole } from "../middleware/auth.middleware.js";
+import { validate } from "../middleware/validate.middleware.js";
+import { testimonialSchema, testimonialUpdateSchema, statusOnlySchema } from "../schemas/content.schema.js";
 import {
   createTestimonial,
   getAllTestimonials,
@@ -24,9 +26,9 @@ router.get("/", testimonialController.getAllTestimonials);
 
 // Content management — admin + manager only.
 const manage = [verifyToken, requireRole("admin", "manager")];
-router.post("/", ...manage, testimonialController.createTestimonial);
-router.put("/:id", ...manage, testimonialController.updateTestimonial);
+router.post("/", ...manage, validate(testimonialSchema), testimonialController.createTestimonial);
+router.put("/:id", ...manage, validate(testimonialUpdateSchema), testimonialController.updateTestimonial);
 router.delete("/:id", ...manage, testimonialController.deleteTestimonial);
-router.patch("/:id/status", ...manage, testimonialController.toggleStatus);
+router.patch("/:id/status", ...manage, validate(statusOnlySchema), testimonialController.toggleStatus);
 
 export default router;

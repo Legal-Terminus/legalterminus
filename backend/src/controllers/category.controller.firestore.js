@@ -5,24 +5,24 @@ import {
   updateDoc,
   deleteDoc,
 } from "../config/firestore.js";
+import { logger } from "../config/logger.js";
 
 const COLLECTION = "categories";
 
 /* ================= GET ALL CATEGORIES ================= */
 export const getCategories = async (req, res) => {
   try {
-    const categories = await getAllDocs(COLLECTION);
-
-    // Sort by name ascending (case-insensitive)
+    // Bounded read (cap in Firestore). Categories is a small, naturally-bounded
+    // set; we sort case-insensitively in JS because Firestore orderBy is
+    // case-sensitive and there is no normalized name field to order on.
+    const categories = await getAllDocs(COLLECTION, [], { limit: 200 });
     categories.sort((a, b) =>
-      (a.name || "").localeCompare(b.name || "", "en", {
-        sensitivity: "base",
-      })
+      (a.name || "").localeCompare(b.name || "", "en", { sensitivity: "base" })
     );
 
     res.status(200).json(categories);
   } catch (error) {
-    console.error("Fetch Categories Error:", error);
+    logger.error({ err: error }, "Fetch Categories Error:");
     res.status(500).json({ message: "Failed to fetch categories" });
   }
 };
@@ -57,7 +57,7 @@ export const createCategory = async (req, res) => {
 
     res.status(201).json(category);
   } catch (error) {
-    console.error("Create Category Error:", error);
+    logger.error({ err: error }, "Create Category Error:");
     res.status(500).json({ message: "Failed to create category" });
   }
 };
@@ -96,7 +96,7 @@ export const updateCategory = async (req, res) => {
 
     res.status(200).json({ id, name: name.trim(), updatedAt: new Date() });
   } catch (error) {
-    console.error("Update Category Error:", error);
+    logger.error({ err: error }, "Update Category Error:");
     res.status(500).json({ message: "Failed to update category" });
   }
 };
@@ -115,7 +115,7 @@ export const deleteCategory = async (req, res) => {
 
     res.status(200).json({ message: "Category deleted successfully" });
   } catch (error) {
-    console.error("Delete Category Error:", error);
+    logger.error({ err: error }, "Delete Category Error:");
     res.status(500).json({ message: "Failed to delete category" });
   }
 };

@@ -4,6 +4,7 @@ import {
   updateDoc,
   deleteDoc,
 } from "../config/firestore.js";
+import { logger } from "../config/logger.js";
 
 const COLLECTION = "contactLeads";
 
@@ -80,7 +81,7 @@ export const createContactLead = async (req, res) => {
 
     res.status(201).json({ success: true, lead });
   } catch (error) {
-    console.error("[CONTACT_ERROR]", error);
+    logger.error({ err: error }, "[CONTACT_ERROR]");
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -88,17 +89,11 @@ export const createContactLead = async (req, res) => {
 /* ================= GET ALL LEADS ================= */
 export const getContactLeads = async (req, res) => {
   try {
-    const leads = await getAllDocs(COLLECTION);
-
-    leads.sort((a, b) => {
-      const dateA = a.createdAt?.toMillis?.() ?? new Date(a.createdAt).getTime() ?? 0;
-      const dateB = b.createdAt?.toMillis?.() ?? new Date(b.createdAt).getTime() ?? 0;
-      return dateB - dateA;
-    });
-
+    // Ordered + capped in Firestore (no full scan, no in-memory sort).
+    const leads = await getAllDocs(COLLECTION, [], { orderBy: { field: "createdAt", direction: "desc" } });
     res.status(200).json(leads);
   } catch (error) {
-    console.error("[CONTACT_ERROR]", error);
+    logger.error({ err: error }, "[CONTACT_ERROR]");
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -121,7 +116,7 @@ export const updateContactLeadStatus = async (req, res) => {
 
     res.status(200).json({ success: true, ...updated });
   } catch (error) {
-    console.error("[CONTACT_ERROR]", error);
+    logger.error({ err: error }, "[CONTACT_ERROR]");
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -132,7 +127,7 @@ export const deleteContactLead = async (req, res) => {
     await deleteDoc(COLLECTION, req.params.id);
     res.status(200).json({ success: true, message: "Lead deleted." });
   } catch (error) {
-    console.error("[CONTACT_ERROR]", error);
+    logger.error({ err: error }, "[CONTACT_ERROR]");
     res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import axios from 'axios';
 import { getDb } from '../config/firebase.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
+import { logger } from "../config/logger.js";
 
 const router = express.Router();
 
@@ -95,7 +96,7 @@ router.post('/redirect', express.urlencoded({ extended: true }), async (req, res
   const { txnId, planName, userId, amount, source, sourceLabel } = req.query;
   const { FRONTEND_URL } = process.env;
 
-  console.log(`PayU redirect: txnId=${txnId}, status=${body.status}, userId=${userId}`);
+  logger.info(`PayU redirect: txnId=${txnId}, status=${body.status}, userId=${userId}`);
 
   if (!txnId) {
     return res.redirect(`${FRONTEND_URL}/payment/result?status=failed&reason=missing_transaction`);
@@ -119,7 +120,7 @@ router.post('/redirect', express.urlencoded({ extended: true }), async (req, res
   });
 
   if (!hashValid) {
-    console.error('PayU hash verification failed for txnId:', txnId);
+    logger.error({ txnId }, 'PayU hash verification failed');
     const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason: 'Hash verification failed' });
     return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   }
@@ -147,7 +148,7 @@ router.post('/redirect', express.urlencoded({ extended: true }), async (req, res
     const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason });
     return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   } catch (err) {
-    console.error('PayU redirect handler error:', err.message);
+    logger.error({ err }, 'PayU redirect handler error:');
     const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason: 'Server error' });
     return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   }
@@ -163,7 +164,7 @@ router.get('/redirect', async (req, res) => {
   const { txnId, planName, userId, amount, source, sourceLabel, status_type } = req.query;
   const { FRONTEND_URL } = process.env;
 
-  console.log(`PayU GET redirect: txnId=${txnId}, status_type=${status_type}`);
+  logger.info(`PayU GET redirect: txnId=${txnId}, status_type=${status_type}`);
 
   if (!txnId) {
     return res.redirect(`${FRONTEND_URL}/payment/result?status=failed&reason=missing_transaction`);
@@ -195,7 +196,7 @@ router.get('/redirect', async (req, res) => {
     const trustedPlanName = txnData?.udf2 || planName;
     const trustedAmount   = txnData?.amt  || txnData?.amount || amount;
 
-    console.log(`[PayU Verify] txnId=${txnId}, status=${status}`);
+    logger.info(`[PayU Verify] txnId=${txnId}, status=${status}`);
 
     if (isSuccess) {
       await savePayment({ userId: trustedUserId, transactionId: txnId, paymentId, amount: trustedAmount, planName: trustedPlanName, source, sourceLabel, status: 'success' });
@@ -208,7 +209,7 @@ router.get('/redirect', async (req, res) => {
     const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason });
     return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   } catch (err) {
-    console.error('PayU verify error:', err.response?.data || err.message);
+    logger.error({ err, payu: err.response?.data }, 'PayU verify error:');
     const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason: 'Status check failed' });
     return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   }
@@ -217,10 +218,10 @@ router.get('/redirect', async (req, res) => {
 /* ─── helpers ─── */
 
 async function savePayment({ userId, transactionId, paymentId, amount, planName, source, sourceLabel, status, failureReason }) {
-  console.log(`[savePayment] userId=${userId}, txnId=${transactionId}, status=${status}, source=${source}`);
+  logger.info(`[savePayment] userId=${userId}, txnId=${transactionId}, status=${status}, source=${source}`);
 
   if (!userId) {
-    console.warn('[savePayment] userId is missing — payment NOT saved to database');
+    logger.warn('[savePayment] userId is missing — payment NOT saved to database');
     return;
   }
 
@@ -239,17 +240,17 @@ async function savePayment({ userId, transactionId, paymentId, amount, planName,
       updatedAt:     new Date(),
     });
 
-    console.log('[savePayment] Payment saved successfully');
+    logger.info('[savePayment] Payment saved successfully');
 
     if (status === 'success') {
       await db.collection('users').doc(userId).update({
         currentPlan:   planName,
         paidPlanStart: new Date(),
         updatedAt:     new Date(),
-      }).catch((err) => console.error('[savePayment] Error updating user subscription:', err));
+      }).catch((err) => logger.error({ err: err }, '[savePayment] Error updating user subscription:'));
     }
   } catch (err) {
-    console.error('[savePayment] Error saving payment to Firestore:', err);
+    logger.error({ err: err }, '[savePayment] Error saving payment to Firestore:');
   }
 }
 
