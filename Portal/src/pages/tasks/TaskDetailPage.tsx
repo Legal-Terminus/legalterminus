@@ -274,7 +274,7 @@ function CurrentStepActions({
     body = role.isStaff ? (
       <div className="flex flex-wrap gap-2">
         <button disabled={pending} onClick={() => onEvent({ type: 'RECORD_PAYMENT', newStatus: 'fully_paid' })} className="btn-primary disabled:opacity-50">
-          {pending ? spin : <CreditCard className="w-4 h-4" />} Record Payment (stub)
+          {pending ? spin : <CreditCard className="w-4 h-4" />} Mark as Paid
         </button>
         <button disabled={pending} onClick={() => fireWithComment('ADMIN_OVERRIDE_PAYMENT', 'Reason for override (optional):')} className="btn-secondary disabled:opacity-50">
           <ShieldCheck className="w-4 h-4" /> Admin Override
@@ -416,12 +416,11 @@ function DocumentsTab() {
     <div className="card p-12 text-center">
       <FileText className="w-10 h-10 text-hairline mx-auto mb-3" />
       <p className="text-sm font-medium text-ink">Documents</p>
-      <p className="text-sm text-ink-muted mt-1">
-        Uploading and reviewing documents for each step is coming soon.
+      <p className="text-sm text-ink-muted mt-1 max-w-sm mx-auto">
+        Secure document upload and review is on the way. For now, please share documents with our
+        team over your usual channel.
       </p>
-      <button disabled className="btn-secondary mt-4 opacity-50 cursor-not-allowed">
-        Attach document (coming soon)
-      </button>
+      <span className="badge bg-surface-card text-ink-muted mt-4 inline-block">Coming soon</span>
     </div>
   );
 }
@@ -453,7 +452,7 @@ function PaymentsTab({ task }: { task: Task }) {
         </div>
       </div>
       <p className="text-xs text-ink-faint mt-4">
-        Online payment and receipts are coming soon. Payments are currently recorded by the team.
+        Payments are recorded by our team as they are received.
       </p>
     </div>
   );
