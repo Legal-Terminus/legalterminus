@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Settings, Layers,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Settings, Layers, User, Package,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 
@@ -13,6 +13,8 @@ import UsersPage from '../pages/users/UsersPage';
 import UserFormPage from '../pages/users/UserFormPage';
 import WorkflowSettings from '../pages/workflow/WorkflowSettingsPage';
 import Services from '../pages/services/ServicesPage';
+import ProfilePage from '../pages/profile/ProfilePage';
+import OrdersPage from '../pages/orders/OrdersPage';
 
 // Reports
 import ReportsPage from '../pages/reports/ReportsPage';
@@ -77,6 +79,11 @@ export const APP_ROUTES: AppRoute[] = [
 
   // ── Service catalog — staff only (clients excluded; staff can customise table fields) ──
   { path: '/services', element: <Services />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Services', icon: Layers, mobile: true } },
+
+  // ── Self-service (all roles) — own profile + order history (migrated from the
+  //    marketing site's /my-profile, which is now a redirect into the portal) ──
+  { path: '/profile', element: <ProfilePage />, roles: ALL_ROLES, nav: { label: 'My Profile', icon: User, order: 10 } },
+  { path: '/orders',  element: <OrdersPage />,  roles: ALL_ROLES, nav: { label: 'My Orders', icon: Package, order: 11 } },
 
   // ── Shared (multi-role) — reached via Reports tile / dashboard tile; no sidebar entry ──
   { path: '/reports/leads', element: <ContactLeadsReport />, roles: ['admin', 'manager', 'team_member'] },

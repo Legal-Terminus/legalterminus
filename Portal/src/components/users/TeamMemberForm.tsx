@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createUser, updateUser, type PortalUser } from '../../api/users';
 import { useAuthStore } from '../../store/authStore';
 import { assignableRolesFor } from '../../lib/roles';
@@ -45,6 +45,7 @@ const COLOR_MAP = {
 };
 
 export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMemberFormProps) {
+  const queryClient = useQueryClient();
   const currentRole = useAuthStore((s) => s.role);
   // Only show roles the current user is allowed to assign (manager can't mint admin/manager).
   const allowedRoleKeys = assignableRolesFor(currentRole);
@@ -76,11 +77,18 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
         // PATCH accepts only updatable fields — `uid` is in the URL and `email`
         // is immutable; sending them trips the strict schema ("Unrecognized keys").
         const { uid, email: _email, ...updates } = data;
+        void _email; // email is immutable — intentionally dropped from the PATCH payload
         return updateUser(uid, updates);
       }
       return createUser({ ...data, role: data.role });
     },
-    onSuccess: () => onSuccess(),
+    onSuccess: () => {
+      // Refresh the users grid (and this user's detail) so the new/updated row
+      // appears without a manual page refresh.
+      queryClient.invalidateQueries({ queryKey: ['portalUsers'] });
+      if (member?.uid) queryClient.invalidateQueries({ queryKey: ['portalUser', member.uid] });
+      onSuccess();
+    },
     onError: (err: Error) => setError(err.message),
   });
 

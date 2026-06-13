@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createUser, updateUser, type PortalUser } from '../../api/users';
+import { useAuthStore } from '../../store/authStore';
+import { assignableRolesFor, isStaffRole, roleLabel, type Role } from '../../lib/roles';
 import {
-  ArrowLeft, User, Mail, Phone, MapPin, Building2,
+  ArrowLeft, User, Mail, Phone, MapPin, Building2, Briefcase, Shield,
   FileText, AlertCircle, Save, X, Plus,
 } from 'lucide-react';
 
@@ -13,6 +15,8 @@ interface Client {
   email: string;
   phone: string;
   address: string;
+  role: Role;
+  designation?: string;
   organisation?: string;
   businessName?: string;
   gstNumber?: string;
@@ -31,13 +35,23 @@ interface ClientFormProps {
 }
 
 export default function ClientForm({ client, onClose, onSuccess }: ClientFormProps) {
+  const queryClient = useQueryClient();
   const id = client?.uid;
+  const currentRole = useAuthStore((s) => s.role);
+
+  // Roles the current user may assign. Role changes are only offered when
+  // editing an existing user and the actor can assign more than just 'client'
+  // (e.g. promote a client to team_member). Mirrors the backend authz gate.
+  const assignableRoles = assignableRolesFor(currentRole);
+  const canChangeRole = !!id && assignableRoles.filter((r) => r !== 'client').length > 0;
 
   const [formData, setFormData] = useState<Client>({
     name: client?.name ?? client?.fullName ?? '',
     email: client?.email ?? '',
     phone: client?.phone ?? '',
     address: client?.address ?? '',
+    role: client?.role ?? 'client',
+    designation: client?.designation,
     organisation: client?.organisation,
     businessName: client?.businessName,
     gstNumber: client?.gstNumber,
@@ -50,18 +64,35 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
   const [secondaryEmail, setSecondaryEmail] = useState('');
   const [error, setError] = useState('');
 
+  const promotingToStaff = isStaffRole(formData.role);
+
   const mutation = useMutation({
     mutationFn: async (data: Client) => {
       const allEmails = [data.email, ...data.emailIds.filter((e) => e !== data.email)];
       if (id) {
         // PATCH accepts only updatable fields — `uid` is in the URL and `email`
         // is immutable; sending them trips the strict schema ("Unrecognized keys").
-        const { uid: _uid, email: _email, ...rest } = data;
-        return updateUser(id, { ...rest, emailIds: allEmails });
+        const { uid: _uid, email: _email, role, designation, ...rest } = data;
+        void _uid; void _email; // intentionally dropped from the PATCH payload
+        // Only send `role` when it can be changed; only send `designation` for
+        // staff roles (backend requires it for staff, ignores it for clients).
+        return updateUser(id, {
+          ...rest,
+          emailIds: allEmails,
+          ...(canChangeRole ? { role } : {}),
+          ...(canChangeRole && isStaffRole(role) ? { designation } : {}),
+        });
       }
+      // Create is always a client here; promotion happens on a later edit.
       return createUser({ ...data, emailIds: allEmails, role: 'client' as const });
     },
-    onSuccess: () => onSuccess(),
+    onSuccess: () => {
+      // Refresh the users grid (and this user's detail) so the new/updated row
+      // appears without a manual page refresh.
+      queryClient.invalidateQueries({ queryKey: ['portalUsers'] });
+      if (id) queryClient.invalidateQueries({ queryKey: ['portalUser', id] });
+      onSuccess();
+    },
     onError: (err: Error) => setError(err.message),
   });
 
@@ -86,6 +117,10 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.phone || !formData.address) {
       setError('Please fill all required fields');
+      return;
+    }
+    if (canChangeRole && promotingToStaff && !formData.designation?.trim()) {
+      setError('Designation is required when assigning a staff role.');
       return;
     }
     setError('');
@@ -203,6 +238,58 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
               </div>
             </div>
           </div>
+
+          {/* Role & Access — only when editing, and only if the actor can promote */}
+          {canChangeRole && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-6 h-6 bg-brand-100 rounded-lg flex items-center justify-center">
+                  <Shield className="w-3.5 h-3.5 text-brand-600" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-700">Role &amp; Access</h3>
+                <div className="flex-1 h-px bg-gray-100" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="input-label">Role <span className="text-red-400">*</span></label>
+                  <div className="relative">
+                    <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <select
+                      name="role"
+                      value={formData.role}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, role: e.target.value as Role }))}
+                      className="input-field pl-10"
+                    >
+                      {assignableRoles.map((r) => (
+                        <option key={r} value={r}>{roleLabel(r)}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {promotingToStaff && formData.role !== client?.role && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      Promoting to staff grants access to internal portal areas.
+                    </p>
+                  )}
+                </div>
+                {promotingToStaff && (
+                  <div>
+                    <label className="input-label">Designation <span className="text-red-400">*</span></label>
+                    <div className="relative">
+                      <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        name="designation"
+                        value={formData.designation ?? ''}
+                        onChange={handleChange}
+                        placeholder="e.g. Legal Analyst"
+                        className="input-field pl-10"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Additional Emails */}
           <div>

@@ -8,6 +8,7 @@ import {
   upsertUser,
   getUserByEmail,
   updateUserRole,
+  normalizeUserProfile,
 } from "../services/userService.js";
 
 const router = express.Router();
@@ -152,6 +153,67 @@ router.get("/me", verifyToken, async (req, res) => {
     res.json({ success: true, user: { uid, ...doc.data() } });
   } catch (error) {
     logger.error({ err: error }, '[GET_ME_ERROR]');
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+});
+
+/**
+ * PATCH /api/auth/me
+ * Self-service profile update for the authenticated user. Only safe, self-owned
+ * profile fields are writable — `role`, `email`, status, etc. are NEVER editable
+ * here (role changes go through admin-only paths). uid is taken from the verified
+ * token, so a user can only ever update their own document.
+ * Auth: Bearer <firebase_id_token>
+ * Body: { name?, phone?, address?, businessName?, state?, organisation? }
+ */
+router.patch("/me", verifyToken, async (req, res) => {
+  try {
+    const { uid } = req.user;
+    const db = getDb();
+
+    const { name, phone, address, businessName, state, organisation } = req.body;
+    // Canonicalise name/phone (mirrors fullName/mobile) — same as the admin path.
+    const updates = {
+      ...normalizeUserProfile({ name, phone }),
+      ...(address !== undefined && { address: String(address).slice(0, 500) }),
+      ...(businessName !== undefined && { businessName: String(businessName).slice(0, 200) }),
+      ...(state !== undefined && { state: String(state).slice(0, 100) }),
+      ...(organisation !== undefined && { organisation: String(organisation).slice(0, 200) }),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await db.collection('users').doc(uid).set(updates, { merge: true });
+    const doc = await db.collection('users').doc(uid).get();
+    res.json({ success: true, user: { uid, ...doc.data() } });
+  } catch (error) {
+    logger.error({ err: error }, '[PATCH_ME_ERROR]');
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+});
+
+/**
+ * GET /api/auth/me/orders
+ * Returns the authenticated user's payment/order history from the
+ * users/{uid}/payments subcollection (written by the PayU flow), newest first.
+ * Auth: Bearer <firebase_id_token>
+ */
+router.get("/me/orders", verifyToken, async (req, res) => {
+  try {
+    const { uid } = req.user;
+    const db = getDb();
+
+    const snap = await db.collection('users').doc(uid).collection('payments').get();
+    const orders = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => {
+        const ta = a.paymentDate?._seconds ? a.paymentDate._seconds * 1000 : new Date(a.paymentDate ?? 0).getTime();
+        const tb = b.paymentDate?._seconds ? b.paymentDate._seconds * 1000 : new Date(b.paymentDate ?? 0).getTime();
+        return tb - ta;
+      });
+
+    res.json({ success: true, orders });
+  } catch (error) {
+    logger.error({ err: error }, '[GET_ME_ORDERS_ERROR]');
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 });

@@ -551,23 +551,31 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 ---
 
-### E04-S05 — Service Listing Interface [Phase 2]
+### E04-S05 — Service Catalog (staff-facing) [Phase 1]
 
 **Priority**: P3 | **Complexity**: S | **Linked spec story**: US-12 | **Dependencies**: E01-S04
 
-**Rationale**: Client-facing service catalogue. P3, Phase 2 — not on the critical path.
+**Status**: ✅ IMPLEMENTED (2026-06-13)
+
+**Rationale**: A service catalog for **staff** (admin/manager/team_member) to browse and customise the services Legal Terminus offers — pricing/fields that drive checkout. **Re-scoped 2026-06-13 from "client-facing listing" to staff-facing:** clients don't manage the catalog, staff do; clients are excluded.
 
 **Acceptance Criteria**:
-- `ServicesPage.tsx` — accessible only to `client` role; shows up to 20 services with name, price, 1-line description.
-- "View all" link opens `legalterminus.com/services` in a new tab.
-- "Request Service" CTA opens a pre-filled contact form.
-- Services data is fetched from `GET /api/services` (simple static or Firestore-backed list).
+- `ServicesPage.tsx` — accessible to `admin`, `manager`, `team_member` (NOT `client`). Lists services with editable fields.
+- Staff can update service fields via `PATCH /api/service-config/:categoryId/:key` (role-guarded).
+- Catalog data fetched from `GET /api/service-config/all` (staff-only; returns all services including inactive). The public `GET /api/service-config` returns active services only (used by the marketing site / checkout).
+- Surfaced as a "Service Catalog" dashboard tile + `/services` sidebar nav for staff roles.
 
 **Backend endpoints needed**:
-- `GET /api/services`
+- `GET /api/service-config` — public, active services only
+- `GET /api/service-config/all` — staff-only (verifyToken + requireRole admin/manager/team_member)
+- `PATCH /api/service-config/:categoryId/:key` — staff-only, edit a service field
 
 **Frontend screens/components**:
 - `Portal/src/pages/services/ServicesPage.tsx`
+- `Portal/src/api/services.ts`
+- `backend/src/routes/serviceConfig.routes.js`, `backend/src/schemas/content.schema.js`
+
+> **Note:** `/services` route + dashboard tile roles changed from `['client']` to `['admin','manager','team_member']` in `appRoutes.tsx` / `dashboardConfig.ts`.
 
 ---
 
@@ -1243,19 +1251,24 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 
 **Priority**: P2 | **Complexity**: S | **Linked spec story**: US-8 | **Dependencies**: E09-S01
 
-**Rationale**: Role changes must propagate to Firebase custom claims atomically to take effect on the next token refresh.
+**Rationale**: Role changes must take effect promptly and reliably, without forcing the user to log out or wait for a token to expire.
 
 **Acceptance Criteria**:
-- Admin selects a new role from a dropdown on `UserDetailPage`; confirmation dialog warns "This will change the user's access level immediately on next login."
-- `PATCH /api/portal/users/:uid/role { role: "manager" }` — backend calls `admin.auth().setCustomUserClaims(uid, { role })` then updates `users/{uid}.role` in the same response; returns `{ success: true }`.
-- Frontend notes "The user's new role will be active after their next login or token refresh."
-- The calling admin's own role cannot be changed via the UI (guard: `uid !== currentUser.uid`).
+- Role is changed via the unified user edit form (`PATCH /api/portal/users/:uid`); `role` is admin/manager-assignable per `canAssignRole` (manager cannot mint admin/manager). Backend persists `users/{uid}.role` and best-effort syncs the Firebase custom claim.
+- The new role takes effect within ≤60s for the affected user with **no logout required**.
+
+> **⚠️ UPDATED 2026-06-13 — authorization model changed.** The original design above relied on the **token custom claim** taking effect "on next login / token refresh", which left a stale-token window of up to ~1h (a real bug: changing a user's role didn't apply until their cached token expired). **Now `verifyToken` resolves the role from Firestore `users/{uid}.role` as the authoritative source** (cached 60s), treating the token claim as a fallback only. Consequences:
+> - Role up/down-grades propagate within ≤60s for everyone (self or admin-initiated) — no re-login, no token-refresh/revocation dance.
+> - **`role` is the single source of truth.** The legacy `type` mirror field is fully removed (no code reads/writes it; `backfill-remove-user-type.js` cleared existing docs).
+> - Security note: the Firestore read is server-side, so the client cannot influence the resolved role; trusting it over the signed claim stays secure. Cost: ≤1 Firestore read per user per minute (cached).
+> - Implementation: `backend/src/middleware/auth.middleware.js` (`verifyToken`).
+> - ⏳ Still TODO: the self-role-change UI guard (`uid !== currentUser.uid`) and a dedicated role-change confirmation dialog are not yet implemented; role is changed through the general edit form today.
 
 **Backend endpoints needed**:
-- `PATCH /api/portal/users/:uid/role`
+- `PATCH /api/portal/users/:uid` (role is one of the updatable fields; authz via `canAssignRole`)
 
 **Frontend screens/components**:
-- `Portal/src/pages/users/UserDetailPage.tsx` (role change section)
+- `Portal/src/components/users/TeamMemberForm.tsx` (role selector, gated by `assignableRolesFor`)
 
 ---
 
@@ -1646,7 +1659,6 @@ The following stories are tagged `[Phase 2]` and are scoped for the next plannin
 
 | Story | Title | Epic |
 |---|---|---|
-| E04-S05 | Service Listing Interface | E-04 |
 | E04-S06 | Client Approval/Correction Flow | E-04 |
 | E05-S04 | Document Expiry & Auto-Deletion | E-05 |
 | E06-S04 | Payment Reminder Automation | E-06 |
