@@ -5,6 +5,7 @@ import {
   validateProfileData,
   getUserByUid,
   deleteUser,
+  normalizeUserProfile,
 } from '../services/userService.js';
 
 /**
@@ -151,7 +152,8 @@ export const updateUser = async (req, res) => {
     const writableRole = roleChangeRequested && canAssignRole(req.user?.role, role) ? role : undefined;
 
     const updates = clean({
-      name, phone,
+      // Canonicalise name/phone (mirrors fullName/mobile) so edits never reintroduce drift.
+      ...normalizeUserProfile({ name, phone }),
       role: writableRole,
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, gstNumber, panNumber, aadhaarNumber, state,

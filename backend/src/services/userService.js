@@ -26,12 +26,31 @@ const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => 
  * @param {object} options - { sendEmail: true, authProvider: 'email|google', createdBy: uid }
  * @returns {object} { uid, email, role, isUpdate, scenario, message }
  */
+/**
+ * Normalize name/phone aliases to canonical fields. The `users` collection has
+ * historically been written with either `name`/`fullName` and `phone`/`mobile`
+ * depending on the entry path (self-signup vs portal form). This makes `name`
+ * and `phone` canonical while mirroring the legacy aliases so any older reader
+ * still works. Applied on EVERY upsert so no new inconsistency is created.
+ */
+export const normalizeUserProfile = (profile = {}) => {
+  const out = { ...profile };
+  const name = (out.name ?? out.fullName ?? '').toString().trim();
+  const phone = (out.phone ?? out.mobile ?? '').toString().trim();
+  if (name) { out.name = name; out.fullName = name; }
+  if (phone) { out.phone = phone; out.mobile = phone; }
+  return out;
+};
+
 export const upsertUser = async (email, role, profileData, options = {}) => {
   const {
     sendEmail = true,
     authProvider = 'email',
     createdBy = 'admin',
   } = options;
+
+  // Canonicalise name/phone before any Firestore write.
+  profileData = normalizeUserProfile(profileData);
 
   try {
     const now = new Date().toISOString();

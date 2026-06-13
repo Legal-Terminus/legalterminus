@@ -8,7 +8,9 @@
     "start": "lsof -ti :5001 | xargs kill -9 2>/dev/null; node src/server.js",
     "build:backend": "echo 'Backend build: no build step needed (Node.js)'",
     "start:backend": "cd /Users/ankygoyal/Documents/git/legalterminus/Legal-Terminus/backend && npm start",
-    "dev:backend": "cd /Users/ankygoyal/Documents/git/legalterminus/Legal-Terminus/backend && npm run dev"
+    "dev:backend": "cd /Users/ankygoyal/Documents/git/legalterminus/Legal-Terminus/backend && npm run dev",
+    "backfill:user-names": "node scripts/backfill-user-names.js",
+    "backfill:user-names:dry": "node scripts/backfill-user-names.js --dry-run"
   },
   "keywords": [],
   "author": "",

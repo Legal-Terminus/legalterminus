@@ -883,9 +883,11 @@ POST /api/tasks
 
 ### 5.1 Collections and Security Rules Strategy
 
+**⚠️ `users/{uid}` canonical fields (2026-06-13):** `name` and `phone` are the **canonical** fields. `fullName` and `mobile` are legacy aliases kept mirrored for backward compatibility. All writes flow through `normalizeUserProfile()` in `backend/src/services/userService.js` (applied in `upsertUser` and `portalUsers.updateUser`), which accepts either alias and always persists the canonical field + mirror. Existing docs were normalized via `backend/scripts/backfill-user-names.js` (idempotent; `npm run backfill:user-names`). New code should read `name`/`phone`; the frontend `displayName()` helper (`Portal/src/api/users.ts`) provides a `name → fullName → email` fallback for safety.
+
 | Collection | Who Reads | Who Writes | Security Strategy |
 |---|---|---|---|
-| `users/{uid}` | Owner (own doc), admin, manager | Owner (own limited fields), admin, manager | User reads own; admin/manager read all; only admin can write `role` |
+| `users/{uid}` | Owner (own doc), admin, manager | Owner (own limited fields), admin, manager | User reads own; admin/manager read all; only admin can write `role`. Canonical name/phone fields (see note above). |
 | `workflowTemplates/{wfId}` | admin, manager (top-level), backend | admin only (steps sub-collection) | Public read locked down; write = admin-only custom claim check |
 | `workflowTemplates/{wfId}/steps/{stepNo}` | admin (via portal) | admin only | Sub-collection inherits parent; UI calls backend PATCH not direct Firestore write |
 | `tasks/{taskId}` | Owner client (own), assigned team member, admin, manager | Backend only (not direct client write) | Client reads tasks where `clientUid == uid`; team member reads tasks where any step `assignedTo == uid`; writes always go through backend |
