@@ -10,6 +10,10 @@ export default defineConfig({
         target: 'http://localhost:5001',
         changeOrigin: true,
       },
+      '/portal': {
+        target: 'http://localhost:5173',
+        changeOrigin: true,
+      },
     },
   },
   build: {
