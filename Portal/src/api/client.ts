@@ -1,7 +1,8 @@
 import { getIdToken } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001';
+// Empty string = relative URLs → Vite proxy forwards /api/* to backend:5001
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 export async function apiFetch<T>(
   path: string,

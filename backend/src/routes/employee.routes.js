@@ -7,22 +7,24 @@ import {
   deleteEmployee,
 } from "../controllers/employee.controller.firestore.js";
 import { upload } from "../middleware/upload.middleware.js";
+import { verifyToken, requireRole } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-/* ➕ Create Employee */
-router.post("/create", upload.single("avatar"), createEmployee);
+// Content management — admin + manager only.
+const manage = [verifyToken, requireRole("admin", "manager")];
 
-/* 📥 Fetch All Employees */
+/* 📥 Public reads — consumed by the marketing site. */
 router.get("/", getAllEmployees);
-
-/* 👤 Get Single Employee */
 router.get("/:id", getEmployee);
 
+/* ➕ Create Employee */
+router.post("/create", ...manage, upload.single("avatar"), createEmployee);
+
 /* ✏️ Update Employee */
-router.put("/update/:id", upload.single("avatar"), updateEmployee);
+router.put("/update/:id", ...manage, upload.single("avatar"), updateEmployee);
 
 /* ❌ Delete Employee */
-router.delete("/delete/:id", deleteEmployee);
+router.delete("/delete/:id", ...manage, deleteEmployee);
 
 export default router;

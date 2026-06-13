@@ -1,7 +1,8 @@
 import express from "express";
 import admin from "firebase-admin";
-import { verifyToken } from "../middleware/auth.middleware.js";
+import { verifyToken, requireRole } from "../middleware/auth.middleware.js";
 import { getDb } from "../config/firebase.js";
+import { VALID_ROLES, canAssignRole } from "../config/roles.js";
 import {
   upsertUser,
   getUserByEmail,
@@ -9,8 +10,6 @@ import {
 } from "../services/userService.js";
 
 const router = express.Router();
-
-const VALID_ROLES = ["admin", "manager", "team_member", "client"];
 
 /**
  * GET /api/auth/firebase-config
@@ -160,17 +159,21 @@ router.get("/me", verifyToken, async (req, res) => {
  * Auth: Bearer <firebase_id_token> with role = admin
  * Body: { targetUid, role }
  */
-router.patch("/set-role", verifyToken, async (req, res) => {
+router.patch("/set-role", verifyToken, requireRole("admin"), async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, error: "Forbidden: admin only" });
-    }
-
     const { targetUid, role } = req.body;
     if (!targetUid || !VALID_ROLES.includes(role)) {
       return res.status(400).json({
         success: false,
         error: `role must be one of: ${VALID_ROLES.join(", ")}`,
+      });
+    }
+
+    // Privilege guard: caller may only assign roles permitted for their own role.
+    if (!canAssignRole(req.user.role, role)) {
+      return res.status(403).json({
+        success: false,
+        error: `You are not allowed to assign the role '${role}'.`,
       });
     }
 
@@ -190,18 +193,22 @@ router.patch("/set-role", verifyToken, async (req, res) => {
  * Auth: Bearer <firebase_id_token> with role = admin
  * Body: { email, fullName, role, mobile?, designation?, dateOfJoining? }
  */
-router.post("/admin/create-user", verifyToken, async (req, res) => {
+router.post("/admin/create-user", verifyToken, requireRole("admin"), async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, error: "Forbidden: admin only" });
-    }
-
     const { email, fullName, role, mobile, designation, dateOfJoining } = req.body;
 
     if (!email || !fullName || !VALID_ROLES.includes(role)) {
       return res.status(400).json({
         success: false,
         error: "email, fullName and a valid role are required",
+      });
+    }
+
+    // Privilege guard: caller may only assign roles permitted for their own role.
+    if (!canAssignRole(req.user.role, role)) {
+      return res.status(403).json({
+        success: false,
+        error: `You are not allowed to assign the role '${role}'.`,
       });
     }
 

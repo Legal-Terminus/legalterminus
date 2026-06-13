@@ -1,5 +1,7 @@
 import { db, admin } from '../config/firebase.js';
 
+const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
+
 /**
  * Unified User UPSERT Service
  * Handles creation and updates for all user types (team_member, client, admin, manager)
@@ -76,7 +78,12 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
       const uid = userRecord.uid || existingFirestoreUser?.uid;
       console.log(`[UPSERT] User exists (${uid}). Merging: role=${role}, provider=${authProvider}`);
 
-      const existingAuthProviders = existingFirestoreUser?.authProviders || ['email'];
+      // Derive existing providers from Firestore doc if available; otherwise
+      // inspect the Firebase Auth record's providerData so we don't incorrectly
+      // seed ['email'] for a user who only ever signed in via Google.
+      const existingAuthProviders =
+        existingFirestoreUser?.authProviders ||
+        (userRecord.providerData?.map((p) => p.providerId === 'password' ? 'email' : p.providerId.replace('.com', '')) ?? []);
       const updatedAuthProviders = Array.from(
         new Set([...existingAuthProviders, authProvider])
       );
@@ -87,7 +94,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
           ? 'both'
           : updatedAuthProviders[0];
 
-      // Build Firestore update
+      // Build Firestore update — include createdAt only when no Firestore doc existed yet
       const updates = {
         ...profileData, // name, phone, address, designation, etc.
         email,
@@ -96,16 +103,23 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
         status: 'active',
         updatedAt: now,
         updatedBy: createdBy,
+        ...(!existingFirestoreUser && { createdAt: now, createdBy }),
 
         // Auth tracking
         authProviders: updatedAuthProviders,
         signInMethod,
       };
 
-      await db.collection('users').doc(uid).update(updates);
+      await db.collection('users').doc(uid).set(clean(updates), { merge: true });
 
-      // Set custom claims
-      await admin.auth().setCustomUserClaims(uid, { role });
+      // Set custom claims — may fail if the UID has no Firebase Auth account yet
+      // (e.g. Google-only user whose Auth record hasn't been resolved). Non-fatal:
+      // claims will be set correctly on their next login.
+      try {
+        await admin.auth().setCustomUserClaims(uid, { role });
+      } catch (claimsErr) {
+        console.warn(`[UPSERT] Could not set claims for ${uid} (no Auth record yet):`, claimsErr.message);
+      }
 
       // Send password reset email only if:
       // - sendEmail is true
@@ -169,7 +183,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
       createdBy,
     };
 
-    await db.collection('users').doc(newUid).set(firestoreData);
+    await db.collection('users').doc(newUid).set(clean(firestoreData));
 
     // Set custom claims
     await admin.auth().setCustomUserClaims(newUid, { role });

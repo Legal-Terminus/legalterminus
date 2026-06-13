@@ -70,14 +70,26 @@
 
 ### When adding a new Report or Admin feature:
 1. ✅ Create backend controller endpoint (`backend/src/controllers/`)
-2. ✅ Create frontend page in Portal (`Portal/src/pages/`)
-3. ✅ Create or update Firestore indexes in `firestore.indexes.json`
-4. ✅ Define TypeScript types (`Portal/src/types/`)
-5. ✅ Add role-based access control checks (admin/manager only)
-6. ✅ Update `spec.md` with new fields or workflow changes
-7. ✅ Update `epics.md` story with acceptance criteria + file paths
-8. ✅ Test CSV export if applicable + mobile responsiveness
-9. ✅ Create feature branch + PR
+2. ✅ Add backend route with role guard: `verifyToken, requireRole('admin', ...)` (`backend/src/routes/`)
+3. ✅ Create frontend page in Portal (`Portal/src/pages/`)
+4. ✅ **Register the page in `Portal/src/routes/appRoutes.tsx` — the SINGLE source of truth.** Add ONE `AppRoute` entry with `path`, `element`, `roles`, and optional `nav` block. Do NOT add it to `routes/index.tsx` or `navConfig.ts` directly — both derive from `appRoutes.tsx`.
+5. ✅ Create or update Firestore indexes in `firestore.indexes.json`
+6. ✅ Define TypeScript types (`Portal/src/types/` or alongside the API helper)
+7. ✅ Update `spec.md` with new fields or workflow changes
+8. ✅ Update `epics.md` story with acceptance criteria + file paths
+9. ✅ Test CSV export if applicable + mobile responsiveness
+10. ✅ Create feature branch + PR
+
+### When adding a route or changing who can access a page:
+**⚠️ Access control is declarative and lives in ONE place: `Portal/src/routes/appRoutes.tsx` (`APP_ROUTES`). URLs are ROLE-NEUTRAL.**
+1. ✅ To open a page to another role → add the role to that route's `roles` array. ONE line.
+2. ✅ **Paths name the FEATURE, not the role.** Use `/tasks`, `/users`, `/reports/leads` — NEVER `/admin/*`, `/manager/*`, `/team/*`, `/client/*`. Role-prefixed URLs leak the role and cause duplication; they are banned.
+3. ✅ A page used by multiple roles → ONE canonical path, list every allowed role, and adapt the view inside the component by reading `role` from `useAuthStore`. There is one `/dashboard` and one `/tasks` for all roles. NEVER duplicate a page per role.
+4. ✅ A reachable-but-unlinked page (edit form, detail view) → omit the `nav` block.
+5. ✅ The router (`routes/index.tsx`), navigation (`components/layout/navConfig.ts`), and dashboard tiles (`pages/dashboard/dashboardConfig.ts`) all auto-derive from declarative configs — do not hand-edit guards or nav lists.
+6. ✅ **Folders name the FEATURE, not the role.** Organize `pages/` and `components/` as `pages/users/`, `pages/tasks/`, `pages/reports/`, `components/users/` — NEVER `pages/admin/`, `pages/client/`, `pages/manager/`, `pages/team/`, `components/admin/`. A role-named folder is the same anti-pattern as a role-prefixed URL.
+7. ✅ Roles are NOT hardcoded: use the role service — `Portal/src/lib/roles.ts` (frontend) and `backend/src/config/roles.js` (backend). Adding a role = one entry there. Privilege rules (`canAssignRole`, `USER_DELETE_ROLES`, etc.) live in the role service too.
+8. ✅ See `architecture.md` §2.2 for the full pattern.
 
 ### When refactoring code into a service layer:
 1. ✅ Identify common logic across multiple controllers (e.g., user creation, email sending)
@@ -193,24 +205,36 @@ Services are called by multiple controllers for consistency.
 
 ---
 
-## 📋 Current Sprint Status (Sprint 4)
+## 📋 Current Sprint Status
 
 **Completed:**
-- ✅ Portal frontend scaffold
-- ✅ Auth system (email, Google, signup, forgot password)
-- ✅ Reports (All Tasks, Completed, Pending, Master Sheet)
-- ✅ Task urgent flagging
-- ✅ CI/CD Portal deployment
+- ✅ Portal frontend scaffold (E01-S01)
+- ✅ Auth system: email, Google, signup, forgot password (E01-S02)
+- ✅ Role-based routing & protected routes (E01-S03)
+- ✅ App shell, sidebar, layout (E01-S04)
+- ✅ Team members CRUD — backend + frontend (E09-S01)
+- ✅ Clients CRUD — backend + frontend (E09-S02)
 - ✅ Hybrid auth UPSERT system (team members + clients + Google merge)
+- ✅ Reports: All Tasks, Completed, Pending, Master Sheet (E08-S01 partial)
+- ✅ CI/CD Portal deployment
+- ✅ **User management consolidation** — Clients, Team Members, Users merged into single `/users` page with role filter tabs (2026-06-13)
+
+**User Management Architecture (consolidated):**
+- Single page: `Portal/src/pages/admin/UsersPage.tsx` at route `/users`
+- Single form: `Portal/src/pages/admin/UserFormPage.tsx` at routes `/users/new/:type` and `/users/edit/:type/:uid`
+- `:type` param = `"member"` (renders TeamMemberForm) or `"client"` (renders ClientForm)
+- Sidebar has ONE "Users" nav entry — no separate Clients / Team Members entries
+- Backend APIs unchanged: `/api/team-members` and `/api/clients` — both fetched and merged on the frontend
 
 **In Progress:**
-- 🔄 Manual testing of all auth flows
-- 🔄 Error message UX improvements
-- 🔄 End-to-end test automation
+- 🔄 Workflow engine (E02): XState machine + task creation + transition endpoint
+- 🔄 Task management UI (E03): task list, step queue, admin task creation
 
 **Next:**
-- ⏳ Firestore rules deployment
-- ⏳ Production release
+- ⏳ E02-S01: XState Company Incorporation machine (41 steps)
+- ⏳ E02-S02: Backend transition endpoint (`POST /api/tasks/:taskId/transition`)
+- ⏳ E02-S03: Task creation endpoint with config layer merge (`POST /api/tasks`)
+- ⏳ E03-S03: Admin/Manager task creation UI + TaskDetailPage
 
 ---
 
@@ -286,25 +310,20 @@ Services are called by multiple controllers for consistency.
    ```
 
 2. **Form pages on mobile:** Use full-screen form pages instead of modals
-   - ✅ Navigate to dedicated form pages (`/admin/team-members/new`, `/admin/team-members/edit/:id`)
+   - ✅ Navigate to dedicated form pages — user forms use `/users/new/:type` and `/users/edit/:type/:uid`
    - ✅ Use full-page real estate on mobile (no modal overlay)
    - ✅ Include back button to return to list
    - ✅ Wrap form in `PageShell` for consistent layout
    - ✅ Make forms responsive with Tailwind utilities
    - Example pattern:
      ```tsx
-     // List page with navigation
-     <button onClick={() => navigate('/admin/team-members/new')}>New</button>
-     <button onClick={() => navigate(`/admin/team-members/edit/${member.uid}`)}>Edit</button>
+     // List page with navigation — type = "member" | "client"
+     <button onClick={() => navigate('/users/new/member')}>Add Member</button>
+     <button onClick={() => navigate('/users/new/client')}>Add Client</button>
+     <button onClick={() => navigate(`/users/edit/member/${uid}`)}>Edit</button>
      
-     // Form page with full-screen form
-     <PageShell title={uid ? 'Edit Team Member' : 'New Team Member'}>
-       <div className="max-w-2xl mx-auto">
-         <div className="bg-white rounded-lg shadow p-6 md:p-8">
-           <form>...</form>
-         </div>
-       </div>
-     </PageShell>
+     // UserFormPage reads :type param and renders TeamMemberForm or ClientForm
+     // All users (clients, team_member, manager, admin) live at /users
      ```
 
 3. **Forms on mobile:**

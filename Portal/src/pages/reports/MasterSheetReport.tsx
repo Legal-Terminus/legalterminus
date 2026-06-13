@@ -65,7 +65,7 @@ export default function MasterSheetReport() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <Link to="/admin/reports" className="text-sm text-indigo-600 hover:underline">← Reports</Link>
+          <Link to="/reports" className="text-sm text-indigo-600 hover:underline">← Reports</Link>
           <h1 className="text-xl font-semibold text-gray-900">Master Sheet</h1>
         </div>
         <button

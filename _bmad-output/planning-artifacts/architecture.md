@@ -115,46 +115,48 @@ Portal/
     │   ├── ProtectedRoute.tsx    # Auth + role guard wrapper
     │   └── RoleRedirect.tsx      # Redirects to role-specific home on login
     │
-    ├── pages/                    # One file per screen/page
+    ├── pages/                    # Organised by FEATURE, never by role (role-neutral)
     │   ├── auth/
     │   │   ├── LoginPage.tsx
+    │   │   ├── SignupPage.tsx
     │   │   └── ForgotPasswordPage.tsx
     │   ├── dashboard/
-    │   │   ├── AdminDashboard.tsx
-    │   │   ├── ManagerDashboard.tsx
-    │   │   ├── TeamMemberDashboard.tsx
-    │   │   └── ClientDashboard.tsx
+    │   │   ├── DashboardPage.tsx          # ONE dashboard, all roles
+    │   │   └── dashboardConfig.ts         # DASHBOARD_TILES (tiles filtered by role)
     │   ├── tasks/
-    │   │   ├── TaskListPage.tsx
-    │   │   ├── TaskDetailPage.tsx   # Steps | Documents | Payments tabs
-    │   │   └── NewTaskPage.tsx
+    │   │   ├── TasksPage.tsx              # ONE tasks page, view adapts to role
+    │   │   └── TaskDetailPage.tsx         # Steps | Documents | Payments tabs
     │   ├── workflow/
-    │   │   ├── WorkflowSettingsPage.tsx   # Admin-only config layer editor
-    │   │   └── StepDetailPage.tsx
+    │   │   └── WorkflowSettingsPage.tsx   # admin-only (via roles[], not folder)
     │   ├── users/
-    │   │   ├── UserListPage.tsx
-    │   │   ├── UserDetailPage.tsx
-    │   │   └── NewUserPage.tsx
-    │   ├── clients/
-    │   │   ├── ClientListPage.tsx
-    │   │   └── ClientDetailPage.tsx
+    │   │   ├── UsersPage.tsx              # all user roles, role filter tabs
+    │   │   └── UserFormPage.tsx           # create/edit any user
     │   ├── reports/
-    │   │   ├── ReportsPage.tsx           # Report selector
+    │   │   ├── ReportsPage.tsx            # report selector
     │   │   ├── AllTasksReport.tsx
-    │   │   ├── WorkloadReport.tsx
-    │   │   ├── DelayReport.tsx
-    │   │   ├── PaymentReport.tsx
-    │   │   └── ...                       # 13 report views total
-    │   ├── notifications/
-    │   │   └── NotificationsPage.tsx
-    │   └── services/
-    │       └── ServicesPage.tsx           # Client-facing service catalogue
+    │   │   ├── CompletedTasksReport.tsx
+    │   │   ├── PendingTasksReport.tsx
+    │   │   ├── MasterSheetReport.tsx
+    │   │   └── ContactLeadsReport.tsx
+    │   ├── services/
+    │   │   └── ServicesPage.tsx           # client service catalogue
+    │   └── shared/
+    │       ├── RootRedirect.tsx
+    │       ├── UnauthorizedPage.tsx
+    │       └── NotFoundPage.tsx
     │
-    ├── components/                # Reusable UI components
+    │   # ⚠️ NO role-named folders (no admin/, client/, manager/, team/).
+    │   # Folders name the FEATURE; access is the route's roles[] in appRoutes.tsx.
+    │
+    ├── components/                # Reusable UI components (feature-named, not role-named)
     │   ├── layout/
-    │   │   ├── AppShell.tsx       # Top nav + sidebar shell
-    │   │   ├── Sidebar.tsx        # Role-aware navigation
-    │   │   └── NotificationBell.tsx
+    │   │   ├── AppLayout.tsx      # Shell: drawer sidebar + topbar + bottom nav
+    │   │   ├── Sidebar.tsx        # Nav derived from APP_ROUTES (navConfig.ts)
+    │   │   ├── BottomNav.tsx      # Mobile bottom nav
+    │   │   ├── TopBar.tsx
+    │   │   └── navConfig.ts       # Sidebar/bottom-nav derivation from APP_ROUTES
+    │   ├── users/                 # ClientForm, TeamMemberForm (was components/admin/)
+    │   ├── dashboard/             # DashboardTile
     │   ├── tasks/
     │   │   ├── StepCard.tsx
     │   │   ├── StepTimeline.tsx
@@ -214,44 +216,84 @@ Portal/
 
 ### 2.2 Role-Based Routing Strategy
 
-React Router v7 (`createBrowserRouter`) wraps every authenticated route in a `ProtectedRoute` component that checks both the auth state and the required role.
+**⚠️ ARCHITECTURE DECISION (2026-06-13, updated): Single declarative source of truth for routes + access + navigation, with ROLE-NEUTRAL URLs. Do NOT create per-role duplicate routes or role-prefixed paths.**
+
+Two principles:
+
+1. **Declarative access** — every authenticated route, the roles allowed to reach it, and its nav metadata live in **one table**: `Portal/src/routes/appRoutes.tsx` → `APP_ROUTES`. The router and navigation both derive from it.
+2. **Role-neutral URLs** — paths name the **feature**, not the role. There are **no `/admin/*`, `/manager/*`, `/team/*`, `/client/*` prefixes**. A path is shared across roles; the page adapts its view to the current role internally, and the `roles` array controls access. This avoids leaking the role in the URL and eliminates per-role route duplication. One unified `/dashboard` and one `/tasks` serve all roles.
 
 ```tsx
-// Portal/src/routes/ProtectedRoute.tsx
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-
-interface Props {
-  allowedRoles: Role[];
+// Portal/src/routes/appRoutes.tsx — the single source of truth
+export interface AppRoute {
+  path: string;
+  element: ReactElement;
+  roles: Role[];        // who can reach this page
+  nav?: {               // omit for non-nav routes (edit forms, detail pages)
+    label: string;
+    mobileLabel?: string;
+    icon: LucideIcon;
+    mobile?: boolean;   // surface in mobile bottom nav
+    order?: number;     // explicit nav ordering
+  };
 }
 
-export function ProtectedRoute({ allowedRoles }: Props) {
-  const { user, role, loading } = useAuth();
+const ALL_ROLES: Role[] = ['admin', 'manager', 'team_member', 'client'];
 
-  if (loading) return <LoadingSpinner />;
+export const APP_ROUTES: AppRoute[] = [
+  // Shared across roles — one path, view adapts to role:
+  { path: '/dashboard', element: <DashboardPage />, roles: ALL_ROLES,
+    nav: { label: 'Dashboard', mobileLabel: 'Home', icon: LayoutDashboard, mobile: true, order: -2 } },
+  { path: '/tasks', element: <TasksPage />, roles: ALL_ROLES,
+    nav: { label: 'Tasks', icon: CheckSquare, mobile: true, order: -1 } },
+  // Admin-only feature:
+  { path: '/users', element: <AdminUsers />, roles: ['admin'],
+    nav: { label: 'Users', icon: Users, mobile: true } },
+  // Shared multi-role page — canonical path, listed ONCE:
+  { path: '/reports/leads', element: <ContactLeadsReport />, roles: ['admin', 'team_member'] },
+];
+```
+
+**Unified dashboard**: there is ONE `DashboardPage` (`Portal/src/pages/dashboard/`) for all roles. Its tiles come from a declarative `DASHBOARD_TILES` config (`dashboardConfig.ts`) filtered by role — same pattern as `APP_ROUTES`. No per-role dashboard components.
+
+Three things derive from this one table — none requires touching the others:
+
+1. **Router guards** (`Portal/src/routes/index.tsx`) — groups routes by identical role-set and wraps each group in a single `<ProtectedRoute allowedRoles={roles}>`. No manual route blocks.
+2. **Sidebar + Bottom nav** (`Portal/src/components/layout/navConfig.ts`) — `navForRole(role)` / `mobileNavForRole(role)` filter `APP_ROUTES` by `roles` and `nav`.
+3. **Access checks** — `ProtectedRoute` enforces `allowedRoles.includes(role)`; redirects to `/unauthorized` otherwise.
+
+**Rules for adding/changing access:**
+- To open a page to another role → add the role to that route's `roles` array. **One line.**
+- **Use role-neutral paths.** Name the feature, not the role: `/tasks`, `/users`, `/reports/leads` — **never** `/admin/*`, `/team/*`, `/client/*`. The `roles` array is the access mechanism; the URL must not encode or leak the role.
+- A page used by multiple roles → one canonical path, list every allowed role, and adapt the view inside the component by reading `role` from the auth store. **Never duplicate the route per role.**
+- A reachable-but-not-linked page (edit form, detail view) → omit the `nav` block.
+
+```tsx
+// Portal/src/components/common/ProtectedRoute.tsx
+export default function ProtectedRoute({ allowedRoles }: { allowedRoles: Role[] }) {
+  const { user, role, isLoading } = useAuthStore();
+  if (isLoading) return <LoadingSpinner />;
   if (!user) return <Navigate to="/login" replace />;
-  if (!allowedRoles.includes(role)) return <Navigate to="/unauthorized" replace />;
-
+  if (!role || !allowedRoles.includes(role)) return <Navigate to="/unauthorized" replace />;
   return <Outlet />;
 }
 ```
 
-**Route tree summary** (abbreviated — all routes are in `Portal/src/routes/index.tsx`):
+**Route tree summary** (abbreviated — full table is `APP_ROUTES` in `Portal/src/routes/appRoutes.tsx`). All paths role-neutral:
 
 | Path | Allowed Roles | Component |
 |---|---|---|
 | `/login` | Public | `LoginPage` |
-| `/dashboard` | All authenticated | `RoleRedirect` → role-specific dashboard |
-| `/tasks` | admin, manager, team_member, client | `TaskListPage` (filtered by role) |
-| `/tasks/new` | admin, manager, team_member | `NewTaskPage` |
-| `/tasks/:taskId` | admin, manager, team_member, client | `TaskDetailPage` |
+| `/dashboard` | all roles | `DashboardPage` (tiles filtered by role) |
+| `/tasks` | all roles | `TasksPage` (view adapts to role) |
+| `/tasks/:taskId` | all roles | `TaskDetailPage` |
+| `/users`, `/users/new/:type`, `/users/edit/:type/:uid` | admin, manager | `UsersPage` / `UserFormPage` (manager cannot delete — E09-S01/S02) |
+| `/reports`, `/reports/all-tasks`, `/reports/completed`, `/reports/pending`, `/reports/master-sheet` | admin, manager | Report pages |
 | `/workflow-settings` | admin | `WorkflowSettingsPage` |
-| `/users` | admin, manager | `UserListPage` |
-| `/clients` | admin, manager | `ClientListPage` |
-| `/reports/*` | admin, manager | Report pages |
-| `/reports/client-delays` | client | Client-facing delay summary |
-| `/notifications` | All authenticated | `NotificationsPage` |
 | `/services` | client | `ServicesPage` |
+| `/reports/leads` | **admin, manager, team_member** | `ContactLeadsReport` (shared) |
+
+`RootRedirect` sends `/` → `/dashboard` for any authenticated role (→ `/login` if not).
 
 ### 2.3 State Management Strategy
 
@@ -414,13 +456,15 @@ app.use("/api/notifications", notifRoutes);
 
 ### 3.5 `/api/portal/users` — User Management Routes
 
+**✅ IMPLEMENTED (2026-06-13) as the SINGLE user-management API.** The legacy split endpoints `/api/clients` and `/api/team-members` (and their controllers + the redundant `clients` collection) have been **removed**. All user types — admin, manager, team_member, client — live in the `users` collection; `role` is a field, not a separate endpoint. The portal `UsersPage` makes ONE call (`getUsers()`) instead of fetching+merging two lists. Backed by `backend/src/controllers/portalUsers.controller.js` + `routes/portalUsers.routes.js`; role validation/permissions come from `backend/src/config/roles.js` (the backend role service). Frontend helper: `Portal/src/api/users.ts`; frontend role service: `Portal/src/lib/roles.ts`.
+
 | Method | Path | Roles | Description |
 |---|---|---|---|
-| `GET` | `/api/portal/users` | admin, manager | List all users (filter by role) |
-| `POST` | `/api/portal/users` | admin, manager | Create team_member or client profile + Firebase Auth account |
-| `GET` | `/api/portal/users/:uid` | admin, manager, self | Get user profile |
-| `PATCH` | `/api/portal/users/:uid` | admin, manager | Update profile fields |
-| `DELETE` | `/api/portal/users/:uid` | admin | Deactivate user (soft-delete) |
+| `GET` | `/api/portal/users` | admin, manager | List all users (optional `?role=` filter) |
+| `POST` | `/api/portal/users` | admin, manager | Create user (any role) + Firebase Auth account |
+| `GET` | `/api/portal/users/:uid` | admin, manager | Get user profile |
+| `PATCH` | `/api/portal/users/:uid` | admin, manager | Update profile fields (role change = admin only) |
+| `DELETE` | `/api/portal/users/:uid` | admin | Delete user |
 | `PATCH` | `/api/portal/users/:uid/role` | admin | Update role + setCustomUserClaims |
 | `POST` | `/api/portal/users/:uid/bulk-reassign` | admin, manager | Reassign all open steps to another uid |
 

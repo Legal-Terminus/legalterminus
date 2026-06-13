@@ -120,7 +120,7 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 2. **Scenario 2: Admin Creates Team Member** → Admin creates joe@gmail.com with role='manager' → Joe receives password reset email → On login, role is preserved
 3. **Scenario 3: Admin + Google Merge** → Admin creates joe@gmail.com → Joe signs in via Google → Email-based Firestore lookup → Role preserved, profile synced, account linking attempted
 
-**Implementation Notes** (Updated 2026-06-01):
+**Implementation Notes** (Updated 2026-06-13):
 - ✅ Hybrid auth system fully implemented in backend auth flow
 - ✅ `POST /api/auth/register` now implements email-based search:
   - Searches Firestore by email FIRST (for admin-created users)
@@ -136,6 +136,10 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 - Backend `POST /api/auth/register` creates user document with `role: "client"` by default (or admin-assigned role if found)
 - `useAuthListener()` reads role from Firestore via `getDoc(doc(db, 'users', uid))` instead of `getIdTokenResult().claims`
 - This allows changing role directly in Firestore console for testing without needing Firebase Console custom claims UI
+- ✅ BUG FIX (2026-06-13): `upsertUser` UPDATE path — `authProviders` now derived from Firebase Auth `providerData` when no Firestore doc exists yet, instead of incorrectly defaulting to `['email']` (broke Google-only users)
+- ✅ BUG FIX (2026-06-13): Firebase Auth `providerId: 'password'` now correctly mapped to `'email'` (was left as `'password'`, causing spurious password-reset emails for existing email/password users)
+- ✅ BUG FIX (2026-06-13): `createdAt` is now written on first Firestore doc creation even when going through the UPDATE path (e.g. Firebase Auth user with no prior Firestore doc)
+- ✅ BUG FIX (2026-06-13): `setCustomUserClaims` wrapped in try/catch on UPDATE path — gracefully handles edge case where UID has no Firebase Auth account yet (Firestore-only placeholder); claims are set on next login
 
 **Backend endpoints needed**:
 - ✅ `POST /api/auth/register` — creates `users/{uid}` with role; searches by email for admin-created users; accepts { fullName, email?, mobile?, businessName?, state?, provider }
@@ -1006,6 +1010,54 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 ---
 
+### E08-S06 — Contact Leads Report [Phase 1]
+
+**Priority**: P2 | **Complexity**: S | **Linked spec story**: US-7 | **Dependencies**: E09-S02
+
+**Status**: ✅ IMPLEMENTED (2026-06-13)
+
+**Rationale**: The public marketing site (`Frontend/`) captures enquiries into the `contactLeads` Firestore collection. Admins, managers, and team members need to review and follow up on these leads from the portal, and immediately see whether a lead is already a registered client (to avoid duplicate onboarding and to route follow-up correctly).
+
+**Access requirement**: `ContactLeadsReport` is accessible to **`admin`, `manager`, and `team_member`** (the internal staff roles). Clients have no access.
+
+**Acceptance Criteria**:
+- `ContactLeadsReport.tsx` — accessible to `admin`, `manager`, and `team_member`.
+- `GET /api/leads` — returns all `contactLeads` docs, each enriched with a `registered` boolean indicating whether the lead's email matches a `users` doc (by primary `email` OR any entry in `emailIds[]`), plus `registeredUid` and `registeredRole`.
+- Each lead row shows: name, company, email, phone, state, message, service/source, preferred call time, status (`new`/`contacted`/`closed`), received date, and a **Client / New lead** tag from the `registered` flag.
+- Filters: status tabs (All/New/Contacted/Closed with counts), registered-vs-new-lead tabs, and free-text search across name/email/phone/company/service.
+- Mobile-first: desktop table + mobile card layout; tappable `mailto:`/`tel:` links.
+- Reachable via a "Contact Leads" card on `ReportsPage` (admin + manager), a dashboard tile (all three roles), and direct link. No standalone sidebar entry.
+
+**Implementation Notes** (2026-06-13):
+- ✅ Backend controller: `backend/src/controllers/leads.controller.js` (`getContactLeadsReport`) — fetches `contactLeads` + `users` in parallel, builds an email→user map (incl. `emailIds[]`), flags each lead.
+- ✅ Backend route: `backend/src/routes/leads.routes.js` mounted at `/api/leads` with `verifyToken, requireRole('admin', 'manager', 'team_member')`. Mounted in `server.js`.
+- ✅ Frontend page: `Portal/src/pages/reports/ContactLeadsReport.tsx`.
+- ✅ API helper + types: `getContactLeadsReport()` and `ContactLead` interface in `Portal/src/api/reports.ts`.
+- ✅ Registered as a single `AppRoute` at canonical role-neutral path `/reports/leads` with `roles: ['admin', 'manager', 'team_member']` in `Portal/src/routes/appRoutes.tsx`.
+- ⚠️ Reuses existing `contactLeads` data + existing `POST/GET/PATCH/DELETE /api/contact` endpoints; this story only adds the read-with-enrichment report endpoint.
+- ⏳ TODO (Phase 2): inline status update from the report; "convert lead to client" action prefilling the client form.
+
+**Backend endpoints needed**:
+- ✅ `GET /api/leads` — enriched contact-leads list (admin, manager, team_member)
+
+**Frontend screens/components**:
+- ✅ `Portal/src/pages/reports/ContactLeadsReport.tsx`
+
+---
+
+### ⚠️ ARCHITECTURE DECISION (2026-06-13) — Declarative role-based routing
+
+**Decision**: Route access control is data-driven from a **single source of truth**: `Portal/src/routes/appRoutes.tsx` (`APP_ROUTES`). Each route declares `{ path, element, roles, nav? }`. The router guards (`routes/index.tsx`) and navigation (`components/layout/navConfig.ts`) both **derive** from this table.
+
+**Rules**:
+- To grant a role access to a page → add the role to that route's `roles` array (one line).
+- Shared multi-role pages use a **role-neutral canonical path** (e.g. `/reports/leads`) and list every allowed role. **Do NOT** create per-role duplicate routes (`/admin/reports/leads` + `/team/leads`).
+- Role-prefixed paths (`/admin/*`) are URL-clarity only; the `roles` array is the access mechanism.
+
+Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instructions.md`.
+
+---
+
 ## E-09 — User & Client Management
 
 **Goal**: Enable admin to create and manage team members and clients; enable manager to create/edit clients; enforce multi-email client login resolution; support bulk step reassignment.
@@ -1016,7 +1068,7 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Priority**: P2 | **Complexity**: M | **Linked spec story**: US-8 | **Dependencies**: E01-S02
 
-**Status**: ✅ IMPLEMENTED with Hybrid Auth UPSERT (2026-06-01)
+**Status**: ✅ IMPLEMENTED with Hybrid Auth UPSERT (2026-06-01) | ✅ CONSOLIDATED into unified Users page (2026-06-13)
 
 **Rationale**: Team members must exist before tasks can be assigned to them. Admin creates them; Firebase Auth accounts are created server-side. **Updated: Now supports UPSERT pattern to handle existing users and hybrid auth scenarios.**
 
@@ -1036,12 +1088,13 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
   4. SYNCs profile data from Google provider
   5. Preserves admin-created status and metadata
 
-**Implementation Notes** (Updated 2026-06-01):
-- ✅ Frontend UI: `Portal/src/pages/admin/TeamMembersPage.tsx` (list view with search, create/edit/delete actions)
-- ✅ Frontend UI: `Portal/src/pages/admin/TeamMembersFormPage.tsx` (full-screen form page for create/edit)
-- ✅ Frontend UI: `Portal/src/components/admin/TeamMemberForm.tsx` (reusable form component with full-page and modal modes)
-- ✅ Routes registered: `/admin/team-members`, `/admin/team-members/new`, `/admin/team-members/edit/:uid` in `Portal/src/routes/index.tsx`
-- ✅ Navigation: List page uses `navigate('/admin/team-members/new')` and `navigate('/admin/team-members/edit/:uid')` instead of modals
+**Implementation Notes** (Updated 2026-06-13):
+- ✅ Frontend UI: `Portal/src/pages/admin/UsersPage.tsx` (unified list with role filter tabs — All/Clients/Team Members/Managers/Admins)
+- ✅ Frontend UI: `Portal/src/pages/admin/UserFormPage.tsx` (unified form page; reads `:type` param to render TeamMemberForm or ClientForm)
+- ✅ Frontend UI: `Portal/src/components/admin/TeamMemberForm.tsx` (reusable form component)
+- ✅ Routes registered: `/admin/users`, `/admin/users/new/:type`, `/admin/users/edit/:type/:uid` in `Portal/src/routes/index.tsx`
+- ✅ Navigation: Single "Users" sidebar entry; navigate to `/admin/users/new/member` or `/admin/users/edit/member/:uid`
+- ⚠️ DESIGN DECISION (2026-06-13): Clients, Team Members, and Users are all roles — they live on ONE page with filter tabs. Do NOT create separate pages per role.
 - ✅ Mobile-friendly: Full-screen forms work better on mobile than modals; responsive padding and sizing applied
 - ✅ Backend: `backend/src/controllers/team-members.controller.js` implements UPSERT pattern with email lookup
 - ✅ Backend: `backend/src/routes/team-members.routes.js` (routes mounted at `/api/team-members`)
@@ -1052,6 +1105,8 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 - ✅ authProviders tracking: Stores array of auth methods (['email'], ['google'], or ['email','google'])
 - ✅ signInMethod field: Tracks 'email', 'google', or 'both'
 - ✅ Custom claims set automatically: `admin.auth().setCustomUserClaims(uid, { role })`
+- ✅ BUG FIX (2026-06-13): `getTeamMembers` query changed from `type == 'team_member'` to `type in ['team_member', 'manager', 'admin']` — previously managers and admins created via the team member form were invisible in the list
+- ✅ BUG FIX (2026-06-13): `updateTeamMember` changed from `.update()` to `.set(clean({...}), { merge: true })` — prevents Firestore failure when optional fields are undefined or document doesn't exist yet
 - ⏳ TODO: Email sending via SendGrid (password reset link)
 - ⏳ TODO: Role-based permission enforcement (manager cannot delete)
 - ⏳ TODO: Admin-only endpoint guards (verify req.user.role === 'admin')
@@ -1087,12 +1142,13 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 - Multi-email display: Shows primary email and list of secondary email IDs with remove (✕) button.
 - Email validation: Prevents adding primary email as secondary; prevents duplicate emails in `emailIds[]`.
 
-**Implementation Notes**:
-- ✅ Frontend UI: `Portal/src/pages/admin/ClientsPage.tsx` (list view with search, create/edit/delete actions)
-- ✅ Frontend UI: `Portal/src/pages/admin/ClientsFormPage.tsx` (full-screen form page for create/edit)
+**Implementation Notes** (Updated 2026-06-13):
+- ✅ Frontend UI: `Portal/src/pages/admin/UsersPage.tsx` (unified list; filter to "Clients" tab to see clients only)
+- ✅ Frontend UI: `Portal/src/pages/admin/UserFormPage.tsx` (unified form page; `:type=client` renders ClientForm)
 - ✅ Frontend UI: `Portal/src/components/admin/ClientForm.tsx` (reusable form component with full-page and modal modes; multi-email support)
-- ✅ Routes registered: `/admin/clients`, `/admin/clients/new`, `/admin/clients/edit/:clientId` in `Portal/src/routes/index.tsx`
-- ✅ Navigation: List page uses `navigate('/admin/clients/new')` and `navigate('/admin/clients/edit/:clientId')` instead of modals
+- ✅ Routes registered: `/admin/users/new/client`, `/admin/users/edit/client/:uid` in `Portal/src/routes/index.tsx`
+- ✅ Navigation: "Add Client" button on UsersPage navigates to `/admin/users/new/client`
+- ⚠️ DESIGN DECISION (2026-06-13): No standalone /admin/clients route. All user management at /admin/users.
 - ✅ Mobile-friendly: Full-screen forms work better on mobile than modals; responsive padding and sizing applied
 - ✅ Backend: Refactored `backend/src/controllers/client.controller.firestore.js` to integrate Firebase Auth + Firestore
 - ✅ Backend routes: `backend/src/routes/client.routes.js` already existed; POST/GET/PATCH/DELETE mapped
@@ -1100,6 +1156,8 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 - ✅ Firebase Auth integration: `createClient` creates Auth account with temporary password
 - ✅ Firestore integration: `/clients/{uid}` document with emailIds array, `/users/{uid}` document with role='client'
 - ✅ Multi-email support: emailIds array stored and managed; primary email locked on edit
+- ✅ BUG FIX (2026-06-13): `createClient` and `updateClient` changed from `.update()` to `.set(clean({...}), { merge: true })` — prevents Firestore NOT_FOUND failure when client doc doesn't exist yet, and Firestore undefined value rejection for optional fields
+- ✅ BUG FIX (2026-06-13): `toggleClientStatus` changed from `.update()` to `.set({...}, { merge: true })` — same NOT_FOUND protection
 - ⏳ TODO: Email sending via SendGrid (password reset link)
 - ⏳ TODO: Role-based permission enforcement (manager cannot delete)
 - ⏳ TODO: Admin-only endpoint guards (verify req.user.role === 'admin')
@@ -1385,6 +1443,103 @@ npm run build:all
 | Deployment | Firebase Hosting target `portal`; Cloud Run deploy; env config | — | M |
 
 **Sprint goal checkpoints**: By end of Sprint 4, the full Company Incorporation workflow can be run end-to-end in staging; admin can view all-tasks and master-sheet reports; the portal is deployed to `portal.legalterminus.com`.
+
+---
+
+## Tech Debt & Hardening Backlog (Deferred — address after feature implementation)
+
+These are non-feature engineering tasks captured during development. **Scheduled to be worked AFTER core feature implementation is complete** (per direction 2026-06-13).
+
+### TD-01 — Firestore Indexing & Query Performance Optimization [Deferred]
+
+**Priority**: P2 | **Complexity**: M | **Raised**: 2026-06-13
+
+**Rationale**: The backend logs Firestore index warnings during development (composite-index-required / missing-index notices on report and list queries). Several report and list endpoints currently fetch whole collections and filter/sort in memory (e.g. `getContactLeadsReport` reads all `contactLeads` + all `users`; `listUsers` reads `users` and sorts in memory). This is acceptable at current data volume but will not scale.
+
+**Acceptance Criteria**:
+- Audit all Firestore queries across `backend/src/controllers/*` for: (a) missing composite indexes (capture the exact warnings), (b) full-collection reads that should be server-side filtered, (c) N+1 patterns.
+- Add all required composite indexes to `firestore.indexes.json` (align with `architecture.md` §5.2 Indexing Strategy table); deploy via `firebase deploy --only firestore:indexes`.
+- Replace in-memory filter/sort with indexed Firestore queries where data volume warrants it.
+- For enrichment joins (leads↔users), evaluate denormalisation or a cached lookup vs. full-collection scan.
+- Document final index set and any deliberate in-memory-by-design choices in `architecture.md` §5.2.
+- No Firestore index warnings in backend logs for normal portal usage.
+
+**Files likely touched**:
+- `firestore.indexes.json`
+- `backend/src/controllers/reports.controller.js`, `leads.controller.js`, `portalUsers.controller.js`
+- `architecture.md` §5.2
+
+---
+
+### TD-02 — Backend Authorization Audit (all routes) [Deferred]
+
+**Priority**: P1 (security) | **Complexity**: M | **Raised**: 2026-06-13
+
+**Rationale**: During the user-API consolidation we found `/api/clients` and `/api/team-members` had **no auth middleware at all** (anyone could create/delete users). They're now fixed/removed, but the discovery means other route files may have the same gap. Every route that reads or mutates portal data must enforce `verifyToken` + an appropriate `requireRole`.
+
+**Acceptance Criteria**:
+- Audit every router in `backend/src/routes/*` — confirm each portal-data route has `verifyToken` and a correct `requireRole` per BMAD role matrix (architecture §3.x tables).
+- Verify no authorization check anywhere reads role from request body/query/headers (must use `req.user.role` from the verified token only). (Confirmed clean for user routes 2026-06-13; extend to tasks/payments/notifications/workflows/contact.)
+- Confirm public endpoints (e.g. `POST /api/contact` from the marketing site, `GET /api/auth/firebase-config`) are intentionally public and documented as such.
+- Document the per-route auth matrix in `architecture.md`.
+
+---
+
+### TD-03 — Role Escalation Guard Tests [Deferred]
+
+**Priority**: P2 (security) | **Complexity**: S | **Raised**: 2026-06-13
+
+**Rationale**: The privilege-escalation guards (`canAssignRole` / `assignableRolesFor` in `backend/src/config/roles.js` and `Portal/src/lib/roles.ts`) prevent a manager from minting an admin/manager account. These are security-critical and currently have no automated coverage (no test framework is set up in the backend).
+
+**Acceptance Criteria**:
+- Establish a backend test setup (built-in `node:test`, or vitest/supertest — decide during the broader test-infra task).
+- Unit-test `canAssignRole`/`assignableRolesFor`: manager → cannot assign admin/manager, can assign team_member/client; admin → any role.
+- API-level: `POST /api/portal/users {role:'admin'}` as manager → 403; `PATCH /api/portal/users/:uid {role:'admin'}` as manager → 403; role field silently dropped for non-privileged edits.
+
+---
+
+### TD-04 — CORS Allowed-Origins Hardening [Critical]
+
+**Priority**: P0 (security) | **Complexity**: S | **Raised**: 2026-06-13
+
+**Rationale**: The CORS `allowedOrigins` list in `backend/src/server.js` uses unanchored / overly-broad regular expressions, so origins outside our control are accepted:
+- `/legalterminus\.com$/` matches attacker-controlled domains like `https://evil-legalterminus.com` and `https://notlegalterminus.com` (no `.`/start-of-host boundary before `legalterminus`).
+- `/\.firebaseapp\.com$/` and `/\.web\.app$/` match **any** project on those shared Firebase/Google hosting domains, not just ours.
+
+Combined with `credentials: true`, a malicious origin that matches these patterns can make authenticated cross-origin requests with the user's credentials. This is a genuine cross-origin attack surface and should be treated as critical.
+
+**Acceptance Criteria**:
+- Anchor the primary domain to a host boundary, e.g. `/(^|\.)legalterminus\.com$/`, so only `legalterminus.com` and its subdomains match.
+- Replace the broad `.firebaseapp.com` / `.web.app` patterns with our exact project hostnames (e.g. `https://<project-id>.web.app`, `https://<project-id>.firebaseapp.com`).
+- Keep `localhost` / Capacitor origins only for non-production environments; gate them behind `NODE_ENV !== 'production'`.
+- Add a regression note/test asserting `evil-legalterminus.com` and an unrelated `*.web.app` are rejected.
+
+---
+
+### TD-05 — Server-Side Price Catalog & Payment Amount Validation [Critical]
+
+**Priority**: P0 (security/financial) | **Complexity**: L | **Raised**: 2026-06-13
+
+**Rationale**: `POST /api/payment/initiate` trusts the client-supplied `amount` and signs it straight into the PayU request hash, so a user can pay an arbitrary amount (e.g. ₹1) for any plan. The proper fix is a server-authoritative price catalog: the backend looks up the price for `(source, planName)` and ignores the client `amount`.
+
+This was **partially mitigated** on 2026-06-13 (auth + userId binding — see below), which closes pay-as-another-user and entitlement spoofing, but **NOT** amount tampering. Amount tampering remains open until this catalog exists.
+
+**Blocker discovered**: prices are currently defined inline across ~71 frontend plan components, keyed by a `source` prop. Auditing them surfaced data-integrity problems that must be resolved before a catalog can be trusted:
+- **Duplicate `source` keys with conflicting prices** — the same `source` maps to different plan sets/prices in two components, e.g. `trademark-application` (`TmarkPlans`: 1499/3499/7999 vs `TMApplicaPlanandPricing`: **1**/7499/24499), `professional-tax`, `dissolve-llp`, `trademark-renewal`, `trademark-hearing`, `trademark-opposition`, `proprietorship-to-opc`.
+- **Suspicious values** — `TMApplicaPlanandPricing` has a plan priced at `₹1` (likely a test value left in prod).
+- **`source` defined in a parent (breadcrumb) component, prices in a sibling** for: `proprietorship-to-company`, `director-partner`, `gst-returns`, `pf-registration`, `society-registration`, `trust-registration`.
+
+**Acceptance Criteria**:
+- Reconcile duplicate `source` keys to a single canonical plan set + price each (product decision required).
+- Model the catalog in Firestore (extend `serviceCategories`, or a new `plans` collection) keyed by `source` → `{ planName → { price, label } }`.
+- `/initiate` looks up price server-side by `(source, planName)`; reject if not found; ignore client `amount`.
+- On the PayU callback, cross-check the verified `amount`/`productinfo` against the looked-up plan before granting entitlement.
+- Migrate frontend plan components to read prices from the catalog API (price field only — no other content changes) so displayed and validated prices cannot diverge.
+
+**Done so far (2026-06-13, partial)**:
+- `/api/payment/initiate` now requires `verifyToken`; `userId` is derived from `req.user.uid`, not the request body.
+- The PayU callback (`/redirect`) credits the hash-protected `udf1` (userId), `udf2` (planName) and `amount` from the verified PayU body rather than the unsigned query string.
+- Frontend `ProCheckoutModal` sends the Firebase ID token and no longer sends `userId`.
 
 ---
 

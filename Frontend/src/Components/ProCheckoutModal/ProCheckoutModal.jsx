@@ -359,13 +359,18 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
     }, { merge: true }).catch(() => {});
 
     try {
+      // /api/payment/initiate now requires authentication; the backend derives
+      // the userId from this token, so we no longer send userId in the body.
+      const idToken = await currentUser.getIdToken();
       const res = await fetch(`${API_BASE}/api/payment/initiate`, {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type':  'application/json',
+          Authorization:   `Bearer ${idToken}`,
+        },
         body:    JSON.stringify({
           amount:      plan.price,
           planName:    plan.name,
-          userId:      currentUser.uid,
           form,
           source,
           sourceLabel: getServiceDisplayName(source),
