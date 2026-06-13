@@ -1,0 +1,112 @@
+import { getDb } from '../config/firebase.js';
+import { logger } from '../config/logger.js';
+
+const COLLECTION = 'notifications';
+
+const toMillis = (ts) =>
+  ts?.toMillis?.() ?? (ts ? new Date(ts).getTime() : 0) ?? 0;
+
+const toISO = (ts) => {
+  const ms = toMillis(ts);
+  return ms ? new Date(ms).toISOString() : null;
+};
+
+const NOTIFICATION_TYPES = ['info', 'warning', 'success', 'error'];
+
+/** Shape returned to the Portal — mirrors Portal/src/types/notification.ts. */
+const serialize = (doc) => {
+  const d = doc.data();
+  return {
+    id: doc.id,
+    recipientUid: d.recipientUid,
+    type: NOTIFICATION_TYPES.includes(d.type) ? d.type : 'info',
+    title: d.title ?? '',
+    message: d.message ?? '',
+    read: d.read === true,
+    taskId: d.taskId ?? undefined,
+    createdAt: toISO(d.createdAt),
+  };
+};
+
+// GET /api/notifications — the current user's notifications, newest first.
+export const listNotifications = async (req, res) => {
+  try {
+    const uid = req.user?.uid;
+    if (!uid) return res.status(401).json({ message: 'Unauthorized' });
+
+    const db = getDb();
+    // Filter by recipient in Firestore, sort in memory to avoid a composite
+    // index (recipientUid + createdAt). Volume per user is small.
+    const snap = await db.collection(COLLECTION).where('recipientUid', '==', uid).get();
+    const items = snap.docs
+      .map(serialize)
+      .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
+
+    res.status(200).json(items);
+  } catch (error) {
+    logger.error({ err: error }, 'Error listing notifications:');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// PATCH /api/notifications/:id/read — mark one as read (owner only).
+export const markRead = async (req, res) => {
+  try {
+    const uid = req.user?.uid;
+    const { id } = req.params;
+    const db = getDb();
+    const ref = db.collection(COLLECTION).doc(id);
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Notification not found' });
+    if (snap.data().recipientUid !== uid) return res.status(403).json({ message: 'Forbidden' });
+
+    await ref.set({ read: true, readAt: new Date() }, { merge: true });
+    res.status(200).json({ id, read: true });
+  } catch (error) {
+    logger.error({ err: error }, 'Error marking notification read:');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// PATCH /api/notifications/read-all — mark all of the user's unread as read.
+export const markAllRead = async (req, res) => {
+  try {
+    const uid = req.user?.uid;
+    const db = getDb();
+    // Single-field filter (no composite index); narrow to unread in memory.
+    const snap = await db.collection(COLLECTION).where('recipientUid', '==', uid).get();
+    const unread = snap.docs.filter((doc) => doc.data().read !== true);
+
+    if (unread.length > 0) {
+      const batch = db.batch();
+      const now = new Date();
+      unread.forEach((doc) => batch.set(doc.ref, { read: true, readAt: now }, { merge: true }));
+      await batch.commit();
+    }
+    res.status(200).json({ updated: unread.length });
+  } catch (error) {
+    logger.error({ err: error }, 'Error marking all notifications read:');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * Reusable helper for other backend code (task transitions, document review,
+ * payment events) to emit an in-app notification. Fire-and-forget friendly.
+ */
+export const createNotification = async ({ recipientUid, type = 'info', title, message, taskId }) => {
+  if (!recipientUid || !title) {
+    throw new Error('createNotification requires recipientUid and title');
+  }
+  const db = getDb();
+  const ref = await db.collection(COLLECTION).add({
+    recipientUid,
+    type: NOTIFICATION_TYPES.includes(type) ? type : 'info',
+    title,
+    message: message ?? '',
+    taskId: taskId ?? null,
+    read: false,
+    createdAt: new Date(),
+  });
+  return ref.id;
+};

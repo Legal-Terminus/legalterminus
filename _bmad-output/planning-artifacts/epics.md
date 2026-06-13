@@ -1244,6 +1244,8 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 > **Critical bug fixed (2026-06-13):** the Users list returned **0 rows / 500** — root cause was the `validate(paginationSchema,'query')` middleware doing `req.query = ...`, which throws in **Express 5** (getter-only `req.query`). Fixed in [validate.middleware.js](../../backend/src/middleware/validate.middleware.js) via `Object.defineProperty`. Also fixed: role-filtered list 500'd needing a `role+createdAt` composite index → now sorts in memory when filtering (see TD-01). Backfilled missing `role`/`createdAt` on legacy docs.
 >
 > **Source-of-drift fix:** the marketing Frontend wrote `users` docs directly via client SDK (Signup/Login/ProCheckoutModal), bypassing `upsertUser` — producing docs with no `role` and Timestamp-vs-ISO `createdAt` drift. Those now route through `POST /api/auth/register` → `upsertUser` ([Frontend/src/utils/registerUser.js](../../Frontend/src/utils/registerUser.js)).
+>
+> **Bug fix (2026-06-13) — new/edited user didn't appear in the grid without a manual refresh.** Neither user form invalidated the React Query cache on save; `UsersPage` loads `['portalUsers']` with `staleTime: 30s` and only invalidated on delete, so the cached list was shown after create/edit. Fix: both [ClientForm.tsx](../../Portal/src/components/users/ClientForm.tsx) and [TeamMemberForm.tsx](../../Portal/src/components/users/TeamMemberForm.tsx) now invalidate `['portalUsers']` (and `['portalUser', uid]` on edit) in their mutation `onSuccess`, so the grid refetches immediately.
 
 ---
 
@@ -1264,11 +1266,14 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 > - Implementation: `backend/src/middleware/auth.middleware.js` (`verifyToken`).
 > - ⏳ Still TODO: the self-role-change UI guard (`uid !== currentUser.uid`) and a dedicated role-change confirmation dialog are not yet implemented; role is changed through the general edit form today.
 
+> **⚠️ BUG FIX 2026-06-13 — clients could not be promoted.** Since **every new user defaults to `client`**, promotion (client → staff) is the common path, but it was unreachable from the UI: editing a client opened `ClientForm`, which hardcoded `role: 'client'` with no selector, and only `TeamMemberForm` had a role picker (staff roles only). The backend already authorized the change via `canAssignRole`. Fix: added a **Role & Access** section to [ClientForm.tsx](../../Portal/src/components/users/ClientForm.tsx) — shown only when editing an existing user and only if the actor can assign a non-client role (`assignableRolesFor`). Selecting a staff role reveals a **required Designation** field (backend requires designation for staff). On save, `role` is sent only when changeable, `designation` only for staff roles. Create still always makes a client; promotion happens on a later edit.
+
 **Backend endpoints needed**:
 - `PATCH /api/portal/users/:uid` (role is one of the updatable fields; authz via `canAssignRole`)
 
 **Frontend screens/components**:
-- `Portal/src/components/users/TeamMemberForm.tsx` (role selector, gated by `assignableRolesFor`)
+- `Portal/src/components/users/TeamMemberForm.tsx` (role selector for staff users, gated by `assignableRolesFor`)
+- `Portal/src/components/users/ClientForm.tsx` (role selector to promote a client to staff, gated by `assignableRolesFor`)
 
 ---
 
