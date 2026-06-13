@@ -48,11 +48,11 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 | E-01 | Foundation & Auth | Phase 1 | E01-S01 – E01-S04 |
 | E-02 | Workflow Engine | Phase 1 | E02-S01 – E02-S04 |
 | E-03 | Task Management | Phase 1 | E03-S01 – E03-S05 |
-| E-04 | Client Portal | Phase 1 / 2 | E04-S01 – E04-S06 |
+| E-04 | Client Portal | Phase 1 / 2 | E04-S01 – E04-S07 |
 | E-05 | Document Cycle | Phase 1 / 2 | E05-S01 – E05-S04 |
 | E-06 | Payments | Phase 1 / 2 | E06-S01 – E06-S04 |
 | E-07 | Notifications & Email | Phase 1 / 2 | E07-S01 – E07-S05 |
-| E-08 | Reports & Master Sheet | Phase 1 / 2 | E08-S01 – E08-S05 |
+| E-08 | Reports & Master Sheet | Phase 1 / 2 | E08-S01 – E08-S06 |
 | E-09 | User & Client Management | Phase 1 / 2 | E09-S01 – E09-S05 |
 | E-10 | Workflow Configuration | Phase 1 | E10-S01 – E10-S02 |
 
@@ -588,6 +588,44 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Frontend screens/components**:
 - `Portal/src/pages/workflow/StepDetailPage.tsx` (correction request UI)
+
+---
+
+### E04-S07 — Migrate Profile & Orders into the Portal [Phase 1]
+
+**Priority**: P2 | **Complexity**: M | **Linked spec story**: — | **Dependencies**: E01-S04, E04-S01, E06-S03 | **Raised**: 2026-06-13
+
+**Rationale**: Account features (Profile, Orders) currently live on the **marketing site** (`Frontend/src/Pages/MyProfile/MyProfile.jsx`) as a mini-app bolted onto the brochure site. This violates the consolidation principle established for the portal: authenticated, role-scoped application surface belongs in the Portal (React 19 + TS + Tailwind + Cal.com design system + unified `/api/portal/users`), not on the marketing site (plain JSX + hand-rolled CSS). Maintaining account UI in two stacks duplicates work and bypasses the portal's design language, auth model, and type safety. The marketing site's job is to convert and hand off to the portal — not to host an app.
+
+**Decision (2026-06-13)**: Migrate Profile + Orders into the Portal as role-neutral pages. Reduce the marketing `/my-profile` route to a **thin redirect** (logged in → `/portal/`, logged out → login). No account UI remains on the marketing site.
+
+**Acceptance Criteria**:
+- New portal routes added to `Portal/src/routes/appRoutes.tsx` as role-neutral, available to all roles:
+  - `/profile` — view/edit own profile (name, phone, email read-only, address, business details for clients). Uses unified `/api/portal/users` for self-read/self-update (a user editing their own record).
+  - `/orders` — order/payment history for the current user. Client sees own orders; reuses or extends existing order-fetching logic.
+- Profile + Orders surfaced in nav (sidebar + bottom nav) via `appRoutes` `nav` config, consistent with role-neutral routing — visible to all authenticated roles.
+- Self-service authorization: a user can read and update **their own** `users` record via the portal regardless of role; this must not require admin/manager (`requireRole`) — backend needs a self-or-privileged guard (a user may PATCH their own uid; managing *other* users still requires `admin`/`manager`).
+- Order-fetching logic from `MyProfile.jsx` (added in commit `bcd3875`) is moved into the portal's API layer (`Portal/src/api/`), not duplicated.
+- Marketing `/my-profile` becomes a redirect-only route:
+  - Authenticated → redirect to portal (`/portal/`).
+  - Unauthenticated → redirect to login.
+  - The "My Portal" tab/card and the Profile/Orders tabs are removed from `MyProfile.jsx`.
+- Verify no other marketing-site links point at `/my-profile` account tabs; the header avatar links to `/portal/` (or to login if unauthenticated).
+- Profile + Orders pages adopt the Cal.com design system (Tailwind component classes), matching the rest of the portal.
+
+**Backend endpoints needed**:
+- Self-service profile read/update path on `/api/portal/users` — a `self-or-requireRole` guard so a user can GET/PATCH their own uid without admin/manager.
+- Orders/payment-history endpoint scoped to the current user (`req.user.uid`), reusing existing order logic.
+
+**Frontend screens/components**:
+- `Portal/src/pages/profile/ProfilePage.tsx` (new)
+- `Portal/src/pages/orders/OrdersPage.tsx` (new)
+- `Portal/src/api/orders.ts` (new — migrated order-fetch logic)
+- `Frontend/src/Pages/MyProfile/MyProfile.jsx` (reduced to redirect)
+
+**Notes**:
+- Sequenced **after** the current uncommitted portal consolidation work and the user-name backfill have landed.
+- Naming already aligned: the marketing link was renamed "Admin" → "My Portal" on 2026-06-13 as an interim step before this full migration.
 
 ---
 

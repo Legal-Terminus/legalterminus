@@ -193,15 +193,15 @@ export default function MyProfile() {
             </svg>
             Orders
           </button>
-          {profile?.role === 'admin' && (
-            <button 
+          {profile?.role && (
+            <button
               className={`mp-tab ${activeTab === "admin" ? "mp-tab--active" : ""}`}
               onClick={() => setActiveTab("admin")}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
               </svg>
-              Admin
+              My Portal
             </button>
           )}
         </div>
@@ -356,8 +356,8 @@ export default function MyProfile() {
         </div>
         )}
 
-        {/* ── Admin Tab ── */}
-        {activeTab === "admin" && profile?.role === 'admin' && (
+        {/* ── My Portal Tab ── */}
+        {activeTab === "admin" && profile?.role && (
         <div className="mp-card">
           <div className="mp-card-header" style={{ backgroundColor: '#3b82f6' }}>
             <div className="mp-avatar" style={{ background: 'rgba(255, 255, 255, 0.3)' }}>
@@ -366,13 +366,13 @@ export default function MyProfile() {
               </svg>
             </div>
             <div className="mp-header-info" style={{ color: 'white' }}>
-              <h1>Admin Portal</h1>
-              <p>Manage users, clients, and tasks</p>
+              <h1>My Portal</h1>
+              <p>Your dashboard, services, and tasks</p>
             </div>
           </div>
           <div style={{ padding: '32px 40px' }}>
             <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
-              Access the admin dashboard to manage team members, clients, and service configurations.
+              Access your portal to manage your services, tasks, and account.
             </p>
             <a 
               href="/portal/"
