@@ -30,7 +30,7 @@ const PtoopcBenefits = () => {
   ];
 
   return (
-    <section className="opcben-section">
+    <section className="opcben-section" id="requirements">
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">

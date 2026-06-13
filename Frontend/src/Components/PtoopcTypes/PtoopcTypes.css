@@ -1,0 +1,154 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+.opctypes-section {
+  font-family: "Poppins", sans-serif;
+  background: #f8fafc;
+  padding: 70px 24px 80px;
+}
+
+.opctypes-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.opctypes-header {
+  text-align: center;
+  margin-bottom: 52px;
+}
+
+.opctypes-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.opctypes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 28px;
+}
+
+.opctypes-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.opctypes-card:hover {
+  border-color: #22c55e;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.12);
+  transform: translateY(-4px);
+}
+
+.opctypes-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.opctypes-card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.opctypes-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #22c55e, #4ade80);
+  color: #022c22;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.opctypes-card-description {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #475569;
+  margin: 0;
+  flex: 1;
+}
+
+@media (max-width: 1024px) {
+  .opctypes-section {
+    padding: 52px 20px 60px;
+  }
+
+  .opctypes-title {
+    font-size: 30px;
+  }
+
+  .opctypes-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .opctypes-section {
+    padding: 40px 16px 48px;
+  }
+
+  .opctypes-title {
+    font-size: 26px;
+  }
+
+  .opctypes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .opctypes-card {
+    padding: 24px;
+  }
+
+  .opctypes-card-title {
+    font-size: 16px;
+  }
+
+  .opctypes-card-description {
+    font-size: 13.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .opctypes-section {
+    padding: 32px 12px 40px;
+  }
+
+  .opctypes-title {
+    font-size: 22px;
+  }
+
+  .opctypes-card {
+    padding: 20px;
+  }
+
+  .opctypes-card-title {
+    font-size: 15px;
+  }
+
+  .opctypes-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .opctypes-card-description {
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+}

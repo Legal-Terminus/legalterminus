@@ -102,7 +102,7 @@ const PtoopcOverview = () => {
   return (
     <div className="opc-full-wrapper">
 
-      <section className="opc-why-convert-section">
+      <section className="opc-why-convert-section" id="company">
         <div className="opc-why-convert-container">
           <h2 className="opc-why-convert-title">Why Convert Your Proprietorship to a OPC</h2>
           <p className="opc-why-convert-text">

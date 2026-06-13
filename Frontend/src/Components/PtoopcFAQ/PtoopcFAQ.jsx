@@ -97,7 +97,7 @@ const PtoopcFAQ = () => {
   };
 
   return (
-    <section className="opcfaq-section">
+    <section className="opcfaq-section" id="faq">
       <div className="opcfaq-container">
 
         <div className="opcfaq-header">
