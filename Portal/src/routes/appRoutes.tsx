@@ -13,6 +13,7 @@ import UsersPage from '../pages/users/UsersPage';
 import UserFormPage from '../pages/users/UserFormPage';
 import WorkflowSettings from '../pages/workflow/WorkflowSettingsPage';
 import Services from '../pages/services/ServicesPage';
+import ServiceDetail from '../pages/services/ServiceDetailPage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import OrdersPage from '../pages/orders/OrdersPage';
 
@@ -79,6 +80,7 @@ export const APP_ROUTES: AppRoute[] = [
 
   // ── Service catalog — staff only (clients excluded; staff can customise table fields) ──
   { path: '/services', element: <Services />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Services', icon: Layers, mobile: true } },
+  { path: '/services/:serviceKey', element: <ServiceDetail />, roles: ['admin', 'manager', 'team_member'] },
 
   // ── Self-service (all roles) — own profile + order history (migrated from the
   //    marketing site's /my-profile, which is now a redirect into the portal) ──

@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Layers, Pencil, Loader2 } from 'lucide-react';
+import { Layers, Pencil, Loader2, Workflow } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import {
   getServiceCatalog, groupByCategory, updateService,
@@ -73,6 +74,7 @@ export default function ServicesPage() {
 /** A single service card. Click to edit its display name inline; toggle active. */
 function ServiceCard({ service }: { service: CatalogService }) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(service.displayName);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -172,6 +174,15 @@ function ServiceCard({ service }: { service: CatalogService }) {
 
         <p className="mt-1 text-xs text-ink-muted">{service.category}</p>
       </div>
+
+      {/* View configured workflow */}
+      <button
+        onClick={() => navigate(`/services/${service.key}`)}
+        className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted hover:text-ink transition-colors"
+      >
+        <Workflow className="w-3.5 h-3.5" /> View workflow
+        <span aria-hidden>→</span>
+      </button>
 
       {/* Active/inactive toggle */}
       <div className="mt-4 pt-3 border-t border-hairline-soft flex items-center justify-between">
