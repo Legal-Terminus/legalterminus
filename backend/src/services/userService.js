@@ -355,17 +355,45 @@ export const updateUserRole = async (uid, newRole) => {
  * @returns {object} { deleted: true }
  */
 export const deleteUser = async (uid) => {
+  // Delete the Firestore doc FIRST — it's the portal's source of truth. Doing
+  // Auth first risked an orphaned doc if the second step failed. We then attempt
+  // the Auth deletion, tolerating `auth/user-not-found` so that legacy/Google-only
+  // docs (which may have no matching Auth account) can still be removed.
+  let firestoreDeleted = false;
+  let authDeleted = false;
+  let paymentsDeleted = 0;
+
   try {
-    // Delete Firebase Auth account
-    await admin.auth().deleteUser(uid);
+    // Delete the `payments` subcollection first (Firestore does NOT cascade
+    // subcollections when a parent doc is deleted — they'd otherwise be orphaned).
+    const paymentsSnap = await db.collection('users').doc(uid).collection('payments').get();
+    if (!paymentsSnap.empty) {
+      const batch = db.batch();
+      paymentsSnap.docs.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+      paymentsDeleted = paymentsSnap.size;
+    }
 
-    // Delete Firestore document
     await db.collection('users').doc(uid).delete();
-
-    logger.info(`[deleteUser] User ${uid} deleted`);
-    return { deleted: true };
+    firestoreDeleted = true;
   } catch (error) {
-    logger.error({ err: error }, `[deleteUser] Error for ${uid}:`);
-    throw error;
+    logger.error({ err: error }, `[deleteUser] Firestore delete failed for ${uid}:`);
+    throw error; // nothing destructive happened in Auth yet — safe to surface
   }
+
+  try {
+    await admin.auth().deleteUser(uid);
+    authDeleted = true;
+  } catch (error) {
+    if (error?.code === 'auth/user-not-found') {
+      logger.info(`[deleteUser] No Auth account for ${uid} (doc removed).`);
+    } else {
+      // Firestore doc is already gone; report so the caller knows Auth lingers.
+      logger.error({ err: error }, `[deleteUser] Auth delete failed for ${uid} (Firestore doc already removed):`);
+      throw error;
+    }
+  }
+
+  logger.info(`[deleteUser] User ${uid} deleted (firestore=${firestoreDeleted}, auth=${authDeleted}, payments=${paymentsDeleted})`);
+  return { deleted: true, firestoreDeleted, authDeleted, paymentsDeleted };
 };

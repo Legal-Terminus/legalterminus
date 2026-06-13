@@ -5,9 +5,11 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  updateProfile,
 } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
+import { registerUser } from "../../utils/registerUser.js";
 import { getServiceDisplayName } from "../../utils/serviceConfig.js";
 import "./ProCheckoutModal.css";
 
@@ -207,7 +209,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
             businessName: updated.businessName,
             state:        updated.state,
             mobile:       updated.mobile,
-            updatedAt:    new Date(),
+            updatedAt:    new Date().toISOString(),
           }, { merge: true }).catch(() => {});
         }
       }, 1000);
@@ -227,7 +229,14 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
   };
 
   // After a successful auth inside the modal, fill form and advance
-  const afterAuth = useCallback(async (currentUser) => {
+  const afterAuth = useCallback(async (currentUser, provider = "email") => {
+    // Create/sync the Firestore user doc via the backend chokepoint (ISO
+    // createdAt, normalized fields, role). Runs for every auth path through the
+    // modal — login and signup, email and Google — replacing direct setDoc writes.
+    await registerUser(currentUser, {
+      provider,
+      fullName: currentUser.displayName || "",
+    });
     setLoggedInUser(currentUser);
     await fillFormFromUser(currentUser);
     setStep("checkout");
@@ -253,17 +262,12 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
         userCredential = await signInWithEmailAndPassword(auth, authEmail.trim(), authPassword);
       } else {
         userCredential = await createUserWithEmailAndPassword(auth, authEmail.trim(), authPassword);
-        const db = getFirestore();
-        await setDoc(doc(db, "users", userCredential.user.uid), {
-          uid:       userCredential.user.uid,
-          name:      authName.trim(),
-          fullName:  authName.trim(),
-          email:     authEmail.trim(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }, { merge: true });
+        // Set displayName so the backend register picks up the entered name.
+        if (authName.trim()) {
+          await updateProfile(userCredential.user, { displayName: authName.trim() });
+        }
       }
-      await afterAuth(userCredential.user);
+      await afterAuth(userCredential.user, "email");
     } catch (err) {
       const map = {
         "auth/user-not-found":      "No account found with this email.",
@@ -288,21 +292,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      const db = getFirestore();
-      const ref = doc(db, "users", result.user.uid);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) {
-        await setDoc(ref, {
-          uid:       result.user.uid,
-          name:      result.user.displayName || "",
-          fullName:  result.user.displayName || "",
-          email:     result.user.email,
-          avatar:    result.user.photoURL || null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      }
-      await afterAuth(result.user);
+      await afterAuth(result.user, "google");
     } catch (err) {
       if (err.code !== "auth/popup-closed-by-user" && err.code !== "auth/cancelled-popup-request") {
         setAuthError("Google sign-in failed. Please try again.");
@@ -355,7 +345,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
       businessName: form.businessName,
       state:        form.state,
       mobile:       form.mobile,
-      updatedAt:    new Date(),
+      updatedAt:    new Date().toISOString(),
     }, { merge: true }).catch(() => {});
 
     try {

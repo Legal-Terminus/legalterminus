@@ -5,7 +5,15 @@
       "Read(//c/Users/Shipra/AppData/Roaming/**)",
       "PowerShell(gh run list --repo Legal-Terminus/legalterminus --limit 5 2>&1)",
       "PowerShell($env:PATH = \"$env:APPDATA\\\\npm;\" + $env:PATH; cd \"c:\\\\Users\\\\Shipra\\\\OneDrive\\\\Desktop\\\\Legal-Terminus Project\"; firebase deploy --only hosting 2>&1)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(node -e ' *)",
+      "Bash(node scripts/backfill-user-role.js --dry-run)",
+      "Bash(curl -s -o /tmp/resp.txt -w \"HTTP %{http_code}\\\\n\" http://localhost:5001/api/portal/users?limit=25)",
+      "Bash(curl -s -o /tmp/resp.txt -w \"HTTP %{http_code}\\\\n\" \"http://localhost:5001/api/portal/users?limit=25\")",
+      "Bash(ps -o command= -p 27947)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:5001/api/portal/users?limit=25\")",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{s.trim\\(\\).split\\('\\\\n'\\).forEach\\(l=>{try{const j=JSON.parse\\(l\\);console.log\\('ERR:',j.err?.message\\);console.log\\('STACK:',\\(j.err?.stack||''\\).split\\('\\\\n'\\).slice\\(0,4\\).join\\('\\\\n'\\)\\);console.log\\('---'\\)}catch\\(e\\){}}\\)}\\)\")",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{try{const j=JSON.parse\\(s.replace\\(/^[^:]*:/,''\\)\\);console.log\\('ERR:',j.err?.message\\);console.log\\(\\(j.err?.stack||''\\).split\\('\\\\n'\\).slice\\(0,4\\).join\\('\\\\n'\\)\\)}catch\\(e\\){console.log\\('parse fail, raw:',s.slice\\(-400\\)\\)}}\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\Shipra\\OneDrive\\Desktop\\Legal-Terminus Project\\Frontend\\public"

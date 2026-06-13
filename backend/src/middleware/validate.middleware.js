@@ -14,7 +14,22 @@ import { ZodError } from "zod";
  */
 export const validate = (schema, source = "body") => (req, res, next) => {
   try {
-    req[source] = schema.parse(req[source]);
+    const parsed = schema.parse(req[source]);
+    // Express 5 makes `req.query` (and `req.params`) getter-only — a plain
+    // `req.query = parsed` throws, and mutating the object the getter returns
+    // doesn't stick (it can re-parse lazily). Redefine the property as a
+    // writable own-value so the parsed/coerced result is what handlers read.
+    // `req.body` is still a normal writable property.
+    if (source === "body") {
+      req.body = parsed;
+    } else {
+      Object.defineProperty(req, source, {
+        value: parsed,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+    }
     next();
   } catch (err) {
     if (err instanceof ZodError) {
