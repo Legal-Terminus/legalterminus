@@ -1347,6 +1347,12 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 **Frontend screens/components**:
 - `Portal/src/pages/workflow/WorkflowSettingsPage.tsx`
 
+> **✅ PARTIAL (2026-06-13) — visual workflow review shipped (read-only).** Admins/managers/team_members can now **view** a service's configured workflow as an interactive diagram: from `/services`, each card has a "View workflow →" link to a new service detail page `/services/:serviceKey` ([ServiceDetailPage.tsx](../../Portal/src/pages/services/ServiceDetailPage.tsx)). The diagram is auto-derived from the XState machine (no hand-maintained chart) and stays in sync with code:
+> - [machineToGraph.ts](../../Portal/src/workflows/machineToGraph.ts) derives nodes/edges (labels + kind: step/payment_gate/waiting/branch/final) from `machine.config.states`.
+> - [layoutGraph.ts](../../Portal/src/workflows/layoutGraph.ts) lays out via dagre; [WorkflowDiagram.tsx](../../Portal/src/components/workflow/WorkflowDiagram.tsx) renders read-only React Flow (`@xyflow/react` + `@dagrejs/dagre`).
+> - [registry.ts](../../Portal/src/workflows/registry.ts) maps `serviceKey → machine` (only `incorporation` wired; others show "No workflow configured yet").
+> - **Still the hardcoded machine is the source of truth.** This is review/visualization only — NOT the DB-backed editable config layer this story specifies (no `workflowTemplates` collection, no `/api/workflows*` endpoints yet, no inline step-metadata editing). The editable config layer remains TODO.
+
 ---
 
 ### E10-S02 — Config Sync Warning [Phase 1]
