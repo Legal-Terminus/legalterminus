@@ -1,1 +1,6 @@
 @import url('../OpcZolvitPremium/OpcZolvitPremium.css');
+
+/* Gap between consecutive subtitle paragraphs */
+.opczp-subtitle + .opczp-subtitle {
+  margin-top: 16px;
+}
