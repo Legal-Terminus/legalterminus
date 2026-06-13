@@ -57,6 +57,57 @@
     margin-bottom: 16px;
 }
 
+/* Priority Section */
+
+.opctc-priority-section {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.opctc-priority-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 16px;
+}
+
+.opctc-priority-intro {
+    font-size: 15px;
+    line-height: 1.9;
+    color: #111827;
+    margin-bottom: 16px;
+}
+
+.opctc-priority-desc {
+    font-size: 15px;
+    line-height: 1.9;
+    color: #111827;
+    margin-bottom: 24px;
+}
+
+.opctc-priority-subtitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 24px 0 16px;
+}
+
+.opctc-priority-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.opctc-priority-list li {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #111827;
+    margin-bottom: 12px;
+    padding-left: 20px;
+    position: relative;
+}
+
 
 /* -----------------------------
    Responsive
