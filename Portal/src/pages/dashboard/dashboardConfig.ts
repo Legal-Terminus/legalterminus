@@ -1,0 +1,48 @@
+import {
+  CheckSquare, Users, BarChart2, Inbox, Settings, type LucideIcon,
+} from 'lucide-react';
+import type { Role } from '../../store/authStore';
+
+/**
+ * Declarative dashboard tiles — single source of truth for what each role sees
+ * on the unified /dashboard. A tile shows iff the user's role is in its `roles`.
+ * Paths are role-neutral (see routes/appRoutes.tsx).
+ *
+ * To show a tile to another role → add the role to its `roles` array.
+ */
+export interface DashboardTileDef {
+  title: string;
+  desc: string;
+  to: string;
+  icon: LucideIcon;
+  roles: Role[];
+}
+
+export const DASHBOARD_TILES: DashboardTileDef[] = [
+  // Shared / multi-role
+  { title: 'Tasks',         desc: 'View and manage your workflow tasks.',              to: '/tasks',         icon: CheckSquare, roles: ['admin', 'manager', 'team_member', 'client'] },
+  { title: 'Contact Leads', desc: 'Website enquiries — see which are already clients.', to: '/reports/leads', icon: Inbox,       roles: ['admin', 'manager', 'team_member'] },
+
+  // Admin + Manager
+  { title: 'Users',             desc: 'Manage clients, team members, and roles.', to: '/users',             icon: Users,    roles: ['admin', 'manager'] },
+  { title: 'Reports',           desc: 'Operational and lead insights.',           to: '/reports',           icon: BarChart2, roles: ['admin', 'manager'] },
+
+  // Admin only
+  { title: 'Workflow Settings', desc: 'Configure step metadata and deadlines.',   to: '/workflow-settings', icon: Settings, roles: ['admin'] },
+
+  // Client
+  { title: 'Browse Services', desc: 'Explore services Legal Terminus offers.', to: '/services', icon: Settings, roles: ['client'] },
+];
+
+export const tilesForRole = (role: Role | null): DashboardTileDef[] =>
+  role ? DASHBOARD_TILES.filter((t) => t.roles.includes(role)) : [];
+
+export const dashboardTitle = (role: Role | null): string => {
+  switch (role) {
+    case 'admin': return 'Admin Dashboard';
+    case 'manager': return 'Manager Dashboard';
+    case 'team_member': return 'Team Dashboard';
+    case 'client': return 'My Services';
+    default: return 'Dashboard';
+  }
+};

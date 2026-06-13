@@ -52,6 +52,31 @@ export interface MasterSheetRow {
 export const getMasterSheet = (filters: ReportFilters = {}) =>
   apiFetch<MasterSheetRow[]>(`/api/reports/master-sheet${buildQuery(filters)}`);
 
+// ─── Contact Leads report ───────────────────────────────────────────────────
+export interface ContactLead {
+  id: string;
+  fullName: string;
+  company: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+  state: string;
+  preferredCallTime: string;
+  source: string;
+  sourceLabel: string;
+  whatsapp: boolean;
+  status: 'new' | 'contacted' | 'closed';
+  createdAt: string | null;
+  updatedAt: string | null;
+  registered: boolean;
+  registeredUid: string | null;
+  registeredRole: string | null;
+}
+
+export const getContactLeadsReport = () =>
+  apiFetch<ContactLead[]>('/api/leads');
+
 /** Navigates browser to download CSV — no fetch needed (binary stream) */
 export const downloadMasterSheetCSV = (filters: ReportFilters = {}) => {
   const base = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001';

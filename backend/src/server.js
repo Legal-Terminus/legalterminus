@@ -8,14 +8,14 @@ import blogRoutes from "./routes/blog.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
 import employeeRoutes from "./routes/employee.routes.js";
 import videoTestimonialRoutes from "./routes/videotestimonial.routes.js";
-import clientRoutes from "./routes/client.routes.js";
 import testimonialRoutes from "./routes/testimonialRoute.js";
 import authRoutes from "./routes/auth.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import tasksRoutes from "./routes/tasks.routes.js";
 import reportsRoutes from "./routes/reports.routes.js";
-import teamMembersRoutes from "./routes/team-members.routes.js";
+import leadsRoutes from "./routes/leads.routes.js";
+import portalUsersRoutes from "./routes/portalUsers.routes.js";
 import serviceConfigRoutes from "./routes/serviceConfig.routes.js";
 import initializeFirebase from "./config/firebase.js";
 
@@ -58,13 +58,13 @@ app.use("/api/admin/category", categoryRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/video-testimonials", videoTestimonialRoutes);
 app.use("/api/testimonials", testimonialRoutes);
-app.use("/api/clients", clientRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/tasks", tasksRoutes);
 app.use("/api/reports", reportsRoutes);
-app.use("/api/team-members", teamMembersRoutes);
+app.use("/api/leads", leadsRoutes);
+app.use("/api/portal/users", portalUsersRoutes);
 app.use("/api/service-config", serviceConfigRoutes);
 
 /* ================= HEALTH CHECK ================= */

@@ -3,6 +3,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { Link } from 'react-router-dom';
 import { apiFetch } from '../../api/client';
+import { Scale, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -18,29 +19,17 @@ export default function SignupPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      // 1. Create Firebase Auth account
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const idToken = await userCredential.user.getIdToken();
-
-      // 2. Register in Firestore (sets role to 'client' + creates users/{uid} doc)
       await apiFetch('/api/auth/register', {
         method: 'POST',
         headers: { Authorization: `Bearer ${idToken}` },
         body: JSON.stringify({ fullName, mobile, businessName }),
       });
-
-      // Auth listener will now read role from Firestore and trigger redirect
       setSuccess(true);
-      setEmail('');
-      setPassword('');
-      setFullName('');
-      setMobile('');
-      setBusinessName('');
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Signup failed';
-      setError(msg);
+      setError(err instanceof Error ? err.message : 'Signup failed');
     } finally {
       setLoading(false);
     }
@@ -48,102 +37,93 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm text-center">
-          <h1 className="text-2xl font-bold text-green-700 mb-4">Signup Successful!</h1>
-          <p className="text-gray-600 mb-6">
-            Your account has been created. You can now sign in with your email and password.
+      <div className="min-h-dvh bg-white flex items-center justify-center p-6">
+        <div className="w-full max-w-sm text-center">
+          <div className="w-12 h-12 bg-surface-card rounded-full flex items-center justify-center mx-auto mb-5">
+            <CheckCircle className="w-6 h-6 text-emerald-600" />
+          </div>
+          <h1 className="text-xl font-semibold text-ink">Account created</h1>
+          <p className="mt-2 text-sm text-ink-muted">
+            You can now sign in with your email and password.
           </p>
-          <Link
-            to="/login"
-            className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
-          >
-            Go to Login
-          </Link>
+          <Link to="/login" className="btn-primary mt-6 w-full">Go to Sign in</Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 py-8">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-blue-700 mb-2">Create Account</h1>
-        <p className="text-sm text-gray-500 mb-6">Sign up to access Legal Terminus Portal</p>
-
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+    <div className="min-h-dvh bg-white flex flex-col md:flex-row">
+      {/* Left branding panel */}
+      <div className="hidden md:flex md:w-1/2 bg-ink flex-col justify-between p-10">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+            <Scale className="w-4 h-4 text-white" />
           </div>
+          <span className="text-sm font-semibold text-white">Legal Terminus</span>
+        </div>
+        <div>
+          <h2 className="text-3xl font-semibold text-white leading-snug">
+            Get started<br />in minutes.
+          </h2>
+          <p className="mt-3 text-sm text-white/50">
+            Create your account and start tracking your legal services today.
+          </p>
+        </div>
+        <p className="text-xs text-white/30">© {new Date().getFullYear()} Legal Terminus</p>
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+      {/* Form */}
+      <div className="flex-1 flex flex-col justify-center px-6 py-12 md:px-12 lg:px-20">
+        <div className="flex items-center gap-2.5 mb-10 md:hidden">
+          <div className="w-8 h-8 bg-ink rounded-lg flex items-center justify-center">
+            <Scale className="w-4 h-4 text-white" />
           </div>
+          <span className="text-sm font-semibold text-ink">Legal Terminus</span>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Min. 6 characters"
-            />
-          </div>
+        <div className="w-full max-w-sm mx-auto md:mx-0">
+          <h1 className="text-2xl font-semibold text-ink">Create account</h1>
+          <p className="mt-1 text-sm text-ink-muted">Fill in your details to get started.</p>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mobile (Optional)</label>
-            <input
-              type="tel"
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          {error && (
+            <div className="mt-5 flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Business Name (Optional)</label>
-            <input
-              type="text"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <div>
+              <label className="input-label">Full Name <span className="text-red-400">*</span></label>
+              <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Ankit Sharma" className="input-field" />
+            </div>
+            <div>
+              <label className="input-label">Email <span className="text-red-400">*</span></label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" className="input-field" />
+            </div>
+            <div>
+              <label className="input-label">Password <span className="text-red-400">*</span></label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="Min. 6 characters" className="input-field" />
+            </div>
+            <div>
+              <label className="input-label">Mobile <span className="text-ink-faint font-normal">(optional)</span></label>
+              <input type="tel" value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="+91 98765 43210" className="input-field" />
+            </div>
+            <div>
+              <label className="input-label">Business Name <span className="text-ink-faint font-normal">(optional)</span></label>
+              <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Acme Pvt Ltd" className="input-field" />
+            </div>
+            <button type="submit" disabled={loading} className="btn-primary w-full py-2.5 mt-1">
+              {loading ? 'Creating account…' : 'Create account'}
+            </button>
+          </form>
 
-          {error && <p className="text-sm text-red-500 bg-red-50 p-2 rounded">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? 'Creating account…' : 'Sign Up'}
-          </button>
-        </form>
-
-        <p className="text-xs text-gray-500 mt-4 text-center">
-          Already have an account?{' '}
-          <Link to="/login" className="text-blue-600 hover:underline font-medium">
-            Sign In
-          </Link>
-        </p>
+          <p className="mt-6 text-center text-sm text-ink-muted">
+            Already have an account?{' '}
+            <Link to="/login" className="font-medium text-ink hover:underline">Sign in</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

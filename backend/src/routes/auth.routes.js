@@ -2,6 +2,7 @@ import express from "express";
 import admin from "firebase-admin";
 import { verifyToken } from "../middleware/auth.middleware.js";
 import { getDb } from "../config/firebase.js";
+import { VALID_ROLES } from "../config/roles.js";
 import {
   upsertUser,
   getUserByEmail,
@@ -9,8 +10,6 @@ import {
 } from "../services/userService.js";
 
 const router = express.Router();
-
-const VALID_ROLES = ["admin", "manager", "team_member", "client"];
 
 /**
  * GET /api/auth/firebase-config
