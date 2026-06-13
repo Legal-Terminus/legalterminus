@@ -5,9 +5,25 @@ import path from "path";
 
 const storage = multer.memoryStorage();
 
+// Only accept image types we actually process with sharp. Rejects everything
+// else before the bytes are touched, so non-image / disguised uploads can't
+// reach processing or storage.
+const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+const fileFilter = (req, file, cb) => {
+  if (ALLOWED_MIME.has(file.mimetype)) {
+    cb(null, true);
+  } else {
+    const err = new Error("Only JPEG, PNG, or WebP images are allowed");
+    err.status = 400;
+    cb(err, false);
+  }
+};
+
 export const upload = multer({
   storage,
   limits: { fileSize: 3 * 1024 * 1024 },
+  fileFilter,
 });
 
 export const processImage = async (file) => {

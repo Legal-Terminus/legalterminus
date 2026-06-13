@@ -46,7 +46,7 @@ export const listUsers = async (req, res) => {
     res.status(200).json(users);
   } catch (error) {
     console.error('Error listing users:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -59,7 +59,7 @@ export const getUser = async (req, res) => {
     res.status(200).json(user);
   } catch (error) {
     console.error('Error fetching user:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -121,7 +121,7 @@ export const createUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating user:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -178,7 +178,7 @@ export const updateUser = async (req, res) => {
     res.status(200).json({ uid, message: 'User updated successfully', roleChanged: !!role && role !== current.role });
   } catch (error) {
     console.error('Error updating user:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -194,6 +194,6 @@ export const removeUser = async (req, res) => {
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error('Error deleting user:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };

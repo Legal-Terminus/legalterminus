@@ -19,7 +19,8 @@ export const createTestimonial = async (req, res) => {
 
     res.status(201).json(testimonial);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("[TESTIMONIAL_ERROR]", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -37,7 +38,8 @@ export const getAllTestimonials = async (req, res) => {
 
     res.status(200).json(testimonials);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[TESTIMONIAL_ERROR]", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -53,7 +55,8 @@ export const getTestimonial = async (req, res) => {
 
     res.status(200).json(testimonial);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[TESTIMONIAL_ERROR]", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -73,7 +76,8 @@ export const updateTestimonial = async (req, res) => {
 
     res.status(200).json({ id, ...testimonial, ...req.body });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("[TESTIMONIAL_ERROR]", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -91,6 +95,7 @@ export const deleteTestimonial = async (req, res) => {
 
     res.status(200).json({ message: "Testimonial deleted successfully" });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("[TESTIMONIAL_ERROR]", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

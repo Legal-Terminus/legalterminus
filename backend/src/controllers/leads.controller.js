@@ -81,7 +81,7 @@ export const getContactLeadsReport = async (req, res) => {
     res.status(200).json(leads);
   } catch (error) {
     console.error('Error fetching leads report:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -132,7 +132,7 @@ export const createLead = async (req, res) => {
     res.status(201).json({ id: ref.id, refId: refIdFor(ref.id), ...doc, createdAt: toISO(now), updatedAt: toISO(now) });
   } catch (error) {
     console.error('Error creating lead:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -182,7 +182,7 @@ export const updateLead = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating lead:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -201,6 +201,6 @@ export const deleteLead = async (req, res) => {
     res.status(200).json({ message: 'Lead deleted', id });
   } catch (error) {
     console.error('Error deleting lead:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };

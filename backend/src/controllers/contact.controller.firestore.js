@@ -80,7 +80,8 @@ export const createContactLead = async (req, res) => {
 
     res.status(201).json({ success: true, lead });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[CONTACT_ERROR]", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -97,7 +98,8 @@ export const getContactLeads = async (req, res) => {
 
     res.status(200).json(leads);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[CONTACT_ERROR]", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -119,7 +121,8 @@ export const updateContactLeadStatus = async (req, res) => {
 
     res.status(200).json({ success: true, ...updated });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[CONTACT_ERROR]", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -129,6 +132,7 @@ export const deleteContactLead = async (req, res) => {
     await deleteDoc(COLLECTION, req.params.id);
     res.status(200).json({ success: true, message: "Lead deleted." });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[CONTACT_ERROR]", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

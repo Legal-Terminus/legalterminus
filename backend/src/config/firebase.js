@@ -48,11 +48,20 @@ export const getDb = () => {
   return admin.firestore();
 };
 
-// Export db singleton for convenience
-export const db = (() => {
-  initializeFirebase();
-  return admin.firestore();
-})();
+// Lazy Firestore handle: behaves like a Firestore instance for existing callers
+// (`db.collection(...)`), but initialization is deferred until first use instead
+// of running as an import-time side-effect. This avoids crashing at import if env
+// vars aren't loaded yet, and keeps the module importable in tests.
+export const db = new Proxy(
+  {},
+  {
+    get(_target, prop) {
+      const instance = getDb();
+      const value = instance[prop];
+      return typeof value === "function" ? value.bind(instance) : value;
+    },
+  }
+);
 
 /**
  * Get Firebase Auth instance

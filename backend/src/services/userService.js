@@ -1,6 +1,12 @@
+import crypto from 'crypto';
 import { db, admin } from '../config/firebase.js';
 
 const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
+
+// Cryptographically-strong throwaway password for server-created accounts. The
+// user never sees or uses this — they set their own via the password-reset flow —
+// so it only needs to be unguessable, not memorable.
+const generateTempPassword = () => crypto.randomBytes(24).toString('base64url');
 
 /**
  * Unified User UPSERT Service
@@ -150,9 +156,9 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
         !existingAuthProviders.includes('email')
       ) {
         try {
-          const resetLink = await admin.auth().generatePasswordResetLink(email);
-          console.log(`[EMAIL] Password reset link generated for ${email}`);
-          // TODO: Send via SendGrid
+          await admin.auth().generatePasswordResetLink(email);
+          console.log(`[EMAIL] Password reset link generated for ${email} (delivery not yet implemented)`);
+          // TODO: send via SendGrid.
         } catch (e) {
           console.warn(`[EMAIL] Could not generate password reset for ${email}:`, e.message);
         }
@@ -178,7 +184,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
     // Create Firebase Auth account
     const newUserRecord = await admin.auth().createUser({
       email,
-      password: Math.random().toString(36).slice(-8), // Temporary password
+      password: generateTempPassword(), // throwaway — user sets their own via reset email
     });
 
     const newUid = newUserRecord.uid;
@@ -207,12 +213,15 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
     // Set custom claims
     await admin.auth().setCustomUserClaims(newUid, { role });
 
-    // Send password reset email if email auth
+    // Generate a password-reset link so the new user can set their own password.
+    // NOTE: email delivery (SendGrid) is not yet wired up, so the link is only
+    // generated/logged — it is NOT emailed to the user. Do not claim otherwise.
+    let resetEmailSent = false;
     if (sendEmail && authProvider === 'email') {
       try {
-        const resetLink = await admin.auth().generatePasswordResetLink(email);
-        console.log(`[EMAIL] Password reset link generated for ${email}`);
-        // TODO: Send via SendGrid
+        await admin.auth().generatePasswordResetLink(email);
+        console.log(`[EMAIL] Password reset link generated for ${email} (delivery not yet implemented)`);
+        // TODO: send via SendGrid, then set resetEmailSent = true on success.
       } catch (e) {
         console.warn(`[EMAIL] Could not generate password reset for ${email}:`, e.message);
       }
@@ -225,7 +234,10 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
       role,
       isUpdate: false,
       scenario: 'new_user',
-      message: `${role} created. Password reset email sent.`,
+      resetEmailSent,
+      message: resetEmailSent
+        ? `${role} created. Password reset email sent.`
+        : `${role} created. Ask them to use "Forgot password" to set their password.`,
     };
   } catch (error) {
     console.error('[UPSERT] Error:', error);

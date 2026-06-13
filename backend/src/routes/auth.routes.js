@@ -53,9 +53,10 @@ router.get("/firebase-config", (req, res) => {
       config: firebaseConfig,
     });
   } catch (error) {
+    console.error('[FIREBASE_CONFIG_ERROR]', error);
     res.status(500).json({
       success: false,
-      error: error.message,
+      error: "Internal server error",
     });
   }
 });
@@ -125,7 +126,7 @@ router.post("/register", verifyToken, async (req, res) => {
     });
   } catch (error) {
     console.error('[REGISTER_ERROR]', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
 
@@ -149,7 +150,8 @@ router.get("/me", verifyToken, async (req, res) => {
 
     res.json({ success: true, user: { uid, ...doc.data() } });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[GET_ME_ERROR]', error);
+    res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
 
@@ -182,7 +184,8 @@ router.patch("/set-role", verifyToken, requireRole("admin"), async (req, res) =>
 
     res.json({ success: true, ...result });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[SET_ROLE_ERROR]', error);
+    res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
 
@@ -247,7 +250,7 @@ router.post("/admin/create-user", verifyToken, requireRole("admin"), async (req,
     });
   } catch (error) {
     console.error('[ADMIN_CREATE_USER_ERROR]', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
 

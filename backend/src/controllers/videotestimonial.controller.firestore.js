@@ -20,7 +20,8 @@ export const createVideoTestimonial = async (req, res) => {
 
     return res.status(201).json(video);
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -38,7 +39,8 @@ export const getVideoTestimonials = async (req, res) => {
 
     return res.status(200).json(videos);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -54,7 +56,8 @@ export const getVideoTestimonial = async (req, res) => {
 
     return res.status(200).json(video);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -74,7 +77,8 @@ export const updateVideoTestimonial = async (req, res) => {
 
     return res.status(200).json({ id, ...video, ...req.body });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -92,7 +96,8 @@ export const deleteVideoTestimonial = async (req, res) => {
 
     return res.status(200).json({ message: "Deleted successfully" });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -116,6 +121,7 @@ export const toggleVideoTestimonialStatus = async (req, res) => {
 
     return res.status(200).json({ id, ...video, status: newStatus });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("[VIDEO_TESTIMONIAL_ERROR]", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
