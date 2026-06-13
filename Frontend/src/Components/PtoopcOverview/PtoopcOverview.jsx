@@ -3,39 +3,6 @@ import "./PtoopcOverview.css";
 import illustration from "../../assets/whypvt-imp1.svg";
 
 const PtoopcOverview = () => {
-  const urcForms = [
-    {
-      form: "URC-2",
-      purpose: "PUBLIC NOTICE / NEWSPAPER ADVERTISEMENT",
-      requirements: "Two newspapers (1 English + 1 vernacular) | At least 21 DAYS BEFORE URC-1 filing | Invites objections from creditors / members / public | Specifies intention to register as company under Section 366",
-    },
-    {
-      form: "URC-1",
-      purpose: "APPLICATION FOR CONVERSION AS A COMPANY",
-      requirements: "Filed on MCA portal after URC-2 21-day window | Attaches audited statement of accounts (not older than 30 days), list of members + creditors, consents, declaration of solvency, affidavits, URC-2 newspaper cuttings, proposed MOA + AOA",
-    },
-    {
-      form: "SPICe+ Part B",
-      purpose: "INCORPORATION + PAN + TAN + AGILE-PRO-S",
-      requirements: "Filed in PARALLEL with URC-1, covers PAN + TAN + GSTIN + EPFO + ESIC + Bank Account application",
-    },
-    {
-      form: "Form INC-3",
-      purpose: "NOMINEE CONSENT",
-      requirements: "Mandatory for OPC - nominates becomes member on original member's death / incapacity",
-    },
-    {
-      form: "Form INC-9",
-      purpose: "DECLARATION",
-      requirements: "Declaration by director + member confirming compliance with Companies Act",
-    },
-    {
-      form: "Certificate of Incorporation (Sec 367)",
-      purpose: "ISSUED BY ROC",
-      requirements: "On approval, fresh CIN issued + PAN + TAN auto-generated + AGILE-PRO-S registrations triggered",
-    },
-  ];
-
   const comparison = [
     {
       parameter: "Statutory Anchor",
@@ -102,48 +69,7 @@ const PtoopcOverview = () => {
   return (
     <div className="opc-full-wrapper">
 
-      <section className="opc-why-convert-section" id="company">
-        <div className="opc-why-convert-container">
-          <h2 className="opc-why-convert-title">Why Convert Your Proprietorship to a OPC</h2>
-          <p className="opc-why-convert-text">
-            A Proprietorship is one of the simplest ways to start a business, but it has certain limitations as it grows. Since the owner and the business are legally the same, the proprietor is personally liable for all business debts and obligations. It can also be challenging to build credibility, raise funds, or ensure long-term business continuity.
-          </p>
-          <p className="opc-why-convert-text">
-            Converting a Proprietorship into a One Person Company (OPC) provides the benefits of a separate legal entity and limited liability while allowing the founder to retain complete ownership and control. Recognized under the Companies Act, 2013, an OPC enhances business credibility, supports corporate banking and tender participation, and ensures better continuity. The conversion is completed through MCA filings, including URC-1 and SPICe+ forms, with recent legal amendments making OPC registration more flexible and founder-friendly.
-          </p>
-        </div>
-      </section>
-
-      <section className="opc-urc-forms-section">
-        <div className="opc-urc-forms-container">
-          <h2 className="opc-urc-forms-title">Form URC-1 + Form URC-2: The Section 366 Conversion Path</h2>
-          <p className="opc-urc-forms-subtitle">
-            Section 366 of the Companies Act, 2013 + the Companies (Authorised to Register) Rules, 2014 lay out the conversion path. Two forms drive the process - URC-1 (the application) and URC-2 (the newspaper notice). Here's what each does:
-          </p>
-          <div className="opc-urc-forms-table-wrapper">
-            <table className="opc-urc-forms-table">
-              <thead>
-                <tr>
-                  <th>Form</th>
-                  <th>Purpose</th>
-                  <th>Key Requirements</th>
-                </tr>
-              </thead>
-              <tbody>
-                {urcForms.map((item, i) => (
-                  <tr key={i}>
-                    <td className="opc-urc-forms-form">{item.form}</td>
-                    <td>{item.purpose}</td>
-                    <td>{item.requirements}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section className="opc-intro-section">
+      <section className="opc-intro-section" id="company">
         <div className="opc-intro-container">
           <div className="opc-intro-illustration-wrap">
             <img
