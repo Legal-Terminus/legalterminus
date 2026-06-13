@@ -11,37 +11,42 @@ const Breadcrum = () => {
         <div className="ProPrietorship-opc-Bc-public-content">
 
           <span className="ProPrietorship-opc-Bc-public-tag">
-            Conversion of Proprietorship Firm To Private Limited
+            Convert Proprietorship to OPC  in India
           </span>
 
           <h1 className="ProPrietorship-opc-Bc-public-title">
-            Proprietorship Firm To Private Limited Company
-            {/* <span> in India</span> */}
+            Convert Proprietorship to OPC  in India
+            <br />
+            <span className="ProPrietorship-opc-Bc-title-tagline">One founder, full corporate shield</span>
           </h1>
 
           <p className="ProPrietorship-opc-Bc-public-description">
-            Legal Terminus can help you with conversion of proprietorship into private limited company in a hassle-free manner within a reasonable time span and competitive Professional fee which starts from Rs. 14999/- excluding Govt. Fees
+            A Proprietorship is easy to start, but as your business grows, it comes with limitations such as unlimited personal liability, no separate legal identity, and lower business credibility. Proprietorship firm to OPC conversion helps you upgrade your business into a legally recognized corporate structure while keeping complete ownership in the hands of a single founder. A One Person Company (OPC) under the Companies Act, 2013 offers limited liability protection, separate legal identity, better brand credibility, and improved business continuity.
+          </p>
+
+          <p className="ProPrietorship-opc-Bc-public-description">
+            At Legal Terminus, we handle the complete Proprietorship firm to OPC conversion process — including OPC incorporation through the MCA portal, PAN & TAN application, GST migration support, and assistance with updating bank accounts and business registrations. Supreme Plans also include 12 months of compliance support.
           </p>
 
           <div className="ProPrietorship-opc-Bc-public-features">
-            <div className="ProPrietorship-opc-Bc-feature-item">1 Directors Required</div>
-            <div className="ProPrietorship-opc-Bc-feature-item">Required 40 to 50 Working Days</div>
-            <div className="ProPrietorship-opc-Bc-feature-item">Easy Conversion Process</div>
-            <div className="ProPrietorship-opc-Bc-feature-item">Limited Liability Protection</div>
+            <div className="ProPrietorship-opc-Bc-feature-item">URC-1 + URC-2 Filed</div>
+            <div className="ProPrietorship-opc-Bc-feature-item">Section 366 Compliant</div>
+            <div className="ProPrietorship-opc-Bc-feature-item">Limited Liability</div>
+            <div className="ProPrietorship-opc-Bc-feature-item">100% Founder-Held</div>
           </div>
 
           <div className="ProPrietorship-opc-Bc-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>Companies Registered</p>
+              <h3>500+</h3>
+              <p>OPC + URC-1 conversions</p>
             </div>
             <div>
-              <h3>100%</h3>
-              <p>Online Process</p>
+              <h3>End-to-End Transition</h3>
+              <p>GST + Bank + Licenses + IP</p>
             </div>
             <div>
-              <h3>5+</h3>
-              <p>Years of Legal Expertise</p>
+              <h3>7+</h3>
+              <p>Years of Compliance Expertise</p>
             </div>
           </div>
 
