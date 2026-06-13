@@ -1,0 +1,105 @@
+.profopc-govtcosts-section {
+  font-family: 'Poppins', sans-serif;
+  background: #f8fdf9;
+  padding: 60px 24px 70px;
+}
+
+.profopc-govtcosts-container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.profopc-govtcosts-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  text-align: center;
+}
+
+.profopc-govtcosts-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #19b43a;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.profopc-govtcosts-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 28px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.profopc-govtcosts-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+
+.profopc-govtcosts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 560px;
+}
+
+.profopc-govtcosts-table thead tr { background: #0f3d2e; }
+
+.profopc-govtcosts-table thead th {
+  color: #fff;
+  font-weight: 600;
+  padding: 14px 20px;
+  text-align: left;
+  letter-spacing: 0.3px;
+}
+
+.profopc-govtcosts-table thead th:first-child { border-radius: 12px 0 0 0; }
+.profopc-govtcosts-table thead th:last-child  { border-radius: 0 12px 0 0; }
+
+.profopc-govtcosts-table tbody tr {
+  background: #fff;
+  border-bottom: 1px solid #e9f5ec;
+  transition: background 0.15s ease;
+}
+
+.profopc-govtcosts-table tbody tr:hover { background: #f0faf2; }
+
+.profopc-govtcosts-table tbody td {
+  padding: 14px 20px;
+  color: #1e293b;
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+.profopc-govtcosts-range {
+  font-weight: 600;
+  color: #0f3d2e;
+  white-space: nowrap;
+}
+
+.profopc-govtcosts-total-row {
+  background: #edfaf1 !important;
+  border-top: 2px solid #19b43a !important;
+}
+
+.profopc-govtcosts-total-row td { font-weight: 700; color: #0f3d2e; }
+.profopc-govtcosts-total-row td.profopc-govtcosts-range { color: #19b43a; }
+
+.profopc-govtcosts-table tbody tr:last-child td:first-child { border-radius: 0 0 0 12px; }
+.profopc-govtcosts-table tbody tr:last-child td:last-child  { border-radius: 0 0 12px 0; }
+
+@media (max-width: 640px) {
+  .profopc-govtcosts-title   { font-size: 18px; }
+  .profopc-govtcosts-section { padding: 40px 16px 50px; }
+}

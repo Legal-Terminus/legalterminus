@@ -3,6 +3,7 @@ import ProFOPCBreadcrum from '../../Components/ProFOPCBreadcrum/ProFOPCBreadcrum
 
 // Lazy load below-fold components
 const ProFOPCPlanandPricing = React.lazy(() => import('../../Components/ProFOPCPlanandPricing/ProFOPCPlanandPricing'))
+const ProFOPCGovtCosts = React.lazy(() => import('../../Components/ProFOPCGovtCosts/ProFOPCGovtCosts'))
 const ProFOPCCondition = React.lazy(() => import('../../Components/ProFOPCCondition/ProFOPCCondition'))
 const ProFOPCZolvitPremium = React.lazy(() => import('../../Components/ProFOPCZolvitPremium/ProFOPCZolvitPremium'))
 const ProFOPCTabs = React.lazy(() => import('../../Components/ProFOPCTabs/ProFOPCTabs'))
@@ -27,6 +28,10 @@ const ProprietorshipOPC = () => {
       <div id="plans">
         <ProFOPCPlanandPricing/>
       </div>
+
+      <Suspense fallback={<div />}>
+        <ProFOPCGovtCosts />
+      </Suspense>
 
       <ProFOPCCondition/> 
 
