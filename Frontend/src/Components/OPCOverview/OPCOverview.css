@@ -294,3 +294,168 @@
   .opc-compare-title   { font-size: 20px; }
   .opc-compare-section { padding: 16px 16px 40px; }
 }
+
+.opc-compare-param {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* --------------------------------------------------
+   WHY CONVERT SECTION
+-------------------------------------------------- */
+
+.opc-why-convert-section {
+  font-family: "Poppins", sans-serif;
+  background: #ffffff;
+  padding: 60px 24px;
+}
+
+.opc-why-convert-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.opc-why-convert-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.opc-why-convert-text {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #4b5563;
+  margin-bottom: 18px;
+  text-align: justify;
+}
+
+.opc-why-convert-text:last-child {
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------
+   URC FORMS SECTION
+-------------------------------------------------- */
+
+.opc-urc-forms-section {
+  font-family: "Poppins", sans-serif;
+  background: #f8fafc;
+  padding: 60px 24px;
+}
+
+.opc-urc-forms-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.opc-urc-forms-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.opc-urc-forms-subtitle {
+  font-size: 15px;
+  color: #64748b;
+  margin-bottom: 32px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.opc-urc-forms-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+
+.opc-urc-forms-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 800px;
+  background: #fff;
+}
+
+.opc-urc-forms-table thead tr {
+  background: #0f3d2e;
+}
+
+.opc-urc-forms-table thead th {
+  color: #fff;
+  font-weight: 600;
+  padding: 16px 20px;
+  text-align: left;
+  letter-spacing: 0.3px;
+}
+
+.opc-urc-forms-table thead th:first-child {
+  border-radius: 12px 0 0 0;
+}
+
+.opc-urc-forms-table thead th:last-child {
+  border-radius: 0 12px 0 0;
+}
+
+.opc-urc-forms-table tbody tr {
+  background: #fff;
+  border-bottom: 1px solid #e9f5ec;
+  transition: background 0.15s ease;
+}
+
+.opc-urc-forms-table tbody tr:hover {
+  background: #f0faf2;
+}
+
+.opc-urc-forms-table tbody td {
+  padding: 16px 20px;
+  color: #1e293b;
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+.opc-urc-forms-form {
+  font-weight: 600;
+  color: #0f172a;
+  min-width: 120px;
+}
+
+.opc-urc-forms-table tbody tr:last-child td:first-child {
+  border-radius: 0 0 0 12px;
+}
+
+.opc-urc-forms-table tbody tr:last-child td:last-child {
+  border-radius: 0 0 12px 0;
+}
+
+@media (max-width: 768px) {
+  .opc-why-convert-section {
+    padding: 40px 16px;
+  }
+
+  .opc-urc-forms-section {
+    padding: 40px 16px;
+  }
+
+  .opc-why-convert-title,
+  .opc-urc-forms-title {
+    font-size: 24px;
+  }
+
+  .opc-why-convert-text {
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .opc-urc-forms-table {
+    font-size: 13px;
+  }
+
+  .opc-urc-forms-table tbody td,
+  .opc-urc-forms-table thead th {
+    padding: 12px 14px;
+  }
+}
