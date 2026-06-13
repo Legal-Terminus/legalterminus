@@ -15,7 +15,7 @@ const PtoopcBreadcrum = () => {
           </span>
 
           <h1 className="lt-public-title">
-            Convert Proprietorship to One Person Company
+            Convert Proprietorship to OPC
             <span className="lt-title-india"> in India</span>
             <br />
             <span className="lt-title-tagline">Stay Solo, Gain Limited Liability</span>
