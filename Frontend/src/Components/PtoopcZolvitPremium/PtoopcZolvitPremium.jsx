@@ -27,32 +27,35 @@ const PtoopcZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  This isn't a one-form conversion — it's incorporating a new OPC and cleanly moving your whole business into it. Get the nominee, the takeover agreement, or the registration migration wrong, and you end up with a company that doesn't actually hold your business. Priority is what happens when an expert runs the incorporation and the transition together, end-to-end.
+                  Proprietorship to OPC Conversion may look like a simple company registration process, but a proper conversion involves multiple legal and compliance steps under the Companies Act, 2013. Documentation, creditor consent, newspaper publication, ROC filing, and business transition planning all play an important role in smooth approval and future compliance.
+                </p>
+                <p className="opczp-subtitle">
+                  With LT Priority, your Proprietorship Firm to OPC Conversion is handled by experienced company law professionals who carefully manage the complete process — from eligibility review to final incorporation and business transition support.
                 </p>
               </header>
 
               <section className="opczp-section-block">
-                <h3 className="opczp-label">What you get</h3>
+                <h3 className="opczp-label">What you get from Legal Terminus Proprietorship to OPC Conversion</h3>
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    A clean OPC incorporation through SPICe+ — DSC, name, MOA/AOA, and the nominee's INC-3 consent handled correctly the first time.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    A properly drafted takeover agreement that actually transfers your proprietorship's assets, liabilities, and contracts into the OPC.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    GST, bank, Udyam, and licence migration so the new company — not the old proprietorship — holds every registration.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    Old proprietorship registrations surrendered so you aren't left filing for two entities.
+                    Priority processing and faster filing support throughout the conversion process
                   </li>
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">📑</span>
-                    A first-year compliance calendar — AOC-4, MGT-7A, ITR, and audit — so the OPC starts life fully compliant.
+                    Proper drafting and handling of URC-1, URC-2, SPICe+ and related MCA filings
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">🛡</span>
+                    Senior Company Secretary review before final submission
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📲</span>
+                    Dedicated coordination and real-time status updates during the process
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📅</span>
+                    Post-incorporation compliance guidance and annual filing reminders
                   </li>
                 </ul>
               </section>
@@ -65,16 +68,16 @@ const PtoopcZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  It's incorporation, not statutory conversion. A proprietorship has no separate legal identity, so you incorporate a fresh OPC and transfer the business into it via a takeover agreement. Missing that transfer step leaves the business legally with the proprietor, not the company.
+                  URC-2 newspaper advertisement MUST run 21 days BEFORE URC-1 filing - this is a hard statutory waiting period. Plan your timeline: URC-2 advertisement (Day 0) -&gt; 21-day objection window (Day 21) -&gt; URC-1 filing (Day 22+). Skip this window or file URC-1 early, and the Registrar rejects the application. Coordination of English + vernacular publication is part of all plans.
                 </li>
                 <li className="opczp-note-item">
-                  A nominee is mandatory. Every OPC must name a nominee (an Indian citizen and resident) in Form INC-3, who steps in if the sole member dies or becomes incapacitated. Choosing and documenting the nominee correctly is essential to incorporation.
+                  ELIGIBILITY: ONLY an Indian citizen (or NRI Indian citizen with 120-day residency in the preceding FY - effective 1 April 2021) can be the SOLE MEMBER of an OPC. Foreign nationals (non-citizens) CANNOT convert their proprietorship to an OPC - they should look at WOS or Pvt Ltd instead. ONE PERSON RULE: you can only hold ONE OPC at a time + cannot be a nominee in more than one OPC.
                 </li>
                 <li className="opczp-note-item">
-                  Compliance steps up. Unlike a proprietorship, an OPC must file annual ROC returns, maintain statutory records, and get its accounts audited every year. We set up a calendar so the higher compliance is handled, not a surprise.
+                  AUDITED STATEMENT OF ACCOUNTS REQUIRED: Form URC-1 requires an AUDITED Statement of Accounts of the proprietorship, NOT older than 30 days from URC-1 filing. If your proprietorship books are not audit-ready, factor in 7-10 days for the audit before URC-1 can be filed. We coordinate with your existing CA or arrange a fresh audit.
                 </li>
                 <li className="opczp-note-item">
-                  Migrate every registration. GST, bank accounts, Udyam, IEC, and trade licences must move to the OPC's name, and the proprietorship's versions surrendered. Leaving any behind causes mismatches and duplicate filings.
+                  CREDITOR / MEMBER OBJECTIONS: The URC-2 newspaper window invites objections from creditors, members, and the public. If material objections are received, the conversion may need RD approval, creditor settlement, or other resolution before the Registrar acts on URC-1. Most clean cases proceed without objections; problem cases can extend timeline by 30-60 days.
                 </li>
               </ul>
             </div>
