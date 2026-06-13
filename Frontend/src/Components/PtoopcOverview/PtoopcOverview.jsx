@@ -1,5 +1,6 @@
 import React from "react";
 import "./PtoopcOverview.css";
+import illustration from "../../assets/whypvt-imp1.svg";
 
 const PtoopcOverview = () => {
   const urcForms = [
@@ -101,15 +102,24 @@ const PtoopcOverview = () => {
   return (
     <div className="opc-full-wrapper">
 
-      <section className="opc-why-convert-section" id="company">
-        <div className="opc-why-convert-container">
-          <h2 className="opc-why-convert-title">Why Convert Proprietorship to OPC</h2>
-          <p className="opc-why-convert-text">
-            A Proprietorship is one of the simplest ways to start a business, but it has certain limitations as it grows. Since the owner and the business are legally the same, the proprietor is personally liable for all business debts and obligations. It can also be challenging to build credibility, raise funds, or ensure long-term business continuity.
-          </p>
-          <p className="opc-why-convert-text">
-            Converting a Proprietorship into a One Person Company (OPC) provides the benefits of a separate legal entity and limited liability while allowing the founder to retain complete ownership and control. Recognized under the Companies Act, 2013, an OPC enhances business credibility, supports corporate banking and tender participation, and ensures better continuity. The conversion is completed through MCA filings, including URC-1 and SPICe+ forms, with recent legal amendments making OPC registration more flexible and founder-friendly.
-          </p>
+      <section className="opc-intro-section" id="company">
+        <div className="opc-intro-container">
+          <div className="opc-intro-illustration-wrap">
+            <img
+              src={illustration}
+              alt="Why convert Proprietorship to OPC illustration"
+              className="opc-intro-illustration"
+            />
+          </div>
+
+          <div className="opc-intro-content">
+            <h2 className="opc-intro-title">Why Convert Proprietorship to OPC</h2>
+            <p className="opc-intro-text">
+              A Proprietorship is one of the simplest ways to start a business, but it has certain limitations as it grows. Since the owner and the business are legally the same, the proprietor is personally liable for all business debts and obligations. It can also be challenging to build credibility, raise funds, or ensure long-term business continuity.
+              <br /><br />
+              Converting a Proprietorship into a One Person Company (OPC) provides the benefits of a separate legal entity and limited liability while allowing the founder to retain complete ownership and control. Recognized under the Companies Act, 2013, an OPC enhances business credibility, supports corporate banking and tender participation, and ensures better continuity. The conversion is completed through MCA filings, including URC-1 and SPICe+ forms, with recent legal amendments making OPC registration more flexible and founder-friendly.
+            </p>
+          </div>
         </div>
       </section>
 
