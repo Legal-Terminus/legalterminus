@@ -4,10 +4,10 @@ import {
 } from 'lucide-react';
 
 const REPORTS = [
-  { to: '/reports/all-tasks',    title: 'All Tasks',       desc: 'Filterable view of every task in the system.', icon: ListChecks },
-  { to: '/reports/completed',    title: 'Completed Tasks', desc: 'Tasks marked complete — sorted by finish date.', icon: CheckCircle2 },
-  { to: '/reports/pending',      title: 'Pending Tasks',   desc: 'Pending tasks grouped by blocking reason.', icon: Clock },
-  { to: '/reports/master-sheet', title: 'Master Sheet',    desc: 'Full task summary table with CSV export.', icon: FileSpreadsheet },
+  { to: '/reports/all-tasks',    title: 'All Matters',       desc: 'Filterable view of every matter in the system.', icon: ListChecks },
+  { to: '/reports/completed',    title: 'Completed Matters', desc: 'Matters marked complete — sorted by finish date.', icon: CheckCircle2 },
+  { to: '/reports/pending',      title: 'Pending Matters',   desc: 'Pending matters grouped by blocking reason.', icon: Clock },
+  { to: '/reports/master-sheet', title: 'Master Sheet',      desc: 'Full matter summary table with CSV export.', icon: FileSpreadsheet },
   { to: '/reports/leads',        title: 'Contact Leads',   desc: 'Website enquiries — flags leads already registered as clients.', icon: Inbox },
 ];
 

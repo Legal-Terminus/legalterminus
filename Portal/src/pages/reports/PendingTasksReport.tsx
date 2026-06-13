@@ -40,7 +40,7 @@ export default function PendingTasksReport() {
     <div className="p-6">
       <div className="flex items-center gap-3 mb-4">
         <Link to="/reports" className="text-sm text-indigo-600 hover:underline">← Reports</Link>
-        <h1 className="text-xl font-semibold text-gray-900">Pending Tasks</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Pending Matters</h1>
       </div>
 
       <ReportFiltersBar filters={filters} onChange={setFilters} />
@@ -49,7 +49,7 @@ export default function PendingTasksReport() {
       {isError && <p className="text-red-600 text-sm">Failed to load report.</p>}
 
       {groups.length === 0 && !isLoading && (
-        <p className="text-gray-400 text-sm mt-8 text-center">No pending tasks.</p>
+        <p className="text-gray-400 text-sm mt-8 text-center">No pending matters.</p>
       )}
 
       {groups.map(({ reason, tasks }) => (
@@ -64,7 +64,7 @@ export default function PendingTasksReport() {
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 text-gray-600 text-xs uppercase">
                 <tr>
-                  {['Task ID', 'Client', 'Service', 'Step', 'Assigned', ''].map((h) => (
+                  {['Matter ID', 'Client', 'Service', 'Step', 'Assigned', ''].map((h) => (
                     <th key={h} className="px-4 py-2 text-left font-medium">{h}</th>
                   ))}
                 </tr>
@@ -73,8 +73,8 @@ export default function PendingTasksReport() {
                 {tasks.map((task) => (
                   <tr key={task.id} className="hover:bg-gray-50">
                     <td className="px-4 py-2 font-mono text-xs text-gray-500">{task.id.slice(0, 8)}…</td>
-                    <td className="px-4 py-2">{task.clientUid}</td>
-                    <td className="px-4 py-2">{task.workflowType}</td>
+                    <td className="px-4 py-2">{task.clientName || task.clientUid}</td>
+                    <td className="px-4 py-2">{task.serviceName || task.workflowType}</td>
                     <td className="px-4 py-2">{task.currentStepNumber}</td>
                     <td className="px-4 py-2">{task.assignedTo ?? '—'}</td>
                     <td className="px-4 py-2">{task.isUrgent && <UrgentBadge compact />}</td>

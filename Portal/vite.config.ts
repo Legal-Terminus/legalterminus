@@ -12,6 +12,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@shared': path.resolve(__dirname, '../shared'),
     },
+    // The shared/ workflow module (repo root) imports 'xstate' and would resolve
+    // to the ROOT node_modules copy, while Portal uses its own — two copies in
+    // the bundle and clashing type identities. Dedupe to Portal's single copy.
+    dedupe: ['xstate', '@xstate/react'],
   },
   server: {
     port: 5173,

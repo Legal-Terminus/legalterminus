@@ -30,9 +30,24 @@ const NAV_ITEMS: NavItem[] = APP_ROUTES
     order: r.nav!.order ?? 0,
   }));
 
+// Per-role label overrides: a few nav items read differently by role. The
+// /tasks instance is a "Matter" (client case) to staff but the client's own
+// "Services". Keeps one route while showing role-appropriate vocabulary.
+const ROLE_LABEL_OVERRIDES: Record<string, Partial<Record<Role, string>>> = {
+  '/tasks': { client: 'My Services' },
+};
+
+const labelFor = (item: NavItem, role: Role): string =>
+  ROLE_LABEL_OVERRIDES[item.to]?.[role] ?? item.label;
+
 /** Nav items visible to a given role, sorted by `order` then declaration. */
 export const navForRole = (role: Role | null): NavItem[] =>
-  role ? NAV_ITEMS.filter((i) => i.roles.includes(role)).sort((a, b) => a.order - b.order) : [];
+  role
+    ? NAV_ITEMS
+        .filter((i) => i.roles.includes(role))
+        .map((i) => ({ ...i, label: labelFor(i, role) }))
+        .sort((a, b) => a.order - b.order)
+    : [];
 
 /** Mobile bottom-nav items for a given role (max ~5 looks best). */
 export const mobileNavForRole = (role: Role | null): NavItem[] =>

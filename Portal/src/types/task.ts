@@ -22,6 +22,7 @@ export interface Task {
   clientName?: string;
   assignedTo?: string;
   status: TaskStatus;
+  workflowDefinitionId?: string;
   paymentStatus: PaymentStatus;
   amountPaid?: number;
   amountDue?: number;

@@ -17,7 +17,7 @@ export default function CompletedTasksReport() {
     <div className="p-6">
       <div className="flex items-center gap-3 mb-4">
         <Link to="/reports" className="text-sm text-indigo-600 hover:underline">← Reports</Link>
-        <h1 className="text-xl font-semibold text-gray-900">Completed Tasks</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Completed Matters</h1>
       </div>
 
       <ReportFiltersBar filters={filters} onChange={setFilters} />
@@ -29,20 +29,20 @@ export default function CompletedTasksReport() {
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 text-gray-600 text-xs uppercase">
               <tr>
-                {['Task ID', 'Client', 'Service', 'Assigned To', 'Payment', 'Completed At'].map((h) => (
+                {['Matter ID', 'Client', 'Service', 'Assigned To', 'Payment', 'Completed At'].map((h) => (
                   <th key={h} className="px-4 py-3 text-left font-medium">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {data.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No completed tasks.</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No completed matters.</td></tr>
               )}
               {data.map((task) => (
                 <tr key={task.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-mono text-xs text-gray-500">{task.id.slice(0, 8)}…</td>
-                  <td className="px-4 py-3">{task.clientUid}</td>
-                  <td className="px-4 py-3">{task.workflowType}</td>
+                  <td className="px-4 py-3">{task.clientName || task.clientUid}</td>
+                  <td className="px-4 py-3">{task.serviceName || task.workflowType}</td>
                   <td className="px-4 py-3">{task.assignedTo ?? '—'}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${

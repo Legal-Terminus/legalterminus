@@ -1,6 +1,8 @@
+import { createActor } from 'xstate';
 import { db } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
-import { getCompiledForServiceKey } from '../services/workflowDefinitions.service.js';
+import { getCompiledForServiceKey, getCompiledById } from '../services/workflowDefinitions.service.js';
+import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
 
 // ─── POST /api/tasks ───────────────────────────────────────────────────────
 // Assign a service's workflow to a client → create a task. Admin/manager only.
@@ -128,6 +130,76 @@ export async function listTasks(req, res) {
   }
 }
 
+// ─── GET /api/tasks/my-steps ───────────────────────────────────────────────
+// Consolidated, cross-matter STEP worklist for a staff user ("My Tasks"). A
+// Matter (task) has many steps; at any time one step is `active`. This returns
+// the active step of every OPEN matter the caller is involved in, enriched with
+// matter context (client, service, urgency, age) so staff get a single to-do
+// inbox instead of opening matters one by one.
+//
+// "Mine" is phased:
+//   • Per-person assignment (step.assignedTo == me)  → bucket 'assigned'
+//   • Unassigned active steps                        → bucket 'unassigned'
+// The frontend groups by bucket so a user sees their own queue first, plus the
+// shared pool they can pick up. Admin/manager see all open matters; team members
+// see matters assigned to them (task-level assignedTo) OR steps assigned to them.
+export async function listMySteps(req, res) {
+  try {
+    const { role, uid } = req.user;
+    if (role === 'client') return res.status(403).json({ message: 'Forbidden' });
+
+    // Open matters only (pending/active). Role-scope mirrors listTasks.
+    let q = db.collection('tasks').where('status', 'in', ['pending', 'active']);
+    if (role === 'team_member') {
+      // Team members: matters assigned to them at the task level. (Step-level
+      // assignment to a member whose matter isn't task-assigned is added below.)
+      q = q.where('assignedTo', '==', uid);
+    }
+    const taskSnap = await q.get();
+
+    // Also pull steps assigned directly to this user across ANY matter (covers
+    // the case where a step is delegated to someone the matter isn't assigned to).
+    const tasksById = new Map(taskSnap.docs.map((d) => [d.id, d.data()]));
+
+    const rows = [];
+    await Promise.all(
+      taskSnap.docs.map(async (doc) => {
+        const t = doc.data();
+        const active = await doc.ref.collection('steps')
+          .where('status', '==', 'active').limit(1).get();
+        if (active.empty) return;
+        const step = active.docs[0].data();
+        const assignedTo = step.assignedTo ?? null;
+        // Team members only see active steps that are theirs or unassigned.
+        if (role === 'team_member' && assignedTo && assignedTo !== uid) return;
+        rows.push({
+          taskId: doc.id,
+          clientName: t.clientName ?? '',
+          serviceName: t.serviceName ?? t.workflowType ?? '',
+          isUrgent: !!t.isUrgent,
+          updatedAt: t.updatedAt ?? null,
+          stepNumber: step.stepNumber,
+          stepTitle: step.title ?? `Step ${step.stepNumber}`,
+          assignedRole: step.assignedRole ?? null,
+          assignedTo,
+          bucket: assignedTo === uid ? 'assigned' : (assignedTo ? 'other' : 'unassigned'),
+        });
+      })
+    );
+
+    void tasksById; // reserved for future step-only (cross-matter) delegation lookup
+    // Urgent first, then most recently updated matter.
+    rows.sort((a, b) => {
+      if (a.isUrgent !== b.isUrgent) return a.isUrgent ? -1 : 1;
+      return (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '');
+    });
+    res.json({ data: rows });
+  } catch (err) {
+    logger.error({ err }, 'listMySteps error:');
+    res.status(500).json({ message: 'Failed to load your tasks' });
+  }
+}
+
 // ─── GET /api/tasks/:taskId ────────────────────────────────────────────────
 export async function getTask(req, res) {
   try {
@@ -189,7 +261,7 @@ export async function patchStep(req, res) {
     }
 
     const { taskId, stepId } = req.params;
-    const { isUrgent } = req.body;
+    const { isUrgent, assignedTo } = req.body;
 
     // Try sub-collection approach first
     const stepRef = db.collection('tasks').doc(taskId).collection('steps').doc(stepId);
@@ -198,6 +270,9 @@ export async function patchStep(req, res) {
     if (stepDoc.exists) {
       const update = { updatedAt: new Date().toISOString() };
       if (isUrgent !== undefined) update.isUrgent = isUrgent;
+      // Assign/unassign this step to a specific staff user. `null`/'' clears it
+      // (back to the shared/unassigned pool). Surfaced in the My Tasks worklist.
+      if (assignedTo !== undefined) update.assignedTo = assignedTo || null;
       await stepRef.update(update);
       return res.json({ success: true });
     }
@@ -221,5 +296,194 @@ export async function patchStep(req, res) {
   } catch (err) {
     logger.error({ err: err }, 'patchStep error:');
     res.status(500).json({ message: 'Failed to update step' });
+  }
+}
+
+// ─── POST /api/tasks/:taskId/transition ────────────────────────────────────
+// Backend-AUTHORITATIVE step execution. The client sends an INTENT (an event);
+// the backend rebuilds the workflow machine from the task's PINNED definition,
+// resumes it at the task's current step, applies the event under the engine's
+// guards (payment gates etc.), and persists the resulting state. Invalid moves
+// are rejected. Body: { event: { type, ... } }.
+export async function transitionTask(req, res) {
+  try {
+    const { role, uid } = req.user;
+    const { taskId } = req.params;
+    const { event } = req.body;
+
+    const taskRef = db.collection('tasks').doc(taskId);
+    const taskSnap = await taskRef.get();
+    if (!taskSnap.exists) return res.status(404).json({ message: 'Task not found' });
+    const task = taskSnap.data();
+
+    // Authorization: admin/manager always; team_member only if assigned; clients
+    // may only fire client-facing approval events on their own task.
+    const isStaff = role === 'admin' || role === 'manager';
+    const isAssignedTeam = role === 'team_member' && task.assignedTo === uid;
+    const isOwnerClient = role === 'client' && task.clientUid === uid;
+    const clientEvents = new Set(['CLIENT_APPROVE', 'CLIENT_REJECT']);
+    if (!isStaff && !isAssignedTeam && !(isOwnerClient && clientEvents.has(event?.type))) {
+      return res.status(403).json({ message: 'Not allowed to advance this task' });
+    }
+
+    // Load the task's PINNED definition (immutable per task), compile it, then
+    // recompile with initial = current step so we resume exactly where we are.
+    const compiled = await getCompiledById(task.workflowDefinitionId);
+    if (!compiled) return res.status(409).json({ message: 'Workflow definition unavailable' });
+    const resumed = compileDefinition({ ...compiled.definition, initialStep: task.currentStepNumber });
+
+    const context = {
+      taskId,
+      clientUid: task.clientUid,
+      workflowType: task.workflowDefinitionId,
+      paymentStatus: task.paymentStatus ?? 'not_paid',
+      currentStepNumber: task.currentStepNumber,
+      completedSteps: [],
+      activeParallelGroup: null,
+      branchDecision: null,
+      iterationCount: {},
+      adminOverride: task.adminOverride === true,
+    };
+
+    const actor = createActor(resumed, { input: context });
+    actor.start();
+    const before = String(actor.getSnapshot().value);
+    actor.send(event);
+    const snap = actor.getSnapshot();
+    const after = String(snap.value);
+    actor.stop();
+
+    // No state change AND not a payment event that mutated context → invalid move.
+    const ctxChanged =
+      snap.context.currentStepNumber !== task.currentStepNumber ||
+      snap.context.paymentStatus !== context.paymentStatus ||
+      snap.context.adminOverride !== context.adminOverride;
+    if (before === after && !ctxChanged) {
+      return res.status(400).json({ message: `Event '${event?.type}' is not valid in step ${task.currentStepNumber}` });
+    }
+
+    const newStep = snap.context.currentStepNumber;
+    const isComplete = after === 'completed' || snap.status === 'done';
+
+    // Persist task-level state.
+    const taskUpdate = {
+      currentStepNumber: newStep,
+      paymentStatus: snap.context.paymentStatus,
+      adminOverride: snap.context.adminOverride,
+      status: isComplete ? 'completed' : 'active',
+      updatedAt: new Date().toISOString(),
+    };
+
+    const now = new Date().toISOString();
+    const comment = (event?.remark || event?.reason || '').toString().trim().slice(0, 2000) || null;
+
+    // Update step statuses: mark the step we LEFT as completed (on a forward move),
+    // and the step we landed on as active. Done in a batch with the task update.
+    const batch = db.batch();
+    batch.set(taskRef, taskUpdate, { merge: true });
+
+    if (newStep !== task.currentStepNumber) {
+      const leftRef = taskRef.collection('steps').doc(String(task.currentStepNumber));
+      batch.set(leftRef, {
+        status: 'completed',
+        completedBy: uid ?? null,
+        completedAt: now,
+        ...(comment ? { remark: comment } : {}),
+      }, { merge: true });
+    } else if (comment) {
+      // No step change (e.g. payment/override) — still record the comment on the step.
+      const sameRef = taskRef.collection('steps').doc(String(task.currentStepNumber));
+      batch.set(sameRef, { remark: comment }, { merge: true });
+    }
+    if (!isComplete) {
+      const nextRef = taskRef.collection('steps').doc(String(newStep));
+      batch.set(nextRef, { status: 'active' }, { merge: true });
+    }
+
+    // Forward JUMP over intermediate steps. Two reasons a step can be bypassed:
+    //  - a payment GATE that auto-passed because payment was already satisfied →
+    //    it was effectively completed, not skipped (it just didn't need action);
+    //  - a conditional branch step that doesn't apply on this path (e.g. the
+    //    resubmission steps 14–19 when Govt approves at 13) → genuinely skipped.
+    const fromStep = task.currentStepNumber;
+    if (newStep > fromStep + 1) {
+      const typeByNum = new Map(compiled.definition.steps.map((s) => [s.stepNumber, s.type]));
+      const between = await taskRef.collection('steps')
+        .where('stepNumber', '>', fromStep)
+        .where('stepNumber', '<', newStep)
+        .get();
+      between.forEach((d) => {
+        if (d.data().status !== 'pending') return;
+        const isGate = typeByNum.get(d.data().stepNumber) === 'payment_gate';
+        batch.set(d.ref, isGate
+          ? { status: 'completed', completedAt: now }
+          : { status: 'skipped' }, { merge: true });
+      });
+    }
+
+    // Append to the task's event history (audit trail of who did what, when).
+    const eventRef = taskRef.collection('events').doc();
+    batch.set(eventRef, {
+      type: event?.type,
+      branch: event?.branch ?? null,
+      fromStep: task.currentStepNumber,
+      toStep: newStep,
+      comment,
+      byUid: uid ?? null,
+      byRole: role ?? null,
+      at: now,
+    });
+
+    await batch.commit();
+
+    // Return the refreshed task with steps.
+    const stepsSnap = await taskRef.collection('steps').orderBy('stepNumber').get();
+    res.json({
+      id: taskId,
+      ...task,
+      ...taskUpdate,
+      steps: stepsSnap.docs.map((s) => s.data()),
+    });
+  } catch (err) {
+    logger.error({ err }, 'transitionTask error:');
+    res.status(500).json({ message: 'Failed to advance task' });
+  }
+}
+
+// ─── DELETE /api/tasks/:taskId ─────────────────────────────────────────────
+// Admin-only. Deletes a matter and its subcollections (Firestore does NOT
+// cascade): tasks/{id}/steps/* and tasks/{id}/events/* are removed first, then
+// the task doc.
+export async function deleteTask(req, res) {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden: admin required' });
+    }
+    const { taskId } = req.params;
+    const taskRef = db.collection('tasks').doc(taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+
+    let stepsDeleted = 0;
+    let eventsDeleted = 0;
+    for (const sub of ['steps', 'events']) {
+      const subSnap = await taskRef.collection(sub).get();
+      if (subSnap.empty) continue;
+      // Batches cap at 500 writes; chunk to be safe for large event logs.
+      for (let i = 0; i < subSnap.docs.length; i += 450) {
+        const batch = db.batch();
+        subSnap.docs.slice(i, i + 450).forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+      }
+      if (sub === 'steps') stepsDeleted = subSnap.size;
+      else eventsDeleted = subSnap.size;
+    }
+
+    await taskRef.delete();
+    logger.info(`[deleteTask] Matter ${taskId} deleted (steps=${stepsDeleted}, events=${eventsDeleted})`);
+    res.status(200).json({ id: taskId, deleted: true, stepsDeleted, eventsDeleted });
+  } catch (err) {
+    logger.error({ err }, 'deleteTask error:');
+    res.status(500).json({ message: 'Failed to delete matter' });
   }
 }

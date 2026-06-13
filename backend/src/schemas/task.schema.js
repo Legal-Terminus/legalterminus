@@ -19,6 +19,24 @@ export const taskUpdateSchema = z.object({
   isUrgent: z.boolean(),
 }).strict();
 
+// POST /api/tasks/:taskId/transition — fire a workflow event (intent).
+const WORKFLOW_EVENTS = [
+  'COMPLETE_STEP', 'RECORD_PAYMENT', 'ADMIN_OVERRIDE_PAYMENT', 'BRANCH_DECISION',
+  'CLIENT_APPROVE', 'CLIENT_REJECT', 'GOVT_APPROVE', 'GOVT_REJECT', 'RESUBMIT', 'REJECT_DOCUMENT',
+];
+export const taskTransitionSchema = z.object({
+  event: z.object({
+    type: z.enum(WORKFLOW_EVENTS),
+    // Event-specific optional fields (validated loosely; controller/engine enforce semantics).
+    newStatus: z.enum(['not_paid', 'part_paid', 'fully_paid']).optional(),
+    branch: z.string().trim().max(40).optional(),
+    remark: z.string().trim().max(2000).optional(),
+    amount: z.number().optional(),
+    mode: z.string().trim().max(40).optional(),
+    reason: z.string().trim().max(500).optional(),
+  }).passthrough(),
+}).strict();
+
 // GET /api/tasks list filters (+ pagination merged in route).
 export const taskListQuerySchema = z.object({
   status: z.enum(['pending', 'active', 'completed', 'cancelled', 'on_hold']).optional(),

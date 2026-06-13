@@ -91,8 +91,10 @@ export const companyIncorporationMachine = createMachine({
     },
     step_13_await_govt_name_approval: {
       on: {
-        GOVT_APPROVE: { target: 'step_14_resubmission_decision', actions: assign(() => ({ currentStepNumber: 14 })) },
-        GOVT_REJECT: { target: 'step_15_resubmission_branch', actions: assign(() => ({ currentStepNumber: 15 })) },
+        // Approval skips the resubmission branch and proceeds to the name-approval
+        // tail (20 → 21). The resubmission branch (14–19) is reached only on reject.
+        GOVT_APPROVE: { target: 'step_20_name_approval_letter', actions: assign(() => ({ currentStepNumber: 20 })) },
+        GOVT_REJECT: { target: 'step_14_resubmission_decision', actions: assign(() => ({ currentStepNumber: 14 })) },
       },
     },
     step_14_resubmission_decision: {

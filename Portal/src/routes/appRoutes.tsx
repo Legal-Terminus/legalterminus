@@ -1,13 +1,14 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Settings, Layers, User, Package,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Settings, Layers, User, Package, Inbox,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 
 // Pages are organised by FEATURE, never by role (role-neutral architecture).
 import DashboardPage from '../pages/dashboard/DashboardPage';
 import TasksPage from '../pages/tasks/TasksPage';
+import MyTasksPage from '../pages/tasks/MyTasksPage';
 import TaskDetail from '../pages/tasks/TaskDetailPage';
 import UsersPage from '../pages/users/UsersPage';
 import UserFormPage from '../pages/users/UserFormPage';
@@ -62,7 +63,9 @@ const ALL_ROLES: Role[] = ['admin', 'manager', 'team_member', 'client'];
 export const APP_ROUTES: AppRoute[] = [
   // ── Shared across roles — one path, view adapts to role ──
   { path: '/dashboard', element: <DashboardPage />, roles: ALL_ROLES, nav: { label: 'Dashboard', mobileLabel: 'Home', icon: LayoutDashboard, mobile: true, order: -2 } },
-  { path: '/tasks',     element: <TasksPage />,     roles: ALL_ROLES, nav: { label: 'Tasks', icon: CheckSquare, mobile: true, order: -1 } },
+  { path: '/tasks',     element: <TasksPage />,     roles: ALL_ROLES, nav: { label: 'Matters', icon: CheckSquare, mobile: true, order: -1 } },
+  // Cross-matter step worklist for staff (clients don't perform steps).
+  { path: '/my-tasks',  element: <MyTasksPage />,   roles: ['admin', 'manager', 'team_member'], nav: { label: 'My Tasks', icon: Inbox, mobile: true, order: 0 } },
   { path: '/tasks/:taskId', element: <TaskDetail />, roles: ALL_ROLES },
 
   // ── Admin + Manager (per BMAD E08-S01 reports, E09-S02 user/client mgmt) ──

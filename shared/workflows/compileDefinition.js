@@ -34,7 +34,10 @@ function compileStep(step) {
         ],
         on: {
           RECORD_PAYMENT: { actions: assign(({ event }) => ({ paymentStatus: event.newStatus })), target: key },
-          ADMIN_OVERRIDE_PAYMENT: { actions: assign(() => ({ adminOverride: true })), target: passKey },
+          ADMIN_OVERRIDE_PAYMENT: {
+            actions: [assign(() => ({ adminOverride: true })), setStep(step.gate.onPass)],
+            target: passKey,
+          },
         },
       },
       // Paired waiting state: parks until payment recorded or admin overrides.
@@ -42,7 +45,10 @@ function compileStep(step) {
         meta: { waitingFor: step.stepNumber },
         on: {
           RECORD_PAYMENT: { actions: assign(({ event }) => ({ paymentStatus: event.newStatus })), target: key },
-          ADMIN_OVERRIDE_PAYMENT: { actions: assign(() => ({ adminOverride: true })), target: passKey },
+          ADMIN_OVERRIDE_PAYMENT: {
+            actions: [assign(() => ({ adminOverride: true })), setStep(step.gate.onPass)],
+            target: passKey,
+          },
         },
       },
     };
@@ -74,6 +80,7 @@ function stepMeta(step) {
   return {
     stepNumber: step.stepNumber,
     title: step.title,
+    description: step.description ?? '',
     type: step.type,
     assignedRole: step.assignedRole,
     effects: step.effects ?? [],

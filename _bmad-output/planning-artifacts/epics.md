@@ -18,6 +18,25 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 ---
 
+## Vocabulary (UI labels vs. code) — set 2026-06-13
+
+The data model is unchanged; only **user-facing labels** differ from code identifiers to avoid
+the task/workflow confusion. Canonical mapping:
+
+| Concept | Code identifier (unchanged) | Staff UI label | Client UI label |
+|---|---|---|---|
+| Workflow template/definition | `workflowDefinition`, `workflowDefinitions` | **Workflow** | (not shown) |
+| A client's running instance | `task`, `tasks` collection, `/api/tasks` | **Matter** (a client case) | **Service** |
+| A unit of work within an instance | `step`, `tasks/{id}/steps` | **Task** (the steps are the tasks staff do) | **Step** |
+
+So: a **Workflow** is instantiated as a **Matter** (client case) made of **Tasks** (steps). Clients
+see their Matter as a **Service** with **Steps**. Code keeps `task` = the instance (matches the
+~80 existing spec references and `/api/tasks`); we did NOT rename the data model. Implemented via
+role-aware page copy, a nav label override (`/tasks`: staff "Matters", client "My Services"), and
+split dashboard tiles.
+
+---
+
 ## Story ID Convention
 
 `E{epic}-S{story}` — e.g. `E01-S02` = Epic 1, Story 2.
@@ -48,7 +67,7 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 | E-01 | Foundation & Auth | Phase 1 | E01-S01 – E01-S04 |
 | E-02 | Workflow Engine | Phase 1 | E02-S01 – E02-S04 |
 | E-03 | Task Management | Phase 1 | E03-S01 – E03-S05 |
-| E-04 | Client Portal | Phase 1 / 2 | E04-S01 – E04-S07 |
+| E-04 | Client Portal | Phase 1 / 2 | E04-S01 – E04-S08 |
 | E-05 | Document Cycle | Phase 1 / 2 | E05-S01 – E05-S04 |
 | E-06 | Payments | Phase 1 / 2 | E06-S01 – E06-S04 |
 | E-07 | Notifications & Email | Phase 1 / 2 | E07-S01 – E07-S05 |
@@ -337,11 +356,60 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Goal**: Enable admin and manager to create tasks and manage approval chains; enable team members to view their assigned step queue and execute steps (mark complete, reassign, flag urgent).
 
+> **✅ STATUS UPDATE (2026-06-13) — step execution + matter management built.** (Vocabulary: a
+> "Matter" is the running instance; its steps are "Tasks". See the Vocabulary section up top.)
+> - **Backend-authoritative execution:** `POST /api/tasks/:id/transition` rebuilds the matter's
+>   compiled (pinned) workflow, resumes at the current step, applies the event under engine guards,
+>   and persists. Handles `COMPLETE_STEP`, `RECORD_PAYMENT`, `ADMIN_OVERRIDE_PAYMENT`,
+>   `BRANCH_DECISION`, `CLIENT_APPROVE/REJECT`, `GOVT_APPROVE/REJECT`. Invalid moves rejected;
+>   payment gates enforced. ([tasks.controller.js](../../backend/src/controllers/tasks.controller.js))
+> - **Step status lifecycle:** the step left → `completed`; landed-on → `active`. On a forward JUMP,
+>   bypassed steps are classified: a satisfied **payment gate** → `completed` (auto-passed, no action
+>   needed); a **conditional branch** step that doesn't apply (e.g. 14–19 when Govt approves at 13) →
+>   `skipped`. (Inferred from step-number ranges + step type — a known limitation vs. the engine
+>   emitting traversed steps directly; fine for the current linear+branch flow.)
+> - **Action comments / audit:** events accept an optional `remark` (required on CLIENT_REJECT /
+>   GOVT_REJECT); stored on the acted-on step + appended to a `tasks/{id}/events` audit subcollection.
+> - **Task detail UI:** role-branched 3-tab (Steps/Documents/Payments); context-aware action buttons
+>   derived from the current step's definition; step title + description shown. ([TaskDetailPage.tsx](../../Portal/src/pages/tasks/TaskDetailPage.tsx))
+> - **Matters list:** scannable rows (client anchor, service, status, payment, progress, recency),
+>   search, urgent-first sort; completed matters show "Completed · N of N" (no 9999 leak).
+> - **Delete matter (admin-only):** `DELETE /api/tasks/:id` cascades the `steps` + `events`
+>   subcollections then the doc (Firestore doesn't cascade). UI: trash action on each Matters row
+>   (admin), with confirm + cache invalidation.
+> - **Cross-role freshness:** global `refetchOnWindowFocus` + polling on the matters list (15s) and
+>   detail (10s) so admin↔client changes appear without a manual refresh (React Query cache is
+>   per-browser-context). Real-time `onSnapshot` remains a later option.
+> - **Bug fixes:** workflow topology (Govt-approve at 13 → 20; synthetic final step so matters can
+>   complete); 9999 sentinel no longer shown; admin override now advances immediately.
+> - **My Tasks — consolidated cross-matter worklist (E03-S01):** new staff page surfacing the
+>   **active step of every open matter** the user is involved in, as one to-do inbox (no opening
+>   matters one by one). `GET /api/tasks/my-steps` returns each open matter's active step enriched
+>   with client/service/urgency/recency and bucketed: **Assigned to me** vs **Available to pick up**.
+>   Role-scoped (admin/manager see all open matters; team members see matters/steps that are theirs
+>   or unassigned). Urgent-first, polled (15s). Nav: "My Tasks" for all staff roles.
+>   ([MyTasksPage.tsx](../../Portal/src/pages/tasks/MyTasksPage.tsx), [tasks.controller.js](../../backend/src/controllers/tasks.controller.js) `listMySteps`)
+> - **Per-person step assignment (Phase 4, phase 1 of 2):** `PATCH /api/tasks/:id/steps/:n` now
+>   accepts `assignedTo` (UID, or null to return it to the shared pool). Admin/manager can assign the
+>   **current step** to a staff member via an inline picker on the Task detail. Assigning a step to a
+>   person overrides the role default and routes it into that person's "My Tasks". (Bulk/forward-step
+>   assignment and assignment-on-create remain future work.)
+> - **Still TODO:** approval-chain management (E03-S04); reassign-with-accept handshake (E03-S02);
+>   assignment on matter creation + assigning not-yet-active steps in advance.
+
 ---
 
 ### E03-S01 — Team Member Step Queue [Phase 1]
 
 **Priority**: P1 | **Complexity**: M | **Linked spec story**: US-2 | **Dependencies**: E02-S02, E01-S04
+
+> **✅ Delivered (2026-06-13) as "My Tasks".** Implemented for **all staff roles** (not just team
+> members) as a consolidated cross-matter worklist at `/my-tasks`. Differences from the original
+> spec below: the endpoint is `GET /api/tasks/my-steps` (returns each open matter's **active step**,
+> not a flat `taskSteps` query); rows are bucketed **Assigned to me / Available to pick up** rather
+> than only `assignedTo == me`; freshness is via polling (15s) rather than `onSnapshot` (deferred).
+> Step-level `assignedTo` is now writable (see E-03 status block). Reassign-with-accept handshake and
+> the "Blocked — Payment Pending" label remain TODO.
 
 **Rationale**: The step queue is the core daily-use screen for team members — the primary replacement for the spreadsheet.
 
@@ -472,6 +540,43 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 ## E-04 — Client Portal
 
 **Goal**: Give clients a self-service view of their tasks (steps, documents, payments) and a service catalogue, eliminating "call us to check status" interactions.
+
+> **✅ STATUS UPDATE (2026-06-13) — client task view built (Steps live; Documents/Payments scaffolded).**
+> - **Client list (E04-S01):** ✅ `/tasks` (role-neutral) lists the client's own tasks framed as
+>   purchased services — anchor is the SERVICE name, with status/payment/progress. (Client name is the
+>   anchor for staff instead.) [TasksPage.tsx](../../Portal/src/pages/tasks/TasksPage.tsx).
+> - **Task detail (E04-S02):** ✅ **role-branched 3-tab layout** (Steps / Documents / Payments) on a
+>   single `/tasks/:id` route ([TaskDetailPage.tsx](../../Portal/src/pages/tasks/TaskDetailPage.tsx)).
+>   - **Steps tab:** timeline with **title + description** (description seeded on each step, see below),
+>     done/current/upcoming status, and step remarks shown inline. Clients see **only** their own-step
+>     CTAs (Approve / Request Changes); all staff-internal actions are hidden and replaced with neutral
+>     "waiting…" notes. Staff see the operational actions.
+>   - **Documents tab:** scaffolded with a disabled "Attach document (coming soon)" — the real upload/
+>     review system is **E05 (deferred)**.
+>   - **Payments tab:** read-only payment status + amount paid/due; online payment is a later phase.
+> - **Step descriptions:** added `description` to the workflow definition schema; seeded concise,
+>   client-friendly descriptions for all 41 incorporation steps (convertMachineToDefinition.js). Carried
+>   through the compiler `meta` and the `/api/workflow-definitions/:id` read endpoint.
+> - **Action comments / audit:** the transition endpoint accepts an optional `remark` on events
+>   (required on CLIENT_REJECT / GOVT_REJECT, optional on admin override); the comment is stored on the
+>   acted-on step and an **event-history subcollection** `tasks/{id}/events` records who did what, when.
+> - **Access fix:** `GET /api/workflow-definitions/:id` is now readable by ANY authenticated role (was
+>   staff-only), because clients need their task's definition to render progress + CTAs. The LIST
+>   endpoint stays staff-only.
+> - **Journey tracker (E04-S08, 2026-06-13):** the Steps tab now leads with a client-facing **progress
+>   tracker** above the step list — a phase "rail" (6 milestone stations with a you-are-here pulse +
+>   animated active connector), a **next-stop hero card** (current step + who's blocking + optional ETA),
+>   and a **"steps remaining" ownership strip** (You / Our team / Registrar, decrementing as steps
+>   complete). Added to the definition schema: `phases[]` (+ per-step `phaseId`), plus optional
+>   `typicalDurationDays`, `clientActionLabel`, `ownerType`. Owner is **derived** (`deriveOwnerType`:
+>   payment-gate/CLIENT_APPROVE → client, GOVT_APPROVE → registrar, else team) so no per-step config is
+>   needed; phase done/now/upcoming is computed from **real per-step statuses** (`phaseProgress`) so the
+>   final phase turns green on completion. Seeded 6 phases for incorporation; re-seed required.
+>   ([TaskJourneyTracker.tsx](../../Portal/src/pages/tasks/TaskJourneyTracker.tsx),
+>   [definitionSchema.js](../../shared/workflows/definitionSchema.js))
+> - **Not yet (later phases):** assigning steps to a specific user (Phase 4), real documents (E05),
+>   online payments/receipts (E06), real-time `onSnapshot` updates, and XState snapshot rehydration
+>   (we resume from stored domain fields instead — see architecture.md §1.3).
 
 ---
 
@@ -656,9 +761,51 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 ---
 
+### E04-S08 — Service Progress / Journey Tracker [Phase 1]
+
+**Priority**: P2 | **Complexity**: M | **Linked spec story**: US-1 | **Dependencies**: E04-S02 | **Raised**: 2026-06-13
+
+**Status**: ✅ IMPLEMENTED (2026-06-13)
+
+**Rationale**: The original Steps tab (E04-S02) was a flat 41-row "Done / Done / Done" list — accurate but low-signal for a client, who mainly wants to know *where am I, what's next, and who's holding things up* (the "live train map" mental model). This story adds a client-facing **journey tracker** above the step list that collapses the 41 steps into ~6 milestone "stations" and surfaces the current step and its owner, without changing the workflow engine or the detailed list (which remains the source of truth for per-step actions).
+
+**Acceptance Criteria**:
+- The Steps tab renders a **phase rail** above the step list: one station per workflow phase, in order, with a you-are-here pulse on the active phase, an animated connector on the active segment, green checks for completed phases, and a "Stage X of N · {phase name}" smart-progress label (replacing the bare "N of N").
+- A **next-stop hero card** shows the current step's number, title, description, an owner badge ("Waiting on you / our team / registrar"), and an optional "Typically takes N days" line when `typicalDurationDays` is set. Hidden on completion (replaced by the completion banner).
+- A **"steps remaining" ownership strip** shows three counts — client / team / registrar — computed from **not-yet-completed** steps (excludes `completed` + `skipped`), so each count decrements as work is done and all read 0 on completion. The strip highlights the current owner.
+- Phase status is derived from **real per-step statuses** (`task.steps`), not the cursor alone: a phase is `done` when all its steps are completed/skipped, `now` when it holds the current/in-progress step, else `upcoming`. The **final phase therefore turns green on completion** (a cursor-only heuristic left it stuck on "now").
+- Owner is **derived** with no per-step config: payment_gate or `CLIENT_APPROVE` → client; `GOVT_APPROVE` → registrar; otherwise team. An explicit `step.ownerType` overrides the derivation.
+- Role-aware copy: clients see "You" for client-owned work; staff see "Client". The tracker degrades gracefully — if a workflow has no `phases`, it renders nothing and the existing list (+ completion banner) shows unchanged.
+- Mobile-first: the rail scrolls horizontally; the ownership strip is a 3-column grid.
+- Skipped steps in the detailed list use a distinct `CircleSlash` icon (not the plain pending circle).
+
+**Schema / data changes**:
+- `WorkflowDefinition` gains `phases[]` (`{ id, name, order }`); `WorkflowStepDef` gains optional `phaseId`, `typicalDurationDays`, `clientActionLabel`, `ownerType`. `validateDefinition` rejects dangling `phaseId`s and malformed phases. Shared helpers added: `deriveOwnerType`, `stepPhaseMap`, `phaseProgress` (in `definitionSchema.js`, mirrored in `Portal/src/api/workflowDefinitions.ts`).
+- `convertMachineToDefinition.js` seeds 6 incorporation phases (Payment & Name Approval → Handover) and assigns each step a `phaseId`. **Re-seed required** (`node backend/src/scripts/seedWorkflowDefinitions.js`) — done 2026-06-13.
+
+**Backend endpoints needed**: None new — reuses `GET /api/tasks/:taskId` (returns `steps` with per-step status) and `GET /api/workflow-definitions/:id` (now returns `phases`).
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/TaskJourneyTracker.tsx` (new)
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (Steps tab wiring + skipped-step icon)
+- `Portal/src/api/workflowDefinitions.ts` (types + `deriveOwnerType` / `phaseProgress`)
+- `Portal/tailwind.config.js` (`pulse-ring`, `flow-dash` keyframes)
+- `shared/workflows/definitionSchema.js`, `shared/workflows/convertMachineToDefinition.js`
+
+**Still TODO**: deriving the ~6 phases for non-incorporation workflows (Phase 2 flows); per-phase ETA / delay ("running late") states; surfacing `clientActionLabel` as a real CTA on the hero card; an activity/event feed alongside the rail.
+
+---
+
 ## E-05 — Document Cycle
 
 **Goal**: Implement the full document lifecycle: client uploads → team review → approve/reject with remark → re-upload → expiry management.
+
+> **⏳ STATUS (2026-06-13) — NOT built; deferred.** No task-document system exists yet. The only
+> upload code is `backend/src/middleware/upload.middleware.js` (image-only, memory + sharp, for the
+> marketing/blog flows) — not reusable for task documents (any file type, Firebase Storage, per-step,
+> review status). Firebase Storage is not yet wired for the Portal. The task-detail **Documents tab is
+> scaffolded** with a disabled "coming soon" affordance (see E04 update). This epic is the next major
+> subsystem when documents are prioritised.
 
 ---
 
@@ -1371,6 +1518,25 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 > - [layoutGraph.ts](../../Portal/src/workflows/layoutGraph.ts) lays out via dagre; [WorkflowDiagram.tsx](../../Portal/src/components/workflow/WorkflowDiagram.tsx) renders read-only React Flow (`@xyflow/react` + `@dagrejs/dagre`).
 > - [registry.ts](../../Portal/src/workflows/registry.ts) maps `serviceKey → machine` (only `incorporation` wired; others show "No workflow configured yet").
 > - **Still the hardcoded machine is the source of truth.** This is review/visualization only — NOT the DB-backed editable config layer this story specifies (no `workflowTemplates` collection, no `/api/workflows*` endpoints yet, no inline step-metadata editing). The editable config layer remains TODO.
+
+> **✅ UPDATE (2026-06-13) — DB-backed definitions now exist (read side); editor UI deferred.**
+> The data-driven foundation this story needs is **built**: workflows are stored in
+> `workflowDefinitions/{id}` (versioned) and compiled at runtime (see architecture.md §1.3).
+> Read endpoints exist: `GET /api/workflow-definitions`, `GET /api/workflow-definitions/:id`.
+> The visualizer reads from these (no longer the hardcoded machine). **What remains for this
+> story** is the WRITE/edit side, deferred to its own phase below.
+
+> **🔜 FUTURE PHASE — Admin Workflow Editor (E10-S01 write side).** Scoped & deferred 2026-06-13.
+> The seed script is a one-time migration; ongoing flow changes (we edit flows talking to business,
+> and will author 50+ flows) must be doable from the UI. Planned scope:
+> - Backend: CRUD on `workflowDefinitions` — create/update/**publish** (publish bumps `version`;
+>   `createTask` already pins version so in-flight tasks are unaffected). Reuse `validateDefinition`
+>   + a Zod schema; invalidate the workflow cache on write.
+> - Portal: flesh out the stub `WorkflowSettingsPage` — list definitions, **edit step metadata**
+>   (title, assignedRole, effects, deadlines, reorder, active), live-preview via the existing
+>   visualizer/compiler, publish → new version.
+> - **v1 scope = step-metadata editing only** (NOT topology rewiring, NOT authoring brand-new flows
+>   from scratch — those are later sub-phases). Build sequence: after Phase 2 (step execution).
 
 ---
 

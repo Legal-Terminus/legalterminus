@@ -4,11 +4,14 @@ import { listDefinitions, getDefinition } from '../controllers/workflowDefinitio
 
 const router = Router();
 
-// Workflow definitions are internal config — staff only. (Write/publish endpoints
-// for the admin editor are added in the Workflow Editor phase.)
-router.use(verifyToken, requireRole('admin', 'manager', 'team_member'));
+router.use(verifyToken);
 
-router.get('/', listDefinitions);          // list all definitions (id, name, version, serviceKeys)
-router.get('/:id', getDefinition);         // full definition (steps) for one workflow
+// Listing all definitions is a staff/editor concern.
+router.get('/', requireRole('admin', 'manager', 'team_member'), listDefinitions);
+
+// A single definition is readable by ANY authenticated role — clients need their
+// task's workflow (step titles/types) to render their progress + approval CTAs.
+// Step metadata is not sensitive (same data the visualizer shows).
+router.get('/:id', getDefinition);
 
 export default router;
