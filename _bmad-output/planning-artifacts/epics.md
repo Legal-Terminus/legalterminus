@@ -389,13 +389,32 @@ split dashboard tiles.
 >   Role-scoped (admin/manager see all open matters; team members see matters/steps that are theirs
 >   or unassigned). Urgent-first, polled (15s). Nav: "My Tasks" for all staff roles.
 >   ([MyTasksPage.tsx](../../Portal/src/pages/tasks/MyTasksPage.tsx), [tasks.controller.js](../../backend/src/controllers/tasks.controller.js) `listMySteps`)
-> - **Per-person step assignment (Phase 4, phase 1 of 2):** `PATCH /api/tasks/:id/steps/:n` now
->   accepts `assignedTo` (UID, or null to return it to the shared pool). Admin/manager can assign the
->   **current step** to a staff member via an inline picker on the Task detail. Assigning a step to a
->   person overrides the role default and routes it into that person's "My Tasks". (Bulk/forward-step
->   assignment and assignment-on-create remain future work.)
+> - **Assignment — step-level AND matter-level (2026-06-14):**
+>   - **Step owner:** `PATCH /api/tasks/:id/steps/:n { assignedTo }` assigns the **current step** to a
+>     staff user (null → back to the shared pool). Surfaced as a **"Step owner"** picker in the step
+>     hero. Routes that step into the assignee's "My Tasks".
+>   - **Matter owner:** `PATCH /api/tasks/:id { assignedTo }` assigns the **whole matter** (all steps)
+>     to one user and **cascades onto the active step** (without clobbering a step delegated elsewhere).
+>     Validates the assignee is staff (rejects clients). Surfaced as a **"Matter owner"** control in the
+>     page header. ([tasks.controller.js](../../backend/src/controllers/tasks.controller.js) `patchTask`)
+>   - **Team-member routing fixed:** lists/My-Tasks for `team_member` now union *matters assigned to them*
+>     ∪ *matters where a step is assigned to them* (collection-group query on `steps.assignedTo`; field
+>     override deployed). Previously `assignedTo` was always null so team members saw nothing.
+> - **Activity thread (real audit feed):** `GET /api/tasks/:id/events` returns the matter's event history
+>   name-enriched (who/what/when + comment), and each entry **references the step acted on** as
+>   *phase · Step N · title* (looked up from the pinned definition; events store only the step number).
+>   Shown as an **Activity** section on the task detail; clients can read their own matter's thread.
+>   ([tasks.controller.js](../../backend/src/controllers/tasks.controller.js) `listTaskEvents`)
+> - **Task detail redesign (Option 3 — timeline-centric, 2026-06-14):** replaced the flat stacked-cards
+>   view with a clearer hierarchy: left **stage rail** (phases w/ done/total + status dots; collapses to
+>   a dropdown on mobile, hidden when a flow has no phases), a **merged hero panel** (step action +
+>   Step-owner/Documents in one elevated container), then quieter **Activity** and **Steps** sections.
+>   A **"pending-on" summary** ("N remaining · X Our team · Y Client · Z Registrar") + a whose-turn chip
+>   ("With our team" / "Waiting on client" / "With registrar") restore the at-a-glance ownership signal.
+>   Completed steps are **expandable** (who/when/remark). Matter status shown once in the page header
+>   (no in-body duplication). Back is a leading-left link. Responsive desktop ↔ mobile.
 > - **Still TODO:** approval-chain management (E03-S04); reassign-with-accept handshake (E03-S02);
->   assignment on matter creation + assigning not-yet-active steps in advance.
+>   assignment on matter creation + assigning not-yet-active steps in advance; real document attach (E05).
 
 ---
 
@@ -537,14 +556,18 @@ split dashboard tiles.
 
 ---
 
-### E03-S06 — Comment & Attach on Any Step Action [Phase 1 / partial]
+### E03-S06 — Comment & Attach on Any Step Action [Phase 1 — comment ✅ / attach stub]
 
 **Priority**: P1 | **Complexity**: S | **Linked spec story**: US-2 / US-13 | **Dependencies**: E03-S02, E05 (attach upload)
 **Raised**: 2026-06-14
 
 **Rationale**: When acting on a step, staff/clients need to (a) leave a **comment** explaining the action and (b) **attach a document** relevant to it. Today comments exist only on rejections/overrides (via a `window.prompt`), and there is no attach affordance on actions. Generalising comments to every transition and exposing an attach control makes each action self-documenting and audit-complete. Real file upload belongs to **E-05 (Document Cycle)**; this story delivers the **comment** end-to-end and the **attach affordance as a stub** now.
 
-> **🚧 SCOPE (2026-06-14):** Already partially built — the transition endpoint accepts an optional `remark` and stores it on the acted-on step + the `events` audit subcollection (see E-03 status block). This story extends the **UI** so a comment can accompany *any* action (not just reject/override) and adds the attach control.
+> **✅ BUILT (2026-06-14) — comment half done; attach is a stub (E-05).** The step hero now shows an
+> **inline comment composer** for every action (optional on positive actions, required on rejections),
+> sent as `event.remark` and persisted on the step + `events` trail; the comment surfaces in the
+> Activity thread and the expandable completed-step details. The **"Attach document"** control is a
+> visible-but-disabled stub (real upload = E-05). `window.prompt` is gone.
 
 **Acceptance Criteria**:
 - **Comment on every action:** the current-step action card shows an **inline comment composer** (replacing `window.prompt`). Comment is **optional** on positive actions (Complete Step, Approve, Mark as Paid, Branch decision, Govt Approved) and **required** on rejections (CLIENT_REJECT / GOVT_REJECT) — preserving the existing required-remark rule.
@@ -558,7 +581,7 @@ split dashboard tiles.
 - *(Future, E-05)* attach upload via signed URL.
 
 **Frontend screens/components**:
-- `Portal/src/pages/tasks/TaskDetailPage.tsx` — `CurrentStepActions` inline comment composer + disabled attach control.
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` — `StepHeroPanel` inline comment composer (`ActionComposer`) + disabled attach control.
 
 ---
 
@@ -567,6 +590,10 @@ split dashboard tiles.
 **Goal**: Give clients a self-service view of their tasks (steps, documents, payments) and a service catalogue, eliminating "call us to check status" interactions.
 
 > **✅ STATUS UPDATE (2026-06-13) — client task view built (Steps live; Documents/Payments scaffolded).**
+> **♻️ Steps tab redesigned 2026-06-14** — the task detail (both roles) now uses the Option-3
+> timeline-centric layout (stage rail + merged step hero + Activity thread + pending-on summary); see the
+> E-03 status block "Task detail redesign". Clients get the same structure, still limited to their own
+> actionable steps. The bullets below describe the original build; the engine/data are unchanged.
 > - **Client list (E04-S01):** ✅ `/tasks` (role-neutral) lists the client's own tasks framed as
 >   purchased services — anchor is the SERVICE name, with status/payment/progress. (Client name is the
 >   anchor for staff instead.) [TasksPage.tsx](../../Portal/src/pages/tasks/TasksPage.tsx).
@@ -790,7 +817,16 @@ split dashboard tiles.
 
 **Priority**: P2 | **Complexity**: M | **Linked spec story**: US-1 | **Dependencies**: E04-S02 | **Raised**: 2026-06-13
 
-**Status**: ✅ IMPLEMENTED (2026-06-13)
+**Status**: ✅ IMPLEMENTED (2026-06-13) → **superseded by the Option-3 task-detail redesign (2026-06-14)**
+
+> **♻️ SUPERSEDED (2026-06-14).** The standalone `TaskJourneyTracker.tsx` (horizontal phase rail +
+> next-stop hero + ownership strip) is **no longer rendered**. Its three ideas were absorbed into the
+> Option-3 task-detail layout (see the E-03 status block "Task detail redesign"): the horizontal rail
+> became the **left stage rail** (vertical on desktop, a dropdown on mobile); the ownership strip became
+> the **"pending-on" summary** ("N remaining · X Our team · Y Client · Z Registrar"); the next-stop hero
+> became the **merged step hero**. The underlying data model below (`phases[]`, `phaseId`,
+> `deriveOwnerType`, `phaseProgress`) is unchanged and still powers it. `TaskJourneyTracker.tsx` is now
+> dead and can be deleted in cleanup.
 
 **Rationale**: The original Steps tab (E04-S02) was a flat 41-row "Done / Done / Done" list — accurate but low-signal for a client, who mainly wants to know *where am I, what's next, and who's holding things up* (the "live train map" mental model). This story adds a client-facing **journey tracker** above the step list that collapses the 41 steps into ~6 milestone "stations" and surfaces the current step and its owner, without changing the workflow engine or the detailed list (which remains the source of truth for per-step actions).
 

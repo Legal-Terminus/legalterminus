@@ -144,16 +144,20 @@ Both apps share the **same Cloud Run backend** and the same **Firebase project**
 - **`step.assignedRole`** (from the definition) = the *default responsible ROLE* (e.g. `team_member`).
 - **`task.assignedTo` / `step.assignedTo`** = a specific USER (UID). `team_member` task-list
   scoping filters on `assignedTo == uid`.
-- **`assignedTo` is `null` on creation.** Per-person assignment is now **partially built**:
-  `PATCH /api/tasks/:id/steps/:n { assignedTo }` sets/clears the assignee of a step (admin/manager).
-  The Task detail exposes an inline picker on the **current** step. Assigning steps on creation, or
-  assigning not-yet-active steps in advance, is still future work.
-- **My Tasks worklist:** `GET /api/tasks/my-steps` returns, for the calling staff user, the **active
-  step of every open matter** they're involved in — bucketed `assigned` (step.assignedTo == me) /
-  `unassigned` (shared pool) / `other`. Admin/manager see all open matters; team members see matters
-  task-assigned to them, minus active steps assigned to someone else. Implementation iterates the
-  (already role-scoped + indexed) open `tasks` and reads each one's active step — no new
-  collection-group index. Revisit with a `collectionGroup('steps')` query if matter volume grows.
+- **`assignedTo` is `null` on creation.** Per-person assignment (2026-06-14) is built at two levels:
+  - **Step:** `PATCH /api/tasks/:id/steps/:n { assignedTo }` sets/clears a step's assignee (admin/manager);
+    "Step owner" picker in the step hero.
+  - **Matter:** `PATCH /api/tasks/:id { assignedTo }` assigns the whole matter and **cascades onto the
+    active step** (without clobbering a step delegated elsewhere); validates the assignee is staff;
+    "Matter owner" control in the page header.
+  - Assigning steps on creation, or not-yet-active steps in advance, remains future work.
+- **My Tasks worklist:** `GET /api/tasks/my-steps` returns the **active step of every open matter** the
+  caller is involved in — bucketed `assigned` / `unassigned` / `other`. Admin/manager see all open
+  matters; **team members see matters task-assigned to them ∪ matters where a step is assigned to them**
+  (the OR is resolved via a `collectionGroup('steps').where('assignedTo','==',uid)` query — needs the
+  `steps.assignedTo` COLLECTION_GROUP field override, deployed 2026-06-14; degrades gracefully if absent).
+- **Activity thread:** `GET /api/tasks/:id/events` returns the matter's audit events name-enriched; each
+  entry references the actioned step (`fromStep`) resolved to *phase · Step N · title* via the definition.
 
 **Visualizer:** the service detail page (`/services/:serviceKey`) fetches the definition from
 `/api/workflow-definitions/:id` and compiles it client-side (read-only). Step identity (title/kind)
@@ -512,11 +516,12 @@ app.use("/api/notifications", notifRoutes);
 | `GET` | `/api/tasks` | admin, manager, team_member, client | List tasks (filtered by role/uid) |
 | `GET` | `/api/tasks/my-steps` | admin, manager, team_member | Cross-matter step worklist ("My Tasks") — active step of each open matter, bucketed assigned/unassigned |
 | `GET` | `/api/tasks/:taskId` | admin, manager, team_member, client | Get single task with steps |
-| `PATCH` | `/api/tasks/:taskId` | admin, manager | Update task metadata (isUrgent, etc.) |
+| `GET` | `/api/tasks/:taskId/events` | admin, manager, team_member, client (own) | Activity thread — name-enriched audit events; entries reference the actioned step |
+| `PATCH` | `/api/tasks/:taskId` | admin, manager | Update matter (isUrgent; **assignedTo** = matter owner, cascades to active step) |
 | `DELETE` | `/api/tasks/:taskId` | admin | Hard-delete matter + cascade `steps`/`events` subcollections |
-| `POST` | `/api/tasks/:taskId/transition` | admin, manager, team_member | Fire XState event, persist new snapshot |
+| `POST` | `/api/tasks/:taskId/transition` | admin, manager, team_member, client (own approval) | Fire workflow event (with optional `remark`), persist new state |
 | `GET` | `/api/tasks/:taskId/steps` | admin, manager, team_member, client | List all steps for a task |
-| `PATCH` | `/api/tasks/:taskId/steps/:stepId` | admin, manager, team_member | Update step (assignedTo, isUrgent) |
+| `PATCH` | `/api/tasks/:taskId/steps/:stepId` | admin, manager | Update step (**assignedTo** = step owner, isUrgent) |
 | `POST` | `/api/tasks/:taskId/approve` | admin, manager | Approve pending task |
 | `POST` | `/api/tasks/:taskId/reject` | admin, manager | Reject pending task with reason |
 

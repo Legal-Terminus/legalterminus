@@ -49,6 +49,21 @@ export const updateTask = (id: string, body: Partial<Task>) =>
 export const deleteTask = (id: string) =>
   apiFetch<void>(`/api/tasks/${id}`, { method: 'DELETE' });
 
+/** An entry in a matter's activity thread (from the events audit subcollection). */
+export interface TaskEvent {
+  type: string;
+  comment: string | null;
+  fromStep: number | null;
+  toStep: number | null;
+  byRole: string | null;
+  byName: string;
+  at: string | null;
+}
+
+/** Activity thread for a matter — who did what, when, with comments. */
+export const getTaskEvents = async (taskId: string): Promise<TaskEvent[]> =>
+  (await apiFetch<{ data: TaskEvent[] }>(`/api/tasks/${taskId}/events`)).data;
+
 /** Assign (or clear, with null) a whole matter to a staff user. Routes its active step too. */
 export const assignMatter = (taskId: string, assignedTo: string | null) =>
   apiFetch<void>(`/api/tasks/${taskId}`, {

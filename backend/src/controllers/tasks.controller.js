@@ -274,6 +274,48 @@ export async function getTask(req, res) {
   }
 }
 
+// ─── GET /api/tasks/:taskId/events ─────────────────────────────────────────
+// The matter's activity thread: who did what, when, with their comment. Reads
+// the `events` audit subcollection and enriches each entry with the actor's
+// display name. Clients may read their own matter's thread (it's their history).
+export async function listTaskEvents(req, res) {
+  try {
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const taskSnap = await taskRef.get();
+    if (!taskSnap.exists) return res.status(404).json({ message: 'Task not found' });
+    if (req.user.role === 'client' && taskSnap.data().clientUid !== req.user.uid) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    const snap = await taskRef.collection('events').orderBy('at', 'asc').get();
+    const events = snap.docs.map((d) => d.data());
+
+    // Resolve actor names in one batched pass (small N; dedupe uids).
+    const uids = [...new Set(events.map((e) => e.byUid).filter(Boolean))];
+    const nameByUid = {};
+    await Promise.all(uids.map(async (u) => {
+      const us = await db.collection('users').doc(u).get();
+      const d = us.exists ? us.data() : null;
+      nameByUid[u] = d ? (d.name || d.fullName || d.email || 'User') : 'User';
+    }));
+
+    res.json({
+      data: events.map((e) => ({
+        type: e.type,
+        comment: e.comment ?? null,
+        fromStep: e.fromStep ?? null,
+        toStep: e.toStep ?? null,
+        byRole: e.byRole ?? null,
+        byName: e.byUid ? (nameByUid[e.byUid] ?? 'User') : (e.byRole ?? 'System'),
+        at: e.at ?? null,
+      })),
+    });
+  } catch (err) {
+    logger.error({ err }, 'listTaskEvents error:');
+    res.status(500).json({ message: 'Failed to load activity' });
+  }
+}
+
 // ─── PATCH /api/tasks/:taskId ──────────────────────────────────────────────
 // Allowed updates (admin/manager): isUrgent, assignedTo (matter owner).
 // Assigning a matter to a user makes the matter appear in that user's lists and
