@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
-import { listDefinitions, getDefinition } from '../controllers/workflowDefinitions.controller.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { phaseAssignmentsSchema } from '../schemas/workflow.schema.js';
+import {
+  listDefinitions, getDefinition, getPhaseAssignments, putPhaseAssignments,
+  syncCheckDefinition,
+} from '../controllers/workflowDefinitions.controller.js';
 
 const router = Router();
 
@@ -8,6 +13,14 @@ router.use(verifyToken);
 
 // Listing all definitions is a staff/editor concern.
 router.get('/', requireRole('admin', 'manager', 'team_member'), listDefinitions);
+
+// Per-phase default assignees (E11-S02). Read for staff; write for admin/manager.
+// MUST precede '/:id' so '/:id/phase-assignments' isn't swallowed by it.
+router.get('/:id/phase-assignments', requireRole('admin', 'manager', 'team_member'), getPhaseAssignments);
+router.put('/:id/phase-assignments', requireRole('admin', 'manager'), validate(phaseAssignmentsSchema), putPhaseAssignments);
+
+// Config sync / health check (E10-S02). Staff read; also MUST precede '/:id'.
+router.get('/:id/sync-check', requireRole('admin', 'manager', 'team_member'), syncCheckDefinition);
 
 // A single definition is readable by ANY authenticated role — clients need their
 // task's workflow (step titles/types) to render their progress + approval CTAs.

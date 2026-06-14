@@ -54,7 +54,8 @@ export async function getCompletedTasks(req, res) {
 export async function getPendingTasks(req, res) {
   try {
     const { startDate, endDate } = req.query;
-    let query = db.collection('tasks').where('status', 'in', ['pending', 'active', 'on_hold']);
+    let query = db.collection('tasks')
+      .where('status', 'in', ['pending', 'active', 'on_hold', 'pending_admin_approval']);
 
     if (startDate) query = query.where('createdAt', '>=', startDate);
     if (endDate)   query = query.where('createdAt', '<=', endDate);
@@ -62,9 +63,13 @@ export async function getPendingTasks(req, res) {
     const snap = await query.get();
     const tasks = snap.docs.map((doc) => {
       const data = doc.data();
-      // Classify pending reason from paymentStatus and task state
+      // Classify pending reason from status, paymentStatus and task state.
+      // `pending_admin_approval` (E03-S04) is its own bucket — the matter is held
+      // for an approver, distinct from operational blockers.
       let pendingReason = 'government'; // default — waiting on external party
-      if (data.paymentStatus === 'not_paid' || data.paymentStatus === 'part_paid') {
+      if (data.status === 'pending_admin_approval') {
+        pendingReason = 'approval';
+      } else if (data.paymentStatus === 'not_paid' || data.paymentStatus === 'part_paid') {
         pendingReason = 'payment';
       } else if (data.status === 'on_hold') {
         pendingReason = 'client_action';

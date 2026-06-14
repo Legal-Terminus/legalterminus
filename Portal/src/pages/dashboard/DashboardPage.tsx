@@ -1,5 +1,6 @@
 import PageShell from '../../components/common/PageShell';
 import DashboardTile from '../../components/dashboard/DashboardTile';
+import MyWorkWidget from '../../components/dashboard/MyWorkWidget';
 import { useAuthStore } from '../../store/authStore';
 import { tilesForRole, dashboardTitle } from './dashboardConfig';
 
@@ -11,9 +12,12 @@ import { tilesForRole, dashboardTitle } from './dashboardConfig';
 export default function DashboardPage() {
   const role = useAuthStore((s) => s.role);
   const tiles = tilesForRole(role);
+  const isStaff = role === 'admin' || role === 'manager' || role === 'team_member';
 
   return (
     <PageShell title={dashboardTitle(role)} subtitle="Quick actions and overview.">
+      {/* What's waiting on you — urgent assigned steps + approvals (staff only). */}
+      {isStaff && <MyWorkWidget />}
       {tiles.length === 0 ? (
         <div className="card p-12 text-center text-ink-muted text-sm">
           Nothing to show here yet.

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, offerStep, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
 import type { Task, TaskStep, StepStatus, PaymentStatus } from '../../types/task';
@@ -96,6 +96,40 @@ export default function TaskDetailPage() {
     onError: (err: Error) => window.alert(err.message || 'Could not assign this matter.'),
   });
 
+  // Reassign-with-accept handshake (E03-S02): offer the current step to another
+  // staff user. Ownership only moves when they accept (in their My Tasks).
+  const offer = useMutation({
+    mutationFn: ({ stepNumber, toUid }: { stepNumber: number; toUid: string }) =>
+      offerStep(taskId!, stepNumber, toUid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      window.alert('Reassignment offered. It will move once they accept it from their My Tasks.');
+    },
+    onError: (err: Error) => window.alert(err.message || 'Could not offer this step.'),
+  });
+
+  // Approval chain (E03-S04). Only admins approve/reject; the controls show only
+  // while the matter is `pending_admin_approval`.
+  const approve = useMutation({
+    mutationFn: () => approveTask(taskId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['task-events', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['my-steps'] });
+    },
+    onError: (err: Error) => window.alert(err.message || 'Could not approve this matter.'),
+  });
+  const reject = useMutation({
+    mutationFn: (reason: string) => rejectTask(taskId!, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['task-events', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+    onError: (err: Error) => window.alert(err.message || 'Could not reject this matter.'),
+  });
+
   const noun = isClient ? 'Service' : 'Matter';
 
   if (isLoading) {
@@ -163,6 +197,32 @@ export default function TaskDetailPage() {
         <ArrowLeft className="w-4 h-4" /> Back to {isClient ? 'My Services' : 'Matters'}
       </button>
 
+      {/* Approval chain (E03-S04): a matter created by a manager waits for admin
+          approval before any work can start. Admins act here; everyone else sees
+          the waiting state. A rejected matter shows the reason. */}
+      {task.status === 'pending_admin_approval' && (
+        <ApprovalBanner
+          isAdmin={role === 'admin'}
+          approving={approve.isPending}
+          rejecting={reject.isPending}
+          onApprove={() => approve.mutate()}
+          onReject={(reason) => reject.mutate(reason)}
+        />
+      )}
+      {task.status === 'rejected' && (
+        <div className="card p-4 mb-4 border-red-200 bg-red-50/60">
+          <div className="flex items-start gap-2.5">
+            <ThumbsDown className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-red-800">This matter was rejected</p>
+              {task.rejectionReason && (
+                <p className="text-sm text-red-700 mt-0.5">{task.rejectionReason}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tabs — underline style */}
       <div className="flex items-center gap-1 border-b border-hairline mb-5">
         {TABS.map((t) => {
@@ -199,8 +259,9 @@ export default function TaskDetailPage() {
           onEvent={(e) => advance.mutate(e)}
           assignment={canAssign ? {
             staff,
-            assigning: assign.isPending,
+            assigning: assign.isPending || offer.isPending,
             onAssign: (stepNumber, assignedTo) => assign.mutate({ stepNumber, assignedTo }),
+            onOffer: (stepNumber, toUid) => offer.mutate({ stepNumber, toUid }),
           } : undefined}
           events={events}
         />
@@ -220,12 +281,100 @@ function LoadingCard() {
   );
 }
 
+/* ── Approval banner (E03-S04) ─────────────────────────────────────────────── */
+
+function ApprovalBanner({
+  isAdmin, approving, rejecting, onApprove, onReject,
+}: {
+  isAdmin: boolean;
+  approving: boolean;
+  rejecting: boolean;
+  onApprove: () => void;
+  onReject: (reason: string) => void;
+}) {
+  // Two-step reject: reveal a reason field (the spec requires a reason) before firing.
+  const [rejecting2, setRejecting2] = useState(false);
+  const [reason, setReason] = useState('');
+  const busy = approving || rejecting;
+
+  return (
+    <div className="card p-4 mb-4 border-amber-200 bg-amber-50/60">
+      <div className="flex items-start gap-2.5">
+        <ShieldCheck className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-amber-900">
+            {isAdmin ? 'Awaiting your approval' : 'Awaiting admin approval'}
+          </p>
+          <p className="text-sm text-amber-800 mt-0.5">
+            {isAdmin
+              ? 'This matter was created by a manager and needs your approval before work can begin.'
+              : 'This matter is pending admin approval. Work will begin once an admin approves it.'}
+          </p>
+
+          {isAdmin && !rejecting2 && (
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <button
+                className="btn-primary inline-flex items-center gap-1.5 py-1.5"
+                disabled={busy}
+                onClick={onApprove}
+              >
+                {approving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
+                Approve
+              </button>
+              <button
+                className="btn-secondary inline-flex items-center gap-1.5 py-1.5"
+                disabled={busy}
+                onClick={() => setRejecting2(true)}
+              >
+                <ThumbsDown className="w-4 h-4" /> Reject
+              </button>
+            </div>
+          )}
+
+          {isAdmin && rejecting2 && (
+            <div className="mt-3 space-y-2">
+              <textarea
+                className="input-field w-full text-sm"
+                rows={2}
+                placeholder="Reason for rejection (required)"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                disabled={rejecting}
+                autoFocus
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  className="btn-primary inline-flex items-center gap-1.5 py-1.5 bg-red-600 hover:bg-red-700"
+                  disabled={rejecting || !reason.trim()}
+                  onClick={() => onReject(reason.trim())}
+                >
+                  {rejecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsDown className="w-4 h-4" />}
+                  Confirm rejection
+                </button>
+                <button
+                  className="btn-ghost py-1.5"
+                  disabled={rejecting}
+                  onClick={() => { setRejecting2(false); setReason(''); }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Steps tab ─────────────────────────────────────────────────────────────── */
 
 interface StepAssignment {
   staff: PortalUser[];
   assigning: boolean;
   onAssign: (stepNumber: number, assignedTo: string | null) => void;
+  // Reassign-with-accept handshake (E03-S02): offer (don't force) to another user.
+  onOffer: (stepNumber: number, toUid: string) => void;
 }
 
 function StepsTab({
@@ -647,6 +796,23 @@ function StepHeroPanel({
           </div>
         )}
       </div>
+      {assignment && (
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">Reassign (needs accept)</p>
+          <select
+            className="input-field py-1.5 text-xs w-full"
+            value=""
+            disabled={assignment.assigning}
+            onChange={(e) => { if (e.target.value) assignment.onOffer(step.stepNumber, e.target.value); e.target.value = ''; }}
+          >
+            <option value="">Offer to…</option>
+            {assignment.staff
+              .filter((u) => u.uid !== currentAssignee)
+              .map((u) => <option key={u.uid} value={u.uid}>{displayName(u)}</option>)}
+          </select>
+          <p className="text-[10px] text-ink-faint mt-1">They keep waiting until they accept.</p>
+        </div>
+      )}
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">Documents</p>
         <button disabled title="Coming soon" className="btn-secondary py-1.5 px-3 text-xs w-full opacity-50 cursor-not-allowed inline-flex items-center justify-center gap-1.5">

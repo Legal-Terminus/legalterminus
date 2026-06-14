@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { ClipboardList, ArrowRight, Search, AlertTriangle, Trash2 } from 'lucide-react';
+import { ClipboardList, ArrowRight, Search, AlertTriangle, Trash2, Plus } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
+import CreateMatterModal from '../../components/tasks/CreateMatterModal';
 import { useAuthStore } from '../../store/authStore';
 import { getTasks, deleteTask } from '../../api/tasks';
 import type { Task, TaskStatus, PaymentStatus } from '../../types/task';
@@ -17,8 +18,10 @@ export default function TasksPage() {
   const role = useAuthStore((s) => s.role);
   const isClientView = role === 'client';
   const canDelete = role === 'admin';
+  const canCreate = role === 'admin' || role === 'manager';
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteTask(id),
@@ -62,7 +65,19 @@ export default function TasksPage() {
   }, [tasks, search]);
 
   return (
-    <PageShell title={c.title} subtitle={c.body}>
+    <PageShell
+      title={c.title}
+      subtitle={c.body}
+      action={canCreate ? (
+        <button
+          onClick={() => setShowCreate(true)}
+          className="btn-primary inline-flex items-center gap-1.5"
+        >
+          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Create Matter</span><span className="sm:hidden">Create</span>
+        </button>
+      ) : undefined}
+    >
+      {showCreate && <CreateMatterModal onClose={() => setShowCreate(false)} />}
       {!isClientView && tasks.length > 0 && (
         <div className="relative mb-4">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
@@ -120,6 +135,13 @@ const STATUS_BADGE: Record<TaskStatus, string> = {
   completed: 'bg-emerald-50 text-emerald-700',
   cancelled: 'bg-red-50 text-red-700',
   on_hold: 'bg-amber-50 text-amber-700',
+  pending_admin_approval: 'bg-amber-50 text-amber-700',
+  rejected: 'bg-red-50 text-red-700',
+};
+
+// Human-friendly status labels (the raw enum is shown otherwise).
+const STATUS_LABEL: Partial<Record<TaskStatus, string>> = {
+  pending_admin_approval: 'Awaiting approval',
 };
 
 const PAYMENT: Record<PaymentStatus, { label: string; cls: string }> = {
@@ -186,7 +208,7 @@ function TaskRow({ task, clientView, canDelete, deleting, onDelete }: {
               </span>
             )}
             <span className={`badge ${STATUS_BADGE[task.status] ?? 'bg-surface-card text-ink-muted'}`}>
-              {task.status}
+              {STATUS_LABEL[task.status] ?? task.status}
             </span>
             <span className={`badge ${payment.cls}`}>{payment.label}</span>
           </div>

@@ -1,4 +1,6 @@
-export type TaskStatus = 'pending' | 'active' | 'completed' | 'cancelled' | 'on_hold';
+export type TaskStatus =
+  | 'pending' | 'active' | 'completed' | 'cancelled' | 'on_hold'
+  | 'pending_admin_approval' | 'rejected';
 export type StepStatus = 'pending' | 'active' | 'completed' | 'blocked' | 'skipped';
 export type PaymentStatus = 'not_paid' | 'part_paid' | 'fully_paid';
 
@@ -30,6 +32,7 @@ export interface Task {
   totalSteps?: number;
   steps?: TaskStep[];
   isUrgent?: boolean;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt: string;
 }

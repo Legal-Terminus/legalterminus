@@ -114,3 +114,30 @@ export const getWorkflowDefinitions = () =>
 
 export const getWorkflowDefinition = (id: string) =>
   apiFetch<WorkflowDefinition>(`/api/workflow-definitions/${id}`);
+
+/** Per-phase default assignees (E11-S02): phaseId → user UID (or null). */
+export type PhaseAssignments = Record<string, string | null>;
+
+export const getPhaseAssignments = (id: string) =>
+  apiFetch<{ definitionId: string; assignments: PhaseAssignments }>(
+    `/api/workflow-definitions/${id}/phase-assignments`,
+  );
+
+export const putPhaseAssignments = (id: string, assignments: PhaseAssignments) =>
+  apiFetch<{ definitionId: string; assignments: PhaseAssignments }>(
+    `/api/workflow-definitions/${id}/phase-assignments`,
+    { method: 'PUT', body: JSON.stringify({ assignments }) },
+  );
+
+/** Config sync / health check for a workflow definition (E10-S02). */
+export interface WorkflowSyncCheck {
+  definitionId: string;
+  version: number;
+  stepCount: number;
+  inSync: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+export const getWorkflowSyncCheck = (id: string) =>
+  apiFetch<WorkflowSyncCheck>(`/api/workflow-definitions/${id}/sync-check`);

@@ -8,6 +8,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import UrgentBadge from '../../components/tasks/UrgentBadge';
 
 const REASON_LABELS: Record<PendingTask['pendingReason'], string> = {
+  approval: 'Awaiting Approval',
   payment: 'Payment Pending',
   document: 'Document Pending',
   client_action: 'Client Action Pending',
@@ -15,6 +16,7 @@ const REASON_LABELS: Record<PendingTask['pendingReason'], string> = {
 };
 
 const REASON_COLOURS: Record<PendingTask['pendingReason'], string> = {
+  approval: 'bg-amber-100 text-amber-800',
   payment: 'bg-red-100 text-red-700',
   document: 'bg-orange-100 text-orange-700',
   client_action: 'bg-yellow-100 text-yellow-700',
@@ -30,7 +32,7 @@ export default function PendingTasksReport() {
 
   // Group by pending reason
   const groups = data
-    ? (['payment', 'document', 'client_action', 'government'] as const).map((reason) => ({
+    ? (['approval', 'payment', 'document', 'client_action', 'government'] as const).map((reason) => ({
         reason,
         tasks: data.filter((t) => t.pendingReason === reason),
       })).filter((g) => g.tasks.length > 0)

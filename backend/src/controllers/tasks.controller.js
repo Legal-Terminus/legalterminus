@@ -2,7 +2,9 @@ import { createActor } from 'xstate';
 import { db } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
 import { getCompiledForServiceKey, getCompiledById } from '../services/workflowDefinitions.service.js';
+import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
+import { validateDefinition } from '../../../shared/workflows/definitionSchema.js';
 
 // Task IDs in which this user is assigned at least one STEP, across all matters.
 // Firestore can't OR a task-doc field with a subcollection field in one query, so
@@ -51,6 +53,18 @@ export async function createTask(req, res) {
     }
     const { definition } = compiled;
 
+    // Config sync guard (E10-S02): never instantiate a structurally-broken
+    // definition (dangling transitions/gates, bad phaseIds) — it would create a
+    // matter that can't advance. Block with 409 so the admin fixes the workflow.
+    const defErrors = validateDefinition(definition);
+    if (defErrors.length) {
+      return res.status(409).json({
+        message: 'This service\'s workflow is misconfigured and cannot be used until fixed.',
+        code: 'WORKFLOW_OUT_OF_SYNC',
+        errors: defErrors,
+      });
+    }
+
     // Verify the client exists and resolve a display name.
     const clientDoc = await db.collection('users').doc(clientUid).get();
     if (!clientDoc.exists) return res.status(404).json({ message: 'Client not found' });
@@ -58,6 +72,20 @@ export async function createTask(req, res) {
     const clientName = c.name || c.fullName || c.email || 'Client';
 
     const firstStep = definition.initialStep;
+
+    // Per-phase default assignees (E11-S02): pre-route each step to the person
+    // configured for its phase, so work lands in the right "My Tasks" with no
+    // manual assignment. Map is phaseId → uid; steps in unconfigured phases stay
+    // in the shared pool. Validation (staff-only, phase exists) happened on write.
+    const phaseAssignees = await loadPhaseAssignments(definition.id);
+    const assigneeForStep = (s) => (s.phaseId && phaseAssignees[s.phaseId]) || null;
+
+    // Approval gate (E03-S04): a manager-created matter must be approved by an
+    // admin before it goes active; an admin-created matter activates immediately.
+    // While pending, the first step is held `pending` (not `active`) so no work
+    // starts and it stays out of "My Tasks" until approved.
+    const needsApproval = role === 'manager';
+    const initialStatus = needsApproval ? 'pending_admin_approval' : 'pending';
 
     // Per-step INSTANCE state, built from the definition's EXPLICIT step identity
     // (no regex parsing). Stored in a SUBCOLLECTION (tasks/{id}/steps/{stepNumber})
@@ -75,7 +103,7 @@ export async function createTask(req, res) {
       clientUid,
       clientName,
       assignedTo: null,
-      status: 'pending',
+      status: initialStatus,
       paymentStatus: 'not_paid',
       amountPaid: 0,
       amountDue: 0,
@@ -91,12 +119,15 @@ export async function createTask(req, res) {
     const ref = db.collection('tasks').doc();
     const batch = db.batch();
     batch.set(ref, task);
+    // While pending approval, even the first step stays `pending` (no work starts).
+    const firstStepStatus = needsApproval ? 'pending' : 'active';
     for (const s of stepDefs) {
       batch.set(ref.collection('steps').doc(String(s.stepNumber)), {
         stepNumber: s.stepNumber,
         title: s.title,
         assignedRole: s.assignedRole ?? null,
-        status: s.stepNumber === firstStep ? 'active' : 'pending',
+        assignedTo: assigneeForStep(s),
+        status: s.stepNumber === firstStep ? firstStepStatus : 'pending',
       });
     }
     await batch.commit();
@@ -104,12 +135,94 @@ export async function createTask(req, res) {
     const steps = stepDefs.map((s) => ({
       stepNumber: s.stepNumber,
       title: s.title,
-      status: s.stepNumber === firstStep ? 'active' : 'pending',
+      status: s.stepNumber === firstStep ? firstStepStatus : 'pending',
     }));
     res.status(201).json({ id: ref.id, ...task, steps });
   } catch (err) {
     logger.error({ err }, 'createTask error:');
     res.status(500).json({ message: 'Failed to create task' });
+  }
+}
+
+// ─── POST /api/tasks/:taskId/approve ───────────────────────────────────────
+// Admin approves a matter that is `pending_admin_approval` (E03-S04). The matter
+// goes `active` and its first step is activated, so normal execution begins and
+// it appears in worklists. Records the approval in the events thread.
+export async function approveTask(req, res) {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden: admin required' });
+    }
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+    if (task.status !== 'pending_admin_approval') {
+      return res.status(409).json({ message: 'Matter is not pending approval' });
+    }
+
+    const now = new Date().toISOString();
+    const batch = db.batch();
+    batch.set(taskRef, { status: 'active', updatedAt: now }, { merge: true });
+    // Activate the current (first) step so work can begin.
+    batch.set(
+      taskRef.collection('steps').doc(String(task.currentStepNumber)),
+      { status: 'active' },
+      { merge: true },
+    );
+    batch.set(taskRef.collection('events').doc(), {
+      type: 'TASK_APPROVED',
+      fromStep: task.currentStepNumber,
+      toStep: task.currentStepNumber,
+      comment: null,
+      byUid: req.user.uid ?? null,
+      byRole: req.user.role ?? null,
+      at: now,
+    });
+    await batch.commit();
+    res.json({ success: true, status: 'active' });
+  } catch (err) {
+    logger.error({ err }, 'approveTask error:');
+    res.status(500).json({ message: 'Failed to approve matter' });
+  }
+}
+
+// ─── POST /api/tasks/:taskId/reject ────────────────────────────────────────
+// Admin rejects a matter pending approval (E03-S04). Requires a reason, which is
+// recorded on the events thread so the creator can see why. The matter moves to
+// `rejected` (terminal for now); re-creation is the path forward.
+export async function rejectTask(req, res) {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden: admin required' });
+    }
+    const { reason } = req.body; // validated non-empty by taskRejectSchema
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+    if (task.status !== 'pending_admin_approval') {
+      return res.status(409).json({ message: 'Matter is not pending approval' });
+    }
+
+    const now = new Date().toISOString();
+    const comment = reason.toString().trim().slice(0, 500);
+    const batch = db.batch();
+    batch.set(taskRef, { status: 'rejected', rejectionReason: comment, updatedAt: now }, { merge: true });
+    batch.set(taskRef.collection('events').doc(), {
+      type: 'TASK_REJECTED',
+      fromStep: task.currentStepNumber,
+      toStep: task.currentStepNumber,
+      comment,
+      byUid: req.user.uid ?? null,
+      byRole: req.user.role ?? null,
+      at: now,
+    });
+    await batch.commit();
+    res.json({ success: true, status: 'rejected' });
+  } catch (err) {
+    logger.error({ err }, 'rejectTask error:');
+    res.status(500).json({ message: 'Failed to reject matter' });
   }
 }
 
@@ -171,6 +284,15 @@ export async function listTasks(req, res) {
   }
 }
 
+// Can this user approve a matter that is awaiting approval? Role-derived, NOT
+// hardcoded — today only an admin approves a `pending_admin_approval` matter
+// (the manager→admin gate, E03-S04). Extend here as approval rules grow (e.g. a
+// manager approving team-member-created matters) without touching call sites.
+function canApprove(user, matter) {
+  if (matter.status === 'pending_admin_approval') return user.role === 'admin';
+  return false;
+}
+
 // ─── GET /api/tasks/my-steps ───────────────────────────────────────────────
 // Consolidated, cross-matter STEP worklist for a staff user ("My Tasks"). A
 // Matter (task) has many steps; at any time one step is `active`. This returns
@@ -226,7 +348,9 @@ export async function listMySteps(req, res) {
           taskId,
           clientName: t.clientName ?? '',
           serviceName: t.serviceName ?? t.workflowType ?? '',
-          isUrgent: !!t.isUrgent,
+          // Effective urgency (E11-S03): the matter is urgent OR its active step is.
+          // An urgent step flags the row even if the matter itself isn't.
+          isUrgent: !!t.isUrgent || !!step.isUrgent,
           updatedAt: t.updatedAt ?? null,
           stepNumber: step.stepNumber,
           stepTitle: step.title ?? `Step ${step.stepNumber}`,
@@ -242,7 +366,75 @@ export async function listMySteps(req, res) {
       if (a.isUrgent !== b.isUrgent) return a.isUrgent ? -1 : 1;
       return (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '');
     });
-    res.json({ data: rows });
+
+    // Approvals as worklist items (E11-S04): matters awaiting THIS user's approval.
+    // A `pending_admin_approval` matter has no active step, so it never appears in
+    // `rows` — but approving it IS a to-do for the approver. Surface it separately,
+    // enriched with creator + age. Approver is role-derived via canApprove().
+    let approvals = [];
+    try {
+      const pendSnap = await db.collection('tasks')
+        .where('status', '==', 'pending_admin_approval').get();
+      const pending = pendSnap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((m) => canApprove(req.user, m));
+      // Resolve creator display names in one batched pass.
+      const creatorUids = [...new Set(pending.map((m) => m.createdBy).filter(Boolean))];
+      const nameByUid = {};
+      await Promise.all(creatorUids.map(async (u) => {
+        const us = await db.collection('users').doc(u).get();
+        const data = us.exists ? us.data() : null;
+        nameByUid[u] = data ? (data.name || data.fullName || data.email || 'User') : 'User';
+      }));
+      approvals = pending.map((m) => ({
+        taskId: m.id,
+        clientName: m.clientName ?? '',
+        serviceName: m.serviceName ?? m.workflowType ?? '',
+        createdByName: m.createdBy ? (nameByUid[m.createdBy] ?? 'User') : 'Unknown',
+        isUrgent: !!m.isUrgent,
+        createdAt: m.createdAt ?? null,
+        updatedAt: m.updatedAt ?? null,
+      }));
+      approvals.sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
+    } catch (err) {
+      logger.warn({ err: err?.message }, 'listMySteps: approvals lookup failed');
+    }
+
+    // Reassignment offers awaiting MY accept/decline (E03-S02). Collection-group
+    // over steps where reassignOffer.toUid == me. Enrich with matter context.
+    let offers = [];
+    try {
+      const offerSnap = await db.collectionGroup('steps')
+        .where('reassignOffer.toUid', '==', uid).get();
+      offers = await Promise.all(offerSnap.docs.map(async (d) => {
+        const step = d.data();
+        const taskRef = d.ref.parent.parent;
+        const taskDoc = taskRef ? await taskRef.get() : null;
+        const t = taskDoc && taskDoc.exists ? taskDoc.data() : {};
+        // Resolve who offered it.
+        let offeredByName = 'Someone';
+        const byUid = step.reassignOffer?.byUid;
+        if (byUid) {
+          const us = await db.collection('users').doc(byUid).get();
+          const ud = us.exists ? us.data() : null;
+          offeredByName = ud ? (ud.name || ud.fullName || ud.email || 'User') : 'User';
+        }
+        return {
+          taskId: taskRef ? taskRef.id : null,
+          stepNumber: step.stepNumber,
+          stepTitle: step.title ?? `Step ${step.stepNumber}`,
+          clientName: t.clientName ?? '',
+          serviceName: t.serviceName ?? t.workflowType ?? '',
+          offeredByName,
+          at: step.reassignOffer?.at ?? null,
+        };
+      }));
+      offers.sort((a, b) => (b.at ?? '').localeCompare(a.at ?? ''));
+    } catch (err) {
+      logger.warn({ err: err?.message }, 'listMySteps: offers lookup failed (index missing?)');
+    }
+
+    res.json({ data: rows, approvals, offers });
   } catch (err) {
     logger.error({ err }, 'listMySteps error:');
     res.status(500).json({ message: 'Failed to load your tasks' });
@@ -428,6 +620,108 @@ export async function patchStep(req, res) {
   } catch (err) {
     logger.error({ err: err }, 'patchStep error:');
     res.status(500).json({ message: 'Failed to update step' });
+  }
+}
+
+// ─── Reassign-with-accept handshake (E03-S02) ──────────────────────────────
+// Direct assignment (patchStep / assignMatter) force-routes a step. The HANDSHAKE
+// is a softer hand-off: the proposer OFFERS the step to another staff user, who
+// must ACCEPT before ownership moves. Until then the original assignee keeps it.
+// State lives on the step as `reassignOffer: { toUid, fromUid, byUid, at }`.
+
+const stepRefFor = (taskId, stepNumber) =>
+  db.collection('tasks').doc(taskId).collection('steps').doc(String(stepNumber));
+
+// POST /api/tasks/:taskId/steps/:stepNumber/offer  { toUid }
+// Propose handing this step to `toUid`. Allowed for admin/manager, or the step's
+// current owner handing off their own work.
+export async function offerStep(req, res) {
+  try {
+    const { taskId, stepNumber } = req.params;
+    const { toUid } = req.body;
+    const { uid, role } = req.user;
+
+    const stepRef = stepRefFor(taskId, stepNumber);
+    const stepSnap = await stepRef.get();
+    if (!stepSnap.exists) return res.status(404).json({ message: 'Step not found' });
+    const step = stepSnap.data();
+
+    const isStaffManager = role === 'admin' || role === 'manager';
+    const isOwner = step.assignedTo && step.assignedTo === uid;
+    if (!isStaffManager && !isOwner) {
+      return res.status(403).json({ message: 'Only a manager/admin or the step owner can reassign this step' });
+    }
+
+    // Validate target is a staff user (never a client) and not the current owner.
+    const u = await db.collection('users').doc(toUid).get();
+    if (!u.exists) return res.status(400).json({ message: 'Proposed assignee not found' });
+    if (u.data().role === 'client') return res.status(400).json({ message: 'Cannot assign a step to a client' });
+    if (step.assignedTo === toUid) return res.status(400).json({ message: 'Step is already owned by that user' });
+
+    const now = new Date().toISOString();
+    await stepRef.set({
+      reassignOffer: { toUid, fromUid: step.assignedTo ?? null, byUid: uid ?? null, at: now },
+      updatedAt: now,
+    }, { merge: true });
+    res.json({ success: true });
+  } catch (err) {
+    logger.error({ err }, 'offerStep error:');
+    res.status(500).json({ message: 'Failed to offer step' });
+  }
+}
+
+// POST /api/tasks/:taskId/steps/:stepNumber/accept
+// The proposed user accepts: ownership moves to them, the offer is cleared.
+export async function acceptStepOffer(req, res) {
+  try {
+    const { taskId, stepNumber } = req.params;
+    const { uid } = req.user;
+    const stepRef = stepRefFor(taskId, stepNumber);
+    const stepSnap = await stepRef.get();
+    if (!stepSnap.exists) return res.status(404).json({ message: 'Step not found' });
+    const offer = stepSnap.data().reassignOffer;
+    if (!offer) return res.status(409).json({ message: 'No pending reassignment for this step' });
+    if (offer.toUid !== uid) return res.status(403).json({ message: 'This reassignment was not offered to you' });
+
+    const { FieldValue } = await import('firebase-admin/firestore');
+    await stepRef.set({
+      assignedTo: uid,
+      reassignOffer: FieldValue.delete(),
+      updatedAt: new Date().toISOString(),
+    }, { merge: true });
+    res.json({ success: true, assignedTo: uid });
+  } catch (err) {
+    logger.error({ err }, 'acceptStepOffer error:');
+    res.status(500).json({ message: 'Failed to accept reassignment' });
+  }
+}
+
+// POST /api/tasks/:taskId/steps/:stepNumber/decline
+// The proposed user declines (or the proposer/admin cancels): clear the offer;
+// ownership stays with the original assignee.
+export async function declineStepOffer(req, res) {
+  try {
+    const { taskId, stepNumber } = req.params;
+    const { uid, role } = req.user;
+    const stepRef = stepRefFor(taskId, stepNumber);
+    const stepSnap = await stepRef.get();
+    if (!stepSnap.exists) return res.status(404).json({ message: 'Step not found' });
+    const offer = stepSnap.data().reassignOffer;
+    if (!offer) return res.status(409).json({ message: 'No pending reassignment for this step' });
+
+    // The proposed user, the proposer, or any admin/manager may clear it.
+    const allowed = offer.toUid === uid || offer.byUid === uid || role === 'admin' || role === 'manager';
+    if (!allowed) return res.status(403).json({ message: 'Not allowed to decline this reassignment' });
+
+    const { FieldValue } = await import('firebase-admin/firestore');
+    await stepRef.set({
+      reassignOffer: FieldValue.delete(),
+      updatedAt: new Date().toISOString(),
+    }, { merge: true });
+    res.json({ success: true });
+  } catch (err) {
+    logger.error({ err }, 'declineStepOffer error:');
+    res.status(500).json({ message: 'Failed to decline reassignment' });
   }
 }
 

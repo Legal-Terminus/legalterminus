@@ -232,14 +232,24 @@ export const removeUser = async (req, res) => {
     // Guard: refuse to delete a user who still has tasks (as client or assignee).
     // Deleting would orphan task history / leave dangling refs. The admin must
     // reassign or close those tasks first. (count() = cheap aggregation, no reads.)
-    const [asClient, asAssignee] = await Promise.all([
+    // Includes STEP-level assignment (E11-S02): pre-assignment + per-step "Step
+    // owner" route users onto steps without making them the matter owner, so a
+    // matter-level check alone would let us orphan those steps with a dead UID.
+    const [asClient, asAssignee, asStepAssignee] = await Promise.all([
       db.collection('tasks').where('clientUid', '==', uid).count().get(),
       db.collection('tasks').where('assignedTo', '==', uid).count().get(),
+      db.collectionGroup('steps').where('assignedTo', '==', uid).count().get()
+        .catch((e) => {
+          // collection-group count index may be missing → degrade (don't 500 a
+          // delete). Matter-level checks still apply.
+          logger.warn({ err: e?.message }, 'removeUser: step-assignee count failed (index missing?)');
+          return { data: () => ({ count: 0 }) };
+        }),
     ]);
-    const taskCount = asClient.data().count + asAssignee.data().count;
+    const taskCount = asClient.data().count + asAssignee.data().count + asStepAssignee.data().count;
     if (taskCount > 0) {
       return res.status(409).json({
-        message: `This user has ${taskCount} associated task(s). Reassign or close them before deleting.`,
+        message: `This user has ${taskCount} associated task(s)/step(s). Reassign or close them before deleting.`,
         taskCount,
       });
     }

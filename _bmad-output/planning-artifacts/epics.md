@@ -456,6 +456,18 @@ split dashboard tiles.
 
 **Priority**: P1 | **Complexity**: L | **Linked spec story**: US-2 | **Dependencies**: E03-S01, E02-S02
 
+> **✅ Reassign-with-accept handshake BUILT (2026-06-14).** The "reassign to another team member"
+> half of this story is done as a soft hand-off (the other halves — mark-complete, doc-query — were
+> already covered by the transition endpoint + E05 stub). A step OWNER (or admin/manager) can OFFER
+> the step to another staff user; ownership only moves when they ACCEPT. State lives on the step as
+> `reassignOffer: { toUid, fromUid, byUid, at }` — the original assignee keeps it until accepted.
+> Endpoints: `POST /api/tasks/:id/steps/:n/offer { toUid }`, `/accept`, `/decline`
+> ([tasks.controller.js](../../backend/src/controllers/tasks.controller.js)). The proposed user sees
+> offers in **My Tasks** ("Reassignments offered to you" with Accept/Decline); the offer is initiated
+> from the step hero's "Reassign (needs accept)" picker on the task detail. Collection-group query on
+> `steps.reassignOffer.toUid` (field override added to firestore.indexes.json). NOTE: notifications/email
+> on offer are deferred to E-07 (no notification subsystem yet) — surfacing is via the polled My Tasks feed.
+
 **Rationale**: A team member must be able to act on steps: mark complete (fires `COMPLETE_STEP` XState event), raise a document query (sends notification to client), and reassign to another team member. These are the three primary daily interactions.
 
 **Acceptance Criteria**:
@@ -509,6 +521,20 @@ split dashboard tiles.
 ### E03-S04 — Task Approval Workflow [Phase 1]
 
 **Priority**: P1 | **Complexity**: M | **Linked spec story**: US-13 | **Dependencies**: E03-S03, E07-S01
+
+> **✅ BUILT (2026-06-14) — manager→admin gate; chain is role-derived & extensible.** Scope chosen:
+> a **manager-created** matter enters `pending_admin_approval` (first step held `pending`, kept out of
+> worklists); an **admin-created** matter activates immediately. (Team-member creation isn't enabled,
+> so the team_member→manager leg is N/A today; the `needsApproval` seam in `createTask` extends it.)
+> - `POST /api/tasks/:id/approve` (admin) → matter `active`, first step activated, logged `TASK_APPROVED`.
+> - `POST /api/tasks/:id/reject` (admin, **reason required**) → matter `rejected`, reason stored + logged.
+>   ([tasks.controller.js](../../backend/src/controllers/tasks.controller.js))
+> - **Task detail** shows an amber approval banner (admins get Approve / Reject-with-reason; others see
+>   a waiting note); a rejected matter shows the reason. **Matters list** has "Awaiting approval" / "rejected"
+>   badges. ([TaskDetailPage.tsx](../../Portal/src/pages/tasks/TaskDetailPage.tsx), [TasksPage.tsx](../../Portal/src/pages/tasks/TasksPage.tsx))
+> - **Surfaced as worklist items (E11-S04):** approval to-dos appear in My Tasks + a dashboard widget;
+>   approver is role-derived via `canApprove(user, matter)` (admin today, extensible). Notifications/email
+>   on submit deferred to E-07. New statuses added: `pending_admin_approval`, `rejected`.
 
 **Rationale**: The approval chain (team_member → manager → admin) is a core business process. Without it, tasks created by non-admins cannot be activated.
 
@@ -1174,6 +1200,18 @@ split dashboard tiles.
 
 **Priority**: P2 | **Complexity**: L | **Linked spec story**: US-7 | **Dependencies**: E02-S03, E03-S03
 
+> **✅ DONE (verified 2026-06-14).** Built in a prior session; confirmed complete this session.
+> Shell grid ([ReportsPage.tsx](../../Portal/src/pages/reports/ReportsPage.tsx)) + the three task
+> reports ([AllTasksReport.tsx](../../Portal/src/pages/reports/AllTasksReport.tsx),
+> [CompletedTasksReport.tsx](../../Portal/src/pages/reports/CompletedTasksReport.tsx),
+> [PendingTasksReport.tsx](../../Portal/src/pages/reports/PendingTasksReport.tsx) grouped by reason:
+> payment / document / client_action / government) + Master Sheet. Backend
+> `GET /api/reports/{all-tasks,completed,pending,master-sheet}` return real data
+> ([reports.controller.js](../../backend/src/controllers/reports.controller.js)); routes admin/manager.
+> Routes registered in appRoutes; date-range filters present.
+> ✅ 2026-06-14: the Pending report now includes `pending_admin_approval` matters as a distinct
+> **"Awaiting Approval"** bucket (alongside payment/document/client_action/government).
+
 **Rationale**: The three core task reports are needed immediately after tasks exist. The report shell (selector page) provides the navigation scaffold for the remaining 10 reports.
 
 **Acceptance Criteria**:
@@ -1605,6 +1643,18 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 
 **Priority**: P1 | **Complexity**: S | **Linked spec story**: US-17 | **Dependencies**: E10-S01
 
+> **✅ BUILT (2026-06-14) — adapted to the data-driven model.** The original two-layer check
+> (`workflowTemplates.totalSteps` vs config step-doc count) is obsolete — workflows are now single
+> `workflowDefinitions` documents compiled at runtime, so there's no second layer to drift from. The
+> faithful equivalent is a **definition health check**: `GET /api/workflow-definitions/:id/sync-check`
+> runs `validateDefinition` (hard errors: dangling transitions/gates, dangling phaseIds, dup step
+> numbers) plus soft warnings (unreachable steps; steps with no phase).
+> ([workflowDefinitions.controller.js](../../backend/src/controllers/workflowDefinitions.controller.js))
+> - **`ServiceDetailPage`** shows a red banner (hard errors → "new matters blocked") or amber banner
+>   (warnings) when the workflow isn't clean.
+> - **`createTask` blocks** on hard errors with **409 `WORKFLOW_OUT_OF_SYNC`** (the spec's
+>   "reject new task creation until in sync"), so a broken workflow can't spawn an unrunnable matter.
+
 **Rationale**: When a developer updates the XState machine topology (adds a step, changes a branch), the Firestore config layer may be missing metadata for new steps. The sync check prevents broken task instantiation.
 
 **Acceptance Criteria**:
@@ -1620,6 +1670,180 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 
 **Frontend screens/components**:
 - `Portal/src/pages/workflow/WorkflowSettingsPage.tsx` (sync warning banner)
+
+---
+
+## E-11 — Matter Creation, Pre-Assignment & Priority Visibility
+
+**Goal**: Make matter creation a first-class action from the Matters page, let staff
+**pre-configure who owns each phase** of a service's workflow so steps are auto-assigned
+on creation, and make **Urgent** priority visible where staff actually look (My Tasks +
+dashboard) including approval to-dos. Raised 2026-06-14.
+
+> **Why these together**: they form one operational loop — *create a matter → its work is
+> already routed to the right people → the urgent/pending items surface on each person's
+> worklist*. They build directly on the assignment model (E-03 status block) and the
+> approval chain (E03-S04).
+
+---
+
+### E11-S01 — Create Matter from the Matters Page [Phase 1]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-3 | **Dependencies**: E02-S03
+
+> **✅ BUILT (2026-06-14).** "Create Matter" button (admin/manager) on the Matters page header opens
+> [CreateMatterModal.tsx](../../Portal/src/components/tasks/CreateMatterModal.tsx) — searchable client
+> picker + workflow-backed service picker → `POST /api/tasks`. Client-profile "Assign Service" retained.
+
+**Rationale**: Today a matter can only be created from a client's profile ("Assign Service" on
+`ClientForm`). Staff managing the Matters list have no direct way to start a new matter — they
+must navigate to the client first. A **"Create Matter"** action on the Matters page closes that
+gap with a client picker + service picker, reusing the existing `POST /api/tasks`.
+
+**Acceptance Criteria**:
+- A **"Create Matter"** button on the Matters page header (admin/manager only; hidden for client
+  and team_member) opens a **modal** (chosen over a separate route for mobile-friendliness).
+- The modal has: a **searchable client picker** (from `GET /api/portal/users?role=client`) and a
+  **service picker** limited to workflow-backed, active services (services ∩ `workflowDefinitions`).
+- On submit → `POST /api/tasks { clientUid, serviceKey, serviceName }` (existing endpoint, incl. the
+  E03-S04 approval gate). On success the modal closes, the list invalidates (`['tasks']`), and the
+  new matter appears.
+- The existing client-profile "Assign Service" flow is **retained** (both entry points work).
+- Validation + error states (no client / no service selected; API error shown inline).
+
+**Backend endpoints needed**: none new — reuses `POST /api/tasks`, `GET /api/portal/users`,
+`GET /api/service-config`, `GET /api/workflow-definitions`.
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/TasksPage.tsx` (header button + modal)
+- `Portal/src/components/tasks/CreateMatterModal.tsx` (new)
+
+---
+
+### E11-S02 — Per-Phase Default Assignees (Service-Level Config) [Phase 1]
+
+**Priority**: P1 | **Complexity**: M | **Linked spec story**: US-3 / US-8 | **Dependencies**: E11-S01, E04-S08 (phases)
+
+> **✅ BUILT (2026-06-14).** Collection `workflowPhaseAssignments/{definitionId}` + endpoints
+> `GET`/`PUT /api/workflow-definitions/:id/phase-assignments` (read staff / write admin+manager;
+> validates phaseId exists + assignee is staff). Editor section on
+> [ServiceDetailPage.tsx](../../Portal/src/pages/services/ServiceDetailPage.tsx) ("Phase Assignments").
+> `createTask` applies each phase's assignee onto its steps at creation. **Delete-guard extended**:
+> `removeUser` now also counts `collectionGroup('steps').where('assignedTo','==',uid)` so a user owning
+> steps (via pre-assignment / Step owner) can't be deleted and orphan them — folds in the
+> "delete user with matters" requirement / TD-07.
+
+**Rationale**: A firm runs the same workflow the same way each time — a given phase's tasks always
+go to the same person/team. Configuring this **once per service workflow** means every new matter is
+pre-routed: each step inherits its phase's default assignee at creation, so work lands in the right
+person's "My Tasks" without manual per-step assignment.
+
+**Decision (2026-06-14)**: Store the phase→assignee map in a **separate config collection**
+`workflowPhaseAssignments/{definitionId}` (NOT on the versioned definition), so ops can re-route a
+phase without bumping the workflow version. Edited in the **Services section** (the service workflow
+detail page), keeping definition topology and staffing concerns separate.
+
+**Acceptance Criteria**:
+- New collection `workflowPhaseAssignments/{definitionId}` = `{ definitionId, assignments: { [phaseId]: uid|null }, updatedAt, updatedBy }`.
+- Backend: `GET /api/workflow-definitions/:id/phase-assignments` (staff read) and
+  `PUT /api/workflow-definitions/:id/phase-assignments { assignments }` (admin/manager write) —
+  validates each `phaseId` exists on the definition and each `uid` is a staff user (rejects clients).
+- The **service workflow detail page** (`ServiceDetailPage`) gains a **"Phase assignments"** section:
+  for each phase of the definition, a staff-user dropdown (default "Unassigned"). Saving calls the PUT.
+- **On matter creation** (`createTask`): for each instance step, resolve its `phaseId` → look up the
+  phase's default assignee → set `step.assignedTo`. The matter-level `assignedTo` stays null (these are
+  per-step routings, not a single matter owner). Steps in phases with no configured assignee stay
+  unassigned (shared pool).
+- Re-configuring assignments affects **new matters only**; in-flight matters are unchanged (consistent
+  with the version-pinning model). A later edit/reassign still works per the existing step/matter
+  assignment controls.
+- If a configured assignee is later deleted, matter creation degrades gracefully (step left unassigned;
+  no failure).
+- **Delete-guard extension (folds in TD-07 / the "delete user with matters" ask, 2026-06-14):** because
+  pre-assignment routes users onto *steps* (not just matter-level `assignedTo`), the user-delete guard
+  ([portalUsers.controller.js](../../backend/src/controllers/portalUsers.controller.js) `removeUser`)
+  must ALSO refuse deletion when the user owns any step (`collectionGroup('steps').where('assignedTo','==',uid)`),
+  not only matter-level `clientUid`/`assignedTo`. Otherwise pre-assignment creates orphaned steps pointing
+  at a dead UID. The 409 count includes step ownership.
+
+**Backend endpoints needed**:
+- `GET /api/workflow-definitions/:id/phase-assignments`
+- `PUT /api/workflow-definitions/:id/phase-assignments`
+- Modification to `POST /api/tasks` (`createTask`): apply phase assignees to seeded steps.
+- Modification to `DELETE /api/portal/users/:uid` (`removeUser`): include step-assignee count in the guard.
+
+**Frontend screens/components**:
+- `Portal/src/pages/services/ServiceDetailPage.tsx` (Phase assignments editor section)
+- `Portal/src/api/workflowDefinitions.ts` (get/put phase-assignments helpers)
+
+---
+
+### E11-S03 — Urgent Priority Visibility on My Tasks & Dashboard [Phase 1]
+
+**Priority**: P2 | **Complexity**: S | **Linked spec story**: US-10 | **Dependencies**: E03-S01, E03-S05
+
+> **✅ BUILT (2026-06-14).** `my-steps` rows now carry EFFECTIVE urgency (matter `isUrgent` OR active
+> step `isUrgent`). **My Tasks** has an "Urgent — waiting on you" section above the assigned queue;
+> the staff **dashboard** has a [MyWorkWidget.tsx](../../Portal/src/components/dashboard/MyWorkWidget.tsx)
+> "Urgent — waiting on you" card. Reuses `isUrgent` (no new data model).
+
+**Rationale**: The `isUrgent` flag already exists (E03-S05) on matters and steps, but it's not
+surfaced where staff plan their day. Staff need to immediately see **which urgent items are waiting
+on them**. This reuses `isUrgent` (no new data model) and adds the *visibility* layer.
+
+**Acceptance Criteria**:
+- `GET /api/tasks/my-steps` carries urgency that reflects **either** the matter `isUrgent` **or** the
+  active step `isUrgent` (an urgent step makes the row urgent even if the matter isn't).
+- **My Tasks**: urgent rows are visually flagged and an **"Urgent — waiting on you"** grouping/treatment
+  surfaces a user's urgent assigned items first (above the rest of their assigned queue).
+- **Dashboard**: a staff widget **"Urgent tasks waiting on you"** shows the count + a short list of the
+  user's urgent assigned steps, linking into each matter. Zero-state hidden or shows "None".
+- Urgency continues to clear naturally as steps complete (existing behaviour); no urgent item lingers
+  after its step is done.
+
+**Backend endpoints needed**:
+- `GET /api/tasks/my-steps` (extend the row with effective urgency; already exists).
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/MyTasksPage.tsx` (urgent grouping)
+- `Portal/src/pages/dashboard/DashboardPage.tsx` (+ a new urgent widget component)
+
+---
+
+### E11-S04 — Approvals as Worklist Items [Phase 1]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-13 | **Dependencies**: E03-S04, E03-S01
+
+> **✅ BUILT (2026-06-14) — fixes "approvals not appearing in My Tasks".** `GET /api/tasks/my-steps`
+> now also returns `approvals` (matters awaiting the caller's approval, via role-derived
+> `canApprove(user, matter)` — admin + `pending_admin_approval` today, extensible). **My Tasks** shows
+> an "Awaiting your approval" section; the staff **dashboard** widget shows the count + list. Each links
+> to the matter's approval banner (Approve/Reject from E03-S04). Also surfaces E03-S02 reassignment
+> offers in the same feed.
+
+**Rationale**: A matter `pending_admin_approval` (E03-S04) has no `active` step, so it never appeared
+in My Tasks — yet approving it **is** a to-do for the approver. Approvals must surface as worklist
+items. The approver is **role-derived, not hardcoded** (today admin approves a manager-created matter;
+the model must extend to future approval rules without a rewrite).
+
+**Acceptance Criteria**:
+- A `canApprove(user, matter)` notion (helper) determines who sees a pending matter as an approval
+  to-do. v1: admin + matter status `pending_admin_approval`. Designed to extend (e.g. manager approving
+  team-member-created matters) without changing call sites.
+- Backend: `GET /api/tasks/my-steps` (or a sibling field/endpoint) returns the set of matters awaiting
+  the caller's approval, enriched (client, service, who created it, age).
+- **My Tasks**: an **"Approvals"** section at the top (for users who can approve) listing pending-approval
+  matters; each links to the matter's approval banner (Approve / Reject live there, E03-S04).
+- **Dashboard**: the count is reflected in the urgent/approvals widget area ("N matters awaiting your
+  approval").
+- Non-approvers never see the section. A matter leaving `pending_admin_approval` drops out immediately.
+
+**Backend endpoints needed**:
+- Extend `GET /api/tasks/my-steps` (or add `GET /api/tasks/my-approvals`).
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/MyTasksPage.tsx` (Approvals section)
+- `Portal/src/pages/dashboard/DashboardPage.tsx` (approvals count)
 
 ---
 
