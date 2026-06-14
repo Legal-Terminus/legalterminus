@@ -51,20 +51,6 @@ export default {
       screens: {
         xs: '375px',
       },
-      keyframes: {
-        'pulse-ring': {
-          '0%':   { boxShadow: '0 0 0 0 rgba(37,99,235,0.45)' },
-          '70%':  { boxShadow: '0 0 0 8px rgba(37,99,235,0)' },
-          '100%': { boxShadow: '0 0 0 0 rgba(37,99,235,0)' },
-        },
-        'flow-dash': {
-          to: { backgroundPosition: '0 -16px' },
-        },
-      },
-      animation: {
-        'pulse-ring': 'pulse-ring 1.8s infinite',
-        'flow-dash': 'flow-dash 0.7s linear infinite',
-      },
     },
   },
   plugins: [],
