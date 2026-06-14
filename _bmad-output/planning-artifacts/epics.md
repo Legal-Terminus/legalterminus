@@ -537,6 +537,31 @@ split dashboard tiles.
 
 ---
 
+### E03-S06 — Comment & Attach on Any Step Action [Phase 1 / partial]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-2 / US-13 | **Dependencies**: E03-S02, E05 (attach upload)
+**Raised**: 2026-06-14
+
+**Rationale**: When acting on a step, staff/clients need to (a) leave a **comment** explaining the action and (b) **attach a document** relevant to it. Today comments exist only on rejections/overrides (via a `window.prompt`), and there is no attach affordance on actions. Generalising comments to every transition and exposing an attach control makes each action self-documenting and audit-complete. Real file upload belongs to **E-05 (Document Cycle)**; this story delivers the **comment** end-to-end and the **attach affordance as a stub** now.
+
+> **🚧 SCOPE (2026-06-14):** Already partially built — the transition endpoint accepts an optional `remark` and stores it on the acted-on step + the `events` audit subcollection (see E-03 status block). This story extends the **UI** so a comment can accompany *any* action (not just reject/override) and adds the attach control.
+
+**Acceptance Criteria**:
+- **Comment on every action:** the current-step action card shows an **inline comment composer** (replacing `window.prompt`). Comment is **optional** on positive actions (Complete Step, Approve, Mark as Paid, Branch decision, Govt Approved) and **required** on rejections (CLIENT_REJECT / GOVT_REJECT) — preserving the existing required-remark rule.
+- The composer's value is sent as `event.remark` to `POST /api/tasks/:taskId/transition`; backend persistence is unchanged (already stores it). Comment shows in the step's history/remark and the `events` trail.
+- **Attach affordance (stub now):** an "Attach document" control sits next to the composer, **visible but disabled**, with a "coming soon" hint — consistent with the Documents-tab scaffold. No bytes are uploaded; no backend change.
+- Clients only see the composer on their own actionable steps; staff see it on the operational actions.
+- When E-05 lands, the attach control is enabled and wired to the signed-URL upload + step `documents` (this story's stub is the seam).
+
+**Backend endpoints needed**:
+- `POST /api/tasks/:taskId/transition` (already accepts `remark`; no change for the comment half).
+- *(Future, E-05)* attach upload via signed URL.
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` — `CurrentStepActions` inline comment composer + disabled attach control.
+
+---
+
 ## E-04 — Client Portal
 
 **Goal**: Give clients a self-service view of their tasks (steps, documents, payments) and a service catalogue, eliminating "call us to check status" interactions.
@@ -1846,6 +1871,36 @@ This was **partially mitigated** on 2026-06-13 (auth + userId binding — see be
 
 **Files likely touched**:
 - `backend/src/controllers/portalUsers.controller.js` (`removeUser`), `backend/src/services/userService.js` (`deleteUser`)
+
+---
+
+### TD-08 — `steps` Collection-Group Index for Team-Member Routing [Deferred]
+
+**Priority**: P2 | **Complexity**: S | **Raised**: 2026-06-14
+
+**Rationale**: Team-member work routing (`listTasks`, `listMySteps`) resolves "matters where a step is assigned to me" via `db.collectionGroup('steps').where('assignedTo','==',uid)` (in `taskIdsWithStepAssignedTo`). This needs a **collection-group** index on `steps.assignedTo`, added to `firestore.indexes.json` (2026-06-14) but **not yet deployed**. Until deployed, the helper **degrades gracefully** (try/catch → logs a warning, returns empty), so team members still see matters assigned to them at the task level, but **step-only delegations won't surface**. Step-level assignment to a member whose matter isn't task-assigned silently won't route until the index is live.
+
+**Acceptance Criteria**:
+- Deploy the `steps` collection-group index (`assignedTo ASC, __name__ ASC`) via `npm run db:deploy-indexes` (needs Firebase CLI auth — user-run or CI token).
+- Verify a team member with only a *step* (not matter) assigned to them sees that matter in both `/tasks` and `/my-tasks`.
+- Confirm no `FAILED_PRECONDITION` warnings from `taskIdsWithStepAssignedTo` in backend logs.
+
+**Files**: `firestore.indexes.json` (index added), `backend/src/controllers/tasks.controller.js` (`taskIdsWithStepAssignedTo`).
+
+---
+
+### TD-09 — Team-Member Task List: In-Memory Merge & Missing Pagination [Deferred]
+
+**Priority**: P3 | **Complexity**: M | **Raised**: 2026-06-14
+
+**Rationale**: A team member's visible set is `matters task-assigned to them ∪ matters where a step is assigned to them`. Firestore can't OR a task-doc field with a subcollection field in one query, so `listTasks`/`listMySteps` **fetch both sources, merge, filter and sort in memory** for `role === 'team_member'`. Consequences: (a) the team-member `/tasks` response returns **all** their matters in one page with `nextCursor: null` — cursor pagination doesn't apply to that branch; (b) per-matter active-step reads in `listMySteps` are an N-read fan-out. Acceptable at firm scale; won't scale to thousands of matters.
+
+**Acceptance Criteria**:
+- Decide a scalable model: e.g. **denormalise** a per-matter `assigneeUids` array (task owner + any step assignees) so a single `array-contains` query serves the whole team-member view with native pagination; OR a maintained `myWork/{uid}` index doc updated on assignment.
+- Restore cursor pagination for the team-member list once the query is single-source.
+- Bound or batch the active-step fan-out in `listMySteps`.
+
+**Files**: `backend/src/controllers/tasks.controller.js` (`listTasks`, `listMySteps`, assignment writes in `patchTask`/`patchStep`).
 
 ---
 

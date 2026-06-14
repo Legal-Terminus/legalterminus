@@ -49,6 +49,13 @@ export const updateTask = (id: string, body: Partial<Task>) =>
 export const deleteTask = (id: string) =>
   apiFetch<void>(`/api/tasks/${id}`, { method: 'DELETE' });
 
+/** Assign (or clear, with null) a whole matter to a staff user. Routes its active step too. */
+export const assignMatter = (taskId: string, assignedTo: string | null) =>
+  apiFetch<void>(`/api/tasks/${taskId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ assignedTo }),
+  });
+
 /** Toggle urgent flag on a whole task */
 export const setTaskUrgent = (taskId: string, isUrgent: boolean) =>
   apiFetch<void>(`/api/tasks/${taskId}`, {

@@ -16,8 +16,12 @@ export const taskCreateSchema = z.object({
 
 // PATCH /api/tasks/:taskId — currently only isUrgent is writable here.
 export const taskUpdateSchema = z.object({
-  isUrgent: z.boolean(),
-}).strict();
+  isUrgent: z.boolean().optional(),
+  // Assign the whole matter to a staff user (UID), or null/'' to unassign.
+  assignedTo: z.string().trim().max(200).nullable().optional(),
+}).strict().refine((b) => Object.keys(b).length > 0, {
+  message: 'No updatable fields provided',
+});
 
 // POST /api/tasks/:taskId/transition — fire a workflow event (intent).
 const WORKFLOW_EVENTS = [

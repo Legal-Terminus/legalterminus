@@ -4,11 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, CheckCircle2, Circle, CircleSlash, Loader2, PlayCircle,
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
-  ListChecks, FileText, IndianRupee,
+  ListChecks, FileText, IndianRupee, Paperclip,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, type WorkflowEventInput } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, type WorkflowEventInput } from '../../api/tasks';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
 import TaskJourneyTracker from './TaskJourneyTracker';
@@ -76,6 +76,16 @@ export default function TaskDetailPage() {
     onError: (err: Error) => window.alert(err.message || 'Could not assign this step.'),
   });
 
+  const assignOwner = useMutation({
+    mutationFn: (assignedTo: string | null) => assignMatter(taskId!, assignedTo),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['my-steps'] });
+    },
+    onError: (err: Error) => window.alert(err.message || 'Could not assign this matter.'),
+  });
+
   const noun = isClient ? 'Service' : 'Matter';
 
   if (isLoading) {
@@ -115,6 +125,25 @@ export default function TaskDetailPage() {
         </button>
       }
     >
+      {/* Matter owner — staff assignment of the whole matter (routes its active step). */}
+      {canAssign && (
+        <div className="card p-4 mb-4 flex items-center gap-2">
+          <span className="text-xs text-ink-muted shrink-0">Matter owner</span>
+          <select
+            className="input-field py-1.5 text-sm max-w-xs"
+            value={task.assignedTo ?? ''}
+            disabled={assignOwner.isPending}
+            onChange={(e) => assignOwner.mutate(e.target.value || null)}
+          >
+            <option value="">Unassigned</option>
+            {staff.map((u) => (
+              <option key={u.uid} value={u.uid}>{displayName(u)}</option>
+            ))}
+          </select>
+          {assignOwner.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint" />}
+        </div>
+      )}
+
       {/* Tabs — underline style */}
       <div className="flex items-center gap-1 border-b border-hairline mb-5">
         {TABS.map((t) => {
@@ -261,65 +290,82 @@ function CurrentStepActions({
   const isClientStep = events.has('CLIENT_APPROVE');
   const isGovtStep = events.has('GOVT_APPROVE');
 
-  // Reject/approve actions can carry a comment.
-  const fireWithComment = (type: WorkflowEventInput['type'], promptText: string, required = false) => {
-    const c = window.prompt(promptText) ?? '';
-    if (required && !c.trim()) return; // cancelled / empty when required
-    onEvent({ type, remark: c.trim() || undefined });
+  // One comment composer feeds every action on this step. Comment is optional on
+  // positive actions, required on rejections. The value rides along as event.remark.
+  const [comment, setComment] = useState('');
+  const [needComment, setNeedComment] = useState(false);
+
+  const fire = (type: WorkflowEventInput['type'], opts?: { required?: boolean; extra?: Partial<WorkflowEventInput> }) => {
+    const c = comment.trim();
+    if (opts?.required && !c) { setNeedComment(true); return; }
+    setNeedComment(false);
+    onEvent({ type, remark: c || undefined, ...opts?.extra });
+    setComment('');
   };
 
-  let body: React.ReactNode = null;
+  let actions: React.ReactNode = null;     // buttons (actionable)
+  let wait: React.ReactNode = null;        // passive "waiting" note for the other role
 
   if (step.type === 'payment_gate') {
-    body = role.isStaff ? (
-      <div className="flex flex-wrap gap-2">
-        <button disabled={pending} onClick={() => onEvent({ type: 'RECORD_PAYMENT', newStatus: 'fully_paid' })} className="btn-primary disabled:opacity-50">
-          {pending ? spin : <CreditCard className="w-4 h-4" />} Mark as Paid
-        </button>
-        <button disabled={pending} onClick={() => fireWithComment('ADMIN_OVERRIDE_PAYMENT', 'Reason for override (optional):')} className="btn-secondary disabled:opacity-50">
-          <ShieldCheck className="w-4 h-4" /> Admin Override
-        </button>
-      </div>
-    ) : <WaitNote text="Waiting for payment to be recorded." />;
+    if (role.isStaff) {
+      actions = (
+        <div className="flex flex-wrap gap-2">
+          <button disabled={pending} onClick={() => fire('RECORD_PAYMENT', { extra: { newStatus: 'fully_paid' } })} className="btn-primary disabled:opacity-50">
+            {pending ? spin : <CreditCard className="w-4 h-4" />} Mark as Paid
+          </button>
+          <button disabled={pending} onClick={() => fire('ADMIN_OVERRIDE_PAYMENT')} className="btn-secondary disabled:opacity-50">
+            <ShieldCheck className="w-4 h-4" /> Admin Override
+          </button>
+        </div>
+      );
+    } else wait = <WaitNote text="Waiting for payment to be recorded." />;
   } else if (step.type === 'branch') {
     const branches = [...new Set((step.transitions ?? []).filter((t) => t.branch).map((t) => t.branch!))];
-    body = role.isStaff ? (
-      <div className="flex flex-wrap gap-2">
-        {branches.map((b) => (
-          <button key={b} disabled={pending} onClick={() => onEvent({ type: 'BRANCH_DECISION', branch: b })} className="btn-secondary disabled:opacity-50">
-            <GitBranch className="w-4 h-4" /> {b.replace(/_/g, ' ')}
-          </button>
-        ))}
-      </div>
-    ) : <WaitNote text="Our team is processing the next step." />;
+    if (role.isStaff) {
+      actions = (
+        <div className="flex flex-wrap gap-2">
+          {branches.map((b) => (
+            <button key={b} disabled={pending} onClick={() => fire('BRANCH_DECISION', { extra: { branch: b } })} className="btn-secondary disabled:opacity-50">
+              <GitBranch className="w-4 h-4" /> {b.replace(/_/g, ' ')}
+            </button>
+          ))}
+        </div>
+      );
+    } else wait = <WaitNote text="Our team is processing the next step." />;
   } else if (isClientStep) {
-    body = role.isClient ? (
-      <div className="flex flex-wrap gap-2">
-        <button disabled={pending} onClick={() => onEvent({ type: 'CLIENT_APPROVE' })} className="btn-primary disabled:opacity-50">
-          {pending ? spin : <ThumbsUp className="w-4 h-4" />} Approve
-        </button>
-        <button disabled={pending} onClick={() => fireWithComment('CLIENT_REJECT', 'What changes would you like? (please describe):', true)} className="btn-secondary disabled:opacity-50">
-          <ThumbsDown className="w-4 h-4" /> Request Changes
-        </button>
-      </div>
-    ) : <WaitNote text="Waiting for the client to approve." />;
+    if (role.isClient) {
+      actions = (
+        <div className="flex flex-wrap gap-2">
+          <button disabled={pending} onClick={() => fire('CLIENT_APPROVE')} className="btn-primary disabled:opacity-50">
+            {pending ? spin : <ThumbsUp className="w-4 h-4" />} Approve
+          </button>
+          <button disabled={pending} onClick={() => fire('CLIENT_REJECT', { required: true })} className="btn-secondary disabled:opacity-50">
+            <ThumbsDown className="w-4 h-4" /> Request Changes
+          </button>
+        </div>
+      );
+    } else wait = <WaitNote text="Waiting for the client to approve." />;
   } else if (isGovtStep) {
-    body = role.isStaff ? (
-      <div className="flex flex-wrap gap-2">
-        <button disabled={pending} onClick={() => onEvent({ type: 'GOVT_APPROVE' })} className="btn-primary disabled:opacity-50">
-          {pending ? spin : <Landmark className="w-4 h-4" />} Govt Approved
-        </button>
-        <button disabled={pending} onClick={() => fireWithComment('GOVT_REJECT', 'Reason / department remarks:', true)} className="btn-secondary disabled:opacity-50">
-          <Landmark className="w-4 h-4" /> Govt Rejected
-        </button>
-      </div>
-    ) : <WaitNote text="Awaiting the government department response." />;
+    if (role.isStaff) {
+      actions = (
+        <div className="flex flex-wrap gap-2">
+          <button disabled={pending} onClick={() => fire('GOVT_APPROVE')} className="btn-primary disabled:opacity-50">
+            {pending ? spin : <Landmark className="w-4 h-4" />} Govt Approved
+          </button>
+          <button disabled={pending} onClick={() => fire('GOVT_REJECT', { required: true })} className="btn-secondary disabled:opacity-50">
+            <Landmark className="w-4 h-4" /> Govt Rejected
+          </button>
+        </div>
+      );
+    } else wait = <WaitNote text="Awaiting the government department response." />;
   } else if (events.has('COMPLETE_STEP')) {
-    body = role.isStaff ? (
-      <button disabled={pending} onClick={() => onEvent({ type: 'COMPLETE_STEP' })} className="btn-primary disabled:opacity-50">
-        {pending ? spin : <PlayCircle className="w-4 h-4" />} Complete Step
-      </button>
-    ) : <WaitNote text="Our team is working on this step." />;
+    if (role.isStaff) {
+      actions = (
+        <button disabled={pending} onClick={() => fire('COMPLETE_STEP')} className="btn-primary disabled:opacity-50">
+          {pending ? spin : <PlayCircle className="w-4 h-4" />} Complete Step
+        </button>
+      );
+    } else wait = <WaitNote text="Our team is working on this step." />;
   }
 
   return (
@@ -327,7 +373,17 @@ function CurrentStepActions({
       <p className="text-xs text-ink-muted">Current step</p>
       <p className="text-sm font-semibold text-ink">{step.stepNumber}. {step.title}</p>
       {step.description && <p className="text-sm text-ink-muted mt-1 mb-3">{step.description}</p>}
-      {body}
+      {/* Comment + (stub) attach composer — shown whenever this user can act. */}
+      {actions && (
+        <ActionComposer
+          comment={comment}
+          onChange={(v) => { setComment(v); if (v.trim()) setNeedComment(false); }}
+          error={needComment ? 'Please add a comment explaining the requested changes.' : null}
+          disabled={pending}
+        />
+      )}
+      {actions}
+      {wait}
       {assignment && (
         <AssigneePicker
           stepNumber={step.stepNumber}
@@ -337,6 +393,44 @@ function CurrentStepActions({
           onChange={(uid) => assignment.onAssign(step.stepNumber, uid)}
         />
       )}
+    </div>
+  );
+}
+
+/**
+ * Comment + attach composer for a step action. The comment is optional on
+ * positive actions and required on rejections (enforced by the caller via the
+ * `error` prop). The attach control is a STUB — real upload is E-05 (Document
+ * Cycle); for now it's visible-but-disabled to signal the capability.
+ */
+function ActionComposer({ comment, onChange, error, disabled }: {
+  comment: string;
+  onChange: (v: string) => void;
+  error: string | null;
+  disabled: boolean;
+}) {
+  return (
+    <div className="mb-3">
+      <textarea
+        value={comment}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        rows={2}
+        placeholder="Add a comment (optional)…"
+        className={`input-field text-sm w-full resize-y ${error ? 'border-red-400' : ''}`}
+      />
+      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+      <div className="mt-2">
+        <button
+          type="button"
+          disabled
+          title="Document attachments are coming soon"
+          className="btn-secondary opacity-50 cursor-not-allowed inline-flex items-center gap-1.5"
+        >
+          <Paperclip className="w-4 h-4" /> Attach document
+          <span className="badge bg-surface-card text-ink-muted ml-1">soon</span>
+        </button>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,29 @@ import { logger } from "../config/logger.js";
 import { getCompiledForServiceKey, getCompiledById } from '../services/workflowDefinitions.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
 
+// Task IDs in which this user is assigned at least one STEP, across all matters.
+// Firestore can't OR a task-doc field with a subcollection field in one query, so
+// a team member's visible set = matters task-assigned to them ∪ matters where a
+// step is assigned to them. This resolves the second half via a collection-group
+// query on `steps` (needs the steps/assignedTo collection-group index).
+async function taskIdsWithStepAssignedTo(uid) {
+  const ids = new Set();
+  try {
+    const snap = await db.collectionGroup('steps').where('assignedTo', '==', uid).get();
+    snap.forEach((d) => {
+      const parent = d.ref.parent.parent; // tasks/{taskId}/steps/{n} → tasks/{taskId}
+      if (parent) ids.add(parent.id);
+    });
+  } catch (err) {
+    // Most likely the steps/assignedTo collection-group index isn't deployed yet
+    // (FAILED_PRECONDITION). Degrade gracefully: team members still see matters
+    // assigned to them at the task level; step-only delegations appear once the
+    // index is live. Don't 500 the whole list.
+    logger.warn({ err: err?.message }, 'taskIdsWithStepAssignedTo: collection-group query failed (index missing?)');
+  }
+  return ids;
+}
+
 // ─── POST /api/tasks ───────────────────────────────────────────────────────
 // Assign a service's workflow to a client → create a task. Admin/manager only.
 // Body: { clientUid, serviceKey, serviceName? }
@@ -97,21 +120,39 @@ export async function createTask(req, res) {
 export async function listTasks(req, res) {
   try {
     const { isUrgent, status, assignedTo, limit = 25, cursor } = req.query;
-    let query = db.collection('tasks');
-
     const { role, uid } = req.user;
 
+    // Team members see matters task-assigned to them ∪ matters where a STEP is
+    // assigned to them. Firestore can't OR those in one query, so fetch both,
+    // merge, filter and sort in memory. (Volumes per member are small; this also
+    // means cursor pagination doesn't apply to the team-member view.)
+    if (role === 'team_member') {
+      const [byTask, stepTaskIds] = await Promise.all([
+        db.collection('tasks').where('assignedTo', '==', uid).get(),
+        taskIdsWithStepAssignedTo(uid),
+      ]);
+      const byId = new Map(byTask.docs.map((d) => [d.id, { id: d.id, ...d.data() }]));
+      // Add step-assigned matters not already captured by task-level assignment.
+      const missing = [...stepTaskIds].filter((id) => !byId.has(id));
+      await Promise.all(missing.map(async (id) => {
+        const d = await db.collection('tasks').doc(id).get();
+        if (d.exists) byId.set(id, { id: d.id, ...d.data() });
+      }));
+      let rows = [...byId.values()];
+      if (status) rows = rows.filter((t) => t.status === status);
+      if (isUrgent === 'true') rows = rows.filter((t) => t.isUrgent === true);
+      rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
+      return res.json({ data: rows, nextCursor: null });
+    }
+
+    let query = db.collection('tasks');
     // Clients can only see their own tasks
     if (role === 'client') {
       query = query.where('clientUid', '==', uid);
     }
-    // Team members only see tasks assigned to them
-    if (role === 'team_member') {
-      query = query.where('assignedTo', '==', uid);
-    }
 
     if (status)           query = query.where('status', '==', status);
-    if (assignedTo && role !== 'team_member') query = query.where('assignedTo', '==', assignedTo);
+    if (assignedTo)       query = query.where('assignedTo', '==', assignedTo);
     if (isUrgent === 'true') query = query.where('isUrgent', '==', true);
 
     query = query.orderBy('updatedAt', 'desc').limit(limit);
@@ -148,24 +189,33 @@ export async function listMySteps(req, res) {
     const { role, uid } = req.user;
     if (role === 'client') return res.status(403).json({ message: 'Forbidden' });
 
-    // Open matters only (pending/active). Role-scope mirrors listTasks.
-    let q = db.collection('tasks').where('status', 'in', ['pending', 'active']);
+    // Resolve the set of OPEN matters in scope.
+    const openByDoc = new Map(); // taskId → task data
     if (role === 'team_member') {
-      // Team members: matters assigned to them at the task level. (Step-level
-      // assignment to a member whose matter isn't task-assigned is added below.)
-      q = q.where('assignedTo', '==', uid);
+      // Team members: matters task-assigned to them ∪ matters where a step is
+      // assigned to them. Merge both, keep only open ones.
+      const [byTask, stepTaskIds] = await Promise.all([
+        db.collection('tasks')
+          .where('status', 'in', ['pending', 'active'])
+          .where('assignedTo', '==', uid).get(),
+        taskIdsWithStepAssignedTo(uid),
+      ]);
+      byTask.docs.forEach((d) => openByDoc.set(d.id, d.data()));
+      const missing = [...stepTaskIds].filter((id) => !openByDoc.has(id));
+      await Promise.all(missing.map(async (id) => {
+        const d = await db.collection('tasks').doc(id).get();
+        const data = d.exists ? d.data() : null;
+        if (data && (data.status === 'pending' || data.status === 'active')) openByDoc.set(id, data);
+      }));
+    } else {
+      const snap = await db.collection('tasks').where('status', 'in', ['pending', 'active']).get();
+      snap.docs.forEach((d) => openByDoc.set(d.id, d.data()));
     }
-    const taskSnap = await q.get();
-
-    // Also pull steps assigned directly to this user across ANY matter (covers
-    // the case where a step is delegated to someone the matter isn't assigned to).
-    const tasksById = new Map(taskSnap.docs.map((d) => [d.id, d.data()]));
 
     const rows = [];
     await Promise.all(
-      taskSnap.docs.map(async (doc) => {
-        const t = doc.data();
-        const active = await doc.ref.collection('steps')
+      [...openByDoc.entries()].map(async ([taskId, t]) => {
+        const active = await db.collection('tasks').doc(taskId).collection('steps')
           .where('status', '==', 'active').limit(1).get();
         if (active.empty) return;
         const step = active.docs[0].data();
@@ -173,7 +223,7 @@ export async function listMySteps(req, res) {
         // Team members only see active steps that are theirs or unassigned.
         if (role === 'team_member' && assignedTo && assignedTo !== uid) return;
         rows.push({
-          taskId: doc.id,
+          taskId,
           clientName: t.clientName ?? '',
           serviceName: t.serviceName ?? t.workflowType ?? '',
           isUrgent: !!t.isUrgent,
@@ -187,7 +237,6 @@ export async function listMySteps(req, res) {
       })
     );
 
-    void tasksById; // reserved for future step-only (cross-matter) delegation lookup
     // Urgent first, then most recently updated matter.
     rows.sort((a, b) => {
       if (a.isUrgent !== b.isUrgent) return a.isUrgent ? -1 : 1;
@@ -226,7 +275,10 @@ export async function getTask(req, res) {
 }
 
 // ─── PATCH /api/tasks/:taskId ──────────────────────────────────────────────
-// Allowed updates: isUrgent (admin/manager only). Extend later as needed.
+// Allowed updates (admin/manager): isUrgent, assignedTo (matter owner).
+// Assigning a matter to a user makes the matter appear in that user's lists and
+// routes its ACTIVE step to them (unless that step already has its own assignee),
+// so the work shows up in their My Tasks immediately.
 export async function patchTask(req, res) {
   try {
     const { role } = req.user;
@@ -234,15 +286,53 @@ export async function patchTask(req, res) {
       return res.status(403).json({ message: 'Forbidden: admin or manager required' });
     }
 
-    const allowed = ['isUrgent'];
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const taskSnap = await taskRef.get();
+    if (!taskSnap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = taskSnap.data();
+
     const update = {};
-    allowed.forEach((k) => { if (k in req.body) update[k] = req.body[k]; });
+    if ('isUrgent' in req.body) update.isUrgent = req.body.isUrgent;
+
+    // Matter-level assignment. null/'' clears it.
+    let newAssignee; // undefined = not changing
+    if ('assignedTo' in req.body) {
+      newAssignee = req.body.assignedTo || null;
+      if (newAssignee) {
+        // Validate the assignee exists and is a STAFF user (never a client).
+        const u = await db.collection('users').doc(newAssignee).get();
+        if (!u.exists) return res.status(400).json({ message: 'Assignee not found' });
+        if (u.data().role === 'client') {
+          return res.status(400).json({ message: 'Cannot assign a matter to a client' });
+        }
+      }
+      update.assignedTo = newAssignee;
+    }
+
     if (!Object.keys(update).length) {
       return res.status(400).json({ message: 'No updatable fields provided' });
     }
     update.updatedAt = new Date().toISOString();
 
-    await db.collection('tasks').doc(req.params.taskId).update(update);
+    const batch = db.batch();
+    batch.set(taskRef, update, { merge: true });
+
+    // Cascade the matter owner onto the ACTIVE step so it routes to them now —
+    // but don't clobber a step that was explicitly delegated to someone else.
+    if (newAssignee !== undefined) {
+      const activeSnap = await taskRef.collection('steps')
+        .where('status', '==', 'active').limit(1).get();
+      if (!activeSnap.empty) {
+        const stepRef = activeSnap.docs[0].ref;
+        const stepData = activeSnap.docs[0].data();
+        const stepOwnedByOther = stepData.assignedTo && stepData.assignedTo !== task.assignedTo;
+        if (!stepOwnedByOther) {
+          batch.set(stepRef, { assignedTo: newAssignee, updatedAt: update.updatedAt }, { merge: true });
+        }
+      }
+    }
+
+    await batch.commit();
     res.json({ success: true });
   } catch (err) {
     logger.error({ err: err }, 'patchTask error:');
