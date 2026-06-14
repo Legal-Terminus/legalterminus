@@ -6,6 +6,7 @@ import {
   type ContactLead, type LeadStatus, type LeadInput,
 } from '../../api/reports';
 import { useAuthStore } from '../../store/authStore';
+import { useConfirm } from '../../components/common/confirmContext';
 import {
   ArrowLeft, Search, Phone, Mail, MapPin, MessageSquare,
   CheckCircle2, UserPlus, Inbox, Plus, X, Trash2, Clock, Hash,
@@ -267,6 +268,7 @@ function LeadDrawer({
   lead, onClose, onChanged,
 }: { lead: ContactLead | null; onClose: () => void; onChanged: () => void }) {
   const isNew = !lead;
+  const confirm = useConfirm();
   const [form, setForm] = useState<LeadInput>({
     fullName: lead?.fullName ?? '',
     company: lead?.company ?? '',
@@ -392,7 +394,7 @@ function LeadDrawer({
         <div className="border-t border-hairline p-4 flex items-center gap-2 shrink-0">
           {!isNew && (
             <button
-              onClick={() => { if (window.confirm('Delete this lead?')) delMut.mutate(); }}
+              onClick={async () => { if (await confirm({ title: 'Delete lead?', message: 'This permanently removes the lead.', confirmLabel: 'Delete', tone: 'danger' })) delMut.mutate(); }}
               disabled={delMut.isPending}
               className="btn-danger px-3"
               title="Delete lead"

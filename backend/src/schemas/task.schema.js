@@ -46,11 +46,6 @@ export const taskRejectSchema = z.object({
   reason: z.string().trim().min(1).max(500),
 }).strict();
 
-// POST /api/tasks/:taskId/steps/:stepNumber/offer — propose reassigning a step.
-export const stepOfferSchema = z.object({
-  toUid: shortText,
-}).strict();
-
 // GET /api/tasks list filters (+ pagination merged in route).
 export const taskListQuerySchema = z.object({
   status: z.enum([

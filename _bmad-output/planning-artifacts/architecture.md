@@ -235,20 +235,24 @@ Portal/
     │   │   ├── TopBar.tsx
     │   │   └── navConfig.ts       # Sidebar/bottom-nav derivation from APP_ROUTES
     │   ├── users/                 # ClientForm, TeamMemberForm (was components/admin/)
-    │   ├── dashboard/             # DashboardTile
+    │   ├── dashboard/             # DashboardTile, MyWorkWidget (urgent + approvals "waiting on you")
     │   ├── tasks/
     │   │   ├── StepCard.tsx
     │   │   ├── StepTimeline.tsx
     │   │   ├── PaymentBadge.tsx   # Blinking indicator
-    │   │   └── UrgentBadge.tsx
+    │   │   ├── UrgentBadge.tsx    # (urgent now shown via Flame icon on detail; badge in lists)
+    │   │   └── CreateMatterModal.tsx  # E11-S01 — create a matter (client + service picker)
     │   ├── documents/
     │   │   ├── DocumentUploader.tsx
     │   │   └── DocumentCard.tsx
     │   ├── payments/
     │   │   ├── RecordPaymentForm.tsx
     │   │   └── PaymentHistory.tsx
-    │   └── shared/
-    │       ├── ConfirmDialog.tsx
+    │   └── common/                # shared primitives (NOTE: dir is common/, not shared/)
+    │       ├── DataGrid.tsx       # E11-S06 — reusable sort/search/paginate grid + onRowClick
+    │       ├── ConfirmDialog.tsx  # E11-S07 — ConfirmProvider (app-root); promise-based modal
+    │       ├── confirmContext.ts  # E11-S07 — useConfirm() hook + context (split for fast-refresh)
+    │       ├── PageShell.tsx
     │       ├── LoadingSpinner.tsx
     │       └── ErrorBoundary.tsx
     │

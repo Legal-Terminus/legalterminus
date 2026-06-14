@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Flame, ShieldCheck, ArrowRight } from 'lucide-react';
 import { getMySteps } from '../../api/tasks';
 
 /**
@@ -30,7 +30,7 @@ export default function MyWorkWidget() {
       {urgentMine.length > 0 && (
         <div className="card p-4 border-red-200 bg-red-50/40">
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-4 h-4 text-red-600" />
+            <Flame className="w-4 h-4 text-red-600" fill="currentColor" />
             <h3 className="text-sm font-semibold text-red-800">
               Urgent — waiting on you ({urgentMine.length})
             </h3>

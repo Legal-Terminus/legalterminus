@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Workflow, Users, Check, Loader2, AlertTriangle, AlertCircle } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import WorkflowDiagram from '../../components/workflow/WorkflowDiagram';
@@ -155,6 +155,7 @@ function PhaseAssignmentsEditor({
     staleTime: 60_000,
   });
 
+  const queryClient = useQueryClient();
   const { data: saved } = useQuery({
     queryKey: ['phase-assignments', definitionId],
     queryFn: () => getPhaseAssignments(definitionId),
@@ -170,7 +171,12 @@ function PhaseAssignmentsEditor({
 
   const save = useMutation({
     mutationFn: () => putPhaseAssignments(definitionId, { ...serverAssignments, ...edits }),
-    onSuccess: () => setEdits({}),
+    onSuccess: (res) => {
+      // Write the server's canonical result straight into the cache so the UI
+      // reflects the save WITHOUT a hard refresh (was relying on stale data).
+      queryClient.setQueryData(['phase-assignments', definitionId], res);
+      setEdits({});
+    },
     onError: (err: Error) => window.alert(err.message || 'Could not save phase assignments.'),
   });
 

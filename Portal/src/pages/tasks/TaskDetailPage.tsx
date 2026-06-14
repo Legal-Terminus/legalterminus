@@ -5,11 +5,11 @@ import {
   ArrowLeft, CheckCircle2, Circle, CircleSlash, Loader2, PlayCircle,
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase,
-  ChevronRight, ChevronDown,
+  ChevronRight, ChevronDown, Flame,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, offerStep, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
 import type { Task, TaskStep, StepStatus, PaymentStatus } from '../../types/task';
@@ -96,16 +96,23 @@ export default function TaskDetailPage() {
     onError: (err: Error) => window.alert(err.message || 'Could not assign this matter.'),
   });
 
-  // Reassign-with-accept handshake (E03-S02): offer the current step to another
-  // staff user. Ownership only moves when they accept (in their My Tasks).
-  const offer = useMutation({
-    mutationFn: ({ stepNumber, toUid }: { stepNumber: number; toUid: string }) =>
-      offerStep(taskId!, stepNumber, toUid),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
-      window.alert('Reassignment offered. It will move once they accept it from their My Tasks.');
-    },
-    onError: (err: Error) => window.alert(err.message || 'Could not offer this step.'),
+  // Urgent flag (E03-S05 UI / Issue 3): admin/manager can flag the whole matter
+  // or just the current step. Effective urgency surfaces in My Tasks + dashboard.
+  const invalidateTaskViews = () => {
+    queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    queryClient.invalidateQueries({ queryKey: ['my-steps'] });
+  };
+  const toggleMatterUrgent = useMutation({
+    mutationFn: (next: boolean) => setTaskUrgent(taskId!, next),
+    onSuccess: invalidateTaskViews,
+    onError: (err: Error) => window.alert(err.message || 'Could not update urgency.'),
+  });
+  const toggleStepUrgent = useMutation({
+    mutationFn: ({ stepNumber, next }: { stepNumber: number; next: boolean }) =>
+      setStepUrgent(taskId!, String(stepNumber), next),
+    onSuccess: invalidateTaskViews,
+    onError: (err: Error) => window.alert(err.message || 'Could not update step urgency.'),
   });
 
   // Approval chain (E03-S04). Only admins approve/reject; the controls show only
@@ -164,27 +171,41 @@ export default function TaskDetailPage() {
       title={task.serviceName || task.workflowType}
       subtitle={isClient ? progressLabel : `${task.clientName ?? ''}${task.clientName ? ' · ' : ''}${progressLabel} · ${task.status}`}
       action={
-        /* Matter owner — assigns the WHOLE matter (all steps) to one user. A
-           matter-level property, so it sits in the matter header — distinct from
-           the per-step "Step owner" in the hero below. */
         canAssign ? (
-          <label className="flex items-center gap-2">
-            <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Matter owner</span>
-            <span className="relative inline-flex items-center">
-              <select
-                className="input-field py-1.5 pr-8 text-sm max-w-[160px]"
-                value={task.assignedTo ?? ''}
-                disabled={assignOwner.isPending}
-                onChange={(e) => assignOwner.mutate(e.target.value || null)}
-              >
-                <option value="">Unassigned</option>
-                {staff.map((u) => (
-                  <option key={u.uid} value={u.uid}>{displayName(u)}</option>
-                ))}
-              </select>
-              {assignOwner.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
-            </span>
-          </label>
+          <div className="flex items-center gap-2">
+            {/* Matter-level Urgent flame (Issue 3). Filled red = urgent. */}
+            <button
+              onClick={() => toggleMatterUrgent.mutate(!task.isUrgent)}
+              disabled={toggleMatterUrgent.isPending}
+              aria-pressed={!!task.isUrgent}
+              title={task.isUrgent ? 'Urgent — click to clear' : 'Mark matter urgent'}
+              className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
+                task.isUrgent
+                  ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                  : 'text-ink-faint hover:text-ink hover:bg-surface-soft'
+              }`}
+            >
+              <Flame className="w-[18px] h-[18px]" fill={task.isUrgent ? 'currentColor' : 'none'} />
+            </button>
+            {/* Matter owner — assigns the WHOLE matter (all steps) to one user. */}
+            <label className="flex items-center gap-2">
+              <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Matter owner</span>
+              <span className="relative inline-flex items-center">
+                <select
+                  className="input-field py-1.5 pr-8 text-sm max-w-[160px]"
+                  value={task.assignedTo ?? ''}
+                  disabled={assignOwner.isPending}
+                  onChange={(e) => assignOwner.mutate(e.target.value || null)}
+                >
+                  <option value="">Unassigned</option>
+                  {staff.map((u) => (
+                    <option key={u.uid} value={u.uid}>{displayName(u)}</option>
+                  ))}
+                </select>
+                {assignOwner.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
+              </span>
+            </label>
+          </div>
         ) : undefined
       }
     >
@@ -259,9 +280,10 @@ export default function TaskDetailPage() {
           onEvent={(e) => advance.mutate(e)}
           assignment={canAssign ? {
             staff,
-            assigning: assign.isPending || offer.isPending,
+            assigning: assign.isPending,
             onAssign: (stepNumber, assignedTo) => assign.mutate({ stepNumber, assignedTo }),
-            onOffer: (stepNumber, toUid) => offer.mutate({ stepNumber, toUid }),
+            onToggleUrgent: (stepNumber, next) => toggleStepUrgent.mutate({ stepNumber, next }),
+            urgentPending: toggleStepUrgent.isPending,
           } : undefined}
           events={events}
         />
@@ -373,8 +395,9 @@ interface StepAssignment {
   staff: PortalUser[];
   assigning: boolean;
   onAssign: (stepNumber: number, assignedTo: string | null) => void;
-  // Reassign-with-accept handshake (E03-S02): offer (don't force) to another user.
-  onOffer: (stepNumber: number, toUid: string) => void;
+  // Urgent toggle for the current step (Issue 3).
+  onToggleUrgent: (stepNumber: number, next: boolean) => void;
+  urgentPending: boolean;
 }
 
 function StepsTab({
@@ -435,10 +458,12 @@ function StepsTab({
 
   // The HERO panel — the one dominant zone: action (left) + meta (right) inside a
   // single elevated, bordered container, so the rail clearly belongs to the step.
+  const currentStepUrgent = steps.find((s) => s.stepNumber === task.currentStepNumber)?.isUrgent ?? false;
   const hero = !completed && currentDef ? (
     <StepHeroPanel
       step={currentDef} role={role} pending={pending} turn={currentTurn}
       onEvent={onEvent} assignment={assignment} currentAssignee={currentAssignee}
+      stepUrgent={currentStepUrgent}
     />
   ) : completed ? (
     <div className="card p-5 flex items-center gap-2.5 bg-emerald-50 border-emerald-100">
@@ -483,21 +508,31 @@ function StepsTab({
     </div>
   );
 
-  // No phases → single column (graceful fallback for non-incorporation flows).
+  // Activity as a sticky RIGHT sidebar (xl+). Capped height with internal scroll
+  // so a long feed never runs past the viewport while sticky.
+  const activityAside = activitySection && (
+    <aside className="xl:sticky xl:top-4 self-start xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto">
+      {activitySection}
+    </aside>
+  );
+
+  // No phases → content + sticky Activity sidebar on xl (single column below that).
   if (!hasPhases) {
     return (
-      <div className="space-y-7">
-        {pendingBar}
-        {hero}
-        {activitySection}
-        {stepsSection}
+      <div className="xl:grid xl:grid-cols-[1fr_320px] xl:gap-6">
+        <div className="space-y-7 min-w-0">
+          {pendingBar}
+          {hero}
+          {stepsSection}
+        </div>
+        {activityAside}
       </div>
     );
   }
 
-  // Phases → timeline-centric (Option 3): stage rail + focused pane.
+  // Phases → timeline-centric (Option 3): stage rail + focused pane + Activity rail.
   return (
-    <div className="lg:grid lg:grid-cols-[230px_1fr] lg:gap-6">
+    <div className="lg:grid lg:grid-cols-[210px_1fr] xl:grid-cols-[210px_1fr_320px] lg:gap-6">
       {/* Mobile: stage dropdown. Desktop: stage rail. */}
       <MobileStagePicker stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} />
       <nav className="hidden lg:block space-y-1 lg:sticky lg:top-4 self-start">
@@ -522,9 +557,14 @@ function StepsTab({
       <div className="space-y-7 min-w-0 mt-5 lg:mt-0">
         {pendingBar}
         {hero}
-        {activitySection}
+        {/* On lg (no 3rd column) Activity shows here, below content; on xl it
+            moves to the right rail (hidden here to avoid duplication). */}
+        <div className="xl:hidden">{activitySection}</div>
         {stepsSection}
       </div>
+
+      {/* Activity right rail — xl+ only (lg shows it inline above). */}
+      <div className="hidden xl:block">{activityAside}</div>
     </div>
   );
 }
@@ -594,6 +634,9 @@ const EVENT_VERB: Record<string, string> = {
   CLIENT_REJECT: 'requested changes',
   GOVT_APPROVE: 'marked Govt approved',
   GOVT_REJECT: 'marked Govt rejected',
+  STEP_REASSIGNED: 'reassigned the step',
+  TASK_APPROVED: 'approved the matter',
+  TASK_REJECTED: 'rejected the matter',
 };
 
 /** Relative time. Module-scope (impure Date.now must not be called in render). */
@@ -669,7 +712,7 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  step, role, pending, onEvent, assignment, currentAssignee, turn,
+  step, role, pending, onEvent, assignment, currentAssignee, turn, stepUrgent,
 }: {
   step: WorkflowStepDef;
   role: { isStaff: boolean; isClient: boolean };
@@ -678,6 +721,7 @@ function StepHeroPanel({
   assignment?: StepAssignment;
   currentAssignee?: string | null;
   turn?: 'team' | 'client' | 'govt' | null;
+  stepUrgent?: boolean;
 }) {
   const events = new Set((step.transitions ?? []).map((t) => t.event));
   const spin = <Loader2 className="w-4 h-4 animate-spin" />;
@@ -798,19 +842,20 @@ function StepHeroPanel({
       </div>
       {assignment && (
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">Reassign (needs accept)</p>
-          <select
-            className="input-field py-1.5 text-xs w-full"
-            value=""
-            disabled={assignment.assigning}
-            onChange={(e) => { if (e.target.value) assignment.onOffer(step.stepNumber, e.target.value); e.target.value = ''; }}
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">Priority</p>
+          <button
+            onClick={() => assignment.onToggleUrgent(step.stepNumber, !stepUrgent)}
+            disabled={assignment.urgentPending}
+            aria-pressed={!!stepUrgent}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium w-full justify-center transition-colors ${
+              stepUrgent
+                ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                : 'btn-secondary'
+            }`}
           >
-            <option value="">Offer to…</option>
-            {assignment.staff
-              .filter((u) => u.uid !== currentAssignee)
-              .map((u) => <option key={u.uid} value={u.uid}>{displayName(u)}</option>)}
-          </select>
-          <p className="text-[10px] text-ink-faint mt-1">They keep waiting until they accept.</p>
+            <Flame className="w-3.5 h-3.5" fill={stepUrgent ? 'currentColor' : 'none'} />
+            {stepUrgent ? 'Urgent — clear' : 'Mark step urgent'}
+          </button>
         </div>
       )}
       <div>

@@ -400,41 +400,7 @@ export async function listMySteps(req, res) {
       logger.warn({ err: err?.message }, 'listMySteps: approvals lookup failed');
     }
 
-    // Reassignment offers awaiting MY accept/decline (E03-S02). Collection-group
-    // over steps where reassignOffer.toUid == me. Enrich with matter context.
-    let offers = [];
-    try {
-      const offerSnap = await db.collectionGroup('steps')
-        .where('reassignOffer.toUid', '==', uid).get();
-      offers = await Promise.all(offerSnap.docs.map(async (d) => {
-        const step = d.data();
-        const taskRef = d.ref.parent.parent;
-        const taskDoc = taskRef ? await taskRef.get() : null;
-        const t = taskDoc && taskDoc.exists ? taskDoc.data() : {};
-        // Resolve who offered it.
-        let offeredByName = 'Someone';
-        const byUid = step.reassignOffer?.byUid;
-        if (byUid) {
-          const us = await db.collection('users').doc(byUid).get();
-          const ud = us.exists ? us.data() : null;
-          offeredByName = ud ? (ud.name || ud.fullName || ud.email || 'User') : 'User';
-        }
-        return {
-          taskId: taskRef ? taskRef.id : null,
-          stepNumber: step.stepNumber,
-          stepTitle: step.title ?? `Step ${step.stepNumber}`,
-          clientName: t.clientName ?? '',
-          serviceName: t.serviceName ?? t.workflowType ?? '',
-          offeredByName,
-          at: step.reassignOffer?.at ?? null,
-        };
-      }));
-      offers.sort((a, b) => (b.at ?? '').localeCompare(a.at ?? ''));
-    } catch (err) {
-      logger.warn({ err: err?.message }, 'listMySteps: offers lookup failed (index missing?)');
-    }
-
-    res.json({ data: rows, approvals, offers });
+    res.json({ data: rows, approvals });
   } catch (err) {
     logger.error({ err }, 'listMySteps error:');
     res.status(500).json({ message: 'Failed to load your tasks' });
@@ -592,12 +558,43 @@ export async function patchStep(req, res) {
     const stepDoc = await stepRef.get();
 
     if (stepDoc.exists) {
-      const update = { updatedAt: new Date().toISOString() };
+      const prev = stepDoc.data();
+      const now = new Date().toISOString();
+      const update = { updatedAt: now };
       if (isUrgent !== undefined) update.isUrgent = isUrgent;
       // Assign/unassign this step to a specific staff user. `null`/'' clears it
       // (back to the shared/unassigned pool). Surfaced in the My Tasks worklist.
+      const reassigning = assignedTo !== undefined && (assignedTo || null) !== (prev.assignedTo ?? null);
       if (assignedTo !== undefined) update.assignedTo = assignedTo || null;
-      await stepRef.update(update);
+
+      const batch = db.batch();
+      batch.set(stepRef, update, { merge: true });
+
+      // Record reassignment in the activity thread (E03-S02, direct model). The
+      // change takes effect immediately — no acceptance needed — but is audited so
+      // everyone can see who routed the step to whom.
+      if (reassigning) {
+        const nameFor = async (u) => {
+          if (!u) return null;
+          const s = await db.collection('users').doc(u).get();
+          const d = s.exists ? s.data() : null;
+          return d ? (d.name || d.fullName || d.email || 'User') : 'User';
+        };
+        const [fromName, toName] = await Promise.all([nameFor(prev.assignedTo), nameFor(update.assignedTo)]);
+        const comment = update.assignedTo
+          ? `Reassigned to ${toName}${prev.assignedTo ? ` (from ${fromName})` : ''}`
+          : `Unassigned${prev.assignedTo ? ` (was ${fromName})` : ''}`;
+        batch.set(db.collection('tasks').doc(taskId).collection('events').doc(), {
+          type: 'STEP_REASSIGNED',
+          fromStep: prev.stepNumber ?? parseInt(stepId, 10),
+          toStep: prev.stepNumber ?? parseInt(stepId, 10),
+          comment,
+          byUid: req.user.uid ?? null,
+          byRole: req.user.role ?? null,
+          at: now,
+        });
+      }
+      await batch.commit();
       return res.json({ success: true });
     }
 
@@ -620,108 +617,6 @@ export async function patchStep(req, res) {
   } catch (err) {
     logger.error({ err: err }, 'patchStep error:');
     res.status(500).json({ message: 'Failed to update step' });
-  }
-}
-
-// ─── Reassign-with-accept handshake (E03-S02) ──────────────────────────────
-// Direct assignment (patchStep / assignMatter) force-routes a step. The HANDSHAKE
-// is a softer hand-off: the proposer OFFERS the step to another staff user, who
-// must ACCEPT before ownership moves. Until then the original assignee keeps it.
-// State lives on the step as `reassignOffer: { toUid, fromUid, byUid, at }`.
-
-const stepRefFor = (taskId, stepNumber) =>
-  db.collection('tasks').doc(taskId).collection('steps').doc(String(stepNumber));
-
-// POST /api/tasks/:taskId/steps/:stepNumber/offer  { toUid }
-// Propose handing this step to `toUid`. Allowed for admin/manager, or the step's
-// current owner handing off their own work.
-export async function offerStep(req, res) {
-  try {
-    const { taskId, stepNumber } = req.params;
-    const { toUid } = req.body;
-    const { uid, role } = req.user;
-
-    const stepRef = stepRefFor(taskId, stepNumber);
-    const stepSnap = await stepRef.get();
-    if (!stepSnap.exists) return res.status(404).json({ message: 'Step not found' });
-    const step = stepSnap.data();
-
-    const isStaffManager = role === 'admin' || role === 'manager';
-    const isOwner = step.assignedTo && step.assignedTo === uid;
-    if (!isStaffManager && !isOwner) {
-      return res.status(403).json({ message: 'Only a manager/admin or the step owner can reassign this step' });
-    }
-
-    // Validate target is a staff user (never a client) and not the current owner.
-    const u = await db.collection('users').doc(toUid).get();
-    if (!u.exists) return res.status(400).json({ message: 'Proposed assignee not found' });
-    if (u.data().role === 'client') return res.status(400).json({ message: 'Cannot assign a step to a client' });
-    if (step.assignedTo === toUid) return res.status(400).json({ message: 'Step is already owned by that user' });
-
-    const now = new Date().toISOString();
-    await stepRef.set({
-      reassignOffer: { toUid, fromUid: step.assignedTo ?? null, byUid: uid ?? null, at: now },
-      updatedAt: now,
-    }, { merge: true });
-    res.json({ success: true });
-  } catch (err) {
-    logger.error({ err }, 'offerStep error:');
-    res.status(500).json({ message: 'Failed to offer step' });
-  }
-}
-
-// POST /api/tasks/:taskId/steps/:stepNumber/accept
-// The proposed user accepts: ownership moves to them, the offer is cleared.
-export async function acceptStepOffer(req, res) {
-  try {
-    const { taskId, stepNumber } = req.params;
-    const { uid } = req.user;
-    const stepRef = stepRefFor(taskId, stepNumber);
-    const stepSnap = await stepRef.get();
-    if (!stepSnap.exists) return res.status(404).json({ message: 'Step not found' });
-    const offer = stepSnap.data().reassignOffer;
-    if (!offer) return res.status(409).json({ message: 'No pending reassignment for this step' });
-    if (offer.toUid !== uid) return res.status(403).json({ message: 'This reassignment was not offered to you' });
-
-    const { FieldValue } = await import('firebase-admin/firestore');
-    await stepRef.set({
-      assignedTo: uid,
-      reassignOffer: FieldValue.delete(),
-      updatedAt: new Date().toISOString(),
-    }, { merge: true });
-    res.json({ success: true, assignedTo: uid });
-  } catch (err) {
-    logger.error({ err }, 'acceptStepOffer error:');
-    res.status(500).json({ message: 'Failed to accept reassignment' });
-  }
-}
-
-// POST /api/tasks/:taskId/steps/:stepNumber/decline
-// The proposed user declines (or the proposer/admin cancels): clear the offer;
-// ownership stays with the original assignee.
-export async function declineStepOffer(req, res) {
-  try {
-    const { taskId, stepNumber } = req.params;
-    const { uid, role } = req.user;
-    const stepRef = stepRefFor(taskId, stepNumber);
-    const stepSnap = await stepRef.get();
-    if (!stepSnap.exists) return res.status(404).json({ message: 'Step not found' });
-    const offer = stepSnap.data().reassignOffer;
-    if (!offer) return res.status(409).json({ message: 'No pending reassignment for this step' });
-
-    // The proposed user, the proposer, or any admin/manager may clear it.
-    const allowed = offer.toUid === uid || offer.byUid === uid || role === 'admin' || role === 'manager';
-    if (!allowed) return res.status(403).json({ message: 'Not allowed to decline this reassignment' });
-
-    const { FieldValue } = await import('firebase-admin/firestore');
-    await stepRef.set({
-      reassignOffer: FieldValue.delete(),
-      updatedAt: new Date().toISOString(),
-    }, { merge: true });
-    res.json({ success: true });
-  } catch (err) {
-    logger.error({ err }, 'declineStepOffer error:');
-    res.status(500).json({ message: 'Failed to decline reassignment' });
   }
 }
 

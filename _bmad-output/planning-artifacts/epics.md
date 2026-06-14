@@ -74,6 +74,8 @@ split dashboard tiles.
 | E-08 | Reports & Master Sheet | Phase 1 / 2 | E08-S01 – E08-S06 |
 | E-09 | User & Client Management | Phase 1 / 2 | E09-S01 – E09-S05 |
 | E-10 | Workflow Configuration | Phase 1 | E10-S01 – E10-S02 |
+| E-11 | Matter Creation, Pre-Assignment, Priority & UI Platform | Phase 1 | E11-S01 – E11-S08 |
+| E-12 | Client vs Internal View Separation | Phase 1 | E12-S01 – E12-S03 |
 
 ---
 
@@ -456,17 +458,19 @@ split dashboard tiles.
 
 **Priority**: P1 | **Complexity**: L | **Linked spec story**: US-2 | **Dependencies**: E03-S01, E02-S02
 
-> **✅ Reassign-with-accept handshake BUILT (2026-06-14).** The "reassign to another team member"
-> half of this story is done as a soft hand-off (the other halves — mark-complete, doc-query — were
-> already covered by the transition endpoint + E05 stub). A step OWNER (or admin/manager) can OFFER
-> the step to another staff user; ownership only moves when they ACCEPT. State lives on the step as
-> `reassignOffer: { toUid, fromUid, byUid, at }` — the original assignee keeps it until accepted.
-> Endpoints: `POST /api/tasks/:id/steps/:n/offer { toUid }`, `/accept`, `/decline`
-> ([tasks.controller.js](../../backend/src/controllers/tasks.controller.js)). The proposed user sees
-> offers in **My Tasks** ("Reassignments offered to you" with Accept/Decline); the offer is initiated
-> from the step hero's "Reassign (needs accept)" picker on the task detail. Collection-group query on
-> `steps.reassignOffer.toUid` (field override added to firestore.indexes.json). NOTE: notifications/email
-> on offer are deferred to E-07 (no notification subsystem yet) — surfacing is via the polled My Tasks feed.
+> **✅ Reassignment BUILT — DIRECT + audited (revised 2026-06-14).** The "reassign to another team
+> member" half of this story is done (the other halves — mark-complete, doc-query — were already covered
+> by the transition endpoint + E05 stub).
+> - **⚠️ DESIGN CHANGED (2026-06-14):** an earlier accept/decline **handshake** was built then **removed**
+>   per user decision — *"we should not need acceptance, but yes record in the activity reassignments
+>   also."* Reassignment is now **direct and immediate**: changing the **Step owner** picker on the task
+>   detail (admin/manager, or the step's current owner) moves ownership at once.
+> - **Audited:** `PATCH /api/tasks/:id/steps/:n { assignedTo }` records a `STEP_REASSIGNED` event in the
+>   matter's activity thread ("Reassigned to X (from Y)" / "Unassigned"). Surfaces in the Activity feed.
+> - **Removed artifacts:** the `offer`/`accept`/`decline` endpoints, `reassignOffer` step field, the
+>   `steps.reassignOffer.toUid` index override, and the My Tasks "Reassignments offered to you" section
+>   are all gone.
+> - **Still TODO (this story):** "Raise Document Query" (needs E-07 notifications); blocked-step gating.
 
 **Rationale**: A team member must be able to act on steps: mark complete (fires `COMPLETE_STEP` XState event), raise a document query (sends notification to client), and reassign to another team member. These are the three primary daily interactions.
 
@@ -1673,17 +1677,22 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 
 ---
 
-## E-11 — Matter Creation, Pre-Assignment & Priority Visibility
+## E-11 — Matter Creation, Pre-Assignment, Priority & UI Platform
 
 **Goal**: Make matter creation a first-class action from the Matters page, let staff
 **pre-configure who owns each phase** of a service's workflow so steps are auto-assigned
-on creation, and make **Urgent** priority visible where staff actually look (My Tasks +
-dashboard) including approval to-dos. Raised 2026-06-14.
+on creation, make **Urgent** priority visible where staff actually look (My Tasks +
+dashboard) including approval to-dos, and standardise the app's list/confirm UX
+(reusable data grid, in-app confirm dialog, clearer task-detail layout). Raised 2026-06-14.
 
-> **Why these together**: they form one operational loop — *create a matter → its work is
+> **Why these together**: S01–S04 form one operational loop — *create a matter → its work is
 > already routed to the right people → the urgent/pending items surface on each person's
-> worklist*. They build directly on the assignment model (E-03 status block) and the
-> approval chain (E03-S04).
+> worklist* — building on the assignment model (E-03 status block) and the approval chain
+> (E03-S04). S05–S08 are the **UI platform** work that emerged while polishing that loop:
+> the flame priority icon (S05), a reusable DataGrid + list→grid migration (S06), an in-app
+> confirmation dialog replacing `window.confirm` (S07), and the task-detail Activity sidebar (S08).
+>
+> **Story status (all 2026-06-14):** S01 ✅ · S02 ✅ · S03 ✅ · S04 ✅ · S05 ✅ · S06 ✅ · S07 ✅ · S08 ✅.
 
 ---
 
@@ -1818,8 +1827,9 @@ on them**. This reuses `isUrgent` (no new data model) and adds the *visibility* 
 > now also returns `approvals` (matters awaiting the caller's approval, via role-derived
 > `canApprove(user, matter)` — admin + `pending_admin_approval` today, extensible). **My Tasks** shows
 > an "Awaiting your approval" section; the staff **dashboard** widget shows the count + list. Each links
-> to the matter's approval banner (Approve/Reject from E03-S04). Also surfaces E03-S02 reassignment
-> offers in the same feed.
+> to the matter's approval banner (Approve/Reject from E03-S04).
+> *(Update 2026-06-14: the reassignment-offers section that briefly shared this feed was removed when
+> reassignment became direct — see E03-S02.)*
 
 **Rationale**: A matter `pending_admin_approval` (E03-S04) has no `active` step, so it never appeared
 in My Tasks — yet approving it **is** a to-do for the approver. Approvals must surface as worklist
@@ -1844,6 +1854,165 @@ the model must extend to future approval rules without a rewrite).
 **Frontend screens/components**:
 - `Portal/src/pages/tasks/MyTasksPage.tsx` (Approvals section)
 - `Portal/src/pages/dashboard/DashboardPage.tsx` (approvals count)
+
+---
+
+### E11-S05 — Urgent Priority Icon (Flame) [Phase 1]
+
+**Priority**: P3 | **Complexity**: S | **Linked spec story**: US-10 | **Dependencies**: E11-S03 | **Raised**: 2026-06-14
+
+> **✅ BUILT (2026-06-14).** Replaced the text "Mark urgent" toggle button with a more intuitive
+> **flame icon** (per user request). Filled red when urgent, grey outline when not, used consistently
+> app-wide: matter header (icon button) + step hero (labelled) on the task detail, and the Urgent
+> badges in the Matters grid, My Tasks, and the dashboard widget. `aria-pressed` for a11y. Reuses the
+> existing `isUrgent` flag — no data change.
+
+**Acceptance Criteria**:
+- The urgent control is a flame icon (toggle), filled+red when active; consistent across matter header,
+  step hero, list/grid badges and the dashboard widget.
+- My Tasks work grid has a sortable + searchable **Priority** column (Urgent / Normal), urgent on top.
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/TaskDetailPage.tsx`, `MyTasksPage.tsx`, `TasksPage.tsx`,
+  `Portal/src/components/dashboard/MyWorkWidget.tsx`.
+
+---
+
+### E11-S06 — Reusable Data Grid + List→Grid Migration [Phase 1]
+
+**Priority**: P2 | **Complexity**: M | **Linked spec story**: — | **Dependencies**: E09 (Users grid pattern) | **Raised**: 2026-06-14
+
+> **✅ BUILT (2026-06-14).** Extracted the Users-page table pattern into a single reusable
+> **`DataGrid<T>`** ([Portal/src/components/common/DataGrid.tsx](../../Portal/src/components/common/DataGrid.tsx)):
+> sortable headers, global search, client-side pagination, desktop div-grid table + optional mobile-card
+> renderer, loading/error/empty states, and an **`onRowClick`** that makes whole rows clickable
+> (cursor + hover). Migrated these list pages from ad-hoc tables/cards to `DataGrid`:
+> - **Matters** ([TasksPage.tsx](../../Portal/src/pages/tasks/TasksPage.tsx)) — sortable Client/Service,
+>   Status, Payment, Progress, Updated, Actions; row → matter detail.
+> - **My Tasks** ([MyTasksPage.tsx](../../Portal/src/pages/tasks/MyTasksPage.tsx)) — two grids: "Awaiting
+>   your approval" + "My work" (assigned + pool combined with a sortable **Queue** column; Priority column).
+> - **Reports** — All / Completed / Pending (per reason group) / Master Sheet
+>   ([reportColumns.tsx](../../Portal/src/pages/reports/reportColumns.tsx) shared columns); server-side
+>   status/payment/date filters retained, CSV export retained; rows → matter detail.
+
+**Acceptance Criteria**:
+- One `DataGrid<T>` component is the shared basis for Users-style lists; supports sort, search, pagination,
+  mobile cards, and optional `onRowClick`.
+- Matters, My Tasks (both sections), and all four report pages render via `DataGrid` with clickable rows
+  that open the matter (`/tasks/:id`).
+- Pre-existing server-side report filters and CSV export are preserved.
+
+**Frontend screens/components**:
+- `Portal/src/components/common/DataGrid.tsx` (new), `Portal/src/pages/reports/reportColumns.tsx` (new),
+  `TasksPage.tsx`, `MyTasksPage.tsx`, `reports/*`.
+
+---
+
+### E11-S07 — App Confirmation Dialog (replace window.confirm) [Phase 1]
+
+**Priority**: P3 | **Complexity**: S | **Linked spec story**: — | **Dependencies**: E01-S04 | **Raised**: 2026-06-14
+
+> **✅ BUILT (2026-06-14).** Native `window.confirm()` for destructive actions replaced with a styled,
+> promise-based in-app dialog — `ConfirmProvider` + `useConfirm()`
+> ([ConfirmDialog.tsx](../../Portal/src/components/common/ConfirmDialog.tsx),
+> [confirmContext.ts](../../Portal/src/components/common/confirmContext.ts)), mounted at the app root.
+> Usage: `if (await confirm({ title, message, tone: 'danger', confirmLabel: 'Delete' })) …`. Wired into
+> the **delete matter**, **delete user**, and **delete lead** flows.
+> - ⏳ TODO: `window.alert()` error popups (mutation onError handlers across tasks/services/reports) are
+>   still native — convert to in-app toasts in a follow-up (separate concern from confirmation).
+
+**Acceptance Criteria**:
+- A single app-wide confirm dialog (our UI, not the browser's) is used for all destructive confirmations.
+- Delete matter / user / lead use it with a danger tone and explicit confirm label.
+
+**Frontend screens/components**:
+- `Portal/src/components/common/ConfirmDialog.tsx`, `confirmContext.ts`; `TasksPage.tsx`,
+  `users/UsersPage.tsx`, `reports/ContactLeadsReport.tsx`, `main.tsx`.
+
+---
+
+### E11-S08 — Task Detail: Activity in a Sticky Sidebar [Phase 1]
+
+**Priority**: P3 | **Complexity**: S | **Linked spec story**: US-1 | **Dependencies**: E-03 redesign | **Raised**: 2026-06-14
+
+> **✅ BUILT (2026-06-14).** UX review flagged that the Activity feed stacked *below* the current step
+> competed with the action zone and pushed the step list down. Moved Activity into a **sticky right
+> sidebar** (xl+) beside the hero/steps, capped height with internal scroll; on smaller screens it
+> collapses below the content. ([TaskDetailPage.tsx](../../Portal/src/pages/tasks/TaskDetailPage.tsx))
+
+**Acceptance Criteria**:
+- On wide screens Activity is a sticky right column; on narrow screens it stacks below the step content.
+- The step list is reachable without scrolling past the full activity history.
+
+---
+
+## E-12 — Client vs Internal View Separation
+
+**Goal**: Ensure the client-facing view never exposes internal operational detail. A client must see a
+clean, client-appropriate picture of *their* service — never internal team assignees, internal-only
+activity events, or staff mechanics. Raised 2026-06-14.
+
+> **⏳ NOT STARTED — next up.** Current state: the task detail and activity thread are largely shared
+> between staff and client with role-branched CTAs, but several internal signals can leak to clients.
+> This epic hardens the boundary, server-side first (don't rely on hiding in the UI).
+
+---
+
+### E12-S01 — Hide Internal Assignees & Owner Controls from Clients [Phase 1]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-1 | **Dependencies**: E-03, E-04
+
+**Rationale**: Clients should not see *who internally* is working their matter (Step owner, Matter owner,
+assignee names, reassignment controls). These are internal staffing details.
+
+**Acceptance Criteria**:
+- The client task view shows no Step-owner / Matter-owner pickers, assignee names, or reassign controls.
+- Backend: `GET /api/tasks/:id` and `/steps` responses for a **client** omit (or null) `assignedTo` and
+  any internal-only fields — defence at the API, not just the UI.
+- Staff views are unchanged.
+
+**Backend/Frontend**:
+- `backend/src/controllers/tasks.controller.js` (role-aware projection for client reads).
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (client branch hides owner/assignee UI).
+
+---
+
+### E12-S02 — Client-Safe Activity Feed [Phase 1]
+
+**Priority**: P1 | **Complexity**: M | **Linked spec story**: US-1 | **Dependencies**: E03-S06 (events), E12-S01
+
+**Rationale**: The activity thread currently records internal events (reassignments, step-owner changes,
+internal comments, payment-override mechanics, govt-step internals). A client should see only events
+meaningful to them — their own approvals/rejections, status/stage changes, document requests, completion.
+
+**Acceptance Criteria**:
+- A **client-safe event whitelist** governs what `GET /api/tasks/:id/events` returns to a client (e.g.
+  matter created/approved, stage completed, client-action requested, client approve/reject, matter
+  completed). Internal events (`STEP_REASSIGNED`, internal `COMPLETE_STEP` detail, payment overrides,
+  internal comments) are excluded for clients.
+- Event actor identity is generalised for clients ("Our team") rather than naming internal staff.
+- Filtering is enforced **server-side** by role; staff still get the full feed.
+- The client task view's Activity reflects only the whitelisted, client-friendly entries.
+
+**Backend/Frontend**:
+- `backend/src/controllers/tasks.controller.js` `listTaskEvents` (role-aware whitelist + actor masking).
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (client Activity copy).
+
+---
+
+### E12-S03 — Client View Audit Pass [Phase 1]
+
+**Priority**: P2 | **Complexity**: S | **Linked spec story**: US-1 | **Dependencies**: E12-S01, E12-S02
+
+**Rationale**: A holistic sweep of every client-facing surface to catch any remaining internal leakage
+(labels, tooltips, step internal notes, "with our team" vs internal role names, urgent flags meant for
+ops, etc.).
+
+**Acceptance Criteria**:
+- Reviewed: client task list, task detail (Steps/Documents/Payments), journey/stage cues, and any
+  client-visible report/profile surfaces — none expose internal assignees, internal events, or staff-only
+  controls.
+- Findings tracked and fixed; documented in this story.
 
 ---
 

@@ -8,7 +8,7 @@ import {
   Shield, Calendar, AlertCircle, Save, X,
 } from 'lucide-react';
 
-type StaffRole = 'admin' | 'manager' | 'team_member';
+type AssignableRole = 'admin' | 'manager' | 'team_member' | 'client';
 
 interface TeamMember {
   uid?: string;
@@ -16,7 +16,7 @@ interface TeamMember {
   email: string;
   phone: string;
   designation: string;
-  role: StaffRole;
+  role: AssignableRole;
   joiningDate: string;
   fathersName?: string;
   dateOfBirth?: string;
@@ -36,12 +36,14 @@ const ROLES = [
   { value: 'team_member', label: 'Team Member', desc: 'Can view and work on assigned tasks', color: 'brand' },
   { value: 'manager',     label: 'Manager',     desc: 'Can manage team and task assignments', color: 'amber' },
   { value: 'admin',       label: 'Admin',        desc: 'Full access to all features',          color: 'red' },
+  { value: 'client',      label: 'Client',       desc: 'External client — no staff access',    color: 'slate' },
 ] as const;
 
 const COLOR_MAP = {
   brand: { border: 'border-brand-500 bg-brand-50', ring: 'ring-1 ring-brand-500', dot: 'bg-brand-600', label: 'text-brand-700' },
   amber: { border: 'border-amber-400 bg-amber-50', ring: 'ring-1 ring-amber-400', dot: 'bg-amber-500', label: 'text-amber-700' },
   red:   { border: 'border-red-400 bg-red-50',     ring: 'ring-1 ring-red-400',   dot: 'bg-red-500',   label: 'text-red-700'   },
+  slate: { border: 'border-slate-400 bg-slate-50', ring: 'ring-1 ring-slate-400', dot: 'bg-slate-500', label: 'text-slate-700' },
 };
 
 export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMemberFormProps) {
@@ -52,8 +54,8 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
   const selectableRoles = ROLES.filter((r) => allowedRoleKeys.includes(r.value));
 
   const incomingRole = member?.role;
-  const initialRole: StaffRole =
-    incomingRole === 'admin' || incomingRole === 'manager' || incomingRole === 'team_member'
+  const initialRole: AssignableRole =
+    incomingRole === 'admin' || incomingRole === 'manager' || incomingRole === 'team_member' || incomingRole === 'client'
       ? incomingRole
       : 'team_member';
 
@@ -99,12 +101,16 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.phone || !formData.designation) {
+    // Designation is required for STAFF roles only; a client has no designation.
+    const needsDesignation = formData.role !== 'client';
+    if (!formData.name || !formData.email || !formData.phone || (needsDesignation && !formData.designation)) {
       setError('Please fill all required fields');
       return;
     }
     setError('');
-    mutation.mutate(formData);
+    // Don't send a stale designation for a client (backend keys staff-ness off role).
+    const payload = formData.role === 'client' ? { ...formData, designation: '' } : formData;
+    mutation.mutate(payload);
   };
 
   return (
@@ -191,7 +197,9 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
                 </div>
               </div>
               <div>
-                <label className="input-label">Designation <span className="text-red-400">*</span></label>
+                <label className="input-label">
+                  Designation {formData.role !== 'client' && <span className="text-red-400">*</span>}
+                </label>
                 <div className="relative">
                   <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
@@ -199,9 +207,10 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
                     name="designation"
                     value={formData.designation}
                     onChange={handleChange}
-                    placeholder="e.g. Legal Analyst"
+                    placeholder={formData.role === 'client' ? 'Not applicable for clients' : 'e.g. Legal Analyst'}
                     className="input-field pl-10"
-                    required
+                    disabled={formData.role === 'client'}
+                    required={formData.role !== 'client'}
                   />
                 </div>
               </div>

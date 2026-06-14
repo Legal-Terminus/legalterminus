@@ -121,46 +121,22 @@ export interface MyApprovalRow {
   updatedAt: string | null;
 }
 
-/** Full "My Tasks" payload: the worklist + approvals + reassignment offers. */
+/** Full "My Tasks" payload: the active-step worklist + matters awaiting my approval. */
 export interface MyStepsResponse {
   data: MyStepRow[];
   approvals: MyApprovalRow[];
-  offers: ReassignOfferRow[];
 }
 
 /** Consolidated step worklist + approvals for the current staff user across all matters. */
 export const getMySteps = (): Promise<MyStepsResponse> =>
   apiFetch<MyStepsResponse>('/api/tasks/my-steps');
 
-/** Assign (or clear, with null) a specific step to a staff user. */
+/**
+ * Assign (or clear, with null) a specific step to a staff user. Direct + immediate
+ * (no acceptance handshake); the backend records the change in the activity thread.
+ */
 export const assignStep = (taskId: string, stepNumber: number, assignedTo: string | null) =>
   apiFetch<void>(`/api/tasks/${taskId}/steps/${stepNumber}`, {
     method: 'PATCH',
     body: JSON.stringify({ assignedTo }),
   });
-
-/** A reassignment offer awaiting the current user's accept/decline (E03-S02). */
-export interface ReassignOfferRow {
-  taskId: string;
-  stepNumber: number;
-  stepTitle: string;
-  clientName: string;
-  serviceName: string;
-  offeredByName: string;
-  at: string | null;
-}
-
-/** Reassign-with-accept handshake: offer a step to another staff user. */
-export const offerStep = (taskId: string, stepNumber: number, toUid: string) =>
-  apiFetch<void>(`/api/tasks/${taskId}/steps/${stepNumber}/offer`, {
-    method: 'POST',
-    body: JSON.stringify({ toUid }),
-  });
-
-/** Accept a reassignment offered to me → I become the step owner. */
-export const acceptStepOffer = (taskId: string, stepNumber: number) =>
-  apiFetch<void>(`/api/tasks/${taskId}/steps/${stepNumber}/accept`, { method: 'POST' });
-
-/** Decline (or cancel) a reassignment offer → ownership stays with the original. */
-export const declineStepOffer = (taskId: string, stepNumber: number) =>
-  apiFetch<void>(`/api/tasks/${taskId}/steps/${stepNumber}/decline`, { method: 'POST' });

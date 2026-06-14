@@ -13,6 +13,7 @@ import {
 } from '@tanstack/react-table';
 import PageShell from '../../components/common/PageShell';
 import ErrorBoundary from '../../components/common/ErrorBoundary';
+import { useConfirm } from '../../components/common/confirmContext';
 import {
   getAllUsers, deleteUser, displayName,
   type PortalUser, type Role,
@@ -67,6 +68,7 @@ const columnHelper = createColumnHelper<PortalUser>();
 export default function UsersPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const currentRole = useAuthStore((s) => s.role);
   const canDelete = can(currentRole, USER_DELETE_ROLES); // BMAD E09-S01/S02: manager cannot delete
 
@@ -101,9 +103,14 @@ export default function UsersPage() {
     navigate(`/users/edit/${type}/${user.uid}`);
   }
 
-  function handleDelete(user: PortalUser) {
-    if (!window.confirm(`Delete ${displayName(user)}?`)) return;
-    deleteUserMutation.mutate(user.uid);
+  async function handleDelete(user: PortalUser) {
+    const ok = await confirm({
+      title: 'Delete user?',
+      message: `Delete ${displayName(user)}? This permanently removes their account and cannot be undone.`,
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (ok) deleteUserMutation.mutate(user.uid);
   }
 
   // Role tab → column filter on `role`.

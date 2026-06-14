@@ -114,19 +114,10 @@
     }
   ],
   "_comment_steps_assignedTo": "Team-member routing queries collectionGroup('steps').where('assignedTo','==',uid). A single-field COLLECTION query is auto-indexed, but the COLLECTION_GROUP scope needs an explicit field override (below) — it is NOT a composite index (Firestore rejects that as redundant).",
-  "_comment_steps_reassignOffer": "Reassign-with-accept handshake (E03-S02) queries collectionGroup('steps').where('reassignOffer.toUid','==',uid). The COLLECTION_GROUP scope on the nested field needs an explicit override.",
   "fieldOverrides": [
     {
       "collectionGroup": "steps",
       "fieldPath": "assignedTo",
-      "indexes": [
-        { "queryScope": "COLLECTION", "order": "ASCENDING" },
-        { "queryScope": "COLLECTION_GROUP", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "steps",
-      "fieldPath": "reassignOffer.toUid",
       "indexes": [
         { "queryScope": "COLLECTION", "order": "ASCENDING" },
         { "queryScope": "COLLECTION_GROUP", "order": "ASCENDING" }
