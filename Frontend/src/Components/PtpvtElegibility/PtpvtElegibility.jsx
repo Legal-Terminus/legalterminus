@@ -3,34 +3,44 @@ import "./PtpvtElegibility.css";
 
 const steps = [
   {
-    title: "Eligibility Review & Cap-Table Mapping",
-    day: "Step 1",
-    text: "We confirm eligibility under Section 366 and map the firm's partners and their capital into the proposed shareholding of the company. With two or more partners, the minimum of two directors and two shareholders is already met; we structure the share capital and any ESOP pool.",
+    title: "Discovery & Partnership Deed + Eligibility Audit",
+    day: "Day 0",
+    text: "60-min call with our Company Secretary to confirm: Partnership Deed terms + registration status under Partnership Act 1932, all partners' identities + KYC, business activity + NIC code, registered office, capital contribution + profit-sharing ratio of each partner, partner-to-director / shareholder mapping preferences, audited-accounts readiness, creditor list, current GST / FSSAI / Shop & Estd / Trade License / Udyam / Trademarks, and Section 115BAA + DPIIT eligibility.",
   },
   {
-    title: "DSC, DIN & Name Reservation",
-    day: "Step 2",
-    text: "We obtain DSC and DIN for the directors and reserve the company name through SPICe+ Part A. The firm's existing name can usually continue, with the legal name ending in 'Private Limited', subject to MCA approval.",
+    title: "Documents + Audited Statement Preparation",
+    day: "Day 1–7",
+    text: "Personalised checklist: each partner's PAN + Aadhaar + photograph + KYC, registered office proof + NOC, audited statement of accounts of the firm (not older than 30 days from URC-1 filing — we coordinate the audit if not ready), Capital Account statement of each partner, list of creditors with consents, last 3 years' firm ITRs + GST returns, and the registration certificate of the firm.",
   },
   {
-    title: "Registrar NOC & Statement of Accounts",
-    day: "Step 3",
-    text: "We obtain the No-Objection Certificate from the Registrar of Firms (where the firm is registered) and from secured creditors, and compile the CA-certified statement of the firm's assets and liabilities, the registered partnership deed, the latest ITR, and the list of creditors with their consent.",
+    title: "DSC + DIN + SPICe+ Part A Name Reservation",
+    day: "Day 7–9",
+    text: "DSC procured for ALL partner-directors (Class 3 Individual, 2-year). DIN auto-applied via SPICe+. SPICe+ Part A filed on the MCA portal with up to 4 proposed names ending with 'Private Limited'. MCA approval typically within 1–2 days.",
   },
   {
-    title: "URC-2 Newspaper Advertisement",
-    day: "Step 4",
-    text: "A public notice in Form URC-2 is published in an English and a vernacular newspaper inviting objections to the conversion. We draft and coordinate the publication and manage the statutory objection window, responding to any objections raised.",
+    title: "URC-2 Newspaper Advertisement — Publication",
+    day: "Day 9–10",
+    text: "Form URC-2 drafted in compliant format. Published in TWO newspapers — ONE English + ONE in the principal vernacular language of the State / UT where the firm is situated. Notice of conversion + invitation for objections from creditors / members / public. The publication date is Day 0 of the statutory 21-day objection window.",
   },
   {
-    title: "Filing URC-1 + SPICe+ Incorporation",
-    day: "Step 5",
-    text: "Form URC-1 is filed with the ROC together with SPICe+ Part B, the MOA, AOA, and INC-9 declarations. On approval, the company is incorporated under Section 367 and receives its Certificate of Incorporation, CIN, PAN, and TAN.",
+    title: "21-Day Statutory Objection Window",
+    day: "Day 10–31",
+    text: "Mandatory 21-day window during which creditors / members / public can object to the conversion. We monitor incoming objections, respond to legitimate concerns, and prepare an objection-handling note for URC-1. Most clean cases pass through without objections.",
   },
   {
-    title: "Migrate Records & Go Live",
-    day: "Step 6",
-    text: "We register the company for GST, open its bank account, migrate Udyam, IEC, and licences, transfer the firm's assets and contracts, issue share certificates, and set up the first-year compliance calendar (AOC-4, MGT-7, audit).",
+    title: "URC-1 Application + Capital Mapping + SPICe+ Part B Filing",
+    day: "Day 31–33",
+    text: "After the 21-day window closes: Form URC-1 application + SPICe+ Part B + AGILE-PRO-S filed in parallel on the MCA portal. Attachments: URC-2 newspaper cuttings, audited statement, list of partners + capital accounts + profit-sharing ratio, list of creditors with consents, declaration of solvency, affidavits, INC-9 declarations by all partner-directors + subscribers, Partnership Deed, share-allotment schedule (per capital accounts), and MOA + AOA.",
+  },
+  {
+    title: "ROC Scrutiny + CoI Issuance",
+    day: "Day 33–45",
+    text: "The Registrar of Companies reviews URC-1 + SPICe+ Part B. Any queries / objections (typically: URC-2 cutting clarity, audited statement adequacy, NIC code match, capital allotment proportionality vs Section 47(xiii)) are addressed within 7 days. On approval: Certificate of Incorporation issued under Section 367 + PAN + TAN auto-generated + AGILE-PRO-S registrations activated.",
+  },
+  {
+    title: "Partnership Dissolution + GST Migration + Asset Transfer",
+    day: "Day 45–90",
+    text: "Post-CoI: Firm's GSTIN cancelled via Form REG-16; the Pvt Ltd's GSTIN is already active via AGILE-PRO-S. ITC transferred via Form ITC-02. Corporate bank account opened. Supreme Plus: Asset Transfer Agreement signed; vendor / customer change-of-entity notifications issued; Shop & Estd / Trade License / Udyam re-registered or amended under the Pvt Ltd name; existing contracts assigned / novated; firm formally wound down; TM-P trademark assignment + 12-month compliance package activated.",
   },
 ];
 
@@ -38,10 +48,10 @@ const PtpvtElegibility = () => {
   return (
     <section className="opcelg-wrapper">
       <h2 className="opcelg-heading">
-        Partnership Firm to Private Limited Conversion — Step by Step
+        Steps for Converting Partnership Firm to a Pvt Ltd
       </h2>
       <p className="opcelg-subheading">
-        Six steps from eligibility review to a fully operational Pvt Ltd — the Section 366 conversion and cap-table setup handled together.
+        Eight steps anchored to the URC-1 + URC-2 statutory waiting period. End-to-end timeline: 35–50 working days for clean cases (URC-2 publication + 21-day objection window + URC-1 filing + ROC scrutiny + CoI). Migration items (GST, bank, licenses) run in parallel where possible.
       </p>
 
       <div className="opcelg-timeline">

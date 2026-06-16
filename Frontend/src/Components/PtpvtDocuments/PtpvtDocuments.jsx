@@ -1,85 +1,79 @@
 import React from "react";
 import "./PtpvtDocuments.css";
-import { FaUser, FaBuilding, FaIdCard, FaCamera, FaFileSignature, FaFileContract, FaShieldAlt, FaFileAlt, FaBalanceScale, FaBolt } from "react-icons/fa";
+import { FaUser, FaBuilding, FaIdCard, FaFileSignature, FaFileContract, FaNewspaper, FaFileAlt } from "react-icons/fa";
 
 const partnerDocs = [
   {
     icon: <FaIdCard />,
-    title: "Identity Proof of All Partners",
-    note: "Mandatory for every partner becoming a shareholder/director",
+    title: "All Partners' KYC + Identity",
+    note: "Mandatory for every partner",
     items: [
-      "Self-attested PAN card of each partner (mandatory)",
-      "Self-attested Aadhaar of each partner",
-      "Passport for foreign nationals / NRI partners: notarized + apostilled copy",
+      "PAN + Aadhaar (mandatory linkage) of each partner",
+      "Latest passport-size photograph, email ID + mobile number (for OTP)",
+      "Bank statement / utility bill (within 60 days) as residence proof",
+      "DSC (Class-3 Individual, 2-year) for digital signing",
+      "NRI partners: passport + overseas address proof; DIR-3 KYC if existing director",
     ],
   },
   {
-    icon: <FaFileAlt />,
-    title: "Address Proof (Per Partner)",
-    note: "Not older than 60 days from the filing date",
+    icon: <FaFileSignature />,
+    title: "Partnership Deed + Firm Records",
+    note: "Existing firm records",
     items: [
-      "Bank statement OR electricity bill OR mobile bill — not older than 2 months",
-      "Voter ID / Driving Licence / Passport as additional address proof",
+      "Original Partnership Deed (with all amendments / supplementary deeds)",
+      "Registration Certificate under Partnership Act 1932 (if registered)",
+      "PAN of the firm",
+      "Firm's GSTIN, Udyam, Shop & Estd, Trade License, FSSAI, IEC (where applicable)",
+      "Last 3 years' firm ITRs (Form ITR-5) + GST returns + bank statements",
     ],
   },
   {
-    icon: <FaCamera />,
-    title: "DSC, DIN & Photographs",
-    note: "For all partners who will be directors",
+    icon: <FaFileContract />,
+    title: "URC-1 Statutory Pack",
+    note: "Core conversion documentation",
     items: [
-      "Digital Signature Certificate (DSC) for all proposed directors",
-      "DIN, where already allotted",
-      "Latest passport-size photograph of each partner",
+      "AUDITED Statement of Accounts (not older than 30 days from URC-1 filing)",
+      "Capital Account statement of each partner (drives share allotment — Section 47(xiii))",
+      "List of ALL partners with addresses + occupations + capital contribution + profit-sharing ratio",
+      "List of CREDITORS with claim amounts + consent letters / NOCs",
+      "Declaration of SOLVENCY by all partners + unanimous consent resolution + affidavits",
     ],
   },
 ];
 
 const firmDocs = [
   {
-    icon: <FaFileSignature />,
-    title: "Partnership Firm Documents",
-    note: "Existing firm records",
+    icon: <FaNewspaper />,
+    title: "URC-2 Advertisement Inputs",
+    note: "For the mandatory newspaper notice",
     items: [
-      "Registered partnership deed and any supplementary deeds",
-      "Registration certificate from the Registrar of Firms",
-      "Firm's PAN card and latest income-tax return (ITR)",
+      "Proposed Pvt Ltd name (post-name-reservation)",
+      "Names of all partners (becoming subscribers / directors)",
+      "Principal place of business + brief business activity description",
+      "State / UT where the firm is situated (determines the vernacular newspaper)",
     ],
   },
   {
-    icon: <FaBalanceScale />,
-    title: "Statement of Accounts & Creditors",
-    note: "Required under Section 366 / URC-1",
-    items: [
-      "CA-certified statement of assets and liabilities (not older than 30 days)",
-      "List of all partners, proposed shareholding and capital contribution",
-      "List of creditors with their written consent / no-objection to conversion",
-    ],
-  },
-  {
-    icon: <FaShieldAlt />,
-    title: "Registrar NOC & URC-2 Notice",
-    note: "Statutory approvals & public notice",
-    items: [
-      "No-Objection Certificate from the Registrar of Firms and secured creditors",
-      "Copy of Form URC-2 advertisement published in English and vernacular newspapers",
-      "Declaration that the firm has no pending prosecution or undisclosed dues",
-    ],
-  },
-  {
-    icon: <FaBolt />,
+    icon: <FaBuilding />,
     title: "Registered Office Proof",
-    note: "Latest utility bill, not older than 2 months",
+    note: "Address of the company",
     items: [
-      "Electricity / water / gas bill of the office address",
+      "Address proof — rent agreement OR ownership document",
+      "NOC from owner (if rented)",
+      "Latest electricity / utility bill (within 60 days)",
+      "Premises must be capable of receiving statutory notices",
     ],
   },
   {
-    icon: <FaFileContract />,
-    title: "Rent Agreement & NOC",
-    note: "If the office premises are rented",
+    icon: <FaFileAlt />,
+    title: "MOA + AOA + Capital Structure + Declarations",
+    note: "Incorporation + capital structure",
     items: [
-      "Notarized rent agreement between the owner and a director",
-      "NOC from the property owner permitting use as registered office",
+      "Proposed name (up to 4 options) + main object clauses",
+      "Authorised + subscribed + paid-up share capital",
+      "Share allotment schedule per partner (proportionate to capital accounts — Section 47(xiii) compliant)",
+      "Custom AOA + SHA inputs (Supreme Plus — partnership terms, ESOP-ready)",
+      "Form INC-9 + stamp duty on MOA / AOA + Asset Transfer + Dissolution Deed at State actuals",
     ],
   },
 ];
@@ -108,20 +102,20 @@ const PtpvtDocuments = () => {
 
         {/* Header */}
         <div className="opcd-header">
-          <h2 className="opcd-main-title">Documents Required to Convert a Partnership Firm into a Private Limited Company</h2>
-          <p className="opcd-main-subtitle">Get these ready and we'll take care of the URC-1 + SPICe+ filing</p>
+          <h2 className="opcd-main-title">Documents Required for Converting Partnership Firm to a Pvt Ltd</h2>
+          <p className="opcd-main-subtitle">Six categories. Documentation is heavier than a fresh Pvt Ltd incorporation because of URC-1 + URC-2 statutory requirements + Partnership Deed + Capital Account statements + all partners' KYC. We send a personalised checklist after the discovery call.</p>
         </div>
 
         {/* Two columns */}
         <div className="opcd-columns">
 
-          {/* Partner Documents */}
+          {/* Partner & Statutory Documents */}
           <div className="opcd-column">
             <div className="opcd-col-header">
               <div className="opcd-col-header-icon"><FaUser /></div>
               <div>
-                <h3 className="opcd-col-title">Partner / Director Documents</h3>
-                <p className="opcd-col-subtitle">For every partner becoming a shareholder</p>
+                <h3 className="opcd-col-title">Partner &amp; Statutory Documents</h3>
+                <p className="opcd-col-subtitle">All partners' KYC, firm records &amp; URC-1 pack</p>
               </div>
             </div>
             <div className="opcd-col-body">
@@ -131,13 +125,13 @@ const PtpvtDocuments = () => {
             </div>
           </div>
 
-          {/* Firm & Office Documents */}
+          {/* Notice, Office & Incorporation Documents */}
           <div className="opcd-column">
             <div className="opcd-col-header opcd-col-header--office">
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="opcd-col-title">Firm, Conversion & Office Documents</h3>
-                <p className="opcd-col-subtitle">Section 366 records, NOC & office proof</p>
+                <h3 className="opcd-col-title">Notice, Office &amp; Incorporation Docs</h3>
+                <p className="opcd-col-subtitle">URC-2 inputs, office proof &amp; MOA / AOA</p>
               </div>
             </div>
             <div className="opcd-col-body">
