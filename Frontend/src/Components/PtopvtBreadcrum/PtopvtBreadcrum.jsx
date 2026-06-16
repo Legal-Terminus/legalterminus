@@ -11,35 +11,37 @@ const PtopvtBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Proprietorship to Private Limited Conversion
+            Proprietorship to Pvt Ltd Conversion
           </span>
 
           <h1 className="lt-public-title">
-            Convert Proprietorship to Private Limited Company
+            Convert Proprietorship to Pvt Ltd
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Scale Up with a Funding-Ready Structure</span>
+            <span className="lt-title-tagline">Build a company investors trust</span>
           </h1>
 
           <p className="lt-public-description">
-            Ready to scale and raise capital? Legal Terminus converts your sole proprietorship into a Private Limited Company under Section 366 of the Companies Act, 2013 — the statutory route using Form URC-1 and the URC-2 newspaper notice. We bring in your second member/director, handle creditor consent and the audited statement of accounts, and incorporate the Pvt Ltd that takes over your business. You get limited liability, equity-funding ability, and full corporate credibility. Our professional fee starts at ₹9,999 + GST. Government fees, stamp duty &amp; newspaper charges are billed separately at actuals.
+            Convert your Proprietorship into a Private Limited Company and unlock greater credibility, limited liability protection, and a separate legal identity. This transition helps your business scale more effectively while improving acceptance among banks, investors, and corporate clients.
+            <br /><br />
+            We manage the entire conversion process under the Companies Act, 2013, including URC-1 filing, URC-2 newspaper publication, MOA &amp; AOA drafting, required approvals, and SPICe+ Part B filing on the MCA portal. Your new company will be better positioned for fundraising, ESOP implementation, and government initiatives such as Startup India benefits.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Section 366 Conversion via Form URC-1</div>
-            <div className="lt-feature-item">Min 2 Members &amp; 2 Directors</div>
-            <div className="lt-feature-item">URC-2 Notice &amp; Creditor Consent</div>
-            <div className="lt-feature-item">Equity-Funding &amp; ESOP Ready</div>
+            <div className="lt-feature-item">URC-1 + URC-2 Filed</div>
+            <div className="lt-feature-item">Section 366 Compliant</div>
+            <div className="lt-feature-item">2-Director Ready</div>
+            <div className="lt-feature-item">Investor-Grade</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>3,000+</h3>
-              <p>Conversions handled</p>
+              <h3>1,000+</h3>
+              <p>Conversion Made</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>End-to-end MCA filing</p>
+              <h3>End-to-End Transition</h3>
+              <p>URC-1 + GST + Bank + Licenses</p>
             </div>
             <div>
               <h3>7+</h3>
