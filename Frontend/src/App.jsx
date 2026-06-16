@@ -42,7 +42,7 @@ const IEC = lazy(() => import("./Pages/IEC/IEC"));
 const FoodLicense = lazy(() => import("./Pages/FoodLicense/FoodLicense"));
 const TradeLicense = lazy(() => import("./Pages/TradeLicense/TradeLicense"));
 const ProprietorshipOPC = lazy(() => import("./Pages/PropToOpcNew/PropToOpcNew"));
-const PropritorshipPLC = lazy(() => import("./Pages/ProprietorshipPLC/ProprietorshipPLC"));
+const PropritorshipPLC = lazy(() => import("./Pages/PropToPvtNew/PropToPvtNew"));
 const PartnershipLLP = lazy(() => import("./Pages/PartnershipLLP/PartnershipLLP"));
 const LabourLicense = lazy(() => import("./Pages/LabourLicense/LabourLicense"));
 const BCRegistration = lazy(() => import("./Pages/BCRegistration/BCRegistration"));
