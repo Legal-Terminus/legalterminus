@@ -11,38 +11,42 @@ const Breadcrum = () => {
         <div className="ProPrietorship-opc-Bc-public-content">
 
           <span className="ProPrietorship-opc-Bc-public-tag">
-            Convert Proprietorship to OPC  in India
+            Proprietorship to Pvt Ltd Conversion
           </span>
 
           <h1 className="ProPrietorship-opc-Bc-public-title">
-            Convert Proprietorship to OPC  in India
+            Convert Proprietorship to Pvt Ltd in India
             <br />
-            <span className="ProPrietorship-opc-Bc-title-tagline">One founder, full corporate shield</span>
+            <span className="ProPrietorship-opc-Bc-title-tagline">Build a company investors trust</span>
           </h1>
 
           <p className="ProPrietorship-opc-Bc-public-description">
-            A Proprietorship is easy to start, but as your business grows, it comes with limitations such as unlimited personal liability, no separate legal identity, and lower business credibility. Proprietorship firm to OPC conversion helps you upgrade your business into a legally recognized corporate structure while keeping complete ownership in the hands of a single founder. A One Person Company (OPC) under the Companies Act, 2013 offers limited liability protection, separate legal identity, better brand credibility, and improved business continuity.
+            Ready to scale your business? A Proprietorship to Private Limited Conversion helps you move from a personally-owned business structure to a legally separate company with limited liability, better credibility, and stronger growth potential.
           </p>
 
           <p className="ProPrietorship-opc-Bc-public-description">
-            At Legal Terminus, we handle the complete Proprietorship firm to OPC conversion process — including OPC incorporation through the MCA portal, PAN & TAN application, GST migration support, and assistance with updating bank accounts and business registrations. Supreme Plans also include 12 months of compliance support.
+            We handle the complete conversion process under Sections 366–374 of the Companies Act, 2013 by filing Form URC-1, publishing the mandatory URC-2 newspaper notice, drafting the company’s MOA &amp; AOA, obtaining required consents, and filing SPICe+ Part B on the official MCA portal.
+          </p>
+
+          <p className="ProPrietorship-opc-Bc-public-description">
+            Your new Private Limited Company comes with a separate legal identity, easier fundraising opportunities, eligibility for Startup India benefits, ESOP structuring, and better acceptance from banks, investors, and large clients.
           </p>
 
           <div className="ProPrietorship-opc-Bc-public-features">
             <div className="ProPrietorship-opc-Bc-feature-item">URC-1 + URC-2 Filed</div>
             <div className="ProPrietorship-opc-Bc-feature-item">Section 366 Compliant</div>
-            <div className="ProPrietorship-opc-Bc-feature-item">Limited Liability</div>
-            <div className="ProPrietorship-opc-Bc-feature-item">100% Founder-Held</div>
+            <div className="ProPrietorship-opc-Bc-feature-item">2-Director Ready</div>
+            <div className="ProPrietorship-opc-Bc-feature-item">Investor-Grade</div>
           </div>
 
           <div className="ProPrietorship-opc-Bc-public-highlights">
             <div>
-              <h3>500+</h3>
-              <p>OPC + URC-1 conversions</p>
+              <h3>1,000+</h3>
+              <p>Conversion Made</p>
             </div>
             <div>
               <h3>End-to-End Transition</h3>
-              <p>GST + Bank + Licenses + IP</p>
+              <p>URC-1 + GST + Bank + Licenses</p>
             </div>
             <div>
               <h3>7+</h3>
