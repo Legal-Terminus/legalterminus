@@ -27,7 +27,10 @@ const PtopvtZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  This is a statutory Section 366 conversion, not a simple incorporation — URC-1, URC-2 newspaper notice, creditor consent, and an audited statement of accounts all have to line up. Get any of them wrong and the ROC sends it back. Priority is what happens when a specialist runs the whole conversion and business migration as one coordinated project.
+                  A Proprietorship to Private Limited Conversion is much more than a simple company registration. Unlike a fresh Private Limited incorporation, the conversion process under Section 366 involves additional legal procedures such as newspaper publication, creditor consents, audited financials, and ROC scrutiny. Proper structuring is also important to ensure your company is investor-ready from day one.
+                </p>
+                <p className="opczp-subtitle" style={{ marginTop: "12px" }}>
+                  With LT Priority, your conversion is handled by experienced Company Secretaries who manage the complete process carefully — from documentation and compliance to incorporation and post-conversion transition.
                 </p>
               </header>
 
@@ -36,23 +39,23 @@ const PtopvtZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    Help structuring the mandatory second member/director and the cap table — so you meet the Pvt Ltd minimum cleanly before filing.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    A complete URC-1 statutory pack — audited statement of accounts, list of creditors with consent, and solvency declaration — prepared correctly.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    URC-2 newspaper notice drafted and published in the right English and vernacular papers, with objections handled.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    GST, bank, Udyam, and licence migration to the company — and the old proprietorship registrations surrendered.
+                    Priority processing and faster filing support throughout the conversion process.
                   </li>
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">📑</span>
-                    A first-year compliance calendar — AOC-4, MGT-7, audit, board meetings — so the Pvt Ltd starts life fully compliant.
+                    Proper drafting and handling of URC-1, URC-2, SPICe+ and related MCA filings.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">🔍</span>
+                    Senior Company Secretary review before final submission.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📲</span>
+                    Dedicated coordination and real-time status updates during the process.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📅</span>
+                    Post-incorporation compliance guidance and annual filing reminders.
                   </li>
                 </ul>
               </section>
@@ -65,16 +68,16 @@ const PtopvtZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  You need a second person. A Private Limited Company requires a minimum of two shareholders and two directors. As a sole proprietor you must bring in at least one more member — a co-founder, family member, or associate — to make the conversion possible.
+                  MINIMUM 2 DIRECTORS + 2 SHAREHOLDERS: A Pvt Ltd cannot exist with just one person. The proprietor MUST bring in a second director + shareholder (commonly spouse, family member, business partner, or co-founder). Decide WHO this person will be before kicking off the conversion. The 2nd shareholder can hold nominal shareholding (e.g., 1%) to keep founder economic control intact — but they must consent + provide KYC.
                 </li>
                 <li className="opczp-note-item">
-                  The accounts must be fresh and audited. URC-1 needs an audited statement of accounts of the proprietorship dated within 30 days of filing, plus a list of creditors with consent. We coordinate the audit and the consents so the application isn't rejected on a stale or incomplete account.
+                  URC-2 NEWSPAPER ADVERTISEMENT MUST RUN 21 DAYS BEFORE URC-1 FILING — this is a hard statutory waiting period. Plan your timeline: URC-2 advertisement (Day 0) → 21-day objection window (Day 21) → URC-1 filing (Day 22+). Skip this window or file URC-1 early, and the Registrar rejects the application. Coordination of English + vernacular publication is part of all plans.
                 </li>
                 <li className="opczp-note-item">
-                  The newspaper notice is mandatory. A URC-2 advertisement inviting objections must run in an English and a vernacular newspaper before the company is registered. Skipping or mis-drafting it stalls the whole conversion.
+                  AUDITED STATEMENT OF ACCOUNTS REQUIRED: Form URC-1 requires an AUDITED Statement of Accounts of the proprietorship, NOT older than 30 days from URC-1 filing. If your proprietorship books are not audit-ready, factor in 7–10 days for the audit before URC-1 can be filed. We coordinate with your existing CA or arrange a fresh audit.
                 </li>
                 <li className="opczp-note-item">
-                  Compliance steps up sharply. A Pvt Ltd must hold board meetings, file annual ROC returns, and get audited every year — far more than a proprietorship. We set up the calendar so the new structure is an asset, not a surprise burden.
+                  AGM + AUDIT + FULL COMPLIANCE STACK: Once you're a Pvt Ltd, you must (a) hold AGM annually under Section 96(1), (b) appoint a statutory auditor regardless of turnover, (c) file MGT-7 (full annual return — not the OPC's simplified MGT-7A), (d) prepare full financial statements WITH Cash Flow Statement. Annual compliance cost typically ₹40,000 – ₹1,00,000 / year. Supreme covers the 1st year; Supreme Plus extends to a 12-month wrap.
                 </li>
               </ul>
             </div>
