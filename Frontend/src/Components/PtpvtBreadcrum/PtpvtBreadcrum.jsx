@@ -11,35 +11,37 @@ const PtpvtBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Partnership Firm to Private Limited Conversion
+            Partnership into Pvt Ltd Conversion
           </span>
 
           <h1 className="lt-public-title">
-            Convert Partnership Firm to Private Limited Company
+            Convert Partnership Firm to Pvt Ltd
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Gain Limited Liability &amp; Become Investor-Ready</span>
+            <span className="lt-title-tagline">Built for growth and corporate scale</span>
           </h1>
 
           <p className="lt-public-description">
-            Ready to give your partnership firm limited liability, a separate legal identity, and the ability to raise equity? Legal Terminus converts your partnership firm into a Private Limited Company under Section 366 of the Companies Act, 2013 — filing Form URC-1 with SPICe+, the URC-2 newspaper notice, an NOC from the Registrar of Firms and creditors, and a CA-certified statement of accounts. All partners become shareholders and the business continues seamlessly under a share-capital structure that banks and investors prefer. Our professional fee starts at ₹11,999 + GST. Government fees, stamp duty &amp; newspaper charges are billed separately at actuals.
+            Your partnership firm may have helped you start and grow the business — but scaling further often needs a stronger structure. A Private Limited Company offers limited liability protection, separate legal identity, better credibility, investor readiness, and long-term business continuity.
+            <br /><br />
+            Under Part I of Chapter XXI (Sections 366–374) of the Companies Act, 2013, an existing partnership firm can be converted into a Private Limited Company through the URC-1 route. We handle the complete process — including Form URC-1 filing, Form URC-2 newspaper publication, partner consents, creditor NOCs, SPICe+ incorporation filing, MOA &amp; AOA drafting, and post-conversion support. We also help map partners' capital into company shareholding and assist with GST, bank account, and license transition for smooth business continuity.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Section 366 Conversion via Form URC-1</div>
-            <div className="lt-feature-item">Limited Liability &amp; Separate Legal Entity</div>
-            <div className="lt-feature-item">URC-2 Notice &amp; Creditor NOC</div>
-            <div className="lt-feature-item">All Partners Become Shareholders</div>
+            <div className="lt-feature-item">URC-1 + URC-2 Filed</div>
+            <div className="lt-feature-item">Section 366 Compliant</div>
+            <div className="lt-feature-item">Capital Account Mapped</div>
+            <div className="lt-feature-item">Investor-Grade</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>3,000+</h3>
-              <p>Conversions handled</p>
+              <h3>100+</h3>
+              <p>Partnership conversions + incorporations</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>End-to-end MCA filing</p>
+              <h3>End-to-End Transition</h3>
+              <p>URC-1 + GST + Bank + Licenses</p>
             </div>
             <div>
               <h3>7+</h3>
