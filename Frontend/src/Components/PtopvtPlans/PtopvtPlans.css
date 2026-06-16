@@ -1,1 +1,7 @@
 @import url('../OPCPlans/OPCPlans.css');
+
+/* Keep the plan cards centered within the section */
+.opc-pricing-section .opcpricing-cards {
+    justify-content: center;
+    align-items: stretch;
+}
