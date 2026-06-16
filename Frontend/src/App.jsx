@@ -36,7 +36,7 @@ const ShopReg = lazy(() => import("./Pages/ShopReg/ShopReg"));
 const Proprietorship = lazy(() => import("./Pages/Proprietorship/Proprietorship"));
 const Parternership = lazy(() => import("./Pages/Parternership/Parternership"));
 const PartnershiptoPrivate = lazy(() => import("./Pages/PartnershiptoPrivate/PartnershiptoPrivate"));
-const LlptoPrivate = lazy(() => import("./Pages/LlptoPrivate/LlptoPrivate"));
+const LlptoPrivate = lazy(() => import("./Pages/LlpToPvtNew/LlpToPvtNew"));
 const PritoLlp = lazy(() => import("./Pages/PritoLlp/PritoLlp"));
 const IEC = lazy(() => import("./Pages/IEC/IEC"));
 const FoodLicense = lazy(() => import("./Pages/FoodLicense/FoodLicense"));
