@@ -27,7 +27,10 @@ const PtpvtZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  Converting a partnership firm to a Pvt Ltd is a statutory Section 366 process, not a simple incorporation — URC-1, the URC-2 newspaper notice, the Registrar of Firms' NOC, creditor consents, and a CA-certified statement of accounts all have to line up, and the partners' capital must map cleanly into share capital. Priority is what happens when a specialist runs the conversion and the cap-table setup as one coordinated project.
+                  Converting an existing Partnership Firm into a Private Limited Company under Section 366 of the Companies Act, 2013 is a much more detailed process. It involves partner approvals, creditor consents, newspaper publication, capital restructuring, and proper legal documentation to ensure smooth business continuity and future tax efficiency.
+                </p>
+                <p className="opczp-subtitle" style={{ marginTop: "12px" }}>
+                  With Legal Terminus Priority, your entire conversion process is handled by experienced professionals who manage the URC-1, URC-2, and SPICe+ filing process carefully from start to finish — helping you avoid delays, rejection, and compliance issues.
                 </p>
               </header>
 
@@ -36,23 +39,23 @@ const PtpvtZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    Partner-to-shareholder mapping and a clean cap table — so the firm's capital converts into share capital correctly.
+                    Priority processing and faster filing support throughout the conversion process.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    A complete URC-1 pack — CA-certified statement of accounts, registered partnership deed, latest ITR, list of creditors with consent — prepared to the ROC's standard.
+                    <span className="opczp-list-icon">🔍</span>
+                    Senior Company Secretary review before final submission.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    The URC-2 newspaper notice and the NOC from the Registrar of Firms obtained and the objection window managed.
+                    <span className="opczp-list-icon">📰</span>
+                    Newspaper advertisement and objection-period compliance support.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    GST, bank, Udyam, and licence migration to the company — and the firm's assets and contracts transferred cleanly.
+                    <span className="opczp-list-icon">📲</span>
+                    Dedicated coordination and real-time status updates during the process.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">📑</span>
-                    An investor-ready cap table with an ESOP pool option and a first-year compliance calendar — AOC-4, MGT-7, audit, board meetings.
+                    <span className="opczp-list-icon">📅</span>
+                    Post-incorporation compliance guidance and annual filing reminders.
                   </li>
                 </ul>
               </section>
@@ -65,16 +68,16 @@ const PtpvtZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  All partners must become shareholders. On conversion every partner of the firm becomes a shareholder of the company, with their capital mapped into share capital. A Pvt Ltd needs at least two directors and two shareholders — which a firm with two or more partners already satisfies.
+                  ALL PARTNERS MUST CONSENT — UNANIMOUSLY: URC-1 requires consent from EVERY partner of the firm. Any dissenting partner blocks the conversion — resolve internal disagreements + buy-outs + retirements BEFORE you kick off the URC-1 process. Partner-dispute resolution is OUT OF SCOPE; we coordinate but don't litigate.
                 </li>
                 <li className="opczp-note-item">
-                  Registration of the firm helps. A firm registered with the Registrar of Firms makes the conversion smoother; an NOC from the Registrar of Firms and from secured creditors must be obtained before the URC-1 conversion is filed. We secure these so the application isn't held up.
+                  URC-2 NEWSPAPER ADVERTISEMENT MUST RUN 21 DAYS BEFORE URC-1 FILING — this is a hard statutory waiting period. Plan your timeline: URC-2 advertisement (Day 0) → 21-day objection window (Day 21) → URC-1 filing (Day 22+). Skip this window or file URC-1 early, and the Registrar rejects the application. Coordination of English + vernacular publication is part of all plans.
                 </li>
                 <li className="opczp-note-item">
-                  The newspaper notice and objection window are mandatory. A URC-2 advertisement inviting objections runs in an English and a vernacular newspaper, followed by a statutory objection period. We draft, publish, and manage any objections.
+                  SECTION 47(xiii) IS UNFORGIVING: To get capital-gains exemption on the asset transfer, ALL FOUR conditions must be satisfied for FIVE YEARS post-conversion — all assets + liabilities transferred, ALL PARTNERS become shareholders in the SAME PROPORTION as capital accounts, no consideration other than allotment of shares, and partners' aggregate shareholding ≥ 50% of voting power for 5 years. Break any condition (e.g., a partner sells all their shares in year 3) and the original conversion gets retrospectively taxed as capital gains. Supreme Plus covers the structuring + 5-year lock-in advisory.
                 </li>
                 <li className="opczp-note-item">
-                  Liability and compliance change. A partnership has unlimited liability and light compliance; a Pvt Ltd gives limited liability but must be audited every year and file AOC-4 and MGT-7. We set up the calendar so the new structure is an asset, not a surprise.
+                  AUDITED STATEMENT REQUIRED: Form URC-1 requires an AUDITED Statement of Accounts of the firm, NOT older than 30 days from URC-1 filing. If your firm's books are not audit-ready, factor in 7–10 days for the audit before URC-1 can be filed. We coordinate with your existing CA or arrange a fresh audit.
                 </li>
               </ul>
             </div>

@@ -107,7 +107,7 @@ const PtpvtPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards ptpvt-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
