@@ -15,31 +15,33 @@ const LtopvtBreadcrum = () => {
           </span>
 
           <h1 className="lt-public-title">
-            Convert LLP to Private Limited Company
+            Convert LLP to Pvt Ltd Company
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Become Funding-Ready &amp; Investor-Friendly</span>
+            <span className="lt-title-tagline">LLP to Pvt Ltd. Growth Simplified.</span>
           </h1>
 
           <p className="lt-public-description">
-            Need to raise venture capital, issue ESOPs, or onboard investors? Legal Terminus converts your LLP into a Private Limited Company under Section 366 of the Companies Act, 2013 — filing Form URC-1 with SPICe+, the URC-2 newspaper notice, an NOC from the LLP's Registrar, and a CA-certified statement of accounts. All partners become shareholders and the business continues seamlessly under a share-capital structure that investors prefer. Our professional fee starts at ₹11,999 + GST. Government fees, stamp duty &amp; newspaper charges are billed separately at actuals.
+            An LLP is a flexible and cost-effective business structure, but as your business grows, raising investment, issuing ESOPs, or attracting institutional investors can become challenging. Most investors and venture capital firms prefer a Private Limited Company structure for funding and long-term scalability.
+            <br /><br />
+            LLP to Pvt Ltd Company Conversion is carried out under Sections 366–374 of the Companies Act, 2013 through the URC-1 process. We handle the complete conversion, including compliance verification, URC-1 and URC-2 filings, partner approvals, creditor NOCs, SPICe+ incorporation, MOA &amp; AOA drafting, conversion of capital contribution into shareholding, and support for GST, bank account, and license transitions.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Section 366 Conversion via Form URC-1</div>
-            <div className="lt-feature-item">Equity, VC Funding &amp; ESOP Ready</div>
-            <div className="lt-feature-item">URC-2 Notice &amp; Registrar NOC</div>
-            <div className="lt-feature-item">All Partners Become Shareholders</div>
+            <div className="lt-feature-item">URC-1 + URC-2 Filed</div>
+            <div className="lt-feature-item">Section 366 Compliant</div>
+            <div className="lt-feature-item">Capital Contribution Mapped</div>
+            <div className="lt-feature-item">Investor-Grade</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>3,000+</h3>
-              <p>Conversions handled</p>
+              <h3>500+</h3>
+              <p>LLP conversions + Pvt Ltd incorporations</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>End-to-end MCA filing</p>
+              <h3>End-to-End Transition</h3>
+              <p>URC-1 + GST + Bank + LLP Wind-Up</p>
             </div>
             <div>
               <h3>7+</h3>
