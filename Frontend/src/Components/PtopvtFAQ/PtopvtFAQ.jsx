@@ -3,49 +3,99 @@ import "./PtopvtFAQ.css";
 
 const faqs = [
   {
-    question: "What is Proprietorship to Private Limited conversion?",
+    question: "What is Proprietorship to Private Limited Conversion?",
     answer:
-      "It is the process of converting an existing sole proprietorship business into a Private Limited Company under Section 366 of the Companies Act, 2013, using Form URC-1 along with SPICe+ incorporation. The business gets limited liability, a separate legal identity, the ability to raise equity funding, and far greater credibility — while continuing as the same operation under a corporate structure.",
+      "Proprietorship to Private Limited Conversion is the process of converting an existing sole proprietorship business into a Private Limited Company under the Companies Act, 2013. This helps the business get a separate legal identity, limited liability protection, better business credibility, and easier access to funding and investment opportunities.",
   },
   {
-    question: "How is conversion different from a fresh company registration?",
+    question: "How is Proprietorship to Private Limited Conversion different from fresh Pvt Ltd registration?",
     answer:
-      "A fresh registration is for starting a brand-new business. A conversion is for an already-running proprietorship moving into a company structure under Section 366. It involves extra legal steps — newspaper publication (URC-2), creditor consent, an audited statement of accounts, and URC-1 documentation — that a fresh incorporation does not require, which is why it takes longer and costs a little more.",
+      "Fresh Private Limited registration is for starting a completely new company. Proprietorship to Private Limited Conversion is used when an existing business wants to continue operations under a Private Limited Company structure.\n\nThe conversion process is more detailed because it involves:\n• Transfer of the existing business\n• Creditor and member consents\n• Newspaper publication\n• Financial documents\n• Statutory filings under Section 366 of the Companies Act",
   },
   {
     question: "What is Form URC-1?",
     answer:
-      "Form URC-1 is the main MCA application used to register an existing business as a company under Section 366. It includes the business details, audited financial statements, list of members and creditors, declarations, and supporting documents, and is filed alongside the SPICe+ incorporation forms.",
+      "Form URC-1 is the main application filed with the MCA for converting an existing proprietorship into a company under Section 366 of the Companies Act, 2013.\n\nIt includes:\n• Audited financial statements\n• List of creditors\n• Consent documents\n• Declaration of solvency\n• Proposed MOA & AOA\n• Other statutory declarations",
   },
   {
-    question: "Why is a newspaper advertisement required?",
+    question: "What is Form URC-2 and why is it important?",
     answer:
-      "Before the conversion is registered, a public notice in Form URC-2 must be published in one English and one vernacular newspaper inviting objections from creditors or the public. This is a mandatory transparency requirement under the conversion rules, ensuring that anyone with a claim against the proprietorship can be heard.",
+      "Form URC-2 is the mandatory public notice published in newspapers before conversion.\n\nThe notice must be published in:\n• One English newspaper, and\n• One regional language newspaper\n\nA 21-day objection period is provided for creditors or the public before filing the final conversion application.",
   },
   {
-    question: "How many people are needed to convert to a Private Limited Company?",
+    question: "Why do I need 2 directors and 2 shareholders for a Private Limited Company?",
     answer:
-      "A Private Limited Company requires a minimum of two shareholders and two directors. Since a proprietorship has a single owner, you must bring in at least one more member — typically a co-founder, family member, or trusted associate — to meet this requirement. The company can have up to 200 shareholders.",
+      "As per the Companies Act, 2013, a Private Limited Company must have:\n• Minimum 2 Directors, and\n• Minimum 2 Shareholders\n\nThe second shareholder can hold a very small percentage of shares while the founder retains operational control. One person can be the Director as well as Shareholder of the company.",
   },
   {
-    question: "How long does the conversion take?",
+    question: "How long does Proprietorship to Private Limited Conversion take?",
     answer:
-      "Most conversions take around 35 to 50 working days, depending on how quickly documents are ready, the newspaper publication and objection period, the audit of accounts, and MCA processing. We work to keep the timeline tight by preparing the URC-1 pack and URC-2 notice in parallel with the incorporation steps.",
+      "In most cases, the complete conversion process takes around 35–50 working days, depending on:\n• Document readiness\n• Newspaper publication timeline\n• ROC approval\n• Government processing speed",
   },
   {
-    question: "What happens to my GST, bank account, and licences?",
+    question: "What documents are required for conversion?",
     answer:
-      "Because the Private Limited Company is a new legal entity with a new PAN, fresh registrations are taken in the company's name — a new GST registration, a new bank account, and migration of Udyam, IEC, and other licences. The proprietorship's old registrations are then surrendered. We handle this migration so nothing is left under the old proprietorship.",
+      "Common documents include:\n• PAN & Aadhaar of directors / shareholders\n• Address proof\n• Proprietorship business proof\n• GST certificate\n• Bank statement\n• Audited financial statements\n• NOC from creditors\n• Utility bill of registered office\n• Passport-size photographs\n\nAdditional documents may be required based on the business activity.",
   },
   {
-    question: "Can I keep my existing business name and brand?",
+    question: "What happens to my GST registration after conversion?",
     answer:
-      "In most cases yes, subject to the MCA's name-approval rules. The legal name of the company will end with 'Private Limited', while your existing brand or trade name can generally continue. If the name is already trademarked in your personal name, it can be assigned to the company.",
+      "The proprietorship GST registration is usually cancelled after business transfer, and a new GST registration is obtained in the name of the Private Limited Company. Input Tax Credit (ITC) can also be transferred properly during the transition process.",
   },
   {
-    question: "How does Legal Terminus help convert my proprietorship to a Pvt Ltd?",
+    question: "Can I keep the same business name after conversion?",
     answer:
-      "We handle the entire Section 366 conversion end-to-end: eligibility and member structuring, DSC/DIN, name reservation, the URC-1 statutory pack, the URC-2 newspaper notice, MOA/AOA and SPICe+ incorporation — then GST/bank/licence migration, surrender of the proprietorship registrations, and a first-year compliance calendar. Book a free consultation to get started.",
+      "Yes, in most cases the brand or business name can continue, subject to MCA name approval guidelines. The legal suffix 'Private Limited' will be added to the company name.\n\nExample: ABC Traders → ABC Traders Private Limited",
+  },
+  {
+    question: "Can I transfer my trademark, licenses, and contracts to the new company?",
+    answer:
+      "Yes. Existing trademark, GST, FSSAI, Trade License, Shop & Establishment License, vendor agreements, and customer contracts can be transferred or updated in the name of the Private Limited Company.",
+  },
+  {
+    question: "What are the benefits of converting into a Private Limited Company?",
+    answer:
+      "Major benefits include:\n• Limited liability protection\n• Separate legal identity\n• Better brand credibility\n• Easier bank funding\n• Startup India eligibility\n• Investor readiness\n• ESOP and equity structure\n• Better tax planning opportunities\n• Business continuity and succession",
+  },
+  {
+    question: "Is statutory audit mandatory after conversion?",
+    answer:
+      "Yes. Every Private Limited Company must conduct a statutory audit every financial year, regardless of turnover. Annual ROC filings are also mandatory.",
+  },
+  {
+    question: "Can a Private Limited Company raise investment?",
+    answer:
+      "Yes. A Private Limited Company is the preferred structure for angel investment, venture capital, startup funding, ESOPs, and equity participation. Most investors prefer investing only in Private Limited Companies.",
+  },
+  {
+    question: "What is Section 115BAA?",
+    answer:
+      "Section 115BAA of the Income Tax Act allows eligible domestic companies to opt for a concessional corporate tax rate of 22%, subject to certain conditions. This benefit is available only to companies and not to proprietorship firms.",
+  },
+  {
+    question: "Can I convert my proprietorship if I have loans or creditors?",
+    answer:
+      "Yes, but creditor consent or NOC may be required during the conversion process. Proper disclosure of liabilities is mandatory while filing URC-1.",
+  },
+  {
+    question: "Is there any tax exemption available during conversion?",
+    answer:
+      "Yes, certain conditions under Section 47(xiv) of the Income Tax Act may help avoid capital gains tax during business transfer, provided the conversion is structured correctly.",
+  },
+  {
+    question: "What happens to the existing bank account?",
+    answer:
+      "A new current account is opened in the name of the Private Limited Company. Existing business balances, assets, and operations are then shifted to the company structure.",
+  },
+  {
+    question: "Can I convert my proprietorship into OPC instead of Pvt Ltd?",
+    answer:
+      "Yes. If you want complete ownership and do not plan external investment immediately, an OPC may be suitable.\n\nIf you plan startup funding, co-founders, ESOPs, or future investors, then a Private Limited Company is generally the better structure.",
+  },
+  {
+    question: "How can Legal Terminus help with Proprietorship to Private Limited Conversion?",
+    answer:
+      "Legal Terminus provides complete end-to-end support for Proprietorship to Private Limited Conversion, including eligibility review, URC-1 and URC-2 filing, newspaper publication, documentation, MCA filing, DSC support, incorporation, GST transition, bank account assistance, license migration, and post-incorporation compliance support. Our team ensures the conversion is handled professionally with proper legal documentation and smooth business continuity.",
   },
 ];
 
@@ -84,7 +134,7 @@ const PtopvtFAQ = () => {
                   <span className={`opcfaq-icon ${isActive ? "open" : ""}`}>▾</span>
                 </button>
                 <div className={`opcfaq-answer ${isActive ? "open" : ""}`}>
-                  <div className="opcfaq-answer-content">{item.answer}</div>
+                  <div className="opcfaq-answer-content" style={{ whiteSpace: "pre-line" }}>{item.answer}</div>
                 </div>
               </div>
             );

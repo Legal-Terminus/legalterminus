@@ -5,12 +5,14 @@ import { FaUser, FaUsers, FaIdCard, FaFileContract, FaNewspaper, FaBuilding, FaB
 const applicantDocs = [
   {
     icon: <FaIdCard />,
-    title: "Directors & Shareholders KYC",
-    note: "For the minimum two members/directors",
+    title: "Founder + 2nd Director / Shareholder Identity",
+    note: "Both directors / subscribers",
     items: [
-      "PAN & Aadhaar of both members/directors",
-      "Passport-size photographs & contact details",
-      "DSC (Class-3) & DIN of the directors",
+      "PAN + Aadhaar (mandatory linkage) of both directors / subscribers",
+      "Latest passport-size photograph, email ID + mobile number",
+      "Bank statement / utility bill (within 60 days) as residence proof",
+      "DSC (Class-3 Individual, 2-year); DIR-3 KYC if existing director",
+      "NRI directors: passport + overseas address proof",
     ],
   },
   {
@@ -18,19 +20,22 @@ const applicantDocs = [
     title: "URC-1 Statutory Pack",
     note: "Core conversion documentation",
     items: [
-      "Audited statement of accounts (not older than 30 days)",
-      "List of members & creditors with consent / NOC",
-      "Declaration of solvency & Section 366 affidavits",
+      "AUDITED Statement of Accounts (not older than 30 days from URC-1 filing)",
+      "List of MEMBERS / partners with addresses + occupations + capital contribution",
+      "List of CREDITORS with claim amounts + consent letters / NOCs",
+      "Declaration of SOLVENCY by the proprietor (on stamp paper)",
+      "Affidavits confirming compliance with Section 366 + consent resolutions",
     ],
   },
   {
     icon: <FaBalanceScale />,
-    title: "Proprietorship Records",
-    note: "Existing business proof",
+    title: "Statutory Declarations + Stamp Duty + Add-Ons",
+    note: "Declarations, stamp duty & optional add-ons",
     items: [
-      "Proprietorship GST / Udyam / Shop & Establishment / Trade Licence",
-      "Last 2–3 years' ITRs & bank statements",
-      "List of assets, liabilities & ongoing contracts",
+      "Form INC-9 (Declaration by each director + subscriber)",
+      "Stamp duty on MOA + AOA per State rates (₹500 – ₹12,600)",
+      "Stamp duty on Asset Transfer Agreement + TM-P assignment (Supreme / Supreme Plus)",
+      "Section 115BAA Form 10-IC opt-in + DPIIT recognition (Supreme / Supreme Plus)",
     ],
   },
 ];
@@ -41,29 +46,32 @@ const officeDocs = [
     title: "URC-2 Advertisement Inputs",
     note: "For the mandatory newspaper notice",
     items: [
-      "Proposed company name (post-reservation)",
-      "Names of directors & subscribers",
-      "Principal place of business & State / UT (for vernacular paper)",
+      "Proposed company name (post-name-reservation)",
+      "Names of subscribers / proposed directors",
+      "Principal place of business + brief business activity description",
+      "State / UT where the proprietorship is situated (determines the vernacular newspaper)",
     ],
   },
   {
     icon: <FaBuilding />,
-    title: "Registered Office Proof",
-    note: "Address of the company",
+    title: "Registered Office + Proprietorship Records",
+    note: "Office proof + existing registrations",
     items: [
-      "Utility bill of the premises (≤ 2 months)",
-      "Rent agreement (if rented)",
-      "No-Objection Certificate from the owner",
+      "Registered office proof — rent agreement OR ownership document",
+      "NOC from owner (if rented) + latest utility bill (within 60 days)",
+      "Proprietorship PAN, GSTIN, Udyam, Shop & Estd, Trade License, FSSAI, IEC",
+      "Last 3 years' ITRs + GST returns + bank statements",
     ],
   },
   {
     icon: <FaFileAlt />,
-    title: "MOA, AOA & Declarations",
-    note: "Incorporation documents",
+    title: "MOA + AOA + Capital Structure Inputs",
+    note: "Incorporation + capital structure",
     items: [
-      "MOA & AOA with object & capital clauses",
-      "INC-9 declarations by directors & subscribers",
-      "Asset-transfer / takeover agreement (stamped)",
+      "Proposed name (up to 4 options) + main object clauses",
+      "Authorised + subscribed + paid-up share capital",
+      "Shareholding split between proprietor + 2nd subscriber; share classes",
+      "Custom AOA + SHA inputs (Supreme Plus — founder-vested, ESOP-ready)",
     ],
   },
 ];
@@ -91,8 +99,8 @@ const PtopvtDocuments = () => {
       <div className="opcd-container">
 
         <div className="opcd-header">
-          <h2 className="opcd-main-title">Documents Required to Convert Proprietorship to Private Limited</h2>
-          <p className="opcd-main-subtitle">Heavier than a fresh incorporation due to URC-1 + URC-2 — we send a personalised checklist after the call</p>
+          <h2 className="opcd-main-title">Documents Required for Converting Proprietorship to a Pvt Ltd</h2>
+          <p className="opcd-main-subtitle">Six categories. Documentation is heavier than a fresh Pvt Ltd incorporation because of URC-1 + URC-2 statutory requirements — audited statement, member / creditor lists with consents, declaration of solvency, multiple affidavits + 2nd-director KYC. We send a personalised checklist after the discovery call.</p>
         </div>
 
         <div className="opcd-columns">
@@ -102,7 +110,7 @@ const PtopvtDocuments = () => {
               <div className="opcd-col-header-icon"><FaUser /></div>
               <div>
                 <h3 className="opcd-col-title">Applicant &amp; Statutory Documents</h3>
-                <p className="opcd-col-subtitle">Directors, URC-1 pack &amp; business proof</p>
+                <p className="opcd-col-subtitle">Identity, URC-1 pack &amp; declarations</p>
               </div>
             </div>
             <div className="opcd-col-body">
@@ -117,7 +125,7 @@ const PtopvtDocuments = () => {
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
                 <h3 className="opcd-col-title">Notice, Office &amp; Incorporation Docs</h3>
-                <p className="opcd-col-subtitle">URC-2 inputs, office proof &amp; MOA/AOA</p>
+                <p className="opcd-col-subtitle">URC-2 inputs, office proof &amp; MOA / AOA</p>
               </div>
             </div>
             <div className="opcd-col-body">

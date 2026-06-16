@@ -4,18 +4,33 @@ import "./PtopvtFeatures.css";
 const types = [
   {
     number: "01",
-    title: "Section 366 Statutory Conversion",
-    text: "The conversion uses Part I of Chapter XXI of the Companies Act, 2013 (Section 366) read with the Companies (Authorised to Register) Rules, 2014. The existing proprietorship business registers itself as a Private Limited Company through Form URC-1 filed alongside SPICe+ — a statutory route that carries the business, its contracts, and operations into the new company rather than requiring a separate wind-up.",
+    title: "Form URC-2 — Newspaper Advertisement",
+    text: "MANDATORY notice published in TWO newspapers (one English + one vernacular language of the State / UT where the proprietorship is situated). Published AT LEAST 21 DAYS BEFORE filing URC-1. Invites objections from creditors / members / public. We draft the URC-2 text in compliant format, coordinate publication, and manage the 21-day objection window.",
   },
   {
     number: "02",
-    title: "URC-2 Notice & Creditor Consent",
-    text: "Unlike a fresh incorporation, conversion requires transparency to existing stakeholders. A public notice in Form URC-2 is published in an English and a vernacular newspaper inviting objections, and a list of creditors with their consent (NOC) is filed. This protects creditors and the public and is a mandatory step before the ROC registers the company.",
+    title: "Form URC-1 — Conversion Application",
+    text: "Application for registration of the proprietorship as a Pvt Ltd Company under Section 366 of the Companies Act, 2013. Filed on MCA portal with: audited statement of accounts (not older than 30 days), list of members / creditors with consents, declaration of solvency, affidavits, URC-2 newspaper cuttings, proposed MOA + AOA. We curate the entire documentation pack.",
   },
   {
     number: "03",
-    title: "Minimum Two Members & Directors",
-    text: "A Private Limited Company must have at least two shareholders and two directors (and can have up to 200 shareholders). As a sole proprietor, you bring in at least one more person — a co-founder, family member, or trusted associate — and the capital is structured between them. This is what makes the company able to raise equity and add shareholders later.",
+    title: "SPICe+ Part A — Name Reservation",
+    text: "Reserve up to 4 proposed names for the Pvt Ltd via SPICe+ Part A on the MCA portal. Approval typically in 1–2 days. Name must end with 'Private Limited'. We run a comprehensive search across MCA + TM database to avoid identical / similar / prohibited names + ensure trademark clean-up.",
+  },
+  {
+    number: "04",
+    title: "SPICe+ Part B + AGILE-PRO-S — Incorporation",
+    text: "Combined incorporation form on MCA portal filed IN PARALLEL with URC-1. Covers PAN + TAN + AGILE-PRO-S (combined GST, EPFO, ESIC, Profession Tax, Bank Account application). MOA + AOA + Form INC-9 (Declaration by both directors + subscribers) attached. CIN issued under Section 367 on approval.",
+  },
+  {
+    number: "05",
+    title: "Asset / Liability Transfer Agreement",
+    text: "Asset Transfer Agreement drafted for movables + fixed assets + intangibles + work-in-progress + receivables. Liabilities transferred subject to creditor consent (loan novation, vendor consent letters). Tax-efficient structuring per Section 47(xiv) / Section 49 of the Income-tax Act (Supreme Plus includes structuring note + ESOP template + SHA).",
+  },
+  {
+    number: "06",
+    title: "Trademark Assignment via Form TM-P",
+    text: "Proprietorship-held trademarks assigned to the Pvt Ltd via Form TM-P (Application for assignment) on the IP India portal. Maintains brand continuity + protects the Pvt Ltd's IP. Goodwill / without-goodwill structure advised based on business model. Stamp duty on assignment deed at State actuals.",
   },
 ];
 
@@ -24,7 +39,7 @@ const PtopvtFeatures = () => {
     <section className="opc-features-section">
       <div className="opc-features-container">
 
-        <h2 className="opc-features-title">Key Features of the Conversion Route</h2>
+        <h2 className="opc-features-title">Types of Converting Proprietorship to a Pvt Ltd</h2>
 
         <div className="opc-features-cards">
           {types.map((type) => (
