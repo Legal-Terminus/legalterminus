@@ -3,35 +3,59 @@ import "./PtpvtGovtCosts.css";
 
 const rows = [
   {
-    head: "DSC for Directors",
-    range: "₹1,000 – ₹2,000 each",
-    note: "Digital Signature Certificates for the directors of the new company",
+    head: "MCA Filing Fee — SPICe+ + URC-1",
+    range: "₹0 – ₹610",
+    note: "₹0 for authorised capital up to ₹15 lakh; URC-1 filing fee separate",
   },
   {
-    head: "Name Reservation (SPICe+ Part A)",
-    range: "₹0 – ₹1,000",
-    note: "MCA fee to reserve the proposed company name",
+    head: "SPICe+ Part A (Name Reservation)",
+    range: "₹1,000",
+    note: "Per attempt; up to 4 names per attempt",
   },
   {
     head: "URC-2 Newspaper Advertisement",
-    range: "₹3,000 – ₹10,000",
-    note: "Mandatory notice in one English + one vernacular newspaper inviting objections",
+    range: "₹4,500 – ₹18,000",
+    note: "English + vernacular newspaper; rates vary by State + circulation",
   },
   {
-    head: "MCA Fees — URC-1 + SPICe+",
-    range: "Slab-based",
-    note: "Government fees on conversion & incorporation, by authorised capital slab",
+    head: "Stamp Duty — MOA + AOA",
+    range: "₹500 – ₹12,600",
+    note: "State-based; Maharashtra / Delhi low, Punjab / Kerala high",
   },
   {
-    head: "Stamp Duty (MOA / AOA)",
-    range: "₹1,000 – ₹5,000+",
-    note: "State-specific stamp duty on the incorporation documents",
+    head: "Stamp Duty — Asset Transfer Agreement",
+    range: "₹500 – ₹3,000+",
+    note: "Required under Supreme / Supreme Plus only; State-based",
   },
   {
-    head: "Total Out-of-Pocket (typical)",
-    range: "₹6,000 – ₹20,000",
-    note: "Higher than a fresh incorporation due to URC-1 / URC-2 — billed at actuals",
-    isTotal: true,
+    head: "Stamp Duty — Partnership Dissolution Deed",
+    range: "₹200 – ₹1,000",
+    note: "State-based; required under Supreme / Supreme Plus",
+  },
+  {
+    head: "Class 3 DSC (2-year) — all partner-directors",
+    range: "₹1,999 / person",
+    note: "Required for all partners becoming directors",
+  },
+  {
+    head: "PAN + TAN",
+    range: "₹0",
+    note: "Issued free with COI",
+  },
+  {
+    head: "GST Cancellation + Re-Registration",
+    range: "₹0",
+    note: "Free; only our consultancy charges",
+  },
+  {
+    head: "INC-20A (Commencement)",
+    range: "₹200 – ₹400",
+    note: "Filed within 180 days of incorporation",
+  },
+  {
+    head: "Affidavit + Notarisation (URC-1)",
+    range: "₹500 – ₹1,500",
+    note: "Multiple affidavits required (1 per partner)",
   },
 ];
 
@@ -44,7 +68,7 @@ const PtpvtGovtCosts = () => {
           <span className="opc-govtcosts-badge">Billed at Actuals</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          A Section 366 conversion costs more than a fresh incorporation because of the URC-1 statutory pack and the mandatory URC-2 newspaper notice. The MCA fees, DSC, stamp duty, and advertisement charges are over and above our professional fee — billed at actuals per the official MCA schedule and applicable state stamp law.
+          Per current MCA SPICe+ tariff + Section 366 conversion rules + State Stamp Duty schedules. These charges are over and above our professional fee — billed at actuals.
         </p>
 
         <div className="opc-govtcosts-table-wrapper">

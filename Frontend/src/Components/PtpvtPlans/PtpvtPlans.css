@@ -1,1 +1,21 @@
 @import url('../OPCPlans/OPCPlans.css');
+
+/* Keep the plan cards centered within the section */
+.opc-pricing-section .opcpricing-cards {
+    justify-content: center;
+    align-items: stretch;
+}
+
+/* "33% off" discount badge next to the struck-through old price */
+.opcplan-discount {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: #e7f9ec;
+    color: #18b233;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 20px;
+    text-decoration: none;
+    vertical-align: middle;
+}
