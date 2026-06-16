@@ -65,40 +65,48 @@ const faqs = [
 ];
 
 const PtpvtFAQ = () => {
-  const [activeIndex, setActiveIndex] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const toggle = (index) => {
-    setActiveIndex(activeIndex === index ? null : index);
+    setActiveIndex((prev) => (prev === index ? -1 : index));
   };
 
   return (
     <section className="opcfaq-section" id="faq">
       <div className="opcfaq-container">
-        <h2 className="opcfaq-title">Partnership to Private Limited — FAQs</h2>
-        <p className="opcfaq-subtitle">
-          Everything you need to know about converting your partnership firm into a Private Limited Company
-        </p>
+
+        <div className="opcfaq-header">
+          <h2 className="opcfaq-title">Partnership to Private Limited — FAQs</h2>
+          <p className="opcfaq-intro">
+            Everything you need to know about converting your partnership firm into a Private Limited Company
+          </p>
+        </div>
 
         <div className="opcfaq-list">
-          {faqs.map((faq, index) => (
-            <div
-              className={`opcfaq-item ${activeIndex === index ? "active" : ""}`}
-              key={index}
-            >
-              <button
-                className="opcfaq-question"
-                onClick={() => toggle(index)}
-                aria-expanded={activeIndex === index}
+          {faqs.map((faq, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <div
+                key={index}
+                className={`opcfaq-item ${isActive ? "active" : ""}`}
               >
-                <span>{faq.q}</span>
-                <span className="opcfaq-icon">{activeIndex === index ? "−" : "+"}</span>
-              </button>
-              <div className="opcfaq-answer">
-                <p style={{ whiteSpace: "pre-line" }}>{faq.a}</p>
+                <button
+                  type="button"
+                  className="opcfaq-question"
+                  onClick={() => toggle(index)}
+                  aria-expanded={isActive}
+                >
+                  <span>{faq.q}</span>
+                  <span className={`opcfaq-icon ${isActive ? "open" : ""}`}>▾</span>
+                </button>
+                <div className={`opcfaq-answer ${isActive ? "open" : ""}`}>
+                  <div className="opcfaq-answer-content" style={{ whiteSpace: "pre-line" }}>{faq.a}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
       </div>
     </section>
   );
