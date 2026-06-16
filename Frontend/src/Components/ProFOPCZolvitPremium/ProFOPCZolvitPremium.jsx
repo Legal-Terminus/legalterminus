@@ -32,7 +32,7 @@ const ZolvitPremium = () => {
             </header>
 
             <section className="profopc-zp-section-block">
-              <h3 className="profopc-zp-label">What you get from Legal Terminus Proprietorship to OPC Conversion</h3>
+              <h3 className="profopc-zp-label">What you get</h3>
               <ul className="profopc-zp-list profopc-zp-features-list">
                 <li className="profopc-zp-list-item">
                   <span className="profopc-zp-list-icon">⚡</span>

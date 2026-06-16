@@ -35,7 +35,7 @@ const PtoopcZolvitPremium = () => {
               </header>
 
               <section className="opczp-section-block">
-                <h3 className="opczp-label">What you get from Legal Terminus Proprietorship to OPC Conversion</h3>
+                <h3 className="opczp-label">What you get</h3>
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
