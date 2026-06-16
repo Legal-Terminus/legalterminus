@@ -9,7 +9,6 @@ const PLANS = [
     badge: "BASIC",
     oldPrice: 22499,
     price: 14999,
-    discount: "33% off",
     services: [
       "Section 366 eligibility audit + URC-1 path advisory",
       "Partnership Deed + registration certificate verification",
@@ -37,7 +36,6 @@ const PLANS = [
     popular: true,
     oldPrice: 32999,
     price: 21999,
-    discount: "33% off",
     services: [
       "Everything in Elemental",
       "Partnership Firm GST cancellation (Form REG-16)",
@@ -58,7 +56,6 @@ const PLANS = [
     badge: "✦ 6-MONTH SERVICE",
     oldPrice: 45999,
     price: 29999,
-    discount: "33% off",
     services: [
       "Everything in Enriched",
       "Statutory registers (members / directors / charges)",
@@ -77,7 +74,6 @@ const PLANS = [
     badge: "✦ FULL-SERVICE 12-MONTH",
     oldPrice: 67499,
     price: 44999,
-    discount: "33% off",
     services: [
       "Everything in Supreme",
       "Directors' Report preparation",
@@ -125,10 +121,7 @@ const PtpvtPlans = () => {
                       </div>
                     )}
                     <div className="opcplan-name">{plan.name}</div>
-                    <div className="opcplan-old-price">
-                      ₹{plan.oldPrice.toLocaleString("en-IN")}
-                      {plan.discount && <span className="opcplan-discount">{plan.discount}</span>}
-                    </div>
+                    <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
                     <div className="opcplan-meta">+ Govt fee, stamp duty &amp; GST extra</div>
                   </div>
