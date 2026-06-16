@@ -506,3 +506,40 @@ a.hs-scard:hover {
   border-color: rgba(25, 163, 95, 0.45);
   color: #0b5f3a;
 }
+
+/* ── Inline rating line (Google / Trustpilot) ── */
+.hs-rating-logo {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.hs-rating-line {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hs-rating-line strong {
+  font-weight: 800;
+}
+
+/* Title + description stack vertically (spans default to inline) */
+.hs-scard__title,
+.hs-scard__text {
+  display: block;
+}
+
+/* ── Divider between the two service columns ── */
+.hs-scards-grid .hs-scard:nth-child(even) {
+  border-left: 1px solid #edf0f2;
+  padding-left: 18px;
+}
+
+/* On stacked layouts the single-column cards drop the divider */
+@media (max-width: 600px) {
+  .hs-scards-grid .hs-scard:nth-child(even) {
+    border-left: none;
+    padding-left: 0;
+  }
+}
