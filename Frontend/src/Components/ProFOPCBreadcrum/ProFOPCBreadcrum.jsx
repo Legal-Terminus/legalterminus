@@ -21,15 +21,11 @@ const Breadcrum = () => {
           </h1>
 
           <p className="ProPrietorship-opc-Bc-public-description">
-            Ready to scale your business? A Proprietorship to Private Limited Conversion helps you move from a personally-owned business structure to a legally separate company with limited liability, better credibility, and stronger growth potential.
+            Convert your Proprietorship into a Private Limited Company and unlock greater credibility, limited liability protection, and a separate legal identity. This transition helps your business scale more effectively while improving acceptance among banks, investors, and corporate clients.
           </p>
 
           <p className="ProPrietorship-opc-Bc-public-description">
-            We handle the complete conversion process under Sections 366–374 of the Companies Act, 2013 by filing Form URC-1, publishing the mandatory URC-2 newspaper notice, drafting the company’s MOA &amp; AOA, obtaining required consents, and filing SPICe+ Part B on the official MCA portal.
-          </p>
-
-          <p className="ProPrietorship-opc-Bc-public-description">
-            Your new Private Limited Company comes with a separate legal identity, easier fundraising opportunities, eligibility for Startup India benefits, ESOP structuring, and better acceptance from banks, investors, and large clients.
+            We manage the entire conversion process under the Companies Act, 2013, including URC-1 filing, URC-2 newspaper publication, MOA &amp; AOA drafting, required approvals, and SPICe+ Part B filing on the MCA portal. Your new company will be better positioned for fundraising, ESOP implementation, and government initiatives such as Startup India benefits.
           </p>
 
           <div className="ProPrietorship-opc-Bc-public-features">
