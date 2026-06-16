@@ -28,5 +28,8 @@
     "management"
   ],
   "author": "Legal Terminus",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "xstate": "^5.32.1"
+  }
 }

@@ -24,8 +24,19 @@
 
     /* Path aliases */
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/*"],
+      "@shared/*": ["../shared/*"],
+      /* Pin xstate to Portal's single copy. The shared/ workflow module (at repo
+         root) also imports 'xstate'; without this it resolves to the ROOT
+         node_modules copy, giving TWO distinct type identities → "not assignable"
+         errors where Portal code and shared machines meet (useWorkflowMachine).
+         One mapping = one identity. Mirrored by resolve.dedupe in vite.config. */
+      "xstate": ["./node_modules/xstate"],
+      "@xstate/react": ["./node_modules/@xstate/react"]
+    },
+
+    /* Allow importing the plain-JS shared workflow module (typed via .d.ts files) */
+    "allowJs": true
   },
-  "include": ["src"]
+  "include": ["src", "../shared"]
 }

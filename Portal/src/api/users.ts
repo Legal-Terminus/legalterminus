@@ -67,6 +67,25 @@ export const getUsersPage = (params: { role?: Role; cursor?: string; limit?: num
 /** Role tab counts — one cheap aggregation call, accurate at any scale. */
 export const getUserCounts = () => apiFetch<UserCounts>(`${BASE}/counts`);
 
+/**
+ * Fetch ALL users (follows the cursor until exhausted). Used by the client-side
+ * data grid, which does its own sorting/filtering/pagination. Fine at the
+ * current scale; if the collection grows very large, switch the grid to a
+ * server-side row model instead of loading everything.
+ */
+export const getAllUsers = async (): Promise<PortalUser[]> => {
+  const all: PortalUser[] = [];
+  let cursor: string | undefined;
+  // Safety cap so a bad cursor can never loop forever.
+  for (let i = 0; i < 100; i++) {
+    const page = await getUsersPage({ cursor, limit: 100 });
+    all.push(...page.data);
+    if (!page.nextCursor) break;
+    cursor = page.nextCursor;
+  }
+  return all;
+};
+
 export const getUser = (uid: string) => apiFetch<PortalUser>(`${BASE}/${uid}`);
 
 export const createUser = (body: Partial<PortalUser> & { role: Role }) =>

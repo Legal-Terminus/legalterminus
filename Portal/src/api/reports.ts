@@ -28,7 +28,7 @@ export const getCompletedTasksReport = (filters: ReportFilters = {}) =>
 
 // ─── Pending Tasks report ───────────────────────────────────────────────────
 export interface PendingTask extends Task {
-  pendingReason: 'payment' | 'document' | 'client_action' | 'government';
+  pendingReason: 'approval' | 'payment' | 'document' | 'client_action' | 'government';
 }
 
 export const getPendingTasksReport = (filters: ReportFilters = {}) =>

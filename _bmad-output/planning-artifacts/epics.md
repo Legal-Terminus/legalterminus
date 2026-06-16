@@ -18,6 +18,25 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 ---
 
+## Vocabulary (UI labels vs. code) — set 2026-06-13
+
+The data model is unchanged; only **user-facing labels** differ from code identifiers to avoid
+the task/workflow confusion. Canonical mapping:
+
+| Concept | Code identifier (unchanged) | Staff UI label | Client UI label |
+|---|---|---|---|
+| Workflow template/definition | `workflowDefinition`, `workflowDefinitions` | **Workflow** | (not shown) |
+| A client's running instance | `task`, `tasks` collection, `/api/tasks` | **Matter** (a client case) | **Service** |
+| A unit of work within an instance | `step`, `tasks/{id}/steps` | **Task** (the steps are the tasks staff do) | **Step** |
+
+So: a **Workflow** is instantiated as a **Matter** (client case) made of **Tasks** (steps). Clients
+see their Matter as a **Service** with **Steps**. Code keeps `task` = the instance (matches the
+~80 existing spec references and `/api/tasks`); we did NOT rename the data model. Implemented via
+role-aware page copy, a nav label override (`/tasks`: staff "Matters", client "My Services"), and
+split dashboard tiles.
+
+---
+
 ## Story ID Convention
 
 `E{epic}-S{story}` — e.g. `E01-S02` = Epic 1, Story 2.
@@ -48,13 +67,15 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 | E-01 | Foundation & Auth | Phase 1 | E01-S01 – E01-S04 |
 | E-02 | Workflow Engine | Phase 1 | E02-S01 – E02-S04 |
 | E-03 | Task Management | Phase 1 | E03-S01 – E03-S05 |
-| E-04 | Client Portal | Phase 1 / 2 | E04-S01 – E04-S07 |
+| E-04 | Client Portal | Phase 1 / 2 | E04-S01 – E04-S08 |
 | E-05 | Document Cycle | Phase 1 / 2 | E05-S01 – E05-S04 |
 | E-06 | Payments | Phase 1 / 2 | E06-S01 – E06-S04 |
 | E-07 | Notifications & Email | Phase 1 / 2 | E07-S01 – E07-S05 |
 | E-08 | Reports & Master Sheet | Phase 1 / 2 | E08-S01 – E08-S06 |
 | E-09 | User & Client Management | Phase 1 / 2 | E09-S01 – E09-S05 |
 | E-10 | Workflow Configuration | Phase 1 | E10-S01 – E10-S02 |
+| E-11 | Matter Creation, Pre-Assignment, Priority & UI Platform | Phase 1 | E11-S01 – E11-S08 |
+| E-12 | Client vs Internal View Separation | Phase 1 | E12-S01 – E12-S03 |
 
 ---
 
@@ -211,6 +232,25 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Goal**: Implement the XState v5 Company Incorporation machine, the backend transition endpoint, and task creation with config-layer merge so that workflow state is reliably instantiated, persisted, and advanced through all 41 steps including payment gates, parallel groups, and resubmission branches.
 
+> **⚠️ STATUS UPDATE (2026-06-13) — workflows are DATA-DRIVEN; see architecture.md §1.3.**
+> - **E02-S01 (machine):** ✅ done, but **re-architected from code to data.** The 41-step
+>   incorporation machine now lives as a Firestore **definition** (`workflowDefinitions/company-incorporation`)
+>   compiled to XState at runtime by the shared `compileDefinition.js` (verified behaviourally
+>   equivalent). New flows are documents, not code files. The hardcoded `companyIncorporation.machine.ts`
+>   is retained only as the seed source; the spec's parallel `incorporation_docs` region and the
+>   `__tests__` Vitest file are NOT implemented (incorporation modelled as linear+branch).
+> - **E02-S03 (task creation):** ✅ **`POST /api/tasks`** built (admin/manager, Zod-validated). Creates a
+>   task from the compiled definition; pins `workflowDefinitionId`+`workflowVersion` (immutable per task);
+>   writes per-step instance state to a `tasks/{id}/steps/{n}` **subcollection** (+ denormalized `totalSteps`).
+>   "Config-layer merge" is now "instance state from definition steps."
+> - **E02-S02 (transition endpoint):** ⏳ NOT built yet — `POST /api/tasks/:id/transition` is **Phase 2**
+>   (step execution). Tasks can be created/assigned but not yet advanced.
+> - **E03-S03 (task creation UI):** ✅ Entry point is **"Assign Service" on the client profile**
+>   ([ClientForm.tsx](../../Portal/src/components/users/ClientForm.tsx)) → lists workflow-backed services →
+>   creates the task; appears in the Tasks list ([TasksPage.tsx](../../Portal/src/pages/tasks/TasksPage.tsx)).
+> - **Assignment:** `step.assignedRole` (role, from definition) vs `task/step.assignedTo` (user UID). Today
+>   `assignedTo` is **null** on create — assigning to a specific user/role is **Phase 4**, not built.
+
 ---
 
 ### E02-S01 — XState Machine — Company Incorporation (Code Layer) [Phase 1]
@@ -318,11 +358,79 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Goal**: Enable admin and manager to create tasks and manage approval chains; enable team members to view their assigned step queue and execute steps (mark complete, reassign, flag urgent).
 
+> **✅ STATUS UPDATE (2026-06-13) — step execution + matter management built.** (Vocabulary: a
+> "Matter" is the running instance; its steps are "Tasks". See the Vocabulary section up top.)
+> - **Backend-authoritative execution:** `POST /api/tasks/:id/transition` rebuilds the matter's
+>   compiled (pinned) workflow, resumes at the current step, applies the event under engine guards,
+>   and persists. Handles `COMPLETE_STEP`, `RECORD_PAYMENT`, `ADMIN_OVERRIDE_PAYMENT`,
+>   `BRANCH_DECISION`, `CLIENT_APPROVE/REJECT`, `GOVT_APPROVE/REJECT`. Invalid moves rejected;
+>   payment gates enforced. ([tasks.controller.js](../../backend/src/controllers/tasks.controller.js))
+> - **Step status lifecycle:** the step left → `completed`; landed-on → `active`. On a forward JUMP,
+>   bypassed steps are classified: a satisfied **payment gate** → `completed` (auto-passed, no action
+>   needed); a **conditional branch** step that doesn't apply (e.g. 14–19 when Govt approves at 13) →
+>   `skipped`. (Inferred from step-number ranges + step type — a known limitation vs. the engine
+>   emitting traversed steps directly; fine for the current linear+branch flow.)
+> - **Action comments / audit:** events accept an optional `remark` (required on CLIENT_REJECT /
+>   GOVT_REJECT); stored on the acted-on step + appended to a `tasks/{id}/events` audit subcollection.
+> - **Task detail UI:** role-branched 3-tab (Steps/Documents/Payments); context-aware action buttons
+>   derived from the current step's definition; step title + description shown. ([TaskDetailPage.tsx](../../Portal/src/pages/tasks/TaskDetailPage.tsx))
+> - **Matters list:** scannable rows (client anchor, service, status, payment, progress, recency),
+>   search, urgent-first sort; completed matters show "Completed · N of N" (no 9999 leak).
+> - **Delete matter (admin-only):** `DELETE /api/tasks/:id` cascades the `steps` + `events`
+>   subcollections then the doc (Firestore doesn't cascade). UI: trash action on each Matters row
+>   (admin), with confirm + cache invalidation.
+> - **Cross-role freshness:** global `refetchOnWindowFocus` + polling on the matters list (15s) and
+>   detail (10s) so admin↔client changes appear without a manual refresh (React Query cache is
+>   per-browser-context). Real-time `onSnapshot` remains a later option.
+> - **Bug fixes:** workflow topology (Govt-approve at 13 → 20; synthetic final step so matters can
+>   complete); 9999 sentinel no longer shown; admin override now advances immediately.
+> - **My Tasks — consolidated cross-matter worklist (E03-S01):** new staff page surfacing the
+>   **active step of every open matter** the user is involved in, as one to-do inbox (no opening
+>   matters one by one). `GET /api/tasks/my-steps` returns each open matter's active step enriched
+>   with client/service/urgency/recency and bucketed: **Assigned to me** vs **Available to pick up**.
+>   Role-scoped (admin/manager see all open matters; team members see matters/steps that are theirs
+>   or unassigned). Urgent-first, polled (15s). Nav: "My Tasks" for all staff roles.
+>   ([MyTasksPage.tsx](../../Portal/src/pages/tasks/MyTasksPage.tsx), [tasks.controller.js](../../backend/src/controllers/tasks.controller.js) `listMySteps`)
+> - **Assignment — step-level AND matter-level (2026-06-14):**
+>   - **Step owner:** `PATCH /api/tasks/:id/steps/:n { assignedTo }` assigns the **current step** to a
+>     staff user (null → back to the shared pool). Surfaced as a **"Step owner"** picker in the step
+>     hero. Routes that step into the assignee's "My Tasks".
+>   - **Matter owner:** `PATCH /api/tasks/:id { assignedTo }` assigns the **whole matter** (all steps)
+>     to one user and **cascades onto the active step** (without clobbering a step delegated elsewhere).
+>     Validates the assignee is staff (rejects clients). Surfaced as a **"Matter owner"** control in the
+>     page header. ([tasks.controller.js](../../backend/src/controllers/tasks.controller.js) `patchTask`)
+>   - **Team-member routing fixed:** lists/My-Tasks for `team_member` now union *matters assigned to them*
+>     ∪ *matters where a step is assigned to them* (collection-group query on `steps.assignedTo`; field
+>     override deployed). Previously `assignedTo` was always null so team members saw nothing.
+> - **Activity thread (real audit feed):** `GET /api/tasks/:id/events` returns the matter's event history
+>   name-enriched (who/what/when + comment), and each entry **references the step acted on** as
+>   *phase · Step N · title* (looked up from the pinned definition; events store only the step number).
+>   Shown as an **Activity** section on the task detail; clients can read their own matter's thread.
+>   ([tasks.controller.js](../../backend/src/controllers/tasks.controller.js) `listTaskEvents`)
+> - **Task detail redesign (Option 3 — timeline-centric, 2026-06-14):** replaced the flat stacked-cards
+>   view with a clearer hierarchy: left **stage rail** (phases w/ done/total + status dots; collapses to
+>   a dropdown on mobile, hidden when a flow has no phases), a **merged hero panel** (step action +
+>   Step-owner/Documents in one elevated container), then quieter **Activity** and **Steps** sections.
+>   A **"pending-on" summary** ("N remaining · X Our team · Y Client · Z Registrar") + a whose-turn chip
+>   ("With our team" / "Waiting on client" / "With registrar") restore the at-a-glance ownership signal.
+>   Completed steps are **expandable** (who/when/remark). Matter status shown once in the page header
+>   (no in-body duplication). Back is a leading-left link. Responsive desktop ↔ mobile.
+> - **Still TODO:** approval-chain management (E03-S04); reassign-with-accept handshake (E03-S02);
+>   assignment on matter creation + assigning not-yet-active steps in advance; real document attach (E05).
+
 ---
 
 ### E03-S01 — Team Member Step Queue [Phase 1]
 
 **Priority**: P1 | **Complexity**: M | **Linked spec story**: US-2 | **Dependencies**: E02-S02, E01-S04
+
+> **✅ Delivered (2026-06-13) as "My Tasks".** Implemented for **all staff roles** (not just team
+> members) as a consolidated cross-matter worklist at `/my-tasks`. Differences from the original
+> spec below: the endpoint is `GET /api/tasks/my-steps` (returns each open matter's **active step**,
+> not a flat `taskSteps` query); rows are bucketed **Assigned to me / Available to pick up** rather
+> than only `assignedTo == me`; freshness is via polling (15s) rather than `onSnapshot` (deferred).
+> Step-level `assignedTo` is now writable (see E-03 status block). Reassign-with-accept handshake and
+> the "Blocked — Payment Pending" label remain TODO.
 
 **Rationale**: The step queue is the core daily-use screen for team members — the primary replacement for the spreadsheet.
 
@@ -349,6 +457,20 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 ### E03-S02 — Step Execution (Complete, Query, Reassign) [Phase 1]
 
 **Priority**: P1 | **Complexity**: L | **Linked spec story**: US-2 | **Dependencies**: E03-S01, E02-S02
+
+> **✅ Reassignment BUILT — DIRECT + audited (revised 2026-06-14).** The "reassign to another team
+> member" half of this story is done (the other halves — mark-complete, doc-query — were already covered
+> by the transition endpoint + E05 stub).
+> - **⚠️ DESIGN CHANGED (2026-06-14):** an earlier accept/decline **handshake** was built then **removed**
+>   per user decision — *"we should not need acceptance, but yes record in the activity reassignments
+>   also."* Reassignment is now **direct and immediate**: changing the **Step owner** picker on the task
+>   detail (admin/manager, or the step's current owner) moves ownership at once.
+> - **Audited:** `PATCH /api/tasks/:id/steps/:n { assignedTo }` records a `STEP_REASSIGNED` event in the
+>   matter's activity thread ("Reassigned to X (from Y)" / "Unassigned"). Surfaces in the Activity feed.
+> - **Removed artifacts:** the `offer`/`accept`/`decline` endpoints, `reassignOffer` step field, the
+>   `steps.reassignOffer.toUid` index override, and the My Tasks "Reassignments offered to you" section
+>   are all gone.
+> - **Still TODO (this story):** "Raise Document Query" (needs E-07 notifications); blocked-step gating.
 
 **Rationale**: A team member must be able to act on steps: mark complete (fires `COMPLETE_STEP` XState event), raise a document query (sends notification to client), and reassign to another team member. These are the three primary daily interactions.
 
@@ -404,6 +526,20 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Priority**: P1 | **Complexity**: M | **Linked spec story**: US-13 | **Dependencies**: E03-S03, E07-S01
 
+> **✅ BUILT (2026-06-14) — manager→admin gate; chain is role-derived & extensible.** Scope chosen:
+> a **manager-created** matter enters `pending_admin_approval` (first step held `pending`, kept out of
+> worklists); an **admin-created** matter activates immediately. (Team-member creation isn't enabled,
+> so the team_member→manager leg is N/A today; the `needsApproval` seam in `createTask` extends it.)
+> - `POST /api/tasks/:id/approve` (admin) → matter `active`, first step activated, logged `TASK_APPROVED`.
+> - `POST /api/tasks/:id/reject` (admin, **reason required**) → matter `rejected`, reason stored + logged.
+>   ([tasks.controller.js](../../backend/src/controllers/tasks.controller.js))
+> - **Task detail** shows an amber approval banner (admins get Approve / Reject-with-reason; others see
+>   a waiting note); a rejected matter shows the reason. **Matters list** has "Awaiting approval" / "rejected"
+>   badges. ([TaskDetailPage.tsx](../../Portal/src/pages/tasks/TaskDetailPage.tsx), [TasksPage.tsx](../../Portal/src/pages/tasks/TasksPage.tsx))
+> - **Surfaced as worklist items (E11-S04):** approval to-dos appear in My Tasks + a dashboard widget;
+>   approver is role-derived via `canApprove(user, matter)` (admin today, extensible). Notifications/email
+>   on submit deferred to E-07. New statuses added: `pending_admin_approval`, `rejected`.
+
 **Rationale**: The approval chain (team_member → manager → admin) is a core business process. Without it, tasks created by non-admins cannot be activated.
 
 **Acceptance Criteria**:
@@ -450,9 +586,79 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 ---
 
+### E03-S06 — Comment & Attach on Any Step Action [Phase 1 — comment ✅ / attach stub]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-2 / US-13 | **Dependencies**: E03-S02, E05 (attach upload)
+**Raised**: 2026-06-14
+
+**Rationale**: When acting on a step, staff/clients need to (a) leave a **comment** explaining the action and (b) **attach a document** relevant to it. Today comments exist only on rejections/overrides (via a `window.prompt`), and there is no attach affordance on actions. Generalising comments to every transition and exposing an attach control makes each action self-documenting and audit-complete. Real file upload belongs to **E-05 (Document Cycle)**; this story delivers the **comment** end-to-end and the **attach affordance as a stub** now.
+
+> **✅ BUILT (2026-06-14) — comment half done; attach is a stub (E-05).** The step hero now shows an
+> **inline comment composer** for every action (optional on positive actions, required on rejections),
+> sent as `event.remark` and persisted on the step + `events` trail; the comment surfaces in the
+> Activity thread and the expandable completed-step details. The **"Attach document"** control is a
+> visible-but-disabled stub (real upload = E-05). `window.prompt` is gone.
+
+**Acceptance Criteria**:
+- **Comment on every action:** the current-step action card shows an **inline comment composer** (replacing `window.prompt`). Comment is **optional** on positive actions (Complete Step, Approve, Mark as Paid, Branch decision, Govt Approved) and **required** on rejections (CLIENT_REJECT / GOVT_REJECT) — preserving the existing required-remark rule.
+- The composer's value is sent as `event.remark` to `POST /api/tasks/:taskId/transition`; backend persistence is unchanged (already stores it). Comment shows in the step's history/remark and the `events` trail.
+- **Attach affordance (stub now):** an "Attach document" control sits next to the composer, **visible but disabled**, with a "coming soon" hint — consistent with the Documents-tab scaffold. No bytes are uploaded; no backend change.
+- Clients only see the composer on their own actionable steps; staff see it on the operational actions.
+- When E-05 lands, the attach control is enabled and wired to the signed-URL upload + step `documents` (this story's stub is the seam).
+
+**Backend endpoints needed**:
+- `POST /api/tasks/:taskId/transition` (already accepts `remark`; no change for the comment half).
+- *(Future, E-05)* attach upload via signed URL.
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` — `StepHeroPanel` inline comment composer (`ActionComposer`) + disabled attach control.
+
+---
+
 ## E-04 — Client Portal
 
 **Goal**: Give clients a self-service view of their tasks (steps, documents, payments) and a service catalogue, eliminating "call us to check status" interactions.
+
+> **✅ STATUS UPDATE (2026-06-13) — client task view built (Steps live; Documents/Payments scaffolded).**
+> **♻️ Steps tab redesigned 2026-06-14** — the task detail (both roles) now uses the Option-3
+> timeline-centric layout (stage rail + merged step hero + Activity thread + pending-on summary); see the
+> E-03 status block "Task detail redesign". Clients get the same structure, still limited to their own
+> actionable steps. The bullets below describe the original build; the engine/data are unchanged.
+> - **Client list (E04-S01):** ✅ `/tasks` (role-neutral) lists the client's own tasks framed as
+>   purchased services — anchor is the SERVICE name, with status/payment/progress. (Client name is the
+>   anchor for staff instead.) [TasksPage.tsx](../../Portal/src/pages/tasks/TasksPage.tsx).
+> - **Task detail (E04-S02):** ✅ **role-branched 3-tab layout** (Steps / Documents / Payments) on a
+>   single `/tasks/:id` route ([TaskDetailPage.tsx](../../Portal/src/pages/tasks/TaskDetailPage.tsx)).
+>   - **Steps tab:** timeline with **title + description** (description seeded on each step, see below),
+>     done/current/upcoming status, and step remarks shown inline. Clients see **only** their own-step
+>     CTAs (Approve / Request Changes); all staff-internal actions are hidden and replaced with neutral
+>     "waiting…" notes. Staff see the operational actions.
+>   - **Documents tab:** scaffolded with a disabled "Attach document (coming soon)" — the real upload/
+>     review system is **E05 (deferred)**.
+>   - **Payments tab:** read-only payment status + amount paid/due; online payment is a later phase.
+> - **Step descriptions:** added `description` to the workflow definition schema; seeded concise,
+>   client-friendly descriptions for all 41 incorporation steps (convertMachineToDefinition.js). Carried
+>   through the compiler `meta` and the `/api/workflow-definitions/:id` read endpoint.
+> - **Action comments / audit:** the transition endpoint accepts an optional `remark` on events
+>   (required on CLIENT_REJECT / GOVT_REJECT, optional on admin override); the comment is stored on the
+>   acted-on step and an **event-history subcollection** `tasks/{id}/events` records who did what, when.
+> - **Access fix:** `GET /api/workflow-definitions/:id` is now readable by ANY authenticated role (was
+>   staff-only), because clients need their task's definition to render progress + CTAs. The LIST
+>   endpoint stays staff-only.
+> - **Journey tracker (E04-S08, 2026-06-13):** the Steps tab now leads with a client-facing **progress
+>   tracker** above the step list — a phase "rail" (6 milestone stations with a you-are-here pulse +
+>   animated active connector), a **next-stop hero card** (current step + who's blocking + optional ETA),
+>   and a **"steps remaining" ownership strip** (You / Our team / Registrar, decrementing as steps
+>   complete). Added to the definition schema: `phases[]` (+ per-step `phaseId`), plus optional
+>   `typicalDurationDays`, `clientActionLabel`, `ownerType`. Owner is **derived** (`deriveOwnerType`:
+>   payment-gate/CLIENT_APPROVE → client, GOVT_APPROVE → registrar, else team) so no per-step config is
+>   needed; phase done/now/upcoming is computed from **real per-step statuses** (`phaseProgress`) so the
+>   final phase turns green on completion. Seeded 6 phases for incorporation; re-seed required.
+>   ([TaskJourneyTracker.tsx](../../Portal/src/pages/tasks/TaskJourneyTracker.tsx),
+>   [definitionSchema.js](../../shared/workflows/definitionSchema.js))
+> - **Not yet (later phases):** assigning steps to a specific user (Phase 4), real documents (E05),
+>   online payments/receipts (E06), real-time `onSnapshot` updates, and XState snapshot rehydration
+>   (we resume from stored domain fields instead — see architecture.md §1.3).
 
 ---
 
@@ -551,23 +757,31 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 ---
 
-### E04-S05 — Service Listing Interface [Phase 2]
+### E04-S05 — Service Catalog (staff-facing) [Phase 1]
 
 **Priority**: P3 | **Complexity**: S | **Linked spec story**: US-12 | **Dependencies**: E01-S04
 
-**Rationale**: Client-facing service catalogue. P3, Phase 2 — not on the critical path.
+**Status**: ✅ IMPLEMENTED (2026-06-13)
+
+**Rationale**: A service catalog for **staff** (admin/manager/team_member) to browse and customise the services Legal Terminus offers — pricing/fields that drive checkout. **Re-scoped 2026-06-13 from "client-facing listing" to staff-facing:** clients don't manage the catalog, staff do; clients are excluded.
 
 **Acceptance Criteria**:
-- `ServicesPage.tsx` — accessible only to `client` role; shows up to 20 services with name, price, 1-line description.
-- "View all" link opens `legalterminus.com/services` in a new tab.
-- "Request Service" CTA opens a pre-filled contact form.
-- Services data is fetched from `GET /api/services` (simple static or Firestore-backed list).
+- `ServicesPage.tsx` — accessible to `admin`, `manager`, `team_member` (NOT `client`). Lists services with editable fields.
+- Staff can update service fields via `PATCH /api/service-config/:categoryId/:key` (role-guarded).
+- Catalog data fetched from `GET /api/service-config/all` (staff-only; returns all services including inactive). The public `GET /api/service-config` returns active services only (used by the marketing site / checkout).
+- Surfaced as a "Service Catalog" dashboard tile + `/services` sidebar nav for staff roles.
 
 **Backend endpoints needed**:
-- `GET /api/services`
+- `GET /api/service-config` — public, active services only
+- `GET /api/service-config/all` — staff-only (verifyToken + requireRole admin/manager/team_member)
+- `PATCH /api/service-config/:categoryId/:key` — staff-only, edit a service field
 
 **Frontend screens/components**:
 - `Portal/src/pages/services/ServicesPage.tsx`
+- `Portal/src/api/services.ts`
+- `backend/src/routes/serviceConfig.routes.js`, `backend/src/schemas/content.schema.js`
+
+> **Note:** `/services` route + dashboard tile roles changed from `['client']` to `['admin','manager','team_member']` in `appRoutes.tsx` / `dashboardConfig.ts`.
 
 ---
 
@@ -629,9 +843,60 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 ---
 
+### E04-S08 — Service Progress / Journey Tracker [Phase 1]
+
+**Priority**: P2 | **Complexity**: M | **Linked spec story**: US-1 | **Dependencies**: E04-S02 | **Raised**: 2026-06-13
+
+**Status**: ✅ IMPLEMENTED (2026-06-13) → **superseded by the Option-3 task-detail redesign (2026-06-14)**
+
+> **♻️ SUPERSEDED (2026-06-14).** The standalone `TaskJourneyTracker.tsx` (horizontal phase rail +
+> next-stop hero + ownership strip) is **no longer rendered**. Its three ideas were absorbed into the
+> Option-3 task-detail layout (see the E-03 status block "Task detail redesign"): the horizontal rail
+> became the **left stage rail** (vertical on desktop, a dropdown on mobile); the ownership strip became
+> the **"pending-on" summary** ("N remaining · X Our team · Y Client · Z Registrar"); the next-stop hero
+> became the **merged step hero**. The underlying data model below (`phases[]`, `phaseId`,
+> `deriveOwnerType`, `phaseProgress`) is unchanged and still powers it. `TaskJourneyTracker.tsx` is now
+> dead and can be deleted in cleanup.
+
+**Rationale**: The original Steps tab (E04-S02) was a flat 41-row "Done / Done / Done" list — accurate but low-signal for a client, who mainly wants to know *where am I, what's next, and who's holding things up* (the "live train map" mental model). This story adds a client-facing **journey tracker** above the step list that collapses the 41 steps into ~6 milestone "stations" and surfaces the current step and its owner, without changing the workflow engine or the detailed list (which remains the source of truth for per-step actions).
+
+**Acceptance Criteria**:
+- The Steps tab renders a **phase rail** above the step list: one station per workflow phase, in order, with a you-are-here pulse on the active phase, an animated connector on the active segment, green checks for completed phases, and a "Stage X of N · {phase name}" smart-progress label (replacing the bare "N of N").
+- A **next-stop hero card** shows the current step's number, title, description, an owner badge ("Waiting on you / our team / registrar"), and an optional "Typically takes N days" line when `typicalDurationDays` is set. Hidden on completion (replaced by the completion banner).
+- A **"steps remaining" ownership strip** shows three counts — client / team / registrar — computed from **not-yet-completed** steps (excludes `completed` + `skipped`), so each count decrements as work is done and all read 0 on completion. The strip highlights the current owner.
+- Phase status is derived from **real per-step statuses** (`task.steps`), not the cursor alone: a phase is `done` when all its steps are completed/skipped, `now` when it holds the current/in-progress step, else `upcoming`. The **final phase therefore turns green on completion** (a cursor-only heuristic left it stuck on "now").
+- Owner is **derived** with no per-step config: payment_gate or `CLIENT_APPROVE` → client; `GOVT_APPROVE` → registrar; otherwise team. An explicit `step.ownerType` overrides the derivation.
+- Role-aware copy: clients see "You" for client-owned work; staff see "Client". The tracker degrades gracefully — if a workflow has no `phases`, it renders nothing and the existing list (+ completion banner) shows unchanged.
+- Mobile-first: the rail scrolls horizontally; the ownership strip is a 3-column grid.
+- Skipped steps in the detailed list use a distinct `CircleSlash` icon (not the plain pending circle).
+
+**Schema / data changes**:
+- `WorkflowDefinition` gains `phases[]` (`{ id, name, order }`); `WorkflowStepDef` gains optional `phaseId`, `typicalDurationDays`, `clientActionLabel`, `ownerType`. `validateDefinition` rejects dangling `phaseId`s and malformed phases. Shared helpers added: `deriveOwnerType`, `stepPhaseMap`, `phaseProgress` (in `definitionSchema.js`, mirrored in `Portal/src/api/workflowDefinitions.ts`).
+- `convertMachineToDefinition.js` seeds 6 incorporation phases (Payment & Name Approval → Handover) and assigns each step a `phaseId`. **Re-seed required** (`node backend/src/scripts/seedWorkflowDefinitions.js`) — done 2026-06-13.
+
+**Backend endpoints needed**: None new — reuses `GET /api/tasks/:taskId` (returns `steps` with per-step status) and `GET /api/workflow-definitions/:id` (now returns `phases`).
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/TaskJourneyTracker.tsx` (new)
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (Steps tab wiring + skipped-step icon)
+- `Portal/src/api/workflowDefinitions.ts` (types + `deriveOwnerType` / `phaseProgress`)
+- `Portal/tailwind.config.js` (`pulse-ring`, `flow-dash` keyframes)
+- `shared/workflows/definitionSchema.js`, `shared/workflows/convertMachineToDefinition.js`
+
+**Still TODO**: deriving the ~6 phases for non-incorporation workflows (Phase 2 flows); per-phase ETA / delay ("running late") states; surfacing `clientActionLabel` as a real CTA on the hero card; an activity/event feed alongside the rail.
+
+---
+
 ## E-05 — Document Cycle
 
 **Goal**: Implement the full document lifecycle: client uploads → team review → approve/reject with remark → re-upload → expiry management.
+
+> **⏳ STATUS (2026-06-13) — NOT built; deferred.** No task-document system exists yet. The only
+> upload code is `backend/src/middleware/upload.middleware.js` (image-only, memory + sharp, for the
+> marketing/blog flows) — not reusable for task documents (any file type, Firebase Storage, per-step,
+> review status). Firebase Storage is not yet wired for the Portal. The task-detail **Documents tab is
+> scaffolded** with a disabled "coming soon" affordance (see E04 update). This epic is the next major
+> subsystem when documents are prioritised.
 
 ---
 
@@ -939,6 +1204,18 @@ stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", 
 
 **Priority**: P2 | **Complexity**: L | **Linked spec story**: US-7 | **Dependencies**: E02-S03, E03-S03
 
+> **✅ DONE (verified 2026-06-14).** Built in a prior session; confirmed complete this session.
+> Shell grid ([ReportsPage.tsx](../../Portal/src/pages/reports/ReportsPage.tsx)) + the three task
+> reports ([AllTasksReport.tsx](../../Portal/src/pages/reports/AllTasksReport.tsx),
+> [CompletedTasksReport.tsx](../../Portal/src/pages/reports/CompletedTasksReport.tsx),
+> [PendingTasksReport.tsx](../../Portal/src/pages/reports/PendingTasksReport.tsx) grouped by reason:
+> payment / document / client_action / government) + Master Sheet. Backend
+> `GET /api/reports/{all-tasks,completed,pending,master-sheet}` return real data
+> ([reports.controller.js](../../backend/src/controllers/reports.controller.js)); routes admin/manager.
+> Routes registered in appRoutes; date-range filters present.
+> ✅ 2026-06-14: the Pending report now includes `pending_admin_approval` matters as a distinct
+> **"Awaiting Approval"** bucket (alongside payment/document/client_action/government).
+
 **Rationale**: The three core task reports are needed immediately after tasks exist. The report shell (selector page) provides the navigation scaffold for the remaining 10 reports.
 
 **Acceptance Criteria**:
@@ -1160,6 +1437,11 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 - ✅ `Portal/src/pages/admin/TeamMembersPage.tsx`
 - ✅ `Portal/src/components/admin/TeamMemberForm.tsx`
 
+> **⚠️ SESSION UPDATE (2026-06-13) — supersedes the stale notes above.** The
+> separate `/api/team-members` + `/api/clients` endpoints and the role-prefixed
+> `/admin/*` paths described above **no longer exist**. See the consolidated
+> current state in the shared note under E09-S02.
+
 ---
 
 ### E09-S02 — Create & Edit Clients [Phase 1]
@@ -1212,25 +1494,55 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 - ✅ `Portal/src/pages/admin/ClientsPage.tsx`
 - ✅ `Portal/src/components/admin/ClientForm.tsx`
 
+> **⚠️ SESSION UPDATE (2026-06-13) — current state of user management (E09-S01 + E09-S02).**
+> Supersedes the stale `/api/team-members`, `/api/clients`, `/clients/{uid}`,
+> and `/admin/*` references in both stories above.
+>
+> **Unified, role-neutral API + UI:**
+> - Single endpoint `/api/portal/users` ([portalUsers.controller.js](../../backend/src/controllers/portalUsers.controller.js), [portalUsers.routes.js](../../backend/src/routes/portalUsers.routes.js)) for ALL roles. `GET /` (list, paginated), `GET /counts`, `GET /:uid`, `POST /`, `PATCH /:uid`, `DELETE /:uid`. Backed by the single `users` collection (the `clients` collection is gone). GET/POST/PATCH require `admin|manager`; DELETE is `admin` only.
+> - Single page [Portal/src/pages/users/UsersPage.tsx](../../Portal/src/pages/users/UsersPage.tsx) at role-neutral `/users` (not `/admin/users`). Forms at `/users/new/:type` and `/users/edit/:type/:uid`. Components under `Portal/src/components/users/`.
+> - Role logic is centralized in the role services ([Portal/src/lib/roles.ts](../../Portal/src/lib/roles.ts), [backend/src/config/roles.js](../../backend/src/config/roles.js)); privilege-escalation guards via `canAssignRole` (manager cannot mint admin/manager).
+>
+> **Data grid (2026-06-13):** UsersPage now uses **TanStack Table + TanStack Virtual** (replaced the hand-rolled virtualized table). Sortable columns, global search (name/email/role/phone/designation/org), role-tab filtering, virtualized scroll (~70vh, no pagination), Cal.com styling. Column order: User → Role → Contact → Added → Actions (actions always visible).
+>
+> **Delete now cleans up related data (E09-S01/S02 delete path):**
+> - Refuses to delete a user who still has tasks (`clientUid` or `assignedTo`) → `409` with task count; admin must reassign/close first.
+> - Deletes the `users/{uid}/payments` subcollection (Firestore does not cascade), then the user doc, then the Auth account.
+> - Firestore-first ordering (no orphan on partial failure); tolerates `auth/user-not-found` so legacy/Google-only docs without an Auth account can still be deleted.
+>
+> **Critical bug fixed (2026-06-13):** the Users list returned **0 rows / 500** — root cause was the `validate(paginationSchema,'query')` middleware doing `req.query = ...`, which throws in **Express 5** (getter-only `req.query`). Fixed in [validate.middleware.js](../../backend/src/middleware/validate.middleware.js) via `Object.defineProperty`. Also fixed: role-filtered list 500'd needing a `role+createdAt` composite index → now sorts in memory when filtering (see TD-01). Backfilled missing `role`/`createdAt` on legacy docs.
+>
+> **Source-of-drift fix:** the marketing Frontend wrote `users` docs directly via client SDK (Signup/Login/ProCheckoutModal), bypassing `upsertUser` — producing docs with no `role` and Timestamp-vs-ISO `createdAt` drift. Those now route through `POST /api/auth/register` → `upsertUser` ([Frontend/src/utils/registerUser.js](../../Frontend/src/utils/registerUser.js)).
+>
+> **Bug fix (2026-06-13) — new/edited user didn't appear in the grid without a manual refresh.** Neither user form invalidated the React Query cache on save; `UsersPage` loads `['portalUsers']` with `staleTime: 30s` and only invalidated on delete, so the cached list was shown after create/edit. Fix: both [ClientForm.tsx](../../Portal/src/components/users/ClientForm.tsx) and [TeamMemberForm.tsx](../../Portal/src/components/users/TeamMemberForm.tsx) now invalidate `['portalUsers']` (and `['portalUser', uid]` on edit) in their mutation `onSuccess`, so the grid refetches immediately.
+
 ---
 
 ### E09-S03 — Role Management & Custom Claims [Phase 1]
 
 **Priority**: P2 | **Complexity**: S | **Linked spec story**: US-8 | **Dependencies**: E09-S01
 
-**Rationale**: Role changes must propagate to Firebase custom claims atomically to take effect on the next token refresh.
+**Rationale**: Role changes must take effect promptly and reliably, without forcing the user to log out or wait for a token to expire.
 
 **Acceptance Criteria**:
-- Admin selects a new role from a dropdown on `UserDetailPage`; confirmation dialog warns "This will change the user's access level immediately on next login."
-- `PATCH /api/portal/users/:uid/role { role: "manager" }` — backend calls `admin.auth().setCustomUserClaims(uid, { role })` then updates `users/{uid}.role` in the same response; returns `{ success: true }`.
-- Frontend notes "The user's new role will be active after their next login or token refresh."
-- The calling admin's own role cannot be changed via the UI (guard: `uid !== currentUser.uid`).
+- Role is changed via the unified user edit form (`PATCH /api/portal/users/:uid`); `role` is admin/manager-assignable per `canAssignRole` (manager cannot mint admin/manager). Backend persists `users/{uid}.role` and best-effort syncs the Firebase custom claim.
+- The new role takes effect within ≤60s for the affected user with **no logout required**.
+
+> **⚠️ UPDATED 2026-06-13 — authorization model changed.** The original design above relied on the **token custom claim** taking effect "on next login / token refresh", which left a stale-token window of up to ~1h (a real bug: changing a user's role didn't apply until their cached token expired). **Now `verifyToken` resolves the role from Firestore `users/{uid}.role` as the authoritative source** (cached 60s), treating the token claim as a fallback only. Consequences:
+> - Role up/down-grades propagate within ≤60s for everyone (self or admin-initiated) — no re-login, no token-refresh/revocation dance.
+> - **`role` is the single source of truth.** The legacy `type` mirror field is fully removed (no code reads/writes it; `backfill-remove-user-type.js` cleared existing docs).
+> - Security note: the Firestore read is server-side, so the client cannot influence the resolved role; trusting it over the signed claim stays secure. Cost: ≤1 Firestore read per user per minute (cached).
+> - Implementation: `backend/src/middleware/auth.middleware.js` (`verifyToken`).
+> - ⏳ Still TODO: the self-role-change UI guard (`uid !== currentUser.uid`) and a dedicated role-change confirmation dialog are not yet implemented; role is changed through the general edit form today.
+
+> **⚠️ BUG FIX 2026-06-13 — clients could not be promoted.** Since **every new user defaults to `client`**, promotion (client → staff) is the common path, but it was unreachable from the UI: editing a client opened `ClientForm`, which hardcoded `role: 'client'` with no selector, and only `TeamMemberForm` had a role picker (staff roles only). The backend already authorized the change via `canAssignRole`. Fix: added a **Role & Access** section to [ClientForm.tsx](../../Portal/src/components/users/ClientForm.tsx) — shown only when editing an existing user and only if the actor can assign a non-client role (`assignableRolesFor`). Selecting a staff role reveals a **required Designation** field (backend requires designation for staff). On save, `role` is sent only when changeable, `designation` only for staff roles. Create still always makes a client; promotion happens on a later edit.
 
 **Backend endpoints needed**:
-- `PATCH /api/portal/users/:uid/role`
+- `PATCH /api/portal/users/:uid` (role is one of the updatable fields; authz via `canAssignRole`)
 
 **Frontend screens/components**:
-- `Portal/src/pages/users/UserDetailPage.tsx` (role change section)
+- `Portal/src/components/users/TeamMemberForm.tsx` (role selector for staff users, gated by `assignableRolesFor`)
+- `Portal/src/components/users/ClientForm.tsx` (role selector to promote a client to staff, gated by `assignableRolesFor`)
 
 ---
 
@@ -1304,11 +1616,48 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 **Frontend screens/components**:
 - `Portal/src/pages/workflow/WorkflowSettingsPage.tsx`
 
+> **✅ PARTIAL (2026-06-13) — visual workflow review shipped (read-only).** Admins/managers/team_members can now **view** a service's configured workflow as an interactive diagram: from `/services`, each card has a "View workflow →" link to a new service detail page `/services/:serviceKey` ([ServiceDetailPage.tsx](../../Portal/src/pages/services/ServiceDetailPage.tsx)). The diagram is auto-derived from the XState machine (no hand-maintained chart) and stays in sync with code:
+> - [machineToGraph.ts](../../Portal/src/workflows/machineToGraph.ts) derives nodes/edges (labels + kind: step/payment_gate/waiting/branch/final) from `machine.config.states`.
+> - [layoutGraph.ts](../../Portal/src/workflows/layoutGraph.ts) lays out via dagre; [WorkflowDiagram.tsx](../../Portal/src/components/workflow/WorkflowDiagram.tsx) renders read-only React Flow (`@xyflow/react` + `@dagrejs/dagre`).
+> - [registry.ts](../../Portal/src/workflows/registry.ts) maps `serviceKey → machine` (only `incorporation` wired; others show "No workflow configured yet").
+> - **Still the hardcoded machine is the source of truth.** This is review/visualization only — NOT the DB-backed editable config layer this story specifies (no `workflowTemplates` collection, no `/api/workflows*` endpoints yet, no inline step-metadata editing). The editable config layer remains TODO.
+
+> **✅ UPDATE (2026-06-13) — DB-backed definitions now exist (read side); editor UI deferred.**
+> The data-driven foundation this story needs is **built**: workflows are stored in
+> `workflowDefinitions/{id}` (versioned) and compiled at runtime (see architecture.md §1.3).
+> Read endpoints exist: `GET /api/workflow-definitions`, `GET /api/workflow-definitions/:id`.
+> The visualizer reads from these (no longer the hardcoded machine). **What remains for this
+> story** is the WRITE/edit side, deferred to its own phase below.
+
+> **🔜 FUTURE PHASE — Admin Workflow Editor (E10-S01 write side).** Scoped & deferred 2026-06-13.
+> The seed script is a one-time migration; ongoing flow changes (we edit flows talking to business,
+> and will author 50+ flows) must be doable from the UI. Planned scope:
+> - Backend: CRUD on `workflowDefinitions` — create/update/**publish** (publish bumps `version`;
+>   `createTask` already pins version so in-flight tasks are unaffected). Reuse `validateDefinition`
+>   + a Zod schema; invalidate the workflow cache on write.
+> - Portal: flesh out the stub `WorkflowSettingsPage` — list definitions, **edit step metadata**
+>   (title, assignedRole, effects, deadlines, reorder, active), live-preview via the existing
+>   visualizer/compiler, publish → new version.
+> - **v1 scope = step-metadata editing only** (NOT topology rewiring, NOT authoring brand-new flows
+>   from scratch — those are later sub-phases). Build sequence: after Phase 2 (step execution).
+
 ---
 
 ### E10-S02 — Config Sync Warning [Phase 1]
 
 **Priority**: P1 | **Complexity**: S | **Linked spec story**: US-17 | **Dependencies**: E10-S01
+
+> **✅ BUILT (2026-06-14) — adapted to the data-driven model.** The original two-layer check
+> (`workflowTemplates.totalSteps` vs config step-doc count) is obsolete — workflows are now single
+> `workflowDefinitions` documents compiled at runtime, so there's no second layer to drift from. The
+> faithful equivalent is a **definition health check**: `GET /api/workflow-definitions/:id/sync-check`
+> runs `validateDefinition` (hard errors: dangling transitions/gates, dangling phaseIds, dup step
+> numbers) plus soft warnings (unreachable steps; steps with no phase).
+> ([workflowDefinitions.controller.js](../../backend/src/controllers/workflowDefinitions.controller.js))
+> - **`ServiceDetailPage`** shows a red banner (hard errors → "new matters blocked") or amber banner
+>   (warnings) when the workflow isn't clean.
+> - **`createTask` blocks** on hard errors with **409 `WORKFLOW_OUT_OF_SYNC`** (the spec's
+>   "reject new task creation until in sync"), so a broken workflow can't spawn an unrunnable matter.
 
 **Rationale**: When a developer updates the XState machine topology (adds a step, changes a branch), the Firestore config layer may be missing metadata for new steps. The sync check prevents broken task instantiation.
 
@@ -1325,6 +1674,345 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 
 **Frontend screens/components**:
 - `Portal/src/pages/workflow/WorkflowSettingsPage.tsx` (sync warning banner)
+
+---
+
+## E-11 — Matter Creation, Pre-Assignment, Priority & UI Platform
+
+**Goal**: Make matter creation a first-class action from the Matters page, let staff
+**pre-configure who owns each phase** of a service's workflow so steps are auto-assigned
+on creation, make **Urgent** priority visible where staff actually look (My Tasks +
+dashboard) including approval to-dos, and standardise the app's list/confirm UX
+(reusable data grid, in-app confirm dialog, clearer task-detail layout). Raised 2026-06-14.
+
+> **Why these together**: S01–S04 form one operational loop — *create a matter → its work is
+> already routed to the right people → the urgent/pending items surface on each person's
+> worklist* — building on the assignment model (E-03 status block) and the approval chain
+> (E03-S04). S05–S08 are the **UI platform** work that emerged while polishing that loop:
+> the flame priority icon (S05), a reusable DataGrid + list→grid migration (S06), an in-app
+> confirmation dialog replacing `window.confirm` (S07), and the task-detail Activity sidebar (S08).
+>
+> **Story status (all 2026-06-14):** S01 ✅ · S02 ✅ · S03 ✅ · S04 ✅ · S05 ✅ · S06 ✅ · S07 ✅ · S08 ✅.
+
+---
+
+### E11-S01 — Create Matter from the Matters Page [Phase 1]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-3 | **Dependencies**: E02-S03
+
+> **✅ BUILT (2026-06-14).** "Create Matter" button (admin/manager) on the Matters page header opens
+> [CreateMatterModal.tsx](../../Portal/src/components/tasks/CreateMatterModal.tsx) — searchable client
+> picker + workflow-backed service picker → `POST /api/tasks`. Client-profile "Assign Service" retained.
+
+**Rationale**: Today a matter can only be created from a client's profile ("Assign Service" on
+`ClientForm`). Staff managing the Matters list have no direct way to start a new matter — they
+must navigate to the client first. A **"Create Matter"** action on the Matters page closes that
+gap with a client picker + service picker, reusing the existing `POST /api/tasks`.
+
+**Acceptance Criteria**:
+- A **"Create Matter"** button on the Matters page header (admin/manager only; hidden for client
+  and team_member) opens a **modal** (chosen over a separate route for mobile-friendliness).
+- The modal has: a **searchable client picker** (from `GET /api/portal/users?role=client`) and a
+  **service picker** limited to workflow-backed, active services (services ∩ `workflowDefinitions`).
+- On submit → `POST /api/tasks { clientUid, serviceKey, serviceName }` (existing endpoint, incl. the
+  E03-S04 approval gate). On success the modal closes, the list invalidates (`['tasks']`), and the
+  new matter appears.
+- The existing client-profile "Assign Service" flow is **retained** (both entry points work).
+- Validation + error states (no client / no service selected; API error shown inline).
+
+**Backend endpoints needed**: none new — reuses `POST /api/tasks`, `GET /api/portal/users`,
+`GET /api/service-config`, `GET /api/workflow-definitions`.
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/TasksPage.tsx` (header button + modal)
+- `Portal/src/components/tasks/CreateMatterModal.tsx` (new)
+
+---
+
+### E11-S02 — Per-Phase Default Assignees (Service-Level Config) [Phase 1]
+
+**Priority**: P1 | **Complexity**: M | **Linked spec story**: US-3 / US-8 | **Dependencies**: E11-S01, E04-S08 (phases)
+
+> **✅ BUILT (2026-06-14).** Collection `workflowPhaseAssignments/{definitionId}` + endpoints
+> `GET`/`PUT /api/workflow-definitions/:id/phase-assignments` (read staff / write admin+manager;
+> validates phaseId exists + assignee is staff). Editor section on
+> [ServiceDetailPage.tsx](../../Portal/src/pages/services/ServiceDetailPage.tsx) ("Phase Assignments").
+> `createTask` applies each phase's assignee onto its steps at creation. **Delete-guard extended**:
+> `removeUser` now also counts `collectionGroup('steps').where('assignedTo','==',uid)` so a user owning
+> steps (via pre-assignment / Step owner) can't be deleted and orphan them — folds in the
+> "delete user with matters" requirement / TD-07.
+
+**Rationale**: A firm runs the same workflow the same way each time — a given phase's tasks always
+go to the same person/team. Configuring this **once per service workflow** means every new matter is
+pre-routed: each step inherits its phase's default assignee at creation, so work lands in the right
+person's "My Tasks" without manual per-step assignment.
+
+**Decision (2026-06-14)**: Store the phase→assignee map in a **separate config collection**
+`workflowPhaseAssignments/{definitionId}` (NOT on the versioned definition), so ops can re-route a
+phase without bumping the workflow version. Edited in the **Services section** (the service workflow
+detail page), keeping definition topology and staffing concerns separate.
+
+**Acceptance Criteria**:
+- New collection `workflowPhaseAssignments/{definitionId}` = `{ definitionId, assignments: { [phaseId]: uid|null }, updatedAt, updatedBy }`.
+- Backend: `GET /api/workflow-definitions/:id/phase-assignments` (staff read) and
+  `PUT /api/workflow-definitions/:id/phase-assignments { assignments }` (admin/manager write) —
+  validates each `phaseId` exists on the definition and each `uid` is a staff user (rejects clients).
+- The **service workflow detail page** (`ServiceDetailPage`) gains a **"Phase assignments"** section:
+  for each phase of the definition, a staff-user dropdown (default "Unassigned"). Saving calls the PUT.
+- **On matter creation** (`createTask`): for each instance step, resolve its `phaseId` → look up the
+  phase's default assignee → set `step.assignedTo`. The matter-level `assignedTo` stays null (these are
+  per-step routings, not a single matter owner). Steps in phases with no configured assignee stay
+  unassigned (shared pool).
+- Re-configuring assignments affects **new matters only**; in-flight matters are unchanged (consistent
+  with the version-pinning model). A later edit/reassign still works per the existing step/matter
+  assignment controls.
+- If a configured assignee is later deleted, matter creation degrades gracefully (step left unassigned;
+  no failure).
+- **Delete-guard extension (folds in TD-07 / the "delete user with matters" ask, 2026-06-14):** because
+  pre-assignment routes users onto *steps* (not just matter-level `assignedTo`), the user-delete guard
+  ([portalUsers.controller.js](../../backend/src/controllers/portalUsers.controller.js) `removeUser`)
+  must ALSO refuse deletion when the user owns any step (`collectionGroup('steps').where('assignedTo','==',uid)`),
+  not only matter-level `clientUid`/`assignedTo`. Otherwise pre-assignment creates orphaned steps pointing
+  at a dead UID. The 409 count includes step ownership.
+
+**Backend endpoints needed**:
+- `GET /api/workflow-definitions/:id/phase-assignments`
+- `PUT /api/workflow-definitions/:id/phase-assignments`
+- Modification to `POST /api/tasks` (`createTask`): apply phase assignees to seeded steps.
+- Modification to `DELETE /api/portal/users/:uid` (`removeUser`): include step-assignee count in the guard.
+
+**Frontend screens/components**:
+- `Portal/src/pages/services/ServiceDetailPage.tsx` (Phase assignments editor section)
+- `Portal/src/api/workflowDefinitions.ts` (get/put phase-assignments helpers)
+
+---
+
+### E11-S03 — Urgent Priority Visibility on My Tasks & Dashboard [Phase 1]
+
+**Priority**: P2 | **Complexity**: S | **Linked spec story**: US-10 | **Dependencies**: E03-S01, E03-S05
+
+> **✅ BUILT (2026-06-14).** `my-steps` rows now carry EFFECTIVE urgency (matter `isUrgent` OR active
+> step `isUrgent`). **My Tasks** has an "Urgent — waiting on you" section above the assigned queue;
+> the staff **dashboard** has a [MyWorkWidget.tsx](../../Portal/src/components/dashboard/MyWorkWidget.tsx)
+> "Urgent — waiting on you" card. Reuses `isUrgent` (no new data model).
+
+**Rationale**: The `isUrgent` flag already exists (E03-S05) on matters and steps, but it's not
+surfaced where staff plan their day. Staff need to immediately see **which urgent items are waiting
+on them**. This reuses `isUrgent` (no new data model) and adds the *visibility* layer.
+
+**Acceptance Criteria**:
+- `GET /api/tasks/my-steps` carries urgency that reflects **either** the matter `isUrgent` **or** the
+  active step `isUrgent` (an urgent step makes the row urgent even if the matter isn't).
+- **My Tasks**: urgent rows are visually flagged and an **"Urgent — waiting on you"** grouping/treatment
+  surfaces a user's urgent assigned items first (above the rest of their assigned queue).
+- **Dashboard**: a staff widget **"Urgent tasks waiting on you"** shows the count + a short list of the
+  user's urgent assigned steps, linking into each matter. Zero-state hidden or shows "None".
+- Urgency continues to clear naturally as steps complete (existing behaviour); no urgent item lingers
+  after its step is done.
+
+**Backend endpoints needed**:
+- `GET /api/tasks/my-steps` (extend the row with effective urgency; already exists).
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/MyTasksPage.tsx` (urgent grouping)
+- `Portal/src/pages/dashboard/DashboardPage.tsx` (+ a new urgent widget component)
+
+---
+
+### E11-S04 — Approvals as Worklist Items [Phase 1]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-13 | **Dependencies**: E03-S04, E03-S01
+
+> **✅ BUILT (2026-06-14) — fixes "approvals not appearing in My Tasks".** `GET /api/tasks/my-steps`
+> now also returns `approvals` (matters awaiting the caller's approval, via role-derived
+> `canApprove(user, matter)` — admin + `pending_admin_approval` today, extensible). **My Tasks** shows
+> an "Awaiting your approval" section; the staff **dashboard** widget shows the count + list. Each links
+> to the matter's approval banner (Approve/Reject from E03-S04).
+> *(Update 2026-06-14: the reassignment-offers section that briefly shared this feed was removed when
+> reassignment became direct — see E03-S02.)*
+
+**Rationale**: A matter `pending_admin_approval` (E03-S04) has no `active` step, so it never appeared
+in My Tasks — yet approving it **is** a to-do for the approver. Approvals must surface as worklist
+items. The approver is **role-derived, not hardcoded** (today admin approves a manager-created matter;
+the model must extend to future approval rules without a rewrite).
+
+**Acceptance Criteria**:
+- A `canApprove(user, matter)` notion (helper) determines who sees a pending matter as an approval
+  to-do. v1: admin + matter status `pending_admin_approval`. Designed to extend (e.g. manager approving
+  team-member-created matters) without changing call sites.
+- Backend: `GET /api/tasks/my-steps` (or a sibling field/endpoint) returns the set of matters awaiting
+  the caller's approval, enriched (client, service, who created it, age).
+- **My Tasks**: an **"Approvals"** section at the top (for users who can approve) listing pending-approval
+  matters; each links to the matter's approval banner (Approve / Reject live there, E03-S04).
+- **Dashboard**: the count is reflected in the urgent/approvals widget area ("N matters awaiting your
+  approval").
+- Non-approvers never see the section. A matter leaving `pending_admin_approval` drops out immediately.
+
+**Backend endpoints needed**:
+- Extend `GET /api/tasks/my-steps` (or add `GET /api/tasks/my-approvals`).
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/MyTasksPage.tsx` (Approvals section)
+- `Portal/src/pages/dashboard/DashboardPage.tsx` (approvals count)
+
+---
+
+### E11-S05 — Urgent Priority Icon (Flame) [Phase 1]
+
+**Priority**: P3 | **Complexity**: S | **Linked spec story**: US-10 | **Dependencies**: E11-S03 | **Raised**: 2026-06-14
+
+> **✅ BUILT (2026-06-14).** Replaced the text "Mark urgent" toggle button with a more intuitive
+> **flame icon** (per user request). Filled red when urgent, grey outline when not, used consistently
+> app-wide: matter header (icon button) + step hero (labelled) on the task detail, and the Urgent
+> badges in the Matters grid, My Tasks, and the dashboard widget. `aria-pressed` for a11y. Reuses the
+> existing `isUrgent` flag — no data change.
+
+**Acceptance Criteria**:
+- The urgent control is a flame icon (toggle), filled+red when active; consistent across matter header,
+  step hero, list/grid badges and the dashboard widget.
+- My Tasks work grid has a sortable + searchable **Priority** column (Urgent / Normal), urgent on top.
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/TaskDetailPage.tsx`, `MyTasksPage.tsx`, `TasksPage.tsx`,
+  `Portal/src/components/dashboard/MyWorkWidget.tsx`.
+
+---
+
+### E11-S06 — Reusable Data Grid + List→Grid Migration [Phase 1]
+
+**Priority**: P2 | **Complexity**: M | **Linked spec story**: — | **Dependencies**: E09 (Users grid pattern) | **Raised**: 2026-06-14
+
+> **✅ BUILT (2026-06-14).** Extracted the Users-page table pattern into a single reusable
+> **`DataGrid<T>`** ([Portal/src/components/common/DataGrid.tsx](../../Portal/src/components/common/DataGrid.tsx)):
+> sortable headers, global search, client-side pagination, desktop div-grid table + optional mobile-card
+> renderer, loading/error/empty states, and an **`onRowClick`** that makes whole rows clickable
+> (cursor + hover). Migrated these list pages from ad-hoc tables/cards to `DataGrid`:
+> - **Matters** ([TasksPage.tsx](../../Portal/src/pages/tasks/TasksPage.tsx)) — sortable Client/Service,
+>   Status, Payment, Progress, Updated, Actions; row → matter detail.
+> - **My Tasks** ([MyTasksPage.tsx](../../Portal/src/pages/tasks/MyTasksPage.tsx)) — two grids: "Awaiting
+>   your approval" + "My work" (assigned + pool combined with a sortable **Queue** column; Priority column).
+> - **Reports** — All / Completed / Pending (per reason group) / Master Sheet
+>   ([reportColumns.tsx](../../Portal/src/pages/reports/reportColumns.tsx) shared columns); server-side
+>   status/payment/date filters retained, CSV export retained; rows → matter detail.
+
+**Acceptance Criteria**:
+- One `DataGrid<T>` component is the shared basis for Users-style lists; supports sort, search, pagination,
+  mobile cards, and optional `onRowClick`.
+- Matters, My Tasks (both sections), and all four report pages render via `DataGrid` with clickable rows
+  that open the matter (`/tasks/:id`).
+- Pre-existing server-side report filters and CSV export are preserved.
+
+**Frontend screens/components**:
+- `Portal/src/components/common/DataGrid.tsx` (new), `Portal/src/pages/reports/reportColumns.tsx` (new),
+  `TasksPage.tsx`, `MyTasksPage.tsx`, `reports/*`.
+
+---
+
+### E11-S07 — App Confirmation Dialog (replace window.confirm) [Phase 1]
+
+**Priority**: P3 | **Complexity**: S | **Linked spec story**: — | **Dependencies**: E01-S04 | **Raised**: 2026-06-14
+
+> **✅ BUILT (2026-06-14).** Native `window.confirm()` for destructive actions replaced with a styled,
+> promise-based in-app dialog — `ConfirmProvider` + `useConfirm()`
+> ([ConfirmDialog.tsx](../../Portal/src/components/common/ConfirmDialog.tsx),
+> [confirmContext.ts](../../Portal/src/components/common/confirmContext.ts)), mounted at the app root.
+> Usage: `if (await confirm({ title, message, tone: 'danger', confirmLabel: 'Delete' })) …`. Wired into
+> the **delete matter**, **delete user**, and **delete lead** flows.
+> - ⏳ TODO: `window.alert()` error popups (mutation onError handlers across tasks/services/reports) are
+>   still native — convert to in-app toasts in a follow-up (separate concern from confirmation).
+
+**Acceptance Criteria**:
+- A single app-wide confirm dialog (our UI, not the browser's) is used for all destructive confirmations.
+- Delete matter / user / lead use it with a danger tone and explicit confirm label.
+
+**Frontend screens/components**:
+- `Portal/src/components/common/ConfirmDialog.tsx`, `confirmContext.ts`; `TasksPage.tsx`,
+  `users/UsersPage.tsx`, `reports/ContactLeadsReport.tsx`, `main.tsx`.
+
+---
+
+### E11-S08 — Task Detail: Activity in a Sticky Sidebar [Phase 1]
+
+**Priority**: P3 | **Complexity**: S | **Linked spec story**: US-1 | **Dependencies**: E-03 redesign | **Raised**: 2026-06-14
+
+> **✅ BUILT (2026-06-14).** UX review flagged that the Activity feed stacked *below* the current step
+> competed with the action zone and pushed the step list down. Moved Activity into a **sticky right
+> sidebar** (xl+) beside the hero/steps, capped height with internal scroll; on smaller screens it
+> collapses below the content. ([TaskDetailPage.tsx](../../Portal/src/pages/tasks/TaskDetailPage.tsx))
+
+**Acceptance Criteria**:
+- On wide screens Activity is a sticky right column; on narrow screens it stacks below the step content.
+- The step list is reachable without scrolling past the full activity history.
+
+---
+
+## E-12 — Client vs Internal View Separation
+
+**Goal**: Ensure the client-facing view never exposes internal operational detail. A client must see a
+clean, client-appropriate picture of *their* service — never internal team assignees, internal-only
+activity events, or staff mechanics. Raised 2026-06-14.
+
+> **⏳ NOT STARTED — next up.** Current state: the task detail and activity thread are largely shared
+> between staff and client with role-branched CTAs, but several internal signals can leak to clients.
+> This epic hardens the boundary, server-side first (don't rely on hiding in the UI).
+
+---
+
+### E12-S01 — Hide Internal Assignees & Owner Controls from Clients [Phase 1]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-1 | **Dependencies**: E-03, E-04
+
+**Rationale**: Clients should not see *who internally* is working their matter (Step owner, Matter owner,
+assignee names, reassignment controls). These are internal staffing details.
+
+**Acceptance Criteria**:
+- The client task view shows no Step-owner / Matter-owner pickers, assignee names, or reassign controls.
+- Backend: `GET /api/tasks/:id` and `/steps` responses for a **client** omit (or null) `assignedTo` and
+  any internal-only fields — defence at the API, not just the UI.
+- Staff views are unchanged.
+
+**Backend/Frontend**:
+- `backend/src/controllers/tasks.controller.js` (role-aware projection for client reads).
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (client branch hides owner/assignee UI).
+
+---
+
+### E12-S02 — Client-Safe Activity Feed [Phase 1]
+
+**Priority**: P1 | **Complexity**: M | **Linked spec story**: US-1 | **Dependencies**: E03-S06 (events), E12-S01
+
+**Rationale**: The activity thread currently records internal events (reassignments, step-owner changes,
+internal comments, payment-override mechanics, govt-step internals). A client should see only events
+meaningful to them — their own approvals/rejections, status/stage changes, document requests, completion.
+
+**Acceptance Criteria**:
+- A **client-safe event whitelist** governs what `GET /api/tasks/:id/events` returns to a client (e.g.
+  matter created/approved, stage completed, client-action requested, client approve/reject, matter
+  completed). Internal events (`STEP_REASSIGNED`, internal `COMPLETE_STEP` detail, payment overrides,
+  internal comments) are excluded for clients.
+- Event actor identity is generalised for clients ("Our team") rather than naming internal staff.
+- Filtering is enforced **server-side** by role; staff still get the full feed.
+- The client task view's Activity reflects only the whitelisted, client-friendly entries.
+
+**Backend/Frontend**:
+- `backend/src/controllers/tasks.controller.js` `listTaskEvents` (role-aware whitelist + actor masking).
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (client Activity copy).
+
+---
+
+### E12-S03 — Client View Audit Pass [Phase 1]
+
+**Priority**: P2 | **Complexity**: S | **Linked spec story**: US-1 | **Dependencies**: E12-S01, E12-S02
+
+**Rationale**: A holistic sweep of every client-facing surface to catch any remaining internal leakage
+(labels, tooltips, step internal notes, "with our team" vs internal role names, urgent flags meant for
+ops, etc.).
+
+**Acceptance Criteria**:
+- Reviewed: client task list, task detail (Steps/Documents/Payments), journey/stage cues, and any
+  client-visible report/profile surfaces — none expose internal assignees, internal events, or staff-only
+  controls.
+- Findings tracked and fixed; documented in this story.
 
 ---
 
@@ -1497,6 +2185,7 @@ These are non-feature engineering tasks captured during development. **Scheduled
 **Acceptance Criteria**:
 - Audit all Firestore queries across `backend/src/controllers/*` for: (a) missing composite indexes (capture the exact warnings), (b) full-collection reads that should be server-side filtered, (c) N+1 patterns.
 - Add all required composite indexes to `firestore.indexes.json` (align with `architecture.md` §5.2 Indexing Strategy table); deploy via `firebase deploy --only firestore:indexes`.
+  - **Known needed index (2026-06-13):** `users` collection `role ASC, createdAt DESC` — the role-filtered Users list currently sorts in memory specifically to avoid this missing composite index (it 500'd with `FAILED_PRECONDITION`). Once the index exists, move `listUsers` role-filter ordering back to Firestore.
 - Replace in-memory filter/sort with indexed Firestore queries where data volume warrants it.
 - For enrichment joins (leads↔users), evaluate denormalisation or a cached lookup vs. full-collection scan.
 - Document final index set and any deliberate in-memory-by-design choices in `architecture.md` §5.2.
@@ -1596,13 +2285,60 @@ This was **partially mitigated** on 2026-06-13 (auth + userId binding — see be
 
 ---
 
+### TD-07 — User-Delete Related-Data Cascade [Deferred]
+
+**Priority**: P2 | **Complexity**: M | **Raised**: 2026-06-13
+
+**Rationale**: Deleting a user (`DELETE /api/portal/users/:uid`) currently cleans up the user doc, the `users/{uid}/payments` subcollection, and the Auth account, and **blocks** the delete (`409`) if the user still has tasks (`clientUid` or `assignedTo`). The block is the safe interim choice, but it means an admin cannot remove a user with any task history without manual reassignment/closure, and other references aren't considered. A fuller policy is needed.
+
+**Acceptance Criteria**:
+- Decide and document the policy per reference type: tasks (block vs. reassign vs. soft-delete), task subcollections (steps/documents/payments), notifications, and any audit trail.
+- Consider **soft-delete** (status = `deleted`/`deactivated`) instead of hard delete, so history is preserved and reports don't show ghosts — likely the better default for a compliance-sensitive app.
+- If hard delete is kept, implement a transactional cascade (or a background cleanup job) so a partial failure can't orphan related data.
+- Leads enrichment (`registeredUid`) re-derives at read time, so it needs no cleanup — confirm this stays true.
+- Add tests for: delete blocked by tasks (409), payments subcollection removed, Auth-missing tolerated.
+
+**Files likely touched**:
+- `backend/src/controllers/portalUsers.controller.js` (`removeUser`), `backend/src/services/userService.js` (`deleteUser`)
+
+---
+
+### TD-08 — `steps` Collection-Group Index for Team-Member Routing [Deferred]
+
+**Priority**: P2 | **Complexity**: S | **Raised**: 2026-06-14
+
+**Rationale**: Team-member work routing (`listTasks`, `listMySteps`) resolves "matters where a step is assigned to me" via `db.collectionGroup('steps').where('assignedTo','==',uid)` (in `taskIdsWithStepAssignedTo`). This needs a **collection-group** index on `steps.assignedTo`, added to `firestore.indexes.json` (2026-06-14) but **not yet deployed**. Until deployed, the helper **degrades gracefully** (try/catch → logs a warning, returns empty), so team members still see matters assigned to them at the task level, but **step-only delegations won't surface**. Step-level assignment to a member whose matter isn't task-assigned silently won't route until the index is live.
+
+**Acceptance Criteria**:
+- Deploy the `steps` collection-group index (`assignedTo ASC, __name__ ASC`) via `npm run db:deploy-indexes` (needs Firebase CLI auth — user-run or CI token).
+- Verify a team member with only a *step* (not matter) assigned to them sees that matter in both `/tasks` and `/my-tasks`.
+- Confirm no `FAILED_PRECONDITION` warnings from `taskIdsWithStepAssignedTo` in backend logs.
+
+**Files**: `firestore.indexes.json` (index added), `backend/src/controllers/tasks.controller.js` (`taskIdsWithStepAssignedTo`).
+
+---
+
+### TD-09 — Team-Member Task List: In-Memory Merge & Missing Pagination [Deferred]
+
+**Priority**: P3 | **Complexity**: M | **Raised**: 2026-06-14
+
+**Rationale**: A team member's visible set is `matters task-assigned to them ∪ matters where a step is assigned to them`. Firestore can't OR a task-doc field with a subcollection field in one query, so `listTasks`/`listMySteps` **fetch both sources, merge, filter and sort in memory** for `role === 'team_member'`. Consequences: (a) the team-member `/tasks` response returns **all** their matters in one page with `nextCursor: null` — cursor pagination doesn't apply to that branch; (b) per-matter active-step reads in `listMySteps` are an N-read fan-out. Acceptable at firm scale; won't scale to thousands of matters.
+
+**Acceptance Criteria**:
+- Decide a scalable model: e.g. **denormalise** a per-matter `assigneeUids` array (task owner + any step assignees) so a single `array-contains` query serves the whole team-member view with native pagination; OR a maintained `myWork/{uid}` index doc updated on assignment.
+- Restore cursor pagination for the team-member list once the query is single-source.
+- Bound or batch the active-step fan-out in `listMySteps`.
+
+**Files**: `backend/src/controllers/tasks.controller.js` (`listTasks`, `listMySteps`, assignment writes in `patchTask`/`patchStep`).
+
+---
+
 ## Phase 2 Stories (Out of Sprint 1–4 Scope)
 
 The following stories are tagged `[Phase 2]` and are scoped for the next planning cycle after the web app is stable:
 
 | Story | Title | Epic |
 |---|---|---|
-| E04-S05 | Service Listing Interface | E-04 |
 | E04-S06 | Client Approval/Correction Flow | E-04 |
 | E05-S04 | Document Expiry & Auto-Deletion | E-05 |
 | E06-S04 | Payment Reminder Automation | E-06 |

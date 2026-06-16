@@ -3,13 +3,16 @@ import { QueryClient } from '@tanstack/react-query';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Admin dashboard: tolerate slightly stale data to avoid redundant refetches.
+      // Default: tolerate slightly stale data to avoid redundant refetches.
       staleTime: 60_000,
       gcTime: 5 * 60_000,
       retry: 1,
-      // Refetching on every tab focus hammers the API for a dashboard kept open
-      // all day; rely on staleTime + explicit invalidation after mutations instead.
-      refetchOnWindowFocus: false,
+      // Refetch when the user returns to the tab. React Query's cache is per browser
+      // context, so when two roles are open in separate windows (admin + client), an
+      // action by one can't invalidate the other's cache. Refetching on focus means
+      // switching back to a window pulls the latest state without a manual refresh.
+      // Live-updating views (task list/detail) additionally poll — see those queries.
+      refetchOnWindowFocus: true,
     },
   },
 });

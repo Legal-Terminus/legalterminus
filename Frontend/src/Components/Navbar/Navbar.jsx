@@ -942,11 +942,11 @@ export default function NavbarAdvanced() {
                 <a
                   href={loggedIn ? "/my-profile" : "/login"}
                   className="icon-btn user-login-btn"
-                  aria-label={loggedIn ? 'My Account' : 'User Login'}
+                  aria-label={loggedIn ? 'My Portal' : 'User Login'}
                 >
                   <FaUser />
                 </a>
-                <span className="user-login-tooltip">{loggedIn ? 'My Account' : 'User Login'}</span>
+                <span className="user-login-tooltip">{loggedIn ? 'My Portal' : 'User Login'}</span>
               </div>
 
               <button
@@ -1166,7 +1166,7 @@ export default function NavbarAdvanced() {
                 >
                   <span className="premium-link-text">
                     <FaUser style={{ marginRight: 8, verticalAlign: "middle" }} />
-                    My Profile
+                    My Portal
                   </span>
                   <FaChevronRight className="premium-link-arrow" />
                 </a>

@@ -93,6 +93,85 @@ Both apps share the **same Cloud Run backend** and the same **Firebase project**
 
 ---
 
+## 1.3 ⚠️ IMPLEMENTATION UPDATE (2026-06-13) — Workflows are DATA-DRIVEN
+
+> This supersedes the "hardcoded XState machine" framing in §2.5, §4, and §4.7 below.
+> The XState **engine** is unchanged; what changed is that workflow **definitions are
+> stored as data and compiled to machines at runtime**, so new flows (50+ planned) are
+> documents — not code — and are editable without a deploy. Decided during an architecture
+> review of the workflow Phase 1 (reusability/scalability for 50 flows). Multi-tenancy was
+> explicitly **rejected** (system stays single-tenant).
+
+**Shared module (`shared/workflows/`, plain ESM, imported by BOTH Portal and backend):**
+- `definitionSchema.js` — the data shape of a workflow + `validateDefinition()`. A definition
+  is `{ id, name, version, initialStep, steps[], phases?[] }`; each step has explicit `stepNumber`,
+  `title`, `type` (`step|payment_gate|branch|final`), optional `assignedRole`, `effects[]`,
+  `gate{requires,onPass,onWait}`, and `transitions[{event,to,branch?}]`. **Client-facing presentation
+  (added 2026-06-13):** optional `phases[]` (`{id,name,order}`) group steps into journey milestones,
+  with each step carrying an optional `phaseId` (plus optional `typicalDurationDays`, `clientActionLabel`,
+  `ownerType`). `validateDefinition` rejects dangling `phaseId`s and malformed phases. These fields are
+  **presentation-only** — the compiler ignores them, so workflow topology/behaviour is unaffected.
+  Helper exports `deriveOwnerType` (payment_gate/`CLIENT_APPROVE`→client, `GOVT_APPROVE`→govt, else team),
+  `stepPhaseMap`, and `phaseProgress(def, currentStep, stepStatuses?)` — phase done/now/upcoming computed
+  from **real per-step statuses** so the final phase resolves to done on completion (cursor-only would
+  not). Mirrored in `Portal/src/api/workflowDefinitions.ts` for the client.
+- `compileDefinition.js` — **compiles a definition → XState v5 machine** (gates → `always`
+  guard + paired waiting state; branches → guarded `BRANCH_DECISION`; tracks `currentStepNumber`).
+  Verified behaviourally **equivalent** to the legacy hand-written machine.
+- `convertMachineToDefinition.js` — one-time converter (legacy machine → definition) used by the seed.
+- `companyIncorporation.machine.js` — legacy machine, retained only as the seed source.
+
+**Storage:** Firestore `workflowDefinitions/{id}` (e.g. `company-incorporation`, v1, 41 steps,
+`serviceKeys:['incorporation']`). Seeded via `backend/src/scripts/seedWorkflowDefinitions.js`
+(part of `npm run db:setup`). Editable from the UI in the upcoming Workflow Editor (BMAD E10-S01).
+
+**Backend** (`backend/src/services/workflowDefinitions.service.js`): loads a definition by
+`serviceKey` or `id`, compiles + caches by `id@version`. New endpoints:
+`GET /api/workflow-definitions`, `GET /api/workflow-definitions/:id` (staff-only).
+
+**Task model (created via `POST /api/tasks`, admin/manager):**
+- Pins **`workflowDefinitionId` + `workflowVersion`** (immutable per task) — NOT the service key —
+  so editing/versioning a flow never alters in-flight tasks. (`workflowType` kept as a back-compat
+  mirror for reports.)
+- Per-step **instance state** lives in a **subcollection** `tasks/{id}/steps/{stepNumber}`
+  (status/assignee/title/assignedRole) — not an array on the task doc (avoids whole-array write
+  races). A denormalized `totalSteps` is kept on the task for cheap list/report display.
+- `GET /api/tasks` is paginated (`{ data, nextCursor }`) + role-scoped; composite indexes for
+  role-scope × filter × `updatedAt` are in `firestore.indexes.json`.
+- Zod validation on task endpoints (`backend/src/schemas/task.schema.js`).
+
+**Assignment model (IMPORTANT — current state):**
+- **`step.assignedRole`** (from the definition) = the *default responsible ROLE* (e.g. `team_member`).
+- **`task.assignedTo` / `step.assignedTo`** = a specific USER (UID). `team_member` task-list
+  scoping filters on `assignedTo == uid`.
+- **`assignedTo` is `null` on creation.** Per-person assignment (2026-06-14) is built at two levels:
+  - **Step:** `PATCH /api/tasks/:id/steps/:n { assignedTo }` sets/clears a step's assignee (admin/manager);
+    "Step owner" picker in the step hero.
+  - **Matter:** `PATCH /api/tasks/:id { assignedTo }` assigns the whole matter and **cascades onto the
+    active step** (without clobbering a step delegated elsewhere); validates the assignee is staff;
+    "Matter owner" control in the page header.
+  - Assigning steps on creation, or not-yet-active steps in advance, remains future work.
+- **My Tasks worklist:** `GET /api/tasks/my-steps` returns the **active step of every open matter** the
+  caller is involved in — bucketed `assigned` / `unassigned` / `other`. Admin/manager see all open
+  matters; **team members see matters task-assigned to them ∪ matters where a step is assigned to them**
+  (the OR is resolved via a `collectionGroup('steps').where('assignedTo','==',uid)` query — needs the
+  `steps.assignedTo` COLLECTION_GROUP field override, deployed 2026-06-14; degrades gracefully if absent).
+- **Activity thread:** `GET /api/tasks/:id/events` returns the matter's audit events name-enriched; each
+  entry references the actioned step (`fromStep`) resolved to *phase · Step N · title* via the definition.
+
+**Visualizer:** the service detail page (`/services/:serviceKey`) fetches the definition from
+`/api/workflow-definitions/:id` and compiles it client-side (read-only). Step identity (title/kind)
+comes from the definition's explicit `meta`, not regex on state-key strings.
+
+**Journey tracker (client progress view, BMAD E04-S08):** the Task detail Steps tab renders
+`TaskJourneyTracker.tsx` above the step list — a phase "rail" (milestone stations), a next-stop hero
+card, and a "steps remaining" ownership strip (client/team/registrar). It reads the definition's
+`phases[]` + the task's per-step statuses (`GET /api/tasks/:id` already returns the `steps`
+subcollection) and derives everything via the shared `phaseProgress` / `deriveOwnerType` helpers — no
+new endpoints. Degrades to nothing when a workflow has no `phases`.
+
+---
+
 ## 2. Portal Frontend Architecture
 
 ### 2.1 Directory Structure
@@ -156,20 +235,24 @@ Portal/
     │   │   ├── TopBar.tsx
     │   │   └── navConfig.ts       # Sidebar/bottom-nav derivation from APP_ROUTES
     │   ├── users/                 # ClientForm, TeamMemberForm (was components/admin/)
-    │   ├── dashboard/             # DashboardTile
+    │   ├── dashboard/             # DashboardTile, MyWorkWidget (urgent + approvals "waiting on you")
     │   ├── tasks/
     │   │   ├── StepCard.tsx
     │   │   ├── StepTimeline.tsx
     │   │   ├── PaymentBadge.tsx   # Blinking indicator
-    │   │   └── UrgentBadge.tsx
+    │   │   ├── UrgentBadge.tsx    # (urgent now shown via Flame icon on detail; badge in lists)
+    │   │   └── CreateMatterModal.tsx  # E11-S01 — create a matter (client + service picker)
     │   ├── documents/
     │   │   ├── DocumentUploader.tsx
     │   │   └── DocumentCard.tsx
     │   ├── payments/
     │   │   ├── RecordPaymentForm.tsx
     │   │   └── PaymentHistory.tsx
-    │   └── shared/
-    │       ├── ConfirmDialog.tsx
+    │   └── common/                # shared primitives (NOTE: dir is common/, not shared/)
+    │       ├── DataGrid.tsx       # E11-S06 — reusable sort/search/paginate grid + onRowClick
+    │       ├── ConfirmDialog.tsx  # E11-S07 — ConfirmProvider (app-root); promise-based modal
+    │       ├── confirmContext.ts  # E11-S07 — useConfirm() hook + context (split for fast-refresh)
+    │       ├── PageShell.tsx
     │       ├── LoadingSpinner.tsx
     │       └── ErrorBoundary.tsx
     │
@@ -435,12 +518,14 @@ app.use("/api/notifications", notifRoutes);
 |---|---|---|---|
 | `POST` | `/api/tasks` | admin, manager, team_member | Create new task (workflow instance) |
 | `GET` | `/api/tasks` | admin, manager, team_member, client | List tasks (filtered by role/uid) |
+| `GET` | `/api/tasks/my-steps` | admin, manager, team_member | Cross-matter step worklist ("My Tasks") — active step of each open matter, bucketed assigned/unassigned |
 | `GET` | `/api/tasks/:taskId` | admin, manager, team_member, client | Get single task with steps |
-| `PATCH` | `/api/tasks/:taskId` | admin, manager | Update task metadata (isUrgent, etc.) |
-| `DELETE` | `/api/tasks/:taskId` | admin | Soft-delete task |
-| `POST` | `/api/tasks/:taskId/transition` | admin, manager, team_member | Fire XState event, persist new snapshot |
+| `GET` | `/api/tasks/:taskId/events` | admin, manager, team_member, client (own) | Activity thread — name-enriched audit events; entries reference the actioned step |
+| `PATCH` | `/api/tasks/:taskId` | admin, manager | Update matter (isUrgent; **assignedTo** = matter owner, cascades to active step) |
+| `DELETE` | `/api/tasks/:taskId` | admin | Hard-delete matter + cascade `steps`/`events` subcollections |
+| `POST` | `/api/tasks/:taskId/transition` | admin, manager, team_member, client (own approval) | Fire workflow event (with optional `remark`), persist new state |
 | `GET` | `/api/tasks/:taskId/steps` | admin, manager, team_member, client | List all steps for a task |
-| `PATCH` | `/api/tasks/:taskId/steps/:stepId` | admin, manager, team_member | Update step (assignedTo, isUrgent) |
+| `PATCH` | `/api/tasks/:taskId/steps/:stepId` | admin, manager | Update step (**assignedTo** = step owner, isUrgent) |
 | `POST` | `/api/tasks/:taskId/approve` | admin, manager | Approve pending task |
 | `POST` | `/api/tasks/:taskId/reject` | admin, manager | Reject pending task with reason |
 

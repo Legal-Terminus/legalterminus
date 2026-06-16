@@ -1,5 +1,5 @@
 import {
-  CheckSquare, Users, BarChart2, Inbox, Settings, type LucideIcon,
+  CheckSquare, Users, BarChart2, Inbox, Settings, Layers, type LucideIcon,
 } from 'lucide-react';
 import type { Role } from '../../store/authStore';
 
@@ -19,8 +19,9 @@ export interface DashboardTileDef {
 }
 
 export const DASHBOARD_TILES: DashboardTileDef[] = [
-  // Shared / multi-role
-  { title: 'Tasks',         desc: 'View and manage your workflow tasks.',              to: '/tasks',         icon: CheckSquare, roles: ['admin', 'manager', 'team_member', 'client'] },
+  // A "Matter" is a client's running workflow instance; clients see theirs as "Services".
+  { title: 'Matters',     desc: 'Client matters and their progress through each workflow.', to: '/tasks', icon: CheckSquare, roles: ['admin', 'manager', 'team_member'] },
+  { title: 'My Services', desc: 'Track the progress of your purchased services.',            to: '/tasks', icon: CheckSquare, roles: ['client'] },
   { title: 'Contact Leads', desc: 'Website enquiries — see which are already clients.', to: '/reports/leads', icon: Inbox,       roles: ['admin', 'manager', 'team_member'] },
 
   // Admin + Manager
@@ -30,8 +31,8 @@ export const DASHBOARD_TILES: DashboardTileDef[] = [
   // Admin only
   { title: 'Workflow Settings', desc: 'Configure step metadata and deadlines.',   to: '/workflow-settings', icon: Settings, roles: ['admin'] },
 
-  // Client
-  { title: 'Browse Services', desc: 'Explore services Legal Terminus offers.', to: '/services', icon: Settings, roles: ['client'] },
+  // Service catalog — staff only (clients excluded)
+  { title: 'Service Catalog', desc: 'Browse every service Legal Terminus offers.', to: '/services', icon: Layers, roles: ['admin', 'manager', 'team_member'] },
 ];
 
 export const tilesForRole = (role: Role | null): DashboardTileDef[] =>

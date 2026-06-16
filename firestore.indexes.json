@@ -65,6 +65,46 @@
       ]
     },
     {
+      "_comment": "Role-scoped (client) + status filter, ordered by updatedAt",
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "clientUid",     "order": "ASCENDING" },
+        { "fieldPath": "status",        "order": "ASCENDING" },
+        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
+      ]
+    },
+    {
+      "_comment": "Role-scoped (team_member) + status filter, ordered by updatedAt",
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "assignedTo",    "order": "ASCENDING" },
+        { "fieldPath": "status",        "order": "ASCENDING" },
+        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
+      ]
+    },
+    {
+      "_comment": "Role-scoped (team_member) + isUrgent filter, ordered by updatedAt",
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "assignedTo",    "order": "ASCENDING" },
+        { "fieldPath": "isUrgent",      "order": "ASCENDING" },
+        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
+      ]
+    },
+    {
+      "_comment": "Role-scoped (client) + isUrgent filter, ordered by updatedAt",
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "clientUid",     "order": "ASCENDING" },
+        { "fieldPath": "isUrgent",      "order": "ASCENDING" },
+        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
@@ -73,5 +113,15 @@
       ]
     }
   ],
-  "fieldOverrides": []
+  "_comment_steps_assignedTo": "Team-member routing queries collectionGroup('steps').where('assignedTo','==',uid). A single-field COLLECTION query is auto-indexed, but the COLLECTION_GROUP scope needs an explicit field override (below) — it is NOT a composite index (Firestore rejects that as redundant).",
+  "fieldOverrides": [
+    {
+      "collectionGroup": "steps",
+      "fieldPath": "assignedTo",
+      "indexes": [
+        { "queryScope": "COLLECTION", "order": "ASCENDING" },
+        { "queryScope": "COLLECTION_GROUP", "order": "ASCENDING" }
+      ]
+    }
+  ]
 }

@@ -6,9 +6,10 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { getFirebaseAuth, getFirebaseDb } from "../../utils/firebase";
 import { saveUserProfile } from "../../utils/userProfile";
+import { registerUser } from "../../utils/registerUser";
 import "./Login.css";
 
 const Login = () => {
@@ -63,22 +64,11 @@ const Login = () => {
     const auth = getFirebaseAuth();
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // Ensure user profile exists in Firestore
+      // Ensure the Firestore user doc exists/synced via the backend chokepoint
+      // (ISO createdAt, normalized fields, role logic) instead of a direct write.
+      await registerUser(userCredential.user, { provider: "email" });
       const db = getFirebaseDb();
-      const userDocRef = doc(db, "users", userCredential.user.uid);
-      const userDoc = await getDoc(userDocRef);
-      if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-          uid: userCredential.user.uid,
-          name: userCredential.user.displayName || "User",
-          email: userCredential.user.email,
-          phone: "",
-          address: "",
-          avatar: userCredential.user.photoURL || null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      }
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       const firestoreData = userDoc.exists() ? userDoc.data() : {};
       saveUserProfile({
         fullName: firestoreData.fullName || firestoreData.name || userCredential.user.displayName || "",
@@ -119,22 +109,11 @@ const Login = () => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      // Ensure user profile exists in Firestore
+      // Ensure the Firestore user doc exists/synced via the backend chokepoint
+      // (ISO createdAt, normalized fields, role logic) instead of a direct write.
+      await registerUser(result.user, { provider: "google" });
       const db = getFirebaseDb();
-      const userDocRef = doc(db, "users", result.user.uid);
-      const userDoc = await getDoc(userDocRef);
-      if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-          uid: result.user.uid,
-          name: result.user.displayName || "User",
-          email: result.user.email,
-          phone: "",
-          address: "",
-          avatar: result.user.photoURL || null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      }
+      const userDoc = await getDoc(doc(db, "users", result.user.uid));
       const firestoreData = userDoc.exists() ? userDoc.data() : {};
       saveUserProfile({
         fullName: firestoreData.fullName || firestoreData.name || result.user.displayName || "",

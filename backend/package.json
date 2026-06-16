@@ -10,7 +10,12 @@
     "start:backend": "cd /Users/ankygoyal/Documents/git/legalterminus/Legal-Terminus/backend && npm start",
     "dev:backend": "cd /Users/ankygoyal/Documents/git/legalterminus/Legal-Terminus/backend && npm run dev",
     "backfill:user-names": "node scripts/backfill-user-names.js",
-    "backfill:user-names:dry": "node scripts/backfill-user-names.js --dry-run"
+    "backfill:user-names:dry": "node scripts/backfill-user-names.js --dry-run",
+    "db:setup": "node src/scripts/setupDatabase.js",
+    "db:setup:seeds-only": "node src/scripts/setupDatabase.js --seeds-only",
+    "db:seed:services": "node src/scripts/seedServiceConfig.js",
+    "db:seed:workflows": "node src/scripts/seedWorkflowDefinitions.js",
+    "db:deploy-indexes": "cd .. && firebase deploy --only firestore:indexes"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +35,7 @@
     "razorpay": "^2.9.6",
     "sharp": "^0.34.5",
     "slugify": "^1.6.6",
+    "xstate": "^5.32.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {

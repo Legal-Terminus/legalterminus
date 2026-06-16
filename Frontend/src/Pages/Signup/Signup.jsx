@@ -6,8 +6,8 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { getFirebaseAuth, getFirebaseDb } from "../../utils/firebase";
+import { getFirebaseAuth } from "../../utils/firebase";
+import { registerUser } from "../../utils/registerUser";
 import "./Signup.css";
 
 const Signup = () => {
@@ -72,23 +72,13 @@ const Signup = () => {
     return isValid;
   };
 
-  const createUserProfile = async (user) => {
-    try {
-      const db = getFirebaseDb();
-      const userDocRef = doc(db, "users", user.uid);
-      await setDoc(userDocRef, {
-        uid: user.uid,
-        name: name || user.displayName || "User",
-        email: user.email,
-        phone: "",
-        address: "",
-        avatar: user.photoURL || null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-    } catch (error) {
-      console.error("Error creating user profile:", error);
-    }
+  // Create/sync the Firestore user doc via the backend so it goes through the
+  // unified upsertUser chokepoint (ISO createdAt, normalized fields, role logic).
+  const createUserProfile = async (user, provider = "email") => {
+    await registerUser(user, {
+      provider,
+      fullName: name || user.displayName || "User",
+    });
   };
 
   const handleSignup = async (e) => {
@@ -130,7 +120,7 @@ const Signup = () => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      await createUserProfile(result.user);
+      await createUserProfile(result.user, "google");
       navigate("/my-profile");
     } catch (error) {
       console.error("Google signup error:", error);

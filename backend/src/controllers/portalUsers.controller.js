@@ -28,25 +28,49 @@ export const listUsers = async (req, res) => {
     // limit/cursor validated+coerced by paginationSchema; role is a free filter.
     const { role, limit, cursor } = req.query;
 
+    const roleFilter = role && isValidRole(role) ? role : null;
     let query = db.collection(COLLECTION);
-    if (role && isValidRole(role)) {
-      query = query.where('role', '==', role);
+    let data;
+    let nextCursor;
+
+    if (roleFilter) {
+      // Filtering by role + orderBy('createdAt') would need a composite index
+      // (role ASC, createdAt DESC). To avoid that dependency we filter in
+      // Firestore and sort the result in memory. Fine at current scale; if the
+      // filtered set grows large, add the composite index and order server-side.
+      const snapshot = await query.where('role', '==', roleFilter).get();
+      data = snapshot.docs
+        .map((doc) => ({ uid: doc.id, ...doc.data() }))
+        .sort((a, b) => {
+          const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return tb - ta;
+        });
+      // In-memory paging over the sorted set (cursor = last uid of prev page).
+      if (cursor) {
+        const idx = data.findIndex((u) => u.uid === cursor);
+        if (idx >= 0) data = data.slice(idx + 1);
+      }
+      const hasMore = data.length > limit;
+      data = data.slice(0, limit);
+      nextCursor = hasMore && data.length ? data[data.length - 1].uid : null;
+    } else {
+      // No role filter: order + paginate in Firestore (single-field index only).
+      // NOTE: orderBy('createdAt') silently DROPS docs lacking the field — every
+      // user doc is guaranteed `createdAt` by the upsertUser write path + the
+      // backfill-user-createdat.js migration. If a legacy doc ever lacks it,
+      // run that backfill rather than removing the orderBy.
+      query = query.orderBy('createdAt', 'desc').limit(limit);
+      if (cursor) {
+        const cursorDoc = await db.collection(COLLECTION).doc(cursor).get();
+        if (cursorDoc.exists) query = query.startAfter(cursorDoc);
+      }
+      const snapshot = await query.get();
+      data = snapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
+      nextCursor = snapshot.docs.length === limit
+        ? snapshot.docs[snapshot.docs.length - 1].id
+        : null;
     }
-
-    // Order + paginate in Firestore (no full-collection scan, no in-memory sort).
-    // The role filter + orderBy needs a composite index (firestore.indexes.json).
-    query = query.orderBy('createdAt', 'desc').limit(limit);
-
-    if (cursor) {
-      const cursorDoc = await db.collection(COLLECTION).doc(cursor).get();
-      if (cursorDoc.exists) query = query.startAfter(cursorDoc);
-    }
-
-    const snapshot = await query.get();
-    const data = snapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
-    const nextCursor = snapshot.docs.length === limit
-      ? snapshot.docs[snapshot.docs.length - 1].id
-      : null;
 
     res.status(200).json({ data, nextCursor });
   } catch (error) {
@@ -205,8 +229,35 @@ export const removeUser = async (req, res) => {
     const user = await getUserByUid(uid);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    await deleteUser(uid);
-    res.status(200).json({ message: 'User deleted successfully' });
+    // Guard: refuse to delete a user who still has tasks (as client or assignee).
+    // Deleting would orphan task history / leave dangling refs. The admin must
+    // reassign or close those tasks first. (count() = cheap aggregation, no reads.)
+    // Includes STEP-level assignment (E11-S02): pre-assignment + per-step "Step
+    // owner" route users onto steps without making them the matter owner, so a
+    // matter-level check alone would let us orphan those steps with a dead UID.
+    const [asClient, asAssignee, asStepAssignee] = await Promise.all([
+      db.collection('tasks').where('clientUid', '==', uid).count().get(),
+      db.collection('tasks').where('assignedTo', '==', uid).count().get(),
+      db.collectionGroup('steps').where('assignedTo', '==', uid).count().get()
+        .catch((e) => {
+          // collection-group count index may be missing → degrade (don't 500 a
+          // delete). Matter-level checks still apply.
+          logger.warn({ err: e?.message }, 'removeUser: step-assignee count failed (index missing?)');
+          return { data: () => ({ count: 0 }) };
+        }),
+    ]);
+    const taskCount = asClient.data().count + asAssignee.data().count + asStepAssignee.data().count;
+    if (taskCount > 0) {
+      return res.status(409).json({
+        message: `This user has ${taskCount} associated task(s)/step(s). Reassign or close them before deleting.`,
+        taskCount,
+      });
+    }
+
+    // No tasks → safe to delete the user, their Auth account, and the
+    // payments subcollection (handled inside deleteUser).
+    const result = await deleteUser(uid);
+    res.status(200).json({ message: 'User deleted successfully', ...result });
   } catch (error) {
     logger.error({ err: error }, 'Error deleting user:');
     res.status(500).json({ message: "Internal server error" });

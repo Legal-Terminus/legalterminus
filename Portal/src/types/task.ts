@@ -1,4 +1,6 @@
-export type TaskStatus = 'pending' | 'active' | 'completed' | 'cancelled' | 'on_hold';
+export type TaskStatus =
+  | 'pending' | 'active' | 'completed' | 'cancelled' | 'on_hold'
+  | 'pending_admin_approval' | 'rejected';
 export type StepStatus = 'pending' | 'active' | 'completed' | 'blocked' | 'skipped';
 export type PaymentStatus = 'not_paid' | 'part_paid' | 'fully_paid';
 
@@ -17,16 +19,20 @@ export interface TaskStep {
 export interface Task {
   id: string;
   workflowType: string;
+  serviceName?: string;
   clientUid: string;
   clientName?: string;
   assignedTo?: string;
   status: TaskStatus;
+  workflowDefinitionId?: string;
   paymentStatus: PaymentStatus;
   amountPaid?: number;
   amountDue?: number;
   currentStepNumber: number;
-  steps: TaskStep[];
+  totalSteps?: number;
+  steps?: TaskStep[];
   isUrgent?: boolean;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,13 +1,22 @@
 # Build stage
 FROM node:22-alpine AS builder
 
-WORKDIR /app
+# Build under /app/Portal (NOT /app) and place the repo-root `shared/` dir as a
+# sibling at /app/shared. The Portal imports the framework-agnostic workflow
+# modules via the `@shared/*` alias, which resolves to `../shared` in both
+# tsconfig.app.json and vite.config.ts. Flattening Portal/src to /app would shift
+# that `../shared` by one level and `shared/` wouldn't be in the image at all →
+# "Cannot find module '@shared/workflows/*'" during the in-container build.
+WORKDIR /app/Portal
 
 # Copy Portal dependencies
 COPY Portal/package*.json ./
 
 # Install dependencies
 RUN npm ci
+
+# Copy the shared workflow modules (resolved as ../shared from Portal/).
+COPY shared /app/shared
 
 # Copy Portal source and config files
 COPY Portal/src ./src
@@ -60,8 +69,8 @@ EOF
 # Install express
 RUN npm install --omit=dev
 
-# Copy built Portal from builder
-COPY --from=builder /app/dist ./dist
+# Copy built Portal from builder (build now runs in /app/Portal)
+COPY --from=builder /app/Portal/dist ./dist
 COPY Portal/server.js ./server.js
 
 EXPOSE 8080
