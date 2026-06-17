@@ -35,12 +35,12 @@ body {
 .hs-hero__container {
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 12px 40px;
+  padding: 40px 40px;
   display: grid;
   grid-template-columns: 1fr 1.2fr 1fr;
   gap: 20px;
   align-items: center;
-  min-height: 55vh;
+  min-height: 70vh;
 }
 
 /* ─────────────────────────────
@@ -113,7 +113,7 @@ body {
   z-index: 1;
   width: 100%;
   height: auto;
-  max-height: 400px;
+  max-height: 460px;
   object-fit: contain;
   object-position: center bottom;
   display: block;
