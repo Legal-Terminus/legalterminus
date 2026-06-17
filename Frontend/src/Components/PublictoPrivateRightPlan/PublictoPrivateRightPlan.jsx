@@ -1,148 +1,132 @@
 import React, { useState } from "react";
-import "./PublictoPrivateRightPlan.css";
+import "../ProFOPCPlanandPricing/ProFOPCPlanandPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
-
 const PLANS = [
-  { id: "elemental", name: "Elemental", price: 3999, services: ["Search Report of Name Availability", "1 RUN Name Approval Certificate", "Director Identification Number for 2 Individuals", "Certificate of Incorporation", "E-PAN", "E-TAN", "E-MOA", "E-AOA", "Documents for Bank Account Opening", "Documents for 1st Auditor Appointment", "EPF Registrations", "ESI Registrations"] },
-  { id: "enriched", name: "Enriched", price: 5999, services: ["Elemental Plan Plus", "Share Certificate", "Commencement of Business", "Udyam/MSME Registration"] },
-  { id: "supreme", name: "Supreme", price: 24999, services: ["Enriched Plan Plus", "Income tax filing of Company", "Preparation of Directors Report", "Preparation of Annual Return", "Preparation of Auditor Appointment Paperwork", "Preparation of List of Share Holders", "Preparation of Notice of AGM", "Preparation of Notice of BM", "Preparation of Extracts of AGM", "Filing of AOC - 4 (Financial Statements)", "Filing of MGT - 7 (Annual Return)", "Filing of ADT - 1 (Auditor Appointment)", "Minutes of Board Meeting for 1st FY", "Minutes of General Meeting for 1st FY", "Maintenance of Statutory E- Registers", "Filing of DPT - 3 Annual (If Applicable)", "Filing of MSME - 1 (If Applicable) for 1st FY", "DIR KYC (2 Directors)", "Income Tax Filing of 2 Directors", "Audit fees are excluded and to be paid directly to Auditor"] }
+  {
+    id: "elemental",
+    name: "Elemental",
+    badge: "* BASIC",
+    oldPrice: 18999,
+    price: 13999,
+    services: [
+      "Section 14 eligibility audit + conversion path advisory",
+      "Board Meeting + EGM notice & documentation",
+      "Special Resolution drafting (conversion to Private)",
+      "Alteration of MOA + AOA (private company restrictions)",
+      "Form MGT-14 filing with the RoC",
+      "Form INC-25A newspaper advertisement - drafting",
+      "(English + vernacular - 21-day objection window managed)",
+      "Individual notices to creditors / debenture holders",
+      "Notices to the RoC + Regional Director",
+      "Form RD-1 APPLICATION drafting + filing with the RD",
+      "Liaison with the Regional Director till order",
+      "Form INC-28 filing of RD order with the RoC",
+      "Fresh Certificate of Incorporation (Private status)",
+      "Updated PAN + company master data",
+    ],
+  },
+  {
+    id: "enriched",
+    name: "Enriched",
+    badge: "* MOST POPULAR",
+    oldPrice: 24499,
+    price: 19999,
+    services: [
+      "Everything in Elemental",
+      "Creditor / member consent management",
+      "Declaration of solvency + list of creditors",
+      "Updated statutory registers (members / directors / charges)",
+      "Share certificate re-issuance under new status",
+      "Bank record + GST profile update coordination",
+      "Updated letterhead + invoice format (Pvt Ltd)",
+      "Director KYC (DIR-3 KYC) - 2 directors",
+      "60-day post-conversion compliance advisory",
+    ],
+  },
+  {
+    id: "supreme",
+    name: "Supreme",
+    badge: "* FULL-SERVICE 12-MONTH",
+    oldPrice: 34499,
+    price: 24999,
+    services: [
+      "Everything in Enriched",
+      "Annual ITR Filing - Company (1st FY)",
+      "Financial Statements Filing - AOC-4",
+      "Annual Return Filing - MGT-7",
+      "Auditor Appointment Filing - ADT-1",
+      "Directors' Report + Minutes of Board & General Meetings",
+      "Maintenance of statutory e-registers (1st FY)",
+      "DPT-3 / MSME-1 filing (if applicable)",
+      "Income Tax Filing of 2 Directors",
+      "90-day post-conversion senior-CS helpline",
+    ],
+  },
 ];
 
 const PricingSection = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
-
     <>
-    <section className="plt-pr-section">
-      <div className="plt-pr-container">
+      <section className="profopc-pricing-section">
+        <div className="profopc-pricing-container">
+          <header className="profopc-pricing-header">
+            <h2 className="profopc-pricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="profopc-pricing-subtitle">
+              Convert your Public Limited Company to Private with transparent pricing
+            </p>
+          </header>
 
-        {/* Upper part */}
-        <header className="plt-pr-header">
-          <h2 className="plt-pr-title">CHOOSE YOUR PLAN</h2>
-          <p className="plt-pr-subtitle">
-            Register your company with pocket-friendly prices
-          </p>
-        </header>
+          <div className="profopc-pricing-cards">
+            {PLANS.map((plan) => (
+              <article key={plan.id} className="profopc-plan-card">
+                <div>
+                  <div className="profopc-plan-header">
+                    {plan.badge && (
+                      <div className="profopc-plan-badge">{plan.badge}</div>
+                    )}
+                    <div className="profopc-plan-name">{plan.name}</div>
+                    <div className="profopc-plan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    <div className="profopc-plan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="profopc-plan-meta">+ Govt. fees & GST extra</div>
+                  </div>
 
-        {/* Cards */}
-        <div className="plt-pr-cards">
-
-          {/* Elemental */}
-          <article className="plt-pr-card">
-            <div>
-              <div className="plt-pr-card-header">
-                <div className="plt-pr-name">Elemental</div>
-                <div className="plt-pr-old-price">₹5,999</div>
-                <div className="plt-pr-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
-                <div className="plt-pr-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="plt-pr-body">
-                <ul className="plt-pr-list">
-                  <li className="plt-pr-list-item">Search Report of Name Availability</li>
-                  <li className="plt-pr-list-item">1 RUN Name Approval Certificate</li>
-                  <li className="plt-pr-list-item">Director Identification Number for 2 Individuals</li>
-                  <li className="plt-pr-list-item">Certificate of Incorporation</li>
-                  <li className="plt-pr-list-item">E-PAN</li>
-                  <li className="plt-pr-list-item">E-TAN</li>
-                  <li className="plt-pr-list-item">E-MOA</li>
-                  <li className="plt-pr-list-item">E-AOA</li>
-                  <li className="plt-pr-list-item">Documents for Bank Account Opening</li>
-                  <li className="plt-pr-list-item">Documents for 1st Auditor Appointment</li>
-                  <li className="plt-pr-list-item">EPF Registrations</li>
-                  <li className="plt-pr-list-item">ESI Registrations</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plt-pr-footer">
-              <button className="plt-pr-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Enriched */}
-          <article className="plt-pr-card">
-            <div>
-              <div className="plt-pr-card-header">
-                <div className="plt-pr-name">Enriched</div>
-                <div className="plt-pr-old-price">₹7,999</div>
-                <div className="plt-pr-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
-                <div className="plt-pr-meta">
-                  Excluding gov fee <span className="plt-pr-popular">(Popular)</span>
+                  <div className="profopc-plan-body">
+                    <ul className="profopc-plan-list">
+                      {plan.services.map((service, idx) => (
+                        <li key={idx} className="profopc-plan-list-item">
+                          {service}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-              </div>
 
-              <div className="plt-pr-body">
-                <ul className="plt-pr-list">
-                  <li className="plt-pr-list-item">Elemental Plan Plus</li>
-                  <li className="plt-pr-list-item">Share Certificate</li>
-                  <li className="plt-pr-list-item">Commencement of Business</li>
-                  <li className="plt-pr-list-item">Udyam/MSME Registration</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plt-pr-footer">
-              <button className="plt-pr-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
-            </div>
-          </article>
-
-          {/* Supreme */}
-          <article className="plt-pr-card">
-            <div>
-              <div className="plt-pr-card-header">
-                <div className="plt-pr-name">Supreme</div>
-                <div className="plt-pr-old-price">₹29,999</div>
-                <div className="plt-pr-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
-                <div className="plt-pr-meta">Excluding gov fee</div>
-              </div>
-
-              <div className="plt-pr-body">
-                <ul className="plt-pr-list">
-                  <li className="plt-pr-list-item">Enriched Plan Plus</li>
-                  <li className="plt-pr-list-item">Income tax filing of Company</li>
-                  <li className="plt-pr-list-item">Preparation of Directors Report</li>
-                  <li className="plt-pr-list-item">Preparation of Annual Return</li>
-                  <li className="plt-pr-list-item">Preparation of Auditor Appointment Paperwork</li>
-                  <li className="plt-pr-list-item">Preparation of List of Share Holders</li>
-                  <li className="plt-pr-list-item">Preparation of Notice of AGM</li>
-                  <li className="plt-pr-list-item">Preparation of Notice of BM</li>
-                  <li className="plt-pr-list-item">Preparation of Extracts of AGM</li>
-                  <li className="plt-pr-list-item">Filing of AOC - 4 (Financial Statements)</li>
-                  <li className="plt-pr-list-item">Filing of MGT - 7 (Annual Return)</li>
-                  <li className="plt-pr-list-item">Filing of ADT - 1 (Auditor Appointment)</li>
-                  <li className="plt-pr-list-item">Minutes of Board Meeting for 1st FY</li>
-                  <li className="plt-pr-list-item">Minutes of General Meeting for 1st FY</li>
-                  <li className="plt-pr-list-item">Maintenance of Statutory E- Registers</li>
-                  <li className="plt-pr-list-item">Filing of DPT - 3 Annual (If Applicable)</li>
-                  <li className="plt-pr-list-item">Filing of MSME - 1 (If Applicable) for 1st FY</li>
-                  <li className="plt-pr-list-item">DIR KYC (2 Directors)</li>
-                  <li className="plt-pr-list-item">Income Tax Filing of 2 Directors</li>
-                  <li className="plt-pr-list-item">Audit fees are excluded and to be paid directly to Auditor</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="plt-pr-footer">
-              <button className="plt-pr-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
-            </div>
-          </article>
-
+                <div className="profopc-plan-footer">
+                  <button
+                    className="profopc-plan-button"
+                    onClick={() => setActivePlan(plan)}
+                  >
+                    Buy Now
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
-
+      </section>
 
       {activePlan && (
-
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="public-to-private" />
-
+        <CheckoutModal
+          plan={activePlan}
+          onClose={() => setActivePlan(null)}
+          source="public-to-private"
+        />
       )}
-
     </>
-
-  );};
+  );
+};
 
 export default PricingSection;

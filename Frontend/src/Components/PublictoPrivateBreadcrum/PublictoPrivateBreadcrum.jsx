@@ -1,51 +1,53 @@
 import React from "react";
-import "./PublictoPrivateBreadcrum.css";
+import "../ProFOPCBreadcrum/ProFOPCBreadcrum.css";
 
 import ConsultationForm from '../ConsultationForm/ConsultationForm';
-const PublicBreadcrum = () => {
+
+const Breadcrum = () => {
   return (
-    <section className="plt-bc-hero">
-      <div className="plt-bc-container">
+    <section className="ProPrietorship-opc-Bc-public-hero">
+      <div className="ProPrietorship-opc-Bc-public-container">
 
         {/* LEFT CONTENT */}
-        <div className="plt-bc-content">
+        <div className="ProPrietorship-opc-Bc-public-content">
 
-          <span className="plt-bc-tag">
-            Public Limited Company Registration
+          <span className="ProPrietorship-opc-Bc-public-tag">
+            Public Ltd to Private Ltd Conversion
           </span>
 
-          <h1 className="plt-bc-title">
-            Public Limited Company Registration
-            <span> in India</span>
+          <h1 className="ProPrietorship-opc-Bc-public-title">
+            Convert Public Limited to Private Limited in India
+            <br />
+            <span className="ProPrietorship-opc-Bc-title-tagline">Cut compliance, keep control</span>
           </h1>
 
-          <p className="plt-bc-description">
-            A Public Limited Company is a trusted and scalable business structure
-            ideal for large enterprises looking to raise capital from the public.
-            Legal Terminus assists you with complete Public Limited Company
-            registration in India, ensuring legal accuracy, regulatory compliance,
-            and timely approval.
+          <p className="ProPrietorship-opc-Bc-public-description">
+            Convert your Public Limited Company into a Private Limited Company to reduce your regulatory burden, keep ownership closely held, and gain the flexibility of a privately managed business. This transition lets you restrict share transfers, limit public exposure, and run the company with fewer statutory formalities.
           </p>
 
-          <div className="plt-bc-features">
-            <div className="plt-bc-feature-item"> Minimum 7 Shareholders Required</div>
-            <div className="plt-bc-feature-item"> Suitable for Fundraising & IPO</div>
-            <div className="plt-bc-feature-item"> Limited Liability Protection</div>
-            <div className="plt-bc-feature-item"> High Business Credibility</div>
+          <p className="ProPrietorship-opc-Bc-public-description">
+            We manage the entire conversion process under the Companies Act, 2013, including the special resolution, alteration of MOA &amp; AOA, MGT-14 filing, newspaper advertisement in Form INC-25A, notices to creditors and regulators, and the application to the Regional Director in Form RD-1 — right up to filing INC-28 once the order is approved.
+          </p>
+
+          <div className="ProPrietorship-opc-Bc-public-features">
+            <div className="ProPrietorship-opc-Bc-feature-item">Section 14 Compliant</div>
+            <div className="ProPrietorship-opc-Bc-feature-item">RD-1 + MGT-14 Filed</div>
+            <div className="ProPrietorship-opc-Bc-feature-item">RD Approval Managed</div>
+            <div className="ProPrietorship-opc-Bc-feature-item">Reduced Compliance</div>
           </div>
 
-          <div className="plt-bc-highlights">
+          <div className="ProPrietorship-opc-Bc-public-highlights">
             <div>
-              <h3>12,000+</h3>
-              <p>Companies Registered</p>
+              <h3>1,000+</h3>
+              <p>Conversions Made</p>
             </div>
             <div>
-              <h3>99%</h3>
-              <p>Approval Success Rate</p>
+              <h3>End-to-End Transition</h3>
+              <p>Resolution + RD + ROC Filings</p>
             </div>
             <div>
-              <h3>15+</h3>
-              <p>Years of Legal Expertise</p>
+              <h3>7+</h3>
+              <p>Years of Compliance Expertise</p>
             </div>
           </div>
 
@@ -54,7 +56,7 @@ const PublicBreadcrum = () => {
         {/* RIGHT FORM */}
         <ConsultationForm
           source="public-to-private"
-          subtitle="Talk to our Public Company registration expert"
+          subtitle="Talk to our conversion expert"
         />
 
       </div>
@@ -62,4 +64,4 @@ const PublicBreadcrum = () => {
   );
 };
 
-export default PublicBreadcrum;
+export default Breadcrum;

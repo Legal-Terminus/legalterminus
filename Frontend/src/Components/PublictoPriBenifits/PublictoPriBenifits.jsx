@@ -1,59 +1,56 @@
 import React from "react";
-import "./PublictoPriBenifits.css";
+import "../ProFOPCRequirementsTab/ProFOPCRequirementsTab.css";
 
 const RequirementsPvt = () => {
   return (
-    <section className="pubpvt-req-section">
-      <div className="pubpvt-req-container">
+    <section className="profopc-req-section">
+      <div className="profopc-req-container">
         {/* Heading + intro */}
-        <header className="pubpvt-req-header">
-          <h2 className="pubpvt-req-title">
-            Benefits of Public Limited Company Registration in India
+        <header className="profopc-req-header">
+          <h2 className="profopc-req-title">
+            Benefits of Converting Public Limited to Private Limited
           </h2>
-          <p className="pubpvt-req-subtitle">
-            The Ministry of Corporate Affairs (MCA) manages the company registration process in India. It includes registering the business with the Registrar of Companies (RoC) and obtaining a Digital Signature Certificate (DSC) and Director Identification Number (DIN).
-          </p>
         </header>
 
         {/* Cards */}
-        <div className="pubpvt-req-grid">
+        <div className="profopc-req-grid">
           {/* 1 */}
-          <article className="pubpvt-req-card">
-            <h3 className="pubpvt-req-card-title">Separate Legal Identity</h3>
-            <div className="pubpvt-req-card-underline" />
-            <p className="pubpvt-req-card-text">
-              Once registered, a company becomes its own legal entity. It can own property, sign contracts, and operate separately from its owners.
+          <article className="profopc-req-card">
+            <h3 className="profopc-req-card-title">Reduced Compliance</h3>
+            <div className="profopc-req-card-underline" />
+            <p className="profopc-req-card-text">
+              A private company is freed from many of the heavy filings and public disclosures that a public company must make, cutting your ongoing compliance burden.
             </p>
           </article>
 
           {/* 2 */}
-          <article className="pubpvt-req-card">
-            <h3 className="pubpvt-req-card-title">Limited Liability Protection</h3>
-            <div className="pubpvt-req-card-underline" />
-            <p className="pubpvt-req-card-text">
-              The personal assets of shareholders are safe from company debts and risks, ensuring financial protection.
+          <article className="profopc-req-card">
+            <h3 className="profopc-req-card-title">
+              Greater Privacy &amp; Control
+            </h3>
+            <div className="profopc-req-card-underline" />
+            <p className="profopc-req-card-text">
+              Restrict the transfer of shares and keep ownership within a small, trusted group — the public can no longer subscribe to your securities.
             </p>
           </article>
 
           {/* 3 */}
-          <article className="pubpvt-req-card">
-            <h3 className="pubpvt-req-card-title">
-              Access to Government Schemes
+          <article className="profopc-req-card">
+            <h3 className="profopc-req-card-title">
+              Fewer Statutory Requirements
             </h3>
-            <div className="pubpvt-req-card-underline" />
-            <p className="pubpvt-req-card-text">
-              Registered companies can benefit from government schemes like Startup India for tax benefits and easier compliance, and Make in India for incentives and support for manufacturing businesses.
+            <div className="profopc-req-card-underline" />
+            <p className="profopc-req-card-text">
+              Run the company with just 2 members and 2 directors instead of the 7 members and 3 directors a public company needs.
             </p>
           </article>
 
           {/* 4 */}
-          <article className="pubpvt-req-card">
-            <h3 className="pubpvt-req-card-title">
-              Increased Credibility
-            </h3>
-            <div className="pubpvt-req-card-underline" />
-            <p className="pubpvt-req-card-text">
-              A registered company is more trusted by investors, clients, and vendors, making it easier to get funding and partnerships.
+          <article className="profopc-req-card">
+            <h3 className="profopc-req-card-title">Faster Decision Making</h3>
+            <div className="profopc-req-card-underline" />
+            <p className="profopc-req-card-text">
+              Private companies enjoy several exemptions under the Companies Act, allowing leaner board and general meetings and quicker approvals.
             </p>
           </article>
         </div>

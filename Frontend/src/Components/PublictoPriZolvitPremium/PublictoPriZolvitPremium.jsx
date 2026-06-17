@@ -1,76 +1,84 @@
 import React from "react";
-import "./PublictoPriZolvitPremium.css";
+import "../ProFOPCZolvitPremium/ProFOPCZolvitPremium.css";
 import premiumIllustration from "../../assets/lt-company.svg";
 
 const ZolvitPremium = () => {
   return (
-    <section className="plt-zp-section">
-      <div className="plt-zp-container">
-        <div className="plt-zp-card">
+    <section className="profopc-zp-section">
+      <div className="profopc-zp-container">
+        <div className="profopc-zp-card">
 
-          {/* Left illustration */}
-          <div className="plt-zp-illustration-wrapper">
+          <div className="profopc-zp-illustration-wrapper">
             <img
               src={premiumIllustration}
-              alt="Private Limited Company Registration by Legal Terminus"
-              className="plt-zp-illustration"
+              alt="Public to Private Limited Conversion by Legal Terminus"
+              className="profopc-zp-illustration"
             />
           </div>
 
-          {/* Right content */}
-          <div className="plt-zp-content">
+          <div className="profopc-zp-content">
 
-            {/* Title + subtitle */}
-            <header className="plt-zp-header">
-              <h2 className="plt-zp-title">
+            <header className="profopc-zp-header">
+              <h2 className="profopc-zp-title">
                 Legal Terminus{" "}
-                <span className="plt-zp-title-highlight">Priority</span>{" "}
-                <span className="plt-zp-title-icon">⚖️</span>
+                <span className="profopc-zp-title-highlight">Priority</span>{" "}
+                <span className="profopc-zp-title-icon">⚖</span>
               </h2>
-              <p className="plt-zp-subtitle">
-                Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+              <p className="profopc-zp-subtitle">
+                Public to Private Limited Conversion may look like a simple name change, but it involves multiple legal and compliance steps under the Companies Act, 2013. Special resolution, alteration of the Articles, creditor notices, newspaper publication and approval of the Regional Director all play an important role in smooth conversion and future compliance.
+                <br /><br />
+                With LT Priority, your Public to Private Limited Conversion is handled by experienced company law professionals who carefully manage the complete process — from the Section 14 eligibility review to the final RD order and post-conversion compliance support.
               </p>
             </header>
 
-            {/* Features */}
-            <section className="plt-zp-section-block">
-              <h3 className="plt-zp-label">What You Get:</h3>
-              <ul className="plt-zp-list plt-zp-features-list">
-                <li className="plt-zp-list-item">
-                  <span className="plt-zp-list-icon">🧑‍⚖️</span>
-                  Get your company registered faster with Legal Terminus expert-handled process, made for entrepreneurs who value time and want to avoid unnecessary delays.
+            <section className="profopc-zp-section-block">
+              <h3 className="profopc-zp-label">What you get</h3>
+              <ul className="profopc-zp-list profopc-zp-features-list">
+                <li className="profopc-zp-list-item">
+                  <span className="profopc-zp-list-icon">⚡</span>
+                  Priority processing and faster filing support throughout the conversion process
                 </li>
-                <li className="plt-zp-list-item">
-                  <span className="plt-zp-list-icon">📑</span>
-                  Hassle-Free Compliance Solutions
+                <li className="profopc-zp-list-item">
+                  <span className="profopc-zp-list-icon">📑</span>
+                  Proper drafting and handling of the special resolution, MGT-14, INC-25A and RD-1 filings
                 </li>
-                <li className="plt-zp-list-item">
-                  <span className="plt-zp-list-icon">⏱️</span>
-                  Excellent Reminder Policy
+                <li className="profopc-zp-list-item">
+                  <span className="profopc-zp-list-icon">🛡</span>
+                  Senior Company Secretary review before final submission to the Regional Director
+                </li>
+                <li className="profopc-zp-list-item">
+                  <span className="profopc-zp-list-icon">📲</span>
+                  Dedicated coordination and real-time status updates during the process
+                </li>
+                <li className="profopc-zp-list-item">
+                  <span className="profopc-zp-list-icon">📅</span>
+                  Post-conversion compliance guidance and annual filing reminders
                 </li>
               </ul>
             </section>
 
-            {/* Note */}
-            <section className="plt-zp-section-block">
-              <h3 className="plt-zp-label">Important Notes:</h3>
-              <div className="plt-zp-note-box">
-                <ul className="plt-zp-note-list">
-                  <li className="plt-zp-note-item">
-                    We prioritize your preferred business name and conduct a
-                    preliminary name check before submission.
+            <section className="profopc-zp-section-block">
+              <h3 className="profopc-zp-label">Important Notes</h3>
+              <div className="profopc-zp-note-box">
+                <ul className="profopc-zp-note-list">
+                  <li className="profopc-zp-note-item">
+                    INC-25A newspaper advertisement and individual creditor notices MUST be issued at least 21 days BEFORE filing the RD-1 application - this is a hard statutory waiting period. Plan your timeline: Special Resolution -> MGT-14 (30 days) -> INC-25A + notices (Day 0) -> 21-day objection window -> RD-1 filing (within 60 days of the resolution). Skip this window, and the Regional Director can return the application.
                   </li>
-                  <li className="plt-zp-note-item">
-                    In case of name rejection, our experts will recommend
-                    legally compliant alternative names to ensure approval.
+                  <li className="profopc-zp-note-item">
+                    PRIVATE COMPANY LIMITS: After conversion, the company must keep its members within a maximum of 200, restrict share transfers in its Articles, and never invite the public to subscribe to its securities. A minimum of 2 members and 2 directors must be maintained at all times.
+                  </li>
+                  <li className="profopc-zp-note-item">
+                    NO PENDING DEFAULTS: The Regional Director expects a clean compliance record - pending annual filings, unpaid deposits or unresolved charges can delay or block the order. We review your MCA master data and flag any pending items before filing RD-1.
+                  </li>
+                  <li className="profopc-zp-note-item">
+                    CREDITOR / REGULATOR OBJECTIONS: The advertisement and notices invite objections from creditors, members and regulators. If material objections are received, the conversion may need a hearing, creditor settlement or other resolution before the RD passes the order. Most clean cases proceed without objections; problem cases can extend the timeline by 30-60 days.
                   </li>
                 </ul>
               </div>
             </section>
 
-            {/* CTA */}
-            <div className="plt-zp-cta-row">
-              <button className="plt-zp-cta-btn">
+            <div className="profopc-zp-cta-row">
+              <button className="profopc-zp-cta-btn">
                 Consult a Legal Expert
               </button>
             </div>

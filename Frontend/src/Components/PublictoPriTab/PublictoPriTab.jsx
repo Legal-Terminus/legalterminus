@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import "./PublictoPriTab.css";
+import "../ProFOPCTabs/ProFOPCTabs.css";
 
 const tabs = [
-  { label: "Why Choose Public ltd", id: "company" },
-  { label: "Features", id: "features" },
-  { label: "Benefits", id: "benefits" },
+  { label: "Why Convert to Pvt Ltd", id: "company" },
+  { label: "Types", id: "types" },
+  { label: "Benefits", id: "requirements" },
+  { label: "Process & Steps", id: "process" },
   { label: "Documents", id: "documents" },
-  { label: "Process", id: "process" },
   { label: "FAQ's", id: "faq" },
 ];
 
-const PvtTabs = () => {
+const PublictoPriTab = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const handleClick = (index, id) => {
@@ -26,17 +26,15 @@ const PvtTabs = () => {
   };
 
   return (
-    <section className="pvt-pub-tabs-section">
-      <div className="pvt-pub-tabs-container">
-        <div className="pvt-pub-tabs-card">
-          <div className="pvt-pub-tabs-list">
+    <section className="ProF-OPC-tabs-section">
+      <div className="ProF-OPC-tabs-container">
+        <div className="ProF-OPC-tabs-card">
+          <div className="ProF-OPC-tabs-list">
             {tabs.map((tab, index) => (
               <button
                 key={tab.id}
                 type="button"
-                className={`pvt-pub-tab ${
-                  index === activeIndex ? "active" : ""
-                }`}
+                className={`ProF-OPC-tab ${index === activeIndex ? "active" : ""}`}
                 onClick={() => handleClick(index, tab.id)}
               >
                 {tab.label}
@@ -49,4 +47,4 @@ const PvtTabs = () => {
   );
 };
 
-export default PvtTabs;
+export default PublictoPriTab;

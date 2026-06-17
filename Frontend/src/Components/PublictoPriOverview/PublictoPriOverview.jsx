@@ -1,34 +1,33 @@
 import React from "react";
-import "./PublictoPriOverview.css";
+import "../ProFOPCCompanyTab/ProFOPCCompanyTab.css";
+
 import pvtIllustration from "../../assets/whypvt-imp.svg";
 
 const PvtLtdFull = () => {
   return (
-    <div className="pvt-ov-full-wrapper">
+    <div className="profopc-companytab-wrapper">
 
       {/* ===========================
           SECTION 2 — INTRO
       ============================ */}
-      <section className="pvt-ov-intro-section">
-        <div className="pvt-ov-intro-container">
+      <section className="profopc-companytab-intro-section">
+        <div className="profopc-companytab-intro-container">
           {/* Illustration */}
-          <div className="pvt-ov-intro-illustration-wrap">
+          <div className="profopc-companytab-intro-illustration-wrap">
             <img
               src={pvtIllustration}
-              alt="Private limited company illustration"
-              className="pvt-ov-intro-illustration"
+              alt="Public to Private Limited conversion illustration"
+              className="profopc-companytab-intro-illustration"
             />
           </div>
 
           {/* Text */}
-          <div className="pvt-ov-intro-content">
-            <h2 className="pvt-ov-intro-title">
-              Why Choose Public Limited Company Registration
+          <div className="profopc-companytab-intro-content">
+            <h2 className="profopc-companytab-intro-title">
+              Why Convert a Public Limited Company into a Private Limited Company
             </h2>
-            <p className="pvt-ov-intro-text">
-              Registering a company in India is the first step to legally starting your business. The Companies Act, 2013, sets the rules for company formation, and the Ministry of Corporate Affairs (MCA) oversees the process. Once registered, your business gets a legal identity, along with rights and protections under Indian law.
-              <br /><br />
-              Choosing the right type of Private Limited Company is important, as it determines how your business is owned, managed, and legally protected. Different types of private limited companies suit different business needs, depending on factors such as ownership structure. Selecting the correct type also helps ensure smooth compliance with legal regulations. Proper registration with the Ministry of Corporate Affairs (MCA) allows your company to operate legally, access government benefits, and build strong credibility in the market.
+            <p className="profopc-companytab-intro-text">
+              A Public Limited Company is built to raise capital from the public and carries a heavy compliance load - a minimum of seven members, three directors, mandatory public disclosures, and a long list of statutory provisions that simply do not apply to closely held businesses. As a company matures, many promoters find that they no longer need public funds and would rather keep ownership within a small, trusted group. Converting to a Private Limited Company lets them restrict share transfers, cap the membership, and step away from the formalities meant for widely held companies. The private structure is leaner, more private, and easier to manage - which is why a large number of public companies choose to convert once their fundraising needs are met.
             </p>
           </div>
         </div>
@@ -37,32 +36,28 @@ const PvtLtdFull = () => {
       {/* ===========================
           SECTION 3 — COMPANIES ACT
       ============================ */}
-      <section className="pvt-ov-companies-act-section">
-        <div className="pvt-ov-companies-act-container">
-          <div className="pvt-ov-companies-act-card">
-            <h3 className="pvt-ov-companies-act-title">Companies Act, 2013</h3>
+      <section className="profopc-companytab-act-section">
+        <div className="profopc-companytab-act-container">
+          <div className="profopc-companytab-act-card">
+            <h3 className="profopc-companytab-act-title">Companies Act, 2013</h3>
 
-            <p className="pvt-ov-companies-act-text">
-              As per Section 2(68) of the Companies Act, 2013, a private limited
-              company means a company having a minimum paid-up share capital as
-              may be prescribed, and which by its articles of association:
+            <p className="profopc-companytab-act-text">
+              As per Section 14 read with Rule 41 of the Companies (Incorporation) Rules, 2014, a public company may convert into a private company by passing a special resolution and obtaining the approval of the Regional Director, provided the following conditions are met:
             </p>
 
-            <p className="pvt-ov-companies-act-point">
-              <span className="pvt-ov-companies-act-point-label">(a)</span>
-              Restricts the right to transfer its shares;
+            <p className="profopc-companytab-act-point">
+              <span className="profopc-companytab-act-point-label">(a)</span>
+              The Articles must restrict the right to transfer the company's shares;
             </p>
 
-            <p className="pvt-ov-companies-act-point">
-              <span className="pvt-ov-companies-act-point-label">(b)</span>
-              Limits the number of its members to 200 (excluding present and
-              former employees); and
+            <p className="profopc-companytab-act-point">
+              <span className="profopc-companytab-act-point-label">(b)</span>
+              The number of members must be limited to a maximum of 200; and
             </p>
 
-            <p className="pvt-ov-companies-act-point">
-              <span className="pvt-ov-companies-act-point-label">(c)</span>
-              Prohibits any invitation to the public to subscribe for any
-              securities of the company.
+            <p className="profopc-companytab-act-point">
+              <span className="profopc-companytab-act-point-label">(c)</span>
+              Any invitation to the public to subscribe to the company's securities must be prohibited.
             </p>
           </div>
         </div>

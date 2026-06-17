@@ -1,78 +1,75 @@
 import React from "react";
-import "./PublictoPriProcess.css";
+import "../ProFOPCProcess/ProFOPCProcess.css";
 
 const steps = [
   {
-    title: "Step 1 – Document Submission",
+    title: "Step 1 – Board Meeting",
     text:
-      "Provision of requisite documents / information to us (as per the checklist to be provided by us).",
+      "Convene a board meeting to approve the conversion, fix the date of the EGM, and authorise alteration of the MOA & AOA.",
   },
   {
-    title: "Step 2 – Company Name & Objects Finalization",
+    title: "Step 2 – Special Resolution (EGM)",
     text:
-      "Finalisation of objects along with name of the proposed company (based on a search report duly conducted and provided by our team).",
+      "Pass a special resolution in the extraordinary general meeting approving the conversion and the altered Articles of Association.",
   },
   {
-    title: "Step 3 – Name Reservation Application",
+    title: "Step 3 – MGT-14 Filing",
     text:
-      "Filing of application for name reservation in requisite e-form along with applicable government fees.",
+      "File the special resolution with the Registrar of Companies in Form MGT-14 within 30 days of passing it.",
   },
   {
-    title: "Step 4 – Digital Signature Certificates",
+    title: "Step 4 – Notices & Advertisement",
     text:
-      "Preparation of requisite numbers of DSC with respect to the proposed promoters & directors and registration of DSC in the MCA portal.",
+      "Publish Form INC-25A in an English and a vernacular newspaper, and serve notice on creditors, debenture holders, the RoC and the Regional Director.",
   },
   {
-    title: "Step 5 – Incorporation Document Preparation",
+    title: "Step 5 – RD-1 Application",
     text:
-      "Preparation of further incorporation documents upon receipt of the name approval letter from the department.",
+      "File the application for conversion with the Regional Director in Form RD-1 within 60 days of the special resolution, along with all attachments.",
   },
   {
-    title: "Step 6 – Final Form Upload & Fee Payment",
+    title: "Step 6 – RD Hearing & Order",
     text:
-      "Uploading of final incorporation forms to the MCA portal along with applicable government fees.",
+      "Respond to any objections received; the Regional Director examines the application and passes the order approving the conversion.",
   },
   {
-    title: "Step 7 – Registration Certificate Issuance",
+    title: "Step 7 – INC-28 Filing",
     text:
-      "Processing of the application by the department and issuance of the registration certificate.",
+      "File the certified copy of the Regional Director's order with the Registrar of Companies in Form INC-28.",
   },
   {
-    title: "Step 8 – Registration Certificate Issuance",
+    title: "Step 8 – Fresh Certificate of Incorporation",
     text:
-      "Processing of the application by the department and issuance of the registration certificate.",
-  },
-  {
-    title: "Step 9 – Registration Certificate Issuance",
-    text:
-      "Processing of the application by the department and issuance of the registration certificate.",
+      "The Registrar issues a fresh Certificate of Incorporation reflecting the company's new Private Limited status.",
   },
 ];
 
-const GSTProcess = () => {
+const PublictoPriProcess = () => {
   return (
-    <section className="pvt-prc-wrapper">
-      <h2 className="pvt-prc-heading">
-        STEPS FOR PRIVATE LIMITED COMPANY REGISTRATION IN INDIA
+    <section className="profopc-process-wrapper">
+      <h2 className="profopc-process-heading">
+        STEPS TO CONVERT PUBLIC LIMITED INTO PRIVATE LIMITED
       </h2>
-      <p className="pvt-prc-subheading">
-        The broad process of registering a Private Limited company involves
-        the following steps:
+      <p className="profopc-process-subheading">
+        The broad process of converting a Public Limited company into a Private
+        Limited company involves the following steps:
       </p>
 
-      <div className="pvt-prc-timeline">
-        <div className="pvt-prc-timeline-line" />
+      <div className="profopc-process-timeline">
+        <div className="profopc-process-timeline-line" />
 
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`pvt-prc-timeline-item ${
+            className={`profopc-process-timeline-item ${
               index % 2 === 0 ? "left" : "right"
             }`}
           >
-            <div className="pvt-prc-timeline-dot">{index + 1}</div>
+            <div className="profopc-process-timeline-dot">
+              {index + 1}
+            </div>
 
-            <div className="pvt-prc-timeline-card">
+            <div className="profopc-process-timeline-card">
               <h4>{step.title}</h4>
               <p>{step.text}</p>
             </div>
@@ -83,4 +80,4 @@ const GSTProcess = () => {
   );
 };
 
-export default GSTProcess;
+export default PublictoPriProcess;

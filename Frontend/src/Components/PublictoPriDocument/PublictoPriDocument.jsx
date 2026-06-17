@@ -1,91 +1,91 @@
 import React from "react";
-import {
-  FaExclamation,
-  FaCog,
-  FaBullseye,
-  FaDollarSign,
-  FaChartLine,
-} from "react-icons/fa";
-import "./PublictoPriDocument.css";
+import "../ProFOPCDocument/ProFOPCDocument.css";
 
-const steps = [
+const documents = [
   {
-    step: "01",
-    title: "Document Review",
-    desc: "Initial verification and assessment of submitted documents.",
-    icon: <FaExclamation />,
-    color: "pubpri-cvd-pink",
+    id: 1,
+    title: "KYC Documents",
+    text:
+      "PAN and Aadhaar of all directors and shareholders along with address proof.",
+    color: "red",
   },
   {
-    step: "02",
-    title: "Eligibility Check",
-    desc: "Ensure compliance with all applicable requirements.",
-    icon: <FaCog />,
-    color: "pubpri-cvd-purple",
+    id: 2,
+    title: "Special Resolution & EGM Minutes",
+    text:
+      "Certified copy of the special resolution and minutes of the general meeting approving the conversion.",
+    color: "orange",
   },
   {
-    step: "03",
-    title: "Processing",
-    desc: "Detailed review and internal processing workflow.",
-    icon: <FaBullseye />,
-    color: "pubpri-cvd-blue",
+    id: 3,
+    title: "Altered MOA & AOA",
+    text:
+      "Updated Memorandum and Articles incorporating the private company restrictions.",
+    color: "teal",
   },
   {
-    step: "04",
-    title: "Approval",
-    desc: "Final approval after validation checks.",
-    icon: <FaDollarSign />,
-    color: "pubpri-cvd-orange",
+    id: 4,
+    title: "List of Creditors",
+    text:
+      "List of creditors and debenture holders with their consent or no-objection.",
+    color: "brown",
   },
   {
-    step: "05",
-    title: "Completion",
-    desc: "Successful completion and handover of documents.",
-    icon: <FaChartLine />,
-    color: "pubpri-cvd-green",
+    id: 5,
+    title: "Audited Financial Statements",
+    text:
+      "Latest audited financial statements and a declaration of solvency of the company.",
+    color: "pink",
+  },
+  {
+    id: 6,
+    title: "Registered Office Proof",
+    text:
+      "Latest utility bill, rent agreement and NOC for the registered office address.",
+    color: "yellow",
   },
 ];
 
-const CurvedInfographicSection = () => {
+const PublictoPriDocument = () => {
   return (
-    <section className="pubpri-cvd-section">
-      <div className="pubpri-cvd-wrapper">
-        {/* LEFT CIRCLE */}
-        <div className="pubpri-cvd-center">
-          <span>
-            INFO
-            <br />
-            GRAPHICS
-          </span>
+    <section className="profopc-doc-section">
+      <div className="profopc-doc-container">
+
+        {/* Infographic */}
+        <div className="profopc-doc-wheel">
+          <div className="profopc-doc-center">
+            <span>Documents<br />Required</span>
+          </div>
+
+          {documents.map((doc) => (
+            <div
+              key={doc.id}
+              className={`profopc-doc-node profopc-doc-${doc.color}`}
+            >
+              {doc.id}
+            </div>
+          ))}
         </div>
 
-        {/* CURVED LINE */}
-        <div className="pubpri-cvd-line"></div>
-
-        {/* STEPS */}
-        <div className="pubpri-cvd-steps">
-          {steps.map((item, index) => (
+        {/* Cards */}
+        <div className="profopc-doc-list">
+          {documents.map((doc) => (
             <div
-              key={index}
-              className={`pubpri-cvd-step pubpri-cvd-step-${index + 1}`}
+              key={doc.id}
+              className={`profopc-doc-card profopc-doc-${doc.color}`}
             >
-              <div className="pubpri-cvd-step-dot">
-                <span>{item.step}</span>
-              </div>
-
-              <div className={`pubpri-cvd-step-card ${item.color}`}>
-                <div>
-                  <h4>{item.title}</h4>
-                  <p>{item.desc}</p>
-                </div>
-                <div className="pubpri-cvd-step-icon">{item.icon}</div>
+              <span className="profopc-doc-badge">{doc.id}</span>
+              <div>
+                <h4>{doc.title}</h4>
+                <p>{doc.text}</p>
               </div>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );
 };
 
-export default CurvedInfographicSection;
+export default PublictoPriDocument;
