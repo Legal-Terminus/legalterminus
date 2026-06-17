@@ -22,9 +22,9 @@ const PtollpBreadcrum = () => {
           </h1>
 
           <p className="lt-public-description">
-            Want the protection of limited liability without the heavier compliance of a Private Limited Company? A Partnership Firm to LLP Conversion allows your existing partnership firm to move into a Limited Liability Partnership (LLP) structure under the Limited Liability Partnership Act, 2008. Compared to company conversion routes, LLP conversion is faster, simpler, and more cost-effective. There is no newspaper advertisement, no 21-day objection window, and no complex corporate restructuring. The conversion is completed through Form 17 and FiLLiP filing on the MCA portal.
+            A Partnership Firm to LLP Conversion allows your existing partnership firm to become a Limited Liability Partnership (LLP) under the LLP Act, 2008, offering limited liability with simpler compliance than a Private Limited Company. The process is faster and more cost-effective, with no newspaper advertisement, objection period, or complex restructuring, and is completed through Form 17 and FiLLiP filings on the MCA portal.
             <br /><br />
-            We help you convert your Partnership Firm into an LLP by preparing the required documents, mapping partners' capital into LLP contribution, filing the conversion application, drafting the LLP Agreement, and completing post-conversion compliances including Form 14 and Form 3 filings.
+            We assist with document preparation, partner capital conversion, application filing, LLP Agreement drafting, and post-conversion compliances, including Form 14 and Form 3 filings.
           </p>
 
           <div className="lt-public-features">
