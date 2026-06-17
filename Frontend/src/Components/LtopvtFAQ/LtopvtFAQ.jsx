@@ -4,77 +4,125 @@ import "./LtopvtFAQ.css";
 const faqs = [
   {
     q: "Can an LLP be converted into a Private Limited Company?",
-    a: "Yes. An LLP can be registered as a Private Limited Company under Section 366 of the Companies Act, 2013 (Companies Authorised to Register) read with the Companies (Authorised to Register) Rules, 2014. Form URC-1 is filed along with SPICe+, and on approval the company is incorporated under Section 367 while the LLP is dissolved.",
+    a: "Yes. An LLP can be converted into a Private Limited Company under Part I of Chapter XXI (Sections 366–374) of the Companies Act, 2013 through the URC-1 process. Since the LLP Act, 2008 does not provide a direct LLP-to-company conversion route, this is the legally accepted method used across India.",
   },
   {
-    q: "How many partners are needed to convert an LLP into a Private Limited Company?",
-    a: "A Private Limited Company requires a minimum of two shareholders and two directors. Since an LLP also has at least two partners, an LLP with two or more partners can convert directly — all partners become shareholders of the new company.",
+    q: "Why do businesses convert an LLP into a Private Limited Company?",
+    a: "Most businesses convert when they want to raise investment, issue ESOPs, on-board investors, improve corporate credibility, or scale operations. Investors and venture capital firms generally prefer Private Limited Companies because they support equity shares, preference shares, and structured fundraising.",
   },
   {
-    q: "What happens to the partners on conversion?",
-    a: "All partners of the LLP become shareholders of the Private Limited Company. Their capital contribution is mapped into the share capital, and the cap table of the new company is built from the existing partner structure. Those who will manage the company are also appointed as directors.",
+    q: "Is my LLP required to be active before conversion?",
+    a: "Yes. Your LLP must be active and compliant on the MCA portal. Annual filings like Form 8 and Form 11 should be up to date before starting the conversion process. Pending filings or non-compliance can delay or reject the application.",
   },
   {
-    q: "Why is the URC-2 newspaper advertisement required?",
-    a: "Conversion under Section 366 requires a public notice in Form URC-2, published in one English and one vernacular newspaper, inviting objections to the conversion. This is a statutory safeguard so that creditors and the public can raise concerns before the company is registered.",
+    q: "What is Form URC-1?",
+    a: "Form URC-1 is the main application used for converting an existing LLP into a company under Section 366 of the Companies Act, 2013. It includes details such as partner information, audited financial statements, creditor details, declarations, and incorporation documents.",
   },
   {
-    q: "Is a No-Objection Certificate from the Registrar needed?",
-    a: "Yes. A No-Objection Certificate from the Registrar where the LLP is registered must be obtained and filed with Form URC-1, along with the CA-certified statement of accounts, the latest LLP agreement, and the consent of creditors.",
+    q: "What is Form URC-2?",
+    a: "Form URC-2 is the mandatory public notice published in newspapers before conversion. The notice is published in one English newspaper and one regional language newspaper, inviting objections from creditors or the public. A 21-day waiting period is compulsory before filing URC-1.",
   },
   {
-    q: "Does the business continue without interruption after conversion?",
-    a: "Yes. Through the Section 366 route the LLP's business, assets, and contracts carry into the new company and operations continue seamlessly. There is no need to wind up the LLP separately — it is dissolved automatically once the company is registered.",
+    q: "How many directors and shareholders are required after conversion?",
+    a: "A Private Limited Company must have at least:\n• 2 Directors\n• 2 Shareholders\n\nIn many cases, existing LLP partners become both the first shareholders and directors of the new company.",
   },
   {
-    q: "What are the main benefits of converting an LLP to a Private Limited Company?",
-    a: "A Private Limited Company can raise equity from angels, VCs, and PE funds, issue ESOPs to employees, and offer transferable shares — none of which an LLP can do. It also carries greater credibility with investors and large customers and can pursue Startup India recognition and concessional tax under Section 115BAA.",
+    q: "What happens to the LLP's assets and liabilities after conversion?",
+    a: "After conversion, all assets, liabilities, contracts, licenses, and business operations are transferred to the new Private Limited Company. The company becomes the legal successor of the LLP.",
   },
   {
-    q: "How long does the LLP to Private Limited conversion take?",
-    a: "Depending on document readiness, the newspaper advertisement window, and ROC processing, conversion typically takes around 25 to 40 working days. Pending LLP filings (Form 8 / Form 11) and creditor consents are the most common factors that affect the timeline.",
+    q: "Will the LLP automatically close after conversion?",
+    a: "Yes. Once the Certificate of Incorporation is issued, the LLP is treated as dissolved under the Companies Act framework. However, certain procedural filings and intimation to the LLP Registrar may still be required for proper closure and record updates.",
   },
   {
-    q: "Will the company keep the same name and PAN as the LLP?",
-    a: "The company can usually retain the LLP's name with 'Private Limited' added, subject to MCA approval through SPICe+. However, the new company receives a fresh CIN, PAN, and TAN — the LLP's LLPIN and PAN do not carry over, so GST and other registrations are updated to the new entity.",
+    q: "What happens to the LLP partners' capital contribution?",
+    a: "The capital contribution of LLP partners is usually converted into share capital of the new Private Limited Company in the agreed ratio. This helps maintain ownership continuity after conversion.",
+  },
+  {
+    q: "How long does LLP to Pvt Ltd Company Conversion take?",
+    a: "Normally, the complete process takes around 35–60 working days depending on:\n• LLP compliance status\n• Newspaper publication timeline\n• MCA approvals\n• Availability of partner and creditor documents",
+  },
+  {
+    q: "What documents are generally required for conversion?",
+    a: "Common documents include:\n• LLP Incorporation Certificate\n• LLP Agreement\n• PAN of LLP\n• Partner PAN & Aadhaar\n• Address proof\n• Audited financial statements\n• List of creditors with consent\n• NOC from partners\n• Registered office proof",
+  },
+  {
+    q: "What happens to GST after conversion?",
+    a: "The LLP's GST registration is usually surrendered after transfer of business, and a fresh GST registration is obtained in the name of the new Private Limited Company. Input Tax Credit transfer can also be planned properly during transition.",
+  },
+  {
+    q: "Is there any tax benefit after conversion?",
+    a: "Yes. Eligible domestic Private Limited Companies may opt for the concessional 22% corporate tax regime under Section 115BAA of the Income-tax Act, subject to conditions.",
+  },
+  {
+    q: "Can the new company raise funding after conversion?",
+    a: "Yes. A Private Limited Company is the preferred structure for:\n• Angel investment\n• Venture capital\n• ESOPs\n• Equity fundraising\n• Startup recognition\n\nThis is one of the biggest reasons businesses shift from an LLP to a Pvt Ltd structure.",
+  },
+  {
+    q: "Can the company continue using the same brand name?",
+    a: "Usually yes, subject to MCA name approval and trademark availability. Your business brand can continue while the legal structure changes from LLP to Private Limited Company.",
+  },
+  {
+    q: "Do I need to transfer licenses and registrations after conversion?",
+    a: "Yes. Registrations like:\n• GST\n• MSME / Udyam\n• FSSAI\n• Trade License\n• Shop & Establishment\n• Import Export Code (IEC)\n• Bank accounts\nmay need to be updated or migrated to the new company.",
+  },
+  {
+    q: "Is a physical office inspection required?",
+    a: "Generally, no physical inspection is required in normal cases. However, MCA or other departments may ask for additional verification or clarification if needed.",
+  },
+  {
+    q: "Can an LLP with pending loans or creditors be converted?",
+    a: "Yes, but creditor consent or NOC is generally required before conversion. Proper disclosure of liabilities is important to avoid future disputes.",
+  },
+  {
+    q: "How can Legal Terminus help with LLP to Pvt Ltd Company Conversion?",
+    a: "Legal Terminus manages the complete LLP to Pvt Ltd Company Conversion process from start to finish. Our team handles eligibility checks, pending LLP compliance review, drafting and publication of Form URC-2, preparation and filing of Form URC-1, SPICe+ incorporation filing, PAN/TAN application, GST and license migration support, and post-conversion compliance guidance. We also help with shareholder structuring, capital mapping, and business transition planning so your conversion is smooth, compliant, and investor-ready.",
   },
 ];
 
 const LtopvtFAQ = () => {
-  const [activeIndex, setActiveIndex] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const toggle = (index) => {
-    setActiveIndex(activeIndex === index ? null : index);
+    setActiveIndex((prev) => (prev === index ? -1 : index));
   };
 
   return (
     <section className="opcfaq-section" id="faq">
       <div className="opcfaq-container">
-        <h2 className="opcfaq-title">LLP to Private Limited — FAQs</h2>
-        <p className="opcfaq-subtitle">
-          Everything you need to know about converting your LLP into a Private Limited Company
-        </p>
+
+        <div className="opcfaq-header">
+          <h2 className="opcfaq-title">LLP to Private Limited — FAQs</h2>
+          <p className="opcfaq-intro">
+            Everything you need to know about converting your LLP into a Private Limited Company
+          </p>
+        </div>
 
         <div className="opcfaq-list">
-          {faqs.map((faq, index) => (
-            <div
-              className={`opcfaq-item ${activeIndex === index ? "active" : ""}`}
-              key={index}
-            >
-              <button
-                className="opcfaq-question"
-                onClick={() => toggle(index)}
-                aria-expanded={activeIndex === index}
+          {faqs.map((faq, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <div
+                key={index}
+                className={`opcfaq-item ${isActive ? "active" : ""}`}
               >
-                <span>{faq.q}</span>
-                <span className="opcfaq-icon">{activeIndex === index ? "−" : "+"}</span>
-              </button>
-              <div className="opcfaq-answer">
-                <p>{faq.a}</p>
+                <button
+                  type="button"
+                  className="opcfaq-question"
+                  onClick={() => toggle(index)}
+                  aria-expanded={isActive}
+                >
+                  <span>{faq.q}</span>
+                  <span className={`opcfaq-icon ${isActive ? "open" : ""}`}>▾</span>
+                </button>
+                <div className={`opcfaq-answer ${isActive ? "open" : ""}`}>
+                  <div className="opcfaq-answer-content" style={{ whiteSpace: "pre-line" }}>{faq.a}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
       </div>
     </section>
   );
