@@ -3,34 +3,54 @@ import "./PtollpGovtCosts.css";
 
 const rows = [
   {
-    head: "DSC for Designated Partners",
-    range: "₹1,000 – ₹2,000 each",
-    note: "Digital Signature Certificates required for the designated partners",
+    head: "MCA Filing Fee — Form FiLLiP + Form 17",
+    range: "₹0 – ₹500",
+    note: "₹0 for contribution up to ₹1 lakh; slab-based above",
   },
   {
-    head: "Name Reservation (RUN-LLP)",
-    range: "₹200",
-    note: "MCA fee to reserve the proposed LLP name",
+    head: "Name Reservation (RUN-LLP / FiLLiP Part A)",
+    range: "₹200 – ₹1,000",
+    note: "Per attempt",
   },
   {
-    head: "FiLLiP + Form 17 Filing Fees",
-    range: "Slab-based",
-    note: "MCA fees on incorporation & conversion, based on the LLP's total contribution",
+    head: "Stamp Duty — LLP Agreement (Form 3)",
+    range: "₹500 – ₹5,000+",
+    note: "State-based; varies by capital contribution",
   },
   {
-    head: "Form 3 (LLP Agreement) + Stamp Duty",
-    range: "₹50 – ₹200 + duty",
-    note: "Filing fee plus state stamp duty on the LLP agreement",
+    head: "Stamp Duty — Asset Transfer Agreement",
+    range: "₹500 – ₹3,000+",
+    note: "Where applicable; Supreme tier only",
   },
   {
-    head: "CA Certification (Assets & Liabilities)",
-    range: "Professional charge",
-    note: "Statement of assets & liabilities certified by a Chartered Accountant",
+    head: "Class 3 DSC (2-year) — per designated partner",
+    range: "₹1,999 / person",
+    note: "Required for ALL designated partners",
   },
   {
-    head: "Total Out-of-Pocket (typical)",
-    range: "₹2,000 – ₹8,000",
-    note: "Govt. fees & stamp duty billed at actuals; varies by contribution & state",
+    head: "PAN + TAN",
+    range: "₹0",
+    note: "Issued free with CoI",
+  },
+  {
+    head: "GST Cancellation + Re-Registration",
+    range: "₹0",
+    note: "Free; only our consultancy charges",
+  },
+  {
+    head: "Form 14 — Notice to Registrar of Firms",
+    range: "₹50 – ₹200",
+    note: "State-based",
+  },
+  {
+    head: "Affidavit + Notarisation",
+    range: "₹500 – ₹1,500",
+    note: "Multiple affidavits required",
+  },
+  {
+    head: "Total Out-of-Pocket (typical, 2-partner firm)",
+    range: "₹5,000 – ₹15,000",
+    note: "Mainly DSC + stamp duty on LLP Agreement",
     isTotal: true,
   },
 ];
@@ -44,7 +64,7 @@ const PtollpGovtCosts = () => {
           <span className="opc-govtcosts-badge">Billed at Actuals</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          The MCA fees for FiLLiP, Form 17, and Form 3, the DSC cost, and stamp duty on the LLP agreement are charged over and above our professional fee. The exact amount depends on the LLP's total contribution and the applicable state stamp duty — billed at actuals per the official MCA schedule.
+          Per current MCA tariff + LLP Rules 2009 + State Stamp Duty schedules. These charges are over and above our professional fee — billed at actuals.
         </p>
 
         <div className="opc-govtcosts-table-wrapper">

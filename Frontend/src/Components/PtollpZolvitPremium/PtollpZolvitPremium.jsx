@@ -27,7 +27,10 @@ const PtollpZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  Partnership-to-LLP is a clean statutory conversion — but only if the eligibility boxes are ticked: every partner carries over, ITRs are current, no security interest subsists, and the CA-certified statement is in order. Miss one and the ROC rejects Form 17. Priority is what happens when a specialist runs the conversion and the LLP agreement together.
+                  Partnership to LLP Conversion may look simple on paper, but proper conversion requires accurate documentation, partner verification, capital contribution mapping, creditor approvals, and timely MCA filings. Even small mistakes in Form 17, FiLLiP, or post-conversion compliance can lead to ROC delays and unnecessary queries.
+                </p>
+                <p className="opczp-subtitle" style={{ marginTop: "12px" }}>
+                  With LT Priority, your Partnership to LLP Conversion is handled on priority by experienced professionals who ensure faster filing, proper documentation, and smooth end-to-end conversion support.
                 </p>
               </header>
 
@@ -36,23 +39,23 @@ const PtollpZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    An upfront eligibility check — partner carry-over, ITR status, security interest, creditor consent — so Form 17 isn't bounced.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    DSC/DPIN for the designated partners, name reservation, and the FiLLiP + Form 17 application prepared correctly.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    A CA-certified statement of assets &amp; liabilities and creditor consent compiled to the ROC's standard.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    A tailored LLP agreement filed in Form 3 within 30 days, the Registrar of Firms intimated, and PAN/GST/bank updated.
+                    Priority document review and faster MCA filing support.
                   </li>
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">📑</span>
-                    A first-year compliance calendar — Form 8, Form 11, ITR-5 — so the LLP starts life fully compliant.
+                    Proper drafting and verification of Form 17, FiLLiP, and LLP documents.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">🔍</span>
+                    Senior Company Secretary review before submission.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📅</span>
+                    Timely filing of Form 14 and LLP Agreement (Form 3) after conversion.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📲</span>
+                    Dedicated coordination and real-time status updates throughout the process.
                   </li>
                 </ul>
               </section>
@@ -65,16 +68,16 @@ const PtollpZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  Everything vests automatically. The big advantage of the Section 55 route is that on conversion all the firm's assets, liabilities, and contracts pass to the LLP by operation of law — no separate transfer deed or stamp duty on each asset. The firm is deemed dissolved.
+                  ALL PARTNERS MUST BECOME LLP PARTNERS — NO ONE ELSE: Per Clause 4 of the Second Schedule, ALL partners of the firm must be partners of the LLP at the time of conversion, and NO ONE ELSE shall be a partner. Composition cannot change at conversion. Partner exit / new admission must happen BEFORE Form 17 (via retirement deed) OR AFTER CoI (via Form 4). Misalignment = ROC rejection.
                 </li>
                 <li className="opczp-note-item">
-                  All partners — and only them — carry over. Every partner of the firm must become a partner of the LLP, and no outsider can be added during conversion. New partners can join only after the LLP is incorporated, through a supplementary agreement.
+                  ALL PARTNERS MUST CONSENT — UNANIMOUSLY: Form 17 requires consent from EVERY partner. Any dissenting partner blocks the conversion — resolve internal disagreements + buy-outs BEFORE you kick off the Form 17 process. Partner-dispute resolution is OUT OF SCOPE.
                 </li>
                 <li className="opczp-note-item">
-                  Eligibility is strict. ITRs must be up to date, there must be no subsisting charge on assets (or secured creditors must consent), and all creditors' consent is needed. We verify each condition before filing so the application proceeds cleanly.
+                  AUDITED STATEMENT REQUIRED: Form 17 requires a Statement of Accounts of the firm certified by a Chartered Accountant, not older than 30 days from Form 17 filing. If the firm has audit obligations (under the IT Act or LLP Act 2008 thresholds), audited accounts are required. Factor 7–10 days for the CA work BEFORE Form 17 can be filed.
                 </li>
                 <li className="opczp-note-item">
-                  Compliance is lighter than a company. An LLP needs only Form 11 and Form 8 annually and an audit only above turnover/contribution thresholds — materially lighter than a Pvt Ltd, while still giving limited liability and a separate legal identity.
+                  FORM 14 + FORM 3 ARE TIME-BARRED: Post-CoI, Form 14 (Notice to Registrar of Firms) must be filed within 15 DAYS; Form 3 (LLP Agreement) must be filed within 30 DAYS. Missing these = late-fee accumulation under LLP Rules + default rights / duties under the First Schedule (which most firms don't want). All plans include Form 14; Enriched + Supreme include Form 3.
                 </li>
               </ul>
             </div>

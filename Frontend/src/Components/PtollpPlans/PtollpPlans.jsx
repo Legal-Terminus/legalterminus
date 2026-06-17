@@ -4,51 +4,66 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "conversion",
-    name: "Section 55 Conversion",
-    oldPrice: 15999,
-    price: 7999,
+    id: "elemental",
+    name: "Elemental",
+    badge: "BASIC CONVERSION",
+    oldPrice: 14999,
+    price: 9999,
     services: [
-      "DSC + DPIN for the designated partners",
-      "Name reservation via RUN-LLP",
-      "Form 17 (conversion application) preparation",
-      "Form FiLLiP (LLP incorporation) filing",
-      "Statement of assets & liabilities coordination (CA)",
-      "Certificate of Registration as LLP",
-      "Govt fee coordination at actuals",
+      "Section 55 / Second Schedule eligibility audit",
+      "Partnership Deed + Registration Certificate verification",
+      "Name Search & Form RUN-LLP / FiLLiP Part A reservation",
+      "DSC for all designated partners (Class 3, 2-year)",
+      "DPIN allotment for designated partners (via FiLLiP)",
+      "Capital Account → LLP Contribution mapping",
+      "Form 17 — Application + Statement for conversion",
+      "Audited Statement of Accounts review (not older than 30 days)",
+      "All partners' consent + affidavits + declaration of solvency",
+      "List of creditors with consent / NoCs",
+      "Form FiLLiP — Incorporation form (filed alongside Form 17)",
+      "PAN + TAN coordination",
+      "Certificate of Incorporation as LLP delivery",
+      "Form 14 — Notice to Registrar of Firms (within 15 days post-CoI)",
     ],
   },
   {
-    id: "agreement",
-    name: "Conversion + LLP Agreement",
+    id: "enriched",
+    name: "Enriched",
     badge: "★ MOST POPULAR",
     popular: true,
-    oldPrice: 27999,
+    oldPrice: 22999,
     price: 14999,
     services: [
-      "Everything in Section 55 Conversion",
-      "Custom LLP agreement drafting & Form 3 filing",
-      "Creditor NOC & consent handling",
-      "Registrar of Firms intimation (firm dissolution)",
-      "PAN update & GST migration to the LLP",
-      "Bank account update assistance",
-      "Dedicated compliance manager + reminders",
+      "Everything in Elemental",
+      "Custom LLP Agreement (capital + profit-share + decision rights)",
+      "Form 3 — LLP Agreement drafting + filing (within 30 days of CoI)",
+      "Partnership Firm's GST cancellation (Form REG-16)",
+      "Fresh GST registration under LLP (Form REG-01)",
+      "ITC carry-forward via Form ITC-02 (transfer of business)",
+      "Corporate Bank Account Opening Documents",
+      "Designated Partner consent + KYC pack for bank",
+      "Udyam / MSME Registration migration (if applicable)",
+      "60-day post-conversion advisory",
     ],
   },
   {
-    id: "full",
-    name: "Full Transition + Compliance",
-    badge: "✦ FULL-SERVICE",
-    oldPrice: 44999,
-    price: 24999,
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ FULL TRANSITION + 6-MONTH",
+    oldPrice: 26499,
+    price: 17999,
     services: [
-      "Everything in Conversion + LLP Agreement",
-      "Profit-sharing, capital & remuneration structuring",
-      "Licence / Udyam / IEC migration to the LLP",
-      "Vendor & customer intimation templates",
-      "First-year compliance calendar (Form 8 / Form 11 / ITR-5)",
-      "Statutory records & designated-partner KYC setup",
-      "Priority support till the LLP is fully operational",
+      "Everything in Enriched",
+      "Asset Transfer Agreement (Firm → LLP) — if needed beyond Second Schedule auto-vesting",
+      "Statutory records setup (Minutes Book, Partners Register)",
+      "Letterhead + invoice template (LLP format)",
+      "Shop & Establishment registration migration",
+      "Trade License amendment (Municipal Corporation)",
+      "Annual ITR Filing — LLP (1st FY)",
+      "Form 11 — LLP Annual Return Filing",
+      "Form 8 — Statement of Account + Solvency Filing",
+      "Designated Partner KYC (DIR-3 KYC) — 1 year",
+      "90-day post-issuance senior-professional helpline",
     ],
   },
 ];
@@ -68,7 +83,7 @@ const PtollpPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards ptollp-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
@@ -84,7 +99,7 @@ const PtollpPlans = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ Govt fee, stamp duty &amp; GST extra</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">
