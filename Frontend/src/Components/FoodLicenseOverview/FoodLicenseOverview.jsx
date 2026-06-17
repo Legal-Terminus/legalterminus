@@ -2,14 +2,11 @@ import React from "react";
 import "./FoodLicenseOverview.css";
 import illustration from "../../assets/whypvt-imp1.svg";
 
-const categoryFees = [
-  { category: "Basic Registration (Form A) — Elemental", eligibility: "Petty Retailer of snacks / tea shops + Hawker / Mobile food vendor", fee: "₹100" },
-  { category: "Basic Registration (Form A) — Enriched", eligibility: "Other Petty FBOs — T/O up to ₹1.5 crore", fee: "₹100" },
-  { category: "State License — Manufacturer / Re-labeler / Re-packer", eligibility: "₹1.5 Cr – ₹50 Cr", fee: "₹5,000" },
-  { category: "State License — Hotel (3-star and below)", eligibility: "₹1.5 Cr – ₹50 Cr", fee: "₹5,000" },
-  { category: "State License — Restaurant / Club / Caterer", eligibility: "₹1.5 Cr – ₹50 Cr", fee: "₹5,000" },
-  { category: "State License — Storage / Wholesaler / Distributor / Retailer / Transporter", eligibility: "₹1.5 Cr – ₹50 Cr", fee: "₹5,000" },
-  { category: "Central License", eligibility: "Turnover > ₹50 crore OR compulsory-Central category (importer / exporter / e-commerce / multi-state / 5-star / ports / airports / railways) — irrespective of turnover", fee: "₹7,500" },
+const tierMapping = [
+  { plan: "ELEMENTAL (₹999)", category: "Basic Registration (Form A)", eligibility: "Petty Retailer of snacks / tea shops + Hawker (itinerant / mobile food vendor) ONLY" },
+  { plan: "ENRICHED (₹2,999)", category: "Basic Registration (Form A)", eligibility: "OTHER Petty FBOs — home bakers, kirana food sellers, tiffin services, small caterers, small manufacturers etc. — T/O up to ₹1.5 crore" },
+  { plan: "SUPREME (₹3,999)", category: "State Licence (Form B)", eligibility: "Restaurants, mid manufacturers, distributors, hotels (3-star and below), storage, transporters — T/O ₹1.5 Cr to ₹50 Cr" },
+  { plan: "SUPREME PLUS (₹7,999)", category: "Central Licence (Form B)", eligibility: "T/O > ₹50 Cr OR compulsory-Central category — importers, exporters, e-commerce FBOs, multi-state operators, 5-star hotels, ports / airports / railways — IRRESPECTIVE of turnover" },
 ];
 
 const planComparison = [
@@ -52,26 +49,26 @@ const FoodLicenseOverview = () => {
       <section className="opc-urc-forms-section">
         <div className="opc-urc-forms-container">
           <h2 className="opc-urc-forms-title">
-            FSSAI Categories + Government Fees (Revised 2026)
+            FSSAI Tier Mapping: Basic vs State vs Central + Our 4 Plans
           </h2>
           <p className="opc-urc-forms-subtitle">
-            The right category depends on your FBO type and annual turnover. Government fees are billed at actuals on the FoSCoS portal.
+            Here's how our 4 plans map to the FSSAI categorisation under the FSS (Licensing and Registration of Food Businesses) Amendment Regulations 2026:
           </p>
           <div className="opc-urc-forms-table-wrapper">
             <table className="opc-urc-forms-table">
               <thead>
                 <tr>
-                  <th>FSSAI Category (Revised 2026)</th>
-                  <th>Eligibility (Turnover / Scale)</th>
-                  <th>Government Fee per Year</th>
+                  <th>Plan</th>
+                  <th>FSSAI Category + Form</th>
+                  <th>Eligibility / Who It's For</th>
                 </tr>
               </thead>
               <tbody>
-                {categoryFees.map((row, i) => (
+                {tierMapping.map((row, i) => (
                   <tr key={i}>
-                    <td className="opc-urc-forms-form">{row.category}</td>
+                    <td className="opc-urc-forms-form">{row.plan}</td>
+                    <td>{row.category}</td>
                     <td>{row.eligibility}</td>
-                    <td>{row.fee}</td>
                   </tr>
                 ))}
               </tbody>
