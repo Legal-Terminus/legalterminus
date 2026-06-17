@@ -27,7 +27,10 @@ const FoodlicenseZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  FSSAI registration sounds simple — but wrong license type selection, FBO category mismatches, and inspection-ready documentation gaps cause rejections and delays. Priority is what happens when a senior expert owns your FSSAI file from discovery call to license certificate delivery.
+                  FSSAI Food License Registration may look simple online, but delays often happen because of wrong license selection, incorrect business category, incomplete documents, or slow follow-up. That's where LT Priority makes the difference.
+                </p>
+                <p className="opczp-subtitle" style={{ marginTop: "12px" }}>
+                  With LT Priority, your application gets faster attention, priority handling, and dedicated support from our experienced compliance team — helping you complete your FSSAI registration smoothly and without unnecessary delays.
                 </p>
               </header>
 
@@ -36,23 +39,23 @@ const FoodlicenseZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    Same-day license type recommendation — Basic, State, or Central — based on your actual turnover and business model, before you commit.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Senior expert reviewed document package and FBO category mapping to prevent FoSCoS rejection on first submission.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Inspection-ready documentation — product list, layout plan, FSMS undertaking — prepared and reviewed before filing.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    Real-time FoSCoS application status updates on mail and WhatsApp — no checking the portal yourself.
+                    Priority document review and faster application filing.
                   </li>
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">📑</span>
-                    Post-license kit: FSSAI certificate, compliance calendar, display notice template, and renewal due-date alert.
+                    Correct FSSAI category selection based on your food business.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">🔍</span>
+                    Expert verification before submission to reduce rejection chances.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">🏢</span>
+                    Support for inspection and food safety compliance requirements.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📅</span>
+                    Renewal reminders and 1-year support for basic updates and modifications.
                   </li>
                 </ul>
               </section>
@@ -65,16 +68,16 @@ const FoodlicenseZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  License type selection is the #1 reason for FSSAI application rejection. A petty food vendor applying for a Central License — or a medium manufacturer applying for Basic Registration — will face rejection. We confirm the correct type on a discovery call before a single document is submitted.
+                  REVISED 2026 SLABS: Basic up to ₹1.5 Cr (was 12 lakh), State ₹1.5 Cr to ₹50 Cr (was 12 lakh–20 Cr), Central above ₹50 Cr (was 20 Cr). Many small / mid manufacturers earlier needing a State License now fit into Basic — which is a meaningful compliance + cost relief.
                 </li>
                 <li className="opczp-note-item">
-                  FSSAI may conduct a physical inspection for State and Central licenses. Premises must be ready: safe drinking water source, clean work area, pest control records, health certificates for food handlers, and accurate layout plan. We prepare your inspection checklist in advance.
+                  VALIDITY + RENEWAL DISCIPLINE: FSSAI licences are issued for 1–5 YEARS (applicant's choice at filing). Renewal MUST be filed BEFORE EXPIRY (180-day pre-expiry window). LATE RENEWAL = ₹100 PER DAY of delay (no cap). Filing more than 180 days post-expiry = licence cancellation + fresh application. Don't slip — our plans include a renewal-reminder calendar with 90 / 30 / 7-day pre-expiry alerts. Annual returns (Form D1) + hygiene compliance + FSMP discipline (Supreme + Supreme Plus) sit on top of the renewal cycle.
                 </li>
                 <li className="opczp-note-item">
-                  Food product list accuracy matters. FSSAI issues licenses for specific food categories. Adding a new product category after license issuance requires a modification application (paid, ~30 days). Plan your product scope before filing — we help you future-proof it.
+                  Operating without a license is a CRIMINAL offence under Section 63 of the FSS Act 2006 — punishable with imprisonment up to 6 months + fine up to ₹5 lakh. Even tea-stall vendors + home bakers need at minimum Basic Registration. The 2026 slab hike does NOT exempt anyone.
                 </li>
                 <li className="opczp-note-item">
-                  Renewal is non-negotiable. A lapsed FSSAI license means you must stop food business operations legally until reactivated. We send renewal reminders 90/60/30 days before expiry under State and Central plans.
+                  E-commerce food businesses MUST hold a Central License (Supreme Plus) — irrespective of the new ₹50 crore turnover slab. Selling via Swiggy / Zomato / Amazon Food / your own website triggers a Central License under the FSSAI Order on E-commerce FBOs. Same for importers, exporters, multi-state operators, ports / airports / railways / 5-star hotels.
                 </li>
               </ul>
             </div>

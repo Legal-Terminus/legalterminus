@@ -3,35 +3,39 @@ import "./FoodLicenseGovtCosts.css";
 
 const rows = [
   {
-    head: "FSSAI Basic Registration Fee",
-    range: "₹100 / year",
-    note: "For FBOs with annual turnover < ₹12 lakhs; valid for 1–5 years",
+    category: "Basic Registration (Form A) — Elemental",
+    eligibility: "Petty Retailer of snacks / tea shops + Hawker / Mobile food vendor",
+    fee: "₹100",
   },
   {
-    head: "State FSSAI License Fee",
-    range: "₹2,000 – ₹5,000 / year",
-    note: "Varies by business category (manufacturer, trader, restaurant, etc.) and state",
+    category: "Basic Registration (Form A) — Enriched",
+    eligibility: "Other Petty FBOs — T/O up to ₹1.5 crore",
+    fee: "₹100",
   },
   {
-    head: "Central FSSAI License Fee",
-    range: "₹7,500 / year",
-    note: "Standard Central License; higher slabs (up to ₹75,000/year) for large manufacturers",
+    category: "State License — Manufacturer / Re-labeler / Re-packer",
+    eligibility: "₹1.5 Cr – ₹50 Cr",
+    fee: "₹5,000",
   },
   {
-    head: "Late Renewal Penalty",
-    range: "₹100 / day",
-    note: "Per FSSAI regulations — applies if renewal filed within 30 days before expiry",
+    category: "State License — Hotel (3-star and below)",
+    eligibility: "₹1.5 Cr – ₹50 Cr",
+    fee: "₹5,000",
   },
   {
-    head: "Modification / Amendment Fee",
-    range: "₹1,000 – ₹7,500",
-    note: "Depending on license type and nature of change (address, product category, etc.)",
+    category: "State License — Restaurant / Club / Caterer",
+    eligibility: "₹1.5 Cr – ₹50 Cr",
+    fee: "₹5,000",
   },
   {
-    head: "Total Out-of-Pocket (typical, State License)",
-    range: "₹2,000 – ₹5,000 / year",
-    note: "Govt. fee billed at actuals per FSSAI tariff; varies by state and FBO category",
-    isTotal: true,
+    category: "State License — Storage / Wholesaler / Distributor / Retailer / Transporter",
+    eligibility: "₹1.5 Cr – ₹50 Cr",
+    fee: "₹5,000",
+  },
+  {
+    category: "Central License",
+    eligibility: "Turnover > ₹50 crore OR compulsory-Central category (importer / exporter / e-commerce / multi-state / 5-star / ports / airports / railways) — irrespective of turnover",
+    fee: "₹7,500",
   },
 ];
 
@@ -40,28 +44,28 @@ const FoodLicenseGovtCosts = () => {
     <section className="opc-govtcosts-section">
       <div className="opc-govtcosts-container">
         <h2 className="opc-govtcosts-title">
-          Indicative Government &amp; Out-of-Pocket Costs
+          Indicative Government Fees
           <span className="opc-govtcosts-badge">Billed at Actuals</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          FSSAI government fees are charged over and above our professional fee. Actual amounts depend on your business type, turnover slab, and state — billed at actuals per official FSSAI tariff.
+          FSSAI government fees per the revised 2026 slabs — charged over and above our professional fee and billed at actuals on the FoSCoS portal.
         </p>
 
         <div className="opc-govtcosts-table-wrapper">
           <table className="opc-govtcosts-table">
             <thead>
               <tr>
-                <th>Cost Head</th>
-                <th>Typical Range</th>
-                <th>Notes</th>
+                <th>FSSAI Category (Revised 2026)</th>
+                <th>Eligibility (Turnover / Scale)</th>
+                <th>Government Fee per Year</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row, i) => (
-                <tr key={i} className={row.isTotal ? "opc-govtcosts-total-row" : ""}>
-                  <td>{row.head}</td>
-                  <td className="opc-govtcosts-range">{row.range}</td>
-                  <td>{row.note}</td>
+                <tr key={i}>
+                  <td>{row.category}</td>
+                  <td>{row.eligibility}</td>
+                  <td className="opc-govtcosts-range">{row.fee}</td>
                 </tr>
               ))}
             </tbody>
