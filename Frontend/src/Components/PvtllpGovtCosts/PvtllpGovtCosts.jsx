@@ -3,34 +3,54 @@ import "./PvtllpGovtCosts.css";
 
 const rows = [
   {
-    head: "DSC for Designated Partners",
-    range: "₹1,000 – ₹2,000 each",
-    note: "Digital Signature Certificates for the designated partners of the LLP",
+    head: "MCA Filing Fee — Form FiLLiP + Form 18",
+    range: "₹0 – ₹500",
+    note: "₹0 for contribution up to ₹1 lakh; slab-based above",
   },
   {
-    head: "DPIN / Name Reservation (FiLLiP / RUN-LLP)",
+    head: "Name Reservation (RUN-LLP / FiLLiP Part A)",
     range: "₹200 – ₹1,000",
-    note: "MCA fee to allot DPIN and reserve the proposed LLP name",
+    note: "Per attempt",
   },
   {
-    head: "MCA Fees — Form 18 + FiLLiP",
-    range: "Slab-based",
-    note: "Government fees on conversion & LLP incorporation, by capital-contribution slab",
-  },
-  {
-    head: "LLP Agreement Stamp Duty + Form 3",
+    head: "Stamp Duty — LLP Agreement (Form 3)",
     range: "₹500 – ₹5,000+",
-    note: "State-specific stamp duty on the LLP agreement and the Form 3 filing fee",
+    note: "State-based; varies by capital contribution",
   },
   {
-    head: "Charge Satisfaction (if any)",
-    range: "Case-specific",
-    note: "Fees to clear / satisfy any subsisting charges before conversion (CHG-4 etc.)",
+    head: "Stamp Duty — Asset Transfer Agreement",
+    range: "₹500 – ₹3,000+",
+    note: "Supreme tier only (where needed beyond auto-vesting)",
   },
   {
-    head: "Total Out-of-Pocket (typical)",
-    range: "₹3,000 – ₹15,000",
-    note: "Varies with capital contribution, state stamp duty & pending charges — billed at actuals",
+    head: "Class 3 DSC (2-year) — per designated partner",
+    range: "₹1,999 / person",
+    note: "Existing director DSCs may carry over via DPIN",
+  },
+  {
+    head: "PAN + TAN",
+    range: "₹0",
+    note: "Issued free with CoI",
+  },
+  {
+    head: "GST Cancellation + Re-Registration",
+    range: "₹0",
+    note: "Free; only our consultancy charges",
+  },
+  {
+    head: "Form 14 — Notice to ROC",
+    range: "₹50 – ₹300",
+    note: "MCA filing fee for intimation to ROC",
+  },
+  {
+    head: "Affidavit + Notarisation",
+    range: "₹500 – ₹1,500",
+    note: "Multiple affidavits required",
+  },
+  {
+    head: "Total Out-of-Pocket (typical, 2-shareholder company)",
+    range: "₹5,000 – ₹15,000",
+    note: "Mainly DSC + stamp duty on LLP Agreement",
     isTotal: true,
   },
 ];
@@ -44,7 +64,7 @@ const PvtllpGovtCosts = () => {
           <span className="opc-govtcosts-badge">Billed at Actuals</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          Conversion of a company into an LLP runs through Form 18 with FiLLiP and the LLP agreement in Form 3. The MCA fees, DSC, DPIN, and stamp duty on the LLP agreement are over and above our professional fee — billed at actuals per the official MCA schedule and applicable state stamp law. Any subsisting charges on the company's assets must be satisfied before the application.
+          Per current MCA tariff + LLP Rules 2009 + State Stamp Duty schedules. These charges are over and above our professional fee — billed at actuals.
         </p>
 
         <div className="opc-govtcosts-table-wrapper">

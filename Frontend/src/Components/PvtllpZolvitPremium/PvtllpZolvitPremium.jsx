@@ -27,7 +27,10 @@ const PvtllpZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  Converting a Pvt Ltd to an LLP is a statutory Section 56 process, not a simple closure — the charges on the company's assets must be clear, ROC and income-tax filings must be up to date, every shareholder must become a partner, and Section 47(xiiib) eligibility decides whether the conversion is tax-neutral. Priority is what happens when a specialist runs the conversion, the compliance closure, and the tax check as one coordinated project.
+                  Pvt Ltd Company to LLP Conversion may look simple on paper, but proper execution requires careful handling of legal, tax, and MCA compliance requirements. Eligibility conditions, shareholder-to-partner conversion, creditor approvals, Statement of Accounts, and post-conversion filings all need to be managed correctly to avoid delays or future compliance issues.
+                </p>
+                <p className="opczp-subtitle" style={{ marginTop: "12px" }}>
+                  With LT Priority, your Pvt Ltd Company to LLP Conversion is handled on a priority basis by experienced Company Secretaries who manage the entire process quickly and professionally — from eligibility review to final LLP incorporation and post-conversion filings.
                 </p>
               </header>
 
@@ -36,23 +39,23 @@ const PvtllpZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    Shareholder-to-partner mapping and capital-contribution structuring — so the company's shareholding converts into the LLP cleanly.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    A clean Form 18 pack — up-to-date ROC &amp; income-tax filings, statement of assets and liabilities, and shareholder &amp; creditor consents — prepared to the Registrar's standard.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔎</span>
-                    A charge / security-interest check and satisfaction, plus a Section 47(xiiib) eligibility review so you know your tax position before filing.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    GST amendment, PAN/TAN update, bank, and licence migration to the LLP — and Form 14 intimation to the Registrar of Companies.
+                    Priority handling and faster MCA filing support.
                   </li>
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">📑</span>
-                    A registered LLP agreement (Form 3) and a lean first-year compliance calendar — Form 8 and Form 11 only.
+                    Proper review of eligibility, documents, and partner structure.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">🔍</span>
+                    Senior Company Secretary review before filing.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📲</span>
+                    Dedicated coordination and real-time status updates.
+                  </li>
+                  <li className="opczp-list-item">
+                    <span className="opczp-list-icon">📅</span>
+                    Timely filing of Form 14 and LLP Agreement (Form 3) compliances.
                   </li>
                 </ul>
               </section>
@@ -65,16 +68,16 @@ const PvtllpZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  All shareholders must become partners. On conversion every shareholder of the company — and no one else — becomes a partner of the LLP, with at least two designated partners. The shareholding is mapped into capital contribution.
+                  SECTION 47(xiiib) THRESHOLDS ARE RESTRICTIVE: Capital-gains EXEMPTION is available ONLY if turnover ≤ ₹60 LAKH in any of the 3 preceding years AND total assets in books ≤ ₹5 CRORE in any of the 3 preceding years. Breach either threshold and the entire asset transfer becomes TAXABLE under Section 45 (capital gains). For growth-stage Pvt Ltd companies above these thresholds, conversion is STILL LEGAL under Section 56 — but a tax bill arrives. We audit eligibility upfront.
                 </li>
                 <li className="opczp-note-item">
-                  Charges must be cleared first. The company must have no security interest subsisting on its assets at the time of application. Any secured loan or charge must be satisfied, or an NOC obtained from the charge-holder, before Form 18 is filed.
+                  NO SECURITY INTEREST CONDITION: Per Third Schedule Para 1(a), there must be NO SECURITY INTEREST (charge / mortgage / lien / hypothecation) on company assets at the time of Form 18 filing. If you have outstanding secured loans (CC, term loan, equipment finance), the security must be RELEASED / SATISFIED before Form 18. We verify the company's charge-register (Form CHG-7) early in the discovery call.
                 </li>
                 <li className="opczp-note-item">
-                  Filings and consents are essential. All ROC annual filings and income-tax returns must be up to date, and the consent of all shareholders and secured creditors is mandatory. We get these in order so the application isn't rejected.
+                  ALL SHAREHOLDERS BECOME LLP PARTNERS — NO ONE ELSE: Per Third Schedule Para 1(b), at conversion ALL SHAREHOLDERS of the company MUST become partners of the LLP, AND no other person can become a partner. Composition cannot change at conversion. Shareholder exit (via share transfer / buy-back) must complete BEFORE Form 18. New partner admission must wait until POST-CoI (via Form 4).
                 </li>
                 <li className="opczp-note-item">
-                  Tax-neutrality depends on Section 47(xiiib). The conversion is exempt from capital-gains tax only if the prescribed conditions are met. We review eligibility up front so the move reduces cost without an unexpected tax bill.
+                  5-YEAR PROFIT-SHARE LOCK-IN under Section 47(xiiib)(d): Aggregate profit-sharing ratio of erstwhile shareholders in the LLP must remain ≥ 50% AT ANY TIME during the 5 YEARS post-conversion. If a partner exits / transfers profit share and the aggregate drops below 50% in years 1–5, the original Section 47(xiiib) exemption is REVOKED + capital-gains tax kicks in retrospectively. Supreme tier monitors the 5-year lock-in + flags pre-emption.
                 </li>
               </ul>
             </div>

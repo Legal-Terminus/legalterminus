@@ -4,51 +4,71 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "conversion",
-    name: "Section 56 Conversion",
-    oldPrice: 22999,
-    price: 11999,
+    id: "elemental",
+    name: "Elemental",
+    badge: "BASIC CONVERSION",
+    oldPrice: 14999,
+    price: 9999,
     services: [
-      "Eligibility & charge / security-interest review",
-      "DSC + DPIN for the designated partners",
-      "LLP name reservation via RUN-LLP / FiLLiP",
-      "Shareholder consents & creditor NOC drafting",
-      "Form 18 + FiLLiP filing under the Third Schedule",
-      "Certificate of Incorporation as an LLP",
-      "Govt fee coordination at actuals",
+      "Section 56 / Third Schedule eligibility audit",
+      "No-security-interest verification (creditor list review)",
+      "All-shareholders-become-partners compliance check",
+      "Section 47(xiiib) Income-tax eligibility check (T/O + assets thresholds)",
+      "Board Resolution + Shareholders' consent drafting",
+      "Name Search & Form RUN-LLP / FiLLiP Part A reservation",
+      "DSC for all designated partners (Class 3, 2-year)",
+      "DPIN allotment for designated partners (via FiLLiP)",
+      "Shareholding → LLP Contribution proportionality mapping",
+      "Form 18 — Application + Statement for conversion",
+      "Audited Statement of Accounts review (not older than 30 days)",
+      "List of creditors with consent / NoCs",
+      "Form FiLLiP — Incorporation form (filed alongside Form 18)",
+      "PAN + TAN coordination",
+      "Certificate of Incorporation as LLP delivery",
+      "Form 14 — Notice to ROC about conversion (within 15 days post-CoI)",
     ],
   },
   {
-    id: "transition",
-    name: "Conversion + Compliance Closure",
+    id: "enriched",
+    name: "Enriched",
     badge: "★ MOST POPULAR",
     popular: true,
-    oldPrice: 39999,
-    price: 21999,
+    oldPrice: 22499,
+    price: 14999,
     services: [
-      "Everything in Section 56 Conversion",
-      "Up-to-date ROC & income-tax filing check",
-      "LLP Agreement drafting + Form 3 filing",
-      "Form 14 intimation to the Registrar of Companies",
-      "PAN / TAN update & GST amendment to the LLP",
-      "Bank account & licence migration assistance",
-      "Dedicated compliance manager + reminders",
+      "Everything in Elemental",
+      "Custom LLP Agreement (capital + profit-share + decision rights)",
+      "Form 3 — LLP Agreement drafting + filing (within 30 days of CoI)",
+      "Section 47(xiiib) STRUCTURING NOTE — 5-year profit-share lock-in advisory",
+      "Pvt Ltd's GST cancellation (Form REG-16)",
+      "Fresh GST registration under LLP (Form REG-01)",
+      "ITC carry-forward via Form ITC-02 (transfer of business)",
+      "Corporate Bank Account Opening Documents",
+      "Designated Partner consent + KYC pack for bank",
+      "Udyam / MSME Registration migration (if applicable)",
+      "60-day post-conversion advisory",
     ],
   },
   {
-    id: "full",
-    name: "Full Transition + Tax Planning",
-    badge: "✦ FULL-SERVICE",
-    oldPrice: 64999,
-    price: 36999,
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ FULL TRANSITION + 6-MONTH",
+    oldPrice: 34499,
+    price: 22999,
     services: [
-      "Everything in Conversion + Compliance Closure",
-      "Section 47(xiiib) capital-gains eligibility review",
-      "Profit-sharing & capital-contribution structuring",
-      "Asset & contract transfer documentation",
-      "First-year LLP compliance calendar (Form 8 / Form 11 / ITR)",
-      "Statutory registers & partner records setup",
-      "Priority support till the LLP is fully operational",
+      "Everything in Enriched",
+      "Letterhead + invoice template (LLP format)",
+      "Statutory records setup (Minutes Book, Partners Register)",
+      "Asset Transfer Agreement (Pvt Ltd → LLP) where needed beyond auto-vesting",
+      "Shop & Establishment registration migration",
+      "Trade License amendment (Municipal Corporation)",
+      "Annual ITR Filing — LLP (1st FY)",
+      "Form 11 — LLP Annual Return Filing",
+      "Form 8 — Statement of Account + Solvency Filing",
+      "Statutory audit support (if turnover > ₹40 lakh or contribution > ₹25 lakh)",
+      "Designated Partner KYC (DIR-3 KYC) — 1 year",
+      "Section 47(xiiib) 5-year lock-in monitoring + advisory",
+      "90-day post-issuance senior-CS helpline",
     ],
   },
 ];
@@ -68,7 +88,7 @@ const PvtllpPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards pvtllp-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
@@ -84,7 +104,7 @@ const PvtllpPlans = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ Govt fee, stamp duty &amp; GST extra</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">
