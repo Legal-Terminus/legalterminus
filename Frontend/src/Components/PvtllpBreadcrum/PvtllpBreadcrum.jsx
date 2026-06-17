@@ -15,31 +15,33 @@ const PvtllpBreadcrum = () => {
           </span>
 
           <h1 className="lt-public-title">
-            Convert Private Limited Company to LLP
+            Convert Private Limited into LLP
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Cut Compliance, Skip Mandatory Audit &amp; Save Tax</span>
+            <span className="lt-title-tagline">Lighter compliance. Same shield</span>
           </h1>
 
           <p className="lt-public-description">
-            Running a Private Limited Company but no longer need to raise equity? Convert it into a Limited Liability Partnership and dramatically reduce your compliance load — no mandatory annual audit below the threshold, only Form 8 and Form 11 to file, no board-meeting formalities, and no dividend distribution tax. Legal Terminus converts your company into an LLP under Section 56 and the Third Schedule of the LLP Act, 2008 — filing Form 18 with FiLLiP, then Form 14 with the ROC and the LLP agreement in Form 3. All shareholders become partners and the business continues seamlessly with limited liability intact. Our professional fee starts at ₹11,999 + GST. Government fees, stamp duty &amp; charge-clearance costs are billed separately at actuals.
+            A Private Limited Company to LLP Conversion allows businesses to move to a simpler structure while retaining limited liability, separate legal identity, and perpetual succession. LLPs have lower compliance requirements, with no mandatory AGM and fewer ROC filings.
+            <br /><br />
+            The conversion is completed under Section 56 and the Third Schedule of the LLP Act, 2008 through Form 18 and FiLLiP filings on the MCA portal. We provide end-to-end support, including eligibility review, documentation, MCA filings, LLP incorporation, LLP Agreement filing, and post-conversion compliances.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Section 56 / Third Schedule Conversion</div>
-            <div className="lt-feature-item">No Mandatory Audit Below Threshold</div>
-            <div className="lt-feature-item">Form 18 + FiLLiP &amp; Form 14 Filing</div>
-            <div className="lt-feature-item">All Shareholders Become Partners</div>
+            <div className="lt-feature-item">Form 18 + FiLLiP</div>
+            <div className="lt-feature-item">Section 56 LLP Act</div>
+            <div className="lt-feature-item">47(xiiib) Audit</div>
+            <div className="lt-feature-item">No Newspaper Ad</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>3,000+</h3>
-              <p>Conversions handled</p>
+              <h3>500+</h3>
+              <p>Company conversions handled</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>End-to-end MCA filing</p>
+              <h3>End-to-End Transition</h3>
+              <p>Form 18 + GST + Bank + Form 3</p>
             </div>
             <div>
               <h3>7+</h3>
