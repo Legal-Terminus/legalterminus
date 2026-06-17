@@ -3,34 +3,44 @@ import "./PvtllpElegibility.css";
 
 const steps = [
   {
-    title: "Eligibility, Charge & Tax Review",
-    day: "Step 1",
-    text: "We confirm eligibility under Section 56 / Third Schedule, check that no security interest (charge) is subsisting on the company's assets, and review Section 47(xiiib) conditions so the conversion stays tax-neutral. Shareholders are mapped to partners and capital contribution is structured from the existing shareholding.",
+    title: "Discovery & Two-Pronged Eligibility Audit (Section 56 + 47(xiiib))",
+    day: "Day 0",
+    text: "60-min call with our professional to verify: (a) THIRD SCHEDULE check — NO security interest on company assets (charge register / CHG-7), all shareholders willing to be LLP partners, all-shareholders-no-one-else compliance; (b) SECTION 47(xiiib) check — turnover ≤ ₹60 lakh AND assets ≤ ₹5 crore in each of 3 preceding years (for tax-neutral conversion). Plus: business activity, registered office, designated partner identification, current GST / FSSAI / Shop & Estd / Trade License / IEC / Udyam / Trademarks.",
   },
   {
-    title: "DSC, DPIN & LLP Name Reservation",
-    day: "Step 2",
-    text: "We obtain DSC and DPIN for the designated partners and reserve the LLP name through RUN-LLP / FiLLiP. The company's existing name can usually continue, with the legal name ending in 'LLP', subject to MCA approval.",
+    title: "Documents + Audited Statement Preparation",
+    day: "Day 1–7",
+    text: "Personalised checklist: each shareholder's PAN + Aadhaar + DSC, registered office proof, Statement of Accounts of the company CA-certified (not older than 30 days from Form 18 filing — we coordinate CA work if not ready), Capital + Shareholding statement, list of creditors with consents, last 3 years' company ITRs + audited financials + Form CHG-7 charge register, Memorandum + Articles of Association.",
   },
   {
-    title: "Clear Charges & Up-to-Date Filings",
-    day: "Step 3",
-    text: "We ensure all ROC annual filings (AOC-4, MGT-7) and income-tax returns are up to date, satisfy or obtain NOCs for any subsisting charges, and collect the written consent of all shareholders and secured creditors along with the statement of assets and liabilities.",
+    title: "Board Resolution + EGM + Special Resolution",
+    day: "Day 7–30",
+    text: "Board Meeting to approve conversion in principle + convene EGM. EGM Notice + Explanatory Statement (Section 102) issued to shareholders on 21-clear-day advance notice (or shorter consent). EGM held; SPECIAL RESOLUTION passed (75% majority of members present + voting) approving conversion + altered structure. UNANIMOUS consent of all shareholders captured. Minutes drafted.",
   },
   {
-    title: "Filing Form 18 + FiLLiP",
-    day: "Step 4",
-    text: "Form 18 (the conversion application and statement) is filed with the ROC together with FiLLiP for LLP incorporation, attaching the shareholder and creditor consents, the latest ITR, and the statement of accounts. The Registrar reviews the application and may raise queries.",
+    title: "DSC + DPIN + Name Reservation",
+    day: "Day 30–32",
+    text: "DSC procured for designated partners (existing director DSCs may carry over via DPIN allotment). Form RUN-LLP filed (or via FiLLiP Part A) on the MCA portal with up to 2 proposed names ending with 'LLP'. MCA approval typically within this window.",
   },
   {
-    title: "LLP Incorporation & Form 3 Agreement",
-    day: "Step 5",
-    text: "On approval, the LLP is incorporated and receives its Certificate of Incorporation, LLPIN, PAN, and TAN. The LLP agreement — setting out profit sharing, roles, and contribution — is executed on stamp paper and filed in Form 3 within 30 days.",
+    title: "Form 18 + Form FiLLiP Drafting + Filing",
+    day: "Day 32–34",
+    text: "Form 18 (Conversion Application + Statement) + Form FiLLiP (LLP Incorporation) drafted with full annexures. Form 18 attachments: list of ALL shareholders + consents, Statement of Accounts (CA-certified), list of creditors with consents, declaration of solvency, Board + Special Resolutions, MoA + AoA, latest IT acknowledgement, CHG-7 charge register, Form CHG-1 satisfaction (if any charges existed + are now released), affidavits. Form FiLLiP attachments: registered office proof, designated partner KYC, contribution schedule (mapped to shareholding proportionately for Section 47(xiiib) compliance). Both filed in parallel on the MCA portal.",
   },
   {
-    title: "Form 14 Intimation & Migration",
-    day: "Step 6",
-    text: "Form 14 intimation is filed with the Registrar of Companies within 15 days and the company is deemed dissolved. We amend GST, update PAN/TAN, open / update the bank account, migrate Udyam, IEC, and licences, and set up the lean LLP compliance calendar (Form 8, Form 11, ITR).",
+    title: "ROC Scrutiny + Query Reply",
+    day: "Day 34–40",
+    text: "The Registrar reviews the Form 18 + FiLLiP submission. Any queries / objections (typically: name conflict, Statement of Accounts adequacy, shareholder-partner mapping mismatch, charge-register clarity, registered-office proof) are addressed within 5 working days.",
+  },
+  {
+    title: "Certificate of Incorporation as LLP Issuance",
+    day: "Day 40–45",
+    text: "On approval: Certificate of Incorporation issued under the LLP Act 2008 + LLPIN allocated + PAN + TAN auto-generated. By operation of the Third Schedule: company DEEMED DISSOLVED + all assets / liabilities AUTO-VEST in the LLP.",
+  },
+  {
+    title: "Form 14 (15 Days) + Form 3 (30 Days) + GST + Bank",
+    day: "Day 45–100",
+    text: "Within 15 DAYS of CoI: Form 14 (Notice to ROC) filed — formal intimation of conversion + dissolution. Included in all plans. Within 30 DAYS of CoI: Form 3 (LLP Agreement) filed. Post-CoI: Pvt Ltd's GSTIN cancelled (Form REG-16); LLP's GSTIN active via fresh REG-01; ITC carry-forward via Form ITC-02. Corporate bank account opened.",
   },
 ];
 
@@ -38,10 +48,10 @@ const PvtllpElegibility = () => {
   return (
     <section className="opcelg-wrapper">
       <h2 className="opcelg-heading">
-        Private Limited to LLP Conversion — Step by Step
+        Steps for Converting Pvt Ltd into LLP
       </h2>
       <p className="opcelg-subheading">
-        Six steps from eligibility and charge review to a fully operational LLP — the Section 56 conversion, compliance closure, and tax check handled together.
+        Eight steps. End-to-end timeline: 25–35 working days for clean cases (slightly longer than Partnership-to-LLP because of Board Meeting + EGM + Section 47(xiiib) audit + charge-register verification). Post-CoI: Form 14 within 15 days + Form 3 within 30 days.
       </p>
 
       <div className="opcelg-timeline">

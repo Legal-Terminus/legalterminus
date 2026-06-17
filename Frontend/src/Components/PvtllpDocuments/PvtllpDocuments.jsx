@@ -1,85 +1,80 @@
 import React from "react";
 import "./PvtllpDocuments.css";
-import { FaUser, FaBuilding, FaIdCard, FaCamera, FaFileSignature, FaFileContract, FaShieldAlt, FaFileAlt, FaBalanceScale, FaBolt } from "react-icons/fa";
+import { FaUser, FaBuilding, FaIdCard, FaFileSignature, FaFileContract, FaShieldAlt, FaBalanceScale } from "react-icons/fa";
 
 const partnerDocs = [
   {
     icon: <FaIdCard />,
-    title: "Identity Proof of All Shareholders",
-    note: "Mandatory for every shareholder becoming a partner",
+    title: "All Shareholders' KYC + Identity",
+    note: "Every shareholder becoming a partner",
     items: [
-      "Self-attested PAN card of each shareholder (mandatory)",
-      "Self-attested Aadhaar of each shareholder",
-      "Passport for foreign nationals / NRI shareholders: notarized + apostilled copy",
+      "PAN + Aadhaar (mandatory linkage) of each shareholder",
+      "Latest passport-size photograph, email + mobile (for OTP)",
+      "Bank statement / utility bill (within 60 days) as residence proof",
+      "DSC (Class-3 Individual, 2-year) — existing director DSCs may carry over via DPIN",
+      "NRI / foreign shareholders: passport + overseas address proof + FEMA compliance check",
     ],
   },
   {
-    icon: <FaFileAlt />,
-    title: "Address Proof (Per Shareholder)",
-    note: "Not older than 60 days from the filing date",
+    icon: <FaFileSignature />,
+    title: "Company Identity + Corporate Records",
+    note: "Existing company records",
     items: [
-      "Bank statement OR electricity bill OR mobile bill — not older than 2 months",
-      "Voter ID / Driving Licence / Passport as additional address proof",
+      "Company's CIN + PAN + TAN; Certificate of Incorporation + any alteration certificates",
+      "Current Memorandum + Articles of Association",
+      "Last 3 years' MGT-7 + audited financial statements + Directors' Report + Auditor's Report",
+      "List of directors (DIN + DSC) + list of all SHAREHOLDERS with PAN + shareholding %",
+      "Statutory registers (members, directors, charges, SBO, related parties) + Form CHG-7",
     ],
   },
   {
-    icon: <FaCamera />,
-    title: "DSC, DPIN & Photographs",
-    note: "For all designated partners",
+    icon: <FaFileContract />,
+    title: "EGM + Resolution Pack",
+    note: "Board & shareholder approvals",
     items: [
-      "Digital Signature Certificate (DSC) for all designated partners",
-      "DPIN / DIN, where already allotted",
-      "Latest passport-size photograph of each shareholder",
+      "Notice of Board Meeting + minutes approving conversion + EGM convening",
+      "Notice of EGM + Explanatory Statement (Section 102) sent to shareholders",
+      "Proof of advance-notice service to shareholders + auditor + directors",
+      "Attendance register + minutes of EGM",
+      "SPECIAL RESOLUTION as passed + signed + UNANIMOUS shareholders' consent (Third Schedule Para 1(b))",
     ],
   },
 ];
 
 const companyDocs = [
   {
-    icon: <FaFileSignature />,
-    title: "Company Constitution Documents",
-    note: "Existing company records",
-    items: [
-      "Certificate of Incorporation, MOA & AOA of the company",
-      "CIN and copies of recent AOC-4 & MGT-7 filings",
-      "Board & shareholders' resolution approving the conversion",
-    ],
-  },
-  {
     icon: <FaBalanceScale />,
-    title: "Financials, ITR & Statement of Accounts",
-    note: "Required for Form 18",
+    title: "Form 18 Statutory Pack",
+    note: "Core conversion documentation",
     items: [
-      "Latest audited financial statements and income-tax returns",
-      "Statement of assets and liabilities certified by a Chartered Accountant",
-      "List of all shareholders with proposed capital contribution & profit share",
+      "STATEMENT OF ACCOUNTS CERTIFIED BY A CHARTERED ACCOUNTANT (audited where applicable), not older than 30 DAYS from Form 18 filing",
+      "List of ALL SHAREHOLDERS with addresses + shareholding + consent to become LLP partners",
+      "List of CREDITORS with claim amounts + consent letters / NOCs",
+      "Declaration of SOLVENCY by directors + affidavits + latest income-tax acknowledgement",
+      "Verification of NO subsisting security interest (Form CHG-7 + CHG-1 satisfaction proof)",
     ],
   },
   {
     icon: <FaShieldAlt />,
-    title: "Consents & Charge Clearance",
-    note: "Statutory approvals before filing",
+    title: "Section 47(xiiib) Eligibility Pack",
+    note: "For tax-neutral conversion",
     items: [
-      "Written consent of all shareholders to the conversion",
-      "No-Objection Certificate / consent of all secured creditors",
-      "Proof that no charge / security interest subsists (or CHG-4 satisfaction)",
+      "Income-tax returns for 3 PRECEDING YEARS — turnover ≤ ₹60 lakh in EACH year",
+      "Total assets in books of accounts ≤ ₹5 crore in EACH of the 3 preceding years",
+      "Shareholding pattern documents for SAME-PROPORTION contribution + profit-share mapping (Section 47(xiiib)(b))",
+      "Declaration confirming no consideration / benefit other than profit-share + capital contribution in the LLP",
     ],
   },
   {
-    icon: <FaBolt />,
-    title: "Registered Office Proof",
-    note: "Latest utility bill, not older than 2 months",
+    icon: <FaBuilding />,
+    title: "Registered Office + LLP Inputs",
+    note: "Office proof & LLP structure",
     items: [
-      "Electricity / water / gas bill of the office address",
-    ],
-  },
-  {
-    icon: <FaFileContract />,
-    title: "Rent Agreement & NOC",
-    note: "If the office premises are rented",
-    items: [
-      "Notarized rent agreement between the owner and a designated partner",
-      "NOC from the property owner permitting use as registered office",
+      "Address proof — rent agreement OR ownership document; NOC from owner (if rented) on stamp paper",
+      "Latest electricity / utility bill (within 60 days)",
+      "Proposed LLP name (up to 2 options) + designated partners (min 2, one Indian resident)",
+      "Capital contribution per partner (proportionate to shareholding)",
+      "LLP Agreement inputs (Enriched + Supreme): profit-share, decision rights, indemnification, exit / admission, dispute resolution",
     ],
   },
 ];
@@ -108,20 +103,20 @@ const PvtllpDocuments = () => {
 
         {/* Header */}
         <div className="opcd-header">
-          <h2 className="opcd-main-title">Documents Required to Convert a Private Limited Company into an LLP</h2>
-          <p className="opcd-main-subtitle">Get these ready and we'll take care of the Form 18 + FiLLiP filing</p>
+          <h2 className="opcd-main-title">Documents Required to Convert Pvt Ltd into LLP</h2>
+          <p className="opcd-main-subtitle">Six categories. Documentation is heavier than Partnership-to-LLP because of Pvt Ltd's formal records (MoA + AoA + Board + Special Resolutions + statutory registers + audited financials with CFS) + charge-register check + Section 47(xiiib) eligibility verification.</p>
         </div>
 
         {/* Two columns */}
         <div className="opcd-columns">
 
-          {/* Shareholder Documents */}
+          {/* Shareholder & Company Records */}
           <div className="opcd-column">
             <div className="opcd-col-header">
               <div className="opcd-col-header-icon"><FaUser /></div>
               <div>
-                <h3 className="opcd-col-title">Shareholder / Partner Documents</h3>
-                <p className="opcd-col-subtitle">For every shareholder becoming a partner</p>
+                <h3 className="opcd-col-title">Shareholder &amp; Company Records</h3>
+                <p className="opcd-col-subtitle">KYC, corporate records &amp; EGM pack</p>
               </div>
             </div>
             <div className="opcd-col-body">
@@ -131,13 +126,13 @@ const PvtllpDocuments = () => {
             </div>
           </div>
 
-          {/* Company & Conversion Documents */}
+          {/* Statutory, Tax & Office Documents */}
           <div className="opcd-column">
             <div className="opcd-col-header opcd-col-header--office">
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="opcd-col-title">Company, Conversion & Office Documents</h3>
-                <p className="opcd-col-subtitle">Section 56 records, consents & office proof</p>
+                <h3 className="opcd-col-title">Statutory, Tax &amp; Office Docs</h3>
+                <p className="opcd-col-subtitle">Form 18 pack, 47(xiiib) &amp; office proof</p>
               </div>
             </div>
             <div className="opcd-col-body">

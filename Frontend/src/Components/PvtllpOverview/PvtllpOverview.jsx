@@ -2,6 +2,57 @@ import React from "react";
 import "./PvtllpOverview.css";
 import illustration from "../../assets/whypvt-imp1.svg";
 
+const conversionPath = [
+  {
+    form: "Form RUN-LLP / FiLLiP Part A",
+    purpose: "NAME RESERVATION for the LLP (must end with 'LLP')",
+    window: "Before Form 18 + FiLLiP filing",
+  },
+  {
+    form: "FORM 18",
+    purpose: "APPLICATION + STATEMENT FOR CONVERSION of private / unlisted public company into LLP. Attachments: list of shareholders + consents, Statement of Accounts (CA-certified, not older than 30 days), list of creditors with consents, declaration of solvency, Board + Shareholders' Resolutions, MoA + AoA, latest income-tax acknowledgement, charge-register verification",
+    window: "Filed alongside Form FiLLiP",
+  },
+  {
+    form: "FORM FiLLiP",
+    purpose: "FORM FOR INCORPORATION OF LLP — designated partner details + LLP name + registered office + contribution structure (mapped to shareholding proportionately)",
+    window: "Filed alongside Form 18",
+  },
+  {
+    form: "CERTIFICATE OF INCORPORATION",
+    purpose: "Issued by Registrar on approval of Form 18 + FiLLiP; LLP comes into legal existence; COMPANY is DEEMED DISSOLVED + assets / liabilities AUTO-VEST in LLP",
+    window: "Typically within 15–20 working days of filing",
+  },
+  {
+    form: "FORM 14",
+    purpose: "NOTICE TO REGISTRAR OF COMPANIES (ROC) about conversion + dissolution of the company",
+    window: "Within 15 DAYS of CoI",
+  },
+  {
+    form: "FORM 3",
+    purpose: "LLP AGREEMENT FILING — internal arrangements between partners (contribution, profit-share, decision rights, etc.); structured to satisfy Section 47(xiiib) conditions (same-proportion mapping + 5-year profit-share lock-in)",
+    window: "Within 30 DAYS of CoI",
+  },
+];
+
+const comparison = [
+  { param: "Statutory Anchor", pvt: "Companies Act, 2013", llp: "LLP Act, 2008" },
+  { param: "Min Owners / Members", pvt: "2 directors + 2 shareholders", llp: "2 designated partners" },
+  { param: "Max Members", pvt: "200 shareholders", llp: "Unlimited partners" },
+  { param: "Liability", pvt: "Limited to unpaid share capital", llp: "Limited to capital contribution" },
+  { param: "Perpetual Succession", pvt: "Yes", llp: "Yes" },
+  { param: "Income Tax", pvt: "22% (Section 115BAA) / 25.17% / 30%", llp: "30% flat + surcharge + cess" },
+  { param: "AGM Requirement", pvt: "MANDATORY (Section 96)", llp: "Not required" },
+  { param: "Statutory Audit", pvt: "Mandatory regardless of T/O", llp: "Only if T/O > ₹40 L OR contribution > ₹25 L" },
+  { param: "Cash Flow Statement", pvt: "Mandatory", llp: "Not required" },
+  { param: "Annual Return", pvt: "MGT-7 (full) + AOC-4 + Directors' Report", llp: "Form 11 + Form 8 (simpler)" },
+  { param: "External VC Funding", pvt: "Yes (preferred)", llp: "Difficult / uncommon" },
+  { param: "ESOPs / Sweat Equity", pvt: "Yes (Sec 62(1)(b), Sec 54)", llp: "Not permitted" },
+  { param: "Share Classes / CCD / CCPS", pvt: "Yes (preference, convertible, etc.)", llp: "Not available" },
+  { param: "Annual Compliance Cost", pvt: "₹40,000 – ₹1,00,000+", llp: "₹15,000 – ₹40,000" },
+  { param: "Conversion Route", pvt: "N/A", llp: "Form 18 + FiLLiP (Section 56 + Third Schedule)" },
+];
+
 const PvtllpOverview = () => {
   return (
     <div className="opc-full-wrapper">
@@ -18,40 +69,71 @@ const PvtllpOverview = () => {
 
           <div className="opc-intro-content">
             <h2 className="opc-intro-title">
-              Why Convert a Private Limited Company into an LLP
+              Why Convert Private Limited Company into an LLP
             </h2>
             <p className="opc-intro-text">
-              A Private Limited Company is the right vehicle when you are raising equity, issuing ESOPs, or courting investors — but for a profitable, owner-run business with no such plans, it can be heavier than it needs to be. A company must hold board meetings, file AOC-4 and MGT-7 every year, and get a statutory audit regardless of turnover. An LLP keeps the same limited-liability protection but strips most of that away: there is no mandatory audit until turnover crosses ₹40 lakh or contribution crosses ₹25 lakh, only Form 8 and Form 11 to file each year, and no dividend distribution tax when partners draw profits.
+              A Private Limited Company offers advantages for fundraising and growth but comes with higher compliance requirements such as audits, ROC filings, annual returns, and other corporate obligations. If your business no longer requires external investment, converting to an LLP can reduce compliance costs while retaining limited liability, separate legal identity, and perpetual succession. LLPs also have simpler compliance, with no mandatory AGM or board meetings and audits applicable only beyond prescribed limits.
               <br /><br />
-              The conversion is done through the statutory route under Section 56 and the Third Schedule of the LLP Act, 2008, using Form 18 with FiLLiP. All shareholders of the company — and no one else — become partners of the LLP, the shareholding is mapped into capital contribution, and the business continues seamlessly. The company must have no charge subsisting on its assets, all ROC and income-tax filings must be up to date, and the consent of shareholders and creditors is required. Once incorporated, Form 14 intimation is filed with the Registrar of Companies and the LLP agreement is filed in Form 3 — and the conversion is tax-neutral where the conditions of Section 47(xiiib) are met.
+              Private Limited Company to LLP Conversion is governed by Section 56 and the Third Schedule of the LLP Act, 2008 and is completed through Form 18 and FiLLiP filings on the MCA portal. The process enables the transfer of assets, liabilities, contracts, and business operations to the LLP and may qualify for tax benefits under Section 47(xiiib) of the Income-tax Act, subject to eligibility conditions.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="opc-urc-forms-section">
+        <div className="opc-urc-forms-container">
+          <h2 className="opc-urc-forms-title">
+            Form 18 + Form FiLLiP + Form 14 + Form 3: The Section 56 Conversion Path
+          </h2>
+          <p className="opc-urc-forms-subtitle">
+            Four forms drive the Pvt Ltd to LLP conversion. Here's what each does:
+          </p>
+          <div className="opc-urc-forms-table-wrapper">
+            <table className="opc-urc-forms-table">
+              <thead>
+                <tr>
+                  <th>Form</th>
+                  <th>Purpose</th>
+                  <th>Filing Window</th>
+                </tr>
+              </thead>
+              <tbody>
+                {conversionPath.map((row, i) => (
+                  <tr key={i}>
+                    <td className="opc-urc-forms-form">{row.form}</td>
+                    <td>{row.purpose}</td>
+                    <td>{row.window}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
 
       <section className="opc-compare-section">
         <div className="opc-compare-container">
-          <h2 className="opc-compare-title">LLP vs Private Limited Company: The Honest Comparison</h2>
+          <h2 className="opc-compare-title">Private Limited Company vs LLP — The Comparison</h2>
           <p className="opc-compare-subtitle">
-            What changes for your business when it moves from a Private Limited Company to an LLP:
+            Here's how the two structures compare on the parameters that drive the conversion decision:
           </p>
           <div className="opc-compare-table-wrapper">
             <table className="opc-compare-table">
               <thead>
                 <tr>
                   <th>Parameter</th>
-                  <th>Limited Liability Partnership</th>
                   <th>Private Limited Company</th>
+                  <th>Limited Liability Partnership (LLP)</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>Statutory Audit</td><td>Only above ₹40L turnover / ₹25L contribution</td><td>Mandatory every year</td></tr>
-                <tr><td>Annual ROC Filings</td><td>Form 8 &amp; Form 11 only</td><td>AOC-4, MGT-7 + board meetings</td></tr>
-                <tr><td>Compliance Cost</td><td>Low</td><td>Higher</td></tr>
-                <tr><td>Profit Withdrawal</td><td>No DDT; share exempt u/s 10(2A)</td><td>Dividend taxable in shareholder's hands</td></tr>
-                <tr><td>Equity Funding / ESOPs</td><td>Not possible</td><td>Can raise equity &amp; issue ESOPs</td></tr>
-                <tr><td>Management</td><td>Flexible, via LLP agreement</td><td>Board / Companies Act governance</td></tr>
-                <tr><td>Liability</td><td>Limited to contribution</td><td>Limited to shareholding</td></tr>
+                {comparison.map((row, i) => (
+                  <tr key={i}>
+                    <td>{row.param}</td>
+                    <td>{row.pvt}</td>
+                    <td>{row.llp}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
