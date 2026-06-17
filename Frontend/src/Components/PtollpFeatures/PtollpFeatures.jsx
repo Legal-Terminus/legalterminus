@@ -4,18 +4,33 @@ import "./PtollpFeatures.css";
 const types = [
   {
     number: "01",
-    title: "Section 55 Statutory Conversion",
-    text: "The conversion is carried out under Section 55 and the Second Schedule of the LLP Act, 2008. A registered or unregistered partnership firm can convert. On registration of the LLP, the firm is deemed dissolved and its name removed from the register of firms — the business simply continues as an LLP under the same partners.",
+    title: "Form RUN-LLP / FiLLiP Part A — Name Reservation",
+    text: "Reserve up to 2 proposed names for the LLP via RUN-LLP or via FiLLiP Part A on the MCA portal. Name must end with 'LLP' or 'Limited Liability Partnership'. We run a comprehensive search across MCA + TM database to avoid identical / similar / prohibited names + ensure trademark clean-up. Typically approved in 1–2 days.",
   },
   {
     number: "02",
-    title: "Automatic Vesting of Assets & Liabilities",
-    text: "The biggest advantage of this route is that all of the firm's property, assets, interests, rights, privileges, liabilities, and obligations vest in the LLP automatically by operation of law — without separate conveyance deeds or stamp duty on each asset. Pending contracts, agreements, and licences continue as if entered into by the LLP.",
+    title: "Form 17 — Conversion Application + Statement",
+    text: "Application for conversion of the Partnership Firm into an LLP under Section 55 of the LLP Act, 2008. Filed on MCA portal alongside Form FiLLiP. Attachments: list of ALL partners with consents, Statement of Accounts of the firm (CA-certified, not older than 30 days), list of creditors with consents / NOCs, latest income-tax acknowledgement, Partnership Deed (original + supplementary), Firm Registration Certificate (if registered), affidavits, declaration of solvency. We curate the entire pack.",
   },
   {
     number: "03",
-    title: "Same Partners, Two Designated Partners",
-    text: "All partners of the firm — and no one else — must become partners of the LLP. At least two of them are appointed as designated partners (responsible for compliance), each holding a DPIN and a DSC. New partners can be brought in only after the LLP is formed, keeping the conversion itself clean and continuity intact.",
+    title: "Form FiLLiP — LLP Incorporation Form",
+    text: "Form for Incorporation of LLP. Filed IN PARALLEL with Form 17 on the MCA portal. Covers: LLP name (from RUN-LLP), registered office address, designated partner details (PAN, Aadhaar, DPIN, DSC), partner details (all firm partners as LLP partners), capital contribution amount + structure, business activity. PAN + TAN auto-generated on approval. Certificate of Incorporation as LLP issued.",
+  },
+  {
+    number: "04",
+    title: "Capital Contribution + LLP Agreement Mapping",
+    text: "Each partner's CAPITAL ACCOUNT balance in the firm (as on the Statement of Accounts date) is mapped to the partner's CONTRIBUTION to the LLP. Profit-sharing ratio per Partnership Deed + capital contribution drive the LLP Agreement structure. We prepare the contribution schedule with cross-CA validation.",
+  },
+  {
+    number: "05",
+    title: "Form 14 — Notice to Registrar of Firms",
+    text: "Mandatory post-CoI filing per Clause 8 of the Second Schedule. WITHIN 15 DAYS of LLP registration, Form 14 is filed with the concerned REGISTRAR OF FIRMS (under the Indian Partnership Act 1932) to formally intimate the conversion + dissolution of the firm. Without Form 14, the firm continues on the Registrar of Firms' records. Included in all plans.",
+  },
+  {
+    number: "06",
+    title: "Form 3 — LLP Agreement Filing",
+    text: "Per Section 23 of LLP Act + Rule 21 of LLP Rules, the LLP Agreement must be filed in Form 3 within 30 DAYS of CoI. Drafted to reflect Partnership Deed terms + carry forward internal arrangements (capital, profit-share, decision rights, exit, dispute resolution, indemnification). Custom LLP Agreement in Enriched + Supreme; Elemental clients use our template + file Form 3 themselves.",
   },
 ];
 
@@ -24,7 +39,7 @@ const PtollpFeatures = () => {
     <section className="opc-features-section">
       <div className="opc-features-container">
 
-        <h2 className="opc-features-title">Key Features of the Conversion Route</h2>
+        <h2 className="opc-features-title">Types of Converting Partnership Firm into an LLP</h2>
 
         <div className="opc-features-cards">
           {types.map((type) => (

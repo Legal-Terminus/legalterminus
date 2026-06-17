@@ -5,65 +5,73 @@ import { FaUser, FaUsers, FaIdCard, FaFileContract, FaHandshake, FaBuilding, FaB
 const partnerDocs = [
   {
     icon: <FaIdCard />,
-    title: "Partner KYC",
-    note: "For all partners of the firm",
+    title: "All Partners' KYC + Identity",
+    note: "For every partner of the firm",
     items: [
-      "PAN & Aadhaar of all partners",
-      "Passport-size photographs & contact details",
-      "DSC & DPIN of the designated partners",
+      "PAN + Aadhaar (mandatory linkage) of each partner",
+      "Latest passport-size photograph, email + mobile (for OTP)",
+      "Bank statement / utility bill (within 60 days) as residence proof",
+      "DSC (Class-3 Individual, 2-year); designated partners: DPIN (via FiLLiP if not existing)",
+      "NRI / foreign partners: passport + overseas address proof + FEMA compliance check",
     ],
   },
   {
     icon: <FaHandshake />,
-    title: "Existing Partnership Records",
-    note: "Constitution of the firm",
+    title: "Partnership Deed + Firm Records",
+    note: "Constitution & filing history of the firm",
     items: [
-      "Partnership deed & any amendments",
-      "Firm registration certificate (if registered)",
-      "PAN of the partnership firm",
+      "Original Partnership Deed + all supplementary / amendment deeds",
+      "Firm Registration Certificate (Indian Partnership Act, 1932) if registered",
+      "PAN of the firm",
+      "Firm's GSTIN + Udyam + Shop & Estd + Trade License + IEC (where applicable)",
+      "Last 3 years' firm ITRs (Form ITR-5) + GST returns + bank statements",
     ],
   },
   {
     icon: <FaBalanceScale />,
-    title: "Statement of Accounts & Consents",
+    title: "Statement of Accounts + Capital Schedule",
     note: "Core conversion documents",
     items: [
-      "Statement of assets & liabilities certified by a CA",
-      "List of all creditors with consent / NOC",
-      "Up-to-date income tax returns of the firm",
+      "Statement of Accounts of the firm CERTIFIED BY A CHARTERED ACCOUNTANT (not older than 30 DAYS from Form 17 filing)",
+      "Capital Account statement of each partner (per Partnership Deed — drives LLP contribution mapping)",
+      "Firms subject to audit (IT Act / LLP Act thresholds): AUDITED Statement of Accounts",
+      "List of CREDITORS with claim amounts + consent letters / NOCs",
     ],
   },
 ];
 
 const officeDocs = [
   {
-    icon: <FaBuilding />,
-    title: "Registered Office Proof",
-    note: "Address of the LLP",
+    icon: <FaFileContract />,
+    title: "Form 17 / Form FiLLiP Inputs",
+    note: "Conversion + incorporation details",
     items: [
-      "Utility bill of the premises (≤ 2 months)",
-      "Rent agreement (if rented)",
-      "No-Objection Certificate from the owner",
+      "Proposed LLP name (post-name-reservation)",
+      "Names of all partners (becoming LLP partners) + designated partners (min 2, one Indian resident)",
+      "Registered office address + business activity + NIC code",
+      "Capital contribution structure (per partner, per Statement of Accounts)",
+      "Unanimous resolution + consent of all partners + affidavits + declaration of solvency",
     ],
   },
   {
-    icon: <FaFileContract />,
-    title: "Conversion Forms",
-    note: "Filed with the ROC",
+    icon: <FaBuilding />,
+    title: "Registered Office + Premises Proof",
+    note: "Address of the LLP",
     items: [
-      "Form 17 (application for conversion)",
-      "Form FiLLiP (LLP incorporation)",
-      "Consent of all partners to convert",
+      "Address proof — rent agreement OR ownership document",
+      "NOC from owner (if rented) on stamp paper",
+      "Latest electricity / utility bill (within 60 days)",
+      "Premises must be capable of receiving statutory notices",
     ],
   },
   {
     icon: <FaFileAlt />,
-    title: "LLP Agreement & Declarations",
-    note: "Post-registration filing",
+    title: "LLP Agreement Inputs + Declarations",
+    note: "Form 3 & stamp duty",
     items: [
-      "LLP agreement (drafted by us) for Form 3",
-      "Profit-sharing, capital & management terms",
-      "Stamped per the applicable state stamp duty",
+      "Custom LLP Agreement terms (Enriched + Supreme): capital, profit-share, decision rights, designated-partner roles, indemnification, exit + admission, dispute resolution, dissolution",
+      "Stamp duty on LLP Agreement payable at State rates",
+      "Stamp duty on Asset Transfer Agreement (Supreme tier) if applicable",
     ],
   },
 ];
@@ -91,8 +99,8 @@ const PtollpDocuments = () => {
       <div className="opcd-container">
 
         <div className="opcd-header">
-          <h2 className="opcd-main-title">Documents Required to Convert Partnership to LLP</h2>
-          <p className="opcd-main-subtitle">Get these ready and we'll take care of the rest</p>
+          <h2 className="opcd-main-title">Documents Required to Convert a Partnership Firm into an LLP</h2>
+          <p className="opcd-main-subtitle">Six categories. Documentation is moderate — Partnership Deed + all partners' KYC + Statement of Accounts + creditor consents + LLP Agreement inputs. We send a personalised checklist after the discovery call.</p>
         </div>
 
         <div className="opcd-columns">
@@ -102,7 +110,7 @@ const PtollpDocuments = () => {
               <div className="opcd-col-header-icon"><FaUsers /></div>
               <div>
                 <h3 className="opcd-col-title">Partner &amp; Firm Documents</h3>
-                <p className="opcd-col-subtitle">KYC, deed &amp; statement of accounts</p>
+                <p className="opcd-col-subtitle">KYC, deed, accounts &amp; creditor consents</p>
               </div>
             </div>
             <div className="opcd-col-body">
@@ -116,8 +124,8 @@ const PtollpDocuments = () => {
             <div className="opcd-col-header opcd-col-header--office">
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="opcd-col-title">Office, Forms &amp; Agreement</h3>
-                <p className="opcd-col-subtitle">Office proof, Form 17/FiLLiP &amp; LLP agreement</p>
+                <h3 className="opcd-col-title">Forms, Office &amp; Agreement</h3>
+                <p className="opcd-col-subtitle">Form 17/FiLLiP, office proof &amp; LLP agreement</p>
               </div>
             </div>
             <div className="opcd-col-body">

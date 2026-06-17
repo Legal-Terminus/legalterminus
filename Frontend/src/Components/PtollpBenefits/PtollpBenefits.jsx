@@ -1,67 +1,54 @@
 import React from "react";
 import "./PtollpBenefits.css";
 
+const benefits = [
+  {
+    title: "Limited Liability + Personal Asset Protection",
+    text: "The single biggest reason to convert. In a Partnership Firm, EVERY PARTNER is JOINTLY + SEVERALLY liable for ALL the firm's debts + the acts of OTHER PARTNERS (Section 25 Partnership Act). One partner's mis-step can drain another's personal assets. In an LLP, each partner's liability is LIMITED to their capital contribution. The LLP contracts in its own name. Joint-several liability disappears.",
+  },
+  {
+    title: "Separate Legal Entity + Perpetual Succession",
+    text: "An LLP is a SEPARATE LEGAL PERSON distinct from its partners (Section 3 LLP Act). It can own property, sue + be sued in its own name, and enter contracts. PARTNERS MAY CHANGE — the LLP continues. No reconstitution / dissolution on partner exit (unlike Partnership Firms where reconstitution / dissolution under Sections 39–44 of the Partnership Act is the default). Business continuity is structural.",
+  },
+  {
+    title: "No Newspaper Advertisement / Public Notice Required",
+    text: "UNLIKE the URC-1 route to a company (which requires INC-25A / URC-2 newspaper advertisement + 21-day public objection window), Section 55 + Second Schedule conversion to LLP has NO advertisement requirement + NO objection window. Combined Form 17 + FiLLiP is a single filing — typical timeline 15–20 working days vs 35–50 days for URC-1 conversions. Material time + cost saving.",
+  },
+  {
+    title: "Lighter Compliance Than Pvt Ltd",
+    text: "LLP enjoys major compliance relaxations vs a Private Limited Company: NO mandatory AGM (Section 96 not applicable), NO statutory audit unless turnover > ₹40 lakh OR contribution > ₹25 lakh, NO Section 134 Directors' Report, simpler annual return (Form 11 vs MGT-7), only Form 8 for financial statements (vs full AOC-4 with Cash Flow Statement). Annual compliance overhead is materially lower (₹15,000–25,000/year for LLP vs ₹40,000–1,00,000+/year for Pvt Ltd).",
+  },
+  {
+    title: "Internal Flexibility via LLP Agreement",
+    text: "Where a Pvt Ltd's Articles + Companies Act dictate governance (board meetings, AGM, statutory committees), an LLP Agreement (Form 3) lets partners freely structure: capital contributions, profit-share ratios (which can differ from contribution ratios), decision-making rights, indemnification, exit + admission terms, and dispute resolution. Custom LLP Agreement in Enriched + Supreme tiers.",
+  },
+  {
+    title: "Statutory Continuity + Asset Auto-Vesting",
+    text: "Per the Second Schedule, on CoI all the firm's TANGIBLE + INTANGIBLE PROPERTY + ASSETS + RIGHTS + LIABILITIES + CONTRACTS + LICENCES + THE WHOLE UNDERTAKING auto-vest in the LLP — no separate transfer deeds, no novation, no creditor consent (per the LLP Act's framework). The firm is deemed dissolved + the LLP succeeds it. Cleaner than wind-up + fresh incorporation OR partnership-to-Pvt-Ltd conversion via URC-1.",
+  },
+];
+
 const PtollpBenefits = () => {
   return (
     <section className="opcben-section">
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of Converting to an LLP
+            Benefits of Converting Partnership Firm into an LLP
           </h2>
           <p className="opcben-subtitle">
-            An LLP gives a partnership the corporate shield it lacks — limited liability and a separate legal identity — while keeping the operational flexibility and lighter compliance that make it ideal for professional and family-run firms.
+            LLP is the corporate shield for partner-led businesses that don't need the heavy Pvt Ltd compliance stack + don't (yet) plan VC fundraising. Here's what matters:
           </p>
         </header>
 
         <div className="opcben-grid">
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Limited Liability for Partners</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              The single biggest gain — each partner's liability is limited to their agreed contribution. Personal assets are protected from the firm's debts, and crucially, a partner is not liable for the wrongful acts or negligence of another partner.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Separate Legal Entity</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              An LLP is a body corporate distinct from its partners. It can own property, hold contracts, open accounts, and sue or be sued in its own name — giving the business a stable legal identity that a partnership firm never has.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Perpetual Succession</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              Unlike a partnership that changes or dissolves when a partner exits, an LLP continues uninterrupted regardless of changes among its partners. The business, its contracts, and its assets are protected for the long term.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Seamless Asset Transfer</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              Through the Section 55 route, all the firm's assets and liabilities pass to the LLP automatically by operation of law — no separate sale deeds, no stamp duty on each asset. The transition is clean, fast, and tax-efficient compared to winding up and re-incorporating.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Lighter Compliance Than a Company</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              An LLP files only two annual MCA forms — Form 11 and Form 8 — and requires a statutory audit only if turnover exceeds ₹40 lakh or contribution exceeds ₹25 lakh. The compliance burden is materially lighter than a private limited company's.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Credibility &amp; Flexibility</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              A registered LLP is taken more seriously by banks, vendors, and clients than an informal partnership, while the LLP agreement still lets partners freely structure profit-sharing, roles, and management — combining corporate credibility with partnership flexibility.
-            </p>
-          </article>
+          {benefits.map((benefit, i) => (
+            <article className="opcben-card" key={i}>
+              <h3 className="opcben-card-title">{benefit.title}</h3>
+              <div className="opcben-card-underline" />
+              <p className="opcben-card-text">{benefit.text}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
