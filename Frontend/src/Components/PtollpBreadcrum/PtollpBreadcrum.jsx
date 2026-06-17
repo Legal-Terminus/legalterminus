@@ -18,28 +18,30 @@ const PtollpBreadcrum = () => {
             Convert Partnership Firm to LLP
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Limited Liability, Same Partners</span>
+            <span className="lt-title-tagline">Limited liability without heavy compliance</span>
           </h1>
 
           <p className="lt-public-description">
-            Want limited liability without losing your partnership's continuity? Legal Terminus converts your partnership firm into a Limited Liability Partnership under Section 55 and the Second Schedule of the LLP Act, 2008 — filing Form FiLLiP with Form 17, a CA-certified statement of assets &amp; liabilities, and creditor consent. On conversion, all assets, liabilities, and contracts vest in the LLP automatically by operation of law. You keep the same partners but gain a corporate shield. Our professional fee starts at ₹7,999 + GST. Government fees &amp; stamp duty are billed separately at actuals.
+            Want the protection of limited liability without the heavier compliance of a Private Limited Company? A Partnership Firm to LLP Conversion allows your existing partnership firm to move into a Limited Liability Partnership (LLP) structure under the Limited Liability Partnership Act, 2008. Compared to company conversion routes, LLP conversion is faster, simpler, and more cost-effective. There is no newspaper advertisement, no 21-day objection window, and no complex corporate restructuring. The conversion is completed through Form 17 and FiLLiP filing on the MCA portal.
+            <br /><br />
+            We help you convert your Partnership Firm into an LLP by preparing the required documents, mapping partners' capital into LLP contribution, filing the conversion application, drafting the LLP Agreement, and completing post-conversion compliances including Form 14 and Form 3 filings.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Section 55 Conversion via Form 17 + FiLLiP</div>
-            <div className="lt-feature-item">Assets &amp; Liabilities Vest Automatically</div>
-            <div className="lt-feature-item">Limited Liability for All Partners</div>
-            <div className="lt-feature-item">Lower Compliance Than a Pvt Ltd</div>
+            <div className="lt-feature-item">Form 17 + FiLLiP</div>
+            <div className="lt-feature-item">Section 55 LLP Act</div>
+            <div className="lt-feature-item">Limited Liability</div>
+            <div className="lt-feature-item">No Newspaper Ad</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>3,000+</h3>
-              <p>Conversions handled</p>
+              <h3>800+</h3>
+              <p>LLP incorporations + conversions</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>End-to-end MCA filing</p>
+              <h3>End-to-End Transition</h3>
+              <p>Form 17 + GST + Bank + Form 3</p>
             </div>
             <div>
               <h3>7+</h3>
