@@ -24,7 +24,7 @@ const PvtToPublicNew = () => {
 
       <div className="section-divider" />
 
-      <div id="plans" className="pub-page-pricing">
+      <div id="plans" className="opc-page-pricing">
         <Suspense fallback={<div />}>
           <PtpubRightPlan />
         </Suspense>

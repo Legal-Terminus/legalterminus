@@ -1,14 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./PtpubRightPlan.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
-
 
 const PLANS = [
   {
     id: "elemental",
     name: "Elemental",
     badge: "BASIC",
-    badgeClass: "pub-plan-card--badged",
     oldPrice: 29999,
     price: 19999,
     services: [
@@ -26,7 +24,6 @@ const PLANS = [
     id: "enriched",
     name: "Enriched",
     badge: "★ MOST POPULAR",
-    badgeClass: "pub-plan-card--badged",
     popular: true,
     oldPrice: 44999,
     price: 29999,
@@ -44,7 +41,6 @@ const PLANS = [
     id: "supreme",
     name: "Supreme",
     badge: "✦ 6-MONTH SERVICE",
-    badgeClass: "pub-plan-card--badged",
     oldPrice: 66999,
     price: 44999,
     services: [
@@ -59,7 +55,6 @@ const PLANS = [
     id: "supreme-plus",
     name: "Supreme Plus",
     badge: "✦ FULL-SERVICE 12-MONTH",
-    badgeClass: "pub-plan-card--badged",
     oldPrice: 96999,
     price: 64999,
     services: [
@@ -76,50 +71,52 @@ const PLANS = [
   },
 ];
 
-const PricingSection = () => {
+const PtpubRightPlan = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
     <>
-      <section className="pub-plan-section">
-        <div className="pub-plan-container">
+      <section className="opc-pricing-section">
+        <div className="opcpricing-container">
 
-          {/* Header */}
-          <header className="pub-plan-header">
-            <h2 className="pub-plan-title">CHOOSE YOUR PLAN</h2>
-            <p className="pub-plan-subtitle">
-              Convert your company to a Public Limited with pocket-friendly prices
+          <header className="opcpricing-header">
+            <h2 className="opcpricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="opcpricing-subtitle">
+              Convert your Private Limited Company into a Public Limited at pocket-friendly prices
             </p>
           </header>
 
-          {/* Cards */}
-          <div className="pub-plan-cards">
+          <div className="opcpricing-cards ptpub-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
-                className={`pub-plan-card${plan.badgeClass ? ` ${plan.badgeClass}` : ""}`}
+                className={`opcplan-card${plan.popular ? " opcplan-card--popular" : ""}`}
               >
-                {plan.badge && <div className="pub-plan-banner-badge">{plan.badge}</div>}
                 <div>
-                  <div className="pub-plan-card-header">
-                      <div className="pub-plan-name">{plan.name}</div>
-                    <div className="pub-plan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
-                    <div className="pub-plan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="pub-plan-meta">+ Govt. fees &amp; GST extra</div>
+                  <div className="opcplan-header">
+                    {plan.badge && (
+                      <div className={`opcplan-badge${plan.popular ? " opcplan-badge--popular" : ""}`}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    <div className="opcplan-name">{plan.name}</div>
+                    <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
-                  <div className="pub-plan-body">
-                    <ul className="pub-plan-list">
+                  <div className="opcplan-body">
+                    <ul className="opcplan-list">
                       {plan.services.map((s, i) => (
-                        <li key={i} className="pub-plan-list-item">{s}</li>
+                        <li key={i} className="opcplan-list-item">{s}</li>
                       ))}
                     </ul>
                   </div>
                 </div>
 
-                <div className="pub-plan-footer">
+                <div className="opcplan-footer">
                   <button
-                    className={`pub-plan-button${plan.popular ? " pub-plan-button--popular" : ""}`}
+                    className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
                     onClick={() => setActivePlan(plan)}
                   >
                     Buy Now
@@ -139,4 +136,4 @@ const PricingSection = () => {
   );
 };
 
-export default PricingSection;
+export default PtpubRightPlan;
