@@ -18,7 +18,9 @@ const PtpubFAQ = React.lazy(() => import('../../Components/PtpubFAQ/PtpubFAQ'))
 const PvtToPublicNew = () => {
   return (
     <div>
-      <PtpubBreadcrum />
+      <div className="opc-page-hero">
+        <PtpubBreadcrum />
+      </div>
 
       <div className="section-divider" />
 

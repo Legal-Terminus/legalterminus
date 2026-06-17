@@ -7,6 +7,8 @@ const PLANS = [
   {
     id: "elemental",
     name: "Elemental",
+    badge: "BASIC",
+    badgeClass: "pub-plan-card--badged",
     oldPrice: 29999,
     price: 19999,
     services: [
@@ -41,7 +43,7 @@ const PLANS = [
   {
     id: "supreme",
     name: "Supreme",
-    badge: "✦ 6 MONTH SERVICE",
+    badge: "✦ 6-MONTH SERVICE",
     badgeClass: "pub-plan-card--badged",
     oldPrice: 66999,
     price: 44999,
@@ -56,7 +58,7 @@ const PLANS = [
   {
     id: "supreme-plus",
     name: "Supreme Plus",
-    badge: "✦ FULL-SERVICE",
+    badge: "✦ FULL-SERVICE 12-MONTH",
     badgeClass: "pub-plan-card--badged",
     oldPrice: 96999,
     price: 64999,

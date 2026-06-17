@@ -1,1 +1,2 @@
-@import url('../PublicBreadcrum/PublicBreadcrum.css');
+/* Hero styling is inherited from ../OPCBreadcrum/OPCBreadcrum.css (imported in JSX)
+   and the dark-navy hero overrides in the page CSS (PvtToPublicNew.css). */
