@@ -11,35 +11,37 @@ const FoodLicenseBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Food License (FSSAI) Registration
+            Food License Registration
           </span>
 
           <h1 className="lt-public-title">
-            Food License (FSSAI) Registration
+            Food License Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">FSSAI-Certified, Fast &amp; 100% Online</span>
+            <span className="lt-title-tagline">Start Your Food Business with FSSAI</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus manages your end-to-end FSSAI Food License Registration — Basic Registration, State License, and Central License — across all food business categories. We handle documentation, FoSCoS portal filing, and government fee payment so your food business is legally compliant from day one. Our professional fee starts at ₹1,499 + GST. Government fees are billed separately at actuals per the FSSAI tariff.
+            Food License Registration in India is mandatory for every Food Business Operator (FBO) involved in manufacturing, storing, distributing, transporting, or selling food products. Whether you run a restaurant, cloud kitchen, bakery, food stall, café, home kitchen, catering business, food manufacturing unit, or import/export business, obtaining an FSSAI License under the Food Safety and Standards Act, 2006 is essential for legal operations in India.
+            <br /><br />
+            We help you choose and file the correct FSSAI category — Basic Registration, State License, or Central License — based on your business type and annual turnover through the official FoSCoS portal (https://foscos.fssai.gov.in). Our team handles documentation, application filing, and complete support until your 14-digit FSSAI License number is issued.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Mandatory for All Food Businesses (FBOs)</div>
-            <div className="lt-feature-item">Basic, State &amp; Central License Covered</div>
-            <div className="lt-feature-item">FoSCoS Portal Filing &amp; Govt Fee Coordination</div>
-            <div className="lt-feature-item">Renewal, Amendment &amp; Compliance Support</div>
+            <div className="lt-feature-item">FoSCoS Filed</div>
+            <div className="lt-feature-item">14-Digit License</div>
+            <div className="lt-feature-item">Renewal Calendar</div>
+            <div className="lt-feature-item">All FBO Categories</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>1,000+</h3>
-              <p>FSSAI licenses obtained</p>
+              <h3>3,200+</h3>
+              <p>Food licenses filed</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>FoSCoS portal filing</p>
+              <h3>All 3 Categories</h3>
+              <p>Basic + State + Central</p>
             </div>
             <div>
               <h3>7+</h3>
