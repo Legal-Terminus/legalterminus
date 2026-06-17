@@ -33,11 +33,13 @@ const partnerDocs = [
     title: "URC-1 Statutory Pack",
     note: "Core conversion documentation",
     items: [
-      "AUDITED Statement of Accounts of the LLP (not older than 30 days — SEPARATE from the LLP's annual Form 8)",
-      "Capital Contribution statement of each partner (per LLP Agreement)",
+      "AUDITED Statement of Accounts of the LLP (not older than 30 DAYS from URC-1 filing — SEPARATE from the LLP's annual Form 8)",
+      "CAPITAL CONTRIBUTION STATEMENT of each partner (per LLP Agreement)",
       "List of ALL partners with addresses + occupations + capital contribution + profit-sharing ratio",
       "List of CREDITORS with claim amounts + consent letters / NOCs",
-      "Declaration of SOLVENCY by all partners + unanimous consent resolution + affidavits",
+      "Declaration of SOLVENCY signed by all partners (on stamp paper)",
+      "UNANIMOUS RESOLUTION of consent of all partners",
+      "Affidavits by each partner",
     ],
   },
 ];
@@ -50,9 +52,10 @@ const llpDocs = [
     items: [
       "Proposed Pvt Ltd name (post-name-reservation)",
       "Names of all partners (becoming subscribers / directors)",
-      "LLPIN + principal place of business (LLP's registered office)",
-      "Brief description of the business activity",
-      "State / UT where the LLP's registered office is situated (determines the vernacular newspaper)",
+      "LLPIN + Principal place of business (LLP's registered office)",
+      "Brief description of business activity",
+      "State / UT where LLP's registered office is situated (determines vernacular newspaper)",
+      "We draft URC-2 + coordinate publication",
     ],
   },
   {
