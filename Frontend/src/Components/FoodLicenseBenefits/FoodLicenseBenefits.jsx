@@ -1,67 +1,54 @@
 import React from "react";
 import "./FoodLicenseBenefits.css";
 
+const benefits = [
+  {
+    title: "Legal Right to Operate",
+    text: "An FSSAI license is the statutory authorisation to carry on a food business under Section 31 of the FSS Act, 2006. Without it, operations are illegal and attract Section 63 penalties (imprisonment up to 6 months + fine up to ₹5 lakh). With it — and a disciplined renewal calendar — you operate openly.",
+  },
+  {
+    title: "4-Tier Plan = Right Fit for Your FBO",
+    text: "We've split Basic Registration into Elemental (tea stall + hawker) + Enriched (other Basic) so the simplest cases pay the simplest price. State Licence stays Supreme; Central Licence is Supreme Plus. Pay for what you actually need — no over-paying for unnecessary FSMP / HACCP overhead if you're a hawker; no under-quoting if you're an importer.",
+  },
+  {
+    title: "Compliance Relief from the 2026 Slab Hike",
+    text: "The revised slabs (Basic up to ₹1.5 Cr; State up to ₹50 Cr) mean many small / mid FBOs drop down one tier — lower documentation, lower government fees, lighter oversight. A unit doing ₹50 lakh turnover that earlier needed a State License (₹2,000–5,000/year) now fits into Basic (₹100/year).",
+  },
+  {
+    title: "Renewal Discipline Built-In",
+    text: "FSSAI licences are issued for 1–5 years (applicant's choice). Renewal must be filed BEFORE expiry — the 180-day pre-expiry window is the sweet spot. Late renewal attracts ₹100/day penalty (no cap); beyond 180 days post-expiry the licence can be cancelled. Our plans include a renewal-reminder calendar with 90 / 30 / 7-day pre-expiry alerts so the renewal never slips — the cheapest insurance you can buy against business disruption.",
+  },
+  {
+    title: "Marketplace + B2B + Tender Access",
+    text: "Swiggy, Zomato, Amazon Food, BigBasket, Blinkit, Zepto, modern trade chains, government tenders, institutional catering, and large B2B buyers ALL require valid FSSAI at onboarding (with the right category — e-commerce needs Central per FSSAI 2017 Order). No license = no listing = no revenue.",
+  },
+  {
+    title: "Investor + Funding Readiness",
+    text: "Venture investors and lenders in the food / FMCG / restaurant / cloud kitchen space treat valid FSSAI licensing as table stakes. Due diligence will flag a missing or wrong-category licence + expired-licence-on-record as deal-killers or material risk. A disciplined renewal calendar + clean annual returns (Form D1) + risk-based-inspection readiness = strong DD posture.",
+  },
+];
+
 const FoodLicenseBenefits = () => {
   return (
     <section className="opcben-section">
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of FSSAI Food License Registration in India
+            Benefits of Food License Registration in India
           </h2>
           <p className="opcben-subtitle">
-            FSSAI registration is not just a legal requirement — it actively protects your business from penalties, opens major sales channels, and builds lasting consumer trust.
+            FSSAI license isn't just a sticker on the wall — it's a business enabler. Here's what matters in the 2026 reform-era regime:
           </p>
         </header>
 
         <div className="opcben-grid">
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Legal Compliance &amp; Penalty-Free Operations</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              A valid FSSAI license ensures your food business operates lawfully under the FSS Act 2006, eliminating exposure to prosecution, product seizure, and penalties up to ₹5 lakh for unlicensed operations. It also protects you during food safety audits and inspections.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Access to E-Commerce &amp; Food Delivery Platforms</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              Swiggy, Zomato, BigBasket, Amazon, Flipkart, and Blinkit require a valid FSSAI number to list food products or restaurants. Without it, your business cannot be onboarded or will be delisted. FSSAI registration is the gateway to India's ₹10 trillion food e-commerce market.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Consumer Trust &amp; Brand Credibility</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              The FSSAI logo and 14-digit license number on your product label is an immediately recognisable food safety trust signal. It assures consumers that your product meets mandated hygiene, quality, and safety standards, directly improving brand perception and repeat purchases.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Retail &amp; Modern Trade Access</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              Supermarkets (Reliance Smart, D-Mart, Spencer's), modern retail chains, and institutional buyers mandate FSSAI certification before onboarding any food product. A valid FSSAI license is the single most critical document in any retail vendor registration or B2B food supply agreement.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Export Readiness</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              FSSAI certification is a prerequisite for food export. Importers in the EU, USA, Middle East, and South-East Asia require FSSAI compliance documentation. Combined with an IEC (Import Export Code), a valid Central FSSAI License is the baseline for entering international food markets.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Bank Loans &amp; Government Schemes</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              FSSAI registration is required for accessing PMFME scheme benefits, NABARD food processing loans, and MSME credit under CGTMSE. Banks and NBFCs ask for FSSAI certification as part of food business loan documentation.
-            </p>
-          </article>
+          {benefits.map((benefit, i) => (
+            <article className="opcben-card" key={i}>
+              <h3 className="opcben-card-title">{benefit.title}</h3>
+              <div className="opcben-card-underline" />
+              <p className="opcben-card-text">{benefit.text}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>

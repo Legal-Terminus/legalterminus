@@ -3,54 +3,79 @@ import "./FoodLicenseFAQ.css";
 
 const faqs = [
   {
-    question: "Who needs an FSSAI license or registration in India?",
+    question: "What changed in FSSAI licensing from 1 April 2026?",
     answer:
-      "Every Food Business Operator (FBO) — including manufacturers, processors, transporters, distributors, retailers, importers, exporters, and food service operators — must obtain FSSAI registration or license before starting operations. This includes home bakers, cloud kitchens, restaurants, packaged food brands, food startups, and e-commerce food sellers.",
+      "The revised FSSAI rules effective from 1 April 2026 increased the turnover limits for different license categories. Small food businesses now qualify for Basic Registration up to a higher turnover limit, reducing compliance costs for many businesses. State and Central License thresholds were also revised. However, all food businesses still need some form of FSSAI registration or license depending on their activity and turnover.",
   },
   {
-    question: "What is the difference between Basic Registration, State License, and Central License?",
+    question: "Which FSSAI plan is right for my business?",
     answer:
-      "Basic Registration is for petty food businesses with turnover below ₹12 lakh/year. State License is for medium-sized businesses with turnover between ₹12 lakh and ₹20 crore operating within one state. Central License is for large businesses with turnover above ₹20 crore, multi-state operations, or businesses involved in import/export. The license type is determined by turnover, scale, and geographic spread.",
+      "Elemental (₹999) – Suitable for tea stalls, hawkers, small snack vendors, and petty food sellers with simple documentation needs.\nEnriched (₹2,999) – Best for home bakers, tiffin services, small food manufacturers, food trucks, and kirana food sellers.\nSupreme (₹3,999) – Suitable for restaurants, hotels, distributors, and medium-sized food manufacturers operating within one state.\nSupreme Plus (₹7,999) – Recommended for importers, exporters, e-commerce food businesses, multi-state operations, and large food businesses requiring a Central License.",
   },
   {
-    question: "How long does FSSAI registration take?",
+    question: "Who needs an FSSAI License or Registration?",
     answer:
-      "Basic Registration is typically approved in 7–10 working days. State License takes 15–30 working days (may require premise inspection). Central License takes 30–60 working days (includes FSMS documentation and possible inspection). Delays occur if documents are incomplete or the premise inspection raises queries — we respond within 24 hours on your behalf.",
+      "Every Food Business Operator (FBO) in India needs FSSAI registration or license. This includes restaurants, cloud kitchens, home bakers, food manufacturers, food delivery businesses, retailers, wholesalers, transporters, importers, exporters, and food sellers on online platforms.",
   },
   {
-    question: "What is the FSSAI registration fee?",
+    question: "How is your pricing different from government fees?",
     answer:
-      "Government fees are: Basic Registration ₹100/year, State License ₹2,000–₹5,000/year depending on business type, Central License ₹7,500/year. These are in addition to Legal Terminus professional fees. Our fees cover document preparation, FoSCoS filing, government fee payment, inspection support, and license delivery.",
+      "Our fee covers consultation, documentation, application drafting, portal filing, follow-up, and support. Government fees are charged separately by FSSAI based on your license category and validity period.",
   },
   {
-    question: "Can I operate a cloud kitchen or home food delivery business without FSSAI?",
+    question: "How long does it take to get an FSSAI License?",
     answer:
-      "No. Cloud kitchens, ghost kitchens, and home-based food businesses are classified as FBOs under the FSS Act. Swiggy, Zomato, and EatSure require a valid FSSAI number to onboard and maintain your listing. FSSAI registration is mandatory before you accept your first order — not after you scale.",
+      "Basic Registration usually takes around 7–10 working days.\nState License may take around 15–20 working days.\nCentral License generally takes 20–30 working days depending on inspection and approval timelines.",
   },
   {
-    question: "Does FSSAI registration need to be renewed?",
+    question: "What is the validity period of an FSSAI License?",
     answer:
-      "Yes. FSSAI registration and licenses must be renewed before expiry. Validity ranges from 1 to 5 years depending on what you choose at application. Late renewal attracts a penalty of ₹100 per day. Legal Terminus sends renewal reminders 90 days before expiry and handles the renewal filing on your behalf.",
+      "An FSSAI License or Registration can be obtained for 1 to 5 years, depending on the option selected during application. Renewal should be filed before expiry to avoid penalties or cancellation.",
   },
   {
-    question: "Is a physical premise inspection mandatory for all license types?",
+    question: "Do cloud kitchens and online food businesses need an FSSAI License?",
     answer:
-      "No. Basic Registration is typically approved without inspection. State and Central licenses may involve inspection — the Designated Officer (DO) or Food Safety Officer (FSO) may visit your premises within 30 days of filing. We prepare you for the inspection with a checklist and accompany you remotely if questions arise.",
+      "Yes. Cloud kitchens, Swiggy / Zomato sellers, food businesses on Amazon or Blinkit, and businesses selling food through websites or apps must obtain an FSSAI License.",
   },
   {
-    question: "Can I get FSSAI registration if I operate from a rented property?",
+    question: "Is FSSAI mandatory for home bakers and small food businesses?",
     answer:
-      "Yes. Rented premises are fully acceptable for FSSAI. You need: a notarized Rent Agreement between you and the property owner, and an NOC from the property owner permitting use of the premises for food business. We include both documents in our checklist.",
+      "Yes. Even small or home-based food businesses require at least Basic FSSAI Registration if they are selling food commercially.",
   },
   {
-    question: "What happens if I operate without FSSAI registration?",
+    question: "What is the FoSCoS portal?",
     answer:
-      "Operating without FSSAI registration is a criminal offence under the Food Safety and Standards Act, 2006. Penalties include: ₹5 lakh for carrying on business without license/registration, ₹2 lakh for manufacturing/processing substandard food, and up to ₹10 lakh for unsafe food causing injury. Your products can also be seized and your business premises sealed.",
+      "FoSCoS (Food Safety Compliance System) is FSSAI's official online portal used for registration, licensing, renewal, modification, and annual return filing.\nOfficial Portal: https://foscos.fssai.gov.in",
   },
   {
-    question: "Can Legal Terminus help if FSSAI has raised a deficiency notice or query on my application?",
+    question: "What happens if I operate without an FSSAI License?",
     answer:
-      "Yes. If FSSAI raises a deficiency notice (common for State/Central applications), we respond within 24 hours with corrected documents or clarifications. If an inspection is scheduled, we prepare an inspection readiness checklist and walk you through what the FSO will look for. We stay with you until the license is issued.",
+      "Running a food business without an FSSAI License can attract penalties, business closure, and legal action under the Food Safety and Standards Act, 2006.",
+  },
+  {
+    question: "Is inspection required for FSSAI License approval?",
+    answer:
+      "In many State and Central License cases, FSSAI authorities may conduct a physical inspection of the premises before approval. Proper hygiene, storage, and food safety practices are important for smooth approval.",
+  },
+  {
+    question: "Do restaurants and cafes need a Central or State License?",
+    answer:
+      "It depends on turnover, business size, and operational model. Small restaurants generally require a State License, while large chains, multi-state operations, and certain specialised businesses may require a Central License.",
+  },
+  {
+    question: "Can I modify my FSSAI License later?",
+    answer:
+      "Yes. Business name, address, product category, turnover, contact details, and other information can be updated later through modification applications on the FoSCoS portal.",
+  },
+  {
+    question: "Does an FSSAI License help in getting business partnerships and online listings?",
+    answer:
+      "Yes. Most food delivery platforms, supermarkets, distributors, and institutional buyers ask for a valid FSSAI License before onboarding a food business.",
+  },
+  {
+    question: "How can Legal Terminus help with FSSAI Food License Registration?",
+    answer:
+      "Legal Terminus helps businesses across India with complete FSSAI Registration and Licensing support — from selecting the correct license category to preparing documents, filing applications on the FoSCoS portal, handling queries, and tracking approval status. Our team assists restaurants, cloud kitchens, home bakers, manufacturers, distributors, importers, exporters, and online food businesses with smooth and hassle-free compliance support. We also provide renewal reminders, modification support, and guidance for inspection readiness to help businesses stay compliant without delays.",
   },
 ];
 
@@ -89,7 +114,7 @@ const FoodLicenseFAQ = () => {
                   <span className={`opcfaq-icon ${isActive ? "open" : ""}`}>▾</span>
                 </button>
                 <div className={`opcfaq-answer ${isActive ? "open" : ""}`}>
-                  <div className="opcfaq-answer-content">{item.answer}</div>
+                  <div className="opcfaq-answer-content" style={{ whiteSpace: "pre-line" }}>{item.answer}</div>
                 </div>
               </div>
             );
