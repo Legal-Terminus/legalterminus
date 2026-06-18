@@ -1,1 +1,77 @@
 @import url('../OPCPlans/OPCPlans.css');
+
+/* ── EPF Return plans: 3 tiers + enterprise call-out ──
+   Scoped under .epfret-plans so it never affects other pages
+   that share the .opcpricing-* / .opcplan-* classes. */
+
+.epfret-plans .opcpricing-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Employee-range line under the plan name */
+.epfret-plans .epfplan-range {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #0b5f3a;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.epfret-plans .opcplan-old-price {
+  font-size: 16px;
+}
+
+/* Yearly price under the monthly price */
+.epfret-plans .epfplan-yearly {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: #18b233;
+  margin-top: 4px;
+}
+
+/* Enterprise call-out frame (more than 50 employees) */
+.epfret-plans .epfplan-enterprise {
+  margin-top: 32px;
+  background: #eef8f0;
+  border: 1.5px solid rgba(34, 197, 94, 0.55);
+  border-radius: 12px;
+  padding: 28px 32px;
+  text-align: center;
+}
+
+.epfret-plans .epfplan-enterprise-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #0b5f3a;
+  margin: 0 0 12px;
+}
+
+.epfret-plans .epfplan-enterprise-text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #333;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.epfret-plans .epfplan-enterprise-text strong {
+  color: #0b5f3a;
+  font-weight: 700;
+}
+
+@media (max-width: 992px) {
+  .epfret-plans .opcpricing-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .epfret-plans .opcpricing-cards {
+    grid-template-columns: 1fr;
+  }
+}

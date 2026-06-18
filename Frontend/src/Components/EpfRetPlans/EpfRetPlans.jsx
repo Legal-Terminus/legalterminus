@@ -2,57 +2,51 @@ import { useState } from "react";
 import "./EpfRetPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
+// Every tier ships the same end-to-end monthly EPF compliance scope —
+// only the covered headcount and price change between plans.
+const SERVICES = [
+  "Employee addition (Form 11 new joinee processing)",
+  "KYC seeding (Aadhaar + PAN + Bank linkage to UAN)",
+  "Form 5A submission",
+  "eSign approval workflow coordination",
+  "ECR statement preparation (member-wise wages + contributions)",
+  "ECR upload on EPF portal (unifiedportal-emp.epfindia.gov.in)",
+  "Acknowledgement (TRRN) delivery to client",
+  "EPF contribution payment coordination",
+  "Monthly filing by 15th of next month",
+  "Late-fee ZERO promise (we file on time)",
+];
+
 const PLANS = [
   {
-    id: "starter",
-    name: "Starter (up to 10 employees)",
-    oldPrice: 1999,
+    id: "elemental",
+    name: "ELEMENTAL",
+    range: "Up to 10 Employees",
+    oldPrice: 1499,
     price: 999,
-    period: "/ month",
-    services: [
-      "Monthly ECR preparation & generation",
-      "PF, EPS & EDLI contribution computation",
-      "Challan generation & payment guidance",
-      "Up to 10 employees per month",
-      "UAN generation for new joiners",
-      "Due-date reminder & filing confirmation",
-      "Email support for PF queries",
-    ],
+    period: "/ mo",
+    yearly: 10500,
+    services: SERVICES,
   },
   {
-    id: "growth",
-    name: "Growth (up to 50 employees)",
-    badge: "★ MOST POPULAR",
-    popular: true,
-    oldPrice: 3999,
-    price: 2199,
-    period: "/ month",
-    services: [
-      "Everything in Starter plan",
-      "Up to 50 employees per month",
-      "UAN KYC seeding (Aadhaar, PAN, bank)",
-      "New joiner & exit (Date of Exit) updates",
-      "KYC approval & member profile management",
-      "Arrear & wage-revision handling",
-      "Dedicated PF manager + WhatsApp support",
-    ],
+    id: "enriched",
+    name: "ENRICHED",
+    range: "10 to 25 Employees",
+    oldPrice: 2199,
+    price: 1999,
+    period: "/ mo",
+    yearly: 21500,
+    services: SERVICES,
   },
   {
-    id: "enterprise",
-    name: "Enterprise + Returns",
-    badge: "✦ FULL-SERVICE",
-    oldPrice: 8999,
-    price: 4999,
-    period: "/ month",
-    services: [
-      "Everything in Growth plan",
-      "Unlimited employees (custom-priced above 100)",
-      "Annual PF return & reconciliation support",
-      "EPF + ESI combined compliance option",
-      "PF withdrawal & transfer claim assistance",
-      "Inspection & notice (7A) response support",
-      "Priority support for EPFO grievances",
-    ],
+    id: "supreme",
+    name: "SUPREME",
+    range: "25 to 50 Employees",
+    oldPrice: 2999,
+    price: 2999,
+    period: "/ mo",
+    yearly: 31500,
+    services: SERVICES,
   },
 ];
 
@@ -61,7 +55,7 @@ const EpfRetPlans = () => {
 
   return (
     <>
-      <section className="opc-pricing-section">
+      <section className="opc-pricing-section epfret-plans">
         <div className="opcpricing-container">
 
           <header className="opcpricing-header">
@@ -73,24 +67,24 @@ const EpfRetPlans = () => {
 
           <div className="opcpricing-cards">
             {PLANS.map((plan) => (
-              <article
-                key={plan.id}
-                className={`opcplan-card${plan.popular ? " opcplan-card--popular" : ""}`}
-              >
+              <article key={plan.id} className="opcplan-card">
                 <div>
                   <div className="opcplan-header">
-                    {plan.badge && (
-                      <div className={`opcplan-badge${plan.popular ? " opcplan-badge--popular" : ""}`}>
-                        {plan.badge}
+                    <div className="opcplan-name">{plan.name}</div>
+                    <div className="epfplan-range">✦ {plan.range} ✦</div>
+                    {plan.oldPrice > plan.price && (
+                      <div className="opcplan-old-price">
+                        ₹{plan.oldPrice.toLocaleString("en-IN")}/mo
                       </div>
                     )}
-                    <div className="opcplan-name">{plan.name}</div>
-                    <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">
                       ₹{plan.price.toLocaleString("en-IN")}
                       <span style={{ fontSize: "0.5em", fontWeight: 500 }}> {plan.period}</span>
                     </div>
-                    <div className="opcplan-meta">+ PF contributions &amp; GST extra</div>
+                    <div className="epfplan-yearly">
+                      ₹{plan.yearly.toLocaleString("en-IN")} / year
+                    </div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">
@@ -104,7 +98,7 @@ const EpfRetPlans = () => {
 
                 <div className="opcplan-footer">
                   <button
-                    className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
+                    className="opcplan-button"
                     onClick={() => setActivePlan(plan)}
                   >
                     Buy Now
@@ -112,6 +106,18 @@ const EpfRetPlans = () => {
                 </div>
               </article>
             ))}
+          </div>
+
+          {/* Custom plan call-out for establishments above the SUPREME headcount */}
+          <div className="epfplan-enterprise">
+            <h3 className="epfplan-enterprise-title">
+              ✶ Establishment with more than 50 employees? ✶
+            </h3>
+            <p className="epfplan-enterprise-text">
+              Please reach out to us for a <strong>Custom Enterprise Plan</strong> tailored
+              to your employee count, multi-branch presence, and compliance complexity.
+              Drop us a note &amp; we&apos;ll structure a fit-for-purpose monthly engagement.
+            </p>
           </div>
 
         </div>
