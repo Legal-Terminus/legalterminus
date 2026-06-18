@@ -11,39 +11,43 @@ const TmarkBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Trademark Registration &amp; Application
+            Trademark Registration Filing
           </span>
 
           <h1 className="lt-public-title">
-            Trademark Application
+            Trademark Registration
             <span className="lt-title-india"> in India</span>
             <br />
             <span className="lt-title-tagline">Use the ™ from Day One, 100% Online</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus handles your end-to-end trademark application under the Trade Marks Act, 1999 — free trademark search, correct class selection across the 45 Nice classes, TM-A filing on the IP India portal, and examination &amp; objection support right up to registration. You can start using the ™ symbol as soon as the application is filed. Our professional fee starts at ₹1,499 + GST per class. Government fees are billed separately at actuals.
+            Your brand name, logo, tagline, or business identity is one of your most valuable business assets. With proper Trademark Application Filing under the Trade Marks Act, 1999, you get the legal right to protect your brand from unauthorized use and misuse across India.
+            <br /><br />
+            A registered trademark gives your business exclusive rights over its brand identity and provides legal protection against unauthorized use, copying, or infringement. It also allows you to use the ® symbol after registration, enhances brand credibility and value, and offers protection for 10 years, with the option for unlimited renewals.
+            <br /><br />
+            At Legal Terminus, we handle the complete Trademark Application Filing process for you — from trademark search to application filing on the official IP India portal.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Free Trademark Search &amp; Class Advice</div>
-            <div className="lt-feature-item">TM-A Filing on the IP India Portal</div>
-            <div className="lt-feature-item">Use ™ Immediately After Filing</div>
-            <div className="lt-feature-item">Examination &amp; Objection Reply Support</div>
+            <div className="lt-feature-item">TM-A Filed</div>
+            <div className="lt-feature-item">Brand Secure</div>
+            <div className="lt-feature-item">Regular Status Updates</div>
+            <div className="lt-feature-item">Start Using ™ Symbol After Filing</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>5,000+</h3>
-              <p>Trademarks filed</p>
+              <h3>3,500+</h3>
+              <p>Trademark applications filed</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>IP India portal filing</p>
+              <h3>All 45 Classes</h3>
+              <p>Goods + Services covered</p>
             </div>
             <div>
               <h3>7+</h3>
-              <p>Years of IP Expertise</p>
+              <p>Years of Legal Expertise</p>
             </div>
           </div>
 

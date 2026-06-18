@@ -3,35 +3,44 @@ import "./TmarkGovtCosts.css";
 
 const rows = [
   {
-    head: "Govt Fee — Individual / Startup / MSME",
-    range: "₹4,500 / class",
-    note: "Concessional e-filing fee in Form TM-A for individuals, startups, and MSMEs",
+    applicant: "Individual / Sole Proprietor (in personal name)",
+    fee: "₹4,500",
+    note: "50% rebate vs corporate filers",
   },
   {
-    head: "Govt Fee — Company / Others",
-    range: "₹9,000 / class",
-    note: "E-filing fee in Form TM-A for companies, partnerships, and other entities",
+    applicant: "Startup (DPIIT-recognised)",
+    fee: "₹4,500",
+    note: "Requires DPIIT Recognition Certificate",
   },
   {
-    head: "Per Additional Class",
-    range: "Same fee × classes",
-    note: "The above fee applies separately for each class of goods/services applied for",
+    applicant: "Small Enterprise (Udyam MSME-registered)",
+    fee: "₹4,500",
+    note: "Requires valid Udyam Certificate",
   },
   {
-    head: "Opposition / Notice (TM-O)",
-    range: "₹2,700 / class",
-    note: "Fee to file or defend an opposition during the 4-month publication window",
+    applicant: "Companies / LLPs / Partnerships (non-MSME / non-Startup)",
+    fee: "₹9,000",
+    note: "Default rate; no rebate",
   },
   {
-    head: "Renewal (after 10 years)",
-    range: "₹9,000 / class",
-    note: "Renewal fee on Form TM-R; a registered mark is valid for 10 years and renewable",
+    applicant: "Opposition Filing (Form TM-O)",
+    fee: "₹2,700 per class",
+    note: "Counter-statement separate",
   },
   {
-    head: "Total Out-of-Pocket (typical, 1 class)",
-    range: "₹4,500 – ₹9,000",
-    note: "Govt. fee billed at actuals per applicant type; professional fee charged separately",
-    isTotal: true,
+    applicant: "Renewal (Form TM-R) — after 10 years",
+    fee: "₹9,000 (or ₹4,500 with rebate)",
+    note: "Same rebate logic applies",
+  },
+  {
+    applicant: "Restoration (Form TM-R) — if renewal missed",
+    fee: "₹4,500 surcharge added",
+    note: "Within grace period",
+  },
+  {
+    applicant: "50% REBATE — Individual / DPIIT Startup / Udyam MSME",
+    fee: "₹4,500 vs ₹9,000 per class",
+    note: "Material saving across multi-class",
   },
 ];
 
@@ -40,27 +49,27 @@ const TmarkGovtCosts = () => {
     <section className="opc-govtcosts-section">
       <div className="opc-govtcosts-container">
         <h2 className="opc-govtcosts-title">
-          Indicative Government &amp; Out-of-Pocket Costs
-          <span className="opc-govtcosts-badge">Billed at Actuals</span>
+          Indicative Government Fees
+          <span className="opc-govtcosts-badge">Per Class — Billed at Actuals</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          Trademark government fees are charged over and above our professional fee. The fee depends on the applicant type (individual/startup/MSME vs others) and the number of classes applied for — billed at actuals per the official IP India fee schedule.
+          Per First Schedule of the Trade Marks Rules, 2017. E-FILING IS THE STANDARD AND RECOMMENDED PATH — physical filing, while technically still listed in the First Schedule, is essentially obsolete in 2026 practice (we file ONLY via the IP India online portal). Fees are per class — multi-class filings are multiplicative:
         </p>
 
         <div className="opc-govtcosts-table-wrapper">
           <table className="opc-govtcosts-table">
             <thead>
               <tr>
-                <th>Cost Head</th>
-                <th>Typical Range</th>
+                <th>Applicant Type</th>
+                <th>E-Filing (per class)</th>
                 <th>Notes</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row, i) => (
-                <tr key={i} className={row.isTotal ? "opc-govtcosts-total-row" : ""}>
-                  <td>{row.head}</td>
-                  <td className="opc-govtcosts-range">{row.range}</td>
+                <tr key={i}>
+                  <td>{row.applicant}</td>
+                  <td className="opc-govtcosts-range">{row.fee}</td>
                   <td>{row.note}</td>
                 </tr>
               ))}

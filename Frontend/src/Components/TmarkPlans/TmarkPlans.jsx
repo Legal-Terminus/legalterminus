@@ -4,51 +4,75 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "basic",
-    name: "Trademark Search & File",
-    oldPrice: 2999,
+    id: "elemental",
+    name: "Elemental",
+    badge: "PROPOSED-TO-BE-USED",
+    oldPrice: 2249,
     price: 1499,
     services: [
-      "Comprehensive trademark search (public TM register)",
-      "Class selection guidance (1 class)",
-      "TM-A application drafting & filing",
-      "Govt fee coordination (₹4,500 for individual/startup/MSME)",
-      "Right to use the ™ symbol immediately",
-      "Application number & filing receipt",
-      "Email delivery of acknowledgement",
+      "Name search up to 5 names (IP India database)",
+      "Preparing objects / goods + services descriptions",
+      "Preparing Power of Attorney (Form TM-48)",
+      "Filing TM-A application on IP India portal",
+      "Client confirmation before final submission",
+      "Final submission of TM-A application",
+      "Government fee submission (per class at actuals)",
+      "Acknowledgement + Challan emailed to client",
+      "Monthly status update of the application (life time)",
     ],
   },
   {
-    id: "standard",
-    name: "File + Examination Support",
-    badge: "★ MOST POPULAR",
+    id: "enriched",
+    name: "Enriched",
+    badge: "★ PRIOR USE OF MARK",
     popular: true,
-    oldPrice: 5999,
-    price: 3499,
+    oldPrice: 3749,
+    price: 2499,
     services: [
-      "Everything in Trademark Search & File",
-      "Examination report monitoring & analysis",
-      "Reply to objection under Section 9 / 11",
-      "Drafting & filing of examination response",
-      "Hearing preparation guidance (if scheduled)",
-      "Status tracking till journal publication",
-      "Dedicated IP expert + WhatsApp support",
+      "Everything in Elemental",
+      "Additional name search up to 5 names (IP India database)",
+      "PREPARE USER AFFIDAVIT (Statement of use)",
+      "Coordination for EVIDENCE OF PRIOR USE",
+      "(invoices, advertisements, packaging, online presence, social media history, GST records, etc.)",
+      "Date-of-first-use declaration on TM-A",
+      "Stronger claim against future similar-mark filings",
+      "All other Elemental features apply",
+      "Monthly status update of the application (life time)",
     ],
   },
   {
-    id: "premium",
-    name: "End-to-End Registration",
-    badge: "✦ FULL-SERVICE",
-    oldPrice: 12999,
-    price: 7999,
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ WITH DEPT QUERY HANDLING",
+    oldPrice: 9749,
+    price: 6499,
     services: [
-      "Everything in File + Examination Support",
-      "Multi-class / multiple-mark filing support",
-      "Opposition monitoring during 4-month window",
-      "Reply to third-party opposition (basic)",
-      "Registration certificate follow-up",
-      "Brand-protection & ® usage advisory",
-      "Priority support till certificate issuance",
+      "Everything in Elemental + Enriched",
+      "UDYAM CERTIFICATE UPDATE (or fresh Udyam application)",
+      "(unlocks 50% government-fee rebate — ₹4,500 instead of ₹9,000)",
+      "DEPARTMENTAL QUERY HANDLING (max 2 times)",
+      "(Examination Report response under Section 18)",
+      "Drafting + filing of objection reply",
+      "Legal arguments + case-law citations",
+      "Monthly status update + reminders (life time)",
+    ],
+  },
+  {
+    id: "supreme-plus",
+    name: "Supreme Plus",
+    badge: "✦ HEARING + OPPOSITION",
+    oldPrice: 22499,
+    price: 14999,
+    services: [
+      "Everything in Supreme",
+      "TRADEMARK HEARING representation (max 2 times)",
+      "(before the Trade Marks Registry — personal + video)",
+      "Counter-statement + arguments + case-law citations",
+      "OPPOSITION HANDLING (1 time)",
+      "(filing counter-statement under Section 21)",
+      "Drafting Reply to Notice of Opposition",
+      "Coordination through evidence stage",
+      "Monthly status update + reminders (life time)",
     ],
   },
 ];
@@ -68,7 +92,7 @@ const TmarkPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards tmark-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
@@ -84,7 +108,7 @@ const TmarkPlans = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ Govt fee &amp; GST extra / class</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">
