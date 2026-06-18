@@ -4,7 +4,6 @@ import EpfRetBreadcrum from '../../Components/EpfRetBreadcrum/EpfRetBreadcrum'
 
 const EpfRetPlans = React.lazy(() => import('../../Components/EpfRetPlans/EpfRetPlans'))
 const EpfRetPenalties = React.lazy(() => import('../../Components/EpfRetPenalties/EpfRetPenalties'))
-const EpfRetGovtCosts = React.lazy(() => import('../../Components/EpfRetGovtCosts/EpfRetGovtCosts'))
 const EpfRetTermCondition = React.lazy(() => import('../../Components/EpfRetTermCondition/EpfRetTermCondition'))
 const EpfRetZolvitPremium = React.lazy(() => import('../../Components/EpfRetZolvitPremium/EpfRetZolvitPremium'))
 const EpfRetTabs = React.lazy(() => import('../../Components/EpfRetTabs/EpfRetTabs'))
@@ -35,12 +34,6 @@ const EPFReturnNew = () => {
 
       <Suspense fallback={<div />}>
         <EpfRetPenalties />
-      </Suspense>
-
-      <div className="section-divider" />
-
-      <Suspense fallback={<div />}>
-        <EpfRetGovtCosts />
       </Suspense>
 
       <div className="section-divider" />
