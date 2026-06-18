@@ -5,64 +5,68 @@ import { FaUser, FaBuilding, FaIdCard, FaTrademark, FaFileSignature, FaCertifica
 const applicantDocs = [
   {
     icon: <FaIdCard />,
-    title: "Applicant Identity & Address",
-    note: "For all applicant types",
+    title: "Applicant Identity",
+    note: "Varies by applicant type",
     items: [
-      "PAN card of the applicant / proprietor / company",
-      "Aadhaar / address proof of the signatory",
-      "Email ID & mobile number for correspondence",
+      "INDIVIDUALS (sole proprietors, in personal name — 50% rebate): PAN + Aadhaar + photograph + residence address proof",
+      "COMPANIES / LLPs / PARTNERSHIPS: entity PAN + Certificate of Incorporation / Partnership Deed + authorised signatory PAN + KYC + DSC (Class 3) + authorisation letter / Board Resolution",
+      "STARTUPS (DPIIT-recognised — 50% rebate): DPIIT Startup India Recognition Certificate",
     ],
   },
   {
-    icon: <FaCertificate />,
-    title: "MSME / Startup Proof (for lower fee)",
-    note: "To claim the ₹4,500 concessional fee",
+    icon: <FaTrademark />,
+    title: "Brand / Mark Details",
+    note: "The mark you want to protect",
     items: [
-      "Udyam (MSME) registration certificate, or",
-      "DPIIT Startup recognition certificate",
-      "(Individuals also qualify for the concessional fee)",
+      "MARK image in JPG / PNG (high resolution; transparent background preferred)",
+      "WORDMARK: exact spelling + font / typeface; LOGO: design / device file; COMBINATION: text + image as one composite",
+      "Tagline (if part of mark); Colour scheme (if mark is colour-claimed)",
+      "Any special characteristics (3D mark, sound mark, motion mark — rare)",
     ],
   },
   {
-    icon: <FaFileSignature />,
-    title: "Power of Attorney",
-    note: "Authorising us to file (Form TM-48)",
+    icon: <FaClipboardList />,
+    title: "Goods / Services + Class Identification",
+    note: "Determines protection scope",
     items: [
-      "Signed Power of Attorney (Form TM-48) — drafted by us",
-      "Authorised signatory details for companies/firms",
+      "Detailed list of GOODS and / or SERVICES for which the mark will be registered",
+      "Each item mapped to the correct Nice Class (1–34 goods / 35–45 services)",
+      "The goods / services description determines your protection scope — we draft it carefully",
+      "Multi-class applications listed separately",
     ],
   },
 ];
 
 const markDocs = [
   {
-    icon: <FaTrademark />,
-    title: "The Trademark Itself",
-    note: "The brand you want to protect",
+    icon: <FaFileSignature />,
+    title: "Power of Attorney (Form TM-48)",
+    note: "Authorising us to file + prosecute",
     items: [
-      "Brand name / word mark to be registered",
-      "Logo / device in clear image format (if applicable)",
-      "Tagline or slogan (if to be included)",
-    ],
-  },
-  {
-    icon: <FaClipboardList />,
-    title: "Goods / Services Details",
-    note: "For class selection",
-    items: [
-      "Description of goods or services offered",
-      "Business / industry the mark is used in",
-      "Class(es) to be applied for (we advise)",
+      "POWER OF ATTORNEY in favour of our trademark agent / firm — authorising us to file + prosecute the application",
+      "Format shared by us; signed by the applicant (or authorised signatory for entities) on appropriate stamp paper (typically ₹100)",
+      "We draft + provide for signature",
     ],
   },
   {
     icon: <FaImage />,
-    title: "Proof of Use (if claiming prior use)",
-    note: "Optional — strengthens the application",
+    title: "Prior-Use Evidence Pack",
+    note: "Required where claiming prior use",
     items: [
-      "Date of first use of the mark",
-      "Evidence — invoices, packaging, ads, brochures",
-      "Affidavit of user (Form TM-U, if required)",
+      "USER AFFIDAVIT (sworn statement) declaring date of first use + goods / services + extent of use",
+      "EVIDENCE: invoices, advertisements, social media handles + post screenshots, website domain + WHOIS records, GST returns + commercial records, packaging samples, third-party endorsements / news coverage, e-commerce listings",
+      "We coordinate; you provide source documents",
+    ],
+  },
+  {
+    icon: <FaCertificate />,
+    title: "MSME / DPIIT / Individual Status (Fee Rebate)",
+    note: "For the 50% government-fee rebate",
+    items: [
+      "UDYAM REGISTRATION CERTIFICATE (for MSMEs — any size: Micro / Small / Medium)",
+      "OR DPIIT STARTUP INDIA RECOGNITION CERTIFICATE (for startups)",
+      "OR for individuals filing in personal name — PAN + Aadhaar as evidence",
+      "Supreme tier helps with Udyam application / renewal where you don't have one. Material saving: ₹4,500 vs ₹9,000 per class",
     ],
   },
 ];
@@ -90,8 +94,8 @@ const TmarkDocuments = () => {
       <div className="opcd-container">
 
         <div className="opcd-header">
-          <h2 className="opcd-main-title">Documents Required for a Trademark Application</h2>
-          <p className="opcd-main-subtitle">Get these ready and we'll take care of the rest</p>
+          <h2 className="opcd-main-title">Documents Required for Trademark Registration in India</h2>
+          <p className="opcd-main-subtitle">Six categories. Documentation is moderate — applicant identity + mark details + class + POA + (if prior-use) user affidavit + evidence + (if MSME / Startup) Udyam / DPIIT certificate. We send a personalised checklist after the discovery call.</p>
         </div>
 
         <div className="opcd-columns">
@@ -100,8 +104,8 @@ const TmarkDocuments = () => {
             <div className="opcd-col-header">
               <div className="opcd-col-header-icon"><FaUser /></div>
               <div>
-                <h3 className="opcd-col-title">Applicant &amp; Authorisation Documents</h3>
-                <p className="opcd-col-subtitle">Identity, fee-category proof &amp; POA</p>
+                <h3 className="opcd-col-title">Applicant, Mark &amp; Class</h3>
+                <p className="opcd-col-subtitle">Identity, brand details &amp; goods / services</p>
               </div>
             </div>
             <div className="opcd-col-body">
@@ -115,8 +119,8 @@ const TmarkDocuments = () => {
             <div className="opcd-col-header opcd-col-header--office">
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="opcd-col-title">Mark &amp; Goods/Services Documents</h3>
-                <p className="opcd-col-subtitle">The mark, its class &amp; proof of use</p>
+                <h3 className="opcd-col-title">POA, Evidence &amp; Fee Rebate</h3>
+                <p className="opcd-col-subtitle">TM-48, prior-use proof &amp; MSME / DPIIT</p>
               </div>
             </div>
             <div className="opcd-col-body">
