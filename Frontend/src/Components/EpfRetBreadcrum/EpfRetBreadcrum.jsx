@@ -11,35 +11,39 @@ const EpfRetBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            EPF Return Filing &amp; Monthly Compliance
+            EPF Return Filing
           </span>
 
           <h1 className="lt-public-title">
             EPF Return Filing
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">EPFO-Compliant, Monthly &amp; 100% Online</span>
+            <span className="lt-title-tagline">Filed on Time, Every Month</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus manages your establishment's monthly EPF compliance with the Employees' Provident Fund Organisation (EPFO) — ECR (Electronic Challan-cum-Return) preparation, UAN generation, contribution computation, and challan payment before every due date. We handle employee and employer PF, EPS, and EDLI calculations so your workforce's provident fund stays fully compliant. Our professional fee starts at ₹999 + GST per month. Statutory contributions are paid directly to EPFO at actuals.
+            Every employer covered under the Employees&rsquo; Provident Funds and Miscellaneous Provisions Act, 1952 is required to complete monthly EPF Return Filing through the EPFO Unified Portal. The monthly ECR (Electronic Challan-cum-Return) must generally be filed on or before the 15th of the following month.
+          </p>
+
+          <p className="lt-public-description">
+            At Legal Terminus, we manage the complete EPF monthly compliance cycle — from employee onboarding and UAN/KYC updates to ECR preparation, challan generation, portal filing, and acknowledgement support. Our team helps ensure accurate filings, timely submissions, and smooth coordination with your payroll process.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Monthly ECR Preparation &amp; Filing</div>
-            <div className="lt-feature-item">UAN Generation &amp; KYC Seeding</div>
-            <div className="lt-feature-item">PF, EPS &amp; EDLI Computation</div>
-            <div className="lt-feature-item">Challan Payment by the 15th Due Date</div>
+            <div className="lt-feature-item">ECR Filed by 15th</div>
+            <div className="lt-feature-item">KYC Seeded</div>
+            <div className="lt-feature-item">Form 5A Annual</div>
+            <div className="lt-feature-item">Payment Coordinated</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>5,000+</h3>
-              <p>Returns filed monthly</p>
+              <h3>500+</h3>
+              <p>Monthly ECRs filed</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>EPFO portal filing</p>
+              <h3>All Establishment Sizes</h3>
+              <p>Up to 50 employees standard; 50+ custom</p>
             </div>
             <div>
               <h3>7+</h3>
