@@ -39,7 +39,7 @@ const PLANS = [
     id: "supreme",
     name: "Supreme",
     badge: "✦ 25 TO 50 EMPLOYEES",
-    oldPrice: 2999,
+    oldPrice: 3499,
     price: 2999,
     yearly: "₹31,500 / yr",
     services: ESI_SERVICES,
