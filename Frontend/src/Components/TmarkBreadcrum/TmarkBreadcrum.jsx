@@ -11,7 +11,7 @@ const TmarkBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Trademark Registration Filing
+            Trademark Registration
           </span>
 
           <h1 className="lt-public-title">
