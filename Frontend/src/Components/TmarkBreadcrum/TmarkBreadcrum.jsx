@@ -18,13 +18,13 @@ const TmarkBreadcrum = () => {
             Trademark Registration
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Use the ™ from Day One, 100% Online</span>
+            <span className="lt-title-tagline">Exclusive Rights for Your Brand</span>
           </h1>
 
           <p className="lt-public-description">
-            Your brand name, logo, tagline, or business identity is one of your most valuable business assets. With proper Trademark Application Filing under the Trade Marks Act, 1999, you get the legal right to protect your brand from unauthorized use and misuse across India.
+            Your brand name, logo, tagline, and business identity are valuable business assets. Filing a trademark application under the Trade Marks Act, 1999 helps secure legal protection for your brand and prevents unauthorized use or misuse across India.
             <br /><br />
-            A registered trademark gives your business exclusive rights over its brand identity and provides legal protection against unauthorized use, copying, or infringement. It also allows you to use the ® symbol after registration, enhances brand credibility and value, and offers protection for 10 years, with the option for unlimited renewals.
+            A registered trademark grants exclusive rights over your brand, enhances credibility and business value, and allows you to use the ® symbol after registration. Trademark protection is valid for 10 years and can be renewed indefinitely.
             <br /><br />
             At Legal Terminus, we handle the complete Trademark Application Filing process for you — from trademark search to application filing on the official IP India portal.
           </p>
