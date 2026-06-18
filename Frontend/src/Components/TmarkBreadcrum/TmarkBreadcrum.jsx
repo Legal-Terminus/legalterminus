@@ -22,9 +22,7 @@ const TmarkBreadcrum = () => {
           </h1>
 
           <p className="lt-public-description">
-            Your brand name, logo, tagline, and business identity are valuable business assets. Filing a trademark application under the Trade Marks Act, 1999 helps secure legal protection for your brand and prevents unauthorized use or misuse across India.
-            <br /><br />
-            A registered trademark grants exclusive rights over your brand, enhances credibility and business value, and allows you to use the ® symbol after registration. Trademark protection is valid for 10 years and can be renewed indefinitely.
+            Your brand name, logo, tagline, and business identity are valuable business assets. Filing a trademark application under the Trade Marks Act, 1999 helps secure legal protection for your brand and prevents unauthorized use or misuse across India. A registered trademark grants exclusive rights over your brand, enhances credibility and business value, and allows you to use the ® symbol after registration. Trademark protection is valid for 10 years and can be renewed indefinitely.
             <br /><br />
             At Legal Terminus, we handle the complete Trademark Application Filing process for you — from trademark search to application filing on the official IP India portal.
           </p>
