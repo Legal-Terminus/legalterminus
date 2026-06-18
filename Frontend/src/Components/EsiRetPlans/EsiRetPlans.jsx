@@ -2,57 +2,47 @@ import { useState } from "react";
 import "./EsiRetPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
+const ESI_SERVICES = [
+  "Employee addition in ESI portal (new IP creation)",
+  "Employee exit marking in ESI portal",
+  "Monthly ESI return filing (Contribution upload)",
+  "ESI contribution payment coordination",
+  "Challan emailed to client",
+  "Contribution history emailed to client",
+  "Filing-by-15th guarantee (Late-fee ZERO promise)",
+  "Filed on https://www.esic.gov.in",
+  "Monthly due-date by 15TH OF NEXT MONTH",
+  "Govt interest (Sec 39 12% pa) + damages (85B 5-25% pa) at actuals",
+];
+
 const PLANS = [
   {
-    id: "starter",
-    name: "Starter (up to 10 employees)",
-    oldPrice: 1999,
+    id: "elemental",
+    name: "Elemental",
+    badge: "UP TO 10 EMPLOYEES",
+    oldPrice: 1499,
     price: 999,
-    period: "/ month",
-    services: [
-      "Monthly ESI contribution return filing",
-      "Employee (0.75%) & employer (3.25%) computation",
-      "Challan generation & payment guidance",
-      "Up to 10 covered employees per month",
-      "IP (Insured Person) registration for new joiners",
-      "Due-date reminder & filing confirmation",
-      "Email support for ESI queries",
-    ],
+    yearly: "₹10,500 / yr",
+    services: ESI_SERVICES,
   },
   {
-    id: "growth",
-    name: "Growth (up to 50 employees)",
-    badge: "★ MOST POPULAR",
+    id: "enriched",
+    name: "Enriched",
+    badge: "★ 10 TO 25 EMPLOYEES",
     popular: true,
-    oldPrice: 3999,
-    price: 2199,
-    period: "/ month",
-    services: [
-      "Everything in Starter plan",
-      "Up to 50 covered employees per month",
-      "e-Pehchaan card generation & dependant details",
-      "New joiner & exit (Date of Leaving) updates",
-      "Wage-ceiling (₹21,000) eligibility tracking",
-      "Contribution-period continuation handling",
-      "Dedicated ESI manager + WhatsApp support",
-    ],
+    oldPrice: 2199,
+    price: 1999,
+    yearly: "₹21,500 / yr",
+    services: ESI_SERVICES,
   },
   {
-    id: "enterprise",
-    name: "Enterprise + Returns",
-    badge: "✦ FULL-SERVICE",
-    oldPrice: 8999,
-    price: 4999,
-    period: "/ month",
-    services: [
-      "Everything in Growth plan",
-      "Unlimited employees (custom-priced above 100)",
-      "Half-yearly contribution return reconciliation",
-      "EPF + ESI combined compliance option",
-      "Accident reporting (Form 12) & benefit assistance",
-      "Inspection & notice (45A / 85) response support",
-      "Priority support for ESIC grievances",
-    ],
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ 25 TO 50 EMPLOYEES",
+    oldPrice: 2999,
+    price: 2999,
+    yearly: "₹31,500 / yr",
+    services: ESI_SERVICES,
   },
 ];
 
@@ -71,7 +61,7 @@ const EsiRetPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards esiret-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
@@ -85,12 +75,15 @@ const EsiRetPlans = () => {
                       </div>
                     )}
                     <div className="opcplan-name">{plan.name}</div>
-                    <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    {plan.oldPrice && plan.oldPrice !== plan.price && (
+                      <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")} / mo</div>
+                    )}
                     <div className="opcplan-price">
                       ₹{plan.price.toLocaleString("en-IN")}
-                      <span style={{ fontSize: "0.5em", fontWeight: 500 }}> {plan.period}</span>
+                      <span style={{ fontSize: "0.5em", fontWeight: 500 }}> / mo</span>
                     </div>
-                    <div className="opcplan-meta">+ ESI contributions &amp; GST extra</div>
+                    <div className="esiret-plan-yearly">{plan.yearly}</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">

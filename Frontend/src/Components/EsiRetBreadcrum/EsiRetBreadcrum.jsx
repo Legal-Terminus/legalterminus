@@ -11,35 +11,35 @@ const EsiRetBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            ESI Return Filing &amp; Monthly Compliance
+            ESI Return Filing
           </span>
 
           <h1 className="lt-public-title">
             ESI Return Filing
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">ESIC-Compliant, Monthly &amp; 100% Online</span>
+            <span className="lt-title-tagline">Filed by the 15th. Every month</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus manages your establishment's monthly ESI compliance with the Employees' State Insurance Corporation (ESIC) under the ESI Act, 1948 — monthly contribution filing, IP (Insured Person) registration, contribution computation, and challan payment before every due date. We handle employee (0.75%) and employer (3.25%) contributions so your workforce's health-insurance cover stays fully active. Our professional fee starts at ₹999 + GST per month. Statutory contributions are paid directly to ESIC at actuals.
+            Managing ESI compliance every month can be time-consuming — especially when employee additions, exits, contribution calculations, and filing deadlines all need to be handled accurately. Legal Terminus makes the process simple. We manage your complete ESI Return Filing cycle, including employee registration, exit updates, monthly contribution filing, challan sharing, payment coordination, and compliance tracking — all filed before the due date on the official ESIC portal. Our focused team helps your business stay compliant while ensuring employees continue receiving uninterrupted ESI benefits. Plans start from ₹999 per month (or ₹10,500 yearly) + GST.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Monthly Contribution Return &amp; Challan</div>
-            <div className="lt-feature-item">IP Registration &amp; e-Pehchaan Cards</div>
-            <div className="lt-feature-item">Employee 0.75% &amp; Employer 3.25%</div>
-            <div className="lt-feature-item">Challan Payment by the 15th Due Date</div>
+            <div className="lt-feature-item">Filed by 15th</div>
+            <div className="lt-feature-item">Challan Mailed</div>
+            <div className="lt-feature-item">History Shared</div>
+            <div className="lt-feature-item">Payment Coordinated</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>5,000+</h3>
-              <p>Returns filed monthly</p>
+              <h3>500+</h3>
+              <p>Monthly ESI contributions filed</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>ESIC portal filing</p>
+              <h3>All Establishment Sizes</h3>
+              <p>Up to 50 employees standard; 50+ custom</p>
             </div>
             <div>
               <h3>7+</h3>

@@ -2,6 +2,39 @@ import React from "react";
 import "./EsiRetOverview.css";
 import illustration from "../../assets/whypvt-imp1.svg";
 
+const contribStructure = [
+  {
+    component: "Employee Contribution (0.75%)",
+    rate: "0.75% of GROSS WAGES (covered IPs only)",
+    exA: "₹112.50 (rounded ₹113)",
+    exB: "₹150",
+  },
+  {
+    component: "Employer Contribution (3.25%)",
+    rate: "3.25% of GROSS WAGES (covered IPs only)",
+    exA: "₹487.50 (rounded ₹488)",
+    exB: "₹650",
+  },
+  {
+    component: "TOTAL ESI Contribution per IP (4%)",
+    rate: "Combined Employee + Employer",
+    exA: "₹600 (per IP per month)",
+    exB: "₹800 (per IP per month)",
+  },
+  {
+    component: "Coverage Eligibility",
+    rate: "Gross wages ≤ ₹21,000 (₹25,000 differently-abled)",
+    exA: "Covered",
+    exB: "Covered",
+  },
+  {
+    component: "If Wage > ₹21,000",
+    rate: "Not covered (with mid-period continuation rule)",
+    exA: "N/A",
+    exB: "N/A",
+  },
+];
+
 const EsiRetOverview = () => {
   return (
     <div className="opc-full-wrapper">
@@ -18,12 +51,12 @@ const EsiRetOverview = () => {
 
           <div className="opc-intro-content">
             <h2 className="opc-intro-title">
-              Why ESI Return Filing Matters
+              Why You Need Timely ESI Return Filing
             </h2>
             <p className="opc-intro-text">
-              The Employees' State Insurance (ESI) scheme is a self-financing social-security and health-insurance scheme run by the ESIC under the ESI Act, 1948. Establishments with 10 or more employees (20 in some states) must register and file a monthly contribution return, depositing the employee (0.75%) and employer (3.25%) contributions for every worker earning up to ₹21,000 a month — by the 15th of the following month.
+              The Employees' State Insurance (ESI) Act, 1948 requires eligible establishments to register under ESI and deposit monthly contributions for covered employees. Generally, establishments employing 10 or more employees must comply with ESI regulations for employees earning up to ₹21,000 per month. ESI provides valuable benefits such as medical care, sickness, maternity, disability, and dependent benefits for employees and their families.
               <br /><br />
-              Treating it casually is costly on two fronts. Late deposit attracts 12% per annum interest plus graded damages of 5%–25%, and persistent default can lead to a 45A determination and prosecution under Section 85. More importantly, ESI is your workers' gateway to medical care, sickness pay, maternity benefit, and disablement cover — and a worker not properly registered as an Insured Person simply cannot access it. Accurate monthly ESI filing protects both the employer's liability and the workforce's health security.
+              Under the ESI scheme, employees contribute 0.75% of wages and employers contribute 3.25%, making the total contribution 4% of wages. Contributions must be deposited through the ESIC portal by the 15th of the following month. Delayed or incorrect filing may result in interest, penalties, compliance notices, recovery proceedings, and disruption of employee benefits.
             </p>
           </div>
         </div>
@@ -31,27 +64,29 @@ const EsiRetOverview = () => {
 
       <section className="opc-compare-section">
         <div className="opc-compare-container">
-          <h2 className="opc-compare-title">Compliant vs Non-Compliant Employer: The Honest Comparison</h2>
+          <h2 className="opc-compare-title">ESI Contribution Structure (Monthly Computation)</h2>
           <p className="opc-compare-subtitle">
-            What changes when ESI returns are filed accurately and on time versus left to lapse:
+            ESI's contribution structure is different from EPF's — the wage ceiling (₹21,000) is a COVERAGE THRESHOLD, not a contribution cap. Employees earning gross wages up to ₹21,000 (or ₹25,000 if differently-abled) are COVERED + contributions are computed on ACTUAL GROSS WAGES (not capped at ₹21,000). Employees earning above ₹21,000 are NOT covered — subject to the mid-period continuation rule. Here's how the monthly contribution breaks down:
           </p>
           <div className="opc-compare-table-wrapper">
             <table className="opc-compare-table">
               <thead>
                 <tr>
-                  <th>Parameter</th>
-                  <th>Compliant Employer</th>
-                  <th>Non-Compliant Employer</th>
+                  <th>Component</th>
+                  <th>Rate / Calculation</th>
+                  <th>Example A: Gross Wage = ₹15,000</th>
+                  <th>Example B: Gross Wage = ₹20,000</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>Interest on Late Deposit</td><td>₹0 — paid by the 15th</td><td>12% p.a. on delayed dues</td></tr>
-                <tr><td>Damages</td><td>None</td><td>5%–25% p.a. (Reg. 31C)</td></tr>
-                <tr><td>Prosecution Risk</td><td>None — clean record</td><td>45A determination &amp; Sec 85 action</td></tr>
-                <tr><td>Worker Medical Benefit</td><td>Active — IPs registered</td><td>Denied — workers uninsured</td></tr>
-                <tr><td>Employer Liability on Injury</td><td>Covered by ESIC</td><td>Direct liability under Workmen laws</td></tr>
-                <tr><td>Tender / Audit Compliance</td><td>Proof available</td><td>Disqualified at compliance check</td></tr>
-                <tr><td>Employee Trust</td><td>High — benefits accessible</td><td>Grievances &amp; attrition</td></tr>
+                {contribStructure.map((row, i) => (
+                  <tr key={i}>
+                    <td>{row.component}</td>
+                    <td>{row.rate}</td>
+                    <td>{row.exA}</td>
+                    <td>{row.exB}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
