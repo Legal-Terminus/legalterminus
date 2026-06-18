@@ -1,1 +1,12 @@
 @import url('../OpcZolvitPremium/OpcZolvitPremium.css');
+
+/* Nudge the priority illustration down a little */
+.tmark-zp-illustration {
+    margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+    .tmark-zp-illustration {
+        margin-top: 16px;
+    }
+}

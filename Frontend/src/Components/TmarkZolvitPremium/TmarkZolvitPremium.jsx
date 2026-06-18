@@ -14,7 +14,7 @@ const TmarkZolvitPremium = () => {
               <img
                 src={premiumIllustration}
                 alt="Trademark Application by Legal Terminus"
-                className="opczp-illustration"
+                className="opczp-illustration tmark-zp-illustration"
               />
             </div>
 
