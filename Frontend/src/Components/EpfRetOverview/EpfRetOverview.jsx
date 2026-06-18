@@ -31,35 +31,6 @@ const EpfRetOverview = () => {
         </div>
       </section>
 
-      <section className="opc-compare-section">
-        <div className="opc-compare-container">
-          <h2 className="opc-compare-title">Compliant vs Non-Compliant Employer: The Honest Comparison</h2>
-          <p className="opc-compare-subtitle">
-            What changes when EPF returns are filed accurately and on time versus left to lapse:
-          </p>
-          <div className="opc-compare-table-wrapper">
-            <table className="opc-compare-table">
-              <thead>
-                <tr>
-                  <th>Parameter</th>
-                  <th>Compliant Employer</th>
-                  <th>Non-Compliant Employer</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>Interest on Late Deposit</td><td>₹0 — paid by the 15th</td><td>12% p.a. under Section 7Q</td></tr>
-                <tr><td>Damages</td><td>None</td><td>5%–25% p.a. under Section 14B</td></tr>
-                <tr><td>Employer Liability</td><td>Discharged each month</td><td>Personal liability for PF dues</td></tr>
-                <tr><td>Employee Withdrawals</td><td>Smooth — KYC seeded</td><td>Blocked by missing/mismatched data</td></tr>
-                <tr><td>EPFO 7A Inquiry</td><td>Unlikely — clean record</td><td>Assessment, recovery &amp; damages</td></tr>
-                <tr><td>Tax Deduction (Sec 36/43B)</td><td>Allowed — paid on time</td><td>Disallowed if not deposited by due date</td></tr>
-                <tr><td>Employee Trust</td><td>High — dues visible in passbook</td><td>Grievances &amp; attrition</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
     </div>
   );
 };
