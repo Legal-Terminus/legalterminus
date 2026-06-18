@@ -38,10 +38,6 @@ const EpfRetGovtCosts = () => {
   return (
     <section className="opc-govtcosts-section">
       <div className="opc-govtcosts-container">
-        <h2 className="opc-govtcosts-title">
-          Indicative EPF Contribution &amp; Late-Payment Costs
-          <span className="opc-govtcosts-badge">Statutory</span>
-        </h2>
         <p className="opc-govtcosts-subtitle">
           EPF contributions are statutory amounts deposited with EPFO, separate from our professional fee. Contributions are calculated on wages (basic + DA), and late deposit attracts interest under Section 7Q and damages under Section 14B — charged by EPFO at actuals.
         </p>
