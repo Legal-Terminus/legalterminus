@@ -51,7 +51,7 @@ const EpfRetElegibility = () => {
         Steps for EPF Return Filing in India
       </h2>
       <p className="opcelg-subheading">
-        EPF Return Filing is a recurring monthly cycle anchored to the 15th-of-next-month deadline. Below is your monthly EPF compliance cycle — calendar-anchored to the 8 deliverables.
+        This Section Is Reframed From The Standard "Step-By-Step Process" Because Epf Return Filing Is A Recurring Monthly Cycle Anchored To The 15th-Of-Next-Month Deadline. Below Is Your Monthly Epf Compliance Cycle - Calendar-Anchored To The 8 Deliverables.
       </p>
 
       <div className="opcelg-timeline">
