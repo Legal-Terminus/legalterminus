@@ -6,23 +6,12 @@ const employerDocs = [
   {
     icon: <FaFileInvoiceDollar />,
     title: "Monthly Wage Register",
-    note: "The foundation of every month's Contribution upload",
-    items: [
-      "Every IP's monthly payroll: Name + IP Number + Designation + Date of Joining + Days Worked + LOP Days + Gross Wages + Actual Wage Paid",
-      "Gross Wages = Basic + DA + HRA + other allowances forming part of 'wages' (Section 2(22) ESI Act)",
-      "Provided in Excel / payroll software export (Zoho / Keka / GreytHR / Tally / SAP)",
-    ],
+    text: "Every IP's monthly payroll data: Name + IP Number + Designation + Date of Joining + Days Worked + LOP Days + Gross Wages (Basic + DA + HRA + other allowances forming part of 'wages' under Section 2(22) ESI Act) + Actual Wage Paid. Provided in Excel / payroll software export (Zoho / Keka / GreytHR / Tally / SAP). The foundation of every month's Contribution upload.",
   },
   {
     icon: <FaUserPlus />,
     title: "New Joinee (Monthly)",
-    note: "Used for IP creation in ESIC portal",
-    items: [
-      "New joinees during the month (gross wages ≤ ₹21,000 covered)",
-      "Name + DOB + Father's / Spouse's name + Gender + Aadhaar + PAN",
-      "Bank Account + IFSC + Family / Nominee details + Photograph",
-      "Joining Date + Designation",
-    ],
+    text: "NEW JOINEES during the month (gross wages ≤ ₹21,000 covered): Name + DOB + Father's / Spouse's name + Gender + Aadhaar + PAN + Bank Account + IFSC + Family / Nominee details + Photograph + Joining Date + Designation. Used for IP creation in ESIC portal.",
   },
 ];
 
@@ -30,22 +19,12 @@ const memberDocs = [
   {
     icon: <FaIdCard />,
     title: "IP / ESI Number Records (Periodic)",
-    note: "We maintain this master in the portal",
-    items: [
-      "Master record of all IPs with IP Numbers (allotted by ESIC portal), Aadhaar, PAN, Bank account, family / nominee details",
-      "IP photograph (mandatory for benefit claims)",
-      "For existing IPs from previous employers: previous IP Number for transfer of insurance",
-    ],
+    text: "Master record of all IPs with their IP Numbers (allotted by ESIC portal), Aadhaar, PAN, Bank account, family / nominee details. IP photograph (mandatory for benefit claims). For existing IPs from previous employers: previous IP Number for transfer of insurance. We maintain this master in the portal.",
   },
   {
     icon: <FaUserMinus />,
     title: "Employee Exit Details (Full Settlement Pack)",
-    note: "Marked on ESIC portal in the next Contribution upload",
-    items: [
-      "Last Working Day + reason for exit + designation at exit",
-      "Last drawn gross wages + LOP days in exit month + full-and-final settlement status",
-      "Member's preference (continued ESI coverage via new employer / no further coverage)",
-    ],
+    text: "For each member exiting during the month: LAST WORKING DAY + reason for exit + designation at exit + last drawn gross wages + LOP days in exit month + full-and-final settlement status + member's preference (continued ESI coverage via new employer / no further coverage). We mark the exit on ESIC portal in the next Contribution upload.",
   },
 ];
 
@@ -55,14 +34,9 @@ const DocItem = ({ doc }) => (
       <div className="opcd-doc-icon">{doc.icon}</div>
       <div className="opcd-doc-meta">
         <h4 className="opcd-doc-title">{doc.title}</h4>
-        <span className="opcd-doc-note">{doc.note}</span>
       </div>
     </div>
-    <ul className="opcd-doc-list">
-      {doc.items.map((item, i) => (
-        <li key={i} className="opcd-doc-list-item">{item}</li>
-      ))}
-    </ul>
+    <p className="esiret-doc-text">{doc.text}</p>
   </div>
 );
 
