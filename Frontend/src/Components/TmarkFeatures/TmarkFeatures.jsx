@@ -5,12 +5,12 @@ const types = [
   {
     number: "01",
     title: "Proposed-to-be-Used Mark",
-    text: "You're launching a new brand + have decided on the mark, but haven't yet started commercial use. We file the TM-A claiming 'proposed to be used' — reserving your priority date now while you build the brand. Most common scenario for startups + new product launches. ELEMENTAL plan.",
+    text: "You're launching a new brand + have decided on the mark, but haven't yet started commercial use. We file the TM-A claiming 'proposed to be used' — reserving your priority date now while you build the brand. Most common scenario for startups + new product launches.",
   },
   {
     number: "02",
     title: "Prior-Use Mark",
-    text: "You've been using the brand in commerce for some time but haven't filed for registration yet. We file the TM-A with the DATE OF FIRST USE + user affidavit + evidence of prior use (invoices, advertisements, social media history, website screenshots). Stronger claim under Section 12 — protects against later similar-mark filings. ENRICHED plan.",
+    text: "You've been using the brand in commerce for some time but haven't filed for registration yet. We file the TM-A with the DATE OF FIRST USE + user affidavit + evidence of prior use (invoices, advertisements, social media history, website screenshots). Stronger claim under Section 12 — protects against later similar-mark filings.",
   },
   {
     number: "03",
