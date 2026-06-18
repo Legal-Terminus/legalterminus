@@ -4,65 +4,47 @@ import { FaBuilding, FaKey, FaIdCard, FaMoneyCheckAlt, FaUserPlus, FaUserMinus, 
 
 const employerDocs = [
   {
-    icon: <FaKey />,
-    title: "Establishment & Portal Access",
-    note: "For ESIC portal filing",
-    items: [
-      "ESI registration code (Code No. 17 digit)",
-      "Employer ESIC portal login credentials",
-      "Registration certificate (Form C-11)",
-    ],
-  },
-  {
     icon: <FaFileInvoiceDollar />,
-    title: "Monthly Wage Data",
-    note: "For contribution computation",
+    title: "Monthly Wage Register",
+    note: "The foundation of every month's Contribution upload",
     items: [
-      "Gross wage sheet for the month",
-      "Attendance / loss-of-pay (LOP) details",
-      "List of employees above / below ₹21,000 ceiling",
+      "Every IP's monthly payroll: Name + IP Number + Designation + Date of Joining + Days Worked + LOP Days + Gross Wages + Actual Wage Paid",
+      "Gross Wages = Basic + DA + HRA + other allowances forming part of 'wages' (Section 2(22) ESI Act)",
+      "Provided in Excel / payroll software export (Zoho / Keka / GreytHR / Tally / SAP)",
     ],
   },
   {
-    icon: <FaMoneyCheckAlt />,
-    title: "Payment Details",
-    note: "For challan settlement",
+    icon: <FaUserPlus />,
+    title: "New Joinee (Monthly)",
+    note: "Used for IP creation in ESIC portal",
     items: [
-      "Establishment bank account for challan payment",
-      "Previous month's contribution challan & receipt",
+      "New joinees during the month (gross wages ≤ ₹21,000 covered)",
+      "Name + DOB + Father's / Spouse's name + Gender + Aadhaar + PAN",
+      "Bank Account + IFSC + Family / Nominee details + Photograph",
+      "Joining Date + Designation",
     ],
   },
 ];
 
 const memberDocs = [
   {
-    icon: <FaUserPlus />,
-    title: "New Joiner Details",
-    note: "For IP registration",
-    items: [
-      "Name, DOB, date of joining & gross wages",
-      "Aadhaar, mobile number & bank account",
-      "Existing ESIC Insurance Number (if any)",
-    ],
-  },
-  {
     icon: <FaIdCard />,
-    title: "Dependant & KYC Details",
-    note: "For e-Pehchaan card",
+    title: "IP / ESI Number Records (Periodic)",
+    note: "We maintain this master in the portal",
     items: [
-      "Family / dependant details (name, relation, DOB)",
-      "Aadhaar of insured person",
-      "Photograph for e-Pehchaan card",
+      "Master record of all IPs with IP Numbers (allotted by ESIC portal), Aadhaar, PAN, Bank account, family / nominee details",
+      "IP photograph (mandatory for benefit claims)",
+      "For existing IPs from previous employers: previous IP Number for transfer of insurance",
     ],
   },
   {
     icon: <FaUserMinus />,
-    title: "Exit & Member Updates",
-    note: "For accurate IP roster",
+    title: "Employee Exit Details (Full Settlement Pack)",
+    note: "Marked on ESIC portal in the next Contribution upload",
     items: [
-      "Date of Leaving for separated employees",
-      "Reason for leaving / non-working periods",
-      "Wage-revision or correction details (if any)",
+      "Last Working Day + reason for exit + designation at exit",
+      "Last drawn gross wages + LOP days in exit month + full-and-final settlement status",
+      "Member's preference (continued ESI coverage via new employer / no further coverage)",
     ],
   },
 ];
@@ -90,8 +72,8 @@ const EsiRetDocuments = () => {
       <div className="opcd-container">
 
         <div className="opcd-header">
-          <h2 className="opcd-main-title">Documents Required for ESI Return Filing</h2>
-          <p className="opcd-main-subtitle">Share these each month and we'll handle the return &amp; challan</p>
+          <h2 className="opcd-main-title">Documents Required for ESI Return Filing in India</h2>
+          <p className="opcd-main-subtitle">These are the recurring monthly data inputs you share with us each cycle. We send a personalised checklist + data template at onboarding.</p>
         </div>
 
         <div className="opcd-columns">
@@ -100,8 +82,8 @@ const EsiRetDocuments = () => {
             <div className="opcd-col-header">
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="opcd-col-title">Establishment &amp; Wage Documents</h3>
-                <p className="opcd-col-subtitle">Portal access, wages &amp; payment</p>
+                <h3 className="opcd-col-title">Wage &amp; Joinee Data</h3>
+                <p className="opcd-col-subtitle">Monthly payroll &amp; new IP creation</p>
               </div>
             </div>
             <div className="opcd-col-body">
@@ -115,8 +97,8 @@ const EsiRetDocuments = () => {
             <div className="opcd-col-header opcd-col-header--office">
               <div className="opcd-col-header-icon"><FaUsers /></div>
               <div>
-                <h3 className="opcd-col-title">Insured Person &amp; KYC Documents</h3>
-                <p className="opcd-col-subtitle">Joiners, dependants &amp; exit updates</p>
+                <h3 className="opcd-col-title">IP Records &amp; Exit Updates</h3>
+                <p className="opcd-col-subtitle">IP master &amp; member exits</p>
               </div>
             </div>
             <div className="opcd-col-body">
