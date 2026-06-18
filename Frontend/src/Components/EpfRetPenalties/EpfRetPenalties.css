@@ -1,0 +1,18 @@
+@import url('../OPCGovtCosts/OPCGovtCosts.css');
+
+/* Penalties schedule reuses the govt-costs table styling, with a slightly
+   wider container (3 long columns) and an italic lead-in note. */
+
+.epfret-penalties .opc-govtcosts-container {
+  max-width: 1000px;
+}
+
+.epfret-penalties-note {
+  font-style: italic;
+}
+
+/* Statutory-charge column: emphasised but allowed to wrap (long text) */
+.epfret-penalties .epfret-penalties-charge {
+  font-weight: 600;
+  color: #0f3d2e;
+}
