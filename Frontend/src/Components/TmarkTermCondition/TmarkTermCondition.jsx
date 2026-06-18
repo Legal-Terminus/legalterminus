@@ -14,31 +14,40 @@ const TmarkTermCondition = () => {
 
           <ol className="opctc-list">
             <li className="opctc-item">
-              Professional Fee Only: All quoted prices cover professional services — trademark search, class selection, TM-A drafting, and filing. They are exclusive of government fees, statutory charges, and out-of-pocket costs.
+              Per-Application Engagement Model: Our Trademark Application Filing plans are per-application engagements (one engagement, one TM-A filing). The plan covers our work from name search through registration (subject to per-plan tier limits on departmental query / hearing / opposition coverage). Monthly status updates are included until registration certificate issuance OR application abandonment / refusal.
             </li>
             <li className="opctc-item">
-              Government Fees Payable Separately: The IP India filing fee (₹4,500 per class for individual/startup/MSME, ₹9,000 per class for others) is payable to the Trade Marks Registry and reimbursed at actuals per the official fee schedule.
+              Plan Eligibility (4 Tiers — per Trademark Scenario): (a) ELEMENTAL (₹1,499) — For PROPOSED-TO-BE-USED marks (where commercial use hasn't begun). (b) ENRICHED (₹2,499) — For PRIOR-USE marks (where commercial use has begun); adds User Affidavit + evidence coordination. (c) SUPREME (₹6,499) — Adds UDYAM update + departmental query handling (max 2 times). (d) SUPREME PLUS (₹14,999) — Adds Trademark Hearing (max 2 times) + Opposition handling (1 time). All plans include monthly status updates till registration. All plans cover up to 1 class application in one Brand name.
+            </li>
+            <li className="opctc-item">
+              Statutory Anchor: Trademark Applications are governed by the TRADE MARKS ACT, 1999 + TRADE MARKS RULES, 2017 + the Nice Classification of Goods and Services (10th–11th edition). Filed on the IP India online portal (https://ipindiaonline.gov.in) operated by the Trade Marks Registry under the Controller General of Patents, Designs and Trade Marks (CGPDTM), Ministry of Commerce &amp; Industry.
+            </li>
+            <li className="opctc-item">
+              Government Fees (Per Class — Pass-Through at Actuals): TM-A filing fee per class (e-filing): ₹4,500 for Individual / DPIIT Startup / Udyam MSME applicants; ₹9,000 for Companies / LLPs / Partnerships (non-MSME). Per First Schedule of the Trade Marks Rules, 2017. NOTE: Physical filing rates exist in the Rules (₹500 higher) but PHYSICAL FILING IS ESSENTIALLY OBSOLETE in 2026 practice — we file ONLY via the IP India online portal (https://ipindiaonline.gov.in) which is the standard + faster + entitled to the 10% lower fee. MULTI-CLASS FILINGS ARE MULTIPLICATIVE — each additional class is a separate filing fee. Opposition: ₹2,700 per class. Renewal: ₹9,000 per class (₹4,500 with rebate). All government fees are NON-REFUNDABLE.
             </li>
             <li className="opctc-item">
               GST on Our Fee: All quoted prices are exclusive of GST @ 18%, charged at checkout.
             </li>
             <li className="opctc-item">
-              No Guarantee of Registration: Filing a trademark application does not guarantee registration. Acceptance depends on the Registry's examination, possible objections under Sections 9 and 11, and any third-party opposition — all of which are at the discretion of the Trade Marks Registry.
+              Single-Class Default + Multi-Class Add-On: Each plan covers ONE CLASS application by default. Additional classes are billed at actual as per plan + GST per class (professional fee) + government fee per class (at actuals).
             </li>
             <li className="opctc-item">
-              Search is Indicative: A trademark search reduces, but cannot eliminate, the risk of objection or opposition. The public register may not reflect very recent or unpublished applications, and similarity assessments are ultimately the Registrar's call.
+              Examination Report Handling (Supreme + Supreme Plus): The Examination Report is typically issued within 3–6 months of filing. Under Section 18 of the Trade Marks Act, the applicant has 30 DAYS to respond. Supreme tier covers MAX 2 DEPARTMENTAL QUERY RESPONSES (initial + follow-up). Additional query responses beyond 2 are billed at ₹2,999 per response.
             </li>
             <li className="opctc-item">
-              Correct Applicant &amp; Class: Registration rights flow to the applicant named and the class(es) filed. The applicant is responsible for confirming the correct legal name, proprietor type, and the goods/services class before filing, as these cannot be changed later.
+              Hearing + Opposition (Supreme Plus): Trademark Hearing under Rule 41 is scheduled by the Registry where examination objections persist OR an opposition is contested. Supreme Plus covers MAX 2 HEARINGS. Opposition under Section 21 — we file Counter-Statement + coordinate through evidence-led hearing (1 OPPOSITION HANDLED per plan). Additional hearings / oppositions beyond plan limits are billed at ₹4,999 per hearing / ₹7,999 per additional opposition.
             </li>
             <li className="opctc-item">
-              Examination &amp; Opposition Replies: Objection replies and opposition defence (where included) are limited to the scope of the chosen plan. Hearings, evidence affidavits, and protracted opposition proceedings are quoted separately.
+              User Affidavit + Evidence of Prior Use (Enriched onwards): For prior-use claims, we draft a User Affidavit (sworn statement) declaring the date-of-first-use of the mark in commerce + the goods / services covered. We coordinate evidence: invoices, advertisements, social media history, GST returns, website screenshots, third-party endorsements, packaging samples. Authenticity of evidence is the client's representation; we structure presentation.
             </li>
             <li className="opctc-item">
-              Use of ™ and ®: The ™ symbol may be used from the date of filing. The ® symbol may be used only after the mark is registered and a registration certificate is issued. Misuse of ® before registration is the applicant's liability.
+              Outcome Disclosures: Trademark registration is at the discretion of the Registry + subject to publication in the Trade Marks Journal + 4-month opposition window post-publication. Typical timeline: 12–24 months for clean cases; 24–36+ months where objections / oppositions arise. WE DO NOT GUARANTEE registration outcome — the Registry's decision is final. We commit to professional handling within the plan's coverage scope. Refunds for application abandonment / refusal are not applicable since work was performed.
             </li>
             <li className="opctc-item">
-              Out-of-Scope Items: Trademark assignment, rectification, renewal, infringement litigation, international (Madrid) filing, and copyright/design registration are not included and quoted separately.
+              Refund Policy: Full refund of professional fee (less ₹499 Name search / documentation handling) is available if the TM-A application is NOT FILED within 7 working days from receipt of all required documents + POA + government fee. Government fees already paid are non-refundable (Trade Marks Rules 2017 — First Schedule).
+            </li>
+            <li className="opctc-item">
+              Out-of-Scope Items: Trademark searches beyond IP India database (e.g., Madrid Protocol / international filings — separately quoted), International Trademark filing under Madrid Protocol (separate service), Trademark Renewals (Form TM-R — separate service after 10 years), Trademark Assignment / Transmission (Form TM-P), Trademark Rectification / Cancellation Petitions (separate quote), Appellate matters before IPAB / Tribunals / Courts, Customs Recordal (IP Customs Rules 2007), IP Watch services, Trademark Brand Audit, Geographical Indications (GI) registration, Patent or Copyright filings — all separately quoted.
             </li>
           </ol>
         </div>

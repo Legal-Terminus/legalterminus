@@ -1,67 +1,54 @@
 import React from "react";
 import "./TmarkBenefits.css";
 
+const benefits = [
+  {
+    title: "Exclusive Rights + Statutory Protection",
+    text: "A registered trademark grants EXCLUSIVE RIGHTS to use the mark for the registered goods / services (Section 28 Trade Marks Act 1999). Anyone using a deceptively similar mark in the same / related class can be sued for INFRINGEMENT under Section 29 — statutory presumption of validity + entitlement to INJUNCTION + DAMAGES + DELIVERY UP of infringing materials. Without registration, you're limited to common-law passing-off (where YOU bear the burden of proof).",
+  },
+  {
+    title: "® Symbol + Brand Credibility",
+    text: "Only REGISTERED trademarks can use the ® symbol. Until registration, you can use ™ (claiming common-law rights). The ® symbol signals statutory protection to consumers + competitors + business partners + investors — and acts as a deterrent against potential infringers. Brand valuation reports always include the registered TM portfolio.",
+  },
+  {
+    title: "10-Year Validity + Indefinite Renewal",
+    text: "Trademark registration is valid for 10 YEARS from the application date + renewable indefinitely for further 10-year terms (Section 25). Some Indian trademarks (Tata, Bajaj, etc.) have been continuously renewed for 80+ years. A long-term brand asset — it compounds in value with use + advertising + market share.",
+  },
+  {
+    title: "Investor + M&A + Funding Readiness",
+    text: "VCs + private equity + strategic acquirers conduct IP due-diligence at every investment / acquisition. Registered trademarks are foundational — a missing or weak TM portfolio is a deal-killer or valuation discount. Banks accept registered TMs as collateral for IP-backed financing. Brand valuation (typically 20–40% of company value for consumer brands) requires registered TMs.",
+  },
+  {
+    title: "E-Commerce + Marketplace Eligibility",
+    text: "Amazon Brand Registry, Flipkart Brand Centre, Meesho, Myntra, Nykaa, ONDC — all require a valid registered trademark for brand-protection programmes. Without a registered TM, you cannot enforce takedowns of counterfeit / lookalike listings + cannot access marketplace brand-protection tools. Critical for any D2C / online business.",
+  },
+  {
+    title: "Customs Recordal + Anti-Counterfeit",
+    text: "Registered TM owners can record their marks with INDIAN CUSTOMS under the IPR (Imported Goods) Enforcement Rules 2007 — empowering Customs to seize infringing goods at the border. Critical for export-oriented brands + importable consumer goods. The foundation for international IP enforcement (Madrid Protocol filings).",
+  },
+];
+
 const TmarkBenefits = () => {
   return (
     <section className="opcben-section">
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of Registering Your Trademark
+            Benefits of Trademark Registration in India
           </h2>
           <p className="opcben-subtitle">
-            A registered trademark turns your brand from a vulnerable name into legally protected, valuable property — giving you exclusive rights, enforcement power, and a real business asset.
+            A registered trademark is far more than the ® symbol — it's a statutory asset that grows in value with your brand. Here's what matters:
           </p>
         </header>
 
         <div className="opcben-grid">
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Exclusive Nationwide Rights</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              Registration gives you the exclusive right to use your mark across India for the goods or services in your class, and the legal power to stop anyone else from using an identical or deceptively similar mark in the same space.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Strong Legal Protection</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              A registered mark lets you file an infringement suit — a far stronger and easier remedy than a passing-off action available to unregistered brands. It is treated as prima facie proof of ownership, putting you on solid legal footing in any dispute.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">A Valuable Business Asset</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              A trademark is intellectual property you own. It can be licensed for royalties, franchised, used as collateral, or sold — and it adds to the valuation of your company during fundraising, partnerships, or acquisition.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Builds Trust &amp; Brand Value</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              The ™ and ® symbols signal that your brand is established and protected, building customer confidence and goodwill. Over time, a registered trademark becomes the legal anchor for your reputation and the value you've built.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">E-Commerce &amp; Marketplace Protection</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              Amazon Brand Registry, Flipkart, and other marketplaces require a registered (or applied-for) trademark to unlock brand-protection tools that block counterfeiters and listing hijackers — essential for any serious online seller.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Long Validity, Renewable Forever</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              A registered trademark is valid for 10 years and can be renewed indefinitely in 10-year blocks. Unlike many assets, a well-maintained trademark can protect and grow in value for as long as your brand exists.
-            </p>
-          </article>
+          {benefits.map((benefit, i) => (
+            <article className="opcben-card" key={i}>
+              <h3 className="opcben-card-title">{benefit.title}</h3>
+              <div className="opcben-card-underline" />
+              <p className="opcben-card-text">{benefit.text}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>

@@ -27,7 +27,10 @@ const TmarkZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  A trademark looks like one form — but a weak search, a wrong class, or a generic mark leads to objections, oppositions, and months of delay. Priority is what happens when a trademark attorney owns your application from search to registration certificate.
+                  Trademark Application Filing may look simple — choose a class, file TM-A, and wait for registration. But in reality, even a small mistake can create major delays or weaken your brand protection. Wrong class selection, incomplete descriptions, missed objections, or delayed replies can lead to rejection, abandonment, or loss of trademark rights.
+                </p>
+                <p className="opczp-subtitle" style={{ marginTop: "12px" }}>
+                  With LT Priority, your Trademark Application Filing is handled on a priority basis by experienced trademark professionals who ensure faster processing, accurate filing, and proper follow-up at every stage.
                 </p>
               </header>
 
@@ -35,24 +38,20 @@ const TmarkZolvitPremium = () => {
                 <h3 className="opczp-label">What you get</h3>
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">⚡</span>
-                    A thorough trademark search across the public register and phonetic/visual look-alikes, so you file a mark that can actually survive examination.
+                    <span className="opczp-list-icon">🔍</span>
+                    Trademark Search &amp; Filing Support — trademark search for up to 5 brand name options, proper class selection, and TM-A application filing.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Correct class selection across the 45 Nice classes — covering your real goods/services so your protection isn't full of gaps.
+                    <span className="opczp-list-icon">📄</span>
+                    Documentation &amp; Affidavit Assistance — complete documentation support, including user affidavit preparation for prior-use trademarks.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Attorney-drafted TM-A with the right specification and applicant details, reducing the chance of a Section 9/11 objection.
+                    <span className="opczp-list-icon">💰</span>
+                    Fee Rebate &amp; Status Tracking — MSME / Startup fee rebate support (where applicable) along with regular application status updates.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    Examination report tracking and a strong, citation-backed objection reply drafted by an expert — not a template.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">📑</span>
-                    Status updates at every stage — filed, examined, published, registered — with the application number and certificate delivered to you.
+                    <span className="opczp-list-icon">🛡</span>
+                    Priority Processing &amp; Legal Support — faster filing assistance and support for examination queries, objections, and trademark hearings (selected plans).
                   </li>
                 </ul>
               </section>
@@ -65,16 +64,16 @@ const TmarkZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  Search before you file. The most common reason trademarks fail is an existing identical or deceptively similar mark. A proper search up front saves you the government fee, the months of delay, and the heartbreak of rebranding later.
+                  WRONG CLASS = REFILING: Trademark classes are under the Nice Classification (1–34 Goods + 35 Trading + 45 Services). Wrong class selection = your protection doesn't cover what you actually sell. Refiling = fresh application + lost time + lost priority date. We identify the class correctly first time based on your actual goods / services.
                 </li>
                 <li className="opczp-note-item">
-                  Class selection is permanent. Your protection extends only to the classes you file in, and classes cannot be added to an existing application. Choosing the right class — or classes — at filing is critical to genuinely covering your business.
+                  EXAMINATION REPORT DEADLINE IS 30 DAYS: The Examination Report typically issues 3–6 months post-filing. You have 30 DAYS under Section 18 to respond. Miss it = the application is treated as ABANDONED. Supreme + Supreme Plus include departmental query handling (max 2 + max 2 hearings respectively).
                 </li>
                 <li className="opczp-note-item">
-                  Distinctiveness wins. Generic or purely descriptive marks attract objections under Section 9. Invented, arbitrary, or suggestive marks are far stronger. We advise on the strength of your mark before you commit to it.
+                  OPPOSITION COUNTER-STATEMENT DEADLINE IS 2 MONTHS: Post-publication in the Trade Marks Journal, anyone can file an Opposition within 4 months. Once Notice of Opposition is served on you, you have 2 MONTHS to file a Counter-Statement. Miss it = the opposition is deemed accepted + your application is treated as abandoned. Supreme Plus handles 1 opposition reply.
                 </li>
                 <li className="opczp-note-item">
-                  ™ now, ® later. You can use ™ the moment you file, signalling your claim. The ® symbol — and the strongest legal protection — comes only after registration, which typically takes several months to over a year if smooth.
+                  TRADEMARK REGISTRATION IS NOT GUARANTEED: We file with discipline + handle examination / hearing / opposition where applicable. But final registration is at the Registry's discretion, subject to no oppositions succeeding, and subject to compliance with Sections 9, 11, 17, 18 etc. Realistic timeline: 12–24 months for clean cases; 24–36+ months with oppositions.
                 </li>
               </ul>
             </div>

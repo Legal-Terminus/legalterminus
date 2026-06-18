@@ -2,6 +2,17 @@ import React from "react";
 import "./TmarkOverview.css";
 import illustration from "../../assets/whypvt-imp1.svg";
 
+const niceClasses = [
+  { range: "1–5", category: "Chemicals + Pharma", examples: "Class 5 - pharmaceuticals; Class 3 - cosmetics" },
+  { range: "6–14", category: "Metals + Tools + Machinery + Vehicles + Jewellery", examples: "Class 11 - lighting; Class 12 - vehicles; Class 14 - jewellery" },
+  { range: "15–21", category: "Music + Paper + Rubber + Leather + Construction + Household", examples: "Class 16 - paper / publications; Class 18 - leather" },
+  { range: "22–28", category: "Ropes + Textiles + Clothing + Footwear + Carpet + Toys", examples: "Class 25 - apparel + footwear (very common)" },
+  { range: "29–34", category: "Food + Beverage + Agriculture + Tobacco", examples: "Class 29 - food products; Class 30 - tea/coffee/snacks; Class 33 - alcoholic beverages" },
+  { range: "35–45", category: "Trading", examples: "Class 35 - retail + advertising" },
+  { range: "36–45", category: "SERVICES", examples: "Class 41 - education + entertainment; Class 42 - tech + IT services; Class 43 - food & lodging services; Class 45 - legal services" },
+  { range: "Government Fee", category: "Per Class (E-Filing)", examples: "₹4,500 (Individual / Startup / MSME) | ₹9,000 (Others)" },
+];
+
 const TmarkOverview = () => {
   return (
     <div className="opc-full-wrapper">
@@ -11,19 +22,19 @@ const TmarkOverview = () => {
           <div className="opc-intro-illustration-wrap">
             <img
               src={illustration}
-              alt="Trademark Application illustration"
+              alt="Trademark Registration illustration"
               className="opc-intro-illustration"
             />
           </div>
 
           <div className="opc-intro-content">
             <h2 className="opc-intro-title">
-              Why a Trademark Matters for Your Brand
+              Why You Need a Registered Trademark
             </h2>
             <p className="opc-intro-text">
-              A trademark is any unique sign — a name, logo, word, slogan, or combination — that distinguishes your goods or services from everyone else's. Registered under the Trade Marks Act, 1999 and administered by the Trade Marks Registry (IP India), it gives you exclusive nationwide rights to use the mark in your class and to stop others from using a confusingly similar one. India follows the 45-class Nice Classification, and protection extends only to the classes you register in.
+              A registered trademark protects your brand name, logo, tagline, product name, or business identity under the Trade Marks Act, 1999. It grants exclusive legal rights over your brand, helps prevent unauthorized use, and allows you to use the ® symbol after registration.
               <br /><br />
-              Your brand is often your most valuable asset, yet without registration anyone can copy it — and you may even be forced to rebrand if someone else registers first. A registered trademark turns your brand into legally protected property you can license, franchise, or sell. You can use the ™ symbol the moment you file, and the ® symbol once the mark is registered. Filing early secures your priority date and locks in your rights before a competitor does.
+              Trademark registration strengthens brand value, builds customer trust, and provides legal protection against infringement. Once registered, the trademark remains valid for 10 years and can be renewed indefinitely, making it a valuable long-term business asset.
             </p>
           </div>
         </div>
@@ -31,27 +42,27 @@ const TmarkOverview = () => {
 
       <section className="opc-compare-section">
         <div className="opc-compare-container">
-          <h2 className="opc-compare-title">Registered vs Unregistered Brand: The Honest Comparison</h2>
+          <h2 className="opc-compare-title">Nice Classification + Government Fees</h2>
           <p className="opc-compare-subtitle">
-            What changes when your brand name and logo are protected by a registered trademark:
+            Trademarks in India follow the NICE CLASSIFICATION — an international classification system with 45 CLASSES (1–34 for Goods + 35–45 for Services). Each class covers a specific category of goods or services. You file separately for each class your business operates in. Here's a quick overview:
           </p>
           <div className="opc-compare-table-wrapper">
             <table className="opc-compare-table">
               <thead>
                 <tr>
-                  <th>Parameter</th>
-                  <th>Registered Trademark</th>
-                  <th>Unregistered Brand</th>
+                  <th>Class Range</th>
+                  <th>Category</th>
+                  <th>Examples</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>Exclusive Rights</td><td>Nationwide, in your class</td><td>Limited, hard to enforce</td></tr>
-                <tr><td>Symbol You Can Use</td><td>® after registration</td><td>Only ™ (no ® right)</td></tr>
-                <tr><td>Legal Action</td><td>Infringement suit available</td><td>Only costly passing-off claim</td></tr>
-                <tr><td>Brand as Asset</td><td>Can license, franchise &amp; sell</td><td>No clear, tradable IP</td></tr>
-                <tr><td>Marketplace Listing</td><td>Amazon/Flipkart Brand Registry eligible</td><td>Vulnerable to hijacking</td></tr>
-                <tr><td>Risk of Rebrand</td><td>Protected — priority secured</td><td>May be forced to rename</td></tr>
-                <tr><td>Validity</td><td>10 years, renewable forever</td><td>No formal term or record</td></tr>
+                {niceClasses.map((row, i) => (
+                  <tr key={i}>
+                    <td>{row.range}</td>
+                    <td>{row.category}</td>
+                    <td>{row.examples}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

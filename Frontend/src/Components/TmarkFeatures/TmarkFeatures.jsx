@@ -4,18 +4,33 @@ import "./TmarkFeatures.css";
 const types = [
   {
     number: "01",
-    title: "Word & Logo Marks",
-    text: "The two most common trademarks. A word mark protects a brand name, term, or slogan in plain text — covering it in any font or style. A device/logo mark protects a specific graphic, symbol, or stylised logo. Many businesses register both: the word mark for the name and the device mark for the visual identity, for the widest protection.",
+    title: "Proposed-to-be-Used Mark",
+    text: "You're launching a new brand + have decided on the mark, but haven't yet started commercial use. We file the TM-A claiming 'proposed to be used' — reserving your priority date now while you build the brand. Most common scenario for startups + new product launches. ELEMENTAL plan.",
   },
   {
     number: "02",
-    title: "Service, Collective & Certification Marks",
-    text: "A service mark identifies services rather than goods (classes 35–45). A collective mark is owned by an association and used by its members (e.g. a trade body). A certification mark — like ISI or AGMARK — certifies that goods/services meet a defined standard of quality, origin, or material, and is used by anyone who meets that standard.",
+    title: "Prior-Use Mark",
+    text: "You've been using the brand in commerce for some time but haven't filed for registration yet. We file the TM-A with the DATE OF FIRST USE + user affidavit + evidence of prior use (invoices, advertisements, social media history, website screenshots). Stronger claim under Section 12 — protects against later similar-mark filings. ENRICHED plan.",
   },
   {
     number: "03",
-    title: "Shape, Sound & Non-Conventional Marks",
-    text: "Trademarks can extend beyond words and logos. The shape of goods or packaging, a distinctive colour combination, a sound (jingle), or even a pattern can be registered if it is distinctive and capable of distinguishing your offering. These non-conventional marks protect brand elements that customers recognise instantly.",
+    title: "Wordmark / Device (Logo) / Combination Mark",
+    text: "WORDMARK = text-only mark (e.g., 'COCA-COLA'). LOGO = device / image-only mark. COMBINATION = text + image together. We file accordingly via TM-A. Each plan covers any of these forms. Combination marks offer broader protection but are slightly more specific. Discussed in the discovery call.",
+  },
+  {
+    number: "04",
+    title: "Multi-Class Filings (Add-On)",
+    text: "Each class is a separate filing. We can file across multiple classes simultaneously — e.g., a restaurant chain typically files Class 30 (food products) + Class 43 (restaurant services). Each additional class = Actual Plan + GST + class-fee at actuals.",
+  },
+  {
+    number: "05",
+    title: "Sound Mark",
+    text: "Protects a distinctive sound sequence or audio logo (e.g., the Britannia four-bell chime or the Netflix 'Tudum').",
+  },
+  {
+    number: "06",
+    title: "Color Mark",
+    text: "Protects a specific color or a unique combination of colors used in a specific commercial context (e.g., Cadbury purple).",
   },
 ];
 
@@ -24,7 +39,10 @@ const TmarkFeatures = () => {
     <section className="opc-features-section">
       <div className="opc-features-container">
 
-        <h2 className="opc-features-title">Types of Trademarks You Can Register</h2>
+        <h2 className="opc-features-title">Types of Trademark Registration in India</h2>
+        <p className="tmark-features-subtitle">
+          Trademark scenarios we handle across the 4 plan tiers. Pick by your trademark situation (proposed-to-be-used vs prior-use) + complexity (clean filing vs examination / hearing / opposition).
+        </p>
 
         <div className="opc-features-cards">
           {types.map((type) => (
