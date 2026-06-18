@@ -1,1 +1,23 @@
 @import url('../OPCFAQ/OPCFAQ.css');
+
+/* Answers may carry intro text + a bullet list + a closing note. */
+.opcfaq-answer-text {
+  margin: 0 0 10px;
+}
+
+.opcfaq-answer-text:last-child {
+  margin-bottom: 0;
+}
+
+.opcfaq-answer-list {
+  margin: 0 0 10px;
+  padding-left: 20px;
+}
+
+.opcfaq-answer-list li {
+  margin-bottom: 5px;
+}
+
+.opcfaq-answer-list li:last-child {
+  margin-bottom: 0;
+}

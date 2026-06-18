@@ -3,34 +3,44 @@ import "./EpfRetElegibility.css";
 
 const steps = [
   {
-    title: "Onboarding & Setup",
-    day: "Step 1",
-    text: "We map your EPF establishment code, employer portal credentials, wage structure, and current member list. A monthly compliance calendar is set up locked to the 15th-of-next-month ECR deadline so no filing is ever missed.",
+    title: "Wage + Joinee + KYC Data Hand-Off (You → Us)",
+    day: "By Day 1–3",
+    text: "First 3 days of next month: share previous month's WAGE REGISTER (member name + UAN + Basic + DA + LOP days + actual wage paid). For NEW JOINEES during the month: name + DOB + Aadhaar + PAN + Bank passbook + previous UAN (if any) + Form 11 inputs. Standard formats: Excel / payroll software export (Zoho / Keka / GreytHR / Tally).",
   },
   {
-    title: "Monthly Data Collection",
-    day: "Step 2",
-    text: "Each month you share the wage sheet, attendance/LOP, and details of new joiners and exits. We provide a simple template; this is your only recurring task, due a few working days before the deadline.",
+    title: "Employee Addition (Form 11) + KYC Seeding",
+    day: "Day 3–5",
+    text: "New joinee Form 11 processed on EPF portal. New UANs allotted where needed. KYC seeding for new joinees + existing members with pending KYC: Aadhaar linkage, PAN linkage, Bank account linkage. Seeding errors / mismatches actively cleared.",
   },
   {
-    title: "UAN, KYC & Member Updates",
-    day: "Step 3",
-    text: "We generate UANs for new joiners, seed and approve KYC (Aadhaar, PAN, bank), and mark Date of Exit for separated employees. The member roster is reconciled so the ECR reflects exactly who is on the rolls this month.",
+    title: "ECR Statement Preparation",
+    day: "Day 5–7",
+    text: "Member-wise wage data validated. Contribution computation: Employee 12% + Employer 12% (split EPS 8.33% capped + EPF 3.67%) + EDLI 0.5% capped + Admin charges 0.5%. ECR file generated in EPFO portal format (TXT / Excel). Internal QC + reconciliation against payroll output.",
   },
   {
-    title: "Contribution Computation",
-    day: "Step 4",
-    text: "We compute employee PF (12%), employer EPF/EPS split (3.67% / 8.33%), EDLI, and admin charges on the correct wage base, handling arrears and wage revisions — arriving at the exact dues for the month.",
+    title: "eSign Approval Workflow Coordination",
+    day: "Day 7–9",
+    text: "ECR file routed to your authorised signatory for eSign approval (DSC or Aadhaar-based e-Sign). We coordinate signatory availability + verify DSC validity + walk through the approval if needed. eSign captured + ready for portal upload.",
   },
   {
-    title: "ECR Upload & Your Approval",
-    day: "Step 5",
-    text: "The ECR text file is prepared and uploaded on the EPFO Unified Portal. A contribution summary is shared with you for confirmation, and the challan (TRRN) is generated for payment.",
+    title: "ECR Upload on EPF Portal",
+    day: "Day 9–12",
+    text: "ECR file uploaded on the EPFO Unified Portal (unifiedportal-emp.epfindia.gov.in). Portal validates the file. Challan amount confirmed. TRRN (Temporary Return Reference Number) generated.",
   },
   {
-    title: "Challan Payment & Confirmation",
-    day: "Step 6",
-    text: "Dues are paid online by the 15th. You receive the paid challan (TRRN), ECR statement, and a monthly compliance log. The cycle repeats every month, keeping your establishment continuously compliant.",
+    title: "TRRN Acknowledgement Delivery to Client",
+    day: "Day 12",
+    text: "Same day as upload: we deliver the TRRN + ECR PDF to you, along with payment instructions (bank name, beneficiary, amount, due date). Your records are updated.",
+  },
+  {
+    title: "EPF Contribution Payment Coordination",
+    day: "Day 12–14",
+    text: "You make the payment via Internet Banking (SBI / HDFC / ICICI / Axis / Kotak / other empanelled banks) OR NEFT / RTGS using the TRRN. We track payment confirmation + send reminders if not paid by Day 14. Once EPFO reconciles payment, FINAL PF CHALLAN is generated + archived.",
+  },
+  {
+    title: "Filing Closed + Annual (Form 5A) on Schedule",
+    day: "By Day 15",
+    text: "ECR filing + payment closed by the 15TH OF NEXT MONTH deadline. Members' EPF passbooks updated by EPFO within 7–10 days. ANNUALLY (typically April / May): Form 5A filed / amended on EPF portal confirming ownership + management structure — we file this once per FY + on any change of partner / director / signatory.",
   },
 ];
 
@@ -38,10 +48,10 @@ const EpfRetElegibility = () => {
   return (
     <section className="opcelg-wrapper">
       <h2 className="opcelg-heading">
-        EPF Return Filing Process — Step by Step
+        Steps for EPF Return Filing in India
       </h2>
       <p className="opcelg-subheading">
-        Six steps, repeated every month. Members reconciled, contributions computed, and the challan paid before the 15th — every time.
+        EPF Return Filing is a recurring monthly cycle anchored to the 15th-of-next-month deadline. Below is your monthly EPF compliance cycle — calendar-anchored to the 8 deliverables.
       </p>
 
       <div className="opcelg-timeline">

@@ -1,0 +1,6 @@
+@import url('../OPCGovtCosts/OPCGovtCosts.css');
+
+/* Wider container — three descriptive columns of computation detail. */
+.epfret-contrib .opc-govtcosts-container {
+  max-width: 1040px;
+}

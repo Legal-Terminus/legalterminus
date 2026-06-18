@@ -9,6 +9,7 @@ const EpfRetTermCondition = React.lazy(() => import('../../Components/EpfRetTerm
 const EpfRetZolvitPremium = React.lazy(() => import('../../Components/EpfRetZolvitPremium/EpfRetZolvitPremium'))
 const EpfRetTabs = React.lazy(() => import('../../Components/EpfRetTabs/EpfRetTabs'))
 const EpfRetOverview = React.lazy(() => import('../../Components/EpfRetOverview/EpfRetOverview'))
+const EpfRetContribStructure = React.lazy(() => import('../../Components/EpfRetContribStructure/EpfRetContribStructure'))
 const EpfRetFeatures = React.lazy(() => import('../../Components/EpfRetFeatures/EpfRetFeatures'))
 const EpfRetBenefits = React.lazy(() => import('../../Components/EpfRetBenefits/EpfRetBenefits'))
 const EpfRetElegibility = React.lazy(() => import('../../Components/EpfRetElegibility/EpfRetElegibility'))
@@ -69,6 +70,12 @@ const EPFReturnNew = () => {
           <EpfRetOverview />
         </Suspense>
       </div>
+
+      <div className="section-divider" />
+
+      <Suspense fallback={<div />}>
+        <EpfRetContribStructure />
+      </Suspense>
 
       <div className="section-divider" />
 

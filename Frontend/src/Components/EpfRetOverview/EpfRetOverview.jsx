@@ -18,12 +18,14 @@ const EpfRetOverview = () => {
 
           <div className="opc-intro-content">
             <h2 className="opc-intro-title">
-              Why EPF Return Filing Matters
+              Why You Need Timely EPF Return Filing
             </h2>
             <p className="opc-intro-text">
-              The Employees' Provident Fund (EPF) is a retirement-savings scheme run by the EPFO under the EPF &amp; MP Act, 1952. Any establishment employing 20 or more persons must register and then file a monthly return — the ECR (Electronic Challan-cum-Return) — declaring each member's wages and depositing the employee (12%) and employer (12%) contributions, along with EDLI and admin charges, by the 15th of the following month.
+              Under the Employees' Provident Funds and Miscellaneous Provisions Act, 1952, establishments employing 20 or more employees must comply with EPF regulations by deducting PF contributions, depositing contributions, paying applicable charges, and filing monthly ECR returns through the EPFO portal within the prescribed due date.
               <br /><br />
-              Treating it as optional is expensive. Late deposit attracts interest at 12% per annum under Section 7Q and graded damages of 5%–25% under Section 14B — and PF dues, being a trust on employee money, carry serious personal liability for the employer. Beyond the penalties, delayed or inaccurate filing stalls members' withdrawals, transfers, and insurance claims. Accurate monthly EPF compliance protects both the establishment and its employees' hard-earned savings.
+              Delayed EPF filing or payment can result in interest, penalties, departmental notices, compliance scrutiny, and difficulties during loans, investments, or tender processes. Continued non-compliance may also lead to legal action and prosecution.
+              <br /><br />
+              Apart from legal compliance, timely EPF return filing helps maintain employee trust and keeps your business records clean and verification-ready.
             </p>
           </div>
         </div>

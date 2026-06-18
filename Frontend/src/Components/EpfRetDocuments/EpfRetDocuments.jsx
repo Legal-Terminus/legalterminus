@@ -1,68 +1,49 @@
 import React from "react";
 import "./EpfRetDocuments.css";
-import { FaBuilding, FaKey, FaIdCard, FaMoneyCheckAlt, FaUserPlus, FaUserMinus, FaFileInvoiceDollar, FaUsers } from "react-icons/fa";
+import { FaBuilding, FaIdCard, FaUserPlus, FaUserMinus, FaFileInvoiceDollar, FaUsers } from "react-icons/fa";
 
 const employerDocs = [
   {
-    icon: <FaKey />,
-    title: "Establishment & Portal Access",
-    note: "For EPFO portal filing",
-    items: [
-      "EPF establishment code & registration certificate",
-      "Employer Unified Portal login credentials",
-      "DSC / e-sign of the authorised signatory",
-    ],
-  },
-  {
     icon: <FaFileInvoiceDollar />,
-    title: "Monthly Wage Data",
-    note: "For ECR computation",
+    title: "Monthly Wage Register",
+    note: "The foundation of every ECR",
     items: [
-      "Wage sheet (basic + DA) for the month",
-      "Attendance / loss-of-pay (LOP) details",
-      "Arrears & wage-revision details (if any)",
+      "Member-wise: Name, UAN, Designation, Date of Joining",
+      "Days Worked, LOP Days, Basic, DA, Actual Wage Paid",
+      "Excel / payroll export (Zoho / Keka / GreytHR / Tally / SAP)",
     ],
   },
   {
-    icon: <FaMoneyCheckAlt />,
-    title: "Payment Details",
-    note: "For challan settlement",
+    icon: <FaUserPlus />,
+    title: "New Joinee Data (Monthly)",
+    note: "For employee addition, UAN & KYC seeding",
     items: [
-      "Establishment bank account for challan payment",
-      "Previous month's ECR & paid challan (TRRN)",
+      "Name, DOB, Father's / Spouse's name, Gender",
+      "Aadhaar, PAN, Bank A/c + IFSC, previous UAN (if any)",
+      "Form 11 self-declaration + Joining Date",
     ],
   },
 ];
 
 const memberDocs = [
   {
-    icon: <FaUserPlus />,
-    title: "New Joiner Details",
-    note: "For UAN generation",
-    items: [
-      "Name, DOB, date of joining & wages",
-      "Aadhaar, PAN & bank account (with IFSC)",
-      "Existing UAN (if previously employed)",
-    ],
-  },
-  {
     icon: <FaIdCard />,
-    title: "KYC Documents",
-    note: "For UAN seeding & approval",
+    title: "UAN + KYC Records (Periodic)",
+    note: "Member-master, updated each month",
     items: [
-      "Aadhaar card of each member",
-      "PAN card of each member",
-      "Cancelled cheque / bank passbook",
+      "UAN + KYC status: Aadhaar / PAN / Bank seeding",
+      "Aadhaar copy, PAN copy, bank passbook / cancelled cheque",
+      "For new joinees + KYC-pending existing members",
     ],
   },
   {
     icon: <FaUserMinus />,
-    title: "Exit & Member Updates",
-    note: "For accurate member roster",
+    title: "Employee Exit Details (Full Settlement Pack)",
+    note: "For exit marking on the EPFO portal",
     items: [
-      "Date of Exit for separated employees",
-      "Reason for leaving / non-contributory periods",
-      "Member-wise contribution corrections (if any)",
+      "Last working day, reason, designation, last Basic + DA",
+      "LOP days in exit month + full-and-final settlement status",
+      "Withdrawal preference: Form 19 / 10C / transfer via Form 13",
     ],
   },
 ];
@@ -90,8 +71,10 @@ const EpfRetDocuments = () => {
       <div className="opcd-container">
 
         <div className="opcd-header">
-          <h2 className="opcd-main-title">Documents Required for EPF Return Filing</h2>
-          <p className="opcd-main-subtitle">Share these each month and we'll handle the ECR &amp; challan</p>
+          <h2 className="opcd-main-title">Documents Required for EPF Return Filing in India</h2>
+          <p className="opcd-main-subtitle">
+            The recurring monthly data inputs you share with us each cycle — we send a personalised checklist &amp; data template at onboarding
+          </p>
         </div>
 
         <div className="opcd-columns">
@@ -100,8 +83,8 @@ const EpfRetDocuments = () => {
             <div className="opcd-col-header">
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="opcd-col-title">Establishment &amp; Wage Documents</h3>
-                <p className="opcd-col-subtitle">Portal access, wages &amp; payment</p>
+                <h3 className="opcd-col-title">Monthly Wage &amp; Joinee Inputs</h3>
+                <p className="opcd-col-subtitle">Wage register &amp; new joiners</p>
               </div>
             </div>
             <div className="opcd-col-body">
@@ -115,8 +98,8 @@ const EpfRetDocuments = () => {
             <div className="opcd-col-header opcd-col-header--office">
               <div className="opcd-col-header-icon"><FaUsers /></div>
               <div>
-                <h3 className="opcd-col-title">Member &amp; KYC Documents</h3>
-                <p className="opcd-col-subtitle">Joiners, KYC &amp; exit updates</p>
+                <h3 className="opcd-col-title">KYC &amp; Exit Records</h3>
+                <p className="opcd-col-subtitle">Member KYC &amp; exit updates</p>
               </div>
             </div>
             <div className="opcd-col-body">

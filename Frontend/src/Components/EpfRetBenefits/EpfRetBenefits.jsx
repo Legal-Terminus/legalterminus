@@ -7,59 +7,59 @@ const EpfRetBenefits = () => {
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of Timely EPF Return Filing
+            Benefits of EPF Return Filing in India
           </h2>
           <p className="opcben-subtitle">
-            Filing EPF returns on time is more than statutory compliance — it shields the employer from steep interest and damages, keeps tax deductions intact, and protects your employees' retirement savings.
+            Timely + accurate EPF returns aren't just employer compliance — they unlock real benefits for the EMPLOYEES too. Here's what matters on both sides of the table:
           </p>
         </header>
 
         <div className="opcben-grid">
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Avoid 7Q Interest &amp; 14B Damages</h3>
+            <h3 className="opcben-card-title">Late-Fee Zero (Statutory 7Q + 14B Avoidance)</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Late deposit of PF dues attracts interest at 12% per annum under Section 7Q plus damages of 5%–25% under Section 14B. Depositing by the 15th every month eliminates both — a recurring saving that protects the establishment's cash flow.
+              Section 7Q interest at 12% p.a. + Section 14B damages at 5%–25% p.a. compound fast. For a ₹10 lakh monthly PF dues 3 months late: ₹30,000 + ₹25,000 = ₹55,000 statutory hit. We file by the 15th provided client data is in by Day 7 — the cheapest insurance you can buy against statutory cost.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Preserve Your Tax Deduction</h3>
+            <h3 className="opcben-card-title">Banking + Tender + Investor Eligibility</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Employer PF contributions are deductible only if deposited by the due date — late payment can be disallowed under Section 43B, increasing your taxable income. Timely filing keeps this legitimate business deduction fully intact.
+              Banks, NBFCs, investors, government tenders, and large customers ALL check EPF compliance status during due diligence (EPFO publishes defaulter lists). Erratic ECRs flag the company as risky — loan rejection, lower credit limits, tender disqualification. Clean ECR record = best terms.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Smooth Employee Withdrawals</h3>
+            <h3 className="opcben-card-title">Continuous PF Account Growth + Tax-Free Interest</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              When contributions are filed accurately against seeded UANs, employees can withdraw, take advances, and transfer their PF without friction. Clean monthly filing directly translates into fewer grievances and higher employee trust.
+              Every month's contribution gets credited to the member's UAN-linked PF account + earns interest (currently ~8.25% p.a. compounded annually — declared by the EPFO Central Board). Interest is TAX-FREE on accumulated balance (subject to Section 10(11) / 10(12) Income-tax Act). Long-term, this is one of the safest tax-free retirement savings instruments in India.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Stay Off the EPFO Radar</h3>
+            <h3 className="opcben-card-title">Withdrawal Benefits + Section 80C Tax Deduction</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Persistent default or under-reporting can trigger an inquiry and assessment under Section 7A, with recovery, interest, and damages. A consistent, accurate filing history keeps your establishment out of EPFO enforcement action.
+              Members can withdraw PF for MARRIAGE / EDUCATION / MEDICAL EMERGENCY / HOUSING needs (Form 31 — partial withdrawal). Full PF withdrawal on retirement / 2-month gap post-resignation (Form 19). Employee's 12% contribution is ELIGIBLE FOR SECTION 80C DEDUCTION (up to ₹1.5 lakh per FY — Old Tax Regime). PF transfer is seamless across employers via UAN.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Employee Insurance &amp; Pension Cover</h3>
+            <h3 className="opcben-card-title">EPS Pension at 58 (After 10+ Years' Service)</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              EPF filing also funds EPS (pension) and EDLI (life insurance up to ₹7 lakh) for your members at no extra cost to them. Timely contributions keep these valuable social-security benefits active for your entire workforce.
+              Employer's EPS contribution (8.33% capped at ₹1,250/month) builds a PENSION ENTITLEMENT under the Employees' Pension Scheme, 1995. Members with 10+ years' eligible service get a LIFELONG MONTHLY PENSION from age 58 — covering retirement years. Members who join with a prior UAN have years carried over. Critical employee welfare benefit.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Audit &amp; Tender Readiness</h3>
+            <h3 className="opcben-card-title">EDLI Insurance Cover Up to ₹7 Lakh (Free Life Cover)</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              A clean PF compliance record is checked in statutory audits, labour inspections, and government/PSU tenders that require proof of EPF compliance. Up-to-date returns keep your establishment qualified and audit-ready year-round.
+              Under the Employees' Deposit Linked Insurance Scheme, 1976, ACTIVE PF members get LIFE INSURANCE COVER OF UP TO ₹7 LAKH (depending on average wages + last 12 months' service) — PAID BY EPFO directly to the nominee on the member's death during service. NO premium burden on the employee. This is free + automatic life cover — one of the strongest reasons employees value clean EPF compliance.
             </p>
           </article>
         </div>
