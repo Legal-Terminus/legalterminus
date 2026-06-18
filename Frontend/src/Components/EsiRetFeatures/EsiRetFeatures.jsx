@@ -41,7 +41,7 @@ const EsiRetFeatures = () => {
 
         <h2 className="opc-features-title">Types of ESI Returns in India</h2>
         <p className="esiret-features-subtitle">
-          ESI Return Filing covers the 7 monthly deliverables we execute for you — the same 7 across all 3 tiers; only the tier varies by employee count.
+          This Section Is Reframed From &quot;Types Of Registrations&quot; Because Esi Return Filing Covers The 7 Monthly Deliverables We Execute For You. Same 7 Across All 3 Tiers; Tier Varies By Employee Count.
         </p>
 
         <div className="opc-features-cards">
