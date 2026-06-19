@@ -22,13 +22,9 @@ const TmoppBreadcrum = () => {
           </h1>
 
           <p className="lt-public-description">
-            Trademark Opposition can arise in two situations — either you want to stop a similar trademark from getting registered, or someone has opposed your own trademark application. Both are governed by Section 21 of the Trade Marks Act, 1999 and the Trade Marks Rules, 2017.
+            Trademark Opposition may arise when you want to challenge a similar trademark published in the Trade Marks Journal or when someone opposes your own trademark application. Both situations are governed by Section 21 of the Trade Marks Act, 1999 and the Trade Marks Rules, 2017. Legal Terminus assists with filing Notices of Opposition as well as drafting and filing Counter Statements to protect your trademark rights.
             <br /><br />
-            Legal Terminus helps in both scenarios:
-            <br />• Filing a Notice of Opposition against conflicting trademarks published in the Trade Marks Journal
-            <br />• Drafting and filing Counter Statements to defend your trademark application within the prescribed timeline
-            <br /><br />
-            Timely action is critical. Missing the 2-month deadline for Counter Statement filing may result in abandonment of your application. Our plans start from ₹5,999 + GST and cover 1 trademark in 1 class. We provide professional drafting, filing support, evidence coordination, hearing assistance, and regular status updates through the official IP India portal (ipindiaonline.gov.in).
+            Timely action is essential, as missing the prescribed deadline for filing a Counter Statement may result in abandonment of the application. Our plans start from ₹5,999 + GST for 1 trademark in 1 class and include professional drafting, filing support, evidence coordination, hearing assistance, and regular status updates throughout the process.
           </p>
 
           <div className="lt-public-features">
