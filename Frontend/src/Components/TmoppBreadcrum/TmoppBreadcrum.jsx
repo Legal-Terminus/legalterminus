@@ -11,39 +11,45 @@ const TmoppBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            Trademark Opposition &amp; Defence
+            Trademark Opposition
           </span>
 
           <h1 className="lt-public-title">
             Trademark Opposition
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">Oppose or Defend, 100% Online</span>
+            <span className="lt-title-tagline">Protect Your Brand Rights</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus handles both sides of a trademark opposition under the Trade Marks Act, 1999 — filing a Notice of Opposition (Form TM-O) to block a conflicting mark published in the Trademark Journal, or defending your own application with a strong Counter-Statement and evidence. The journal opens a 4-month opposition window, and a counter-statement must be filed within 2 months of receiving an opposition or the application is abandoned. We act on time and argue your case end-to-end. Our professional fee starts at ₹4,999 + GST.
+            Trademark Opposition can arise in two situations — either you want to stop a similar trademark from getting registered, or someone has opposed your own trademark application. Both are governed by Section 21 of the Trade Marks Act, 1999 and the Trade Marks Rules, 2017.
+            <br /><br />
+            Legal Terminus helps in both scenarios:
+            <br />• Filing a Notice of Opposition against conflicting trademarks published in the Trade Marks Journal
+            <br />• Drafting and filing Counter Statements to defend your trademark application within the prescribed timeline
+            <br /><br />
+            Timely action is critical. Missing the 2-month deadline for Counter Statement filing may result in abandonment of your application. Our plans start from ₹5,999 + GST and cover 1 trademark in 1 class. We provide professional drafting, filing support, evidence coordination, hearing assistance, and regular status updates through the official IP India portal (ipindiaonline.gov.in).
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">File or Defend Notice of Opposition (TM-O)</div>
-            <div className="lt-feature-item">Counter-Statement Within 2 Months</div>
-            <div className="lt-feature-item">Evidence Affidavits &amp; Hearing Support</div>
-            <div className="lt-feature-item">4-Month Journal Window Monitoring</div>
+            <div className="lt-feature-item">Strict Deadline Tracking</div>
+            <div className="lt-feature-item">Professional Legal Drafting</div>
+            <div className="lt-feature-item">Monthly Updates</div>
+            <div className="lt-feature-item">Full Hearing Coverage</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>5,000+</h3>
-              <p>TM matters handled</p>
+              <h3>1000+</h3>
+              <p>Opposition matters handled</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>IP India portal filing</p>
+              <h3>12 Years</h3>
+              <p>of IP / opposition expertise</p>
             </div>
             <div>
               <h3>7+</h3>
-              <p>Years of IP Expertise</p>
+              <p>Years of Legal Expertise</p>
             </div>
           </div>
 
