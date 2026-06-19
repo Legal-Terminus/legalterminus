@@ -7,7 +7,7 @@ const TmoppBenefits = () => {
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of Trademark Opposition
+            Benefits of Trademark Opposition in India
           </h2>
           <p className="opcben-subtitle">
             Filing or defending an opposition delivers concrete legal + commercial benefits FOR YOU. Here's what filing the opposition / counter statement actually delivers:

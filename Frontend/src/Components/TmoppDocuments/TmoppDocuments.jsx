@@ -5,17 +5,17 @@ import { FaFileAlt, FaUser, FaIdCard, FaFileSignature, FaReceipt, FaBalanceScale
 const pleadingDocs = [
   {
     icon: <FaFileAlt />,
-    title: "1. Subject Matter Documents (Scenario-Specific)",
+    title: "Subject Matter Documents (Scenario-Specific)",
     text: "SCENARIO A (Opposing other's TM): copy of the published Journal entry for the impugned application + screenshot of the IP India portal record + your own earlier trademark registration / pending application / well-known mark evidence as basis for opposition. SCENARIO B (Counter Statement): the OPPOSITION NOTICE received from the Registrar (download from portal) + your pending TM application + acknowledgement.",
   },
   {
     icon: <FaIdCard />,
-    title: "2. Client Identity + Authority",
+    title: "Client Identity + Authority",
     text: "For INDIVIDUAL opposers / applicants: PAN + Aadhaar + photograph. For COMPANIES / LLPs / PARTNERSHIPS: entity PAN + Certificate of Incorporation / Partnership Deed + authorised signatory PAN + DSC (Class 3). Board resolution authorising the opposition / counter statement (for entities). Used for verification of pleadings + affidavit signing.",
   },
   {
     icon: <FaFileSignature />,
-    title: "3. Power of Attorney (Form TM-48) + Authorisation Letter",
+    title: "Power of Attorney (Form TM-48) + Authorisation Letter",
     text: "Power of Attorney (FORM TM-48) executed by the client in favour of LT's associated Attorney + Authorisation Letter (for entity clients) confirming signatory authority. We DRAFT both documents; you sign on ₹100 stamp paper. Required across all plan tiers + both scenarios.",
   },
 ];
@@ -23,17 +23,17 @@ const pleadingDocs = [
 const evidenceDocs = [
   {
     icon: <FaBalanceScale />,
-    title: "4. Grounds + Supporting Legal Material",
+    title: "Grounds + Supporting Legal Material",
     text: "Drafted notes on opposition grounds (we draft these; client provides factual inputs). Supporting case-law citations relevant to your grounds (we research + cite). Prior decisions of the Registrar / High Court on similar matters (we identify). Up to 25 grounds covered; beyond 25 mutually quoted.",
   },
   {
     icon: <FaReceipt />,
-    title: "5. Use Evidence + Documentary Proof",
+    title: "Use Evidence + Documentary Proof",
     text: "For EVIDENCE STAGE filings: invoices / advertising material / social media presence / website screenshots / sales data / GST returns / customer testimonials / market presence proof / brand recognition surveys. Strength of evidence drives the strength of the opposition / counter. Notarised affidavit drafted by LT; you provide factual inputs.",
   },
   {
     icon: <FaBullhorn />,
-    title: "6. Hearing Preparation Documents (for Rule 50 hearing)",
+    title: "Hearing Preparation Documents (for Rule 50 hearing)",
     text: "Final HEARING BRIEF (drafted by LT — summary of pleadings + evidence highlights + case-law digest). Paper-book of pleadings + evidence + Registrar's interlocutory orders. Authorised representative confirmation. Pre-hearing notes from client on factual context. Hearing typically online video conference.",
   },
 ];

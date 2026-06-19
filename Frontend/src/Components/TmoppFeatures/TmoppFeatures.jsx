@@ -39,7 +39,7 @@ const TmoppFeatures = () => {
     <section className="opc-features-section">
       <div className="opc-features-container">
 
-        <h2 className="opc-features-title">Types of Trademark Opposition</h2>
+        <h2 className="opc-features-title">Types of Trademark Opposition in India</h2>
 
         <div className="opc-features-cards">
           {types.map((type) => (
