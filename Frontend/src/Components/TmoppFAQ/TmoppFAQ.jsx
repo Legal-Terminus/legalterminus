@@ -3,49 +3,84 @@ import "./TmoppFAQ.css";
 
 const faqs = [
   {
-    question: "What is a trademark opposition?",
+    question: "Can anyone file a Trademark Opposition in India?",
     answer:
-      "After a trademark application clears examination, it is advertised in the Trademark Journal. A trademark opposition is a formal challenge filed by any third party who believes the published mark conflicts with their rights — it asks the Registry not to register the mark. It can be filed by anyone, and is the public's opportunity to stop a confusing or conflicting trademark from being registered.",
+      "Yes. Any person, business, company, partnership, proprietor, or even a prior user of a similar brand can file a Trademark Opposition if they believe the published trademark may affect their rights or create confusion in the market.",
   },
   {
-    question: "Within how long can an opposition be filed?",
+    question: "Where can I check if a trademark has been opposed?",
     answer:
-      "A Notice of Opposition (Form TM-O) must be filed within 4 months from the date the mark is published in the Trademark Journal. If no opposition is filed within this window, the mark proceeds toward registration. Monitoring the journal is therefore essential to catch a conflicting mark in time.",
+      "You can check the trademark application status on the official IP India portal. If an opposition is filed, the application status usually changes to \"Opposed\" on the Trade Marks Registry records.",
   },
   {
-    question: "My application has been opposed — what should I do?",
+    question: "Can a trademark be opposed even after examination approval?",
     answer:
-      "You must file a Counter-Statement within 2 months of receiving the Notice of Opposition. This is a strict deadline: if you do not file the counter-statement in time, your application is treated as abandoned. The counter-statement denies the opposition's claims and asserts your right to the mark, after which the case proceeds to the evidence stage.",
+      "Yes. Examination approval does not guarantee registration. Once the trademark is published in the Trade Marks Journal, it becomes open for public opposition during the statutory 4-month opposition period.",
   },
   {
-    question: "What are the grounds for opposing a trademark?",
+    question: "Is Trademark Opposition the same as trademark infringement?",
     answer:
-      "Common grounds include that the mark is identical or deceptively similar to an earlier mark (Section 11), that it is descriptive, generic, or non-distinctive (Section 9), that the opponent has prior use and reputation in the mark, or that the application was made in bad faith. The opposition succeeds or fails on how well these grounds are argued and evidenced.",
+      "No. Trademark Opposition is an administrative proceeding before the Trade Marks Registry during the application stage. Trademark infringement usually happens after registration when someone illegally uses a registered trademark without permission.",
   },
   {
-    question: "What is the government fee to file an opposition?",
+    question: "Can I continue using my trademark during an opposition case?",
     answer:
-      "The government fee to file a Notice of Opposition is ₹2,700 per class. Defending an opposition by filing a counter-statement carries no separate government fee. These fees are separate from our professional fee and are billed at actuals.",
+      "Yes. In many cases, applicants continue using their trademark while the opposition matter is pending. However, the final rights depend on the Registrar's decision and the facts of the case.",
   },
   {
-    question: "What are the evidence stages in an opposition?",
+    question: "What are the common reasons for Trademark Opposition?",
     answer:
-      "After the counter-statement, evidence is filed by affidavit in three stages: the opponent's evidence in support of the opposition (Rule 45), the applicant's evidence in support of the application (Rule 46), and the opponent's evidence strictly in reply (Rule 47). Each stage has a fixed timeline, and a party may sometimes waive its evidence and rely on its pleadings.",
+      "Common reasons include:\n• Similar brand name or logo\n• Risk of customer confusion\n• Prior use by another business\n• Descriptive or generic trademark\n• Bad-faith filing\n• Copying of an established brand identity",
   },
   {
-    question: "Will there be a hearing in an opposition?",
+    question: "What documents are generally required in a Trademark Opposition matter?",
     answer:
-      "Yes. After the evidence stages are complete, the Registrar appoints a hearing where both sides present oral arguments, usually via video conference. The hearing is often decisive — being prepared with written submissions and proper representation strongly influences the outcome. After the hearing, the Registrar issues a reasoned decision.",
+      "The required documents may include:\n• Trademark application details\n• Trade Marks Journal copy\n• Business proof\n• Prior use proof (invoices, advertisements, website, social media, GST records, etc.)\n• Authorisation documents / POA\n• Evidence affidavits (if applicable)",
   },
   {
-    question: "What happens after the Registrar's decision?",
+    question: "Can multiple oppositions be filed against one trademark?",
     answer:
-      "If the opposition is rejected, the mark proceeds to registration; if it is allowed, the application is refused. The party that is not satisfied with the decision may appeal to the High Court within the prescribed time. We advise you on the merits and next steps once the order is passed.",
+      "Yes. More than one party can oppose the same trademark application if they believe the registration may affect their rights or business interests.",
   },
   {
-    question: "How does Legal Terminus help with a trademark opposition?",
+    question: "Can opposition be filed against only a logo or only a brand name?",
     answer:
-      "We handle both sides end-to-end: monitoring the journal, drafting and filing the Notice of Opposition or the Counter-Statement within the deadline, compiling and filing evidence affidavits at each stage, and — where included — preparing for and representing you at the hearing before the Registrar, tracking the matter through to the final decision. Book a free consultation to get started.",
+      "Yes. Trademark Opposition can be filed against:\n• Wordmarks\n• Logos / Device marks\n• Taglines\n• Labels\n• Packaging marks\n• Combination marks",
+  },
+  {
+    question: "What happens if the opposite party does not respond?",
+    answer:
+      "If the applicant fails to file a Counter Statement within the prescribed time, the trademark application is treated as abandoned. Similarly, if the opposer fails to submit evidence within time, the opposition may be treated as abandoned.",
+  },
+  {
+    question: "Can I oppose a trademark if my own trademark is not registered?",
+    answer:
+      "Yes. Even unregistered trademark owners may oppose a trademark application if they can prove prior use, reputation, goodwill, or market presence.",
+  },
+  {
+    question: "Does filing an opposition automatically stop trademark registration?",
+    answer:
+      "Temporarily yes. Once opposition is filed, the trademark registration process is kept on hold until the opposition matter is decided or settled.",
+  },
+  {
+    question: "Can Trademark Opposition matters be resolved online?",
+    answer:
+      "Yes. Most filings, evidence submissions, status tracking, and hearings are now handled digitally through the official IP India e-filing system and online hearing platform.",
+  },
+  {
+    question: "Can a startup or small business file a Trademark Opposition?",
+    answer:
+      "Absolutely. Trademark Opposition rights are available to all businesses — including startups, MSMEs, proprietorships, and individuals — if their brand rights may be affected.",
+  },
+  {
+    question: "Why is professional handling important in Trademark Opposition matters?",
+    answer:
+      "Trademark Opposition involves legal drafting, evidence preparation, deadline management, and hearing representation. A small mistake or missed deadline can seriously affect the matter. Professional handling helps ensure proper filings, timely responses, and stronger legal presentation before the Registry.",
+  },
+  {
+    question: "How can Legal Terminus help me with Trademark Opposition?",
+    answer:
+      "Legal Terminus provides end-to-end support for Trademark Opposition matters — whether you want to oppose a similar trademark or defend your own trademark application. Our team handles drafting, filing, evidence preparation, hearing support, and regular follow-ups through the official IP India e-filing portal.",
   },
 ];
 
@@ -84,7 +119,7 @@ const TmoppFAQ = () => {
                   <span className={`opcfaq-icon ${isActive ? "open" : ""}`}>▾</span>
                 </button>
                 <div className={`opcfaq-answer ${isActive ? "open" : ""}`}>
-                  <div className="opcfaq-answer-content">{item.answer}</div>
+                  <div className="opcfaq-answer-content" style={{ whiteSpace: "pre-line" }}>{item.answer}</div>
                 </div>
               </div>
             );

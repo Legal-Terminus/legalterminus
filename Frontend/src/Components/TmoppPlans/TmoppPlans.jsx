@@ -78,7 +78,7 @@ const TmoppPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards tmopp-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}

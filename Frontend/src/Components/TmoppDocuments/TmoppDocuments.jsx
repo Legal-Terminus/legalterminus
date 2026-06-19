@@ -1,69 +1,40 @@
 import React from "react";
 import "./TmoppDocuments.css";
-import { FaFileAlt, FaUser, FaIdCard, FaFileSignature, FaTrademark, FaReceipt, FaBalanceScale, FaBullhorn } from "react-icons/fa";
+import { FaFileAlt, FaUser, FaIdCard, FaFileSignature, FaReceipt, FaBalanceScale, FaBullhorn } from "react-icons/fa";
 
-const caseDocs = [
-  {
-    icon: <FaTrademark />,
-    title: "Mark & Application Details",
-    note: "The marks in dispute",
-    items: [
-      "Your trademark (number / certificate, if registered)",
-      "The opposed / opposing mark & application number",
-      "Class(es) and goods/services involved",
-    ],
-  },
+const pleadingDocs = [
   {
     icon: <FaFileAlt />,
-    title: "Opposition Papers",
-    note: "Depending on your side",
-    items: [
-      "Notice of Opposition received (if defending), or",
-      "Journal page of the mark to be opposed (if opposing)",
-      "Date of receipt / publication (for the deadline)",
-    ],
+    title: "1. Subject Matter Documents (Scenario-Specific)",
+    text: "SCENARIO A (Opposing other's TM): copy of the published Journal entry for the impugned application + screenshot of the IP India portal record + your own earlier trademark registration / pending application / well-known mark evidence as basis for opposition. SCENARIO B (Counter Statement): the OPPOSITION NOTICE received from the Registrar (download from portal) + your pending TM application + acknowledgement.",
+  },
+  {
+    icon: <FaIdCard />,
+    title: "2. Client Identity + Authority",
+    text: "For INDIVIDUAL opposers / applicants: PAN + Aadhaar + photograph. For COMPANIES / LLPs / PARTNERSHIPS: entity PAN + Certificate of Incorporation / Partnership Deed + authorised signatory PAN + DSC (Class 3). Board resolution authorising the opposition / counter statement (for entities). Used for verification of pleadings + affidavit signing.",
   },
   {
     icon: <FaFileSignature />,
-    title: "Authorisation",
-    note: "Authorising us to act (Form TM-48)",
-    items: [
-      "Signed Power of Attorney (Form TM-48) — drafted by us",
-      "Authorised signatory details for companies/firms",
-    ],
+    title: "3. Power of Attorney (Form TM-48) + Authorisation Letter",
+    text: "Power of Attorney (FORM TM-48) executed by the client in favour of LT's associated Attorney + Authorisation Letter (for entity clients) confirming signatory authority. We DRAFT both documents; you sign on ₹100 stamp paper. Required across all plan tiers + both scenarios.",
   },
 ];
 
 const evidenceDocs = [
   {
-    icon: <FaIdCard />,
-    title: "Party Identity",
-    note: "For opponent / applicant on record",
-    items: [
-      "PAN & address proof of the party",
-      "Entity registration proof (company/firm)",
-      "Email & mobile for correspondence",
-    ],
+    icon: <FaBalanceScale />,
+    title: "4. Grounds + Supporting Legal Material",
+    text: "Drafted notes on opposition grounds (we draft these; client provides factual inputs). Supporting case-law citations relevant to your grounds (we research + cite). Prior decisions of the Registrar / High Court on similar matters (we identify). Up to 25 grounds covered; beyond 25 mutually quoted.",
   },
   {
     icon: <FaReceipt />,
-    title: "Evidence of Use & Reputation",
-    note: "The core of the case",
-    items: [
-      "Date of first use of your mark",
-      "Invoices, sales figures & turnover under the mark",
-      "Advertising spend, brochures & media coverage",
-    ],
+    title: "5. Use Evidence + Documentary Proof",
+    text: "For EVIDENCE STAGE filings: invoices / advertising material / social media presence / website screenshots / sales data / GST returns / customer testimonials / market presence proof / brand recognition surveys. Strength of evidence drives the strength of the opposition / counter. Notarised affidavit drafted by LT; you provide factual inputs.",
   },
   {
-    icon: <FaBalanceScale />,
-    title: "Supporting Legal Documents",
-    note: "Filed by affidavit",
-    items: [
-      "Affidavit deposing to use & reputation",
-      "Prior registrations / applications relied upon",
-      "Any cease-and-desist or coexistence correspondence",
-    ],
+    icon: <FaBullhorn />,
+    title: "6. Hearing Preparation Documents (for Rule 50 hearing)",
+    text: "Final HEARING BRIEF (drafted by LT — summary of pleadings + evidence highlights + case-law digest). Paper-book of pleadings + evidence + Registrar's interlocutory orders. Authorised representative confirmation. Pre-hearing notes from client on factual context. Hearing typically online video conference.",
   },
 ];
 
@@ -73,14 +44,9 @@ const DocItem = ({ doc }) => (
       <div className="opcd-doc-icon">{doc.icon}</div>
       <div className="opcd-doc-meta">
         <h4 className="opcd-doc-title">{doc.title}</h4>
-        <span className="opcd-doc-note">{doc.note}</span>
       </div>
     </div>
-    <ul className="opcd-doc-list">
-      {doc.items.map((item, i) => (
-        <li key={i} className="opcd-doc-list-item">{item}</li>
-      ))}
-    </ul>
+    <p className="tmopp-doc-text">{doc.text}</p>
   </div>
 );
 
@@ -90,8 +56,8 @@ const TmoppDocuments = () => {
       <div className="opcd-container">
 
         <div className="opcd-header">
-          <h2 className="opcd-main-title">Documents Required for a Trademark Opposition</h2>
-          <p className="opcd-main-subtitle">Get these ready and we'll take care of the rest</p>
+          <h2 className="opcd-main-title">Documents Required for Trademark Opposition in India</h2>
+          <p className="opcd-main-subtitle">Six categories. Opposition documentation depends on scenario (A vs B) + plan tier (pleading only vs evidence vs hearing). Personalised checklist after discovery call.</p>
         </div>
 
         <div className="opcd-columns">
@@ -100,12 +66,12 @@ const TmoppDocuments = () => {
             <div className="opcd-col-header">
               <div className="opcd-col-header-icon"><FaFileAlt /></div>
               <div>
-                <h3 className="opcd-col-title">Case &amp; Mark Documents</h3>
-                <p className="opcd-col-subtitle">The marks, papers &amp; authorisation</p>
+                <h3 className="opcd-col-title">Subject, Identity &amp; Authority</h3>
+                <p className="opcd-col-subtitle">The matter, the party &amp; the POA</p>
               </div>
             </div>
             <div className="opcd-col-body">
-              {caseDocs.map((doc, i) => (
+              {pleadingDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>
@@ -113,10 +79,10 @@ const TmoppDocuments = () => {
 
           <div className="opcd-column">
             <div className="opcd-col-header opcd-col-header--office">
-              <div className="opcd-col-header-icon"><FaBullhorn /></div>
+              <div className="opcd-col-header-icon"><FaUser /></div>
               <div>
-                <h3 className="opcd-col-title">Identity &amp; Evidence Documents</h3>
-                <p className="opcd-col-subtitle">Use, reputation &amp; affidavits</p>
+                <h3 className="opcd-col-title">Grounds, Evidence &amp; Hearing</h3>
+                <p className="opcd-col-subtitle">Legal material, proof &amp; hearing docs</p>
               </div>
             </div>
             <div className="opcd-col-body">
