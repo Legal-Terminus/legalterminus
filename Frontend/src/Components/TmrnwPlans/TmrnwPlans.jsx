@@ -4,51 +4,57 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "renewal",
-    name: "Standard Renewal",
-    oldPrice: 3999,
+    id: "elemental",
+    name: "Elemental",
+    badge: "STANDARD RENEWAL",
+    oldPrice: 2999,
     price: 1999,
     services: [
-      "Form TM-R renewal filing (1 class)",
-      "Renewal of registration for another 10 years",
-      "Govt fee coordination (₹9,000 per class)",
-      "Deadline verification against the register",
-      "Power of Attorney drafting (TM-48)",
-      "Filing acknowledgement & renewal status",
-      "Next-renewal reminder set for you",
+      "Existing registration certificate review",
+      "Expiry verification on IP India portal",
+      "Form TM-R drafting + client confirmation",
+      "Government fee payment (per class at actuals)",
+      "DSC affixation by LT (registered TM agent)",
+      "E-filing on https://ipindiaonline.gov.in",
+      "Challan + Acknowledgement emailed to client",
+      "Renewal Certificate delivery (30–60 days)",
+      "LIFELONG REMINDER POLICY included",
     ],
   },
   {
-    id: "grace",
-    name: "Grace-Period Renewal",
+    id: "enriched",
+    name: "Enriched",
     badge: "★ MOST POPULAR",
     popular: true,
-    oldPrice: 6999,
-    price: 3999,
+    oldPrice: 5249,
+    price: 3499,
     services: [
-      "Everything in Standard Renewal",
-      "Renewal within 6-month grace window after expiry",
-      "Surcharge filing & fee handling (Form TM-R)",
-      "Status check to confirm mark is still on register",
-      "Risk assessment before deadline lapses fully",
-      "Priority filing to avoid removal",
-      "Dedicated IP expert + WhatsApp support",
+      "Form TM-48 Power of Attorney drafting",
+      "Authorisation Letter drafting (POA signatory)",
+      "POA stamping + execution coordination",
+      "Filing change-of-agent on IP India portal",
+      "Form TM-R filing + Govt fee + DSC affixation",
+      "Challan + Acknowledgement + Renewal Cert",
+      "LIFELONG REMINDER POLICY included",
+      "Single engagement — no separate billing",
     ],
   },
   {
-    id: "restoration",
-    name: "Restoration + Renewal",
-    badge: "✦ FULL-SERVICE",
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ RENEWAL + 12 MONTHS TRADEMARK WATCH",
     oldPrice: 14999,
-    price: 8999,
+    price: 9999,
     services: [
-      "Everything in Grace-Period Renewal",
-      "Restoration of a removed mark (within 1 year)",
-      "Form TM-R with restoration + renewal fee",
-      "Drafting of restoration justification",
-      "Register-status reconciliation & follow-up",
-      "Multi-class / portfolio renewal support",
-      "Priority support till mark is restored",
+      "FULL RENEWAL PROCESS (per Elemental OR Enriched)",
+      "Attorney Change handled inclusive (if needed)",
+      "Form TM-R + Govt fee + DSC + Renewal Certificate",
+      "12 MONTHS of TRADEMARK WATCH SERVICES",
+      "Monthly watch report + alert emails",
+      "IP India Trademark Journal monitoring",
+      "Similar / identical mark filing alerts",
+      "Opposition window tracking (4-month statutory)",
+      "LIFELONG REMINDER POLICY included",
     ],
   },
 ];
@@ -68,7 +74,7 @@ const TmrnwPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards tmrnw-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
@@ -84,7 +90,7 @@ const TmrnwPlans = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ Govt fee &amp; GST extra / class</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">
