@@ -3,35 +3,39 @@ import "./TmoppGovtCosts.css";
 
 const rows = [
   {
-    head: "Notice of Opposition (Form TM-O)",
-    range: "₹2,700 / class",
-    note: "Government fee to file an opposition against a published mark, per class",
+    action: "Form TM-O — Notice of Opposition (Scenario A)",
+    fee: "₹2,700 per class (e-filing)",
+    note: "Filed by OPPOSER within 4 months of Journal publication",
   },
   {
-    head: "Counter-Statement (Form TM-O)",
-    range: "₹0 govt fee",
-    note: "Filing the counter-statement to defend the application carries no separate fee",
+    action: "Form TM-O — Counter Statement (Scenario B)",
+    fee: "NIL — No Govt Fee",
+    note: "Filed by APPLICANT within 2 months of opposition notice received",
   },
   {
-    head: "Opposition Window",
-    range: "4 months",
-    note: "Time from journal publication within which any party may file an opposition",
+    action: "Rule 45 Evidence (Opposer's evidence)",
+    fee: "NIL — No Govt Fee",
+    note: "Affidavit filed within 2 months of counter statement",
   },
   {
-    head: "Counter-Statement Deadline",
-    range: "2 months",
-    note: "Applicant must file the counter-statement within 2 months of receiving the opposition",
+    action: "Rule 46 Evidence (Applicant's evidence)",
+    fee: "NIL — No Govt Fee",
+    note: "Affidavit filed within 2 months of opposer's evidence",
   },
   {
-    head: "Evidence Stages (Rule 45 / 46 / 47)",
-    range: "2 months each",
-    note: "Opponent's evidence, applicant's evidence, and evidence in reply, by affidavit",
+    action: "Rule 47 Reply Evidence (Opposer's reply)",
+    fee: "NIL — No Govt Fee",
+    note: "Within 1 month + 1 month extension",
   },
   {
-    head: "Total Out-of-Pocket (file opposition, 1 class)",
-    range: "₹2,700 govt fee",
-    note: "Govt. fee billed at actuals; defending an opposition carries no government fee",
-    isTotal: true,
+    action: "Rule 50 Hearing attendance",
+    fee: "NIL — No Govt Fee",
+    note: "Online video conference",
+  },
+  {
+    action: "Form TM-M — Adjournment / Extension",
+    fee: "₹900 per request",
+    note: "Max 2 adjournments per matter, 30 days each",
   },
 ];
 
@@ -39,28 +43,36 @@ const TmoppGovtCosts = () => {
   return (
     <section className="opc-govtcosts-section">
       <div className="opc-govtcosts-container">
+
+        <div className="tmopp-status-callout">
+          <h3 className="tmopp-status-title">*&nbsp;&nbsp;STATUS UPDATE COMMITMENT&nbsp;&nbsp;*</h3>
+          <p className="tmopp-status-text">
+            Opposition matters run 2-5 YEARS through multiple evidence + hearing stages. You won't lose track. ONCE A MONTH — calendared, guaranteed — you receive an email status update on your matter. AND for ANY CHANGE (Counter Statement Received / Evidence Filed / Hearing Scheduled / Order Passed / etc.), you're notified WITHIN 1-2 DAYS. Active across ALL three plan tiers from engagement through final Registrar's order.
+          </p>
+        </div>
+
         <h2 className="opc-govtcosts-title">
-          Government Fees &amp; Key Timelines
-          <span className="opc-govtcosts-badge">Billed at Actuals</span>
+          Indicative Government Fees — Opposition
+          <span className="opc-govtcosts-badge">At Actuals</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          Filing an opposition carries a government fee of ₹2,700 per class, while defending one carries none — the value is in the legal argument and evidence. The proceeding runs on strict statutory deadlines. Our professional fee covers drafting, evidence, and representation; government fees are billed at actuals.
+          Per First Schedule of the Trade Marks Rules, 2017 + verified IP India portal fees:
         </p>
 
         <div className="opc-govtcosts-table-wrapper">
           <table className="opc-govtcosts-table">
             <thead>
               <tr>
-                <th>Cost / Timeline Head</th>
-                <th>Typical Value</th>
+                <th>Action</th>
+                <th>Government Fee</th>
                 <th>Notes</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row, i) => (
-                <tr key={i} className={row.isTotal ? "opc-govtcosts-total-row" : ""}>
-                  <td>{row.head}</td>
-                  <td className="opc-govtcosts-range">{row.range}</td>
+                <tr key={i}>
+                  <td>{row.action}</td>
+                  <td className="opc-govtcosts-range">{row.fee}</td>
                   <td>{row.note}</td>
                 </tr>
               ))}

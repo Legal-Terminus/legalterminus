@@ -1,1 +1,82 @@
 @import url('../OpcZolvitPremium/OpcZolvitPremium.css');
+
+/* "Trademark Opposition: The Basics" — two-scenario box (after Priority) */
+.tmopp-basics-section {
+    padding: 10px 20px 60px;
+    background: #ffffff;
+}
+
+.tmopp-basics-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.tmopp-basics-title {
+    margin: 0 0 28px;
+    text-align: center;
+    font-size: 30px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.tmopp-basics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+}
+
+.tmopp-basics-card {
+    padding: 24px 26px;
+    border-radius: 14px;
+    border: 1.5px solid transparent;
+}
+
+.tmopp-basics-card--a {
+    background: #f0fdf4;
+    border-color: rgba(34, 197, 94, 0.35);
+}
+
+.tmopp-basics-card--b {
+    background: #fffbeb;
+    border-color: rgba(234, 179, 8, 0.4);
+}
+
+.tmopp-basics-label {
+    display: inline-block;
+    margin-bottom: 12px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.tmopp-basics-card--a .tmopp-basics-label {
+    color: #15803d;
+}
+
+.tmopp-basics-card--b .tmopp-basics-label {
+    color: #b45309;
+}
+
+.tmopp-basics-heading {
+    margin: 0 0 12px;
+    font-size: 19px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.tmopp-basics-text {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.8;
+    color: #475569;
+}
+
+@media (max-width: 768px) {
+    .tmopp-basics-grid {
+        grid-template-columns: 1fr;
+    }
+    .tmopp-basics-title {
+        font-size: 24px;
+    }
+}

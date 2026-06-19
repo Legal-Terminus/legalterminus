@@ -1,1 +1,40 @@
 @import url('../OPCGovtCosts/OPCGovtCosts.css');
+
+/* Status update commitment callout (solid green, white text) above the fees table */
+.tmopp-status-callout {
+    max-width: 1000px;
+    margin: 0 auto 36px;
+    padding: 28px 34px;
+    background: #2e8b57;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 10px 24px rgba(46, 139, 87, 0.18);
+}
+
+.tmopp-status-title {
+    margin: 0 0 14px;
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.tmopp-status-text {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.85;
+    color: #eafaf0;
+}
+
+@media (max-width: 600px) {
+    .tmopp-status-callout {
+        padding: 20px 18px;
+    }
+    .tmopp-status-title {
+        font-size: 15px;
+    }
+    .tmopp-status-text {
+        font-size: 14px;
+    }
+}

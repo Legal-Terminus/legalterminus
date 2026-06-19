@@ -18,12 +18,12 @@ const TmoppOverview = () => {
 
           <div className="opc-intro-content">
             <h2 className="opc-intro-title">
-              What is Trademark Opposition?
+              Why Trademark Opposition Matters
             </h2>
             <p className="opc-intro-text">
-              Once a trademark application clears examination, it is advertised in the Trademark Journal — and a 4-month window opens during which any third party who believes the mark conflicts with their rights can challenge it by filing a Notice of Opposition (Form TM-O). It is the public's chance to stop a confusing or conflicting mark from being registered. Opposition has two sides: filing one to block a copycat, and defending your own application when someone opposes it.
+              Trademark Opposition arises when a trademark application is published in the Trade Marks Journal and a third party challenges its registration within the prescribed 4-month opposition period. It is the final opportunity to object to a trademark before it becomes registered, helping brand owners prevent similar or conflicting marks from gaining legal protection.
               <br /><br />
-              The proceeding is governed by strict timelines under the Trade Marks Act, 1999. After a Notice of Opposition, the applicant must file a Counter-Statement within 2 months — miss it and the application is abandoned. Both sides then file evidence by affidavit across fixed stages, after which the Registrar hears the matter and decides. Opposition is the battleground where brand rights are genuinely contested, and the side with timely action and strong evidence usually prevails.
+              The opposition process involves notices, counter statements, evidence submissions, and hearings before the Trade Marks Registry. Missing a deadline, especially for filing a Counter Statement, can lead to automatic abandonment of the application. Therefore, timely tracking, proper legal drafting, and continuous follow-up are essential throughout the opposition proceedings.
             </p>
           </div>
         </div>
@@ -31,27 +31,29 @@ const TmoppOverview = () => {
 
       <section className="opc-compare-section">
         <div className="opc-compare-container">
-          <h2 className="opc-compare-title">Acting on Opposition vs Ignoring It: The Honest Comparison</h2>
+          <h2 className="opc-compare-title">Opposition Lifecycle — Stages + Timeline Summary</h2>
           <p className="opc-compare-subtitle">
-            What happens when you engage with an opposition properly versus letting the deadline pass:
+            The full journey from journal publication to the Registrar's order, with the governing rule and statutory deadline at each stage:
           </p>
           <div className="opc-compare-table-wrapper">
             <table className="opc-compare-table">
               <thead>
                 <tr>
-                  <th>Parameter</th>
-                  <th>Acted On Time &amp; Properly</th>
-                  <th>Ignored / Missed Deadline</th>
+                  <th>Stage</th>
+                  <th>Rule / Section</th>
+                  <th>Timeline / Deadline</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>If You Are Opposed</td><td>Counter-statement filed — case continues</td><td>Application abandoned</td></tr>
-                <tr><td>If You Oppose a Copycat</td><td>Conflicting mark can be blocked</td><td>Copycat proceeds to registration</td></tr>
-                <tr><td>Evidence</td><td>Affidavits filed at each stage</td><td>Treated as having no evidence</td></tr>
-                <tr><td>Hearing</td><td>Represented &amp; argued</td><td>Decided ex-parte against you</td></tr>
-                <tr><td>Brand Rights</td><td>Defended / asserted</td><td>Lost or diluted</td></tr>
-                <tr><td>Cost of Inaction</td><td>Fee + professional cost</td><td>Refile, rebrand or litigate later</td></tr>
-                <tr><td>Path to ®</td><td>Stays open</td><td>Closed for that application</td></tr>
+                <tr><td>TM application accepted + Journal published</td><td>Section 20</td><td>Starts the opposition window</td></tr>
+                <tr><td>File Notice of Opposition (Form TM-O)</td><td>Section 21(1) / Rule 42</td><td>Within 4 MONTHS of Journal publication (NO EXTENSION)</td></tr>
+                <tr><td>Service of opposition notice on applicant</td><td>Rule 43</td><td>By Registrar</td></tr>
+                <tr><td>File Counter Statement (Form TM-O)</td><td>Rule 44</td><td>Within 2 MONTHS of notice receipt (NO EXTENSION)</td></tr>
+                <tr><td>Opposer's evidence affidavit</td><td>Rule 45</td><td>Within 2 MONTHS of counter statement</td></tr>
+                <tr><td>Applicant's evidence affidavit</td><td>Rule 46</td><td>Within 2 MONTHS of opposer's evidence</td></tr>
+                <tr><td>Opposer's reply evidence</td><td>Rule 47</td><td>Within 1 MONTH + 1 month extension</td></tr>
+                <tr><td>Final Hearing (online video conference)</td><td>Rule 50</td><td>Scheduled by Registrar; max 2 adjournments</td></tr>
+                <tr><td>Registrar's Order</td><td>Section 21(5)</td><td>30-90 days post-hearing</td></tr>
               </tbody>
             </table>
           </div>
