@@ -1,1 +1,9 @@
 @import url('../OPCDocuments/OPCDocuments.css');
+
+/* Full-paragraph document body (instead of bulleted items) */
+.tmrnw-doc-text {
+    margin: 10px 0 0;
+    font-size: 14px;
+    line-height: 1.75;
+    color: #475569;
+}

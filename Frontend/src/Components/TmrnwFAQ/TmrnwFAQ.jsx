@@ -3,49 +3,104 @@ import "./TmrnwFAQ.css";
 
 const faqs = [
   {
-    question: "How often does a trademark need to be renewed?",
+    question: "How long is a registered trademark valid in India?",
     answer:
-      "A registered trademark in India is valid for 10 years from the date of application. To keep it protected, it must be renewed every 10 years under Section 25 of the Trade Marks Act, 1999. There is no limit on the number of renewals — a trademark can be renewed indefinitely in successive 10-year terms.",
+      "A registered trademark in India is valid for 10 years from the date of registration under the Trade Marks Act, 1999. It can be renewed indefinitely for further 10-year periods by filing Form TM-R through the official IP India portal (ipindiaonline.gov.in). There is no limit on the number of renewals, which means your brand can remain protected for decades if renewed on time.",
   },
   {
-    question: "When can I file for trademark renewal?",
+    question: "Which Trademark Renewal plan is right for me?",
     answer:
-      "A renewal application (Form TM-R) can be filed up to one year before the registration's expiry date. Filing early is strongly recommended — it ensures uninterrupted protection and avoids any surcharge. We track your deadline and file well ahead of time.",
+      "Elemental (₹1,999) – Suitable for standard trademark renewal where no agent change is required.\nEnriched (₹3,499) – Best if you want to shift your trademark records or authorised agent to Legal Terminus.\nSupreme (₹9,999) – Ideal for businesses looking for complete brand protection support, including trademark watch and monitoring services after renewal.\n\nAll plans include our reminder support for future renewal cycles.",
   },
   {
-    question: "What happens if I miss the renewal deadline?",
+    question: "What is the Lifelong Reminder Policy?",
     answer:
-      "If you miss the expiry date, the trademark enters a 6-month grace period during which it can still be renewed by paying a surcharge in addition to the renewal fee. If it is not renewed within that window, the mark can be removed from the register and you lose your exclusive rights.",
+      "Trademark renewal comes only once every 10 years, and many businesses unintentionally forget the deadline. To avoid this, Legal Terminus maintains a structured reminder system and sends renewal alerts before every future expiry cycle. This helps ensure your trademark remains protected without interruption.",
   },
   {
-    question: "Can a removed (lapsed) trademark be restored?",
+    question: "What is included in the Trademark Watch service?",
     answer:
-      "Yes — within one year of the expiry date, a removed trademark can be restored by filing Form TM-R with a restoration fee plus the renewal fee. However, restoration is at the Registrar's discretion and may require justification, making it more expensive and less certain than renewing on time.",
+      "Our Trademark Watch service helps monitor similar or potentially conflicting trademark applications filed after your renewal. It also includes alerts for similar marks published in the Trademark Journal and basic brand monitoring support for online marketplaces and domains.",
   },
   {
-    question: "What is the government fee for trademark renewal?",
+    question: "What if I want to change my trademark agent during renewal?",
     answer:
-      "The IP India e-filing fee for renewal is ₹9,000 per class. If renewing within the grace period, a surcharge applies on top of this, and restoration involves an additional restoration fee. These government fees are separate from our professional fee and are billed at actuals.",
+      "If your previous trademark agent is inactive or you want Legal Terminus to manage your trademark portfolio, we can assist with the change of agent process along with renewal filing. We prepare the required authorisation documents and complete the transition smoothly.",
   },
   {
-    question: "Which form is used for trademark renewal?",
+    question: "When should I renew my trademark?",
     answer:
-      "Trademark renewal, grace-period renewal, and restoration are all filed using Form TM-R on the IP India portal. We prepare and file Form TM-R with the correct class(es), applicant details, and any applicable surcharge or restoration fee on your behalf.",
+      "Trademark renewal can be filed before the expiry date of the registration. It is always recommended to renew the trademark well before expiry to avoid additional fees, delays, or restoration procedures.",
   },
   {
-    question: "Do I need to renew each class separately?",
+    question: "What is the government fee for Trademark Renewal?",
     answer:
-      "If your trademark is registered in more than one class, the renewal fee applies per class. We handle multi-class and full-portfolio renewals together so every class — and every mark in your brand family — is renewed at the same time, with nothing left to lapse.",
+      "The government fee for trademark renewal is charged per class and is payable separately from the professional fee. Late renewal or restoration may attract additional government charges.",
   },
   {
-    question: "Will I get a reminder before my trademark expires?",
+    question: "What happens if I miss the trademark renewal deadline?",
     answer:
-      "The Registry may send a notice before expiry, but relying on it is risky. As part of our service, we set an automatic reminder well ahead of your renewal date and proactively reach out — so your renewal is handled in good time regardless of whether an official notice arrives.",
+      "If the renewal deadline is missed, additional late fees may apply. After a certain period, restoration procedures become necessary. If the trademark is not restored within the prescribed timeline, it may be removed from the Trademark Register permanently.",
   },
   {
-    question: "How does Legal Terminus handle my trademark renewal?",
+    question: "Is Trademark Renewal done online or physically?",
     answer:
-      "We verify your renewal deadline against the official register, collect the required details, prepare and file Form TM-R (with any surcharge or restoration fee), pay the government fee at actuals, track the Registry's processing, and confirm the renewed 10-year validity — then set a reminder for the next cycle. Book a free consultation to get started.",
+      "Trademark Renewal is primarily filed online through the official IP India portal, which is the standard and recommended process for faster acknowledgement and tracking.",
+  },
+  {
+    question: "Will my trademark automatically renew after payment?",
+    answer:
+      "No. Trademark Renewal requires proper filing of Form TM-R and processing by the Trade Marks Registry. Simply making payment without correct filing does not complete the renewal process.",
+  },
+  {
+    question: "Can I renew multiple trademark classes together?",
+    answer:
+      "Yes. If your trademark is registered in multiple classes, each class can be renewed. Government fees are applicable separately for every class.",
+  },
+  {
+    question: "Can a removed trademark be restored?",
+    answer:
+      "Yes, in certain cases a removed trademark may be restored by filing the prescribed restoration application within the permitted timeline, subject to approval by the Trade Marks Registry.",
+  },
+  {
+    question: "Will I receive a certificate after Trademark Renewal?",
+    answer:
+      "Yes. After successful processing, the Trade Marks Registry issues an updated Renewal Certificate confirming the continuation of trademark protection.",
+  },
+  {
+    question: "Why is timely Trademark Renewal important for businesses?",
+    answer:
+      "A trademark is a long-term business asset. Timely renewal helps maintain exclusive legal rights over the brand name, logo, or slogan and avoids the risk of losing brand protection due to expiry.",
+  },
+  {
+    question: "Can Trademark Renewal be filed by an individual or only by companies?",
+    answer:
+      "Trademark Renewal can be filed by any registered proprietor, including individuals, startups, companies, LLPs, partnerships, trusts, and NGOs.",
+  },
+  {
+    question: "Does Trademark Renewal protect my brand internationally?",
+    answer:
+      "No. Indian Trademark Renewal protects the mark only within India. Separate filings or renewals are required for international trademark protection in other countries.",
+  },
+  {
+    question: "Can I update my address or proprietor details during renewal?",
+    answer:
+      "Yes. Certain changes relating to proprietor details, address, or authorised agent can also be updated during the renewal process, subject to applicable procedures.",
+  },
+  {
+    question: "Do I need to renew a trademark even if I am not actively using it?",
+    answer:
+      "Yes. If you want to continue retaining legal ownership and future rights over the trademark, renewal should still be completed on time.",
+  },
+  {
+    question: "Can Trademark Renewal increase my brand value?",
+    answer:
+      "Yes. Continuously renewed trademarks strengthen brand credibility, improve intellectual property value, and support future investment, franchise, licensing, and expansion opportunities.",
+  },
+  {
+    question: "How can Legal Terminus help with Trademark Renewal?",
+    answer:
+      "Legal Terminus provides end-to-end support for Trademark Renewal, including trademark status verification, Form TM-R filing, Attorney change support, renewal tracking, reminder management, and post-renewal monitoring support through the official IP India portal.",
   },
 ];
 
@@ -84,7 +139,7 @@ const TmrnwFAQ = () => {
                   <span className={`opcfaq-icon ${isActive ? "open" : ""}`}>▾</span>
                 </button>
                 <div className={`opcfaq-answer ${isActive ? "open" : ""}`}>
-                  <div className="opcfaq-answer-content">{item.answer}</div>
+                  <div className="opcfaq-answer-content" style={{ whiteSpace: "pre-line" }}>{item.answer}</div>
                 </div>
               </div>
             );

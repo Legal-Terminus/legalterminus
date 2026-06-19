@@ -1,67 +1,54 @@
 import React from "react";
 import "./TmrnwBenefits.css";
 
+const benefits = [
+  {
+    title: "LIFELONG REMINDER POLICY (Our Binding Commitment)",
+    text: "The single biggest reason clients lose trademarks: they FORGOT. We don't let that happen. 90 / 60 / 30 / 7-day reminders before every renewal expiry — for every 10-year cycle, indefinitely — until your business exits OR you explicitly ask us to stop. Binding commitment, included in every plan tier. No additional charge for the reminder service.",
+  },
+  {
+    title: "Continuous Statutory Protection",
+    text: "Timely renewal keeps the trademark continuously on the register — preserving Section 28 EXCLUSIVE RIGHTS + Section 29 INFRINGEMENT remedies (injunction + damages + delivery up) + Section 31 PRESUMPTION OF VALIDITY. Lapsed marks lose all this overnight + you become limited to common-law passing-off rights (much harder to enforce).",
+  },
+  {
+    title: "E-Commerce Brand Registry + Marketplace Continuity",
+    text: "Amazon Brand Registry + Flipkart Brand Centre + Meesho + Myntra + Nykaa + ONDC + Shopify — ALL require an active registered trademark for brand-protection programmes. Lapsed mark = lose access to takedowns + brand-protection tools = counterfeit / lookalike listings proliferate unchecked. Continuous renewal preserves marketplace standing.",
+  },
+  {
+    title: "Brand Valuation + Investor / M&A Continuity",
+    text: "Brand valuation reports for funding rounds / M&A always include the registered TM portfolio. A lapsed TM is written down to zero in DD — and brand-led valuations can take a 10–30% hit from gaps in IP coverage. Continuous renewal maintains the asset value year on year + the priority date that compounds over decades.",
+  },
+  {
+    title: "10-Year Validity After Renewal",
+    text: "Trademark registration is valid for 10 YEARS from the application date + renewable indefinitely for further 10-year terms (Section 25). Some Indian trademarks (Tata, Bajaj, etc.) have been continuously renewed for 80+ years. A long-term brand asset — it compounds in value with use + advertising + market share.",
+  },
+  {
+    title: "Customs Recordal + Anti-Counterfeit",
+    text: "Registered TM owners can record their marks with INDIAN CUSTOMS under the IPR (Imported Goods) Enforcement Rules 2007 — empowering Customs to seize infringing goods at the border. Critical for export-oriented brands + importable consumer goods. The foundation for international IP enforcement (Madrid Protocol filings).",
+  },
+];
+
 const TmrnwBenefits = () => {
   return (
     <section className="opcben-section">
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of Renewing Your Trademark on Time
+            Benefits of Trademark Renewal in India
           </h2>
           <p className="opcben-subtitle">
-            Renewing keeps the protection you already paid for fully alive — preserving your exclusive rights, your brand value, and your ability to act against copycats, all for a fraction of the cost of restoration or rebranding.
+            Renewal isn't a chore — it's the ONE LINE OF DEFENCE that keeps your trademark's statutory protection alive. Here's what timely renewal preserves + delivers:
           </p>
         </header>
 
         <div className="opcben-grid">
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Uninterrupted Brand Protection</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              Timely renewal keeps your exclusive rights continuous, with no gap during which a competitor could exploit a lapse. Your brand stays legally protected across India for another full 10-year term.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Retain the ® Symbol &amp; Legal Power</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              A renewed mark keeps your right to use the ® symbol and to file infringement suits. A lapsed registration forfeits both — leaving you only with weaker, harder-to-prove remedies.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Cheaper Than Restoration or Rebrand</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              Renewing on time costs only the renewal fee. Letting the mark lapse adds surcharges, restoration fees, and — in the worst case — the enormous cost of rebranding a business that has lost its trademark.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Protects Brand Value &amp; Goodwill</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              The goodwill attached to a brand can be its most valuable asset. Continuous renewal preserves that value and keeps the trademark a clean, licensable, sellable asset on your balance sheet.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Keeps Squatters &amp; Copycats Out</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              The moment a mark lapses, opportunists can try to use or register something similar. Staying renewed keeps your mark on the live register, blocking imitators before they can gain a foothold.
-            </p>
-          </article>
-
-          <article className="opcben-card">
-            <h3 className="opcben-card-title">Smooth Licensing &amp; Due Diligence</h3>
-            <div className="opcben-card-underline" />
-            <p className="opcben-card-text">
-              Investors, franchisees, and acquirers check that your trademarks are current. A continuously renewed portfolio sails through due diligence and supports licensing, franchising, and fundraising deals.
-            </p>
-          </article>
+          {benefits.map((benefit, i) => (
+            <article className="opcben-card" key={i}>
+              <h3 className="opcben-card-title">{benefit.title}</h3>
+              <div className="opcben-card-underline" />
+              <p className="opcben-card-text">{benefit.text}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
