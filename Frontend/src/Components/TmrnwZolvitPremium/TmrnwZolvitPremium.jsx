@@ -27,7 +27,10 @@ const TmrnwZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  Renewal looks like a routine refile — but a missed expiry date turns years of brand-building into a removed mark, an open door for copycats, and a costly restoration fight. Priority is what happens when an IP expert watches your renewal calendar and files Form TM-R well before the deadline.
+                  Trademark Renewal may look simple — file Form TM-R, pay the government fee, and wait for the renewal certificate. But in practice, many trademarks lapse because renewal deadlines are missed, old agent records are not updated properly, or businesses stop tracking their brand after renewal.
+                </p>
+                <p className="opczp-subtitle" style={{ marginTop: "12px" }}>
+                  With LT Priority, your Trademark Renewal is handled on a priority basis by an experienced IP team that ensures timely filing, smooth coordination, and continued protection of your brand.
                 </p>
               </header>
 
@@ -36,23 +39,19 @@ const TmrnwZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    Deadline verification against the official register, so you renew on the correct date — not a date you half-remember.
+                    Priority processing and complete renewal support, including timely reminders before every 10-year expiry cycle and dedicated coordination throughout the process.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Early filing — up to a year before expiry — to lock in continuity and completely avoid the grace-period surcharge.
+                    <span className="opczp-list-icon">📄</span>
+                    Trademark verification, TM-R preparation, and filing support through the official IP India portal to help avoid errors, mismatches, and filing issues.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Multi-class and portfolio renewal handled together so no mark in your brand family slips through the cracks.
+                    <span className="opczp-list-icon">🤝</span>
+                    Documentation and agent change assistance, along with renewal acknowledgement and certificate sharing with regular status updates.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    Restoration support if a mark has already lapsed — filed within the one-year window with a proper justification.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">📑</span>
-                    A renewal record with the new 10-year validity date and an automatic reminder set for the next cycle.
+                    <span className="opczp-list-icon">🔍</span>
+                    Post-renewal trademark watch support to help identify similar or potentially infringing marks and protect your brand identity.
                   </li>
                 </ul>
               </section>
@@ -65,16 +64,19 @@ const TmrnwZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  Renewal is every 10 years — but you can file early. An application can be made up to one year before expiry. Filing early is the single best way to guarantee uninterrupted protection and avoid any surcharge.
+                  1 YEAR BEFORE TO EXPIRY DATE = ON-TIME WINDOW: Standard renewal at ₹9,000 per class — UNIFORM for all applicants (no MSME / Startup rebate at renewal). No surcharge. This is the sweet spot — we recommend renewing 3–6 months before expiry to avoid last-minute surprises.
                 </li>
                 <li className="opczp-note-item">
-                  Miss the date and the clock starts. After expiry you get a 6-month grace window to renew with a surcharge. Beyond that, the mark can be removed from the register — and you lose your exclusive rights in the meantime.
+                  WITHIN 6 MONTHS POST-EXPIRY = LATE WITH SURCHARGE: Section 25(4) proviso allows renewal here but adds a ₹4,500 SURCHARGE per class. Total: ₹13,500 per class for ALL applicants. The mark stays on the register during this 6-month grace period.
                 </li>
                 <li className="opczp-note-item">
-                  Removal is not always final — but it's costly. A removed mark can be restored within one year of expiry via Form TM-R with a restoration fee, subject to the Registrar's discretion. It is far cheaper and safer to simply renew on time.
+                  6 TO 12 MONTHS POST-EXPIRY = RESTORATION (Form TM-18): Section 25(5) read with Rule 60. The mark is removed from the register; restoration is at the REGISTRAR'S DISCRETION. Combined Govt fee ₹18,000 per class. NO GUARANTEE — the Registrar considers third-party interests + public interest before allowing restoration.
                 </li>
                 <li className="opczp-note-item">
-                  A lapsed mark invites copycats. The moment your registration lapses, competitors can attempt to use or even register a similar mark — undoing years of goodwill. Continuous renewal keeps your brand legally locked down.
+                  BEYOND 12 MONTHS POST-EXPIRY = PERMANENTLY LOST: The mark is REMOVED from the register; you have NO PATH TO RESTORATION. The only option is to file a FRESH trademark application (losing 10/20/30+ years of brand seniority + priority date + customs recordal status + e-commerce brand-protection status). Our Lifelong Reminder Policy is designed to make sure this never happens to you.
+                </li>
+                <li className="opczp-note-item">
+                  NO 50% REBATE AT RENEWAL: The reduced fee (₹4,500 vs ₹9,000) that helps Individual / DPIIT Startup / Udyam MSME applicants at the INITIAL FILING stage (Form TM-A) does NOT extend to renewal. Renewal is uniform ₹9,000 per class for everyone. Budget accordingly.
                 </li>
               </ul>
             </div>
