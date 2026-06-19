@@ -3,49 +3,69 @@ import "./TmexrFAQ.css";
 
 const faqs = [
   {
-    question: "What is a trademark examination report?",
+    question: "Can I continue using my trademark while the Examination Report is pending?",
     answer:
-      "After you file a trademark application, the Trade Marks Registry examines it and issues an examination report. If the Examiner has concerns, the report raises objections — usually under Section 9 (the mark is descriptive or non-distinctive) or Section 11 (it is similar to an existing mark). You then have to file a reply addressing those objections to move the application forward.",
+      "Yes. Filing of an Examination Report does not stop you from using your trademark. If your trademark application is already filed, you may continue using the ™ symbol while the matter is under examination, subject to applicable laws.",
   },
   {
-    question: "How long do I have to reply to a trademark objection?",
+    question: "What are the most common reasons for trademark objections in India?",
     answer:
-      "You must file the reply within 30 days of receiving the examination report. This is a strict deadline — if no reply is filed in time, the application is treated as abandoned. Because the window is short, it is important to act on an objection as soon as you receive the report.",
+      "The most common reasons are:\n• Similarity with existing trademarks\n• Generic or descriptive brand names\n• Lack of distinctiveness\n• Incorrect trademark class selection\n• Use of common industry words\n\nA proper filing strategy and professionally drafted reply help reduce these risks.",
   },
   {
-    question: "What happens if I don't reply to the examination report?",
+    question: "Can a logo trademark also receive an Examination Report?",
     answer:
-      "If you fail to file a reply within the deadline, your application is marked as abandoned. You lose the government filing fee, your priority date, and the application itself — and you would have to file a fresh application and pay the fee again to restart the process.",
+      "Yes. Both wordmarks and logo / device marks can receive objections from the Trade Marks Registry, especially if they are similar to existing trademarks or contain descriptive elements.",
   },
   {
-    question: "What is the difference between a Section 9 and a Section 11 objection?",
+    question: "Do I need to attend the hearing personally?",
     answer:
-      "A Section 9 (absolute grounds) objection says the mark itself is not registrable because it is descriptive, generic, or non-distinctive. A Section 11 (relative grounds) objection says the mark conflicts with an earlier identical or similar mark. They require different strategies — Section 9 is usually met with evidence of use and distinctiveness, while Section 11 is met by distinguishing the marks or relying on consent/coexistence.",
+      "Usually no. In most cases, your authorised trademark attorney or representative can attend the Show Cause Hearing on your behalf. Personal appearance is generally not required unless specifically requested by the Registry.",
   },
   {
-    question: "Does filing a reply guarantee my trademark will be registered?",
+    question: "What documents may be required for replying to an Examination Report?",
     answer:
-      "No. A reply gives your mark the best chance to proceed, but acceptance is at the discretion of the Examiner. After a strong reply the mark may be accepted and published; in some cases the Examiner schedules a show-cause hearing before deciding. The quality of the argument and evidence heavily influences the outcome.",
+      "Depending on the objection, documents may include:\n• User affidavit\n• Invoices and business proof\n• Website or social media evidence\n• Advertisement materials\n• GST registration\n• Brand usage samples\n• Authorisation documents\n\nThe exact requirement depends on the type of objection raised.",
   },
   {
-    question: "What is a show-cause hearing?",
+    question: "Does replying to the Examination Report increase the chances of trademark registration?",
     answer:
-      "If the Examiner is not satisfied with the written reply, they may schedule a show-cause hearing where you (or your representative) argue the case orally, usually via video. Being prepared with written submissions and proper representation at this hearing is often the deciding factor between acceptance and refusal.",
+      "Yes. A professionally drafted reply helps clarify objections raised by the Examiner and significantly improves the chances of acceptance, especially when supported with proper legal arguments and brand-use evidence.",
   },
   {
-    question: "What evidence helps overcome a descriptiveness (Section 9) objection?",
+    question: "Can I file a fresh trademark instead of replying to the objection?",
     answer:
-      "Evidence that shows customers associate the mark with you — such as invoices, sales figures, advertising and marketing spend, packaging, website and social-media presence, and the date of first use — helps establish 'acquired distinctiveness'. This is typically presented through an affidavit of use, and can turn a Section 9 refusal into an acceptance.",
+      "Yes. In some situations, filing a fresh application with a modified brand name, logo, or class may be more practical than contesting the objection. The best option depends on the strength of the original application.",
   },
   {
-    question: "Can the reply be filed online?",
+    question: "Will my trademark be published immediately after filing the reply?",
     answer:
-      "Yes. The reply to the examination report, along with any affidavit and supporting evidence, is filed electronically on the IP India trademark portal. We handle the entire online filing on your behalf and share the filed reply and acknowledgement with you.",
+      "Not always. The Registry first reviews the reply. If the Examiner is satisfied, the trademark is accepted and published in the Trademark Journal. If not satisfied, a Show Cause Hearing may be scheduled.",
   },
   {
-    question: "How does Legal Terminus help with my examination reply?",
+    question: "Can I check the status of my trademark application online?",
     answer:
-      "We analyse your examination report, identify the grounds of objection, advise on the right evidence, draft a strong attorney-prepared reply with case-law citations (and an affidavit of use where needed), file it within the 30-day deadline, and — where included — prepare for and represent you at any show-cause hearing, tracking the matter through to acceptance. Book a free consultation to get started.",
+      "Yes. Trademark application status can be checked anytime on the official IP India portal (ipindiaonline.gov.in) using the application number.",
+  },
+  {
+    question: "Is there any difference between Section 9 and Section 11 objections?",
+    answer:
+      "Yes.\n• Section 9 objections relate to the nature of the trademark itself — such as descriptive or generic names.\n• Section 11 objections relate to similarity with existing registered or pending trademarks.\n\nBoth require different legal approaches while drafting the reply.",
+  },
+  {
+    question: "Can startups and small businesses also receive trademark objections?",
+    answer:
+      "Yes. Trademark objections are common for businesses of all sizes — including startups, MSMEs, companies, and individual founders. Receiving an Examination Report does not mean the trademark will definitely be rejected.",
+  },
+  {
+    question: "What happens if my trademark is accepted after the hearing?",
+    answer:
+      "If the Hearing Officer is satisfied with the arguments and documents, the trademark application is accepted and published in the Trademark Journal for public opposition.",
+  },
+  {
+    question: "How can Legal Terminus help with Reply to Examination Report?",
+    answer:
+      "Legal Terminus provides end-to-end support for Reply to Examination Report, including objection analysis, legal drafting, filing of reply, hearing coordination, attorney change support, and continuous status tracking. Our team helps businesses respond professionally to trademark objections and move the application toward acceptance and registration through the official IP India portal (ipindiaonline.gov.in).",
   },
 ];
 
@@ -61,7 +81,7 @@ const TmexrFAQ = () => {
       <div className="opcfaq-container">
 
         <div className="opcfaq-header">
-          <h2 className="opcfaq-title">Trademark Examination Reply — FAQs</h2>
+          <h2 className="opcfaq-title">Reply of Examination Report — FAQs</h2>
           <p className="opcfaq-intro">
             Got questions? We've got answers — straight, no-BS, legally accurate.
           </p>
@@ -84,7 +104,7 @@ const TmexrFAQ = () => {
                   <span className={`opcfaq-icon ${isActive ? "open" : ""}`}>▾</span>
                 </button>
                 <div className={`opcfaq-answer ${isActive ? "open" : ""}`}>
-                  <div className="opcfaq-answer-content">{item.answer}</div>
+                  <div className="opcfaq-answer-content" style={{ whiteSpace: "pre-line" }}>{item.answer}</div>
                 </div>
               </div>
             );

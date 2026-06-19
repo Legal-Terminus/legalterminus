@@ -4,18 +4,23 @@ import "./TmexrFeatures.css";
 const types = [
   {
     number: "01",
-    title: "Section 9 — Absolute Grounds",
-    text: "These objections say the mark itself is not registrable — it is descriptive of the goods/services, generic, laudatory, or otherwise lacks distinctive character. The reply must argue that the mark is inherently distinctive, or has acquired distinctiveness through use, supported by evidence such as invoices, advertising, and sales figures (often via an affidavit of use).",
+    title: "Section 9 Reply — Distinctiveness Defence",
+    text: "Examiner objects on absolute grounds: the mark is descriptive / generic / lacking distinctiveness. Reply strategy: cite acquired distinctiveness via continuous use + market evidence + sales data + advertising spend + visual / stylistic distinguishing features. Elemental tier covers the drafting + filing. Most replies of this type succeed on the written reply alone.",
   },
   {
     number: "02",
-    title: "Section 11 — Relative Grounds",
-    text: "These objections cite one or more earlier marks that are identical or deceptively similar to yours in the same or related class. The reply distinguishes your mark from the cited marks on visual, phonetic, and conceptual differences, differences in goods/services, or argues honest concurrent use — sometimes supported by a consent or coexistence arrangement.",
+    title: "Section 11 Reply — Distinguishing from Cited Marks",
+    text: "Examiner cites earlier registered / pending marks as similar (the most common scenario). Reply strategy: distinguish on the THREE-FACTOR TEST (phonetic / visual / structural / conceptual), demonstrate class / goods / market difference, file a co-existence agreement (if available with the prior mark holder), provide consumer-confusion analysis. Elemental tier covers this; complex multi-citation cases may need Supreme.",
   },
   {
     number: "03",
-    title: "Procedural & Formality Objections",
-    text: "The report may also raise procedural issues — an incorrect specification of goods, a wrong class, missing user details, an unsigned or defective Power of Attorney, or a need to file an affidavit. These are addressed by correcting the records, filing the required documents, and clarifying the application so it complies with the Trade Marks Rules.",
+    title: "Procedural / Documentation Defect Reply",
+    text: "Examiner flags procedural issues — wrong class, missing User Affidavit (for prior use claims), missing translation (for non-English marks), incorrect classification of goods / services. Reply strategy: file Form TM-M (₹900) for amendment + supporting documents + corrections. Elemental tier covers this end-to-end.",
+  },
+  {
+    number: "04",
+    title: "Multiple Replies + Hearings",
+    text: "Complex matters — the first reply addresses some objections; the Examiner issues a second objection requiring a responsive reply; the matter then proceeds to hearing. Supreme tier covers UP TO 2 REPLY FILINGS + UP TO 2 SHOW CAUSE HEARINGS in one engagement. Typical for cases with multi-citation Section 11 objections or where the application has been amended mid-prosecution.",
   },
 ];
 
@@ -24,7 +29,7 @@ const TmexrFeatures = () => {
     <section className="opc-features-section">
       <div className="opc-features-container">
 
-        <h2 className="opc-features-title">Types of Trademark Objections We Reply To</h2>
+        <h2 className="opc-features-title">Types of Reply of Examination Report</h2>
 
         <div className="opc-features-cards">
           {types.map((type) => (
