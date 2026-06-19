@@ -39,19 +39,19 @@ const TmexrZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    Priority handling and deadline management — including 30-day objection reply tracking, proactive follow-ups, and regular status updates for complete transparency.
+                    Priority handling and faster response preparation.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">⚖</span>
-                    Professionally drafted trademark objection replies — with legal arguments, case-law references, and careful review of objections and cited marks before filing.
+                    <span className="opczp-list-icon">📅</span>
+                    30-day deadline tracking with proactive follow-up support.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🎤</span>
-                    Comprehensive legal support — including trademark attorney change assistance and Show Cause Hearing support / appearance as per the selected plan.
+                    <span className="opczp-list-icon">📄</span>
+                    Legal arguments and case-law support wherever required.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">💬</span>
-                    Transparent and structured service process — with clear pricing, expert guidance, and dedicated assistance throughout the objection response procedure.
+                    <span className="opczp-list-icon">🔄</span>
+                    Trademark attorney change support, if required.
                   </li>
                 </ul>
               </section>
