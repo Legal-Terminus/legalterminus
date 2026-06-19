@@ -3,35 +3,34 @@ import "./TmexrGovtCosts.css";
 
 const rows = [
   {
-    head: "Examination Reply Filing",
-    range: "₹0 govt fee",
-    note: "Filing the reply to the examination report carries no separate government fee",
+    action: "Reply to Examination Report filing (Section 18)",
+    fee: "NIL - No Govt Fee",
+    note: "Reply filed under Misc head on IP India portal",
   },
   {
-    head: "Reply Deadline",
-    range: "30 days",
-    note: "The reply must be filed within 30 days of receiving the examination report",
+    action: "Show Cause Hearing attendance (Rule 33)",
+    fee: "NIL - No Govt Fee",
+    note: "Online hearing via video conference",
   },
   {
-    head: "Show-Cause Hearing",
-    range: "₹0 govt fee",
-    note: "If a hearing is scheduled, attendance/representation carries no government fee",
+    action: "Form TM-M - Amendment to Application",
+    fee: "₹900 per request",
+    note: "Only if the reply requires amending the application",
   },
   {
-    head: "Affidavit / Notarisation (if used)",
-    range: "₹100 – ₹500",
-    note: "Stamp paper & notary charges for an affidavit of use, where evidence is filed",
+    action: "Form TM-M - Extension of Reply Time",
+    fee: "₹900 per request",
+    note: "Up to 30 additional days beyond initial 30",
   },
   {
-    head: "Review Petition (Form TM-M, if needed)",
-    range: "₹2,700",
-    note: "Government fee if a review of the Registrar's decision is later required",
+    action: "Form TM-M - Adjournment of Hearing",
+    fee: "₹900 per request",
+    note: "Max 2 adjournments per matter, 30 days each",
   },
   {
-    head: "Total Out-of-Pocket (typical reply)",
-    range: "₹0 – ₹500",
-    note: "Replying is largely fee-free; our professional fee covers the legal drafting & filing",
-    isTotal: true,
+    action: "Form TM-48 - Power of Attorney",
+    fee: "NIL - No Govt Fee",
+    note: "₹100 stamp paper cost only (for Enriched / Supreme)",
   },
 ];
 
@@ -39,28 +38,36 @@ const TmexrGovtCosts = () => {
   return (
     <section className="opc-govtcosts-section">
       <div className="opc-govtcosts-container">
+
+        <div className="tmexr-status-callout">
+          <h3 className="tmexr-status-title">★&nbsp;&nbsp;OUR STATUS UPDATE COMMITMENT&nbsp;&nbsp;★</h3>
+          <p className="tmexr-status-text">
+            From the moment we accept the engagement, we don't go silent. ONCE A MONTH - calendared, guaranteed - you receive an email status update on your application. AND for ANY CHANGE in your application status (Reply Accepted / Reply Objected / Hearing Scheduled / Journal Published / Order Issued), you're notified WITHIN 1-2 DAYS. Active across ALL three plan tiers. No ghosting - ever.
+          </p>
+        </div>
+
         <h2 className="opc-govtcosts-title">
-          Government Fees &amp; Key Timelines
-          <span className="opc-govtcosts-badge">Billed at Actuals</span>
+          Indicative Government Fees — Reply / Hearing
+          <span className="opc-govtcosts-badge">At Actuals</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          Replying to a trademark examination report is largely free of government fees — the value is in the quality of the legal argument. Our professional fee covers the analysis, drafting, and filing. Any incidental costs (notarisation, a later review petition) are billed at actuals.
+          Per Trade Marks Rules, 2017. GOOD NEWS: The reply to the Examination Report itself attracts NO GOVERNMENT FEE. The Show Cause Hearing attendance also attracts NO GOVERNMENT FEE. The only Govt fee touchpoint is Form TM-M (₹900) — used for amendment to application / time extension / adjournment of hearing — and only if the case actually requires it.
         </p>
 
         <div className="opc-govtcosts-table-wrapper">
           <table className="opc-govtcosts-table">
             <thead>
               <tr>
-                <th>Cost / Timeline Head</th>
-                <th>Typical Value</th>
+                <th>Action</th>
+                <th>Government Fee</th>
                 <th>Notes</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row, i) => (
-                <tr key={i} className={row.isTotal ? "opc-govtcosts-total-row" : ""}>
-                  <td>{row.head}</td>
-                  <td className="opc-govtcosts-range">{row.range}</td>
+                <tr key={i}>
+                  <td>{row.action}</td>
+                  <td className="opc-govtcosts-range">{row.fee}</td>
                   <td>{row.note}</td>
                 </tr>
               ))}

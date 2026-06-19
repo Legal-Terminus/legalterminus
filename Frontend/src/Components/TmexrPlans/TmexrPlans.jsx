@@ -4,51 +4,61 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "reply",
-    name: "Objection Reply",
-    oldPrice: 3999,
-    price: 1999,
+    id: "elemental",
+    name: "Elemental",
+    badge: "STANDARD REPLY FILING FOR 1 CITED MARK",
+    oldPrice: 4499,
+    price: 2999,
     services: [
-      "Analysis of the examination report",
-      "Attorney-drafted reply (Section 9 / 11 grounds)",
-      "Case-law citations supporting your mark",
-      "Filing of the reply on the IP India portal",
-      "Filed within the 30-day deadline",
-      "Status tracking after submission",
-      "Email delivery of the filed reply",
+      "Examination Report review + objection analysis",
+      "Reply letter drafting (Section 9 / 11 responses)",
+      "Citation of distinguishing marks + case law",
+      "Affidavit of use / prior use (if needed)",
+      "Filing on IP India portal under Misc head",
+      "DSC affixation by LT's associated Attorney",
+      "Government fee payment (if any — usually NIL)",
+      "Challan + Acknowledgement emailed to client",
+      "STATUS UPDATE COMMITMENT (monthly + 1–2 day)",
+      "Add'l cited marks: ₹999/mark + GST",
     ],
   },
   {
-    id: "reply-evidence",
-    name: "Reply + Evidence of Use",
-    badge: "★ MOST POPULAR",
+    id: "enriched",
+    name: "Enriched",
+    badge: "★ ATTORNEY CHANGE + REPLY FOR 1 CITED MARK",
     popular: true,
-    oldPrice: 7999,
-    price: 4499,
+    oldPrice: 5999,
+    price: 3999,
     services: [
-      "Everything in Objection Reply",
-      "Affidavit of use (Form TM-U) drafting",
-      "Compilation of use evidence (invoices, ads, packaging)",
-      "Distinctiveness / acquired-secondary-meaning argument",
-      "Stronger reply for Section 9 descriptiveness objections",
-      "Coexistence / consent argument for Section 11",
-      "Dedicated IP attorney + WhatsApp support",
+      "ATTORNEY CHANGE PROCEDURE end-to-end",
+      "Form TM-48 POA drafted in LT Attorney's name",
+      "Authorisation Letter drafting + signature flow",
+      "POA stamping + execution coordination",
+      "Filing change-of-attorney on IP India portal",
+      "Then FULL REPLY PROCESS per Elemental",
+      "Reply drafted + filed + DSC affixed",
+      "Challan + Acknowledgement + status alerts",
+      "STATUS UPDATE COMMITMENT",
+      "Add'l cited marks: ₹999/mark + GST",
     ],
   },
   {
-    id: "hearing",
-    name: "Reply + Hearing Representation",
-    badge: "✦ FULL-SERVICE",
+    id: "supreme",
+    name: "Supreme",
+    badge: "✦ REPLY x2 + HEARING x2  |  1 CITED MARK",
     oldPrice: 14999,
-    price: 8999,
+    price: 9999,
     services: [
-      "Everything in Reply + Evidence of Use",
-      "Show-cause hearing preparation",
-      "Representation before the Examiner (virtual hearing)",
-      "Written submissions & rebuttal arguments",
-      "Follow-up till acceptance / journal publication",
-      "Strategy for review if needed",
-      "Priority support till the mark is accepted",
+      "FULL REPLY PROCESS (per Elemental OR Enriched)",
+      "Attorney Change inclusive (if needed)",
+      "UP TO 2 REPLY FILINGS (initial + responsive)",
+      "Re-examination response handling",
+      "UP TO 2 SHOW CAUSE HEARINGS attendance",
+      "Online (video conference) representation",
+      "Hearing brief drafting + evidence compilation",
+      "Adjournment management (Form TM-M ₹900 — pass-through)",
+      "Senior IP-counsel-led case management",
+      "Add'l cited marks: ₹999/mark + GST",
     ],
   },
 ];
@@ -68,7 +78,7 @@ const TmexrPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards tmexr-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
@@ -84,7 +94,7 @@ const TmexrPlans = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ GST extra</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">

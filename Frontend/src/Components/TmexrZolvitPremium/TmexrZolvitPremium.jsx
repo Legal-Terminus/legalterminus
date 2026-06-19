@@ -27,7 +27,10 @@ const TmexrZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  An objection is not a rejection — but a weak, templated reply often becomes one. The reply is your single best chance to save your mark, and it has a hard 30-day clock. Priority is what happens when a trademark attorney builds a citation-backed argument and files it well before the deadline.
+                  A Trademark Examination Report may look simple, but even a small mistake or delay can put your trademark application at risk. Missing the 30-day reply deadline, submitting a weak or generic response, or failing to attend the Show Cause Hearing can lead to abandonment of the application.
+                </p>
+                <p className="opczp-subtitle" style={{ marginTop: "12px" }}>
+                  With LT Priority, your Reply to Examination Report is handled on a priority basis by experienced IP professionals who ensure timely drafting, proper legal response, and continuous follow-up throughout the process.
                 </p>
               </header>
 
@@ -36,23 +39,19 @@ const TmexrZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    Fast turnaround on a tight clock — the report is analysed and a reply drafted with room to spare before the 30-day deadline.
+                    Priority handling and deadline management — including 30-day objection reply tracking, proactive follow-ups, and regular status updates for complete transparency.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    A tailored legal argument — not a template — addressing the exact Section 9 or Section 11 grounds cited against your mark.
+                    <span className="opczp-list-icon">⚖</span>
+                    Professionally drafted trademark objection replies — with legal arguments, case-law references, and careful review of objections and cited marks before filing.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Case-law citations and, where useful, an affidavit of use to prove distinctiveness or coexistence with cited marks.
+                    <span className="opczp-list-icon">🎤</span>
+                    Comprehensive legal support — including trademark attorney change assistance and Show Cause Hearing support / appearance as per the selected plan.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    Hearing preparation and representation if the Examiner calls a show-cause hearing — you're not left to argue it alone.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">📑</span>
-                    Status tracking from reply to acceptance, with the filed reply and updates delivered to you at each stage.
+                    <span className="opczp-list-icon">💬</span>
+                    Transparent and structured service process — with clear pricing, expert guidance, and dedicated assistance throughout the objection response procedure.
                   </li>
                 </ul>
               </section>
@@ -65,16 +64,22 @@ const TmexrZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  The 30-day deadline is real. If no reply is filed within 30 days of the examination report, the application is treated as abandoned — and you lose the filing fee, the priority date, and the mark. Acting immediately is critical.
+                  30 DAYS from Examination Report receipt (Rule 29) — this is the HARD deadline. Missing it = application DEEMED ABANDONED. We engage immediately and target Day 20 of the window for filing to leave a safe buffer.
                 </li>
                 <li className="opczp-note-item">
-                  Section 9 vs Section 11 need different arguments. Section 9 (descriptive/non-distinctive) is best met with evidence of use and acquired distinctiveness; Section 11 (similar prior mark) calls for distinguishing the marks, goods, or a consent/coexistence argument. A generic reply that ignores this usually fails.
+                  PLAN SCOPE = 1 CITED MARK / 1 CLASS — all 3 plans are priced for one cited mark in one class. ADDITIONAL CITED MARKS billed at ₹999 + GST per additional mark (extra distinguishing + drafting per mark). We share the FINAL QUOTE in writing BEFORE taking the assignment — so no surprises. Multi-citation matters are common in Section 11 cases.
                 </li>
                 <li className="opczp-note-item">
-                  Evidence wins descriptiveness objections. For a Section 9 objection, real proof that customers associate the mark with you — invoices, ads, sales, social presence — can turn a refusal into an acceptance. Gather and preserve this evidence early.
+                  EXTENSION possible via Form TM-M (₹900) for up to 30 additional days — but use sparingly. Repeat extensions can hurt your credibility with the Examiner. We recommend extension only when genuinely needed (e.g., obtaining proof of prior-use evidence).
                 </li>
                 <li className="opczp-note-item">
-                  A reply may lead to a hearing. The Examiner can still call a show-cause hearing after your reply. Being prepared with submissions and representation at that hearing is often the deciding factor between acceptance and refusal.
+                  SHOW CAUSE HEARING — if the Examiner is not persuaded by the written reply, a hearing is scheduled (typically 3–6 months after the reply, conducted ONLINE by video conference under Rule 33). NON-APPEARANCE = application ABANDONED. Supreme tier covers up to 2 hearings.
+                </li>
+                <li className="opczp-note-item">
+                  ADJOURNMENT max 2 per matter (Rule 33 proviso), 30 days each. Form TM-M ₹900 per adjournment. Beyond 2 adjournments, the Hearing Officer typically proceeds ex-parte on the merits.
+                </li>
+                <li className="opczp-note-item">
+                  NO GOVT FEE FOR REPLY OR HEARING — this is genuinely free at the Registry. The only Govt fee touchpoints are Form TM-M (₹900) for amendment / extension / adjournment, and DSC / Class-3 digital signature (one-time cost outside this engagement).
                 </li>
               </ul>
             </div>
