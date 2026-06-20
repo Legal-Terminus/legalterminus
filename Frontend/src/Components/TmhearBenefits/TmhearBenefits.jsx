@@ -7,59 +7,59 @@ const TmhearBenefits = () => {
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of Professional Hearing Representation
+            Benefits of Trademark Hearing in India
           </h2>
           <p className="opcben-subtitle">
-            The hearing is where your application is won or lost. Expert representation ensures your case is fully prepared, properly argued, and never decided against you simply because no one showed up.
+            Attending the hearing PROPERLY delivers concrete legal + commercial benefits. Here's what showing up — PREPARED — actually delivers for you as the trademark applicant / proprietor:
           </p>
         </header>
 
         <div className="opcben-grid">
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Your Case is Actually Heard</h3>
+            <h3 className="opcben-card-title">Your Matter Stays Alive — Avoids Abandonment</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              An attorney appears and argues on your behalf, so your side of the objection or opposition is presented clearly to the Hearing Officer — instead of the matter being decided ex-parte because you were absent or unprepared.
+              Non-appearance at any scheduled hearing causes the matter to be marked abandoned — whether it's a Show Cause Hearing (application refused), Opposition Hearing (default order), or Rectification Hearing (petition dismissed). Attending the hearing keeps the matter active + ensures the Hearing Officer hears your case on its merits + issues a reasoned order rather than a default order against you.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Best Chance of Acceptance</h3>
+            <h3 className="opcben-card-title">Oral Advocacy Often Decides the Order</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Well-drafted written submissions and confident oral advocacy give your mark the strongest possible shot at being accepted. Framing the case correctly in advance often shapes the outcome before the hearing even begins.
+              The Hearing Officer has the pleadings + evidence in front of them — what they don't have is your real-time answers to their specific concerns. Strong oral advocacy at the hearing addresses the Hearing Officer's mind, cites precedent decisions that bear on the issue, and often moves the order in your favour — even where the written record is mixed. Many cases are won at the hearing that looked uncertain on paper.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Avoid Ex-Parte Refusal</h3>
+            <h3 className="opcben-card-title">Path to Acceptance / Registration / Favourable Order</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Failing to attend a hearing usually means the application is refused or abandoned without your input. Representation guarantees someone is there to defend your mark, protecting the filing fee and priority you have already invested.
+              A successful hearing on Show Cause leads to application acceptance + Journal publication + (if unopposed) registration certificate. A successful Opposition Hearing leads to either your opposition allowed (copycat refused) or your application allowed (opposition dismissed). The hearing is the bridge between contested status + the favourable Registrar's order.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Evidence Presented Properly</h3>
+            <h3 className="opcben-card-title">Builds the Record for Any Future Appeal</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Cases turn on how well evidence of use, reputation, and distinctiveness is organised and presented. We know what the Officer is looking for and put your strongest material front and centre.
+              Even if the Registrar's order goes against you — a properly conducted hearing with arguments on record + written submissions + paper-book creates a strong appellate record for any Section 91 appeal to the High Court (post-IPAB-abolition under Tribunals Reforms Act 2021). Hearings poorly handled make appeals nearly impossible. Hearings well handled give your appellate counsel a complete record to work with.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Confident Handling of Procedure</h3>
+            <h3 className="opcben-card-title">Statutory Protection Path Continues</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Virtual hearings, scheduling, adjournments, and Registry procedure can be daunting. An experienced attorney manages all of it smoothly, so you can stay focused on your business instead of decoding the process.
+              For applicants — a successful hearing moves your matter toward the full Section 28 (exclusive rights) + Section 29 (infringement remedies) + Section 31 (presumption of validity) protection bundle. For opposers — a successful hearing blocks the copycat from accessing those rights against your brand. Either way, the hearing is what keeps the protection path open.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Clear Next Steps After the Order</h3>
+            <h3 className="opcben-card-title">Saves Long-Term Litigation Costs</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Whatever the result, we analyse the Hearing Officer's order and advise you on the next move — proceeding to registration, seeking a review, or filing an appeal — so you are never left guessing after the decision.
+              A hearing well handled at the Registry costs ₹3,499 – ₹12,999. The same dispute escalated to High Court appeals (Section 91) + civil suits + injunction proceedings can cost ₹10-50 LAKHS over multiple years. Hearing-stage advocacy is the cheapest + earliest moment to resolve a TM contest. Money spent here avoids 100x more spend later.
             </p>
           </article>
         </div>

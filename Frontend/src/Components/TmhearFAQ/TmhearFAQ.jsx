@@ -3,49 +3,89 @@ import "./TmhearFAQ.css";
 
 const faqs = [
   {
-    question: "What is a trademark hearing?",
+    question: "Do I need to personally attend the Trademark Hearing?",
     answer:
-      "A trademark hearing is an oral proceeding before a Hearing Officer at the Trade Marks Registry where you argue your case in person (usually via video conference). It happens either as a show-cause hearing — when the Examiner is not satisfied with your reply to the examination report — or as an opposition hearing, when your application has been opposed and both sides argue after the evidence stages.",
+      "No. In most cases, your authorised trademark attorney or agent can attend and represent you before the Trade Marks Registry. However, clients are welcome to join the online hearing as observers if they wish.",
   },
   {
-    question: "Why has my trademark been listed for a hearing?",
+    question: "Are Trademark Hearings conducted physically or online?",
     answer:
-      "Your mark is listed for a hearing when the Registry wants to hear you before taking a decision — typically because the objection raised in the examination report was not fully resolved by your written reply, or because an opposition has been filed against your application. The hearing is your opportunity to convince the Officer that the mark should be registered.",
+      "Most Trademark Hearings in India are now conducted online through video conference by the Trade Marks Registry. Physical appearance is generally not required.",
   },
   {
-    question: "How will I know the date of my hearing?",
+    question: "How long does a Trademark Hearing usually take?",
     answer:
-      "The Trade Marks Registry issues a hearing notice on the IP India portal, fixing the date and the mode (most hearings are now held by video conference). The notice is generally given a few weeks in advance. It is important to share it with your representative immediately so there is enough time to prepare.",
+      "Most hearings are completed within 15–30 minutes, depending on the complexity of the case and the number of objections involved.",
   },
   {
-    question: "Do I have to attend the hearing in person?",
+    question: "Can a trademark be accepted directly after the hearing?",
     answer:
-      "Most trademark hearings are conducted online by video conference, so physical attendance is usually not required. You can also be represented by a trademark attorney or agent who appears and argues on your behalf — in fact, professional representation is strongly recommended for the best outcome.",
+      "Yes. In many cases, the Hearing Officer may accept the trademark after hearing the arguments and later issue an order for advertisement in the Trade Marks Journal.",
   },
   {
-    question: "What happens if I miss or don't attend the hearing?",
+    question: "What documents are usually required before a Trademark Hearing?",
     answer:
-      "If neither you nor your representative attends, the Hearing Officer can decide the matter ex-parte — which usually means the application is refused or treated as abandoned. Because the consequences are severe, ensuring that someone appears and presents your case is critical.",
+      "Commonly required documents include:\n• Examination Report or Opposition documents\n• Authorisation / Power of Attorney (TM-48)\n• Proof of trademark usage (if applicable)\n• Sales invoices, advertisements, website screenshots, social media proof, etc.\n• Supporting legal submissions or case laws",
   },
   {
-    question: "Can a trademark hearing be adjourned?",
+    question: "Can I change my trademark attorney before the hearing?",
     answer:
-      "Yes, but only to a limited extent. An adjournment can be requested (by filing Form TM-M with the prescribed fee) if more time is genuinely needed, and it is granted at the Registry's discretion. You cannot rely on repeated postponements, so it is safer to be fully prepared for the scheduled date.",
+      "Yes. You can appoint a new trademark attorney or agent at any stage by filing the required authorisation documents with the Trade Marks Registry.",
   },
   {
-    question: "What should I prepare for the hearing?",
+    question: "What happens after the hearing is completed?",
     answer:
-      "You should have well-drafted written submissions addressing the objection or opposition, organised evidence of use and reputation (invoices, advertising, sales, packaging), an affidavit of use where relevant, and a clear line of argument. We prepare all of this and file the submissions in advance to frame your case before the hearing begins.",
+      "After the hearing, the Hearing Officer reviews the submissions and issues a written order. Depending on the outcome:\n• The trademark may be accepted\n• Further clarification may be requested\n• The application may be refused\n• The matter may proceed to the next legal stage",
   },
   {
-    question: "What happens after the hearing?",
+    question: "Can additional documents be submitted after the hearing?",
     answer:
-      "After hearing the arguments, the Hearing Officer passes a reasoned order — accepting the mark (which then proceeds toward registration or journal publication), refusing it, or seeking further material. We analyse the order and advise you on the next step, whether that is publication, a review, or an appeal to the High Court.",
+      "In certain cases, the Hearing Officer may allow written submissions or supporting documents after the hearing within a specified time period.",
   },
   {
-    question: "How does Legal Terminus help with a trademark hearing?",
+    question: "What is a Show Cause Hearing in trademark matters?",
     answer:
-      "We review your case the moment the hearing notice arrives, build the strategy, draft and file written submissions with case-law citations, organise your evidence, brief you, and have a trademark attorney appear and argue at the virtual hearing — handling adjournments if needed and advising on next steps after the order. Book a free consultation to get started.",
+      "A Show Cause Hearing is conducted when the Trade Marks Registry is not satisfied with the written reply filed against the Examination Report and wants further oral clarification before deciding the application.",
+  },
+  {
+    question: "Is a Trademark Hearing compulsory in every trademark application?",
+    answer:
+      "No. Hearings are conducted only when required by the Registry — usually in objection, opposition, rectification, or disputed matters.",
+  },
+  {
+    question: "Can my trademark still get registered if objections were raised?",
+    answer:
+      "Yes. Many trademarks receive objections during examination but still proceed to registration after a proper reply and successful hearing representation.",
+  },
+  {
+    question: "What is the role of case laws in a Trademark Hearing?",
+    answer:
+      "Case laws help support legal arguments and show how similar trademark disputes were decided previously by courts or the Trade Marks Registry.",
+  },
+  {
+    question: "Will I receive a copy of the hearing order?",
+    answer:
+      "Yes. Once the order is passed, it becomes available on the IP India portal and can also be shared by your trademark attorney or representative.",
+  },
+  {
+    question: "Can a hearing be postponed if there is an emergency?",
+    answer:
+      "Yes, adjournment may be requested in genuine situations by filing Form TM-M along with the prescribed government fee, subject to Registry approval.",
+  },
+  {
+    question: "Why is professional representation important in Trademark Hearings?",
+    answer:
+      "Trademark Hearings involve legal arguments, procedural rules, and Registry practice. Proper representation improves the chances of successfully defending or securing your trademark application.",
+  },
+  {
+    question: "Can I attend the hearing as observer?",
+    answer:
+      "YES — clients are WELCOME to attend the online video conference hearing as observers. We share the Registry's joining link 24 hours before the hearing. Most Hearing Officers permit silent observation by parties. Recommended for high-stakes matters — gives you direct visibility into the proceedings + the Hearing Officer's questions / orientation. We brief you afterward on what happened + what comes next. Camera-on, mute, professional setup expected.",
+  },
+  {
+    question: "How can Legal Terminus help me with Trademark Hearing?",
+    answer:
+      "Legal Terminus provides professional support for Trademark Hearings before the Trade Marks Registry, including Show Cause Hearings, Opposition Hearings, Rectification matters, and Renewal/Restoration hearings.\n\nOur team helps clients with case review, legal argument preparation, hearing brief drafting, evidence coordination, online hearing representation, and post-hearing follow-up. We also assist in handling procedural requirements, hearing notices, adjournments, and communication with the Registry.\n\nWe understand that Trademark Hearings are time-sensitive and legally important. That is why we provide regular status updates, proactive coordination, and dedicated support throughout the hearing process to help clients avoid missed deadlines and procedural issues.",
   },
 ];
 
@@ -84,7 +124,7 @@ const TmhearFAQ = () => {
                   <span className={`opcfaq-icon ${isActive ? "open" : ""}`}>▾</span>
                 </button>
                 <div className={`opcfaq-answer ${isActive ? "open" : ""}`}>
-                  <div className="opcfaq-answer-content">{item.answer}</div>
+                  <div className="opcfaq-answer-content" style={{ whiteSpace: "pre-line" }}>{item.answer}</div>
                 </div>
               </div>
             );

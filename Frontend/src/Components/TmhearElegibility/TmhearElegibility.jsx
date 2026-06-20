@@ -3,34 +3,44 @@ import "./TmhearElegibility.css";
 
 const steps = [
   {
-    title: "Hearing Notice Received",
-    day: "Step 1",
-    text: "The Trade Marks Registry issues a hearing notice on the IP India portal, fixing the date and mode (usually video conference). Share it with us the moment you receive it — typically a few weeks in advance — so we have time to prepare a strong case.",
+    title: "Engagement Acceptance + Status Protocol Activation",
+    day: "Day 0",
+    text: "Within 24 hours of plan selection + payment: Status Update Commitment activated. Welcome email + assigned IP-counsel confirmation. Hearing notice + prior case file uploaded by client.",
   },
   {
-    title: "Case Review & Strategy",
-    day: "Step 2",
-    text: "We study the underlying objection (examination report) or opposition record, identify the exact grounds to be argued, and build the line of argument — distinctiveness, prior use, differences from cited marks, or rebuttal of the opposition.",
+    title: "Hearing Notice Review + Case File Analysis",
+    day: "Day 1-3",
+    text: "Assigned IP-counsel reviews: hearing notice + prior pleadings (Examination Report + Reply OR Opposition + Counter Statement + Evidence) + Registrar's interlocutory orders + cited prior decisions. Hearing strategy memo prepared internally.",
   },
   {
-    title: "Written Submissions & Evidence",
-    day: "Step 3",
-    text: "Our attorney drafts written submissions with case-law citations and compiles your supporting evidence — invoices, advertising, sales, and an affidavit of use where helpful. Submissions are filed in advance to frame the case before the hearing.",
+    title: "Discovery + Strategy Call",
+    day: "Day 3-7",
+    text: "30-min (Elemental) / 60-min (Enriched) / Multiple (Supreme) strategy call with client: review of hearing objectives, factual matrix, key arguments, likely Hearing Officer questions, document availability.",
   },
   {
-    title: "Hearing Preparation",
-    day: "Step 4",
-    text: "We brief you on what to expect, confirm the video-hearing logins and schedule, and prepare answers to the questions the Hearing Officer is likely to raise. You walk into the hearing knowing exactly how your case will be argued.",
+    title: "Power of Attorney Setup (if LT's associate is new attorney)",
+    day: "Day 3-10",
+    text: "Where LT is not the prior attorney on file: Form TM-48 POA drafted in LT's associated Attorney's name + Authorisation Letter + ₹100 stamp paper execution + change-of-attorney filing on IP India portal (₹999 + GST).",
   },
   {
-    title: "Attending the Hearing",
-    day: "Step 5",
-    text: "On the date, our attorney appears before the Hearing Officer and presents oral arguments, responds to the objection or opposition in real time, and presents your evidence. If genuinely needed, we request an adjournment within the limits allowed.",
+    title: "Hearing Brief Drafting (Enriched / Supreme)",
+    day: "Day 7-15",
+    text: "HEARING BRIEF drafted with: (a) statement of issues, (b) top 3-5 arguments with statutory basis, (c) case-law digest with relevant paragraph highlights, (d) factual chronology, (e) Q&A preparation for likely Hearing Officer questions. Paper-book compiled. Internal review.",
   },
   {
-    title: "Order & Next Steps",
-    day: "Step 6",
-    text: "After the hearing, the Hearing Officer passes a reasoned order — accepting the mark (toward registration), refusing it, or seeking more. We analyse the order and advise on the next step, whether that is publication, a review, or an appeal.",
+    title: "Pre-Hearing Client Briefing",
+    day: "Day 13-15",
+    text: "24-48 hours before hearing: pre-hearing call to align on key arguments + likely Q&A + technical setup (joining link, camera test, professional setup). Client may attend hearing as observer.",
+  },
+  {
+    title: "Hearing Day — Online Attendance",
+    day: "Day 15-30",
+    text: "LT's associated Attorney attends the online video conference hearing at the scheduled time. Oral arguments (10-15 minutes), Hearing Officer Q&A handling, written submissions filed in real time or post-hearing as directed. Hearing minutes recorded by Registry.",
+  },
+  {
+    title: "Post-Hearing Follow-Up + Order Receipt",
+    day: "Day 30-120",
+    text: "Post-hearing summary to client (1-page Elemental / detailed Enriched / Supreme advisory). Written submissions filed if directed by Hearing Officer. Follow-up on IP India portal for order receipt — typically 30-90 days post-hearing. Order analysis + next-steps advisory (acceptance / appeal under Section 91 / etc.). Status Update Commitment continues through order receipt.",
   },
 ];
 
@@ -38,10 +48,10 @@ const TmhearElegibility = () => {
   return (
     <section className="opcelg-wrapper">
       <h2 className="opcelg-heading">
-        Trademark Hearing Process — Step by Step
+        Steps for Trademark Hearing in India
       </h2>
       <p className="opcelg-subheading">
-        Six steps from hearing notice to the Registrar's order. We prepare, file submissions, and argue your case so you are never unprepared.
+        Eight steps. End-to-end timeline: 15-30 days from engagement to hearing day; order typically 30-90 days post-hearing. Status updates run monthly + change-driven through order receipt.
       </p>
 
       <div className="opcelg-timeline">
