@@ -1,69 +1,40 @@
 import React from "react";
 import "./AflDocuments.css";
-import { FaBuilding, FaFileSignature, FaIdCard, FaBalanceScale, FaUsers, FaFileContract, FaStamp, FaHandshake } from "react-icons/fa";
+import { FaBuilding, FaFileSignature, FaIdCard, FaBalanceScale, FaUsers, FaFileContract, FaStamp } from "react-icons/fa";
 
 const llpDocs = [
   {
-    icon: <FaFileSignature />,
-    title: "Incorporation & Agreement",
-    note: "Core LLP records",
-    items: [
-      "Certificate of Incorporation of the LLP",
-      "LLP Agreement & any supplementary agreements",
-      "PAN of the LLP",
-    ],
+    icon: <FaBuilding />,
+    title: "LLP Identity + Master Data",
+    text: "LLP Incorporation Certificate (FiLLiP) + LLP Identification Number (LLPIN) + PAN of LLP + LLP Agreement (latest amended version) + Registered office address proof. Used to pre-populate Form LLP-11 + LLP-8 + ITR-5. Required across all plan tiers.",
+  },
+  {
+    icon: <FaIdCard />,
+    title: "Designated Partners + Partners Details",
+    text: "All Partners + Designated Partners: PAN + Aadhaar + DPIN (Designated Partner Identification Number) + KYC + photograph + address + email + mobile + valid DSC (Class 3 — for Supreme up to 2 DSCs can be procured). Partner contribution details + profit-sharing ratio. Body corporate partner details (if any).",
   },
   {
     icon: <FaBalanceScale />,
-    title: "Financial Records",
-    note: "For Form 8 & ITR-5",
-    items: [
-      "Statement of Account & Solvency details",
-      "Books of accounts — assets, liabilities, income, expenditure",
-      "Bank statements for the financial year",
-    ],
-  },
-  {
-    icon: <FaHandshake />,
-    title: "Contribution Details",
-    note: "For Form 11",
-    items: [
-      "Total contribution received by the LLP",
-      "Partner-wise contribution & profit-sharing ratio",
-      "Details of any changes during the year",
-    ],
+    title: "Year's Financial Data (Elemental — client provides ready)",
+    text: "For ELEMENTAL clients (client maintains books): Year's Profit & Loss Account + Balance Sheet + Trial Balance + Income Tax Computation in ready format. Bank statements (all accounts, April-March) for reconciliation. Major transaction records. If not provided in proper format, Enriched / Supreme tier is recommended.",
   },
 ];
 
 const partnerDocs = [
   {
-    icon: <FaIdCard />,
-    title: "Partner Details & KYC",
-    note: "For Form 11 & DIR-3 KYC",
-    items: [
-      "DPIN/DIN, PAN & Aadhaar of all partners",
-      "Updated mobile & email of designated partners",
-      "List of partners & designated partners",
-    ],
+    icon: <FaFileContract />,
+    title: "Bank Statements + Transaction Records (Enriched / Supreme — we close books)",
+    text: "For ENRICHED / SUPREME clients: All bank statements April-March + sales invoices + purchase invoices + expense vouchers + Partner contribution + drawing records + loan documents + GST returns (if applicable) + TDS deductions + TDS certificates (Form 16A) received. We close the books from these inputs.",
   },
   {
     icon: <FaStamp />,
-    title: "Digital Signatures (DSC)",
-    note: "For MCA e-filing",
-    items: [
-      "Active DSC of designated partner(s)",
-      "DSC / certification of practising professional",
-    ],
+    title: "DSC Coordination for Designated Partners",
+    text: "For all LLP annual filing plans, valid DSCs of the Designated Partners are mandatory for filing Forms LLP-11, LLP-8, and Income Tax Return. If any DSC is expired, inactive, or unavailable, Legal Terminus can also coordinate the DSC procurement / renewal process through authorised DSC service providers for smooth and timely compliance filing.",
   },
   {
-    icon: <FaFileContract />,
-    title: "Other Filing Details",
-    note: "For audit & event-based forms",
-    items: [
-      "Tax audit report (if turnover/contribution threshold crossed)",
-      "Details of changes in partners or contribution (Form 3 / Form 4)",
-      "Previous year's filed forms & acknowledgements",
-    ],
+    icon: <FaFileSignature />,
+    title: "Prior Year Filings + Notices (Continuity)",
+    text: "Prior year's Form 11 + Form 8 + ITR-5 + Income Tax intimation orders + any notices from MCA / IT Department + outstanding tax demands / refunds + DIN-KYC status of Designated Partners. Used for opening balances + carry-forward losses + continuity across filing cycles.",
   },
 ];
 
@@ -73,14 +44,9 @@ const DocItem = ({ doc }) => (
       <div className="opcd-doc-icon">{doc.icon}</div>
       <div className="opcd-doc-meta">
         <h4 className="opcd-doc-title">{doc.title}</h4>
-        <span className="opcd-doc-note">{doc.note}</span>
       </div>
     </div>
-    <ul className="opcd-doc-list">
-      {doc.items.map((item, i) => (
-        <li key={i} className="opcd-doc-list-item">{item}</li>
-      ))}
-    </ul>
+    <p className="afl-doc-text">{doc.text}</p>
   </div>
 );
 
@@ -90,8 +56,8 @@ const AflDocuments = () => {
       <div className="opcd-container">
 
         <div className="opcd-header">
-          <h2 className="opcd-main-title">Documents Required for LLP Annual Filing</h2>
-          <p className="opcd-main-subtitle">Get these ready and we'll take care of the rest</p>
+          <h2 className="opcd-main-title">Documents Required for LLP in India</h2>
+          <p className="opcd-main-subtitle">Six categories. Documentation requirements vary by plan tier + audit applicability. We send a personalised checklist after the discovery call.</p>
         </div>
 
         <div className="opcd-columns">
@@ -100,8 +66,8 @@ const AflDocuments = () => {
             <div className="opcd-col-header">
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="opcd-col-title">LLP &amp; Financial Documents</h3>
-                <p className="opcd-col-subtitle">Incorporation, accounts &amp; contribution</p>
+                <h3 className="opcd-col-title">LLP, Partners &amp; Financials</h3>
+                <p className="opcd-col-subtitle">Identity, partners &amp; ready financials</p>
               </div>
             </div>
             <div className="opcd-col-body">
@@ -115,8 +81,8 @@ const AflDocuments = () => {
             <div className="opcd-col-header opcd-col-header--office">
               <div className="opcd-col-header-icon"><FaUsers /></div>
               <div>
-                <h3 className="opcd-col-title">Partner, DSC &amp; Other Documents</h3>
-                <p className="opcd-col-subtitle">KYC, signatures &amp; audit details</p>
+                <h3 className="opcd-col-title">Books, DSC &amp; Continuity</h3>
+                <p className="opcd-col-subtitle">Transactions, signatures &amp; prior filings</p>
               </div>
             </div>
             <div className="opcd-col-body">

@@ -3,34 +3,34 @@ import "./AflElegibility.css";
 
 const steps = [
   {
-    title: "Onboarding & Compliance Review",
-    day: "Step 1",
-    text: "We map your LLP's status — incorporation details, financial year, last filings, designated partner DINs, and total contribution. A compliance calendar is built covering Form 11 (30 May), Form 8 (30 October), DIR-3 KYC (30 September), and ITR-5 so no due date slips.",
+    title: "Engagement Acceptance + Annual Calendar Setup",
+    day: "Day 0 (Apr-May)",
+    text: "Within 24 hours of plan selection + payment: STATUS UPDATE COMMITMENT activated. Annual compliance calendar shared (key dates: 30 April books closure / 30 May Form 11 / 30 Jun ITR books / 31 Jul non-audit ITR / 30 Sep Tax Audit Report / 30 Oct Form 8 + audit ITR).",
   },
   {
-    title: "Accounts & Solvency Finalisation",
-    day: "Step 2",
-    text: "We help compile your LLP's accounts — assets, liabilities, income, and expenditure — and prepare the Statement of Account & Solvency. Where a tax audit applies (turnover above ₹40 lakh or contribution above ₹25 lakh), we coordinate it with a Chartered Accountant.",
+    title: "Books Closure + Financial Statement Preparation (Enriched / Supreme)",
+    day: "Day 1-30 (April)",
+    text: "For Enriched / Supreme: year-round bookkeeping closed by 30 April. Profit & Loss Account + Balance Sheet + Income Tax Computation prepared. Trial Balance reconciliation. Bank statement matching. For Elemental: client provides ready financial statements.",
   },
   {
-    title: "Partner & Contribution Verification",
-    day: "Step 3",
-    text: "We confirm the details of all partners and designated partners, total and individual contributions, and any changes during the year — the core data for Form 11. Designated-partner KYC and DSC validity are checked at this stage.",
+    title: "Form LLP-11 (Annual Return) Drafting + Filing",
+    day: "Day 40-60 (May)",
+    text: "Form LLP-11 drafted: Partners + Designated Partners details + contribution details + body corporate information + statement of changes. Form sealed + client confirmation + DSC affixation by Designated Partners + filing on MCA portal. Filed BY 30 MAY 2026.",
   },
   {
-    title: "Form Preparation & Certification",
-    day: "Step 4",
-    text: "We prepare Form 11 and Form 8 with the correct attachments and obtain the required professional certification on Form 8. Government fees are pre-filled based on your contribution slab so there are no surprises at filing.",
+    title: "LLP ITR-5 (Non-Audit Cases) Filing",
+    day: "Day 90-120 (Jun-Jul)",
+    text: "For LLPs without tax audit: ITR-5 prepared with Profit & Loss + Balance Sheet + computation + partner remuneration / interest disclosure. Filed on Income Tax portal BY 31 JULY 2026. e-Verification + Acknowledgement to client.",
   },
   {
-    title: "MCA Filing & Fee Payment",
-    day: "Step 5",
-    text: "Form 11 is filed by 30 May and Form 8 by 30 October on the MCA portal. Government fees are paid on your behalf at actuals, and the SRN / challan acknowledgement is shared with you immediately after filing.",
+    title: "Form LLP-8 (Statement of Account) Drafting + Filing",
+    day: "Day 200-240 (October)",
+    text: "Form LLP-8 drafted: Statement of Account & Solvency + Profit & Loss + Balance Sheet (CA-certified for statutory/tax audit cases). Form sealed + client confirmation + Designated Partners DSC + filing on MCA portal. Filed BY 30 OCTOBER 2026.",
   },
   {
-    title: "Acknowledgement & Record-Keeping",
-    day: "Step 6",
-    text: "You receive all filed forms, SRN/challan receipts, and an updated compliance record. We also set reminders for next year's calendar — including DIR-3 KYC by 30 September and the LLP's ITR-5 income tax return.",
+    title: "LLP ITR-5 (Audit Cases) Filing + Year-End Review",
+    day: "Day 210-240 (Oct-Nov)",
+    text: "For LLPs with statutory or tax audit: ITR-5 filed BY 31 OCTOBER 2026 with audit report references. Year-end compliance review call — highlighting next year's calendar + any structural changes needed. STATUS UPDATE COMMITMENT reset for next FY cycle.",
   },
 ];
 
@@ -38,10 +38,10 @@ const AflElegibility = () => {
   return (
     <section className="opcelg-wrapper">
       <h2 className="opcelg-heading">
-        LLP Annual Filing Process — Step by Step
+        Steps for Annual Filing for LLP in India
       </h2>
       <p className="opcelg-subheading">
-        Six steps, repeated every financial year. Accounts finalised, certified, and filed with the MCA before every due date.
+        Six steps. End-to-end annual compliance calendar across April - May - July - September - October. Status updates run monthly + change-driven throughout.
       </p>
 
       <div className="opcelg-timeline">
