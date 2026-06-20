@@ -98,7 +98,7 @@ const navData = [
           { label: "Udyam Registration In India", href: "/udyam" },
           { label: "EPF Registration In India", href: "/epf" },
           { label: "ESIC Registration In India", href: "/esic" },
-          { label: "Professional Tax Registration", href: "/professional-tax" },
+          // Hidden from menu (page kept): Professional Tax Registration -> /professional-tax
           {
             label: "Shop & Commercial Establishments Registration In India",
             href: "/shop-establishment",
@@ -134,10 +134,7 @@ const navData = [
           { label: "Annual Filing (LLP)", href: "/annual-filing-llp" },
           { label: "EPF Return Filing", href: "/epf-return" },
           { label: "ESI Return Filing", href: "/esi-return" },
-          {
-            label: "Professional Tax Return Filing",
-            href: "/professional-tax-return",
-          },
+          // Hidden from menu (page kept): Professional Tax Return Filing -> /professional-tax-return
         ],
       },
     ],
@@ -174,14 +171,9 @@ const navData = [
             label: "Private Limited Company To Limited Liability Partnership",
             href: "/conversion/private-to-llp",
           },
-          {
-            label: "Private Limited Company To Public Limited Company",
-            href: "/conversion/private-to-public",
-          },
-          {
-            label: "Public Limited Company To Private Limited Company",
-            href: "/conversion/public-to-private",
-          },
+          // Hidden from menu (pages kept):
+          // Private Limited Company To Public Limited Company -> /conversion/private-to-public
+          // Public Limited Company To Private Limited Company -> /conversion/public-to-private
         ],
       },
       {
