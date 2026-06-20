@@ -26,8 +26,8 @@ test('staff matter detail SHOWS the matter owner control', async ({ adminPage })
   await expect(adminPage.getByText('Matter owner')).toBeVisible();
 });
 
-test('client activity feed never names internal staff', async ({ adminPage, clientPage }) => {
-  // Drive an internal action as admin so there's activity to (not) leak.
+test('#42: client does NOT see the workflow Activity stream (staff-only)', async ({ adminPage, clientPage }) => {
+  // Drive an internal action as admin so there IS activity (which staff see).
   await adminPage.goto(`tasks/${taskId}`);
   await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
   const complete = adminPage.getByRole('button', { name: /complete step/i });
@@ -35,9 +35,14 @@ test('client activity feed never names internal staff', async ({ adminPage, clie
     await complete.first().click();
     await adminPage.waitForTimeout(1500);
   }
-  // As the client, the activity feed must not show staff names.
+  // Staff see the Activity section…
+  await expect(adminPage.getByText('Activity').first()).toBeVisible();
+
+  // …the client does not (removed from the client service screen, #42), and of
+  // course no internal staff names leak.
   await clientPage.goto(`tasks/${taskId}`);
   await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
+  await expect(clientPage.getByText('Activity')).toHaveCount(0);
   await expect(clientPage.getByText('E2E Admin')).toHaveCount(0);
   await expect(clientPage.getByText('E2E Team')).toHaveCount(0);
 });

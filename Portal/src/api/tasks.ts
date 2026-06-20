@@ -60,6 +60,14 @@ export const rejectTask = (id: string, reason: string) =>
     body: JSON.stringify({ reason }),
   });
 
+/** Stop/cancel an in-flight matter when a client discontinues (GitHub #41).
+ *  Staff (admin/manager/team_member). Requires a reason. */
+export const stopTask = (id: string, reason: string) =>
+  apiFetch<{ success: boolean; status: string }>(`/api/tasks/${id}/stop`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  });
+
 /** An entry in a matter's activity thread (from the events audit subcollection). */
 export interface TaskEvent {
   type: string;

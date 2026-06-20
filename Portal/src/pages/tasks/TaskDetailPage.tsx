@@ -5,13 +5,13 @@ import {
   ArrowLeft, CheckCircle2, Circle, CircleSlash, Loader2, PlayCircle,
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase,
-  ChevronRight, ChevronDown, Flame,
+  ChevronRight, ChevronDown, Flame, Ban,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
 import type { Task, TaskStep, StepStatus, PaymentStatus } from '../../types/task';
@@ -140,6 +140,20 @@ export default function TaskDetailPage() {
     onError: (err: Error) => toast.error(err.message || 'Could not reject this matter.'),
   });
 
+  // Stop/cancel an in-flight matter when a client discontinues (GitHub #41).
+  // Staff-only; reason captured via a small inline composer (see StopMatterBanner).
+  const [stopping, setStopping] = useState(false);
+  const stop = useMutation({
+    mutationFn: (reason: string) => stopTask(taskId!, reason),
+    onSuccess: () => {
+      setStopping(false);
+      toast.success('Matter stopped.');
+      invalidateTaskViews();
+      queryClient.invalidateQueries({ queryKey: ['task-events', taskId] });
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not stop this matter.'),
+  });
+
   const noun = isClient ? 'Service' : 'Matter';
 
   if (isLoading) {
@@ -245,6 +259,31 @@ export default function TaskDetailPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Stopped/cancelled banner (#41) — terminal state with the reason. */}
+      {task.status === 'cancelled' && (
+        <div className="card p-4 mb-4 border-red-200 bg-red-50/60">
+          <div className="flex items-start gap-2.5">
+            <Ban className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-red-800">This matter was stopped</p>
+              {task.cancelledReason && <p className="text-sm text-red-700 mt-0.5">{task.cancelledReason}</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stop workflow (#41) — staff (admin/manager/team_member) can stop an
+          in-flight matter when a client discontinues. Reason required. */}
+      {isStaff && (task.status === 'active' || task.status === 'pending') && (
+        <StopMatterBanner
+          open={stopping}
+          pending={stop.isPending}
+          onOpen={() => setStopping(true)}
+          onCancel={() => setStopping(false)}
+          onStop={(reason) => stop.mutate(reason)}
+        />
       )}
 
       {/* Tabs — underline style */}
@@ -392,6 +431,68 @@ function ApprovalBanner({
   );
 }
 
+/* ── Stop matter banner (#41) ──────────────────────────────────────────────── */
+
+function StopMatterBanner({
+  open, pending, onOpen, onCancel, onStop,
+}: {
+  open: boolean;
+  pending: boolean;
+  onOpen: () => void;
+  onCancel: () => void;
+  onStop: (reason: string) => void;
+}) {
+  const [reason, setReason] = useState('');
+  if (!open) {
+    return (
+      <div className="mb-4 flex justify-end">
+        <button
+          onClick={onOpen}
+          className="btn-secondary inline-flex items-center gap-1.5 text-red-600 hover:bg-red-50"
+        >
+          <Ban className="w-4 h-4" /> Stop workflow
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="card p-4 mb-4 border-red-200 bg-red-50/60">
+      <div className="flex items-start gap-2.5">
+        <Ban className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-red-900">Stop this matter?</p>
+          <p className="text-sm text-red-800 mt-0.5">
+            Use this when the client discontinues the service. The matter is cancelled and leaves
+            active worklists. A reason is required.
+          </p>
+          <textarea
+            className="input-field w-full text-sm mt-2"
+            rows={2}
+            placeholder="Reason for stopping (required)"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            disabled={pending}
+            autoFocus
+          />
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <button
+              className="btn-primary inline-flex items-center gap-1.5 py-1.5 bg-red-600 hover:bg-red-700"
+              disabled={pending || !reason.trim()}
+              onClick={() => onStop(reason.trim())}
+            >
+              {pending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
+              Stop workflow
+            </button>
+            <button className="btn-ghost py-1.5" disabled={pending} onClick={() => { onCancel(); setReason(''); }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Steps tab ─────────────────────────────────────────────────────────────── */
 
 interface StepAssignment {
@@ -476,7 +577,9 @@ function StepsTab({
   ) : null;
 
   // Quieter sections below the hero — clearly separated by section headers.
-  const activitySection = events.length > 0 && (
+  // The workflow Activity stream is an INTERNAL/ops view — clients don't need it
+  // on their service screen (GitHub #42), so it's staff-only here.
+  const activitySection = !role.isClient && events.length > 0 && (
     <Section title="Activity" count={events.length} icon={<MessageSquare className="w-3.5 h-3.5" />}>
       <ActivityThreadCard events={events} definition={definition} flush />
     </Section>
@@ -640,6 +743,7 @@ const EVENT_VERB: Record<string, string> = {
   STEP_REASSIGNED: 'reassigned the step',
   TASK_APPROVED: 'approved the matter',
   TASK_REJECTED: 'rejected the matter',
+  TASK_STOPPED: 'stopped the matter',
 };
 
 /** Relative time. Module-scope (impure Date.now must not be called in render). */

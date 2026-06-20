@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { taskCreateSchema, taskUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema } from '../schemas/task.schema.js';
-import { listTasks, getTask, createTask, patchTask, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask } from '../controllers/tasks.controller.js';
+import { taskCreateSchema, taskUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema } from '../schemas/task.schema.js';
+import { listTasks, getTask, createTask, patchTask, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, getDownloadUrl, reviewDocument } from '../controllers/documents.controller.js';
 
 const router = Router();
@@ -21,6 +21,8 @@ router.post('/:taskId/transition',           validate(taskTransitionSchema), tra
 // Approval chain (E03-S04): admin-only approve / reject of a pending matter.
 router.post('/:taskId/approve',              requireRole('admin'), approveTask);
 router.post('/:taskId/reject',               requireRole('admin'), validate(taskRejectSchema), rejectTask);
+// Stop/cancel an in-flight matter when a client discontinues (#41) — staff.
+router.post('/:taskId/stop',                 requireRole('admin', 'manager', 'team_member'), validate(taskStopSchema), stopTask);
 
 // Document cycle (E-05). Upload (signed URL → confirm), list, download, review.
 // Clients may upload/confirm/list/download on their OWN matter; only staff review.

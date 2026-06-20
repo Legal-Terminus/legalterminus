@@ -39,6 +39,7 @@ export interface Task {
   // Projected matter completion (E13-S02); null while pending approval/untracked.
   matterDueAt?: string | null;
   rejectionReason?: string;
+  cancelledReason?: string; // set when a matter is stopped (#41)
   createdAt: string;
   updatedAt: string;
 }

@@ -382,6 +382,58 @@ export async function rejectTask(req, res) {
   }
 }
 
+// ─── POST /api/tasks/:taskId/stop ──────────────────────────────────────────
+// Stop/cancel an in-flight matter when a client discontinues the service midway
+// (GitHub #41). Available to admin, manager, and team_member. Requires a reason,
+// recorded on the activity thread. The matter moves to `cancelled` (terminal) and
+// its active step is marked cancelled so it leaves worklists. Already-finished
+// matters (completed/cancelled/rejected) can't be stopped.
+export async function stopTask(req, res) {
+  try {
+    const { role, uid } = req.user;
+    if (role !== 'admin' && role !== 'manager' && role !== 'team_member') {
+      return res.status(403).json({ message: 'Forbidden: staff only' });
+    }
+    const { reason } = req.body; // validated non-empty by taskStopSchema
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+    if (['completed', 'cancelled', 'rejected'].includes(task.status)) {
+      return res.status(409).json({ message: `Matter is already ${task.status} and cannot be stopped.` });
+    }
+
+    const now = new Date().toISOString();
+    const comment = reason.toString().trim().slice(0, 500);
+    const batch = db.batch();
+    batch.set(taskRef, { status: 'cancelled', cancelledReason: comment, updatedAt: now }, { merge: true });
+    // Take the active step out of worklists.
+    const activeSnap = await taskRef.collection('steps').where('status', '==', 'active').limit(1).get();
+    if (!activeSnap.empty) {
+      batch.set(activeSnap.docs[0].ref, { status: 'cancelled' }, { merge: true });
+    }
+    batch.set(taskRef.collection('events').doc(), {
+      type: 'TASK_STOPPED',
+      fromStep: task.currentStepNumber,
+      toStep: task.currentStepNumber,
+      comment,
+      byUid: uid ?? null,
+      byRole: role ?? null,
+      at: now,
+    });
+    await batch.commit();
+
+    // Notify the matter owner + client that the service was stopped (E07-S01).
+    const ctx = `${task.clientName ?? ''} · ${task.serviceName ?? task.workflowType ?? ''}`;
+    await notify({ recipientUid: task.assignedTo, actorUid: uid, type: 'warning', title: 'Matter stopped', message: `${ctx}: ${comment}`, taskId: req.params.taskId });
+
+    res.json({ success: true, status: 'cancelled' });
+  } catch (err) {
+    logger.error({ err }, 'stopTask error:');
+    res.status(500).json({ message: 'Failed to stop matter' });
+  }
+}
+
 // ─── GET /api/tasks ────────────────────────────────────────────────────────
 // Paginated + role-scoped. Filters (status/assignedTo/isUrgent) combined with
 // orderBy(updatedAt) require composite indexes — see firestore.indexes.json.
@@ -840,10 +892,20 @@ export async function transitionTask(req, res) {
     if (!taskSnap.exists) return res.status(404).json({ message: 'Task not found' });
     const task = taskSnap.data();
 
-    // Authorization: admin/manager always; team_member only if assigned; clients
-    // may only fire client-facing approval events on their own task.
+    // Authorization: admin/manager always; team_member if assigned the MATTER or
+    // the CURRENT ACTIVE STEP; clients only their own client-facing approval events.
+    // Step-level assignment matters for steps a team member owns without being the
+    // matter owner — e.g. Government Approval / Name Approval tasks routed to them
+    // via phase pre-assignment or per-step assignment (GitHub #44).
     const isStaff = role === 'admin' || role === 'manager';
-    const isAssignedTeam = role === 'team_member' && task.assignedTo === uid;
+    let isAssignedTeam = role === 'team_member' && task.assignedTo === uid;
+    if (role === 'team_member' && !isAssignedTeam) {
+      const activeSnap = await taskRef.collection('steps')
+        .where('status', '==', 'active').limit(1).get();
+      if (!activeSnap.empty && activeSnap.docs[0].data().assignedTo === uid) {
+        isAssignedTeam = true; // owns the active step → may advance it
+      }
+    }
     const isOwnerClient = role === 'client' && task.clientUid === uid;
     const clientEvents = new Set(['CLIENT_APPROVE', 'CLIENT_REJECT']);
     if (!isStaff && !isAssignedTeam && !(isOwnerClient && clientEvents.has(event?.type))) {

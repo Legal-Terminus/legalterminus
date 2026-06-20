@@ -10,8 +10,15 @@ import { creds, env, type RoleKey } from './helpers';
 const API_BASE = process.env.E2E_API_BASE ?? 'http://localhost:5001';
 const API_KEY = () => env('E2E_FIREBASE_API_KEY');
 
-/** Exchange a role's email/password for a Firebase ID token. */
+/**
+ * Exchange a role's email/password for a Firebase ID token — CACHED per role for
+ * the process lifetime. Firebase rate-limits password sign-ins ("QUOTA_EXCEEDED"),
+ * and ID tokens last ~1h, so we must mint once per role and reuse, not per call.
+ */
+const _tokenCache = new Map<RoleKey, string>();
 export async function idToken(role: RoleKey): Promise<string> {
+  const cached = _tokenCache.get(role);
+  if (cached) return cached;
   const { email, password } = creds(role);
   const ctx = await request.newContext();
   const res = await ctx.post(
@@ -21,6 +28,7 @@ export async function idToken(role: RoleKey): Promise<string> {
   if (!res.ok()) throw new Error(`token mint failed for ${role}: ${res.status()} ${await res.text()}`);
   const body = await res.json();
   await ctx.dispose();
+  _tokenCache.set(role, body.idToken as string);
   return body.idToken as string;
 }
 
@@ -50,6 +58,25 @@ export async function createThrowawayStaff(): Promise<{ uid: string; name: strin
   return { uid: body.uid as string, name, email };
 }
 
+/** Find a user's uid by email (admin), or null. */
+export async function findUserByEmail(email: string): Promise<string | null> {
+  const api = await apiAs('admin');
+  // The users list isn't email-filterable server-side; page through and match.
+  const res = await api.get('/api/portal/users?limit=100');
+  const body = await res.json();
+  await api.dispose();
+  const u = (body.data ?? []).find((x: { email?: string }) => (x.email ?? '').toLowerCase() === email.toLowerCase());
+  return u?.uid ?? null;
+}
+
+/** Delete a user by email (admin). Best-effort cleanup for UI-created users. */
+export async function deleteUserByEmail(email: string): Promise<void> {
+  try {
+    const uid = await findUserByEmail(email);
+    if (uid) await deleteUser(uid);
+  } catch { /* best-effort */ }
+}
+
 /** Delete a user by uid (admin). Best-effort. May 409 if they still hold work —
  *  callers should reassign first. */
 export async function deleteUser(uid: string): Promise<void> {
@@ -61,18 +88,31 @@ export async function deleteUser(uid: string): Promise<void> {
   } catch { /* best-effort */ }
 }
 
+/** Resolve a workflow-backed service key dynamically (don't hardcode one —
+ *  service catalog + workflows are editable). Returns the first definition's
+ *  first serviceKey. */
+let _cachedServiceKey: string | null = null;
+export async function resolveServiceKey(): Promise<string> {
+  if (_cachedServiceKey) return _cachedServiceKey;
+  const api = await apiAs('admin');
+  const defs = await (await api.get('/api/workflow-definitions')).json();
+  await api.dispose();
+  const key = (defs ?? []).flatMap((d: { serviceKeys?: string[] }) => d.serviceKeys ?? [])[0];
+  if (!key) throw new Error('No workflow-backed service found to create a matter.');
+  _cachedServiceKey = key;
+  return key;
+}
+
 /**
  * Create a fresh matter for the seeded client via the real create endpoint
- * (admin → matter goes active immediately). Returns the new task id.
+ * (admin → matter goes active immediately). Service key is resolved from the live
+ * workflow definitions unless one is passed. Returns the new task id.
  */
 export async function createMatter(opts?: { serviceKey?: string; serviceName?: string }): Promise<string> {
+  const serviceKey = opts?.serviceKey ?? (await resolveServiceKey());
   const api = await apiAs('admin');
   const res = await api.post('/api/tasks', {
-    data: {
-      clientUid: env('E2E_CLIENT_UID'),
-      serviceKey: opts?.serviceKey ?? 'incorporation',
-      serviceName: opts?.serviceName ?? 'Company Incorporation',
-    },
+    data: { clientUid: env('E2E_CLIENT_UID'), serviceKey, serviceName: opts?.serviceName },
   });
   if (!res.ok()) throw new Error(`createMatter failed: ${res.status()} ${await res.text()}`);
   const body = await res.json();
@@ -107,6 +147,89 @@ export async function currentStep(taskId: string): Promise<number> {
   return body.currentStepNumber as number;
 }
 
+/** Read full matter state (status, currentStepNumber, paymentStatus, matterDueAt). */
+export async function getMatter(taskId: string): Promise<Record<string, unknown>> {
+  const api = await apiAs('admin');
+  const res = await api.get(`/api/tasks/${taskId}`);
+  const body = await res.json();
+  await api.dispose();
+  return body;
+}
+
+/* ── Workflow DISCOVERY (no hardcoded steps — workflows are editable) ──────────
+ * Tests must derive structure from the LIVE definition, never assume step numbers
+ * or types. These helpers fetch the matter's pinned definition and answer generic
+ * questions ("first payment gate", "first client-approval step", "a plain step").
+ */
+export interface WfStep {
+  stepNumber: number;
+  title: string;
+  type: 'step' | 'payment_gate' | 'branch' | 'final';
+  transitions?: { event: string; to: number; branch?: string }[];
+  gate?: { requires: string; onPass: number; onWait: number };
+}
+export interface WfDef { id: string; initialStep: number; steps: WfStep[] }
+
+/** Fetch the workflow definition a matter is running on. */
+export async function getDefinitionForMatter(taskId: string): Promise<WfDef> {
+  const api = await apiAs('admin');
+  const t = await (await api.get(`/api/tasks/${taskId}`)).json();
+  const def = await (await api.get(`/api/workflow-definitions/${t.workflowDefinitionId}`)).json();
+  await api.dispose();
+  return def as WfDef;
+}
+
+const stepEvents = (s: WfStep) => new Set((s.transitions ?? []).map((t) => t.event));
+
+/** First step matching a predicate, in definition order. */
+function findStep(def: WfDef, pred: (s: WfStep) => boolean): WfStep | undefined {
+  return [...def.steps].sort((a, b) => a.stepNumber - b.stepNumber).find(pred);
+}
+export const firstPaymentGate = (def: WfDef) => findStep(def, (s) => s.type === 'payment_gate');
+export const firstPlainStep = (def: WfDef) => findStep(def, (s) => s.type === 'step' && stepEvents(s).has('COMPLETE_STEP'));
+export const firstClientStep = (def: WfDef) => findStep(def, (s) => stepEvents(s).has('CLIENT_APPROVE'));
+export const firstGovtStep = (def: WfDef) => findStep(def, (s) => stepEvents(s).has('GOVT_APPROVE'));
+export const firstBranchStep = (def: WfDef) => findStep(def, (s) => s.type === 'branch');
+
+/** Fire a workflow transition as a role (used to fast-forward a matter to a
+ *  specific step before the UI assertions). */
+export async function transition(role: 'admin' | 'manager', taskId: string, event: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const api = await apiAs(role);
+  const res = await api.post(`/api/tasks/${taskId}/transition`, { data: { event } });
+  if (!res.ok()) throw new Error(`transition ${JSON.stringify(event)} failed: ${res.status()} ${await res.text()}`);
+  const body = await res.json();
+  await api.dispose();
+  return body;
+}
+
+/** Advance a matter generically, driven by the LIVE definition (no hardcoded
+ *  steps). At each step: payment_gate → ADMIN_OVERRIDE_PAYMENT; a step with a
+ *  COMPLETE_STEP transition → COMPLETE_STEP. Stops at `targetStepNumber` (if
+ *  given) or at the first step needing client/govt/branch input. Returns the
+ *  step number it stopped on. */
+export async function advanceUntil(
+  taskId: string,
+  stop?: (s: WfStep) => boolean,
+): Promise<number> {
+  const def = await getDefinitionForMatter(taskId);
+  const byNum = new Map(def.steps.map((s) => [s.stepNumber, s]));
+  for (let i = 0; i < def.steps.length + 5; i++) {
+    const m = await getMatter(taskId);
+    if (m.status === 'completed') return m.currentStepNumber as number;
+    const cur = m.currentStepNumber as number;
+    const step = byNum.get(cur);
+    if (!step) return cur;
+    if (stop && stop(step)) return cur;
+    let ev: Record<string, unknown> | null = null;
+    if (step.type === 'payment_gate') ev = { type: 'ADMIN_OVERRIDE_PAYMENT' };
+    else if (stepEvents(step).has('COMPLETE_STEP')) ev = { type: 'COMPLETE_STEP' };
+    else return cur; // needs a special event (client/govt/branch) → stop here
+    try { await transition('admin', taskId, ev); }
+    catch { return cur; }
+  }
+  return (await getMatter(taskId)).currentStepNumber as number;
+}
+
 /** Delete a matter (admin only). Best-effort — never throws in teardown. */
 export async function deleteMatter(taskId: string): Promise<void> {
   if (!taskId) return;
@@ -134,6 +257,26 @@ export async function deleteNewestClientMatter(): Promise<void> {
   } catch { /* best-effort */ }
 }
 
+/** Read the current notifications for a role (via the real API). */
+export async function getNotifications(role: RoleKey): Promise<Array<{ title: string; message: string; read: boolean }>> {
+  const api = await apiAs(role);
+  const res = await api.get('/api/notifications');
+  const body = await res.json();
+  await api.dispose();
+  return body as Array<{ title: string; message: string; read: boolean }>;
+}
+
+/** Poll a role's notifications until one matches `re` (titles), or time out. */
+export async function waitForNotification(role: RoleKey, re: RegExp, timeoutMs = 20_000): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const list = await getNotifications(role);
+    if (list.some((n) => re.test(n.title) || re.test(n.message))) return true;
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  return false;
+}
+
 /** Create a fresh unregistered contact lead (for E08-S06). Returns its id + name. */
 export async function createLead(): Promise<{ id: string; fullName: string }> {
   const api = await apiAs('admin');
@@ -159,13 +302,10 @@ export async function deleteLead(id: string): Promise<void> {
 
 /** Create a manager-owned matter that is pending admin approval (for approval tests). */
 export async function createPendingMatter(): Promise<string> {
+  const serviceKey = await resolveServiceKey();
   const api = await apiAs('manager'); // manager-created → pending_admin_approval
   const res = await api.post('/api/tasks', {
-    data: {
-      clientUid: env('E2E_CLIENT_UID'),
-      serviceKey: 'incorporation',
-      serviceName: 'Company Incorporation',
-    },
+    data: { clientUid: env('E2E_CLIENT_UID'), serviceKey },
   });
   if (!res.ok()) throw new Error(`createPendingMatter failed: ${res.status()} ${await res.text()}`);
   const body = await res.json();

@@ -1,9 +1,10 @@
 import { test, expect } from './fixtures';
+import { deleteUserByEmail } from './api';
 
 /**
- * E09 — User management. Listing, role tabs, the self-role-change guard (E09-S03),
- * and that the create form is reachable. (Bulk reassign E09-S04 is covered via the
- * delete-blocked flow in reassign.spec.ts.)
+ * E09 — User management: grid + role tabs, the self-role-change guard (E09-S03),
+ * and END-TO-END create of a team member (E09-S01) and a client (E09-S02). Created
+ * users are deleted afterward.
  */
 
 test('admin sees the Users grid with role filter tabs', async ({ adminPage }) => {
@@ -14,20 +15,51 @@ test('admin sees the Users grid with role filter tabs', async ({ adminPage }) =>
   }
 });
 
-test('Add Member + Add Client open the user form', async ({ adminPage }) => {
-  await adminPage.goto('users');
-  await adminPage.getByRole('button', { name: 'Add Member' }).click();
-  await expect(adminPage).toHaveURL(/users\/new\/member/);
-
-  await adminPage.goto('users');
-  await adminPage.getByRole('button', { name: 'Add Client' }).click();
-  await expect(adminPage).toHaveURL(/users\/new\/client/);
-});
-
 test('E09-S03: editing your OWN account locks the role selector', async ({ adminPage }) => {
-  // Go straight to the edit form for the logged-in admin's own uid (member type),
-  // avoiding a brittle search+row-click. Self-edit must lock the role selector.
   const adminUid = process.env.E2E_ADMIN_UID!;
   await adminPage.goto(`users/edit/member/${adminUid}`);
   await expect(adminPage.getByText(/can't change your own role/i)).toBeVisible();
+});
+
+test('E09-S01: admin creates a team member end-to-end', async ({ adminPage }) => {
+  const email = `e2e-newmember-${Date.now()}@legalterminus.test`;
+  try {
+    await adminPage.goto('users');
+    await adminPage.getByRole('button', { name: 'Add Member' }).click();
+    await expect(adminPage).toHaveURL(/users\/new\/member/);
+
+    await adminPage.locator('input[name="name"]').fill('E2E New Member');
+    await adminPage.locator('input[name="email"]').fill(email);
+    await adminPage.locator('input[name="phone"]').fill('9876500001');
+    await adminPage.locator('input[name="designation"]').fill('QA Tester');
+    await adminPage.getByRole('button', { name: /create member/i }).click();
+
+    // Back to the users list; the new member is findable via search.
+    await expect(adminPage).toHaveURL(/\/users(\?|$)/, { timeout: 15_000 });
+    await adminPage.getByPlaceholder(/search users/i).fill('E2E New Member');
+    await expect(adminPage.getByText('E2E New Member').first()).toBeVisible();
+  } finally {
+    await deleteUserByEmail(email);
+  }
+});
+
+test('E09-S02: admin creates a client end-to-end', async ({ adminPage }) => {
+  const email = `e2e-newclient-${Date.now()}@legalterminus.test`;
+  try {
+    await adminPage.goto('users');
+    await adminPage.getByRole('button', { name: 'Add Client' }).click();
+    await expect(adminPage).toHaveURL(/users\/new\/client/);
+
+    await adminPage.locator('input[name="name"]').fill('E2E New Client');
+    await adminPage.locator('input[name="email"]').fill(email);
+    await adminPage.locator('input[name="phone"]').fill('9876500002');
+    await adminPage.locator('input[name="address"]').fill('123 E2E Street, Test City'); // required for clients
+    await adminPage.getByRole('button', { name: /create client/i }).click();
+
+    await expect(adminPage).toHaveURL(/\/users(\?|$)/, { timeout: 15_000 });
+    await adminPage.getByPlaceholder(/search users/i).fill('E2E New Client');
+    await expect(adminPage.getByText('E2E New Client').first()).toBeVisible();
+  } finally {
+    await deleteUserByEmail(email);
+  }
 });

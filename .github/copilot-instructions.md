@@ -405,6 +405,29 @@ spec in `Portal/e2e/` in the SAME change — this is part of "done", not a follo
 - Prefer role-based fixtures + accessible selectors (`getByRole`, exact text) over
   brittle CSS. Keep specs idempotent/order-independent where possible.
 
+### Test design rules (learned the hard way)
+- **Per-run fresh state, then delete.** Each spec PROVISIONS its own matter/lead/
+  user via `e2e/api.ts` (create in `beforeAll`/`beforeEach`, delete in `afterAll`/
+  `afterEach`). Never share a static seeded matter across mutating specs — it causes
+  cross-test pollution + flakiness. `seed-e2e.js` only provisions the stable role USERS.
+- **Never hardcode workflow steps/types.** Workflows are EDITABLE. Discover structure
+  from the live definition (`e2e/api.ts`: `getDefinitionForMatter`, `firstPaymentGate`,
+  `firstPlainStep`, `firstClientStep`, `advanceUntil`, `resolveServiceKey`). A workflow
+  edit must not break tests for the wrong reason.
+- **Auth via cached storageState.** `auth.setup.ts` logs each role in once (IndexedDB
+  captured — Firebase needs it); API tokens are cached per role in `api.ts` to avoid
+  Firebase "QUOTA_EXCEEDED" on password sign-ins. Don't mint per call.
+- **webServer = `npm run dev:e2e`** (backend + portal only; NOT `dev:all` which also
+  boots the marketing app and can crash the run).
+
+### Current coverage (17 specs, ~69 tests — keep this list current)
+auth-rbac, matters, step-execution (gates/complete/client-approve), approvals,
+client-view (E12), documents (E05 full cycle), journey (cross-role lifecycle),
+notifications (E07 per-event), reports (content+filter), users (create + self-role
+lock), reassign (E09-S04), services-eta (E13-S01 + E11-S02 phase + E10-S02 sync),
+service-catalog (E04-S05), my-tasks, urgent (E11-S03/S05), leads (E08-S06),
+interactions (E03-S06 comment + E11-S07 confirm dialog).
+
 Do NOT run the suite automatically on unrelated edits; run it when you touch a
 covered flow, when explicitly asked, or before declaring a feature done.
 

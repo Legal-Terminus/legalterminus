@@ -46,6 +46,11 @@ export const taskRejectSchema = z.object({
   reason: z.string().trim().min(1).max(500),
 }).strict();
 
+// POST /api/tasks/:taskId/stop — stop/cancel an in-flight matter (reason required, #41).
+export const taskStopSchema = z.object({
+  reason: z.string().trim().min(1).max(500),
+}).strict();
+
 // ─── Document cycle (E-05) ─────────────────────────────────────────────────
 // POST /api/tasks/:taskId/documents/signed-upload-url
 export const signedUploadUrlSchema = z.object({
