@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { phaseAssignmentsSchema, stepEtasSchema } from '../schemas/workflow.schema.js';
+import { phaseAssignmentsSchema, stepEtasSchema, stepAssigneesSchema } from '../schemas/workflow.schema.js';
 import {
   listDefinitions, getDefinition, getPhaseAssignments, putPhaseAssignments,
-  syncCheckDefinition, getStepEtas, putStepEtas,
+  syncCheckDefinition, getStepEtas, putStepEtas, getStepAssignees, putStepAssignees,
 } from '../controllers/workflowDefinitions.controller.js';
 
 const router = Router();
@@ -25,6 +25,10 @@ router.get('/:id/sync-check', requireRole('admin', 'manager', 'team_member'), sy
 // Per-step ETAs (E13-S01). Read for staff; write for admin/manager. Precede '/:id'.
 router.get('/:id/step-etas', requireRole('admin', 'manager', 'team_member'), getStepEtas);
 router.put('/:id/step-etas', requireRole('admin', 'manager'), validate(stepEtasSchema), putStepEtas);
+
+// Per-step default assignees. Read for staff; write for admin/manager. Precede '/:id'.
+router.get('/:id/step-assignees', requireRole('admin', 'manager', 'team_member'), getStepAssignees);
+router.put('/:id/step-assignees', requireRole('admin', 'manager'), validate(stepAssigneesSchema), putStepAssignees);
 
 // A single definition is readable by ANY authenticated role — clients need their
 // task's workflow (step titles/types) to render their progress + approval CTAs.

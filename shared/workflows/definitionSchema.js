@@ -31,6 +31,7 @@
  *   description?: string,       // optional client/staff-facing explanation of the step
  *   type: 'step' | 'payment_gate' | 'branch' | 'final',
  *   assignedRole?: string,      // default responsible role
+ *   defaultAssigneeUid?: string,// default assignee (specific user UID); overrides phase default
  *   effects?: string[],         // declarative effect names (e.g. 'SEND_EMAIL') run by backend AFTER commit
  *   phaseId?: string,           // which PhaseDef this step belongs to (journey grouping)
  *   typicalDurationDays?: number, // expected duration — powers ETA + delay states

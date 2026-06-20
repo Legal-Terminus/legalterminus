@@ -20,6 +20,7 @@ export interface WorkflowStepDef {
   description?: string;
   type: 'step' | 'payment_gate' | 'branch' | 'final';
   assignedRole?: string;
+  defaultAssigneeUid?: string;
   effects?: string[];
   phaseId?: string;
   typicalDurationDays?: number;
@@ -164,4 +165,28 @@ export const putStepEtas = (id: string, etas: Record<string, number | null>) =>
   apiFetch<StepEtas>(`/api/workflow-definitions/${id}/step-etas`, {
     method: 'PUT',
     body: JSON.stringify({ etas }),
+  });
+
+/** Per-step default assignee config: one editable row per non-final step. */
+export interface StepAssigneeRow {
+  stepNumber: number;
+  title: string;
+  phaseId: string | null;
+  defaultAssigneeUid: string | null;
+}
+
+export interface StepAssignees {
+  definitionId: string;
+  version: number;
+  steps: StepAssigneeRow[];
+}
+
+export const getStepAssignees = (id: string) =>
+  apiFetch<StepAssignees>(`/api/workflow-definitions/${id}/step-assignees`);
+
+/** Save per-step default assignees. `assignees` maps stepNumber → uid (or null). */
+export const putStepAssignees = (id: string, assignees: Record<string, string | null>) =>
+  apiFetch<StepAssignees>(`/api/workflow-definitions/${id}/step-assignees`, {
+    method: 'PUT',
+    body: JSON.stringify({ assignees }),
   });

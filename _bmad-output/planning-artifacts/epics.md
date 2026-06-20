@@ -1858,6 +1858,13 @@ gap with a client picker + service picker, reusing the existing `POST /api/tasks
 > `removeUser` now also counts `collectionGroup('steps').where('assignedTo','==',uid)` so a user owning
 > steps (via pre-assignment / Step owner) can't be deleted and orphan them — folds in the
 > "delete user with matters" requirement / TD-07.
+>
+> **Extension (2026-06-20) — per-STEP default assignees.** Beyond per-phase defaults, a specific step can
+> now be pre-assigned to a team member. Stored as `defaultAssigneeUid` ON the step in the definition
+> (version-pinned per matter, like ETAs). Endpoints `GET`/`PUT /api/workflow-definitions/:id/step-assignees`
+> (read staff / write admin+manager; validates step exists + assignee is staff). UI: `StepAssigneeEditor`
+> on the service detail page (one staff dropdown per step). Precedence in `createTask`: a step's own
+> `defaultAssigneeUid` **overrides** its phase default; neither set → shared pool. Tests: `services-eta.spec.ts`.
 
 **Rationale**: A firm runs the same workflow the same way each time — a given phase's tasks always
 go to the same person/team. Configuring this **once per service workflow** means every new matter is
@@ -2187,6 +2194,10 @@ no time dimension. This turns the workflow config into an SLA engine.
 > the matching steps and **bumps `version`** (definitions are version-pinned per matter, so in-flight
 > matters are unaffected; new matters inherit the change). UI: `StepEtaEditor` on the service detail page
 > beside Phase Assignments (per-step day input + live total), edits-overlay + cache-write pattern.
+>
+> **Update (2026-06-20):** steps with no configured ETA now default to **2 days** (`DEFAULT_STEP_ETA_DAYS`
+> in `tasks.controller.js` `etaDaysOf`), so every step — and therefore every matter — gets a projected
+> due date out of the box. An explicit per-step value in Workflow Settings still overrides the default.
 
 **Rationale**: Each step of a service workflow should carry an expected duration so the system can compute
 due dates. Configured on the workflow definition (per service), the same place per-phase assignees are

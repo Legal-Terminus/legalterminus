@@ -14,22 +14,28 @@ function addDaysIso(iso, days) {
   return new Date(new Date(iso).getTime() + days * 86_400_000).toISOString();
 }
 
-// A step's ETA in days from the definition (null = untracked).
+// Default ETA (days) applied to any step whose definition doesn't set one, so
+// every step — and therefore every matter — has a projected due date.
+const DEFAULT_STEP_ETA_DAYS = 2;
+
+// A step's ETA in days. Uses the definition's `typicalDurationDays` when present,
+// otherwise falls back to the 2-day default.
 function etaDaysOf(stepDef) {
-  return typeof stepDef?.typicalDurationDays === 'number' ? stepDef.typicalDurationDays : null;
+  return typeof stepDef?.typicalDurationDays === 'number'
+    ? stepDef.typicalDurationDays
+    : DEFAULT_STEP_ETA_DAYS;
 }
 
 // Projected whole-matter completion: `from` + the sum of ETAs of the steps that
-// still lie ahead (current step included). Steps without an ETA contribute 0, so
-// the projection undercounts on partial coverage (surfaced as a sync-check warning).
-// Returns null when no remaining step has an ETA at all.
+// still lie ahead (current step included). Every step has an ETA (its configured
+// value or the 2-day default), so this always projects a date.
 function projectMatterDueAt(stepDefs, fromStepNumber, fromIso) {
   let total = 0;
   let any = false;
   for (const s of stepDefs) {
     if (s.stepNumber < fromStepNumber) continue;
-    const d = etaDaysOf(s);
-    if (d != null) { total += d; any = true; }
+    total += etaDaysOf(s);
+    any = true;
   }
   return any ? addDaysIso(fromIso, total) : null;
 }
@@ -165,8 +171,11 @@ export async function createTask(req, res) {
     // configured for its phase, so work lands in the right "My Tasks" with no
     // manual assignment. Map is phaseId → uid; steps in unconfigured phases stay
     // in the shared pool. Validation (staff-only, phase exists) happened on write.
+    // A step's own `defaultAssigneeUid` (configured in Workflow Settings) wins
+    // over the phase-level default; steps with neither stay in the shared pool.
     const phaseAssignees = await loadPhaseAssignments(definition.id);
-    const assigneeForStep = (s) => (s.phaseId && phaseAssignees[s.phaseId]) || null;
+    const assigneeForStep = (s) =>
+      s.defaultAssigneeUid || (s.phaseId && phaseAssignees[s.phaseId]) || null;
 
     // Approval gate (E03-S04): a manager-created matter must be approved by an
     // admin before it goes active; an admin-created matter activates immediately.

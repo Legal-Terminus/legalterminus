@@ -23,3 +23,15 @@ export const stepEtasSchema = z.object({
     z.number().min(0).max(3650).nullable(),                             // days | null
   ),
 }).strict();
+
+/**
+ * Per-step default assignees: a map of stepNumber (as string key) → user UID
+ * (or null to clear). Step existence and assignee validity (exists + is staff)
+ * are checked in the controller against the live definition/users.
+ */
+export const stepAssigneesSchema = z.object({
+  assignees: z.record(
+    z.string().trim().regex(/^\d+$/, 'step key must be a step number'), // stepNumber
+    z.string().trim().max(200).nullable(),                             // uid | null
+  ),
+}).strict();

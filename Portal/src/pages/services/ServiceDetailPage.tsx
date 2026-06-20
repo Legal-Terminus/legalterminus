@@ -11,6 +11,7 @@ import {
   getWorkflowDefinitions, getWorkflowDefinition,
   getPhaseAssignments, putPhaseAssignments, getWorkflowSyncCheck,
   getStepEtas, putStepEtas,
+  getStepAssignees, putStepAssignees,
   type WorkflowDefinition, type PhaseAssignments,
 } from '../../api/workflowDefinitions';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
@@ -137,6 +138,12 @@ export default function ServiceDetailPage() {
       {definitionId && definition && (
         <StepEtaEditor definitionId={definitionId} />
       )}
+
+      {/* Per-step default assignees — pre-route each step to a team member; new
+          matters land in that person's "My Tasks" with no manual assignment. */}
+      {definitionId && definition && (
+        <StepAssigneeEditor definitionId={definitionId} />
+      )}
     </PageShell>
   );
 }
@@ -254,6 +261,113 @@ function StepEtaEditor({ definitionId }: { definitionId: string }) {
               </button>
             )}
           </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ── Per-step default assignee editor ──────────────────────────────────────── */
+
+function StepAssigneeEditor({ definitionId }: { definitionId: string }) {
+  const role = useAuthStore((s) => s.role);
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const canEdit = role === 'admin' || role === 'manager';
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['step-assignees', definitionId],
+    queryFn: () => getStepAssignees(definitionId),
+    staleTime: 30_000,
+  });
+
+  const { data: staff = [] } = useQuery({
+    queryKey: ['portalUsers', 'staff'],
+    queryFn: getAllUsers,
+    select: (users: PortalUser[]) => users.filter((u) => u.role !== 'client'),
+    staleTime: 60_000,
+  });
+
+  // Edits overlay the server value; keyed by stepNumber. '' = cleared (shared pool).
+  const [edits, setEdits] = useState<Record<number, string>>({});
+  const serverSteps = useMemo(() => data?.steps ?? [], [data]);
+  const valueFor = (stepNumber: number): string => {
+    if (stepNumber in edits) return edits[stepNumber];
+    const s = serverSteps.find((x) => x.stepNumber === stepNumber);
+    return s?.defaultAssigneeUid ?? '';
+  };
+
+  const save = useMutation({
+    mutationFn: () => {
+      const assignees: Record<string, string | null> = {};
+      for (const [num, uid] of Object.entries(edits)) {
+        assignees[num] = uid === '' ? null : uid;
+      }
+      return putStepAssignees(definitionId, assignees);
+    },
+    onSuccess: (res) => {
+      queryClient.setQueryData(['step-assignees', definitionId], res);
+      // Version bumped — drop the definition cache so dependent views refetch.
+      queryClient.invalidateQueries({ queryKey: ['workflow-definition', definitionId] });
+      setEdits({});
+      toast.success('Step assignees saved. Applies to new matters.');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not save step assignees.'),
+  });
+
+  const hasEdits = Object.keys(edits).length > 0;
+
+  return (
+    <div className="mt-8">
+      <div className="mb-3 flex items-center gap-2">
+        <Users className="w-4 h-4 text-ink-muted" />
+        <h2 className="text-sm font-semibold text-ink">Step Assignees</h2>
+      </div>
+      <p className="text-sm text-ink-muted mb-3">
+        Pre-assign a specific step to a team member. New matters route that step to them automatically,
+        overriding the phase default. Leave unassigned to use the phase default (or the shared pool).
+        {' '}Changes apply to new matters only.
+      </p>
+
+      {isLoading ? (
+        <div className="card p-8 flex items-center justify-center text-ink-faint">
+          <Loader2 className="w-5 h-5 animate-spin" />
+        </div>
+      ) : (
+        <>
+          <div className="card divide-y divide-hairline">
+            {serverSteps.map((s) => (
+              <div key={s.stepNumber} className="flex items-center justify-between gap-3 p-4">
+                <span className="text-sm text-ink min-w-0 truncate">
+                  <span className="text-ink-faint mr-1.5">{s.stepNumber}.</span>{s.title}
+                </span>
+                <select
+                  className="input-field py-1.5 text-sm max-w-[220px] shrink-0"
+                  value={valueFor(s.stepNumber)}
+                  disabled={!canEdit || save.isPending}
+                  onChange={(e) => setEdits((d) => ({ ...d, [s.stepNumber]: e.target.value }))}
+                >
+                  <option value="">Unassigned</option>
+                  {staff.map((u) => (
+                    <option key={u.uid} value={u.uid}>{displayName(u)}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+
+          {canEdit && (
+            <div className="flex items-center gap-3 mt-3">
+              <button
+                onClick={() => save.mutate()}
+                disabled={save.isPending || !hasEdits}
+                className="btn-primary inline-flex items-center gap-1.5 ml-auto"
+              >
+                {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                {save.isPending ? 'Saving…' : 'Save assignees'}
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

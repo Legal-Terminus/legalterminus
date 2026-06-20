@@ -256,6 +256,98 @@ export async function putStepEtas(req, res) {
   }
 }
 
+// ─── Per-step default assignees ────────────────────────────────────────────
+// GET /api/workflow-definitions/:id/step-assignees — staff read. Returns the
+// ordered step list with each step's current default assignee uid, so the
+// service-config UI can render an editable assignee picker per step.
+export async function getStepAssignees(req, res) {
+  try {
+    const snap = await getDb().collection(COLLECTION).doc(req.params.id).get();
+    if (!snap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
+    const def = snap.data();
+    const steps = (def.steps ?? [])
+      .filter((s) => s.type !== 'final')
+      .map((s) => ({
+        stepNumber: s.stepNumber,
+        title: s.title,
+        phaseId: s.phaseId ?? null,
+        defaultAssigneeUid: s.defaultAssigneeUid ?? null,
+      }));
+    res.json({ definitionId: def.id ?? req.params.id, version: def.version ?? 1, steps });
+  } catch (err) {
+    logger.error({ err }, 'getStepAssignees error:');
+    res.status(500).json({ message: 'Failed to get step assignees' });
+  }
+}
+
+// PUT /api/workflow-definitions/:id/step-assignees — admin/manager write.
+// Body: { assignees: { [stepNumber]: uid | null } }. Validates every step exists
+// and every uid is a STAFF user (rejects clients), writes defaultAssigneeUid onto
+// the matching steps and bumps `version`. Definitions are version-pinned per
+// matter, so in-flight matters are unaffected; matters created after this change
+// route the step to the configured person. null clears a step's default assignee.
+export async function putStepAssignees(req, res) {
+  try {
+    const { id } = req.params;
+    const { assignees } = req.body; // shape validated by stepAssigneesSchema
+
+    const ref = getDb().collection(COLLECTION).doc(id);
+    const defSnap = await ref.get();
+    if (!defSnap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
+    const def = defSnap.data();
+
+    const byNum = new Map((def.steps ?? []).map((s) => [s.stepNumber, s]));
+    // Validate every referenced step exists, and collect the uids to verify.
+    const uidsToCheck = new Set();
+    for (const [key, uid] of Object.entries(assignees)) {
+      if (!byNum.has(Number(key))) {
+        return res.status(400).json({ message: `Unknown step ${key} for this workflow` });
+      }
+      if (uid) uidsToCheck.add(uid);
+    }
+
+    // Every assignee must exist and be staff (never a client).
+    await Promise.all([...uidsToCheck].map(async (uid) => {
+      const u = await getDb().collection('users').doc(uid).get();
+      if (!u.exists) throw { status: 400, message: `Assignee ${uid} not found` };
+      if (u.data().role === 'client') throw { status: 400, message: 'Cannot assign a step to a client' };
+    }));
+
+    // Apply: set or clear defaultAssigneeUid per step.
+    const steps = (def.steps ?? []).map((s) => {
+      if (!(String(s.stepNumber) in assignees)) return s;
+      const v = assignees[String(s.stepNumber)] || null;
+      const copy = { ...s };
+      if (v == null) delete copy.defaultAssigneeUid;
+      else copy.defaultAssigneeUid = v;
+      return copy;
+    });
+
+    const version = (def.version ?? 1) + 1;
+    await ref.set({
+      steps,
+      version,
+      updatedAt: new Date().toISOString(),
+      updatedBy: req.user.uid ?? null,
+    }, { merge: true });
+
+    res.json({
+      definitionId: id,
+      version,
+      steps: steps.filter((s) => s.type !== 'final').map((s) => ({
+        stepNumber: s.stepNumber,
+        title: s.title,
+        phaseId: s.phaseId ?? null,
+        defaultAssigneeUid: s.defaultAssigneeUid ?? null,
+      })),
+    });
+  } catch (err) {
+    if (err && err.status) return res.status(err.status).json({ message: err.message });
+    logger.error({ err }, 'putStepAssignees error:');
+    res.status(500).json({ message: 'Failed to save step assignees' });
+  }
+}
+
 // Helper for createTask: returns the phaseId→uid map for a definition (or {}).
 export async function loadPhaseAssignments(definitionId) {
   try {

@@ -16,6 +16,30 @@ test('admin opens a service and sees the Step ETAs editor', async ({ adminPage }
   await adminPage.goto(`services/${serviceKey}`);
   await expect(adminPage.getByRole('heading', { name: 'Step ETAs' })).toBeVisible();
   await expect(adminPage.getByRole('heading', { name: 'Phase Assignments' })).toBeVisible();
+  await expect(adminPage.getByRole('heading', { name: 'Step Assignees' })).toBeVisible();
+});
+
+test('admin can set a per-step default assignee and save', async ({ adminPage }) => {
+  await adminPage.goto(`services/${serviceKey}`);
+  const heading = adminPage.getByRole('heading', { name: 'Step Assignees' });
+  await expect(heading).toBeVisible();
+
+  const teamUid = process.env.E2E_TEAM_UID!;
+  // Scope to the Step Assignees section (the .mt-8 block that contains its heading)
+  // so we don't grab the phase-assignment selects above it.
+  const section = adminPage.locator('div.mt-8', { has: heading });
+  await section.locator('select').first().selectOption(teamUid);
+
+  const save = adminPage.getByRole('button', { name: /save assignees/i });
+  await expect(save).toBeEnabled();
+  await save.click();
+  await expect(adminPage.getByText(/step assignees saved/i)).toBeVisible();
+});
+
+test('team member can view but not edit step assignees', async ({ teamPage }) => {
+  await teamPage.goto(`services/${serviceKey}`);
+  await expect(teamPage.getByRole('heading', { name: 'Step Assignees' })).toBeVisible();
+  await expect(teamPage.getByRole('button', { name: /save assignees/i })).toHaveCount(0);
 });
 
 test('admin can set and save a step ETA', async ({ adminPage }) => {
