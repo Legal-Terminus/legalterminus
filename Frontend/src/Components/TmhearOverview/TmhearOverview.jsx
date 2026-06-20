@@ -18,12 +18,12 @@ const TmhearOverview = () => {
 
           <div className="opc-intro-content">
             <h2 className="opc-intro-title">
-              What is a Trademark Hearing?
+              Why Trademark Hearing Matters
             </h2>
             <p className="opc-intro-text">
-              A trademark hearing is an oral proceeding before a Hearing Officer at the Trade Marks Registry, where you get to argue your case face-to-face (now usually by video conference). It arises in two situations: a show-cause hearing, when the Examiner is not satisfied by your written reply to the examination report and wants to hear you before deciding; and an opposition hearing, when your application has been opposed and both sides argue the matter after the evidence stages.
+              A Trademark Hearing is an important stage in the trademark registration process where the applicant gets an opportunity to present and defend their case before the Trade Marks Registry. Proper preparation, legal arguments, and timely appearance are crucial, as even a strong application can be refused if the hearing is not handled effectively.
               <br /><br />
-              The hearing is frequently the final, decisive step before a mark is accepted or refused. The Hearing Officer will test the objection or opposition against your arguments and evidence, and then pass a reasoned order. Walking in with well-drafted written submissions, organised evidence, and an attorney who can argue the law makes the difference between acceptance and refusal. Equally, simply not attending almost always results in the application being refused or treated as abandoned ex-parte.
+              Trademark hearings may arise in cases such as Show Cause Hearings, Opposition Hearings, Rectification/Cancellation matters, and Renewal or Restoration disputes. Today, most hearings are conducted online through video conferencing, making attendance convenient across India. At Legal Terminus, we provide complete assistance with hearing preparation, representation, legal submissions, and post-hearing follow-up to help protect your trademark rights.
             </p>
           </div>
         </div>
