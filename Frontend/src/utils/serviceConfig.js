@@ -45,6 +45,7 @@ export const SERVICE_CONFIG = {
   'society-registration':       { displayName: 'Society Registration',                    category: 'Company Registration' },
   'trust-registration':         { displayName: 'Trust Registration',                      category: 'Company Registration' },
   'incorporation':              { displayName: 'Company Incorporation',                   category: 'Company Registration' },
+  'company-registration-odisha':{ displayName: 'Company Registration Consultancy in Odisha', category: 'Company Registration' },
 
   // LLP
   'llp-registration':           { displayName: 'LLP Registration',                        category: 'LLP' },

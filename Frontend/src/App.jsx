@@ -65,7 +65,7 @@ const Increase = lazy(() => import("./Pages/IncreaseCapitalNew/IncreaseCapitalNe
 const Add = lazy(() => import("./Pages/Add/Add"));
 const DissolvePrivate = lazy(() => import("./Pages/DissolvePrivateNew/DissolvePrivateNew"));
 const PrivatetoPublic = lazy(() => import("./Pages/PvtToPublicNew/PvtToPublicNew"));
-const PublictoPrivate = lazy(() => import("./Pages/PublictoPrivate/PublictoPrivate"));
+const PublictoPrivate = lazy(() => import("./Pages/PubToPvtNew/PubToPvtNew"));
 const ChangetoCompany = lazy(() => import("./Pages/ChangetoCompany/ChangetoCompany"));
 const ChangetoLlp = lazy(() => import("./Pages/ChangetoLlp/ChangetoLlp"));
 const OLWF = lazy(() => import("./Pages/OLWF/OLWF"));
@@ -85,6 +85,7 @@ const TermsConditions = lazy(() => import("./Pages/Policies/TermsConditions"));
 const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
 const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
 const PrivateLimitedCopy2 = lazy(() => import("./Pages/PrivateLimitedCopy2/PrivateLimitedCopy2"));
+const CompanyRegOdisha = lazy(() => import("./Pages/CompanyRegOdisha/CompanyRegOdisha"));
 const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
 
 // Store scroll positions keyed by location.key
@@ -214,6 +215,7 @@ function App() {
             <Route path="/confidentiality-policy" element={<ConfidentialityPolicy />} />
             <Route path="/policies/confidentiality" element={<ConfidentialityPolicy />} />
             <Route path="/private-limited-company-registration-in-india" element={<PrivateLimitedCopy2 />} />
+            <Route path="/company-registration-consultancy-in-odisha" element={<CompanyRegOdisha />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>
