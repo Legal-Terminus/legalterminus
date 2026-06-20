@@ -905,6 +905,21 @@ split dashboard tiles.
 
 **Priority**: P2 | **Complexity**: L | **Linked spec story**: US-4 | **Dependencies**: E01-S02, E02-S03
 
+> **✅ BUILT (2026-06-14).** Two-step signed-URL upload via Firebase Storage Admin SDK
+> ([documents.controller.js](../../backend/src/controllers/documents.controller.js)):
+> `POST /api/tasks/:taskId/documents/signed-upload-url` (15-min signed PUT, type pinned into the
+> signature, pre-creates an `awaiting_upload` metadata doc) → browser PUTs bytes straight to storage →
+> `POST .../:docId/confirm` (verifies the object exists, flips to `pending_review`, stamps
+> `uploadedAt`/`expiresAt = +1y`, notifies the reviewer). Metadata in `tasks/{taskId}/documents/{docId}`;
+> bytes at `tasks/{taskId}/{docId}/{fileName}`. Type allow-list (PDF/JPG/PNG/DOCX) + 10MB enforced
+> client- and server-side. `getBucket()` added to firebase config (env `FIREBASE_STORAGE_BUCKET`,
+> defaults to `<projectId>.appspot.com`). Frontend: [documents.ts](../../Portal/src/api/documents.ts) +
+> `DocumentsPanel`/uploader, wired into the Task detail Documents tab (replaced the "coming soon" stub).
+> - Adaptation: documents are DECOUPLED from the XState machine (own status lifecycle + REST endpoints),
+>   not `APPROVE_DOCUMENT`/`REJECT_DOCUMENT` transition events — matches the data-driven model.
+> - ⚠️ Storage Security Rules still need to enforce type/size server-side at the bucket (defence in depth);
+>   today the signed-URL content-type pin + app checks cover it. Deploy rules before launch.
+
 **Rationale**: Documents are the primary communication channel. The signed URL flow avoids routing large files through the backend.
 
 **Acceptance Criteria**:
@@ -928,6 +943,15 @@ split dashboard tiles.
 
 **Priority**: P2 | **Complexity**: M | **Linked spec story**: US-4 | **Dependencies**: E05-S01, E07-S01
 
+> **✅ BUILT (2026-06-14).** `POST /api/tasks/:taskId/documents/:docId/review { action, remark? }`
+> (staff only): approve → `approved` (records `reviewedBy`/`reviewedAt`); reject → `rejected` with a
+> **required remark** (shown to the client) + a client notification (E07-S01). `GET .../documents` lists
+> a matter's docs; `GET .../:docId/download-url` issues a short-lived signed READ URL (view without
+> routing bytes through the API). UI: approve/reject (with remark modal) on each pending `DocumentCard`.
+> - Adaptation: review is its own endpoint, not a machine transition (see E05-S01 note). The "Mark
+>   Complete disabled until a required doc is approved" gating is NOT wired (steps don't declare required
+>   docs in the definition yet) — deferred until document requirements are modelled on steps.
+
 **Rationale**: Team members must review uploaded documents before the step can proceed. Rejection requires a mandatory remark which is shown to the client.
 
 **Acceptance Criteria**:
@@ -950,6 +974,12 @@ split dashboard tiles.
 ### E05-S03 — Document Re-upload After Rejection [Phase 1]
 
 **Priority**: P2 | **Complexity**: S | **Linked spec story**: US-4 | **Dependencies**: E05-S02
+
+> **✅ BUILT (2026-06-14).** A rejected document shows its remark + a **Re-upload** button (reuses the
+> uploader). On confirm, `confirmUpload` archives any prior active doc for the same step
+> (`status → archived`, `archivedAt` set — NOT deleted) so there's one active doc per step while the
+> history is preserved; the new upload starts a fresh `pending_review` cycle and notifies the reviewer.
+> Archived versions are shown under a collapsible "Version history" section and remain downloadable.
 
 **Rationale**: Re-upload is a continuation of the document cycle; rejections are common and the flow must be seamless for clients.
 
@@ -1092,6 +1122,19 @@ split dashboard tiles.
 ### E07-S01 — In-App Notification System [Phase 1]
 
 **Priority**: P2 | **Complexity**: M | **Linked spec story**: US-9 | **Dependencies**: E01-S04
+
+> **✅ BUILT (2026-06-14).** The notification store + UI already existed (controller
+> `notifications.controller.js` with `createNotification` helper, routes, `useNotifications` hook + bell).
+> This round WIRED `createNotification` into the workflow events so notifications actually fire:
+> matter created → admins (needs approval) / first step assignee; approve/reject → creator; matter
+> assigned → new owner; step reassigned → new assignee; **transition** → whoever the ball moves to
+> (client when it's their turn, else the next step's assignee; client-responded → matter owner;
+> completion → client + owner); document review → client; document uploaded → reviewer (E-05). All
+> fire-and-forget (a notification failure never breaks the action), self-notifications skipped.
+> - Adaptation: delivery is the existing **30s poll** (kept per decision), not a Firestore `onSnapshot`
+>   real-time listener; notifications live in a flat `notifications` collection (`recipientUid` field),
+>   not `notifications/{uid}/items`. Deep-link is carried as `taskId` (the bell links to the matter).
+> - ⏳ Still Phase-2 / deferred: `onSnapshot` real-time upgrade; transactional **email** (E07-S02).
 
 **Rationale**: In-app notifications replace WhatsApp pings. The Firestore real-time listener on `notifications/{uid}/items` makes them instantaneous.
 
@@ -2083,6 +2126,15 @@ no time dimension. This turns the workflow config into an SLA engine.
 
 **Priority**: P1 | **Complexity**: M | **Linked spec story**: US-9, US-10 | **Dependencies**: E10-S02, E11-S02
 
+> **✅ BUILT (2026-06-14).** Used the definition schema's existing `typicalDurationDays` field (already
+> documented there as "powers ETA + delay states") rather than a new `etaDays`. `validateDefinition`
+> now rejects a negative/non-numeric ETA; `syncCheckDefinition` warns on partial coverage
+> (some-but-not-all steps have an ETA). Write path:
+> `GET/PUT /api/workflow-definitions/:id/step-etas` (admin/manager write) sets `typicalDurationDays` on
+> the matching steps and **bumps `version`** (definitions are version-pinned per matter, so in-flight
+> matters are unaffected; new matters inherit the change). UI: `StepEtaEditor` on the service detail page
+> beside Phase Assignments (per-step day input + live total), edits-overlay + cache-write pattern.
+
 **Rationale**: Each step of a service workflow should carry an expected duration so the system can compute
 due dates. Configured on the workflow definition (per service), the same place per-phase assignees are
 set — one config, applied to all matters of that service.
@@ -2107,6 +2159,14 @@ set — one config, applied to all matters of that service.
 
 **Priority**: P1 | **Complexity**: M | **Linked spec story**: US-9 | **Dependencies**: E13-S01
 
+> **✅ BUILT (2026-06-14).** `createTask` stamps the active first step's `startedAt`/`dueAt` and the
+> matter's `matterDueAt` (now + sum of remaining step ETAs); deferred to `approveTask` for
+> manager-created matters (the clock starts when work actually starts). `transitionTask` stamps the
+> completed step's `onTime` (completedAt ≤ its `dueAt`), starts the newly-active step's clock, and
+> re-projects `matterDueAt` from the landing step. Steps without an ETA get no `dueAt` (and contribute 0
+> to the projection). All computed server-side (single source of truth). Helpers: `addDaysIso`,
+> `etaDaysOf`, `projectMatterDueAt` in `tasks.controller.js`.
+
 **Rationale**: When a matter is created and as it advances, each step needs a concrete **due date** so
 lateness is objective and sortable.
 
@@ -2126,6 +2186,13 @@ lateness is objective and sortable.
 ### E13-S03 — "Running Late" Visibility (My Tasks, Matters, Dashboard) [Phase 1]
 
 **Priority**: P1 | **Complexity**: M | **Linked spec story**: US-9, US-10 | **Dependencies**: E13-S02
+
+> **✅ BUILT (2026-06-14).** Shared `lib/dueDate.ts` (`dueInfo` → tone/label/days + `DUE_BADGE_CLASS`)
+> drives all surfaces. My Tasks work grid: sortable **Due** column (overdue sorts to top; untracked
+> last) + due badge on mobile cards (`my-steps` now returns the active step's `dueAt`). Matters grid:
+> a **Due** column (staff only — clients don't see an internal SLA) off `matterDueAt`. Dashboard
+> `MyWorkWidget`: an "Overdue — waiting on you" section mirroring the urgent one. All lateness derived
+> client-side from `dueAt`/`matterDueAt` vs now — no extra backend calls.
 
 **Rationale**: Computed due dates are only useful if late work is visible where staff already look.
 

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
+import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import { useAuthStore } from '../../store/authStore';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
@@ -290,7 +291,7 @@ export default function TaskDetailPage() {
           events={events}
         />
       )}
-      {tab === 'documents' && <DocumentsTab />}
+      {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} />}
       {tab === 'payments' && <PaymentsTab task={task} />}
     </PageShell>
   );
@@ -994,22 +995,6 @@ function ExpandableStepRow({ step, description, isCurrent }: { step: TaskStep; d
           {step.remark && <p className="text-sm text-ink-muted bg-surface-soft rounded-lg px-3 py-2">“{step.remark}”</p>}
         </div>
       )}
-    </div>
-  );
-}
-
-/* ── Documents tab (scaffold — E05 deferred) ───────────────────────────────── */
-
-function DocumentsTab() {
-  return (
-    <div className="card p-12 text-center">
-      <FileText className="w-10 h-10 text-hairline mx-auto mb-3" />
-      <p className="text-sm font-medium text-ink">Documents</p>
-      <p className="text-sm text-ink-muted mt-1 max-w-sm mx-auto">
-        Secure document upload and review is on the way. For now, please share documents with our
-        team over your usual channel.
-      </p>
-      <span className="badge bg-surface-card text-ink-muted mt-4 inline-block">Coming soon</span>
     </div>
   );
 }

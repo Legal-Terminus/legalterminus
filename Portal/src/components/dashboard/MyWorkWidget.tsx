@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Flame, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Flame, ShieldCheck, ArrowRight, Clock } from 'lucide-react';
 import { getMySteps } from '../../api/tasks';
+import { dueInfo } from '../../lib/dueDate';
 
 /**
  * Staff dashboard widget: the things waiting on YOU right now — urgent assigned
@@ -22,8 +23,12 @@ export default function MyWorkWidget() {
   const approvals = data?.approvals ?? [];
   // Urgent items that are assigned to ME (the "waiting on me" framing).
   const urgentMine = (data?.data ?? []).filter((r) => r.isUrgent && r.bucket === 'assigned');
+  // Overdue items assigned to ME (E13-S03) — past their step due date.
+  const overdueMine = (data?.data ?? []).filter(
+    (r) => r.bucket === 'assigned' && dueInfo(r.dueAt).tone === 'overdue',
+  );
 
-  if (approvals.length === 0 && urgentMine.length === 0) return null;
+  if (approvals.length === 0 && urgentMine.length === 0 && overdueMine.length === 0) return null;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
@@ -53,6 +58,37 @@ export default function MyWorkWidget() {
           {urgentMine.length > 4 && (
             <Link to="/my-tasks" className="text-xs text-red-700 hover:underline mt-2 inline-block">
               View all {urgentMine.length} →
+            </Link>
+          )}
+        </div>
+      )}
+
+      {overdueMine.length > 0 && (
+        <div className="card p-4 border-red-200 bg-red-50/40">
+          <div className="flex items-center gap-2 mb-2">
+            <Clock className="w-4 h-4 text-red-600" />
+            <h3 className="text-sm font-semibold text-red-800">
+              Overdue — waiting on you ({overdueMine.length})
+            </h3>
+          </div>
+          <ul className="flex flex-col gap-1.5">
+            {overdueMine.slice(0, 4).map((r) => (
+              <li key={`${r.taskId}:${r.stepNumber}`}>
+                <Link
+                  to={`/tasks/${r.taskId}`}
+                  className="group flex items-center justify-between gap-2 text-sm text-ink hover:text-red-700"
+                >
+                  <span className="truncate">
+                    {r.stepTitle} · <span className="text-ink-muted">{r.clientName}</span>
+                  </span>
+                  <span className="text-xs text-red-600 shrink-0">{dueInfo(r.dueAt).label}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {overdueMine.length > 4 && (
+            <Link to="/my-tasks" className="text-xs text-red-700 hover:underline mt-2 inline-block">
+              View all {overdueMine.length} →
             </Link>
           )}
         </div>

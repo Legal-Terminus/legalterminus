@@ -15,6 +15,7 @@
 - [ ] **Technical decisions documented:** `_bmad-output/planning-artifacts/architecture.md` (service layers, components, database changes, integrations)
 - [ ] Error messages are user-friendly (no Firebase error codes)
 - [ ] Build passes clean — run `npm run build` (Portal uses `tsc -b && vite build`). ⚠️ `tsc --noEmit` is NOT sufficient: `tsc -b` is stricter (unused vars, project refs) and is what CI runs. Always verify with the real build command before declaring done.
+- [ ] **Playwright suite updated for the feature** — added/updated the matching spec in `Portal/e2e/` (+ `seed-e2e.js` fixtures if new state is needed) and it passes. See "🧪 TESTING WITH PLAYWRIGHT". Tests are part of "done", not a follow-up.
 - [ ] Backend/Frontend/Portal are all in sync if applicable
 
 **Key Rule:** Every commit must reference the related epic/story ID (e.g., "E01-S02: Implement Google Sign-In")
@@ -365,9 +366,47 @@ Services are called by multiple controllers for consistency.
 
 ## 🧪 TESTING WITH PLAYWRIGHT
 
-- ⚠️ **DO NOT automatically run Playwright tests** or open browsers unless explicitly asked
-- Only use Playwright when user requests: "test in playwright" or "verify in browser"
-- Default behavior: Code changes only, no automatic testing
+The Portal has an end-to-end Playwright suite in **`Portal/e2e/`** covering every
+implemented epic across all four roles (admin / manager / team_member / client).
+
+**Layout & how it works:**
+- `Portal/playwright.config.ts` — starts the whole stack via `npm run dev:all`
+  (port cleanup + backend + frontend + portal) and waits for the Portal URL.
+- `e2e/auth.setup.ts` — a "setup" project that logs in each role ONCE and saves
+  `storageState` to `e2e/.auth/<role>.json`. Every spec reuses it (no per-test
+  login → fast, no Firebase auth throttling).
+- `e2e/fixtures.ts` — exposes `adminPage` / `managerPage` / `teamPage` / `clientPage`
+  fixtures (pre-authenticated contexts). Specs do `test('…', async ({ adminPage }) => …)`.
+- `e2e/helpers.ts` — `login`, `openMatter`, `openDocumentsTab`, `pdfFile`, `creds`, `env`.
+- `backend/scripts/seed-e2e.js --write-env` — creates the throwaway `e2e-*` users
+  (one per role) + fixtures (active matter, pending-approval matter, a lead) and
+  writes `Portal/e2e/.env.e2e`. Fixtures are tagged `e2e:true` and cleaned up on
+  each re-seed. **Run this before the suite** (and after schema/flow changes).
+
+**Run commands (from `Portal/`):**
+```bash
+# one-time per run / after flow changes: seed users + fixtures
+cd ../backend && node scripts/seed-e2e.js --write-env && cd ../Portal
+npm run test:e2e            # headless (boots the full stack via dev:all)
+npm run test:e2e:headed     # watch the browser
+npm run test:e2e:ui         # interactive debugger
+npm run test:e2e:report     # open last HTML report
+```
+
+### 🔴 MANDATE: new features MUST update the Playwright suite
+When you build or change a feature/flow, you **must** add or update the matching
+spec in `Portal/e2e/` in the SAME change — this is part of "done", not a follow-up:
+- New page/flow → new `*.spec.ts` (or extend the closest existing one).
+- New role-gated route → add an allow/deny assertion per role (see `auth-rbac.spec.ts`).
+- New backend endpoint that the UI drives → cover its happy path + the primary
+  error/guard (e.g. validation, 403, conflict) through the UI.
+- New fixture state needed (a matter in some status, a lead, etc.) → extend
+  `backend/scripts/seed-e2e.js`, never hardcode prod data.
+- Prefer role-based fixtures + accessible selectors (`getByRole`, exact text) over
+  brittle CSS. Keep specs idempotent/order-independent where possible.
+
+Do NOT run the suite automatically on unrelated edits; run it when you touch a
+covered flow, when explicitly asked, or before declaring a feature done.
 
 ---
 

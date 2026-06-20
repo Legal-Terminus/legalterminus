@@ -1,0 +1,25 @@
+rules_version = '2';
+
+// Cloud Storage Security Rules — Legal Terminus (project: legal-terminus-web)
+//
+// Document uploads/downloads (E-05) go EXCLUSIVELY through the backend, which
+// issues short-lived V4 SIGNED URLs via the Firebase Admin SDK. Signed URLs are
+// authenticated by their signature and BYPASS these rules, so the app's document
+// flow keeps working with everything below denied.
+//
+// Because no part of the product uses the Firebase client Storage SDK, the safe
+// posture is DENY ALL direct access: anything that reaches these rules is an
+// unsigned/direct request we don't want to serve. The backend remains the only
+// way in (it validates auth, ownership, file type, and size before signing).
+//
+// If a future feature needs direct client-SDK access to a path, add a narrowly
+// scoped allow for THAT path here (with auth + content-type + size checks) — do
+// not loosen the default.
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Deny every direct client read/write. Signed URLs are unaffected.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

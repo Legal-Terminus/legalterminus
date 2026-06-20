@@ -7,6 +7,7 @@ import PageShell from '../../components/common/PageShell';
 import DataGrid from '../../components/common/DataGrid';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useToast } from '../../components/common/toastContext';
+import { dueInfo, DUE_BADGE_CLASS } from '../../lib/dueDate';
 import CreateMatterModal from '../../components/tasks/CreateMatterModal';
 import { useAuthStore } from '../../store/authStore';
 import { getTasks, deleteTask } from '../../api/tasks';
@@ -177,6 +178,23 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
         );
       },
     }),
+    // Due / lateness (E13-S03) — staff only; clients don't see an internal SLA.
+    // Sort key = days-to-due so overdue sorts first ascending; untracked sorts last.
+    ...(isClientView ? [] : [
+      col.accessor((t) => {
+        const d = dueInfo(t.matterDueAt).days;
+        return d == null ? Number.POSITIVE_INFINITY : d;
+      }, {
+        id: 'due',
+        header: 'Due',
+        size: 120,
+        cell: (ctx) => {
+          const info = dueInfo(ctx.row.original.matterDueAt);
+          if (info.tone === 'none') return <span className="text-xs text-ink-faint">—</span>;
+          return <span className={`badge ${DUE_BADGE_CLASS[info.tone]}`}>{info.label}</span>;
+        },
+      }),
+    ]),
     col.accessor((t) => t.updatedAt ?? '', {
       id: 'updatedAt',
       header: 'Updated',

@@ -147,6 +147,11 @@ export function validateDefinition(def) {
     if (numbers.has(s.stepNumber)) errors.push(`duplicate stepNumber ${s.stepNumber}`);
     numbers.add(s.stepNumber);
     if (!STEP_TYPES.includes(s.type)) errors.push(`step ${s.stepNumber} has invalid type '${s.type}'`);
+    // ETA (E13-S01): optional, but when present must be a non-negative number.
+    if (s.typicalDurationDays != null &&
+        (typeof s.typicalDurationDays !== 'number' || !Number.isFinite(s.typicalDurationDays) || s.typicalDurationDays < 0)) {
+      errors.push(`step ${s.stepNumber} typicalDurationDays must be a non-negative number`);
+    }
     if (s.type === 'payment_gate') {
       if (!s.gate) errors.push(`payment_gate step ${s.stepNumber} missing gate config`);
       else {

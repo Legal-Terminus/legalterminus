@@ -35,6 +35,12 @@ const initializeFirebase = () => {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
       projectId: process.env.FIREBASE_PROJECT_ID,
+      // Storage bucket for document uploads (E-05). Prefer the explicit env value;
+      // this project uses the newer *.firebasestorage.app naming, so fall back to
+      // that (NOT the legacy *.appspot.com) when the env var is absent.
+      storageBucket:
+        process.env.FIREBASE_STORAGE_BUCKET ||
+        (process.env.FIREBASE_PROJECT_ID ? `${process.env.FIREBASE_PROJECT_ID}.firebasestorage.app` : undefined),
     });
 
     logger.info("✅ Firebase Admin SDK initialized");
@@ -78,6 +84,18 @@ export const db = new Proxy(
 export const getAuth = () => {
   initializeFirebase();
   return admin.auth();
+};
+
+/**
+ * Get the default Cloud Storage bucket (E-05 documents). Memoized like Firestore.
+ */
+let _bucket;
+export const getBucket = () => {
+  if (!_bucket) {
+    initializeFirebase();
+    _bucket = admin.storage().bucket();
+  }
+  return _bucket;
 };
 
 export { admin };

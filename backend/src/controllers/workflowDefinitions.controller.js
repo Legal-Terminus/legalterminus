@@ -90,6 +90,13 @@ export async function syncCheckDefinition(req, res) {
         warnings.push(`${noPhase.length} step(s) have no phase — they won't group on the journey tracker or inherit a phase assignee.`);
       }
     }
+    // ETA coverage (E13-S01): partial ETAs make "running late" misleading (a
+    // matter's projected due date only counts steps that have one). Warn — not an
+    // error — when some-but-not-all steps carry typicalDurationDays.
+    const withEta = steps.filter((s) => typeof s.typicalDurationDays === 'number');
+    if (withEta.length > 0 && withEta.length < steps.length) {
+      warnings.push(`${steps.length - withEta.length} of ${steps.length} step(s) have no ETA — matter due-date projections will undercount until every step has one.`);
+    }
 
     res.json({
       definitionId: def.id ?? req.params.id,
@@ -164,6 +171,88 @@ export async function putPhaseAssignments(req, res) {
     if (err && err.status) return res.status(err.status).json({ message: err.message });
     logger.error({ err }, 'putPhaseAssignments error:');
     res.status(500).json({ message: 'Failed to save phase assignments' });
+  }
+}
+
+// ─── Per-step ETAs (E13-S01) ───────────────────────────────────────────────
+// GET /api/workflow-definitions/:id/step-etas — staff read. Returns the ordered
+// step list with each step's stepNumber, title, and current ETA (typicalDurationDays),
+// so the service-config UI can render an editable row per step.
+export async function getStepEtas(req, res) {
+  try {
+    const snap = await getDb().collection(COLLECTION).doc(req.params.id).get();
+    if (!snap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
+    const def = snap.data();
+    const steps = (def.steps ?? [])
+      .filter((s) => s.type !== 'final')
+      .map((s) => ({
+        stepNumber: s.stepNumber,
+        title: s.title,
+        phaseId: s.phaseId ?? null,
+        typicalDurationDays: typeof s.typicalDurationDays === 'number' ? s.typicalDurationDays : null,
+      }));
+    res.json({ definitionId: def.id ?? req.params.id, version: def.version ?? 1, steps });
+  } catch (err) {
+    logger.error({ err }, 'getStepEtas error:');
+    res.status(500).json({ message: 'Failed to get step ETAs' });
+  }
+}
+
+// PUT /api/workflow-definitions/:id/step-etas — admin/manager write.
+// Body: { etas: { [stepNumber]: number | null } }. Writes typicalDurationDays onto
+// the matching steps WITHIN the definition and bumps `version`. Definitions are
+// version-pinned per matter, so in-flight matters are unaffected; matters created
+// after this change inherit the new ETAs. null clears a step's ETA.
+export async function putStepEtas(req, res) {
+  try {
+    const { id } = req.params;
+    const { etas } = req.body; // shape validated by stepEtasSchema
+
+    const ref = getDb().collection(COLLECTION).doc(id);
+    const defSnap = await ref.get();
+    if (!defSnap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
+    const def = defSnap.data();
+
+    const byNum = new Map((def.steps ?? []).map((s) => [s.stepNumber, s]));
+    // Validate every referenced step exists before mutating anything.
+    for (const key of Object.keys(etas)) {
+      const num = Number(key);
+      if (!byNum.has(num)) {
+        return res.status(400).json({ message: `Unknown step ${key} for this workflow` });
+      }
+    }
+
+    // Apply: set or clear typicalDurationDays per step.
+    const steps = (def.steps ?? []).map((s) => {
+      if (!(String(s.stepNumber) in etas)) return s;
+      const v = etas[String(s.stepNumber)];
+      const copy = { ...s };
+      if (v == null) delete copy.typicalDurationDays;
+      else copy.typicalDurationDays = v;
+      return copy;
+    });
+
+    const version = (def.version ?? 1) + 1;
+    await ref.set({
+      steps,
+      version,
+      updatedAt: new Date().toISOString(),
+      updatedBy: req.user.uid ?? null,
+    }, { merge: true });
+
+    res.json({
+      definitionId: id,
+      version,
+      steps: steps.filter((s) => s.type !== 'final').map((s) => ({
+        stepNumber: s.stepNumber,
+        title: s.title,
+        phaseId: s.phaseId ?? null,
+        typicalDurationDays: typeof s.typicalDurationDays === 'number' ? s.typicalDurationDays : null,
+      })),
+    });
+  } catch (err) {
+    logger.error({ err }, 'putStepEtas error:');
+    res.status(500).json({ message: 'Failed to save step ETAs' });
   }
 }
 

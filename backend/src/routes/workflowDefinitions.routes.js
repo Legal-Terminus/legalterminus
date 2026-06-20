@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { phaseAssignmentsSchema } from '../schemas/workflow.schema.js';
+import { phaseAssignmentsSchema, stepEtasSchema } from '../schemas/workflow.schema.js';
 import {
   listDefinitions, getDefinition, getPhaseAssignments, putPhaseAssignments,
-  syncCheckDefinition,
+  syncCheckDefinition, getStepEtas, putStepEtas,
 } from '../controllers/workflowDefinitions.controller.js';
 
 const router = Router();
@@ -21,6 +21,10 @@ router.put('/:id/phase-assignments', requireRole('admin', 'manager'), validate(p
 
 // Config sync / health check (E10-S02). Staff read; also MUST precede '/:id'.
 router.get('/:id/sync-check', requireRole('admin', 'manager', 'team_member'), syncCheckDefinition);
+
+// Per-step ETAs (E13-S01). Read for staff; write for admin/manager. Precede '/:id'.
+router.get('/:id/step-etas', requireRole('admin', 'manager', 'team_member'), getStepEtas);
+router.put('/:id/step-etas', requireRole('admin', 'manager'), validate(stepEtasSchema), putStepEtas);
 
 // A single definition is readable by ANY authenticated role — clients need their
 // task's workflow (step titles/types) to render their progress + approval CTAs.

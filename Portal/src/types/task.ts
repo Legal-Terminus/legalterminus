@@ -14,6 +14,10 @@ export interface TaskStep {
   deadline?: string;
   remark?: string;
   isUrgent?: boolean;
+  // ETA tracking (E13-S02): set when a step becomes active / completes.
+  startedAt?: string;
+  dueAt?: string | null;
+  onTime?: boolean;
 }
 
 export interface Task {
@@ -32,6 +36,8 @@ export interface Task {
   totalSteps?: number;
   steps?: TaskStep[];
   isUrgent?: boolean;
+  // Projected matter completion (E13-S02); null while pending approval/untracked.
+  matterDueAt?: string | null;
   rejectionReason?: string;
   createdAt: string;
   updatedAt: string;

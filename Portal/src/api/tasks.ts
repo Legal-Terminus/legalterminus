@@ -107,6 +107,8 @@ export interface MyStepRow {
   stepTitle: string;
   assignedRole: string | null;
   assignedTo: string | null;
+  // Due date of the active step (E13-S03); null when the step has no ETA.
+  dueAt: string | null;
   bucket: 'assigned' | 'unassigned' | 'other';
 }
 

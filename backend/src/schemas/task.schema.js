@@ -46,6 +46,28 @@ export const taskRejectSchema = z.object({
   reason: z.string().trim().min(1).max(500),
 }).strict();
 
+// ─── Document cycle (E-05) ─────────────────────────────────────────────────
+// POST /api/tasks/:taskId/documents/signed-upload-url
+export const signedUploadUrlSchema = z.object({
+  stepNumber: z.coerce.number().int().min(0).optional(),
+  fileName: z.string().trim().min(1).max(200),
+  contentType: z.string().trim().min(1).max(120),
+}).strict();
+
+// POST /api/tasks/:taskId/documents/:docId/confirm
+export const confirmUploadSchema = z.object({
+  uploaded: z.boolean().optional(),
+}).strip();
+
+// POST /api/tasks/:taskId/documents/:docId/review
+export const reviewDocumentSchema = z.object({
+  action: z.enum(['approve', 'reject']),
+  remark: z.string().trim().max(1000).optional(),
+}).strict().refine((b) => b.action === 'approve' || (b.remark && b.remark.trim().length > 0), {
+  message: 'A rejection remark is required.',
+  path: ['remark'],
+});
+
 // GET /api/tasks list filters (+ pagination merged in route).
 export const taskListQuerySchema = z.object({
   status: z.enum([

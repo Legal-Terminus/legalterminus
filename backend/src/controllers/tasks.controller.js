@@ -3,8 +3,60 @@ import { db } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
 import { getCompiledForServiceKey, getCompiledById } from '../services/workflowDefinitions.service.js';
 import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
+import { createNotification } from './notifications.controller.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
-import { validateDefinition } from '../../../shared/workflows/definitionSchema.js';
+import { validateDefinition, deriveOwnerType } from '../../../shared/workflows/definitionSchema.js';
+
+// ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
+// Add `days` (may be fractional) to an ISO instant, returning an ISO string.
+function addDaysIso(iso, days) {
+  if (days == null || !Number.isFinite(days)) return null;
+  return new Date(new Date(iso).getTime() + days * 86_400_000).toISOString();
+}
+
+// A step's ETA in days from the definition (null = untracked).
+function etaDaysOf(stepDef) {
+  return typeof stepDef?.typicalDurationDays === 'number' ? stepDef.typicalDurationDays : null;
+}
+
+// Projected whole-matter completion: `from` + the sum of ETAs of the steps that
+// still lie ahead (current step included). Steps without an ETA contribute 0, so
+// the projection undercounts on partial coverage (surfaced as a sync-check warning).
+// Returns null when no remaining step has an ETA at all.
+function projectMatterDueAt(stepDefs, fromStepNumber, fromIso) {
+  let total = 0;
+  let any = false;
+  for (const s of stepDefs) {
+    if (s.stepNumber < fromStepNumber) continue;
+    const d = etaDaysOf(s);
+    if (d != null) { total += d; any = true; }
+  }
+  return any ? addDaysIso(fromIso, total) : null;
+}
+
+// ─── Notifications (E07-S01) ────────────────────────────────────────────────
+// Fire-and-forget in-app notification. NEVER let a notification failure break the
+// workflow action that triggered it — we log and move on. Skips self-notification
+// (don't ping someone for their own action) and empty recipients.
+async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId }) {
+  try {
+    if (!recipientUid || recipientUid === actorUid) return;
+    await createNotification({ recipientUid, type, title, message, taskId });
+  } catch (err) {
+    logger.warn({ err: err?.message }, 'notify: failed to create notification');
+  }
+}
+
+// All admin UIDs — recipients for "needs approval" notifications. Best-effort.
+async function adminUids() {
+  try {
+    const snap = await db.collection('users').where('role', '==', 'admin').get();
+    return snap.docs.map((d) => d.id);
+  } catch (err) {
+    logger.warn({ err: err?.message }, 'adminUids lookup failed');
+    return [];
+  }
+}
 
 // ─── Client-view projection (E12) ──────────────────────────────────────────
 // Clients must never receive INTERNAL operational data: who on our team owns a
@@ -129,6 +181,13 @@ export async function createTask(req, res) {
     const stepDefs = definition.steps.filter((s) => s.type !== 'final');
 
     const now = new Date().toISOString();
+    // Due-date projection (E13-S02). Only start the clock when work actually
+    // starts: an admin-created matter is active now; a manager-created one waits
+    // for approval, so its due dates are stamped at approval time instead.
+    const firstStepDef = stepDefs.find((s) => s.stepNumber === firstStep);
+    const firstStepEta = etaDaysOf(firstStepDef);
+    const matterDueAt = needsApproval ? null : projectMatterDueAt(stepDefs, firstStep, now);
+
     const task = {
       // Workflow identity: definition + pinned version (NOT the service key).
       workflowDefinitionId: definition.id,
@@ -146,6 +205,7 @@ export async function createTask(req, res) {
       isUrgent: false,
       currentStepNumber: firstStep,
       totalSteps: stepDefs.length, // denormalized count for list/report display
+      matterDueAt, // projected completion (E13-S02); null while pending approval/untracked
       createdAt: now,
       updatedAt: now,
       createdBy: req.user.uid ?? null,
@@ -158,15 +218,38 @@ export async function createTask(req, res) {
     // While pending approval, even the first step stays `pending` (no work starts).
     const firstStepStatus = needsApproval ? 'pending' : 'active';
     for (const s of stepDefs) {
+      const isFirstActive = s.stepNumber === firstStep && !needsApproval;
       batch.set(ref.collection('steps').doc(String(s.stepNumber)), {
         stepNumber: s.stepNumber,
         title: s.title,
         assignedRole: s.assignedRole ?? null,
         assignedTo: assigneeForStep(s),
         status: s.stepNumber === firstStep ? firstStepStatus : 'pending',
+        // ETA clock (E13-S02): only the active first step gets a running due date.
+        ...(isFirstActive ? { startedAt: now, dueAt: addDaysIso(now, firstStepEta) } : {}),
       });
     }
     await batch.commit();
+
+    // Notifications (E07-S01). A manager-created matter pings admins to approve;
+    // an active matter pings the first step's pre-assigned owner that work is theirs.
+    if (needsApproval) {
+      const admins = await adminUids();
+      await Promise.all(admins.map((a) => notify({
+        recipientUid: a, actorUid: req.user.uid, type: 'warning',
+        title: 'Matter awaiting your approval',
+        message: `${clientName} · ${task.serviceName} was created and needs admin approval.`,
+        taskId: ref.id,
+      })));
+    } else {
+      const firstAssignee = assigneeForStep(firstStepDef ?? {});
+      await notify({
+        recipientUid: firstAssignee, actorUid: req.user.uid, type: 'info',
+        title: 'New step assigned to you',
+        message: `${clientName} · ${task.serviceName}: ${firstStepDef?.title ?? `Step ${firstStep}`}`,
+        taskId: ref.id,
+      });
+    }
 
     const steps = stepDefs.map((s) => ({
       stepNumber: s.stepNumber,
@@ -198,12 +281,31 @@ export async function approveTask(req, res) {
     }
 
     const now = new Date().toISOString();
+
+    // Start the ETA clock now (E13-S02): approval is when a manager-created matter
+    // actually begins, so the first step's due date and the matter projection are
+    // stamped here (they were deferred at creation). Best-effort: if the pinned
+    // definition can't be loaded, fall back to no due dates rather than failing.
+    let matterDueAt = null;
+    let firstDueAt = null;
+    try {
+      const compiled = await getCompiledById(task.workflowDefinitionId);
+      if (compiled) {
+        const stepDefs = compiled.definition.steps.filter((s) => s.type !== 'final');
+        const firstDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber);
+        firstDueAt = addDaysIso(now, etaDaysOf(firstDef));
+        matterDueAt = projectMatterDueAt(stepDefs, task.currentStepNumber, now);
+      }
+    } catch (e) {
+      logger.warn({ err: e?.message }, 'approveTask: ETA stamping skipped (definition unavailable)');
+    }
+
     const batch = db.batch();
-    batch.set(taskRef, { status: 'active', updatedAt: now }, { merge: true });
-    // Activate the current (first) step so work can begin.
+    batch.set(taskRef, { status: 'active', updatedAt: now, matterDueAt }, { merge: true });
+    // Activate the current (first) step so work can begin, and start its clock.
     batch.set(
       taskRef.collection('steps').doc(String(task.currentStepNumber)),
-      { status: 'active' },
+      { status: 'active', startedAt: now, ...(firstDueAt ? { dueAt: firstDueAt } : {}) },
       { merge: true },
     );
     batch.set(taskRef.collection('events').doc(), {
@@ -216,6 +318,15 @@ export async function approveTask(req, res) {
       at: now,
     });
     await batch.commit();
+
+    // Notify the creator their matter was approved and is now live (E07-S01).
+    await notify({
+      recipientUid: task.createdBy, actorUid: req.user.uid, type: 'success',
+      title: 'Matter approved',
+      message: `${task.clientName ?? ''} · ${task.serviceName ?? ''} was approved and is now active.`,
+      taskId: req.params.taskId,
+    });
+
     res.json({ success: true, status: 'active' });
   } catch (err) {
     logger.error({ err }, 'approveTask error:');
@@ -255,6 +366,15 @@ export async function rejectTask(req, res) {
       at: now,
     });
     await batch.commit();
+
+    // Notify the creator their matter was rejected, with the reason (E07-S01).
+    await notify({
+      recipientUid: task.createdBy, actorUid: req.user.uid, type: 'error',
+      title: 'Matter rejected',
+      message: `${task.clientName ?? ''} · ${task.serviceName ?? ''} was rejected: ${comment}`,
+      taskId: req.params.taskId,
+    });
+
     res.json({ success: true, status: 'rejected' });
   } catch (err) {
     logger.error({ err }, 'rejectTask error:');
@@ -394,6 +514,8 @@ export async function listMySteps(req, res) {
           stepTitle: step.title ?? `Step ${step.stepNumber}`,
           assignedRole: step.assignedRole ?? null,
           assignedTo,
+          // Due date of the active step (E13-S03) — drives the lateness column.
+          dueAt: step.dueAt ?? null,
           bucket: assignedTo === uid ? 'assigned' : (assignedTo ? 'other' : 'unassigned'),
         });
       })
@@ -591,6 +713,17 @@ export async function patchTask(req, res) {
     }
 
     await batch.commit();
+
+    // Notify the new matter owner that a matter was assigned to them (E07-S01).
+    if (newAssignee) {
+      await notify({
+        recipientUid: newAssignee, actorUid: req.user.uid, type: 'info',
+        title: 'Matter assigned to you',
+        message: `${task.clientName ?? ''} · ${task.serviceName ?? task.workflowType ?? ''}`,
+        taskId: req.params.taskId,
+      });
+    }
+
     res.json({ success: true });
   } catch (err) {
     logger.error({ err: err }, 'patchTask error:');
@@ -653,6 +786,18 @@ export async function patchStep(req, res) {
         });
       }
       await batch.commit();
+
+      // Notify the new step assignee that work was routed to them (E07-S01).
+      if (reassigning && update.assignedTo) {
+        const t = (await db.collection('tasks').doc(taskId).get()).data() ?? {};
+        await notify({
+          recipientUid: update.assignedTo, actorUid: req.user.uid, type: 'info',
+          title: 'Step assigned to you',
+          message: `${t.clientName ?? ''} · ${t.serviceName ?? t.workflowType ?? ''}: ${prev.title ?? `Step ${prev.stepNumber}`}`,
+          taskId,
+        });
+      }
+
       return res.json({ success: true });
     }
 
@@ -744,17 +889,25 @@ export async function transitionTask(req, res) {
     const newStep = snap.context.currentStepNumber;
     const isComplete = after === 'completed' || snap.status === 'done';
 
+    const now = new Date().toISOString();
+    const comment = (event?.remark || event?.reason || '').toString().trim().slice(0, 2000) || null;
+
+    // ── Due-date stamping (E13-S02) ──
+    // ETAs come from the pinned definition (already loaded as `compiled`).
+    const etaStepDefs = compiled.definition.steps.filter((s) => s.type !== 'final');
+    const etaByNum = new Map(etaStepDefs.map((s) => [s.stepNumber, etaDaysOf(s)]));
+    // Re-project the matter's completion from the step we're landing on.
+    const matterDueAt = isComplete ? null : projectMatterDueAt(etaStepDefs, newStep, now);
+
     // Persist task-level state.
     const taskUpdate = {
       currentStepNumber: newStep,
       paymentStatus: snap.context.paymentStatus,
       adminOverride: snap.context.adminOverride,
       status: isComplete ? 'completed' : 'active',
-      updatedAt: new Date().toISOString(),
+      matterDueAt,
+      updatedAt: now,
     };
-
-    const now = new Date().toISOString();
-    const comment = (event?.remark || event?.reason || '').toString().trim().slice(0, 2000) || null;
 
     // Update step statuses: mark the step we LEFT as completed (on a forward move),
     // and the step we landed on as active. Done in a batch with the task update.
@@ -763,10 +916,15 @@ export async function transitionTask(req, res) {
 
     if (newStep !== task.currentStepNumber) {
       const leftRef = taskRef.collection('steps').doc(String(task.currentStepNumber));
+      // onTime (E13-S02): compare completion to the step's stored due date (if any).
+      const leftSnap = await leftRef.get();
+      const leftDueAt = leftSnap.exists ? leftSnap.data().dueAt : null;
+      const onTime = leftDueAt ? (new Date(now).getTime() <= new Date(leftDueAt).getTime()) : null;
       batch.set(leftRef, {
         status: 'completed',
         completedBy: uid ?? null,
         completedAt: now,
+        ...(onTime != null ? { onTime } : {}),
         ...(comment ? { remark: comment } : {}),
       }, { merge: true });
     } else if (comment) {
@@ -776,7 +934,12 @@ export async function transitionTask(req, res) {
     }
     if (!isComplete) {
       const nextRef = taskRef.collection('steps').doc(String(newStep));
-      batch.set(nextRef, { status: 'active' }, { merge: true });
+      // Start the new active step's clock (only on an actual step change, so a
+      // payment/override that stays on the same step doesn't reset its due date).
+      const startedNew = newStep !== task.currentStepNumber
+        ? { startedAt: now, dueAt: addDaysIso(now, etaByNum.get(newStep) ?? null) }
+        : {};
+      batch.set(nextRef, { status: 'active', ...startedNew }, { merge: true });
     }
 
     // Forward JUMP over intermediate steps. Two reasons a step can be bypassed:
@@ -814,6 +977,41 @@ export async function transitionTask(req, res) {
     });
 
     await batch.commit();
+
+    // ── Notifications (E07-S01): tell whoever the ball moves to. ──
+    try {
+      const ctx = `${task.clientName ?? ''} · ${task.serviceName ?? task.workflowType ?? ''}`;
+      if (isComplete) {
+        // Matter finished — congratulate the client + tell the matter owner.
+        await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'success',
+          title: 'Your service is complete', message: ctx, taskId });
+        await notify({ recipientUid: task.assignedTo, actorUid: uid, type: 'success',
+          title: 'Matter completed', message: ctx, taskId });
+      } else if (newStep !== task.currentStepNumber) {
+        const newDef = etaStepDefs.find((s) => s.stepNumber === newStep);
+        const owner = deriveOwnerType(newDef);
+        if (owner === 'client') {
+          // The ball is now with the client — prompt them to act.
+          await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'info',
+            title: 'Action needed on your service',
+            message: `${ctx}: ${newDef?.title ?? `Step ${newStep}`}`, taskId });
+        } else {
+          // Internal step — notify its assignee (pre-assigned or matter owner).
+          const nextStepSnap = await taskRef.collection('steps').doc(String(newStep)).get();
+          const nextAssignee = nextStepSnap.exists ? nextStepSnap.data().assignedTo : null;
+          await notify({ recipientUid: nextAssignee || task.assignedTo, actorUid: uid, type: 'info',
+            title: 'Step ready for you',
+            message: `${ctx}: ${newDef?.title ?? `Step ${newStep}`}`, taskId });
+        }
+        // If the CLIENT just acted, also let the matter owner know they responded.
+        if (role === 'client') {
+          await notify({ recipientUid: task.assignedTo, actorUid: uid, type: 'info',
+            title: 'Client responded', message: ctx, taskId });
+        }
+      }
+    } catch (e) {
+      logger.warn({ err: e?.message }, 'transitionTask: notification step failed');
+    }
 
     // Return the refreshed task with steps.
     const stepsSnap = await taskRef.collection('steps').orderBy('stepNumber').get();

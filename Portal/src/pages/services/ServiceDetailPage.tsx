@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Workflow, Users, Check, Loader2, AlertTriangle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Workflow, Users, Check, Loader2, AlertTriangle, AlertCircle, Clock } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
 import WorkflowDiagram from '../../components/workflow/WorkflowDiagram';
@@ -10,6 +10,7 @@ import { getServiceCatalog } from '../../api/services';
 import {
   getWorkflowDefinitions, getWorkflowDefinition,
   getPhaseAssignments, putPhaseAssignments, getWorkflowSyncCheck,
+  getStepEtas, putStepEtas,
   type WorkflowDefinition, type PhaseAssignments,
 } from '../../api/workflowDefinitions';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
@@ -130,7 +131,132 @@ export default function ServiceDetailPage() {
       {definitionId && definition && (definition.phases?.length ?? 0) > 0 && (
         <PhaseAssignmentsEditor definitionId={definitionId} definition={definition} />
       )}
+
+      {/* Per-step ETAs (E13-S01) — configure expected duration per step; new
+          matters derive per-step + whole-matter due dates from these. */}
+      {definitionId && definition && (
+        <StepEtaEditor definitionId={definitionId} />
+      )}
     </PageShell>
+  );
+}
+
+/* ── Per-step ETA editor (E13-S01) ─────────────────────────────────────────── */
+
+function StepEtaEditor({ definitionId }: { definitionId: string }) {
+  const role = useAuthStore((s) => s.role);
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const canEdit = role === 'admin' || role === 'manager';
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['step-etas', definitionId],
+    queryFn: () => getStepEtas(definitionId),
+    staleTime: 30_000,
+  });
+
+  // Edits overlay the server value (no effect-driven sync). Keyed by stepNumber;
+  // value is the raw input string ('' = cleared/untracked).
+  const [edits, setEdits] = useState<Record<number, string>>({});
+  const serverSteps = useMemo(() => data?.steps ?? [], [data]);
+  const valueFor = (stepNumber: number): string => {
+    if (stepNumber in edits) return edits[stepNumber];
+    const s = serverSteps.find((x) => x.stepNumber === stepNumber);
+    return s?.typicalDurationDays != null ? String(s.typicalDurationDays) : '';
+  };
+
+  const save = useMutation({
+    mutationFn: () => {
+      // Build the etas map from edits only (server keeps the rest). '' → null (clear).
+      const etas: Record<string, number | null> = {};
+      for (const [num, raw] of Object.entries(edits)) {
+        etas[num] = raw.trim() === '' ? null : Number(raw);
+      }
+      return putStepEtas(definitionId, etas);
+    },
+    onSuccess: (res) => {
+      queryClient.setQueryData(['step-etas', definitionId], res);
+      // The definition itself changed (version bumped) — drop its cache so the
+      // diagram/detail refetch the new version.
+      queryClient.invalidateQueries({ queryKey: ['workflow-definition', definitionId] });
+      setEdits({});
+      toast.success('Step ETAs saved. Applies to new matters.');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not save step ETAs.'),
+  });
+
+  // Total expected duration across steps that have an ETA (live, incl. edits).
+  const totalDays = useMemo(() => {
+    return serverSteps.reduce((sum, s) => {
+      const v = valueFor(s.stepNumber).trim();
+      const n = v === '' ? 0 : Number(v);
+      return sum + (Number.isFinite(n) ? n : 0);
+    }, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverSteps, edits]);
+
+  const hasEdits = Object.keys(edits).length > 0;
+
+  return (
+    <div className="mt-8">
+      <div className="mb-3 flex items-center gap-2">
+        <Clock className="w-4 h-4 text-ink-muted" />
+        <h2 className="text-sm font-semibold text-ink">Step ETAs</h2>
+      </div>
+      <p className="text-sm text-ink-muted mb-3">
+        Set an expected duration (in days) per step. New matters use these to compute per-step and
+        whole-matter due dates, and to flag work that’s running late. Leave blank to leave a step untracked.
+        {' '}Changes apply to new matters only.
+      </p>
+
+      {isLoading ? (
+        <div className="card p-8 flex items-center justify-center text-ink-faint">
+          <Loader2 className="w-5 h-5 animate-spin" />
+        </div>
+      ) : (
+        <>
+          <div className="card divide-y divide-hairline">
+            {serverSteps.map((s) => (
+              <div key={s.stepNumber} className="flex items-center justify-between gap-3 p-4">
+                <span className="text-sm text-ink min-w-0 truncate">
+                  <span className="text-ink-faint mr-1.5">{s.stepNumber}.</span>{s.title}
+                </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <input
+                    type="number"
+                    min={0}
+                    max={3650}
+                    inputMode="numeric"
+                    className="input-field py-1.5 text-sm w-24 text-right"
+                    placeholder="—"
+                    value={valueFor(s.stepNumber)}
+                    disabled={!canEdit || save.isPending}
+                    onChange={(e) => setEdits((d) => ({ ...d, [s.stepNumber]: e.target.value }))}
+                  />
+                  <span className="text-xs text-ink-faint w-8">days</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3 mt-3">
+            <span className="text-xs text-ink-muted">
+              Total expected: <span className="font-semibold text-ink">{totalDays}</span> day{totalDays === 1 ? '' : 's'}
+            </span>
+            {canEdit && (
+              <button
+                onClick={() => save.mutate()}
+                disabled={save.isPending || !hasEdits}
+                className="btn-primary inline-flex items-center gap-1.5 ml-auto"
+              >
+                {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                {save.isPending ? 'Saving…' : 'Save ETAs'}
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 

@@ -10,6 +10,7 @@
     "build:portal": "cd Portal && npm run build:portal",
     "cleanup:ports": "lsof -ti :5001 | xargs kill -9 2>/dev/null || true; lsof -ti :5173 | xargs kill -9 2>/dev/null || true; lsof -ti :5174 | xargs kill -9 2>/dev/null || true; echo '✅ Cleaned up ports 5001, 5173, 5174'",
     "dev:all": "npm run cleanup:ports && concurrently \"npm run start:backend\" \"npm run dev:frontend\" \"npm run dev:portal\"",
+    "dev:e2e": "npm run cleanup:ports && concurrently --names backend,portal --kill-others \"npm run start:backend\" \"npm run dev:portal\"",
     "start:backend": "lsof -ti :5001 | xargs kill -9 2>/dev/null || true; cd backend && npm start",
     "dev:backend": "lsof -ti :5001 | xargs kill -9 2>/dev/null || true; cd backend && npm run dev",
     "dev:frontend": "lsof -ti :5174 | xargs kill -9 2>/dev/null || true; cd Frontend && npm run dev",

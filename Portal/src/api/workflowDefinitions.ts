@@ -141,3 +141,27 @@ export interface WorkflowSyncCheck {
 
 export const getWorkflowSyncCheck = (id: string) =>
   apiFetch<WorkflowSyncCheck>(`/api/workflow-definitions/${id}/sync-check`);
+
+/** Per-step ETA config (E13-S01): one editable row per non-final step. */
+export interface StepEtaRow {
+  stepNumber: number;
+  title: string;
+  phaseId: string | null;
+  typicalDurationDays: number | null;
+}
+
+export interface StepEtas {
+  definitionId: string;
+  version: number;
+  steps: StepEtaRow[];
+}
+
+export const getStepEtas = (id: string) =>
+  apiFetch<StepEtas>(`/api/workflow-definitions/${id}/step-etas`);
+
+/** Save per-step ETAs. `etas` maps stepNumber → days (or null to clear). */
+export const putStepEtas = (id: string, etas: Record<string, number | null>) =>
+  apiFetch<StepEtas>(`/api/workflow-definitions/${id}/step-etas`, {
+    method: 'PUT',
+    body: JSON.stringify({ etas }),
+  });

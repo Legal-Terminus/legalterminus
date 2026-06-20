@@ -7,6 +7,7 @@ import PageShell from '../../components/common/PageShell';
 import DataGrid from '../../components/common/DataGrid';
 import { getMySteps } from '../../api/tasks';
 import type { MyStepRow, MyApprovalRow } from '../../api/tasks';
+import { dueInfo, DUE_BADGE_CLASS } from '../../lib/dueDate';
 
 /**
  * "My Tasks" — consolidated cross-matter worklist for staff, as grids (shared
@@ -142,6 +143,21 @@ function buildWorkColumns(navigate: (to: string) => void) {
         );
       },
     }),
+    // Due / lateness (E13-S03) — sortable. Sort key is days-until-due so overdue
+    // (most negative) sorts to the top ascending; steps with no ETA sort last.
+    wc.accessor((r) => {
+      const d = dueInfo(r.dueAt).days;
+      return d == null ? Number.POSITIVE_INFINITY : d;
+    }, {
+      id: 'due',
+      header: 'Due',
+      size: 120,
+      cell: (ctx) => {
+        const info = dueInfo(ctx.row.original.dueAt);
+        if (info.tone === 'none') return <span className="text-xs text-ink-faint">—</span>;
+        return <span className={`badge ${DUE_BADGE_CLASS[info.tone]}`}>{info.label}</span>;
+      },
+    }),
     wc.accessor('stepNumber', { header: 'Step #', size: 90, cell: (ctx) => <span className="badge bg-brand-50 text-brand-700">#{ctx.getValue()}</span> }),
     wc.accessor('bucket', {
       header: 'Queue',
@@ -190,6 +206,7 @@ function StepCard({ row, navigate }: { row: MyStepRow; navigate: (to: string) =>
       <div className="flex items-center gap-2 flex-wrap">
         <p className="text-sm font-semibold text-ink truncate">{row.stepTitle}</p>
         {row.isUrgent && <span className="badge bg-red-50 text-red-600 inline-flex items-center gap-1"><Flame className="w-3 h-3" fill="currentColor" /> Urgent</span>}
+        {(() => { const info = dueInfo(row.dueAt); return info.tone !== 'none' && (info.tone === 'overdue' || info.tone === 'today' || info.tone === 'soon') ? <span className={`badge ${DUE_BADGE_CLASS[info.tone]}`}>{info.label}</span> : null; })()}
         <span className="badge bg-brand-50 text-brand-700">#{row.stepNumber}</span>
         {row.bucket === 'assigned' && <span className="badge bg-emerald-50 text-emerald-700">Mine</span>}
         {row.bucket === 'unassigned' && <span className="badge bg-surface-card text-ink-muted">Available</span>}
