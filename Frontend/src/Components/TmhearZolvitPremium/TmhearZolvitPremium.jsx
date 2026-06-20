@@ -27,7 +27,10 @@ const TmhearZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  The hearing is often the last and most decisive stage between your mark and registration. Showing up unprepared — or not showing up — usually means refusal. Priority is what happens when a trademark attorney builds your case, files written submissions, and argues it for you before the Hearing Officer.
+                  A Trademark Hearing is a critical stage in the trademark registration process. Missing the hearing, giving weak arguments, or poor preparation can lead to refusal or abandonment of the application.
+                </p>
+                <p className="opczp-subtitle" style={{ marginTop: "12px" }}>
+                  With LT Priority, your Trademark Hearing matter is handled on a priority basis by experienced IP professionals who ensure timely coordination, proper preparation, and professional representation before the Trade Marks Registry.
                 </p>
               </header>
 
@@ -36,23 +39,23 @@ const TmhearZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    Fast preparation from the moment the hearing notice arrives — submissions drafted and evidence organised well before the date.
+                    Priority handling and faster hearing coordination.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    A focused legal argument addressing the exact objection or opposition that triggered the hearing — not a generic script.
+                    <span className="opczp-list-icon">📅</span>
+                    Timely hearing tracking with regular status updates.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    An experienced attorney appearing on your behalf at the virtual hearing, so you never have to argue trademark law alone.
+                    <span className="opczp-list-icon">👨‍⚖️</span>
+                    Professional representation before the Trademark Registry.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    Adjournment handling if you need more time, and clear advice on whether to seek one.
+                    <span className="opczp-list-icon">📄</span>
+                    Detailed hearing preparation with legal arguments and supporting documents.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">📑</span>
-                    Post-hearing analysis of the order with a clear recommendation — acceptance, review, or appeal — so you always know the next move.
+                    <span className="opczp-list-icon">💻</span>
+                    Online hearing support with proper technical coordination.
                   </li>
                 </ul>
               </section>
@@ -65,16 +68,22 @@ const TmhearZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  Not attending is the worst outcome. If you fail to appear at the hearing, the Hearing Officer can decide the matter ex-parte — usually refusing or treating the application as abandoned. Representation ensures your side is actually heard.
+                  NON-APPEARANCE = ABANDONMENT — failure to appear at any scheduled hearing causes the matter to be MARKED ABANDONED. The Registry does not call out for missing parties — if the Hearing Officer opens the file at the scheduled time and the party / representative is not present, the matter is dismissed for default.
                 </li>
                 <li className="opczp-note-item">
-                  Preparation beats improvisation. The hearing is your chance to address the Officer's specific concerns with reasoned arguments and evidence. Well-drafted written submissions filed in advance frame the case in your favour before a word is spoken.
+                  15-DAY NOTICE (Show Cause — Rule 33) — the Registry must give MINIMUM 15 DAYS notice for a Show Cause Hearing. Use this window to engage hearing counsel + prepare thoroughly. Don't leave it to the last 48 hours.
                 </li>
                 <li className="opczp-note-item">
-                  Hearings are now mostly virtual. Most trademark hearings are held by video conference, which means precise scheduling, a stable connection, and an attorney who knows the process matter just as much as the legal argument.
+                  MAX 2 ADJOURNMENTS (Rule 50 proviso) — max 2 adjournments per matter, max 30 days each. Form TM-M (₹900 each) pass-through. Beyond 2 adjournments, Hearing Officer typically proceeds ex-parte on merits. Use adjournments sparingly — prefer to attend prepared on the original date.
                 </li>
                 <li className="opczp-note-item">
-                  Adjournments are limited. The Registry grants only a few adjournments at its discretion. Relying on repeated postponements is risky — it is far safer to be fully prepared for the date that is set.
+                  ALL HEARINGS ARE ONLINE — 2026 practice is overwhelmingly online video conference. Plan for: stable internet, professional setup, no background noise, formal attire (camera on). Physical hearing only on specific request.
+                </li>
+                <li className="opczp-note-item">
+                  REGISTRAR'S ORDER 30-90 DAYS POST-HEARING — written order typically issued 30-90 days after the hearing. We follow up till order receipt + brief you on the order + advise on next steps (acceptance / appeal under Section 91 / rectification etc.).
+                </li>
+                <li className="opczp-note-item">
+                  PRIOR POWER OF ATTORNEY — if LT was not the prior attorney on file, we draft Form TM-48 POA + Authorisation Letter (additional ₹999 + GST). Required for our online attendance to be recorded as authorised representative.
                 </li>
               </ul>
             </div>

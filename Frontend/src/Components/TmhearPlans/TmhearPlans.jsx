@@ -4,51 +4,61 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "submissions",
-    name: "Hearing Submissions",
-    oldPrice: 5999,
-    price: 2999,
+    id: "elemental",
+    name: "ELEMENTAL",
+    badge: "SINGLE HEARING ATTENDANCE",
+    oldPrice: 7459,
+    price: 4999,
     services: [
-      "Review of objection / opposition on record",
-      "Attorney-drafted written submissions",
-      "Case-law citations supporting your mark",
-      "Filing of submissions before the hearing",
-      "Hearing-readiness checklist & guidance",
-      "Status tracking after the hearing",
-      "Email delivery of the submissions",
+      "Pre-hearing case file review",
+      "Hearing prep call with client (30 min)",
+      "Online video conference hearing attendance",
+      "Oral arguments by LT's associated attorney",
+      "Cross-questions handling by Hearing Officer",
+      "Hearing minutes recorded",
+      "Post-hearing 1-page summary to client",
+      "Status Update Commitment (monthly + 1-2 day)",
+      "Filed e-filing only (Form TM-M ₹900 adj if needed)",
+      "Single hearing per engagement",
     ],
   },
   {
-    id: "representation",
-    name: "Hearing Representation",
-    badge: "★ MOST POPULAR",
+    id: "enriched",
+    name: "ENRICHED",
+    badge: "HEARING + BRIEF + FOLLOW-UP",
     popular: true,
-    oldPrice: 9999,
-    price: 5499,
+    oldPrice: 10499,
+    price: 6999,
     services: [
-      "Everything in Hearing Submissions",
-      "Attorney representation at the virtual hearing",
-      "Oral arguments before the Hearing Officer",
-      "Real-time rebuttal of objections raised",
-      "Evidence presentation & clarification",
-      "Adjournment request handling (if needed)",
-      "Dedicated IP attorney + WhatsApp support",
+      "Everything in Elemental",
+      "Hearing brief drafting (arguments + case-law digest)",
+      "Evidence compilation in paper-book format",
+      "Pre-hearing strategy call (60 min)",
+      "Case-law research + precedent citations",
+      "Post-hearing written submissions filing",
+      "Adjournment via Form TM-M (₹900 pass-through) if needed",
+      "Post-hearing follow-up till order receipt",
+      "Order analysis + next-steps advisory",
+      "Status Update Commitment",
     ],
   },
   {
-    id: "endtoend",
-    name: "End-to-End Hearing + Follow-Up",
-    badge: "✦ FULL-SERVICE",
-    oldPrice: 17999,
+    id: "supreme",
+    name: "SUPREME",
+    badge: "MULTI-HEARING + ADJOURNMENT",
+    oldPrice: 14999,
     price: 9999,
     services: [
-      "Everything in Hearing Representation",
-      "Full evidence/affidavit compilation & filing",
-      "Multiple / adjourned hearing appearances",
-      "Post-hearing order analysis & advice",
-      "Next-step strategy (acceptance / review / appeal)",
-      "Coordination till journal publication",
-      "Priority support till the Registry's decision",
+      "Everything in Enriched",
+      "Up to 2 hearings attendance (initial + adjourned)",
+      "Adjournment management (max 2 per matter)",
+      "Form TM-M ₹900 pass-through for adjournments",
+      "Detailed paper-book + bound submissions",
+      "Senior IP-counsel-led representation",
+      "Multiple pre-hearing strategy calls",
+      "Post-order detailed advisory",
+      "Section 91 appeal preliminary review (if needed)",
+      "Status Update Commitment",
     ],
   },
 ];
@@ -68,7 +78,7 @@ const TmhearPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards tmhear-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
@@ -84,7 +94,7 @@ const TmhearPlans = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ GST extra</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">
