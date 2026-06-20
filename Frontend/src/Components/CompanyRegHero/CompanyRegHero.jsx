@@ -28,6 +28,13 @@ const CompanyRegHero = () => {
       <div className="crh-container">
         {/* ---------------- LEFT ---------------- */}
         <div className="crh-content">
+          <a href="/" className="crh-logo">
+            <img
+              src="https://legalterminus.com/wp-content/uploads/2023/09/Legal-Terminus-LOGO-GIF_300-x-150.gif"
+              alt="Legal Terminus"
+            />
+          </a>
+
           <span className="crh-badge">
             <span className="crh-badge-dot" />
             Trusted by 1000+ Businesses across Odisha

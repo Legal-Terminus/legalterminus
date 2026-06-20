@@ -75,6 +75,19 @@
   color: #0f2235;
 }
 
+/* ---------- brand logo ---------- */
+.crh-logo {
+  display: inline-block;
+  margin-bottom: 34px;
+  line-height: 0;
+}
+
+.crh-logo img {
+  width: 210px;
+  height: auto;
+  object-fit: contain;
+}
+
 .crh-badge {
   display: inline-flex;
   align-items: center;
