@@ -96,3 +96,21 @@ export const updateUser = (uid: string, body: Partial<PortalUser>) =>
 
 export const deleteUser = (uid: string) =>
   apiFetch<void>(`${BASE}/${uid}`, { method: 'DELETE' });
+
+/** Result of a bulk reassignment of a user's work to another user (E09-S04). */
+export interface ReassignWorkResult {
+  message: string;
+  mattersMoved: number;
+  stepsMoved: number;
+}
+
+/**
+ * Move ALL of one user's work (matter ownership + step ownership) to another
+ * staff user. Used when offboarding: reassign, then the user becomes deletable
+ * (the delete guard blocks while they still hold work).
+ */
+export const reassignUserWork = (uid: string, toUid: string) =>
+  apiFetch<ReassignWorkResult>(`${BASE}/${uid}/reassign`, {
+    method: 'POST',
+    body: JSON.stringify({ toUid }),
+  });

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createUser, updateUser, type PortalUser } from '../../api/users';
 import { useAuthStore } from '../../store/authStore';
+import { useConfirm } from '../common/confirmContext';
 import { assignableRolesFor } from '../../lib/roles';
 import {
   ArrowLeft, User, Mail, Phone, Briefcase,
@@ -48,7 +49,12 @@ const COLOR_MAP = {
 
 export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMemberFormProps) {
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const currentRole = useAuthStore((s) => s.role);
+  const currentUid = useAuthStore((s) => s.user?.uid ?? null);
+  // Editing your OWN account: role is locked (E09-S03). A user can't change their
+  // own role (an admin self-demoting could lock the org out); another admin must.
+  const isSelf = !!member?.uid && member.uid === currentUid;
   // Only show roles the current user is allowed to assign (manager can't mint admin/manager).
   const allowedRoleKeys = assignableRolesFor(currentRole);
   const selectableRoles = ROLES.filter((r) => allowedRoleKeys.includes(r.value));
@@ -99,7 +105,7 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Designation is required for STAFF roles only; a client has no designation.
     const needsDesignation = formData.role !== 'client';
@@ -108,6 +114,20 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
       return;
     }
     setError('');
+
+    // Role-change confirmation (E09-S03): changing a role rewrites access — make
+    // it deliberate. Only prompts on edit when the role actually changed.
+    const roleChanged = !!member?.uid && formData.role !== initialRole;
+    if (roleChanged) {
+      const newLabel = ROLES.find((r) => r.value === formData.role)?.label ?? formData.role;
+      const ok = await confirm({
+        title: 'Change this user\'s role?',
+        message: `${formData.name || 'This user'} will become ${newLabel}. This immediately changes what they can access. Continue?`,
+        confirmLabel: 'Change role',
+      });
+      if (!ok) return;
+    }
+
     // Don't send a stale designation for a client (backend keys staff-ness off role).
     const payload = formData.role === 'client' ? { ...formData, designation: '' } : formData;
     mutation.mutate(payload);
@@ -240,6 +260,12 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
               <h3 className="text-sm font-semibold text-gray-700">Role &amp; Access</h3>
               <div className="flex-1 h-px bg-gray-100" />
             </div>
+            {isSelf && (
+              <p className="text-xs text-gray-500 mb-3 flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5 text-gray-400" />
+                You can't change your own role — ask another admin.
+              </p>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {selectableRoles.map((r) => {
                 const isSelected = formData.role === r.value;
@@ -248,8 +274,9 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
                   <button
                     key={r.value}
                     type="button"
+                    disabled={isSelf}
                     onClick={() => setFormData((prev) => ({ ...prev, role: r.value }))}
-                    className={`relative p-4 rounded-2xl border-2 text-left transition-all ${
+                    className={`relative p-4 rounded-2xl border-2 text-left transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
                       isSelected ? `${c.border} ${c.ring}` : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50'
                     }`}
                   >

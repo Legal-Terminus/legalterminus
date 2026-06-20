@@ -187,6 +187,12 @@ export const updateUser = async (req, res) => {
     if (roleChangeRequested && !canAssignRole(req.user?.role, role)) {
       return res.status(403).json({ message: `You are not allowed to assign the role '${role}'.` });
     }
+    // Self-role-change guard (E09-S03): a user may not change their OWN role.
+    // An admin demoting themselves could lock the org out of admin functions;
+    // role changes must always be made by a different admin.
+    if (roleChangeRequested && uid === req.user?.uid) {
+      return res.status(403).json({ message: 'You cannot change your own role. Ask another admin to do it.' });
+    }
     // Role is privileged: only persist it when the caller may assign it.
     const writableRole = roleChangeRequested && canAssignRole(req.user?.role, role) ? role : undefined;
 
@@ -218,6 +224,72 @@ export const updateUser = async (req, res) => {
   } catch (error) {
     logger.error({ err: error }, 'Error updating user:');
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+/* ================= BULK REASSIGN WORK ================= */
+// POST /api/portal/users/:uid/reassign   body: { toUid }   (admin only)
+// Moves ALL of a user's open work to another staff user in one operation:
+//   • matter-level ownership  (tasks.assignedTo == :uid)
+//   • step-level ownership     (collectionGroup steps.assignedTo == :uid)
+// This is the companion to the delete guard (E11-S02): an admin offboarding a
+// team member reassigns their work here, then the user becomes deletable. The
+// target must be an existing STAFF user (never a client). Idempotent: running it
+// with no matching work simply reports 0 moved.
+export const reassignUserWork = async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { toUid } = req.body; // validated non-empty by reassignWorkSchema
+
+    if (toUid === uid) {
+      return res.status(400).json({ message: 'Cannot reassign a user to themselves.' });
+    }
+
+    const [fromUser, toUser] = await Promise.all([getUserByUid(uid), getUserByUid(toUid)]);
+    if (!fromUser) return res.status(404).json({ message: 'Source user not found' });
+    if (!toUser) return res.status(404).json({ message: 'Target user not found' });
+    if (toUser.role === 'client') {
+      return res.status(400).json({ message: 'Cannot reassign work to a client.' });
+    }
+
+    const now = new Date().toISOString();
+
+    // 1) Matter-level ownership.
+    const matters = await db.collection('tasks').where('assignedTo', '==', uid).get();
+
+    // 2) Step-level ownership across all matters (collection-group).
+    let steps = { docs: [], size: 0 };
+    try {
+      steps = await db.collectionGroup('steps').where('assignedTo', '==', uid).get();
+    } catch (e) {
+      // Missing collection-group index → can't safely complete a full reassign.
+      logger.warn({ err: e?.message }, 'reassignUserWork: step collection-group query failed (index missing?)');
+      return res.status(503).json({
+        message: 'Step reassignment is temporarily unavailable (search index not ready). Try again shortly.',
+      });
+    }
+
+    // Batch the writes (cap 500/batch; chunk to be safe). Touch the parent task's
+    // updatedAt so reassigned matters resurface in lists.
+    const allWrites = [
+      ...matters.docs.map((d) => ({ ref: d.ref, data: { assignedTo: toUid, updatedAt: now } })),
+      ...steps.docs.map((d) => ({ ref: d.ref, data: { assignedTo: toUid, updatedAt: now } })),
+    ];
+    for (let i = 0; i < allWrites.length; i += 450) {
+      const batch = db.batch();
+      allWrites.slice(i, i + 450).forEach((w) => batch.set(w.ref, w.data, { merge: true }));
+      await batch.commit();
+    }
+
+    logger.info(`[reassignUserWork] ${uid} → ${toUid}: matters=${matters.size}, steps=${steps.size}`);
+    res.status(200).json({
+      message: 'Work reassigned successfully',
+      mattersMoved: matters.size,
+      stepsMoved: steps.size,
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error reassigning user work:');
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 

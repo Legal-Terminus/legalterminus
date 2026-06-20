@@ -76,6 +76,7 @@ split dashboard tiles.
 | E-10 | Workflow Configuration | Phase 1 | E10-S01 – E10-S02 |
 | E-11 | Matter Creation, Pre-Assignment, Priority & UI Platform | Phase 1 | E11-S01 – E11-S08 |
 | E-12 | Client vs Internal View Separation | Phase 1 | E12-S01 – E12-S03 |
+| E-13 | Per-Step ETAs & SLA Tracking | Phase 1 / 2 | E13-S01 – E13-S05 |
 
 ---
 
@@ -1350,7 +1351,12 @@ split dashboard tiles.
 - ✅ API helper + types: `getContactLeadsReport()` and `ContactLead` interface in `Portal/src/api/reports.ts`.
 - ✅ Registered as a single `AppRoute` at canonical role-neutral path `/reports/leads` with `roles: ['admin', 'manager', 'team_member']` in `Portal/src/routes/appRoutes.tsx`.
 - ⚠️ Reuses existing `contactLeads` data + existing `POST/GET/PATCH/DELETE /api/contact` endpoints; this story only adds the read-with-enrichment report endpoint.
-- ⏳ TODO (Phase 2): inline status update from the report; "convert lead to client" action prefilling the client form.
+- ✅ DONE (2026-06-14): **inline status update** from the report — a status `<select>` on each row (and
+  the drawer) PATCHes the lead without opening the drawer. **Convert lead → client**: `POST /api/leads/:id/convert`
+  (admin/manager) creates or links a `client` user from the lead via the shared `upsertUser` path, stamps
+  the lead `convertedAt/convertedBy/convertedUid`; the `registered` tag then resolves live from the users
+  collection. Surfaced as a "Convert to client" action on each unregistered-lead row, mobile card, and in
+  the drawer; refreshes both the leads list and the Users grid. Client/admin role-gated via `canConvert`.
 
 **Backend endpoints needed**:
 - ✅ `GET /api/leads` — enriched contact-leads list (admin, manager, team_member)
@@ -1533,7 +1539,11 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 > - **`role` is the single source of truth.** The legacy `type` mirror field is fully removed (no code reads/writes it; `backfill-remove-user-type.js` cleared existing docs).
 > - Security note: the Firestore read is server-side, so the client cannot influence the resolved role; trusting it over the signed claim stays secure. Cost: ≤1 Firestore read per user per minute (cached).
 > - Implementation: `backend/src/middleware/auth.middleware.js` (`verifyToken`).
-> - ⏳ Still TODO: the self-role-change UI guard (`uid !== currentUser.uid`) and a dedicated role-change confirmation dialog are not yet implemented; role is changed through the general edit form today.
+> - ✅ DONE (2026-06-14): the **self-role-change guard** and **role-change confirmation** are now built.
+>   Server: `updateUser` rejects a role change where `uid === req.user.uid` (403 — an admin can't self-demote
+>   and lock the org out; another admin must do it). UI: `TeamMemberForm` disables the role buttons + shows
+>   "You can't change your own role" when editing yourself, and prompts a `useConfirm()` dialog before any
+>   role change ("X will become Manager. This immediately changes what they can access.").
 
 > **⚠️ BUG FIX 2026-06-13 — clients could not be promoted.** Since **every new user defaults to `client`**, promotion (client → staff) is the common path, but it was unreachable from the UI: editing a client opened `ClientForm`, which hardcoded `role: 'client'` with no selector, and only `TeamMemberForm` had a role picker (staff roles only). The backend already authorized the change via `canAssignRole`. Fix: added a **Role & Access** section to [ClientForm.tsx](../../Portal/src/components/users/ClientForm.tsx) — shown only when editing an existing user and only if the actor can assign a non-client role (`assignableRolesFor`). Selecting a staff role reveals a **required Designation** field (backend requires designation for staff). On save, `role` is sent only when changeable, `designation` only for staff roles. Create still always makes a client; promotion happens on a later edit.
 
@@ -1546,9 +1556,20 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 
 ---
 
-### E09-S04 — Bulk Step Reassignment [Phase 2]
+### E09-S04 — Bulk Step Reassignment [Phase 1 — core built; pulled forward from Phase 2]
 
 **Priority**: P2 | **Complexity**: M | **Linked spec story**: US-8 | **Dependencies**: E09-S01
+
+> **✅ BUILT (2026-06-14) — core flow.** Pulled forward because it's the companion to the delete guard
+> (E11-S02): offboarding was a dead end without it. `POST /api/portal/users/:uid/reassign { toUid }`
+> (admin only) batch-moves BOTH matter-level (`tasks.assignedTo`) and step-level (collection-group
+> `steps.assignedTo`) ownership to another **staff** user (rejects clients / self), stamps `updatedAt`,
+> returns `{ mattersMoved, stepsMoved }`. UI: `UsersPage` delete now catches the 409 "user has work"
+> and opens a **Reassign work** modal (pick a team member → reassign → user becomes deletable). `apiFetch`
+> now attaches `status`/`body` to errors so the 409 can be branched on.
+> - ⏳ Deferred (need other epics): per-task `auditLog` entry + destination-user notification (E-07);
+>   triggering reassignment from the Workload report (E08-S02); the standalone `UserDetailPage` button
+>   (today it's driven from the Users grid delete flow, which is the actual offboarding path).
 
 **Rationale**: When a team member leaves, all their open steps must be reassigned without manual step-by-step editing.
 
@@ -1918,8 +1939,12 @@ the model must extend to future approval rules without a rewrite).
 > [confirmContext.ts](../../Portal/src/components/common/confirmContext.ts)), mounted at the app root.
 > Usage: `if (await confirm({ title, message, tone: 'danger', confirmLabel: 'Delete' })) …`. Wired into
 > the **delete matter**, **delete user**, and **delete lead** flows.
-> - ⏳ TODO: `window.alert()` error popups (mutation onError handlers across tasks/services/reports) are
->   still native — convert to in-app toasts in a follow-up (separate concern from confirmation).
+> - ✅ DONE (2026-06-14): `window.alert()` error popups (mutation onError handlers across
+>   tasks/services/users/reports) replaced with an in-app **toast** system — `ToastProvider` +
+>   `useToast()` ([ToastProvider.tsx](../../Portal/src/components/common/ToastProvider.tsx),
+>   [toastContext.ts](../../Portal/src/components/common/toastContext.ts)), mounted at the app root.
+>   `toast.error/success/info`; errors linger longer, all auto-dismiss + manually dismissable. No
+>   `window.alert()` remains in `Portal/src`.
 
 **Acceptance Criteria**:
 - A single app-wide confirm dialog (our UI, not the browser's) is used for all destructive confirmations.
@@ -1952,15 +1977,20 @@ the model must extend to future approval rules without a rewrite).
 clean, client-appropriate picture of *their* service — never internal team assignees, internal-only
 activity events, or staff mechanics. Raised 2026-06-14.
 
-> **⏳ NOT STARTED — next up.** Current state: the task detail and activity thread are largely shared
-> between staff and client with role-branched CTAs, but several internal signals can leak to clients.
-> This epic hardens the boundary, server-side first (don't rely on hiding in the UI).
+> **✅ BUILT (2026-06-14).** S01 ✅ · S02 ✅ · S03 ✅. The client↔internal boundary is now hardened
+> server-side: client reads get a projected payload (no `assignedTo`/owner/audit fields) and a
+> whitelisted, actor-masked activity feed; the client UI hides Step-owner controls. Don't rely on
+> hiding in the UI — the API itself withholds internal data from clients.
 
 ---
 
 ### E12-S01 — Hide Internal Assignees & Owner Controls from Clients [Phase 1]
 
 **Priority**: P1 | **Complexity**: S | **Linked spec story**: US-1 | **Dependencies**: E-03, E-04
+
+> **✅ BUILT (2026-06-14).** `projectTaskForClient()` strips `assignedTo`/`createdBy`/`adminOverride`/
+> internal step fields from `getTask`+`listTasks` for clients; `TaskDetailPage` hides the Step-owner
+> block for clients (`!role.isClient`). Matter-owner controls were already `canAssign`-gated (staff only).
 
 **Rationale**: Clients should not see *who internally* is working their matter (Step owner, Matter owner,
 assignee names, reassignment controls). These are internal staffing details.
@@ -1980,6 +2010,12 @@ assignee names, reassignment controls). These are internal staffing details.
 ### E12-S02 — Client-Safe Activity Feed [Phase 1]
 
 **Priority**: P1 | **Complexity**: M | **Linked spec story**: US-1 | **Dependencies**: E03-S06 (events), E12-S01
+
+> **✅ BUILT (2026-06-14).** `listTaskEvents` filters to a `CLIENT_EVENT_WHITELIST`
+> (COMPLETE_STEP, BRANCH_DECISION, CLIENT_APPROVE/REJECT, GOVT_APPROVE/REJECT, RECORD_PAYMENT) for
+> clients; internal events (STEP_REASSIGNED, TASK_APPROVED/REJECTED, ADMIN_OVERRIDE_PAYMENT) are dropped.
+> Actor names are masked to "You" (own actions) / "Our team" (everyone else); `byRole` is nulled. Staff
+> still get the full feed with real names.
 
 **Rationale**: The activity thread currently records internal events (reassignments, step-owner changes,
 internal comments, payment-override mechanics, govt-step internals). A client should see only events
@@ -2004,6 +2040,13 @@ meaningful to them — their own approvals/rejections, status/stage changes, doc
 
 **Priority**: P2 | **Complexity**: S | **Linked spec story**: US-1 | **Dependencies**: E12-S01, E12-S02
 
+> **✅ DONE (verified 2026-06-14).** Swept every client-reachable surface. Findings:
+> - `getTask`/`listTasks`/`listTaskEvents` — the only client-reachable task data paths — all projected (S01/S02).
+> - Reports (`/api/leads`, `/api/reports/*`) are `requireRole('admin','manager')` (+team_member for leads) — no client access.
+> - `my-steps` 403s clients. Matters grid (TasksPage) shows clients only Service/Status/Payment/Progress — no assignee column.
+> - StepHeroPanel Step-owner block hidden for clients; matter-owner picker is staff-only (`canAssign`).
+> No remaining leaks. (Approval/rejected status labels are unreachable by clients since clients never create matters.)
+
 **Rationale**: A holistic sweep of every client-facing surface to catch any remaining internal leakage
 (labels, tooltips, step internal notes, "with our team" vs internal role names, urgent flags meant for
 ops, etc.).
@@ -2013,6 +2056,122 @@ ops, etc.).
   client-visible report/profile surfaces — none expose internal assignees, internal events, or staff-only
   controls.
 - Findings tracked and fixed; documented in this story.
+
+---
+
+## E-13 — Per-Step ETAs & SLA Tracking
+
+**Goal**: Make every matter time-aware. Each step in a service's workflow can be configured with an
+expected duration (an ETA / SLA), and the system derives a per-step and whole-matter **due date** as a
+matter progresses, surfaces what's **running late**, and exposes "time on step" / "time to complete" for
+ops visibility. Configured once at the **service (workflow definition) level**; applied automatically to
+every matter created from that service. Raised 2026-06-14.
+
+> **⏳ NOT STARTED.** Builds on the data-driven workflow model (E-10/E-11) and the existing step
+> instance state. ETA config lives on the definition's steps (alongside `assignedRole`, `phaseId`); due
+> dates are computed at matter creation / on each transition and stored on the step instance so reports
+> and worklists can sort/filter by lateness without recomputation. Notifications for breaches depend on
+> E-07 (so the alerting story is gated on it).
+
+**Why now**: We already pre-assign work per phase and flag urgency manually (E-11). The missing piece is
+*objective* timeliness — without ETAs, "running late" is guesswork and the journey tracker (E04-S08) has
+no time dimension. This turns the workflow config into an SLA engine.
+
+---
+
+### E13-S01 — Per-Step ETA Configuration (Service Level) [Phase 1]
+
+**Priority**: P1 | **Complexity**: M | **Linked spec story**: US-9, US-10 | **Dependencies**: E10-S02, E11-S02
+
+**Rationale**: Each step of a service workflow should carry an expected duration so the system can compute
+due dates. Configured on the workflow definition (per service), the same place per-phase assignees are
+set — one config, applied to all matters of that service.
+
+**Acceptance Criteria**:
+- A workflow step can carry an `etaDays` (or `etaHours`) value in the definition schema (optional;
+  unset = untracked). Validated by `validateDefinition` (non-negative number).
+- An admin/manager can edit each step's ETA from the service detail page (alongside Phase Assignments),
+  persisted to the definition; `getWorkflowSyncCheck` flags definitions with partial/missing ETAs as a
+  *warning* (not an error).
+- Editing ETAs does not alter in-flight matters (definitions are version-pinned per matter); applies to
+  matters created after the change.
+
+**Backend/Frontend**:
+- `shared/workflows/definitionSchema.js` (add `etaDays` to step shape + validation).
+- `backend/src/controllers/workflowDefinitions.controller.js` (persist step ETAs; surface in sync-check).
+- `Portal/src/pages/services/ServiceDetailPage.tsx` (per-step ETA editor near PhaseAssignmentsEditor).
+
+---
+
+### E13-S02 — Derived Due Dates on Matter Steps [Phase 1]
+
+**Priority**: P1 | **Complexity**: M | **Linked spec story**: US-9 | **Dependencies**: E13-S01
+
+**Rationale**: When a matter is created and as it advances, each step needs a concrete **due date** so
+lateness is objective and sortable.
+
+**Acceptance Criteria**:
+- On matter creation, the first/active step gets `startedAt` (now) and `dueAt` (= startedAt + step ETA).
+- On each forward transition, the newly-active step is stamped `startedAt`/`dueAt`; the completed step
+  records `completedAt` and `onTime` (completedAt ≤ dueAt). Steps without an ETA get no `dueAt`.
+- A whole-matter projected completion (`matterDueAt`) is derived from the sum of remaining step ETAs and
+  stored/denormalized on the task for list display.
+- Due dates are computed server-side in `createTask` + `transitionTask` (single source of truth).
+
+**Backend**:
+- `backend/src/controllers/tasks.controller.js` (`createTask`, `transitionTask` stamp `startedAt`/`dueAt`/`onTime`).
+
+---
+
+### E13-S03 — "Running Late" Visibility (My Tasks, Matters, Dashboard) [Phase 1]
+
+**Priority**: P1 | **Complexity**: M | **Linked spec story**: US-9, US-10 | **Dependencies**: E13-S02
+
+**Rationale**: Computed due dates are only useful if late work is visible where staff already look.
+
+**Acceptance Criteria**:
+- My Tasks gains a **Due / lateness** column (sortable): "Overdue by Nd", "Due today", "Nd left". Overdue
+  rows are visually flagged (like urgent).
+- The Matters grid shows a due/late indicator; the staff dashboard widget gains an "Overdue — waiting on
+  you" section (mirrors the urgent widget).
+- Lateness is derived from `dueAt` vs now on the client; no extra backend calls (data already on the row).
+
+**Frontend**:
+- `Portal/src/pages/tasks/MyTasksPage.tsx`, `TasksPage.tsx`, `components/dashboard/MyWorkWidget.tsx`.
+
+---
+
+### E13-S04 — SLA / Delay Report [Phase 2]
+
+**Priority**: P2 | **Complexity**: M | **Linked spec story**: US-9 | **Dependencies**: E13-S02, E08-S02
+
+**Rationale**: Management needs an aggregate view of where matters are slipping (which service, which
+phase, which assignee) — the reporting counterpart to E08-S02 (Workload/Delay).
+
+**Acceptance Criteria**:
+- A report lists overdue/at-risk steps across all matters with filters (service, phase, assignee, age of
+  breach) and sortable lateness, reusing the shared DataGrid; rows link to the matter.
+- On-time-completion rate per service/phase is summarized.
+
+**Frontend/Backend**:
+- `backend/src/controllers/reports.controller.js` (SLA aggregation), `Portal/src/pages/reports/` (new report).
+
+---
+
+### E13-S05 — SLA Breach Notifications [Phase 2]
+
+**Priority**: P2 | **Complexity**: M | **Linked spec story**: US-9 | **Dependencies**: E13-S02, E-07
+
+**Rationale**: Proactive alerting when a step is overdue (or approaching its due date) so work is chased
+before it breaches — depends on the notification/email subsystem (E-07).
+
+**Acceptance Criteria**:
+- A scheduled check flags steps past `dueAt` (and optionally approaching it) and notifies the step
+  assignee + matter owner via the E-07 in-app/email channels.
+- Configurable thresholds (e.g. notify at due, +1 day, +3 days); de-duplicated so one breach doesn't spam.
+
+**Backend**:
+- Scheduled job + `EFFECT_HANDLERS` (NOTIFY/SEND_EMAIL) once E-07 lands.
 
 ---
 

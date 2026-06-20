@@ -6,6 +6,42 @@ import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
 import { validateDefinition } from '../../../shared/workflows/definitionSchema.js';
 
+// ─── Client-view projection (E12) ──────────────────────────────────────────
+// Clients must never receive INTERNAL operational data: who on our team owns a
+// matter/step, internal-only activity, or actor names of staff. We strip this
+// server-side (defense in depth — not just hiding it in the UI) so the API
+// cannot leak it regardless of the caller. Staff get the full payload unchanged.
+
+// Internal step fields a client should never see (assignment/audit metadata).
+const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedRole', 'completedBy', 'isUrgent'];
+
+// Strip internal ownership/assignment from a task + its steps for a client.
+function projectTaskForClient(task) {
+  const { assignedTo, createdBy, isUrgent, adminOverride, ...safe } = task;
+  if (Array.isArray(safe.steps)) {
+    safe.steps = safe.steps.map((s) => {
+      const copy = { ...s };
+      for (const k of CLIENT_STEP_HIDDEN) delete copy[k];
+      return copy;
+    });
+  }
+  return safe;
+}
+
+// Which activity events a client may see, and how each reads in client-facing
+// language. Internal-only events (assignment, approval gate, override) are NOT
+// in this whitelist and are dropped entirely. Actor names are masked to the
+// generic "Our team" so we never expose individual staff identities.
+const CLIENT_EVENT_WHITELIST = new Set([
+  'COMPLETE_STEP',
+  'BRANCH_DECISION',
+  'CLIENT_APPROVE',
+  'CLIENT_REJECT',
+  'GOVT_APPROVE',
+  'GOVT_REJECT',
+  'RECORD_PAYMENT',
+]);
+
 // Task IDs in which this user is assigned at least one STEP, across all matters.
 // Firestore can't OR a task-doc field with a subcollection field in one query, so
 // a team member's visible set = matters task-assigned to them ∪ matters where a
@@ -275,8 +311,10 @@ export async function listTasks(req, res) {
     }
 
     const snap = await query.get();
-    const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     const nextCursor = data.length === limit ? snap.docs[snap.docs.length - 1].id : null;
+    // E12-S01: strip internal ownership from the client's own matter list.
+    if (role === 'client') data = data.map(projectTaskForClient);
     res.json({ data, nextCursor });
   } catch (err) {
     logger.error({ err: err }, 'listTasks error:');
@@ -425,7 +463,9 @@ export async function getTask(req, res) {
       ? (data.steps ?? []) // back-compat: legacy tasks stored steps inline
       : stepsSnap.docs.map((s) => s.data());
 
-    res.json({ id: doc.id, ...data, steps });
+    const full = { id: doc.id, ...data, steps };
+    // E12-S01: clients get a projection with internal ownership/assignment removed.
+    res.json(req.user.role === 'client' ? projectTaskForClient(full) : full);
   } catch (err) {
     logger.error({ err: err }, 'getTask error:');
     res.status(500).json({ message: 'Failed to get task' });
@@ -446,10 +486,20 @@ export async function listTaskEvents(req, res) {
     }
 
     const snap = await taskRef.collection('events').orderBy('at', 'asc').get();
-    const events = snap.docs.map((d) => d.data());
+    let events = snap.docs.map((d) => d.data());
 
-    // Resolve actor names in one batched pass (small N; dedupe uids).
-    const uids = [...new Set(events.map((e) => e.byUid).filter(Boolean))];
+    const isClient = req.user.role === 'client';
+
+    // E12-S02: clients get a CLIENT-SAFE feed — internal-only events (assignment,
+    // approval gate, override) are dropped, and staff actor names are masked to a
+    // generic label so we never expose individual team-member identities.
+    if (isClient) {
+      events = events.filter((e) => CLIENT_EVENT_WHITELIST.has(e.type));
+    }
+
+    // Resolve actor names in one batched pass (small N; dedupe uids). For clients
+    // we skip the lookup entirely — staff actors are masked, the client sees self.
+    const uids = isClient ? [] : [...new Set(events.map((e) => e.byUid).filter(Boolean))];
     const nameByUid = {};
     await Promise.all(uids.map(async (u) => {
       const us = await db.collection('users').doc(u).get();
@@ -457,14 +507,22 @@ export async function listTaskEvents(req, res) {
       nameByUid[u] = d ? (d.name || d.fullName || d.email || 'User') : 'User';
     }));
 
+    // Mask the actor for a client: their own actions read as "You"; everyone
+    // else (staff, registrar, system) is collapsed to "Our team".
+    const nameForClient = (e) =>
+      e.byUid && e.byUid === req.user.uid ? 'You' : 'Our team';
+
     res.json({
       data: events.map((e) => ({
         type: e.type,
         comment: e.comment ?? null,
         fromStep: e.fromStep ?? null,
         toStep: e.toStep ?? null,
-        byRole: e.byRole ?? null,
-        byName: e.byUid ? (nameByUid[e.byUid] ?? 'User') : (e.byRole ?? 'System'),
+        // Internal role is hidden from clients; staff keep it for context.
+        byRole: isClient ? null : (e.byRole ?? null),
+        byName: isClient
+          ? nameForClient(e)
+          : (e.byUid ? (nameByUid[e.byUid] ?? 'User') : (e.byRole ?? 'System')),
         at: e.at ?? null,
       })),
     });

@@ -28,8 +28,19 @@ export async function apiFetch<T>(
     },
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error((error as { message?: string }).message ?? 'API error');
+    const body = await res.json().catch(() => ({ message: res.statusText }));
+    // Attach the HTTP status + parsed body so callers can branch on it (e.g. a
+    // 409 conflict offering a recovery flow) without re-parsing the message.
+    const err = new Error((body as { message?: string }).message ?? 'API error') as ApiError;
+    err.status = res.status;
+    err.body = body;
+    throw err;
   }
   return res.json() as Promise<T>;
+}
+
+/** Error thrown by apiFetch on a non-2xx response — carries the HTTP status. */
+export interface ApiError extends Error {
+  status?: number;
+  body?: unknown;
 }

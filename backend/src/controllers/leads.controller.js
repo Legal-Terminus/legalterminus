@@ -1,5 +1,6 @@
 import { getDb } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
+import { upsertUser } from '../services/userService.js';
 
 const LEADS_COLLECTION = 'contactLeads';
 const USERS_COLLECTION = 'users';
@@ -213,6 +214,66 @@ export const updateLead = async (req, res) => {
     });
   } catch (error) {
     logger.error({ err: error }, 'Error updating lead:');
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+/**
+ * POST /api/leads/:id/convert  — convert a lead into a CLIENT user (E08-S06).
+ * Creates (or links, if the email already exists) a client account from the
+ * lead's details via the same upsert path used by user management, so the new
+ * client appears on the Users page and the lead immediately reads as
+ * `registered` (the flag is derived live from the users collection).
+ * Requires the lead to have an email (a client account is keyed by email).
+ * Idempotent: converting an already-registered lead just returns the existing user.
+ */
+export const convertLeadToClient = async (req, res) => {
+  try {
+    const db = getDb();
+    const { id } = req.params;
+    const ref = db.collection(LEADS_COLLECTION).doc(id);
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Lead not found' });
+
+    const lead = snap.data();
+    const email = String(lead.email ?? '').trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ message: 'This lead has no email — add one before converting to a client.' });
+    }
+
+    // Build a client profile from the lead. clean-ish: only carry fields we have.
+    const profileData = {
+      name: lead.fullName || email,
+      email,
+      phone: lead.phone || undefined,
+      businessName: lead.company || undefined,
+      state: lead.state || undefined,
+      emailIds: [email],
+    };
+
+    const result = await upsertUser(email, 'client', profileData, {
+      sendEmail: true,
+      authProvider: 'email',
+      createdBy: req.user?.uid ?? null,
+    });
+
+    // Stamp the lead so we know it was converted + by whom (the `registered`
+    // flag itself is derived from the users collection at read time).
+    await ref.set({
+      convertedAt: new Date(),
+      convertedBy: req.user?.uid ?? null,
+      convertedUid: result.uid,
+      updatedAt: new Date(),
+    }, { merge: true });
+
+    res.status(result.isUpdate ? 200 : 201).json({
+      message: result.isUpdate ? 'Lead linked to existing client.' : 'Lead converted to a new client.',
+      uid: result.uid,
+      email: result.email,
+      isUpdate: !!result.isUpdate,
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error converting lead to client:');
     res.status(500).json({ message: "Internal server error" });
   }
 };

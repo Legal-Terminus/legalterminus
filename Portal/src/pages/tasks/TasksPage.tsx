@@ -6,6 +6,7 @@ import { ArrowRight, Flame, Trash2, Plus } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import DataGrid from '../../components/common/DataGrid';
 import { useConfirm } from '../../components/common/confirmContext';
+import { useToast } from '../../components/common/toastContext';
 import CreateMatterModal from '../../components/tasks/CreateMatterModal';
 import { useAuthStore } from '../../store/authStore';
 import { getTasks, deleteTask } from '../../api/tasks';
@@ -24,12 +25,13 @@ export default function TasksPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const confirm = useConfirm();
+  const toast = useToast();
   const [showCreate, setShowCreate] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteTask(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-    onError: (err: Error) => window.alert(err.message || 'Failed to delete matter.'),
+    onError: (err: Error) => toast.error(err.message || 'Failed to delete matter.'),
   });
 
   const copy: Record<string, { title: string; body: string }> = {

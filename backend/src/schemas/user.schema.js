@@ -50,3 +50,10 @@ export const updateUserSchema = z
     ...profileFields,
   })
   .strict();
+
+// POST /api/portal/users/:uid/reassign — bulk-move a user's work to another (E09-S04).
+export const reassignWorkSchema = z
+  .object({
+    toUid: z.string().trim().min(1, "toUid is required"),
+  })
+  .strict();

@@ -2,14 +2,15 @@ import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
-  getContactLeadsReport, createLead, updateLead, deleteLead,
+  getContactLeadsReport, createLead, updateLead, deleteLead, convertLeadToClient,
   type ContactLead, type LeadStatus, type LeadInput,
 } from '../../api/reports';
 import { useAuthStore } from '../../store/authStore';
 import { useConfirm } from '../../components/common/confirmContext';
+import { useToast } from '../../components/common/toastContext';
 import {
   ArrowLeft, Search, Phone, Mail, MapPin, MessageSquare,
-  CheckCircle2, UserPlus, Inbox, Plus, X, Trash2, Clock, Hash,
+  CheckCircle2, UserPlus, Inbox, Plus, X, Trash2, Clock, Hash, Loader2,
 } from 'lucide-react';
 
 type StatusFilter = 'all' | LeadStatus;
@@ -43,6 +44,9 @@ function RegisteredTag({ lead }: { lead: ContactLead }) {
 export default function ContactLeadsReport() {
   const role = useAuthStore((s) => s.role);
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const confirm = useConfirm();
+  const canConvert = role === 'admin' || role === 'manager';
   const [status, setStatus] = useState<StatusFilter>('all');
   const [reg, setReg] = useState<RegFilter>('all');
   const [search, setSearch] = useState('');
@@ -55,6 +59,37 @@ export default function ContactLeadsReport() {
   });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['report-contact-leads'] });
+
+  // Inline status change straight from the table row (E08-S06) — no drawer needed.
+  const inlineStatus = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: LeadStatus }) => updateLead(id, { status }),
+    onSuccess: invalidate,
+    onError: (e: Error) => toast.error(e.message || 'Could not update status.'),
+  });
+
+  // Convert a lead into a client account (E08-S06). Also refreshes the users grid.
+  const convert = useMutation({
+    mutationFn: (id: string) => convertLeadToClient(id),
+    onSuccess: (res) => {
+      toast.success(res.message || 'Lead converted to client.');
+      invalidate();
+      queryClient.invalidateQueries({ queryKey: ['portalUsers'] });
+    },
+    onError: (e: Error) => toast.error(e.message || 'Could not convert this lead.'),
+  });
+
+  const handleConvert = async (lead: ContactLead) => {
+    if (!lead.email) {
+      toast.error('This lead has no email — add one before converting.');
+      return;
+    }
+    const ok = await confirm({
+      title: 'Convert to client?',
+      message: `Create a client account for ${lead.fullName || lead.email}. They'll appear on the Users page and can be assigned services.`,
+      confirmLabel: 'Convert',
+    });
+    if (ok) convert.mutate(lead.id);
+  };
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -195,10 +230,33 @@ export default function ContactLeadsReport() {
                             <p className="text-xs text-ink-faint mt-0.5">Prefers call: {lead.preferredCallTime}</p>
                           )}
                         </td>
-                        <td className="px-5 py-4">
-                          <span className={STATUS_BADGE[lead.status] ?? 'badge-gray'}>{lead.status}</span>
+                        <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                          {/* Inline status — change without opening the drawer (E08-S06). */}
+                          <select
+                            value={lead.status}
+                            disabled={inlineStatus.isPending}
+                            onChange={(e) => inlineStatus.mutate({ id: lead.id, status: e.target.value as LeadStatus })}
+                            className="input-field py-1 text-xs capitalize max-w-[120px]"
+                          >
+                            {STATUS_FLOW.map((s) => <option key={s} value={s}>{s}</option>)}
+                          </select>
                         </td>
-                        <td className="px-5 py-4"><RegisteredTag lead={lead} /></td>
+                        <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex flex-col items-start gap-1.5">
+                            <RegisteredTag lead={lead} />
+                            {/* Convert-to-client (E08-S06): only for unregistered leads. */}
+                            {!lead.registered && canConvert && (
+                              <button
+                                onClick={() => handleConvert(lead)}
+                                disabled={convert.isPending}
+                                className="text-xs text-brand-600 hover:text-brand-700 inline-flex items-center gap-1 disabled:opacity-50"
+                              >
+                                {convert.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
+                                Convert to client
+                              </button>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-5 py-4">
                           <span className="text-sm text-ink-muted whitespace-nowrap">{fmtDate(lead.createdAt)}</span>
                         </td>
@@ -234,6 +292,16 @@ export default function ContactLeadsReport() {
                     <span className={STATUS_BADGE[lead.status] ?? 'badge-gray'}>{lead.status}</span>
                     <span className="text-xs text-ink-faint">{fmtDate(lead.createdAt)}</span>
                   </div>
+                  {!lead.registered && canConvert && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleConvert(lead); }}
+                      disabled={convert.isPending}
+                      className="mt-2 w-full btn-secondary py-1.5 text-xs inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      {convert.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
+                      Convert to client
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -245,6 +313,9 @@ export default function ContactLeadsReport() {
       {selected && (
         <LeadDrawer
           lead={selected}
+          canConvert={canConvert}
+          converting={convert.isPending}
+          onConvert={() => handleConvert(selected)}
           onClose={() => setSelected(null)}
           onChanged={() => { invalidate(); setSelected(null); }}
         />
@@ -265,8 +336,15 @@ export default function ContactLeadsReport() {
 /* ─────────────────────────  Lead drawer (view / edit / add)  ───────────────────────── */
 
 function LeadDrawer({
-  lead, onClose, onChanged,
-}: { lead: ContactLead | null; onClose: () => void; onChanged: () => void }) {
+  lead, onClose, onChanged, canConvert, converting, onConvert,
+}: {
+  lead: ContactLead | null;
+  onClose: () => void;
+  onChanged: () => void;
+  canConvert?: boolean;
+  converting?: boolean;
+  onConvert?: () => void;
+}) {
   const isNew = !lead;
   const confirm = useConfirm();
   const [form, setForm] = useState<LeadInput>({
@@ -359,6 +437,24 @@ function LeadDrawer({
                 </p>
               )}
             </div>
+          )}
+
+          {/* Convert to client (E08-S06) — existing, not-yet-registered leads. */}
+          {!isNew && (
+            lead!.registered ? (
+              <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-3 flex items-center gap-2 text-sm text-emerald-700">
+                <CheckCircle2 className="w-4 h-4 shrink-0" /> Already a client.
+              </div>
+            ) : canConvert && onConvert ? (
+              <button
+                onClick={onConvert}
+                disabled={converting}
+                className="btn-secondary w-full inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                {converting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                Convert to client
+              </button>
+            ) : null
           )}
 
           {/* Editable fields */}

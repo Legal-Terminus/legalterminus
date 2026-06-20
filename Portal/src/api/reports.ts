@@ -104,6 +104,18 @@ export const updateLead = (id: string, body: LeadInput) =>
 export const deleteLead = (id: string) =>
   apiFetch<void>(`/api/leads/${id}`, { method: 'DELETE' });
 
+/** Result of converting a lead into a client account (E08-S06). */
+export interface ConvertLeadResult {
+  message: string;
+  uid: string;
+  email: string;
+  isUpdate: boolean;
+}
+
+/** Convert a lead into a client user (creates or links by email). Admin/manager. */
+export const convertLeadToClient = (id: string) =>
+  apiFetch<ConvertLeadResult>(`/api/leads/${id}/convert`, { method: 'POST' });
+
 /** Navigates browser to download CSV — no fetch needed (binary stream) */
 export const downloadMasterSheetCSV = (filters: ReportFilters = {}) => {
   const base = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001';

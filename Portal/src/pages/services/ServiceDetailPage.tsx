@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Workflow, Users, Check, Loader2, AlertTriangle, AlertCircle } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
+import { useToast } from '../../components/common/toastContext';
 import WorkflowDiagram from '../../components/workflow/WorkflowDiagram';
 import { useAuthStore } from '../../store/authStore';
 import { getServiceCatalog } from '../../api/services';
@@ -142,6 +143,7 @@ function PhaseAssignmentsEditor({
   definition: WorkflowDefinition;
 }) {
   const role = useAuthStore((s) => s.role);
+  const toast = useToast();
   const canEdit = role === 'admin' || role === 'manager';
   const phases = useMemo(
     () => [...(definition.phases ?? [])].sort((a, b) => a.order - b.order),
@@ -177,7 +179,7 @@ function PhaseAssignmentsEditor({
       queryClient.setQueryData(['phase-assignments', definitionId], res);
       setEdits({});
     },
-    onError: (err: Error) => window.alert(err.message || 'Could not save phase assignments.'),
+    onError: (err: Error) => toast.error(err.message || 'Could not save phase assignments.'),
   });
 
   return (

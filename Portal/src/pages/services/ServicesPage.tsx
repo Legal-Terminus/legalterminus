@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Layers, Pencil, Loader2, Workflow, Search } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
+import { useToast } from '../../components/common/toastContext';
 import {
   getServiceCatalog, groupByCategory, updateService,
   type CatalogService,
@@ -102,6 +103,7 @@ export default function ServicesPage() {
 function ServiceCard({ service }: { service: CatalogService }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const toast = useToast();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(service.displayName);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -114,7 +116,7 @@ function ServiceCard({ service }: { service: CatalogService }) {
       setEditing(false);
     },
     onError: (err: Error) => {
-      window.alert(err.message || 'Failed to rename service.');
+      toast.error(err.message || 'Failed to rename service.');
       setValue(service.displayName); // revert
     },
   });
@@ -123,7 +125,7 @@ function ServiceCard({ service }: { service: CatalogService }) {
     mutationFn: (active: boolean) =>
       updateService(service.categoryId, service.key, { active }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['service-catalog'] }),
-    onError: (err: Error) => window.alert(err.message || 'Failed to update status.'),
+    onError: (err: Error) => toast.error(err.message || 'Failed to update status.'),
   });
 
   function startEditing() {

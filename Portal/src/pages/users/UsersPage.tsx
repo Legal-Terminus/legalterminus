@@ -14,8 +14,9 @@ import {
 import PageShell from '../../components/common/PageShell';
 import ErrorBoundary from '../../components/common/ErrorBoundary';
 import { useConfirm } from '../../components/common/confirmContext';
+import { useToast } from '../../components/common/toastContext';
 import {
-  getAllUsers, deleteUser, displayName,
+  getAllUsers, deleteUser, reassignUserWork, displayName,
   type PortalUser, type Role,
 } from '../../api/users';
 import { useAuthStore } from '../../store/authStore';
@@ -25,6 +26,7 @@ import {
 import {
   Plus, Search, Pencil, Trash2, Users, UserCircle,
   Mail, Phone, Briefcase, Building2, Calendar, ArrowUpDown, ArrowUp, ArrowDown,
+  ArrowRightLeft, X, Loader2,
 } from 'lucide-react';
 
 // Filter tabs derive from the role service — adding a role adds a tab automatically.
@@ -69,6 +71,7 @@ export default function UsersPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const confirm = useConfirm();
+  const toast = useToast();
   const currentRole = useAuthStore((s) => s.role);
   const canDelete = can(currentRole, USER_DELETE_ROLES); // BMAD E09-S01/S02: manager cannot delete
 
@@ -92,10 +95,24 @@ export default function UsersPage() {
   }, [users]);
   const countFor = (value: RoleFilter) => (value === 'all' ? users.length : counts[value] ?? 0);
 
+  // The user we're offboarding via the reassign-then-delete flow (E09-S04).
+  const [reassignFor, setReassignFor] = useState<PortalUser | null>(null);
+
   const deleteUserMutation = useMutation({
     mutationFn: (uid: string) => deleteUser(uid),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['portalUsers'] }),
-    onError: (err: Error) => window.alert(err.message || 'Failed to delete user.'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portalUsers'] });
+      toast.success('User deleted.');
+    },
+    onError: (err: Error & { status?: number }, uid) => {
+      // The delete guard (E11-S02) blocks while the user still holds work. Offer
+      // the bulk-reassign flow instead of a dead-end error.
+      if (err.status === 409) {
+        const u = users.find((x) => x.uid === uid) ?? null;
+        if (u) { setReassignFor(u); return; }
+      }
+      toast.error(err.message || 'Failed to delete user.');
+    },
   });
 
   function handleEdit(user: PortalUser) {
@@ -424,6 +441,93 @@ export default function UsersPage() {
           </div>
         </ErrorBoundary>
       )}
+
+      {/* Reassign-then-delete flow (E09-S04): opened when a delete is blocked
+          because the user still holds work. Move their work to another staff
+          member, then they become deletable. */}
+      {reassignFor && (
+        <ReassignWorkModal
+          user={reassignFor}
+          candidates={users.filter((u) => u.role !== 'client' && u.uid !== reassignFor.uid)}
+          onClose={() => setReassignFor(null)}
+          onDone={() => {
+            setReassignFor(null);
+            queryClient.invalidateQueries({ queryKey: ['portalUsers'] });
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
+          }}
+        />
+      )}
     </PageShell>
+  );
+}
+
+/* ── Reassign work modal (E09-S04) ─────────────────────────────────────────── */
+
+function ReassignWorkModal({ user, candidates, onClose, onDone }: {
+  user: PortalUser;
+  candidates: PortalUser[];
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const toast = useToast();
+  const [toUid, setToUid] = useState('');
+
+  const reassign = useMutation({
+    mutationFn: () => reassignUserWork(user.uid, toUid),
+    onSuccess: (res) => {
+      toast.success(`Reassigned ${res.mattersMoved} matter(s) and ${res.stepsMoved} step(s). You can now delete this user.`);
+      onDone();
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not reassign work.'),
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="card w-full max-w-md p-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start gap-3 p-5">
+          <span className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+            <ArrowRightLeft className="w-4 h-4 text-amber-600" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm font-semibold text-ink">Reassign {displayName(user)}'s work</h2>
+            <p className="text-sm text-ink-muted mt-1">
+              This user still owns open matters or steps, so they can't be deleted yet. Move all
+              their work to another team member, then delete them.
+            </p>
+            <label className="input-label mt-4 block">Reassign all work to</label>
+            <select
+              className="input-field"
+              value={toUid}
+              onChange={(e) => setToUid(e.target.value)}
+              disabled={reassign.isPending}
+            >
+              <option value="">Select a team member…</option>
+              {candidates.map((u) => (
+                <option key={u.uid} value={u.uid}>{displayName(u)} · {roleLabel(u.role)}</option>
+              ))}
+            </select>
+          </div>
+          <button onClick={onClose} className="text-ink-faint hover:text-ink shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="flex items-center justify-end gap-2 px-5 py-3 bg-surface-soft border-t border-hairline">
+          <button onClick={onClose} className="btn-ghost" disabled={reassign.isPending}>Cancel</button>
+          <button
+            onClick={() => reassign.mutate()}
+            disabled={!toUid || reassign.isPending}
+            className="btn-primary inline-flex items-center gap-1.5"
+          >
+            {reassign.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRightLeft className="w-4 h-4" />}
+            Reassign work
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   ChevronRight, ChevronDown, Flame,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
+import { useToast } from '../../components/common/toastContext';
 import { useAuthStore } from '../../store/authStore';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
@@ -26,6 +27,7 @@ export default function TaskDetailPage() {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const role = useAuthStore((s) => s.role);
   const isStaff = role === 'admin' || role === 'manager' || role === 'team_member';
   const isClient = role === 'client';
@@ -63,7 +65,7 @@ export default function TaskDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['task-events', taskId] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
-    onError: (err: Error) => window.alert(err.message || 'Could not advance the task.'),
+    onError: (err: Error) => toast.error(err.message || 'Could not advance the task.'),
   });
 
   // Step assignment is an admin/manager action; team members can't reassign.
@@ -83,7 +85,7 @@ export default function TaskDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['task', taskId] });
       queryClient.invalidateQueries({ queryKey: ['my-steps'] });
     },
-    onError: (err: Error) => window.alert(err.message || 'Could not assign this step.'),
+    onError: (err: Error) => toast.error(err.message || 'Could not assign this step.'),
   });
 
   const assignOwner = useMutation({
@@ -93,7 +95,7 @@ export default function TaskDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['my-steps'] });
     },
-    onError: (err: Error) => window.alert(err.message || 'Could not assign this matter.'),
+    onError: (err: Error) => toast.error(err.message || 'Could not assign this matter.'),
   });
 
   // Urgent flag (E03-S05 UI / Issue 3): admin/manager can flag the whole matter
@@ -106,13 +108,13 @@ export default function TaskDetailPage() {
   const toggleMatterUrgent = useMutation({
     mutationFn: (next: boolean) => setTaskUrgent(taskId!, next),
     onSuccess: invalidateTaskViews,
-    onError: (err: Error) => window.alert(err.message || 'Could not update urgency.'),
+    onError: (err: Error) => toast.error(err.message || 'Could not update urgency.'),
   });
   const toggleStepUrgent = useMutation({
     mutationFn: ({ stepNumber, next }: { stepNumber: number; next: boolean }) =>
       setStepUrgent(taskId!, String(stepNumber), next),
     onSuccess: invalidateTaskViews,
-    onError: (err: Error) => window.alert(err.message || 'Could not update step urgency.'),
+    onError: (err: Error) => toast.error(err.message || 'Could not update step urgency.'),
   });
 
   // Approval chain (E03-S04). Only admins approve/reject; the controls show only
@@ -125,7 +127,7 @@ export default function TaskDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['my-steps'] });
     },
-    onError: (err: Error) => window.alert(err.message || 'Could not approve this matter.'),
+    onError: (err: Error) => toast.error(err.message || 'Could not approve this matter.'),
   });
   const reject = useMutation({
     mutationFn: (reason: string) => rejectTask(taskId!, reason),
@@ -134,7 +136,7 @@ export default function TaskDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['task-events', taskId] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
-    onError: (err: Error) => window.alert(err.message || 'Could not reject this matter.'),
+    onError: (err: Error) => toast.error(err.message || 'Could not reject this matter.'),
   });
 
   const noun = isClient ? 'Service' : 'Matter';
@@ -807,9 +809,12 @@ function StepHeroPanel({
     } else wait = <WaitNote text="Our team is working on this step." />;
   }
 
-  // Right-side meta block (shared by desktop column + mobile stack).
+  // Right-side meta block (shared by desktop column + mobile stack). The
+  // Step-owner section is INTERNAL — clients never see who on our team owns a
+  // step (E12-S01). It only renders for staff.
   const metaBlock = (
     <div className="space-y-4">
+      {!role.isClient && (
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">Step owner</p>
         {assignment ? (
@@ -840,6 +845,7 @@ function StepHeroPanel({
           </div>
         )}
       </div>
+      )}
       {assignment && (
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">Priority</p>
