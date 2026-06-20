@@ -1,5 +1,5 @@
 import {
-  CheckSquare, Users, BarChart2, Inbox, Settings, Layers, type LucideIcon,
+  CheckSquare, Users, BarChart2, Inbox, Layers, type LucideIcon,
 } from 'lucide-react';
 import type { Role } from '../../store/authStore';
 
@@ -28,10 +28,8 @@ export const DASHBOARD_TILES: DashboardTileDef[] = [
   { title: 'Users',             desc: 'Manage clients, team members, and roles.', to: '/users',             icon: Users,    roles: ['admin', 'manager'] },
   { title: 'Reports',           desc: 'Operational and lead insights.',           to: '/reports',           icon: BarChart2, roles: ['admin', 'manager'] },
 
-  // Admin only
-  { title: 'Workflow Settings', desc: 'Configure step metadata and deadlines.',   to: '/workflow-settings', icon: Settings, roles: ['admin'] },
-
-  // Service catalog — staff only (clients excluded)
+  // Service catalog — staff only (clients excluded). Workflow config (step ETAs,
+  // assignments, the visualizer) lives on each service's detail page.
   { title: 'Service Catalog', desc: 'Browse every service Legal Terminus offers.', to: '/services', icon: Layers, roles: ['admin', 'manager', 'team_member'] },
 ];
 

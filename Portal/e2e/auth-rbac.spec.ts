@@ -6,21 +6,19 @@ import { test, expect } from './fixtures';
  * Routes are role-neutral (no /admin/* etc.) — access is the `roles` array.
  */
 
-test('admin sees Users, Reports, Services, Workflow Settings nav', async ({ adminPage }) => {
+test('admin sees Users, Reports, Services nav', async ({ adminPage }) => {
   await adminPage.goto('dashboard');
   // Sidebar nav labels (desktop). Admin has the widest set.
-  for (const label of ['Dashboard', 'Matters', 'Users', 'Reports', 'Services', 'Workflow Settings']) {
+  for (const label of ['Dashboard', 'Matters', 'Users', 'Reports', 'Services']) {
     await expect(adminPage.getByRole('link', { name: label }).first()).toBeVisible();
   }
 });
 
-test('manager can reach Users + Reports but NOT Workflow Settings', async ({ managerPage }) => {
+test('manager can reach Users + Reports', async ({ managerPage }) => {
   await managerPage.goto('users');
   await expect(managerPage.getByRole('heading', { name: 'Users' })).toBeVisible();
-
-  // Workflow Settings is admin-only → manager is redirected away (not the page).
-  await managerPage.goto('workflow-settings');
-  await expect(managerPage).not.toHaveURL(/workflow-settings/);
+  await managerPage.goto('reports');
+  await expect(managerPage.getByRole('heading', { name: 'Reports' })).toBeVisible();
 });
 
 test('team member is blocked from Users + Reports', async ({ teamPage }) => {

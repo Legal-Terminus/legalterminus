@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Settings, Layers, User, Package, Inbox,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Package, Inbox,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 
@@ -12,7 +12,6 @@ import MyTasksPage from '../pages/tasks/MyTasksPage';
 import TaskDetail from '../pages/tasks/TaskDetailPage';
 import UsersPage from '../pages/users/UsersPage';
 import UserFormPage from '../pages/users/UserFormPage';
-import WorkflowSettings from '../pages/workflow/WorkflowSettingsPage';
 import Services from '../pages/services/ServicesPage';
 import ServiceDetail from '../pages/services/ServiceDetailPage';
 import ProfilePage from '../pages/profile/ProfilePage';
@@ -80,7 +79,6 @@ export const APP_ROUTES: AppRoute[] = [
   { path: '/users/edit/:type/:uid',element: <UserFormPage />,         roles: ['admin', 'manager'] },
 
   // ── Admin-only (per BMAD E10-S01 workflow config) ──
-  { path: '/workflow-settings', element: <WorkflowSettings />, roles: ['admin'], nav: { label: 'Workflow Settings', mobileLabel: 'Settings', icon: Settings } },
 
   // ── Service catalog — staff only (clients excluded; staff can customise table fields) ──
   { path: '/services', element: <Services />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Services', icon: Layers, mobile: true } },
