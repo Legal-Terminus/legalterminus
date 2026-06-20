@@ -32,6 +32,8 @@ const NON_SERVICE_PATHS = new Set([
   "/signup",
   "/forgot-password",
   "/my-profile",
+  // Full reproduction page ships its own testimonials + client logos + contact
+  "/company-registration-odisha",
 ]);
 
 const isBlogPost = (pathname) => /^\/blog\/.+/.test(pathname);

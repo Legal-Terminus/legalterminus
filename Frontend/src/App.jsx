@@ -86,6 +86,7 @@ const RefundPolicy = lazy(() => import("./Pages/Policies/RefundPolicy"));
 const ConfidentialityPolicy = lazy(() => import("./Pages/Policies/ConfidentialityPolicy"));
 const PrivateLimitedCopy2 = lazy(() => import("./Pages/PrivateLimitedCopy2/PrivateLimitedCopy2"));
 const CompanyRegOdisha = lazy(() => import("./Pages/CompanyRegOdisha/CompanyRegOdisha"));
+const CompanyRegistrationOdisha = lazy(() => import("./Pages/CompanyRegistrationOdisha/CompanyRegistrationOdisha"));
 const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
 
 // Store scroll positions keyed by location.key
@@ -216,6 +217,7 @@ function App() {
             <Route path="/policies/confidentiality" element={<ConfidentialityPolicy />} />
             <Route path="/private-limited-company-registration-in-india" element={<PrivateLimitedCopy2 />} />
             <Route path="/company-registration-consultancy-in-odisha" element={<CompanyRegOdisha />} />
+            <Route path="/company-registration-odisha" element={<CompanyRegistrationOdisha />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>
