@@ -1049,7 +1049,6 @@ function StepHeroPanel({
                 onChange={(v) => { setComment(v); if (v.trim()) setNeedComment(false); }}
                 error={needComment ? 'Please add a comment explaining the requested changes.' : null}
                 disabled={pending}
-                onAttach={onAttach}
               />
               {actions}
             </div>
@@ -1066,16 +1065,15 @@ function StepHeroPanel({
 }
 
 /**
- * Comment + attach composer for a step action. The comment is optional on
- * positive actions and required on rejections (enforced by the caller via the
- * `error` prop). "Attach document" opens the Documents tab (E-05 upload cycle).
+ * Comment composer for a step action. The comment is optional on positive
+ * actions and required on rejections (enforced by the caller via the `error`
+ * prop). Document attachment lives in the step's right-hand Documents block.
  */
-function ActionComposer({ comment, onChange, error, disabled, onAttach }: {
+function ActionComposer({ comment, onChange, error, disabled }: {
   comment: string;
   onChange: (v: string) => void;
   error: string | null;
   disabled: boolean;
-  onAttach: () => void;
 }) {
   return (
     <div className="mb-3">
@@ -1088,15 +1086,6 @@ function ActionComposer({ comment, onChange, error, disabled, onAttach }: {
         className={`input-field text-sm w-full resize-y ${error ? 'border-red-400' : ''}`}
       />
       {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
-      <div className="mt-2">
-        <button
-          type="button"
-          onClick={onAttach}
-          className="btn-secondary inline-flex items-center gap-1.5"
-        >
-          <Paperclip className="w-4 h-4" /> Attach document
-        </button>
-      </div>
     </div>
   );
 }
