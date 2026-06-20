@@ -1,1 +1,6 @@
 @import url('../OPCGovtCosts/OPCGovtCosts.css');
+
+/* Spacing for the second (late-fee multiplier) table */
+.afl-second-table {
+    margin-top: 56px;
+}

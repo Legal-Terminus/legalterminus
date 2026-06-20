@@ -1,1 +1,14 @@
 @import url('../OPCPlans/OPCPlans.css');
+
+/* Center the plan cards as a group instead of stretching edge-to-edge */
+.opcpricing-cards.afl-cards-center {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 24px;
+}
+
+.opcpricing-cards.afl-cards-center > .opcplan-card {
+    flex: 0 1 300px;
+}

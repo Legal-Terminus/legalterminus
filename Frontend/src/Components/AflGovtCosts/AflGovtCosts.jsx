@@ -1,72 +1,89 @@
 import React from "react";
 import "./AflGovtCosts.css";
 
-const rows = [
-  {
-    head: "Form 11 / Form 8 Normal Filing Fee",
-    range: "₹50 – ₹200 per form",
-    note: "MCA government fee based on the LLP's total contribution slab",
-  },
-  {
-    head: "Late Filing Additional Fee",
-    range: "₹100 / day per form",
-    note: "Levied per day of delay for Form 11 and Form 8, with no upper ceiling",
-  },
-  {
-    head: "DIR-3 KYC (Designated Partners)",
-    range: "₹0 (on time) / ₹5,000",
-    note: "Nil if filed by 30 September; ₹5,000 penalty per partner if the DIN is deactivated",
-  },
-  {
-    head: "Tax Audit (if applicable)",
-    range: "Separate CA fee",
-    note: "Required only if turnover exceeds ₹40 lakh or contribution exceeds ₹25 lakh",
-  },
-  {
-    head: "Event-Based Filing (Form 3 / Form 4)",
-    range: "₹50 – ₹200 each",
-    note: "Slab-based MCA fee for changes in partners, contribution, or LLP agreement",
-  },
-  {
-    head: "Total Out-of-Pocket (typical, on-time)",
-    range: "₹500 – ₹2,000 / year",
-    note: "Govt. fees billed at actuals; varies by contribution — penalties apply only on delay",
-    isTotal: true,
-  },
+const slabRows = [
+  { contribution: "Up to ₹1 lakh", form11: "₹50", form8: "₹50" },
+  { contribution: "₹1 lakh – ₹5 lakh", form11: "₹100", form8: "₹100" },
+  { contribution: "₹5 lakh – ₹10 lakh", form11: "₹150", form8: "₹150" },
+  { contribution: "Above ₹10 lakh", form11: "₹200", form8: "₹200" },
+  { contribution: "LLP ITR-5", form11: "NIL Govt fee", form8: "Belated return = Sec 234F penalty" },
+];
+
+const lateRows = [
+  { delay: "Up to 15 days", small: "1x normal fee", other: "1x normal fee" },
+  { delay: "15 – 30 days", small: "2x normal fee", other: "2x normal fee" },
+  { delay: "30 – 60 days", small: "4x normal fee", other: "8x normal fee" },
+  { delay: "60 – 90 days", small: "6x normal fee", other: "12x normal fee" },
+  { delay: "90 – 180 days", small: "10x normal fee", other: "20x normal fee" },
+  { delay: "180 – 360 days", small: "15x normal fee", other: "30x normal fee" },
+  { delay: "Beyond 360 days (Form 11 / 8)", small: "15x + ₹10/day continuing", other: "30x + ₹20/day continuing" },
 ];
 
 const AflGovtCosts = () => {
   return (
     <section className="opc-govtcosts-section">
       <div className="opc-govtcosts-container">
+
         <h2 className="opc-govtcosts-title">
-          Indicative Government &amp; Out-of-Pocket Costs
-          <span className="opc-govtcosts-badge">Billed at Actuals</span>
+          Normal Government Filing Fees — Form 11 + Form 8
+          <span className="opc-govtcosts-badge">Slab by Contribution</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          MCA government filing fees are charged over and above our professional fee. Actual amounts depend on your LLP's total contribution and the forms filed — billed at actuals per the official MCA fee schedule. Late filing attracts ₹100 per day, per form, with no maximum cap.
+          MCA government filing fees for Form LLP-11 and Form LLP-8 are slab-based on the LLP's total contribution. Billed at actuals — over and above our professional fee.
         </p>
 
         <div className="opc-govtcosts-table-wrapper">
           <table className="opc-govtcosts-table">
             <thead>
               <tr>
-                <th>Cost Head</th>
-                <th>Typical Range</th>
-                <th>Notes</th>
+                <th>LLP Contribution</th>
+                <th>Form 11 Fee</th>
+                <th>Form 8 Fee</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, i) => (
-                <tr key={i} className={row.isTotal ? "opc-govtcosts-total-row" : ""}>
-                  <td>{row.head}</td>
-                  <td className="opc-govtcosts-range">{row.range}</td>
-                  <td>{row.note}</td>
+              {slabRows.map((row, i) => (
+                <tr key={i}>
+                  <td>{row.contribution}</td>
+                  <td className="opc-govtcosts-range">{row.form11}</td>
+                  <td>{row.form8}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        <div className="afl-second-table">
+          <h2 className="opc-govtcosts-title">
+            Late Fee Multiplier Table
+            <span className="opc-govtcosts-badge">LLP Amendment Rules 2022</span>
+          </h2>
+          <p className="opc-govtcosts-subtitle">
+            Per Rule 5, Annexure A. Small LLP = Contribution up to ₹25 LAKH AND Turnover up to ₹40 LAKH (both conditions). Other LLP = anything bigger. Multiplier applied to the NORMAL filing fee:
+          </p>
+
+          <div className="opc-govtcosts-table-wrapper">
+            <table className="opc-govtcosts-table">
+              <thead>
+                <tr>
+                  <th>Days of Delay</th>
+                  <th>Small LLP Multiplier</th>
+                  <th>Other LLP Multiplier</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lateRows.map((row, i) => (
+                  <tr key={i}>
+                    <td>{row.delay}</td>
+                    <td className="opc-govtcosts-range">{row.small}</td>
+                    <td>{row.other}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </section>
   );

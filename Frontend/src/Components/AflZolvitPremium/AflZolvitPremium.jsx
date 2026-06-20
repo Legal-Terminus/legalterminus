@@ -27,7 +27,10 @@ const AflZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  LLP filing looks like just two forms a year — but a missed Form 11 in May, a late Form 8 in October, or a skipped DIR-3 KYC quietly piles up ₹100-a-day penalties with no cap, and can lead to the LLP being struck off. Priority is what happens when a dedicated compliance manager owns your LLP's calendar from books to filed challan.
+                  LLP annual compliance involves multiple filings and strict deadlines throughout the financial year. Missing Form 11, Form 8, or Income Tax Return deadlines can result in heavy late fees, penalties, and additional compliance issues for the LLP and its Designated Partners.
+                </p>
+                <p className="opczp-subtitle" style={{ marginTop: "12px" }}>
+                  With LT Priority, your LLP Annual Filing is handled on a priority basis with timely coordination, proactive follow-ups, and faster compliance management to help your LLP stay fully compliant.
                 </p>
               </header>
 
@@ -36,23 +39,23 @@ const AflZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    A locked annual calendar — Form 11 (30 May), Form 8 (30 October), DIR-3 KYC (30 September), and ITR-5 — tracked with reminders well before each due date.
+                    Priority handling with faster compliance coordination.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Senior-reviewed Statement of Account &amp; Solvency and partner/contribution details, prepared to be MCA-ready the first time.
+                    <span className="opczp-list-icon">📅</span>
+                    Timely reminders and regular status updates throughout the year.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Audit-applicability check on your turnover and contribution, with the CA looped in early only when it is actually required.
+                    <span className="opczp-list-icon">📄</span>
+                    Filing support for Form 11, Form 8, and LLP Income Tax Return.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    DSC validity and designated-partner KYC checked up front — no failed uploads on the due date.
+                    <span className="opczp-list-icon">👨‍💼</span>
+                    Coordination with associated Chartered Accountants for audit-related compliances.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">📑</span>
-                    Compliance kit: all filed forms, SRN/challan receipts, updated LLP records, and a clean year-end compliance trail.
+                    <span className="opczp-list-icon">📌</span>
+                    End-to-end compliance support under one professional team.
                   </li>
                 </ul>
               </section>
@@ -65,16 +68,22 @@ const AflZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  Late fees have no ceiling. Form 11 and Form 8 attract ₹100 per day, per form, from the due date until filing. Because LLP penalties don't cap, a year's delay across both forms can run into lakhs — we file on time so it never starts.
+                  FORM 11 DUE ON 30 MAY. Late fee multiplier kicks in immediately after the deadline – as per LLP Amendment Rules 2022. Small LLP: 2x to 15x normal fee + ₹10/day continuing beyond 360 days. Other LLP: 2x to 30x + ₹20/day continuing.
                 </li>
                 <li className="opczp-note-item">
-                  Filing is mandatory even with no business. A dormant or zero-revenue LLP must still file Form 11 and Form 8. Assuming "no activity means no filing" is the single most common and costly LLP compliance mistake.
+                  FORM 8 DUE ON 30 OCTOBER. Same graded late-fee structure. Both forms delayed compound the penalty quickly.
                 </li>
                 <li className="opczp-note-item">
-                  Audit isn't always needed — but the threshold matters. An LLP needs a statutory tax audit only if turnover exceeds ₹40 lakh or contribution exceeds ₹25 lakh. We confirm your position so you neither skip a required audit nor pay for an unnecessary one.
+                  ITR DEADLINES – 31 JULY (non-audit) / 31 OCTOBER (audit). Belated return = Section 234F penalty (₹5,000 / ₹1,000) + interest under Sections 234A/B/C.
                 </li>
                 <li className="opczp-note-item">
-                  DIR-3 KYC is non-negotiable. Every designated partner with a DIN/DPIN must complete KYC by 30 September or the DIN is deactivated with a ₹5,000 reactivation penalty — blocking all filings until restored.
+                  AUDIT REGIMES – TWO SEPARATE TRIGGERS: STATUTORY AUDIT (LLP Act) when TURNOVER > ₹40 LAKH or CONTRIBUTION > ₹25 LAKH (EITHER). TAX AUDIT (Section 44AB) when turnover > ₹1 CRORE. Our SUPREME tier is built specifically for AUDITED LLPs (statutory audit) under ₹1 CRORE turnover. Tax-audit-applicable LLPs (> ₹1 crore) are quoted separately as a custom engagement.
+                </li>
+                <li className="opczp-note-item">
+                  AUDIT FEE – SEPARATE FROM OUR PLAN – For Supreme tier (audited LLPs under ₹1 Cr T/o), the statutory CA's audit fee is BILLED DIRECTLY by the CA to your LLP. You agree the fee directly with the CA. LT coordinates + facilitates but does NOT mark up the audit fee. Industry-standard audit independence practice. Typical statutory audit fee range: ₹10,000 – ₹30,000 for LLPs under ₹1 Cr turnover.
+                </li>
+                <li className="opczp-note-item">
+                  EVEN DORMANT LLPs MUST FILE – LLP has no 'dormant' status like companies. All annual filings are mandatory regardless of business activity.
                 </li>
               </ul>
             </div>

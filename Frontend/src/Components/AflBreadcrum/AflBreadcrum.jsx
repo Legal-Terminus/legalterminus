@@ -11,39 +11,41 @@ const AflBreadcrum = () => {
         <div className="lt-public-content">
 
           <span className="lt-public-tag">
-            LLP Annual Filing &amp; ROC Compliance
+            LLP Annual Filing
           </span>
 
           <h1 className="lt-public-title">
             Annual Filing for LLP
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">MCA-Compliant, Timely &amp; 100% Online</span>
+            <span className="lt-title-tagline">Done Right, On Time</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus manages your LLP's complete annual ROC compliance under the LLP Act, 2008 — Form 11 (Annual Return), Form 8 (Statement of Account &amp; Solvency), DIR-3 KYC of designated partners, and the LLP's income tax return (ITR-5). We prepare your accounts and filings and submit them to the MCA before every due date so your LLP stays active and penalty-free. Our professional fee starts at ₹2,999 + GST. Government filing fees are billed separately at actuals.
+            Every Limited Liability Partnership (LLP) in India — whether active or inactive — must complete annual compliance filings every financial year. The key compliances include Form LLP-11 (Annual Return), Form LLP-8 (Statement of Account &amp; Solvency), and LLP Income Tax Return (ITR-5). Missing these deadlines can lead to additional late fees, penalties, and compliance issues under the LLP Act and Income Tax laws.
+            <br /><br />
+            At Legal Terminus, we help LLPs manage annual filing smoothly with timely filing support, regular compliance reminders, and proactive status updates throughout the year.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Form 11 &amp; Form 8 Filing Covered</div>
-            <div className="lt-feature-item">Mandatory Even for Zero-Activity LLPs</div>
-            <div className="lt-feature-item">DIR-3 KYC &amp; ITR-5 Compliance</div>
-            <div className="lt-feature-item">Avoid ₹100/Day Late Penalties</div>
+            <div className="lt-feature-item">Late-Fee Zero</div>
+            <div className="lt-feature-item">3 Forms Filed</div>
+            <div className="lt-feature-item">Monthly Updates</div>
+            <div className="lt-feature-item">Tax Audit Coordinated</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>5,000+</h3>
-              <p>LLPs served</p>
+              <h3>1,400+</h3>
+              <p>LLP annual cycles filed</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>End-to-end MCA filing</p>
+              <h3>6 Years</h3>
+              <p>of MCA + IT compliance expertise</p>
             </div>
             <div>
               <h3>7+</h3>
-              <p>Years of Compliance Expertise</p>
+              <p>Years of Legal Expertise</p>
             </div>
           </div>
 

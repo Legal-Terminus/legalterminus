@@ -21,9 +21,9 @@ const AflOverview = () => {
               Why LLP Annual Filing Matters
             </h2>
             <p className="opc-intro-text">
-              Every Limited Liability Partnership registered in India must file its annual returns with the Ministry of Corporate Affairs (MCA) under the LLP Act, 2008 — regardless of turnover or whether it carried on any business during the year. The two core annual filings are Form 11 (Annual Return), due by 30 May, and Form 8 (Statement of Account &amp; Solvency), due by 30 October. Designated partners must also complete DIR-3 KYC, and the LLP files its income tax return (ITR-5) separately.
+              Every LLP registered under the LLP Act, 2008 must complete annual compliance filings, even if there is no business activity. The key compliances include Form LLP-11, Form LLP-8, and the Income Tax Return (ITR-5). Non-compliance may lead to additional fees, penalties, and legal issues.
               <br /><br />
-              The penalty for delay is uniquely harsh. Late filing of Form 11 or Form 8 attracts an additional fee of ₹100 per day, per form, with no upper limit — so a year's delay can balloon into lakhs. Persistent non-filing can also lead to the LLP being declared a defaulter, its designated partners disqualified, and the LLP struck off the register. Timely filing keeps the LLP active, the partners clean, and the limited-liability protection intact.
+              Since LLPs do not have a dormant status option, annual filings are mandatory every year. Timely compliance helps maintain active status, improves credibility, and protects Designated Partners from unnecessary penalties. Legal Terminus provides complete support for hassle-free LLP annual filings.
             </p>
           </div>
         </div>
@@ -31,27 +31,26 @@ const AflOverview = () => {
 
       <section className="opc-compare-section">
         <div className="opc-compare-container">
-          <h2 className="opc-compare-title">Compliant vs Non-Compliant LLP: The Honest Comparison</h2>
+          <h2 className="opc-compare-title">LLP Annual Filing — Forms + Triggers + Audit Thresholds</h2>
           <p className="opc-compare-subtitle">
-            What happens when an LLP keeps up its annual filings versus when it lets them lapse:
+            Every mandatory annual filing, its due date, and the audit trigger you need to watch:
           </p>
           <div className="opc-compare-table-wrapper">
             <table className="opc-compare-table">
               <thead>
                 <tr>
-                  <th>Parameter</th>
-                  <th>Compliant LLP</th>
-                  <th>Non-Compliant LLP</th>
+                  <th>Form / Filing</th>
+                  <th>Due Date</th>
+                  <th>Audit Trigger</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>Late Filing Fee</td><td>₹0 — filed before due date</td><td>₹100/day per form, no upper cap</td></tr>
-                <tr><td>LLP Status (MCA)</td><td>Active &amp; in good standing</td><td>Default → strike-off risk</td></tr>
-                <tr><td>Designated Partner Status</td><td>Eligible to act &amp; incorporate</td><td>Disqualification risk</td></tr>
-                <tr><td>Limited Liability Shield</td><td>Fully protected</td><td>Exposed on strike-off / default</td></tr>
-                <tr><td>Bank Loans &amp; Tenders</td><td>Filings support due diligence</td><td>Rejected — records not up to date</td></tr>
-                <tr><td>Conversion / Closure</td><td>Smooth, records clean</td><td>Blocked until filings regularised</td></tr>
-                <tr><td>Annual Cost</td><td>₹500 – ₹2,000 govt fee</td><td>Uncapped penalties + revival cost</td></tr>
+                <tr><td>Form LLP-11 (Annual Return)</td><td>30 May</td><td>Not applicable — mandatory for all LLPs</td></tr>
+                <tr><td>Form LLP-8 (Statement of Account &amp; Solvency)</td><td>30 October</td><td>CA certification needed if statutory audit applies</td></tr>
+                <tr><td>LLP ITR-5 (Income Tax Return) — non-audit</td><td>31 July</td><td>Belated = Sec 234F + interest</td></tr>
+                <tr><td>LLP ITR-5 — audit cases (Sec 44AB)</td><td>31 October</td><td>Tax Audit Report due 30 Sep</td></tr>
+                <tr><td>STATUTORY AUDIT (LLP Act, Rule 24 proviso)</td><td>Annual</td><td>Turnover &gt; ₹40 LAKH OR Contribution &gt; ₹25 LAKH</td></tr>
+                <tr><td>TAX AUDIT (Section 44AB of IT Act)</td><td>Annual</td><td>Turnover &gt; ₹1 CRORE</td></tr>
               </tbody>
             </table>
           </div>

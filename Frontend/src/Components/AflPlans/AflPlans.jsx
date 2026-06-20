@@ -4,51 +4,60 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "basic",
-    name: "ROC Annual Filing",
-    oldPrice: 5999,
-    price: 2999,
+    id: "elemental",
+    name: "ELEMENTAL",
+    badge: "3-FORM FILING ONLY",
+    oldPrice: 7499,
+    price: 4999,
     services: [
-      "Form 11 (Annual Return) filing",
-      "Form 8 (Statement of Account & Solvency) filing",
-      "Designated partner & contribution details mapping",
-      "Drafting of solvency declaration",
-      "MCA government fee coordination at actuals",
-      "Filing acknowledgements & compliance record",
-      "Due-date reminders for Form 11 & Form 8",
+      "FORM LLP-11 (Annual Return) — by 30 May",
+      "FORM LLP-8 (Statement of Account) — by 30 Oct",
+      "LLP ITR-5 — by 31 Jul / 31 Oct (audit)",
+      "DSC affixation by Designated Partners",
+      "Govt fee payment (₹50-200 per form slab)",
+      "Challan + Acknowledgement to client",
+      "Late-Fee Zero promise (subject to Day-30 data)",
+      "NO bookkeeping / NO financial statements drafting",
+      "Client provides ready financial statements",
     ],
   },
   {
-    id: "standard",
-    name: "Annual Compliance Pack",
-    badge: "★ MOST POPULAR",
+    id: "enriched",
+    name: "ENRICHED",
+    badge: "NON-AUDITED LLPs",
     popular: true,
-    oldPrice: 12999,
-    price: 7999,
-    services: [
-      "Everything in ROC Annual Filing",
-      "DIR-3 KYC for all designated partners",
-      "Preparation of LLP accounts & statements",
-      "Income Tax Return (ITR-5) of the LLP",
-      "Statement of Account & Solvency finalisation",
-      "Maintenance of LLP records & registers",
-      "Dedicated compliance manager + reminders",
-    ],
-  },
-  {
-    id: "premium",
-    name: "Full Compliance + Audit",
-    badge: "✦ FULL-SERVICE",
-    oldPrice: 22999,
+    oldPrice: 22499,
     price: 14999,
     services: [
-      "Everything in Annual Compliance Pack",
-      "Bookkeeping & finalisation of accounts",
-      "Tax audit coordination (turnover-based)",
-      "Event-based filings (Form 3 / Form 4 changes)",
-      "Partner remuneration & profit-share computation",
-      "Annual compliance calendar & review",
-      "Priority support for notices & condonation",
+      "Everything in Elemental",
+      "For NON-AUDITED LLPs only",
+      "(Turnover up to ₹40L AND Contribution up to ₹25L)",
+      "YEAR-ROUND BOOKKEEPING (Tally / Zoho Books)",
+      "Transaction recording + bank reconciliation",
+      "PROFIT & LOSS ACCOUNT preparation",
+      "BALANCE SHEET preparation",
+      "Income Tax COMPUTATION",
+      "Statement of Account & Solvency drafting",
+      "All 3 form filings (LLP-11 + LLP-8 + ITR-5)",
+    ],
+  },
+  {
+    id: "supreme",
+    name: "SUPREME",
+    badge: "AUDITED LLPs (T/o < ₹1 Cr)",
+    oldPrice: 37499,
+    price: 24999,
+    services: [
+      "Everything in Enriched",
+      "For AUDITED LLPs (LLP Act statutory audit)",
+      "Audit triggered: T/o > ₹40L OR Contribution > ₹25L",
+      "Eligibility: TURNOVER UNDER ₹1 CRORE",
+      "(Tax audit cases > ₹1Cr — custom quote)",
+      "Statutory audit coordination (LT panel CA or your CA)",
+      "Form 8 Statement of Solvency CA certification",
+      "Audit fee paid DIRECTLY by client to CA",
+      "DSC procurement for UP TO 2 Designated Partners",
+      "Senior CA-led coordination",
     ],
   },
 ];
@@ -68,7 +77,7 @@ const AflPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards afl-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
@@ -84,7 +93,7 @@ const AflPlans = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ Govt fee &amp; GST extra / year</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">
