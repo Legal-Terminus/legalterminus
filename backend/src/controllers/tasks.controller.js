@@ -1099,9 +1099,9 @@ export async function transitionTask(req, res) {
 }
 
 // ─── DELETE /api/tasks/:taskId ─────────────────────────────────────────────
-// Admin-only. Deletes a matter and its subcollections (Firestore does NOT
-// cascade): tasks/{id}/steps/* and tasks/{id}/events/* are removed first, then
-// the task doc.
+// Admin-only. Deletes a matter and EVERYTHING tied to it (Firestore does NOT
+// cascade): the steps/events/documents subcollections, the matter's Storage
+// objects, and its top-level notifications, then the task doc itself.
 export async function deleteTask(req, res) {
   try {
     if (req.user.role !== 'admin') {
@@ -1128,6 +1128,20 @@ export async function deleteTask(req, res) {
       }
     }
 
+    // Notifications reference the matter by `taskId` but live in a TOP-LEVEL
+    // collection (not a subcollection), so the sweep above misses them. Delete
+    // them here so a removed matter leaves no dangling bell entries that would
+    // deep-link to a 404.
+    {
+      const notifSnap = await db.collection('notifications').where('taskId', '==', taskId).get();
+      counts.notifications = notifSnap.size;
+      for (let i = 0; i < notifSnap.docs.length; i += 450) {
+        const batch = db.batch();
+        notifSnap.docs.slice(i, i + 450).forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+      }
+    }
+
     // Delete the matter's uploaded files from Cloud Storage (E-05 docs live under
     // tasks/{taskId}/...). Best-effort: a storage failure must not block the
     // Firestore delete, but is logged so orphans can be swept later.
@@ -1141,11 +1155,11 @@ export async function deleteTask(req, res) {
     }
 
     await taskRef.delete();
-    logger.info(`[deleteTask] Matter ${taskId} deleted (steps=${counts.steps}, events=${counts.events}, documents=${counts.documents}, files=${filesDeleted})`);
+    logger.info(`[deleteTask] Matter ${taskId} deleted (steps=${counts.steps}, events=${counts.events}, documents=${counts.documents}, notifications=${counts.notifications}, files=${filesDeleted})`);
     res.status(200).json({
       id: taskId, deleted: true,
       stepsDeleted: counts.steps, eventsDeleted: counts.events,
-      documentsDeleted: counts.documents, filesDeleted,
+      documentsDeleted: counts.documents, notificationsDeleted: counts.notifications, filesDeleted,
     });
   } catch (err) {
     logger.error({ err }, 'deleteTask error:');

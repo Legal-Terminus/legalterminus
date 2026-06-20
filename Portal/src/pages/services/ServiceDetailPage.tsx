@@ -127,22 +127,16 @@ export default function ServiceDetailPage() {
         </div>
       )}
 
-      {/* Per-phase default assignees (E11-S02) — configure once per service; every
-          new matter pre-routes each phase's steps to the configured person. */}
-      {definitionId && definition && (definition.phases?.length ?? 0) > 0 && (
-        <PhaseAssignmentsEditor definitionId={definitionId} definition={definition} />
+      {/* Assignments (E11-S02 + per-step) — phase defaults with per-step overrides
+          nested under each phase; new matters pre-route work to the configured staff. */}
+      {definitionId && definition && (
+        <AssignmentsEditor definitionId={definitionId} definition={definition} />
       )}
 
       {/* Per-step ETAs (E13-S01) — configure expected duration per step; new
           matters derive per-step + whole-matter due dates from these. */}
       {definitionId && definition && (
         <StepEtaEditor definitionId={definitionId} />
-      )}
-
-      {/* Per-step default assignees — pre-route each step to a team member; new
-          matters land in that person's "My Tasks" with no manual assignment. */}
-      {definitionId && definition && (
-        <StepAssigneeEditor definitionId={definitionId} />
       )}
     </PageShell>
   );
@@ -267,116 +261,17 @@ function StepEtaEditor({ definitionId }: { definitionId: string }) {
   );
 }
 
-/* ── Per-step default assignee editor ──────────────────────────────────────── */
+/* ── Assignments editor (E11-S02 phase defaults + per-step overrides) ───────── */
 
-function StepAssigneeEditor({ definitionId }: { definitionId: string }) {
-  const role = useAuthStore((s) => s.role);
-  const toast = useToast();
-  const queryClient = useQueryClient();
-  const canEdit = role === 'admin' || role === 'manager';
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['step-assignees', definitionId],
-    queryFn: () => getStepAssignees(definitionId),
-    staleTime: 30_000,
-  });
-
-  const { data: staff = [] } = useQuery({
-    queryKey: ['portalUsers', 'staff'],
-    queryFn: getAllUsers,
-    select: (users: PortalUser[]) => users.filter((u) => u.role !== 'client'),
-    staleTime: 60_000,
-  });
-
-  // Edits overlay the server value; keyed by stepNumber. '' = cleared (shared pool).
-  const [edits, setEdits] = useState<Record<number, string>>({});
-  const serverSteps = useMemo(() => data?.steps ?? [], [data]);
-  const valueFor = (stepNumber: number): string => {
-    if (stepNumber in edits) return edits[stepNumber];
-    const s = serverSteps.find((x) => x.stepNumber === stepNumber);
-    return s?.defaultAssigneeUid ?? '';
-  };
-
-  const save = useMutation({
-    mutationFn: () => {
-      const assignees: Record<string, string | null> = {};
-      for (const [num, uid] of Object.entries(edits)) {
-        assignees[num] = uid === '' ? null : uid;
-      }
-      return putStepAssignees(definitionId, assignees);
-    },
-    onSuccess: (res) => {
-      queryClient.setQueryData(['step-assignees', definitionId], res);
-      // Version bumped — drop the definition cache so dependent views refetch.
-      queryClient.invalidateQueries({ queryKey: ['workflow-definition', definitionId] });
-      setEdits({});
-      toast.success('Step assignees saved. Applies to new matters.');
-    },
-    onError: (err: Error) => toast.error(err.message || 'Could not save step assignees.'),
-  });
-
-  const hasEdits = Object.keys(edits).length > 0;
-
-  return (
-    <div className="mt-8">
-      <div className="mb-3 flex items-center gap-2">
-        <Users className="w-4 h-4 text-ink-muted" />
-        <h2 className="text-sm font-semibold text-ink">Step Assignees</h2>
-      </div>
-      <p className="text-sm text-ink-muted mb-3">
-        Pre-assign a specific step to a team member. New matters route that step to them automatically,
-        overriding the phase default. Leave unassigned to use the phase default (or the shared pool).
-        {' '}Changes apply to new matters only.
-      </p>
-
-      {isLoading ? (
-        <div className="card p-8 flex items-center justify-center text-ink-faint">
-          <Loader2 className="w-5 h-5 animate-spin" />
-        </div>
-      ) : (
-        <>
-          <div className="card divide-y divide-hairline">
-            {serverSteps.map((s) => (
-              <div key={s.stepNumber} className="flex items-center justify-between gap-3 p-4">
-                <span className="text-sm text-ink min-w-0 truncate">
-                  <span className="text-ink-faint mr-1.5">{s.stepNumber}.</span>{s.title}
-                </span>
-                <select
-                  className="input-field py-1.5 text-sm max-w-[220px] shrink-0"
-                  value={valueFor(s.stepNumber)}
-                  disabled={!canEdit || save.isPending}
-                  onChange={(e) => setEdits((d) => ({ ...d, [s.stepNumber]: e.target.value }))}
-                >
-                  <option value="">Unassigned</option>
-                  {staff.map((u) => (
-                    <option key={u.uid} value={u.uid}>{displayName(u)}</option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </div>
-
-          {canEdit && (
-            <div className="flex items-center gap-3 mt-3">
-              <button
-                onClick={() => save.mutate()}
-                disabled={save.isPending || !hasEdits}
-                className="btn-primary inline-flex items-center gap-1.5 ml-auto"
-              >
-                {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                {save.isPending ? 'Saving…' : 'Save assignees'}
-              </button>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-/* ── Per-phase default assignees editor (E11-S02) ──────────────────────────── */
-
-function PhaseAssignmentsEditor({
+/**
+ * One "Assignments" section: each phase carries a default-assignee dropdown, with
+ * its steps nested below. A step defaults to "Inherit from phase" and can override
+ * to a specific person (matching the backend precedence: step default wins over
+ * phase default; neither set → shared pool). Steps with no phase render under an
+ * "Unphased steps" group. Saving persists BOTH phase assignments and step
+ * assignees (each only if changed). Applies to new matters only (version-pinned).
+ */
+function AssignmentsEditor({
   definitionId, definition,
 }: {
   definitionId: string;
@@ -384,7 +279,9 @@ function PhaseAssignmentsEditor({
 }) {
   const role = useAuthStore((s) => s.role);
   const toast = useToast();
+  const queryClient = useQueryClient();
   const canEdit = role === 'admin' || role === 'manager';
+
   const phases = useMemo(
     () => [...(definition.phases ?? [])].sort((a, b) => a.order - b.order),
     [definition],
@@ -397,77 +294,158 @@ function PhaseAssignmentsEditor({
     staleTime: 60_000,
   });
 
-  const queryClient = useQueryClient();
-  const { data: saved } = useQuery({
+  const { data: phaseData } = useQuery({
     queryKey: ['phase-assignments', definitionId],
     queryFn: () => getPhaseAssignments(definitionId),
     staleTime: 30_000,
   });
+  const { data: stepData, isLoading } = useQuery({
+    queryKey: ['step-assignees', definitionId],
+    queryFn: () => getStepAssignees(definitionId),
+    staleTime: 30_000,
+  });
 
-  // Local edits overlay the server value (no effect-driven sync). `edits` holds
-  // only phases the user changed this session; everything else reads from server.
-  const [edits, setEdits] = useState<PhaseAssignments>({});
-  const serverAssignments = saved?.assignments ?? {};
-  const valueFor = (phaseId: string): string =>
-    (phaseId in edits ? edits[phaseId] : serverAssignments[phaseId]) ?? '';
+  // Separate edit overlays for phases (by phaseId) and steps (by stepNumber).
+  const [phaseEdits, setPhaseEdits] = useState<PhaseAssignments>({});
+  const [stepEdits, setStepEdits] = useState<Record<number, string>>({});
+
+  const serverPhases = phaseData?.assignments ?? {};
+  const serverSteps = useMemo(() => stepData?.steps ?? [], [stepData]);
+
+  const phaseValue = (phaseId: string): string =>
+    (phaseId in phaseEdits ? phaseEdits[phaseId] : serverPhases[phaseId]) ?? '';
+  const stepValue = (stepNumber: number): string => {
+    if (stepNumber in stepEdits) return stepEdits[stepNumber];
+    return serverSteps.find((x) => x.stepNumber === stepNumber)?.defaultAssigneeUid ?? '';
+  };
+
+  // Group steps under their phase (preserving the definition's step order); steps
+  // without a phaseId fall into a trailing "unphased" bucket.
+  const stepsByPhase = useMemo(() => {
+    const map = new Map<string, typeof serverSteps>();
+    const unphased: typeof serverSteps = [];
+    for (const s of serverSteps) {
+      if (!s.phaseId) { unphased.push(s); continue; }
+      const arr = map.get(s.phaseId) ?? [];
+      arr.push(s);
+      map.set(s.phaseId, arr);
+    }
+    return { map, unphased };
+  }, [serverSteps]);
 
   const save = useMutation({
-    mutationFn: () => putPhaseAssignments(definitionId, { ...serverAssignments, ...edits }),
-    onSuccess: (res) => {
-      // Write the server's canonical result straight into the cache so the UI
-      // reflects the save WITHOUT a hard refresh (was relying on stale data).
-      queryClient.setQueryData(['phase-assignments', definitionId], res);
-      setEdits({});
+    mutationFn: async () => {
+      const tasks: Promise<unknown>[] = [];
+      if (Object.keys(phaseEdits).length > 0) {
+        tasks.push(putPhaseAssignments(definitionId, { ...serverPhases, ...phaseEdits }));
+      }
+      if (Object.keys(stepEdits).length > 0) {
+        const assignees: Record<string, string | null> = {};
+        for (const [num, uid] of Object.entries(stepEdits)) assignees[num] = uid === '' ? null : uid;
+        tasks.push(putStepAssignees(definitionId, assignees));
+      }
+      await Promise.all(tasks);
     },
-    onError: (err: Error) => toast.error(err.message || 'Could not save phase assignments.'),
+    onSuccess: async () => {
+      // Both writes bump/replace cached config — refetch the canonical values.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['phase-assignments', definitionId] }),
+        queryClient.invalidateQueries({ queryKey: ['step-assignees', definitionId] }),
+        queryClient.invalidateQueries({ queryKey: ['workflow-definition', definitionId] }),
+      ]);
+      setPhaseEdits({});
+      setStepEdits({});
+      toast.success('Assignments saved. Applies to new matters.');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not save assignments.'),
   });
+
+  const hasEdits = Object.keys(phaseEdits).length > 0 || Object.keys(stepEdits).length > 0;
+
+  const staffOptions = staff.map((u) => (
+    <option key={u.uid} value={u.uid}>{displayName(u)}</option>
+  ));
+
+  const stepRow = (s: typeof serverSteps[number]) => (
+    <div key={s.stepNumber} className="flex items-center justify-between gap-3 py-2.5 pl-9 pr-4">
+      <span className="text-sm text-ink-muted min-w-0 truncate">
+        <span className="text-ink-faint mr-1.5">{s.stepNumber}.</span>{s.title}
+      </span>
+      <select
+        className="input-field py-1.5 text-sm max-w-[220px] shrink-0"
+        value={stepValue(s.stepNumber)}
+        disabled={!canEdit || save.isPending}
+        onChange={(e) => setStepEdits((d) => ({ ...d, [s.stepNumber]: e.target.value }))}
+      >
+        <option value="">Inherit from phase</option>
+        {staffOptions}
+      </select>
+    </div>
+  );
 
   return (
     <div className="mt-8">
       <div className="mb-3 flex items-center gap-2">
         <Users className="w-4 h-4 text-ink-muted" />
-        <h2 className="text-sm font-semibold text-ink">Phase Assignments</h2>
+        <h2 className="text-sm font-semibold text-ink">Assignments</h2>
       </div>
       <p className="text-sm text-ink-muted mb-3">
-        Pre-assign each phase to a team member. New matters route that phase’s steps to them automatically.
-        {' '}Changes apply to new matters only.
+        Set a default assignee per phase. New matters route that phase’s steps to them automatically. Override
+        an individual step below to route it to someone else — a step set to “Inherit from phase” uses its
+        phase default (or the shared pool if the phase is unassigned). Changes apply to new matters only.
       </p>
 
-      <div className="card divide-y divide-hairline">
-        {phases.map((p) => (
-          <div key={p.id} className="flex items-center justify-between gap-3 p-4">
-            <span className="text-sm font-medium text-ink min-w-0 truncate">{p.name}</span>
-            <select
-              className="input-field py-1.5 text-sm max-w-[220px]"
-              value={valueFor(p.id)}
-              disabled={!canEdit || save.isPending}
-              onChange={(e) => setEdits((d) => ({ ...d, [p.id]: e.target.value || null }))}
-            >
-              <option value="">Unassigned</option>
-              {staff.map((u) => (
-                <option key={u.uid} value={u.uid}>{displayName(u)}</option>
-              ))}
-            </select>
-          </div>
-        ))}
-      </div>
-
-      {canEdit && (
-        <div className="flex items-center gap-3 mt-3">
-          <button
-            onClick={() => save.mutate()}
-            disabled={save.isPending}
-            className="btn-primary inline-flex items-center gap-1.5"
-          >
-            {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-            {save.isPending ? 'Saving…' : 'Save assignments'}
-          </button>
-          {save.isSuccess && !save.isPending && (
-            <span className="text-sm text-emerald-600 inline-flex items-center gap-1">
-              <Check className="w-4 h-4" /> Saved
-            </span>
-          )}
+      {isLoading ? (
+        <div className="card p-8 flex items-center justify-center text-ink-faint">
+          <Loader2 className="w-5 h-5 animate-spin" />
         </div>
+      ) : (
+        <>
+          <div className="card divide-y divide-hairline">
+            {phases.map((p) => (
+              <div key={p.id}>
+                {/* Phase header row: the phase default assignee. */}
+                <div className="flex items-center justify-between gap-3 p-4 bg-surface-soft/40">
+                  <span className="text-sm font-semibold text-ink min-w-0 truncate">{p.name}</span>
+                  <select
+                    className="input-field py-1.5 text-sm max-w-[220px] shrink-0"
+                    value={phaseValue(p.id)}
+                    disabled={!canEdit || save.isPending}
+                    onChange={(e) => setPhaseEdits((d) => ({ ...d, [p.id]: e.target.value || null }))}
+                  >
+                    <option value="">Unassigned</option>
+                    {staffOptions}
+                  </select>
+                </div>
+                {/* Nested step overrides for this phase. */}
+                {(stepsByPhase.map.get(p.id) ?? []).map(stepRow)}
+              </div>
+            ))}
+
+            {/* Steps with no phase (rare) get their own group. */}
+            {stepsByPhase.unphased.length > 0 && (
+              <div>
+                <div className="flex items-center gap-3 p-4 bg-surface-soft/40">
+                  <span className="text-sm font-semibold text-ink-muted">Unphased steps</span>
+                </div>
+                {stepsByPhase.unphased.map(stepRow)}
+              </div>
+            )}
+          </div>
+
+          {canEdit && (
+            <div className="flex items-center gap-3 mt-3">
+              <button
+                onClick={() => save.mutate()}
+                disabled={save.isPending || !hasEdits}
+                className="btn-primary inline-flex items-center gap-1.5 ml-auto"
+              >
+                {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                {save.isPending ? 'Saving…' : 'Save assignments'}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

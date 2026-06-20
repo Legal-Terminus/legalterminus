@@ -1041,6 +1041,12 @@ deleting a matter must explicitly purge EVERYTHING related or it orphans data/fi
 > delete). Storage cleanup is best-effort (a bucket error is logged, never blocks the
 > Firestore delete) and the response reports `{stepsDeleted, eventsDeleted,
 > documentsDeleted, filesDeleted}`. The orphan-sweep in `seed-e2e.js` covers crash leftovers.
+>
+> **Update (2026-06-20):** also sweeps the matter's **notifications**. These live in the TOP-LEVEL
+> `notifications` collection (referenced by `taskId`), not a subcollection, so the subcollection loop
+> missed them — leaving dangling bell entries that deep-linked to a now-404 matter. `deleteTask` now
+> queries `notifications.where('taskId','==',taskId)` and deletes them; response adds `notificationsDeleted`.
+> Test: `matter-lifecycle.spec.ts` asserts a matter-linked notification exists pre-delete and is gone after.
 
 **Acceptance Criteria**:
 - Deleting a matter removes its steps, events, document metadata, and uploaded files.
@@ -1865,6 +1871,12 @@ gap with a client picker + service picker, reusing the existing `POST /api/tasks
 > (read staff / write admin+manager; validates step exists + assignee is staff). UI: `StepAssigneeEditor`
 > on the service detail page (one staff dropdown per step). Precedence in `createTask`: a step's own
 > `defaultAssigneeUid` **overrides** its phase default; neither set → shared pool. Tests: `services-eta.spec.ts`.
+>
+> **UI merge (2026-06-20):** the former separate "Phase Assignments" and "Step Assignees" sections are now a
+> single **"Assignments"** editor (`AssignmentsEditor` in `ServiceDetailPage.tsx`) — each phase shows its
+> default-assignee dropdown with its steps nested beneath; a step defaults to "Inherit from phase" and can
+> override. One Save button persists both phase and step changes (each only if edited). Steps without a
+> phase render under an "Unphased steps" group.
 
 **Rationale**: A firm runs the same workflow the same way each time — a given phase's tasks always
 go to the same person/team. Configuring this **once per service workflow** means every new matter is

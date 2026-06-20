@@ -2,44 +2,47 @@ import { test, expect } from './fixtures';
 import { resolveServiceKey } from './api';
 
 /**
- * E13-S01 — per-step ETA config at the service level (+ E11-S02 phase assignments
- * live on the same page). The service key is resolved from the live workflow
- * definitions (not hardcoded — service catalog/workflows are editable).
+ * E13-S01 — per-step ETA config at the service level, plus the merged Assignments
+ * section (E11-S02 phase defaults + per-step overrides, nested under each phase).
+ * The service key is resolved from the live workflow definitions (not hardcoded —
+ * service catalog/workflows are editable).
  */
 let serviceKey: string;
 test.beforeAll(async () => { serviceKey = await resolveServiceKey(); });
 
-test('admin opens a service and sees the Step ETAs editor', async ({ adminPage }) => {
+test('admin opens a service and sees the ETAs and Assignments editors', async ({ adminPage }) => {
   await adminPage.goto('services');
   await expect(adminPage.getByRole('heading', { name: 'Service Catalog' })).toBeVisible();
 
   await adminPage.goto(`services/${serviceKey}`);
   await expect(adminPage.getByRole('heading', { name: 'Step ETAs' })).toBeVisible();
-  await expect(adminPage.getByRole('heading', { name: 'Phase Assignments' })).toBeVisible();
-  await expect(adminPage.getByRole('heading', { name: 'Step Assignees' })).toBeVisible();
+  await expect(adminPage.getByRole('heading', { name: 'Assignments' })).toBeVisible();
 });
 
-test('admin can set a per-step default assignee and save', async ({ adminPage }) => {
+test('admin sets a phase default + a per-step override in one Assignments section', async ({ adminPage }) => {
   await adminPage.goto(`services/${serviceKey}`);
-  const heading = adminPage.getByRole('heading', { name: 'Step Assignees' });
+  const heading = adminPage.getByRole('heading', { name: 'Assignments' });
   await expect(heading).toBeVisible();
 
   const teamUid = process.env.E2E_TEAM_UID!;
-  // Scope to the Step Assignees section (the .mt-8 block that contains its heading)
-  // so we don't grab the phase-assignment selects above it.
   const section = adminPage.locator('div.mt-8', { has: heading });
-  await section.locator('select').first().selectOption(teamUid);
 
-  const save = adminPage.getByRole('button', { name: /save assignees/i });
+  // First select is the first phase's default; pick the team member.
+  await section.locator('select').first().selectOption(teamUid);
+  // A nested step override ("Inherit from phase" option present) → also assign it.
+  const stepSelect = section.locator('select:has(option[value=""]:text-is("Inherit from phase"))').first();
+  await stepSelect.selectOption(teamUid);
+
+  const save = adminPage.getByRole('button', { name: /save assignments/i });
   await expect(save).toBeEnabled();
   await save.click();
-  await expect(adminPage.getByText(/step assignees saved/i)).toBeVisible();
+  await expect(adminPage.getByText(/assignments saved/i)).toBeVisible();
 });
 
-test('team member can view but not edit step assignees', async ({ teamPage }) => {
+test('team member can view but not edit assignments', async ({ teamPage }) => {
   await teamPage.goto(`services/${serviceKey}`);
-  await expect(teamPage.getByRole('heading', { name: 'Step Assignees' })).toBeVisible();
-  await expect(teamPage.getByRole('button', { name: /save assignees/i })).toHaveCount(0);
+  await expect(teamPage.getByRole('heading', { name: 'Assignments' })).toBeVisible();
+  await expect(teamPage.getByRole('button', { name: /save assignments/i })).toHaveCount(0);
 });
 
 test('admin can set and save a step ETA', async ({ adminPage }) => {
@@ -61,18 +64,6 @@ test('team member can view but not edit ETAs', async ({ teamPage }) => {
   await teamPage.goto(`services/${serviceKey}`);
   await expect(teamPage.getByRole('heading', { name: 'Step ETAs' })).toBeVisible();
   await expect(teamPage.getByRole('button', { name: /save etas/i })).toHaveCount(0);
-});
-
-test('E11-S02: admin sets a phase default assignee and saves', async ({ adminPage }) => {
-  await adminPage.goto(`services/${serviceKey}`);
-  await expect(adminPage.getByRole('heading', { name: 'Phase Assignments' })).toBeVisible();
-
-  // The phase-assignment selects list staff; pick the team member for the first phase.
-  const teamUid = process.env.E2E_TEAM_UID!;
-  const phaseSelect = adminPage.locator(`select:has(option[value="${teamUid}"])`).first();
-  await phaseSelect.selectOption(teamUid);
-  await adminPage.getByRole('button', { name: /save assignments/i }).click();
-  await expect(adminPage.getByText(/^Saved$/).or(adminPage.getByText(/saved/i)).first()).toBeVisible();
 });
 
 test('E10-S02: a healthy workflow shows no out-of-sync error banner', async ({ adminPage }) => {

@@ -266,6 +266,28 @@ export async function getNotifications(role: RoleKey): Promise<Array<{ title: st
   return body as Array<{ title: string; message: string; read: boolean }>;
 }
 
+/** Count a role's notifications that deep-link to a given matter (by taskId). */
+export async function countNotificationsForTask(role: RoleKey, taskId: string): Promise<number> {
+  const api = await apiAs(role);
+  const res = await api.get('/api/notifications');
+  const body = (await res.json()) as Array<{ taskId?: string }>;
+  await api.dispose();
+  return body.filter((n) => n.taskId === taskId).length;
+}
+
+/**
+ * Poll a role's notifications until at least one deep-links to `taskId`, or time
+ * out. Returns the count seen at resolution (0 on timeout).
+ */
+export async function waitForTaskNotification(role: RoleKey, taskId: string, timeoutMs = 20_000): Promise<number> {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const n = await countNotificationsForTask(role, taskId);
+    if (n > 0 || Date.now() > deadline) return n;
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+}
+
 /** Poll a role's notifications until one matches `re` (titles), or time out. */
 export async function waitForNotification(role: RoleKey, re: RegExp, timeoutMs = 20_000): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
