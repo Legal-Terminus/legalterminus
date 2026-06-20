@@ -128,11 +128,20 @@ function ScrollManager() {
   return null;
 }
 
+// Routes that render as standalone landing pages (no global navbar)
+const HIDE_NAVBAR_ROUTES = ["/company-registration"];
+
+function ConditionalNavbar() {
+  const { pathname } = useLocation();
+  if (HIDE_NAVBAR_ROUTES.includes(pathname)) return null;
+  return <Navbar />;
+}
+
 function App() {
   return (
     <Router>
       <ScrollManager />
-      <Navbar />
+      <ConditionalNavbar />
 
       <RouteLoaderWrapper>
         <Suspense fallback={null}>

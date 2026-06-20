@@ -7,7 +7,7 @@
 .crh-hero {
   position: relative;
   overflow: hidden;
-  padding: 70px 24px 80px;
+  padding: 70px 56px 80px;
   font-family: "Inter", sans-serif;
   background:
     radial-gradient(ellipse 700px 480px at 88% 12%, rgba(74, 222, 128, 0.18), transparent 60%),
@@ -62,11 +62,11 @@
 .crh-container {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
+  max-width: 1760px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1.25fr 0.75fr;
-  gap: 70px;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: 90px;
   align-items: center;
 }
 
@@ -120,7 +120,7 @@
   font-size: 17.5px;
   line-height: 1.7;
   color: #41566a;
-  max-width: 560px;
+  max-width: 680px;
   margin: 0 0 26px;
 }
 
@@ -312,7 +312,8 @@
 /* ============================================================
    RESPONSIVE
    ============================================================ */
-@media (max-width: 1200px) {
+@media (max-width: 1280px) {
+  .crh-hero { padding: 70px 32px 80px; }
   .crh-title { font-size: 44px; }
   .crh-container { gap: 50px; }
 }
