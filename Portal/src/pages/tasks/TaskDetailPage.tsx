@@ -5,13 +5,14 @@ import {
   ArrowLeft, CheckCircle2, Circle, CircleSlash, Loader2, PlayCircle,
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase,
-  ChevronRight, ChevronDown, Flame, Ban,
+  ChevronRight, ChevronDown, Flame, Ban, Archive,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, archiveTask, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { useConfirm } from '../../components/common/confirmContext';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
 import type { Task, TaskStep, StepStatus, PaymentStatus } from '../../types/task';
@@ -29,6 +30,7 @@ export default function TaskDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useToast();
+  const confirm = useConfirm();
   const role = useAuthStore((s) => s.role);
   const isStaff = role === 'admin' || role === 'manager' || role === 'team_member';
   const isClient = role === 'client';
@@ -154,6 +156,25 @@ export default function TaskDetailPage() {
     onError: (err: Error) => toast.error(err.message || 'Could not stop this matter.'),
   });
 
+  // Archive — non-destructive alternative to delete (staff). Confirmed via dialog.
+  const archive = useMutation({
+    mutationFn: () => archiveTask(taskId!),
+    onSuccess: () => {
+      toast.success('Matter archived.');
+      invalidateTaskViews();
+      queryClient.invalidateQueries({ queryKey: ['task-events', taskId] });
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not archive this matter.'),
+  });
+  const onArchive = async () => {
+    const ok = await confirm({
+      title: 'Archive this matter?',
+      message: 'It will be removed from active lists but its history and documents are kept. Only an admin can permanently delete a matter.',
+      confirmLabel: 'Archive',
+    });
+    if (ok) archive.mutate();
+  };
+
   const noun = isClient ? 'Service' : 'Matter';
 
   if (isLoading) {
@@ -274,15 +295,27 @@ export default function TaskDetailPage() {
         </div>
       )}
 
-      {/* Stop workflow (#41) — staff (admin/manager/team_member) can stop an
-          in-flight matter when a client discontinues. Reason required. */}
+      {/* Archived banner — non-destructive terminal state. */}
+      {task.status === 'archived' && (
+        <div className="card p-4 mb-4 border-hairline bg-surface-soft">
+          <div className="flex items-start gap-2.5">
+            <Archive className="w-4 h-4 text-ink-muted mt-0.5 shrink-0" />
+            <p className="text-sm font-semibold text-ink-soft">This matter is archived. Only an admin can permanently delete it.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Stop workflow (#41) + Archive — staff actions on an in-flight matter.
+          Stop = client discontinued (cancelled). Archive = non-destructive hide. */}
       {isStaff && (task.status === 'active' || task.status === 'pending') && (
         <StopMatterBanner
           open={stopping}
           pending={stop.isPending}
+          archiving={archive.isPending}
           onOpen={() => setStopping(true)}
           onCancel={() => setStopping(false)}
           onStop={(reason) => stop.mutate(reason)}
+          onArchive={onArchive}
         />
       )}
 
@@ -328,6 +361,7 @@ export default function TaskDetailPage() {
             urgentPending: toggleStepUrgent.isPending,
           } : undefined}
           events={events}
+          onAttach={() => setTab('documents')}
         />
       )}
       {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} />}
@@ -434,18 +468,27 @@ function ApprovalBanner({
 /* ── Stop matter banner (#41) ──────────────────────────────────────────────── */
 
 function StopMatterBanner({
-  open, pending, onOpen, onCancel, onStop,
+  open, pending, archiving, onOpen, onCancel, onStop, onArchive,
 }: {
   open: boolean;
   pending: boolean;
+  archiving: boolean;
   onOpen: () => void;
   onCancel: () => void;
   onStop: (reason: string) => void;
+  onArchive: () => void;
 }) {
   const [reason, setReason] = useState('');
   if (!open) {
     return (
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex justify-end gap-2">
+        <button
+          onClick={onArchive}
+          disabled={archiving}
+          className="btn-secondary inline-flex items-center gap-1.5"
+        >
+          <Archive className="w-4 h-4" /> Archive
+        </button>
         <button
           onClick={onOpen}
           className="btn-secondary inline-flex items-center gap-1.5 text-red-600 hover:bg-red-50"
@@ -505,7 +548,7 @@ interface StepAssignment {
 }
 
 function StepsTab({
-  task, definition, stepDefs, currentDef, completed, role, pending, onEvent, assignment, events,
+  task, definition, stepDefs, currentDef, completed, role, pending, onEvent, assignment, events, onAttach,
 }: {
   task: Task;
   definition?: WorkflowDefinition;
@@ -517,6 +560,7 @@ function StepsTab({
   onEvent: (e: WorkflowEventInput) => void;
   assignment?: StepAssignment;
   events: TaskEvent[];
+  onAttach: () => void;
 }) {
   const steps = task.steps ?? [];
   const currentAssignee = steps.find((s) => s.stepNumber === task.currentStepNumber)?.assignedTo ?? null;
@@ -567,7 +611,7 @@ function StepsTab({
     <StepHeroPanel
       step={currentDef} role={role} pending={pending} turn={currentTurn}
       onEvent={onEvent} assignment={assignment} currentAssignee={currentAssignee}
-      stepUrgent={currentStepUrgent}
+      stepUrgent={currentStepUrgent} onAttach={onAttach}
     />
   ) : completed ? (
     <div className="card p-5 flex items-center gap-2.5 bg-emerald-50 border-emerald-100">
@@ -819,7 +863,7 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  step, role, pending, onEvent, assignment, currentAssignee, turn, stepUrgent,
+  step, role, pending, onEvent, assignment, currentAssignee, turn, stepUrgent, onAttach,
 }: {
   step: WorkflowStepDef;
   role: { isStaff: boolean; isClient: boolean };
@@ -829,6 +873,7 @@ function StepHeroPanel({
   currentAssignee?: string | null;
   turn?: 'team' | 'client' | 'govt' | null;
   stepUrgent?: boolean;
+  onAttach: () => void;
 }) {
   const events = new Set((step.transitions ?? []).map((t) => t.event));
   const spin = <Loader2 className="w-4 h-4 animate-spin" />;
@@ -971,8 +1016,8 @@ function StepHeroPanel({
       )}
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">Documents</p>
-        <button disabled title="Coming soon" className="btn-secondary py-1.5 px-3 text-xs w-full opacity-50 cursor-not-allowed inline-flex items-center justify-center gap-1.5">
-          <Paperclip className="w-3.5 h-3.5" /> Attach <span className="badge bg-surface-card text-ink-muted">soon</span>
+        <button onClick={onAttach} title="Open the Documents tab to upload" className="btn-secondary py-1.5 px-3 text-xs w-full inline-flex items-center justify-center gap-1.5">
+          <Paperclip className="w-3.5 h-3.5" /> Attach document
         </button>
       </div>
     </div>
@@ -1004,6 +1049,7 @@ function StepHeroPanel({
                 onChange={(v) => { setComment(v); if (v.trim()) setNeedComment(false); }}
                 error={needComment ? 'Please add a comment explaining the requested changes.' : null}
                 disabled={pending}
+                onAttach={onAttach}
               />
               {actions}
             </div>
@@ -1022,14 +1068,14 @@ function StepHeroPanel({
 /**
  * Comment + attach composer for a step action. The comment is optional on
  * positive actions and required on rejections (enforced by the caller via the
- * `error` prop). The attach control is a STUB — real upload is E-05 (Document
- * Cycle); for now it's visible-but-disabled to signal the capability.
+ * `error` prop). "Attach document" opens the Documents tab (E-05 upload cycle).
  */
-function ActionComposer({ comment, onChange, error, disabled }: {
+function ActionComposer({ comment, onChange, error, disabled, onAttach }: {
   comment: string;
   onChange: (v: string) => void;
   error: string | null;
   disabled: boolean;
+  onAttach: () => void;
 }) {
   return (
     <div className="mb-3">
@@ -1045,12 +1091,10 @@ function ActionComposer({ comment, onChange, error, disabled }: {
       <div className="mt-2">
         <button
           type="button"
-          disabled
-          title="Document attachments are coming soon"
-          className="btn-secondary opacity-50 cursor-not-allowed inline-flex items-center gap-1.5"
+          onClick={onAttach}
+          className="btn-secondary inline-flex items-center gap-1.5"
         >
           <Paperclip className="w-4 h-4" /> Attach document
-          <span className="badge bg-surface-card text-ink-muted ml-1">soon</span>
         </button>
       </div>
     </div>

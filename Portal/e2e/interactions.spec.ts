@@ -28,6 +28,18 @@ test('E03-S06: a comment on Complete Step appears in the activity feed', async (
   } finally { await deleteMatter(taskId); }
 });
 
+test('Attach document on a step opens the Documents tab (E-05 wired, no "soon")', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    // The stub is gone — a real "Attach document" action exists and opens Documents.
+    await expect(adminPage.getByText('soon')).toHaveCount(0);
+    await adminPage.getByRole('button', { name: /attach document/i }).first().click();
+    await expect(adminPage.getByText('Upload a document', { exact: true })).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});
+
 test('E11-S07: deleting a matter uses the styled confirm dialog (not native)', async ({ adminPage }) => {
   const taskId = await createMatter();
   let deletedViaUi = false;

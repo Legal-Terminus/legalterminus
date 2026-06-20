@@ -1,5 +1,5 @@
 import { createActor } from 'xstate';
-import { db } from '../config/firebase.js';
+import { db, getBucket } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
 import { getCompiledForServiceKey, getCompiledById } from '../services/workflowDefinitions.service.js';
 import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
@@ -1103,26 +1103,87 @@ export async function deleteTask(req, res) {
     const snap = await taskRef.get();
     if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
 
-    let stepsDeleted = 0;
-    let eventsDeleted = 0;
-    for (const sub of ['steps', 'events']) {
+    // Full cleanup — Firestore does NOT cascade. Remove EVERY subcollection
+    // (steps, events, AND documents metadata) plus the matter's Storage objects,
+    // so deleting a matter leaves nothing orphaned (steps/events/docs/files).
+    const counts = {};
+    for (const sub of ['steps', 'events', 'documents']) {
       const subSnap = await taskRef.collection(sub).get();
+      counts[sub] = subSnap.size;
       if (subSnap.empty) continue;
-      // Batches cap at 500 writes; chunk to be safe for large event logs.
+      // Batches cap at 500 writes; chunk to be safe for large logs.
       for (let i = 0; i < subSnap.docs.length; i += 450) {
         const batch = db.batch();
         subSnap.docs.slice(i, i + 450).forEach((d) => batch.delete(d.ref));
         await batch.commit();
       }
-      if (sub === 'steps') stepsDeleted = subSnap.size;
-      else eventsDeleted = subSnap.size;
+    }
+
+    // Delete the matter's uploaded files from Cloud Storage (E-05 docs live under
+    // tasks/{taskId}/...). Best-effort: a storage failure must not block the
+    // Firestore delete, but is logged so orphans can be swept later.
+    let filesDeleted = 0;
+    try {
+      const [files] = await getBucket().getFiles({ prefix: `tasks/${taskId}/` });
+      filesDeleted = files.length;
+      await Promise.all(files.map((f) => f.delete().catch(() => {})));
+    } catch (e) {
+      logger.warn({ err: e?.message }, `[deleteTask] storage cleanup failed for ${taskId}`);
     }
 
     await taskRef.delete();
-    logger.info(`[deleteTask] Matter ${taskId} deleted (steps=${stepsDeleted}, events=${eventsDeleted})`);
-    res.status(200).json({ id: taskId, deleted: true, stepsDeleted, eventsDeleted });
+    logger.info(`[deleteTask] Matter ${taskId} deleted (steps=${counts.steps}, events=${counts.events}, documents=${counts.documents}, files=${filesDeleted})`);
+    res.status(200).json({
+      id: taskId, deleted: true,
+      stepsDeleted: counts.steps, eventsDeleted: counts.events,
+      documentsDeleted: counts.documents, filesDeleted,
+    });
   } catch (err) {
     logger.error({ err }, 'deleteTask error:');
     res.status(500).json({ message: 'Failed to delete matter' });
+  }
+}
+
+// ─── POST /api/tasks/:taskId/archive ───────────────────────────────────────
+// Archive a matter (staff: admin/manager/team_member). Archiving is the
+// non-destructive alternative to deletion — staff who can't delete (only admin
+// can) can still get a finished/abandoned matter OUT of active worklists without
+// losing its history. Sets status `archived` (terminal); the active step (if any)
+// is closed. Data + documents are preserved; only admin `deleteTask` purges them.
+export async function archiveTask(req, res) {
+  try {
+    const { role, uid } = req.user;
+    if (role !== 'admin' && role !== 'manager' && role !== 'team_member') {
+      return res.status(403).json({ message: 'Forbidden: staff only' });
+    }
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+    if (task.status === 'archived') {
+      return res.status(409).json({ message: 'Matter is already archived.' });
+    }
+
+    const now = new Date().toISOString();
+    const batch = db.batch();
+    batch.set(taskRef, { status: 'archived', archivedAt: now, archivedBy: uid ?? null, updatedAt: now }, { merge: true });
+    const activeSnap = await taskRef.collection('steps').where('status', '==', 'active').limit(1).get();
+    if (!activeSnap.empty) {
+      batch.set(activeSnap.docs[0].ref, { status: 'archived' }, { merge: true });
+    }
+    batch.set(taskRef.collection('events').doc(), {
+      type: 'TASK_ARCHIVED',
+      fromStep: task.currentStepNumber,
+      toStep: task.currentStepNumber,
+      comment: null,
+      byUid: uid ?? null,
+      byRole: role ?? null,
+      at: now,
+    });
+    await batch.commit();
+    res.json({ success: true, status: 'archived' });
+  } catch (err) {
+    logger.error({ err }, 'archiveTask error:');
+    res.status(500).json({ message: 'Failed to archive matter' });
   }
 }

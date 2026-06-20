@@ -15,6 +15,20 @@ test('notification bell is present for staff', async ({ adminPage }) => {
   await expect(adminPage.getByRole('button', { name: 'Notifications' })).toBeVisible();
 });
 
+test('the full /notifications page renders for all roles', async ({ adminPage, clientPage }) => {
+  await adminPage.goto('notifications');
+  await expect(adminPage.getByRole('heading', { name: 'Notifications' })).toBeVisible();
+  // Reachable from the bell dropdown's "View all" link too.
+  await adminPage.goto('dashboard');
+  await adminPage.getByRole('button', { name: 'Notifications' }).click();
+  await adminPage.getByRole('button', { name: /view all notifications/i }).click();
+  await expect(adminPage).toHaveURL(/\/notifications/);
+
+  // Clients have a notifications page as well.
+  await clientPage.goto('notifications');
+  await expect(clientPage.getByRole('heading', { name: 'Notifications' })).toBeVisible();
+});
+
 test('approving a pending matter notifies the creator (manager)', async ({ adminPage }) => {
   const pendingId = await createPendingMatter(); // manager-created
   try {

@@ -946,8 +946,16 @@ split dashboard tiles.
 > **✅ BUILT (2026-06-14).** `POST /api/tasks/:taskId/documents/:docId/review { action, remark? }`
 > (staff only): approve → `approved` (records `reviewedBy`/`reviewedAt`); reject → `rejected` with a
 > **required remark** (shown to the client) + a client notification (E07-S01). `GET .../documents` lists
-> a matter's docs; `GET .../:docId/download-url` issues a short-lived signed READ URL (view without
-> routing bytes through the API). UI: approve/reject (with remark modal) on each pending `DocumentCard`.
+> a matter's docs. UI: approve/reject (with remark modal) on each pending `DocumentCard`.
+> - 🔒 SECURITY (2026-06-14): downloads now **stream through the authenticated backend**
+>   (`GET .../:docId/download`) instead of handing the browser a signed READ URL. The old signed URL
+>   was signature-gated + 15-min TTL but **replayable by anyone with the link** for its lifetime —
+>   unacceptable for legal docs. Now every fetch re-checks the caller's session + ownership (staff, or
+>   the owner-client) and pipes the bytes; the browser never sees a `storage.googleapis.com` URL.
+>   Upload still uses a short signed PUT (write-only). Bucket stays deny-all. Frontend fetches a blob
+>   with the auth header and opens an object URL.
+> - ✅ ATTACH WIRED (E03-S06): the Steps-tab "Attach document" buttons (previously a "soon" stub) now
+>   open the Documents tab (the real E-05 uploader); no stub remains.
 > - Adaptation: review is its own endpoint, not a machine transition (see E05-S01 note). The "Mark
 >   Complete disabled until a required doc is approved" gating is NOT wired (steps don't declare required
 >   docs in the definition yet) — deferred until document requirements are modelled on steps.
@@ -1016,6 +1024,48 @@ split dashboard tiles.
 
 **Frontend screens/components**:
 - Storage Report (Epic 8)
+
+---
+
+### E05-S05 — Full Matter-Delete Cleanup (Storage + subcollections) [Phase 1]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-4 | **Dependencies**: E05-S01
+
+**Rationale**: Firestore does not cascade and Storage objects are independent, so
+deleting a matter must explicitly purge EVERYTHING related or it orphans data/files
+(a privacy + storage-cost issue). Raised 2026-06-14 (user).
+
+> **✅ BUILT (2026-06-14).** `deleteTask` (admin-only) now removes all subcollections
+> (`steps`, `events`, **and `documents`**) AND deletes the matter's Cloud Storage
+> objects under the `tasks/{taskId}/` prefix (`getBucket().getFiles({prefix})` →
+> delete). Storage cleanup is best-effort (a bucket error is logged, never blocks the
+> Firestore delete) and the response reports `{stepsDeleted, eventsDeleted,
+> documentsDeleted, filesDeleted}`. The orphan-sweep in `seed-e2e.js` covers crash leftovers.
+
+**Acceptance Criteria**:
+- Deleting a matter removes its steps, events, document metadata, and uploaded files.
+- Storage failures are logged and do not block the matter delete; deletion is idempotent.
+
+---
+
+### E11-S09 — Archive Matter (non-destructive alternative to delete) [Phase 1]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-8 | **Dependencies**: E11-S01
+
+**Rationale**: Only an admin can DELETE a matter (destructive). Managers/team members
+need a way to get a finished/abandoned matter OUT of active worklists without losing
+history — i.e. archive it. Raised 2026-06-14 (user).
+
+> **✅ BUILT (2026-06-14).** `POST /api/tasks/:taskId/archive` (admin/manager/team_member)
+> sets status `archived` (new terminal state), closes the active step, records a
+> `TASK_ARCHIVED` event; data + documents are preserved (only admin `deleteTask` purges).
+> UI: an **Archive** button beside **Stop workflow** on the matter detail (confirm dialog);
+> an archived banner; `archived` excluded from active worklists (`my-steps` already filters
+> to pending/active). Status added to TaskStatus + the list query enum + grid badge/label.
+
+**Acceptance Criteria**:
+- Staff can archive an active/pending matter; it leaves My Tasks/active lists, history kept.
+- Archived matters are not deletable except by an admin; re-archiving is a no-op (409).
 
 ---
 
@@ -1134,6 +1184,9 @@ split dashboard tiles.
 > - Adaptation: delivery is the existing **30s poll** (kept per decision), not a Firestore `onSnapshot`
 >   real-time listener; notifications live in a flat `notifications` collection (`recipientUid` field),
 >   not `notifications/{uid}/items`. Deep-link is carried as `taskId` (the bell links to the matter).
+> - ✅ ADDED (2026-06-14): the full **`/notifications` page** (`NotificationsPage.tsx`) — the complete
+>   list behind the bell, with per-type icons, mark-all-read, and click-to-deep-link to the matter
+>   (`taskId`). The bell dropdown gained a **"View all notifications"** link. Registered for ALL roles.
 > - ⏳ Still Phase-2 / deferred: `onSnapshot` real-time upgrade; transactional **email** (E07-S02).
 
 **Rationale**: In-app notifications replace WhatsApp pings. The Firestore real-time listener on `notifications/{uid}/items` makes them instantaneous.

@@ -273,10 +273,13 @@ const STATUS_BADGE: Record<TaskStatus, string> = {
   on_hold: 'bg-amber-50 text-amber-700',
   pending_admin_approval: 'bg-amber-50 text-amber-700',
   rejected: 'bg-red-50 text-red-700',
+  archived: 'bg-surface-card text-ink-faint',
 };
 
 const STATUS_LABEL: Partial<Record<TaskStatus, string>> = {
   pending_admin_approval: 'Awaiting approval',
+  cancelled: 'Stopped',
+  archived: 'Archived',
 };
 
 const PAYMENT: Record<PaymentStatus, { label: string; cls: string }> = {

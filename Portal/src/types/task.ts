@@ -1,6 +1,6 @@
 export type TaskStatus =
   | 'pending' | 'active' | 'completed' | 'cancelled' | 'on_hold'
-  | 'pending_admin_approval' | 'rejected';
+  | 'pending_admin_approval' | 'rejected' | 'archived';
 export type StepStatus = 'pending' | 'active' | 'completed' | 'blocked' | 'skipped';
 export type PaymentStatus = 'not_paid' | 'part_paid' | 'fully_paid';
 

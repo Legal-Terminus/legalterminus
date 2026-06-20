@@ -17,6 +17,7 @@ import Services from '../pages/services/ServicesPage';
 import ServiceDetail from '../pages/services/ServiceDetailPage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import OrdersPage from '../pages/orders/OrdersPage';
+import NotificationsPage from '../pages/notifications/NotificationsPage';
 
 // Reports
 import ReportsPage from '../pages/reports/ReportsPage';
@@ -89,6 +90,8 @@ export const APP_ROUTES: AppRoute[] = [
   //    marketing site's /my-profile, which is now a redirect into the portal) ──
   { path: '/profile', element: <ProfilePage />, roles: ALL_ROLES, nav: { label: 'My Profile', icon: User, order: 10 } },
   { path: '/orders',  element: <OrdersPage />,  roles: ALL_ROLES, nav: { label: 'My Orders', icon: Package, order: 11 } },
+  // Full notifications list (E07-S01) — reached from the topbar bell; no sidebar entry.
+  { path: '/notifications', element: <NotificationsPage />, roles: ALL_ROLES },
 
   // ── Shared (multi-role) — reached via Reports tile / dashboard tile; no sidebar entry ──
   { path: '/reports/leads', element: <ContactLeadsReport />, roles: ['admin', 'manager', 'team_member'] },

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../hooks/useNotifications';
 
 interface Props {
@@ -5,6 +6,7 @@ interface Props {
 }
 
 export default function NotificationList({ onClose }: Props) {
+  const navigate = useNavigate();
   const { data: notifications = [], markRead, markAllRead } = useNotifications();
 
   return (
@@ -27,7 +29,7 @@ export default function NotificationList({ onClose }: Props) {
         {notifications.map((n) => (
           <li
             key={n.id}
-            onClick={() => markRead(n.id)}
+            onClick={() => { markRead(n.id); if (n.taskId) { navigate(`/tasks/${n.taskId}`); onClose(); } }}
             className={`p-3 cursor-pointer hover:bg-gray-50 ${!n.read ? 'bg-blue-50' : ''}`}
           >
             <p className="text-sm font-medium text-gray-800">{n.title}</p>
@@ -35,6 +37,12 @@ export default function NotificationList({ onClose }: Props) {
           </li>
         ))}
       </ul>
+      <button
+        onClick={() => { navigate('/notifications'); onClose(); }}
+        className="w-full text-center text-xs text-blue-600 hover:underline p-2.5 border-t"
+      >
+        View all notifications
+      </button>
     </div>
   );
 }

@@ -68,6 +68,11 @@ export const stopTask = (id: string, reason: string) =>
     body: JSON.stringify({ reason }),
   });
 
+/** Archive a matter — non-destructive alternative to delete (admin-only delete).
+ *  Staff (admin/manager/team_member). Preserves data; removes it from active lists. */
+export const archiveTask = (id: string) =>
+  apiFetch<{ success: boolean; status: string }>(`/api/tasks/${id}/archive`, { method: 'POST' });
+
 /** An entry in a matter's activity thread (from the events audit subcollection). */
 export interface TaskEvent {
   type: string;

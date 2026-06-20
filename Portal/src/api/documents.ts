@@ -1,4 +1,6 @@
 import { apiFetch } from './client';
+import { auth } from '../lib/firebase';
+import { getIdToken } from 'firebase/auth';
 
 /**
  * Document Cycle API (E-05). Upload is a two-step signed-URL flow: ask the backend
@@ -82,12 +84,26 @@ export async function uploadDocument(
   );
 }
 
-/** Get a short-lived signed URL to view/download a document, then open it. */
+/**
+ * Download/open a document by STREAMING it through the authenticated backend —
+ * the browser never receives a Google Storage signed URL (nothing replayable).
+ * Fetches the bytes as a blob with the auth header, then opens an object URL.
+ */
 export async function openDocument(taskId: string, docId: string): Promise<void> {
-  const { signedUrl } = await apiFetch<{ signedUrl: string; fileName: string }>(
-    `/api/tasks/${taskId}/documents/${docId}/download-url`,
-  );
-  window.open(signedUrl, '_blank', 'noopener,noreferrer');
+  const base = import.meta.env.VITE_API_BASE_URL ?? '';
+  const headers: Record<string, string> = {};
+  if (auth.currentUser) headers.Authorization = `Bearer ${await getIdToken(auth.currentUser)}`;
+
+  const res = await fetch(`${base}/api/tasks/${taskId}/documents/${docId}/download`, { headers });
+  if (!res.ok) {
+    const msg = await res.json().catch(() => ({ message: 'Failed to open document' }));
+    throw new Error((msg as { message?: string }).message ?? 'Failed to open document');
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank', 'noopener,noreferrer');
+  // Revoke shortly after so the tab has time to load it.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
 /** Staff approve/reject a pending document. Reject requires a remark. */

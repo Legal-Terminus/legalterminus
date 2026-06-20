@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { createMatter, assignMatter, deleteMatter } from './api';
+import { createMatter, assignMatter, deleteMatter, advanceUntil } from './api';
 
 /**
  * E12 — client vs internal view separation, on a FRESH matter (deleted after).
@@ -27,19 +27,17 @@ test('staff matter detail SHOWS the matter owner control', async ({ adminPage })
 });
 
 test('#42: client does NOT see the workflow Activity stream (staff-only)', async ({ adminPage, clientPage }) => {
-  // Drive an internal action as admin so there IS activity (which staff see).
+  // Generate real activity via API (advances off the gate through plain steps,
+  // recording events), so the feed exists for staff regardless of current step.
+  await advanceUntil(taskId);
+
+  // Staff see the Activity section (it may sit in a sticky sidebar → assert attached).
   await adminPage.goto(`tasks/${taskId}`);
   await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
-  const complete = adminPage.getByRole('button', { name: /complete step/i });
-  if (await complete.count()) {
-    await complete.first().click();
-    await adminPage.waitForTimeout(1500);
-  }
-  // Staff see the Activity section…
-  await expect(adminPage.getByText('Activity').first()).toBeVisible();
+  await expect(adminPage.getByText('Activity').first()).toBeAttached();
 
-  // …the client does not (removed from the client service screen, #42), and of
-  // course no internal staff names leak.
+  // The client does NOT (removed from the client service screen, #42), and no
+  // internal staff names leak.
   await clientPage.goto(`tasks/${taskId}`);
   await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
   await expect(clientPage.getByText('Activity')).toHaveCount(0);

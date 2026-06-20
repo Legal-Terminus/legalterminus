@@ -53,6 +53,10 @@ test('Master Sheet report renders rows for the client', async ({ adminPage }) =>
 test('client cannot reach any report', async ({ clientPage }) => {
   for (const route of ['reports', 'reports/all-tasks', 'reports/master-sheet']) {
     await clientPage.goto(route);
-    await expect(clientPage).not.toHaveURL(new RegExp(route));
+    // ProtectedRoute redirects unauthorized roles away — allow a tick for it to
+    // settle, then assert we did NOT stay on the report route.
+    await expect(async () => {
+      expect(new RegExp(`/${route}(\\?|$)`).test(new URL(clientPage.url()).pathname)).toBe(false);
+    }).toPass({ timeout: 15_000 });
   }
 });

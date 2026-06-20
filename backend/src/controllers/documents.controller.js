@@ -230,9 +230,10 @@ export async function confirmUpload(req, res) {
 // ─── GET /api/tasks/:taskId/documents/:docId/download-url ──────────────────
 // Issues a short-lived signed READ URL so staff/owner-client can view/download a
 // document without the bytes routing through the backend.
-export async function getDownloadUrl(req, res) {
+export async function downloadDocument(req, res) {
   try {
     const { taskId, docId } = req.params;
+    // Auth + ownership are enforced on EVERY fetch here (staff, or owner-client).
     const task = await loadAuthorizedTask(req, res, taskId);
     if (!task) return;
 
@@ -243,15 +244,28 @@ export async function getDownloadUrl(req, res) {
       return res.status(409).json({ message: 'Document has not been uploaded yet' });
     }
 
-    const [signedUrl] = await getBucket().file(doc.objectPath).getSignedUrl({
-      version: 'v4',
-      action: 'read',
-      expires: Date.now() + SIGNED_URL_TTL_MS,
+    // Stream the bytes THROUGH the backend so the browser never receives a
+    // (replayable) Google Storage signed URL. The bucket stays deny-all; access is
+    // tied to the caller's live session + ownership, checked above on each request.
+    const file = getBucket().file(doc.objectPath);
+    const [exists] = await file.exists();
+    if (!exists) return res.status(404).json({ message: 'File not found in storage' });
+
+    const safeName = encodeURIComponent(doc.fileName || 'document');
+    res.setHeader('Content-Type', doc.contentType || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `inline; filename*=UTF-8''${safeName}`);
+    res.setHeader('Cache-Control', 'private, no-store');
+
+    const stream = file.createReadStream();
+    stream.on('error', (e) => {
+      logger.error({ err: e?.message }, 'downloadDocument stream error');
+      if (!res.headersSent) res.status(500).json({ message: 'Failed to read document' });
+      else res.destroy();
     });
-    res.json({ signedUrl, fileName: doc.fileName, expiresInMs: SIGNED_URL_TTL_MS });
+    stream.pipe(res);
   } catch (err) {
-    logger.error({ err }, 'getDownloadUrl error:');
-    res.status(500).json({ message: 'Failed to create download URL' });
+    logger.error({ err }, 'downloadDocument error:');
+    if (!res.headersSent) res.status(500).json({ message: 'Failed to download document' });
   }
 }
 

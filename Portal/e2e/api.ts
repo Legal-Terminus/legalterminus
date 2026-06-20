@@ -277,6 +277,42 @@ export async function waitForNotification(role: RoleKey, re: RegExp, timeoutMs =
   return false;
 }
 
+/** Archive a matter via API as a role (admin/manager/team). Returns HTTP status. */
+export async function archiveMatterAs(role: RoleKey, taskId: string): Promise<number> {
+  const api = await apiAs(role);
+  const res = await api.post(`/api/tasks/${taskId}/archive`, {});
+  const status = res.status();
+  await api.dispose();
+  return status;
+}
+
+/** Count a matter's documents via the API (admin). -1 if the matter is gone. */
+export async function countDocuments(taskId: string): Promise<number> {
+  const api = await apiAs('admin');
+  const res = await api.get(`/api/tasks/${taskId}/documents`);
+  const ok = res.ok();
+  const body = ok ? await res.json() : null;
+  await api.dispose();
+  return ok ? (body.data ?? []).length : -1;
+}
+
+/** Does a matter still exist (admin GET)? */
+export async function matterExists(taskId: string): Promise<boolean> {
+  const api = await apiAs('admin');
+  const res = await api.get(`/api/tasks/${taskId}`);
+  await api.dispose();
+  return res.ok();
+}
+
+/** Delete a matter as a specific role (to assert admin-only). Returns HTTP status. */
+export async function deleteMatterAs(role: RoleKey, taskId: string): Promise<number> {
+  const api = await apiAs(role);
+  const res = await api.delete(`/api/tasks/${taskId}`);
+  const status = res.status();
+  await api.dispose();
+  return status;
+}
+
 /** Create a fresh unregistered contact lead (for E08-S06). Returns its id + name. */
 export async function createLead(): Promise<{ id: string; fullName: string }> {
   const api = await apiAs('admin');

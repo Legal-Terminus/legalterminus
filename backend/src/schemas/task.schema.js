@@ -77,7 +77,7 @@ export const reviewDocumentSchema = z.object({
 export const taskListQuerySchema = z.object({
   status: z.enum([
     'pending', 'active', 'completed', 'cancelled', 'on_hold',
-    'pending_admin_approval', 'rejected',
+    'pending_admin_approval', 'rejected', 'archived',
   ]).optional(),
   assignedTo: z.string().trim().max(200).optional(),
   isUrgent: z.enum(['true', 'false']).optional(),

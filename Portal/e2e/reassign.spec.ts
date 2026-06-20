@@ -7,6 +7,11 @@ import { createMatter, assignMatter, deleteMatter, createThrowawayStaff, deleteU
  * the user (blocked → Reassign modal) and reassign their work to the manager.
  * Cleans up the matter + user afterwards. Never touches shared seed users.
  */
+// Heaviest spec: beforeAll creates a real user (welcome-email path) + matter +
+// assignment, all via token-authed API calls. Give it headroom and one retry so an
+// occasional slow Firebase round-trip doesn't fail the run.
+test.describe.configure({ timeout: 180_000, retries: 1 });
+
 let tempUid: string;
 let tempName: string;
 let taskId: string;
@@ -26,6 +31,8 @@ test('deleting a user who owns work opens the reassign modal, then reassigns', a
   const managerUid = process.env.E2E_MANAGER_UID!;
   await adminPage.goto('users');
   await adminPage.getByPlaceholder(/search users/i).fill(tempName);
+  // Wait for the throwaway user's row to actually render before acting on it.
+  await expect(adminPage.getByText(tempName).first()).toBeVisible({ timeout: 15_000 });
 
   // Delete the throwaway user (row icon button title="Delete").
   await adminPage.locator('button[title="Delete"]').first().click();
