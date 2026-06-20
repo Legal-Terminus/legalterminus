@@ -4,51 +4,58 @@ import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
 const PLANS = [
   {
-    id: "basic",
-    name: "ROC Annual Filing",
-    oldPrice: 9999,
-    price: 4999,
+    id: "elemental",
+    name: "ELEMENTAL",
+    badge: "8-FORM FILING ONLY",
+    oldPrice: 10499,
+    price: 6999,
     services: [
-      "AOC-4 (financial statements) filing",
-      "MGT-7 / MGT-7A (annual return) filing",
-      "ADT-1 (auditor appointment) filing",
-      "Director's Report & board resolution drafting",
-      "AGM notice & documentation support",
-      "MCA government fee coordination at actuals",
-      "Filing acknowledgements & compliance record",
+      "Form AOC-4 (Financial Statements) – within 30 days from AGM",
+      "Form MGT-7 / MGT-7A (Annual Return) – within 60 days from AGM",
+      "Form ADT-1 (Auditor Appointment) – within 30 days from AGM",
+      "Form DPT-3 (Deposits Return) – by 30 June",
+      "Company ITR-6 – by 31 October",
+      "DSC affixation by Directors + CA",
+      "Challan + Acknowledgement to client",
+      "Client provides audited financials + secretarial docs",
     ],
   },
   {
-    id: "standard",
-    name: "Annual Compliance Pack",
-    badge: "★ MOST POPULAR",
+    id: "enriched",
+    name: "ENRICHED",
+    badge: "+ SECRETARIAL DOCS PREP",
     popular: true,
-    oldPrice: 19999,
-    price: 11999,
+    oldPrice: 22499,
+    price: 14999,
     services: [
-      "Everything in ROC Annual Filing",
-      "DIR-3 KYC for all directors",
-      "DPT-3 (return of deposits) filing",
-      "Preparation of financial statements & schedules",
-      "Statutory registers & minutes book maintenance",
-      "Income Tax Return (ITR-6) of the company",
-      "Dedicated compliance manager + reminders",
+      "Everything in Elemental",
+      "Board Report drafting (Section 134)",
+      "Notice for AGM drafting (Section 101)",
+      "List of Directors preparation",
+      "List of Shareholders / Members register",
+      "Auditor appointment documents for AGM",
+      "Board Meeting + AGM minutes drafting",
+      "Resolutions drafting (Board + Shareholders)",
+      "Client provides audited financials",
     ],
   },
   {
-    id: "premium",
-    name: "Full Secretarial + Audit",
-    badge: "✦ FULL-SERVICE",
-    oldPrice: 34999,
-    price: 21999,
+    id: "supreme",
+    name: "SUPREME",
+    badge: "+ BOOKS + AUDIT COORD. (T/o < ₹1 Cr)",
+    oldPrice: 39999,
+    price: 26999,
     services: [
-      "Everything in Annual Compliance Pack",
-      "Statutory audit coordination with CA",
-      "Bookkeeping & finalisation of accounts",
-      "4 board meetings + AGM full documentation",
-      "MSME-1 & other event-based ROC filings",
-      "Annual compliance calendar & secretarial review",
-      "Priority support for notices & condonation",
+      "Everything in Enriched",
+      "For companies with turnover under ₹1 crore",
+      "(Tax-audit cases > ₹1Cr – custom quote)",
+      "Year-round bookkeeping (Tally / Zoho Books)",
+      "Profit & Loss Account preparation",
+      "Balance Sheet (Schedule III) preparation",
+      "Notes to Accounts + IT computation",
+      "Statutory audit coordination (Section 139 – mandatory)",
+      "Audit by LT's panel CA or your existing auditor",
+      "Audit fee paid directly by company to CA",
     ],
   },
 ];
@@ -68,7 +75,7 @@ const AfcPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
+          <div className="opcpricing-cards afc-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
@@ -84,7 +91,7 @@ const AfcPlans = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ Govt fee &amp; GST extra / year</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">

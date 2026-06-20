@@ -3,35 +3,29 @@ import "./AfcGovtCosts.css";
 
 const rows = [
   {
-    head: "AOC-4 / MGT-7 Normal Filing Fee",
-    range: "₹300 – ₹600 per form",
-    note: "MCA government fee based on the company's authorised share capital slab",
+    capital: "Up to ₹1 lakh",
+    fee: "₹200",
+    late: "₹100 per day – NO CAP",
   },
   {
-    head: "Late Filing Additional Fee",
-    range: "₹100 / day per form",
-    note: "Levied per day of delay for AOC-4 and MGT-7, with no upper ceiling",
+    capital: "₹1 lakh – ₹5 lakh",
+    fee: "₹300",
+    late: "₹100 per day – NO CAP",
   },
   {
-    head: "ADT-1 (Auditor Appointment) Fee",
-    range: "₹300 – ₹600",
-    note: "Filed within 15 days of the AGM appointing/ratifying the statutory auditor",
+    capital: "₹5 lakh – ₹25 lakh",
+    fee: "₹400",
+    late: "₹100 per day – NO CAP",
   },
   {
-    head: "DIR-3 KYC",
-    range: "₹0 (on time) / ₹5,000",
-    note: "Nil if filed by 30 September; ₹5,000 penalty per director if the DIN is deactivated",
+    capital: "₹25 lakh – ₹1 crore",
+    fee: "₹500",
+    late: "₹100 per day – NO CAP",
   },
   {
-    head: "DPT-3 / MSME-1 Filing Fee",
-    range: "₹300 – ₹600 each",
-    note: "Slab-based MCA fee for return of deposits and MSME outstanding dues returns",
-  },
-  {
-    head: "Total Out-of-Pocket (typical, on-time)",
-    range: "₹2,000 – ₹5,000 / year",
-    note: "Govt. fees billed at actuals; varies by authorised capital — penalties apply only on delay",
-    isTotal: true,
+    capital: "Above ₹1 crore",
+    fee: "₹600",
+    late: "₹100 per day – NO CAP",
   },
 ];
 
@@ -40,28 +34,28 @@ const AfcGovtCosts = () => {
     <section className="opc-govtcosts-section">
       <div className="opc-govtcosts-container">
         <h2 className="opc-govtcosts-title">
-          Indicative Government &amp; Out-of-Pocket Costs
-          <span className="opc-govtcosts-badge">Billed at Actuals</span>
+          Indicative Government Fees – Company Annual Filings
+          <span className="opc-govtcosts-badge">At Actuals</span>
         </h2>
         <p className="opc-govtcosts-subtitle">
-          MCA government filing fees are charged over and above our professional fee. Actual amounts depend on your company's authorised share capital and the forms filed — billed at actuals per the official MCA fee schedule. Late filing attracts ₹100 per day, per form, with no maximum cap.
+          AOC-4 + MGT-7 / MGT-7A Govt fees are SLAB-BASED by AUTHORISED SHARE CAPITAL. Late fees are ₹100/day per form with NO CAP (plus Section 403 additional fee multipliers). DIR-3 KYC has ₹5,000 mandatory penalty if late.
         </p>
 
         <div className="opc-govtcosts-table-wrapper">
           <table className="opc-govtcosts-table">
             <thead>
               <tr>
-                <th>Cost Head</th>
-                <th>Typical Range</th>
-                <th>Notes</th>
+                <th>Authorised Share Capital</th>
+                <th>AOC-4 / MGT-7 (per form)</th>
+                <th>Late Fee</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row, i) => (
-                <tr key={i} className={row.isTotal ? "opc-govtcosts-total-row" : ""}>
-                  <td>{row.head}</td>
-                  <td className="opc-govtcosts-range">{row.range}</td>
-                  <td>{row.note}</td>
+                <tr key={i}>
+                  <td>{row.capital}</td>
+                  <td className="opc-govtcosts-range">{row.fee}</td>
+                  <td>{row.late}</td>
                 </tr>
               ))}
             </tbody>
