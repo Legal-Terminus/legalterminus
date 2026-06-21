@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures';
 import {
   createMatter, deleteMatter, createPendingMatter, transition,
-  getDefinitionForMatter, firstClientStep, advanceUntil, waitForNotification, currentStep, assignStep,
+  getDefinitionForMatter, firstClientStep, advanceUntil, waitForNotification, currentStep, assignStep, assignMatter,
 } from './api';
 
 /**
@@ -71,9 +71,13 @@ test('reassigning a step notifies the new assignee (UI-driven)', async ({ adminP
 test('client document upload notifies the reviewer; review notifies the client', async ({ adminPage, clientPage }) => {
   const taskId = await createMatter();
   try {
-    // Route the active step to the team member so they are the reviewer.
+    // Make the team member the matter owner (reviewer). The client uploads at the
+    // MATTER level (no stepNumber), so the doc reviewer resolves from the matter's
+    // `assignedTo` — assign the matter (not just the active step) so the "document
+    // awaiting review" notification has a recipient.
     const step = await currentStep(taskId);
     await assignStep(taskId, step, process.env.E2E_TEAM_UID!);
+    await assignMatter(taskId, process.env.E2E_TEAM_UID!);
 
     // Client uploads a doc → reviewer (team) gets "Document awaiting review".
     await clientPage.goto(`tasks/${taskId}`);

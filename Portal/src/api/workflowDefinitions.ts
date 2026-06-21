@@ -24,6 +24,8 @@ export interface WorkflowStepDef {
   effects?: string[];
   phaseId?: string;
   typicalDurationDays?: number;
+  /** Whether this step appears in the client step list (default true). */
+  clientVisible?: boolean;
   clientActionLabel?: string;
   ownerType?: OwnerType;
   gate?: { requires: 'fully_paid' | 'part_paid'; onPass: number; onWait: number };
@@ -116,6 +118,34 @@ export const getWorkflowDefinitions = () =>
 export const getWorkflowDefinition = (id: string) =>
   apiFetch<WorkflowDefinition>(`/api/workflow-definitions/${id}`);
 
+/**
+ * Editable body of a workflow definition (E10-S01 editor). `version` is
+ * server-owned (every save bumps it), so the editor never sends it; `id` is
+ * required on create and immutable on update (taken from the route).
+ */
+export interface WorkflowDefinitionInput {
+  id?: string;
+  name: string;
+  initialStep: number;
+  serviceKeys?: string[];
+  steps: WorkflowStepDef[];
+  phases?: PhaseDef[];
+}
+
+/** Create a new workflow definition (admin). Starts at version 1. */
+export const createWorkflowDefinition = (body: WorkflowDefinitionInput) =>
+  apiFetch<WorkflowDefinition>('/api/workflow-definitions', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+
+/** Update (publish a new version of) a definition (admin). Full-body replace. */
+export const updateWorkflowDefinition = (id: string, body: Omit<WorkflowDefinitionInput, 'id'>) =>
+  apiFetch<WorkflowDefinition>(`/api/workflow-definitions/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+
 /** Per-phase default assignees (E11-S02): phaseId → user UID (or null). */
 export type PhaseAssignments = Record<string, string | null>;
 
@@ -189,4 +219,41 @@ export const putStepAssignees = (id: string, assignees: Record<string, string | 
   apiFetch<StepAssignees>(`/api/workflow-definitions/${id}/step-assignees`, {
     method: 'PUT',
     body: JSON.stringify({ assignees }),
+  });
+
+/**
+ * Combined per-step settings (E10-S01) — one editable block per step holding the
+ * default assignee, ETA, and client-visibility together. Saved in a single
+ * version bump.
+ */
+export interface StepSettingRow {
+  stepNumber: number;
+  title: string;
+  type: string;
+  phaseId: string | null;
+  assigneeUid: string | null;
+  etaDays: number | null;
+  clientVisible: boolean;
+}
+
+export interface StepSettings {
+  definitionId: string;
+  version: number;
+  steps: StepSettingRow[];
+}
+
+/** Partial per-step update: omitted sub-fields stay unchanged; null clears. */
+export type StepSettingPatch = Partial<{
+  assigneeUid: string | null;
+  etaDays: number | null;
+  clientVisible: boolean;
+}>;
+
+export const getStepSettings = (id: string) =>
+  apiFetch<StepSettings>(`/api/workflow-definitions/${id}/step-settings`);
+
+export const putStepSettings = (id: string, settings: Record<string, StepSettingPatch>) =>
+  apiFetch<StepSettings>(`/api/workflow-definitions/${id}/step-settings`, {
+    method: 'PUT',
+    body: JSON.stringify({ settings }),
   });

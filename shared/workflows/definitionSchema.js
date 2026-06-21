@@ -35,6 +35,7 @@
  *   effects?: string[],         // declarative effect names (e.g. 'SEND_EMAIL') run by backend AFTER commit
  *   phaseId?: string,           // which PhaseDef this step belongs to (journey grouping)
  *   typicalDurationDays?: number, // expected duration — powers ETA + delay states
+ *   clientVisible?: boolean,    // whether this step appears in the CLIENT step list (default true)
  *   clientActionLabel?: string, // short CTA label for the client hero card (vs. generic title)
  *   // Gate config (type === 'payment_gate'):
  *   gate?: { requires: 'fully_paid' | 'part_paid', onPass: number, onWait: number },
@@ -152,6 +153,10 @@ export function validateDefinition(def) {
     if (s.typicalDurationDays != null &&
         (typeof s.typicalDurationDays !== 'number' || !Number.isFinite(s.typicalDurationDays) || s.typicalDurationDays < 0)) {
       errors.push(`step ${s.stepNumber} typicalDurationDays must be a non-negative number`);
+    }
+    // clientVisible (per-step client interface visibility): optional boolean.
+    if (s.clientVisible != null && typeof s.clientVisible !== 'boolean') {
+      errors.push(`step ${s.stepNumber} clientVisible must be a boolean`);
     }
     if (s.type === 'payment_gate') {
       if (!s.gate) errors.push(`payment_gate step ${s.stepNumber} missing gate config`);

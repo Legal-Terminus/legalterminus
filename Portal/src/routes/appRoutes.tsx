@@ -14,6 +14,7 @@ import UsersPage from '../pages/users/UsersPage';
 import UserFormPage from '../pages/users/UserFormPage';
 import Services from '../pages/services/ServicesPage';
 import ServiceDetail from '../pages/services/ServiceDetailPage';
+import WorkflowEditorPage from '../pages/workflow/WorkflowEditorPage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import OrdersPage from '../pages/orders/OrdersPage';
 import NotificationsPage from '../pages/notifications/NotificationsPage';
@@ -23,6 +24,7 @@ import ReportsPage from '../pages/reports/ReportsPage';
 import AllTasksReport from '../pages/reports/AllTasksReport';
 import CompletedTasksReport from '../pages/reports/CompletedTasksReport';
 import PendingTasksReport from '../pages/reports/PendingTasksReport';
+import SlaReport from '../pages/reports/SlaReport';
 import MasterSheetReport from '../pages/reports/MasterSheetReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 
@@ -74,6 +76,7 @@ export const APP_ROUTES: AppRoute[] = [
   { path: '/reports/all-tasks',    element: <AllTasksReport />,       roles: ['admin', 'manager'] },
   { path: '/reports/completed',    element: <CompletedTasksReport />, roles: ['admin', 'manager'] },
   { path: '/reports/pending',      element: <PendingTasksReport />,   roles: ['admin', 'manager'] },
+  { path: '/reports/sla',          element: <SlaReport />,            roles: ['admin', 'manager'] },
   { path: '/reports/master-sheet', element: <MasterSheetReport />,    roles: ['admin', 'manager'] },
   { path: '/users/new/:type',      element: <UserFormPage />,         roles: ['admin', 'manager'] },
   { path: '/users/edit/:type/:uid',element: <UserFormPage />,         roles: ['admin', 'manager'] },
@@ -83,6 +86,8 @@ export const APP_ROUTES: AppRoute[] = [
   // ── Service catalog — staff only (clients excluded; staff can customise table fields) ──
   { path: '/services', element: <Services />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Services', icon: Layers, mobile: true } },
   { path: '/services/:serviceKey', element: <ServiceDetail />, roles: ['admin', 'manager', 'team_member'] },
+  // Workflow editor (E10-S01 write side) — admin only; reached from a service's "Edit workflow".
+  { path: '/services/:serviceKey/edit', element: <WorkflowEditorPage />, roles: ['admin'] },
 
   // ── Self-service (all roles) — own profile + order history (migrated from the
   //    marketing site's /my-profile, which is now a redirect into the portal) ──

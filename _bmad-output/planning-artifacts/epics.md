@@ -3,8 +3,8 @@ title: Legal-Terminus Portal — Epics & Stories
 version: 1.0
 date: 2026-05-31
 author: Winston (BMAD Architect Agent)
-status: Draft — ready for developer review
-stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", "write-stories", "sprint-plan"]
+status: In progress — Phase 1 substantially complete (status reconciled against code 2026-06-21)
+stepsCompleted: ["validate-prerequisites", "gather-context", "decompose-epics", "write-stories", "sprint-plan", "status-reconciliation-2026-06-21"]
 ---
 
 # Legal-Terminus Portal — Epics & User Stories
@@ -336,6 +336,12 @@ split dashboard tiles.
 ### E02-S04 — Conditional Branching & Resubmission Loop [Phase 1]
 
 **Priority**: P2 | **Complexity**: M | **Linked spec story**: US-6 | **Dependencies**: E02-S02
+
+> **✅ BUILT (status reconciled 2026-06-21).** `transitionTask` handles `BRANCH_DECISION` and the
+> `GOVT_REJECT`/resubmission events end-to-end through `POST /api/tasks/:taskId/transition`; the persisted
+> XState snapshot drives step (re)activation, and conditional-branch steps that don't apply on a given
+> path are skipped. Branch decision is surfaced as a UI affordance on the step hero. Edge coverage exists
+> via `Portal/e2e/step-execution.spec.ts`.
 
 **Rationale**: Resubmissions from government departments are common in Indian regulatory filings. The machine topology supports them (story E02-S01), but this story validates the end-to-end flow through the backend transition endpoint including branch decision UI affordances.
 
@@ -809,6 +815,12 @@ split dashboard tiles.
 ### E04-S07 — Migrate Profile & Orders into the Portal [Phase 1]
 
 **Priority**: P2 | **Complexity**: M | **Linked spec story**: — | **Dependencies**: E01-S04, E04-S01, E06-S03 | **Raised**: 2026-06-13
+
+> **✅ BUILT (status reconciled 2026-06-21).** Profile + Orders now live in the Portal as role-neutral
+> pages (`Portal/src/pages/profile/ProfilePage.tsx`, `Portal/src/pages/orders/OrdersPage.tsx`). The
+> marketing-site `/my-profile` route is reduced to a 25-line thin redirect
+> (`Frontend/src/Pages/MyProfile/MyProfile.jsx` → `window.location.replace('/portal/dashboard')`); no
+> account UI remains on the marketing site.
 
 **Rationale**: Account features (Profile, Orders) currently live on the **marketing site** (`Frontend/src/Pages/MyProfile/MyProfile.jsx`) as a mini-app bolted onto the brochure site. This violates the consolidation principle established for the portal: authenticated, role-scoped application surface belongs in the Portal (React 19 + TS + Tailwind + Cal.com design system + unified `/api/portal/users`), not on the marketing site (plain JSX + hand-rolled CSS). Maintaining account UI in two stacks duplicates work and bypasses the portal's design language, auth model, and type safety. The marketing site's job is to convert and hand off to the portal — not to host an app.
 
@@ -1630,6 +1642,13 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 
 **Priority**: P2 | **Complexity**: S | **Linked spec story**: US-8 | **Dependencies**: E09-S01
 
+> **✅ BUILT (status reconciled 2026-06-21).** Role is changed via `PATCH /api/portal/users/:uid`
+> (guarded `requireRole('admin','manager')`); `canAssignRole` enforces that a manager cannot mint
+> admin/manager. Backend persists `users/{uid}.role` and best-effort syncs the Firebase custom claim
+> via `admin.auth().setCustomUserClaims(uid, { role })`. The **self-role-change guard** blocks a user
+> from changing their own role. Auth middleware reads the claim (with a short role cache) so changes
+> take effect without forced logout.
+
 **Rationale**: Role changes must take effect promptly and reliably, without forcing the user to log out or wait for a token to expire.
 
 **Acceptance Criteria**:
@@ -1692,6 +1711,18 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 ### E09-S05 — Multi-Email Login Resolution [Phase 1]
 
 **Priority**: P1 | **Complexity**: M | **Linked spec story**: US-14 | **Dependencies**: E09-S02
+
+> **🚧 PARTIAL (status reconciled 2026-06-21) — data model + UI built; login resolution NOT wired.**
+> Built: clients carry an `emailIds[]` secondary-email array (`user.schema.js`, defaults to `[email]`),
+> the `ClientForm` lets staff add/remove secondary emails, and the **leads** report already matches a
+> contact against both primary `email` and `emailIds[]` (`array-contains-any`).
+> **Still TODO (the core of this story):**
+> - `getUserByEmail`/`userService` and auth middleware resolve a logged-in user **by primary `email` only**
+>   (`.where('email','==',email)`) — they do NOT consult `emailIds[]`, so signing in with a secondary
+>   email does not resolve to the profile. Add an `emailIds array-contains` fallback + set `req.clientUid`.
+> - Secondary-email banner in the Portal ("logged in via secondary email; primary: …").
+> - Ambiguous-resolution rule (prefer the profile where it is primary; else most-recent + admin alert).
+> - No e2e coverage (`Portal/e2e` has no multi-email spec).
 
 **Rationale**: Clients often have both personal and business emails. Any registered email must resolve to the correct profile.
 
@@ -1763,6 +1794,20 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 >   visualizer/compiler, publish → new version.
 > - **v1 scope = step-metadata editing only** (NOT topology rewiring, NOT authoring brand-new flows
 >   from scratch — those are later sub-phases). Build sequence: after Phase 2 (step execution).
+
+> **✅ BUILT (2026-06-21) — write side shipped, incl. topology editing.** Admin-only editor.
+> Backend: `POST /api/workflow-definitions` (create) + `PATCH /api/workflow-definitions/:id` (update),
+> both run the shared `validateDefinition` before persisting and **bump `version`** (in-flight matters
+> are version-pinned, so unaffected); serviceKey collisions are rejected; `invalidateWorkflowCache()`
+> is now called on every write (it was defined but never invoked — also retrofitted into the existing
+> step-eta / step-assignee writes). Portal: `WorkflowEditorPage.tsx` (`/services/:serviceKey/edit`) —
+> add/remove/reorder steps, edit every step field (title, description, type, role, ETA, phase, effects,
+> client CTA), wire transitions + payment-gate targets, manage phases, with **live inline validation**
+> and a **live diagram preview** via the same compiler the runtime uses. Reached from a service's
+> "Edit workflow" button (admin only). e2e: `Portal/e2e/workflow-editor.spec.ts` (load, validation
+> gating, publish round-trip with version bump, 422 on invalid, 403 for clients).
+> **Note (2026-06-21):** per-step `clientVisible` + a merged single per-step settings block
+> (assignee + ETA + client-visible) are being added on top of this — see the combined-settings work.
 
 ---
 
@@ -2107,6 +2152,16 @@ activity events, or staff mechanics. Raised 2026-06-14.
 > internal step fields from `getTask`+`listTasks` for clients; `TaskDetailPage` hides the Step-owner
 > block for clients (`!role.isClient`). Matter-owner controls were already `canAssign`-gated (staff only).
 
+> **✅ EXTENDED (2026-06-21) — per-step client visibility.** Steps now carry a `clientVisible`
+> boolean on the workflow definition (default `true`). `getTask` for a client DROPS steps whose
+> definition marks `clientVisible === false` (`clientVisibleStepSet()` + `projectTaskForClient(task,
+> visibleSet)`), so internal-only steps (e.g. "DSC preparation", "Form Check") never appear in the
+> client's step list — matching the business sheet's "Steps viewed in client interface" column.
+> Configurable per step in two places: the service **Step Settings** block and the **Workflow Editor**
+> (a "Visible to client" toggle). The company-incorporation seed was rewritten to the 44-step sheet
+> with `clientVisible` set on the 16 client-facing steps. e2e: `Portal/e2e/step-settings.spec.ts`
+> (combined settings + client-projection filtering).
+
 **Rationale**: Clients should not see *who internally* is working their matter (Step owner, Matter owner,
 assignee names, reassignment controls). These are internal staffing details.
 
@@ -2182,11 +2237,12 @@ matter progresses, surfaces what's **running late**, and exposes "time on step" 
 ops visibility. Configured once at the **service (workflow definition) level**; applied automatically to
 every matter created from that service. Raised 2026-06-14.
 
-> **⏳ NOT STARTED.** Builds on the data-driven workflow model (E-10/E-11) and the existing step
-> instance state. ETA config lives on the definition's steps (alongside `assignedRole`, `phaseId`); due
-> dates are computed at matter creation / on each transition and stored on the step instance so reports
-> and worklists can sort/filter by lateness without recomputation. Notifications for breaches depend on
-> E-07 (so the alerting story is gated on it).
+> **✅ PHASE-1 BUILT (status reconciled 2026-06-21).** The time-aware core shipped: ETA config
+> (S01), derived per-step + whole-matter due dates (S02), and "running late" visibility (S03) are all
+> in code. ETA config lives on the definition's steps (`typicalDurationDays`); due dates are computed
+> server-side at matter creation / on each transition and stored on the step instance so reports and
+> worklists sort/filter by lateness without recomputation.
+> **Still pending (Phase 2):** SLA / Delay report (S04) and SLA breach notifications (S05, gated on E-07 email).
 
 **Why now**: We already pre-assign work per phase and flag urgency manually (E-11). The missing piece is
 *objective* timeliness — without ETAs, "running late" is guesswork and the journey tracker (E04-S08) has
@@ -2287,6 +2343,14 @@ lateness is objective and sortable.
 ### E13-S04 — SLA / Delay Report [Phase 2]
 
 **Priority**: P2 | **Complexity**: M | **Linked spec story**: US-9 | **Dependencies**: E13-S02, E08-S02
+
+> **✅ BUILT (2026-06-21).** `GET /api/reports/sla` (admin/manager) aggregates lateness across all
+> in-flight matters from server-stamped per-step `dueAt`/`onTime` (E13-S02 — never recomputed):
+> `breaches[]` = every ACTIVE step that is overdue or at-risk (within an `atRiskDays` window) with
+> service / phase / assignee / breach-age; plus `onTimeByService` and `onTimeByPhase` completion-rate
+> summaries. Portal: `SlaReport.tsx` (`/reports/sla`) — summary chips, an at-risk-window control, a
+> searchable DataGrid (rows link to the matter), and on-time-rate bars; linked from the Reports hub.
+> e2e: `Portal/e2e/sla-report.spec.ts` (page + aggregation contract + client 403/route gating).
 
 **Rationale**: Management needs an aggregate view of where matters are slipping (which service, which
 phase, which assignee) — the reporting counterpart to E08-S02 (Workload/Delay).

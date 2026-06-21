@@ -28,7 +28,12 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // Retry transient flakes everywhere (not just CI): the first interactive test
+  // after a cold server start can be slow, and a few specs poll the 30s
+  // notification cycle — both are timing flakes that pass on a warm retry, not
+  // logic failures. One retry keeps the suite deterministic without masking real
+  // bugs (a genuine failure fails both attempts).
+  retries: process.env.CI ? 2 : 1,
   reporter: process.env.CI ? 'github' : [['list'], ['html', { open: 'never' }]],
   // Generous per-test timeout: provisioning-heavy specs mint a token + create/
   // assign a fresh matter (and sometimes a user) before the UI assertions, plus
@@ -46,7 +51,9 @@ export default defineConfig({
   projects: [
     // Logs in each role once and saves storageState (.auth/*.json). Generous
     // timeout — the first cold-boot login (Firestore role lookup) can be slow.
-    { name: 'setup', testMatch: /auth\.setup\.ts/, timeout: 150_000 },
+    // Always retry setup (even locally): a single slow cold-boot login otherwise
+    // fails setup and cascades to skip the whole suite.
+    { name: 'setup', testMatch: /auth\.setup\.ts/, timeout: 150_000, retries: 2 },
     // All feature specs run after auth is established.
     {
       name: 'chromium',

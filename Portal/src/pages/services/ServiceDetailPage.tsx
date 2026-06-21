@@ -10,9 +10,8 @@ import { getServiceCatalog } from '../../api/services';
 import {
   getWorkflowDefinitions, getWorkflowDefinition,
   getPhaseAssignments, putPhaseAssignments, getWorkflowSyncCheck,
-  getStepEtas, putStepEtas,
-  getStepAssignees, putStepAssignees,
-  type WorkflowDefinition, type PhaseAssignments,
+  getStepSettings, putStepSettings,
+  type WorkflowDefinition, type PhaseAssignments, type StepSettingPatch,
 } from '../../api/workflowDefinitions';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { compileDefinition } from '@shared/workflows/compileDefinition.js';
@@ -26,6 +25,7 @@ import { compileDefinition } from '@shared/workflows/compileDefinition.js';
 export default function ServiceDetailPage() {
   const { serviceKey } = useParams<{ serviceKey: string }>();
   const navigate = useNavigate();
+  const role = useAuthStore((s) => s.role);
 
   const { data: catalog, isLoading: catalogLoading } = useQuery({
     queryKey: ['service-catalog'],
@@ -73,9 +73,16 @@ export default function ServiceDetailPage() {
       title={service?.displayName ?? 'Service'}
       subtitle={service?.category}
       action={
-        <button onClick={() => navigate('/services')} className="btn-secondary">
-          <ArrowLeft className="w-4 h-4" /> Back to Services
-        </button>
+        <div className="flex items-center gap-2">
+          {role === 'admin' && definitionId && (
+            <button onClick={() => navigate(`/services/${serviceKey}/edit`)} className="btn-primary">
+              <Workflow className="w-4 h-4" /> Edit workflow
+            </button>
+          )}
+          <button onClick={() => navigate('/services')} className="btn-secondary">
+            <ArrowLeft className="w-4 h-4" /> Back to Services
+          </button>
+        </div>
       }
     >
       <div className="mb-3 flex items-center gap-2">
@@ -127,87 +134,117 @@ export default function ServiceDetailPage() {
         </div>
       )}
 
-      {/* Assignments (E11-S02 + per-step) — phase defaults with per-step overrides
-          nested under each phase; new matters pre-route work to the configured staff. */}
+      {/* Phase default assignees (E11-S02) — one default person per phase; new
+          matters route that phase's steps to them unless a step overrides below. */}
       {definitionId && definition && (
         <AssignmentsEditor definitionId={definitionId} definition={definition} />
       )}
 
-      {/* Per-step ETAs (E13-S01) — configure expected duration per step; new
-          matters derive per-step + whole-matter due dates from these. */}
-      {definitionId && definition && (
-        <StepEtaEditor definitionId={definitionId} />
+      {/* Combined per-step settings (E10-S01): assignee override + ETA + client
+          visibility, one block per step, saved together. */}
+      {definitionId && (
+        <StepSettingsEditor definitionId={definitionId} />
       )}
     </PageShell>
   );
 }
 
-/* ── Per-step ETA editor (E13-S01) ─────────────────────────────────────────── */
+/* ── Combined per-step settings: assignee + ETA + client visibility ─────────── */
 
-function StepEtaEditor({ definitionId }: { definitionId: string }) {
+/**
+ * One settings block per step holding all three values an admin tunes per step:
+ * the default ASSIGNEE (overrides the phase default), the ETA (days, drives due
+ * dates / "running late"), and CLIENT-VISIBLE (whether the step shows in the
+ * client's step list). Edits overlay the server value and are saved together in a
+ * single version bump via the combined `/step-settings` endpoint. Applies to new
+ * matters only (definitions are version-pinned per matter).
+ */
+function StepSettingsEditor({ definitionId }: { definitionId: string }) {
   const role = useAuthStore((s) => s.role);
   const toast = useToast();
   const queryClient = useQueryClient();
   const canEdit = role === 'admin' || role === 'manager';
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['step-etas', definitionId],
-    queryFn: () => getStepEtas(definitionId),
-    staleTime: 30_000,
+  const { data: staff = [] } = useQuery({
+    queryKey: ['portalUsers', 'staff'],
+    queryFn: getAllUsers,
+    select: (users: PortalUser[]) => users.filter((u) => u.role !== 'client'),
+    staleTime: 60_000,
   });
 
-  // Edits overlay the server value (no effect-driven sync). Keyed by stepNumber;
-  // value is the raw input string ('' = cleared/untracked).
-  const [edits, setEdits] = useState<Record<number, string>>({});
+  const { data, isLoading } = useQuery({
+    queryKey: ['step-settings', definitionId],
+    queryFn: () => getStepSettings(definitionId),
+    staleTime: 30_000,
+  });
   const serverSteps = useMemo(() => data?.steps ?? [], [data]);
-  const valueFor = (stepNumber: number): string => {
-    if (stepNumber in edits) return edits[stepNumber];
-    const s = serverSteps.find((x) => x.stepNumber === stepNumber);
-    return s?.typicalDurationDays != null ? String(s.typicalDurationDays) : '';
+
+  // Per-step edit overlay (only changed fields per step are tracked).
+  const [edits, setEdits] = useState<Record<number, StepSettingPatch>>({});
+  const setField = (n: number, patch: StepSettingPatch) =>
+    setEdits((d) => ({ ...d, [n]: { ...d[n], ...patch } }));
+
+  const assigneeVal = (n: number): string => {
+    const e = edits[n];
+    if (e && 'assigneeUid' in e) return e.assigneeUid ?? '';
+    return serverSteps.find((x) => x.stepNumber === n)?.assigneeUid ?? '';
+  };
+  const etaVal = (n: number): string => {
+    const e = edits[n];
+    if (e && 'etaDays' in e) return e.etaDays == null ? '' : String(e.etaDays);
+    const s = serverSteps.find((x) => x.stepNumber === n);
+    return s?.etaDays != null ? String(s.etaDays) : '';
+  };
+  const visibleVal = (n: number): boolean => {
+    const e = edits[n];
+    if (e && 'clientVisible' in e) return Boolean(e.clientVisible);
+    return serverSteps.find((x) => x.stepNumber === n)?.clientVisible ?? true;
   };
 
   const save = useMutation({
     mutationFn: () => {
-      // Build the etas map from edits only (server keeps the rest). '' → null (clear).
-      const etas: Record<string, number | null> = {};
-      for (const [num, raw] of Object.entries(edits)) {
-        etas[num] = raw.trim() === '' ? null : Number(raw);
+      const settings: Record<string, StepSettingPatch> = {};
+      for (const [num, patch] of Object.entries(edits)) {
+        const clean: StepSettingPatch = {};
+        if ('assigneeUid' in patch) clean.assigneeUid = patch.assigneeUid || null;
+        if ('etaDays' in patch) clean.etaDays = patch.etaDays;
+        if ('clientVisible' in patch) clean.clientVisible = patch.clientVisible;
+        settings[num] = clean;
       }
-      return putStepEtas(definitionId, etas);
+      return putStepSettings(definitionId, settings);
     },
     onSuccess: (res) => {
-      queryClient.setQueryData(['step-etas', definitionId], res);
-      // The definition itself changed (version bumped) — drop its cache so the
-      // diagram/detail refetch the new version.
+      queryClient.setQueryData(['step-settings', definitionId], res);
+      // The definition changed (version bumped) — drop dependent caches.
       queryClient.invalidateQueries({ queryKey: ['workflow-definition', definitionId] });
+      queryClient.invalidateQueries({ queryKey: ['step-assignees', definitionId] });
+      queryClient.invalidateQueries({ queryKey: ['step-etas', definitionId] });
       setEdits({});
-      toast.success('Step ETAs saved. Applies to new matters.');
+      toast.success('Step settings saved. Applies to new matters.');
     },
-    onError: (err: Error) => toast.error(err.message || 'Could not save step ETAs.'),
+    onError: (err: Error) => toast.error(err.message || 'Could not save step settings.'),
   });
 
-  // Total expected duration across steps that have an ETA (live, incl. edits).
-  const totalDays = useMemo(() => {
-    return serverSteps.reduce((sum, s) => {
-      const v = valueFor(s.stepNumber).trim();
+  const totalDays = useMemo(() =>
+    serverSteps.reduce((sum, s) => {
+      const v = etaVal(s.stepNumber).trim();
       const n = v === '' ? 0 : Number(v);
       return sum + (Number.isFinite(n) ? n : 0);
-    }, 0);
+    }, 0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverSteps, edits]);
-
+    [serverSteps, edits]);
   const hasEdits = Object.keys(edits).length > 0;
 
   return (
     <div className="mt-8">
       <div className="mb-3 flex items-center gap-2">
         <Clock className="w-4 h-4 text-ink-muted" />
-        <h2 className="text-sm font-semibold text-ink">Step ETAs</h2>
+        <h2 className="text-sm font-semibold text-ink">Step Settings</h2>
       </div>
       <p className="text-sm text-ink-muted mb-3">
-        Set an expected duration (in days) per step. New matters use these to compute per-step and
-        whole-matter due dates, and to flag work that’s running late. Leave blank to leave a step untracked.
-        {' '}Changes apply to new matters only.
+        Per step: the default <strong>assignee</strong> (overrides the phase default), the expected
+        <strong> ETA</strong> in days (drives due dates and “running late”), and whether the step is
+        <strong> visible to the client</strong>. Changes apply to new matters only.
       </p>
 
       {isLoading ? (
@@ -216,26 +253,52 @@ function StepEtaEditor({ definitionId }: { definitionId: string }) {
         </div>
       ) : (
         <>
+          {/* Header row */}
+          <div className="hidden sm:flex items-center gap-3 px-4 pb-1 text-xs text-ink-faint">
+            <span className="flex-1">Step</span>
+            <span className="w-[200px]">Assignee</span>
+            <span className="w-28 text-right">ETA (days)</span>
+            <span className="w-28 text-center">Client-visible</span>
+          </div>
           <div className="card divide-y divide-hairline">
             {serverSteps.map((s) => (
-              <div key={s.stepNumber} className="flex items-center justify-between gap-3 p-4">
-                <span className="text-sm text-ink min-w-0 truncate">
+              <div key={s.stepNumber} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-4">
+                <span className="flex-1 text-sm text-ink min-w-0 truncate">
                   <span className="text-ink-faint mr-1.5">{s.stepNumber}.</span>{s.title}
                 </span>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <select
+                  className="input-field py-1.5 text-sm sm:w-[200px] shrink-0"
+                  value={assigneeVal(s.stepNumber)}
+                  disabled={!canEdit || save.isPending}
+                  onChange={(e) => setField(s.stepNumber, { assigneeUid: e.target.value || null })}
+                  aria-label={`Step ${s.stepNumber} assignee`}
+                >
+                  <option value="">Inherit from phase</option>
+                  {staff.map((u) => <option key={u.uid} value={u.uid}>{displayName(u)}</option>)}
+                </select>
+                <input
+                  type="number"
+                  min={0}
+                  max={3650}
+                  inputMode="numeric"
+                  className="input-field py-1.5 text-sm sm:w-28 text-right shrink-0"
+                  placeholder="—"
+                  value={etaVal(s.stepNumber)}
+                  disabled={!canEdit || save.isPending}
+                  onChange={(e) => setField(s.stepNumber, { etaDays: e.target.value.trim() === '' ? null : Number(e.target.value) })}
+                  aria-label={`Step ${s.stepNumber} ETA in days`}
+                />
+                <label className="sm:w-28 flex items-center justify-center gap-2 shrink-0 cursor-pointer">
                   <input
-                    type="number"
-                    min={0}
-                    max={3650}
-                    inputMode="numeric"
-                    className="input-field py-1.5 text-sm w-24 text-right"
-                    placeholder="—"
-                    value={valueFor(s.stepNumber)}
+                    type="checkbox"
+                    className="h-4 w-4"
+                    checked={visibleVal(s.stepNumber)}
                     disabled={!canEdit || save.isPending}
-                    onChange={(e) => setEdits((d) => ({ ...d, [s.stepNumber]: e.target.value }))}
+                    onChange={(e) => setField(s.stepNumber, { clientVisible: e.target.checked })}
+                    aria-label={`Step ${s.stepNumber} client-visible`}
                   />
-                  <span className="text-xs text-ink-faint w-8">days</span>
-                </div>
+                  <span className="sm:hidden text-xs text-ink-muted">Client-visible</span>
+                </label>
               </div>
             ))}
           </div>
@@ -251,7 +314,7 @@ function StepEtaEditor({ definitionId }: { definitionId: string }) {
                 className="btn-primary inline-flex items-center gap-1.5 ml-auto"
               >
                 {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                {save.isPending ? 'Saving…' : 'Save ETAs'}
+                {save.isPending ? 'Saving…' : 'Save step settings'}
               </button>
             )}
           </div>
@@ -261,15 +324,13 @@ function StepEtaEditor({ definitionId }: { definitionId: string }) {
   );
 }
 
-/* ── Assignments editor (E11-S02 phase defaults + per-step overrides) ───────── */
+/* ── Phase default-assignee editor (E11-S02) ────────────────────────────────── */
 
 /**
- * One "Assignments" section: each phase carries a default-assignee dropdown, with
- * its steps nested below. A step defaults to "Inherit from phase" and can override
- * to a specific person (matching the backend precedence: step default wins over
- * phase default; neither set → shared pool). Steps with no phase render under an
- * "Unphased steps" group. Saving persists BOTH phase assignments and step
- * assignees (each only if changed). Applies to new matters only (version-pinned).
+ * Phase-level default assignees: one default person per phase. New matters route
+ * that phase's steps to them, unless a step overrides it in the Step Settings block
+ * below (step default wins over phase default; neither set → shared pool). Applies
+ * to new matters only (definitions are version-pinned per matter).
  */
 function AssignmentsEditor({
   definitionId, definition,
@@ -294,105 +355,43 @@ function AssignmentsEditor({
     staleTime: 60_000,
   });
 
-  const { data: phaseData } = useQuery({
+  const { data: phaseData, isLoading } = useQuery({
     queryKey: ['phase-assignments', definitionId],
     queryFn: () => getPhaseAssignments(definitionId),
     staleTime: 30_000,
   });
-  const { data: stepData, isLoading } = useQuery({
-    queryKey: ['step-assignees', definitionId],
-    queryFn: () => getStepAssignees(definitionId),
-    staleTime: 30_000,
-  });
 
-  // Separate edit overlays for phases (by phaseId) and steps (by stepNumber).
   const [phaseEdits, setPhaseEdits] = useState<PhaseAssignments>({});
-  const [stepEdits, setStepEdits] = useState<Record<number, string>>({});
-
   const serverPhases = phaseData?.assignments ?? {};
-  const serverSteps = useMemo(() => stepData?.steps ?? [], [stepData]);
-
   const phaseValue = (phaseId: string): string =>
     (phaseId in phaseEdits ? phaseEdits[phaseId] : serverPhases[phaseId]) ?? '';
-  const stepValue = (stepNumber: number): string => {
-    if (stepNumber in stepEdits) return stepEdits[stepNumber];
-    return serverSteps.find((x) => x.stepNumber === stepNumber)?.defaultAssigneeUid ?? '';
-  };
-
-  // Group steps under their phase (preserving the definition's step order); steps
-  // without a phaseId fall into a trailing "unphased" bucket.
-  const stepsByPhase = useMemo(() => {
-    const map = new Map<string, typeof serverSteps>();
-    const unphased: typeof serverSteps = [];
-    for (const s of serverSteps) {
-      if (!s.phaseId) { unphased.push(s); continue; }
-      const arr = map.get(s.phaseId) ?? [];
-      arr.push(s);
-      map.set(s.phaseId, arr);
-    }
-    return { map, unphased };
-  }, [serverSteps]);
 
   const save = useMutation({
-    mutationFn: async () => {
-      const tasks: Promise<unknown>[] = [];
-      if (Object.keys(phaseEdits).length > 0) {
-        tasks.push(putPhaseAssignments(definitionId, { ...serverPhases, ...phaseEdits }));
-      }
-      if (Object.keys(stepEdits).length > 0) {
-        const assignees: Record<string, string | null> = {};
-        for (const [num, uid] of Object.entries(stepEdits)) assignees[num] = uid === '' ? null : uid;
-        tasks.push(putStepAssignees(definitionId, assignees));
-      }
-      await Promise.all(tasks);
-    },
+    mutationFn: () => putPhaseAssignments(definitionId, { ...serverPhases, ...phaseEdits }),
     onSuccess: async () => {
-      // Both writes bump/replace cached config — refetch the canonical values.
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['phase-assignments', definitionId] }),
-        queryClient.invalidateQueries({ queryKey: ['step-assignees', definitionId] }),
-        queryClient.invalidateQueries({ queryKey: ['workflow-definition', definitionId] }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: ['phase-assignments', definitionId] });
       setPhaseEdits({});
-      setStepEdits({});
-      toast.success('Assignments saved. Applies to new matters.');
+      toast.success('Phase assignments saved. Applies to new matters.');
     },
     onError: (err: Error) => toast.error(err.message || 'Could not save assignments.'),
   });
 
-  const hasEdits = Object.keys(phaseEdits).length > 0 || Object.keys(stepEdits).length > 0;
-
+  const hasEdits = Object.keys(phaseEdits).length > 0;
   const staffOptions = staff.map((u) => (
     <option key={u.uid} value={u.uid}>{displayName(u)}</option>
   ));
 
-  const stepRow = (s: typeof serverSteps[number]) => (
-    <div key={s.stepNumber} className="flex items-center justify-between gap-3 py-2.5 pl-9 pr-4">
-      <span className="text-sm text-ink-muted min-w-0 truncate">
-        <span className="text-ink-faint mr-1.5">{s.stepNumber}.</span>{s.title}
-      </span>
-      <select
-        className="input-field py-1.5 text-sm max-w-[220px] shrink-0"
-        value={stepValue(s.stepNumber)}
-        disabled={!canEdit || save.isPending}
-        onChange={(e) => setStepEdits((d) => ({ ...d, [s.stepNumber]: e.target.value }))}
-      >
-        <option value="">Inherit from phase</option>
-        {staffOptions}
-      </select>
-    </div>
-  );
+  if (phases.length === 0) return null; // no phases → nothing to assign at phase level
 
   return (
     <div className="mt-8">
       <div className="mb-3 flex items-center gap-2">
         <Users className="w-4 h-4 text-ink-muted" />
-        <h2 className="text-sm font-semibold text-ink">Assignments</h2>
+        <h2 className="text-sm font-semibold text-ink">Phase Assignments</h2>
       </div>
       <p className="text-sm text-ink-muted mb-3">
-        Set a default assignee per phase. New matters route that phase’s steps to them automatically. Override
-        an individual step below to route it to someone else — a step set to “Inherit from phase” uses its
-        phase default (or the shared pool if the phase is unassigned). Changes apply to new matters only.
+        Set a default assignee per phase. New matters route that phase’s steps to them automatically — a step
+        can override this in Step Settings below. Changes apply to new matters only.
       </p>
 
       {isLoading ? (
@@ -403,34 +402,20 @@ function AssignmentsEditor({
         <>
           <div className="card divide-y divide-hairline">
             {phases.map((p) => (
-              <div key={p.id}>
-                {/* Phase header row: the phase default assignee. */}
-                <div className="flex items-center justify-between gap-3 p-4 bg-surface-soft/40">
-                  <span className="text-sm font-semibold text-ink min-w-0 truncate">{p.name}</span>
-                  <select
-                    className="input-field py-1.5 text-sm max-w-[220px] shrink-0"
-                    value={phaseValue(p.id)}
-                    disabled={!canEdit || save.isPending}
-                    onChange={(e) => setPhaseEdits((d) => ({ ...d, [p.id]: e.target.value || null }))}
-                  >
-                    <option value="">Unassigned</option>
-                    {staffOptions}
-                  </select>
-                </div>
-                {/* Nested step overrides for this phase. */}
-                {(stepsByPhase.map.get(p.id) ?? []).map(stepRow)}
+              <div key={p.id} className="flex items-center justify-between gap-3 p-4">
+                <span className="text-sm font-semibold text-ink min-w-0 truncate">{p.name}</span>
+                <select
+                  className="input-field py-1.5 text-sm max-w-[220px] shrink-0"
+                  value={phaseValue(p.id)}
+                  disabled={!canEdit || save.isPending}
+                  onChange={(e) => setPhaseEdits((d) => ({ ...d, [p.id]: e.target.value || null }))}
+                  aria-label={`${p.name} default assignee`}
+                >
+                  <option value="">Unassigned</option>
+                  {staffOptions}
+                </select>
               </div>
             ))}
-
-            {/* Steps with no phase (rare) get their own group. */}
-            {stepsByPhase.unphased.length > 0 && (
-              <div>
-                <div className="flex items-center gap-3 p-4 bg-surface-soft/40">
-                  <span className="text-sm font-semibold text-ink-muted">Unphased steps</span>
-                </div>
-                {stepsByPhase.unphased.map(stepRow)}
-              </div>
-            )}
           </div>
 
           {canEdit && (

@@ -4,6 +4,7 @@ import {
   getAllTasks,
   getCompletedTasks,
   getPendingTasks,
+  getSlaReport,
   getMasterSheet,
 } from '../controllers/reports.controller.js';
 
@@ -15,6 +16,7 @@ router.use(verifyToken, requireRole('admin', 'manager'));
 router.get('/all-tasks',    getAllTasks);
 router.get('/completed',    getCompletedTasks);
 router.get('/pending',      getPendingTasks);
+router.get('/sla',          getSlaReport);
 router.get('/master-sheet', getMasterSheet);
 
 export default router;

@@ -21,37 +21,31 @@
 
 import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
-import { companyIncorporationMachine } from '../../../shared/workflows/companyIncorporation.machine.js';
-import { convertMachineToDefinition } from '../../../shared/workflows/convertMachineToDefinition.js';
+import { companyIncorporationDefinition } from '../../../shared/workflows/companyIncorporation.definition.js';
 import { validateDefinition } from '../../../shared/workflows/definitionSchema.js';
 
-// Which legacy machines to seed, and the catalog service keys each one serves.
-const SEEDS = [
-  {
-    machine: companyIncorporationMachine,
-    id: 'company-incorporation',
-    name: 'Company Incorporation',
-    serviceKeys: ['incorporation'],
-  },
-];
+// Hand-authored data definitions to seed. Company Incorporation reflects the
+// 44-step business sheet incl. per-step client visibility (clientVisible). Other
+// flows are authored from the UI (E10-S01) once needed.
+const SEEDS = [companyIncorporationDefinition];
 
 async function seed() {
   const db = getDb();
   const batch = db.batch();
 
-  for (const s of SEEDS) {
-    const def = convertMachineToDefinition(s.machine, { id: s.id, name: s.name, version: 1 });
+  for (const def of SEEDS) {
     const errors = validateDefinition(def);
     if (errors.length) {
-      throw new Error(`Definition '${s.id}' invalid:\n - ${errors.join('\n - ')}`);
+      throw new Error(`Definition '${def.id}' invalid:\n - ${errors.join('\n - ')}`);
     }
     const ref = db.collection('workflowDefinitions').doc(def.id);
     batch.set(
       ref,
-      { ...def, serviceKeys: s.serviceKeys, updatedAt: new Date().toISOString() },
+      { ...def, updatedAt: new Date().toISOString() },
       { merge: true }
     );
-    logger.info(`Prepared workflow definition '${def.id}' (${def.steps.length} steps).`);
+    const clientVisible = def.steps.filter((s) => s.clientVisible).length;
+    logger.info(`Prepared workflow definition '${def.id}' (${def.steps.length} steps, ${clientVisible} client-visible).`);
   }
 
   await batch.commit();

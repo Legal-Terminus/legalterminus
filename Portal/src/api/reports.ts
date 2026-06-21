@@ -34,6 +34,57 @@ export interface PendingTask extends Task {
 export const getPendingTasksReport = (filters: ReportFilters = {}) =>
   apiFetch<PendingTask[]>(`/api/reports/pending${buildQuery(filters)}`);
 
+// ─── SLA / Delay report (E13-S04) ─────────────────────────────────────────────
+export interface SlaBreach {
+  taskId: string;
+  clientName: string;
+  serviceType: string;
+  serviceName: string;
+  stepNumber: number;
+  stepTitle: string;
+  phaseId: string | null;
+  phaseName: string;
+  assigneeUid: string | null;
+  assigneeName: string | null;
+  dueAt: string;
+  startedAt: string | null;
+  severity: 'overdue' | 'at_risk';
+  daysOverdue: number;
+  daysLeft: number;
+  isUrgent: boolean;
+}
+
+export interface OnTimeRate {
+  key: string;
+  label: string;
+  onTime: number;
+  total: number;
+  rate: number | null; // % on-time, null when no completed-with-due steps yet
+}
+
+export interface SlaReport {
+  atRiskDays: number;
+  breaches: SlaBreach[];
+  summary: { overdue: number; atRisk: number };
+  onTimeByService: OnTimeRate[];
+  onTimeByPhase: OnTimeRate[];
+}
+
+export interface SlaFilters {
+  serviceType?: string;
+  assignee?: string;
+  atRiskDays?: number;
+}
+
+export const getSlaReport = (filters: SlaFilters = {}) => {
+  const params = new URLSearchParams();
+  if (filters.serviceType) params.set('serviceType', filters.serviceType);
+  if (filters.assignee) params.set('assignee', filters.assignee);
+  if (filters.atRiskDays != null) params.set('atRiskDays', String(filters.atRiskDays));
+  const qs = params.toString();
+  return apiFetch<SlaReport>(`/api/reports/sla${qs ? `?${qs}` : ''}`);
+};
+
 // ─── Master Sheet ───────────────────────────────────────────────────────────
 export interface MasterSheetRow {
   taskId: string;

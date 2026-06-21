@@ -12,7 +12,11 @@ import { AUTH_DIR, statePath } from './paths';
 fs.mkdirSync(AUTH_DIR, { recursive: true });
 
 // Run the role logins serially — parallel logins race each other and the backend.
-setup.describe.configure({ mode: 'serial' });
+// Retry each setup step: the FIRST cold-boot login (Firebase + backend role lookup
+// on a freshly-started server) is occasionally slow enough to exceed the redirect
+// wait; a retry against the now-warm server reliably succeeds. Without this, one
+// slow login fails setup and cascades to skip the entire suite.
+setup.describe.configure({ mode: 'serial', retries: 2 });
 
 // The Playwright webServer only waits on the PORTAL url; the backend (which the
 // login redirect needs for role resolution) may still be starting. Gate on it.

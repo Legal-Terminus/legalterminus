@@ -1,0 +1,121 @@
+import { test, expect } from './fixtures';
+import { apiAs, resolveServiceKey } from './api';
+
+/**
+ * E10-S01 (write side) — Workflow Editor. An admin can open a service's workflow,
+ * edit it structurally, and publish a new version; the change is validated by the
+ * shared compiler check before saving, and saving bumps `version` (in-flight
+ * matters are version-pinned, so unaffected). Non-admins cannot reach the editor.
+ *
+ * The save test is a NET-ZERO round-trip: it appends " (e2e)" to a step title,
+ * saves, asserts the version bumped, then restores the original title via a second
+ * save — so the suite stays idempotent (only the version counter advances).
+ */
+
+let serviceKey: string;
+let definitionId: string;
+
+test.beforeAll(async () => {
+  serviceKey = await resolveServiceKey();
+  const api = await apiAs('admin');
+  const defs = await (await api.get('/api/workflow-definitions')).json();
+  await api.dispose();
+  definitionId = defs.find((d: { serviceKeys?: string[] }) => (d.serviceKeys ?? []).includes(serviceKey)).id;
+});
+
+test('admin sees an "Edit workflow" button on the service detail page', async ({ adminPage }) => {
+  await adminPage.goto(`services/${serviceKey}`);
+  await expect(adminPage.getByRole('button', { name: /edit workflow/i })).toBeVisible();
+});
+
+test('non-admins (team member) do NOT see the edit entry and cannot reach the editor', async ({ teamPage }) => {
+  await teamPage.goto(`services/${serviceKey}`);
+  await expect(teamPage.getByRole('heading', { name: 'Configured Workflow' })).toBeVisible();
+  await expect(teamPage.getByRole('button', { name: /edit workflow/i })).toHaveCount(0);
+
+  // Direct navigation is also blocked by ProtectedRoute (admin-only route).
+  await teamPage.goto(`services/${serviceKey}/edit`);
+  await expect(async () => {
+    expect(/\/services\/.+\/edit(\?|$)/.test(new URL(teamPage.url()).pathname)).toBe(false);
+  }).toPass({ timeout: 15_000 });
+});
+
+test('editor loads with steps, phases, and a live preview', async ({ adminPage }) => {
+  await adminPage.goto(`services/${serviceKey}/edit`);
+  await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
+  await expect(adminPage.getByRole('heading', { name: /^Steps/ })).toBeVisible();
+  await expect(adminPage.getByRole('heading', { name: /Phases/ })).toBeVisible();
+  await expect(adminPage.getByRole('heading', { name: 'Live preview' })).toBeVisible();
+  // A valid seeded workflow → Save is enabled (no validation errors).
+  await expect(adminPage.getByRole('button', { name: /save & publish/i })).toBeEnabled();
+});
+
+test('invalid edit disables save and shows an inline error', async ({ adminPage }) => {
+  await adminPage.goto(`services/${serviceKey}/edit`);
+  await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
+
+  // Clear the first step's title → required-field error → save disabled.
+  const firstTitle = adminPage.getByLabel(/Step \d+ title/).first();
+  await firstTitle.fill('');
+  await expect(adminPage.getByText(/issue.*to fix before saving/i)).toBeVisible();
+  await expect(adminPage.getByRole('button', { name: /save & publish/i })).toBeDisabled();
+});
+
+test('admin edits a step title and publishes a new version (net-zero round-trip)', async ({ adminPage }) => {
+  // Read the starting version + first step title from the API.
+  const api = await apiAs('admin');
+  const before = await (await api.get(`/api/workflow-definitions/${definitionId}`)).json();
+  const startVersion = before.version as number;
+  const firstStep = [...before.steps].sort((a, b) => a.stepNumber - b.stepNumber)[0];
+  const originalTitle = firstStep.title as string;
+  await api.dispose();
+
+  await adminPage.goto(`services/${serviceKey}/edit`);
+  await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
+
+  // Append " (e2e)" to the first step title and publish.
+  const titleInput = adminPage.getByLabel(`Step ${firstStep.stepNumber} title`);
+  await titleInput.fill(`${originalTitle} (e2e)`);
+  await adminPage.getByRole('button', { name: /save & publish/i }).click();
+  await expect(adminPage.getByText(/workflow saved/i)).toBeVisible();
+
+  // Verify persisted: version bumped, title changed.
+  const api2 = await apiAs('admin');
+  const after = await (await api2.get(`/api/workflow-definitions/${definitionId}`)).json();
+  expect(after.version).toBe(startVersion + 1);
+  const editedStep = after.steps.find((s: { stepNumber: number }) => s.stepNumber === firstStep.stepNumber);
+  expect(editedStep.title).toBe(`${originalTitle} (e2e)`);
+
+  // Restore the original title (second publish) so the suite is idempotent.
+  const { id: _id, version: _v, createdAt: _c, updatedAt: _u, updatedBy: _b, ...body } = after;
+  void _id; void _v; void _c; void _u; void _b;
+  body.steps = body.steps.map((s: { stepNumber: number; title: string }) =>
+    s.stepNumber === firstStep.stepNumber ? { ...s, title: originalTitle } : s);
+  const restore = await api2.patch(`/api/workflow-definitions/${definitionId}`, { data: body });
+  expect(restore.ok()).toBeTruthy();
+  await api2.dispose();
+});
+
+test('API rejects a structurally invalid definition (422) and a client (403)', async ({ adminPage }) => {
+  void adminPage;
+  const api = await apiAs('admin');
+  const current = await (await api.get(`/api/workflow-definitions/${definitionId}`)).json();
+  const { id: _id, version: _v, createdAt: _c, updatedAt: _u, updatedBy: _b, ...body } = current;
+  void _id; void _v; void _c; void _u; void _b;
+
+  // Point the first step's first transition at a non-existent step → dangling target.
+  const broken = structuredClone(body);
+  const s = broken.steps.find((x: { transitions?: unknown[] }) => (x.transitions ?? []).length > 0);
+  if (s) s.transitions[0].to = 99999;
+  const res = await api.patch(`/api/workflow-definitions/${definitionId}`, { data: broken });
+  expect(res.status()).toBe(422);
+  const errBody = await res.json();
+  expect(Array.isArray(errBody.errors)).toBeTruthy();
+  await api.dispose();
+
+  // A client cannot write definitions at all.
+  const clientApi = await apiAs('client');
+  const cRes = await clientApi.patch(`/api/workflow-definitions/${definitionId}`, { data: body });
+  expect(cRes.status()).toBe(403);
+  await clientApi.dispose();
+});

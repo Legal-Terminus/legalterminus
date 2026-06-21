@@ -73,17 +73,37 @@ async function adminUids() {
 // Internal step fields a client should never see (assignment/audit metadata).
 const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedRole', 'completedBy', 'isUrgent'];
 
-// Strip internal ownership/assignment from a task + its steps for a client.
-function projectTaskForClient(task) {
+// Strip internal ownership/assignment from a task + its steps for a client, and
+// (when a visibility set is supplied) DROP steps the workflow marks as not
+// client-visible (`clientVisible === false` on the definition step). When no set
+// is given, all steps are kept (back-compat / staff projection).
+function projectTaskForClient(task, visibleStepNumbers = null) {
   const { assignedTo, createdBy, isUrgent, adminOverride, ...safe } = task;
   if (Array.isArray(safe.steps)) {
-    safe.steps = safe.steps.map((s) => {
-      const copy = { ...s };
-      for (const k of CLIENT_STEP_HIDDEN) delete copy[k];
-      return copy;
-    });
+    safe.steps = safe.steps
+      .filter((s) => !visibleStepNumbers || visibleStepNumbers.has(s.stepNumber))
+      .map((s) => {
+        const copy = { ...s };
+        for (const k of CLIENT_STEP_HIDDEN) delete copy[k];
+        return copy;
+      });
   }
   return safe;
+}
+
+// Build the set of client-visible step numbers for a task's pinned workflow.
+// A step is visible unless its definition explicitly sets clientVisible === false
+// (default-visible preserves behavior for workflows authored before the flag).
+// Returns null if the definition can't be loaded (→ caller keeps all steps).
+async function clientVisibleStepSet(task) {
+  try {
+    const compiled = await getCompiledById(task.workflowDefinitionId);
+    const steps = compiled?.definition?.steps;
+    if (!Array.isArray(steps)) return null;
+    return new Set(steps.filter((s) => s.clientVisible !== false).map((s) => s.stepNumber));
+  } catch {
+    return null;
+  }
 }
 
 // Which activity events a client may see, and how each reads in client-facing
@@ -647,8 +667,14 @@ export async function getTask(req, res) {
       : stepsSnap.docs.map((s) => s.data());
 
     const full = { id: doc.id, ...data, steps };
-    // E12-S01: clients get a projection with internal ownership/assignment removed.
-    res.json(req.user.role === 'client' ? projectTaskForClient(full) : full);
+    // E12-S01: clients get a projection with internal ownership/assignment removed,
+    // plus steps the workflow marks as not client-visible (clientVisible === false)
+    // are dropped from the client's step list.
+    if (req.user.role === 'client') {
+      const visible = await clientVisibleStepSet(full);
+      return res.json(projectTaskForClient(full, visible));
+    }
+    res.json(full);
   } catch (err) {
     logger.error({ err: err }, 'getTask error:');
     res.status(500).json({ message: 'Failed to get task' });

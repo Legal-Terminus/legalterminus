@@ -1,10 +1,15 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { phaseAssignmentsSchema, stepEtasSchema, stepAssigneesSchema } from '../schemas/workflow.schema.js';
 import {
-  listDefinitions, getDefinition, getPhaseAssignments, putPhaseAssignments,
+  phaseAssignmentsSchema, stepEtasSchema, stepAssigneesSchema, stepSettingsSchema,
+  createDefinitionSchema, updateDefinitionSchema,
+} from '../schemas/workflow.schema.js';
+import {
+  listDefinitions, getDefinition, createDefinition, updateDefinition,
+  getPhaseAssignments, putPhaseAssignments,
   syncCheckDefinition, getStepEtas, putStepEtas, getStepAssignees, putStepAssignees,
+  getStepSettings, putStepSettings,
 } from '../controllers/workflowDefinitions.controller.js';
 
 const router = Router();
@@ -13,6 +18,10 @@ router.use(verifyToken);
 
 // Listing all definitions is a staff/editor concern.
 router.get('/', requireRole('admin', 'manager', 'team_member'), listDefinitions);
+
+// Create a brand-new workflow definition (E10-S01 editor). Admin only — authoring
+// a flow is a higher-trust action than tweaking ETAs/assignees.
+router.post('/', requireRole('admin'), validate(createDefinitionSchema), createDefinition);
 
 // Per-phase default assignees (E11-S02). Read for staff; write for admin/manager.
 // MUST precede '/:id' so '/:id/phase-assignments' isn't swallowed by it.
@@ -30,9 +39,18 @@ router.put('/:id/step-etas', requireRole('admin', 'manager'), validate(stepEtasS
 router.get('/:id/step-assignees', requireRole('admin', 'manager', 'team_member'), getStepAssignees);
 router.put('/:id/step-assignees', requireRole('admin', 'manager'), validate(stepAssigneesSchema), putStepAssignees);
 
+// Combined per-step settings (assignee + ETA + client visibility) in one block.
+// Read for staff; write for admin/manager. Precede '/:id'.
+router.get('/:id/step-settings', requireRole('admin', 'manager', 'team_member'), getStepSettings);
+router.put('/:id/step-settings', requireRole('admin', 'manager'), validate(stepSettingsSchema), putStepSettings);
+
 // A single definition is readable by ANY authenticated role — clients need their
 // task's workflow (step titles/types) to render their progress + approval CTAs.
 // Step metadata is not sensitive (same data the visualizer shows).
 router.get('/:id', getDefinition);
+
+// Update (publish a new version of) a definition — admin only. Full-body replace
+// + version bump; validated by the shared compiler check before persisting.
+router.patch('/:id', requireRole('admin'), validate(updateDefinitionSchema), updateDefinition);
 
 export default router;

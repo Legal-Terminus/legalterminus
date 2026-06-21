@@ -1,6 +1,7 @@
 import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { validateDefinition } from '../../../shared/workflows/definitionSchema.js';
+import { invalidateWorkflowCache } from '../services/workflowDefinitions.service.js';
 
 const COLLECTION = 'workflowDefinitions';
 // Per-phase default assignees (E11-S02), kept SEPARATE from the versioned
@@ -38,6 +39,97 @@ export async function getDefinition(req, res) {
   } catch (err) {
     logger.error({ err }, 'getDefinition error:');
     res.status(500).json({ message: 'Failed to get workflow definition' });
+  }
+}
+
+// ─── Create / update a definition (E10-S01 editor — write side) ────────────
+// Both run the shared `validateDefinition` (the same semantic check the runtime
+// compiler relies on) BEFORE persisting, so the editor can never save a workflow
+// that won't compile. Every save bumps `version`; definitions are version-pinned
+// per matter (createTask records the version), so in-flight matters are never
+// disturbed by an edit. The workflow cache is invalidated so new matters and the
+// visualizer pick up the change immediately.
+
+// Reject a payload whose serviceKeys collide with a DIFFERENT definition — a
+// service key must map to exactly one workflow (the runtime resolves by key).
+async function serviceKeyConflict(serviceKeys, selfId) {
+  const keys = serviceKeys ?? [];
+  if (keys.length === 0) return null;
+  const snap = await getDb().collection(COLLECTION).get();
+  for (const doc of snap.docs) {
+    if (doc.id === selfId) continue;
+    const existing = doc.data().serviceKeys ?? [];
+    const clash = keys.find((k) => existing.includes(k));
+    if (clash) return { key: clash, definitionId: doc.id };
+  }
+  return null;
+}
+
+// POST /api/workflow-definitions — admin only. Creates a new definition at v1.
+export async function createDefinition(req, res) {
+  try {
+    const body = req.body; // shape validated by createDefinitionSchema
+    const ref = getDb().collection(COLLECTION).doc(body.id);
+    const existing = await ref.get();
+    if (existing.exists) {
+      return res.status(409).json({ message: `A workflow with id '${body.id}' already exists.` });
+    }
+
+    const def = { ...body, version: 1 };
+    const errors = validateDefinition(def);
+    if (errors.length) {
+      return res.status(422).json({ message: 'Workflow definition is invalid', errors });
+    }
+    const conflict = await serviceKeyConflict(def.serviceKeys, def.id);
+    if (conflict) {
+      return res.status(409).json({ message: `Service key '${conflict.key}' is already used by workflow '${conflict.definitionId}'.` });
+    }
+
+    const now = new Date().toISOString();
+    await ref.set({ ...def, createdAt: now, updatedAt: now, updatedBy: req.user?.uid ?? null });
+    invalidateWorkflowCache();
+    res.status(201).json({ ...def, createdAt: now, updatedAt: now });
+  } catch (err) {
+    logger.error({ err }, 'createDefinition error:');
+    res.status(500).json({ message: 'Failed to create workflow definition' });
+  }
+}
+
+// PATCH /api/workflow-definitions/:id — admin only. Replaces the editable body of
+// an existing definition and bumps version. `id` is immutable (from the route).
+export async function updateDefinition(req, res) {
+  try {
+    const { id } = req.params;
+    const ref = getDb().collection(COLLECTION).doc(id);
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
+
+    const prev = snap.data();
+    // Compose the full definition: route id + client body, server-owned version bump.
+    const def = { ...req.body, id, version: (prev.version ?? 1) + 1 };
+    const errors = validateDefinition(def);
+    if (errors.length) {
+      return res.status(422).json({ message: 'Workflow definition is invalid', errors });
+    }
+    const conflict = await serviceKeyConflict(def.serviceKeys, id);
+    if (conflict) {
+      return res.status(409).json({ message: `Service key '${conflict.key}' is already used by workflow '${conflict.definitionId}'.` });
+    }
+
+    const now = new Date().toISOString();
+    // Overwrite the whole document (the editor sends the complete definition), but
+    // preserve createdAt.
+    await ref.set({
+      ...def,
+      createdAt: prev.createdAt ?? now,
+      updatedAt: now,
+      updatedBy: req.user?.uid ?? null,
+    });
+    invalidateWorkflowCache();
+    res.json({ ...def, updatedAt: now });
+  } catch (err) {
+    logger.error({ err }, 'updateDefinition error:');
+    res.status(500).json({ message: 'Failed to update workflow definition' });
   }
 }
 
@@ -140,13 +232,13 @@ export async function putPhaseAssignments(req, res) {
     const def = defSnap.data();
     const validPhaseIds = new Set((def.phases ?? []).map((p) => p.id));
 
-    // Validate phase ids + assignees. Normalize '' → null (unassigned).
+    // Validate assignees; PRUNE phase ids that no longer exist on the definition.
+    // (A workflow's phases can change via the editor, leaving stale assignment keys
+    // — we silently drop those rather than 400 the whole save.) Normalize '' → null.
     const clean = {};
     const uidsToCheck = new Set();
     for (const [phaseId, uid] of Object.entries(assignments)) {
-      if (!validPhaseIds.has(phaseId)) {
-        return res.status(400).json({ message: `Unknown phase '${phaseId}' for this workflow` });
-      }
+      if (!validPhaseIds.has(phaseId)) continue; // stale phase → drop
       const norm = uid || null;
       clean[phaseId] = norm;
       if (norm) uidsToCheck.add(norm);
@@ -239,6 +331,7 @@ export async function putStepEtas(req, res) {
       updatedAt: new Date().toISOString(),
       updatedBy: req.user.uid ?? null,
     }, { merge: true });
+    invalidateWorkflowCache();
 
     res.json({
       definitionId: id,
@@ -330,6 +423,7 @@ export async function putStepAssignees(req, res) {
       updatedAt: new Date().toISOString(),
       updatedBy: req.user.uid ?? null,
     }, { merge: true });
+    invalidateWorkflowCache();
 
     res.json({
       definitionId: id,
@@ -345,6 +439,106 @@ export async function putStepAssignees(req, res) {
     if (err && err.status) return res.status(err.status).json({ message: err.message });
     logger.error({ err }, 'putStepAssignees error:');
     res.status(500).json({ message: 'Failed to save step assignees' });
+  }
+}
+
+// ─── Combined per-step settings (assignee + ETA + client visibility) ───────
+// One block per step in the service config UI, saved together. GET returns an
+// ordered row per non-final step with all three current values; PUT applies a
+// partial map and bumps the version once. Mirrors the validation of the separate
+// ETA/assignee endpoints (kept for back-compat); this is the merged surface.
+export async function getStepSettings(req, res) {
+  try {
+    const snap = await getDb().collection(COLLECTION).doc(req.params.id).get();
+    if (!snap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
+    const def = snap.data();
+    const steps = (def.steps ?? [])
+      .filter((s) => s.type !== 'final')
+      .map((s) => ({
+        stepNumber: s.stepNumber,
+        title: s.title,
+        type: s.type,
+        phaseId: s.phaseId ?? null,
+        assigneeUid: s.defaultAssigneeUid ?? null,
+        etaDays: typeof s.typicalDurationDays === 'number' ? s.typicalDurationDays : null,
+        clientVisible: s.clientVisible !== false, // default-visible
+      }));
+    res.json({ definitionId: def.id ?? req.params.id, version: def.version ?? 1, steps });
+  } catch (err) {
+    logger.error({ err }, 'getStepSettings error:');
+    res.status(500).json({ message: 'Failed to get step settings' });
+  }
+}
+
+export async function putStepSettings(req, res) {
+  try {
+    const { id } = req.params;
+    const { settings } = req.body; // shape validated by stepSettingsSchema
+
+    const ref = getDb().collection(COLLECTION).doc(id);
+    const defSnap = await ref.get();
+    if (!defSnap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
+    const def = defSnap.data();
+
+    const byNum = new Map((def.steps ?? []).map((s) => [s.stepNumber, s]));
+    const uidsToCheck = new Set();
+    for (const [key, val] of Object.entries(settings)) {
+      if (!byNum.has(Number(key))) {
+        return res.status(400).json({ message: `Unknown step ${key} for this workflow` });
+      }
+      if (val.assigneeUid) uidsToCheck.add(val.assigneeUid);
+    }
+
+    // Every assignee must exist and be staff (never a client).
+    await Promise.all([...uidsToCheck].map(async (uid) => {
+      const u = await getDb().collection('users').doc(uid).get();
+      if (!u.exists) throw { status: 400, message: `Assignee ${uid} not found` };
+      if (u.data().role === 'client') throw { status: 400, message: 'Cannot assign a step to a client' };
+    }));
+
+    // Apply each step's provided sub-fields; omitted fields stay unchanged.
+    const steps = (def.steps ?? []).map((s) => {
+      const v = settings[String(s.stepNumber)];
+      if (!v) return s;
+      const copy = { ...s };
+      if ('assigneeUid' in v) {
+        if (v.assigneeUid == null) delete copy.defaultAssigneeUid;
+        else copy.defaultAssigneeUid = v.assigneeUid;
+      }
+      if ('etaDays' in v) {
+        if (v.etaDays == null) delete copy.typicalDurationDays;
+        else copy.typicalDurationDays = v.etaDays;
+      }
+      if ('clientVisible' in v) copy.clientVisible = v.clientVisible;
+      return copy;
+    });
+
+    const version = (def.version ?? 1) + 1;
+    await ref.set({
+      steps,
+      version,
+      updatedAt: new Date().toISOString(),
+      updatedBy: req.user.uid ?? null,
+    }, { merge: true });
+    invalidateWorkflowCache();
+
+    res.json({
+      definitionId: id,
+      version,
+      steps: steps.filter((s) => s.type !== 'final').map((s) => ({
+        stepNumber: s.stepNumber,
+        title: s.title,
+        type: s.type,
+        phaseId: s.phaseId ?? null,
+        assigneeUid: s.defaultAssigneeUid ?? null,
+        etaDays: typeof s.typicalDurationDays === 'number' ? s.typicalDurationDays : null,
+        clientVisible: s.clientVisible !== false,
+      })),
+    });
+  } catch (err) {
+    if (err && err.status) return res.status(err.status).json({ message: err.message });
+    logger.error({ err }, 'putStepSettings error:');
+    res.status(500).json({ message: 'Failed to save step settings' });
   }
 }
 
