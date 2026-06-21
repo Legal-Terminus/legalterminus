@@ -7,12 +7,19 @@ import { createMatter, deleteMatter, deleteNewestClientMatter } from './api';
  */
 
 test('staff Matters grid renders; client grid is framed as My Services', async ({ adminPage, clientPage }) => {
-  await adminPage.goto('tasks');
-  await expect(adminPage.getByRole('heading', { name: 'All Matters' })).toBeVisible();
-  await expect(adminPage.getByText('Due', { exact: true }).first()).toBeVisible(); // E13-S03 staff-only column
+  // Create a fresh matter so the grid has a row — the Due column header only
+  // renders when the grid is non-empty (an empty DB shows the empty state).
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto('tasks');
+    await expect(adminPage.getByRole('heading', { name: 'All Matters' })).toBeVisible();
+    await expect(adminPage.getByText('Due', { exact: true }).first()).toBeVisible(); // E13-S03 staff-only column
 
-  await clientPage.goto('tasks');
-  await expect(clientPage.getByRole('heading', { name: 'My Services' })).toBeVisible();
+    await clientPage.goto('tasks');
+    await expect(clientPage.getByRole('heading', { name: 'My Services' })).toBeVisible();
+  } finally {
+    await deleteMatter(taskId);
+  }
 });
 
 test('client does NOT see a Create Matter button', async ({ clientPage }) => {
