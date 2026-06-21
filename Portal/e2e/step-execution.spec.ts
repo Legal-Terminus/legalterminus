@@ -111,7 +111,7 @@ test('#44: a team member assigned only the active step can complete it', async (
   }).toPass({ timeout: 15_000 });
 });
 
-test('client-action step: staff see a waiting note, not the approve CTA', async ({ adminPage }) => {
+test('client-action step: staff do NOT get the client Approve CTA, but admin gets an override', async ({ adminPage }) => {
   const def = await getDefinitionForMatter(taskId);
   const clientStep = firstClientStep(def);
   test.skip(!clientStep, 'This workflow has no client-approval step.');
@@ -121,6 +121,40 @@ test('client-action step: staff see a waiting note, not the approve CTA', async 
 
   await adminPage.goto(`tasks/${taskId}`);
   await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
-  // Staff must NOT get the client's Approve CTA on a client step.
+  // Staff must NOT get the client's own Approve CTA (exact label).
   await expect(adminPage.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
+  // …but admin/manager DO get an override action to advance on the client's behalf.
+  await expect(adminPage.getByRole('button', { name: /approve for client/i })).toBeVisible();
+});
+
+test('admin overrides a client step on the client’s behalf and the matter advances', async ({ adminPage }) => {
+  const def = await getDefinitionForMatter(taskId);
+  const clientStep = firstClientStep(def);
+  test.skip(!clientStep, 'This workflow has no client-approval step.');
+
+  const reached = await advanceUntil(taskId, (s) => s.stepNumber === clientStep!.stepNumber);
+  test.skip(reached !== clientStep!.stepNumber, `Could not reach client step (at ${reached}).`);
+
+  await adminPage.goto(`tasks/${taskId}`);
+  await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+  await adminPage.getByRole('button', { name: /approve for client/i }).click();
+
+  await expect(async () => {
+    expect((await getMatter(taskId)).currentStepNumber as number).not.toBe(clientStep!.stepNumber);
+  }).toPass({ timeout: 15_000 });
+});
+
+test('team member CANNOT override a client step (admin/manager only)', async ({ teamPage }) => {
+  const def = await getDefinitionForMatter(taskId);
+  const clientStep = firstClientStep(def);
+  test.skip(!clientStep, 'This workflow has no client-approval step.');
+
+  const reached = await advanceUntil(taskId, (s) => s.stepNumber === clientStep!.stepNumber);
+  test.skip(reached !== clientStep!.stepNumber, `Could not reach client step (at ${reached}).`);
+
+  await teamPage.goto(`tasks/${taskId}`);
+  await teamPage.getByRole('button', { name: 'Steps', exact: true }).click();
+  // A team member sees neither the client CTA nor the admin/manager override.
+  await expect(teamPage.getByRole('button', { name: /approve for client/i })).toHaveCount(0);
+  await expect(teamPage.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
 });

@@ -104,10 +104,14 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ['portalUsers'] });
       toast.success('User deleted.');
     },
-    onError: (err: Error & { status?: number }, uid) => {
-      // The delete guard (E11-S02) blocks while the user still holds work. Offer
-      // the bulk-reassign flow instead of a dead-end error.
-      if (err.status === 409) {
+    onError: (err: Error & { status?: number; body?: unknown }, uid) => {
+      // The delete guard blocks while the user still holds work. Only offer the
+      // reassign-then-delete flow when the block is STAFF work (assignee/step) —
+      // a client's OWNED matters can't be reassigned (a matter belongs to its
+      // client), so for that case we surface the backend's clear message instead
+      // of opening a reassign modal that can never unblock the delete.
+      const body = err.body as { reassignable?: boolean } | undefined;
+      if (err.status === 409 && body?.reassignable) {
         const u = users.find((x) => x.uid === uid) ?? null;
         if (u) { setReassignFor(u); return; }
       }

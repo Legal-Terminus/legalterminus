@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { createLead, deleteLead } from './api';
+import { createLead, deleteLead, deleteUserByEmail } from './api';
 
 /**
  * E08-S06 — Contact Leads: inline status change + convert-to-client, on a FRESH
@@ -7,9 +7,20 @@ import { createLead, deleteLead } from './api';
  */
 let leadId: string;
 let leadName: string;
+let leadEmail: string;
+// Set when a test converts the lead into a client, so teardown removes the
+// converted client too (otherwise each run orphans a client account that owns no
+// matters but lingers in the users list).
+let convertedClientEmail: string | null = null;
 
-test.beforeEach(async () => { const l = await createLead(); leadId = l.id; leadName = l.fullName; });
-test.afterEach(async () => { await deleteLead(leadId); });
+test.beforeEach(async () => {
+  const l = await createLead();
+  leadId = l.id; leadName = l.fullName; leadEmail = l.email; convertedClientEmail = null;
+});
+test.afterEach(async () => {
+  await deleteLead(leadId);
+  if (convertedClientEmail) await deleteUserByEmail(convertedClientEmail);
+});
 
 test('admin can change a lead status inline', async ({ adminPage }) => {
   await adminPage.goto('reports/leads');
@@ -29,6 +40,8 @@ test('admin can convert an unregistered lead to a client', async ({ adminPage })
   await convert.click();
   await adminPage.getByRole('button', { name: 'Convert', exact: true }).click();
   await expect(adminPage.getByText(/converted to (a )?(new )?client|linked to existing client/i)).toBeVisible();
+  // Convert links the new client by the lead's email — mark it for teardown cleanup.
+  convertedClientEmail = leadEmail;
 });
 
 test('team member can view leads but has NO convert action', async ({ teamPage }) => {

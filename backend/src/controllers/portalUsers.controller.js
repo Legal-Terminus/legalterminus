@@ -318,11 +318,25 @@ export const removeUser = async (req, res) => {
           return { data: () => ({ count: 0 }) };
         }),
     ]);
-    const taskCount = asClient.data().count + asAssignee.data().count + asStepAssignee.data().count;
+    const clientMatterCount = asClient.data().count;
+    const staffWorkCount = asAssignee.data().count + asStepAssignee.data().count;
+    const taskCount = clientMatterCount + staffWorkCount;
     if (taskCount > 0) {
+      // Two distinct blockers, handled differently by the caller:
+      //  • staff work (assignee/step) → REASSIGNABLE to another staff member;
+      //  • client-owned matters (clientUid) → NOT reassignable (a matter belongs to
+      //    its client) — those matters must be deleted/closed first.
+      // `reassignable` tells the UI whether the reassign-then-delete flow applies.
+      const isClientOwner = clientMatterCount > 0;
+      const message = isClientOwner
+        ? `This client still owns ${clientMatterCount} matter(s). Delete or close those matters before deleting the client${staffWorkCount > 0 ? ` (they also hold ${staffWorkCount} assigned step/task)` : ''}.`
+        : `This user is assigned to ${staffWorkCount} task(s)/step(s). Reassign them before deleting.`;
       return res.status(409).json({
-        message: `This user has ${taskCount} associated task(s)/step(s). Reassign or close them before deleting.`,
+        message,
         taskCount,
+        clientMatterCount,
+        staffWorkCount,
+        reassignable: !isClientOwner && staffWorkCount > 0,
       });
     }
 

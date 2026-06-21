@@ -732,6 +732,9 @@ export async function listTaskEvents(req, res) {
         byName: isClient
           ? nameForClient(e)
           : (e.byUid ? (nameByUid[e.byUid] ?? 'User') : (e.byRole ?? 'System')),
+        // Staff-only flag: this client step was advanced by staff on the client's
+        // behalf (override). Hidden from clients.
+        onBehalfOfClient: isClient ? undefined : (e.onBehalfOfClient || false),
         at: e.at ?? null,
       })),
     });
@@ -947,6 +950,17 @@ export async function transitionTask(req, res) {
       return res.status(403).json({ message: 'Not allowed to advance this task' });
     }
 
+    // Override-on-behalf-of-client: admin/manager may advance a CLIENT-owned step
+    // (approve / request changes) when the client can't act themselves (e.g. they
+    // approved over the phone/email). Only admin & manager — a team member cannot
+    // act on the client's behalf. Flagged so the audit log records it as an
+    // override (who did it, on behalf of the client), not as the client acting.
+    const isClientOverride =
+      clientEvents.has(event?.type) && (role === 'admin' || role === 'manager');
+    if (clientEvents.has(event?.type) && role === 'team_member') {
+      return res.status(403).json({ message: 'A team member cannot act on the client’s behalf — ask an admin or manager to override.' });
+    }
+
     // Load the task's PINNED definition (immutable per task), compile it, then
     // recompile with initial = current step so we resume exactly where we are.
     const compiled = await getCompiledById(task.workflowDefinitionId);
@@ -1070,6 +1084,9 @@ export async function transitionTask(req, res) {
       comment,
       byUid: uid ?? null,
       byRole: role ?? null,
+      // Records that staff advanced a client-owned step on the client's behalf, so
+      // the activity trail reads "Admin approved on behalf of the client".
+      onBehalfOfClient: isClientOverride || false,
       at: now,
     });
 

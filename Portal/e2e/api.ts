@@ -335,17 +335,19 @@ export async function deleteMatterAs(role: RoleKey, taskId: string): Promise<num
   return status;
 }
 
-/** Create a fresh unregistered contact lead (for E08-S06). Returns its id + name. */
-export async function createLead(): Promise<{ id: string; fullName: string }> {
+/** Create a fresh unregistered contact lead (for E08-S06). Returns id + name + email
+ *  (email lets a test that CONVERTS the lead clean up the resulting client). */
+export async function createLead(): Promise<{ id: string; fullName: string; email: string }> {
   const api = await apiAs('admin');
   const fullName = `E2E Lead ${Date.now().toString().slice(-6)}`;
+  const email = `e2e-lead-${Date.now()}@example.test`;
   const res = await api.post('/api/leads', {
-    data: { fullName, email: `e2e-lead-${Date.now()}@example.test`, phone: '9990001112', sourceLabel: 'E2E' },
+    data: { fullName, email, phone: '9990001112', sourceLabel: 'E2E' },
   });
   if (!res.ok()) throw new Error(`createLead failed: ${res.status()} ${await res.text()}`);
   const body = await res.json();
   await api.dispose();
-  return { id: body.id as string, fullName };
+  return { id: body.id as string, fullName, email };
 }
 
 /** Delete a lead by id (admin). Best-effort. */

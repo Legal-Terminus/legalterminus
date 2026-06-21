@@ -350,7 +350,7 @@ export default function TaskDetailPage() {
           stepDefs={stepDefs}
           currentDef={currentDef}
           completed={completed}
-          role={{ isStaff, isClient }}
+          role={{ isStaff, isClient, canOverrideClient: canAssign }}
           pending={advance.isPending}
           onEvent={(e) => advance.mutate(e)}
           assignment={canAssign ? {
@@ -555,7 +555,7 @@ function StepsTab({
   stepDefs: WorkflowStepDef[];
   currentDef?: WorkflowStepDef;
   completed: boolean;
-  role: { isStaff: boolean; isClient: boolean };
+  role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean };
   pending: boolean;
   onEvent: (e: WorkflowEventInput) => void;
   assignment?: StepAssignment;
@@ -866,7 +866,7 @@ function StepHeroPanel({
   step, role, pending, onEvent, assignment, currentAssignee, turn, stepUrgent, onAttach,
 }: {
   step: WorkflowStepDef;
-  role: { isStaff: boolean; isClient: boolean };
+  role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean };
   pending: boolean;
   onEvent: (e: WorkflowEventInput) => void;
   assignment?: StepAssignment;
@@ -933,6 +933,22 @@ function StepHeroPanel({
           <button disabled={pending} onClick={() => fire('CLIENT_REJECT', { required: true })} className="btn-secondary disabled:opacity-50">
             <ThumbsDown className="w-4 h-4" /> Request Changes
           </button>
+        </div>
+      );
+    } else if (role.canOverrideClient) {
+      // Admin/manager override: advance a client-pending step on the client's
+      // behalf (e.g. they approved over phone/email). Recorded as an override.
+      actions = (
+        <div className="space-y-2">
+          <WaitNote text="Waiting for the client to approve — or override on their behalf below." />
+          <div className="flex flex-wrap gap-2">
+            <button disabled={pending} onClick={() => fire('CLIENT_APPROVE')} className="btn-secondary disabled:opacity-50">
+              {pending ? spin : <ShieldCheck className="w-4 h-4" />} Approve for client
+            </button>
+            <button disabled={pending} onClick={() => fire('CLIENT_REJECT', { required: true })} className="btn-secondary disabled:opacity-50">
+              <ThumbsDown className="w-4 h-4" /> Request changes for client
+            </button>
+          </div>
         </div>
       );
     } else wait = <WaitNote text="Waiting for the client to approve." />;
