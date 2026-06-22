@@ -83,9 +83,10 @@
 }
 
 .crh-logo img {
-  width: 210px;
-  height: auto;
+  width: 200px;
+  height: 55px;
   object-fit: contain;
+  object-position: left center;
 }
 
 .crh-badge {
