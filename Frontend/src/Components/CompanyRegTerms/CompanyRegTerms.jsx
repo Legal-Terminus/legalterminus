@@ -52,7 +52,7 @@ const CompanyRegTerms = () => {
           <ol className="pvtltd-tc-list">
             {TERMS.map((t) => (
               <li className="pvtltd-tc-item" key={t.label}>
-                <strong>{t.label}:</strong> {t.text}
+                {t.text}
               </li>
             ))}
           </ol>
