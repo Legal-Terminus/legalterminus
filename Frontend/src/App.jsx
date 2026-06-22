@@ -4,6 +4,7 @@ import "./App.css";
 
 import Navbar from "./Components/Navbar/Navbar";
 import Footer from "./Components/Footer/Footer";
+import CompanyRegBottomBar from "./Components/CompanyRegBottomBar/CompanyRegBottomBar";
 import RouteLoaderWrapper from "./Components/PageLoader/RouteLoaderWrapper";
 import FloatIcon from "./Components/FloatIcon/FloatIcon";
 import LazyServiceFooterSections from "./Components/LazyServiceFooterSections/LazyServiceFooterSections";
@@ -139,7 +140,8 @@ function ConditionalNavbar() {
 
 function ConditionalFooter() {
   const { pathname } = useLocation();
-  if (STANDALONE_LANDING_ROUTES.includes(pathname)) return null;
+  // Standalone landing page: no full footer, just the disclaimer + copyright bar
+  if (STANDALONE_LANDING_ROUTES.includes(pathname)) return <CompanyRegBottomBar />;
   return <Footer />;
 }
 

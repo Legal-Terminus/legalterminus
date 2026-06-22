@@ -1,0 +1,63 @@
+/* ============================================================
+   CompanyRegBottomBar — green disclaimer + copyright bar
+   (matches the global footer-bottom band)
+   ============================================================ */
+
+.crbb-bottom {
+  background: #45a049;
+  padding: 28px 20px;
+  font-family: "Inter", sans-serif;
+}
+
+.crbb-disclaimer {
+  max-width: 1100px;
+  margin: 0 auto 18px;
+  text-align: center;
+}
+
+.crbb-disclaimer p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  margin: 0;
+  text-align: justify;
+}
+
+.crbb-disclaimer strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.crbb-copyright {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.crbb-pr {
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.crbb-pr:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .crbb-bottom {
+    padding: 18px 14px;
+  }
+  .crbb-copyright {
+    font-size: 0.85rem;
+    padding: 12px 14px;
+  }
+}
