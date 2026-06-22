@@ -77,8 +77,9 @@
 
 /* ---------- brand logo ---------- */
 .crh-logo {
-  display: inline-block;
-  margin: -18px 0 56px;
+  display: block;
+  width: fit-content;
+  margin: -18px 0 18px;
   line-height: 0;
 }
 
