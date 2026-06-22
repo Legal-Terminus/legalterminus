@@ -37,7 +37,7 @@ const NON_SERVICE_PATHS = new Set([
 ]);
 
 // Routes where the client-logos carousel is hidden (but testimonials/video stay)
-const HIDE_CLIENT_LOGOS_PATHS = new Set(["/company-registration"]);
+const HIDE_CLIENT_LOGOS_PATHS = new Set(["/companyregistration-in-odisha"]);
 
 const isBlogPost = (pathname) => /^\/blog\/.+/.test(pathname);
 

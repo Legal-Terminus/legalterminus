@@ -130,7 +130,7 @@ function ScrollManager() {
 }
 
 // Routes that render as standalone landing pages (no global navbar / footer)
-const STANDALONE_LANDING_ROUTES = ["/company-registration"];
+const STANDALONE_LANDING_ROUTES = ["/companyregistration-in-odisha"];
 
 function ConditionalNavbar() {
   const { pathname } = useLocation();
@@ -236,7 +236,7 @@ function App() {
             <Route path="/private-limited-company-registration-in-india" element={<PrivateLimitedCopy2 />} />
             <Route path="/company-registration-consultancy-in-odisha" element={<CompanyRegOdisha />} />
             <Route path="/company-registration-odisha" element={<CompanyRegistrationOdisha />} />
-            <Route path="/company-registration" element={<CompanyRegistrationLanding />} />
+            <Route path="/companyregistration-in-odisha" element={<CompanyRegistrationLanding />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>
