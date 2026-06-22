@@ -34,9 +34,10 @@ const NON_SERVICE_PATHS = new Set([
   "/my-profile",
   // Full reproduction page ships its own testimonials + client logos + contact
   "/company-registration-odisha",
-  // Standalone landing page — no global testimonials / client logos
-  "/company-registration",
 ]);
+
+// Routes where the client-logos carousel is hidden (but testimonials/video stay)
+const HIDE_CLIENT_LOGOS_PATHS = new Set(["/company-registration"]);
 
 const isBlogPost = (pathname) => /^\/blog\/.+/.test(pathname);
 
@@ -105,7 +106,7 @@ function LazyServiceFooterSections() {
         <React.Suspense fallback={null}>
           <PvtltdTestimonial />
           <PvtltdVideoTestimonial />
-          <PvtltdOurclints />
+          {!HIDE_CLIENT_LOGOS_PATHS.has(pathname) && <PvtltdOurclints />}
         </React.Suspense>
       )}
     </div>
