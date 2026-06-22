@@ -8,7 +8,6 @@ import companyRegImg from '../../assets/whypvt-imp1.svg'
 const CompanyRegInfo = React.lazy(() => import('../../Components/CompanyRegInfo/CompanyRegInfo'))
 const CompanyRegStructures = React.lazy(() => import('../../Components/CompanyRegStructures/CompanyRegStructures'))
 const CompanyRegPlans = React.lazy(() => import('../../Components/CompanyRegPlans/CompanyRegPlans'))
-const CroGovtCosts = React.lazy(() => import('../../Components/CroGovtCosts/CroGovtCosts'))
 const CompanyRegTerms = React.lazy(() => import('../../Components/CompanyRegTerms/CompanyRegTerms'))
 const CroPriority = React.lazy(() => import('../../Components/CroPriority/CroPriority'))
 const CroTabs = React.lazy(() => import('../../Components/CroTabs/CroTabs'))
@@ -43,12 +42,6 @@ const CompanyRegistrationLanding = () => {
           <CompanyRegPlans />
         </Suspense>
       </div>
-
-      <div className="section-divider" />
-
-      <Suspense fallback={<div />}>
-        <CroGovtCosts />
-      </Suspense>
 
       <div className="section-divider" />
 
