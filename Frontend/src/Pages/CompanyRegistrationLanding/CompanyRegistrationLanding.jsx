@@ -7,7 +7,7 @@ import companyRegImg from '../../assets/whypvt-imp1.svg'
 
 const CompanyRegInfo = React.lazy(() => import('../../Components/CompanyRegInfo/CompanyRegInfo'))
 const CompanyRegStructures = React.lazy(() => import('../../Components/CompanyRegStructures/CompanyRegStructures'))
-const PvtltdProcess = React.lazy(() => import('../../Components/PvtltdProcess/PvtltdProcess'))
+const CompanyRegSteps = React.lazy(() => import('../../Components/CompanyRegSteps/CompanyRegSteps'))
 const CopyPvtDocument = React.lazy(() => import('../../Components/CopyPvtDocument/CopyPvtDocument'))
 const CompanyRegImportance = React.lazy(() => import('../../Components/CompanyRegImportance/CompanyRegImportance'))
 const PvtltdFAQ = React.lazy(() => import('../../Components/PvtltdFAQ/PvtltdFAQ'))
@@ -84,9 +84,9 @@ const CompanyRegistrationLanding = () => {
 
       <div className="section-divider" />
 
-      {/* Steps (text from Private Limited page) */}
+      {/* Steps (text from Private Limited page, new card design) */}
       <Suspense fallback={<div />}>
-        <PvtltdProcess />
+        <CompanyRegSteps />
       </Suspense>
 
       <div className="section-divider" />
