@@ -14,8 +14,6 @@ const PvtltdFAQ = React.lazy(() => import('../../Components/PvtltdFAQ/PvtltdFAQ'
 const CompanyRegPlans = React.lazy(() => import('../../Components/CompanyRegPlans/CompanyRegPlans'))
 const CompanyRegTerms = React.lazy(() => import('../../Components/CompanyRegTerms/CompanyRegTerms'))
 const OurClients = React.lazy(() => import('../../Components/OurClients/OurClients'))
-const CroTestimonials = React.lazy(() => import('../../Components/CroTestimonials/CroTestimonials'))
-const CroContact = React.lazy(() => import('../../Components/CroContact/CroContact'))
 
 const CompanyRegistrationLanding = () => {
   return (
@@ -113,17 +111,6 @@ const CompanyRegistrationLanding = () => {
           <PvtltdFAQ />
         </Suspense>
       </div>
-
-      {/* Testimonials */}
-      <div className="section-divider" />
-      <Suspense fallback={<div />}>
-        <CroTestimonials />
-      </Suspense>
-
-      {/* Contact / book consultation + office + disclaimer */}
-      <Suspense fallback={<div />}>
-        <CroContact />
-      </Suspense>
     </div>
   )
 }
