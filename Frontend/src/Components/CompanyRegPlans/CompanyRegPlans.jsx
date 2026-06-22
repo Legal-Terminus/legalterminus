@@ -67,8 +67,8 @@ const PLANS = [
       "Filing of MSME – 1 (If Applicable) for 1st FY",
       "DIR KYC (2 Directors)",
       "Income Tax Filing of 2 Directors",
+      "Audit fees are excluded and to be paid directly to the Auditor’s account.",
     ],
-    note: "Audit fees are excluded and to be paid directly to the Auditor’s account.",
   },
 ];
 
@@ -112,8 +112,6 @@ const CompanyRegPlans = () => {
                         <li key={i} className="opcplan-list-item">{s}</li>
                       ))}
                     </ul>
-
-                    {plan.note && <p className="opcplan-note">* {plan.note}</p>}
                   </div>
                 </div>
 
