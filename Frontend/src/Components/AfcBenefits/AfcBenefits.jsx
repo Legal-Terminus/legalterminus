@@ -7,59 +7,59 @@ const AfcBenefits = () => {
       <div className="opcben-container">
         <header className="opcben-header">
           <h2 className="opcben-title">
-            Benefits of Timely Company Annual Filing
+            Benefits of Annual Filing for Company in India
           </h2>
           <p className="opcben-subtitle">
-            Annual compliance is not just a legal box to tick — it keeps your company active, your directors clean, and your business investment-ready, all while avoiding penalties that grow every single day.
+            Filing your Company's annual returns on time delivers concrete legal + commercial benefits FOR YOU as the Directors + Shareholders. Here's what timely filing actually delivers:
           </p>
         </header>
 
         <div className="opcben-grid">
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Avoid ₹100/Day Penalties</h3>
+            <h3 className="opcben-card-title">Director Disqualification Avoided (Section 164(2) Protection)</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              AOC-4 and MGT-7 carry an additional fee of ₹100 per day, per form, with no maximum cap. Filing on time eliminates a penalty that quietly snowballs into tens of thousands of rupees the longer it is ignored.
+              Under SECTION 164(2) of the Companies Act, 2013, if a company defaults on AOC-4 / MGT-7 filing for 3 CONSECUTIVE YEARS, ALL ITS DIRECTORS ARE DISQUALIFIED for 5 YEARS from being Directors in ANY company. This is permanent career-ending for many founders + senior professionals. Timely filing eliminates this exposure entirely. The single biggest reason we exist.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Protect Directors from Disqualification</h3>
+            <h3 className="opcben-card-title">Zero Late Fee Exposure — ₹100/Day NO CAP Savings</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Failure to file annual returns for a continuous period can disqualify directors for five years and bar them from other companies. Staying compliant keeps your board eligible to manage and incorporate businesses.
+              AOC-4 + MGT-7 late fees are ₹100 PER DAY PER FORM with NO upper cap, plus Section 403 additional multipliers (2x to 12x normal fees). DIR-3 KYC late = ₹5,000 fixed penalty + DIN deactivation. Late fees compound rapidly — a 6-month delay can easily exceed ₹40,000. Our Late-Fee Zero promise (subject to Day-30 data hand-off) eliminates this exposure.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Keep the Company Active</h3>
+            <h3 className="opcben-card-title">Continued Access to Bank Loans + Working Capital</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Persistent non-filing leads the ROC to mark the company as a defaulter and ultimately strike it off the register. Regular filing keeps your company "Active" on the MCA portal and operationally alive.
+              Banks + NBFCs require LATEST AOC-4 + MGT-7 + ITR-6 + Audit Report as part of company credit assessment — working capital limits, term loans, OD facilities, NCDs. Companies with overdue filings + accumulated late fees become INELIGIBLE for institutional credit. Timely filing maintains your company's institutional credibility + access to formal capital.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Easier Loans &amp; Funding</h3>
+            <h3 className="opcben-card-title">Statutory Audit Discipline + Financial Statement Quality</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Banks, NBFCs, and investors examine your MCA filings and audited financials during due diligence. An up-to-date compliance record speeds up loan sanctions, fundraising, and credit-limit approvals.
+              Mandatory statutory audit (Section 139) coordinated by LT's associated CA panel creates DISCIPLINED financial records that are: useful for management decisions, defensible in IT scrutiny, ready for investor / banker / VC due diligence, valued in M&amp;A transactions. Companies with sloppy audited financials lose 10-30% in valuation during DD — clean books eliminate this risk.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Tender &amp; Contract Eligibility</h3>
+            <h3 className="opcben-card-title">Investor / VC / M&amp;A Due-Diligence Clean Slate</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              Government and corporate tenders verify that a bidding company's ROC filings are current. A clean compliance history keeps your company qualified for high-value contracts and vendor empanelments.
+              For companies raising investor capital or pursuing M&amp;A: filing track record + audit history is a Day-1 due-diligence check. Overdue filings + late fees + director disqualification flags show up immediately on the MCA portal — dealbreaker for any institutional investor / acquirer. Clean compliance history = no haircut in valuation + faster closing timeline.
             </p>
           </article>
 
           <article className="opcben-card">
-            <h3 className="opcben-card-title">Investor &amp; Buyer Confidence</h3>
+            <h3 className="opcben-card-title">Exit / Strike-Off Path Stays Open</h3>
             <div className="opcben-card-underline" />
             <p className="opcben-card-text">
-              In any funding round, acquisition, or partnership, the first thing a counterparty reviews is your statutory record. Consistent annual filings present a transparent, well-governed company and remove a major deal red flag.
+              If you ever want to STRIKE OFF (close) your company voluntarily under Section 248 (Form STK-2) — all past annual filings must be cleared FIRST. Companies with multi-year defaults face ₹5 lakh+ in accumulated late fees + audit catch-up costs + Director disqualification risk that MUST BE PAID / CLEARED before strike-off can be processed. Timely filing keeps the exit option clean + low-cost.
             </p>
           </article>
         </div>

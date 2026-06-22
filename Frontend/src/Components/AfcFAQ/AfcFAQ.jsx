@@ -3,49 +3,134 @@ import "./AfcFAQ.css";
 
 const faqs = [
   {
-    question: "What is company annual filing and who must do it?",
+    question: "What are the annual compliances mandatory for every company in India?",
     answer:
-      "Company annual filing is the mandatory yearly submission of financial statements and returns to the Ministry of Corporate Affairs (MCA) under the Companies Act, 2013. Every company registered in India — Private Limited, Public Limited, and One Person Company — must file, regardless of turnover or whether it carried on any business during the year. Even a dormant or zero-revenue company must complete its annual filings.",
+      "Every Private Limited Company, OPC, and Small Company must complete annual ROC and Income Tax compliances such as AOC-4 (Financial Statements), MGT-7 / MGT-7A (Annual Return), ADT-1, DPT-3 (if applicable), MSME-1 (if applicable), ITR-6, and statutory audit compliances. Each filing has separate due dates and penalties for delay.",
   },
   {
-    question: "Which forms are part of a company's annual filing?",
+    question: "Which of your plans is suitable for my company?",
     answer:
-      "The core forms are AOC-4 (audited financial statements), MGT-7 / MGT-7A (annual return), and ADT-1 (auditor appointment). Alongside these, companies file DIR-3 KYC for each director, DPT-3 (return of deposits/loans), and MSME-1 (dues to MSME vendors). The company also files its income tax return (ITR-6) separately with the Income Tax Department.",
+      "ELEMENTAL is suitable if you already have audited financials and only need filing support. ENRICHED is ideal if you also require secretarial document preparation such as Board Report, AGM Notice, resolutions, and related ROC documentation. SUPREME is designed for businesses looking for complete annual compliance support including bookkeeping, financial statement preparation, and audit coordination.",
   },
   {
-    question: "What are the due dates for AOC-4 and MGT-7?",
+    question: "Is statutory audit mandatory for every company?",
     answer:
-      "The Annual General Meeting (AGM) must generally be held by 30 September. AOC-4 is then filed within 30 days of the AGM and MGT-7 / MGT-7A within 60 days of the AGM. ADT-1 is filed within 15 days of the AGM where the auditor is appointed or ratified, and DIR-3 KYC is due by 30 September each year.",
+      "Yes. Under the Companies Act, 2013, statutory audit is mandatory for every company, irrespective of turnover, business activity, or profit level. Even inactive or zero-revenue companies are generally required to complete annual audit compliances.",
   },
   {
-    question: "Is a statutory audit mandatory before filing?",
+    question: "What happens if company annual filings are delayed?",
     answer:
-      "Yes. Every company must have its accounts audited by a Chartered Accountant before filing AOC-4 — this applies irrespective of turnover, profit, or level of activity. The audited Balance Sheet, Profit & Loss account, and Auditor's Report form the basis of the AOC-4 filing.",
+      "Delayed filings can result in heavy additional fees, penalties, notices from MCA, and in serious cases, Director Disqualification under Section 164(2) of the Companies Act, 2013.",
   },
   {
-    question: "What is the penalty for late annual filing?",
+    question: "What is Director Disqualification under Section 164(2)?",
     answer:
-      "Late filing of AOC-4 and MGT-7 attracts an additional MCA fee of ₹100 per day, per form, with no upper limit — so the penalty keeps growing until you file. Continued default can also lead to disqualification of directors for up to five years and striking off of the company's name from the register.",
+      "If a company fails to file annual returns or financial statements for three consecutive financial years, its Directors may become disqualified from acting as Directors in any company for five years.",
   },
   {
-    question: "Does a company with no business or no transactions still need to file?",
+    question: "What is the due date for holding the Annual General Meeting (AGM)?",
     answer:
-      "Yes. A dormant company or one with nil revenue must still hold its AGM, get its accounts audited, and file AOC-4 and MGT-7. Skipping filings because there was 'no business' is one of the most common — and most expensive — compliance mistakes, as penalties and strike-off risk apply regardless.",
+      "Most companies are required to hold their AGM on or before 30 September every year, subject to applicable legal provisions and extensions, if any.",
+  },
+  {
+    question: "What is the difference between AOC-4 and MGT-7?",
+    answer:
+      "AOC-4 is used for filing the company's financial statements, while MGT-7 / MGT-7A is used for filing the company's annual return containing shareholding, director, and management details.",
   },
   {
     question: "What is DIR-3 KYC and why is it important?",
     answer:
-      "DIR-3 KYC is an annual KYC verification that every director holding a DIN must complete by 30 September. If a director misses it, their DIN is deactivated and a penalty of ₹5,000 applies to reactivate it. A deactivated DIN means that director cannot sign or file any company forms until it is restored.",
+      "DIR-3 KYC is an annual KYC compliance for Directors holding DIN. Non-filing may lead to DIN deactivation and a late penalty from MCA.",
   },
   {
-    question: "What happens if a company stops filing for several years?",
+    question: "Is annual filing mandatory even if the company has no business activity?",
     answer:
-      "Continuous non-filing leads the ROC to classify the company as a defaulter, accumulate ₹100/day penalties on each pending form, disqualify its directors for five years, and ultimately strike the company off the register. Reviving a struck-off company requires an NCLT application and is far costlier and slower than staying compliant.",
+      "Yes. Even inactive companies are required to complete annual ROC filings, Income Tax filings, and statutory audit compliances unless legally struck off or converted into Dormant status.",
   },
   {
-    question: "How does Legal Terminus handle my company's annual filing?",
+    question: "What is MSME-1 filing?",
     answer:
-      "We manage the full cycle: building your compliance calendar, finalising books and coordinating the statutory audit, drafting the Director's Report and AGM documentation, preparing and e-filing AOC-4, MGT-7, ADT-1, DIR-3 KYC, and DPT-3 with the MCA, and sharing all SRN/challan receipts and updated registers — with a compliance manager and timely reminders. Book a free consultation to get started.",
+      "MSME-1 is a half-yearly return required for companies having outstanding payments to MSME suppliers beyond the prescribed time limit under MSME laws.",
+  },
+  {
+    question: "What is DPT-3 filing?",
+    answer:
+      "DPT-3 is a yearly ROC filing related to outstanding loans, advances, or non-deposit transactions received by the company.",
+  },
+  {
+    question: "What is the difference between MGT-7 and MGT-7A?",
+    answer:
+      "MGT-7A is a simplified annual return applicable to OPCs and Small Companies, while MGT-7 applies to other companies.",
+  },
+  {
+    question: "What documents are generally required for Company Annual Filing?",
+    answer:
+      "Commonly required documents include bank statements, sales and purchase records, expense details, GST returns, auditor-related documents, DSCs of Directors, and previous year compliance records.",
+  },
+  {
+    question: "Can Legal Terminus coordinate with our existing CA or auditor?",
+    answer:
+      "Yes. We can work together with your existing Chartered Accountant, auditor, or internal accounts team for smooth annual compliance coordination.",
+  },
+  {
+    question: "What is ITR-6?",
+    answer:
+      "ITR-6 is the Income Tax Return form applicable to companies other than companies claiming exemption under Section 11.",
+  },
+  {
+    question: "Can annual filings be completed completely online?",
+    answer:
+      "Yes. Most ROC and Income Tax annual compliances are completed online through the official MCA and Income Tax portals.",
+  },
+  {
+    question: "Why is timely annual filing important for companies?",
+    answer:
+      "Timely filing helps maintain legal compliance, avoid penalties, maintain Director eligibility, improve business credibility, and support banking, funding, and tender eligibility.",
+  },
+  {
+    question: "Can a newly incorporated company also have annual filing compliances?",
+    answer:
+      "Yes. Even newly incorporated companies are required to comply with applicable annual ROC and tax filings based on their date of incorporation and financial year.",
+  },
+  {
+    question: "What if one Director's DSC has expired?",
+    answer:
+      "ROC forms cannot be filed without valid DSCs. We can assist in coordinating DSC creation for Directors wherever required.",
+  },
+  {
+    question: "Can annual filing penalties be waived?",
+    answer:
+      "Generally, late fees under MCA are system-generated and mandatory. Waivers are available only if specifically announced by the Government through special schemes.",
+  },
+  {
+    question: "Do Small Companies get any compliance benefits?",
+    answer:
+      "Yes. Small Companies enjoy certain procedural relaxations and simplified annual return requirements under the Companies Act.",
+  },
+  {
+    question: "Can a company change its auditor during the year?",
+    answer:
+      "Yes. Auditor changes are possible subject to compliance with applicable provisions of the Companies Act and ROC filings.",
+  },
+  {
+    question: "Is bookkeeping mandatory for company annual filing?",
+    answer:
+      "Yes. Proper books of accounts are necessary for preparation of financial statements, audit, and annual filings.",
+  },
+  {
+    question: "What happens after annual filing is completed?",
+    answer:
+      "After successful filing, acknowledgement challans and filed forms are generated from MCA and Income Tax portals for record purposes.",
+  },
+  {
+    question: "Why should companies avoid last-minute annual filing?",
+    answer:
+      "Last-minute filing increases the risk of technical issues, server error, DSC problems, missing documents, late fees, and filing errors.",
+  },
+  {
+    question: "How can Legal Terminus help with Company Annual Filing?",
+    answer:
+      "Legal Terminus provides end-to-end support for company annual compliances including ROC filings, Income Tax filings, secretarial documentation, compliance tracking, audit coordination, and regular status updates to help businesses stay compliant smoothly and professionally throughout the year.",
   },
 ];
 

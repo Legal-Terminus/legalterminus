@@ -21,9 +21,9 @@ const AfcOverview = () => {
               Why Company Annual Filing Matters
             </h2>
             <p className="opc-intro-text">
-              Every company registered in India — Private Limited, Public Limited, or One Person Company — must file its annual returns and financial statements with the Ministry of Corporate Affairs (MCA) under the Companies Act, 2013, irrespective of turnover or whether it did any business during the year. This includes AOC-4 (audited financials), MGT-7 / MGT-7A (annual return), ADT-1 (auditor appointment), and director-level compliances like DIR-3 KYC and DPT-3.
+              Every Private Limited Company, OPC, and Small Company in India must comply with various annual filing requirements under the Companies Act, 2013 and Income Tax Act. These include ROC filings such as AOC-4, MGT-7/MGT-7A, ADT-1, DPT-3, MSME-1, DIR-3 KYC, and Income Tax Return filings. Each compliance has specific due dates, and non-compliance may result in additional fees, penalties, and legal consequences.
               <br /><br />
-              The cost of ignoring it compounds daily. Late filing of AOC-4 or MGT-7 carries an additional fee of ₹100 per day, per form, with no upper limit. Worse, a company that fails to file for a continuous period risks its directors being disqualified for five years and its name being struck off the register. Timely annual compliance keeps the company active, the directors clean, and the business credible with banks, investors, and regulators.
+              Unlike LLPs, statutory audit is mandatory for every company regardless of turnover or business activity. Failure to file annual returns and financial statements for three consecutive years can lead to Director Disqualification under Section 164(2) of the Companies Act, 2013. Legal Terminus provides complete annual compliance support, including timely filings, audit coordination, reminders, and compliance management to keep your company legally compliant throughout the year.
             </p>
           </div>
         </div>
@@ -31,27 +31,28 @@ const AfcOverview = () => {
 
       <section className="opc-compare-section">
         <div className="opc-compare-container">
-          <h2 className="opc-compare-title">Compliant vs Non-Compliant Company: The Honest Comparison</h2>
+          <h2 className="opc-compare-title">Company Annual Filing — Forms + Deadlines + Triggers</h2>
           <p className="opc-compare-subtitle">
-            What happens when a company keeps up its annual filings versus when it lets them lapse:
+            Every mandatory annual filing, its due date, and the trigger or late penalty attached:
           </p>
           <div className="opc-compare-table-wrapper">
             <table className="opc-compare-table">
               <thead>
                 <tr>
-                  <th>Parameter</th>
-                  <th>Compliant Company</th>
-                  <th>Non-Compliant Company</th>
+                  <th>Form / Filing</th>
+                  <th>Due Date</th>
+                  <th>Trigger / Late Penalty</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>Late Filing Fee</td><td>₹0 — filed before due date</td><td>₹100/day per form, no upper cap</td></tr>
-                <tr><td>Company Status (MCA)</td><td>Active &amp; in good standing</td><td>Default → strike-off risk</td></tr>
-                <tr><td>Director Status</td><td>Eligible to act &amp; incorporate</td><td>Disqualified up to 5 years</td></tr>
-                <tr><td>Bank Loans &amp; Funding</td><td>Filings support due diligence</td><td>Rejected — records not up to date</td></tr>
-                <tr><td>Tenders &amp; Contracts</td><td>Eligible with clean MCA record</td><td>Disqualified at compliance check</td></tr>
-                <tr><td>Investor / Buyer Confidence</td><td>Clean, auditable history</td><td>Red flag in any due diligence</td></tr>
-                <tr><td>Annual Cost</td><td>₹2,000 – ₹5,000 govt fee</td><td>Penalties + revival cost + lost deals</td></tr>
+                <tr><td>DPT-3 (Return of Deposits)</td><td>30 June</td><td>Typically 2x to 12x normal fees</td></tr>
+                <tr><td>MSME-1 (Half-yearly H1)</td><td>30 April and 30 Oct</td><td>Outstanding dues to MSME suppliers; 2x to 12x normal fees if late</td></tr>
+                <tr><td>AGM (Annual General Meeting)</td><td>by 30 September</td><td>Section 96; anchors AOC-4 + MGT-7 timing</td></tr>
+                <tr><td>Tax Audit Report (3CA-3CD)</td><td>30 September</td><td>If turnover &gt; ₹1 crore (Section 44AB)</td></tr>
+                <tr><td>Form ADT-1 (Auditor Appointment)</td><td>15 days of AGM</td><td>Mandatory; statutory audit per Section 139</td></tr>
+                <tr><td>Form AOC-4 (Financial Statements)</td><td>29 October (30 days of AGM)</td><td>₹100/day late fee + Section 403 multipliers</td></tr>
+                <tr><td>Company ITR-6</td><td>31 October</td><td>Audit case (all companies); Sec 234F belated penalty</td></tr>
+                <tr><td>Form MGT-7 / MGT-7A (Annual Return)</td><td>29 November (60 days of AGM)</td><td>₹100/day late fee</td></tr>
               </tbody>
             </table>
           </div>

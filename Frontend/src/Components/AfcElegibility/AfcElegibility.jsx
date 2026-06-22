@@ -3,34 +3,49 @@ import "./AfcElegibility.css";
 
 const steps = [
   {
-    title: "Onboarding & Compliance Review",
-    day: "Step 1",
-    text: "We map your company's status — incorporation details, financial year, last filings, auditor, and director DINs. A compliance calendar is built covering AGM, AOC-4, MGT-7, ADT-1, DIR-3 KYC, and DPT-3 due dates so nothing slips.",
+    title: "Engagement Acceptance + Annual Calendar Setup",
+    day: "Day 0 (April)",
+    text: "Within 24 hours of plan selection + payment: STATUS UPDATE COMMITMENT activated. Annual compliance calendar shared (key dates: 30 Apr MSME-1 H1 / 30 Jun DPT-3 / 30 Sep AGM + DIR-3 KYC + Tax Audit Report / 30 Oct AOC-4 + ITR / 29 Nov MGT-7). Assigned CS + CA confirmed.",
   },
   {
-    title: "Books Finalisation & Audit",
-    day: "Step 2",
-    text: "We help finalise your books of accounts and coordinate the statutory audit with a Chartered Accountant. The audited Balance Sheet, Profit & Loss, and Auditor's Report are prepared — the foundation for AOC-4.",
+    title: "DPT-3 Filing + Books Closure",
+    day: "Day 60-90 (May-Jun)",
+    text: "DPT-3 filed BY 30 JUNE (Return of Deposits + outstanding loans). For Enriched / Supreme: year-round bookkeeping closed. Schedule III financial statements (P&L + Balance Sheet + Cash Flow + Notes to Accounts + IT Computation) drafted.",
   },
   {
-    title: "Board Meeting & AGM Documentation",
-    day: "Step 3",
-    text: "We draft the notice, Director's Report, and resolutions for the board meeting and Annual General Meeting (AGM), where financials are adopted and the auditor is appointed/ratified. Minutes are prepared and statutory registers updated.",
+    title: "Secretarial Documents Preparation (Enriched / Supreme)",
+    day: "Day 90-150 (Jul-Aug)",
+    text: "For Enriched / Supreme: drafting of BOARD REPORT (Section 134) + NOTICE FOR AGM (Section 101) + LIST OF DIRECTORS + LIST OF SHAREHOLDERS / Members Register + AUDITOR APPOINTMENT DOCUMENTS for AGM agenda + Board Meeting + AGM Minutes drafting + Resolutions (Board + Shareholders) drafting. Coordination with directors on signing + circulation.",
   },
   {
-    title: "Form Preparation & Pre-Validation",
-    day: "Step 4",
-    text: "We prepare AOC-4, MGT-7 / MGT-7A, and ADT-1 with the correct attachments, verify DSC validity and director KYC, and pre-fill the MCA fee based on your authorised capital — eliminating last-minute upload failures.",
+    title: "Statutory Audit Coordination (Supreme only — T/o < ₹1 Cr)",
+    day: "Day 120-180 (Aug-Sep)",
+    text: "For SUPREME (companies under ₹1 crore turnover): Statutory Audit under Section 139 (mandatory for ALL companies) coordinated. LT's panel CA introduced (or client's existing auditor engaged). Audit engagement letter + scope + books handover + audit fieldwork + audit report finalization.",
   },
   {
-    title: "MCA Filing & Fee Payment",
-    day: "Step 5",
-    text: "Forms are filed on the MCA portal within their due dates (AOC-4 within 30 days and MGT-7 within 60 days of the AGM). Government fees are paid on your behalf at actuals and the SRN / challan is shared immediately.",
+    title: "AGM (September Sprint)",
+    day: "Day 180-185 (Sep)",
+    text: "AGM held by 30 SEPTEMBER (Section 96). For Enriched / Supreme: AGM Minutes drafted; AGM resolutions sealed.",
   },
   {
-    title: "Acknowledgement & Record-Keeping",
-    day: "Step 6",
-    text: "You receive all filed forms, SRN/challan receipts, updated statutory registers, and a clean year-end compliance record. We also set reminders for next year's calendar — including DIR-3 KYC by 30 September.",
+    title: "ADT-1 (Auditor Appointment) Filing",
+    day: "Day 185-200",
+    text: "Form ADT-1 filed within 15 DAYS OF AGM (typically by 14 Oct). Statutory auditor's appointment intimated to ROC. One-time per 5-year cycle (re-filed at end of auditor's term).",
+  },
+  {
+    title: "AOC-4 (Financial Statements) Filing",
+    day: "Day 200-220 (Oct)",
+    text: "Form AOC-4 filed by 29 OCTOBER (within 30 days of AGM). Audited financial statements + Board's report + Auditor's report uploaded. DSC affixation by Director.",
+  },
+  {
+    title: "Company ITR-6 Filing",
+    day: "Day 220 (Oct-end)",
+    text: "Company ITR-6 filed BY 31 OCTOBER (mandatory audit case for ALL companies). All Schedules + Audit Report references + carry-forward losses + computation uploaded. e-Verification + Acknowledgement.",
+  },
+  {
+    title: "MGT-7 / MGT-7A (Annual Return) Filing + Year-End Review",
+    day: "Day 240-260 (Nov)",
+    text: "Form MGT-7 (or MGT-7A for OPC / Small Company) filed BY 29 NOVEMBER (within 60 days of AGM). Annual Return includes shareholders + directors + share transfers + meetings + KMP details. Year-end compliance review call.",
   },
 ];
 
@@ -38,10 +53,10 @@ const AfcElegibility = () => {
   return (
     <section className="opcelg-wrapper">
       <h2 className="opcelg-heading">
-        Company Annual Filing Process — Step by Step
+        Steps for Annual Filing for Company in India
       </h2>
       <p className="opcelg-subheading">
-        Six steps, repeated every financial year. Audited, documented, and filed with the MCA before every due date.
+        Nine steps. End-to-end annual compliance calendar across April - June - September - October - November. Status updates run monthly + change-driven throughout the year.
       </p>
 
       <div className="opcelg-timeline">

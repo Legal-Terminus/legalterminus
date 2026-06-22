@@ -27,7 +27,10 @@ const AfcZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  Annual filing looks like a few forms — but a missed AGM date, an un-appointed auditor, a skipped DIR-3 KYC, or a late AOC-4 quietly piles up ₹100-a-day penalties and can disqualify your directors. Priority is what happens when a dedicated compliance manager owns your company's calendar from board meeting to filed challan.
+                  Company annual compliance involves multiple ROC, tax, and audit filings throughout the year. Missing important deadlines can lead to heavy late fees, penalties, DIN deactivation, and even Director Disqualification under the Companies Act, 2013.
+                </p>
+                <p className="opczp-subtitle" style={{ marginTop: "12px" }}>
+                  With LT Priority, your company's annual compliance is handled on a priority basis through one coordinated team of professionals who manage filings, audit coordination, reminders, and status tracking to ensure smooth and timely compliance.
                 </p>
               </header>
 
@@ -36,23 +39,19 @@ const AfcZolvitPremium = () => {
                 <ul className="opczp-list opczp-features-list">
                   <li className="opczp-list-item">
                     <span className="opczp-list-icon">⚡</span>
-                    A locked annual compliance calendar — AGM, AOC-4, MGT-7, ADT-1, DIR-3 KYC, DPT-3 — tracked with reminders well before each due date.
+                    Priority handling with faster compliance coordination.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Senior-reviewed financial statements, Director's Report, and board/AGM minutes drafted to be MCA- and audit-ready.
+                    <span className="opczp-list-icon">📅</span>
+                    Monthly status updates + important deadline alerts.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Auditor appointment (ADT-1) and statutory audit coordination handled so AOC-4 is filed without last-minute scramble.
+                    <span className="opczp-list-icon">📂</span>
+                    Complete annual ROC + Income Tax compliance under one roof.
                   </li>
                   <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    DSC validity and DIN/KYC checks done up front — no failed uploads on the due date.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">📑</span>
-                    Compliance kit: all filed forms, SRN/challan receipts, updated statutory registers, and a clean year-end compliance record.
+                    <span className="opczp-list-icon">🧾</span>
+                    Filing support for AOC-4, MGT-7 / 7A, DIR-3 KYC, DPT-3, ADT-1, MSME-1 (if applicable), ITR and related compliances.
                   </li>
                 </ul>
               </section>
@@ -65,16 +64,22 @@ const AfcZolvitPremium = () => {
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
                 <li className="opczp-note-item">
-                  Late fees have no ceiling. AOC-4 and MGT-7 attract ₹100 per day, per form, from the due date until filing. A few months' delay across two forms can run into tens of thousands — we file on time so it never starts.
+                  AGM ANCHORS EVERYTHING — AGM must be held by 30 SEPTEMBER 2026 (Section 96) only for 2nd year onwards; for 1st financial year company ROC provides 3 months' extension. AOC-4 follows in 30 days (29 Oct); MGT-7 follows in 60 days (29 Nov); ADT-1 in 15 days. Miss AGM = cascade of penalty across forms.
                 </li>
                 <li className="opczp-note-item">
-                  Non-compliance disqualifies directors. A company that fails to file financials/annual returns for a continuous period can have its directors disqualified for 5 years and its name struck off. Staying current protects both the company and its board.
+                  ₹100/DAY NO CAP — AOC-4 + MGT-7 late fee ₹100/day per form (NO upper limit) + Section 403 additional fee multipliers (2x to 12x normal Govt fees). A 6-month delay on AOC-4 + MGT-7 can easily cross ₹40,000+ in fees.
                 </li>
                 <li className="opczp-note-item">
-                  Audit comes first. Every company — even one with nil or no business — must get its accounts audited before AOC-4. We line up the auditor and finalise accounts early so the filing chain doesn't stall.
+                  DIR-3 KYC = ₹5,000 FIXED PENALTY + DIN DEACTIVATION — non-discretionary penalty if missed. DIN deactivation freezes the Director from any filings till compliance.
                 </li>
                 <li className="opczp-note-item">
-                  DIR-3 KYC is non-negotiable. Every director with a DIN must complete KYC by 30 September each year or the DIN is deactivated with a ₹5,000 reactivation penalty. We track and file it for every director.
+                  DIRECTOR DISQUALIFICATION — Section 164(2) — if a company defaults on AOC-4 / MGT-7 filing for 3 CONSECUTIVE YEARS, all Directors are DISQUALIFIED for 5 years from being directors in ANY company. This is the nuclear option — permanent career consequence.
+                </li>
+                <li className="opczp-note-item">
+                  AUDIT FEE — SEPARATE FROM OUR PLAN — For Supreme tier (companies under ₹1 Cr turnover), the Statutory Audit fee (Section 139, mandatory for ALL companies) is BILLED DIRECTLY by the CA to your company. We only coordinate the best CA.
+                </li>
+                <li className="opczp-note-item">
+                  STATUTORY AUDIT IS MANDATORY EVEN FOR ZERO-REVENUE COMPANIES — unlike LLPs, every company (including dormant / Section 8 / Section 455 inactive companies) needs an auditor. Companies cannot skip statutory audit.
                 </li>
               </ul>
             </div>

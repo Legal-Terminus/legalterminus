@@ -4,18 +4,33 @@ import "./AfcFeatures.css";
 const types = [
   {
     number: "01",
-    title: "Financial Statements — AOC-4",
-    text: "The company files its audited Balance Sheet, Profit & Loss account, Director's Report, and Auditor's Report with the ROC in Form AOC-4 (or AOC-4 XBRL / CFS for specified companies). It is generally due within 30 days of the Annual General Meeting and is the core financial-disclosure filing of the year.",
+    title: "Active Pvt Ltd — In-House CS + Auditor",
+    text: "Your company is actively operating with in-house CS handling secretarial documents + statutory auditor already engaged delivering audited financials — you just need form filing services. Elemental tier files all 8 forms (AOC-4 + MGT-7 + ADT-1 + DPT-3 + MSME-1 + DIR-3 KYC + ITR-6) with DSC affixation + Govt fee + acknowledgement. Common for established companies with dedicated compliance teams.",
   },
   {
     number: "02",
-    title: "Annual Return — MGT-7 / MGT-7A",
-    text: "Form MGT-7 captures the company's shareholding pattern, directors, registered office, and changes during the year; small companies and OPCs file the abridged MGT-7A. It is filed within 60 days of the AGM and is the primary corporate-governance return submitted to the MCA each year.",
+    title: "Active Pvt Ltd — Needs Secretarial Support",
+    text: "Your company has its own accountant + auditor delivering financials, but needs corporate-secretarial support for AGM season — Board Report drafting + AGM Notice + Directors/Shareholders lists + Auditor Appointment documents + minutes + resolutions. Enriched tier handles secretarial drafting + form filing. AVAILABLE FOR COMPANIES OF ANY TURNOVER SIZE.",
   },
   {
     number: "03",
-    title: "Auditor, KYC & Other Filings",
-    text: "Beyond the two annual forms, companies file ADT-1 (auditor appointment/ratification within 15 days of AGM), DIR-3 KYC for every director by 30 September, DPT-3 (return of deposits/loans), and MSME-1 (outstanding dues to MSME vendors). Together these complete the company's yearly compliance under the Companies Act, 2013.",
+    title: "Small / Growing Company — End-to-End",
+    text: "Your company has TURNOVER UNDER ₹1 CRORE + you want end-to-end annual compliance — bookkeeping + financial statements + statutory audit + secretarial docs + all filings. Supreme tier covers everything with audit by LT's panel CA or your existing auditor. Most common scenario for first-2-year startups + small founder-led companies.",
+  },
+  {
+    number: "04",
+    title: "Tax-Audit Applicable Company — T/o > ₹1 Cr",
+    text: "Your company's turnover crosses ₹1 CRORE — Tax Audit under Section 44AB of the Income Tax Act triggers. This is OUT OF SCOPE of the standard 3-tier plans — we quote it as a custom engagement covering 3CD/3CB tax audit form filing + tax audit by LT's associated CA + DSC procurement + all annual filings + premium CA coordination. Reach out for a tailored quote.",
+  },
+  {
+    number: "05",
+    title: "Dormant / Inactive Company — Still Mandatory",
+    text: "Your company has done little or no business activity — but ALL FILINGS REMAIN MANDATORY. Even Section 455 'Dormant Company' status (separate filing in Form MSC-1) doesn't exempt from annual returns. Statutory audit still required (zero-revenue P&L + nominal Balance Sheet). Many founders learn this only after Section 164(2) disqualification threatens.",
+  },
+  {
+    number: "06",
+    title: "OPC (One Person Company) — Simplified Filings",
+    text: "OPCs have lighter filing burden: Form MGT-7A (instead of MGT-7) + AOC-4 within 180 days of FY end (not 30 days post AGM) + no AGM mandatory. Statutory audit still mandatory. All 3 tiers handle OPC specifics. Recommend Supreme for OPCs without dedicated accounting setup + turnover under ₹1 Cr.",
   },
 ];
 
@@ -24,7 +39,7 @@ const AfcFeatures = () => {
     <section className="opc-features-section">
       <div className="opc-features-container">
 
-        <h2 className="opc-features-title">Key Annual Filings &amp; ROC Forms for a Company</h2>
+        <h2 className="opc-features-title">Types of Annual Filing for Company in India</h2>
 
         <div className="opc-features-cards">
           {types.map((type) => (
