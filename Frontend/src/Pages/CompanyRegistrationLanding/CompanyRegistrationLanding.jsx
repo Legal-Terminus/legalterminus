@@ -3,7 +3,7 @@ import '../CompanyRegOdisha/CompanyRegOdisha.css'
 import CompanyRegHero from '../../Components/CompanyRegHero/CompanyRegHero'
 import CompanyRegWhyChoose from '../../Components/CompanyRegWhyChoose/CompanyRegWhyChoose'
 
-const CroPlans = React.lazy(() => import('../../Components/CroPlans/CroPlans'))
+const CompanyRegPlans = React.lazy(() => import('../../Components/CompanyRegPlans/CompanyRegPlans'))
 const CroGovtCosts = React.lazy(() => import('../../Components/CroGovtCosts/CroGovtCosts'))
 const CroTermCondition = React.lazy(() => import('../../Components/CroTermCondition/CroTermCondition'))
 const CroPriority = React.lazy(() => import('../../Components/CroPriority/CroPriority'))
@@ -34,9 +34,9 @@ const CompanyRegistrationLanding = () => {
 
       <div className="section-divider" />
 
-      <div id="plans" className="cro-page-pricing">
+      <div id="plans">
         <Suspense fallback={<div />}>
-          <CroPlans />
+          <CompanyRegPlans />
         </Suspense>
       </div>
 
