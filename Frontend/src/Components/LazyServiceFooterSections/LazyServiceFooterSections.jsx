@@ -34,6 +34,8 @@ const NON_SERVICE_PATHS = new Set([
   "/my-profile",
   // Full reproduction page ships its own testimonials + client logos + contact
   "/company-registration-odisha",
+  // Standalone landing page — no global testimonials / client logos
+  "/company-registration",
 ]);
 
 const isBlogPost = (pathname) => /^\/blog\/.+/.test(pathname);

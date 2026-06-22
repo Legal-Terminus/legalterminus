@@ -128,13 +128,19 @@ function ScrollManager() {
   return null;
 }
 
-// Routes that render as standalone landing pages (no global navbar)
-const HIDE_NAVBAR_ROUTES = ["/company-registration"];
+// Routes that render as standalone landing pages (no global navbar / footer)
+const STANDALONE_LANDING_ROUTES = ["/company-registration"];
 
 function ConditionalNavbar() {
   const { pathname } = useLocation();
-  if (HIDE_NAVBAR_ROUTES.includes(pathname)) return null;
+  if (STANDALONE_LANDING_ROUTES.includes(pathname)) return null;
   return <Navbar />;
+}
+
+function ConditionalFooter() {
+  const { pathname } = useLocation();
+  if (STANDALONE_LANDING_ROUTES.includes(pathname)) return null;
+  return <Footer />;
 }
 
 function App() {
@@ -235,7 +241,7 @@ function App() {
 
       <LazyServiceFooterSections />
       <FloatIcon />
-      <Footer />
+      <ConditionalFooter />
     </Router>
   );
 }
