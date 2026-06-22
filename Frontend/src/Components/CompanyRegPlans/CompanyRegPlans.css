@@ -3,6 +3,17 @@
    opcplan / PubpvtPlans pricing design
    ============================================================ */
 
+/* ----- Card hover-lift animation (same as Private Limited plan section) ----- */
+.crp-pricing .opcplan-card {
+  transform: none;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.crp-pricing .opcplan-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 28px rgba(34, 197, 94, 0.18);
+}
+
 /* Audit-fee footnote inside the Enriched Plan Plus card */
 .opcplan-note {
   margin: 14px 0 0;

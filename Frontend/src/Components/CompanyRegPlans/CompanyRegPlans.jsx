@@ -77,7 +77,7 @@ const CompanyRegPlans = () => {
 
   return (
     <>
-      <section className="opc-pricing-section">
+      <section className="opc-pricing-section crp-pricing">
         <div className="opcpricing-container">
 
           <header className="opcpricing-header">
