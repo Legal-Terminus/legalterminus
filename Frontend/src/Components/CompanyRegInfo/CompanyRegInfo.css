@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 /* ============================================================
    CompanyRegInfo — two-column text + illustration section
    ============================================================ */
@@ -5,7 +7,7 @@
 .crinfo-section {
   padding: 60px 24px;
   background: #ffffff;
-  font-family: "Inter", sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .crinfo-container {
@@ -15,8 +17,9 @@
 
 .crinfo-title {
   text-align: center;
-  font-size: 34px;
-  font-weight: 900;
+  font-family: "Poppins", sans-serif;
+  font-size: 36px;
+  font-weight: 700;
   letter-spacing: -0.4px;
   color: #0c1c2c;
   margin: 0 0 44px;
@@ -39,7 +42,8 @@
 
 /* ---------- text ---------- */
 .crinfo-text p {
-  font-size: 16.5px;
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
   line-height: 1.85;
   color: #41566a;
   margin: 0 0 20px;

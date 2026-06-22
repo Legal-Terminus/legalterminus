@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 /* ============================================================
    CompanyRegWhyChoose — "Why Choose Legal Terminus" feature row
    Brand-matched (green circles, dark titles, green captions)
@@ -16,8 +18,9 @@
 
 .crwc-heading {
   text-align: center;
-  font-size: 34px;
-  font-weight: 900;
+  font-family: "Poppins", sans-serif;
+  font-size: 36px;
+  font-weight: 700;
   line-height: 1.25;
   color: #0c1c2c;
   letter-spacing: -0.4px;
