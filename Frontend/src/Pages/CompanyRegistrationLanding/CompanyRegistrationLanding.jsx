@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react'
 import '../CompanyRegOdisha/CompanyRegOdisha.css'
 import CompanyRegHero from '../../Components/CompanyRegHero/CompanyRegHero'
+import CompanyRegWhyChoose from '../../Components/CompanyRegWhyChoose/CompanyRegWhyChoose'
 
 const CroPlans = React.lazy(() => import('../../Components/CroPlans/CroPlans'))
 const CroGovtCosts = React.lazy(() => import('../../Components/CroGovtCosts/CroGovtCosts'))
@@ -27,6 +28,9 @@ const CompanyRegistrationLanding = () => {
       <Suspense fallback={<div />}>
         <OurClients />
       </Suspense>
+
+      {/* Why choose Legal Terminus */}
+      <CompanyRegWhyChoose />
 
       <div className="section-divider" />
 
