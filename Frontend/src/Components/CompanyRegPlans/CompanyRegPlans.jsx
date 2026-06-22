@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../PubpvtPlans/PubpvtPlans.css";
 import "./CompanyRegPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
@@ -7,7 +8,6 @@ const PLANS = [
     id: "elemental",
     name: "Elemental",
     displayName: "Elemental Plan",
-    badge: "STARTER",
     oldPrice: 5999,
     price: 3999,
     services: [
@@ -31,16 +31,10 @@ const PLANS = [
     displayName: "Elemental Plan Plus",
     badge: "★ MOST POPULAR",
     popular: true,
-    inherits: "Everything in the Elemental Plan",
     oldPrice: 7999,
     price: 5999,
     services: [
       "Everything in Elemental Plan",
-      "Share Certificate",
-      "Commencement of Business",
-      "MSME Registration",
-    ],
-    extras: [
       "Share Certificate",
       "Commencement of Business",
       "MSME Registration",
@@ -50,8 +44,7 @@ const PLANS = [
     id: "enriched-plus",
     name: "Enriched Plus",
     displayName: "Enriched Plan Plus",
-    badge: "✦ FULL FIRST-YEAR COMPLIANCE",
-    inherits: "Everything in the Elemental Plan Plus",
+    badge: "✦ FULL COMPLIANCE",
     oldPrice: 29999,
     price: 24999,
     services: [
@@ -75,98 +68,67 @@ const PLANS = [
       "DIR KYC (2 Directors)",
       "Income Tax Filing of 2 Directors",
     ],
-    extras: [
-      "Income tax filing of Company",
-      "Preparation of Directors Report",
-      "Preparation of Annual Return",
-      "Preparation of Auditor Appointment Paperwork",
-      "Preparation of List of Share Holders",
-      "Preparation of Notice of AGM",
-      "Preparation of Notice of BM",
-      "Preparation of Extracts of AGM",
-      "Filing of AOC – 4 (Financial Statements)",
-      "Filing of MGT – 7 (Annual Return)",
-      "Filing of ADT – 1 (Auditor Appointment)",
-      "Minutes of Board Meeting for 1st FY",
-      "Minutes of General Meeting for 1st FY",
-      "Maintenance of Statutory E-Registers",
-      "Filing of DPT – 3 Annual (If Applicable)",
-      "Filing of MSME – 1 (If Applicable) for 1st FY",
-      "DIR KYC (2 Directors)",
-      "Income Tax Filing of 2 Directors",
-    ],
     note: "Audit fees are excluded and to be paid directly to the Auditor’s account.",
   },
 ];
-
-const Check = () => (
-  <svg className="crp-check" viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
-    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
 
 const CompanyRegPlans = () => {
   const [activePlan, setActivePlan] = useState(null);
 
   return (
     <>
-      <section className="crp-section">
-        <div className="crp-container">
-          <header className="crp-header">
-            <span className="crp-eyebrow">Transparent Pricing</span>
-            <h2 className="crp-title">Choose Your Company Registration Plan</h2>
-            <p className="crp-subtitle">
-              Pick the plan that fits your stage — from incorporation essentials to complete
-              first-year compliance. All prices exclude government fees &amp; GST.
+      <section className="opc-pricing-section">
+        <div className="opcpricing-container">
+
+          <header className="opcpricing-header">
+            <h2 className="opcpricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="opcpricing-subtitle">
+              Register your company in Odisha with pocket-friendly prices
             </p>
           </header>
 
-          <div className="crp-grid">
-            {PLANS.map((plan) => {
-              const list = plan.extras || plan.services;
-              return (
-                <article
-                  key={plan.id}
-                  className={`crp-card${plan.popular ? " crp-card--popular" : ""}`}
-                >
-                  {plan.badge && (
-                    <div className={`crp-badge${plan.popular ? " crp-badge--popular" : ""}`}>
-                      {plan.badge}
-                    </div>
-                  )}
-
-                  <div className="crp-card-head">
-                    <h3 className="crp-plan-name">{plan.displayName}</h3>
-                    <div className="crp-price-row">
-                      <span className="crp-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</span>
-                      <span className="crp-price">₹{plan.price.toLocaleString("en-IN")}</span>
-                    </div>
-                    <div className="crp-meta">+ Govt. fees &amp; GST extra</div>
+          <div className="opcpricing-cards pubpvt-cards-center">
+            {PLANS.map((plan) => (
+              <article
+                key={plan.id}
+                className={`opcplan-card${plan.popular ? " opcplan-card--popular" : ""}`}
+              >
+                <div>
+                  <div className="opcplan-header">
+                    {plan.badge && (
+                      <div className={`opcplan-badge${plan.popular ? " opcplan-badge--popular" : ""}`}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    <div className="opcplan-name">{plan.displayName}</div>
+                    <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
-                  <button className="crp-button" onClick={() => setActivePlan(plan)}>
-                    Buy Now
-                  </button>
-
-                  <div className="crp-body">
-                    {plan.inherits && (
-                      <div className="crp-inherits">{plan.inherits}, plus:</div>
-                    )}
-                    <ul className="crp-list">
-                      {list.map((s, i) => (
-                        <li key={i} className="crp-list-item">
-                          <Check />
-                          <span>{s}</span>
-                        </li>
+                  <div className="opcplan-body">
+                    <ul className="opcplan-list">
+                      {plan.services.map((s, i) => (
+                        <li key={i} className="opcplan-list-item">{s}</li>
                       ))}
                     </ul>
 
-                    {plan.note && <p className="crp-note">* {plan.note}</p>}
+                    {plan.note && <p className="opcplan-note">* {plan.note}</p>}
                   </div>
-                </article>
-              );
-            })}
+                </div>
+
+                <div className="opcplan-footer">
+                  <button
+                    className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
+                    onClick={() => setActivePlan(plan)}
+                  >
+                    Buy Now
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
+
         </div>
       </section>
 
