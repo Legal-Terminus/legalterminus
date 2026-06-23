@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react'
 import '../CompanyRegOdisha/CompanyRegOdisha.css'
 import TrademarkHero from '../../Components/TrademarkHero/TrademarkHero'
-import TrademarkWhyChoose from '../../Components/TrademarkWhyChoose/TrademarkWhyChoose'
 import tmLawImg from '../../assets/whypvt-imp.svg'
 import tmRegImg from '../../assets/whypvt-imp1.svg'
 
@@ -11,6 +10,8 @@ const TrademarkHowItWorks = React.lazy(() => import('../../Components/TrademarkH
 const TrademarkComparison = React.lazy(() => import('../../Components/TrademarkComparison/TrademarkComparison'))
 const TrademarkSymbols = React.lazy(() => import('../../Components/TrademarkSymbols/TrademarkSymbols'))
 const TrademarkRights = React.lazy(() => import('../../Components/TrademarkRights/TrademarkRights'))
+const TrademarkImportance = React.lazy(() => import('../../Components/TrademarkImportance/TrademarkImportance'))
+const TrademarkWhyChooseUs = React.lazy(() => import('../../Components/TrademarkWhyChooseUs/TrademarkWhyChooseUs'))
 const TrademarkTypes = React.lazy(() => import('../../Components/TrademarkTypes/TrademarkTypes'))
 const TmarkElegibility = React.lazy(() => import('../../Components/TmarkElegibility/TmarkElegibility'))
 const TmarkDocuments = React.lazy(() => import('../../Components/TmarkDocuments/TmarkDocuments'))
@@ -29,11 +30,6 @@ const TrademarkLanding = () => {
       <Suspense fallback={<div />}>
         <OurClients />
       </Suspense>
-
-      {/* Why choose Legal Terminus */}
-      <TrademarkWhyChoose />
-
-      <div className="section-divider" />
 
       <div id="plans">
         <Suspense fallback={<div />}>
@@ -158,6 +154,20 @@ const TrademarkLanding = () => {
       {/* Understanding Rights of a Registered Trademark User */}
       <Suspense fallback={<div />}>
         <TrademarkRights />
+      </Suspense>
+
+      <div className="section-divider" />
+
+      {/* Why is Trademark Registration Important? */}
+      <Suspense fallback={<div />}>
+        <TrademarkImportance />
+      </Suspense>
+
+      <div className="section-divider" />
+
+      {/* Why Choose Legal Terminus for Trademark Registration? */}
+      <Suspense fallback={<div />}>
+        <TrademarkWhyChooseUs />
       </Suspense>
 
       <div className="section-divider" />
