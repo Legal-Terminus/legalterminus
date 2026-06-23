@@ -14,7 +14,6 @@ const TrademarkRights = React.lazy(() => import('../../Components/TrademarkRight
 const TrademarkTypes = React.lazy(() => import('../../Components/TrademarkTypes/TrademarkTypes'))
 const TmarkElegibility = React.lazy(() => import('../../Components/TmarkElegibility/TmarkElegibility'))
 const TmarkDocuments = React.lazy(() => import('../../Components/TmarkDocuments/TmarkDocuments'))
-const TrademarkImportance = React.lazy(() => import('../../Components/TrademarkImportance/TrademarkImportance'))
 const TmarkFAQ = React.lazy(() => import('../../Components/TmarkFAQ/TmarkFAQ'))
 const TrademarkPlans = React.lazy(() => import('../../Components/TrademarkPlans/TrademarkPlans'))
 const TrademarkTerms = React.lazy(() => import('../../Components/TrademarkTerms/TrademarkTerms'))
@@ -173,13 +172,6 @@ const TrademarkLanding = () => {
       {/* Documents */}
       <Suspense fallback={<div />}>
         <TmarkDocuments />
-      </Suspense>
-
-      <div className="section-divider" />
-
-      {/* Why is Trademark Registration Important? */}
-      <Suspense fallback={<div />}>
-        <TrademarkImportance />
       </Suspense>
 
       <div className="section-divider" />
