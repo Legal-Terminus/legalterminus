@@ -89,6 +89,7 @@ const PrivateLimitedCopy2 = lazy(() => import("./Pages/PrivateLimitedCopy2/Priva
 const CompanyRegOdisha = lazy(() => import("./Pages/CompanyRegOdisha/CompanyRegOdisha"));
 const CompanyRegistrationOdisha = lazy(() => import("./Pages/CompanyRegistrationOdisha/CompanyRegistrationOdisha"));
 const CompanyRegistrationLanding = lazy(() => import("./Pages/CompanyRegistrationLanding/CompanyRegistrationLanding"));
+const TrademarkLanding = lazy(() => import("./Pages/TrademarkLanding/TrademarkLanding"));
 const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
 
 // Store scroll positions keyed by location.key
@@ -130,7 +131,7 @@ function ScrollManager() {
 }
 
 // Routes that render as standalone landing pages (no global navbar / footer)
-const STANDALONE_LANDING_ROUTES = ["/companyregistration-in-odisha"];
+const STANDALONE_LANDING_ROUTES = ["/companyregistration-in-odisha", "/trademark-registration-in-odisha"];
 
 function ConditionalNavbar() {
   const { pathname } = useLocation();
@@ -237,6 +238,7 @@ function App() {
             <Route path="/company-registration-consultancy-in-odisha" element={<CompanyRegOdisha />} />
             <Route path="/company-registration-odisha" element={<CompanyRegistrationOdisha />} />
             <Route path="/companyregistration-in-odisha" element={<CompanyRegistrationLanding />} />
+            <Route path="/trademark-registration-in-odisha" element={<TrademarkLanding />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>
