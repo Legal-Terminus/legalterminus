@@ -6,6 +6,7 @@ import tmLawImg from '../../assets/whypvt-imp.svg'
 import tmRegImg from '../../assets/whypvt-imp1.svg'
 
 const CompanyRegInfo = React.lazy(() => import('../../Components/CompanyRegInfo/CompanyRegInfo'))
+const TrademarkCommonMarks = React.lazy(() => import('../../Components/TrademarkCommonMarks/TrademarkCommonMarks'))
 const TrademarkTypes = React.lazy(() => import('../../Components/TrademarkTypes/TrademarkTypes'))
 const TmarkElegibility = React.lazy(() => import('../../Components/TmarkElegibility/TmarkElegibility'))
 const TmarkDocuments = React.lazy(() => import('../../Components/TmarkDocuments/TmarkDocuments'))
@@ -41,6 +42,13 @@ const TrademarkLanding = () => {
 
       <Suspense fallback={<div />}>
         <TrademarkTerms />
+      </Suspense>
+
+      <div className="section-divider" />
+
+      {/* Most Commonly Filed Trademarks */}
+      <Suspense fallback={<div />}>
+        <TrademarkCommonMarks />
       </Suspense>
 
       <div className="section-divider" />
