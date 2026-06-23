@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   TrademarkComparison — Patent / Trademark / Copyright table
+   ============================================================ */
+
+.tmcomp-section {
+  padding: 64px 24px 72px;
+  background: #dfeadd;
+  font-family: "Poppins", sans-serif;
+}
+
+.tmcomp-container {
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.tmcomp-heading {
+  text-align: center;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  line-height: 1.25;
+  color: #0c1c2c;
+  margin: 0 auto 44px;
+  max-width: 1000px;
+}
+
+.tmcomp-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 14px 36px rgba(15, 34, 53, 0.1);
+}
+
+.tmcomp-table {
+  width: 100%;
+  min-width: 880px;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.tmcomp-table thead th {
+  background: #f3f6f3;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tmcomp-table tbody td {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #374151;
+  text-align: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #eef1ee;
+  vertical-align: middle;
+}
+
+.tmcomp-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tmcomp-aspect {
+  font-weight: 600;
+  color: #1f2937 !important;
+  background: #fafbfa;
+  white-space: nowrap;
+}
+
+/* column separators */
+.tmcomp-table th:not(:last-child),
+.tmcomp-table td:not(:last-child) {
+  border-right: 1px solid #eef1ee;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  .tmcomp-section { padding: 48px 16px 56px; }
+  .tmcomp-heading { font-size: 25px; margin-bottom: 32px; }
+  .tmcomp-table thead th { font-size: 15px; padding: 14px; }
+  .tmcomp-table tbody td { font-size: 13.5px; padding: 14px; }
+}
