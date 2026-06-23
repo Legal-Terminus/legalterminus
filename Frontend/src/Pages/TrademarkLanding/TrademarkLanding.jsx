@@ -9,6 +9,8 @@ const CompanyRegInfo = React.lazy(() => import('../../Components/CompanyRegInfo/
 const TrademarkCommonMarks = React.lazy(() => import('../../Components/TrademarkCommonMarks/TrademarkCommonMarks'))
 const TrademarkHowItWorks = React.lazy(() => import('../../Components/TrademarkHowItWorks/TrademarkHowItWorks'))
 const TrademarkComparison = React.lazy(() => import('../../Components/TrademarkComparison/TrademarkComparison'))
+const TrademarkSymbols = React.lazy(() => import('../../Components/TrademarkSymbols/TrademarkSymbols'))
+const TrademarkRights = React.lazy(() => import('../../Components/TrademarkRights/TrademarkRights'))
 const TrademarkTypes = React.lazy(() => import('../../Components/TrademarkTypes/TrademarkTypes'))
 const TmarkElegibility = React.lazy(() => import('../../Components/TmarkElegibility/TmarkElegibility'))
 const TmarkDocuments = React.lazy(() => import('../../Components/TmarkDocuments/TmarkDocuments'))
@@ -143,6 +145,20 @@ const TrademarkLanding = () => {
       {/* Types of Trademark Registration (cards) */}
       <Suspense fallback={<div />}>
         <TrademarkTypes />
+      </Suspense>
+
+      <div className="section-divider" />
+
+      {/* Types of Trademark Symbols */}
+      <Suspense fallback={<div />}>
+        <TrademarkSymbols />
+      </Suspense>
+
+      <div className="section-divider" />
+
+      {/* Understanding Rights of a Registered Trademark User */}
+      <Suspense fallback={<div />}>
+        <TrademarkRights />
       </Suspense>
 
       <div className="section-divider" />

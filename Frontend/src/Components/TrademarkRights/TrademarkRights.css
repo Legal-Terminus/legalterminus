@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   TrademarkRights — "Understanding Rights of a Registered
+   Trademark User"
+   ============================================================ */
+
+.tmr-section {
+  padding: 64px 24px 72px;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f9f2 100%);
+  font-family: "Poppins", sans-serif;
+}
+
+.tmr-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.tmr-heading {
+  text-align: center;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: #0c1c2c;
+  margin: 0 0 16px;
+}
+
+.tmr-intro {
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.75;
+  color: #41566a;
+  max-width: 960px;
+  margin: 0 auto 44px;
+}
+
+.tmr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.tmr-card {
+  display: flex;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  border-left: 4px solid #22c55e;
+  border-radius: 14px;
+  padding: 24px 24px 24px 22px;
+  box-shadow: 0 10px 26px rgba(15, 34, 53, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.tmr-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 34px rgba(34, 197, 94, 0.16);
+}
+
+.tmr-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  border-radius: 50%;
+  color: #ffffff;
+  background: linear-gradient(135deg, #22c55e, #4ade80);
+}
+
+.tmr-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #15803d;
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+
+.tmr-text {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #51697d;
+  margin: 0;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 820px) {
+  .tmr-grid { grid-template-columns: 1fr; }
+  .tmr-heading { font-size: 28px; }
+}
+
+@media (max-width: 480px) {
+  .tmr-section { padding: 48px 16px 56px; }
+  .tmr-heading { font-size: 23px; }
+  .tmr-card { padding: 20px; }
+}
