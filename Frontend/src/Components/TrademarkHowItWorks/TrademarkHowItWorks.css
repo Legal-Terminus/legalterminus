@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   TrademarkHowItWorks — "How It Works" step cards
+   ============================================================ */
+
+.tmhw-section {
+  padding: 64px 24px 72px;
+  background: #ffffff;
+  font-family: "Poppins", sans-serif;
+}
+
+.tmhw-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tmhw-heading {
+  text-align: center;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: #0c1c2c;
+  margin: 0 0 46px;
+}
+
+.tmhw-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  align-items: stretch;
+}
+
+.tmhw-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 2px solid #5bd07a;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 40px 28px 32px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.tmhw-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 34px rgba(34, 197, 94, 0.16);
+}
+
+/* organic green blob behind the icon */
+.tmhw-icon-wrap {
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+  margin-bottom: 30px;
+  background: rgba(34, 197, 94, 0.14);
+  border-radius: 46% 54% 58% 42% / 52% 44% 56% 48%;
+  color: #16a34a;
+}
+
+.tmhw-icon {
+  display: grid;
+  place-items: center;
+}
+
+.tmhw-title {
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #1f2937;
+  margin: 0 0 14px;
+  flex: 1;
+}
+
+.tmhw-caption {
+  font-size: 15px;
+  color: #4b5563;
+  margin: 0;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .tmhw-grid {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin: 0 auto;
+    gap: 24px;
+  }
+  .tmhw-heading { font-size: 28px; }
+  .tmhw-title { flex: none; }
+}
+
+@media (max-width: 480px) {
+  .tmhw-section { padding: 48px 16px 56px; }
+  .tmhw-heading { font-size: 24px; }
+  .tmhw-card { padding: 32px 22px 28px; }
+  .tmhw-icon-wrap { width: 116px; height: 116px; }
+}
