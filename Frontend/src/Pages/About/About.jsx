@@ -1,5 +1,6 @@
 import React from 'react'
 import './About.css'
+import LazyAboutFooterSections from '../../Components/LazyAboutFooterSections/LazyAboutFooterSections'
 
 const About = () => {
   const standOutItems = [
@@ -108,14 +109,8 @@ const About = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="about-cta">
-        <div className="about-container">
-          <h2>Ready to Get Started?</h2>
-          <p>Contact us today to learn how we can help your business stay compliant and grow.</p>
-          <button className="cta-button">Contact Us Now</button>
-        </div>
-      </section>
+      {/* Testimonials + Video Testimonials (same as other pages) */}
+      <LazyAboutFooterSections />
     </div>
   )
 }

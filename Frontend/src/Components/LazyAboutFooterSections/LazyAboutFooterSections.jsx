@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 
-const DissolavePrivatesTestimonial = React.lazy(() =>
-  import("../DissolvePrivateTestimonial/DissolvePrivateTestimonial")
+// Use the same generic testimonial sections shown on the service pages
+const PvtltdTestimonial = React.lazy(() =>
+  import("../PvtltdTestimonial/PvtltdTestimonial")
 );
-const DissolveVideoTestimonial = React.lazy(() =>
-  import("../DissolveVideoTestimonial/DissolveVideoTestimonial")
-);
-const DissolaveOurClients = React.lazy(() =>
-  import("../DissolaveOurClients/DissolaveOurClients")
+const PvtltdVideoTestimonial = React.lazy(() =>
+  import("../PvtltdVideoTestimonial/PvtltdVideoTestimonial")
 );
 
 /**
@@ -60,9 +58,8 @@ function LazyAboutFooterSections() {
     <div ref={containerRef}>
       {shouldRender && (
         <React.Suspense fallback={null}>
-          <DissolavePrivatesTestimonial />
-          <DissolveVideoTestimonial />
-          <DissolaveOurClients />
+          <PvtltdTestimonial />
+          <PvtltdVideoTestimonial />
         </React.Suspense>
       )}
     </div>
