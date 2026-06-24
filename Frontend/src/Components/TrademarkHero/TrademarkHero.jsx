@@ -36,12 +36,12 @@ const TrademarkHero = () => {
 
           <span className="crh-badge">
             <span className="crh-badge-dot" />
-            Trusted by 3,500+ Brands across India
+            Trusted by 3,500+ Brands across Odisha
           </span>
 
           <h1 className="crh-title">
             Trademark Registration <br />
-            in <span className="crh-title-accent">India</span>
+            in <span className="crh-title-accent">Odisha</span>
           </h1>
 
           <p className="crh-subtitle">
