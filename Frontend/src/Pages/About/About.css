@@ -12,19 +12,63 @@
 /* Banner Section */
 .about-banner {
   position: relative;
+  overflow: hidden;
+  isolation: isolate;
   background:
-    radial-gradient(circle at 18% 20%, rgba(25, 163, 95, 0.12) 0, transparent 42%),
-    radial-gradient(circle at 85% 80%, rgba(11, 95, 58, 0.10) 0, transparent 45%),
-    linear-gradient(135deg, #eafaf1 0%, #d7f0e1 100%);
+    radial-gradient(ellipse 900px 500px at 15% 18%, rgba(25, 163, 95, 0.18), transparent 60%),
+    radial-gradient(ellipse 700px 420px at 88% 85%, rgba(11, 95, 58, 0.14), transparent 60%),
+    linear-gradient(160deg, #eafaf1 0%, #d7f0e1 50%, #eafaf1 100%);
   color: #0b5f3a;
-  padding: 72px 20px;
+  padding: 80px 20px;
   text-align: center;
   border-bottom: 1px solid #c7e9d6;
 }
 
+/* Subtle dotted pattern overlay (same depth trick as the service heroes) */
+.about-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image: radial-gradient(rgba(11, 95, 58, 0.08) 1.4px, transparent 1.4px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 30%, transparent 75%);
+}
+
+/* Soft floating accent blob */
+.about-banner::after {
+  content: "";
+  position: absolute;
+  top: -90px;
+  right: -70px;
+  width: 320px;
+  height: 320px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(25, 163, 95, 0.22), transparent 70%);
+  filter: blur(8px);
+}
+
 .about-banner-content {
+  position: relative;
+  z-index: 1;
   max-width: 760px;
   margin: 0 auto;
+}
+
+/* A second floating blob anchored to the content layer (bottom-left) */
+.about-banner-content::before {
+  content: "";
+  position: absolute;
+  bottom: -130px;
+  left: -120px;
+  width: 240px;
+  height: 240px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(11, 95, 58, 0.16), transparent 70%);
+  filter: blur(6px);
 }
 
 .about-banner-badge {
