@@ -1,28 +1,48 @@
 import React from "react";
 import "./TrademarkCommonMarks.css";
 
-/* Original, generic sample logo used purely to illustrate a "logo" mark */
-const SampleLogo = ({ size = 92 }) => (
+/* Legal Terminus "LT" monogram used as the device-mark example */
+const LTMark = ({ size = 92 }) => (
   <svg viewBox="0 0 64 64" width={size} height={size} aria-hidden="true">
-    <rect x="4" y="4" width="56" height="56" rx="16" fill="#FC8019" />
-    <path
-      d="M22 44V20h11c5.2 0 8.6 2.9 8.6 7.4 0 3.2-1.8 5.4-4.7 6.3l5.4 10.3h-6l-4.7-9.4H27.6V44H22Zm5.6-13.6h4.8c2.4 0 3.8-1.2 3.8-3.2s-1.4-3.1-3.8-3.1h-4.8v6.3Z"
+    <defs>
+      <linearGradient id="lt-mark-grad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stopColor="#16a34a" />
+        <stop offset="1" stopColor="#4ade80" />
+      </linearGradient>
+    </defs>
+    <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#lt-mark-grad)" />
+    <text
+      x="32"
+      y="43"
+      textAnchor="middle"
+      fontSize="27"
+      fontWeight="800"
       fill="#ffffff"
-    />
+      fontFamily="Poppins, sans-serif"
+      letterSpacing="1"
+    >
+      LT
+    </text>
   </svg>
+);
+
+const Wordmark = () => (
+  <>
+    <span className="tmcm-word-accent">LEGAL</span> TERMINUS
+  </>
 );
 
 const MARKS = [
   {
     title: "Word Mark",
     sub: "(also known as brand name)",
-    example: <div className="tmcm-word">BRANDLY</div>,
+    example: <div className="tmcm-word"><Wordmark /></div>,
     desc: "A Word Mark is a unique name for your product or service. Registering it gives you ownership of the word in plain text.",
   },
   {
     title: "Logo",
     sub: "(also known as design and device mark)",
-    example: <SampleLogo size={96} />,
+    example: <LTMark size={96} />,
     desc: "A Logo refers to a unique visual symbol, artwork, or design that represents your brand.",
   },
   {
@@ -30,8 +50,8 @@ const MARKS = [
     sub: "(Word + Logo)",
     example: (
       <div className="tmcm-composite">
-        <SampleLogo size={82} />
-        <span className="tmcm-composite-word">BRANDLY</span>
+        <LTMark size={80} />
+        <span className="tmcm-composite-word"><Wordmark /></span>
       </div>
     ),
     desc: "A Composite Mark combines both a brand name and a logo. It includes the text (word mark) along with a unique symbol or design.",
