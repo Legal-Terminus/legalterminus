@@ -55,14 +55,10 @@ const About = () => {
       <section className="about-intro">
         <div className="about-container">
           <div className="intro-content">
-            <h2>Who We Are</h2>
             <p className="intro-text">
-              Legal Terminus is a professional business consultancy firm providing compliance and regulatory support services across India. We assist businesses with legal and statutory requirements in a structured and hassle-free manner.
+              Legal Terminus is a professional business consultancy firm providing compliance and regulatory support services across India. We assist businesses with legal and statutory requirements in a structured and hassle-free manner. As a one-stop solution, our experienced consultants handle documentation, filings, and procedural support to help your business remain compliant with applicable laws. Our team focuses on accuracy, timely submission, and professional guidance throughout the process.
             </p>
             <p className="intro-text">
-              As a one-stop solution, our experienced consultants handle documentation, filings, and procedural support to help your business remain compliant with applicable laws. Our team focuses on accuracy, timely submission, and professional guidance throughout the process.
-            </p>
-            <p className="intro-disclaimer">
               Legal Terminus is a private consultancy firm and is not affiliated with any government authority.
             </p>
           </div>

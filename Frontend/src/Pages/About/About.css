@@ -37,6 +37,12 @@
   background-color: #f9fafb;
 }
 
+.intro-content {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
 .intro-content h2 {
   font-size: 2.5rem;
   color: #0b5f3a;

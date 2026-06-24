@@ -105,38 +105,6 @@ const TrademarkLanding = () => {
 
       <div className="section-divider" />
 
-      {/* Understanding Trademark Law in India (text + illustration) */}
-      <Suspense fallback={<div />}>
-        <CompanyRegInfo
-          title="Understanding Trademark Law in India"
-          image={tmLawImg}
-          imageAlt="Understanding trademark law in India"
-          paragraphs={[
-            "Trademark law in India is governed by the Trade Marks Act, 1999, which protects brand names, logos, taglines, and other marks that distinguish your goods and services. The Trade Marks Registry, under the Controller General of Patents, Designs and Trade Marks (CGPDTM), administers registration through the IP India portal.",
-            "A registered trademark grants the owner exclusive rights over the mark and the ability to take legal action against unauthorized use. Marks are filed under the Nice Classification — 45 classes covering goods (1–34) and services (35–45) — and protection lasts 10 years, renewable indefinitely.",
-          ]}
-        />
-      </Suspense>
-
-      <div className="section-divider" />
-
-      {/* What is Trademark Registration (illustration + text) */}
-      <Suspense fallback={<div />}>
-        <CompanyRegInfo
-          title="What is Trademark Registration"
-          image={tmRegImg}
-          imageAlt="What is trademark registration"
-          reverse
-          paragraphs={[
-            "Registering a trademark is the first step to legally securing your brand identity. The Trade Marks Act, 1999 sets the rules for filing, and the Trade Marks Registry oversees the process. Once registered, your brand gets exclusive legal protection and the right to use the ® symbol.",
-            "Choosing the right type of mark — word mark, logo, combination, or non-conventional marks — and the correct class is important, because it defines the scope of your protection. You can start using the ™ symbol as soon as your application is filed.",
-            "Registering your trademark also builds customer trust, increases brand and business value, and unlocks access to marketplace brand-protection programmes and IP-backed financing. We handle the complete TM-A process for you on the IP India portal.",
-          ]}
-        />
-      </Suspense>
-
-      <div className="section-divider" />
-
       {/* Types of Trademark Registration (cards) */}
       <Suspense fallback={<div />}>
         <TrademarkTypes />
