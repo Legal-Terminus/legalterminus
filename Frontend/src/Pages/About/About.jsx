@@ -46,8 +46,10 @@ const About = () => {
       {/* Banner Section */}
       <section className="about-banner">
         <div className="about-banner-content">
+          <span className="about-banner-badge">Who We Are</span>
           <h1>About Legal Terminus</h1>
-          <p>Your Trusted Legal & Compliance Partner</p>
+          <p>Your Trusted Legal &amp; Compliance Partner</p>
+          <span className="about-banner-divider" aria-hidden="true"></span>
         </div>
       </section>
 
