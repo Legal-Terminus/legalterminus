@@ -11,7 +11,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-function getFirebaseApp() {
+export function getFirebaseApp() {
   if (getApps().length > 0) return getApp();
   return initializeApp(firebaseConfig);
 }
