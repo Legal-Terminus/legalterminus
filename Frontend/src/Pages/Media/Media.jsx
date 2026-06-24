@@ -1,6 +1,15 @@
 import { useRef, useState, useEffect } from 'react'
 import './Media.css'
-import NewsImageSlider from '../../Components/NewsImageSlider/NewsImageSlider'
+import news1 from '../../assets/NewsPaper.webp'
+import news2 from '../../assets/NewsPaper2.webp'
+import news3 from '../../assets/NewsPaper3.webp'
+
+/* Newspaper clippings for the auto-scrolling Print Media strip */
+const printMedia = [
+  { src: news1, alt: 'Legal Terminus in Janamata Parikrama' },
+  { src: news2, alt: 'Legal Terminus newspaper coverage' },
+  { src: news3, alt: 'Legal Terminus newspaper coverage' },
+]
 
 /**
  * Media coverage videos.
@@ -78,9 +87,18 @@ export default function Media() {
           </div>
         </section>
 
-        {/* Print Media carousel (newspaper clippings) */}
+        {/* Print Media — auto-scrolling newspaper clippings */}
         <section className="media-print">
-          <NewsImageSlider />
+          <h2 className="media-print-title">Print Media</h2>
+          <div className="pm-marquee">
+            <div className="pm-track">
+              {[...printMedia, ...printMedia].map((item, i) => (
+                <div className="pm-slide" key={i}>
+                  <img src={item.src} alt={item.alt} draggable="false" loading="lazy" />
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section className="media-about">
