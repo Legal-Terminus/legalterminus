@@ -5,22 +5,102 @@
 }
 
 .media-banner {
-  background: linear-gradient(135deg, #0b5f3a 0%, #19a35f 100%);
-  color: white;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse 900px 500px at 15% 18%, rgba(25, 163, 95, 0.18), transparent 60%),
+    radial-gradient(ellipse 700px 420px at 88% 85%, rgba(11, 95, 58, 0.14), transparent 60%),
+    linear-gradient(160deg, #eafaf1 0%, #d7f0e1 50%, #eafaf1 100%);
+  color: #0b5f3a;
   padding: 80px 20px;
   text-align: center;
+  border-bottom: 1px solid #c7e9d6;
+}
+
+/* Subtle dotted pattern overlay */
+.media-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image: radial-gradient(rgba(11, 95, 58, 0.08) 1.4px, transparent 1.4px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 30%, transparent 75%);
+}
+
+/* Soft floating accent blob (top-right) */
+.media-banner::after {
+  content: "";
+  position: absolute;
+  top: -90px;
+  right: -70px;
+  width: 320px;
+  height: 320px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(25, 163, 95, 0.22), transparent 70%);
+  filter: blur(8px);
+}
+
+.media-banner-content {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* Second floating blob (bottom-left) */
+.media-banner-content::before {
+  content: "";
+  position: absolute;
+  bottom: -130px;
+  left: -120px;
+  width: 240px;
+  height: 240px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(11, 95, 58, 0.16), transparent 70%);
+  filter: blur(6px);
+}
+
+.media-banner-badge {
+  display: inline-block;
+  background: #ffffff;
+  color: #0b5f3a;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  border-radius: 999px;
+  border: 1px solid #b7e3c9;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 10px rgba(11, 95, 58, 0.08);
 }
 
 .media-banner h1 {
   font-size: 48px;
   font-weight: 700;
+  line-height: 1.2;
   margin: 0 0 15px 0;
+  color: #0b5f3a;
 }
 
 .media-banner p {
   font-size: 20px;
   margin: 0;
-  opacity: 0.95;
+  color: #2f7a55;
+}
+
+.media-banner-divider {
+  display: block;
+  width: 84px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #19a35f, #0b5f3a);
+  margin: 1.5rem auto 0;
 }
 
 .media-container {

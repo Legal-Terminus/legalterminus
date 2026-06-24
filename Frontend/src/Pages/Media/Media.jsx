@@ -67,8 +67,12 @@ export default function Media() {
   return (
     <div className="media-page">
       <section className="media-banner">
-        <h1>Media & Press</h1>
-        <p>Legal Terminus in the News and Media</p>
+        <div className="media-banner-content">
+          <span className="media-banner-badge">Newsroom</span>
+          <h1>Media &amp; Press</h1>
+          <p>Legal Terminus in the News and Media</p>
+          <span className="media-banner-divider" aria-hidden="true"></span>
+        </div>
       </section>
 
       <div className="media-container">

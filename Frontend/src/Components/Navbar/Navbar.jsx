@@ -176,59 +176,20 @@ const navData = [
           // Public Limited Company To Private Limited Company -> /conversion/public-to-private
         ],
       },
-      {
-        id: "updation",
-        label: "Updation Services",
-        items: [
-          { label: "Change In Name (LLP)", href: "/updation/change-name-llp" },
-          {
-            label: "Change In Registered Office Address (Company)",
-            href: "/updation/change-address-company",
-          },
-          {
-            label: "Change In Object (Company)",
-            href: "/updation/change-object-company",
-          },
-          {
-            label: "Increase In Authorised Capital (Company)",
-            href: "/updation/increase-authorised-capital",
-          },
-          {
-            label: "Add Or Remove A Director (Company)",
-            href: "/updation/add-remove-director",
-          },
-          {
-            label: "Change In Name (Company)",
-            href: "/updation/change-name-company",
-          },
-          {
-            label: "Change In Registered Office Address (LLP)",
-            href: "/updation/change-address-llp",
-          },
-          {
-            label: "Change In Object (LLP)",
-            href: "/updation/change-object-llp",
-          },
-        ],
-      },
-      {
-        id: "windup",
-        label: "Windup Services",
-        items: [
-          {
-            label: "Dissolve A Private Limited Company",
-            href: "/windup/dissolve-private",
-          },
-          {
-            label: "Dissolve A Limited Liability Partnership",
-            href: "/windup/dissolve-llp",
-          },
-          {
-            label: "Dissolve A Partnership Firm",
-            href: "/windup/dissolve-partnership",
-          },
-        ],
-      },
+      // Hidden from menu (pages kept):
+      // Updation Services category:
+      //   Change In Name (LLP) -> /updation/change-name-llp
+      //   Change In Registered Office Address (Company) -> /updation/change-address-company
+      //   Change In Object (Company) -> /updation/change-object-company
+      //   Increase In Authorised Capital (Company) -> /updation/increase-authorised-capital
+      //   Add Or Remove A Director (Company) -> /updation/add-remove-director
+      //   Change In Name (Company) -> /updation/change-name-company
+      //   Change In Registered Office Address (LLP) -> /updation/change-address-llp
+      //   Change In Object (LLP) -> /updation/change-object-llp
+      // Windup Services category:
+      //   Dissolve A Private Limited Company -> /windup/dissolve-private
+      //   Dissolve A Limited Liability Partnership -> /windup/dissolve-llp
+      //   Dissolve A Partnership Firm -> /windup/dissolve-partnership
     ],
   },
   {
