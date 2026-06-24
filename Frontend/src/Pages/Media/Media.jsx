@@ -1,4 +1,57 @@
+import { useRef, useState, useEffect } from 'react'
 import './Media.css'
+
+/**
+ * Media coverage videos.
+ * Replace each `videoId` with the real YouTube video ID
+ * (the part after `watch?v=` or `youtu.be/`).
+ */
+const mediaCoverage = [
+  { channel: 'Darbar TV',        videoId: 'dQw4w9WgXcQ' },
+  { channel: 'Daily News',       videoId: 'ysz5PUM2z2A' },
+  { channel: 'Chandrama Khabar', videoId: 'jNQXAC9IVRw' },
+  { channel: 'EN Odisha',        videoId: 'oHg5SJYRHA0' },
+  { channel: 'Utkal Bharat',     videoId: 'kJQP7kiw5Fk' },
+  { channel: 'Pratigyan Live',   videoId: 'fJ9rUzIMcZQ' },
+]
+
+/* Loads the YouTube iframe only once the card scrolls into view */
+function LazyVideo({ videoId, title }) {
+  const ref = useRef(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const node = ref.current
+    if (!node) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          observer.unobserve(entry.target)
+        }
+      },
+      { rootMargin: '120px' }
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div ref={ref} className="mc-video">
+      {visible ? (
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}`}
+          title={title}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      ) : (
+        <div className="mc-video-placeholder" aria-hidden="true" />
+      )}
+    </div>
+  )
+}
 
 export default function Media() {
   return (
@@ -9,6 +62,21 @@ export default function Media() {
       </section>
 
       <div className="media-container">
+        <section className="media-coverage">
+          <h2>Media Coverage</h2>
+          <p className="media-coverage-sub">
+            Watch Legal Terminus featured across leading news channels.
+          </p>
+          <div className="mc-grid">
+            {mediaCoverage.map((item) => (
+              <article className="mc-card" key={item.channel}>
+                <LazyVideo videoId={item.videoId} title={item.channel} />
+                <h3 className="mc-channel">{item.channel}</h3>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="media-about">
           <h2>About Legal Terminus</h2>
           <p>
