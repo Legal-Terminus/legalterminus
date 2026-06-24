@@ -1,12 +1,6 @@
 import React from "react";
 import "./TrademarkImportance.css";
 
-const Check = () => (
-  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
-    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 const POINTS = [
   {
     title: "Protect Your Brand",
@@ -52,14 +46,14 @@ const TrademarkImportance = () => {
           builds trust with your customers. Here's why it matters:
         </p>
 
-        <div className="tmimp-grid">
-          {POINTS.map((p) => (
-            <div className="tmimp-card" key={p.title}>
-              <span className="tmimp-icon" aria-hidden="true">
-                <Check />
-              </span>
-              <h3 className="tmimp-card-title">{p.title}</h3>
-              <p className="tmimp-card-text">{p.text}</p>
+        <div className="tmimp-list">
+          {POINTS.map((p, i) => (
+            <div className="tmimp-item" key={p.title}>
+              <span className="tmimp-num">{String(i + 1).padStart(2, "0")}</span>
+              <div className="tmimp-body">
+                <h3 className="tmimp-item-title">{p.title}</h3>
+                <p className="tmimp-item-text">{p.text}</p>
+              </div>
             </div>
           ))}
         </div>

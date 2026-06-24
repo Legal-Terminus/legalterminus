@@ -86,10 +86,8 @@ const TrademarkWhyChooseUs = () => {
           {ITEMS.map((item) => (
             <div className="tmwcu-card" key={item.title}>
               <span className="tmwcu-icon" aria-hidden="true">{item.icon}</span>
-              <div className="tmwcu-body">
-                <h3 className="tmwcu-title">{item.title}</h3>
-                <p className="tmwcu-text">{item.text}</p>
-              </div>
+              <h3 className="tmwcu-title">{item.title}</h3>
+              <p className="tmwcu-text">{item.text}</p>
             </div>
           ))}
         </div>

@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 
 /* ============================================================
    TrademarkImportance — "Why is Trademark Registration
-   Important?" (8 points)
+   Important?" — NUMBERED LIST design
    ============================================================ */
 
 .tmimp-section {
@@ -12,7 +12,7 @@
 }
 
 .tmimp-container {
-  max-width: 1180px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -31,51 +31,57 @@
   line-height: 1.7;
   color: #41566a;
   max-width: 780px;
-  margin: 0 auto 44px;
+  margin: 0 auto 50px;
 }
 
-.tmimp-grid {
+/* numbered list — two columns, no card boxes */
+.tmimp-list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  align-items: stretch;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 34px 56px;
 }
 
-.tmimp-card {
-  background: #ffffff;
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  border-top: 4px solid #22c55e;
-  border-radius: 14px;
-  padding: 26px 22px 24px;
-  box-shadow: 0 10px 26px rgba(15, 34, 53, 0.06);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+.tmimp-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  position: relative;
 }
 
-.tmimp-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 18px 36px rgba(34, 197, 94, 0.16);
+/* subtle separating line under each item */
+.tmimp-item::after {
+  content: "";
+  position: absolute;
+  left: 66px;
+  right: 0;
+  bottom: -17px;
+  height: 1px;
+  background: rgba(34, 197, 94, 0.18);
 }
 
-.tmimp-icon {
+.tmimp-num {
+  flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  margin-bottom: 14px;
-  border-radius: 10px;
-  color: #ffffff;
-  background: linear-gradient(135deg, #16a34a, #4ade80);
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  font-size: 19px;
+  font-weight: 800;
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1.5px solid rgba(34, 197, 94, 0.35);
 }
 
-.tmimp-card-title {
-  font-size: 17px;
+.tmimp-item-title {
+  font-size: 18px;
   font-weight: 700;
-  color: #15803d;
-  margin: 0 0 8px;
+  color: #0c1c2c;
+  margin: 4px 0 7px;
 }
 
-.tmimp-card-text {
-  font-size: 14px;
+.tmimp-item-text {
+  font-size: 14.5px;
   line-height: 1.6;
   color: #51697d;
   margin: 0;
@@ -85,25 +91,25 @@
   text-align: center;
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
-  margin: 40px auto 0;
-  max-width: 700px;
+  color: #15803d;
+  margin: 50px auto 0;
+  max-width: 720px;
 }
 
 /* ============================================================
    RESPONSIVE
    ============================================================ */
-@media (max-width: 1024px) {
-  .tmimp-grid { grid-template-columns: repeat(2, 1fr); }
-  .tmimp-heading { font-size: 30px; }
+@media (max-width: 760px) {
+  .tmimp-list {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .tmimp-item::after { display: none; }
+  .tmimp-heading { font-size: 28px; }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 480px) {
   .tmimp-section { padding: 48px 16px 56px; }
-  .tmimp-grid {
-    grid-template-columns: 1fr;
-    max-width: 380px;
-    margin: 0 auto;
-  }
   .tmimp-heading { font-size: 24px; }
+  .tmimp-num { width: 44px; height: 44px; font-size: 17px; }
 }
