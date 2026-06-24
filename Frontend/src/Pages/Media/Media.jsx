@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import './Media.css'
+import NewsImageSlider from '../../Components/NewsImageSlider/NewsImageSlider'
 
 /**
  * Media coverage videos.
@@ -75,6 +76,11 @@ export default function Media() {
               </article>
             ))}
           </div>
+        </section>
+
+        {/* Print Media carousel (newspaper clippings) */}
+        <section className="media-print">
+          <NewsImageSlider />
         </section>
 
         <section className="media-about">
