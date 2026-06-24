@@ -95,18 +95,14 @@ export default function ConfidentialityPolicy() {
           </div>
 
           <div className="policy-contact">
-            <h3>Confidentiality Concerns?</h3>
+            <h3>Need Assistance?</h3>
             <p>
-              If you have concerns about how we handle your confidential information or believe your information has been mishandled, 
-              please contact us immediately:
+              For any questions or to request assistance, please reach out to us:
             </p>
             <p>
               <strong>Email:</strong> <a href="mailto:sales21@legalterminus.com">sales21@legalterminus.com</a><br/>
               <strong>Phone:</strong> <a href="tel:+918280045432">+91 8280 045 432</a> / <a href="tel:+918280093456">8280093456</a><br/>
               <strong>WhatsApp:</strong> <a href="https://wa.me/918280008183" target="_blank" rel="noopener noreferrer">+91 8280 008 183</a>
-            </p>
-            <p style={{ marginTop: '15px', fontSize: '14px', fontStyle: 'italic' }}>
-              We take confidentiality breaches very seriously and will investigate all concerns thoroughly.
             </p>
           </div>
         </section>

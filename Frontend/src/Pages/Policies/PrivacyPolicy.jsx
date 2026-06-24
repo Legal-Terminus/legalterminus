@@ -78,9 +78,9 @@ export default function PrivacyPolicy() {
           </div>
 
           <div className="policy-contact">
-            <h3>Questions or Concerns?</h3>
+            <h3>Need Assistance?</h3>
             <p>
-              If you have any questions regarding our privacy policy or how we handle your information, please contact us at:
+              For any questions or to request assistance, please reach out to us:
             </p>
             <p>
               <strong>Email:</strong> <a href="mailto:sales21@legalterminus.com">sales21@legalterminus.com</a><br/>

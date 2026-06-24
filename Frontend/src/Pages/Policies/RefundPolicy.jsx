@@ -76,21 +76,10 @@ export default function RefundPolicy() {
             </p>
           </div>
 
-          <div className="refund-process">
-            <h3>How to Request a Refund</h3>
-            <ol>
-              <li>Contact us via email at <a href="mailto:admin@legalterminus.com">admin@legalterminus.com</a></li>
-              <li>Provide your Order ID and reason for refund request</li>
-              <li>Our team will review within 24 hours</li>
-              <li>If approved, refund will be processed within 15 working days</li>
-              <li>You will receive confirmation via email</li>
-            </ol>
-          </div>
-
           <div className="policy-contact">
             <h3>Need Assistance?</h3>
             <p>
-              For any questions about our refund policy or to request a refund, please reach out to us:
+              For any questions or to request assistance, please reach out to us:
             </p>
             <p>
               <strong>Email:</strong> <a href="mailto:sales21@legalterminus.com">sales21@legalterminus.com</a><br/>

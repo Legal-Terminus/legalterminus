@@ -99,9 +99,9 @@ export default function TermsConditions() {
           </div>
 
           <div className="policy-contact">
-            <h3>Questions About Our Terms?</h3>
+            <h3>Need Assistance?</h3>
             <p>
-              If you have any questions regarding our Terms & Conditions, please contact us:
+              For any questions or to request assistance, please reach out to us:
             </p>
             <p>
               <strong>Email:</strong> <a href="mailto:sales21@legalterminus.com">sales21@legalterminus.com</a><br/>
