@@ -3,7 +3,7 @@ import "./ITRIndividualNew.css";
 import ItrIndBreadcrum from '../../Components/ItrIndBreadcrum/ItrIndBreadcrum'
 
 const ItrIndPlans = React.lazy(() => import('../../Components/ItrIndPlans/ItrIndPlans'))
-const ItrIndGovtCosts = React.lazy(() => import('../../Components/ItrIndGovtCosts/ItrIndGovtCosts'))
+const ItrIndPlanInfo = React.lazy(() => import('../../Components/ItrIndPlanInfo/ItrIndPlanInfo'))
 const ItrIndTermCondition = React.lazy(() => import('../../Components/ItrIndTermCondition/ItrIndTermCondition'))
 const ItrIndZolvitPremium = React.lazy(() => import('../../Components/ItrIndZolvitPremium/ItrIndZolvitPremium'))
 const ItrIndTabs = React.lazy(() => import('../../Components/ItrIndTabs/ItrIndTabs'))
@@ -32,7 +32,7 @@ const ITRIndividualNew = () => {
       <div className="section-divider" />
 
       <Suspense fallback={<div />}>
-        <ItrIndGovtCosts />
+        <ItrIndPlanInfo />
       </Suspense>
 
       <div className="section-divider" />

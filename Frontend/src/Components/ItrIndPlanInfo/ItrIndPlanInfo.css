@@ -1,0 +1,40 @@
+@import url('../OPCGovtCosts/OPCGovtCosts.css');
+
+/* Light-green "Plan Customization" note */
+.itrind-plancustom-section {
+  font-family: 'Poppins', sans-serif;
+  background: #f8fdf9;
+  padding: 44px 24px 8px;
+}
+
+.itrind-plancustom-box {
+  max-width: 960px;
+  margin: 0 auto;
+  background: #e9f9ef;
+  border: 1px solid #bce8c9;
+  border-left: 5px solid #19b43a;
+  border-radius: 12px;
+  padding: 18px 24px;
+  font-size: 14px;
+  line-height: 1.75;
+  color: #14543c;
+}
+
+.itrind-plancustom-box strong {
+  color: #0f3d2e;
+}
+
+/* Italic note under the tax-regime table */
+.itrind-table-note {
+  font-style: italic;
+}
+
+/* Emphasised value column (no nowrap, unlike opc-govtcosts-range) */
+.opc-govtcosts-table td.itrind-rate {
+  font-weight: 600;
+  color: #0f3d2e;
+}
+
+@media (max-width: 640px) {
+  .itrind-plancustom-section { padding: 32px 16px 6px; }
+}

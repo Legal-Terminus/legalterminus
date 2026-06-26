@@ -18,12 +18,12 @@ const ItrIndOverview = () => {
 
           <div className="opc-intro-content">
             <h2 className="opc-intro-title">
-              Why Choose Expert-Assisted Personal ITR Filing
+              Why Choose Professional Personal ITR Filing
             </h2>
             <p className="opc-intro-text">
               An Income Tax Return is your annual declaration of income, deductions, and taxes paid to the government. For individuals, the right form depends on your income mix — ITR-1 (Sahaj) for salary and one house property, ITR-2 for capital gains and foreign assets, ITR-3 for business/professional income, and ITR-4 (Sugam) for presumptive income. On top of the form, you must choose between the old and new tax regimes — a choice that can change your tax by tens of thousands of rupees.
               <br /><br />
-              Filing on time is what unlocks the upside. It gets your TDS refund credited faster, preserves your ability to carry forward capital losses, and builds the income record banks rely on for loans and visas. Expert-assisted filing means the correct form, the better regime, every eligible deduction claimed, and a clean reconciliation with your Form 16, 26AS, and AIS — so your return sails through without notices and your refund lands sooner.
+              Filing on time is what unlocks the upside. It gets your TDS refund credited faster, preserves your ability to carry forward capital losses, and builds the income record banks rely on for loans and visas. Professional filing means the correct form, the better regime, every eligible deduction claimed, and a clean reconciliation with your Form 16, 26AS, and AIS — so your return sails through without notices and your refund lands sooner.
             </p>
           </div>
         </div>
@@ -31,7 +31,7 @@ const ItrIndOverview = () => {
 
       <section className="opc-compare-section">
         <div className="opc-compare-container">
-          <h2 className="opc-compare-title">Expert Filing vs DIY / Late Filing: The Honest Comparison</h2>
+          <h2 className="opc-compare-title">Professional Filing vs DIY / Late Filing: The Honest Comparison</h2>
           <p className="opc-compare-subtitle">
             What changes when your return is filed accurately and on time versus left to chance:
           </p>
@@ -40,7 +40,7 @@ const ItrIndOverview = () => {
               <thead>
                 <tr>
                   <th>Parameter</th>
-                  <th>Expert-Assisted Filing</th>
+                  <th>Professional Filing</th>
                   <th>DIY / Late Filing</th>
                 </tr>
               </thead>
