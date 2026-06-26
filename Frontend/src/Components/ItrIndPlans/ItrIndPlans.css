@@ -1,1 +1,51 @@
 @import url('../OPCPlans/OPCPlans.css');
+
+/* Plan group (Base / Plus) */
+.itrind-plan-group {
+    margin-top: 48px;
+}
+
+.itrind-plan-group:first-of-type {
+    margin-top: 8px;
+}
+
+.itrind-group-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.itrind-group-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #0f1f17;
+    margin: 0;
+}
+
+.itrind-group-title span {
+    color: #18b233;
+}
+
+.itrind-group-sub {
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin: 6px 0 0;
+}
+
+@media (max-width: 480px) {
+    .itrind-plan-group {
+        margin-top: 36px;
+    }
+    .itrind-group-title {
+        font-size: 18px;
+    }
+    .itrind-group-sub {
+        font-size: 12px;
+    }
+}

@@ -2,56 +2,156 @@ import { useState } from "react";
 import "./ItrIndPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 
-const PLANS = [
+const BASE_PLANS = [
   {
-    id: "salaried",
-    name: "Salaried (ITR-1 Sahaj)",
-    oldPrice: 999,
-    price: 499,
+    id: "base-elemental",
+    tier: "ELEMENTAL",
+    name: "ITR-1 — Income up to ₹5 Lakh",
+    oldPrice: 1199,
+    price: 799,
     services: [
-      "ITR-1 filing for salary & one house property",
-      "Income up to ₹50 lakh from salary, pension & interest",
-      "Form 16 & 26AS / AIS reconciliation",
-      "Old vs new tax regime comparison",
-      "Chapter VI-A deduction optimisation (80C, 80D, etc.)",
-      "E-filing with e-verification support",
-      "Refund tracking & ITR-V delivery",
+      "Income up to ₹5 Lakh (ITR-1 Sahaj)",
+      "Salary Income",
+      "House Property Income",
+      "Interest Income",
+      "Income Tax portal account setup + e-Verification",
+      "Form 26AS + AIS / TIS reconciliation",
+      "TDS refund claim (if applicable)",
+      "Old vs New regime quick advisory",
+      "Acknowledgement (ITR-V) delivery",
     ],
   },
   {
-    id: "capgains",
-    name: "Capital Gains (ITR-2)",
-    badge: "★ MOST POPULAR",
+    id: "base-enriched",
+    tier: "ENRICHED",
+    name: "ITR-1 — Income up to ₹10 Lakh",
     popular: true,
-    oldPrice: 2499,
-    price: 1299,
+    oldPrice: 2249,
+    price: 1499,
     services: [
-      "Everything in Salaried plan",
-      "ITR-2 with capital gains (shares, MF, property)",
-      "Multiple house properties & let-out income",
-      "Dividend, interest & other-source income",
-      "Capital-gains computation with indexation",
-      "Carry-forward & set-off of capital losses",
-      "Dedicated expert review + WhatsApp support",
+      "Income up to ₹10 Lakh (ITR-1 Sahaj)",
+      "Salary Income",
+      "House Property Income",
+      "Interest Income",
+      "Income Tax portal + Form 26AS / AIS reconciliation",
+      "Old vs New regime optimisation",
+      "Section 80 deductions claim (Old Regime)",
+      "Section 87A rebate verification",
+      "Acknowledgement (ITR-V) delivery",
     ],
   },
   {
-    id: "complex",
-    name: "Business / NRI / Foreign Income",
-    badge: "✦ FULL-SERVICE",
-    oldPrice: 4999,
-    price: 2499,
+    id: "base-supreme",
+    tier: "SUPREME",
+    name: "ITR-1 — Income more than ₹10 Lakh",
+    oldPrice: 2999,
+    price: 1999,
     services: [
-      "Everything in Capital Gains plan",
-      "ITR-3 / ITR-4 for freelance / professional income",
-      "Presumptive income (44ADA) for professionals",
-      "NRI returns & DTAA relief (Section 90 / 91)",
-      "Foreign assets & income (Schedule FA) reporting",
-      "F&O, crypto / VDA & intraday income handling",
-      "Priority support for notices & scrutiny response",
+      "Income more than ₹10 Lakh",
+      "Salary Income",
+      "House Property Income",
+      "Interest Income",
+      "ITR-1 (up to ₹50L) or ITR-2 (above ₹50L)",
+      "Comprehensive Old vs New regime advisory",
+      "Senior tax-counsel review",
+      "TDS optimisation + advance tax planning hint",
+      "Acknowledgement (ITR-V) delivery",
     ],
   },
 ];
+
+const PLUS_PLANS = [
+  {
+    id: "plus-elemental",
+    tier: "ELEMENTAL",
+    name: "ITR-2 + Capital Gains",
+    oldPrice: 6749,
+    price: 4499,
+    services: [
+      "All Base plan features (any income level)",
+      "Salary + House Property + Interest Income",
+      "CAPITAL GAINS computation",
+      "STCG on equity 20% (Sec 111A)",
+      "LTCG on equity 12.5% above ₹1.25L (Sec 112A)",
+      "LTCG on property / debt 12.5% (no indexation)",
+      "Carry-forward losses (Sec 71B / 74)",
+      "ITR-2 filing (mandatory for capital gains)",
+      "ESOP / RSU / Sweat equity treatment",
+    ],
+  },
+  {
+    id: "plus-enriched",
+    tier: "ENRICHED",
+    name: "ITR-2 + Capital Gains + Foreign Income",
+    popular: true,
+    oldPrice: 8999,
+    price: 5999,
+    services: [
+      "All Elemental+ features",
+      "Salary + House Property + Interest + Capital Gains",
+      "INCOME EARNED OUTSIDE INDIA reporting",
+      "FOREIGN DIVIDEND / INTEREST / ROYALTY disclosure",
+      "Schedule FA (Foreign Assets) disclosure",
+      "Foreign Tax Credit (FTC) claim via Form 67",
+      "Foreign bank account / property reporting",
+      "Section 89A relief (foreign retirement benefits)",
+      "Black Money Act 2015 compliance review",
+    ],
+  },
+  {
+    id: "plus-supreme",
+    tier: "SUPREME",
+    name: "ITR-2 + NRI / NRO + DTAA",
+    oldPrice: 11999,
+    price: 7999,
+    services: [
+      "All Enriched+ features",
+      "Salary + HP + Interest + Capital Gains + Foreign",
+      "NRI / NRO CASES end-to-end",
+      "Section 6 Residential status determination",
+      "Tax Residency Certificate (TRC) facilitation",
+      "DTAA ADVISORY (Double Taxation Avoidance Agreement)",
+      "Treaty interpretation + benefit optimisation",
+      "Multi-jurisdiction filing coordination",
+      "Section 89A foreign retirement benefits",
+    ],
+  },
+];
+
+const PlanCard = ({ plan, onSelect }) => (
+  <article
+    className={`opcplan-card${plan.popular ? " opcplan-card--popular" : ""}`}
+  >
+    <div>
+      <div className="opcplan-header">
+        <div className={`opcplan-badge${plan.popular ? " opcplan-badge--popular" : ""}`}>
+          {plan.tier}
+        </div>
+        <div className="opcplan-name">{plan.name}</div>
+        <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+        <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+        <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
+      </div>
+
+      <div className="opcplan-body">
+        <ul className="opcplan-list">
+          {plan.services.map((s, i) => (
+            <li key={i} className="opcplan-list-item">{s}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <div className="opcplan-footer">
+      <button
+        className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
+        onClick={() => onSelect(plan)}
+      >
+        Buy Now
+      </button>
+    </div>
+  </article>
+);
 
 const ItrIndPlans = () => {
   const [activePlan, setActivePlan] = useState(null);
@@ -68,44 +168,28 @@ const ItrIndPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards">
-            {PLANS.map((plan) => (
-              <article
-                key={plan.id}
-                className={`opcplan-card${plan.popular ? " opcplan-card--popular" : ""}`}
-              >
-                <div>
-                  <div className="opcplan-header">
-                    {plan.badge && (
-                      <div className={`opcplan-badge${plan.popular ? " opcplan-badge--popular" : ""}`}>
-                        {plan.badge}
-                      </div>
-                    )}
-                    <div className="opcplan-name">{plan.name}</div>
-                    <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ GST extra</div>
-                  </div>
+          <div className="itrind-plan-group">
+            <div className="itrind-group-header">
+              <h3 className="itrind-group-title">Base Plans <span>(ITR-1)</span></h3>
+              <p className="itrind-group-sub">Differentiated by income level</p>
+            </div>
+            <div className="opcpricing-cards">
+              {BASE_PLANS.map((plan) => (
+                <PlanCard key={plan.id} plan={plan} onSelect={setActivePlan} />
+              ))}
+            </div>
+          </div>
 
-                  <div className="opcplan-body">
-                    <ul className="opcplan-list">
-                      {plan.services.map((s, i) => (
-                        <li key={i} className="opcplan-list-item">{s}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="opcplan-footer">
-                  <button
-                    className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
-                    onClick={() => setActivePlan(plan)}
-                  >
-                    Buy Now
-                  </button>
-                </div>
-              </article>
-            ))}
+          <div className="itrind-plan-group">
+            <div className="itrind-group-header">
+              <h3 className="itrind-group-title">Plus Plans <span>(ITR-2)</span></h3>
+              <p className="itrind-group-sub">Differentiated by complexity layers</p>
+            </div>
+            <div className="opcpricing-cards">
+              {PLUS_PLANS.map((plan) => (
+                <PlanCard key={plan.id} plan={plan} onSelect={setActivePlan} />
+              ))}
+            </div>
           </div>
 
         </div>
