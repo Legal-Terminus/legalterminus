@@ -22,6 +22,8 @@ interface Client {
   designation?: string;
   organisation?: string;
   businessName?: string;
+  professionalName?: string;
+  groupCompany?: string;
   gstNumber?: string;
   panNumber?: string;
   aadharNumber?: string;
@@ -57,6 +59,8 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
     designation: client?.designation,
     organisation: client?.organisation,
     businessName: client?.businessName,
+    professionalName: client?.professionalName,
+    groupCompany: client?.groupCompany,
     gstNumber: client?.gstNumber,
     panNumber: client?.panNumber,
     aadharNumber: client?.aadhaarNumber,
@@ -375,6 +379,29 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
                   value={formData.businessName ?? ''}
                   onChange={handleChange}
                   placeholder="Trade / brand name"
+                  className="input-field"
+                />
+              </div>
+              {/* #62: map this client to a handling professional and/or group company. */}
+              <div>
+                <label className="input-label">Professional</label>
+                <input
+                  type="text"
+                  name="professionalName"
+                  value={formData.professionalName ?? ''}
+                  onChange={handleChange}
+                  placeholder="Handling professional"
+                  className="input-field"
+                />
+              </div>
+              <div>
+                <label className="input-label">Group / Parent Company</label>
+                <input
+                  type="text"
+                  name="groupCompany"
+                  value={formData.groupCompany ?? ''}
+                  onChange={handleChange}
+                  placeholder="Parent / group entity"
                   className="input-field"
                 />
               </div>

@@ -18,6 +18,10 @@ const profileFields = {
   address: z.string().trim().max(500).optional(),
   organisation: optLong,
   businessName: optLong,
+  // #62: map a client to a handling professional and/or parent/group company, for
+  // reporting "clients per professional / per group".
+  professionalName: optLong,
+  groupCompany: optLong,
   gstNumber: z.string().trim().max(30).optional(),
   panNumber: z.string().trim().max(20).optional(),
   aadhaarNumber: z.string().trim().max(20).optional(),

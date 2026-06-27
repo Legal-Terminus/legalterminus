@@ -111,10 +111,30 @@ export async function resolveServiceKey(): Promise<string> {
 export async function createMatter(opts?: { serviceKey?: string; serviceName?: string }): Promise<string> {
   const serviceKey = opts?.serviceKey ?? (await resolveServiceKey());
   const api = await apiAs('admin');
+  // #51: payment status is chosen at creation; 'not_paid' now routes the matter to
+  // admin approval instead of going live. Lifecycle tests want an ACTIVE matter, so
+  // default to fully_paid here. Use createNoPaymentMatter() for the approval path.
   const res = await api.post('/api/tasks', {
-    data: { clientUid: env('E2E_CLIENT_UID'), serviceKey, serviceName: opts?.serviceName },
+    data: {
+      clientUid: env('E2E_CLIENT_UID'), serviceKey, serviceName: opts?.serviceName,
+      paymentStatus: 'fully_paid', totalCost: 10000, amountReceived: 10000, paymentMode: 'E2E',
+    },
   });
   if (!res.ok()) throw new Error(`createMatter failed: ${res.status()} ${await res.text()}`);
+  const body = await res.json();
+  await api.dispose();
+  return body.id as string;
+}
+
+/** Create a matter with NO PAYMENT (admin) → routes to admin approval (#51).
+ *  Returns the new task id (status pending_admin_approval). */
+export async function createNoPaymentMatter(): Promise<string> {
+  const serviceKey = await resolveServiceKey();
+  const api = await apiAs('admin');
+  const res = await api.post('/api/tasks', {
+    data: { clientUid: env('E2E_CLIENT_UID'), serviceKey, paymentStatus: 'not_paid' },
+  });
+  if (!res.ok()) throw new Error(`createNoPaymentMatter failed: ${res.status()} ${await res.text()}`);
   const body = await res.json();
   await api.dispose();
   return body.id as string;

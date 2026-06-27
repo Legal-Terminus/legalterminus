@@ -125,7 +125,7 @@ export const createUser = async (req, res) => {
     const {
       name, email, phone, role,
       designation, joiningDate, fathersName, dateOfBirth, address,
-      organisation, businessName, gstNumber, panNumber, aadhaarNumber, state, emailIds,
+      organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
     } = req.body;
 
     // Privilege guard: a manager cannot create admin/manager accounts (escalation).
@@ -137,7 +137,7 @@ export const createUser = async (req, res) => {
     const profileData = clean({
       name, email, phone,
       designation, joiningDate, fathersName, dateOfBirth, address,
-      organisation, businessName, gstNumber, panNumber, aadhaarNumber, state,
+      organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state,
       emailIds: role === 'client'
         ? (emailIds && emailIds.length > 0 ? emailIds : [email])
         : undefined,
@@ -177,7 +177,7 @@ export const updateUser = async (req, res) => {
     const {
       name, phone, role,
       designation, joiningDate, fathersName, dateOfBirth, address,
-      organisation, businessName, gstNumber, panNumber, aadhaarNumber, state, emailIds,
+      organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
     } = req.body;
 
     // Role is a privileged field: only admin may write it (BMAD E09-S03).
@@ -201,7 +201,7 @@ export const updateUser = async (req, res) => {
       ...normalizeUserProfile({ name, phone }),
       role: writableRole,
       designation, joiningDate, fathersName, dateOfBirth, address,
-      organisation, businessName, gstNumber, panNumber, aadhaarNumber, state,
+      organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state,
       emailIds: emailIds && emailIds.length > 0 ? emailIds : undefined,
       updatedAt: new Date().toISOString(),
       updatedBy: adminUid,

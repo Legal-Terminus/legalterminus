@@ -8,11 +8,21 @@ import { z } from "zod";
 const shortText = z.string().trim().min(1).max(200);
 
 // POST /api/tasks — assign a service workflow to a client.
+// #51: payment status is chosen at creation. For part/full payment, amount fields
+// are captured and mirrored into the matter's payment module. 'not_paid' routes
+// the matter to admin approval (handled in the controller) rather than going live.
 export const taskCreateSchema = z.object({
   clientUid: shortText,
   serviceKey: shortText,
   serviceName: z.string().trim().max(200).optional(),
-}).strict();
+  paymentStatus: z.enum(['not_paid', 'part_paid', 'fully_paid']).default('not_paid'),
+  totalCost: z.number().min(0).max(1e9).optional(),
+  amountReceived: z.number().min(0).max(1e9).optional(),
+  paymentMode: z.string().trim().max(60).optional(),
+}).strict().refine(
+  (b) => b.paymentStatus === 'not_paid' || typeof b.amountReceived === 'number',
+  { message: 'amountReceived is required for part/full payment', path: ['amountReceived'] },
+);
 
 // PATCH /api/tasks/:taskId — currently only isUrgent is writable here.
 export const taskUpdateSchema = z.object({
@@ -27,6 +37,7 @@ export const taskUpdateSchema = z.object({
 const WORKFLOW_EVENTS = [
   'COMPLETE_STEP', 'RECORD_PAYMENT', 'ADMIN_OVERRIDE_PAYMENT', 'BRANCH_DECISION',
   'CLIENT_APPROVE', 'CLIENT_REJECT', 'GOVT_APPROVE', 'GOVT_REJECT', 'RESUBMIT', 'REJECT_DOCUMENT',
+  'REWORK', // #56: staff "Reject / Need Correction" — reverts to a prior step
 ];
 export const taskTransitionSchema = z.object({
   event: z.object({

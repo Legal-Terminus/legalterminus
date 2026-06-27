@@ -27,6 +27,10 @@ export interface WorkflowStepDef {
   /** Whether this step appears in the client step list (default true). */
   clientVisible?: boolean;
   clientActionLabel?: string;
+  /** When set, the step renders a checklist of these items (#52). */
+  checklistItems?: string[];
+  /** When true, the step renders a per-step document upload control (#61). */
+  allowDocUpload?: boolean;
   ownerType?: OwnerType;
   gate?: { requires: 'fully_paid' | 'part_paid'; onPass: number; onWait: number };
   transitions?: { event: string; to: number; branch?: string }[];

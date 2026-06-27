@@ -672,6 +672,22 @@ function StepsTab({
     </div>
   );
 
+  // #54: part-payment alert — a blinking banner shown to BOTH client and team when
+  // only part payment has been received, replacing the old "Part Payment Due" step.
+  const partPaymentAlert = !completed && task.paymentStatus === 'part_paid' && (
+    <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 flex items-start gap-2.5 animate-pulse">
+      <CreditCard className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-amber-900">Part payment received</p>
+        <p className="text-sm text-amber-800">
+          {role.isClient
+            ? 'Please make the remaining payment for completion and uploading of the final e-forms for company incorporation.'
+            : `Only part payment received${task.amountDue ? ` — ₹${task.amountDue} due` : ''}. Follow up with the client for the balance.`}
+        </p>
+      </div>
+    </div>
+  );
+
   // Activity as a sticky RIGHT sidebar (xl+). Capped height with internal scroll
   // so a long feed never runs past the viewport while sticky.
   const activityAside = activitySection && (
@@ -685,6 +701,7 @@ function StepsTab({
     return (
       <div className="xl:grid xl:grid-cols-[1fr_320px] xl:gap-6">
         <div className="space-y-7 min-w-0">
+          {partPaymentAlert}
           {pendingBar}
           {hero}
           {stepsSection}
@@ -719,6 +736,7 @@ function StepsTab({
       </nav>
 
       <div className="space-y-7 min-w-0 mt-5 lg:mt-0">
+        {partPaymentAlert}
         {pendingBar}
         {hero}
         {/* On lg (no 3rd column) Activity shows here, below content; on xl it
@@ -798,6 +816,7 @@ const EVENT_VERB: Record<string, string> = {
   CLIENT_REJECT: 'requested changes',
   GOVT_APPROVE: 'marked Govt approved',
   GOVT_REJECT: 'marked Govt rejected',
+  REWORK: 'sent back for correction',
   STEP_REASSIGNED: 'reassigned the step',
   TASK_APPROVED: 'approved the matter',
   TASK_REJECTED: 'rejected the matter',
@@ -1004,13 +1023,23 @@ function StepHeroPanel({
       wait = <AssignedToOtherNote assignee={assigneeLabel} />;
     } else wait = <WaitNote text="Awaiting the government department response." />;
   } else if (events.has('COMPLETE_STEP')) {
+    // #56: a step that also has a REWORK transition is an APPROVAL step — render
+    // Approve + "Need Correction in Form" (reject reverts to the prior step).
+    const hasRework = events.has('REWORK');
     if (role.isStaff && canComplete) {
       actions = (
         <div className="space-y-2">
           {completeIsOverride && <OverrideNote assignee={assigneeLabel} />}
-          <button disabled={pending} onClick={() => fire('COMPLETE_STEP')} className="btn-primary disabled:opacity-50">
-            {pending ? spin : <PlayCircle className="w-4 h-4" />} Complete Step
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button disabled={pending} onClick={() => fire('COMPLETE_STEP')} className="btn-primary disabled:opacity-50">
+              {pending ? spin : (hasRework ? <ThumbsUp className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />)} {hasRework ? 'Approve' : 'Complete Step'}
+            </button>
+            {hasRework && (
+              <button disabled={pending} onClick={() => fire('REWORK', { required: true })} className="btn-secondary disabled:opacity-50">
+                <ThumbsDown className="w-4 h-4" /> Need Correction in Form
+              </button>
+            )}
+          </div>
         </div>
       );
     } else if (assignedToOther) {
@@ -1101,6 +1130,20 @@ function StepHeroPanel({
           <p className="text-base font-semibold text-ink">{step.title}</p>
           {step.description && <p className="text-sm text-ink-muted mt-1">{step.description}</p>}
 
+          {/* #52: per-step checklist (display/tracking aid, generic on any step). */}
+          {step.checklistItems && step.checklistItems.length > 0 && (
+            <StepChecklist items={step.checklistItems} />
+          )}
+
+          {/* #61: per-step document upload (generic on any step that opts in). */}
+          {step.allowDocUpload && (
+            <div className="mt-4">
+              <button onClick={onAttach} className="btn-secondary py-1.5 px-3 text-sm inline-flex items-center gap-1.5">
+                <Paperclip className="w-4 h-4" /> Attach document for this step
+              </button>
+            </div>
+          )}
+
           {actions && (
             <div className="mt-4">
               <ActionComposer
@@ -1152,6 +1195,34 @@ function ActionComposer({ comment, onChange, error, disabled }: {
 
 function WaitNote({ text }: { text: string }) {
   return <p className="text-sm text-ink-muted">{text}</p>;
+}
+
+// #52: generic per-step checklist. Items come from the workflow definition; check
+// state is local (a verification/tracking aid — the step still advances via its
+// normal action). A "N of M" counter shows progress at a glance.
+function StepChecklist({ items }: { items: string[] }) {
+  const [checked, setChecked] = useState<Record<number, boolean>>({});
+  const done = items.filter((_, i) => checked[i]).length;
+  return (
+    <div className="mt-4 rounded-lg border border-hairline bg-surface-soft/40 p-3">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-2">
+        Checklist · {done}/{items.length}
+      </p>
+      <div className="flex flex-col gap-1.5">
+        {items.map((item, i) => (
+          <label key={i} className="flex items-start gap-2 text-sm cursor-pointer">
+            <input
+              type="checkbox"
+              className="h-4 w-4 mt-0.5"
+              checked={!!checked[i]}
+              onChange={(e) => setChecked((c) => ({ ...c, [i]: e.target.checked }))}
+            />
+            <span className={checked[i] ? 'text-ink-muted line-through' : 'text-ink'}>{item}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // #49: a non-assignee staff member can't complete this step — only reassign it.

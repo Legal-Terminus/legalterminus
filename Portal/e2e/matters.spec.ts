@@ -34,7 +34,12 @@ test('admin creates a matter via the modal, then it can be deleted', async ({ ad
 
   await adminPage.getByPlaceholder(/search clients/i).fill('E2E Client');
   await adminPage.getByRole('button', { name: /E2E Client/ }).first().click();
-  await adminPage.locator('select').selectOption({ index: 1 });
+  // Service is the first select; the payment-status select (#51) is separate.
+  await adminPage.locator('select').first().selectOption({ index: 1 });
+  // #51: choose Full Payment so the matter is created active (not sent to approval).
+  await adminPage.getByLabel('Payment status').selectOption('fully_paid');
+  await adminPage.getByRole('spinbutton').first().fill('10000'); // Total Cost
+  await adminPage.getByRole('spinbutton').nth(1).fill('10000');  // Amount Received
 
   const submit = adminPage.getByRole('button', { name: 'Create Matter' }).last();
   await expect(submit).toBeEnabled();

@@ -93,6 +93,8 @@ const stepSchema = z.object({
   typicalDurationDays: z.number().min(0).max(3650).optional(),
   clientVisible: z.boolean().optional(),
   clientActionLabel: z.string().trim().max(120).optional(),
+  checklistItems: z.array(z.string().trim().min(1).max(300)).max(50).optional(),
+  allowDocUpload: z.boolean().optional(),
   ownerType: z.enum(['client', 'team', 'govt']).optional(),
   gate: gateSchema.optional(),
   transitions: z.array(transitionSchema).max(40).optional(),

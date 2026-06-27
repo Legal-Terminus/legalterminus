@@ -86,6 +86,71 @@ export async function getPendingTasks(req, res) {
   }
 }
 
+// ─── GET /api/reports/payment-overrides ────────────────────────────────────
+// #58: matters where Admin overrode payment — either the payment GATE was
+// admin-overridden (`adminOverride === true`) or the matter was created with NO
+// payment and approved into existence (`createdWithoutPayment === true`). Surfaced
+// separately so finance can track/monitor matters progressing ahead of payment.
+export async function getPaymentOverrides(req, res) {
+  try {
+    const snap = await db.collection('tasks').get();
+    const rows = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .filter((t) => t.adminOverride === true || t.createdWithoutPayment === true)
+      .map((t) => ({
+        taskId: t.id,
+        clientName: t.clientName ?? t.clientUid ?? 'Unknown',
+        serviceName: t.serviceName ?? t.workflowType ?? '',
+        status: t.status ?? '',
+        paymentStatus: t.paymentStatus ?? 'not_paid',
+        amountPaid: t.amountPaid ?? 0,
+        amountDue: t.amountDue ?? 0,
+        // Why it's here: created without payment, gate-overridden, or both.
+        overrideReason: t.createdWithoutPayment && t.adminOverride ? 'created_no_payment+gate_override'
+          : t.createdWithoutPayment ? 'created_no_payment' : 'gate_override',
+        updatedAt: t.updatedAt ?? '',
+      }))
+      .sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
+    res.json(rows);
+  } catch (err) {
+    logger.error({ err }, 'getPaymentOverrides report error:');
+    res.status(500).json({ message: 'Failed to fetch payment-overrides report' });
+  }
+}
+
+// ─── GET /api/reports/professional-mapping ──────────────────────────────────
+// #62: how many clients are handled under each professional / group company, with
+// the client list per group, so the firm can track volume per professional/entity.
+export async function getProfessionalMapping(req, res) {
+  try {
+    const snap = await db.collection('users').where('role', '==', 'client').get();
+    const byProfessional = new Map();
+    const byGroup = new Map();
+    const bump = (map, key, client) => {
+      const k = (key || '').trim() || '— Unassigned —';
+      const e = map.get(k) ?? { name: k, count: 0, clients: [] };
+      e.count += 1;
+      e.clients.push(client);
+      map.set(k, e);
+    };
+    snap.docs.forEach((d) => {
+      const u = d.data();
+      const client = { uid: d.id, name: u.name || u.fullName || u.email || d.id };
+      bump(byProfessional, u.professionalName, client);
+      bump(byGroup, u.groupCompany, client);
+    });
+    const sortDesc = (m) => [...m.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    res.json({
+      totalClients: snap.size,
+      byProfessional: sortDesc(byProfessional),
+      byGroup: sortDesc(byGroup),
+    });
+  } catch (err) {
+    logger.error({ err }, 'getProfessionalMapping report error:');
+    res.status(500).json({ message: 'Failed to fetch professional-mapping report' });
+  }
+}
+
 // ─── GET /api/reports/sla ──────────────────────────────────────────────────
 // SLA / Delay report (E13-S04). Aggregates lateness across all in-flight matters:
 //   1. `breaches[]` — every ACTIVE step that is overdue or at-risk (approaching

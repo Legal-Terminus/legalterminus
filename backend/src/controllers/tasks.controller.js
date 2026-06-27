@@ -176,8 +176,9 @@ export async function createTask(req, res) {
       return res.status(403).json({ message: 'Forbidden: admin or manager required' });
     }
 
-    // Body shape (clientUid, serviceKey, serviceName?) validated by taskCreateSchema.
-    const { clientUid, serviceKey, serviceName } = req.body;
+    // Body validated by taskCreateSchema (incl. #51 payment fields).
+    const { clientUid, serviceKey, serviceName,
+            paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode } = req.body;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
     if (!compiled) {
@@ -215,12 +216,21 @@ export async function createTask(req, res) {
     const assigneeForStep = (s) =>
       s.defaultAssigneeUid || (s.phaseId && phaseAssignees[s.phaseId]) || null;
 
-    // Approval gate (E03-S04): a manager-created matter must be approved by an
-    // admin before it goes active; an admin-created matter activates immediately.
-    // While pending, the first step is held `pending` (not `active`) so no work
-    // starts and it stays out of "My Tasks" until approved.
-    const needsApproval = role === 'manager';
+    // Approval gate: a matter must be approved by an admin before it goes active in
+    // two cases — (E03-S04) it was manager-created, OR (#51) it was created with NO
+    // PAYMENT (those land in the admin approval box; admin can override-approve or
+    // keep on hold). An admin-created, paid matter activates immediately. While
+    // pending, the first step is held `pending` so no work starts / it stays out of
+    // "My Tasks" until approved.
+    const noPaymentNeedsApproval = paymentStatus === 'not_paid';
+    const needsApproval = role === 'manager' || noPaymentNeedsApproval;
     const initialStatus = needsApproval ? 'pending_admin_approval' : 'pending';
+
+    // #51 payment capture: mirror the chosen amounts into the matter's payment
+    // fields (which the Payment module reads). amountDue = totalCost − received.
+    const received = typeof amountReceived === 'number' ? amountReceived : 0;
+    const cost = typeof totalCost === 'number' ? totalCost : received;
+    const amountDue = Math.max(0, cost - received);
 
     // Per-step INSTANCE state, built from the definition's EXPLICIT step identity
     // (no regex parsing). Stored in a SUBCOLLECTION (tasks/{id}/steps/{stepNumber})
@@ -246,9 +256,13 @@ export async function createTask(req, res) {
       clientName,
       assignedTo: null,
       status: initialStatus,
-      paymentStatus: 'not_paid',
-      amountPaid: 0,
-      amountDue: 0,
+      paymentStatus,
+      amountPaid: received,
+      amountDue,
+      totalCost: cost,
+      paymentMode: paymentMode ?? null,
+      // #51: matters created with no payment require admin approval before going live.
+      createdWithoutPayment: noPaymentNeedsApproval,
       isUrgent: false,
       currentStepNumber: firstStep,
       totalSteps: stepDefs.length, // denormalized count for list/report display
@@ -997,6 +1011,7 @@ export async function transitionTask(req, res) {
     // governed by their own rules above, so they're excluded here.
     const COMPLETION_EVENTS = new Set([
       'COMPLETE_STEP', 'GOVT_APPROVE', 'GOVT_REJECT', 'BRANCH_DECISION',
+      'REWORK', // #56: the form-check owner decides approve vs. reject
     ]);
     let isAdminCompletionOverride = false;
     if (COMPLETION_EVENTS.has(event?.type)) {
@@ -1085,17 +1100,27 @@ export async function transitionTask(req, res) {
 
     if (newStep !== task.currentStepNumber) {
       const leftRef = taskRef.collection('steps').doc(String(task.currentStepNumber));
-      // onTime (E13-S02): compare completion to the step's stored due date (if any).
-      const leftSnap = await leftRef.get();
-      const leftDueAt = leftSnap.exists ? leftSnap.data().dueAt : null;
-      const onTime = leftDueAt ? (new Date(now).getTime() <= new Date(leftDueAt).getTime()) : null;
-      batch.set(leftRef, {
-        status: 'completed',
-        completedBy: uid ?? null,
-        completedAt: now,
-        ...(onTime != null ? { onTime } : {}),
-        ...(comment ? { remark: comment } : {}),
-      }, { merge: true });
+      // #56: a backward move (REWORK / reject) does NOT complete the rejected step
+      // — it goes back to `pending` to be redone; the prior step reactivates below.
+      const isBackward = newStep < task.currentStepNumber;
+      if (isBackward) {
+        batch.set(leftRef, {
+          status: 'pending',
+          ...(comment ? { remark: comment } : {}),
+        }, { merge: true });
+      } else {
+        // onTime (E13-S02): compare completion to the step's stored due date (if any).
+        const leftSnap = await leftRef.get();
+        const leftDueAt = leftSnap.exists ? leftSnap.data().dueAt : null;
+        const onTime = leftDueAt ? (new Date(now).getTime() <= new Date(leftDueAt).getTime()) : null;
+        batch.set(leftRef, {
+          status: 'completed',
+          completedBy: uid ?? null,
+          completedAt: now,
+          ...(onTime != null ? { onTime } : {}),
+          ...(comment ? { remark: comment } : {}),
+        }, { merge: true });
+      }
     } else if (comment) {
       // No step change (e.g. payment/override) — still record the comment on the step.
       const sameRef = taskRef.collection('steps').doc(String(task.currentStepNumber));
@@ -1173,21 +1198,43 @@ export async function transitionTask(req, res) {
           // Internal step — notify its assignee (pre-assigned or matter owner).
           const nextStepSnap = await taskRef.collection('steps').doc(String(newStep)).get();
           const nextAssignee = nextStepSnap.exists ? nextStepSnap.data().assignedTo : null;
-          // #53: when the advance was a CLIENT APPROVAL, use explicit copy so the
-          // team member knows to proceed (vs. the generic "step ready" message).
+          // #53: client-approval → explicit "proceed" copy.
+          // #56: REWORK (form-check reject) → tell the prior-step owner correction
+          // is required so they can rectify and resubmit for approval.
           const clientApproved = event?.type === 'CLIENT_APPROVE';
-          await notify({ recipientUid: nextAssignee || task.assignedTo, actorUid: uid, type: 'info',
-            title: clientApproved ? 'Client approval received' : 'Step ready for you',
-            message: clientApproved
-              ? `Client approval has been received for ${ctx}. Please proceed with the next step: ${newDef?.title ?? `Step ${newStep}`}.`
-              : `${ctx}: ${newDef?.title ?? `Step ${newStep}`}`,
-            taskId });
+          const isRework = event?.type === 'REWORK';
+          let title = 'Step ready for you';
+          let message = `${ctx}: ${newDef?.title ?? `Step ${newStep}`}`;
+          if (clientApproved) {
+            title = 'Client approval received';
+            message = `Client approval has been received for ${ctx}. Please proceed with the next step: ${newDef?.title ?? `Step ${newStep}`}.`;
+          } else if (isRework) {
+            title = 'Correction required';
+            message = `Correction required for ${ctx}: ${newDef?.title ?? `Step ${newStep}`}.${comment ? ` Note: ${comment}` : ''} Please review, rectify and resubmit for approval.`;
+          }
+          await notify({ recipientUid: nextAssignee || task.assignedTo, actorUid: uid, type: isRework ? 'warning' : 'info',
+            title, message, taskId });
         }
         // If the CLIENT just acted, also let the matter owner know they responded.
         if (role === 'client') {
           await notify({ recipientUid: task.assignedTo, actorUid: uid, type: 'info',
             title: 'Client responded', message: ctx, taskId });
         }
+      }
+
+      // #60: declarative step EFFECTS. When the step we just acted on carries
+      // NOTIFY_CLIENT_RESUBMISSION (e.g. "Resubmission Received from Department"),
+      // notify the client that a resubmission requirement has been raised.
+      // (Email send is TODO — transport/E07-S02 not built; in-app fires now.)
+      const actedDef = etaStepDefs.find((s) => s.stepNumber === task.currentStepNumber);
+      const effects = actedDef?.effects ?? [];
+      if (effects.includes('NOTIFY_CLIENT_RESUBMISSION')) {
+        const branchTxt = event?.branch ? ` (${String(event.branch).replace(/_/g, ' ')} required)` : '';
+        await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'warning',
+          title: 'Resubmission required',
+          message: `A resubmission has been raised by the department for ${ctx}${branchTxt}. Our team will reach out with the details.`,
+          taskId });
+        // TODO(email): also send the resubmission email once SendGrid transport (E07-S02) exists.
       }
     } catch (e) {
       logger.warn({ err: e?.message }, 'transitionTask: notification step failed');

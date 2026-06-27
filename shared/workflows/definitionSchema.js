@@ -37,6 +37,10 @@
  *   typicalDurationDays?: number, // expected duration — powers ETA + delay states
  *   clientVisible?: boolean,    // whether this step appears in the CLIENT step list (default true)
  *   clientActionLabel?: string, // short CTA label for the client hero card (vs. generic title)
+ *   checklistItems?: string[],  // when set, the step shows a CHECKLIST (each item tick/untick);
+ *                               // generic & reusable on any step (#52). Display/tracking aid.
+ *   allowDocUpload?: boolean,   // when true, the step shows a per-step document upload control
+ *                               // (#61). Generic & reusable on any step.
  *   // Gate config (type === 'payment_gate'):
  *   gate?: { requires: 'fully_paid' | 'part_paid', onPass: number, onWait: number },
  *   // Transitions (type 'step'/'branch'): event → target step number.
@@ -157,6 +161,16 @@ export function validateDefinition(def) {
     // clientVisible (per-step client interface visibility): optional boolean.
     if (s.clientVisible != null && typeof s.clientVisible !== 'boolean') {
       errors.push(`step ${s.stepNumber} clientVisible must be a boolean`);
+    }
+    // checklistItems (#52): optional array of non-empty strings.
+    if (s.checklistItems != null) {
+      if (!Array.isArray(s.checklistItems) || s.checklistItems.some((i) => typeof i !== 'string' || !i.trim())) {
+        errors.push(`step ${s.stepNumber} checklistItems must be an array of non-empty strings`);
+      }
+    }
+    // allowDocUpload (#61): optional boolean.
+    if (s.allowDocUpload != null && typeof s.allowDocUpload !== 'boolean') {
+      errors.push(`step ${s.stepNumber} allowDocUpload must be a boolean`);
     }
     if (s.type === 'payment_gate') {
       if (!s.gate) errors.push(`payment_gate step ${s.stepNumber} missing gate config`);

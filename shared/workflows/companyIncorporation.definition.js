@@ -19,6 +19,22 @@
  *     SI 40 "Pending for Approval (Final COI)" again → SI 41 "COI Received".
  *
  * Editable from the UI (E10-S01) — this file just provides the initial seed.
+ *
+ * GitHub issue mapping (2026-06-27):
+ *   #51 — "Work Assigning" (old SI 3) removed; matter starts at step 4. Payment
+ *         status + No-Payment→admin-approval handled at matter creation (code).
+ *   #52 — step 4 "Name & Objects received" carries a `checklistItems` list.
+ *   #54 — "Part Payment Due" (old SI 21) removed; part-payment shown as an alert.
+ *   #56 — step 28 "Form Check" is an approval step: COMPLETE_STEP→29 (approve),
+ *         REWORK→27 (reject/need-correction, notifies the step-27 owner).
+ *   #59 — "Email Trigger to Client" (old SI 35) removed.
+ *   #60 — step 34 fires `NOTIFY_CLIENT_RESUBMISSION` (in-app now; email TODO).
+ *   #61 — step 38 renamed "Client Approval/Signature Required" + per-step doc
+ *         upload; CLIENT_APPROVE ("Please Proceed") auto-completes → 39.
+ *   #57 — Early DSC (23) & MCA registration (31): once the checklist + full
+ *         payment are in, these may start early. Represented as editable
+ *         transitions (refine in the Workflow Editor); the engine advances on the
+ *         configured events, so early-start is a config change, not code.
  */
 
 // Phases (journey "stations") grouping the 44 steps for the client tracker.
@@ -41,6 +57,9 @@ const step = (stepNumber, title, opts = {}) => ({
   ...(opts.gate ? { gate: opts.gate } : {}),
   ...(opts.transitions ? { transitions: opts.transitions } : {}),
   ...(opts.effects ? { effects: opts.effects } : {}),
+  ...(opts.checklistItems ? { checklistItems: opts.checklistItems } : {}),
+  ...(opts.allowDocUpload ? { allowDocUpload: opts.allowDocUpload } : {}),
+  ...(opts.clientActionLabel ? { clientActionLabel: opts.clientActionLabel } : {}),
 });
 
 // COMPLETE_STEP → next step number (the default linear advance).
@@ -56,11 +75,19 @@ export const companyIncorporationDefinition = {
   steps: [
     // ── Onboarding & Payment ──
     step(1, 'Payment', { phaseId: 'onboarding', type: 'payment_gate',
-      gate: { requires: 'part_paid', onPass: 3, onWait: 3 } }),
+      gate: { requires: 'part_paid', onPass: 4, onWait: 4 } }),
     // SI 2 in the sheet is the payment-status legend (Full/Part/None) — represented
-    // by the gate above, not a discrete step.
-    step(3, 'Work Assigning', { phaseId: 'onboarding', cv: true, transitions: next(4) }),
-    step(4, 'Name & Objects received', { phaseId: 'onboarding', cv: true, transitions: next(5) }),
+    // by the gate above, not a discrete step. SI 3 "Work Assigning" removed (#51).
+    // #51: "Work Assigning" removed as a discrete step — adding a workflow to a
+    // client IS the assignment. The matter now starts at step 4.
+    step(4, 'Name & Objects received', { phaseId: 'onboarding', cv: true, transitions: next(5),
+      // #52: tracked as a checklist for verification/usability.
+      checklistItems: [
+        'Proposed company name(s) received',
+        'Business objects / main activities received',
+        'Promoter / director details received',
+        'Registered office details received',
+      ] }),
     step(5, 'Checklist Received', { phaseId: 'onboarding', cv: true, transitions: next(6) }),
 
     // ── Name Reservation ──
@@ -82,10 +109,11 @@ export const companyIncorporationDefinition = {
     step(17, 'Resubmission — Approval', { phaseId: 'name_reservation', transitions: next(18) }),
     step(18, 'Resubmission — Signature of client if required', { phaseId: 'name_reservation', transitions: next(19) }),
     step(19, 'Resubmit of Name reservation', { phaseId: 'name_reservation', cv: true, transitions: next(13) }),
-    step(20, 'Name Approval Letter Received (Department)', { phaseId: 'name_reservation', cv: true, transitions: next(21) }),
+    step(20, 'Name Approval Letter Received (Department)', { phaseId: 'name_reservation', cv: true, transitions: next(22) }),
 
     // ── Documentation ──
-    step(21, 'Part Payment Due', { phaseId: 'documentation', transitions: next(22) }),
+    // #54: "Part Payment Due" removed as a step — part-payment is surfaced as a
+    // blinking alert + client message instead (handled in the app, not the flow).
     step(22, 'Documents received from client', { phaseId: 'documentation', transitions: next(23) }),
     step(23, 'DSC preparation', { phaseId: 'documentation', transitions: next(24) }),
     step(24, 'Preparation of Incorporation Documents', { phaseId: 'documentation', transitions: next(25) }),
@@ -94,7 +122,10 @@ export const companyIncorporationDefinition = {
 
     // ── Filing & Approval ──
     step(27, 'Form Fill up (Incorporation)', { phaseId: 'filing', transitions: next(28) }),
-    step(28, 'Form Check (Incorporation Form)', { phaseId: 'filing', transitions: next(29) }),
+    // #56: Form Check is an APPROVAL step owned by the step owner. Approve advances
+    // to 29; Reject / "Need Correction" reverts to 27 (and notifies the 27 owner).
+    step(28, 'Form Check (Incorporation Form)', { phaseId: 'filing',
+      transitions: [{ event: 'COMPLETE_STEP', to: 29 }, { event: 'REWORK', to: 27 }] }),
     step(29, 'Full Payment Received', { phaseId: 'filing', type: 'payment_gate',
       gate: { requires: 'fully_paid', onPass: 30, onWait: 30 } }),
     step(30, 'Uploading of Incorporation Forms', { phaseId: 'filing', transitions: next(31) }),
@@ -103,13 +134,20 @@ export const companyIncorporationDefinition = {
     step(33, 'Pending for Approval (Final COI) from Department', { phaseId: 'filing', cv: true,
       transitions: [{ event: 'GOVT_APPROVE', to: 41 }, { event: 'GOVT_REJECT', to: 34 }] }),
     // Final-COI resubmission loop (SI 34–40).
+    // #60: on "Resubmission Received from Department" the client is notified of the
+    // requirement (info / document / both). #59: the separate "Email Trigger" step
+    // (old SI 35) is removed — the notification is an effect of THIS step, not a step.
     step(34, 'Resubmission Received on Incorporation', { phaseId: 'filing', cv: true, type: 'branch',
       transitions: [{ event: 'BRANCH_DECISION', to: 36, branch: 'information' }, { event: 'BRANCH_DECISION', to: 37, branch: 'document' }],
-      effects: ['SEND_EMAIL'] }),
-    step(35, 'Email triggered to client (additional info/docs if any)', { phaseId: 'filing', effects: ['SEND_EMAIL'], transitions: next(36) }),
+      effects: ['NOTIFY_CLIENT_RESUBMISSION'] }),
+    // (SI 35 "Email triggered to client" removed — #59.)
     step(36, 'Collection of Information, if required', { phaseId: 'filing', transitions: next(38) }),
     step(37, 'Preparation & collation of document', { phaseId: 'filing', transitions: next(38) }),
-    step(38, 'Approval / Signature of client if required', { phaseId: 'filing', transitions: next(39) }),
+    // #61: client approval + signature, with a per-step document upload; on
+    // "Please Proceed" (CLIENT_APPROVE) the step auto-completes and advances to 39.
+    step(38, 'Client Approval/Signature Required', { phaseId: 'filing', cv: true, allowDocUpload: true,
+      clientActionLabel: 'Please Proceed',
+      transitions: [{ event: 'CLIENT_APPROVE', to: 39 }, { event: 'CLIENT_REJECT', to: 37 }] }),
     step(39, 'Form Fill up & Resubmission', { phaseId: 'filing', transitions: next(40) }),
     step(40, 'Pending for Approval (Final COI) from Department', { phaseId: 'filing', cv: true,
       transitions: [{ event: 'GOVT_APPROVE', to: 41 }, { event: 'GOVT_REJECT', to: 34 }] }),

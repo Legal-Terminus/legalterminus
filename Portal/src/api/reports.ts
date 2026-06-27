@@ -85,6 +85,36 @@ export const getSlaReport = (filters: SlaFilters = {}) => {
   return apiFetch<SlaReport>(`/api/reports/sla${qs ? `?${qs}` : ''}`);
 };
 
+// ─── Payment Overrides report (#58) ───────────────────────────────────────────
+export interface PaymentOverrideRow {
+  taskId: string;
+  clientName: string;
+  serviceName: string;
+  status: string;
+  paymentStatus: PaymentStatus;
+  amountPaid: number;
+  amountDue: number;
+  overrideReason: 'created_no_payment' | 'gate_override' | 'created_no_payment+gate_override';
+  updatedAt: string;
+}
+
+export const getPaymentOverridesReport = () =>
+  apiFetch<PaymentOverrideRow[]>('/api/reports/payment-overrides');
+
+// ─── Professional / Group mapping report (#62) ────────────────────────────────
+export interface MappingGroup {
+  name: string;
+  count: number;
+  clients: { uid: string; name: string }[];
+}
+export interface ProfessionalMappingReport {
+  totalClients: number;
+  byProfessional: MappingGroup[];
+  byGroup: MappingGroup[];
+}
+export const getProfessionalMappingReport = () =>
+  apiFetch<ProfessionalMappingReport>('/api/reports/professional-mapping');
+
 // ─── Master Sheet ───────────────────────────────────────────────────────────
 export interface MasterSheetRow {
   taskId: string;

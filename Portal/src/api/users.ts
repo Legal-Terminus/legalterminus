@@ -20,6 +20,9 @@ export interface PortalUser {
   // client fields
   organisation?: string;
   businessName?: string;
+  /** #62: handling professional + parent/group company mapping. */
+  professionalName?: string;
+  groupCompany?: string;
   gstNumber?: string;
   panNumber?: string;
   aadhaarNumber?: string;

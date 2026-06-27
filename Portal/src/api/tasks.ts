@@ -21,7 +21,8 @@ export const getTask = (id: string) => apiFetch<Task>(`/api/tasks/${id}`);
 export interface WorkflowEventInput {
   type:
     | 'COMPLETE_STEP' | 'RECORD_PAYMENT' | 'ADMIN_OVERRIDE_PAYMENT' | 'BRANCH_DECISION'
-    | 'CLIENT_APPROVE' | 'CLIENT_REJECT' | 'GOVT_APPROVE' | 'GOVT_REJECT';
+    | 'CLIENT_APPROVE' | 'CLIENT_REJECT' | 'GOVT_APPROVE' | 'GOVT_REJECT'
+    | 'REWORK'; // #56: staff "Reject / Need Correction"
   newStatus?: 'not_paid' | 'part_paid' | 'fully_paid';
   branch?: string;
   remark?: string;
@@ -42,6 +43,12 @@ export const assignServiceToClient = (input: {
   clientUid: string;
   serviceKey: string;
   serviceName?: string;
+  // #51: payment captured at creation. 'not_paid' routes the matter to admin
+  // approval; part/full capture amounts that mirror into the Payment module.
+  paymentStatus?: 'not_paid' | 'part_paid' | 'fully_paid';
+  totalCost?: number;
+  amountReceived?: number;
+  paymentMode?: string;
 }) =>
   apiFetch<Task>('/api/tasks', { method: 'POST', body: JSON.stringify(input) });
 export const updateTask = (id: string, body: Partial<Task>) =>

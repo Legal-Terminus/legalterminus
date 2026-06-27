@@ -17,7 +17,14 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
   const [clientSearch, setClientSearch] = useState('');
   const [clientUid, setClientUid] = useState('');
   const [serviceKey, setServiceKey] = useState('');
+  // #51: payment status chosen at creation; part/full reveal amount fields.
+  const [paymentStatus, setPaymentStatus] = useState<'not_paid' | 'part_paid' | 'fully_paid'>('not_paid');
+  const [totalCost, setTotalCost] = useState('');
+  const [amountReceived, setAmountReceived] = useState('');
+  const [paymentMode, setPaymentMode] = useState('');
   const [error, setError] = useState('');
+  const showAmounts = paymentStatus !== 'not_paid';
+  const amountDue = Math.max(0, (Number(totalCost) || 0) - (Number(amountReceived) || 0));
 
   // Clients for the picker.
   const { data: users = [], isLoading: usersLoading } = useQuery({
@@ -58,7 +65,15 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
   const create = useMutation({
     mutationFn: () => {
       const svc = services.find((s) => s.key === serviceKey)!;
-      return assignServiceToClient({ clientUid, serviceKey: svc.key, serviceName: svc.displayName });
+      return assignServiceToClient({
+        clientUid, serviceKey: svc.key, serviceName: svc.displayName,
+        paymentStatus,
+        ...(showAmounts ? {
+          totalCost: Number(totalCost) || undefined,
+          amountReceived: Number(amountReceived) || 0,
+          paymentMode: paymentMode || undefined,
+        } : {}),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
@@ -71,6 +86,9 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
     setError('');
     if (!clientUid) { setError('Please select a client.'); return; }
     if (!serviceKey) { setError('Please select a service.'); return; }
+    if (showAmounts && !(Number(amountReceived) >= 0 && amountReceived !== '')) {
+      setError('Enter the amount received.'); return;
+    }
     create.mutate();
   }
 
@@ -164,6 +182,52 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
                   <option key={s.key} value={s.key}>{s.displayName}</option>
                 ))}
               </select>
+            )}
+          </div>
+
+          {/* Payment (#51) */}
+          <div>
+            <label className="block text-sm font-medium text-ink-soft mb-1.5">Payment status</label>
+            <select
+              aria-label="Payment status"
+              value={paymentStatus}
+              onChange={(e) => setPaymentStatus(e.target.value as typeof paymentStatus)}
+              className="input-field w-full"
+            >
+              <option value="not_paid">No Payment</option>
+              <option value="part_paid">Part Payment</option>
+              <option value="fully_paid">Full Payment</option>
+            </select>
+
+            {showAmounts && (
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <label className="text-sm">
+                  <span className="block text-ink-muted mb-1">Total Cost of Work</span>
+                  <input type="number" min={0} value={totalCost} onChange={(e) => setTotalCost(e.target.value)} className="input-field w-full" placeholder="0" />
+                </label>
+                <label className="text-sm">
+                  <span className="block text-ink-muted mb-1">Amount Received</span>
+                  <input type="number" min={0} value={amountReceived} onChange={(e) => setAmountReceived(e.target.value)} className="input-field w-full" placeholder="0" />
+                </label>
+                <label className="text-sm">
+                  <span className="block text-ink-muted mb-1">Mode of Payment</span>
+                  <input type="text" value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)} className="input-field w-full" placeholder="UPI / NEFT / Cash…" />
+                </label>
+                <label className="text-sm">
+                  <span className="block text-ink-muted mb-1">Amount Due</span>
+                  <input type="text" readOnly value={amountDue} className="input-field w-full bg-surface-card text-ink-muted" />
+                </label>
+              </div>
+            )}
+
+            {paymentStatus === 'not_paid' && (
+              <div className="mt-3 flex items-start gap-2.5 p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                <p className="text-sm text-amber-700">
+                  With <strong>No Payment</strong>, the matter is sent to the <strong>Admin Approval</strong> box —
+                  it is created only after an admin approves/overrides.
+                </p>
+              </div>
             )}
           </div>
         </div>
