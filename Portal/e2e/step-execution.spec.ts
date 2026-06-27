@@ -2,7 +2,7 @@ import { test, expect } from './fixtures';
 import {
   createMatter, deleteMatter, getMatter, getDefinitionForMatter,
   firstPaymentGate, firstPlainStep, firstClientStep, advanceUntil,
-  currentStep, assignStep,
+  currentStep, assignStep, apiAs, transition,
 } from './api';
 
 /**
@@ -89,6 +89,62 @@ test('client-action step: client approves and the matter advances', async ({ cli
   await expect(async () => {
     expect((await getMatter(taskId)).currentStepNumber as number).not.toBe(clientStep!.stepNumber);
   }).toPass({ timeout: 15_000 });
+});
+
+test('#49: a non-assignee cannot complete a step assigned to someone else (API 403)', async () => {
+  // Assign the active plain step to the team member; a MANAGER (not the assignee)
+  // must be refused completion — their power is limited to reassign.
+  const def = await getDefinitionForMatter(taskId);
+  const plain = firstPlainStep(def);
+  test.skip(!plain, 'No plain step.');
+  await advanceUntil(taskId, (s) => s.stepNumber === plain!.stepNumber);
+  const step = await currentStep(taskId);
+  test.skip(step !== plain!.stepNumber, `Could not reach the plain step (at ${step}).`);
+  await assignStep(taskId, step, process.env.E2E_TEAM_UID!);
+
+  const mgr = await apiAs('manager');
+  const res = await mgr.post(`/api/tasks/${taskId}/transition`, { data: { event: { type: 'COMPLETE_STEP' } } });
+  expect(res.status()).toBe(403);
+  const body = await res.json();
+  expect(body.code).toBe('NOT_STEP_ASSIGNEE');
+  await mgr.dispose();
+  // The matter did not advance.
+  expect(await currentStep(taskId)).toBe(step);
+});
+
+test('#49: an admin CAN override-complete another user’s step (API)', async () => {
+  const def = await getDefinitionForMatter(taskId);
+  const plain = firstPlainStep(def);
+  test.skip(!plain, 'No plain step.');
+  await advanceUntil(taskId, (s) => s.stepNumber === plain!.stepNumber);
+  const step = await currentStep(taskId);
+  test.skip(step !== plain!.stepNumber, `Could not reach the plain step (at ${step}).`);
+  await assignStep(taskId, step, process.env.E2E_TEAM_UID!);
+
+  // Admin is not the assignee, but keeps an audited override.
+  await transition('admin', taskId, { type: 'COMPLETE_STEP' });
+  expect((await getMatter(taskId)).currentStepNumber as number).toBeGreaterThan(step);
+});
+
+test('#49: the assignee sees Complete; a non-assignee manager sees the reassign note', async ({ teamPage, managerPage }) => {
+  const def = await getDefinitionForMatter(taskId);
+  const plain = firstPlainStep(def);
+  test.skip(!plain, 'No plain step.');
+  await advanceUntil(taskId, (s) => s.stepNumber === plain!.stepNumber);
+  const step = await currentStep(taskId);
+  test.skip(step !== plain!.stepNumber, `Could not reach the plain step (at ${step}).`);
+  await assignStep(taskId, step, process.env.E2E_TEAM_UID!);
+
+  // Assignee (team) sees the Complete button.
+  await teamPage.goto(`tasks/${taskId}`);
+  await teamPage.getByRole('button', { name: 'Steps', exact: true }).click();
+  await expect(teamPage.getByRole('button', { name: /complete step/i })).toBeVisible();
+
+  // Non-assignee manager sees NO complete button — only the reassign note (#48 name shown too).
+  await managerPage.goto(`tasks/${taskId}`);
+  await managerPage.getByRole('button', { name: 'Steps', exact: true }).click();
+  await expect(managerPage.getByRole('button', { name: /complete step/i })).toHaveCount(0);
+  await expect(managerPage.getByText(/only the assignee can complete this step/i)).toBeVisible();
 });
 
 test('#44: a team member assigned only the active step can complete it', async ({ teamPage }) => {

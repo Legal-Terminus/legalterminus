@@ -244,7 +244,9 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
       <p className="text-sm text-ink-muted mb-3">
         Per step: the default <strong>assignee</strong> (overrides the phase default), the expected
         <strong> ETA</strong> in days (drives due dates and “running late”), and whether the step is
-        <strong> visible to the client</strong>. Changes apply to new matters only.
+        <strong> visible to the client</strong>. Set <strong>ETA&nbsp;= 0</strong> for a step that
+        happens on the <strong>same day</strong> as the previous one (multiple steps can share a day).
+        Changes apply to new matters only.
       </p>
 
       {isLoading ? (
@@ -257,7 +259,7 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
           <div className="hidden sm:flex items-center gap-3 px-4 pb-1 text-xs text-ink-faint">
             <span className="flex-1">Step</span>
             <span className="w-[200px]">Assignee</span>
-            <span className="w-28 text-right">ETA (days)</span>
+            <span className="w-28 text-right">ETA · 0=same day</span>
             <span className="w-28 text-center">Client-visible</span>
           </div>
           <div className="card divide-y divide-hairline">

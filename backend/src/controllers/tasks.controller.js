@@ -989,6 +989,36 @@ export async function transitionTask(req, res) {
       return res.status(403).json({ message: 'A team member cannot act on the client’s behalf — ask an admin or manager to override.' });
     }
 
+    // ── #49: restrict step COMPLETION to the assigned user ───────────────────
+    // A step's work-advancing events may only be fired by the active step's
+    // assignee. A manager's power over someone else's step is limited to REASSIGN
+    // (a separate endpoint) — they cannot complete it. ADMIN keeps an explicit,
+    // audited override (the issue's chosen exception). Payment + client events are
+    // governed by their own rules above, so they're excluded here.
+    const COMPLETION_EVENTS = new Set([
+      'COMPLETE_STEP', 'GOVT_APPROVE', 'GOVT_REJECT', 'BRANCH_DECISION',
+    ]);
+    let isAdminCompletionOverride = false;
+    if (COMPLETION_EVENTS.has(event?.type)) {
+      const activeSnap = await taskRef.collection('steps')
+        .where('status', '==', 'active').limit(1).get();
+      const stepAssignee = activeSnap.empty ? null : (activeSnap.docs[0].data().assignedTo ?? null);
+      const isAssignee = stepAssignee != null && stepAssignee === uid;
+      if (!isAssignee) {
+        if (role === 'admin') {
+          isAdminCompletionOverride = true; // allowed, but flagged + audited below
+        } else if (stepAssignee != null) {
+          // Manager or a non-assignee team member trying to complete another's step.
+          return res.status(403).json({
+            message: 'Only the assigned user can complete this step. Reassign it to yourself (or someone else) first.',
+            code: 'NOT_STEP_ASSIGNEE',
+          });
+        }
+        // stepAssignee == null (unassigned) → fall through: existing role checks
+        // above already decided whether this actor may act on an unassigned step.
+      }
+    }
+
     // Load the task's PINNED definition (immutable per task), compile it, then
     // recompile with initial = current step so we resume exactly where we are.
     const compiled = await getCompiledById(task.workflowDefinitionId);
@@ -1115,6 +1145,8 @@ export async function transitionTask(req, res) {
       // Records that staff advanced a client-owned step on the client's behalf, so
       // the activity trail reads "Admin approved on behalf of the client".
       onBehalfOfClient: isClientOverride || false,
+      // #49: an admin completed a step assigned to someone else (audited override).
+      adminCompletionOverride: isAdminCompletionOverride || false,
       at: now,
     });
 
@@ -1141,9 +1173,15 @@ export async function transitionTask(req, res) {
           // Internal step — notify its assignee (pre-assigned or matter owner).
           const nextStepSnap = await taskRef.collection('steps').doc(String(newStep)).get();
           const nextAssignee = nextStepSnap.exists ? nextStepSnap.data().assignedTo : null;
+          // #53: when the advance was a CLIENT APPROVAL, use explicit copy so the
+          // team member knows to proceed (vs. the generic "step ready" message).
+          const clientApproved = event?.type === 'CLIENT_APPROVE';
           await notify({ recipientUid: nextAssignee || task.assignedTo, actorUid: uid, type: 'info',
-            title: 'Step ready for you',
-            message: `${ctx}: ${newDef?.title ?? `Step ${newStep}`}`, taskId });
+            title: clientApproved ? 'Client approval received' : 'Step ready for you',
+            message: clientApproved
+              ? `Client approval has been received for ${ctx}. Please proceed with the next step: ${newDef?.title ?? `Step ${newStep}`}.`
+              : `${ctx}: ${newDef?.title ?? `Step ${newStep}`}`,
+            taskId });
         }
         // If the CLIENT just acted, also let the matter owner know they responded.
         if (role === 'client') {

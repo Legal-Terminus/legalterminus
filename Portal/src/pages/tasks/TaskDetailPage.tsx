@@ -32,6 +32,7 @@ export default function TaskDetailPage() {
   const toast = useToast();
   const confirm = useConfirm();
   const role = useAuthStore((s) => s.role);
+  const currentUserUid = useAuthStore((s) => s.user?.uid ?? null);
   const isStaff = role === 'admin' || role === 'manager' || role === 'team_member';
   const isClient = role === 'client';
   const [tab, setTab] = useState<TabKey>('steps');
@@ -350,7 +351,7 @@ export default function TaskDetailPage() {
           stepDefs={stepDefs}
           currentDef={currentDef}
           completed={completed}
-          role={{ isStaff, isClient, canOverrideClient: canAssign }}
+          role={{ isStaff, isClient, canOverrideClient: canAssign, isAdmin: role === 'admin', uid: currentUserUid }}
           pending={advance.isPending}
           onEvent={(e) => advance.mutate(e)}
           assignment={canAssign ? {
@@ -555,7 +556,7 @@ function StepsTab({
   stepDefs: WorkflowStepDef[];
   currentDef?: WorkflowStepDef;
   completed: boolean;
-  role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean };
+  role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null };
   pending: boolean;
   onEvent: (e: WorkflowEventInput) => void;
   assignment?: StepAssignment;
@@ -563,6 +564,12 @@ function StepsTab({
   onAttach: () => void;
 }) {
   const steps = task.steps ?? [];
+  // #55: display steps in clean serial order (1,2,3,4…). The stored `stepNumber`
+  // is the internal identity and CAN have gaps — e.g. for clients, steps the
+  // workflow hides (clientVisible:false) are filtered out server-side, leaving
+  // 1,2,3,5,7. Number by POSITION in the visible, ordered list instead.
+  const orderedStepNumbers = [...steps].sort((a, b) => a.stepNumber - b.stepNumber).map((s) => s.stepNumber);
+  const displayNumberOf = (stepNumber: number) => orderedStepNumbers.indexOf(stepNumber) + 1;
   const currentStepInstance = steps.find((s) => s.stepNumber === task.currentStepNumber);
   const currentAssignee = currentStepInstance?.assignedTo ?? null;
   // Server-resolved name (#48) — used so team members (who don't fetch the staff
@@ -616,6 +623,7 @@ function StepsTab({
       step={currentDef} role={role} pending={pending} turn={currentTurn}
       onEvent={onEvent} assignment={assignment} currentAssignee={currentAssignee}
       currentAssigneeName={currentAssigneeName}
+      displayNumber={displayNumberOf(task.currentStepNumber)}
       stepUrgent={currentStepUrgent} onAttach={onAttach}
     />
   ) : completed ? (
@@ -640,6 +648,7 @@ function StepsTab({
           <ExpandableStepRow
             key={step.stepNumber}
             step={step}
+            displayNumber={displayNumberOf(step.stepNumber)}
             description={descFor(step.stepNumber)}
             isCurrent={step.stepNumber === task.currentStepNumber && !completed}
           />
@@ -868,15 +877,16 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, turn, stepUrgent, onAttach,
+  step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach,
 }: {
   step: WorkflowStepDef;
-  role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean };
+  role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null };
   pending: boolean;
   onEvent: (e: WorkflowEventInput) => void;
   assignment?: StepAssignment;
   currentAssignee?: string | null;
   currentAssigneeName?: string | null;
+  displayNumber?: number;
   turn?: 'team' | 'client' | 'govt' | null;
   stepUrgent?: boolean;
   onAttach: () => void;
@@ -889,6 +899,15 @@ function StepHeroPanel({
   // Prefer the staff-list object's name (admins/managers), else the server-resolved
   // name (#48) so team members also see the real assignee. Empty when truly unassigned.
   const assigneeLabel = ownerName ? displayName(ownerName) : (currentAssignee ? (currentAssigneeName ?? '') : '');
+
+  // #49: completion is restricted to the step's assignee. A non-assignee staff
+  // member can only reassign (admins/managers via the owner dropdown). ADMIN keeps
+  // an explicit override-complete (mirrors the backend gate). An UNASSIGNED step
+  // stays completable by any permitted staff (nobody to gate against yet).
+  const isAssignee = !!role.uid && currentAssignee === role.uid;
+  const canComplete = role.isClient ? false : (!currentAssignee || isAssignee || role.isAdmin);
+  const completeIsOverride = role.isAdmin && !!currentAssignee && !isAssignee;
+  const assignedToOther = !!currentAssignee && !isAssignee && !role.isAdmin;
 
   // One comment composer feeds every action on this step. Comment is optional on
   // positive actions, required on rejections. The value rides along as event.remark.
@@ -921,16 +940,21 @@ function StepHeroPanel({
     } else wait = <WaitNote text="Waiting for payment to be recorded." />;
   } else if (step.type === 'branch') {
     const branches = [...new Set((step.transitions ?? []).filter((t) => t.branch).map((t) => t.branch!))];
-    if (role.isStaff) {
+    if (role.isStaff && canComplete) {
       actions = (
-        <div className="flex flex-wrap gap-2">
-          {branches.map((b) => (
-            <button key={b} disabled={pending} onClick={() => fire('BRANCH_DECISION', { extra: { branch: b } })} className="btn-secondary disabled:opacity-50">
-              <GitBranch className="w-4 h-4" /> {b.replace(/_/g, ' ')}
-            </button>
-          ))}
+        <div className="space-y-2">
+          {completeIsOverride && <OverrideNote assignee={assigneeLabel} />}
+          <div className="flex flex-wrap gap-2">
+            {branches.map((b) => (
+              <button key={b} disabled={pending} onClick={() => fire('BRANCH_DECISION', { extra: { branch: b } })} className="btn-secondary disabled:opacity-50">
+                <GitBranch className="w-4 h-4" /> {b.replace(/_/g, ' ')}
+              </button>
+            ))}
+          </div>
         </div>
       );
+    } else if (assignedToOther) {
+      wait = <AssignedToOtherNote assignee={assigneeLabel} />;
     } else wait = <WaitNote text="Our team is processing the next step." />;
   } else if (isClientStep) {
     if (role.isClient) {
@@ -962,25 +986,35 @@ function StepHeroPanel({
       );
     } else wait = <WaitNote text="Waiting for the client to approve." />;
   } else if (isGovtStep) {
-    if (role.isStaff) {
+    if (role.isStaff && canComplete) {
       actions = (
-        <div className="flex flex-wrap gap-2">
-          <button disabled={pending} onClick={() => fire('GOVT_APPROVE')} className="btn-primary disabled:opacity-50">
-            {pending ? spin : <Landmark className="w-4 h-4" />} Govt Approved
-          </button>
-          <button disabled={pending} onClick={() => fire('GOVT_REJECT', { required: true })} className="btn-secondary disabled:opacity-50">
-            <Landmark className="w-4 h-4" /> Govt Rejected
+        <div className="space-y-2">
+          {completeIsOverride && <OverrideNote assignee={assigneeLabel} />}
+          <div className="flex flex-wrap gap-2">
+            <button disabled={pending} onClick={() => fire('GOVT_APPROVE')} className="btn-primary disabled:opacity-50">
+              {pending ? spin : <Landmark className="w-4 h-4" />} Govt Approved
+            </button>
+            <button disabled={pending} onClick={() => fire('GOVT_REJECT', { required: true })} className="btn-secondary disabled:opacity-50">
+              <Landmark className="w-4 h-4" /> Govt Rejected
+            </button>
+          </div>
+        </div>
+      );
+    } else if (assignedToOther) {
+      wait = <AssignedToOtherNote assignee={assigneeLabel} />;
+    } else wait = <WaitNote text="Awaiting the government department response." />;
+  } else if (events.has('COMPLETE_STEP')) {
+    if (role.isStaff && canComplete) {
+      actions = (
+        <div className="space-y-2">
+          {completeIsOverride && <OverrideNote assignee={assigneeLabel} />}
+          <button disabled={pending} onClick={() => fire('COMPLETE_STEP')} className="btn-primary disabled:opacity-50">
+            {pending ? spin : <PlayCircle className="w-4 h-4" />} Complete Step
           </button>
         </div>
       );
-    } else wait = <WaitNote text="Awaiting the government department response." />;
-  } else if (events.has('COMPLETE_STEP')) {
-    if (role.isStaff) {
-      actions = (
-        <button disabled={pending} onClick={() => fire('COMPLETE_STEP')} className="btn-primary disabled:opacity-50">
-          {pending ? spin : <PlayCircle className="w-4 h-4" />} Complete Step
-        </button>
-      );
+    } else if (assignedToOther) {
+      wait = <AssignedToOtherNote assignee={assigneeLabel} />;
     } else wait = <WaitNote text="Our team is working on this step." />;
   }
 
@@ -1052,7 +1086,7 @@ function StepHeroPanel({
     <div className="card overflow-hidden ring-1 ring-ink/5 shadow-card-hover">
       <div className="px-5 py-2.5 bg-surface-soft border-b border-hairline flex items-center justify-between gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted flex items-center gap-1.5">
-          <PlayCircle className="w-3.5 h-3.5 text-brand-600" /> Current step · {step.stepNumber}
+          <PlayCircle className="w-3.5 h-3.5 text-brand-600" /> Current step · {displayNumber ?? step.stepNumber}
         </span>
         {turn && (
           <span className={`badge ${turn === 'client' ? 'bg-blue-50 text-blue-700' : turn === 'govt' ? 'bg-violet-50 text-violet-700' : 'bg-brand-50 text-brand-700'}`}>
@@ -1120,6 +1154,26 @@ function WaitNote({ text }: { text: string }) {
   return <p className="text-sm text-ink-muted">{text}</p>;
 }
 
+// #49: a non-assignee staff member can't complete this step — only reassign it.
+function AssignedToOtherNote({ assignee }: { assignee?: string }) {
+  return (
+    <p className="text-sm text-ink-muted">
+      Assigned to <span className="font-medium text-ink">{assignee || 'another team member'}</span>.
+      Only the assignee can complete this step — reassign it (above) to act.
+    </p>
+  );
+}
+
+// #49: admin completing a step assigned to someone else (audited override).
+function OverrideNote({ assignee }: { assignee?: string }) {
+  return (
+    <p className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-2 py-1">
+      <ShieldCheck className="w-3.5 h-3.5" />
+      Override: completing on behalf of {assignee || 'the assignee'}.
+    </p>
+  );
+}
+
 const STATUS: Record<StepStatus, { label: string; cls: string }> = {
   pending:   { label: 'Pending',   cls: 'text-ink-faint' },
   active:    { label: 'In progress', cls: 'text-brand-700' },
@@ -1129,7 +1183,7 @@ const STATUS: Record<StepStatus, { label: string; cls: string }> = {
 };
 
 /** A step row. Completed/skipped rows expand to reveal details (remark, when). */
-function ExpandableStepRow({ step, description, isCurrent }: { step: TaskStep; description?: string; isCurrent: boolean }) {
+function ExpandableStepRow({ step, displayNumber, description, isCurrent }: { step: TaskStep; displayNumber: number; description?: string; isCurrent: boolean }) {
   const s = STATUS[step.status] ?? STATUS.pending;
   const skipped = step.status === 'skipped';
   const Icon = step.status === 'completed' ? CheckCircle2 : skipped ? CircleSlash : isCurrent ? PlayCircle : Circle;
@@ -1144,7 +1198,7 @@ function ExpandableStepRow({ step, description, isCurrent }: { step: TaskStep; d
       >
         <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${step.status === 'completed' ? 'text-emerald-600' : skipped ? 'text-ink-faint' : isCurrent ? 'text-brand-600' : 'text-ink-faint'}`} />
         <div className="min-w-0 flex-1">
-          <p className={`text-sm ${isCurrent ? 'font-semibold text-ink' : 'text-ink-soft'}`}>{step.stepNumber}. {step.title}</p>
+          <p className={`text-sm ${isCurrent ? 'font-semibold text-ink' : 'text-ink-soft'}`}>{displayNumber}. {step.title}</p>
           {description && !open && <p className="text-xs text-ink-muted mt-0.5 truncate">{description}</p>}
         </div>
         <span className={`text-xs font-medium shrink-0 ${s.cls}`}>{s.label}</span>
