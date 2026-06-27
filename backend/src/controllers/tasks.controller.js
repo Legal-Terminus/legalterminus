@@ -1255,8 +1255,9 @@ export async function transitionTask(req, res) {
 
       // #60: declarative step EFFECTS. When the step we just acted on carries
       // NOTIFY_CLIENT_RESUBMISSION (e.g. "Resubmission Received from Department"),
-      // notify the client that a resubmission requirement has been raised.
-      // (Email send is TODO — transport/E07-S02 not built; in-app fires now.)
+      // notify the client that a resubmission requirement has been raised. The
+      // notification path now also sends an EMAIL (E07-S02 Gmail transport), so
+      // #60's "automatic email to the client" is delivered via the same call.
       const actedDef = etaStepDefs.find((s) => s.stepNumber === task.currentStepNumber);
       const effects = actedDef?.effects ?? [];
       if (effects.includes('NOTIFY_CLIENT_RESUBMISSION')) {
@@ -1265,7 +1266,6 @@ export async function transitionTask(req, res) {
           title: 'Resubmission required',
           message: `A resubmission has been raised by the department for ${ctx}${branchTxt}. Our team will reach out with the details.`,
           taskId });
-        // TODO(email): also send the resubmission email once SendGrid transport (E07-S02) exists.
       }
     } catch (e) {
       logger.warn({ err: e?.message }, 'transitionTask: notification step failed');

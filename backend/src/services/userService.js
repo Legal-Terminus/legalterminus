@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { db, admin } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
+import { sendNotificationEmail } from './emailService.js';
 
 const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 
@@ -156,11 +157,17 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
         !existingAuthProviders.includes('email')
       ) {
         try {
-          await admin.auth().generatePasswordResetLink(email);
-          logger.info(`[EMAIL] Password reset link generated for ${email} (delivery not yet implemented)`);
-          // TODO: send via SendGrid.
+          const link = await admin.auth().generatePasswordResetLink(email);
+          // E07-S02: deliver the set-password link via the Gmail transport (no-op
+          // if email isn't configured — link is still generated/logged).
+          await sendNotificationEmail({
+            to: email,
+            title: 'Set up your Legal Terminus account',
+            message: `An account has been created for you. Set your password to sign in: ${link}`,
+          });
+          logger.info(`[EMAIL] Password setup link sent to ${email}`);
         } catch (e) {
-          logger.warn({ err: e }, `[EMAIL] Could not generate password reset for ${email}:`);
+          logger.warn({ err: e }, `[EMAIL] Could not generate/send password reset for ${email}:`);
         }
       }
 
@@ -212,17 +219,21 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
     // Set custom claims
     await admin.auth().setCustomUserClaims(newUid, { role });
 
-    // Generate a password-reset link so the new user can set their own password.
-    // NOTE: email delivery (SendGrid) is not yet wired up, so the link is only
-    // generated/logged — it is NOT emailed to the user. Do not claim otherwise.
+    // Generate a password-setup link and email it via the Gmail transport
+    // (E07-S02). `resetEmailSent` reflects an actual send (false when email is
+    // unconfigured → safe no-op; the link is still generated/logged).
     let resetEmailSent = false;
     if (sendEmail && authProvider === 'email') {
       try {
-        await admin.auth().generatePasswordResetLink(email);
-        logger.info(`[EMAIL] Password reset link generated for ${email} (delivery not yet implemented)`);
-        // TODO: send via SendGrid, then set resetEmailSent = true on success.
+        const link = await admin.auth().generatePasswordResetLink(email);
+        resetEmailSent = await sendNotificationEmail({
+          to: email,
+          title: 'Set up your Legal Terminus account',
+          message: `An account has been created for you. Set your password to sign in: ${link}`,
+        });
+        logger.info(`[EMAIL] Password setup link for ${email} (emailed: ${resetEmailSent})`);
       } catch (e) {
-        logger.warn({ err: e }, `[EMAIL] Could not generate password reset for ${email}:`);
+        logger.warn({ err: e }, `[EMAIL] Could not generate/send password reset for ${email}:`);
       }
     }
 

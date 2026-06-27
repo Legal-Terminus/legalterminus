@@ -1,5 +1,6 @@
 import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
+import { sendNotificationEmail } from '../services/emailService.js';
 
 const COLLECTION = 'notifications';
 
@@ -111,6 +112,20 @@ export const createNotification = async ({ recipientUid, type = 'info', title, m
     read: false,
     createdAt: new Date(),
   });
+
+  // E07-S02: mirror every in-app notification to EMAIL (Gmail SMTP). Fire-and-
+  // forget — resolve the recipient's email and send without blocking or throwing.
+  // No-op when email transport isn't configured (see emailService).
+  (async () => {
+    try {
+      const u = await db.collection('users').doc(recipientUid).get();
+      const to = u.exists ? (u.data().email || u.data().emailIds?.[0]) : null;
+      if (to) await sendNotificationEmail({ to, title, message: message ?? '', taskId });
+    } catch (err) {
+      logger.warn({ err: err?.message }, '[email] notification email dispatch failed (non-fatal)');
+    }
+  })();
+
   return ref.id;
 };
 
