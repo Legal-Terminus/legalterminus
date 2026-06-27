@@ -18,32 +18,34 @@ const ItrBizBreadcrum = () => {
             ITR Filing for Business
             <span className="lt-title-india"> in India</span>
             <br />
-            <span className="lt-title-tagline">CA-Assisted, Accurate &amp; 100% Online</span>
+            <span className="lt-title-tagline">Simple, Affordable, Accurate</span>
           </h1>
 
           <p className="lt-public-description">
-            Legal Terminus handles end-to-end business income tax return filing — ITR-3, ITR-4 (presumptive), ITR-5 (firms &amp; LLPs), and ITR-6 (companies). We compute your business income, claim every eligible deduction, reconcile with GST and Form 26AS/AIS, and e-file with verification so you stay fully compliant. Our professional fee starts at ₹1,499 + GST. Tax audit under Section 44AB, where applicable, is quoted separately.
+            Business Income Tax Return (ITR) filing is a mandatory compliance under the Income Tax Act, 1961 for Sole Proprietorships and Partnership Firms. Filing the correct ITR ensures legal compliance, supports loan and tender applications, and helps maintain accurate financial records. Depending on the nature of the business, returns are generally filed using ITR-3, ITR-4, or ITR-5.
+            <br /><br />
+            At Legal Terminus, we provide affordable and professional Business ITR Filing services, including tax computation, preparation of financial statements, bookkeeping support, and accurate return filing through the Income Tax portal. Our experts ensure timely, compliant, and hassle-free filing tailored to your business needs.
           </p>
 
           <div className="lt-public-features">
-            <div className="lt-feature-item">Proprietor, Firm, LLP &amp; Company Covered</div>
-            <div className="lt-feature-item">Presumptive Scheme (44AD / 44ADA / 44AE)</div>
-            <div className="lt-feature-item">26AS / AIS &amp; GST Reconciliation</div>
-            <div className="lt-feature-item">Tax Audit &amp; Notice Support Available</div>
+            <div className="lt-feature-item">Easy Loan &amp; OD Approval</div>
+            <div className="lt-feature-item">Faster Tax Refund Processing</div>
+            <div className="lt-feature-item">Builds Financial Credibility</div>
+            <div className="lt-feature-item">Avoids Income Tax Notices</div>
           </div>
 
           <div className="lt-public-highlights">
             <div>
-              <h3>10,000+</h3>
-              <p>Returns filed</p>
+              <h3>4,200+</h3>
+              <p>Business ITRs filed (Proprietor + Partnership)</p>
             </div>
             <div>
-              <h3>100% Online</h3>
-              <p>CA-assisted e-filing</p>
+              <h3>100%</h3>
+              <p>On-time filing promise honoured</p>
             </div>
             <div>
               <h3>7+</h3>
-              <p>Years of Tax Expertise</p>
+              <p>Years of Legal Expertise</p>
             </div>
           </div>
 
