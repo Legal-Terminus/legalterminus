@@ -168,7 +168,7 @@ const ItrBizFAQ = () => {
       <div className="opcfaq-container">
 
         <div className="opcfaq-header">
-          <h2 className="opcfaq-title">Business ITR Filing — FAQs</h2>
+          <h2 className="opcfaq-title">ITR Filing for Business — FAQs</h2>
           <p className="opcfaq-intro">
             Got questions? We've got answers — straight, clear, and legally accurate.
           </p>
