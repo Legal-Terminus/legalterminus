@@ -137,6 +137,9 @@ jobs:
             --set-env-vars="PHONEPE_API_BASE=${{ secrets.BACKEND_PHONEPE_API_BASE }}" \
             --set-env-vars="PHONEPE_CLIENT_VERSION=1" \
             --set-env-vars="FRONTEND_URL=${{ secrets.BACKEND_FRONTEND_URL }}" \
+            --set-env-vars="GMAIL_USER=${{ secrets.BACKEND_GMAIL_USER }}" \
+            --set-env-vars="^||^GMAIL_APP_PASSWORD=${{ secrets.BACKEND_GMAIL_APP_PASSWORD }}" \
+            --set-env-vars="EMAIL_FROM=${{ secrets.BACKEND_EMAIL_FROM }}" \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
 
           # Get Backend service URL for payment redirects
