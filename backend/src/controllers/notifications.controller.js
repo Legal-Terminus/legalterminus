@@ -24,6 +24,7 @@ const serialize = (doc) => {
     message: d.message ?? '',
     read: d.read === true,
     taskId: d.taskId ?? undefined,
+    stepNumber: d.stepNumber ?? undefined,
     createdAt: toISO(d.createdAt),
   };
 };
@@ -94,7 +95,7 @@ export const markAllRead = async (req, res) => {
  * Reusable helper for other backend code (task transitions, document review,
  * payment events) to emit an in-app notification. Fire-and-forget friendly.
  */
-export const createNotification = async ({ recipientUid, type = 'info', title, message, taskId }) => {
+export const createNotification = async ({ recipientUid, type = 'info', title, message, taskId, stepNumber }) => {
   if (!recipientUid || !title) {
     throw new Error('createNotification requires recipientUid and title');
   }
@@ -105,8 +106,40 @@ export const createNotification = async ({ recipientUid, type = 'info', title, m
     title,
     message: message ?? '',
     taskId: taskId ?? null,
+    // Optional step linkage so step/matter completion can resolve related alerts.
+    stepNumber: typeof stepNumber === 'number' ? stepNumber : null,
     read: false,
     createdAt: new Date(),
   });
   return ref.id;
+};
+
+/**
+ * Resolve (mark read) ACTIVE notifications tied to a matter — used when a matter
+ * completes or a notified step is done, so stale "action needed" alerts clear from
+ * everyone's unread list. Non-destructive (history is kept). When `stepNumber` is
+ * given, only notifications for THAT step are resolved; otherwise ALL the matter's
+ * active notifications are resolved. Fire-and-forget; never throws to the caller.
+ */
+export const resolveNotificationsForTask = async (taskId, { stepNumber } = {}) => {
+  if (!taskId) return 0;
+  try {
+    const db = getDb();
+    const snap = await db.collection(COLLECTION).where('taskId', '==', taskId).get();
+    const match = snap.docs.filter((doc) => {
+      const d = doc.data();
+      if (d.read === true) return false;
+      if (typeof stepNumber === 'number') return d.stepNumber === stepNumber;
+      return true;
+    });
+    if (match.length === 0) return 0;
+    const batch = db.batch();
+    const now = new Date();
+    match.forEach((doc) => batch.set(doc.ref, { read: true, readAt: now, resolvedAuto: true }, { merge: true }));
+    await batch.commit();
+    return match.length;
+  } catch (err) {
+    logger.warn({ err: err?.message }, 'resolveNotificationsForTask failed');
+    return 0;
+  }
 };

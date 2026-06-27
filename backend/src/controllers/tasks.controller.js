@@ -3,9 +3,9 @@ import { db, getBucket } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
 import { getCompiledForServiceKey, getCompiledById } from '../services/workflowDefinitions.service.js';
 import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
-import { createNotification } from './notifications.controller.js';
+import { createNotification, resolveNotificationsForTask } from './notifications.controller.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
-import { validateDefinition, deriveOwnerType } from '../../../shared/workflows/definitionSchema.js';
+import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE } from '../../../shared/workflows/definitionSchema.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
 // Add `days` (may be fractional) to an ISO instant, returning an ISO string.
@@ -62,10 +62,10 @@ async function resolveUserNames(uids) {
 // Fire-and-forget in-app notification. NEVER let a notification failure break the
 // workflow action that triggered it — we log and move on. Skips self-notification
 // (don't ping someone for their own action) and empty recipients.
-async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId }) {
+async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId, stepNumber }) {
   try {
     if (!recipientUid || recipientUid === actorUid) return;
-    await createNotification({ recipientUid, type, title, message, taskId });
+    await createNotification({ recipientUid, type, title, message, taskId, stepNumber });
   } catch (err) {
     logger.warn({ err: err?.message }, 'notify: failed to create notification');
   }
@@ -213,17 +213,27 @@ export async function createTask(req, res) {
     // A step's own `defaultAssigneeUid` (configured in Workflow Settings) wins
     // over the phase-level default; steps with neither stay in the shared pool.
     const phaseAssignees = await loadPhaseAssignments(definition.id);
-    const assigneeForStep = (s) =>
-      s.defaultAssigneeUid || (s.phaseId && phaseAssignees[s.phaseId]) || null;
+    // #46: resolve a step's default assignee. The CLIENT_ASSIGNEE sentinel (set on
+    // the step or its phase) resolves to THIS matter's client. As a fallback, any
+    // client-owned step (e.g. CLIENT_APPROVE) with no explicit assignee auto-routes
+    // to the client too. Otherwise: step default → phase default → unassigned.
+    const assigneeForStep = (s) => {
+      const configured = s.defaultAssigneeUid || (s.phaseId && phaseAssignees[s.phaseId]) || null;
+      if (configured === CLIENT_ASSIGNEE) return clientUid;
+      if (configured) return configured;
+      if (deriveOwnerType(s) === 'client') return clientUid; // auto-assign client steps
+      return null;
+    };
 
-    // Approval gate: a matter must be approved by an admin before it goes active in
-    // two cases — (E03-S04) it was manager-created, OR (#51) it was created with NO
-    // PAYMENT (those land in the admin approval box; admin can override-approve or
-    // keep on hold). An admin-created, paid matter activates immediately. While
+    // Approval gate: matter creation does NOT require admin approval in general
+    // (#47 — the old manager-created-needs-approval rule from E03-S04 is removed).
+    // The ONE remaining case that still routes to the admin approval box is a matter
+    // created with NO PAYMENT (#51): admin can override-approve or keep it on hold.
+    // Any paid matter (manager- or admin-created) activates immediately. While
     // pending, the first step is held `pending` so no work starts / it stays out of
     // "My Tasks" until approved.
     const noPaymentNeedsApproval = paymentStatus === 'not_paid';
-    const needsApproval = role === 'manager' || noPaymentNeedsApproval;
+    const needsApproval = noPaymentNeedsApproval;
     const initialStatus = needsApproval ? 'pending_admin_approval' : 'pending';
 
     // #51 payment capture: mirror the chosen amounts into the matter's payment
@@ -483,6 +493,9 @@ export async function stopTask(req, res) {
       at: now,
     });
     await batch.commit();
+
+    // A stopped matter shouldn't leave stale "action needed" alerts — resolve them.
+    await resolveNotificationsForTask(req.params.taskId);
 
     // Notify the matter owner + client that the service was stopped (E07-S01).
     const ctx = `${task.clientName ?? ''} · ${task.serviceName ?? task.workflowType ?? ''}`;
@@ -1177,6 +1190,20 @@ export async function transitionTask(req, res) {
 
     await batch.commit();
 
+    // Resolve stale notifications. When the matter COMPLETES, clear all of its
+    // active alerts; otherwise clear the alerts tied to the step we just left
+    // (it's done, so its "action needed / step ready" alert is no longer relevant).
+    // Runs before we create fresh notifications below.
+    try {
+      if (isComplete) {
+        await resolveNotificationsForTask(taskId);
+      } else if (newStep !== task.currentStepNumber) {
+        await resolveNotificationsForTask(taskId, { stepNumber: task.currentStepNumber });
+      }
+    } catch (e) {
+      logger.warn({ err: e?.message }, 'transitionTask: notification resolution failed');
+    }
+
     // ── Notifications (E07-S01): tell whoever the ball moves to. ──
     try {
       const ctx = `${task.clientName ?? ''} · ${task.serviceName ?? task.workflowType ?? ''}`;
@@ -1193,7 +1220,7 @@ export async function transitionTask(req, res) {
           // The ball is now with the client — prompt them to act.
           await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'info',
             title: 'Action needed on your service',
-            message: `${ctx}: ${newDef?.title ?? `Step ${newStep}`}`, taskId });
+            message: `${ctx}: ${newDef?.title ?? `Step ${newStep}`}`, taskId, stepNumber: newStep });
         } else {
           // Internal step — notify its assignee (pre-assigned or matter owner).
           const nextStepSnap = await taskRef.collection('steps').doc(String(newStep)).get();
@@ -1213,7 +1240,7 @@ export async function transitionTask(req, res) {
             message = `Correction required for ${ctx}: ${newDef?.title ?? `Step ${newStep}`}.${comment ? ` Note: ${comment}` : ''} Please review, rectify and resubmit for approval.`;
           }
           await notify({ recipientUid: nextAssignee || task.assignedTo, actorUid: uid, type: isRework ? 'warning' : 'info',
-            title, message, taskId });
+            title, message, taskId, stepNumber: newStep });
         }
         // If the CLIENT just acted, also let the matter owner know they responded.
         if (role === 'client') {

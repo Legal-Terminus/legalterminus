@@ -8,5 +8,7 @@ export interface Notification {
   message: string;
   read: boolean;
   taskId?: string;
+  /** Step the notification relates to (resolved when that step/matter completes). */
+  stepNumber?: number;
   createdAt: string;
 }

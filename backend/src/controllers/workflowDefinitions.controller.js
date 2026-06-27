@@ -1,6 +1,6 @@
 import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
-import { validateDefinition } from '../../../shared/workflows/definitionSchema.js';
+import { validateDefinition, CLIENT_ASSIGNEE } from '../../../shared/workflows/definitionSchema.js';
 import { invalidateWorkflowCache } from '../services/workflowDefinitions.service.js';
 
 const COLLECTION = 'workflowDefinitions';
@@ -241,7 +241,8 @@ export async function putPhaseAssignments(req, res) {
       if (!validPhaseIds.has(phaseId)) continue; // stale phase → drop
       const norm = uid || null;
       clean[phaseId] = norm;
-      if (norm) uidsToCheck.add(norm);
+      // CLIENT_ASSIGNEE (#46) is a valid sentinel, not a user — skip the lookup.
+      if (norm && norm !== CLIENT_ASSIGNEE) uidsToCheck.add(norm);
     }
 
     // Every assignee must exist and be staff (never a client).
@@ -396,7 +397,7 @@ export async function putStepAssignees(req, res) {
       if (!byNum.has(Number(key))) {
         return res.status(400).json({ message: `Unknown step ${key} for this workflow` });
       }
-      if (uid) uidsToCheck.add(uid);
+      if (uid && uid !== CLIENT_ASSIGNEE) uidsToCheck.add(uid); // #46 sentinel: skip lookup
     }
 
     // Every assignee must exist and be staff (never a client).
@@ -486,7 +487,7 @@ export async function putStepSettings(req, res) {
       if (!byNum.has(Number(key))) {
         return res.status(400).json({ message: `Unknown step ${key} for this workflow` });
       }
-      if (val.assigneeUid) uidsToCheck.add(val.assigneeUid);
+      if (val.assigneeUid && val.assigneeUid !== CLIENT_ASSIGNEE) uidsToCheck.add(val.assigneeUid); // #46 sentinel
     }
 
     // Every assignee must exist and be staff (never a client).

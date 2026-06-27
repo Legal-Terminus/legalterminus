@@ -7,6 +7,10 @@ import { apiFetch } from './client';
  */
 export type OwnerType = 'client' | 'team' | 'govt';
 
+/** #46: sentinel assignee meaning "this matter's client" (mirrors the shared
+ *  CLIENT_ASSIGNEE). Resolved to the real clientUid at matter creation. */
+export const CLIENT_ASSIGNEE = '__CLIENT__';
+
 /** A client-facing journey "station" grouping a run of steps. */
 export interface PhaseDef {
   id: string;

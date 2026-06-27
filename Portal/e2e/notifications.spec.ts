@@ -2,6 +2,7 @@ import { test, expect } from './fixtures';
 import {
   createMatter, deleteMatter, createPendingMatter, transition,
   getDefinitionForMatter, firstClientStep, advanceUntil, waitForNotification, currentStep, assignStep, assignMatter,
+  waitForTaskNotification, countUnreadNotificationsForTask, getMatter, getNotifications,
 } from './api';
 
 /**
@@ -109,5 +110,45 @@ test('advancing past a client step notifies the client it is their turn', async 
     await advanceUntil(taskId, (s) => s.stepNumber === clientStep!.stepNumber);
     expect(await waitForNotification('client', /action needed on your service/i)).toBeTruthy();
     void adminPage;
+  } finally { await deleteMatter(taskId); }
+});
+
+test('completing a matter resolves the client’s active notifications for it', async () => {
+  const taskId = await createMatter();
+  try {
+    // Drive to a client step so the client gets an active "action needed" alert.
+    const def = await getDefinitionForMatter(taskId);
+    const clientStep = firstClientStep(def);
+    test.skip(!clientStep, 'No client step in this workflow.');
+    await advanceUntil(taskId, (s) => s.stepNumber === clientStep!.stepNumber);
+    const got = await waitForTaskNotification('client', taskId);
+    test.skip(got === 0, 'No client notification was generated to resolve.');
+    expect(await countUnreadNotificationsForTask('client', taskId)).toBeGreaterThan(0);
+
+    // Fast-forward the matter to completion via the API (admin drives all events).
+    for (let i = 0; i < def.steps.length + 5; i++) {
+      const m = await getMatter(taskId);
+      if (m.status === 'completed') break;
+      const cur = m.currentStepNumber as number;
+      const s = def.steps.find((x) => x.stepNumber === cur);
+      const ev = s?.type === 'payment_gate' ? { type: 'ADMIN_OVERRIDE_PAYMENT' }
+        : (s?.transitions ?? []).some((t) => t.event === 'COMPLETE_STEP') ? { type: 'COMPLETE_STEP' }
+        : (s?.transitions ?? []).some((t) => t.event === 'CLIENT_APPROVE') ? { type: 'CLIENT_APPROVE' }
+        : (s?.transitions ?? []).some((t) => t.event === 'GOVT_APPROVE') ? { type: 'GOVT_APPROVE' }
+        : null;
+      if (!ev) break;
+      try { await transition('admin', taskId, ev); } catch { break; }
+    }
+
+    // After completion, the stale "action needed" alert is resolved. (A fresh
+    // "Your service is complete" notification is expected to remain unread — that's
+    // the new active alert, not a stale one — so we assert the action-needed one
+    // specifically is gone rather than total-unread = 0.)
+    if ((await getMatter(taskId)).status === 'completed') {
+      await expect.poll(async () => {
+        const list = await getNotifications('client');
+        return list.filter((n) => !n.read && /action needed/i.test(n.title)).length;
+      }, { timeout: 15_000 }).toBe(0);
+    }
   } finally { await deleteMatter(taskId); }
 });

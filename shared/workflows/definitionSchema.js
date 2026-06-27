@@ -63,6 +63,12 @@
 export const STEP_TYPES = ['step', 'payment_gate', 'branch', 'final'];
 export const PAYMENT_REQUIREMENTS = ['fully_paid', 'part_paid'];
 
+// #46: sentinel assignee meaning "this matter's client". Stored as a step's
+// defaultAssigneeUid (or a phase assignment); resolved to the actual clientUid at
+// matter creation. Lets client-owned steps (e.g. approvals) auto-route to the
+// client without naming a specific user.
+export const CLIENT_ASSIGNEE = '__CLIENT__';
+
 /** "Who's driving" buckets for the journey tracker's ownership cues. */
 export const OWNER_TYPES = ['client', 'team', 'govt'];
 

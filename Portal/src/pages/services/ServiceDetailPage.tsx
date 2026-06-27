@@ -10,7 +10,7 @@ import { getServiceCatalog } from '../../api/services';
 import {
   getWorkflowDefinitions, getWorkflowDefinition,
   getPhaseAssignments, putPhaseAssignments, getWorkflowSyncCheck,
-  getStepSettings, putStepSettings,
+  getStepSettings, putStepSettings, CLIENT_ASSIGNEE,
   type WorkflowDefinition, type PhaseAssignments, type StepSettingPatch,
 } from '../../api/workflowDefinitions';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
@@ -276,6 +276,7 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
                   aria-label={`Step ${s.stepNumber} assignee`}
                 >
                   <option value="">Inherit from phase</option>
+                  <option value={CLIENT_ASSIGNEE}>Client (this matter&apos;s client)</option>
                   {staff.map((u) => <option key={u.uid} value={u.uid}>{displayName(u)}</option>)}
                 </select>
                 <input
@@ -414,6 +415,7 @@ function AssignmentsEditor({
                   aria-label={`${p.name} default assignee`}
                 >
                   <option value="">Unassigned</option>
+                  <option value={CLIENT_ASSIGNEE}>Client (this matter&apos;s client)</option>
                   {staffOptions}
                 </select>
               </div>

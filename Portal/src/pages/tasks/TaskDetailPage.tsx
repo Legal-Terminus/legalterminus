@@ -607,8 +607,18 @@ function StepsTab({
   // Whose turn for the CURRENT step (drives the hero header chip).
   const currentTurn = currentDef ? deriveOwnerType(currentDef) : null;
 
-  // Which stage is shown in the pane. Default to the active one; user can switch.
+  // Which stage is shown in the pane. Defaults to the ACTIVE phase and FOLLOWS it
+  // as the workflow advances (when completing a step moves the current step into a
+  // new phase, the rail pointer advances too). A manual click still works: we only
+  // auto-snap when `activeIndex` actually CHANGES, so the user's selection sticks
+  // until the next real advance. Reconciled during render (no effect → no
+  // cascading-render lint issue), tracking the last activeIndex we synced to.
   const [selectedStage, setSelectedStage] = useState<number>(Math.max(0, activeIndex));
+  const [syncedActive, setSyncedActive] = useState<number>(activeIndex);
+  if (activeIndex !== -1 && activeIndex !== syncedActive) {
+    setSyncedActive(activeIndex);
+    setSelectedStage(activeIndex);
+  }
   const shownPhaseId = stages[selectedStage]?.id;
   // Steps belonging to the shown stage (for the step list in the pane).
   const stageSteps = hasPhases

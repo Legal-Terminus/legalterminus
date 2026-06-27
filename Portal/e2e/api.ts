@@ -295,6 +295,15 @@ export async function countNotificationsForTask(role: RoleKey, taskId: string): 
   return body.filter((n) => n.taskId === taskId).length;
 }
 
+/** Count a role's UNREAD (active) notifications for a matter. */
+export async function countUnreadNotificationsForTask(role: RoleKey, taskId: string): Promise<number> {
+  const api = await apiAs(role);
+  const res = await api.get('/api/notifications');
+  const body = (await res.json()) as Array<{ taskId?: string; read?: boolean }>;
+  await api.dispose();
+  return body.filter((n) => n.taskId === taskId && n.read !== true).length;
+}
+
 /**
  * Poll a role's notifications until at least one deep-links to `taskId`, or time
  * out. Returns the count seen at resolution (0 on timeout).
@@ -383,9 +392,12 @@ export async function deleteLead(id: string): Promise<void> {
 /** Create a manager-owned matter that is pending admin approval (for approval tests). */
 export async function createPendingMatter(): Promise<string> {
   const serviceKey = await resolveServiceKey();
-  const api = await apiAs('manager'); // manager-created → pending_admin_approval
+  // #47 removed manager-created approval; the remaining approval trigger is
+  // NO PAYMENT (#51). Omitting paymentStatus defaults to not_paid →
+  // pending_admin_approval, which is what these approval tests need.
+  const api = await apiAs('manager');
   const res = await api.post('/api/tasks', {
-    data: { clientUid: env('E2E_CLIENT_UID'), serviceKey },
+    data: { clientUid: env('E2E_CLIENT_UID'), serviceKey, paymentStatus: 'not_paid' },
   });
   if (!res.ok()) throw new Error(`createPendingMatter failed: ${res.status()} ${await res.text()}`);
   const body = await res.json();
