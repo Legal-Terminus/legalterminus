@@ -563,7 +563,11 @@ function StepsTab({
   onAttach: () => void;
 }) {
   const steps = task.steps ?? [];
-  const currentAssignee = steps.find((s) => s.stepNumber === task.currentStepNumber)?.assignedTo ?? null;
+  const currentStepInstance = steps.find((s) => s.stepNumber === task.currentStepNumber);
+  const currentAssignee = currentStepInstance?.assignedTo ?? null;
+  // Server-resolved name (#48) — used so team members (who don't fetch the staff
+  // list) still see the real assignee instead of a false "Unassigned".
+  const currentAssigneeName = currentStepInstance?.assigneeName ?? null;
   const descFor = (n: number) => stepDefs.find((s) => s.stepNumber === n)?.description;
 
   // Stage (phase) data drives the left rail. phaseId comes from the definition.
@@ -611,6 +615,7 @@ function StepsTab({
     <StepHeroPanel
       step={currentDef} role={role} pending={pending} turn={currentTurn}
       onEvent={onEvent} assignment={assignment} currentAssignee={currentAssignee}
+      currentAssigneeName={currentAssigneeName}
       stepUrgent={currentStepUrgent} onAttach={onAttach}
     />
   ) : completed ? (
@@ -863,7 +868,7 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  step, role, pending, onEvent, assignment, currentAssignee, turn, stepUrgent, onAttach,
+  step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, turn, stepUrgent, onAttach,
 }: {
   step: WorkflowStepDef;
   role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean };
@@ -871,6 +876,7 @@ function StepHeroPanel({
   onEvent: (e: WorkflowEventInput) => void;
   assignment?: StepAssignment;
   currentAssignee?: string | null;
+  currentAssigneeName?: string | null;
   turn?: 'team' | 'client' | 'govt' | null;
   stepUrgent?: boolean;
   onAttach: () => void;
@@ -880,6 +886,9 @@ function StepHeroPanel({
   const isClientStep = events.has('CLIENT_APPROVE');
   const isGovtStep = events.has('GOVT_APPROVE');
   const ownerName = assignment?.staff.find((u) => u.uid === currentAssignee);
+  // Prefer the staff-list object's name (admins/managers), else the server-resolved
+  // name (#48) so team members also see the real assignee. Empty when truly unassigned.
+  const assigneeLabel = ownerName ? displayName(ownerName) : (currentAssignee ? (currentAssigneeName ?? '') : '');
 
   // One comment composer feeds every action on this step. Comment is optional on
   // positive actions, required on rejections. The value rides along as event.remark.
@@ -986,7 +995,7 @@ function StepHeroPanel({
         {assignment ? (
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-ink/10 flex items-center justify-center shrink-0">
-              <span className="text-[10px] font-bold text-ink-muted">{initialsOf(ownerName ? displayName(ownerName) : '')}</span>
+              <span className="text-[10px] font-bold text-ink-muted">{initialsOf(assigneeLabel)}</span>
             </div>
             <div className="min-w-0">
               <select
@@ -1003,9 +1012,9 @@ function StepHeroPanel({
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-ink/10 flex items-center justify-center shrink-0"><span className="text-[10px] font-bold text-ink-muted">{ownerName ? initialsOf(displayName(ownerName)) : '—'}</span></div>
+            <div className="w-7 h-7 rounded-full bg-ink/10 flex items-center justify-center shrink-0"><span className="text-[10px] font-bold text-ink-muted">{assigneeLabel ? initialsOf(assigneeLabel) : '—'}</span></div>
             <div>
-              <p className="text-sm font-medium text-ink">{ownerName ? displayName(ownerName) : 'Unassigned'}</p>
+              <p className="text-sm font-medium text-ink">{assigneeLabel || 'Unassigned'}</p>
               {step.assignedRole && <p className="text-[11px] text-ink-faint flex items-center gap-1"><Briefcase className="w-3 h-3" /> {step.assignedRole.replace(/_/g, ' ')}</p>}
             </div>
           </div>

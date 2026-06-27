@@ -195,15 +195,26 @@ jobs:
 
       - name: 🌐 Deploy Frontend to Firebase Hosting
         if: github.event.inputs.deploy_frontend == 'true' || github.event_name == 'push'
-        # ROLLBACK (2026-06-26): the ADC/external_account deploy ("Failed to
-        # authenticate, have you run firebase login?") never worked across
-        # firebase-tools 13/15. This restores the last KNOWN-GOOD deploy (green
-        # through 2026-06-24): mint a short-lived OAuth access token from the WIF
-        # auth that already authorizes gcloud, and pass it via --token. Same auth
-        # the Cloud Run deploys above use successfully.
+        # Auth: mint a short-lived OAuth token from the WIF auth that already
+        # authorizes gcloud (last known-good deploy path; restored 2026-06-26).
+        #
+        # No-op tolerance: when the freshly-built dist is byte-identical to what's
+        # already live, the Hosting release API returns 400 "supplied version … is
+        # the current active version". That's not a failure — there's simply
+        # nothing new to release — so we detect that specific message and exit 0.
         run: |
           ACCESS_TOKEN=$(gcloud auth print-access-token)
-          firebase deploy --only hosting \
+          set +e
+          OUT=$(firebase deploy --only hosting \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
-            --token="$ACCESS_TOKEN"
+            --token="$ACCESS_TOKEN" 2>&1)
+          CODE=$?
+          echo "$OUT"
+          if [ $CODE -ne 0 ]; then
+            if echo "$OUT" | grep -q "is the current active version"; then
+              echo "ℹ️ Hosting content unchanged — nothing new to release. Treating as success."
+              exit 0
+            fi
+            exit $CODE
+          fi
 

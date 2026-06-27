@@ -40,6 +40,24 @@ function projectMatterDueAt(stepDefs, fromStepNumber, fromIso) {
   return any ? addDaysIso(fromIso, total) : null;
 }
 
+// ─── Assignee name resolution (#48) ─────────────────────────────────────────
+// Resolve a set of user UIDs → display names in one batched pass (deduped). The
+// frontend showed "Unassigned" for team members because it derived the name from
+// a staff list it only fetches for admins/managers; returning the name from the
+// API removes that client-side dependency entirely.
+async function resolveUserNames(uids) {
+  const unique = [...new Set(uids.filter(Boolean))];
+  const byUid = {};
+  await Promise.all(unique.map(async (uid) => {
+    try {
+      const u = await db.collection('users').doc(uid).get();
+      const d = u.exists ? u.data() : null;
+      byUid[uid] = d ? (d.displayName || d.name || d.fullName || d.email || 'User') : null;
+    } catch { byUid[uid] = null; }
+  }));
+  return byUid;
+}
+
 // ─── Notifications (E07-S01) ────────────────────────────────────────────────
 // Fire-and-forget in-app notification. NEVER let a notification failure break the
 // workflow action that triggered it — we log and move on. Skips self-notification
@@ -602,6 +620,10 @@ export async function listMySteps(req, res) {
       })
     );
 
+    // Resolve assignee names for the rows (#48) in one batched pass.
+    const stepNames = await resolveUserNames(rows.map((r) => r.assignedTo));
+    rows.forEach((r) => { r.assigneeName = r.assignedTo ? (stepNames[r.assignedTo] ?? null) : null; });
+
     // Urgent first, then most recently updated matter.
     rows.sort((a, b) => {
       if (a.isUrgent !== b.isUrgent) return a.isUrgent ? -1 : 1;
@@ -674,6 +696,12 @@ export async function getTask(req, res) {
       const visible = await clientVisibleStepSet(full);
       return res.json(projectTaskForClient(full, visible));
     }
+    // Staff view (#48): resolve assignee UIDs → names server-side so EVERY staff
+    // role (incl. team members, who don't fetch the user list) sees the real
+    // assignee instead of a false "Unassigned".
+    const names = await resolveUserNames([data.assignedTo, ...steps.map((s) => s.assignedTo)]);
+    full.assignedToName = data.assignedTo ? (names[data.assignedTo] ?? null) : null;
+    full.steps = steps.map((s) => ({ ...s, assigneeName: s.assignedTo ? (names[s.assignedTo] ?? null) : null }));
     res.json(full);
   } catch (err) {
     logger.error({ err: err }, 'getTask error:');

@@ -9,6 +9,9 @@ export interface TaskStep {
   title: string;
   status: StepStatus;
   assignedTo?: string;
+  /** Resolved assignee display name (#48) — server-provided so every staff role
+   *  sees the real assignee without fetching the user list. */
+  assigneeName?: string | null;
   completedBy?: string;
   completedAt?: string;
   deadline?: string;
@@ -27,6 +30,8 @@ export interface Task {
   clientUid: string;
   clientName?: string;
   assignedTo?: string;
+  /** Resolved matter-owner display name (#48). */
+  assignedToName?: string | null;
   status: TaskStatus;
   workflowDefinitionId?: string;
   paymentStatus: PaymentStatus;
