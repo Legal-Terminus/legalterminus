@@ -1,6 +1,24 @@
 import React from "react";
 import "./ItrBizTermCondition.css";
 
+const terms = [
+  "Per-Return Engagement Model: Our Business ITR Filing plans are per-return engagements (one engagement, one ITR for ONE PROPRIETORSHIP OR ONE PARTNERSHIP FIRM for ONE ASSESSMENT YEAR). Plan tier defines scope: Elemental (filing only), Enriched (+Balance Sheet preparation), Supreme (+year-round Tally accounting). STATUS UPDATE COMMITMENT runs across all tiers.",
+  "Plan Eligibility (3 Tiers - common scope criteria): All THREE PLANS are built for: (i) PROPRIETORSHIP FIRMS (Individual / HUF carrying on business), OR (ii) PARTNERSHIP FIRMS (registered under Indian Partnership Act 1932 - NOT LLP), with BUSINESS INCOME + TURNOVER UP TO Rs.50 LAKH (non-audit cases under Section 44AB). (a) ELEMENTAL (Rs.2,499/return) - ITR FILING ONLY: form selection + filing + submission + e-Verification + tax payment coordination + Challan & Acknowledgement (ITR-V) delivery. CLIENT PROVIDES READY Balance Sheet + Profit & Loss + Income Tax Computation. (b) ENRICHED (Rs.4,999/return) - +BALANCE SHEET PREPARATION: Everything in Elemental + LT prepares BALANCE SHEET + Profit & Loss Account + Income Tax Computation + depreciation schedule + TDS reconciliation + partner remuneration / interest computation under Section 40(b) (Partnership Firm). (c) SUPREME (Rs.14,999/return) - +ACCOUNTING IN TALLY: Everything in Enriched + YEAR-ROUND BOOKKEEPING in Tally ERP / Prime + monthly transaction recording + bank reconciliation + Section 44AA books compliance + partner capital account reconciliation (PF) + Section 194T TDS on partner payments (PF - new FY 2025-26) + GST reconciliation + quarterly review calls.",
+  "TAX MECHANICS - Sharply Different for Proprietor vs Partnership Firm: (A) PROPRIETORSHIP - business income flows to proprietor's PERSONAL income; taxed at INDIVIDUAL SLAB RATES (new or old regime); Section 87A rebate Rs.60,000 makes income up to Rs.12 LAKH effectively NIL TAX (New Regime); ITR-3 (regular) or ITR-4 (presumptive). (B) PARTNERSHIP FIRM - SEPARATE TAXABLE ENTITY; FLAT 30% income tax + 12% SURCHARGE (if total income > Rs.1 Cr) + 4% Health & Education Cess; NO REGIME CHOICE; NO Section 87A rebate; ITR-5 (regular) or ITR-4 (presumptive under Sec 44AD - PFs eligible). Partner Remuneration (Section 40(b)) deductible to firm subject to limits; then taxed in partner's hand at slab rates.",
+  "Plan Customisation (per client T&C #1): IF THE ABOVE PLANS DO NOT QUALIFY YOUR REQUIREMENTS, KINDLY CONTACT OUR EXECUTIVE - we shall be happy to customise a plan for you. Common customisation triggers: (a) PROPRIETOR / PARTNERSHIP with turnover Rs.50 LAKH to Rs.1 CRORE (non-audit); (b) TAX AUDIT cases under Section 44AB (turnover > Rs.1 Cr) requiring Form 3CD + 3CB filing; (c) LLPs requiring ITR-5 (separate LT service - LLP Annual Filing); (d) COMPANIES requiring ITR-6 (separate LT service - Company Annual Filing); (e) Profession with gross receipts > Rs.50 LAKH. Quoted within 48 hours.",
+  "INCOME TAX AMOUNT PAYABLE TO GOVERNMENT - PAID DIRECTLY BY YOU (per client T&C #2): The INCOME TAX AMOUNT PAYABLE to the Government (self-assessment tax + advance tax + any other tax demand) SHALL BE PAID DIRECTLY BY YOU to the Government via authorised banks (NSDL / e-Pay tax / RTGS / NEFT / debit card / net banking). LT does NOT collect, hold, or remit Government tax on your behalf. Our professional fee is SEPARATE from any tax payable. The CRN / BSR code from your tax payment is captured in the ITR + verified before submission.",
+  "STATUS UPDATE COMMITMENT (Our Binding Promise): From engagement acceptance through ITR processing + refund: (a) MONTHLY EMAIL UPDATE - calendared written status. (b) CHANGE ALERT - for ANY CHANGE (Return Filed / e-Verified / Processed / Refund Issued / Demand Raised / Section 143(1) Intimation / Notice u/s 142(1) etc.), notified within 1-2 WORKING DAYS. Active across ALL plan tiers. No additional charge.",
+  "Statutory Anchor: Business ITR Filing governed by INCOME TAX ACT, 1961 (Section 139 ITR filing; Section 44AA Books requirement; Section 44AB Tax Audit Rs.1 Cr; Section 44AD Presumptive scheme; Section 44ADA Presumptive profession; Section 44AE Presumptive transport; Section 40(b) Partner remuneration / interest deduction; SECTION 194T - 10% TDS on partner payments > Rs.20K (NEW from FY 2025-26); Section 87A Rebate; Section 115BAC New Tax Regime default (proprietor only); Section 115JC AMT 18.5% (firm); Section 234F Belated penalty; Sections 234A/B/C Interest; Section 139(4) Belated; Section 139(5) Revised; Section 139(8A) Updated ITR-U; Section 271A Books non-maintenance Rs.25,000; Section 184/185 Partnership firm assessment). Filings on Income Tax portal.",
+  "Key Deadlines (for FY 2025-26 / AY 2026-27): (a) NON-AUDIT ITR (both Proprietor + PF) = 31 JULY 2026. (b) BELATED return + REVISED return = 31 DECEMBER 2026 (with Section 234F penalty for belated). (c) UPDATED return (ITR-U) = up to 31 MARCH 2030 (with 25%/50%/60%/70% additional tax). Note: TAX AUDIT cases (out-of-scope, custom quote per T&C #1) have different deadlines (30 Sep for Form 3CD/3CB + 31 Oct for ITR).",
+  "Government Fees: ITR filing on Income Tax portal has NIL GOVERNMENT FEE. Tax payment via challan to authorised banks - PAID DIRECTLY BY CLIENT (per T&C #5). DSC vendor cost (Rs.1,500-Rs.3,000) typically not needed for proprietor ITR; for Partnership Firm ITR-5 DSC may be required for e-Verification (Class 3).",
+  "Section 44AA Books of Account Compliance (Critical for BOTH entity types): Under SECTION 44AA, every PROPRIETOR / PARTNERSHIP FIRM carrying on business / profession with INCOME > Rs.1,20,000 OR TURNOVER > Rs.10 LAKH (in any of 3 preceding years) MUST MAINTAIN BOOKS OF ACCOUNT. Non-maintenance = SECTION 271A PENALTY Rs.25,000. EXEMPTION: SECTION 44AD/44ADA/44AE PRESUMPTIVE SCHEME opt-in EXEMPTS from Section 44AA detailed books requirement (basic statement of financial position suffices). Our ENRICHED tier prepares Balance Sheet from raw data; SUPREME tier maintains complete Tally books year-round.",
+  "Section 44AD Presumptive Scheme (Available for BOTH Proprietor + Partnership Firm): If turnover is UP TO Rs.2 CRORE (Rs.3 Cr if digital > 95%), you may opt for Section 44AD - declare 6% (digital) / 8% (cash) of turnover as DEEMED PROFIT + file ITR-4 (Sugam). Benefits: simpler filing + no detailed books required. Drawback for Partnership Firm: under presumptive scheme, you CANNOT deduct Partner Remuneration / Interest under Section 40(b) (post 2016 amendment) - so deemed profit is the full tax base. 5-YEAR LOCK-IN applies - opting out triggers tax audit. We compute both approaches + advise at intake.",
+  "Section 194T - NEW TDS Obligation for Partnership Firms (FY 2025-26 onwards): Per Budget 2024, FROM 1 APRIL 2025 (FY 2025-26), Partnership Firms (and LLPs) MUST DEDUCT TDS AT 10% on payments to partners (salary, bonus, interest, commission) EXCEEDING Rs.20,000 PER PARTNER PER YEAR. Filed via FORM 26Q. Non-deduction triggers Section 40(a)(ia) disallowance + Section 234E interest. SUPREME tier handles this for Partnership Firm clients - critical new compliance.",
+  "GST on Our Fee: All quoted prices are exclusive of GST @ 18%, charged at checkout.",
+  "Refund Policy: Full refund of professional fee (less Rs.499 documentation handling) if ITR is NOT FILED within 7 working days from receipt of all required documents + financial statements + Partnership Deed (for PF) + client confirmation. Once return is drafted + shared, NO REFUND payable.",
+  "Out-of-Scope Items (Custom Quote per T&C #1): (a) Proprietor / Partnership Firm with T/o Rs.50 LAKH to Rs.1 CRORE (separate quote). (b) TAX AUDIT CASES under Section 44AB (T/o > Rs.1 Cr) requiring Form 3CD + 3CB + audit coordination by LT's associated CA (audit fee billed directly). (c) LLP ITR-5 (separate LT service - LLP Annual Filing). (d) Company ITR-6 (separate LT service - Company Annual Filing). (e) Section 8 / Trust ITR-7. (f) Income Tax NOTICE Response / Scrutiny / Assessment (separate). (g) Appeals to CIT(A) / ITAT / High Court (separate). (h) GST Return Filing (separate). (i) TDS Returns 26Q/27Q/24Q (separate).",
+];
+
 const ItrBizTermCondition = () => {
   return (
     <section className="opctc-section">
@@ -13,33 +31,9 @@ const ItrBizTermCondition = () => {
           </p>
 
           <ol className="opctc-list">
-            <li className="opctc-item">
-              Professional Fee Only: All quoted prices cover professional services — income computation, deduction optimisation, return preparation, and e-filing. They are exclusive of any statutory tax payable, government penalties, interest, and tax audit fees.
-            </li>
-            <li className="opctc-item">
-              Self-Assessment Tax Payable Separately: Any income tax, advance tax, or self-assessment tax due on your business income is your liability and is paid directly to the Income Tax Department, over and above our fee.
-            </li>
-            <li className="opctc-item">
-              GST on Our Fee: All quoted prices are exclusive of GST @ 18%, charged at checkout.
-            </li>
-            <li className="opctc-item">
-              Correct ITR Form: The applicable form (ITR-3, ITR-4, ITR-5, or ITR-6) is determined by your entity type, nature of income, and presumptive eligibility. Legal Terminus confirms the correct form during the discovery review before filing.
-            </li>
-            <li className="opctc-item">
-              Data Accuracy &amp; Responsibility: Returns are prepared on the basis of books, invoices, bank statements, and details provided by you. You remain responsible for the completeness and correctness of the underlying data; we reconcile against 26AS / AIS and flag visible mismatches.
-            </li>
-            <li className="opctc-item">
-              Tax Audit Scope: Where turnover/receipts exceed the Section 44AB threshold (or presumptive conditions are breached), a tax audit by a Chartered Accountant is mandatory. Audit is a separate engagement, quoted and timed independently of return filing.
-            </li>
-            <li className="opctc-item">
-              Timely Submission: Accurate, penalty-free filing depends on you sharing complete data well before the due date (typically 31st July for non-audit and 31st October for audit cases). We are not liable for Section 234F fees or 234A/B/C interest arising from delayed or incomplete data.
-            </li>
-            <li className="opctc-item">
-              Refund Policy: Full refund of professional fee (less ₹499 handling) is available if the return is not prepared within 7 working days of receiving all required documents. Taxes already paid to the department are not refundable through us.
-            </li>
-            <li className="opctc-item">
-              Out-of-Scope Items: Bookkeeping/accounting write-up, GST returns, TDS returns, statutory/tax audit, scrutiny representation beyond standard notice replies, and revised/updated return filing are not included and quoted separately.
-            </li>
+            {terms.map((term, i) => (
+              <li key={i} className="opctc-item">{term}</li>
+            ))}
           </ol>
         </div>
       </div>

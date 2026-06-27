@@ -2,6 +2,44 @@ import React from "react";
 import "./ItrBizZolvitPremium.css";
 import premiumIllustration from "../../assets/lt-companys.svg";
 
+const features = [
+  { icon: "⚡", text: "Priority handling with faster filing support" },
+  { icon: "📅", text: "Timely filing reminders and regular status updates" },
+  { icon: "🏢", text: "Support for both Proprietorships and Partnership Firms" },
+  { icon: "📄", text: "Correct ITR form selection (ITR-3, ITR-4, or ITR-5)" },
+];
+
+const notes = [
+  {
+    label: "PROPRIETOR vs PARTNERSHIP FIRM",
+    text: "completely different tax mechanics. PROPRIETOR = slab rates + Section 87A rebate (NIL up to Rs.12L). PARTNERSHIP = flat 30% + 12% surcharge (if T/o > Rs.1 Cr) + 4% cess (NO regime, NO 87A). Different ITR forms apply.",
+  },
+  {
+    label: "31 JULY 2026 (NON-AUDIT)",
+    text: "file by this date for both entity types. Missing it = Section 234F penalty + 234A/B/C interest. Tax audit cases (T/o > Rs.1 Cr) = 31 Oct 2026 deadline (out of scope, custom quote per T&C #1).",
+  },
+  {
+    label: "WRONG ITR FORM = DEFECTIVE RETURN",
+    text: "ITR-3 (proprietor regular) / ITR-5 (firm regular) / ITR-4 Sugam (presumptive - both entity types). Filing wrong form = Section 139(9) notice + re-filing within 15 days. We auto-detect at intake.",
+  },
+  {
+    label: "NEW SECTION 194T (Partnership Firm only - FY 2025-26 onwards)",
+    text: "10% TDS deducted by firm on partner payments (salary/bonus/interest/commission) > Rs.20,000 per partner per year. Non-deduction = Section 40(a)(ia) disallowance + interest. Supreme tier handles this.",
+  },
+  {
+    label: "SECTION 40(b) Budget 2024 amendment",
+    text: "First slab for partner remuneration DOUBLED to Rs.6 LAKH (was Rs.3L). Effective FY 2025-26. We apply the new higher limits in partnership firm computations.",
+  },
+  {
+    label: "SECTION 44AA BOOKS",
+    text: "Mandatory if income > Rs.1.2L or T/o > Rs.10L. Non-maintenance = Section 271A penalty Rs.25,000. Supreme tier (Tally year-round) ensures compliance.",
+  },
+  {
+    label: "TAX PAYMENT DIRECTLY BY YOU (per T&C #2)",
+    text: "any tax payable to Government is PAID DIRECTLY BY YOU. LT does NOT collect / hold / remit Govt tax.",
+  },
+];
+
 const ItrBizZolvitPremium = () => {
   return (
     <section className="opczp-section">
@@ -27,33 +65,22 @@ const ItrBizZolvitPremium = () => {
                   <span className="opczp-title-icon">⚖</span>
                 </h2>
                 <p className="opczp-subtitle">
-                  Business ITR sounds like filling a form — but the wrong ITR form, a missed presumptive condition, an unreconciled AIS entry, or a misjudged audit trigger turns into notices, penalties, and lost deductions. Priority is what happens when a Chartered Accountant owns your return from books to filed acknowledgement.
+                  Business ITR filing is more than just submitting a return — the correct form selection, proper tax calculation, and timely filing are extremely important to avoid notices, penalties, and unnecessary tax liability.
+                </p>
+                <p className="opczp-subtitle itrbiz-subtitle-2">
+                  With LT Priority, your Proprietorship or Partnership Firm return is handled on a priority basis by experienced tax professionals who ensure faster processing, proper compliance, and accurate filing.
                 </p>
               </header>
 
               <section className="opczp-section-block">
                 <h3 className="opczp-label">What you get</h3>
                 <ul className="opczp-list opczp-features-list">
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">⚡</span>
-                    Correct ITR form selection — ITR-3, 4, 5, or 6 — based on your entity and income, plus a presumptive-vs-regular tax comparison before you file.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Full 26AS / AIS / TIS reconciliation so every TDS credit is claimed and no income flagged by the department is missed.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">✅</span>
-                    Deduction &amp; expense optimisation — depreciation, remuneration, Chapter VI-A — to compute the lowest lawful tax.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">🔄</span>
-                    Tax-audit applicability check (Sec 44AB) flagged early, with audit coordinated before the October deadline if required.
-                  </li>
-                  <li className="opczp-list-item">
-                    <span className="opczp-list-icon">📑</span>
-                    Filed-return kit: computation sheet, ITR-V acknowledgement, tax-paid challans, and a carry-forward-loss record for next year.
-                  </li>
+                  {features.map((feature, i) => (
+                    <li className="opczp-list-item" key={i}>
+                      <span className="opczp-list-icon">{feature.icon}</span>
+                      {feature.text}
+                    </li>
+                  ))}
                 </ul>
               </section>
 
@@ -64,18 +91,11 @@ const ItrBizZolvitPremium = () => {
             <h3 className="opczp-label">Important Notes</h3>
             <div className="opczp-note-box">
               <ul className="opczp-note-list">
-                <li className="opczp-note-item">
-                  The right ITR form is not optional. A proprietor with books needs ITR-3, a presumptive professional uses ITR-4, firms/LLPs file ITR-5, and companies file ITR-6. Filing the wrong form makes the return defective under Section 139(9). We confirm the form before touching your data.
-                </li>
-                <li className="opczp-note-item">
-                  Presumptive taxation has conditions. Opting out of 44AD after opting in locks you out for five years and can trigger audit. Crossing turnover or cash-receipt limits changes everything. We model your eligibility before you commit.
-                </li>
-                <li className="opczp-note-item">
-                  AIS / TIS mismatches drive notices. The department now pre-populates income from banks, registrars, and GST. Unreconciled high-value transactions are the leading cause of scrutiny. We reconcile every entry before filing.
-                </li>
-                <li className="opczp-note-item">
-                  Deadlines differ by case. Non-audit business returns are due 31st July; audit cases 31st October (with the audit report by 30th September). Missing them brings Section 234F fees, 234A interest, and loss of the right to carry forward business losses.
-                </li>
+                {notes.map((note, i) => (
+                  <li className="opczp-note-item" key={i}>
+                    <span className="itrbiz-note-label">{note.label}</span> — {note.text}
+                  </li>
+                ))}
               </ul>
             </div>
 

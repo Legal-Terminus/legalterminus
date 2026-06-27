@@ -1,1 +1,12 @@
 @import url('../OpcZolvitPremium/OpcZolvitPremium.css');
+
+/* Spacing for the second intro paragraph */
+.itrbiz-subtitle-2 {
+    margin-top: 12px;
+}
+
+/* Caps lead-in label for each Important Note */
+.itrbiz-note-label {
+    font-weight: 600;
+    color: #0f1f17;
+}
