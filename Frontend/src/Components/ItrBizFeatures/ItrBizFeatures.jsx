@@ -4,18 +4,33 @@ import "./ItrBizFeatures.css";
 const types = [
   {
     number: "01",
-    title: "ITR-4 (Presumptive Income)",
-    text: "For resident proprietors, professionals, and small firms opting for the presumptive scheme. Section 44AD (business, turnover up to ₹3 crore) declares 6–8% of turnover as income; 44ADA (professionals, receipts up to ₹75 lakh) declares 50%; 44AE covers goods-carriage operators. No books or audit required if conditions are met — the simplest route for eligible small businesses.",
+    title: "Proprietor - Maintains Own Books",
+    text: "Sole proprietor + own accountant prepares Balance Sheet + P&L ready + total income within personal slab rates (most under Rs.12L = NIL tax under New Regime). Elemental tier files ITR-3 with e-Verification + tax payment coord. Most cost-efficient.",
   },
   {
     number: "02",
-    title: "ITR-3 (Business / Profession with Books)",
-    text: "For individuals and HUFs running a proprietary business or profession who maintain regular books of accounts. It carries a full Profit & Loss statement and Balance Sheet, with schedules for depreciation, partner remuneration, capital gains, F&O / speculative income, and other heads. The standard form for proprietors not using the presumptive scheme.",
+    title: "Partnership Firm - Maintains Own Books",
+    text: "Partnership Firm with in-house bookkeeper + ready Balance Sheet + P&L + partner remuneration / interest schedule computed. Elemental tier files ITR-5 + handles flat 30% computation + cess + surcharge (if applicable) + e-Verification. Same low price as proprietor case.",
   },
   {
     number: "03",
-    title: "ITR-5 & ITR-6 (Firms, LLPs & Companies)",
-    text: "ITR-5 is for partnership firms, LLPs, AOPs, and BOIs; ITR-6 is for companies (other than those claiming Section 11 exemption). These returns include detailed financial statements, computation of firm/company income, partner/shareholder distribution, MAT/AMT, and carry-forward of losses — and are typically filed alongside a tax audit where turnover thresholds are crossed.",
+    title: "Proprietor or PF - Needs Balance Sheet Help",
+    text: "You have raw transaction data (bank statements + invoices + expenses) but no Balance Sheet ready. Enriched tier prepares Balance Sheet + P&L + IT Computation + depreciation + (for PF) Section 40(b) partner remuneration / interest computation + TDS reconciliation + ITR filing.",
+  },
+  {
+    number: "04",
+    title: "Partnership Firm - Year-Round Tally + Section 194T",
+    text: "Active PF wanting end-to-end: year-round Tally bookkeeping + monthly transaction recording + partner capital account reconciliation + NEW Section 194T 10% TDS deduction on partner payments > Rs.20K/year (FY 2025-26 onwards - critical compliance) + Form 26Q filing + GST reconciliation + Balance Sheet + ITR-5. Full outsourced accounting + tax.",
+  },
+  {
+    number: "05",
+    title: "Either Entity on Presumptive Scheme - Section 44AD",
+    text: "You've opted for the PRESUMPTIVE SCHEME under Section 44AD - declare 6%/8% of turnover as deemed profit + file ITR-4 (Sugam). PROPRIETOR + PARTNERSHIP FIRM both eligible (NOT LLPs). For PF: remember partner remuneration / interest NOT deductible under presumptive. We model both regular + presumptive at intake to recommend the better option.",
+  },
+  {
+    number: "06",
+    title: "Larger Firms / Tax Audit / Other Entities",
+    text: "If your turnover EXCEEDS Rs.50 LAKH, OR triggers Section 44AB tax audit (T/o > Rs.1 Cr), OR you're an LLP / company - these are OUT OF SCOPE of our standard 3-tier plans. Per T&C #1, contact our executive for a CUSTOMISED quote. LLPs have a separate LT service - LLP Annual Filing. Companies have - Company Annual Filing.",
   },
 ];
 
@@ -24,7 +39,7 @@ const ItrBizFeatures = () => {
     <section className="opc-features-section">
       <div className="opc-features-container">
 
-        <h2 className="opc-features-title">Types of Business Income Tax Returns</h2>
+        <h2 className="opc-features-title">Types of Business Income Tax Returns in India</h2>
 
         <div className="opc-features-cards">
           {types.map((type) => (

@@ -1,1 +1,16 @@
 @import url('../OPCDocuments/OPCDocuments.css');
+
+/* Paragraph-style document description (Business ITR) */
+.opcd-doc-text {
+    margin: 6px 0 0;
+    padding: 0 0 0 52px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #475569;
+}
+
+@media (max-width: 768px) {
+    .opcd-doc-text {
+        padding-left: 38px;
+    }
+}

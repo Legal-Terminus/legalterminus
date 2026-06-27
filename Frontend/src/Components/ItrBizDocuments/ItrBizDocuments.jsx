@@ -1,70 +1,40 @@
 import React from "react";
 import "./ItrBizDocuments.css";
-import { FaUser, FaBuilding, FaIdCard, FaUniversity, FaFileInvoiceDollar, FaBalanceScale, FaReceipt, FaPercent } from "react-icons/fa";
+import { FaUser, FaBuilding, FaIdCard, FaReceipt, FaBalanceScale, FaFileInvoiceDollar, FaUniversity, FaHistory } from "react-icons/fa";
 
-const kycDocs = [
+const identityDocs = [
   {
     icon: <FaIdCard />,
-    title: "Identity & Registration",
-    note: "Business owner / entity KYC",
-    items: [
-      "PAN & Aadhaar of proprietor / partners / directors",
-      "Entity PAN (firm / LLP / company)",
-      "Incorporation / partnership deed / registration proof",
-    ],
-  },
-  {
-    icon: <FaUniversity />,
-    title: "Bank & GST Details",
-    note: "For income & turnover verification",
-    items: [
-      "Business bank statements for the financial year",
-      "GSTIN & GST returns (GSTR-1 / 3B / 9) if registered",
-      "Cancelled cheque for refund credit",
-    ],
+    title: "Entity Identity + Tax Profile",
+    text: "FOR PROPRIETOR: PAN of proprietor (= business PAN) + Aadhaar + IT portal login + GSTIN (if registered) + Udyam Registration + Trade Licence + bank account (with IFSC) + email + mobile. FOR PARTNERSHIP FIRM: PAN of firm (separate from partner PANs) + Partnership Deed (registered) + GSTIN + each Partner's PAN + Aadhaar + DSC of authorised partner + IT portal login + bank account.",
   },
   {
     icon: <FaReceipt />,
-    title: "Tax Credit Statements",
-    note: "For TDS & income reconciliation",
-    items: [
-      "Form 26AS, AIS & TIS",
-      "TDS certificates (Form 16A) from clients",
-      "Advance tax / self-assessment tax challans",
-    ],
+    title: "Income Tax Portal Pre-Filled Data",
+    text: "FORM 26AS (TDS / TCS / advance tax credits to your PAN - including Section 194 series + new Section 194T receipts for partners) + AIS (Annual Information Statement) + TIS. For PF: separate Form 26AS for firm and for each partner. We download + reconcile.",
+  },
+  {
+    icon: <FaBalanceScale />,
+    title: "Financial Statements (Elemental - client provides ready)",
+    text: "For ELEMENTAL: ready Profit & Loss + Balance Sheet + IT Computation. For PARTNERSHIP FIRM additionally: Partner Remuneration / Interest schedule under Section 40(b) (computed using Budget 2024 Rs.6L first-slab limit) + Partner Capital Account schedule + share of profit allocation. For ENRICHED / SUPREME, LT prepares these.",
   },
 ];
 
-const financialDocs = [
-  {
-    icon: <FaBalanceScale />,
-    title: "Financial Statements",
-    note: "For ITR-3 / 5 / 6 (with books)",
-    items: [
-      "Profit & Loss statement and Balance Sheet",
-      "Books of accounts / accounting software export",
-      "Depreciation chart & fixed-asset register",
-    ],
-  },
+const recordDocs = [
   {
     icon: <FaFileInvoiceDollar />,
-    title: "Income & Turnover Records",
-    note: "For presumptive (ITR-4) or regular",
-    items: [
-      "Total turnover / gross receipts summary",
-      "Sales & purchase registers",
-      "Cash vs digital receipt break-up (for 44AD)",
-    ],
+    title: "Business Records (Enriched / Supreme - we close books)",
+    text: "For ENRICHED / SUPREME: All BANK STATEMENTS Apr-Mar + sales invoices + purchase invoices + expense vouchers + asset purchases + loan documents + GST returns + TDS deductions made by you (Form 26Q) + TDS certificates received + advance tax challans. For PF: Section 194T TDS challans / certificates for partner payments (Supreme tier handles).",
   },
   {
-    icon: <FaPercent />,
-    title: "Deductions & Other Income",
-    note: "To optimise tax liability",
-    items: [
-      "Chapter VI-A proofs (80C, 80D, 80G, etc.)",
-      "Interest, capital gains & house-property income",
-      "Partner remuneration / interest & loan details",
-    ],
+    icon: <FaUniversity />,
+    title: "Partnership Firm Specific Documents",
+    text: "PARTNERSHIP DEED (registered, latest amended version) + Form 9 (registration certificate from Registrar of Firms if registered) + partner contribution records + profit-sharing ratio + partner remuneration agreement (if any) + Section 194T TDS records (FY 2025-26 onwards) + AMT computation (if applicable under Section 115JC). For ENRICHED / SUPREME.",
+  },
+  {
+    icon: <FaHistory />,
+    title: "Prior Year Returns + Continuity",
+    text: "Prior year ITR Acknowledgements (last 3 years) + intimation orders (Section 143(1)) + scrutiny / appellate orders + carry-forward losses (business loss) + unabsorbed depreciation + opening balances. For PF: prior year partner remuneration claimed + opening partner capital balances.",
   },
 ];
 
@@ -74,14 +44,9 @@ const DocItem = ({ doc }) => (
       <div className="opcd-doc-icon">{doc.icon}</div>
       <div className="opcd-doc-meta">
         <h4 className="opcd-doc-title">{doc.title}</h4>
-        <span className="opcd-doc-note">{doc.note}</span>
       </div>
     </div>
-    <ul className="opcd-doc-list">
-      {doc.items.map((item, i) => (
-        <li key={i} className="opcd-doc-list-item">{item}</li>
-      ))}
-    </ul>
+    <p className="opcd-doc-text">{doc.text}</p>
   </div>
 );
 
@@ -91,8 +56,8 @@ const ItrBizDocuments = () => {
       <div className="opcd-container">
 
         <div className="opcd-header">
-          <h2 className="opcd-main-title">Documents Required for Business ITR Filing</h2>
-          <p className="opcd-main-subtitle">Get these ready and we'll take care of the rest</p>
+          <h2 className="opcd-main-title">Documents Required for ITR Filing for Business in India</h2>
+          <p className="opcd-main-subtitle">Six categories. Documentation varies by entity type (proprietor vs PF) + plan tier + presumptive scheme. Personalised checklist sent after intake.</p>
         </div>
 
         <div className="opcd-columns">
@@ -101,12 +66,12 @@ const ItrBizDocuments = () => {
             <div className="opcd-col-header">
               <div className="opcd-col-header-icon"><FaUser /></div>
               <div>
-                <h3 className="opcd-col-title">KYC, Bank &amp; Tax-Credit Documents</h3>
-                <p className="opcd-col-subtitle">Identity, GST &amp; TDS reconciliation</p>
+                <h3 className="opcd-col-title">Identity, Tax-Credit &amp; Financial Statements</h3>
+                <p className="opcd-col-subtitle">Basics + statements for every return</p>
               </div>
             </div>
             <div className="opcd-col-body">
-              {kycDocs.map((doc, i) => (
+              {identityDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>
@@ -116,12 +81,12 @@ const ItrBizDocuments = () => {
             <div className="opcd-col-header opcd-col-header--office">
               <div className="opcd-col-header-icon"><FaBuilding /></div>
               <div>
-                <h3 className="opcd-col-title">Financial &amp; Income Documents</h3>
-                <p className="opcd-col-subtitle">Accounts, turnover &amp; deductions</p>
+                <h3 className="opcd-col-title">Business Records, Partnership &amp; Prior-Year</h3>
+                <p className="opcd-col-subtitle">Books, PF documents &amp; continuity</p>
               </div>
             </div>
             <div className="opcd-col-body">
-              {financialDocs.map((doc, i) => (
+              {recordDocs.map((doc, i) => (
                 <DocItem key={i} doc={doc} />
               ))}
             </div>

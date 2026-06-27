@@ -3,49 +3,156 @@ import "./ItrBizFAQ.css";
 
 const faqs = [
   {
-    question: "Which ITR form should my business file?",
+    question: "Do your plans cover both Proprietorships and Partnership Firms?",
     answer:
-      "It depends on your entity and income. A proprietor or professional maintaining books files ITR-3; one opting for the presumptive scheme files ITR-4; partnership firms and LLPs file ITR-5; and companies file ITR-6. Filing the wrong form can make the return defective under Section 139(9), so Legal Terminus confirms the correct form before preparing your return.",
+      "Yes. All our Business ITR Filing plans are designed for both Sole Proprietorships and Partnership Firms with turnover up to Rs.50 lakh (non-audit cases). The filing process and pricing structure remain the same, but the applicable ITR form and tax calculation method differ based on the entity type. Proprietorships are generally filed through ITR-3 or ITR-4, while Partnership Firms are generally filed through ITR-5 or ITR-4.",
   },
   {
-    question: "What is the presumptive taxation scheme (44AD / 44ADA / 44AE)?",
-    answer:
-      "Presumptive taxation lets eligible small businesses and professionals declare income at a fixed percentage of turnover without maintaining detailed books or undergoing audit. Section 44AD applies to businesses (6% of digital / 8% of cash turnover, up to ₹3 crore), 44ADA to specified professionals (50% of receipts, up to ₹75 lakh), and 44AE to goods-carriage operators. We check your eligibility and compare it against regular filing.",
+    question: "How is tax calculation different for Proprietors and Partnership Firms?",
+    answer: (
+      <>
+        <p>For Proprietorships, business income is added to the owner's personal income and taxed as per individual slab rates. Eligible proprietors may also get benefits like the Section 87A rebate under the new tax regime.</p>
+        <p>For Partnership Firms, the firm itself is taxed separately at a flat applicable tax rate along with surcharge and cess as per the Income Tax Act. Partner remuneration and interest can be claimed as deductions subject to prescribed limits.</p>
+      </>
+    ),
   },
   {
-    question: "What are the due dates for filing a business ITR?",
-    answer:
-      "For businesses not requiring an audit, the due date is generally 31st July of the assessment year. For businesses requiring a tax audit, the return is due by 31st October, with the audit report filed by 30th September. A belated return can be filed later with a late fee and interest, but you lose certain benefits like carrying forward losses.",
+    question: "Which ITR forms are applicable for business filing?",
+    answer: (
+      <>
+        <p>Depending on the nature of business and taxation method:</p>
+        <ul>
+          <li>Proprietorships generally file through ITR-3 or ITR-4</li>
+          <li>Partnership Firms generally file through ITR-5 or ITR-4</li>
+        </ul>
+        <p>Our team selects the correct form after reviewing your business structure and income details.</p>
+      </>
+    ),
   },
   {
-    question: "When is a tax audit under Section 44AB required?",
+    question: "What is Section 44AD Presumptive Taxation?",
     answer:
-      "A tax audit is generally required if business turnover exceeds ₹1 crore (₹10 crore where cash receipts and payments are within 5%), or professional receipts exceed ₹50 lakh. It is also triggered if you declare profits lower than the presumptive rate and your income exceeds the basic exemption limit. We flag audit applicability early so it can be completed before the deadline.",
+      "Section 44AD allows eligible small businesses to declare income on a presumptive basis without maintaining detailed books of accounts. It is generally available for eligible businesses within prescribed turnover limits. Filing is usually done through ITR-4.",
   },
   {
-    question: "Do I have to file a return if my business made a loss?",
-    answer:
-      "Yes — and you should. Filing a return in a loss year is what lets you carry forward business losses and unabsorbed depreciation (up to 8 years) to set off against future profits. This benefit is only available if the return is filed by the original due date, so loss-year filing often saves significant tax later.",
+    question: "Which of your plans is suitable for me?",
+    answer: (
+      <>
+        <p>Choose your plan based on the level of support you need:</p>
+        <ul>
+          <li>ELEMENTAL – For businesses having ready Balance Sheet and financial statements</li>
+          <li>ENRICHED – For businesses needing Balance Sheet, P&L, and tax computation preparation</li>
+          <li>SUPREME – For businesses requiring complete year-round bookkeeping, Tally accounting, and compliance support</li>
+        </ul>
+      </>
+    ),
   },
   {
-    question: "What is Form 26AS and AIS, and why do they matter?",
+    question: "Do you provide Tally accounting support?",
     answer:
-      "Form 26AS is your tax credit statement showing TDS deducted against your PAN. The Annual Information Statement (AIS) and Taxpayer Information Summary (TIS) show a wider set of reported transactions — interest, dividends, high-value purchases, GST turnover, and more. Returns that don't reconcile with these statements are the leading cause of notices, so we match every entry before filing.",
+      "Yes. Under our Supreme plan, we provide year-round Tally bookkeeping support, accounting assistance, financial statement preparation, and compliance coordination.",
   },
   {
-    question: "Can business losses or earlier-year losses be set off?",
+    question: "What is Section 194T for Partnership Firms?",
     answer:
-      "Yes. Current-year business losses can be set off against other eligible income (subject to rules), and unabsorbed losses/depreciation carried forward from earlier years can be set off against current profits — provided the earlier returns were filed on time. We track and apply your carry-forward balances correctly each year.",
+      "From FY 2025-26 onwards, Section 194T introduces TDS compliance on certain payments made by Partnership Firms and LLPs to partners above prescribed limits. We help eligible firms manage this compliance properly.",
   },
   {
-    question: "What happens if I file my business return late?",
+    question: "Is GST reconciliation included?",
     answer:
-      "A belated return attracts a late fee under Section 234F (up to ₹5,000), interest under Sections 234A/B/C on any unpaid tax, and the loss of the right to carry forward business losses. Continued non-filing can lead to notices, best-judgement assessment, and in serious cases prosecution under Section 276CC. Timely filing avoids all of this.",
+      "Yes. GST reconciliation support is available under higher-tier plans wherever applicable.",
   },
   {
-    question: "How does Legal Terminus handle my business ITR filing?",
+    question: "What happens if I file the wrong ITR form?",
     answer:
-      "We manage the full cycle: confirming the right ITR form, collecting your books and documents, reconciling 26AS/AIS, computing income with optimised deductions, flagging tax-audit applicability, getting your approval, and e-filing with verification — with a Chartered Accountant reviewing the return and the ITR-V and computation shared afterwards. Book a free consultation to get started.",
+      "Filing the wrong ITR form may result in a defective return notice from the Income Tax Department and may require correction or re-filing. We help ensure the correct form is selected from the beginning.",
+  },
+  {
+    question: "Is there any Government fee for Business ITR filing?",
+    answer:
+      "No. There is no Government filing fee for filing Business ITR on the Income Tax portal. You only pay professional fees for accounting, tax computation, and filing services.",
+  },
+  {
+    question: "Who pays the income tax to the Government?",
+    answer:
+      "The applicable income tax amount is paid directly by the client through the official Income Tax payment system. Legal Terminus does not collect or hold government taxes on behalf of clients.",
+  },
+  {
+    question: "What is the due date for Business ITR Filing?",
+    answer:
+      "For most non-audit business cases for FY 2025-26 (AY 2026-27), the due date is 31 July 2026. Audit cases may have separate due dates as prescribed under the Income Tax Act.",
+  },
+  {
+    question: "What happens if Business ITR is filed late?",
+    answer:
+      "Late filing may attract penalty, interest, delayed refund processing, and other compliance issues under the Income Tax Act.",
+  },
+  {
+    question: "Is maintaining books of accounts mandatory?",
+    answer:
+      "Certain businesses are required to maintain books of accounts under Section 44AA of the Income Tax Act based on turnover and income criteria.",
+  },
+  {
+    question: "Can I revise my Business ITR after filing?",
+    answer:
+      "Yes. If you discover any mistake after filing the return, a revised return can generally be filed within the prescribed timeline under the Income Tax Act.",
+  },
+  {
+    question: "Do you help with advance tax calculation?",
+    answer:
+      "Yes. We assist eligible businesses in calculating advance tax liability wherever applicable.",
+  },
+  {
+    question: "Can you handle returns for freelancers and consultants?",
+    answer:
+      "Yes. Freelancers, consultants, and professionals can also avail our Business ITR Filing services depending on the nature of their income and turnover.",
+  },
+  {
+    question: "Do you support notices from the Income Tax Department?",
+    answer:
+      "Yes. We provide basic support and guidance for routine notices related to return filing and processing.",
+  },
+  {
+    question: "What documents are generally required for Business ITR Filing?",
+    answer: (
+      <>
+        <p>Commonly required documents include:</p>
+        <ul>
+          <li>PAN and Aadhaar</li>
+          <li>Bank statements</li>
+          <li>GST details (if applicable)</li>
+          <li>Balance Sheet and Profit &amp; Loss Account</li>
+          <li>TDS certificates</li>
+          <li>Investment and loan details</li>
+          <li>Previous year ITR copy</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    question: "Can newly started businesses also file ITR?",
+    answer:
+      "Yes. Even newly started Proprietorships and Partnership Firms should file ITR if applicable under the Income Tax Act.",
+  },
+  {
+    question: "Do you provide support for tax refunds?",
+    answer:
+      "Yes. We assist in proper filing, refund tracking, and status updates until the return is processed.",
+  },
+  {
+    question: "Is online filing available?",
+    answer:
+      "Yes. The entire Business ITR Filing process can be completed online through document sharing and virtual coordination.",
+  },
+  {
+    question: "Do you provide customised plans for larger businesses?",
+    answer:
+      "Yes. Businesses with higher turnover, tax audit applicability, or special requirements can contact our team for a customised quote.",
+  },
+  {
+    question: "Why choose Legal Terminus for Business ITR Filing?",
+    answer:
+      "Legal Terminus provides professionally managed Business ITR Filing services for both Proprietorships and Partnership Firms with accurate tax computation, proper form selection, timely filing support, accounting assistance, and regular status updates. Our team focuses on practical compliance support, transparent pricing, and smooth year-round coordination for businesses.",
   },
 ];
 
@@ -63,7 +170,7 @@ const ItrBizFAQ = () => {
         <div className="opcfaq-header">
           <h2 className="opcfaq-title">Business ITR Filing — FAQs</h2>
           <p className="opcfaq-intro">
-            Got questions? We've got answers — straight, no-BS, legally accurate.
+            Got questions? We've got answers — straight, clear, and legally accurate.
           </p>
         </div>
 
