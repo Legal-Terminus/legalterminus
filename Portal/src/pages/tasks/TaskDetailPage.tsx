@@ -10,6 +10,7 @@ import {
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
+import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, archiveTask, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
@@ -60,6 +61,15 @@ export default function TaskDetailPage() {
     enabled: !!taskId,
     staleTime: 5_000,
     refetchInterval: 10_000,
+  });
+
+  // Documents (per-step attachments). Server scopes to the matter + role, so the
+  // client only ever sees what they're allowed to.
+  const { data: documents = [] } = useQuery({
+    queryKey: ['task-documents', taskId],
+    queryFn: () => getDocuments(taskId!),
+    enabled: !!taskId,
+    staleTime: 10_000,
   });
 
   const advance = useMutation({
@@ -362,7 +372,9 @@ export default function TaskDetailPage() {
             urgentPending: toggleStepUrgent.isPending,
           } : undefined}
           events={events}
+          documents={documents}
           onAttach={() => setTab('documents')}
+          onOpenDoc={(docId) => openDocument(taskId!, docId)}
         />
       )}
       {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} />}
@@ -549,7 +561,7 @@ interface StepAssignment {
 }
 
 function StepsTab({
-  task, definition, stepDefs, currentDef, completed, role, pending, onEvent, assignment, events, onAttach,
+  task, definition, stepDefs, currentDef, completed, role, pending, onEvent, assignment, events, documents, onAttach, onOpenDoc,
 }: {
   task: Task;
   definition?: WorkflowDefinition;
@@ -561,7 +573,9 @@ function StepsTab({
   onEvent: (e: WorkflowEventInput) => void;
   assignment?: StepAssignment;
   events: TaskEvent[];
+  documents: TaskDocument[];
   onAttach: () => void;
+  onOpenDoc: (docId: string) => void;
 }) {
   const steps = task.steps ?? [];
   // #55: display steps in clean serial order (1,2,3,4…). The stored `stepNumber`
@@ -661,6 +675,9 @@ function StepsTab({
             displayNumber={displayNumberOf(step.stepNumber)}
             description={descFor(step.stepNumber)}
             isCurrent={step.stepNumber === task.currentStepNumber && !completed}
+            comments={events.filter((e) => e.comment && (e.fromStep === step.stepNumber || e.toStep === step.stepNumber))}
+            attachments={documents.filter((d) => d.stepNumber === step.stepNumber)}
+            onOpenDoc={onOpenDoc}
           />
         ))}
       </div>
@@ -1263,14 +1280,29 @@ const STATUS: Record<StepStatus, { label: string; cls: string }> = {
   skipped:   { label: 'Skipped',   cls: 'text-ink-faint' },
 };
 
-/** A step row. Completed/skipped rows expand to reveal details (remark, when). */
-function ExpandableStepRow({ step, displayNumber, description, isCurrent }: { step: TaskStep; displayNumber: number; description?: string; isCurrent: boolean }) {
+/** A step row. Expands to reveal details: the comments and document attachments
+ *  recorded against this step (plus completion time / remark). */
+function ExpandableStepRow({ step, displayNumber, description, isCurrent, comments = [], attachments = [], onOpenDoc }: {
+  step: TaskStep;
+  displayNumber: number;
+  description?: string;
+  isCurrent: boolean;
+  comments?: TaskEvent[];
+  attachments?: TaskDocument[];
+  onOpenDoc?: (docId: string) => void;
+}) {
   const s = STATUS[step.status] ?? STATUS.pending;
   const skipped = step.status === 'skipped';
   const Icon = step.status === 'completed' ? CheckCircle2 : skipped ? CircleSlash : isCurrent ? PlayCircle : Circle;
-  const hasDetails = !!(step.remark || step.completedAt || step.completedBy);
-  const expandable = step.status === 'completed' && hasDetails;
+  // Expandable when there's anything to show: a remark, completion info, comments,
+  // or attachments — on completed AND in-progress steps.
+  const hasDetails = !!(step.remark || step.completedAt || comments.length || attachments.length);
+  const expandable = hasDetails;
   const [open, setOpen] = useState(false);
+  const countBits = [
+    comments.length ? `${comments.length} comment${comments.length > 1 ? 's' : ''}` : '',
+    attachments.length ? `${attachments.length} file${attachments.length > 1 ? 's' : ''}` : '',
+  ].filter(Boolean).join(' · ');
   return (
     <div className={isCurrent ? 'bg-surface-soft' : ''}>
       <button
@@ -1281,15 +1313,45 @@ function ExpandableStepRow({ step, displayNumber, description, isCurrent }: { st
         <div className="min-w-0 flex-1">
           <p className={`text-sm ${isCurrent ? 'font-semibold text-ink' : 'text-ink-soft'}`}>{displayNumber}. {step.title}</p>
           {description && !open && <p className="text-xs text-ink-muted mt-0.5 truncate">{description}</p>}
+          {!open && countBits && <p className="text-[11px] text-ink-faint mt-0.5">{countBits}</p>}
         </div>
         <span className={`text-xs font-medium shrink-0 ${s.cls}`}>{s.label}</span>
         {expandable && <ChevronDown className={`w-4 h-4 text-ink-faint shrink-0 mt-0.5 transition-transform ${open ? 'rotate-180' : ''}`} />}
       </button>
       {open && expandable && (
-        <div className="px-5 pb-4 pl-12 space-y-1.5">
+        <div className="px-5 pb-4 pl-12 space-y-2">
           {description && <p className="text-xs text-ink-muted">{description}</p>}
           {step.completedAt && <p className="text-xs text-ink-faint">Completed {relTime(step.completedAt)}</p>}
           {step.remark && <p className="text-sm text-ink-muted bg-surface-soft rounded-lg px-3 py-2">“{step.remark}”</p>}
+
+          {comments.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Comments</p>
+              {comments.map((c, i) => (
+                <div key={i} className="text-sm text-ink-muted bg-surface-soft rounded-lg px-3 py-2">
+                  <span className="text-ink-soft">“{c.comment}”</span>
+                  <span className="block text-[11px] text-ink-faint mt-0.5">{c.byName}{c.at ? ` · ${relTime(c.at)}` : ''}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {attachments.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Attachments</p>
+              {attachments.map((d) => (
+                <button
+                  key={d.docId}
+                  onClick={() => onOpenDoc?.(d.docId)}
+                  className="w-full flex items-center gap-2 text-left text-sm text-brand-700 hover:underline bg-surface-soft rounded-lg px-3 py-2"
+                >
+                  <FileText className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">{d.fileName}</span>
+                  <span className="ml-auto text-[11px] text-ink-faint shrink-0">{d.status}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

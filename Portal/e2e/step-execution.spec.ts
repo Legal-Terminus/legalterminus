@@ -214,3 +214,24 @@ test('team member CANNOT override a client step (admin/manager only)', async ({ 
   await expect(teamPage.getByRole('button', { name: /approve for client/i })).toHaveCount(0);
   await expect(teamPage.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
 });
+
+test('a completed step expands to show its comment', async ({ adminPage }) => {
+  // Advance to a plain step, then complete it WITH a remark via the API; the
+  // expanded step on the matter detail should surface that comment.
+  const def = await getDefinitionForMatter(taskId);
+  const plain = firstPlainStep(def);
+  test.skip(!plain, 'No plain step.');
+  await advanceUntil(taskId, (s) => s.stepNumber === plain!.stepNumber);
+  const step = await currentStep(taskId);
+  test.skip(step !== plain!.stepNumber, `Could not reach the plain step (at ${step}).`);
+
+  const remark = `E2E step note ${Date.now().toString().slice(-5)}`;
+  await transition('admin', taskId, { type: 'COMPLETE_STEP', remark });
+
+  await adminPage.goto(`tasks/${taskId}`);
+  await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+  // The step's comment surfaces on the matter detail (step's expanded row +
+  // activity feed). Step rows are stage-gated, so a DOM-first match can be in a
+  // hidden stage — assert a VISIBLE occurrence anywhere on the page instead.
+  await expect(adminPage.locator(`text=${remark} >> visible=true`).first()).toBeVisible({ timeout: 15_000 });
+});

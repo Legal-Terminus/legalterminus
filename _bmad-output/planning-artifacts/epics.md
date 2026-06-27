@@ -2813,6 +2813,15 @@ not new engine code.
   (admin) → `/workflows/new` opens the same editor in create mode (blank
   definition, pick the service it powers) → **Create** (`POST /api/workflow-definitions`).
 
+### Per-step comments & attachments on the matter detail (2026-06-28)
+- Expanding a step on the matter detail (Steps tab) now shows that step's **comments**
+  (from the activity log, matched by from/to step) and its **document attachments**
+  (filtered by `stepNumber`) with click-to-open download — for completed AND
+  in-progress steps. A small "N comments · M files" hint shows on the collapsed row.
+- Visibility follows existing rules: **staff** see everything; **clients** see only
+  the client-safe activity (E12 whitelist) and documents the API already scopes to
+  them — no new client-side data exposure. (E-04, E-05.)
+
 ### Platform fixes
 - **Phase pointer** on the matter detail now advances as steps complete into a new phase.
 - **Notification resolution.** In-app notifications carry an optional `stepNumber`;
