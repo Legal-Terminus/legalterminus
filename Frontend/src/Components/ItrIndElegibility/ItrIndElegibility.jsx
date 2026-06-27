@@ -3,34 +3,44 @@ import "./ItrIndElegibility.css";
 
 const steps = [
   {
-    title: "Discovery & Form Selection",
-    day: "Step 1",
-    text: "A quick review of your income sources — salary, house property, capital gains, business, or foreign income — and residential status. We confirm the correct return (ITR-1, 2, 3, or 4) so the right form is filed from the start.",
+    title: "Engagement Acceptance + Plan Confirmation",
+    day: "Day 0",
+    text: "Within 24 hours of plan selection + payment: STATUS UPDATE COMMITMENT activated. Welcome email + intake questionnaire confirming plan tier (Base 1-3 or Plus 1-3 based on your income level + complexity layers).",
   },
   {
-    title: "Document Collection",
-    day: "Step 2",
-    text: "We share a simple checklist. You upload Form 16, bank/interest statements, capital-gains statements, rent receipts, and investment proofs. That's your only task — we take it from there.",
+    title: "Income Tax Portal Account + Profile Verification",
+    day: "Day 0-1",
+    text: "Income Tax portal account verified / created (https://www.incometax.gov.in). Profile updated (PAN, Aadhaar, address, bank account for refund). PAN-Aadhaar linkage verified (mandatory).",
   },
   {
-    title: "26AS / AIS Reconciliation",
-    day: "Step 3",
-    text: "We download your Form 26AS, AIS, and TIS and match every TDS credit and reported transaction against your documents. Mismatches — unreported interest, dividends, or share sales — are identified and resolved before filing.",
+    title: "Pre-Filled Data Download + Reconciliation",
+    day: "Day 1-2",
+    text: "FORM 26AS (TDS / TCS / advance tax credits) + AIS (Annual Information Statement showing high-value transactions, share trades, dividends, MF redemptions, property purchases / sales, large bank deposits) + TIS (Taxpayer Information Summary) downloaded from portal. Reconciled with client's records.",
   },
   {
-    title: "Regime Comparison & Tax Computation",
-    day: "Step 4",
-    text: "We compute your income, apply all eligible deductions, and run an old-vs-new tax regime comparison on your actual numbers — so you file under the regime that gives you the lower tax and the bigger refund.",
+    title: "Income Computation by Source",
+    day: "Day 2-4",
+    text: "Income consolidated under 5 heads: (a) Salary + (b) House Property + (c) Capital Gains (Plus tier) + (d) Other Sources (interest, dividends, gifts) + (e) Foreign Income (Enriched+ / Supreme+). For Plus tier: capital gains computation + cost basis + indexation (where applicable) + FTC claim.",
   },
   {
-    title: "Your Review & Approval",
-    day: "Step 5",
-    text: "You receive a clear computation showing income, deductions, tax payable or refund, and the chosen regime. Any balance tax is paid via challan. Nothing is filed until you approve the numbers.",
+    title: "Old vs New Regime Comparison (Enriched onwards)",
+    day: "Day 3-5",
+    text: "Tax computed under BOTH regimes: NEW REGIME (default - simpler, no Sec 80 deductions allowed) vs OLD REGIME (Section 80C / 80D / 80CCD / 80G / Home Loan interest / HRA claimed). LOWER-TAX regime selected + filed. For Old Regime filers: Form 10-IEA filed to opt out of New Regime.",
   },
   {
-    title: "E-Filing & E-Verification",
-    day: "Step 6",
-    text: "The return is e-filed on the income tax portal and e-verified (Aadhaar OTP / net banking) within the 30-day window. You receive the ITR-V acknowledgement and computation, and we track your refund until it's credited.",
+    title: "ITR Form Filling + Schedule-Wise Disclosure",
+    day: "Day 4-6",
+    text: "Appropriate ITR (ITR-1 / ITR-2) populated with all schedules. For Plus tier: Schedule CG (Capital Gains) + Schedule SI (Special Income capital gains rates) + Schedule FA (Foreign Assets - Enriched+/Supreme+) + Form 67 (FTC - Enriched+/Supreme+). Draft return shared with client.",
+  },
+  {
+    title: "Tax Payment Coordination + ITR Submission",
+    day: "Day 5-7",
+    text: "If TAX PAYABLE: self-assessment tax challan generated via e-Pay tax - CLIENT PAYS DIRECTLY to Government (per T&C #5). CRN + BSR code captured in ITR. ITR submitted on portal. E-VERIFICATION within 30 days (Aadhaar OTP / Net banking / DEMAT / EVC via bank ATM).",
+  },
+  {
+    title: "ITR-V Delivery + Refund Tracking + Intimation Monitoring",
+    day: "Day 7 onwards",
+    text: "ITR-V Acknowledgement delivered to client. If refund expected: refund tracking via portal (typical processing 30-45 days post e-Verification). Section 143(1) Intimation Order monitored - any mismatch / demand addressed. STATUS UPDATE COMMITMENT continues through refund issuance + any post-filing notices.",
   },
 ];
 
@@ -38,10 +48,10 @@ const ItrIndElegibility = () => {
   return (
     <section className="opcelg-wrapper">
       <h2 className="opcelg-heading">
-        Personal ITR Filing Process — Step by Step
+        Steps for ITR Filing for Individuals in India
       </h2>
       <p className="opcelg-subheading">
-        Six steps. Reconciled, optimised, and e-filed well before the due date — with an expert reviewing every return.
+        Eight steps. End-to-end timeline: 2-5 working days from kickoff to ITR filing (Base tier); 5-10 days (Plus tier). Status updates run through ITR processing + refund.
       </p>
 
       <div className="opcelg-timeline">
