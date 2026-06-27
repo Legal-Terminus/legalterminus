@@ -46,7 +46,7 @@ const ItrIndPlanInfo = () => {
           qualify your requirements — for example, you have business / profession income
           (separate Business ITR Filing service), Stock / trading line items more than 25,
           Arrear Salary, Section 8 / Trust ITR-7, or unique multi-jurisdiction structures —{" "}
-          <strong>kindly contact our executive</strong>, we shall be happy to customize a plan
+          kindly contact our executive, we shall be happy to customize a plan
           for you.
         </div>
       </section>

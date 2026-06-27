@@ -192,16 +192,6 @@ const ItrIndPlans = () => {
             </div>
           </div>
 
-          <div className="itrind-plan-customization">
-            <p>
-              <strong>Plan Customization (per client T&amp;C):</strong> If the above plans do not qualify your
-              requirements - for example, you have business / profession income (separate Business ITR Filing
-              service), in Stock/trading line of item more than 25, Arrear Salary, Section 8 / Trust ITR-7, or
-              unique multi-jurisdiction structures - <strong>KINDLY CONTACT OUR EXECUTIVE</strong>, we shall be
-              happy to customize a plan for you.
-            </p>
-          </div>
-
         </div>
       </section>
 
