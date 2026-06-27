@@ -165,8 +165,7 @@ function buildWorkColumns(navigate: (to: string) => void) {
       cell: (ctx) => {
         const b = ctx.getValue();
         if (b === 'assigned') return <span className="badge bg-emerald-50 text-emerald-700">Assigned to me</span>;
-        if (b === 'unassigned') return <span className="badge bg-surface-card text-ink-muted">Available</span>;
-        return <span className="badge bg-surface-card text-ink-muted">Assigned elsewhere</span>;
+        return <span className="badge bg-surface-card text-ink-muted">Available</span>;
       },
     }),
     wc.accessor((r) => r.updatedAt ?? '', { id: 'updatedAt', header: 'Updated', size: 120, cell: (ctx) => <span className="text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span> }),
@@ -208,9 +207,9 @@ function StepCard({ row, navigate }: { row: MyStepRow; navigate: (to: string) =>
         {row.isUrgent && <span className="badge bg-red-50 text-red-600 inline-flex items-center gap-1"><Flame className="w-3 h-3" fill="currentColor" /> Urgent</span>}
         {(() => { const info = dueInfo(row.dueAt); return info.tone !== 'none' && (info.tone === 'overdue' || info.tone === 'today' || info.tone === 'soon') ? <span className={`badge ${DUE_BADGE_CLASS[info.tone]}`}>{info.label}</span> : null; })()}
         <span className="badge bg-brand-50 text-brand-700">#{row.stepNumber}</span>
-        {row.bucket === 'assigned' && <span className="badge bg-emerald-50 text-emerald-700">Mine</span>}
-        {row.bucket === 'unassigned' && <span className="badge bg-surface-card text-ink-muted">Available</span>}
-        {row.bucket === 'other' && <span className="badge bg-surface-card text-ink-muted">Elsewhere</span>}
+        {row.bucket === 'assigned'
+          ? <span className="badge bg-emerald-50 text-emerald-700">Mine</span>
+          : <span className="badge bg-surface-card text-ink-muted">Available</span>}
       </div>
       <p className="text-xs text-ink-muted mt-1 truncate">{row.clientName || 'Unknown client'} · {row.serviceName}</p>
     </div>

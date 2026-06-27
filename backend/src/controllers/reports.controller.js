@@ -118,6 +118,40 @@ export async function getPaymentOverrides(req, res) {
   }
 }
 
+// ─── GET /api/reports/unassigned ────────────────────────────────────────────
+// Active steps with NO assignee, across all in-flight matters — the shared pickup
+// pool, surfaced for admin/manager to triage/assign. (Complements #50: those rows
+// also appear as "Available" in each staff member's My Tasks.)
+export async function getUnassignedTasks(req, res) {
+  try {
+    const snap = await db.collection('tasks').where('status', 'in', ['pending', 'active']).get();
+    const rows = [];
+    await Promise.all(snap.docs.map(async (taskDoc) => {
+      const t = taskDoc.data();
+      const active = await taskDoc.ref.collection('steps').where('status', '==', 'active').limit(1).get();
+      if (active.empty) return;
+      const step = active.docs[0].data();
+      if (step.assignedTo) return; // assigned → not in the unassigned pool
+      rows.push({
+        taskId: taskDoc.id,
+        clientName: t.clientName ?? t.clientUid ?? 'Unknown',
+        serviceName: t.serviceName ?? t.workflowType ?? '',
+        stepNumber: step.stepNumber,
+        stepTitle: step.title ?? `Step ${step.stepNumber}`,
+        assignedRole: step.assignedRole ?? null,
+        dueAt: step.dueAt ?? null,
+        isUrgent: !!t.isUrgent || !!step.isUrgent,
+        updatedAt: t.updatedAt ?? '',
+      });
+    }));
+    rows.sort((a, b) => (b.isUrgent ? 1 : 0) - (a.isUrgent ? 1 : 0) || (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
+    res.json(rows);
+  } catch (err) {
+    logger.error({ err }, 'getUnassignedTasks report error:');
+    res.status(500).json({ message: 'Failed to fetch unassigned-tasks report' });
+  }
+}
+
 // ─── GET /api/reports/professional-mapping ──────────────────────────────────
 // #62: how many clients are handled under each professional / group company, with
 // the client list per group, so the firm can track volume per professional/entity.

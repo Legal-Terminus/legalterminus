@@ -13,6 +13,7 @@ test('admin reaches the Reports hub and each report page', async ({ adminPage })
   const pages: [string, string][] = [
     ['reports/all-tasks', 'All Matters'],
     ['reports/pending', 'Pending Matters'],
+    ['reports/unassigned', 'Unassigned Tasks'],
     ['reports/master-sheet', 'Master Sheet'],
     ['reports/leads', 'Contact Leads'],
   ];

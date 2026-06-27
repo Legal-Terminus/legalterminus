@@ -7,6 +7,7 @@ import {
   getSlaReport,
   getPaymentOverrides,
   getProfessionalMapping,
+  getUnassignedTasks,
   getMasterSheet,
 } from '../controllers/reports.controller.js';
 
@@ -21,6 +22,7 @@ router.get('/pending',      getPendingTasks);
 router.get('/sla',          getSlaReport);
 router.get('/payment-overrides', getPaymentOverrides);
 router.get('/professional-mapping', getProfessionalMapping);
+router.get('/unassigned', getUnassignedTasks);
 router.get('/master-sheet', getMasterSheet);
 
 export default router;

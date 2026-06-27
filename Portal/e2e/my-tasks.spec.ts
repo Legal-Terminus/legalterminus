@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { createMatter, assignStep, currentStep, deleteMatter } from './api';
+import { createMatter, assignStep, currentStep, deleteMatter, apiAs } from './api';
 
 /**
  * E11 (My Tasks worklist) + E13-S03 (Due column). Staff see a cross-matter step
@@ -41,4 +41,17 @@ test('team member sees their assigned matter in My Tasks', async ({ teamPage }) 
 test('client cannot access My Tasks', async ({ clientPage }) => {
   await clientPage.goto('my-tasks');
   await expect(clientPage).not.toHaveURL(/my-tasks/);
+});
+
+test('#50: a step assigned to someone else does NOT appear in admin My Tasks', async () => {
+  // The active step is assigned to the team member (beforeAll). An ADMIN's my-steps
+  // must not include it — My Tasks holds only mine + the unassigned pool.
+  const stepNo = await currentStep(taskId);
+  const api = await apiAs('admin');
+  const res = await api.get('/api/tasks/my-steps');
+  const body = await res.json();
+  await api.dispose();
+  const rows = body.data ?? body;
+  const leaked = rows.find((r: { taskId: string; stepNumber: number }) => r.taskId === taskId && r.stepNumber === stepNo);
+  expect(leaked).toBeFalsy();
 });

@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import {
-  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users,
+  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX,
 } from 'lucide-react';
 
 const REPORTS = [
   { to: '/reports/all-tasks',    title: 'All Matters',       desc: 'Filterable view of every matter in the system.', icon: ListChecks },
   { to: '/reports/completed',    title: 'Completed Matters', desc: 'Matters marked complete — sorted by finish date.', icon: CheckCircle2 },
   { to: '/reports/pending',      title: 'Pending Matters',   desc: 'Pending matters grouped by blocking reason.', icon: Clock },
+  { to: '/reports/unassigned',   title: 'Unassigned Tasks',  desc: 'Active steps with no owner — the shared pickup pool to triage.', icon: UserX },
   { to: '/reports/sla',          title: 'SLA / Delay',       desc: 'Overdue & at-risk steps, plus on-time rate by service and phase.', icon: AlertTriangle },
   { to: '/reports/payment-overrides', title: 'Payment Overrides', desc: 'Matters progressing ahead of payment (no-payment or gate override).', icon: CreditCard },
   { to: '/reports/professional-mapping', title: 'Professional / Group', desc: 'Client counts per handling professional and parent/group company.', icon: Users },

@@ -626,8 +626,11 @@ export async function listMySteps(req, res) {
         if (active.empty) return;
         const step = active.docs[0].data();
         const assignedTo = step.assignedTo ?? null;
-        // Team members only see active steps that are theirs or unassigned.
-        if (role === 'team_member' && assignedTo && assignedTo !== uid) return;
+        // #50: "My Tasks" shows only steps that are MINE or UNASSIGNED (the shared
+        // pickup pool) — for EVERY staff role, incl. admin/manager. Steps assigned
+        // to someone ELSE never belong in my basket (admins still see all work via
+        // Matters / Reports). This drops the old "Elsewhere" bucket.
+        if (assignedTo && assignedTo !== uid) return;
         rows.push({
           taskId,
           clientName: t.clientName ?? '',
@@ -642,7 +645,8 @@ export async function listMySteps(req, res) {
           assignedTo,
           // Due date of the active step (E13-S03) — drives the lateness column.
           dueAt: step.dueAt ?? null,
-          bucket: assignedTo === uid ? 'assigned' : (assignedTo ? 'other' : 'unassigned'),
+          // After the #50 filter only 'assigned' (mine) or 'unassigned' (pool) remain.
+          bucket: assignedTo === uid ? 'assigned' : 'unassigned',
         });
       })
     );

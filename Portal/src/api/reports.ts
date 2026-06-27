@@ -115,6 +115,21 @@ export interface ProfessionalMappingReport {
 export const getProfessionalMappingReport = () =>
   apiFetch<ProfessionalMappingReport>('/api/reports/professional-mapping');
 
+// ─── Unassigned Tasks report (#50 companion) ──────────────────────────────────
+export interface UnassignedRow {
+  taskId: string;
+  clientName: string;
+  serviceName: string;
+  stepNumber: number;
+  stepTitle: string;
+  assignedRole: string | null;
+  dueAt: string | null;
+  isUrgent: boolean;
+  updatedAt: string;
+}
+export const getUnassignedReport = () =>
+  apiFetch<UnassignedRow[]>('/api/reports/unassigned');
+
 // ─── Master Sheet ───────────────────────────────────────────────────────────
 export interface MasterSheetRow {
   taskId: string;

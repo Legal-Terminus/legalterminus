@@ -27,6 +27,7 @@ import PendingTasksReport from '../pages/reports/PendingTasksReport';
 import SlaReport from '../pages/reports/SlaReport';
 import PaymentOverridesReport from '../pages/reports/PaymentOverridesReport';
 import ProfessionalMappingReport from '../pages/reports/ProfessionalMappingReport';
+import UnassignedTasksReport from '../pages/reports/UnassignedTasksReport';
 import MasterSheetReport from '../pages/reports/MasterSheetReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 
@@ -81,6 +82,7 @@ export const APP_ROUTES: AppRoute[] = [
   { path: '/reports/sla',          element: <SlaReport />,            roles: ['admin', 'manager'] },
   { path: '/reports/payment-overrides', element: <PaymentOverridesReport />, roles: ['admin', 'manager'] },
   { path: '/reports/professional-mapping', element: <ProfessionalMappingReport />, roles: ['admin', 'manager'] },
+  { path: '/reports/unassigned', element: <UnassignedTasksReport />, roles: ['admin', 'manager'] },
   { path: '/reports/master-sheet', element: <MasterSheetReport />,    roles: ['admin', 'manager'] },
   { path: '/users/new/:type',      element: <UserFormPage />,         roles: ['admin', 'manager'] },
   { path: '/users/edit/:type/:uid',element: <UserFormPage />,         roles: ['admin', 'manager'] },

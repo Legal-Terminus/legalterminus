@@ -129,7 +129,8 @@ export interface MyStepRow {
   assignedTo: string | null;
   // Due date of the active step (E13-S03); null when the step has no ETA.
   dueAt: string | null;
-  bucket: 'assigned' | 'unassigned' | 'other';
+  // #50: My Tasks only ever holds my own steps or the unassigned pickup pool.
+  bucket: 'assigned' | 'unassigned';
 }
 
 /** A matter awaiting the current user's approval (E11-S04). */
