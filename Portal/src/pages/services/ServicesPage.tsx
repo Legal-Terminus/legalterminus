@@ -1,9 +1,10 @@
 import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Layers, Pencil, Loader2, Workflow, Search } from 'lucide-react';
+import { Layers, Pencil, Loader2, Workflow, Search, Plus } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
+import { useAuthStore } from '../../store/authStore';
 import {
   getServiceCatalog, groupByCategory, updateService,
   type CatalogService,
@@ -19,6 +20,8 @@ import {
  */
 export default function ServicesPage() {
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
+  const role = useAuthStore((s) => s.role);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['service-catalog'],
@@ -46,6 +49,11 @@ export default function ServicesPage() {
     <PageShell
       title="Service Catalog"
       subtitle="Every service Legal Terminus offers, grouped by category. Click a card to rename it."
+      action={role === 'admin' ? (
+        <button onClick={() => navigate('/workflows/new')} className="btn-primary inline-flex items-center gap-1.5">
+          <Plus className="w-4 h-4" /> New workflow
+        </button>
+      ) : undefined}
     >
       {/* Text search */}
       <div className="relative mb-5">

@@ -1819,6 +1819,15 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 > **Note (2026-06-21):** per-step `clientVisible` + a merged single per-step settings block
 > (assignee + ETA + client-visible) are being added on top of this — see the combined-settings work.
 
+> **✅ UX REDESIGN + CREATE-FROM-SCRATCH (2026-06-27).** The editor was rebuilt for
+> non-technical admins: plain-language controls ("What kind of step?", "What
+> happens next?" with named step pickers, automatic-action toggles, "Who does
+> this?"), an **ⓘ tooltip on every field**, "Stages" terminology, plain-language
+> validation, and a collapsed "Advanced (raw)" escape hatch. A **"+ New workflow"**
+> entry on the Service Catalog (`/workflows/new`) lets admins author a brand-new
+> workflow from scratch in the same editor (→ `POST /api/workflow-definitions`).
+> No engine/schema change — presentation layer over the existing definition model.
+
 ---
 
 ### E10-S02 — Config Sync Warning [Phase 1]
@@ -2789,6 +2798,20 @@ not new engine code.
 - Full create/update/**delete** of workflow definitions (admin); delete refuses if
   matters still use the definition. Step-config now includes `clientVisible`,
   `checklistItems`, `allowDocUpload`, ETA, assignee (incl. CLIENT_ASSIGNEE).
+- **Plain-language redesign for non-technical admins (2026-06-27).** The editor now
+  speaks human, not engine: per step a **"What kind of step?"** picker (Work /
+  Client action / Government wait / Payment checkpoint / Split into options /
+  Final), a **"What happens next?"** section with **named step pickers** (no raw
+  step numbers or event codes), **automatic-action toggles** (instead of free-text
+  effects), and a **"Who does this?"** selector (team role / the client). Every
+  field has an **ⓘ tooltip** (`components/common/FieldLabel.tsx`). "Phases" relabeled
+  **"Stages"** (raw id/order hidden). Validation messages are plain-language
+  ("…points to a step that doesn't exist"). A collapsed **"Advanced (raw)"** panel
+  per step still exposes the underlying transitions/effects for power users. The
+  underlying data model/engine is unchanged — purely a presentation layer.
+- **Create a workflow from scratch.** "+ New workflow" on the Service Catalog page
+  (admin) → `/workflows/new` opens the same editor in create mode (blank
+  definition, pick the service it powers) → **Create** (`POST /api/workflow-definitions`).
 
 ### Platform fixes
 - **Phase pointer** on the matter detail now advances as steps complete into a new phase.

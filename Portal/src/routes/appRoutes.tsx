@@ -94,6 +94,8 @@ export const APP_ROUTES: AppRoute[] = [
   { path: '/services/:serviceKey', element: <ServiceDetail />, roles: ['admin', 'manager', 'team_member'] },
   // Workflow editor (E10-S01 write side) — admin only; reached from a service's "Edit workflow".
   { path: '/services/:serviceKey/edit', element: <WorkflowEditorPage />, roles: ['admin'] },
+  // Create a brand-new workflow from scratch (admin only) — "New workflow" on /services.
+  { path: '/workflows/new', element: <WorkflowEditorPage />, roles: ['admin'] },
 
   // ── Self-service (all roles) — own profile + order history (migrated from the
   //    marketing site's /my-profile, which is now a redirect into the portal) ──

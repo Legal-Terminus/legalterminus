@@ -49,9 +49,18 @@ const nodeTypes: NodeTypes = { workflowNode: WorkflowNode };
 export default function WorkflowDiagram({ machine }: { machine: AnyStateMachine }) {
   const { nodes, edges } = useMemo(() => layoutGraph(machineToGraph(machine)), [machine]);
 
+  // ReactFlow treats `nodes`/`edges` as INITIAL state when used uncontrolled, so it
+  // won't refresh when the machine changes (e.g. the live editor preview). Remount
+  // on a structural signature of the graph so edits reflect immediately + re-fitView.
+  const graphKey = useMemo(
+    () => `${nodes.map((n) => `${n.id}:${(n.data as WorkflowNodeData).label}:${(n.data as WorkflowNodeData).kind}`).join('|')}__${edges.map((e) => `${e.source}->${e.target}`).join('|')}`,
+    [nodes, edges],
+  );
+
   return (
     <div className="h-[70vh] w-full rounded-xl border border-hairline bg-surface-soft">
       <ReactFlow
+        key={graphKey}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}

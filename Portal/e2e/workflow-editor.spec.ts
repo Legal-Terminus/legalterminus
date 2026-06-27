@@ -41,12 +41,15 @@ test('non-admins (team member) do NOT see the edit entry and cannot reach the ed
   }).toPass({ timeout: 15_000 });
 });
 
-test('editor loads with steps, phases, and a live preview', async ({ adminPage }) => {
+test('editor loads with steps, stages, and a live preview (plain-language UI)', async ({ adminPage }) => {
   await adminPage.goto(`services/${serviceKey}/edit`);
   await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
   await expect(adminPage.getByRole('heading', { name: /^Steps/ })).toBeVisible();
-  await expect(adminPage.getByRole('heading', { name: /Phases/ })).toBeVisible();
+  await expect(adminPage.getByRole('heading', { name: /Stages/ })).toBeVisible();
   await expect(adminPage.getByRole('heading', { name: 'Live preview' })).toBeVisible();
+  // Plain-language controls present (no raw "transitions/effects" jargon).
+  await expect(adminPage.getByText('What kind of step?').first()).toBeVisible();
+  await expect(adminPage.getByText('What happens next?').first()).toBeVisible();
   // A valid seeded workflow → Save is enabled (no validation errors).
   await expect(adminPage.getByRole('button', { name: /save & publish/i })).toBeEnabled();
 });
@@ -58,7 +61,7 @@ test('invalid edit disables save and shows an inline error', async ({ adminPage 
   // Clear the first step's title → required-field error → save disabled.
   const firstTitle = adminPage.getByLabel(/Step \d+ title/).first();
   await firstTitle.fill('');
-  await expect(adminPage.getByText(/issue.*to fix before saving/i)).toBeVisible();
+  await expect(adminPage.getByText(/to fix before saving/i)).toBeVisible();
   await expect(adminPage.getByRole('button', { name: /save & publish/i })).toBeDisabled();
 });
 
@@ -116,4 +119,67 @@ test('API rejects a structurally invalid definition (422) and a client (403)', a
   const cRes = await clientApi.patch(`/api/workflow-definitions/${throwawayId}`, { data: body });
   expect(cRes.status()).toBe(403);
   await clientApi.dispose();
+});
+
+test('admin "New workflow" opens create mode requiring a service binding', async ({ adminPage }) => {
+  await adminPage.goto('services');
+  const newBtn = adminPage.getByRole('button', { name: /new workflow/i });
+  await expect(newBtn).toBeVisible();
+  await newBtn.click();
+
+  // Create mode: blank workflow + the REQUIRED "Powers which service?" picker (#2).
+  await expect(adminPage.getByRole('heading', { name: 'New Workflow' })).toBeVisible();
+  await expect(adminPage.getByText(/Powers which service\?/i)).toBeVisible();
+  // Without a name + service, Create is blocked (validation).
+  await expect(adminPage.getByRole('button', { name: /create workflow/i })).toBeDisabled();
+});
+
+test('non-admin does not see "New workflow"', async ({ teamPage }) => {
+  await teamPage.goto('services');
+  await expect(teamPage.getByRole('heading', { name: 'Service Catalog' })).toBeVisible();
+  await expect(teamPage.getByRole('button', { name: /new workflow/i })).toHaveCount(0);
+});
+
+test('create-from-scratch via API: requires id+service, persists, deletes', async () => {
+  // Deterministic create flow (the UI picker depends on a free service in the
+  // catalog; the contract is asserted here). Uses a unique id + a throwaway
+  // serviceKey so it never collides with the seeded incorporation workflow.
+  const api = await apiAs('admin');
+  const id = `e2e-new-${Date.now()}`;
+  const body = {
+    id,
+    name: `E2E Created ${id}`,
+    initialStep: 1,
+    serviceKeys: [`e2e-svc-${Date.now()}`],
+    steps: [
+      { stepNumber: 1, title: 'Start', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 2 }] },
+      { stepNumber: 2, title: 'Done', type: 'final' },
+    ],
+  };
+  const res = await api.post('/api/workflow-definitions', { data: body });
+  expect(res.ok()).toBeTruthy();
+  const created = await (await api.get(`/api/workflow-definitions/${id}`)).json();
+  expect(created.name).toBe(body.name);
+  expect(created.version).toBe(1);
+  await api.dispose();
+  await deleteDefinition(id);
+});
+
+test('admin can edit a step’s outcomes (add a second outcome) on the throwaway', async () => {
+  // Outcome rows (#1) map 1:1 to transitions — adding an outcome adds a transition.
+  const api = await apiAs('admin');
+  const before = await (await api.get(`/api/workflow-definitions/${throwawayId}`)).json();
+  const { id: _i, version: _v, createdAt: _c, updatedAt: _u, updatedBy: _b, ...body } = before;
+  void _i; void _v; void _c; void _u; void _b;
+  const s1 = body.steps.find((s: { stepNumber: number }) => s.stepNumber === 1);
+  s1.transitions = [
+    { event: 'COMPLETE_STEP', to: 2 },
+    { event: 'CLIENT_REJECT', to: 1 },
+  ];
+  const res = await api.patch(`/api/workflow-definitions/${throwawayId}`, { data: body });
+  expect(res.ok()).toBeTruthy();
+  const after = await (await api.get(`/api/workflow-definitions/${throwawayId}`)).json();
+  const a1 = after.steps.find((s: { stepNumber: number }) => s.stepNumber === 1);
+  expect((a1.transitions ?? []).length).toBe(2);
+  await api.dispose();
 });
