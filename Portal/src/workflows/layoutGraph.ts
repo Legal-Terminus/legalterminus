@@ -15,6 +15,8 @@ const NODE_HEIGHT = 56;
 export interface WorkflowNodeData extends Record<string, unknown> {
   label: string;
   kind: NodeKind;
+  stepNumber?: number;
+  highlight?: boolean; // editor: the step currently being edited
 }
 
 export function layoutGraph(graph: WorkflowGraph): { nodes: Node<WorkflowNodeData>[]; edges: Edge[] } {
@@ -38,7 +40,7 @@ export function layoutGraph(graph: WorkflowGraph): { nodes: Node<WorkflowNodeDat
       type: 'workflowNode',
       // dagre centers nodes; React Flow positions by top-left corner.
       position: { x: pos.x - NODE_WIDTH / 2, y: pos.y - NODE_HEIGHT / 2 },
-      data: { label: n.label, kind: n.kind },
+      data: { label: n.label, kind: n.kind, stepNumber: n.stepNumber },
       width: NODE_WIDTH,
       height: NODE_HEIGHT,
     };
@@ -49,6 +51,8 @@ export function layoutGraph(graph: WorkflowGraph): { nodes: Node<WorkflowNodeDat
     source: e.source,
     target: e.target,
     label: e.label,
+    // Outcome identity (for per-outcome colouring of the focused step's arrows).
+    data: { event: e.event, branch: e.branch, toStep: e.toStep },
     labelStyle: { fontSize: 10, fill: '#6b7280' },
     labelBgPadding: [4, 2],
     labelBgStyle: { fill: '#ffffff', fillOpacity: 0.85 },

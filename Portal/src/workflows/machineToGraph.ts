@@ -13,13 +13,17 @@ export interface GraphNode {
   id: string;       // state key, e.g. 'step_2_work_assigning'
   label: string;    // friendly label, e.g. '2. Work Assigning'
   kind: NodeKind;
+  stepNumber?: number; // the definition step number (for editor highlight/center)
 }
 
 export interface GraphEdge {
   id: string;
   source: string;
   target: string;
-  label?: string;   // event + guard, e.g. 'RECORD_PAYMENT [paymentGateGuard]'
+  label?: string;       // friendly label, e.g. 'Client approves' or an option name
+  event?: string;       // raw event (for identity-based colouring)
+  branch?: string;      // branch option value, if any
+  toStep?: number;      // target step number (for identity-based colouring)
 }
 
 export interface WorkflowGraph {
@@ -33,18 +37,37 @@ export interface WorkflowGraph {
 interface RawTransition {
   target?: string | string[];
   guard?: unknown;
+  branchLabel?: string; // human option name carried through compile (branches)
 }
 
-const guardName = (guard: unknown): string | undefined => {
-  if (!guard) return undefined;
-  if (typeof guard === 'string') return guard;
-  if (typeof guard === 'function') return (guard as { name?: string }).name || undefined;
-  // Object guard config { type: 'name' }
-  if (typeof guard === 'object' && 'type' in (guard as object)) {
-    return String((guard as { type?: unknown }).type);
-  }
-  return undefined;
+// Friendly, human edge labels — mirror the editor's outcome vocabulary so the
+// diagram never shows raw event codes (COMPLETE_STEP, BRANCH_DECISION, …).
+const EVENT_LABEL: Record<string, string> = {
+  COMPLETE_STEP: 'When done',
+  CLIENT_APPROVE: 'Client approves',
+  CLIENT_REJECT: 'Client requests changes',
+  GOVT_APPROVE: 'Government approves',
+  GOVT_REJECT: 'Government rejects',
+  REWORK: 'Sent back for correction',
+  RECORD_PAYMENT: 'Payment recorded',
+  ADMIN_OVERRIDE_PAYMENT: 'Payment overridden',
+  BRANCH_DECISION: 'Option',
 };
+const friendlyEvent = (event: string): string => EVENT_LABEL[event] ?? (event ? titleCase(event.toLowerCase()) : '');
+
+// Distinct, accessible colours for the FOCUSED step's outgoing arrows, so multiple
+// outcomes from one step are easy to tell apart. Keyed deterministically on the
+// outcome's IDENTITY (event + branch + target) so the editor's outcome row and its
+// arrow in the chart always get the SAME colour — no reliance on array order.
+export const OUTCOME_COLORS = ['#4f46e5', '#059669', '#dc2626', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d'];
+
+export function outcomeColor(event: string, branch: string | undefined, to: number): string {
+  const keyStr = `${event}|${branch ?? ''}|${to}`;
+  let h = 0;
+  for (let i = 0; i < keyStr.length; i++) h = (h * 31 + keyStr.charCodeAt(i)) >>> 0;
+  return OUTCOME_COLORS[h % OUTCOME_COLORS.length];
+}
+
 
 /** Turn a state key like `step_2_work_assigning` into '2. Work Assigning'. */
 export function labelForState(stateId: string): string {
@@ -141,23 +164,34 @@ export function machineToGraph(machine: AnyStateMachine): WorkflowGraph {
     const meta = (stateDef.meta ?? undefined) as
       | { stepNumber?: number; title?: string; type?: NodeKind }
       | undefined;
-    const label = meta?.title
-      ? (meta.stepNumber != null ? `${meta.stepNumber}. ${meta.title}` : meta.title)
-      : labelForState(stateId);
+    // Label = the step TITLE only (no stored stepNumber prefix). The editor cards
+    // number by display position, so a stored-number prefix here would mismatch the
+    // cards and confuse navigation. Titles match the cards exactly.
+    const label = meta?.title ?? labelForState(stateId);
     const kind = metaKind(meta, stateId, stateDef as { type?: string }, transitions);
-    nodes.push({ id: stateId, label, kind });
+    // stepNumber for editor highlight: prefer meta, else parse `step_<n>` id.
+    const idNum = stateId.match(/^step_(\d+)/);
+    const stepNumber = meta?.stepNumber ?? (idNum ? Number(idNum[1]) : undefined);
+    nodes.push({ id: stateId, label, kind, stepNumber });
 
     for (const t of transitions) {
       const targets = normalizeTargets(t.target);
       // A self-targeting transition with no explicit target is a no-op edge; skip.
       for (const target of targets) {
-        const g = guardName(t.guard);
-        const labelParts = [t.event, g ? `[${g}]` : ''].filter(Boolean);
+        // Human edge label: a branch shows its OPTION NAME; everything else shows
+        // the friendly outcome name (never the raw event code / guard).
+        const label = t.branchLabel
+          ? t.branchLabel
+          : (friendlyEvent(t.event) || undefined);
+        const tNum = target.match(/^step_(\d+)/);
         edges.push({
           id: `e${edgeSeq++}_${stateId}__${target}`,
           source: stateId,
           target,
-          label: labelParts.join(' ') || undefined,
+          label,
+          event: t.event || undefined,
+          branch: t.branchLabel,
+          toStep: tNum ? Number(tNum[1]) : undefined,
         });
       }
     }

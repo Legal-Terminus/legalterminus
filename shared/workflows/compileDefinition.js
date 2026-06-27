@@ -59,12 +59,15 @@ function compileStep(step) {
   for (const t of step.transitions ?? []) {
     const targetState = stateKeyFor(t.to);
     if (t.branch) {
-      // Guarded branch entry: event with a `branch` discriminator.
+      // Guarded branch entry: event with a `branch` discriminator. `branchLabel`
+      // is a no-op field XState ignores, preserved in machine.config so the
+      // diagram can show the human option name instead of a raw event code.
       on[t.event] = on[t.event] || [];
       on[t.event].push({
         guard: branchGuard(t.branch),
         target: targetState,
         actions: setStep(t.to),
+        branchLabel: t.branch,
       });
     } else if (on[t.event]) {
       // Additional unguarded targets are not valid; keep the first (defensive).

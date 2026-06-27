@@ -7,6 +7,7 @@ import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import NotFoundPage from '../pages/shared/NotFoundPage';
 import RootRedirect from '../pages/shared/RootRedirect';
 import UnauthorizedPage from '../pages/shared/UnauthorizedPage';
+import RouteErrorPage from '../pages/shared/RouteErrorPage';
 import { APP_ROUTES } from './appRoutes';
 import type { Role } from '../store/authStore';
 
@@ -36,16 +37,19 @@ const guardedBlocks = Array.from(groups.values()).map(({ roles, routes }) => ({
   children: [
     {
       element: <AppLayout />,
+      // A page that throws renders a friendly error inside the app shell (never a
+      // raw stack trace for end users).
+      errorElement: <RouteErrorPage />,
       children: routes.map((r) => ({ path: r.path, element: r.element })),
     },
   ],
 }));
 
 export const router = createBrowserRouter([
-  { path: '/', element: <RootRedirect /> },
-  { path: '/login', element: <LoginPage /> },
-  { path: '/signup', element: <SignupPage /> },
-  { path: '/forgot-password', element: <ForgotPasswordPage /> },
+  { path: '/', element: <RootRedirect />, errorElement: <RouteErrorPage /> },
+  { path: '/login', element: <LoginPage />, errorElement: <RouteErrorPage /> },
+  { path: '/signup', element: <SignupPage />, errorElement: <RouteErrorPage /> },
+  { path: '/forgot-password', element: <ForgotPasswordPage />, errorElement: <RouteErrorPage /> },
   { path: '/unauthorized', element: <UnauthorizedPage /> },
   ...guardedBlocks,
   { path: '*', element: <NotFoundPage /> },

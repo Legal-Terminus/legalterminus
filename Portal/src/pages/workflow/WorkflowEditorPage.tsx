@@ -2,17 +2,19 @@ import { useMemo, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown, Save, AlertTriangle, Loader2, ChevronRight,
+  ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown, Save, AlertTriangle, Loader2, ChevronRight, Crosshair,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import FieldLabel from '../../components/common/FieldLabel';
 import { useToast } from '../../components/common/toastContext';
+import { useConfirm } from '../../components/common/confirmContext';
 import WorkflowDiagram from '../../components/workflow/WorkflowDiagram';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import {
   getWorkflowDefinitions, getWorkflowDefinition, updateWorkflowDefinition, createWorkflowDefinition,
   type WorkflowDefinition, type WorkflowStepDef, type PhaseDef,
 } from '../../api/workflowDefinitions';
+import { outcomeColor } from '../../workflows/machineToGraph';
 import { getServiceCatalog } from '../../api/services';
 import { compileDefinition } from '@shared/workflows/compileDefinition.js';
 
@@ -163,6 +165,16 @@ export default function WorkflowEditorPage() {
   // A stable id for a newly-created workflow (generated once, not during render).
   const [newId] = useState(() => `wf-${Date.now()}`);
 
+  // The step currently being edited — highlights (colour only) in the live preview.
+  const [activeStepNumber, setActiveStepNumber] = useState<number | null>(null);
+  // One-shot "centre the chart on this step" request (locate-in-chart button). The
+  // nonce lets the same step be re-located on repeated clicks.
+  const [centerToken, setCenterToken] = useState<{ step: number; nonce: number } | null>(null);
+  const locateStep = (stepNumber: number) => {
+    setActiveStepNumber(stepNumber);
+    setCenterToken((prev) => ({ step: stepNumber, nonce: (prev?.nonce ?? 0) + 1 }));
+  };
+
   // Working copy. In create mode we seed a blank definition; in edit mode we seed
   // from the server once (tracked by version key, no effect → no cascading renders).
   const [seeded, setSeeded] = useState<{ key: string; draft: WorkflowDefinition } | null>(null);
@@ -234,6 +246,19 @@ export default function WorkflowEditorPage() {
     const nextNum = d.steps.reduce((m, s) => Math.max(m, s.stepNumber), 0) + 1;
     const step: WorkflowStepDef = { stepNumber: nextNum, title: `Step ${nextNum}`, type: 'step', clientVisible: true, transitions: [{ event: 'COMPLETE_STEP', to: nextNum }] };
     return { ...d, steps: [...d.steps, step] };
+  });
+  // Insert a new step right AFTER `index` (the "add next step" button on a card),
+  // and point it at the step the inserted-after one currently leads to.
+  const insertStepAfter = (index: number) => setDraft((d) => {
+    if (!d) return d;
+    const newNum = d.steps.reduce((m, s) => Math.max(m, s.stepNumber), 0) + 1;
+    const after = d.steps[index];
+    const leadsTo = after?.transitions?.find((t) => t.event === 'COMPLETE_STEP')?.to
+      ?? d.steps[index + 1]?.stepNumber ?? newNum;
+    const step: WorkflowStepDef = { stepNumber: newNum, title: 'New step', type: 'step', clientVisible: true, transitions: [{ event: 'COMPLETE_STEP', to: leadsTo }] };
+    const steps = [...d.steps];
+    steps.splice(index + 1, 0, step);
+    return { ...d, steps };
   });
   const removeStep = (stepNumber: number) =>
     setDraft((d) => d ? { ...d, steps: d.steps.filter((s) => s.stepNumber !== stepNumber) } : d);
@@ -322,12 +347,7 @@ export default function WorkflowEditorPage() {
 
           {/* Steps */}
           <section className="card p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-ink">Steps ({draft.steps.length})</h2>
-              <button onClick={addStep} className="inline-flex items-center gap-1 text-sm text-brand-600 hover:underline">
-                <Plus className="w-4 h-4" /> Add step
-              </button>
-            </div>
+            <h2 className="text-sm font-semibold text-ink mb-3">Steps ({draft.steps.length})</h2>
             <div className="flex flex-col gap-3">
               {draft.steps.map((s, i) => (
                 <StepCard
@@ -337,11 +357,21 @@ export default function WorkflowEditorPage() {
                   total={draft.steps.length}
                   stages={draft.phases ?? []}
                   allSteps={draft.steps}
+                  isActive={activeStepNumber === s.stepNumber}
+                  onActivate={() => setActiveStepNumber(s.stepNumber)}
+                  onLocate={() => locateStep(s.stepNumber)}
+                  onAddAfter={() => insertStepAfter(i)}
                   onPatch={(next) => patchStep(s.stepNumber, next)}
                   onRemove={() => removeStep(s.stepNumber)}
                   onMove={(dir) => moveStep(i, dir)}
                 />
               ))}
+            </div>
+            {/* Add step lives at the BOTTOM — you append the next step after the list. */}
+            <div className="flex justify-end mt-3">
+              <button onClick={addStep} className="btn-secondary inline-flex items-center gap-1.5">
+                <Plus className="w-4 h-4" /> Add step
+              </button>
             </div>
           </section>
         </div>
@@ -355,7 +385,7 @@ export default function WorkflowEditorPage() {
             </h2>
             {previewMachine ? (
               <div className="h-[520px] rounded-md border border-gray-100 overflow-hidden">
-                <WorkflowDiagram machine={previewMachine} />
+                <WorkflowDiagram machine={previewMachine} highlightStepNumber={activeStepNumber} centerToken={centerToken} />
               </div>
             ) : (
               <p className="text-xs text-ink-muted p-4">Fix the items above to see the updated diagram.</p>
@@ -422,21 +452,40 @@ function StagesEditor({ stages, onChange }: { stages: PhaseDef[]; onChange: (p: 
   );
 }
 
-function StepCard({ step, index, total, stages, allSteps, onPatch, onRemove, onMove }: {
+function StepCard({ step, index, total, stages, allSteps, isActive, onActivate, onLocate, onAddAfter, onPatch, onRemove, onMove }: {
   step: WorkflowStepDef;
   index: number;
   total: number;
   stages: PhaseDef[];
   allSteps: WorkflowStepDef[];
+  isActive?: boolean;
+  onActivate?: () => void;
+  onLocate?: () => void;
+  onAddAfter?: () => void;
   onPatch: (next: Partial<WorkflowStepDef>) => void;
   onRemove: () => void;
   onMove: (dir: -1 | 1) => void;
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const confirm = useConfirm();
+  const handleRemove = async () => {
+    const ok = await confirm({
+      title: 'Delete this step?',
+      message: `“${step.title || 'Untitled step'}” will be removed from the workflow. Other steps pointing to it will need their outcomes updated.`,
+      tone: 'danger',
+      confirmLabel: 'Delete step',
+    });
+    if (ok) onRemove();
+  };
   const kind = stepKindOf(step);
   const events = step.transitions ?? [];
   const firstTo = (event: string) => events.find((t) => t.event === event)?.to;
-  const otherStepNum = allSteps.find((s) => s.stepNumber !== step.stepNumber)?.stepNumber ?? step.stepNumber;
+  // Default routing target = the NEXT step in the list (common case), else the
+  // first other step. Avoids new outcomes jumping to the last/Done step.
+  const nextStepNum = allSteps[index + 1]?.stepNumber
+    ?? allSteps.find((s) => s.stepNumber !== step.stepNumber)?.stepNumber
+    ?? step.stepNumber;
+  const otherStepNum = nextStepNum;
 
   // Change step KIND → set engine `type` and PRE-FILL sensible default outcomes
   // (which the user can then freely edit/add/remove via OutcomeRows). Existing
@@ -462,14 +511,19 @@ function StepCard({ step, index, total, stages, allSteps, onPatch, onRemove, onM
   const whoValue = step.defaultAssigneeUid === '__CLIENT__' ? 'client' : (step.assignedRole ? 'role' : 'team');
 
   return (
-    <div className="rounded-lg border border-hairline bg-surface-soft/40 p-4">
+    <div
+      className={`rounded-lg border bg-surface-soft/40 p-4 transition-shadow ${isActive ? 'border-brand-400 ring-1 ring-brand-300' : 'border-hairline'}`}
+      onFocusCapture={onActivate}
+      onClick={onActivate}
+    >
       <div className="flex items-center gap-2 mb-3">
         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand-50 text-xs font-semibold text-brand-700 shrink-0">{index + 1}</span>
         <input className={`${inputCls} font-medium`} value={step.title} onChange={(e) => onPatch({ title: e.target.value })} aria-label={`Step ${step.stepNumber} title`} placeholder="What is this step called?" />
         <div className="flex items-center gap-1 shrink-0">
+          <button onClick={onLocate} className="text-ink-faint hover:text-brand-600" aria-label="Locate in chart" title="Locate in chart"><Crosshair className="w-4 h-4" /></button>
           <button onClick={() => onMove(-1)} disabled={index === 0} className="text-ink-faint hover:text-ink disabled:opacity-30" aria-label="Move up"><ChevronUp className="w-4 h-4" /></button>
           <button onClick={() => onMove(1)} disabled={index === total - 1} className="text-ink-faint hover:text-ink disabled:opacity-30" aria-label="Move down"><ChevronDown className="w-4 h-4" /></button>
-          <button onClick={onRemove} className="text-ink-faint hover:text-red-600" aria-label="Remove step"><Trash2 className="w-4 h-4" /></button>
+          <button onClick={handleRemove} className="text-ink-faint hover:text-red-600" aria-label="Remove step"><Trash2 className="w-4 h-4" /></button>
         </div>
       </div>
 
@@ -536,7 +590,7 @@ function StepCard({ step, index, total, stages, allSteps, onPatch, onRemove, onM
         </WhatHappensNext>
       ) : kind !== 'final' ? (
         <WhatHappensNext>
-          <OutcomeRows step={step} allSteps={allSteps} otherStepNum={otherStepNum} onPatch={onPatch} />
+          <OutcomeRows step={step} allSteps={allSteps} otherStepNum={otherStepNum} onPatch={onPatch} showColors={!!isActive} />
           {kind === 'client' && (
             <div className="mt-2">
               <LabeledField label="Button the client sees" hint="The label on the client’s action button, e.g. “Please Proceed”.">
@@ -587,6 +641,16 @@ function StepCard({ step, index, total, stages, allSteps, onPatch, onRemove, onM
           {JSON.stringify({ stepNumber: step.stepNumber, type: step.type, transitions: step.transitions, gate: step.gate, effects: step.effects }, null, 2)}
         </div>
       )}
+
+      {/* Quick "insert a step right after this one" — easier than scrolling to the
+          bottom "Add step" when building a flow in order. */}
+      {onAddAfter && (
+        <div className="mt-3 flex justify-center">
+          <button onClick={onAddAfter} className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">
+            <Plus className="w-3.5 h-3.5" /> Add step below
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -620,25 +684,41 @@ const OUTCOME_TYPES: { event: string; label: string; needsName?: boolean }[] = [
  * Replaces the old hardcoded per-kind routing so any step can define any number of
  * future states to any steps. Maps 1:1 to the engine's `transitions[]`.
  */
-function OutcomeRows({ step, allSteps, otherStepNum, onPatch }: {
+function OutcomeRows({ step, allSteps, otherStepNum, onPatch, showColors }: {
   step: WorkflowStepDef;
   allSteps: WorkflowStepDef[];
   otherStepNum: number;
   onPatch: (next: Partial<WorkflowStepDef>) => void;
+  showColors?: boolean;
 }) {
   const rows = step.transitions ?? [];
+  // Persist transitions AND keep the engine `type` consistent: a step that has any
+  // "Option (you name it)" (BRANCH_DECISION) outcome must be a branch, otherwise a
+  // plain step — so a named option always compiles + renders correctly (auto-switch).
+  const commit = (transitions: { event: string; to: number; branch?: string }[]) => {
+    const hasBranch = transitions.some((t) => t.event === 'BRANCH_DECISION');
+    const patch: Partial<WorkflowStepDef> = { transitions };
+    if (step.type !== 'final' && step.type !== 'payment_gate') {
+      patch.type = hasBranch ? 'branch' : 'step';
+    }
+    onPatch(patch);
+  };
   const setRow = (i: number, next: Partial<{ event: string; to: number; branch?: string }>) =>
-    onPatch({ transitions: rows.map((t, idx) => (idx === i ? { ...t, ...next } : t)) });
-  const addRow = () => onPatch({ transitions: [...rows, { event: 'COMPLETE_STEP', to: otherStepNum }] });
-  const removeRow = (i: number) => onPatch({ transitions: rows.filter((_, idx) => idx !== i) });
+    commit(rows.map((t, idx) => (idx === i ? { ...t, ...next } : t)));
+  const addRow = () => commit([...rows, { event: 'COMPLETE_STEP', to: otherStepNum }]);
+  const removeRow = (i: number) => commit(rows.filter((_, idx) => idx !== i));
 
   return (
     <div className="flex flex-col gap-2">
       {rows.map((t, i) => {
         const isBranch = t.event === 'BRANCH_DECISION';
+        // Colour dot matching this outcome's arrow in the live chart (only while
+        // this step is focused, so the editor row and its arrow line up visually).
+        const dot = showColors ? outcomeColor(t.event, t.branch, t.to) : null;
         return (
           <div key={i} className="rounded-md border border-hairline bg-white p-2">
             <div className="flex items-end gap-2">
+              {dot && <span className="w-2.5 h-2.5 rounded-full shrink-0 mb-2.5" style={{ backgroundColor: dot }} title="Matches this arrow's colour in the chart" />}
               <div className="flex-1 min-w-0">
                 <span className="block text-[11px] text-ink-faint mb-0.5">Outcome</span>
                 <select
