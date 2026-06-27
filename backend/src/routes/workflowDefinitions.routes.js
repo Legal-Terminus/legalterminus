@@ -6,7 +6,7 @@ import {
   createDefinitionSchema, updateDefinitionSchema,
 } from '../schemas/workflow.schema.js';
 import {
-  listDefinitions, getDefinition, createDefinition, updateDefinition,
+  listDefinitions, getDefinition, createDefinition, updateDefinition, deleteDefinition,
   getPhaseAssignments, putPhaseAssignments,
   syncCheckDefinition, getStepEtas, putStepEtas, getStepAssignees, putStepAssignees,
   getStepSettings, putStepSettings,
@@ -52,5 +52,8 @@ router.get('/:id', getDefinition);
 // Update (publish a new version of) a definition — admin only. Full-body replace
 // + version bump; validated by the shared compiler check before persisting.
 router.patch('/:id', requireRole('admin'), validate(updateDefinitionSchema), updateDefinition);
+
+// Delete a definition — admin only; refuses if matters still use it.
+router.delete('/:id', requireRole('admin'), deleteDefinition);
 
 export default router;

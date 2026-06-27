@@ -94,10 +94,19 @@ export async function deleteUser(uid: string): Promise<void> {
 let _cachedServiceKey: string | null = null;
 export async function resolveServiceKey(): Promise<string> {
   if (_cachedServiceKey) return _cachedServiceKey;
-  const api = await apiAs('admin');
-  const defs = await (await api.get('/api/workflow-definitions')).json();
-  await api.dispose();
-  const key = (defs ?? []).flatMap((d: { serviceKeys?: string[] }) => d.serviceKeys ?? [])[0];
+  // Retry a few times: under suite load the definitions endpoint can momentarily
+  // return a non-array (e.g. a transient error body), which would otherwise crash
+  // a beforeAll with "flatMap is not a function".
+  let defs: unknown = null;
+  for (let i = 0; i < 4; i++) {
+    const api = await apiAs('admin');
+    defs = await (await api.get('/api/workflow-definitions')).json().catch(() => null);
+    await api.dispose();
+    if (Array.isArray(defs) && defs.length > 0) break;
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  if (!Array.isArray(defs)) throw new Error('workflow-definitions did not return a list.');
+  const key = defs.flatMap((d: { serviceKeys?: string[] }) => d.serviceKeys ?? [])[0];
   if (!key) throw new Error('No workflow-backed service found to create a matter.');
   _cachedServiceKey = key;
   return key;
@@ -362,6 +371,38 @@ export async function deleteMatterAs(role: RoleKey, taskId: string): Promise<num
   const status = res.status();
   await api.dispose();
   return status;
+}
+
+/** Create a throwaway workflow definition (admin) so editor tests don't mutate the
+ *  shared seeded one (avoids version-contention flakiness). Minimal valid flow with
+ *  no serviceKeys (so createMatter never picks it). Returns its id. */
+export async function createThrowawayDefinition(): Promise<string> {
+  const api = await apiAs('admin');
+  const id = `e2e-wf-${Date.now()}`;
+  const def = {
+    id,
+    name: `E2E Throwaway ${id}`,
+    initialStep: 1,
+    serviceKeys: [],
+    steps: [
+      { stepNumber: 1, title: 'First step', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 2 }] },
+      { stepNumber: 2, title: 'Done', type: 'final' },
+    ],
+  };
+  const res = await api.post('/api/workflow-definitions', { data: def });
+  if (!res.ok()) throw new Error(`createThrowawayDefinition failed: ${res.status()} ${await res.text()}`);
+  await api.dispose();
+  return id;
+}
+
+/** Delete a workflow definition by id (admin). Best-effort teardown. */
+export async function deleteDefinition(id: string): Promise<void> {
+  if (!id) return;
+  try {
+    const api = await apiAs('admin');
+    await api.delete(`/api/workflow-definitions/${id}`);
+    await api.dispose();
+  } catch { /* best-effort */ }
 }
 
 /** Create a fresh unregistered contact lead (for E08-S06). Returns id + name + email

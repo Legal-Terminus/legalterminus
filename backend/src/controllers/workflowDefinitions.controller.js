@@ -133,6 +133,34 @@ export async function updateDefinition(req, res) {
   }
 }
 
+// DELETE /api/workflow-definitions/:id — admin only. Removes a workflow
+// definition. Guarded: refuses if any matter is still pinned to it (deleting would
+// orphan in-flight matters). Matters pin `workflowDefinitionId`, so we count those.
+export async function deleteDefinition(req, res) {
+  try {
+    const { id } = req.params;
+    const ref = getDb().collection(COLLECTION).doc(id);
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
+
+    const inUse = await getDb().collection('tasks').where('workflowDefinitionId', '==', id).count().get();
+    const count = inUse.data().count;
+    if (count > 0) {
+      return res.status(409).json({
+        message: `This workflow is used by ${count} matter(s). Delete or reassign them before removing the workflow.`,
+        count,
+      });
+    }
+
+    await ref.delete();
+    invalidateWorkflowCache();
+    res.json({ id, deleted: true });
+  } catch (err) {
+    logger.error({ err }, 'deleteDefinition error:');
+    res.status(500).json({ message: 'Failed to delete workflow definition' });
+  }
+}
+
 // ─── Config sync / health check (E10-S02, adapted) ─────────────────────────
 // The original two-layer "machine totalSteps vs config step count" model is gone
 // (workflows are single data-driven definitions compiled at runtime). The faithful
