@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -175,6 +175,14 @@ export default function WorkflowEditorPage() {
     setCenterToken((prev) => ({ step: stepNumber, nonce: (prev?.nonce ?? 0) + 1 }));
   };
 
+  // Refs to each step card so clicking a node in the preview can scroll its editor
+  // into view (reverse of "locate in chart").
+  const cardRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const revealStep = (stepNumber: number) => {
+    setActiveStepNumber(stepNumber);
+    cardRefs.current[stepNumber]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
   // Working copy. In create mode we seed a blank definition; in edit mode we seed
   // from the server once (tracked by version key, no effect → no cascading renders).
   const [seeded, setSeeded] = useState<{ key: string; draft: WorkflowDefinition } | null>(null);
@@ -271,6 +279,11 @@ export default function WorkflowEditorPage() {
     return { ...d, steps };
   });
 
+  // stepNumber → display position (1-based), so the chart can show the SAME numbers
+  // as the editor cards.
+  const displayNumbers: Record<number, number> = {};
+  draft.steps.forEach((s, i) => { displayNumbers[s.stepNumber] = i + 1; });
+
   return (
     <PageShell
       title={isCreate ? 'New Workflow' : 'Edit Workflow'}
@@ -357,6 +370,7 @@ export default function WorkflowEditorPage() {
                   total={draft.steps.length}
                   stages={draft.phases ?? []}
                   allSteps={draft.steps}
+                  cardRef={(el) => { cardRefs.current[s.stepNumber] = el; }}
                   isActive={activeStepNumber === s.stepNumber}
                   onActivate={() => setActiveStepNumber(s.stepNumber)}
                   onLocate={() => locateStep(s.stepNumber)}
@@ -385,7 +399,7 @@ export default function WorkflowEditorPage() {
             </h2>
             {previewMachine ? (
               <div className="h-[520px] rounded-md border border-gray-100 overflow-hidden">
-                <WorkflowDiagram machine={previewMachine} highlightStepNumber={activeStepNumber} centerToken={centerToken} />
+                <WorkflowDiagram machine={previewMachine} highlightStepNumber={activeStepNumber} centerToken={centerToken} onStepClick={revealStep} displayNumbers={displayNumbers} />
               </div>
             ) : (
               <p className="text-xs text-ink-muted p-4">Fix the items above to see the updated diagram.</p>
@@ -452,13 +466,14 @@ function StagesEditor({ stages, onChange }: { stages: PhaseDef[]; onChange: (p: 
   );
 }
 
-function StepCard({ step, index, total, stages, allSteps, isActive, onActivate, onLocate, onAddAfter, onPatch, onRemove, onMove }: {
+function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, onActivate, onLocate, onAddAfter, onPatch, onRemove, onMove }: {
   step: WorkflowStepDef;
   index: number;
   total: number;
   stages: PhaseDef[];
   allSteps: WorkflowStepDef[];
   isActive?: boolean;
+  cardRef?: (el: HTMLDivElement | null) => void;
   onActivate?: () => void;
   onLocate?: () => void;
   onAddAfter?: () => void;
@@ -512,7 +527,8 @@ function StepCard({ step, index, total, stages, allSteps, isActive, onActivate, 
 
   return (
     <div
-      className={`rounded-lg border bg-surface-soft/40 p-4 transition-shadow ${isActive ? 'border-brand-400 ring-1 ring-brand-300' : 'border-hairline'}`}
+      ref={cardRef}
+      className={`rounded-lg border bg-surface-soft/40 p-4 transition-shadow scroll-mt-4 ${isActive ? 'border-brand-400 ring-1 ring-brand-300' : 'border-hairline'}`}
       onFocusCapture={onActivate}
       onClick={onActivate}
     >

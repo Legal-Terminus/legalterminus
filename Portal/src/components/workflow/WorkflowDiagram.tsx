@@ -54,12 +54,28 @@ function WorkflowNode({ data }: NodeProps) {
 
 const nodeTypes: NodeTypes = { workflowNode: WorkflowNode };
 
-function DiagramInner({ machine, highlightStepNumber, centerToken }: {
+function DiagramInner({ machine, highlightStepNumber, centerToken, onStepClick, displayNumbers }: {
   machine: AnyStateMachine;
   highlightStepNumber?: number | null;
   centerToken?: { step: number; nonce: number } | null;
+  onStepClick?: (stepNumber: number) => void;
+  displayNumbers?: Record<number, number>;
 }) {
-  const graph = useMemo(() => layoutGraph(machineToGraph(machine)), [machine]);
+  const graph = useMemo(() => {
+    const g = layoutGraph(machineToGraph(machine));
+    // Prefix node labels with the EDITOR's display number (1,2,3…) so the chart and
+    // the step cards use the same numbering. Falls back to no prefix when unknown.
+    if (displayNumbers) {
+      g.nodes = g.nodes.map((n) => {
+        const sn = (n.data as WorkflowNodeData).stepNumber;
+        const dn = sn != null ? displayNumbers[sn] : undefined;
+        return dn != null
+          ? { ...n, data: { ...n.data, label: `${dn}. ${(n.data as WorkflowNodeData).label}` } }
+          : n;
+      });
+    }
+    return g;
+  }, [machine, displayNumbers]);
   const [nodes, setNodes, onNodesChange] = useNodesState(graph.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(graph.edges);
   const { setCenter } = useReactFlow();
@@ -135,6 +151,10 @@ function DiagramInner({ machine, highlightStepNumber, centerToken }: {
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
+      onNodeClick={(_e, node) => {
+        const sn = (node.data as WorkflowNodeData).stepNumber;
+        if (sn != null) onStepClick?.(sn);
+      }}
       nodeTypes={nodeTypes}
       fitView
       nodesDraggable={false}
@@ -148,15 +168,17 @@ function DiagramInner({ machine, highlightStepNumber, centerToken }: {
   );
 }
 
-export default function WorkflowDiagram({ machine, highlightStepNumber, centerToken }: {
+export default function WorkflowDiagram({ machine, highlightStepNumber, centerToken, onStepClick, displayNumbers }: {
   machine: AnyStateMachine;
   highlightStepNumber?: number | null;
   centerToken?: { step: number; nonce: number } | null;
+  onStepClick?: (stepNumber: number) => void;
+  displayNumbers?: Record<number, number>;
 }) {
   return (
     <div className="h-[70vh] w-full rounded-xl border border-hairline bg-surface-soft">
       <ReactFlowProvider>
-        <DiagramInner machine={machine} highlightStepNumber={highlightStepNumber} centerToken={centerToken} />
+        <DiagramInner machine={machine} highlightStepNumber={highlightStepNumber} centerToken={centerToken} onStepClick={onStepClick} displayNumbers={displayNumbers} />
       </ReactFlowProvider>
     </div>
   );
