@@ -6,7 +6,7 @@ import {
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase,
   ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw, Check,
-  PanelLeft, PanelRight,
+  ChevronsLeft, ChevronsRight,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
@@ -838,56 +838,49 @@ function StepsTab({
   }
 
   // Phases → timeline-centric (Option 3): stage rail + focused pane + Activity rail.
-  // #72: on xl the rails are collapsible + drag-resizable (persisted widths); the
-  // grid template is driven by rail state. lg keeps a simple 2-col; mobile stacks.
+  // #72: at xl the rails are collapsible + drag-resizable (persisted widths), with
+  // drag handles between columns. Below xl it stacks (mobile stage dropdown; lg
+  // shows a simple 2-col stage rail). Each rail is rendered exactly once.
   const stagesCol = stagesRail.collapsed ? '2.25rem' : `${stagesRail.width}px`;
   const activityCol = activityRail.collapsed ? '2.25rem' : `${activityRail.width}px`;
   return (
     <>
-      {/* Mobile: stage dropdown (unchanged). */}
-      <MobileStagePicker stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} />
-
-      {/* lg (no resize): simple stage rail + content. xl: full resizable 3-col. */}
-      <div
-        className="lg:grid xl:grid gap-0 lg:grid-cols-[210px_1fr] lg:gap-6"
-        style={activitySection ? undefined : undefined}
-      >
-        {/* Stages rail — desktop. */}
-        <StagesRail
-          stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor}
-          rail={stagesRail}
-        />
-        <div className="xl:hidden" />
-      </div>
-
-      {/* xl resizable layout. Rendered separately so the drag handles sit between
-          columns; below xl the block above provides the stacked/2-col layout. */}
+      {/* xl+: resizable 3-column grid. */}
       <div
         className="hidden xl:grid items-start"
-        style={{ gridTemplateColumns: `${stagesCol} auto 1fr auto ${activitySection ? activityCol : '0px'}` }}
+        style={{ gridTemplateColumns: `${stagesCol} auto minmax(0,1fr)${activitySection ? ` auto ${activityCol}` : ''}` }}
       >
         <StagesRail stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} rail={stagesRail} />
         {!stagesRail.collapsed
           ? <PanelHandle onPointerDown={stagesRail.startDrag('left')} />
           : <div />}
-
-        <div className="space-y-7 min-w-0 px-0 mx-4">
+        <div className="space-y-7 min-w-0 mx-4">
           {partPaymentAlert}
           {pendingBar}
           {hero}
           {stepsSection}
         </div>
-
-        {activitySection && !activityRail.collapsed
+        {activitySection && (!activityRail.collapsed
           ? <PanelHandle onPointerDown={activityRail.startDrag('right')} />
-          : <div />}
-        {activitySection && (
-          <ActivityRail rail={activityRail}>{activitySection}</ActivityRail>
-        )}
+          : <div />)}
+        {activitySection && <ActivityRail rail={activityRail}>{activitySection}</ActivityRail>}
       </div>
 
-      {/* Below xl: content + inline Activity (stacked). */}
-      <div className="xl:hidden space-y-7 mt-5">
+      {/* lg (no resize): simple stage rail + content. */}
+      <div className="hidden lg:grid xl:hidden lg:grid-cols-[210px_1fr] lg:gap-6 items-start">
+        <StagesRail stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} rail={stagesRail} />
+        <div className="space-y-7 min-w-0">
+          {partPaymentAlert}
+          {pendingBar}
+          {hero}
+          {activitySection}
+          {stepsSection}
+        </div>
+      </div>
+
+      {/* Mobile: stage dropdown + stacked content. */}
+      <div className="lg:hidden space-y-7">
+        <MobileStagePicker stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} />
         {partPaymentAlert}
         {pendingBar}
         {hero}
@@ -923,17 +916,28 @@ function StagesRail({ stages, selected, onSelect, countsFor, rail }: {
 }) {
   return (
     <nav className="hidden lg:block xl:sticky xl:top-4 self-start">
-      <div className="flex items-center justify-between mb-2 px-2">
-        {!rail.collapsed && <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Stages</p>}
+      {rail.collapsed ? (
+        // Collapsed: a single labelled button that expands the rail.
         <button
           onClick={rail.toggle}
-          className="text-ink-faint hover:text-ink p-0.5 rounded"
-          title={rail.collapsed ? 'Expand stages' : 'Collapse stages'}
-          aria-label={rail.collapsed ? 'Expand stages' : 'Collapse stages'}
+          className="w-full flex flex-col items-center gap-1 py-2 text-ink-faint hover:text-ink rounded-lg hover:bg-white/60"
+          title="Expand stages" aria-label="Expand stages"
         >
-          <PanelLeft className="w-4 h-4" />
+          <ChevronsRight className="w-4 h-4" />
+          <span className="text-[10px] font-semibold uppercase tracking-wide [writing-mode:vertical-rl]">Stages</span>
         </button>
-      </div>
+      ) : (
+        <div className="flex items-center justify-between mb-2 px-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Stages</p>
+          <button
+            onClick={rail.toggle}
+            className="inline-flex items-center gap-1 text-[11px] text-ink-faint hover:text-ink px-1.5 py-0.5 rounded hover:bg-white/60"
+            title="Collapse stages" aria-label="Collapse stages"
+          >
+            <ChevronsLeft className="w-3.5 h-3.5" /> Hide
+          </button>
+        </div>
+      )}
       {!rail.collapsed && (
         <div className="space-y-1">
           {stages.map((st, i) => {
@@ -961,17 +965,27 @@ function StagesRail({ stages, selected, onSelect, countsFor, rail }: {
 function ActivityRail({ rail, children }: { rail: RailState; children: React.ReactNode }) {
   return (
     <aside className="xl:sticky xl:top-4 self-start xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto">
-      <div className="flex items-center justify-between mb-2">
-        {!rail.collapsed && <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint px-1">Activity</p>}
+      {rail.collapsed ? (
         <button
           onClick={rail.toggle}
-          className="text-ink-faint hover:text-ink p-0.5 rounded ml-auto"
-          title={rail.collapsed ? 'Expand activity' : 'Collapse activity'}
-          aria-label={rail.collapsed ? 'Expand activity' : 'Collapse activity'}
+          className="w-full flex flex-col items-center gap-1 py-2 text-ink-faint hover:text-ink rounded-lg hover:bg-white/60"
+          title="Expand activity" aria-label="Expand activity"
         >
-          <PanelRight className="w-4 h-4" />
+          <ChevronsLeft className="w-4 h-4" />
+          <span className="text-[10px] font-semibold uppercase tracking-wide [writing-mode:vertical-rl]">Activity</span>
         </button>
-      </div>
+      ) : (
+        <div className="flex items-center justify-between mb-2 px-1">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Activity</p>
+          <button
+            onClick={rail.toggle}
+            className="inline-flex items-center gap-1 text-[11px] text-ink-faint hover:text-ink px-1.5 py-0.5 rounded hover:bg-white/60"
+            title="Collapse activity" aria-label="Collapse activity"
+          >
+            Hide <ChevronsRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
       {!rail.collapsed && children}
     </aside>
   );
