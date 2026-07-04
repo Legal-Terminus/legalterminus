@@ -158,6 +158,62 @@ export interface MasterSheetRow {
 export const getMasterSheet = (filters: ReportFilters = {}) =>
   apiFetch<MasterSheetRow[]>(`/api/reports/master-sheet${buildQuery(filters)}`);
 
+// ─── #84 Revenue Analytics ──────────────────────────────────────────────────
+export interface RevenueReport {
+  collected: number;
+  outstanding: number;
+  totalFees: number;
+  pending: number;
+  monthly: { month: string; collected: number }[];
+  services: { service: string; collected: number; outstanding: number }[];
+  team: { name: string; collected: number }[];
+}
+export const getRevenueReport = () => apiFetch<RevenueReport>('/api/reports/revenue');
+
+// ─── #84 Team Performance ───────────────────────────────────────────────────
+export interface TeamPerformanceRow {
+  uid: string;
+  name: string;
+  assigned: number;
+  completed: number;
+  pending: number;
+  delayed: number;
+  pendingApproval: number;
+  avgCompletionDays: number | null;
+}
+export const getTeamPerformance = () => apiFetch<TeamPerformanceRow[]>('/api/reports/team-performance');
+
+// ─── #84 Storage Usage ──────────────────────────────────────────────────────
+export interface StorageReport {
+  totalBytes: number;
+  remaining: number;
+  provisioned: number;
+  usedPct: number;
+  alertLevel: 'ok' | 'warning' | 'critical';
+  perClient: { client: string; bytes: number }[];
+}
+export const getStorageReport = () => apiFetch<StorageReport>('/api/reports/storage');
+
+// ─── #84 Client-facing: my services ─────────────────────────────────────────
+export interface MyServiceRow {
+  taskId: string;
+  serviceName: string;
+  status: string;
+  currentStep: number;
+  totalSteps: number;
+  pendingAction: string;
+  paymentStatus: PaymentStatus;
+  totalFees: number;
+  amountPaid: number;
+  amountDue: number;
+  paymentMode: string;
+  paymentDate: string;
+  assignedTeam: string;
+  createdAt: string;
+  matterDueAt: string;
+}
+export const getMyServices = () => apiFetch<MyServiceRow[]>('/api/reports/my-services');
+
 // ─── Contact Leads report ───────────────────────────────────────────────────
 export type LeadStatus = 'new' | 'contacted' | 'closed';
 

@@ -29,6 +29,10 @@ import PaymentOverridesReport from '../pages/reports/PaymentOverridesReport';
 import ProfessionalMappingReport from '../pages/reports/ProfessionalMappingReport';
 import UnassignedTasksReport from '../pages/reports/UnassignedTasksReport';
 import MasterSheetReport from '../pages/reports/MasterSheetReport';
+import RevenueReportPage from '../pages/reports/RevenueReport';
+import TeamPerformanceReport from '../pages/reports/TeamPerformanceReport';
+import StorageReportPage from '../pages/reports/StorageReport';
+import MyServicesReport from '../pages/reports/MyServicesReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 
 /**
@@ -84,6 +88,11 @@ export const APP_ROUTES: AppRoute[] = [
   { path: '/reports/professional-mapping', element: <ProfessionalMappingReport />, roles: ['admin', 'manager'] },
   { path: '/reports/unassigned', element: <UnassignedTasksReport />, roles: ['admin', 'manager'] },
   { path: '/reports/master-sheet', element: <MasterSheetReport />,    roles: ['admin', 'manager'] },
+  { path: '/reports/revenue',      element: <RevenueReportPage />,    roles: ['admin', 'manager'] },
+  { path: '/reports/team-performance', element: <TeamPerformanceReport />, roles: ['admin', 'manager'] },
+  { path: '/reports/storage',      element: <StorageReportPage />,    roles: ['admin', 'manager'] },
+  // #84 client-facing report — clients see only their own services/payments.
+  { path: '/reports/my-services',  element: <MyServicesReport />,     roles: ['client'], nav: { label: 'Reports', icon: BarChart2, mobile: true } },
   { path: '/users/new/:type',      element: <UserFormPage />,         roles: ['admin', 'manager'] },
   { path: '/users/edit/:type/:uid',element: <UserFormPage />,         roles: ['admin', 'manager'] },
 

@@ -1,17 +1,20 @@
 import { Link } from 'react-router-dom';
 import {
-  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX,
+  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX, IndianRupee, Gauge, HardDrive,
 } from 'lucide-react';
 
 const REPORTS = [
+  { to: '/reports/master-sheet', title: 'Master Sheet',      desc: 'The central report — every matter with operational, payment & workflow columns. Search, filter, sort & Excel export.', icon: FileSpreadsheet },
   { to: '/reports/all-tasks',    title: 'All Matters',       desc: 'Filterable view of every matter in the system.', icon: ListChecks },
   { to: '/reports/completed',    title: 'Completed Matters', desc: 'Matters marked complete — sorted by finish date.', icon: CheckCircle2 },
   { to: '/reports/pending',      title: 'Pending Matters',   desc: 'Pending matters grouped by blocking reason.', icon: Clock },
   { to: '/reports/unassigned',   title: 'Unassigned Tasks',  desc: 'Active steps with no owner — the shared pickup pool to triage.', icon: UserX },
   { to: '/reports/sla',          title: 'SLA / Delay',       desc: 'Overdue & at-risk steps, plus on-time rate by service and phase.', icon: AlertTriangle },
+  { to: '/reports/team-performance', title: 'Team Performance', desc: 'Per-member assigned/completed/pending/delayed + avg completion time.', icon: Gauge },
+  { to: '/reports/revenue',      title: 'Revenue Analytics', desc: 'Collected, outstanding & pending revenue by month, service and team.', icon: IndianRupee },
   { to: '/reports/payment-overrides', title: 'Payment Overrides', desc: 'Matters progressing ahead of payment (no-payment or gate override).', icon: CreditCard },
   { to: '/reports/professional-mapping', title: 'Professional / Group', desc: 'Client counts per handling professional and parent/group company.', icon: Users },
-  { to: '/reports/master-sheet', title: 'Master Sheet',      desc: 'Full matter summary table with CSV export.', icon: FileSpreadsheet },
+  { to: '/reports/storage',      title: 'Storage Usage',     desc: 'Total & per-client document storage with alert levels.', icon: HardDrive },
   { to: '/reports/leads',        title: 'Contact Leads',   desc: 'Website enquiries — flags leads already registered as clients.', icon: Inbox },
 ];
 

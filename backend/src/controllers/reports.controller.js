@@ -446,3 +446,215 @@ export async function getMasterSheet(req, res) {
     res.status(500).json({ message: 'Failed to fetch master sheet' });
   }
 }
+
+// ─── GET /api/reports/revenue ──────────────────────────────────────────────
+// #84 report 10 — Revenue Analytics. Collected / outstanding totals plus
+// monthly, service-wise and team-wise breakdowns. "Collected" = amountPaid;
+// "outstanding" = amountDue across non-terminal matters.
+export async function getRevenueAnalytics(req, res) {
+  try {
+    const snap = await db.collection('tasks').get();
+    let collected = 0, outstanding = 0, totalFees = 0;
+    const byMonth = new Map();   // 'YYYY-MM' → collected
+    const byService = new Map(); // service → { collected, outstanding }
+    const byTeam = new Map();    // assignee name → collected
+
+    const nameCache = new Map();
+    const resolveName = async (uid) => {
+      if (!uid) return 'Unassigned';
+      if (nameCache.has(uid)) return nameCache.get(uid);
+      let name = uid;
+      try { const u = await db.collection('users').doc(uid).get(); if (u.exists) name = u.data().name || u.data().fullName || u.data().email || uid; } catch { /* keep uid */ }
+      nameCache.set(uid, name);
+      return name;
+    };
+
+    for (const doc of snap.docs) {
+      const d = doc.data();
+      const paid = d.amountPaid ?? 0;
+      const due = d.amountDue ?? 0;
+      collected += paid;
+      totalFees += d.totalCost ?? paid + due;
+      if (!['completed', 'cancelled', 'rejected', 'archived'].includes(d.status)) outstanding += due;
+
+      const month = (d.createdAt ?? '').slice(0, 7);
+      if (month) byMonth.set(month, (byMonth.get(month) ?? 0) + paid);
+
+      const service = d.serviceName ?? d.workflowType ?? 'Unknown';
+      const s = byService.get(service) ?? { collected: 0, outstanding: 0 };
+      s.collected += paid; s.outstanding += due;
+      byService.set(service, s);
+
+      const teamName = await resolveName(d.assignedTo);
+      byTeam.set(teamName, (byTeam.get(teamName) ?? 0) + paid);
+    }
+
+    const monthly = [...byMonth.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([month, amount]) => ({ month, collected: amount }));
+    const services = [...byService.entries()].map(([service, v]) => ({ service, ...v })).sort((a, b) => b.collected - a.collected);
+    const team = [...byTeam.entries()].map(([name, collected]) => ({ name, collected })).sort((a, b) => b.collected - a.collected);
+
+    res.json({ collected, outstanding, totalFees, pending: outstanding, monthly, services, team });
+  } catch (err) {
+    logger.error({ err }, 'getRevenueAnalytics error:');
+    res.status(500).json({ message: 'Failed to fetch revenue analytics' });
+  }
+}
+
+// ─── GET /api/reports/team-performance ─────────────────────────────────────
+// #84 report 4 — per team member: assigned / completed / pending / delayed
+// counts + average completion time + pending-approval count.
+export async function getTeamPerformance(req, res) {
+  try {
+    const now = Date.now();
+    const [usersSnap, tasksSnap] = await Promise.all([
+      db.collection('users').get(),
+      db.collection('tasks').get(),
+    ]);
+    const staff = usersSnap.docs.map((d) => ({ uid: d.id, ...d.data() })).filter((u) => u.role !== 'client');
+    const byUid = new Map(staff.map((u) => [u.uid, {
+      uid: u.uid,
+      name: u.name || u.fullName || u.email || u.uid,
+      assigned: 0, completed: 0, pending: 0, delayed: 0, pendingApproval: 0,
+      _completionMs: 0, _completionN: 0,
+    }]));
+
+    for (const doc of tasksSnap.docs) {
+      const d = doc.data();
+      const row = byUid.get(d.assignedTo);
+      if (!row) continue;
+      row.assigned += 1;
+      if (d.status === 'completed') {
+        row.completed += 1;
+        if (d.createdAt && d.updatedAt) {
+          const ms = new Date(d.updatedAt).getTime() - new Date(d.createdAt).getTime();
+          if (ms > 0) { row._completionMs += ms; row._completionN += 1; }
+        }
+      } else if (['pending', 'active', 'on_hold', 'pending_admin_approval'].includes(d.status)) {
+        row.pending += 1;
+        if (d.status === 'pending_admin_approval') row.pendingApproval += 1;
+        if (d.matterDueAt && new Date(d.matterDueAt).getTime() < now) row.delayed += 1;
+      }
+    }
+
+    const rows = [...byUid.values()].map((r) => ({
+      uid: r.uid, name: r.name,
+      assigned: r.assigned, completed: r.completed, pending: r.pending,
+      delayed: r.delayed, pendingApproval: r.pendingApproval,
+      avgCompletionDays: r._completionN ? Math.round((r._completionMs / r._completionN) / 86_400_000 * 10) / 10 : null,
+    })).sort((a, b) => b.assigned - a.assigned);
+
+    res.json(rows);
+  } catch (err) {
+    logger.error({ err }, 'getTeamPerformance error:');
+    res.status(500).json({ message: 'Failed to fetch team performance' });
+  }
+}
+
+// ─── GET /api/reports/storage ──────────────────────────────────────────────
+// #84 report 11 — storage usage: total bytes used, per-client document storage,
+// and an alert level. Reads document metadata (size where available) across all
+// matters' `documents` subcollections via a collection-group query.
+export async function getStorageReport(req, res) {
+  try {
+    const docsSnap = await db.collectionGroup('documents').get();
+    const clientCache = new Map();
+    const resolveClient = async (uid) => {
+      if (!uid) return 'Unknown';
+      if (clientCache.has(uid)) return clientCache.get(uid);
+      let name = uid;
+      try { const u = await db.collection('users').doc(uid).get(); if (u.exists) name = u.data().name || u.data().fullName || u.data().email || uid; } catch { /* keep uid */ }
+      clientCache.set(uid, name);
+      return name;
+    };
+
+    // Map taskId → clientUid so per-doc storage rolls up to the client.
+    const byTask = new Map();
+    let totalBytes = 0;
+    const perTask = new Map();
+    for (const doc of docsSnap.docs) {
+      const d = doc.data();
+      const bytes = d.sizeBytes ?? d.size ?? 0;
+      totalBytes += bytes;
+      const tId = d.taskId ?? doc.ref.parent.parent?.id ?? null;
+      if (tId) perTask.set(tId, (perTask.get(tId) ?? 0) + bytes);
+      byTask.set(tId, byTask.get(tId) ?? null);
+    }
+
+    // Roll up per task → client.
+    const perClient = new Map();
+    await Promise.all([...perTask.entries()].map(async ([tId, bytes]) => {
+      let clientUid = byTask.get(tId);
+      if (clientUid == null && tId) {
+        try { const t = await db.collection('tasks').doc(tId).get(); clientUid = t.exists ? t.data().clientUid : null; } catch { clientUid = null; }
+      }
+      const name = await resolveClient(clientUid);
+      perClient.set(name, (perClient.get(name) ?? 0) + bytes);
+    }));
+
+    const PROVISIONED = 5 * 1024 * 1024 * 1024; // 5 GB soft cap (display/alerting only)
+    const remaining = Math.max(0, PROVISIONED - totalBytes);
+    const usedPct = PROVISIONED ? Math.round((totalBytes / PROVISIONED) * 100) : 0;
+    const alertLevel = usedPct >= 90 ? 'critical' : usedPct >= 80 ? 'warning' : 'ok';
+
+    res.json({
+      totalBytes, remaining, provisioned: PROVISIONED, usedPct, alertLevel,
+      perClient: [...perClient.entries()].map(([client, bytes]) => ({ client, bytes })).sort((a, b) => b.bytes - a.bytes),
+    });
+  } catch (err) {
+    logger.error({ err }, 'getStorageReport error:');
+    res.status(500).json({ message: 'Failed to fetch storage report' });
+  }
+}
+
+// ─── GET /api/reports/my-services ──────────────────────────────────────────
+// #84 reports 12-16 — the CLIENT-facing report. Scoped to the logged-in client's
+// OWN matters (enforced by clientUid == req.user.uid). Returns each service with
+// status, pending action, payment breakdown and the assigned team, so the client
+// UI can present All / Paid / Partly-paid / Unpaid views by filtering.
+export async function getMyServices(req, res) {
+  try {
+    const uid = req.user?.uid;
+    if (!uid) return res.status(401).json({ message: 'Unauthenticated' });
+
+    const snap = await db.collection('tasks').where('clientUid', '==', uid).get();
+    const nameCache = new Map();
+    const resolveName = async (u) => {
+      if (!u) return '';
+      if (nameCache.has(u)) return nameCache.get(u);
+      let name = '';
+      try { const doc = await db.collection('users').doc(u).get(); if (doc.exists) name = doc.data().name || doc.data().fullName || ''; } catch { /* ignore */ }
+      nameCache.set(u, name);
+      return name;
+    };
+
+    const rows = await Promise.all(snap.docs.map(async (doc) => {
+      const d = doc.data();
+      const pendingAction = d.paymentStatus === 'not_paid' || d.paymentStatus === 'part_paid'
+        ? 'Payment due'
+        : d.status === 'active' ? 'In progress'
+        : d.status === 'completed' ? 'Completed' : '—';
+      return {
+        taskId: doc.id,
+        serviceName: d.serviceName ?? d.workflowType ?? '',
+        status: d.status ?? '',
+        currentStep: d.currentStepNumber ?? 0,
+        totalSteps: d.totalSteps ?? 0,
+        pendingAction,
+        paymentStatus: d.paymentStatus ?? 'not_paid',
+        totalFees: d.totalCost ?? (d.amountPaid ?? 0) + (d.amountDue ?? 0),
+        amountPaid: d.amountPaid ?? 0,
+        amountDue: d.amountDue ?? 0,
+        paymentMode: d.paymentMode ?? '',
+        paymentDate: d.paymentStatus === 'fully_paid' ? (d.updatedAt ?? '') : '',
+        assignedTeam: await resolveName(d.assignedTo),
+        createdAt: d.createdAt ?? '',
+        matterDueAt: d.matterDueAt ?? '',
+      };
+    }));
+
+    res.json(rows.sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? '')));
+  } catch (err) {
+    logger.error({ err }, 'getMyServices error:');
+    res.status(500).json({ message: 'Failed to fetch your services' });
+  }
+}
