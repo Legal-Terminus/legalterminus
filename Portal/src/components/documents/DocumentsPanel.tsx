@@ -28,7 +28,7 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['documents', taskId] });
 
   const upload = useMutation({
-    mutationFn: (file: File) => uploadDocument(taskId, file),
+    mutationFn: ({ file, docType }: { file: File; docType?: string }) => uploadDocument(taskId, file, undefined, docType),
     onSuccess: () => { invalidate(); toast.success('Document uploaded — awaiting review.'); },
     onError: (e: Error) => toast.error(e.message || 'Upload failed.'),
   });
@@ -50,7 +50,7 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
   return (
     <div className="space-y-5">
       {/* Uploader — both roles can add a document (staff on behalf of the client too). */}
-      <Uploader onPick={(f) => upload.mutate(f)} busy={upload.isPending} />
+      <Uploader onPick={(file, docType) => upload.mutate({ file, docType })} busy={upload.isPending} />
 
       {active.length === 0 && archived.length === 0 ? (
         <div className="card p-12 text-center">
@@ -67,7 +67,7 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
               taskId={taskId}
               isStaff={isStaff}
               onChanged={invalidate}
-              onReupload={(f) => upload.mutate(f)}
+              onReupload={(f) => upload.mutate({ file: f, docType: d.docType ?? undefined })}
               reuploading={upload.isPending}
             />
           ))}
@@ -92,13 +92,30 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
 
 /* ── Uploader ──────────────────────────────────────────────────────────────── */
 
-function Uploader({ onPick, busy }: { onPick: (f: File) => void; busy: boolean }) {
+// Common document types (#79) — free text is still allowed via the datalist.
+const COMMON_DOC_TYPES = ['PAN', 'TAN', 'Aadhaar', 'Address Proof', 'Photograph', 'Bank Statement', 'Rent Agreement', 'MOA', 'AOA', 'Board Resolution', 'Invoice', 'Other'];
+
+function Uploader({ onPick, busy }: { onPick: (f: File, docType?: string) => void; busy: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [docType, setDocType] = useState('');
   return (
-    <div className="card p-4 flex items-center justify-between gap-3 flex-wrap">
-      <div className="min-w-0">
+    <div className="card p-4 flex items-end justify-between gap-3 flex-wrap">
+      <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-ink">Upload a document</p>
-        <p className="text-xs text-ink-muted mt-0.5">PDF, JPG, PNG or DOCX · max 10MB</p>
+        <p className="text-xs text-ink-muted mt-0.5 mb-2">PDF, JPG, PNG, DOCX or Excel · max 10MB</p>
+        <label className="block">
+          <span className="text-xs text-ink-muted">Document type <span className="text-ink-faint">(e.g. PAN, TAN, Address proof)</span></span>
+          <input
+            list="doc-type-options"
+            value={docType}
+            onChange={(e) => setDocType(e.target.value)}
+            placeholder="Select or type a document type"
+            className="input-field mt-1 max-w-xs"
+          />
+          <datalist id="doc-type-options">
+            {COMMON_DOC_TYPES.map((t) => <option key={t} value={t} />)}
+          </datalist>
+        </label>
       </div>
       <input
         ref={inputRef}
@@ -107,7 +124,7 @@ function Uploader({ onPick, busy }: { onPick: (f: File) => void; busy: boolean }
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
-          if (f) onPick(f);
+          if (f) { onPick(f, docType.trim() || undefined); setDocType(''); }
           e.target.value = ''; // allow re-picking the same file
         }}
       />
@@ -166,7 +183,10 @@ function DocumentCard({
             <FileText className="w-4 h-4 text-ink-muted" />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-ink truncate">{doc.fileName}</p>
+            {/* #79: show the document type name (PAN, TAN, …) with the file name as
+                secondary. Falls back to just the file name when no type was set. */}
+            <p className="text-sm font-medium text-ink truncate">{doc.docType || doc.fileName}</p>
+            {doc.docType && <p className="text-[11px] text-ink-faint truncate">{doc.fileName}</p>}
             <div className="flex items-center gap-2 mt-1">
               <span className={`badge ${meta.cls} inline-flex items-center gap-1`}>
                 <meta.Icon className="w-3 h-3" /> {meta.label}

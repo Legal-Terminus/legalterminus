@@ -80,6 +80,7 @@ export const signedUploadUrlSchema = z.object({
   stepNumber: z.coerce.number().int().min(0).optional(),
   fileName: z.string().trim().min(1).max(200),
   contentType: z.string().trim().min(1).max(120),
+  docType: z.string().trim().max(100).optional(), // #79: e.g. PAN, TAN, Address proof
 }).strict();
 
 // POST /api/tasks/:taskId/documents/:docId/confirm

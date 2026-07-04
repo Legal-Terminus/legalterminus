@@ -52,6 +52,7 @@ const serialize = (doc) => {
     taskId: d.taskId,
     stepNumber: d.stepNumber ?? null,
     fileName: d.fileName ?? '',
+    docType: d.docType ?? null, // #79: e.g. PAN, TAN, Address proof
     contentType: d.contentType ?? '',
     status: d.status ?? 'awaiting_upload',
     rejectionRemark: d.rejectionRemark ?? null,
@@ -104,7 +105,7 @@ export async function listDocuments(req, res) {
 export async function createSignedUploadUrl(req, res) {
   try {
     const { taskId } = req.params;
-    const { stepNumber, fileName, contentType } = req.body; // shape validated by schema
+    const { stepNumber, fileName, contentType, docType } = req.body; // shape validated by schema
 
     const task = await loadAuthorizedTask(req, res, taskId);
     if (!task) return;
@@ -131,6 +132,7 @@ export async function createSignedUploadUrl(req, res) {
       taskId,
       stepNumber: stepNumber ?? null,
       fileName: safeName,
+      docType: docType ? String(docType).trim().slice(0, 100) : null, // #79
       contentType,
       objectPath,
       status: 'awaiting_upload',

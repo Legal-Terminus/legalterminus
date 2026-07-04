@@ -15,6 +15,7 @@ export interface TaskDocument {
   taskId: string;
   stepNumber: number | null;
   fileName: string;
+  docType: string | null; // #79: e.g. PAN, TAN, Address proof
   contentType: string;
   status: DocumentStatus;
   rejectionRemark: string | null;
@@ -76,6 +77,7 @@ export async function uploadDocument(
   taskId: string,
   file: File,
   stepNumber?: number,
+  docType?: string,
 ): Promise<TaskDocument> {
   if (file.size > MAX_DOC_BYTES) {
     throw new Error('File is too large (max 10MB).');
@@ -90,7 +92,7 @@ export async function uploadDocument(
   // Step 1 — signed PUT URL + a pre-created metadata doc.
   const { docId, signedUrl } = await apiFetch<SignedUploadResponse>(
     `/api/tasks/${taskId}/documents/signed-upload-url`,
-    { method: 'POST', body: JSON.stringify({ stepNumber, fileName: file.name, contentType }) },
+    { method: 'POST', body: JSON.stringify({ stepNumber, fileName: file.name, contentType, docType: docType?.trim() || undefined }) },
   );
 
   // Step 2 — PUT the bytes straight to storage (no backend bandwidth). The
