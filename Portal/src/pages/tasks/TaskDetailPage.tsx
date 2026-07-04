@@ -654,7 +654,25 @@ function StepsTab({
   // Server-resolved name (#48) — used so team members (who don't fetch the staff
   // list) still see the real assignee instead of a false "Unassigned".
   const currentAssigneeName = currentStepInstance?.assigneeName ?? null;
-  const descFor = (n: number) => stepDefs.find((s) => s.stepNumber === n)?.description;
+  // #81/#82: the step's audience-appropriate description text. Staff see internal
+  // descriptions/notes; clients see client ones. Falls back to the legacy single
+  // `description`. (The backend already strips internal fields for clients.)
+  const descFor = (n: number): string | undefined => {
+    const s = stepDefs.find((x) => x.stepNumber === n);
+    if (!s) return undefined;
+    const audience = role.isClient ? 'client' : 'internal';
+    const tagged = (s.descriptions ?? []).filter((d) => (d.audience ?? 'client') === audience).map((d) => d.text);
+    const notes = role.isClient ? s.clientNote : s.internalNotes;
+    const parts = [...tagged, notes, s.description].filter((t): t is string => !!t && t.trim().length > 0);
+    // De-dupe (legacy description may already appear as a migrated entry).
+    return [...new Set(parts)].join('\n\n') || undefined;
+  };
+  // #81: the audience-appropriate step STATUS label (shown as a small badge).
+  const statusFor = (n: number): string | undefined => {
+    const s = stepDefs.find((x) => x.stepNumber === n);
+    if (!s) return undefined;
+    return role.isClient ? s.clientStatus : s.internalStatus;
+  };
 
   // Stage (phase) data drives the left rail. phaseId comes from the definition.
   const phaseList = definition?.phases ?? [];
@@ -743,6 +761,7 @@ function StepsTab({
             step={step}
             displayNumber={displayNumberOf(step.stepNumber)}
             description={descFor(step.stepNumber)}
+            statusLabel={statusFor(step.stepNumber)}
             isCurrent={step.stepNumber === task.currentStepNumber && !completed}
             comments={events.filter((e) => e.comment && (e.fromStep === step.stepNumber || e.toStep === step.stepNumber))}
             attachments={documents.filter((d) => d.stepNumber === step.stepNumber)}
@@ -1537,10 +1556,11 @@ const STATUS: Record<StepStatus, { label: string; cls: string }> = {
 
 /** A step row. Expands to reveal details: the comments and document attachments
  *  recorded against this step (plus completion time / remark). */
-function ExpandableStepRow({ step, displayNumber, description, isCurrent, comments = [], attachments = [], onOpenDoc }: {
+function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCurrent, comments = [], attachments = [], onOpenDoc }: {
   step: TaskStep;
   displayNumber: number;
   description?: string;
+  statusLabel?: string; // #81: audience-specific status text
   isCurrent: boolean;
   comments?: TaskEvent[];
   attachments?: TaskDocument[];
@@ -1567,6 +1587,7 @@ function ExpandableStepRow({ step, displayNumber, description, isCurrent, commen
         <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${step.status === 'completed' ? 'text-emerald-600' : skipped ? 'text-ink-faint' : isCurrent ? 'text-brand-600' : 'text-ink-faint'}`} />
         <div className="min-w-0 flex-1">
           <p className={`text-sm ${isCurrent ? 'font-semibold text-ink' : 'text-ink-soft'}`}>{displayNumber}. {step.title}</p>
+          {statusLabel && <p className="text-[11px] text-ink-muted mt-0.5">{statusLabel}</p>}
           {description && !open && <p className="text-xs text-ink-muted mt-0.5 truncate">{description}</p>}
           {!open && countBits && <p className="text-[11px] text-ink-faint mt-0.5">{countBits}</p>}
         </div>
@@ -1575,7 +1596,7 @@ function ExpandableStepRow({ step, displayNumber, description, isCurrent, commen
       </button>
       {open && expandable && (
         <div className="px-5 pb-4 pl-12 space-y-2">
-          {description && <p className="text-xs text-ink-muted">{description}</p>}
+          {description && <p className="text-xs text-ink-muted whitespace-pre-wrap break-words">{description}</p>}
           {step.completedAt && <p className="text-xs text-ink-faint">Completed {relTime(step.completedAt)}</p>}
           {step.remark && <p className="text-sm text-ink-muted bg-surface-soft rounded-lg px-3 py-2">“{step.remark}”</p>}
 

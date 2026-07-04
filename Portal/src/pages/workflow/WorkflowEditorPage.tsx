@@ -12,7 +12,7 @@ import WorkflowDiagram from '../../components/workflow/WorkflowDiagram';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import {
   getWorkflowDefinitions, getWorkflowDefinition, updateWorkflowDefinition, createWorkflowDefinition,
-  type WorkflowDefinition, type WorkflowStepDef, type PhaseDef,
+  type WorkflowDefinition, type WorkflowStepDef, type PhaseDef, type StepDescription,
 } from '../../api/workflowDefinitions';
 import { outcomeColor } from '../../workflows/machineToGraph';
 import { getServiceCatalog } from '../../api/services';
@@ -641,10 +641,32 @@ function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, onA
         </div>
       )}
 
+      {/* #81: independent Internal vs Client status & notes. Fully separate —
+          editing one never affects the other. */}
+      <div className="mt-3 grid md:grid-cols-2 gap-3">
+        <div className="rounded-lg border border-hairline p-3 space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Internal view</p>
+          <LabeledField label="Internal status">
+            <input className={`${inputCls} mt-1`} value={step.internalStatus ?? ''} onChange={(e) => onPatch({ internalStatus: e.target.value || undefined })} placeholder="e.g. Drafting" />
+          </LabeledField>
+          <LabeledField label="Internal notes">
+            <textarea className={`${inputCls} resize-y mt-1`} rows={2} value={step.internalNotes ?? ''} onChange={(e) => onPatch({ internalNotes: e.target.value || undefined })} placeholder="Only staff see this." />
+          </LabeledField>
+        </div>
+        <div className="rounded-lg border border-hairline p-3 space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Client view</p>
+          <LabeledField label="Client status">
+            <input className={`${inputCls} mt-1`} value={step.clientStatus ?? ''} onChange={(e) => onPatch({ clientStatus: e.target.value || undefined })} placeholder="e.g. In progress" />
+          </LabeledField>
+          <LabeledField label="Client note / description">
+            <textarea className={`${inputCls} resize-y mt-1`} rows={2} value={step.clientNote ?? ''} onChange={(e) => onPatch({ clientNote: e.target.value || undefined })} placeholder="Shown to the client." />
+          </LabeledField>
+        </div>
+      </div>
+
+      {/* #82: multiple audience-tagged descriptions. */}
       <div className="mt-3">
-        <LabeledField label="Description (optional)" hint="A short note shown to staff/clients explaining this step.">
-          <textarea className={`${inputCls} resize-y mt-1`} rows={2} value={step.description ?? ''} onChange={(e) => onPatch({ description: e.target.value || undefined })} />
-        </LabeledField>
+        <StepDescriptionsEditor step={step} onPatch={onPatch} inputCls={inputCls} />
       </div>
 
       {/* Advanced (raw) — power users */}
@@ -694,6 +716,69 @@ const OUTCOME_TYPES: { event: string; label: string; needsName?: boolean }[] = [
   { event: 'REWORK', label: 'Sent back for correction' },
   { event: 'BRANCH_DECISION', label: 'Option (you name it)', needsName: true },
 ];
+
+/**
+ * #82: multiple audience-tagged descriptions per step. Admin can add unlimited
+ * descriptions, edit, delete, and tag each Internal or Client. Migrates a legacy
+ * single `description` into the list on first edit (kept until first save).
+ */
+function StepDescriptionsEditor({ step, onPatch, inputCls }: {
+  step: WorkflowStepDef;
+  onPatch: (next: Partial<WorkflowStepDef>) => void;
+  inputCls: string;
+}) {
+  // Seed from `descriptions`, else from a legacy single `description`.
+  const list: StepDescription[] = step.descriptions
+    ?? (step.description ? [{ id: 'legacy', audience: 'client', text: step.description }] : []);
+
+  const commit = (next: StepDescription[]) =>
+    onPatch({ descriptions: next, description: undefined }); // drop legacy field once managed here
+
+  const add = () => commit([...list, { id: `d${Date.now()}`, audience: 'client', text: '' }]);
+  const update = (i: number, patch: Partial<StepDescription>) =>
+    commit(list.map((d, j) => (j === i ? { ...d, ...patch } : d)));
+  const remove = (i: number) => commit(list.filter((_, j) => j !== i));
+
+  return (
+    <div className="rounded-lg border border-hairline p-3">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Descriptions</p>
+        <button onClick={add} className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">
+          <Plus className="w-3.5 h-3.5" /> Add description
+        </button>
+      </div>
+      {list.length === 0 ? (
+        <p className="text-xs text-ink-faint">No descriptions. Add one for the internal team or the client.</p>
+      ) : (
+        <div className="space-y-2">
+          {list.map((d, i) => (
+            <div key={d.id ?? i} className="flex items-start gap-2">
+              <select
+                className={`${inputCls} w-28 shrink-0`}
+                value={d.audience ?? 'client'}
+                onChange={(e) => update(i, { audience: e.target.value as 'internal' | 'client' })}
+                aria-label="Description audience"
+              >
+                <option value="client">Client</option>
+                <option value="internal">Internal</option>
+              </select>
+              <textarea
+                className={`${inputCls} resize-y flex-1`}
+                rows={2}
+                value={d.text}
+                onChange={(e) => update(i, { text: e.target.value })}
+                placeholder="Description text…"
+              />
+              <button onClick={() => remove(i)} className="p-1.5 text-ink-faint hover:text-red-600" title="Delete description" aria-label="Delete description">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /**
  * Freely-editable list of step OUTCOMES — each row is "[outcome] → [go to step]".

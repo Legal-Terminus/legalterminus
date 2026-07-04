@@ -31,11 +31,46 @@ export async function listDefinitions(req, res) {
 }
 
 // GET /api/workflow-definitions/:id — full definition (incl. steps) for viz/editor.
+// #81: internal-only step fields never sent to a client. #82: only
+// client-audience descriptions are exposed to clients.
+const INTERNAL_STEP_FIELDS = ['internalStatus', 'internalNotes'];
+
+// #82 migration (lazy, non-destructive): a legacy single `description` surfaces
+// as a client-audience entry in `descriptions` so nothing is lost and existing
+// workflows render under the new model without a data backfill.
+function withMigratedDescriptions(def) {
+  const steps = (def.steps ?? []).map((s) => {
+    if (Array.isArray(s.descriptions)) return s;
+    if (s.description && s.description.trim()) {
+      return { ...s, descriptions: [{ id: 'legacy', audience: 'client', text: s.description }] };
+    }
+    return s;
+  });
+  return { ...def, steps };
+}
+
+function projectDefinitionForClient(def) {
+  const steps = (def.steps ?? []).map((s) => {
+    const copy = { ...s };
+    for (const f of INTERNAL_STEP_FIELDS) delete copy[f];
+    if (Array.isArray(copy.descriptions)) {
+      // Client sees only descriptions explicitly tagged for the client audience.
+      copy.descriptions = copy.descriptions.filter((d) => (d.audience ?? 'client') === 'client');
+    }
+    return copy;
+  });
+  return { ...def, steps };
+}
+
 export async function getDefinition(req, res) {
   try {
     const snap = await getDb().collection(COLLECTION).doc(req.params.id).get();
     if (!snap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
-    res.json(snap.data());
+    const def = withMigratedDescriptions(snap.data());
+    // Clients get a projection without internal status/notes + internal-only
+    // descriptions (#81/#82). Staff get the full definition.
+    if (req.user?.role === 'client') return res.json(projectDefinitionForClient(def));
+    res.json(def);
   } catch (err) {
     logger.error({ err }, 'getDefinition error:');
     res.status(500).json({ message: 'Failed to get workflow definition' });

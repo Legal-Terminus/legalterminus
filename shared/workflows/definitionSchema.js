@@ -178,6 +178,28 @@ export function validateDefinition(def) {
     if (s.allowDocUpload != null && typeof s.allowDocUpload !== 'boolean') {
       errors.push(`step ${s.stepNumber} allowDocUpload must be a boolean`);
     }
+    // #81: independent internal/client status + notes — optional strings.
+    for (const f of ['internalStatus', 'internalNotes', 'clientStatus', 'clientNote']) {
+      if (s[f] != null && typeof s[f] !== 'string') {
+        errors.push(`step ${s.stepNumber} ${f} must be a string`);
+      }
+    }
+    // #82: multiple audience-tagged descriptions — optional array of
+    // { audience: 'internal'|'client', text: string }.
+    if (s.descriptions != null) {
+      if (!Array.isArray(s.descriptions)) {
+        errors.push(`step ${s.stepNumber} descriptions must be an array`);
+      } else {
+        for (const d of s.descriptions) {
+          if (!d || typeof d.text !== 'string' || !d.text.trim()) {
+            errors.push(`step ${s.stepNumber} each description needs non-empty text`);
+          }
+          if (d && d.audience != null && d.audience !== 'internal' && d.audience !== 'client') {
+            errors.push(`step ${s.stepNumber} description audience must be 'internal' or 'client'`);
+          }
+        }
+      }
+    }
     if (s.type === 'payment_gate') {
       if (!s.gate) errors.push(`payment_gate step ${s.stepNumber} missing gate config`);
       else {

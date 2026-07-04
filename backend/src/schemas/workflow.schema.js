@@ -95,6 +95,17 @@ const stepSchema = z.object({
   clientActionLabel: z.string().trim().max(120).optional(),
   checklistItems: z.array(z.string().trim().min(1).max(300)).max(50).optional(),
   allowDocUpload: z.boolean().optional(),
+  // #81: independent internal vs client status + notes.
+  internalStatus: z.string().trim().max(200).optional(),
+  internalNotes: z.string().trim().max(4000).optional(),
+  clientStatus: z.string().trim().max(200).optional(),
+  clientNote: z.string().trim().max(4000).optional(),
+  // #82: multiple audience-tagged descriptions.
+  descriptions: z.array(z.object({
+    id: z.string().trim().max(60).optional(),
+    audience: z.enum(['internal', 'client']).optional(),
+    text: z.string().trim().min(1).max(2000),
+  })).max(30).optional(),
   ownerType: z.enum(['client', 'team', 'govt']).optional(),
   gate: gateSchema.optional(),
   transitions: z.array(transitionSchema).max(40).optional(),

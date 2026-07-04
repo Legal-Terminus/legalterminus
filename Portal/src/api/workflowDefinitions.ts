@@ -18,6 +18,12 @@ export interface PhaseDef {
   order: number;
 }
 
+export interface StepDescription {
+  id?: string;
+  audience?: 'internal' | 'client';
+  text: string;
+}
+
 export interface WorkflowStepDef {
   stepNumber: number;
   title: string;
@@ -35,6 +41,13 @@ export interface WorkflowStepDef {
   checklistItems?: string[];
   /** When true, the step renders a per-step document upload control (#61). */
   allowDocUpload?: boolean;
+  /** #81: independent internal vs client status + notes (fully separate). */
+  internalStatus?: string;
+  internalNotes?: string;
+  clientStatus?: string;
+  clientNote?: string;
+  /** #82: multiple audience-tagged descriptions. */
+  descriptions?: StepDescription[];
   ownerType?: OwnerType;
   gate?: { requires: 'fully_paid' | 'part_paid'; onPass: number; onWait: number };
   transitions?: { event: string; to: number; branch?: string }[];
