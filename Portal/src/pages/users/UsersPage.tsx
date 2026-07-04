@@ -20,6 +20,7 @@ import {
   type PortalUser, type Role,
 } from '../../api/users';
 import { useAuthStore } from '../../store/authStore';
+import UserDetailDrawer from '../../components/users/UserDetailDrawer';
 import {
   ROLES, roleLabel, roleBadgeClass, roleAvatarClass, can, USER_DELETE_ROLES,
 } from '../../lib/roles';
@@ -78,6 +79,8 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [search, setSearch] = useState('');
   const [sorting, setSorting] = useState<SortingState>([{ id: 'createdAt', desc: true }]);
+  // E09-S06: read-only detail view opened by clicking a user row.
+  const [detailUser, setDetailUser] = useState<PortalUser | null>(null);
 
   // Load all users once; the grid does sorting/filtering/search client-side.
   const { data: users = [], isLoading, error } = useQuery({
@@ -219,7 +222,7 @@ export default function UsersPage() {
       cell: (ctx) => {
         const user = ctx.row.original;
         return (
-          <div className="flex items-center justify-end gap-1">
+          <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => handleEdit(user)}
               className="p-2 rounded-xl text-ink-faint hover:text-ink hover:bg-surface-soft transition-colors"
@@ -371,7 +374,8 @@ export default function UsersPage() {
                   {rows.map((row) => (
                     <div
                       key={row.id}
-                      className="flex items-start border-b border-gray-50 hover:bg-surface-soft transition-colors group"
+                      onClick={() => setDetailUser(row.original)}
+                      className="flex items-start border-b border-gray-50 hover:bg-surface-soft transition-colors group cursor-pointer"
                     >
                       {row.getVisibleCells().map((cell) => (
                         <div
@@ -394,7 +398,7 @@ export default function UsersPage() {
             {rows.map((row) => {
               const user = row.original;
               return (
-                <div key={row.id} className="card p-4">
+                <div key={row.id} onClick={() => setDetailUser(user)} className="card p-4 cursor-pointer">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${roleAvatarClass(user.role)}`}>
@@ -424,7 +428,7 @@ export default function UsersPage() {
                       <Calendar className="w-3.5 h-3.5" />
                       {formatDate(user.createdAt)}
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                       <button onClick={() => handleEdit(user)} className="btn-secondary py-1.5 px-3 text-xs">
                         <Pencil className="w-3.5 h-3.5" /> Edit
                       </button>
@@ -459,6 +463,16 @@ export default function UsersPage() {
             queryClient.invalidateQueries({ queryKey: ['portalUsers'] });
             queryClient.invalidateQueries({ queryKey: ['tasks'] });
           }}
+        />
+      )}
+
+      {/* E09-S06: read-only detail view; Edit switches to the edit form. */}
+      {detailUser && (
+        <UserDetailDrawer
+          user={detailUser}
+          canEdit
+          onClose={() => setDetailUser(null)}
+          onEdit={(u) => { setDetailUser(null); handleEdit(u); }}
         />
       )}
     </PageShell>

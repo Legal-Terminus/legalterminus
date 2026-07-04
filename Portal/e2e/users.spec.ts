@@ -15,6 +15,19 @@ test('admin sees the Users grid with role filter tabs', async ({ adminPage }) =>
   }
 });
 
+test('E09-S06: clicking a user row opens a read-only detail view with an Edit action', async ({ adminPage }) => {
+  await adminPage.goto('users');
+  await expect(adminPage.getByRole('heading', { name: 'Users' })).toBeVisible();
+  // Click the first data row (avoid the header). Rows are clickable now.
+  await adminPage.locator('.cursor-pointer').first().click();
+  const dialog = adminPage.getByRole('dialog', { name: /user details/i });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText('User details')).toBeVisible();
+  // The detail view exposes an Edit button; clicking it navigates to the edit form.
+  await dialog.getByRole('button', { name: /^edit$/i }).click();
+  await expect(adminPage).toHaveURL(/\/users\/edit\//);
+});
+
 test('E09-S03: editing your OWN account locks the role selector', async ({ adminPage }) => {
   const adminUid = process.env.E2E_ADMIN_UID!;
   await adminPage.goto(`users/edit/member/${adminUid}`);
