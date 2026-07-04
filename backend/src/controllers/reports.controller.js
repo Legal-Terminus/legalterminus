@@ -357,6 +357,30 @@ export async function getMasterSheet(req, res) {
       }
     };
 
+    // Resolve staff names too (assignee) with the same cache.
+    const resolveUser = resolveClient; // same users collection
+
+    // #84: derive the operational/payment/workflow columns the Master Sheet needs.
+    const pendingReasonOf = (d) => {
+      if (['completed', 'cancelled', 'rejected', 'archived'].includes(d.status)) return '';
+      if (d.status === 'pending_admin_approval') return 'Pending for Approval';
+      if (d.paymentStatus === 'not_paid' || d.paymentStatus === 'part_paid') return 'Pending for Payment';
+      if (d.status === 'on_hold') return 'Pending from Client';
+      if (d.pendingReason) return d.pendingReason;
+      return 'Pending from Internal Team (LT)';
+    };
+    const pendingFromOf = (d) => {
+      const r = pendingReasonOf(d);
+      if (!r) return '';
+      if (r.includes('Client')) return 'Client';
+      if (r.includes('Department')) return 'Department';
+      if (r.includes('Approval')) return 'LT';
+      if (r.includes('Payment')) return 'Client';
+      return 'LT';
+    };
+    const approvalPendingFromOf = (d) => (d.status === 'pending_admin_approval' ? 'Admin' : '');
+    const priorityOf = (d) => (d.isUrgent ? 'High' : 'Normal');
+
     const rows = await Promise.all(
       snap.docs.map(async (doc) => {
         const d = doc.data();
@@ -366,33 +390,45 @@ export async function getMasterSheet(req, res) {
         return {
           taskId: doc.id,
           clientName: await resolveClient(d.clientUid),
-          serviceType: d.workflowType ?? '',
+          serviceType: d.serviceName ?? d.workflowType ?? '',
           currentStep: d.currentStepNumber ?? 0,
           totalSteps,
-          assignedTo: d.assignedTo ?? '',
+          assignedTo: d.assignedTo ? await resolveUser(d.assignedTo) : '',
           paymentStatus: d.paymentStatus ?? 'not_paid',
           amountPaid: d.amountPaid ?? 0,
           amountDue: d.amountDue ?? 0,
           lastUpdated: d.updatedAt ?? '',
           taskStatus: d.status ?? '',
+          // #84 additions:
+          createdAt: d.createdAt ?? '',
+          totalFees: d.totalCost ?? (d.amountPaid ?? 0) + (d.amountDue ?? 0),
+          paymentMode: d.paymentMode ?? '',
+          professional: d.professionalName ?? '',
+          priority: priorityOf(d),
+          pendingReason: pendingReasonOf(d),
+          pendingFrom: pendingFromOf(d),
+          approvalPendingFrom: approvalPendingFromOf(d),
+          referralSource: d.referralSource ?? '',
         };
       })
     );
 
     if (format === 'csv') {
       const headers = [
-        'Task ID', 'Client', 'Service', 'Step', 'Total Steps',
-        'Assigned To', 'Payment Status', 'Amount Paid', 'Amount Due',
-        'Status', 'Last Updated',
+        'Task ID', 'Client', 'Service', 'Created', 'Step', 'Total Steps', 'Status',
+        'Priority', 'Assigned To', 'Professional', 'Pending Reason', 'Pending From',
+        'Approval Pending From', 'Payment Status', 'Total Fees', 'Amount Paid',
+        'Amount Due', 'Payment Mode', 'Referral Source', 'Last Updated',
       ];
       const escape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
       const csvLines = [
         headers.join(','),
         ...rows.map((r) =>
           [
-            r.taskId, r.clientName, r.serviceType, r.currentStep, r.totalSteps,
-            r.assignedTo, r.paymentStatus, r.amountPaid, r.amountDue,
-            r.taskStatus, r.lastUpdated,
+            r.taskId, r.clientName, r.serviceType, r.createdAt, r.currentStep, r.totalSteps, r.taskStatus,
+            r.priority, r.assignedTo, r.professional, r.pendingReason, r.pendingFrom,
+            r.approvalPendingFrom, r.paymentStatus, r.totalFees, r.amountPaid,
+            r.amountDue, r.paymentMode, r.referralSource, r.lastUpdated,
           ]
             .map(escape)
             .join(',')

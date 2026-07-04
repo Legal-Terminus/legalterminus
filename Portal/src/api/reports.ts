@@ -143,6 +143,16 @@ export interface MasterSheetRow {
   amountDue: number;
   lastUpdated: string;
   taskStatus: string;
+  // #84 additions:
+  createdAt: string;
+  totalFees: number;
+  paymentMode: string;
+  professional: string;
+  priority: string;
+  pendingReason: string;
+  pendingFrom: string;
+  approvalPendingFrom: string;
+  referralSource: string;
 }
 
 export const getMasterSheet = (filters: ReportFilters = {}) =>
