@@ -6,6 +6,7 @@ import {
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase,
   ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw, Check,
+  PanelLeft, PanelRight,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
@@ -15,6 +16,7 @@ import { useAuthStore } from '../../store/authStore';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
+import { useRail, type RailState } from '../../hooks/useResizablePanels';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
 import type { Task, TaskStep, StepStatus, PaymentStatus } from '../../types/task';
@@ -702,6 +704,10 @@ function StepsTab({
     ? steps.filter((s) => phaseIdOf.get(s.stepNumber) === shownPhaseId)
     : steps;
 
+  // #72: collapsible + drag-resizable Stages and Activity rails (persisted).
+  const stagesRail = useRail('matterLayout:stages', { initial: 210, min: 150, max: 340 });
+  const activityRail = useRail('matterLayout:activity', { initial: 320, min: 240, max: 520 });
+
   // The HERO panel — the one dominant zone: action (left) + meta (right) inside a
   // single elevated, bordered container, so the rail clearly belongs to the step.
   const currentStepUrgent = steps.find((s) => s.stepNumber === task.currentStepNumber)?.isUrgent ?? false;
@@ -725,7 +731,7 @@ function StepsTab({
   // on their service screen (GitHub #42), so it's staff-only here.
   const activitySection = !role.isClient && events.length > 0 && (
     <Section title="Activity" count={events.length} icon={<MessageSquare className="w-3.5 h-3.5" />}>
-      <ActivityThreadCard events={events} definition={definition} flush />
+      <ActivityThreadCard events={events} definition={definition} currentStep={task.currentStepNumber} flush />
     </Section>
   );
   const stepsSection = (
@@ -780,64 +786,175 @@ function StepsTab({
 
   // Activity as a sticky RIGHT sidebar (xl+). Capped height with internal scroll
   // so a long feed never runs past the viewport while sticky.
-  const activityAside = activitySection && (
-    <aside className="xl:sticky xl:top-4 self-start xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto">
-      {activitySection}
-    </aside>
-  );
-
-  // No phases → content + sticky Activity sidebar on xl (single column below that).
+  // No phases → content + collapsible/resizable Activity rail on xl (#72); below
+  // xl it stacks. The Activity column width follows the same persisted rail.
   if (!hasPhases) {
+    const activityCol = activityRail.collapsed ? '2.25rem' : `${activityRail.width}px`;
     return (
-      <div className="xl:grid xl:grid-cols-[1fr_320px] xl:gap-6">
-        <div className="space-y-7 min-w-0">
+      <>
+        <div
+          className="hidden xl:grid items-start"
+          style={{ gridTemplateColumns: `1fr auto ${activitySection ? activityCol : '0px'}` }}
+        >
+          <div className="space-y-7 min-w-0 mr-4">
+            {partPaymentAlert}
+            {pendingBar}
+            {hero}
+            {stepsSection}
+          </div>
+          {activitySection && !activityRail.collapsed
+            ? <PanelHandle onPointerDown={activityRail.startDrag('right')} />
+            : <div />}
+          {activitySection && <ActivityRail rail={activityRail}>{activitySection}</ActivityRail>}
+        </div>
+        <div className="xl:hidden space-y-7">
+          {partPaymentAlert}
+          {pendingBar}
+          {hero}
+          {activitySection}
+          {stepsSection}
+        </div>
+      </>
+    );
+  }
+
+  // Phases → timeline-centric (Option 3): stage rail + focused pane + Activity rail.
+  // #72: on xl the rails are collapsible + drag-resizable (persisted widths); the
+  // grid template is driven by rail state. lg keeps a simple 2-col; mobile stacks.
+  const stagesCol = stagesRail.collapsed ? '2.25rem' : `${stagesRail.width}px`;
+  const activityCol = activityRail.collapsed ? '2.25rem' : `${activityRail.width}px`;
+  return (
+    <>
+      {/* Mobile: stage dropdown (unchanged). */}
+      <MobileStagePicker stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} />
+
+      {/* lg (no resize): simple stage rail + content. xl: full resizable 3-col. */}
+      <div
+        className="lg:grid xl:grid gap-0 lg:grid-cols-[210px_1fr] lg:gap-6"
+        style={activitySection ? undefined : undefined}
+      >
+        {/* Stages rail — desktop. */}
+        <StagesRail
+          stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor}
+          rail={stagesRail}
+        />
+        <div className="xl:hidden" />
+      </div>
+
+      {/* xl resizable layout. Rendered separately so the drag handles sit between
+          columns; below xl the block above provides the stacked/2-col layout. */}
+      <div
+        className="hidden xl:grid items-start"
+        style={{ gridTemplateColumns: `${stagesCol} auto 1fr auto ${activitySection ? activityCol : '0px'}` }}
+      >
+        <StagesRail stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} rail={stagesRail} />
+        {!stagesRail.collapsed
+          ? <PanelHandle onPointerDown={stagesRail.startDrag('left')} />
+          : <div />}
+
+        <div className="space-y-7 min-w-0 px-0 mx-4">
           {partPaymentAlert}
           {pendingBar}
           {hero}
           {stepsSection}
         </div>
-        {activityAside}
+
+        {activitySection && !activityRail.collapsed
+          ? <PanelHandle onPointerDown={activityRail.startDrag('right')} />
+          : <div />}
+        {activitySection && (
+          <ActivityRail rail={activityRail}>{activitySection}</ActivityRail>
+        )}
       </div>
-    );
-  }
 
-  // Phases → timeline-centric (Option 3): stage rail + focused pane + Activity rail.
-  return (
-    <div className="lg:grid lg:grid-cols-[210px_1fr] xl:grid-cols-[210px_1fr_320px] lg:gap-6">
-      {/* Mobile: stage dropdown. Desktop: stage rail. */}
-      <MobileStagePicker stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} />
-      <nav className="hidden lg:block space-y-1 lg:sticky lg:top-4 self-start">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-2 px-2">Stages</p>
-        {stages.map((st, i) => {
-          const sel = i === selectedStage;
-          const { done, total } = countsFor(st.id);
-          return (
-            <button key={st.id} onClick={() => setSelectedStage(i)}
-              className={`w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-left transition-colors ${sel ? 'bg-white border border-hairline font-semibold text-ink shadow-card' : 'text-ink-muted hover:bg-white/60'}`}>
-              <StageDot status={st.status} index={i} />
-              <span className="flex-1 min-w-0">
-                <span className="block truncate">{st.name}</span>
-                <span className="text-[11px] text-ink-faint font-normal">{done}/{total} done</span>
-              </span>
-              {sel && <ChevronRight className="w-4 h-4 text-ink-faint shrink-0" />}
-            </button>
-          );
-        })}
-      </nav>
-
-      <div className="space-y-7 min-w-0 mt-5 lg:mt-0">
+      {/* Below xl: content + inline Activity (stacked). */}
+      <div className="xl:hidden space-y-7 mt-5">
         {partPaymentAlert}
         {pendingBar}
         {hero}
-        {/* On lg (no 3rd column) Activity shows here, below content; on xl it
-            moves to the right rail (hidden here to avoid duplication). */}
-        <div className="xl:hidden">{activitySection}</div>
+        {activitySection}
         {stepsSection}
       </div>
+    </>
+  );
+}
 
-      {/* Activity right rail — xl+ only (lg shows it inline above). */}
-      <div className="hidden xl:block">{activityAside}</div>
+/** A thin vertical drag handle between two columns (#72). */
+function PanelHandle({ onPointerDown }: { onPointerDown: (e: React.PointerEvent) => void }) {
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      onPointerDown={onPointerDown}
+      className="w-2 mx-1 self-stretch cursor-col-resize group flex items-center justify-center"
+      title="Drag to resize"
+    >
+      <div className="w-px h-full bg-hairline group-hover:bg-brand-400 transition-colors" />
     </div>
+  );
+}
+
+/** The Stages rail, collapsible (#72). */
+function StagesRail({ stages, selected, onSelect, countsFor, rail }: {
+  stages: { id: string; name: string; status: string }[];
+  selected: number;
+  onSelect: (i: number) => void;
+  countsFor: (id: string) => { done: number; total: number };
+  rail: RailState;
+}) {
+  return (
+    <nav className="hidden lg:block xl:sticky xl:top-4 self-start">
+      <div className="flex items-center justify-between mb-2 px-2">
+        {!rail.collapsed && <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Stages</p>}
+        <button
+          onClick={rail.toggle}
+          className="text-ink-faint hover:text-ink p-0.5 rounded"
+          title={rail.collapsed ? 'Expand stages' : 'Collapse stages'}
+          aria-label={rail.collapsed ? 'Expand stages' : 'Collapse stages'}
+        >
+          <PanelLeft className="w-4 h-4" />
+        </button>
+      </div>
+      {!rail.collapsed && (
+        <div className="space-y-1">
+          {stages.map((st, i) => {
+            const sel = i === selected;
+            const { done, total } = countsFor(st.id);
+            return (
+              <button key={st.id} onClick={() => onSelect(i)}
+                className={`w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-left transition-colors ${sel ? 'bg-white border border-hairline font-semibold text-ink shadow-card' : 'text-ink-muted hover:bg-white/60'}`}>
+                <StageDot status={st.status} index={i} />
+                <span className="flex-1 min-w-0">
+                  <span className="block truncate">{st.name}</span>
+                  <span className="text-[11px] text-ink-faint font-normal">{done}/{total} done</span>
+                </span>
+                {sel && <ChevronRight className="w-4 h-4 text-ink-faint shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </nav>
+  );
+}
+
+/** The Activity rail, collapsible (#72). */
+function ActivityRail({ rail, children }: { rail: RailState; children: React.ReactNode }) {
+  return (
+    <aside className="xl:sticky xl:top-4 self-start xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto">
+      <div className="flex items-center justify-between mb-2">
+        {!rail.collapsed && <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint px-1">Activity</p>}
+        <button
+          onClick={rail.toggle}
+          className="text-ink-faint hover:text-ink p-0.5 rounded ml-auto"
+          title={rail.collapsed ? 'Expand activity' : 'Collapse activity'}
+          aria-label={rail.collapsed ? 'Expand activity' : 'Collapse activity'}
+        >
+          <PanelRight className="w-4 h-4" />
+        </button>
+      </div>
+      {!rail.collapsed && children}
+    </aside>
   );
 }
 
@@ -931,19 +1048,53 @@ function relTime(iso: string | null): string {
 /** Activity thread — who did what, on WHICH step (phase · step N · title), when,
    with their comment. Real events data; step titles/phases come from the
    definition. `flush`: header is provided by the parent Section. */
-function ActivityThreadCard({ events, flush, definition }: { events: TaskEvent[]; flush?: boolean; definition?: WorkflowDefinition }) {
+function ActivityThreadCard({ events, flush, definition, currentStep }: { events: TaskEvent[]; flush?: boolean; definition?: WorkflowDefinition; currentStep?: number }) {
+  // #73: default to the current step's activity; older steps behind an expander.
+  const [showPrevious, setShowPrevious] = useState(false);
+
   // Lookups from the pinned definition: stepNumber → title, and → phase name.
   const titleByNum = new Map((definition?.steps ?? []).map((s) => [s.stepNumber, s.title]));
   const phaseNameById = new Map((definition?.phases ?? []).map((p) => [p.id, p.name]));
   const phaseByNum = new Map((definition?.steps ?? []).map((s) => [s.stepNumber, s.phaseId ? phaseNameById.get(s.phaseId) : undefined]));
   // The step acted upon is where the action was taken (fromStep); fall back to toStep.
-  const refOf = (e: TaskEvent) => {
-    const n = e.fromStep ?? e.toStep;
-    if (n == null) return null;
-    return { num: n, title: titleByNum.get(n), phase: phaseByNum.get(n) };
+  const stepOf = (e: TaskEvent) => e.fromStep ?? e.toStep ?? null;
+
+  // Group events by their reference step; within a group keep chronological order
+  // (#73: multiple comments on the same step show oldest→newest).
+  const groups = new Map<number | null, TaskEvent[]>();
+  for (const e of events) {
+    const n = stepOf(e);
+    if (!groups.has(n)) groups.set(n, []);
+    groups.get(n)!.push(e);
+  }
+  // Step groups ordered most-recent step first; the current step leads.
+  const stepNums = [...groups.keys()].filter((n): n is number => n != null);
+  stepNums.sort((a, b) => b - a);
+  const orderedStepNums = currentStep != null && groups.has(currentStep)
+    ? [currentStep, ...stepNums.filter((n) => n !== currentStep)]
+    : stepNums;
+
+  const currentGroups = orderedStepNums.filter((n) => n === currentStep);
+  const previousGroups = orderedStepNums.filter((n) => n !== currentStep);
+  // Events with no step reference (task-level) always show at the top.
+  const unattached = groups.get(null) ?? [];
+
+  const renderGroup = (n: number) => {
+    const list = groups.get(n) ?? [];
+    const title = titleByNum.get(n);
+    const phase = phaseByNum.get(n);
+    return (
+      <div key={n} className="space-y-3.5">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          {phase ? `${phase} · ` : ''}Step {n}{title ? ` · ${title}` : ''}
+        </p>
+        {list.map((e, i) => <ActivityRow key={`${n}-${i}`} e={e} />)}
+      </div>
+    );
   };
-  // Most recent first.
-  const ordered = [...events].reverse();
+
+  const hasCurrent = currentGroups.length > 0 || unattached.length > 0;
+
   return (
     <div className="card p-5">
       {!flush && (
@@ -951,32 +1102,47 @@ function ActivityThreadCard({ events, flush, definition }: { events: TaskEvent[]
           <MessageSquare className="w-4 h-4 text-ink-faint" /> Activity <span className="text-ink-faint font-normal">· {events.length}</span>
         </p>
       )}
-      <ol className="space-y-3.5">
-        {ordered.map((e, i) => {
-          const ref = refOf(e);
-          return (
-            <li key={i} className="flex items-start gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-ink/10 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-[10px] font-bold text-ink-muted">{initialsOf(e.byName)}</span>
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm">
-                  <span className="font-semibold text-ink">{e.byName}</span>
-                  <span className="text-ink-muted"> {EVENT_VERB[e.type] ?? e.type.toLowerCase().replace(/_/g, ' ')}</span>
-                  <span className="text-ink-faint"> · {relTime(e.at)}</span>
-                </p>
-                {ref && (
-                  <p className="text-xs text-ink-muted mt-0.5">
-                    {ref.phase && <span className="text-ink-faint">{ref.phase} · </span>}
-                    Step {ref.num}{ref.title ? ` · ${ref.title}` : ''}
-                  </p>
-                )}
-                {e.comment && <p className="text-sm text-ink-muted mt-1 bg-surface-soft rounded-lg px-3 py-2">{e.comment}</p>}
-              </div>
-            </li>
-          );
-        })}
-      </ol>
+      <div className="space-y-4">
+        {unattached.length > 0 && <div className="space-y-3.5">{unattached.map((e, i) => <ActivityRow key={`u-${i}`} e={e} />)}</div>}
+        {currentGroups.map(renderGroup)}
+        {!hasCurrent && previousGroups.length > 0 && !showPrevious && (
+          <p className="text-sm text-ink-muted">No activity on the current step yet.</p>
+        )}
+
+        {previousGroups.length > 0 && (
+          <div className="pt-1">
+            <button
+              onClick={() => setShowPrevious((v) => !v)}
+              className="text-xs font-medium text-brand-700 inline-flex items-center gap-1 hover:underline"
+            >
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showPrevious ? 'rotate-180' : ''}`} />
+              {showPrevious ? 'Hide previous steps' : `Show previous steps (${previousGroups.length})`}
+            </button>
+            {showPrevious && <div className="mt-3 space-y-4 border-t border-hairline pt-3">{previousGroups.map(renderGroup)}</div>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** One activity entry. Comments wrap fully and preserve line breaks (#73). */
+function ActivityRow({ e }: { e: TaskEvent }) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <div className="w-7 h-7 rounded-full bg-ink/10 flex items-center justify-center shrink-0 mt-0.5">
+        <span className="text-[10px] font-bold text-ink-muted">{initialsOf(e.byName)}</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm">
+          <span className="font-semibold text-ink">{e.byName}</span>
+          <span className="text-ink-muted"> {EVENT_VERB[e.type] ?? e.type.toLowerCase().replace(/_/g, ' ')}</span>
+          <span className="text-ink-faint"> · {relTime(e.at)}</span>
+        </p>
+        {e.comment && (
+          <p className="text-sm text-ink-muted mt-1 bg-surface-soft rounded-lg px-3 py-2 whitespace-pre-wrap break-words">{e.comment}</p>
+        )}
+      </div>
     </div>
   );
 }

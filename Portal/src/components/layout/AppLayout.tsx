@@ -6,6 +6,15 @@ import BottomNav from './BottomNav';
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // #72: desktop collapse to an icon rail, persisted.
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    try { return localStorage.getItem('sidebarCollapsed') === '1'; } catch { return false; }
+  });
+  const toggleCollapsed = () => setCollapsed((v) => {
+    const next = !v;
+    try { localStorage.setItem('sidebarCollapsed', next ? '1' : '0'); } catch { /* ignore */ }
+    return next;
+  });
 
   return (
     <div className="flex h-dvh bg-white overflow-hidden">
@@ -17,16 +26,17 @@ export default function AppLayout() {
         />
       )}
 
-      {/* Sidebar — hidden on mobile unless open */}
+      {/* Sidebar — hidden on mobile unless open; collapsible to an icon rail on desktop. */}
       <div
         className={`
-          fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-hairline
-          transform transition-transform duration-200 ease-out
+          fixed inset-y-0 left-0 z-40 bg-white border-r border-hairline
+          transform transition-all duration-200 ease-out
           md:relative md:translate-x-0 md:flex md:flex-col md:shrink-0
+          ${collapsed ? 'md:w-16' : 'md:w-64'} w-64
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        <Sidebar onClose={() => setSidebarOpen(false)} />
+        <Sidebar onClose={() => setSidebarOpen(false)} collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
       </div>
 
       {/* Main */}
