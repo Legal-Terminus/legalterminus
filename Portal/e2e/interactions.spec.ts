@@ -28,6 +28,40 @@ test('E03-S06: a comment on Complete Step appears in the activity feed', async (
   } finally { await deleteMatter(taskId); }
 });
 
+test('#83: a comment draft autosaves, restores on reload, and clears after submit', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    const def = await getDefinitionForMatter(taskId);
+    const plain = firstPlainStep(def);
+    test.skip(!plain, 'No plain step.');
+    await advanceUntil(taskId, (s) => s.stepNumber === plain!.stepNumber);
+
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+
+    const draft = `E2E draft ${Date.now()}`;
+    const box = adminPage.getByPlaceholder(/add a comment/i);
+    await box.fill(draft);
+    // Give the debounced autosave time to persist.
+    await expect(adminPage.getByText(/draft saved/i)).toBeVisible({ timeout: 5_000 });
+
+    // Reload — the draft restores itself into the box.
+    await adminPage.reload();
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await expect(adminPage.getByPlaceholder(/add a comment/i)).toHaveValue(draft);
+
+    // Submit the step action — the draft is consumed and cleared.
+    await adminPage.getByRole('button', { name: /complete step/i }).click();
+    await expect(adminPage.getByText(draft).first()).toBeAttached({ timeout: 15_000 });
+
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    // The next step's composer starts empty (draft did not leak across steps).
+    const nextBox = adminPage.getByPlaceholder(/add a comment/i);
+    if (await nextBox.count()) await expect(nextBox).toHaveValue('');
+  } finally { await deleteMatter(taskId); }
+});
+
 test('Attach document on a step opens the Documents tab (E-05 wired, no "soon")', async ({ adminPage }) => {
   const taskId = await createMatter();
   try {

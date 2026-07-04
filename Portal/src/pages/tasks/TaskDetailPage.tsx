@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, CheckCircle2, Circle, CircleSlash, Loader2, PlayCircle,
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase,
-  ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw,
+  ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw, Check,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
@@ -14,6 +14,7 @@ import { getDocuments, openDocument, type TaskDocument } from '../../api/documen
 import { useAuthStore } from '../../store/authStore';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
+import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
 import type { Task, TaskStep, StepStatus, PaymentStatus } from '../../types/task';
@@ -706,7 +707,7 @@ function StepsTab({
   const currentStepUrgent = steps.find((s) => s.stepNumber === task.currentStepNumber)?.isUrgent ?? false;
   const hero = !completed && currentDef ? (
     <StepHeroPanel
-      step={currentDef} role={role} pending={pending} turn={currentTurn}
+      taskId={task.id} step={currentDef} role={role} pending={pending} turn={currentTurn}
       onEvent={onEvent} assignment={assignment} currentAssignee={currentAssignee}
       currentAssigneeName={currentAssigneeName}
       displayNumber={displayNumberOf(task.currentStepNumber)}
@@ -988,8 +989,9 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach,
+  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach,
 }: {
+  taskId: string;
   step: WorkflowStepDef;
   role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null };
   pending: boolean;
@@ -1022,8 +1024,19 @@ function StepHeroPanel({
 
   // One comment composer feeds every action on this step. Comment is optional on
   // positive actions, required on rejections. The value rides along as event.remark.
+  // #83: the draft autosaves per matter/step/user and restores on reopen.
+  const draft = useCommentDraft(taskId, step.stepNumber, role.uid ?? null);
   const [comment, setComment] = useState('');
   const [needComment, setNeedComment] = useState(false);
+
+  // Restore the saved draft when it loads (or the step/user changes).
+  useEffect(() => { setComment(draft.initial); }, [draft.initial]);
+
+  const onCommentChange = (v: string) => {
+    setComment(v);
+    if (v.trim()) setNeedComment(false);
+    draft.save(v);
+  };
 
   const fire = (type: WorkflowEventInput['type'], opts?: { required?: boolean; extra?: Partial<WorkflowEventInput> }) => {
     const c = comment.trim();
@@ -1031,6 +1044,7 @@ function StepHeroPanel({
     setNeedComment(false);
     onEvent({ type, remark: c || undefined, ...opts?.extra });
     setComment('');
+    draft.clear(); // #83: drop the draft once submitted
   };
 
   let actions: React.ReactNode = null;     // buttons (actionable)
@@ -1243,9 +1257,10 @@ function StepHeroPanel({
             <div className="mt-4">
               <ActionComposer
                 comment={comment}
-                onChange={(v) => { setComment(v); if (v.trim()) setNeedComment(false); }}
+                onChange={onCommentChange}
                 error={needComment ? 'Please add a comment explaining the requested changes.' : null}
                 disabled={pending}
+                savedLabel={comment.trim() ? draftSavedLabel(draft.savedAt) : null}
               />
               {actions}
             </div>
@@ -1266,11 +1281,12 @@ function StepHeroPanel({
  * actions and required on rejections (enforced by the caller via the `error`
  * prop). Document attachment lives in the step's right-hand Documents block.
  */
-function ActionComposer({ comment, onChange, error, disabled }: {
+function ActionComposer({ comment, onChange, error, disabled, savedLabel }: {
   comment: string;
   onChange: (v: string) => void;
   error: string | null;
   disabled: boolean;
+  savedLabel?: string | null; // #83: e.g. "Draft saved 2 minutes ago"
 }) {
   return (
     <div className="mb-3">
@@ -1283,6 +1299,11 @@ function ActionComposer({ comment, onChange, error, disabled }: {
         className={`input-field text-sm w-full resize-y ${error ? 'border-red-400' : ''}`}
       />
       {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+      {!error && savedLabel && (
+        <p className="text-[11px] text-ink-faint mt-1 flex items-center gap-1">
+          <Check className="w-3 h-3 text-emerald-500" /> {savedLabel}
+        </p>
+      )}
     </div>
   );
 }
