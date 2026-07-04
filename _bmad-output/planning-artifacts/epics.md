@@ -77,6 +77,11 @@ split dashboard tiles.
 | E-11 | Matter Creation, Pre-Assignment, Priority & UI Platform | Phase 1 | E11-S01 – E11-S08 |
 | E-12 | Client vs Internal View Separation | Phase 1 | E12-S01 – E12-S03 |
 | E-13 | Per-Step ETAs & SLA Tracking | Phase 1 / 2 | E13-S01 – E13-S05 |
+| E-14 | Matter Detail UX — Collapsible/Resizable Panels & Activity History | Phase 2 | E14-S01 – E14-S02 |
+| E-15 | Document Naming & Step Configuration (Visibility, Status/Notes, Descriptions) | Phase 2 | E15-S01 – E15-S04 |
+| E-16 | Comment Draft Autosave | Phase 2 | E16-S01 |
+| E-17 | Professional Assignment on Matters | Phase 2 | E17-S01 |
+| E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S06 |
 
 ---
 
@@ -2398,6 +2403,238 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 **Backend**:
 - Scheduled job + `EFFECT_HANDLERS` (NOTIFY/SEND_EMAIL) once E-07 lands.
+
+---
+
+## E-14 — Matter Detail UX — Collapsible/Resizable Panels & Activity History
+
+**Goal**: Give staff more usable horizontal space and a less noisy activity feed on the matter detail screen. The three-column layout (Stages rail | content | Activity) stays, but each rail becomes collapsible and user-resizable, and the Activity feed defaults to the current step with older steps behind an expander.
+
+**Source**: GitHub #72 (remove/expand — reinterpreted as *collapsible + resizable* per stakeholder decision, keeping Stages), #73 (activity history).
+
+---
+
+### E14-S01 — Collapsible & Resizable Matter Panels [Phase 2]
+
+**Priority**: P2 | **Complexity**: M | **Linked spec story**: US-2 | **Dependencies**: E11-S08
+
+**Rationale**: Stakeholder rejected outright removal of the Stages rail (#72). The real pain is fixed-width panels that waste/limit space. Instead: keep Stages, Activity, and the app's left navigation, but let the user collapse each and drag to resize — persisted so the layout sticks.
+
+**Acceptance Criteria**:
+- On the matter detail screen ([TaskDetailPage.tsx](../../Portal/src/pages/tasks/TaskDetailPage.tsx)), the **Stages rail** and the **Activity rail** each have a collapse/expand toggle. Collapsed rails free their width for the content column.
+- Both rails are **drag-resizable** via a divider handle; the content column reflows. Widths are clamped to sane min/max.
+- The app's **left navigation** (sidebar) is collapsible (icon-rail) as well.
+- Collapsed/expanded state and rail widths **persist per user** (localStorage) across reloads.
+- Mobile/`lg` fallbacks (existing MobileStagePicker, inline Activity) continue to work; resize/collapse affordances are desktop-only (`xl`).
+- No change to workflow navigation or data — purely presentational.
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (rails), sidebar component, a small reusable `ResizablePanel`/collapse hook.
+
+---
+
+### E14-S02 — Activity Feed: Current Step by Default + "Show Previous Steps" [Phase 2]
+
+**Priority**: P2 | **Complexity**: M | **Linked spec story**: US-2 | **Dependencies**: E14-S01
+
+**Rationale** (#73): The Activity feed shows the whole history at once, which is noisy. Default to just the current step's activity, with older steps behind an expander.
+
+**Acceptance Criteria**:
+- The Activity panel shows only events for the **most recent / current workflow step** by default.
+- A **"Show Previous Steps"** control expands to reveal earlier steps' activity, grouped by step.
+- Long comments **wrap** fully (no overflow/overlap) and **preserve line breaks/whitespace** (e.g. `whitespace-pre-wrap`).
+- Multiple comments on the same step render in **chronological order**.
+- Applies to both internal and client activity views (client sees only client-visible events, unchanged).
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (ActivityFeed / Section rendering).
+
+---
+
+## E-15 — Document Naming & Step Configuration (Visibility, Status/Notes, Descriptions)
+
+**Goal**: Make workflow steps configurable and legible: uploaded documents show their type name; the client-visibility toggle actually works; each step carries **independent** internal vs client status/notes; and admins can attach multiple audience-tagged descriptions per step.
+
+**Source**: GitHub #79, #80, #81, #82.
+
+---
+
+### E15-S01 — Display Document Type Name for Uploads [Phase 2]
+
+**Priority**: P2 | **Complexity**: S | **Linked spec story**: US-5 | **Dependencies**: E05-S01
+
+**Rationale** (#79): Uploaded documents render generically; users can't tell a PAN from an Address Proof at a glance.
+
+**Acceptance Criteria**:
+- Each uploaded document displays its selected **document type name** (e.g. PAN, TAN, Address Proof) in the document card.
+- The name is shown consistently in **both internal and client** document views.
+- Documents without a captured type fall back gracefully to the file name.
+
+**Backend/Frontend**:
+- `documents.controller.js` (persist/return `docType`/`label`), `DocumentsPanel.tsx`, upload flow captures the type.
+
+---
+
+### E15-S02 — Fix Client-Visible Toggle in Step Configuration [Phase 2]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-6 | **Dependencies**: E10-S01, E12-S01
+
+**Rationale** (#80): The "Client Visible" checkbox on a step does not correctly gate client visibility.
+
+**Acceptance Criteria**:
+- Checking **Client Visible** on a step makes that step (and its client-facing content) visible to the client; unchecking hides it.
+- Enforced consistently on **both** the client view and the internal view, and on the **backend** projection that filters client-facing data (not UI-only).
+- Existing workflow execution logic is unaffected.
+
+**Backend/Frontend**:
+- Workflow definition step flag (`clientVisible`), `projectTaskForClient`/client projection in `tasks.controller.js`, Workflow Editor step settings.
+
+---
+
+### E15-S03 — Independent Internal vs Client Status & Notes per Step [Phase 2]
+
+**Priority**: P2 | **Complexity**: L | **Linked spec story**: US-6 | **Dependencies**: E15-S02
+
+**Rationale** (#81): Steps need two independent presentation channels — what internal staff see vs what the client sees — without one leaking into the other.
+
+**Acceptance Criteria**:
+- Step settings expose two sections: **Internal View** (Internal Status, Internal Notes) and **Client View** (Client Status, Client Note/Description), gated behind the Client-Visible toggle for the client side.
+- Internal users see only internal status/notes + internal actions (assignee, priority, uploads); clients see only client status/notes + client actions.
+- The two are **fully independent** — editing one never changes the other.
+- **Admin-only** to modify; admin can add/edit/clear either.
+- **Existing workflows migrate automatically** with no data loss (new fields default empty/derived from current values).
+
+**Backend/Frontend**:
+- Workflow definition step schema (`internalStatus`, `internalNotes`, `clientStatus`, `clientNote`), migration on load/seed, Workflow Editor, TaskDetailPage rendering split by audience.
+
+---
+
+### E15-S04 — Multiple Audience-Tagged Descriptions per Step [Phase 2]
+
+**Priority**: P3 | **Complexity**: M | **Linked spec story**: US-6 | **Dependencies**: E15-S03
+
+**Rationale** (#82): One description per step is limiting; admins want several, each targeted at internal or client audiences.
+
+**Acceptance Criteria**:
+- Step settings provide **Add Description**; admin can add unlimited descriptions, **edit**, and **delete** each.
+- Each description is tagged **Internal** or **Client**; only descriptions for the viewer's audience render.
+- Admin-only to modify; existing single descriptions migrate into the list.
+
+**Backend/Frontend**:
+- Step schema `descriptions: [{ id, audience, text }]`, Workflow Editor list editor, TaskDetailPage renders the audience-filtered set.
+
+---
+
+## E-16 — Comment Draft Autosave
+
+### E16-S01 — Save Draft / Autosave for Comment Boxes (Internal & Client) [Phase 2]
+
+**Priority**: P3 | **Complexity**: M | **Linked spec story**: US-2, US-5 | **Dependencies**: E03-S06
+
+**Rationale** (#83): Users lose in-progress comments when they navigate away. Autosave/Save-Draft protects the work.
+
+**Acceptance Criteria**:
+- Every comment box (internal and client) autosaves the draft as the user types (debounced) — or offers an explicit **Save Draft**.
+- The draft **restores automatically** when the same box is reopened.
+- A status line shows **"Draft saved" / "Last saved: N minutes ago"**, distinct from a submitted comment.
+- Users can keep editing a restored draft; on **successful submit** the draft is **cleared**.
+- Drafts are scoped **per step and per user** (no cross-user/cross-step leakage); only the owner can access their draft.
+- Client-side persistence (localStorage keyed by `taskId:stepNumber:uid`) is acceptable for Phase 2; no backend endpoint required.
+
+**Frontend**:
+- A `useCommentDraft(taskId, stepNumber, uid)` hook + wiring into the comment inputs in `TaskDetailPage.tsx` (and any client comment box).
+
+---
+
+## E-17 — Professional Assignment on Matters
+
+### E17-S01 — "Professional" Field on Create Matter + Filters/Reports [Phase 2]
+
+**Priority**: P2 | **Complexity**: M | **Linked spec story**: US-3, US-7 | **Dependencies**: E11-S01
+
+**Rationale** (#85): Matters should record the responsible **professional**; used for filtering and reporting.
+
+**Acceptance Criteria**:
+- Create Matter/Service form has an **optional Professional dropdown** listing active professionals (searchable/filterable).
+- Existing matters work without a professional (nullable, no forced backfill).
+- Matters can be **filtered/searched by professional**; the field appears in **Excel exports and relevant reports**.
+- The assigned member can **update** the professional after creation.
+
+**Backend/Frontend**:
+- `task.professionalUid`/`professionalName`, `taskCreateSchema` + patch path, `CreateMatterModal.tsx`, matter list filter, report columns.
+
+---
+
+## E-18 — Centralized Reporting Module
+
+**Goal** (#84): One centralized reporting system. The existing **Master Sheet** is the primary Admin report; standalone reports are generated from the same underlying task/payment/client data with **Excel (.xlsx) download, search, filter, sort, and real-time auto-update**. Clients see only their own reports.
+
+**Cross-cutting requirements (all reports)**:
+- **Excel (.xlsx)** export (not just CSV) — use a spreadsheet lib (e.g. `exceljs`/`xlsx`) server-side or a client-side generator.
+- **Search**, **column filter**, **column sort**.
+- **Real-time auto-update** — reports refetch on an interval / React Query `refetchInterval` (or invalidate on relevant mutations).
+- Role-gated: admin/manager for internal reports; clients restricted to their own (E18-S05).
+
+---
+
+### E18-S01 — Master Sheet Expansion + .xlsx/Search/Filter/Sort/Auto-update [Phase 2]
+
+**Priority**: P1 | **Complexity**: L | **Linked spec story**: US-7 | **Dependencies**: E08-S05, E17-S01
+
+**Rationale**: The Master Sheet becomes the central report. Add the missing operational/payment/workflow fields and the cross-cutting capabilities.
+
+**Acceptance Criteria**:
+- Master Sheet adds columns: **Task Creation Date, Current Workflow Step, Pending Reason, Pending From (Client/LT/Department), Priority Level, Assigned Team Member, Approval Pending From (Admin/Manager/Client), Total Fees, Payment Mode, Referral Source, Professional**.
+- **.xlsx download** (replaces/augments CSV), plus **search + per-column filter + sort**.
+- **Auto-update** so the sheet reflects live changes without a manual reload.
+
+**Backend/Frontend**:
+- `GET /api/reports/master-sheet` (+ `format=xlsx`), `MasterSheetReport.tsx`.
+
+---
+
+### E18-S02 — Payment & Revenue Reports [Phase 2]
+
+**Priority**: P2 | **Complexity**: L | **Linked spec story**: US-7 | **Dependencies**: E06-S01, E18-S01
+
+**Acceptance Criteria** — implements #84 reports: **1 Payment Status** (Fully/Partly/Unpaid; client, service, total fees, received, due, status, mode, date), **10 Revenue Analytics** (monthly, service-wise, team-wise revenue; outstanding/collected/pending), **14 Paid Work**, **15 Partly Paid Work**, **16 Unpaid Work**. All with .xlsx/search/filter/sort/auto-update.
+
+---
+
+### E18-S03 — Client & Service Reports [Phase 2]
+
+**Priority**: P2 | **Complexity**: L | **Linked spec story**: US-7 | **Dependencies**: E09-S02, E18-S01
+
+**Acceptance Criteria** — #84 reports: **2 Client-wise Work** (per client: total services, completed/pending/delayed, service-wise status, payment status, assignee), **3 Service-wise Client** (clients per service; current status, payment status, assignee), **7 Referred Client** (referred by, services taken, revenue, status), **8 Inactive Client** (last service date, last login, follow-up, assigned manager).
+
+---
+
+### E18-S04 — Operational Reports (Team, Priority, Pending-Reason, Approval, Storage) [Phase 2]
+
+**Priority**: P2 | **Complexity**: L | **Linked spec story**: US-7 | **Dependencies**: E13-S02, E18-S01
+
+**Acceptance Criteria** — #84 reports: **4 Team Performance** (assigned/completed/pending/delayed, avg completion time, pending-approval), **5 Priority Task** (High/Medium/Normal; pending since, status), **6 Reason-based Pending** (Client/LT/Department/Signature/Approval/Payment/Document; current step, pending since, responsible person), **9 Approval Pending** (Admin/Manager/Client approval type, pending since, assignee), **11 Storage Usage** (total/remaining, per-client document storage, alert level).
+
+---
+
+### E18-S05 — Client-Facing Reports [Phase 2]
+
+**Priority**: P2 | **Complexity**: M | **Linked spec story**: US-7 | **Dependencies**: E12-S01, E18-S01
+
+**Acceptance Criteria** — #84 reports **12/13/14/15/16** scoped to the logged-in client only: **All Work** (service, status, pending action, timeline, assigned team), **Paid Work** (paid amount, payment date, invoice number), **Partly Paid**, **Unpaid**. Client can only ever see their own services/payments; enforced server-side.
+
+---
+
+### E18-S06 — Reporting Infrastructure: .xlsx Export + Table Toolkit [Phase 2]
+
+**Priority**: P1 | **Complexity**: M | **Linked spec story**: US-7 | **Dependencies**: E08-S01
+
+**Rationale**: Shared plumbing so every report gets export/search/filter/sort/auto-update consistently instead of duplicating logic.
+
+**Acceptance Criteria**:
+- A reusable **ReportTable** component (search box, column filters, sortable headers, loading/empty states) and an **.xlsx export** helper.
+- A shared **auto-update** convention (React Query `refetchInterval`).
+- Backend report helpers to centralize pending-reason / pending-from / approval-pending-from derivations reused across E18 reports.
 
 ---
 
