@@ -68,15 +68,20 @@ export const rejectTask = (id: string, reason: string) =>
   });
 
 /** Stop/cancel an in-flight matter when a client discontinues (GitHub #41).
- *  Staff (admin/manager/team_member). Requires a reason. */
+ *  Admin-only (GitHub #70). Requires a reason. */
 export const stopTask = (id: string, reason: string) =>
   apiFetch<{ success: boolean; status: string }>(`/api/tasks/${id}/stop`, {
     method: 'POST',
     body: JSON.stringify({ reason }),
   });
 
+/** Restart a previously stopped matter, resuming from where it left off (GitHub #71).
+ *  Admin-only. The matter goes back to `active` at its saved current step. */
+export const restartTask = (id: string) =>
+  apiFetch<{ success: boolean; status: string }>(`/api/tasks/${id}/restart`, { method: 'POST' });
+
 /** Archive a matter — non-destructive alternative to delete (admin-only delete).
- *  Staff (admin/manager/team_member). Preserves data; removes it from active lists. */
+ *  Admin-only (GitHub #70). Preserves data; removes it from active lists. */
 export const archiveTask = (id: string) =>
   apiFetch<{ success: boolean; status: string }>(`/api/tasks/${id}/archive`, { method: 'POST' });
 

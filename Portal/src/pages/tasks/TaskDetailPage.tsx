@@ -5,14 +5,14 @@ import {
   ArrowLeft, CheckCircle2, Circle, CircleSlash, Loader2, PlayCircle,
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase,
-  ChevronRight, ChevronDown, Flame, Ban, Archive,
+  ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, archiveTask, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
@@ -167,6 +167,26 @@ export default function TaskDetailPage() {
     onError: (err: Error) => toast.error(err.message || 'Could not stop this matter.'),
   });
 
+  // Restart a stopped matter (GitHub #71). Admin-only; resumes from the saved
+  // current step. Confirmed via dialog since it puts the matter back in worklists.
+  const restart = useMutation({
+    mutationFn: () => restartTask(taskId!),
+    onSuccess: () => {
+      toast.success('Matter restarted.');
+      invalidateTaskViews();
+      queryClient.invalidateQueries({ queryKey: ['task-events', taskId] });
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not restart this matter.'),
+  });
+  const onRestart = async () => {
+    const ok = await confirm({
+      title: 'Restart this matter?',
+      message: 'It will resume from where it was stopped and return to active worklists. Its full history is kept.',
+      confirmLabel: 'Restart',
+    });
+    if (ok) restart.mutate();
+  };
+
   // Archive — non-destructive alternative to delete (staff). Confirmed via dialog.
   const archive = useMutation({
     mutationFn: () => archiveTask(taskId!),
@@ -293,15 +313,27 @@ export default function TaskDetailPage() {
         </div>
       )}
 
-      {/* Stopped/cancelled banner (#41) — terminal state with the reason. */}
+      {/* Stopped/cancelled banner (#41) — reason + admin-only Restart (#71). */}
       {task.status === 'cancelled' && (
         <div className="card p-4 mb-4 border-red-200 bg-red-50/60">
           <div className="flex items-start gap-2.5">
             <Ban className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-red-800">This matter was stopped</p>
               {task.cancelledReason && <p className="text-sm text-red-700 mt-0.5">{task.cancelledReason}</p>}
             </div>
+            {role === 'admin' && (
+              <button
+                onClick={onRestart}
+                disabled={restart.isPending}
+                className="btn-secondary shrink-0 inline-flex items-center gap-1.5 text-sm"
+              >
+                {restart.isPending
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <RotateCcw className="w-4 h-4" />}
+                Restart workflow
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -316,9 +348,9 @@ export default function TaskDetailPage() {
         </div>
       )}
 
-      {/* Stop workflow (#41) + Archive — staff actions on an in-flight matter.
+      {/* Stop workflow (#41) + Archive — admin-only actions on an in-flight matter (#70).
           Stop = client discontinued (cancelled). Archive = non-destructive hide. */}
-      {isStaff && (task.status === 'active' || task.status === 'pending') && (
+      {role === 'admin' && (task.status === 'active' || task.status === 'pending') && (
         <StopMatterBanner
           open={stopping}
           pending={stop.isPending}
@@ -848,6 +880,8 @@ const EVENT_VERB: Record<string, string> = {
   TASK_APPROVED: 'approved the matter',
   TASK_REJECTED: 'rejected the matter',
   TASK_STOPPED: 'stopped the matter',
+  TASK_RESTARTED: 'restarted the matter',
+  TASK_ARCHIVED: 'archived the matter',
 };
 
 /** Relative time. Module-scope (impure Date.now must not be called in render). */

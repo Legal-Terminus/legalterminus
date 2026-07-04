@@ -455,15 +455,15 @@ export async function rejectTask(req, res) {
 
 // ─── POST /api/tasks/:taskId/stop ──────────────────────────────────────────
 // Stop/cancel an in-flight matter when a client discontinues the service midway
-// (GitHub #41). Available to admin, manager, and team_member. Requires a reason,
-// recorded on the activity thread. The matter moves to `cancelled` (terminal) and
-// its active step is marked cancelled so it leaves worklists. Already-finished
-// matters (completed/cancelled/rejected) can't be stopped.
+// (GitHub #41). Admin-only (GitHub #70). Requires a reason, recorded on the
+// activity thread. The matter moves to `cancelled` (terminal) and its active
+// step is marked cancelled so it leaves worklists. Already-finished matters
+// (completed/cancelled/rejected) can't be stopped.
 export async function stopTask(req, res) {
   try {
     const { role, uid } = req.user;
-    if (role !== 'admin' && role !== 'manager' && role !== 'team_member') {
-      return res.status(403).json({ message: 'Forbidden: staff only' });
+    if (role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden: admin only' });
     }
     const { reason } = req.body; // validated non-empty by taskStopSchema
     const taskRef = db.collection('tasks').doc(req.params.taskId);
@@ -505,6 +505,78 @@ export async function stopTask(req, res) {
   } catch (err) {
     logger.error({ err }, 'stopTask error:');
     res.status(500).json({ message: 'Failed to stop matter' });
+  }
+}
+
+// ─── POST /api/tasks/:taskId/restart ───────────────────────────────────────
+// Restart a previously stopped (`cancelled`) matter (GitHub #71). Admin-only.
+// The matter resumes from where it left off: `currentStepNumber` was preserved
+// on stop, so we re-activate that step and the matter goes back to `active`.
+// The full history is retained — stop/restart are appended as events, nothing is
+// overwritten. Only stopped matters can be restarted; archived matters are out of
+// scope (#71). The ETA clock restarts now, mirroring approve (E13-S02).
+export async function restartTask(req, res) {
+  try {
+    const { role, uid } = req.user;
+    if (role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden: admin only' });
+    }
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+    if (task.status !== 'cancelled') {
+      return res.status(409).json({ message: `Only a stopped matter can be restarted (this one is ${task.status}).` });
+    }
+
+    const now = new Date().toISOString();
+
+    // Restart the ETA clock from the resumed step, best-effort (as in approveTask):
+    // if the pinned definition can't be loaded, resume without due dates rather
+    // than failing the restart.
+    let matterDueAt = null;
+    let stepDueAt = null;
+    try {
+      const compiled = await getCompiledById(task.workflowDefinitionId);
+      if (compiled) {
+        const stepDefs = compiled.definition.steps.filter((s) => s.type !== 'final');
+        const currentDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber);
+        stepDueAt = addDaysIso(now, etaDaysOf(currentDef));
+        matterDueAt = projectMatterDueAt(stepDefs, task.currentStepNumber, now);
+      }
+    } catch (e) {
+      logger.warn({ err: e?.message }, 'restartTask: ETA stamping skipped (definition unavailable)');
+    }
+
+    const batch = db.batch();
+    // Clear the stopped marker and go back to active.
+    batch.set(taskRef, { status: 'active', cancelledReason: null, updatedAt: now, matterDueAt }, { merge: true });
+    // Re-activate the step that was active when stopped — its assignment and other
+    // fields were preserved (stop only flipped `status` to cancelled).
+    batch.set(
+      taskRef.collection('steps').doc(String(task.currentStepNumber)),
+      { status: 'active', startedAt: now, ...(stepDueAt ? { dueAt: stepDueAt } : {}) },
+      { merge: true },
+    );
+    batch.set(taskRef.collection('events').doc(), {
+      type: 'TASK_RESTARTED',
+      fromStep: task.currentStepNumber,
+      toStep: task.currentStepNumber,
+      comment: null,
+      byUid: uid ?? null,
+      byRole: role ?? null,
+      at: now,
+    });
+    await batch.commit();
+
+    // Notify the matter owner that work has resumed (E07-S01).
+    const ctx = `${task.clientName ?? ''} · ${task.serviceName ?? task.workflowType ?? ''}`;
+    await notify({ recipientUid: task.assignedTo, actorUid: uid, type: 'info', title: 'Matter restarted', message: `${ctx} was restarted and is active again.`, taskId: req.params.taskId });
+
+    res.json({ success: true, status: 'active' });
+  } catch (err) {
+    logger.error({ err }, 'restartTask error:');
+    res.status(500).json({ message: 'Failed to restart matter' });
   }
 }
 
@@ -1355,16 +1427,16 @@ export async function deleteTask(req, res) {
 }
 
 // ─── POST /api/tasks/:taskId/archive ───────────────────────────────────────
-// Archive a matter (staff: admin/manager/team_member). Archiving is the
-// non-destructive alternative to deletion — staff who can't delete (only admin
-// can) can still get a finished/abandoned matter OUT of active worklists without
-// losing its history. Sets status `archived` (terminal); the active step (if any)
-// is closed. Data + documents are preserved; only admin `deleteTask` purges them.
+// Archive a matter (admin-only, GitHub #70). Archiving is the non-destructive
+// alternative to deletion — it gets a finished/abandoned matter OUT of active
+// worklists without losing its history. Sets status `archived` (terminal); the
+// active step (if any) is closed. Data + documents are preserved; only admin
+// `deleteTask` purges them.
 export async function archiveTask(req, res) {
   try {
     const { role, uid } = req.user;
-    if (role !== 'admin' && role !== 'manager' && role !== 'team_member') {
-      return res.status(403).json({ message: 'Forbidden: staff only' });
+    if (role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden: admin only' });
     }
     const taskRef = db.collection('tasks').doc(req.params.taskId);
     const snap = await taskRef.get();
