@@ -67,6 +67,45 @@ test('GET /step-settings returns combined rows; PUT saves all three (round-trip)
   await api.dispose();
 });
 
+test('toggling client-visible applies LIVE to an already-created matter (#80)', async ({ adminPage }) => {
+  void adminPage;
+  const api = await apiAs('admin');
+  const settings = await (await api.get(`/api/workflow-definitions/${definitionId}/step-settings`)).json();
+  // Pick a step that is currently client-visible so hiding it is observable.
+  const target = settings.steps.find((s: { clientVisible: boolean }) => s.clientVisible);
+  test.skip(!target, 'No client-visible step to toggle.');
+  const startVersion = settings.version as number;
+
+  // Create the matter FIRST, so the toggle happens on an existing matter.
+  const taskId = await createMatter({ serviceKey });
+  try {
+    const clientApi = await apiAs('client');
+    const before = await (await clientApi.get(`/api/tasks/${taskId}`)).json();
+    const sawBefore = before.steps.some((s: { stepNumber: number }) => s.stepNumber === target.stepNumber);
+    expect(sawBefore).toBeTruthy();
+
+    // Hide the step in the definition AFTER the matter exists.
+    await api.put(`/api/workflow-definitions/${definitionId}/step-settings`, {
+      data: { settings: { [String(target.stepNumber)]: { clientVisible: false } } },
+    });
+
+    // The client's view of the SAME matter no longer includes that step.
+    await expect(async () => {
+      const after = await (await clientApi.get(`/api/tasks/${taskId}`)).json();
+      expect(after.steps.some((s: { stepNumber: number }) => s.stepNumber === target.stepNumber)).toBeFalsy();
+    }).toPass({ timeout: 10_000 });
+    await clientApi.dispose();
+  } finally {
+    // Restore visibility + clean up.
+    await api.put(`/api/workflow-definitions/${definitionId}/step-settings`, {
+      data: { settings: { [String(target.stepNumber)]: { clientVisible: true } } },
+    });
+    void startVersion;
+    await api.dispose();
+    await deleteMatter(taskId);
+  }
+});
+
 test('client task projection drops non-client-visible steps; staff see all', async ({ adminPage }) => {
   void adminPage;
   // How many steps does the workflow mark client-visible?

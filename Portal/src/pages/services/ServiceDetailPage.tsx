@@ -219,8 +219,14 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
       queryClient.invalidateQueries({ queryKey: ['workflow-definition', definitionId] });
       queryClient.invalidateQueries({ queryKey: ['step-assignees', definitionId] });
       queryClient.invalidateQueries({ queryKey: ['step-etas', definitionId] });
+      const changedVisibility = Object.values(edits).some((p) => 'clientVisible' in p);
       setEdits({});
-      toast.success('Step settings saved. Applies to new matters.');
+      // Client visibility is read LIVE from the definition, so it applies to
+      // existing matters immediately (#80). Assignee/ETA are stamped at matter
+      // creation, so those only affect new matters.
+      toast.success(changedVisibility
+        ? 'Step settings saved. Client visibility applies to all matters now; assignee/ETA apply to new matters.'
+        : 'Step settings saved. Applies to new matters.');
     },
     onError: (err: Error) => toast.error(err.message || 'Could not save step settings.'),
   });
