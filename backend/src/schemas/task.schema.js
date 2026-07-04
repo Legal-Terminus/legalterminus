@@ -33,6 +33,18 @@ export const taskUpdateSchema = z.object({
   message: 'No updatable fields provided',
 });
 
+// PATCH /api/tasks/:taskId/payment — edit payment details after creation (#78).
+// Admin/manager. Any subset of fields; the controller recomputes amountDue and,
+// if paymentStatus isn't given explicitly, derives it from the amounts.
+export const taskPaymentUpdateSchema = z.object({
+  totalCost: z.number().min(0).max(1e9).optional(),
+  amountPaid: z.number().min(0).max(1e9).optional(),
+  paymentMode: z.string().trim().max(60).nullable().optional(),
+  paymentStatus: z.enum(['not_paid', 'part_paid', 'fully_paid']).optional(),
+}).strict().refine((b) => Object.keys(b).length > 0, {
+  message: 'No payment fields provided',
+});
+
 // POST /api/tasks/:taskId/transition — fire a workflow event (intent).
 const WORKFLOW_EVENTS = [
   'COMPLETE_STEP', 'RECORD_PAYMENT', 'ADMIN_OVERRIDE_PAYMENT', 'BRANCH_DECISION',

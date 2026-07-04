@@ -12,7 +12,7 @@ import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
@@ -410,7 +410,7 @@ export default function TaskDetailPage() {
         />
       )}
       {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} />}
-      {tab === 'payments' && <PaymentsTab task={task} />}
+      {tab === 'payments' && <PaymentsTab task={task} canEdit={canAssign} />}
     </PageShell>
   );
 }
@@ -869,6 +869,7 @@ function MobileStagePicker({ stages, selected, onSelect, countsFor }: {
 const EVENT_VERB: Record<string, string> = {
   COMPLETE_STEP: 'completed the step',
   RECORD_PAYMENT: 'recorded payment',
+  PAYMENT_UPDATED: 'updated the payment',
   ADMIN_OVERRIDE_PAYMENT: 'overrode the payment gate',
   BRANCH_DECISION: 'made a decision',
   CLIENT_APPROVE: 'approved',
@@ -1403,27 +1404,120 @@ const PAYMENT: Record<PaymentStatus, { label: string; cls: string }> = {
   fully_paid: { label: 'Fully paid', cls: 'bg-emerald-50 text-emerald-700' },
 };
 
-function PaymentsTab({ task }: { task: Task }) {
+// Payment modes offered in the editor (#78). Free-text is still accepted by the
+// API, but these cover the common cases and keep entries consistent.
+const PAYMENT_MODES = ['UPI', 'Bank Transfer', 'Cash', 'Credit Card', 'Debit Card', 'Cheque', 'Other'];
+
+function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
+  const toast = useToast();
+  const queryClient = useQueryClient();
   const p = PAYMENT[task.paymentStatus] ?? PAYMENT.not_paid;
+
+  const [editing, setEditing] = useState(false);
+  const [totalCost, setTotalCost] = useState(String(task.totalCost ?? task.amountPaid ?? 0));
+  const [amountPaid, setAmountPaid] = useState(String(task.amountPaid ?? 0));
+  const [paymentMode, setPaymentMode] = useState(task.paymentMode ?? '');
+
+  const startEdit = () => {
+    setTotalCost(String(task.totalCost ?? task.amountPaid ?? 0));
+    setAmountPaid(String(task.amountPaid ?? 0));
+    setPaymentMode(task.paymentMode ?? '');
+    setEditing(true);
+  };
+
+  const save = useMutation({
+    mutationFn: () => updatePayment(task.id, {
+      totalCost: Number(totalCost) || 0,
+      amountPaid: Number(amountPaid) || 0,
+      paymentMode: paymentMode.trim() || null,
+    }),
+    onSuccess: () => {
+      toast.success('Payment updated.');
+      setEditing(false);
+      queryClient.invalidateQueries({ queryKey: ['task', task.id] });
+      queryClient.invalidateQueries({ queryKey: ['task-events', task.id] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not update the payment.'),
+  });
+
+  const totalNum = Number(totalCost) || 0;
+  const paidNum = Number(amountPaid) || 0;
+  const dueNum = Math.max(0, totalNum - paidNum);
+  const overpaid = paidNum > totalNum;
+
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-ink">Payment status</p>
-        <span className={`badge ${p.cls}`}>{p.label}</span>
-      </div>
-      <div className="mt-4 grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-xs text-ink-muted">Amount paid</p>
-          <p className="text-sm font-semibold text-ink">₹{(task.amountPaid ?? 0).toLocaleString('en-IN')}</p>
-        </div>
-        <div>
-          <p className="text-xs text-ink-muted">Amount due</p>
-          <p className="text-sm font-semibold text-ink">₹{(task.amountDue ?? 0).toLocaleString('en-IN')}</p>
+        <div className="flex items-center gap-2">
+          <span className={`badge ${p.cls}`}>{p.label}</span>
+          {canEdit && !editing && (
+            <button onClick={startEdit} className="btn-secondary text-xs py-1 px-2">Edit</button>
+          )}
         </div>
       </div>
-      <p className="text-xs text-ink-faint mt-4">
-        Payments are recorded by our team as they are received.
-      </p>
+
+      {!editing ? (
+        <>
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-ink-muted">Total cost</p>
+              <p className="text-sm font-semibold text-ink">₹{(task.totalCost ?? task.amountPaid ?? 0).toLocaleString('en-IN')}</p>
+            </div>
+            <div>
+              <p className="text-xs text-ink-muted">Payment mode</p>
+              <p className="text-sm font-semibold text-ink">{task.paymentMode || '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-ink-muted">Amount paid</p>
+              <p className="text-sm font-semibold text-ink">₹{(task.amountPaid ?? 0).toLocaleString('en-IN')}</p>
+            </div>
+            <div>
+              <p className="text-xs text-ink-muted">Amount due</p>
+              <p className="text-sm font-semibold text-ink">₹{(task.amountDue ?? 0).toLocaleString('en-IN')}</p>
+            </div>
+          </div>
+          <p className="text-xs text-ink-faint mt-4">
+            Payments are recorded by our team as they are received.
+          </p>
+        </>
+      ) : (
+        <div className="mt-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="text-xs text-ink-muted">Total cost (₹)</span>
+              <input type="number" min="0" value={totalCost} onChange={(e) => setTotalCost(e.target.value)}
+                className="input-field mt-1" />
+            </label>
+            <label className="block">
+              <span className="text-xs text-ink-muted">Amount paid (₹)</span>
+              <input type="number" min="0" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)}
+                className="input-field mt-1" />
+            </label>
+          </div>
+          <label className="block">
+            <span className="text-xs text-ink-muted">Payment mode</span>
+            <select value={PAYMENT_MODES.includes(paymentMode) || paymentMode === '' ? paymentMode : 'Other'}
+              onChange={(e) => setPaymentMode(e.target.value === 'Other' ? '' : e.target.value)}
+              className="input-field mt-1">
+              <option value="">— Not set —</option>
+              {PAYMENT_MODES.map((m) => <option key={m} value={m === 'Other' ? 'Other' : m}>{m}</option>)}
+            </select>
+          </label>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-ink-muted">Amount due: <span className="font-semibold text-ink">₹{dueNum.toLocaleString('en-IN')}</span></span>
+            {overpaid && <span className="text-red-600">Paid exceeds total cost</span>}
+          </div>
+          <div className="flex items-center gap-2">
+            <button disabled={save.isPending || overpaid} onClick={() => save.mutate()}
+              className="btn-primary disabled:opacity-50">
+              {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Save
+            </button>
+            <button disabled={save.isPending} onClick={() => setEditing(false)} className="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

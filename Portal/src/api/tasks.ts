@@ -1,5 +1,5 @@
 import { apiFetch } from './client';
-import type { Task } from '../types/task';
+import type { Task, PaymentStatus } from '../types/task';
 
 export interface TasksPage {
   data: Task[];
@@ -55,6 +55,20 @@ export const updateTask = (id: string, body: Partial<Task>) =>
   apiFetch<Task>(`/api/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
 export const deleteTask = (id: string) =>
   apiFetch<void>(`/api/tasks/${id}`, { method: 'DELETE' });
+
+/** Edit a matter's payment details after creation (GitHub #78). Admin/manager.
+ *  Any subset of fields; the backend recomputes amountDue and derives status. */
+export interface PaymentUpdate {
+  totalCost?: number;
+  amountPaid?: number;
+  paymentMode?: string | null;
+  paymentStatus?: PaymentStatus;
+}
+export const updatePayment = (id: string, body: PaymentUpdate) =>
+  apiFetch<{ success: boolean; status: string } & Required<Omit<PaymentUpdate, 'paymentStatus'>> & { paymentStatus: PaymentStatus; amountDue: number }>(
+    `/api/tasks/${id}/payment`,
+    { method: 'PATCH', body: JSON.stringify(body) },
+  );
 
 /** Approve a matter pending admin approval (E03-S04) → it goes active. Admin only. */
 export const approveTask = (id: string) =>

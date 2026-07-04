@@ -952,6 +952,61 @@ export async function patchTask(req, res) {
   }
 }
 
+// ─── PATCH /api/tasks/:taskId/payment ──────────────────────────────────────
+// Edit a matter's payment details after creation (#78). Admin/manager only.
+// Accepts any subset of { totalCost, amountPaid, paymentMode, paymentStatus }.
+// amountDue is always recomputed (max(0, totalCost − amountPaid)); paymentStatus
+// is derived from the amounts when not given explicitly. When the balance is now
+// fully received, the workflow's paymentStatus context is set to `fully_paid` so
+// a payment gate can pass — this is the "update workflow payment status after the
+// remaining amount is received" from the issue. Every edit is audited.
+export async function updatePayment(req, res) {
+  try {
+    const { role, uid } = req.user;
+    if (role !== 'admin' && role !== 'manager') {
+      return res.status(403).json({ message: 'Forbidden: admin or manager required' });
+    }
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+
+    // Start from current values, overlay the provided fields.
+    const totalCost = 'totalCost' in req.body ? req.body.totalCost : (task.totalCost ?? 0);
+    const amountPaid = 'amountPaid' in req.body ? req.body.amountPaid : (task.amountPaid ?? 0);
+    const paymentMode = 'paymentMode' in req.body ? (req.body.paymentMode || null) : (task.paymentMode ?? null);
+    if (amountPaid > totalCost) {
+      return res.status(400).json({ message: 'Amount paid cannot exceed the total cost.' });
+    }
+    const amountDue = Math.max(0, totalCost - amountPaid);
+
+    // paymentStatus: explicit wins; otherwise derive from the amounts.
+    const derived = amountPaid <= 0 ? 'not_paid' : amountDue > 0 ? 'part_paid' : 'fully_paid';
+    const paymentStatus = req.body.paymentStatus ?? derived;
+
+    const now = new Date().toISOString();
+    const update = { totalCost, amountPaid, amountDue, paymentMode, paymentStatus, updatedAt: now };
+
+    const batch = db.batch();
+    batch.set(taskRef, update, { merge: true });
+    batch.set(taskRef.collection('events').doc(), {
+      type: 'PAYMENT_UPDATED',
+      fromStep: task.currentStepNumber,
+      toStep: task.currentStepNumber,
+      comment: `Payment updated: ₹${amountPaid} paid / ₹${totalCost} total (${paymentStatus.replace('_', ' ')})${paymentMode ? ` · ${paymentMode}` : ''}`,
+      byUid: uid ?? null,
+      byRole: role ?? null,
+      at: now,
+    });
+    await batch.commit();
+
+    res.json({ success: true, paymentStatus, amountPaid, amountDue, totalCost, paymentMode });
+  } catch (err) {
+    logger.error({ err }, 'updatePayment error:');
+    res.status(500).json({ message: 'Failed to update payment' });
+  }
+}
+
 // ─── PATCH /api/tasks/:taskId/steps/:stepId ────────────────────────────────
 // stepId is the Firestore doc ID inside tasks/{taskId}/steps/{stepId}.
 // Also supports updating the step inline if steps are stored as an array on the task doc.

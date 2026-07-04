@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { taskCreateSchema, taskUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema } from '../schemas/task.schema.js';
-import { listTasks, getTask, createTask, patchTask, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask } from '../controllers/tasks.controller.js';
+import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema } from '../schemas/task.schema.js';
+import { listTasks, getTask, createTask, patchTask, updatePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument } from '../controllers/documents.controller.js';
 
 const router = Router();
@@ -16,6 +16,8 @@ router.post('/',                             requireRole('admin', 'manager'), va
 router.get('/:taskId',                       getTask);
 router.get('/:taskId/events',                listTaskEvents);
 router.patch('/:taskId',                     validate(taskUpdateSchema), patchTask);
+// Edit payment details after creation (#78) — admin/manager.
+router.patch('/:taskId/payment',             requireRole('admin', 'manager'), validate(taskPaymentUpdateSchema), updatePayment);
 router.patch('/:taskId/steps/:stepId',       patchStep);
 router.post('/:taskId/transition',           validate(taskTransitionSchema), transitionTask);
 // Approval chain (E03-S04): admin-only approve / reject of a pending matter.

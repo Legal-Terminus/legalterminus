@@ -37,6 +37,8 @@ export interface Task {
   paymentStatus: PaymentStatus;
   amountPaid?: number;
   amountDue?: number;
+  totalCost?: number;
+  paymentMode?: string | null;
   currentStepNumber: number;
   totalSteps?: number;
   steps?: TaskStep[];
