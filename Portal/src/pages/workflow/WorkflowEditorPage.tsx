@@ -666,7 +666,7 @@ function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, onA
 
       {/* #82: multiple audience-tagged descriptions. */}
       <div className="mt-3">
-        <StepDescriptionsEditor step={step} onPatch={onPatch} inputCls={inputCls} />
+        <StepDescriptionsEditor step={step} onPatch={onPatch} />
       </div>
 
       {/* Advanced (raw) — power users */}
@@ -722,10 +722,9 @@ const OUTCOME_TYPES: { event: string; label: string; needsName?: boolean }[] = [
  * descriptions, edit, delete, and tag each Internal or Client. Migrates a legacy
  * single `description` into the list on first edit (kept until first save).
  */
-function StepDescriptionsEditor({ step, onPatch, inputCls }: {
+function StepDescriptionsEditor({ step, onPatch }: {
   step: WorkflowStepDef;
   onPatch: (next: Partial<WorkflowStepDef>) => void;
-  inputCls: string;
 }) {
   // Seed from `descriptions`, else from a legacy single `description`.
   const list: StepDescription[] = step.descriptions
@@ -754,7 +753,7 @@ function StepDescriptionsEditor({ step, onPatch, inputCls }: {
           {list.map((d, i) => (
             <div key={d.id ?? i} className="flex items-start gap-2">
               <select
-                className={`${inputCls} w-28 shrink-0`}
+                className="w-28 shrink-0 rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 value={d.audience ?? 'client'}
                 onChange={(e) => update(i, { audience: e.target.value as 'internal' | 'client' })}
                 aria-label="Description audience"
@@ -763,13 +762,13 @@ function StepDescriptionsEditor({ step, onPatch, inputCls }: {
                 <option value="internal">Internal</option>
               </select>
               <textarea
-                className={`${inputCls} resize-y flex-1`}
+                className="flex-1 min-w-0 resize-y rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 rows={2}
                 value={d.text}
                 onChange={(e) => update(i, { text: e.target.value })}
                 placeholder="Description text…"
               />
-              <button onClick={() => remove(i)} className="p-1.5 text-ink-faint hover:text-red-600" title="Delete description" aria-label="Delete description">
+              <button onClick={() => remove(i)} className="shrink-0 p-1.5 text-ink-faint hover:text-red-600" title="Delete description" aria-label="Delete description">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
