@@ -1092,6 +1092,14 @@ export async function transitionTask(req, res) {
       return res.status(403).json({ message: 'A team member cannot act on the client’s behalf — ask an admin or manager to override.' });
     }
 
+    // ── #74: overriding the payment gate is ADMIN-ONLY ───────────────────────
+    // Only an admin may bypass the payment restriction to start/advance a matter
+    // that isn't fully paid. Managers, team members and clients cannot — despite
+    // the event otherwise being an ordinary staff advance.
+    if (event?.type === 'ADMIN_OVERRIDE_PAYMENT' && role !== 'admin') {
+      return res.status(403).json({ message: 'Only an admin can override the payment restriction.' });
+    }
+
     // ── #49: restrict step COMPLETION to the assigned user ───────────────────
     // A step's work-advancing events may only be fired by the active step's
     // assignee. A manager's power over someone else's step is limited to REASSIGN

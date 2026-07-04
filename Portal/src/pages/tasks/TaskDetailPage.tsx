@@ -1012,9 +1012,12 @@ function StepHeroPanel({
           <button disabled={pending} onClick={() => fire('RECORD_PAYMENT', { extra: { newStatus: 'fully_paid' } })} className="btn-primary disabled:opacity-50">
             {pending ? spin : <CreditCard className="w-4 h-4" />} Mark as Paid
           </button>
-          <button disabled={pending} onClick={() => fire('ADMIN_OVERRIDE_PAYMENT')} className="btn-secondary disabled:opacity-50">
-            <ShieldCheck className="w-4 h-4" /> Admin Override
-          </button>
+          {/* Payment override is admin-only (#74). */}
+          {role.isAdmin && (
+            <button disabled={pending} onClick={() => fire('ADMIN_OVERRIDE_PAYMENT')} className="btn-secondary disabled:opacity-50">
+              <ShieldCheck className="w-4 h-4" /> Admin Override
+            </button>
+          )}
         </div>
       );
     } else wait = <WaitNote text="Waiting for payment to be recorded." />;

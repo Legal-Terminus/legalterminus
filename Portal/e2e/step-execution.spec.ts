@@ -37,6 +37,25 @@ test('payment gate blocks until override, then advances', async ({ adminPage }) 
   }).toPass({ timeout: 15_000 });
 });
 
+test('payment override is admin-only: a manager is rejected and never sees the button (#74)', async ({ managerPage }) => {
+  const def = await getDefinitionForMatter(taskId);
+  const gate = firstPaymentGate(def);
+  test.skip(!gate, 'This workflow has no payment gate.');
+
+  await advanceUntil(taskId, (s) => s.type === 'payment_gate');
+  expect((await getMatter(taskId)).currentStepNumber).toBe(gate!.stepNumber);
+
+  // API: a manager firing the override is forbidden.
+  await expect(transition('manager', taskId, { type: 'ADMIN_OVERRIDE_PAYMENT' }))
+    .rejects.toThrow(/403/);
+
+  // UI: the manager sees the gate but not the Admin Override control.
+  await managerPage.goto(`tasks/${taskId}`);
+  await managerPage.getByRole('button', { name: 'Steps', exact: true }).click();
+  await expect(managerPage.getByRole('button', { name: /mark as paid/i })).toBeVisible();
+  await expect(managerPage.getByRole('button', { name: /admin override/i })).toHaveCount(0);
+});
+
 test('payment gate: Mark as Paid sets paid status and advances', async ({ adminPage }) => {
   const def = await getDefinitionForMatter(taskId);
   const gate = firstPaymentGate(def);
