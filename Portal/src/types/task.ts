@@ -39,6 +39,8 @@ export interface Task {
   amountDue?: number;
   totalCost?: number;
   paymentMode?: string | null;
+  professionalUid?: string | null; // #85
+  professionalName?: string | null; // #85 (snapshot for display)
   currentStepNumber: number;
   totalSteps?: number;
   steps?: TaskStep[];

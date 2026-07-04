@@ -1755,6 +1755,22 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 
 ---
 
+### E09-S06 — User Detail (Read-Only View Mode) [Phase 2 — BACKLOG]
+
+**Priority**: P3 | **Complexity**: S | **Linked spec story**: US-1 | **Dependencies**: E09-S01, E09-S02
+
+**Rationale**: On the Users page, clicking a user row only opens **edit** mode — there's no way to just *view* a user's full details without entering the edit form. Users want a read-only detail view that shows all fields at a glance (opening edit only when they choose to change something).
+
+**Acceptance Criteria**:
+- Clicking a user in the Users grid opens a **read-only detail view** showing all of that user's fields (profile, role, client/professional mapping, emails, etc.).
+- An explicit **Edit** action switches from view → edit; viewing never mutates.
+- Consistent for both team members and clients.
+
+**Frontend screens/components**:
+- `Portal/src/pages/users/UsersPage.tsx` (+ a UserDetail view/drawer component).
+
+---
+
 ## E-10 — Workflow Configuration
 
 **Goal**: Give admin a UI to edit the Firestore config layer (step metadata: labels, deadlines, email template refs, default assignee roles) without a code deployment, and detect when the XState code layer is out of sync with the config layer.

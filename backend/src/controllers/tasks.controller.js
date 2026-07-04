@@ -178,7 +178,7 @@ export async function createTask(req, res) {
 
     // Body validated by taskCreateSchema (incl. #51 payment fields).
     const { clientUid, serviceKey, serviceName,
-            paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode } = req.body;
+            paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, professionalUid } = req.body;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
     if (!compiled) {
@@ -203,6 +203,17 @@ export async function createTask(req, res) {
     if (!clientDoc.exists) return res.status(404).json({ message: 'Client not found' });
     const c = clientDoc.data();
     const clientName = c.name || c.fullName || c.email || 'Client';
+
+    // #85: optional handling professional — must be a STAFF user (never a client).
+    // Snapshot the name for display/exports; store the UID as the stable ref.
+    let professional = { professionalUid: null, professionalName: null };
+    if (professionalUid) {
+      const pDoc = await db.collection('users').doc(professionalUid).get();
+      if (!pDoc.exists) return res.status(400).json({ message: 'Professional not found' });
+      const p = pDoc.data();
+      if (p.role === 'client') return res.status(400).json({ message: 'Professional must be a staff user' });
+      professional = { professionalUid, professionalName: p.name || p.fullName || p.email || null };
+    }
 
     const firstStep = definition.initialStep;
 
@@ -265,6 +276,8 @@ export async function createTask(req, res) {
       clientUid,
       clientName,
       assignedTo: null,
+      professionalUid: professional.professionalUid, // #85
+      professionalName: professional.professionalName, // #85 (snapshot for display/reports)
       status: initialStatus,
       paymentStatus,
       amountPaid: received,
@@ -882,18 +895,40 @@ export async function listTaskEvents(req, res) {
 // so the work shows up in their My Tasks immediately.
 export async function patchTask(req, res) {
   try {
-    const { role } = req.user;
-    if (role !== 'admin' && role !== 'manager') {
-      return res.status(403).json({ message: 'Forbidden: admin or manager required' });
-    }
+    const { role, uid } = req.user;
 
     const taskRef = db.collection('tasks').doc(req.params.taskId);
     const taskSnap = await taskRef.get();
     if (!taskSnap.exists) return res.status(404).json({ message: 'Matter not found' });
     const task = taskSnap.data();
 
+    // Admin/manager may patch anything. A team member may ONLY set the handling
+    // professional on a matter assigned to them (#85) — nothing else.
+    if (role !== 'admin' && role !== 'manager') {
+      const onlyProfessional = Object.keys(req.body).every((k) => k === 'professionalUid');
+      const isMatterAssignee = task.assignedTo === uid;
+      if (!(role === 'team_member' && onlyProfessional && isMatterAssignee)) {
+        return res.status(403).json({ message: 'Forbidden: admin or manager required' });
+      }
+    }
+
     const update = {};
     if ('isUrgent' in req.body) update.isUrgent = req.body.isUrgent;
+
+    // #85: set/clear the handling professional (staff user). Snapshot the name.
+    if ('professionalUid' in req.body) {
+      const pUid = req.body.professionalUid || null;
+      if (pUid) {
+        const p = await db.collection('users').doc(pUid).get();
+        if (!p.exists) return res.status(400).json({ message: 'Professional not found' });
+        if (p.data().role === 'client') return res.status(400).json({ message: 'Professional must be a staff user' });
+        update.professionalUid = pUid;
+        update.professionalName = p.data().name || p.data().fullName || p.data().email || null;
+      } else {
+        update.professionalUid = null;
+        update.professionalName = null;
+      }
+    }
 
     // Matter-level assignment. null/'' clears it.
     let newAssignee; // undefined = not changing

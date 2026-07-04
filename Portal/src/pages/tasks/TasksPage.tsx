@@ -87,13 +87,14 @@ export default function TasksPage() {
         columns={columns}
         getRowId={(t) => t.id}
         onRowClick={(t) => navigate(`/tasks/${t.id}`)}
-        searchPlaceholder="Search by client, service, or status…"
+        searchPlaceholder={isClientView ? 'Search by service or status…' : 'Search by client, service, professional, or status…'}
         globalFilterFn={(row, _id, q) => {
           const t = row.original;
           const s = q.toLowerCase();
           return (
             (t.clientName ?? '').toLowerCase().includes(s) ||
             (t.serviceName ?? t.workflowType ?? '').toLowerCase().includes(s) ||
+            (t.professionalName ?? '').toLowerCase().includes(s) || // #85
             (t.status ?? '').toLowerCase().includes(s)
           );
         }}
@@ -156,6 +157,18 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
         return <span className={`badge ${p.cls}`}>{p.label}</span>;
       },
     }),
+    // Professional (#85) — staff view only.
+    ...(isClientView ? [] : [
+      col.accessor((t) => t.professionalName ?? '', {
+        id: 'professional',
+        header: 'Professional',
+        size: 150,
+        cell: (ctx) => {
+          const v = ctx.getValue() as string;
+          return v ? <span className="text-sm text-ink truncate">{v}</span> : <span className="text-xs text-ink-faint">—</span>;
+        },
+      }),
+    ]),
     col.accessor((t) => t.currentStepNumber, {
       id: 'progress',
       header: 'Progress',

@@ -19,6 +19,8 @@ export const taskCreateSchema = z.object({
   totalCost: z.number().min(0).max(1e9).optional(),
   amountReceived: z.number().min(0).max(1e9).optional(),
   paymentMode: z.string().trim().max(60).optional(),
+  // #85: optional handling professional (a staff user UID). Validated in controller.
+  professionalUid: z.string().trim().max(200).nullable().optional(),
 }).strict().refine(
   (b) => b.paymentStatus === 'not_paid' || typeof b.amountReceived === 'number',
   { message: 'amountReceived is required for part/full payment', path: ['amountReceived'] },
@@ -29,6 +31,8 @@ export const taskUpdateSchema = z.object({
   isUrgent: z.boolean().optional(),
   // Assign the whole matter to a staff user (UID), or null/'' to unassign.
   assignedTo: z.string().trim().max(200).nullable().optional(),
+  // #85: set/clear the handling professional (a staff user UID). Validated in controller.
+  professionalUid: z.string().trim().max(200).nullable().optional(),
 }).strict().refine((b) => Object.keys(b).length > 0, {
   message: 'No updatable fields provided',
 });

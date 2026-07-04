@@ -12,7 +12,7 @@ import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
@@ -110,6 +110,17 @@ export default function TaskDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['my-steps'] });
     },
     onError: (err: Error) => toast.error(err.message || 'Could not assign this matter.'),
+  });
+
+  // #85: set/clear the handling professional. Admin/manager or the matter's
+  // assigned member (backend enforces). Snapshot name refreshed on the task read.
+  const assignProfessional = useMutation({
+    mutationFn: (professionalUid: string | null) => setMatterProfessional(taskId!, professionalUid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not update the professional.'),
   });
 
   // Urgent flag (E03-S05 UI / Issue 3): admin/manager can flag the whole matter
@@ -272,6 +283,25 @@ export default function TaskDetailPage() {
                   ))}
                 </select>
                 {assignOwner.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
+              </span>
+            </label>
+            {/* Professional (#85) — the handling staff member. Editable by
+                admin/manager or the matter's assigned member (backend enforces). */}
+            <label className="flex items-center gap-2">
+              <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Professional</span>
+              <span className="relative inline-flex items-center">
+                <select
+                  className="input-field py-1.5 pr-8 text-sm max-w-[160px]"
+                  value={task.professionalUid ?? ''}
+                  disabled={assignProfessional.isPending}
+                  onChange={(e) => assignProfessional.mutate(e.target.value || null)}
+                >
+                  <option value="">None</option>
+                  {staff.map((u) => (
+                    <option key={u.uid} value={u.uid}>{displayName(u)}</option>
+                  ))}
+                </select>
+                {assignProfessional.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
               </span>
             </label>
           </div>

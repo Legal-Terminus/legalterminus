@@ -49,8 +49,17 @@ export const assignServiceToClient = (input: {
   totalCost?: number;
   amountReceived?: number;
   paymentMode?: string;
+  professionalUid?: string; // #85: optional handling professional (staff UID)
 }) =>
   apiFetch<Task>('/api/tasks', { method: 'POST', body: JSON.stringify(input) });
+
+/** Set/clear the handling professional on a matter (#85). Admin/manager, or the
+ *  matter's assigned member. Pass null to clear. */
+export const setMatterProfessional = (id: string, professionalUid: string | null) =>
+  apiFetch<{ success: boolean }>(`/api/tasks/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ professionalUid }),
+  });
 export const updateTask = (id: string, body: Partial<Task>) =>
   apiFetch<Task>(`/api/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
 export const deleteTask = (id: string) =>

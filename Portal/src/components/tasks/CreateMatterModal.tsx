@@ -22,6 +22,7 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
   const [totalCost, setTotalCost] = useState('');
   const [amountReceived, setAmountReceived] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
+  const [professionalUid, setProfessionalUid] = useState(''); // #85
   const [error, setError] = useState('');
   const showAmounts = paymentStatus !== 'not_paid';
   const amountDue = Math.max(0, (Number(totalCost) || 0) - (Number(amountReceived) || 0));
@@ -34,6 +35,11 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
   });
   const clients = useMemo(
     () => users.filter((u) => u.role === 'client'),
+    [users],
+  );
+  // #85: professionals = active staff users (never clients).
+  const staff = useMemo(
+    () => users.filter((u) => u.role !== 'client').sort((a, b) => displayName(a).localeCompare(displayName(b))),
     [users],
   );
   const filteredClients = useMemo(() => {
@@ -68,6 +74,7 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
       return assignServiceToClient({
         clientUid, serviceKey: svc.key, serviceName: svc.displayName,
         paymentStatus,
+        ...(professionalUid ? { professionalUid } : {}),
         ...(showAmounts ? {
           totalCost: Number(totalCost) || undefined,
           amountReceived: Number(amountReceived) || 0,
@@ -183,6 +190,24 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
                 ))}
               </select>
             )}
+          </div>
+
+          {/* Professional (#85) — optional handling staff member. */}
+          <div>
+            <label className="block text-sm font-medium text-ink-soft mb-1.5">
+              Professional <span className="text-ink-faint font-normal">(optional)</span>
+            </label>
+            <select
+              aria-label="Professional"
+              value={professionalUid}
+              onChange={(e) => setProfessionalUid(e.target.value)}
+              className="input-field w-full"
+            >
+              <option value="">— None —</option>
+              {staff.map((u) => (
+                <option key={u.uid} value={u.uid}>{displayName(u)}</option>
+              ))}
+            </select>
           </div>
 
           {/* Payment (#51) */}
