@@ -31,6 +31,8 @@ const ALLOWED_CONTENT_TYPES = new Set([
   'image/jpeg',
   'image/png',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',       // .xlsx (#77)
+  'application/vnd.ms-excel',                                                // .xls (#77)
 ]);
 
 const toISO = (ts) => {

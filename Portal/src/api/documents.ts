@@ -32,9 +32,31 @@ export const ALLOWED_DOC_TYPES = [
   'image/jpeg',
   'image/png',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx (#77)
+  'application/vnd.ms-excel', // .xls (#77)
 ];
-export const ALLOWED_DOC_EXT = '.pdf,.jpg,.jpeg,.png,.docx';
+export const ALLOWED_DOC_EXT = '.pdf,.jpg,.jpeg,.png,.docx,.xlsx,.xls';
 export const MAX_DOC_BYTES = 10 * 1024 * 1024;
+
+/** MIME by extension — the fallback when the browser gives an empty/wrong
+ *  file.type (common for legacy .xls). */
+const EXT_TO_MIME: Record<string, string> = {
+  pdf: 'application/pdf',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  xls: 'application/vnd.ms-excel',
+};
+
+/** Prefer the browser's MIME if it's on the allow-list; otherwise resolve from
+ *  the file extension. Returns '' when neither is recognized. */
+export function effectiveContentType(file: File): string {
+  if (ALLOWED_DOC_TYPES.includes(file.type)) return file.type;
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+  return EXT_TO_MIME[ext] ?? file.type ?? '';
+}
 
 export const getDocuments = (taskId: string) =>
   apiFetch<{ data: TaskDocument[] }>(`/api/tasks/${taskId}/documents`).then((r) => r.data);
@@ -58,21 +80,24 @@ export async function uploadDocument(
   if (file.size > MAX_DOC_BYTES) {
     throw new Error('File is too large (max 10MB).');
   }
-  if (!ALLOWED_DOC_TYPES.includes(file.type)) {
-    throw new Error('Unsupported file type. Allowed: PDF, JPG, PNG, DOCX.');
+  // Some browsers report an empty/incorrect MIME for legacy .xls — resolve an
+  // effective content type from the extension so those still upload (#77).
+  const contentType = effectiveContentType(file);
+  if (!ALLOWED_DOC_TYPES.includes(contentType)) {
+    throw new Error('Unsupported file type. Allowed: PDF, JPG, PNG, DOCX, XLSX, XLS.');
   }
 
   // Step 1 — signed PUT URL + a pre-created metadata doc.
   const { docId, signedUrl } = await apiFetch<SignedUploadResponse>(
     `/api/tasks/${taskId}/documents/signed-upload-url`,
-    { method: 'POST', body: JSON.stringify({ stepNumber, fileName: file.name, contentType: file.type }) },
+    { method: 'POST', body: JSON.stringify({ stepNumber, fileName: file.name, contentType }) },
   );
 
   // Step 2 — PUT the bytes straight to storage (no backend bandwidth). The
   // Content-Type must match what was signed, or the PUT is rejected.
   const put = await fetch(signedUrl, {
     method: 'PUT',
-    headers: { 'Content-Type': file.type },
+    headers: { 'Content-Type': contentType },
     body: file,
   });
   if (!put.ok) throw new Error('Upload failed. Please try again.');
