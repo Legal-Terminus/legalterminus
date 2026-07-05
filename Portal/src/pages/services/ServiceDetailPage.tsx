@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Workflow, Users, Check, Loader2, AlertTriangle, AlertCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Workflow, Check, Loader2, AlertTriangle, AlertCircle } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
+import CollapsibleSection from '../../components/common/CollapsibleSection';
 import { useToast } from '../../components/common/toastContext';
 import WorkflowDiagram from '../../components/workflow/WorkflowDiagram';
 import { useAuthStore } from '../../store/authStore';
@@ -85,11 +86,6 @@ export default function ServiceDetailPage() {
         </div>
       }
     >
-      <div className="mb-3 flex items-center gap-2">
-        <Workflow className="w-4 h-4 text-ink-muted" />
-        <h2 className="text-sm font-semibold text-ink">Configured Workflow</h2>
-      </div>
-
       {/* Config sync warning (E10-S02): hard errors block new matters; warnings
           are advisory. Shown only when there's something to report. */}
       {sync && !sync.inSync && (
@@ -121,18 +117,22 @@ export default function ServiceDetailPage() {
         </div>
       )}
 
-      {loading ? (
-        <div className="card p-16 flex flex-col items-center gap-3 text-ink-faint">
-          <div className="w-7 h-7 border-2 border-hairline border-t-ink rounded-full animate-spin" />
-          <span className="text-sm">Loading…</span>
-        </div>
-      ) : machine ? (
-        <WorkflowDiagram machine={machine} />
-      ) : (
-        <div className="card p-12 text-center text-ink-muted text-sm">
-          No workflow configured yet for this service.
-        </div>
-      )}
+      <CollapsibleSection id="svc-workflow" title="Configured Workflow" className="card p-4">
+        {loading ? (
+          <div className="p-12 flex flex-col items-center gap-3 text-ink-faint">
+            <div className="w-7 h-7 border-2 border-hairline border-t-ink rounded-full animate-spin" />
+            <span className="text-sm">Loading…</span>
+          </div>
+        ) : machine ? (
+          <WorkflowDiagram machine={machine} />
+        ) : (
+          <div className="p-8 text-center text-ink-muted text-sm">
+            No workflow configured yet for this service.
+          </div>
+        )}
+      </CollapsibleSection>
+
+      <div className="mt-4" />
 
       {/* Phase default assignees (E11-S02) — one default person per phase; new
           matters route that phase's steps to them unless a step overrides below. */}
@@ -242,11 +242,8 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
   const hasEdits = Object.keys(edits).length > 0;
 
   return (
-    <div className="mt-8">
-      <div className="mb-3 flex items-center gap-2">
-        <Clock className="w-4 h-4 text-ink-muted" />
-        <h2 className="text-sm font-semibold text-ink">Step Settings</h2>
-      </div>
+    <div className="mt-4">
+      <CollapsibleSection id="svc-step-settings" title="Step Settings" className="card p-4">
       <p className="text-sm text-ink-muted mb-3">
         Per step: the default <strong>assignee</strong> (overrides the phase default), the expected
         <strong> ETA</strong> in days (drives due dates and “running late”), and whether the step is
@@ -329,6 +326,7 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
           </div>
         </>
       )}
+      </CollapsibleSection>
     </div>
   );
 }
@@ -393,11 +391,8 @@ function AssignmentsEditor({
   if (phases.length === 0) return null; // no phases → nothing to assign at phase level
 
   return (
-    <div className="mt-8">
-      <div className="mb-3 flex items-center gap-2">
-        <Users className="w-4 h-4 text-ink-muted" />
-        <h2 className="text-sm font-semibold text-ink">Phase Assignments</h2>
-      </div>
+    <div className="mt-4">
+      <CollapsibleSection id="svc-phase-assignments" title="Phase Assignments" className="card p-4">
       <p className="text-sm text-ink-muted mb-3">
         Set a default assignee per phase. New matters route that phase’s steps to them automatically — a step
         can override this in Step Settings below. Changes apply to new matters only.
@@ -442,6 +437,7 @@ function AssignmentsEditor({
           )}
         </>
       )}
+      </CollapsibleSection>
     </div>
   );
 }

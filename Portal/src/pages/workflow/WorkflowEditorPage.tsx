@@ -2,10 +2,12 @@ import { useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown, Save, AlertTriangle, Loader2, ChevronRight, Crosshair,
+  ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown, Save, AlertTriangle, Loader2, ChevronRight, Crosshair, ChevronsRight,
 } from 'lucide-react';
+import { useRail } from '../../hooks/useResizablePanels';
 import PageShell from '../../components/common/PageShell';
 import FieldLabel from '../../components/common/FieldLabel';
+import CollapsibleSection from '../../components/common/CollapsibleSection';
 import { useToast } from '../../components/common/toastContext';
 import { useConfirm } from '../../components/common/confirmContext';
 import WorkflowDiagram from '../../components/workflow/WorkflowDiagram';
@@ -165,6 +167,9 @@ export default function WorkflowEditorPage() {
   // A stable id for a newly-created workflow (generated once, not during render).
   const [newId] = useState(() => `wf-${Date.now()}`);
 
+  // Live-preview rail: drag-resizable + collapsible, persisted across reloads (#68).
+  const preview = useRail('wfEditorPreviewRail', { initial: 380, min: 280, max: 720 });
+
   // The step currently being edited — highlights (colour only) in the live preview.
   const [activeStepNumber, setActiveStepNumber] = useState<number | null>(null);
   // One-shot "centre the chart on this step" request (locate-in-chart button). The
@@ -317,11 +322,10 @@ export default function WorkflowEditorPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-6 items-start">
         <div className="flex flex-col gap-5">
           {/* Workflow meta */}
-          <section className="card p-4">
-            <h2 className="text-sm font-semibold text-ink mb-3">Workflow</h2>
+          <CollapsibleSection id="workflow" title="Workflow">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-0.5">
                 <FieldLabel label="Name" hint="The service this workflow is for, e.g. “Company Incorporation”." />
@@ -354,13 +358,12 @@ export default function WorkflowEditorPage() {
                 </div>
               )}
             </div>
-          </section>
+          </CollapsibleSection>
 
           <StagesEditor stages={draft.phases ?? []} onChange={(phases) => patch({ phases })} />
 
           {/* Steps */}
-          <section className="card p-4">
-            <h2 className="text-sm font-semibold text-ink mb-3">Steps ({draft.steps.length})</h2>
+          <CollapsibleSection id="steps" title={`Steps (${draft.steps.length})`}>
             <div className="flex flex-col gap-3">
               {draft.steps.map((s, i) => (
                 <StepCard
@@ -387,25 +390,62 @@ export default function WorkflowEditorPage() {
                 <Plus className="w-4 h-4" /> Add step
               </button>
             </div>
-          </section>
+          </CollapsibleSection>
         </div>
 
-        {/* Live preview */}
-        <div className="xl:sticky xl:top-4 self-start w-full">
-          <section className="card p-3">
-            <h2 className="text-sm font-semibold text-ink mb-2 px-1 inline-flex items-center gap-1">
-              Live preview
-              <FieldLabel label="" hint="A diagram of the workflow as you’re building it. Boxes are steps; arrows are where it goes next." />
-            </h2>
-            {previewMachine ? (
-              <div className="h-[520px] rounded-md border border-gray-100 overflow-hidden">
-                <WorkflowDiagram machine={previewMachine} highlightStepNumber={activeStepNumber} centerToken={centerToken} onStepClick={revealStep} displayNumbers={displayNumbers} />
+        {/* Live preview — drag-resizable + collapsible rail so the editor column
+            can widen. On mobile it stacks full-width and skips the drag handle. */}
+        {preview.collapsed ? (
+          <div className="hidden xl:flex xl:sticky xl:top-4 self-start">
+            <button
+              onClick={preview.toggle}
+              className="card p-2 w-11 flex flex-col items-center gap-2 py-2 text-sm font-semibold text-ink hover:text-brand-600"
+              title="Show live preview"
+            >
+              <ChevronsRight className="w-4 h-4 rotate-180 shrink-0" />
+              <span className="[writing-mode:vertical-rl] rotate-180 whitespace-nowrap tracking-wide">Live preview</span>
+            </button>
+          </div>
+        ) : (
+          <div className="xl:sticky xl:top-4 self-start flex">
+            {/* Drag handle (desktop only) — grabs the left edge to resize. */}
+            <div
+              onPointerDown={preview.startDrag('right')}
+              className="hidden xl:block w-1.5 mr-2 shrink-0 cursor-col-resize rounded bg-transparent hover:bg-brand-400/40"
+              role="separator"
+              aria-label="Resize live preview"
+            />
+            {/* Fixed width applies at xl+ only; below that the CSS var is ignored
+                and the section is full-width via w-full. */}
+            <section
+              className="card p-4 w-full xl:w-[var(--rail-w)]"
+              style={{ ['--rail-w' as string]: `${preview.width}px` }}
+            >
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-ink">
+                  Live preview
+                  <FieldLabel label="" hint="A diagram of the workflow as you’re building it. Boxes are steps; arrows are where it goes next." />
+                </span>
+                <button
+                  onClick={preview.toggle}
+                  className="hidden xl:inline-flex items-center gap-1 text-xs text-ink-muted hover:text-brand-600"
+                  title="Collapse"
+                >
+                  Hide <ChevronsRight className="w-3.5 h-3.5" />
+                </button>
               </div>
-            ) : (
-              <p className="text-xs text-ink-muted p-4">Fix the items above to see the updated diagram.</p>
-            )}
-          </section>
-        </div>
+              <div className="mt-3">
+                {previewMachine ? (
+                  <div className="h-[520px] rounded-md border border-gray-100 overflow-hidden">
+                    <WorkflowDiagram machine={previewMachine} highlightStepNumber={activeStepNumber} centerToken={centerToken} onStepClick={revealStep} displayNumbers={displayNumbers} />
+                  </div>
+                ) : (
+                  <p className="text-xs text-ink-muted p-4">Fix the items above to see the updated diagram.</p>
+                )}
+              </div>
+            </section>
+          </div>
+        )}
       </div>
     </PageShell>
   );
@@ -440,20 +480,20 @@ function StagesEditor({ stages, onChange }: { stages: PhaseDef[]; onChange: (p: 
   const patch = (idx: number, next: Partial<PhaseDef>) => onChange(stages.map((p, i) => (i === idx ? { ...p, ...next } : p)));
   const remove = (idx: number) => onChange(stages.filter((_, i) => i !== idx));
   return (
-    <section className="card p-4">
-      <div className="flex items-center justify-between mb-1">
-        <h2 className="text-sm font-semibold text-ink inline-flex items-center gap-1">
-          Stages
-          <FieldLabel label="" hint="Big-picture groupings shown on the client’s progress tracker, e.g. “Name Reservation”, “Filing”. Optional." />
-        </h2>
+    <CollapsibleSection
+      id="stages"
+      title="Stages"
+      hint="Big-picture groupings shown on the client’s progress tracker, e.g. “Name Reservation”, “Filing”. Optional."
+      actions={
         <button onClick={add} className="inline-flex items-center gap-1 text-sm text-brand-600 hover:underline">
           <Plus className="w-4 h-4" /> Add stage
         </button>
-      </div>
+      }
+    >
       {stages.length === 0 ? (
         <p className="text-xs text-ink-muted">No stages yet — steps won’t group on the client’s progress tracker.</p>
       ) : (
-        <div className="flex flex-col gap-2 mt-2">
+        <div className="flex flex-col gap-2">
           {stages.map((p, i) => (
             <div key={i} className="flex items-center gap-2">
               <input className={inputCls} value={p.name} onChange={(e) => patch(i, { name: e.target.value })} placeholder="Stage name" aria-label="Stage name" />
@@ -462,7 +502,7 @@ function StagesEditor({ stages, onChange }: { stages: PhaseDef[]; onChange: (p: 
           ))}
         </div>
       )}
-    </section>
+    </CollapsibleSection>
   );
 }
 
