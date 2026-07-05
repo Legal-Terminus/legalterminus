@@ -52,7 +52,10 @@ test('#83: a comment draft autosaves, restores on reload, and clears after submi
 
     // Submit the step action — the draft is consumed and cleared.
     await adminPage.getByRole('button', { name: /complete step/i }).click();
-    await expect(adminPage.getByText(draft).first()).toBeAttached({ timeout: 15_000 });
+    const posted = adminPage.getByText(draft).first();
+    await expect(posted).toBeAttached({ timeout: 15_000 });
+    // E14-S02: activity comments wrap and preserve line breaks (no overflow).
+    expect(await posted.getAttribute('class') ?? '').toMatch(/whitespace-pre-wrap|break-words/);
 
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();

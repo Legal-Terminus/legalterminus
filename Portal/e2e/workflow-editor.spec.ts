@@ -45,10 +45,11 @@ test('non-admins (team member) do NOT see the edit entry and cannot reach the ed
 test('editor loads with steps, stages, and a live preview (plain-language UI)', async ({ adminPage }) => {
   await adminPage.goto(`services/${serviceKey}/edit`);
   await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
-  // #68: section titles are now collapse toggles (buttons), not headings.
+  // #68: Steps/Stages titles are now collapse toggles (buttons), not headings.
   await expect(adminPage.getByRole('button', { name: /^Steps/ })).toBeVisible();
   await expect(adminPage.getByRole('button', { name: /^Stages/ })).toBeVisible();
-  await expect(adminPage.getByRole('button', { name: /^Live preview/ })).toBeVisible();
+  // Live preview uses the resizable rail (its title is a span, with a Hide toggle).
+  await expect(adminPage.getByText('Live preview')).toBeVisible();
   // Plain-language controls present (no raw "transitions/effects" jargon).
   await expect(adminPage.getByText('What kind of step?').first()).toBeVisible();
   await expect(adminPage.getByText('What happens next?').first()).toBeVisible();
@@ -75,6 +76,50 @@ test('#68: workflow sections collapse and stay collapsed on reload', async ({ ad
   // Re-expand to leave the editor in its default state for other specs.
   await adminPage.getByRole('button', { name: /^Steps/ }).click();
   await expect(adminPage.getByText('What kind of step?').first()).toBeVisible();
+});
+
+test('#68: Live preview is drag-resizable and its width persists', async ({ adminPage }) => {
+  // The preview rail + drag handle are xl-only; use a wide viewport.
+  await adminPage.setViewportSize({ width: 1600, height: 900 });
+  await adminPage.goto(`services/${serviceKey}/edit`);
+  await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
+
+  const previewSection = adminPage.locator('section:has(button[title="Collapse"])').first();
+  await expect(previewSection).toBeVisible();
+  const before = (await previewSection.boundingBox())!.width;
+
+  // Drag the preview resize handle left to WIDEN the rail (right-side rail grows on
+  // leftward drag).
+  const handle = adminPage.getByRole('separator', { name: /resize live preview/i });
+  await expect(handle).toBeVisible();
+  const box = (await handle.boundingBox())!;
+  await adminPage.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await adminPage.mouse.down();
+  await adminPage.mouse.move(box.x - 140, box.y + box.height / 2, { steps: 8 });
+  await adminPage.mouse.up();
+
+  const after = (await previewSection.boundingBox())!.width;
+  expect(after).toBeGreaterThan(before + 40);
+
+  // Persists across reload.
+  await adminPage.reload();
+  const persisted = (await adminPage.locator('section:has(button[title="Collapse"])').first().boundingBox())!.width;
+  expect(persisted).toBeGreaterThan(before + 40);
+});
+
+test('#68: Live preview collapses to a vertical rail and re-expands', async ({ adminPage }) => {
+  await adminPage.setViewportSize({ width: 1600, height: 900 });
+  await adminPage.goto(`services/${serviceKey}/edit`);
+  await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
+
+  // Hide → the diagram/body is gone; a slim "Live preview" rail button remains.
+  await adminPage.getByRole('button', { name: /^Hide/ }).click();
+  const railButton = adminPage.getByRole('button', { name: /Show live preview/i });
+  await expect(railButton).toBeVisible();
+
+  // Re-expand.
+  await railButton.click();
+  await expect(adminPage.getByRole('button', { name: /^Hide/ })).toBeVisible();
 });
 
 test('invalid edit disables save and shows an inline error', async ({ adminPage }) => {

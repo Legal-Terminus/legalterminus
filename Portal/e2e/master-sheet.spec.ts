@@ -71,3 +71,21 @@ test('#88: master-sheet columns are user-resizable and the width persists', asyn
     expect(persisted).toBeGreaterThan(before + 40);
   } finally { await deleteMatter(taskId); }
 });
+
+test('#88: body cells wrap (do not clip) so long text cannot overflow the column', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto('reports/master-sheet');
+    // Wait for a data row to render.
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+    // The shared DataGrid body cells carry `break-words` (wrap) and must NOT clip
+    // with overflow-hidden — that's what stops text spilling into the next column.
+    // Scope to the cell containing the client name so we hit a BODY cell (the header
+    // span also uses break-words).
+    const bodyCell = adminPage.locator('.break-words', { hasText: 'E2E Client' }).first();
+    await expect(bodyCell).toBeVisible();
+    const cls = (await bodyCell.getAttribute('class')) ?? '';
+    expect(cls).toContain('break-words');
+    expect(cls).not.toContain('overflow-hidden');
+  } finally { await deleteMatter(taskId); }
+});

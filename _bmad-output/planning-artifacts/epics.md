@@ -73,11 +73,11 @@ split dashboard tiles.
 | E-07 | Notifications & Email | Phase 1 / 2 | E07-S01 – E07-S05 |
 | E-08 | Reports & Master Sheet | Phase 1 / 2 | E08-S01 – E08-S06 |
 | E-09 | User & Client Management | Phase 1 / 2 | E09-S01 – E09-S05 |
-| E-10 | Workflow Configuration | Phase 1 | E10-S01 – E10-S02 |
+| E-10 | Workflow Configuration | Phase 1 / 2 | E10-S01 – E10-S03 |
 | E-11 | Matter Creation, Pre-Assignment, Priority & UI Platform | Phase 1 | E11-S01 – E11-S08 |
 | E-12 | Client vs Internal View Separation | Phase 1 | E12-S01 – E12-S03 |
 | E-13 | Per-Step ETAs & SLA Tracking | Phase 1 / 2 | E13-S01 – E13-S05 |
-| E-14 | Matter Detail UX — Collapsible/Resizable Panels & Activity History | Phase 2 | E14-S01 – E14-S02 |
+| E-14 | Matter Detail UX — Collapsible/Resizable Panels, Header Compaction, Table Wrap & Activity History | Phase 2 | E14-S01 – E14-S04 |
 | E-15 | Document Naming & Step Configuration (Visibility, Status/Notes, Descriptions) | Phase 2 | E15-S01 – E15-S04 |
 | E-16 | Comment Draft Autosave | Phase 2 | E16-S01 |
 | E-17 | Professional Assignment on Matters | Phase 2 | E17-S01 |
@@ -1885,6 +1885,26 @@ Full pattern documented in `architecture.md` §2.2 and `.github/copilot-instruct
 
 ---
 
+### E10-S03 — Collapsible Sections on Workflow Config Screens [Phase 2]
+
+**Priority**: P3 | **Complexity**: S | **Linked spec story**: US-17 | **Dependencies**: E10-S01
+
+**Rationale** (#68): The Workflow Editor and Service Detail config screens stack several tall sections (Workflow meta, Stages/Phase Assignment, Steps, Step Settings, Live preview), forcing a lot of scrolling. The ticket asked to *remove* the Phase Assignment section, but stakeholder direction was to keep it functional and instead let admins **collapse** sections to reclaim space.
+
+**Acceptance Criteria**:
+- On the **Workflow Editor** ([WorkflowEditorPage.tsx](../../Portal/src/pages/workflow/WorkflowEditorPage.tsx)), each section — **Workflow**, **Stages**, **Steps**, **Live preview** — is independently collapsible via a header toggle.
+- On the **Service Detail** page ([ServiceDetailPage.tsx](../../Portal/src/pages/services/ServiceDetailPage.tsx)), **Configured Workflow**, **Phase Assignments**, and **Step Settings** are collapsible.
+- Collapse state **persists per section** (localStorage) across reloads.
+- **Live preview** additionally collapses to a slim **vertical rail** and is **drag-resizable** (reuses `useRail`), so the editor column widens; width + state persist.
+- No section is removed; all config functionality (phase assignment, step settings, etc.) is unchanged.
+
+**e2e**: `workflow-editor.spec.ts` (`#68` sections collapse and persist on reload); `service-catalog.spec.ts` / `services-eta.spec.ts` / `step-settings.spec.ts` (section titles are collapse toggles).
+
+**Frontend screens/components**:
+- New shared `Portal/src/components/common/CollapsibleSection.tsx`; `WorkflowEditorPage.tsx`, `ServiceDetailPage.tsx`, `useResizablePanels` (`useRail`).
+
+---
+
 ## E-11 — Matter Creation, Pre-Assignment, Priority & UI Platform
 
 **Goal**: Make matter creation a first-class action from the Matters page, let staff
@@ -2424,9 +2444,9 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 ## E-14 — Matter Detail UX — Collapsible/Resizable Panels & Activity History
 
-**Goal**: Give staff more usable horizontal space and a less noisy activity feed on the matter detail screen. The three-column layout (Stages rail | content | Activity) stays, but each rail becomes collapsible and user-resizable, and the Activity feed defaults to the current step with older steps behind an expander.
+**Goal**: Give staff more usable horizontal space and a less noisy activity feed on the matter detail screen. The three-column layout (Stages rail | content | Activity) stays, but each rail becomes collapsible and user-resizable, and the Activity feed defaults to the current step with older steps behind an expander. The header is compacted (Back moved into it, destructive actions behind a ⋮ menu) to reclaim vertical space, and tables across the app wrap/resize instead of overflowing.
 
-**Source**: GitHub #72 (remove/expand — reinterpreted as *collapsible + resizable* per stakeholder decision, keeping Stages), #73 (activity history).
+**Source**: GitHub #72 (remove/expand — reinterpreted as *collapsible + resizable* per stakeholder decision, keeping Stages), #73 (activity history), #88 (table column overflow).
 
 ---
 
@@ -2444,8 +2464,15 @@ before it breaches — depends on the notification/email subsystem (E-07).
 - Mobile/`lg` fallbacks (existing MobileStagePicker, inline Activity) continue to work; resize/collapse affordances are desktop-only (`xl`).
 - No change to workflow navigation or data — purely presentational.
 
+**Header compaction (added — #72 follow-up):**
+- "Back to Matters" moves **into the page header** (via a `PageShell` `back` slot) instead of a separate row that pushed content down, removing the large empty band above the tabs.
+- Destructive admin actions (**Archive**, **Stop workflow**) collapse into a header **⋮ actions menu** instead of full-width buttons.
+- Page-header vertical spacing tightened.
+
+**e2e**: `matter-layout.spec.ts` (rails collapse/persist, sidebar icon-rail), `stop-workflow.spec.ts` (⋮ menu offers Archive + Stop on active matters).
+
 **Frontend screens/components**:
-- `Portal/src/pages/tasks/TaskDetailPage.tsx` (rails), sidebar component, a small reusable `ResizablePanel`/collapse hook.
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (rails, header, `MatterActionsMenu`), `PageShell.tsx` (`back` slot), sidebar component, `useResizablePanels` (`useRail`) hook.
 
 ---
 
@@ -2462,8 +2489,47 @@ before it breaches — depends on the notification/email subsystem (E-07).
 - Multiple comments on the same step render in **chronological order**.
 - Applies to both internal and client activity views (client sees only client-visible events, unchanged).
 
+**e2e**: `matter-layout.spec.ts` (`#73` Activity defaults to current step + "Show previous steps" expander).
+
 **Frontend screens/components**:
 - `Portal/src/pages/tasks/TaskDetailPage.tsx` (ActivityFeed / Section rendering).
+
+---
+
+### E14-S03 — Table Column Overflow: Wrap + User-Resizable Columns [Phase 2]
+
+**Priority**: P2 | **Complexity**: S | **Linked spec story**: US-2 | **Dependencies**: E08-S06
+
+**Rationale** (#88): Across the app, table cell text overflowed into neighbouring columns (e.g. an email overlapping the service name, `pending_admin_approval` overlapping priority), making grids unreadable.
+
+**Acceptance Criteria**:
+- Cell content **wraps** (`break-words`) inside its column instead of spilling into adjacent columns; any legacy `truncate` styling is neutralised to wrap.
+- Columns are **user-resizable** by dragging the header edge; the handle is exposed as `role="separator"` / `aria-label="Resize column"`.
+- Adjusted widths **persist across reloads** per table (localStorage, keyed by a `tableId`).
+- Fixed once in the shared **DataGrid** so **every** table benefits (all report grids + Tasks / My Tasks / Users).
+
+**e2e**: `master-sheet.spec.ts` (`#88` columns resizable + width persists).
+
+**Frontend screens/components**:
+- `Portal/src/components/common/DataGrid.tsx` (wrap + resize + `columnSizing` persistence); `tableId` wired into all report and task grids.
+
+---
+
+### E14-S04 — Archive Available for Completed Matters [Phase 2]
+
+**Priority**: P3 | **Complexity**: XS | **Linked spec story**: US-2 | **Dependencies**: E14-S01
+
+**Rationale**: The header ⋮ actions menu was gated to `active`/`pending` matters, so a **completed** matter had no way to be archived even though the backend already permits archiving from any non-archived status.
+
+**Acceptance Criteria**:
+- The ⋮ actions menu is available on **completed** matters (admin-only) and offers **Archive**.
+- **Stop workflow** is **not** offered on completed matters (a finished workflow can't be stopped).
+- Archiving a completed matter transitions it to `archived` (backend unchanged; it already allowed this).
+
+**e2e**: `stop-workflow.spec.ts` (completed matter can be archived; ⋮ offers Archive but not Stop).
+
+**Frontend screens/components**:
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (`MatterActionsMenu` `canStop` flag + status gate).
 
 ---
 
@@ -2556,6 +2622,8 @@ before it breaches — depends on the notification/email subsystem (E-07).
 - Users can keep editing a restored draft; on **successful submit** the draft is **cleared**.
 - Drafts are scoped **per step and per user** (no cross-user/cross-step leakage); only the owner can access their draft.
 - Client-side persistence (localStorage keyed by `taskId:stepNumber:uid`) is acceptable for Phase 2; no backend endpoint required.
+
+**e2e**: `interactions.spec.ts` (comment draft autosaves, restores on reopen, clears on submit) — see coverage audit.
 
 **Frontend**:
 - A `useCommentDraft(taskId, stepNumber, uid)` hook + wiring into the comment inputs in `TaskDetailPage.tsx` (and any client comment box).
