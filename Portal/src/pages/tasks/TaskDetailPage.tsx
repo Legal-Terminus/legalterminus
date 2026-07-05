@@ -315,12 +315,14 @@ export default function TaskDetailPage() {
                 {assignProfessional.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
               </span>
             </label>
-            {/* ⋮ kebab menu — Archive + Stop workflow (admin-only destructive actions). */}
-            {role === 'admin' && (task.status === 'active' || task.status === 'pending') && (
+            {/* ⋮ kebab menu — Archive (any live/completed matter) + Stop workflow
+                (in-progress only). Admin-only. */}
+            {role === 'admin' && (task.status === 'active' || task.status === 'pending' || task.status === 'completed') && (
               <MatterActionsMenu
                 archiving={archive.isPending}
                 onArchive={onArchive}
                 onStop={() => setStopping(true)}
+                canStop={task.status === 'active' || task.status === 'pending'}
               />
             )}
           </div>
@@ -548,11 +550,13 @@ function ApprovalBanner({
 /* ── Matter actions kebab menu ─────────────────────────────────────────────── */
 
 function MatterActionsMenu({
-  archiving, onArchive, onStop,
+  archiving, onArchive, onStop, canStop,
 }: {
   archiving: boolean;
   onArchive: () => void;
   onStop: () => void;
+  /** Stop workflow only applies to in-progress matters, not completed ones. */
+  canStop: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -585,13 +589,17 @@ function MatterActionsMenu({
           >
             <Archive className="w-4 h-4 text-ink-muted shrink-0" /> Archive matter
           </button>
-          <div className="my-1 border-t border-hairline" />
-          <button
-            onClick={() => { setOpen(false); onStop(); }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <Ban className="w-4 h-4 shrink-0" /> Stop workflow
-          </button>
+          {canStop && (
+            <>
+              <div className="my-1 border-t border-hairline" />
+              <button
+                onClick={() => { setOpen(false); onStop(); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+              >
+                <Ban className="w-4 h-4 shrink-0" /> Stop workflow
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
