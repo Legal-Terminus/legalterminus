@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { createMatter, deleteMatter, getMatter, currentStep, assignStep } from './api';
+import { createMatter, deleteMatter, getMatter, currentStep, assignStep, advanceUntil, archiveMatterAs } from './api';
 
 /**
  * GitHub #41 — Stop workflow for discontinued clients. An admin can stop an
@@ -11,14 +11,23 @@ import { createMatter, deleteMatter, getMatter, currentStep, assignStep } from '
  *
  * GitHub #71 — An admin can restart a stopped matter; it resumes from the same
  * step and returns to `active`. The control is admin-only.
+ *
+ * #72 — Stop workflow now lives inside the header ⋮ actions menu, so admin flows
+ * open that menu first via `openStop`.
  */
 let taskId: string;
 test.beforeEach(async () => { taskId = await createMatter(); });
 test.afterEach(async () => { await deleteMatter(taskId); });
 
+/** Open the header ⋮ menu and click "Stop workflow" (admin-only). */
+async function openStop(page: import('@playwright/test').Page) {
+  await page.getByRole('button', { name: /more actions/i }).click();
+  await page.getByRole('button', { name: /stop workflow/i }).click();
+}
+
 test('admin stops an in-flight matter with a reason', async ({ adminPage }) => {
   await adminPage.goto(`tasks/${taskId}`);
-  await adminPage.getByRole('button', { name: /stop workflow/i }).click();
+  await openStop(adminPage);
   await adminPage.getByPlaceholder(/reason for stopping/i).fill('Client discontinued the service.');
   // The confirm action inside the banner.
   await adminPage.getByRole('button', { name: /^stop workflow$/i }).last().click();
@@ -49,7 +58,7 @@ test('admin restarts a stopped matter; it resumes from the same step (#71)', asy
 
   await adminPage.goto(`tasks/${taskId}`);
   // Stop it first.
-  await adminPage.getByRole('button', { name: /stop workflow/i }).click();
+  await openStop(adminPage);
   await adminPage.getByPlaceholder(/reason for stopping/i).fill('Temporary hold.');
   await adminPage.getByRole('button', { name: /^stop workflow$/i }).last().click();
   await expect(adminPage.getByText(/this matter was stopped/i)).toBeVisible();
@@ -70,7 +79,7 @@ test('admin restarts a stopped matter; it resumes from the same step (#71)', asy
 test('a team member never sees the Restart workflow control on a stopped matter (#71)', async ({ adminPage, teamPage }) => {
   // Admin stops it.
   await adminPage.goto(`tasks/${taskId}`);
-  await adminPage.getByRole('button', { name: /stop workflow/i }).click();
+  await openStop(adminPage);
   await adminPage.getByPlaceholder(/reason for stopping/i).fill('Held.');
   await adminPage.getByRole('button', { name: /^stop workflow$/i }).last().click();
   await expect(adminPage.getByText(/this matter was stopped/i)).toBeVisible();
@@ -78,4 +87,31 @@ test('a team member never sees the Restart workflow control on a stopped matter 
   await teamPage.goto(`tasks/${taskId}`);
   await expect(teamPage.getByText(/this matter was stopped/i)).toBeVisible();
   await expect(teamPage.getByRole('button', { name: /restart workflow/i })).toHaveCount(0);
+});
+
+test('#72: admin ⋮ menu on an active matter offers both Archive and Stop workflow', async ({ adminPage }) => {
+  await adminPage.goto(`tasks/${taskId}`);
+  await adminPage.getByRole('button', { name: /more actions/i }).click();
+  await expect(adminPage.getByRole('button', { name: /archive matter/i })).toBeVisible();
+  await expect(adminPage.getByRole('button', { name: /stop workflow/i })).toBeVisible();
+});
+
+test('completed matter can be archived; the ⋮ menu offers Archive but not Stop', async ({ adminPage }) => {
+  // Drive the matter to completion (advanceUntil runs until status === completed
+  // or it hits a step needing a special event).
+  await advanceUntil(taskId);
+  const m = await getMatter(taskId);
+  test.skip(m.status !== 'completed', 'Workflow needs a special event to complete; not reachable via COMPLETE_STEP alone.');
+
+  await adminPage.goto(`tasks/${taskId}`);
+  await adminPage.getByRole('button', { name: /more actions/i }).click();
+  await expect(adminPage.getByRole('button', { name: /archive matter/i })).toBeVisible();
+  // Stop workflow does not apply to a finished workflow.
+  await expect(adminPage.getByRole('button', { name: /stop workflow/i })).toHaveCount(0);
+
+  // And the backend accepts the archive (200).
+  expect(await archiveMatterAs('admin', taskId)).toBe(200);
+  await expect(async () => {
+    expect((await getMatter(taskId)).status).toBe('archived');
+  }).toPass({ timeout: 15_000 });
 });

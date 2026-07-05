@@ -31,7 +31,7 @@ test('a service card links through to its configured workflow', async ({ adminPa
   await adminPage.goto('services');
   // Direct nav mirrors the card's "View workflow" link target.
   await adminPage.goto(`services/${key}`);
-  await expect(adminPage.getByRole('heading', { name: 'Configured Workflow' })).toBeVisible();
+  await expect(adminPage.getByRole('button', { name: /Configured Workflow/ })).toBeVisible();
 });
 
 test('client cannot access the service catalog', async ({ clientPage }) => {

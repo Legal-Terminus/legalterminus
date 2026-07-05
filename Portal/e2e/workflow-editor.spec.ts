@@ -31,7 +31,8 @@ test('admin sees an "Edit workflow" button on the service detail page', async ({
 
 test('non-admins (team member) do NOT see the edit entry and cannot reach the editor', async ({ teamPage }) => {
   await teamPage.goto(`services/${serviceKey}`);
-  await expect(teamPage.getByRole('heading', { name: 'Configured Workflow' })).toBeVisible();
+  // "Configured Workflow" is now a collapsible section toggle (button), not a heading.
+  await expect(teamPage.getByRole('button', { name: /Configured Workflow/ })).toBeVisible();
   await expect(teamPage.getByRole('button', { name: /edit workflow/i })).toHaveCount(0);
 
   // Direct navigation is also blocked by ProtectedRoute (admin-only route).
@@ -44,14 +45,36 @@ test('non-admins (team member) do NOT see the edit entry and cannot reach the ed
 test('editor loads with steps, stages, and a live preview (plain-language UI)', async ({ adminPage }) => {
   await adminPage.goto(`services/${serviceKey}/edit`);
   await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
-  await expect(adminPage.getByRole('heading', { name: /^Steps/ })).toBeVisible();
-  await expect(adminPage.getByRole('heading', { name: /Stages/ })).toBeVisible();
-  await expect(adminPage.getByRole('heading', { name: 'Live preview' })).toBeVisible();
+  // #68: section titles are now collapse toggles (buttons), not headings.
+  await expect(adminPage.getByRole('button', { name: /^Steps/ })).toBeVisible();
+  await expect(adminPage.getByRole('button', { name: /^Stages/ })).toBeVisible();
+  await expect(adminPage.getByRole('button', { name: /^Live preview/ })).toBeVisible();
   // Plain-language controls present (no raw "transitions/effects" jargon).
   await expect(adminPage.getByText('What kind of step?').first()).toBeVisible();
   await expect(adminPage.getByText('What happens next?').first()).toBeVisible();
   // A valid seeded workflow → Save is enabled (no validation errors).
   await expect(adminPage.getByRole('button', { name: /save & publish/i })).toBeEnabled();
+});
+
+test('#68: workflow sections collapse and stay collapsed on reload', async ({ adminPage }) => {
+  await adminPage.goto(`services/${serviceKey}/edit`);
+  await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
+
+  // A step-detail control is visible while Steps is expanded (default).
+  await expect(adminPage.getByText('What kind of step?').first()).toBeVisible();
+
+  // Collapse the Steps section → its body (step-detail controls) disappears.
+  await adminPage.getByRole('button', { name: /^Steps/ }).click();
+  await expect(adminPage.getByText('What kind of step?')).toHaveCount(0);
+
+  // Collapse persists across a reload (localStorage-backed).
+  await adminPage.reload();
+  await expect(adminPage.getByRole('button', { name: /^Steps/ })).toBeVisible();
+  await expect(adminPage.getByText('What kind of step?')).toHaveCount(0);
+
+  // Re-expand to leave the editor in its default state for other specs.
+  await adminPage.getByRole('button', { name: /^Steps/ }).click();
+  await expect(adminPage.getByText('What kind of step?').first()).toBeVisible();
 });
 
 test('invalid edit disables save and shows an inline error', async ({ adminPage }) => {

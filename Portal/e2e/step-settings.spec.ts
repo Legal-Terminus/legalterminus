@@ -23,7 +23,7 @@ test.beforeAll(async () => {
 
 test('Step Settings editor shows assignee + ETA + client-visible per step', async ({ adminPage }) => {
   await adminPage.goto(`services/${serviceKey}`);
-  await expect(adminPage.getByRole('heading', { name: 'Step Settings' })).toBeVisible();
+  await expect(adminPage.getByRole('button', { name: /Step Settings/ })).toBeVisible();
   // First step's three controls are present.
   await expect(adminPage.getByLabel(/Step \d+ assignee/).first()).toBeVisible();
   await expect(adminPage.getByLabel(/Step \d+ ETA in days/).first()).toBeVisible();
@@ -32,7 +32,7 @@ test('Step Settings editor shows assignee + ETA + client-visible per step', asyn
 
 test('team member can view Step Settings but not save', async ({ teamPage }) => {
   await teamPage.goto(`services/${serviceKey}`);
-  await expect(teamPage.getByRole('heading', { name: 'Step Settings' })).toBeVisible();
+  await expect(teamPage.getByRole('button', { name: /Step Settings/ })).toBeVisible();
   await expect(teamPage.getByRole('button', { name: /save step settings/i })).toHaveCount(0);
 });
 
