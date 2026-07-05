@@ -95,6 +95,7 @@ export default function MasterSheetReport() {
 
       <div className="mt-4">
         <DataGrid<MasterSheetRow>
+          tableId="rpt-master-sheet"
           data={data}
           columns={columns}
           getRowId={(r) => r.taskId}

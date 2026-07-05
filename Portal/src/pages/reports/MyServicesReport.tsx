@@ -80,6 +80,7 @@ export default function MyServicesReport() {
       </div>
 
       <DataGrid<MyServiceRow>
+          tableId="rpt-my-services"
         data={rows}
         columns={columns}
         getRowId={(r) => r.taskId}

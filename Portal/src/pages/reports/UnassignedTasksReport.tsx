@@ -65,6 +65,7 @@ export default function UnassignedTasksReport() {
         <p className="text-gray-400 text-sm mt-8 text-center">No unassigned tasks. 🎉</p>
       ) : (
         <DataGrid<UnassignedRow>
+          tableId="rpt-unassigned"
           data={data}
           columns={cols}
           getRowId={(r) => `${r.taskId}-${r.stepNumber}`}

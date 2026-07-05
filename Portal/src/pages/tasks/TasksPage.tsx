@@ -83,6 +83,7 @@ export default function TasksPage() {
     >
       {showCreate && <CreateMatterModal onClose={() => setShowCreate(false)} />}
       <DataGrid<Task>
+          tableId="tasks"
         data={rows}
         columns={columns}
         getRowId={(t) => t.id}
@@ -212,7 +213,7 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
       id: 'updatedAt',
       header: 'Updated',
       size: 120,
-      cell: (ctx) => <span className="text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span>,
+      cell: (ctx) => <span className="block truncate text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span>,
     }),
     col.display({
       id: 'actions',

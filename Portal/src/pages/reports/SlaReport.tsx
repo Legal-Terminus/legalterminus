@@ -170,6 +170,7 @@ export default function SlaReport() {
             </p>
           ) : (
             <DataGrid<SlaBreach>
+          tableId="rpt-sla"
               data={data.breaches}
               columns={columns}
               getRowId={(b) => `${b.taskId}-${b.stepNumber}`}

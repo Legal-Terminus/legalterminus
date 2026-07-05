@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -7,6 +7,7 @@ import {
   getPaginationRowModel,
   flexRender,
   type ColumnDef,
+  type ColumnSizingState,
   type SortingState,
   type Row,
 } from '@tanstack/react-table';
@@ -42,6 +43,8 @@ export interface DataGridProps<T> {
   toolbar?: ReactNode;
   /** Row click handler — makes the whole row clickable (cursor + hover). */
   onRowClick?: (row: T) => void;
+  /** Stable id used to persist user-adjusted column widths to localStorage. */
+  tableId?: string;
 }
 
 export default function DataGrid<T>({
@@ -59,21 +62,44 @@ export default function DataGrid<T>({
   loadingLabel = 'Loading…',
   toolbar,
   onRowClick,
+  tableId,
 }: DataGridProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [search, setSearch] = useState('');
+  const sizingKey = tableId ? `dataGridColSizing:${tableId}` : null;
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(() => {
+    if (!sizingKey) return {};
+    try {
+      const raw = localStorage.getItem(sizingKey);
+      return raw ? (JSON.parse(raw) as ColumnSizingState) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Persist user-adjusted widths so they survive reloads.
+  useEffect(() => {
+    if (!sizingKey) return;
+    try {
+      localStorage.setItem(sizingKey, JSON.stringify(columnSizing));
+    } catch {
+      /* ignore quota / serialization errors */
+    }
+  }, [sizingKey, columnSizing]);
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, globalFilter: search },
+    state: { sorting, globalFilter: search, columnSizing },
     onSortingChange: setSorting,
     onGlobalFilterChange: setSearch,
+    onColumnSizingChange: setColumnSizing,
     getRowId: getRowId ? (row, index) => getRowId(row, index) : undefined,
     globalFilterFn: globalFilterFn
       ? (row, columnId, value) => globalFilterFn(row, columnId, String(value))
       : 'auto',
     columnResizeMode: 'onChange',
+    enableColumnResizing: true,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -131,20 +157,34 @@ export default function DataGrid<T>({
                       return (
                         <div
                           key={header.id}
-                          onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                           style={{ width: header.getSize() }}
-                          className={`px-5 py-3.5 text-xs font-semibold text-ink-muted uppercase tracking-wide shrink-0 ${
-                            canSort ? 'cursor-pointer select-none hover:text-ink' : ''
-                          }`}
+                          className="relative px-5 py-3.5 text-xs font-semibold text-ink-muted uppercase tracking-wide shrink-0 min-w-0"
                         >
-                          <span className="inline-flex items-center gap-1.5">
+                          <span
+                            onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                            className={`inline-flex items-start gap-1.5 max-w-full break-words ${
+                              canSort ? 'cursor-pointer select-none hover:text-ink' : ''
+                            }`}
+                          >
                             {flexRender(header.column.columnDef.header, header.getContext())}
                             {canSort && (
-                              sorted === 'asc' ? <ArrowUp className="w-3 h-3" />
-                                : sorted === 'desc' ? <ArrowDown className="w-3 h-3" />
-                                : <ArrowUpDown className="w-3 h-3 opacity-40" />
+                              sorted === 'asc' ? <ArrowUp className="w-3 h-3 shrink-0 mt-0.5" />
+                                : sorted === 'desc' ? <ArrowDown className="w-3 h-3 shrink-0 mt-0.5" />
+                                : <ArrowUpDown className="w-3 h-3 opacity-40 shrink-0 mt-0.5" />
                             )}
                           </span>
+                          {header.column.getCanResize() && (
+                            <div
+                              onMouseDown={header.getResizeHandler()}
+                              onTouchStart={header.getResizeHandler()}
+                              onClick={(e) => e.stopPropagation()}
+                              className={`absolute top-0 right-0 h-full w-1.5 cursor-col-resize select-none touch-none hover:bg-brand-400/40 ${
+                                header.column.getIsResizing() ? 'bg-brand-500/60' : ''
+                              }`}
+                              role="separator"
+                              aria-label="Resize column"
+                            />
+                          )}
                         </div>
                       );
                     })}
@@ -161,7 +201,7 @@ export default function DataGrid<T>({
                         <div
                           key={cell.id}
                           style={{ width: cell.column.getSize() }}
-                          className="px-5 py-4 shrink-0"
+                          className="px-5 py-4 shrink-0 min-w-0 break-words [&_.truncate]:whitespace-normal [&_.truncate]:overflow-visible"
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </div>

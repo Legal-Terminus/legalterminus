@@ -68,6 +68,7 @@ export default function MyTasksPage() {
                 <span className="text-ink-faint font-normal">({approvals.length})</span>
               </h2>
               <DataGrid<MyApprovalRow>
+          tableId="my-tasks"
                 data={approvals}
                 columns={approvalCols}
                 getRowId={(r) => r.taskId}
@@ -168,7 +169,7 @@ function buildWorkColumns(navigate: (to: string) => void) {
         return <span className="badge bg-surface-card text-ink-muted">Available</span>;
       },
     }),
-    wc.accessor((r) => r.updatedAt ?? '', { id: 'updatedAt', header: 'Updated', size: 120, cell: (ctx) => <span className="text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span> }),
+    wc.accessor((r) => r.updatedAt ?? '', { id: 'updatedAt', header: 'Updated', size: 120, cell: (ctx) => <span className="block truncate text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span> }),
   ] as ReturnType<typeof wc.accessor>[];
 }
 
@@ -191,9 +192,9 @@ function buildApprovalColumns(navigate: (to: string) => void) {
         );
       },
     }),
-    ac.accessor('createdByName', { header: 'Created by', size: 160, cell: (ctx) => <span className="text-sm text-ink-muted">{ctx.getValue()}</span> }),
+    ac.accessor('createdByName', { header: 'Created by', size: 160, cell: (ctx) => <span className="block truncate text-sm text-ink-muted">{ctx.getValue()}</span> }),
     ac.display({ id: 'status', header: 'Status', size: 150, cell: () => <span className="badge bg-amber-100 text-amber-800">Needs approval</span> }),
-    ac.accessor((r) => r.createdAt ?? '', { id: 'createdAt', header: 'Created', size: 120, cell: (ctx) => <span className="text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span> }),
+    ac.accessor((r) => r.createdAt ?? '', { id: 'createdAt', header: 'Created', size: 120, cell: (ctx) => <span className="block truncate text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span> }),
   ] as ReturnType<typeof ac.accessor>[];
 }
 

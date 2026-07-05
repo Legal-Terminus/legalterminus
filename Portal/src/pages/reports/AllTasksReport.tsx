@@ -58,6 +58,7 @@ export default function AllTasksReport() {
 
       <div className="mt-4">
         <DataGrid<Task>
+          tableId="rpt-all-tasks"
           data={data}
           columns={columns}
           getRowId={(t) => t.id}

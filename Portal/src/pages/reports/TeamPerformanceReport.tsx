@@ -52,6 +52,7 @@ export default function TeamPerformanceReport() {
         </button>
       </div>
       <DataGrid<TeamPerformanceRow>
+          tableId="rpt-team-perf"
         data={data}
         columns={columns}
         getRowId={(r) => r.uid}

@@ -68,6 +68,7 @@ export default function PendingTasksReport() {
               <span className="text-gray-400">({tasks.length})</span>
             </h2>
             <DataGrid<PendingTask>
+          tableId="rpt-pending"
               data={tasks}
               columns={columns}
               getRowId={(t) => t.id}

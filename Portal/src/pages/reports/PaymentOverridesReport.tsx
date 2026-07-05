@@ -68,6 +68,7 @@ export default function PaymentOverridesReport() {
         <p className="text-gray-400 text-sm mt-8 text-center">No payment overrides. 🎉</p>
       ) : (
         <DataGrid<PaymentOverrideRow>
+          tableId="rpt-payment-overrides"
           data={data}
           columns={cols}
           getRowId={(r) => r.taskId}
