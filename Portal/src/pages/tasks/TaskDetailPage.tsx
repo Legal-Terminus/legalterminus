@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -6,7 +6,7 @@ import {
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase,
   ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw, Check,
-  ChevronsLeft, ChevronsRight,
+  ChevronsLeft, ChevronsRight, MoreVertical,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
@@ -253,9 +253,18 @@ export default function TaskDetailPage() {
     <PageShell
       title={task.serviceName || task.workflowType}
       subtitle={isClient ? progressLabel : `${task.clientName ?? ''}${task.clientName ? ' · ' : ''}${progressLabel} · ${task.status}`}
+      back={
+        <button
+          onClick={() => navigate('/tasks')}
+          className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-soft transition-colors"
+          title="Back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+      }
       action={
         canAssign ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {/* Matter-level Urgent flame (Issue 3). Filled red = urgent. */}
             <button
               onClick={() => toggleMatterUrgent.mutate(!task.isUrgent)}
@@ -275,7 +284,7 @@ export default function TaskDetailPage() {
               <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Matter owner</span>
               <span className="relative inline-flex items-center">
                 <select
-                  className="input-field py-1.5 pr-8 text-sm max-w-[160px]"
+                  className="input-field py-1.5 pr-8 text-sm max-w-[140px]"
                   value={task.assignedTo ?? ''}
                   disabled={assignOwner.isPending}
                   onChange={(e) => assignOwner.mutate(e.target.value || null)}
@@ -288,13 +297,12 @@ export default function TaskDetailPage() {
                 {assignOwner.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
               </span>
             </label>
-            {/* Professional (#85) — the handling staff member. Editable by
-                admin/manager or the matter's assigned member (backend enforces). */}
+            {/* Professional (#85) — the handling staff member. */}
             <label className="flex items-center gap-2">
               <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Professional</span>
               <span className="relative inline-flex items-center">
                 <select
-                  className="input-field py-1.5 pr-8 text-sm max-w-[160px]"
+                  className="input-field py-1.5 pr-8 text-sm max-w-[140px]"
                   value={task.professionalUid ?? ''}
                   disabled={assignProfessional.isPending}
                   onChange={(e) => assignProfessional.mutate(e.target.value || null)}
@@ -307,19 +315,18 @@ export default function TaskDetailPage() {
                 {assignProfessional.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
               </span>
             </label>
+            {/* ⋮ kebab menu — Archive + Stop workflow (admin-only destructive actions). */}
+            {role === 'admin' && (task.status === 'active' || task.status === 'pending') && (
+              <MatterActionsMenu
+                archiving={archive.isPending}
+                onArchive={onArchive}
+                onStop={() => setStopping(true)}
+              />
+            )}
           </div>
         ) : undefined
       }
     >
-      {/* Back — leading-left, the conventional + thumb-reachable spot (matches
-          the reports pages' "← Back" pattern). */}
-      <button
-        onClick={() => navigate('/tasks')}
-        className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-ink mb-3 -ml-1"
-      >
-        <ArrowLeft className="w-4 h-4" /> Back to {isClient ? 'My Services' : 'Matters'}
-      </button>
-
       {/* Approval chain (E03-S04): a matter created by a manager waits for admin
           approval before any work can start. Admins act here; everyone else sees
           the waiting state. A rejected matter shows the reason. */}
@@ -381,22 +388,17 @@ export default function TaskDetailPage() {
         </div>
       )}
 
-      {/* Stop workflow (#41) + Archive — admin-only actions on an in-flight matter (#70).
-          Stop = client discontinued (cancelled). Archive = non-destructive hide. */}
-      {role === 'admin' && (task.status === 'active' || task.status === 'pending') && (
+      {/* Stop confirmation form — only shown when admin clicks Stop workflow in the header. */}
+      {stopping && (
         <StopMatterBanner
-          open={stopping}
           pending={stop.isPending}
-          archiving={archive.isPending}
-          onOpen={() => setStopping(true)}
           onCancel={() => setStopping(false)}
           onStop={(reason) => stop.mutate(reason)}
-          onArchive={onArchive}
         />
       )}
 
       {/* Tabs — underline style */}
-      <div className="flex items-center gap-1 border-b border-hairline mb-5">
+      <div className="flex items-center gap-1 border-b border-hairline mb-4">
         {TABS.map((t) => {
           const active = tab === t.key;
           return (
@@ -543,39 +545,69 @@ function ApprovalBanner({
   );
 }
 
+/* ── Matter actions kebab menu ─────────────────────────────────────────────── */
+
+function MatterActionsMenu({
+  archiving, onArchive, onStop,
+}: {
+  archiving: boolean;
+  onArchive: () => void;
+  onStop: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-ink-faint hover:text-ink hover:bg-surface-soft transition-colors"
+        title="More actions"
+      >
+        <MoreVertical className="w-4 h-4" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-50 min-w-[170px] bg-white border border-hairline rounded-lg shadow-card py-1">
+          <button
+            onClick={() => { setOpen(false); onArchive(); }}
+            disabled={archiving}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink hover:bg-surface-soft transition-colors"
+          >
+            <Archive className="w-4 h-4 text-ink-muted shrink-0" /> Archive matter
+          </button>
+          <div className="my-1 border-t border-hairline" />
+          <button
+            onClick={() => { setOpen(false); onStop(); }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <Ban className="w-4 h-4 shrink-0" /> Stop workflow
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Stop matter banner (#41) ──────────────────────────────────────────────── */
 
 function StopMatterBanner({
-  open, pending, archiving, onOpen, onCancel, onStop, onArchive,
+  pending, onCancel, onStop,
 }: {
-  open: boolean;
   pending: boolean;
-  archiving: boolean;
-  onOpen: () => void;
   onCancel: () => void;
   onStop: (reason: string) => void;
-  onArchive: () => void;
 }) {
   const [reason, setReason] = useState('');
-  if (!open) {
-    return (
-      <div className="mb-4 flex justify-end gap-2">
-        <button
-          onClick={onArchive}
-          disabled={archiving}
-          className="btn-secondary inline-flex items-center gap-1.5"
-        >
-          <Archive className="w-4 h-4" /> Archive
-        </button>
-        <button
-          onClick={onOpen}
-          className="btn-secondary inline-flex items-center gap-1.5 text-red-600 hover:bg-red-50"
-        >
-          <Ban className="w-4 h-4" /> Stop workflow
-        </button>
-      </div>
-    );
-  }
   return (
     <div className="card p-4 mb-4 border-red-200 bg-red-50/60">
       <div className="flex items-start gap-2.5">
