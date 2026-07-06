@@ -258,8 +258,12 @@ test('a completed step expands to show its comment', async ({ adminPage }) => {
 
   await adminPage.goto(`tasks/${taskId}`);
   await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
-  // The step's comment surfaces on the matter detail (step's expanded row +
-  // activity feed). Step rows are stage-gated, so a DOM-first match can be in a
-  // hidden stage — assert a VISIBLE occurrence anywhere on the page instead.
-  await expect(adminPage.locator(`text=${remark} >> visible=true`).first()).toBeVisible({ timeout: 15_000 });
+
+  // The completed step is now a PREVIOUS step: the Activity feed defaults to the
+  // current step (#73), so reveal earlier steps first.
+  const showPrev = adminPage.getByRole('button', { name: /show previous steps/i });
+  if (await showPrev.count()) await showPrev.first().click();
+
+  // The remark surfaces in the activity history (and/or the expanded step row).
+  await expect(adminPage.getByText(remark).first()).toBeAttached({ timeout: 15_000 });
 });
