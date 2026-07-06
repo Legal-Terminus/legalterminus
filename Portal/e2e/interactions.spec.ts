@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { createMatter, deleteMatter, getDefinitionForMatter, firstPlainStep, advanceUntil } from './api';
+import { createMatter, deleteMatter, getDefinitionForMatter, firstPlainStep, advanceUntil, getMatter } from './api';
 
 /**
  * E03-S06 (comment on a step action) + E11-S07 (styled confirm dialog, not native
@@ -13,16 +13,22 @@ test('E03-S06: a comment on Complete Step appears in the activity feed', async (
     const plain = firstPlainStep(def);
     test.skip(!plain, 'No plain step.');
     await advanceUntil(taskId, (s) => s.stepNumber === plain!.stepNumber);
+    // Only proceed if we actually landed on the staff "Complete Step" step; some
+    // workflows gate the first plain step behind a client/govt turn (same guard as
+    // step-execution.spec.ts).
+    const at = (await getMatter(taskId)).currentStepNumber as number;
+    test.skip(at !== plain!.stepNumber, `Could not reach the plain step (at ${at}).`);
 
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    const completeBtn = adminPage.getByRole('button', { name: /^complete step$/i });
+    test.skip(!(await completeBtn.count()), 'Current step is not a staff Complete-Step turn.');
 
-    // Steps tab now renders a comment composer PER step; scope to the current
-    // step's panel (the card with the "Current step ·" header + Complete action).
-    const currentStep = adminPage.locator('div.card', { has: adminPage.getByText(/current step ·/i) });
+    // The Steps tab renders a comment composer PER step; the current step's is
+    // FIRST in DOM order.
     const comment = `E2E note ${Date.now()}`;
-    await currentStep.getByPlaceholder(/add a comment/i).fill(comment);
-    await adminPage.getByRole('button', { name: /complete step/i }).click();
+    await adminPage.getByPlaceholder(/add a comment/i).first().fill(comment);
+    await completeBtn.first().click();
 
     // The comment is recorded and surfaces in the Activity feed. The feed can sit
     // in a sticky sidebar that's off-viewport at test size, so assert it's present
@@ -38,14 +44,17 @@ test('#83: a comment draft autosaves, restores on reload, and clears after submi
     const plain = firstPlainStep(def);
     test.skip(!plain, 'No plain step.');
     await advanceUntil(taskId, (s) => s.stepNumber === plain!.stepNumber);
+    const at = (await getMatter(taskId)).currentStepNumber as number;
+    test.skip(at !== plain!.stepNumber, `Could not reach the plain step (at ${at}).`);
 
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    const completeBtn = adminPage.getByRole('button', { name: /^complete step$/i });
+    test.skip(!(await completeBtn.count()), 'Current step is not a staff Complete-Step turn.');
 
-    // Scope to the CURRENT step's composer (Steps tab has a composer per step).
-    const currentStep = () => adminPage.locator('div.card', { has: adminPage.getByText(/current step ·/i) });
+    // The current step's composer is FIRST in DOM order (Steps tab has one per step).
     const draft = `E2E draft ${Date.now()}`;
-    const box = currentStep().getByPlaceholder(/add a comment/i);
+    const box = adminPage.getByPlaceholder(/add a comment/i).first();
     await box.fill(draft);
     // Give the debounced autosave time to persist.
     await expect(adminPage.getByText(/draft saved/i)).toBeVisible({ timeout: 5_000 });
@@ -53,17 +62,17 @@ test('#83: a comment draft autosaves, restores on reload, and clears after submi
     // Reload — the draft restores itself into the box.
     await adminPage.reload();
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
-    await expect(currentStep().getByPlaceholder(/add a comment/i)).toHaveValue(draft);
+    await expect(adminPage.getByPlaceholder(/add a comment/i).first()).toHaveValue(draft);
 
     // Submit the step action — the draft is consumed and cleared.
-    await adminPage.getByRole('button', { name: /complete step/i }).click();
+    await adminPage.getByRole('button', { name: /^complete step$/i }).first().click();
     await expect(adminPage.getByText(draft).first()).toBeAttached({ timeout: 15_000 });
 
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
     // The next step's composer starts empty (draft did not leak across steps).
-    const nextBox = currentStep().getByPlaceholder(/add a comment/i);
-    if (await nextBox.count()) await expect(nextBox.first()).toHaveValue('');
+    const nextBox = adminPage.getByPlaceholder(/add a comment/i).first();
+    if (await nextBox.count()) await expect(nextBox).toHaveValue('');
   } finally { await deleteMatter(taskId); }
 });
 
