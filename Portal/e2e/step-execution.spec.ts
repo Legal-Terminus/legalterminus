@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 import {
-  createMatter, deleteMatter, getMatter, getDefinitionForMatter,
+  createMatter, createPartPaidMatter, deleteMatter, getMatter, getDefinitionForMatter,
   firstPaymentGate, firstPlainStep, firstClientStep, advanceUntil,
   currentStep, assignStep, apiAs, transition,
 } from './api';
@@ -19,6 +19,10 @@ test.beforeEach(async () => { taskId = await createMatter(); });
 test.afterEach(async () => { await deleteMatter(taskId); });
 
 test('payment gate blocks until override, then advances', async ({ adminPage }) => {
+  // A payment gate only BLOCKS when the matter isn't fully paid — the beforeEach
+  // matter is fully_paid (sails through). Use a part-paid, still-active matter.
+  await deleteMatter(taskId);
+  taskId = await createPartPaidMatter();
   const def = await getDefinitionForMatter(taskId);
   const gate = firstPaymentGate(def);
   test.skip(!gate, 'This workflow has no payment gate.');
@@ -38,6 +42,8 @@ test('payment gate blocks until override, then advances', async ({ adminPage }) 
 });
 
 test('payment override is admin-only: a manager is rejected and never sees the button (#74)', async ({ managerPage }) => {
+  await deleteMatter(taskId);
+  taskId = await createPartPaidMatter();
   const def = await getDefinitionForMatter(taskId);
   const gate = firstPaymentGate(def);
   test.skip(!gate, 'This workflow has no payment gate.');
@@ -57,6 +63,8 @@ test('payment override is admin-only: a manager is rejected and never sees the b
 });
 
 test('payment gate: Mark as Paid sets paid status and advances', async ({ adminPage }) => {
+  await deleteMatter(taskId);
+  taskId = await createPartPaidMatter();
   const def = await getDefinitionForMatter(taskId);
   const gate = firstPaymentGate(def);
   test.skip(!gate, 'This workflow has no payment gate.');
@@ -163,7 +171,8 @@ test('#49: the assignee sees Complete; a non-assignee manager sees the reassign 
   await managerPage.goto(`tasks/${taskId}`);
   await managerPage.getByRole('button', { name: 'Steps', exact: true }).click();
   await expect(managerPage.getByRole('button', { name: /complete step/i })).toHaveCount(0);
-  await expect(managerPage.getByText(/only the assignee can complete this step/i)).toBeVisible();
+  // The note can appear per-step in the Steps tab; assert at least one is shown.
+  await expect(managerPage.getByText(/only the assignee can complete this step/i).first()).toBeVisible();
 });
 
 test('#44: a team member assigned only the active step can complete it', async ({ teamPage }) => {

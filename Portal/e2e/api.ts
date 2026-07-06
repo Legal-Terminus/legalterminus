@@ -135,6 +135,25 @@ export async function createMatter(opts?: { serviceKey?: string; serviceName?: s
   return body.id as string;
 }
 
+/** Create an ACTIVE, PART-PAID matter (admin). Part payment keeps the matter
+ *  active (only `not_paid` routes to approval) while leaving the full-payment
+ *  gate UNsatisfied — so a `payment_gate` step actually blocks (needed by the
+ *  payment-gate step-execution tests; a `fully_paid` matter sails through). */
+export async function createPartPaidMatter(opts?: { serviceKey?: string }): Promise<string> {
+  const serviceKey = opts?.serviceKey ?? (await resolveServiceKey());
+  const api = await apiAs('admin');
+  const res = await api.post('/api/tasks', {
+    data: {
+      clientUid: env('E2E_CLIENT_UID'), serviceKey,
+      paymentStatus: 'part_paid', totalCost: 10000, amountReceived: 4000, paymentMode: 'E2E',
+    },
+  });
+  if (!res.ok()) throw new Error(`createPartPaidMatter failed: ${res.status()} ${await res.text()}`);
+  const body = await res.json();
+  await api.dispose();
+  return body.id as string;
+}
+
 /** Create a matter with NO PAYMENT (admin) → routes to admin approval (#51).
  *  Returns the new task id (status pending_admin_approval). */
 export async function createNoPaymentMatter(): Promise<string> {
@@ -249,10 +268,19 @@ export async function advanceUntil(
     const step = byNum.get(cur);
     if (!step) return cur;
     if (stop && stop(step)) return cur;
+    // Choose the forward event. Admin may fire client/govt approvals, so the walker
+    // can traverse a WHOLE workflow — the live incorporation def gates its very
+    // first step behind CLIENT_APPROVE, which would otherwise strand us at step 1.
+    const events = stepEvents(step);
     let ev: Record<string, unknown> | null = null;
     if (step.type === 'payment_gate') ev = { type: 'ADMIN_OVERRIDE_PAYMENT' };
-    else if (stepEvents(step).has('COMPLETE_STEP')) ev = { type: 'COMPLETE_STEP' };
-    else return cur; // needs a special event (client/govt/branch) → stop here
+    else if (events.has('COMPLETE_STEP')) ev = { type: 'COMPLETE_STEP' };
+    else if (events.has('CLIENT_APPROVE')) ev = { type: 'CLIENT_APPROVE' };
+    else if (events.has('GOVT_APPROVE')) ev = { type: 'GOVT_APPROVE' };
+    else if (events.has('BRANCH_DECISION')) {
+      const first = (step.transitions ?? []).find((t) => t.event === 'BRANCH_DECISION');
+      ev = { type: 'BRANCH_DECISION', branch: first?.branch };
+    } else return cur; // genuinely terminal / unknown → stop here
     try { await transition('admin', taskId, ev); }
     catch { return cur; }
   }
