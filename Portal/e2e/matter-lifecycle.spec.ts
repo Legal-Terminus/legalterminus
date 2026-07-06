@@ -11,7 +11,8 @@ import { openDocumentsTab, pdfFile } from './helpers';
  *  • E05-S05 full delete cleanup — deleting a matter removes its documents (and
  *    Storage files; verified indirectly via the documents list being gone) AND
  *    its top-level notifications (no dangling bell entries linking to a 404).
- *  • E11-S09 archive — staff (incl. team member) can archive; only admin deletes.
+ *  • E11-S09 archive — admin-only (#70 restricted Stop/Archive to admins). A team
+ *    member can neither archive nor delete; an admin archives via the ⋮ menu.
  */
 
 test('E05-S05: deleting a matter purges its documents and notifications', async ({ adminPage, clientPage }) => {
@@ -47,21 +48,28 @@ test('E05-S05: deleting a matter purges its documents and notifications', async 
   }
 });
 
-test('E11-S09: a team member can archive; only admin can delete', async ({ teamPage }) => {
+test('E11-S09: archive + delete are admin-only (#70)', async ({ adminPage, teamPage }) => {
   const taskId = await createMatter();
   let removed = false;
   try {
     const step = await currentStep(taskId);
     await assignStep(taskId, step, process.env.E2E_TEAM_UID!);
 
-    // Team member can NOT delete (admin-only) …
+    // A team member can neither delete NOR archive (both admin-only per #70).
     expect(await deleteMatterAs('team', taskId)).toBe(403);
+    expect(await archiveMatterAs('team', taskId)).toBe(403);
 
-    // … but CAN archive, via the UI.
+    // A team member does not even see the ⋮ actions menu.
     await teamPage.goto(`tasks/${taskId}`);
-    await teamPage.getByRole('button', { name: 'Archive', exact: true }).click();
-    await teamPage.getByRole('dialog').getByRole('button', { name: 'Archive' }).click();
-    await expect(teamPage.getByText(/this matter is archived/i)).toBeVisible();
+    await teamPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await expect(teamPage.getByRole('button', { name: /more actions/i })).toHaveCount(0);
+
+    // Admin archives via the ⋮ menu → confirm dialog → archived banner.
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: /more actions/i }).click();
+    await adminPage.getByRole('button', { name: /archive matter/i }).click();
+    await adminPage.getByRole('dialog').getByRole('button', { name: 'Archive' }).click();
+    await expect(adminPage.getByText(/this matter is archived/i)).toBeVisible();
 
     // Re-archiving is a no-op conflict.
     expect(await archiveMatterAs('admin', taskId)).toBe(409);
