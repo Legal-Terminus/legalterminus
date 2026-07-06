@@ -284,6 +284,7 @@ export default function TaskDetailPage() {
               <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Matter owner</span>
               <span className="relative inline-flex items-center">
                 <select
+                  aria-label="Matter owner"
                   className="input-field py-1.5 pr-8 text-sm max-w-[140px]"
                   value={task.assignedTo ?? ''}
                   disabled={assignOwner.isPending}
@@ -302,6 +303,7 @@ export default function TaskDetailPage() {
               <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Professional</span>
               <span className="relative inline-flex items-center">
                 <select
+                  aria-label="Professional"
                   className="input-field py-1.5 pr-8 text-sm max-w-[140px]"
                   value={task.professionalUid ?? ''}
                   disabled={assignProfessional.isPending}

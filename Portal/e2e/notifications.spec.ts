@@ -65,8 +65,10 @@ test('reassigning a step notifies the new assignee (UI-driven)', async ({ adminP
     const managerUid = process.env.E2E_MANAGER_UID!;
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
-    const ownerSelect = adminPage.locator(`select:has(option[value="${managerUid}"])`).last();
-    await ownerSelect.selectOption(managerUid);
+    // Target the Matter owner select specifically — the header also has a
+    // Professional select (#85) with the same staff options, so `.last()` would
+    // pick the wrong one.
+    await adminPage.getByLabel('Matter owner').selectOption(managerUid);
 
     // Verify via API (fast) AND that the bell surfaces it in the UI.
     expect(await waitForNotification('manager', /(step|matter) assigned to you/i)).toBeTruthy();
@@ -111,10 +113,17 @@ test('advancing past a client step notifies the client it is their turn', async 
   const taskId = await createMatter();
   try {
     const def = await getDefinitionForMatter(taskId);
-    const clientStep = firstClientStep(def);
-    test.skip(!clientStep, 'No client step in this workflow.');
-    // Advance to the step just before the client step, then complete into it.
+    // Need a client step the matter ADVANCES INTO — not the initial step (the
+    // "action needed" notification fires on arrival, and a matter born on a client
+    // step never "arrives"). Pick the first client step after the initial one.
+    const clientStep = [...def.steps]
+      .sort((a, b) => a.stepNumber - b.stepNumber)
+      .find((s) => (s.transitions ?? []).some((t) => t.event === 'CLIENT_APPROVE') && s.stepNumber !== def.initialStep);
+    test.skip(!clientStep, 'No non-initial client step to advance into.');
+    // Advance to that client step; arriving there should notify the client.
     await advanceUntil(taskId, (s) => s.stepNumber === clientStep!.stepNumber);
+    const at = (await getMatter(taskId)).currentStepNumber as number;
+    test.skip(at !== clientStep!.stepNumber, `Could not reach the client step (at ${at}).`);
     expect(await waitForNotification('client', /action needed on your service/i)).toBeTruthy();
     void adminPage;
   } finally { await deleteMatter(taskId); }
