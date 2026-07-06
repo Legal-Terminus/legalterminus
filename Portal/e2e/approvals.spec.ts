@@ -17,23 +17,30 @@ test('non-admin sees a waiting banner, no approve controls', async ({ teamPage }
   await expect(teamPage.getByRole('button', { name: 'Approve' })).toHaveCount(0);
 });
 
+// The approval-chain Approve/Reject live in the amber "Awaiting your approval"
+// banner. Scope to it — a pending matter's current step also renders its own
+// action buttons (e.g. "Approve for client"), so an unscoped "Approve" is
+// ambiguous.
+const approvalBanner = (page: import('@playwright/test').Page) =>
+  page.locator('div.card', { has: page.getByText(/awaiting your approval/i) });
+
 test('admin sees approve/reject controls on a pending matter', async ({ adminPage }) => {
   await adminPage.goto(`tasks/${pendingId}`);
   await expect(adminPage.getByText(/awaiting your approval/i)).toBeVisible();
-  await expect(adminPage.getByRole('button', { name: 'Approve' })).toBeVisible();
-  await expect(adminPage.getByRole('button', { name: 'Reject' })).toBeVisible();
+  await expect(approvalBanner(adminPage).getByRole('button', { name: 'Approve' })).toBeVisible();
+  await expect(approvalBanner(adminPage).getByRole('button', { name: 'Reject' })).toBeVisible();
 });
 
 test('admin can approve a pending matter (it goes active)', async ({ adminPage }) => {
   await adminPage.goto(`tasks/${pendingId}`);
-  await adminPage.getByRole('button', { name: 'Approve' }).click();
+  await approvalBanner(adminPage).getByRole('button', { name: 'Approve' }).click();
   // Banner clears; the matter is now active (approval banner gone).
   await expect(adminPage.getByText(/awaiting your approval/i)).toBeHidden();
 });
 
 test('reject requires a reason then marks the matter rejected', async ({ adminPage }) => {
   await adminPage.goto(`tasks/${pendingId}`);
-  await adminPage.getByRole('button', { name: 'Reject' }).click();
+  await approvalBanner(adminPage).getByRole('button', { name: 'Reject' }).click();
   const reason = adminPage.getByPlaceholder(/reason for rejection/i);
   await expect(reason).toBeVisible();
   await reason.fill('E2E: out of scope.');
