@@ -18,8 +18,12 @@ test('admin sees the Users grid with role filter tabs', async ({ adminPage }) =>
 test('E09-S06: clicking a user row opens a read-only detail view with an Edit action', async ({ adminPage }) => {
   await adminPage.goto('users');
   await expect(adminPage.getByRole('heading', { name: 'Users' })).toBeVisible();
-  // Click the first data row (avoid the header). Rows are clickable now.
-  await adminPage.locator('.cursor-pointer').first().click();
+  // Click the first DATA row — a clickable row contains an "Edit" action (sortable
+  // column HEADERS are also .cursor-pointer, so don't just take the first one).
+  // Click the row's leading avatar/name area (position: left) so we don't land on
+  // the trailing Edit/Delete buttons (which navigate instead of opening the drawer).
+  const firstRow = adminPage.locator('.cursor-pointer', { has: adminPage.getByRole('button', { name: /^edit$/i }) }).first();
+  await firstRow.click({ position: { x: 20, y: 20 } });
   const dialog = adminPage.getByRole('dialog', { name: /user details/i });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByText('User details')).toBeVisible();
