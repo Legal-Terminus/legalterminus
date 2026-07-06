@@ -112,10 +112,13 @@ test('#68: Live preview collapses to a vertical rail and re-expands', async ({ a
   await adminPage.goto(`services/${serviceKey}/edit`);
   await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
 
-  // Hide → the diagram/body is gone; a slim "Live preview" rail button remains.
+  // Hide → the diagram/body is gone; a slim vertical "Live preview" rail button
+  // remains (its accessible name is the visible text "Live preview", and it
+  // carries title="Show live preview").
   await adminPage.getByRole('button', { name: /^Hide/ }).click();
-  const railButton = adminPage.getByRole('button', { name: /Show live preview/i });
+  const railButton = adminPage.getByRole('button', { name: 'Live preview' });
   await expect(railButton).toBeVisible();
+  await expect(railButton).toHaveAttribute('title', /show live preview/i);
 
   // Re-expand.
   await railButton.click();

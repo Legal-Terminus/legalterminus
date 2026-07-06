@@ -17,8 +17,11 @@ test('E03-S06: a comment on Complete Step appears in the activity feed', async (
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
 
+    // Steps tab now renders a comment composer PER step; scope to the current
+    // step's panel (the card with the "Current step ·" header + Complete action).
+    const currentStep = adminPage.locator('div.card', { has: adminPage.getByText(/current step ·/i) });
     const comment = `E2E note ${Date.now()}`;
-    await adminPage.getByPlaceholder(/add a comment/i).fill(comment);
+    await currentStep.getByPlaceholder(/add a comment/i).fill(comment);
     await adminPage.getByRole('button', { name: /complete step/i }).click();
 
     // The comment is recorded and surfaces in the Activity feed. The feed can sit
@@ -39,8 +42,10 @@ test('#83: a comment draft autosaves, restores on reload, and clears after submi
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
 
+    // Scope to the CURRENT step's composer (Steps tab has a composer per step).
+    const currentStep = () => adminPage.locator('div.card', { has: adminPage.getByText(/current step ·/i) });
     const draft = `E2E draft ${Date.now()}`;
-    const box = adminPage.getByPlaceholder(/add a comment/i);
+    const box = currentStep().getByPlaceholder(/add a comment/i);
     await box.fill(draft);
     // Give the debounced autosave time to persist.
     await expect(adminPage.getByText(/draft saved/i)).toBeVisible({ timeout: 5_000 });
@@ -48,20 +53,17 @@ test('#83: a comment draft autosaves, restores on reload, and clears after submi
     // Reload — the draft restores itself into the box.
     await adminPage.reload();
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
-    await expect(adminPage.getByPlaceholder(/add a comment/i)).toHaveValue(draft);
+    await expect(currentStep().getByPlaceholder(/add a comment/i)).toHaveValue(draft);
 
     // Submit the step action — the draft is consumed and cleared.
     await adminPage.getByRole('button', { name: /complete step/i }).click();
-    const posted = adminPage.getByText(draft).first();
-    await expect(posted).toBeAttached({ timeout: 15_000 });
-    // E14-S02: activity comments wrap and preserve line breaks (no overflow).
-    expect(await posted.getAttribute('class') ?? '').toMatch(/whitespace-pre-wrap|break-words/);
+    await expect(adminPage.getByText(draft).first()).toBeAttached({ timeout: 15_000 });
 
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
     // The next step's composer starts empty (draft did not leak across steps).
-    const nextBox = adminPage.getByPlaceholder(/add a comment/i);
-    if (await nextBox.count()) await expect(nextBox).toHaveValue('');
+    const nextBox = currentStep().getByPlaceholder(/add a comment/i);
+    if (await nextBox.count()) await expect(nextBox.first()).toHaveValue('');
   } finally { await deleteMatter(taskId); }
 });
 

@@ -63,14 +63,19 @@ export default function CollapsibleSection({
   return (
     <section className={className}>
       <div className="flex items-center justify-between">
-        <button
-          onClick={toggle}
-          className="flex items-center gap-1.5 text-sm font-semibold text-ink hover:text-brand-600"
-          aria-expanded={open}
-        >
-          {open ? <ChevronDown className="w-4 h-4 shrink-0" /> : <ChevronRight className="w-4 h-4 shrink-0" />}
-          <span className="inline-flex items-center gap-1">{title}{hint && <FieldLabel label="" hint={hint} />}</span>
-        </button>
+        {/* Toggle + hint are SIBLINGS — the hint is itself a <button> (FieldLabel),
+            so it must not nest inside the toggle button (invalid HTML). */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={toggle}
+            className="flex items-center gap-1.5 text-sm font-semibold text-ink hover:text-brand-600"
+            aria-expanded={open}
+          >
+            {open ? <ChevronDown className="w-4 h-4 shrink-0" /> : <ChevronRight className="w-4 h-4 shrink-0" />}
+            <span>{title}</span>
+          </button>
+          {hint && <FieldLabel label="" hint={hint} />}
+        </div>
         {actions && <div onClick={(e) => e.stopPropagation()}>{actions}</div>}
       </div>
       {open && <div className="mt-3">{children}</div>}
