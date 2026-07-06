@@ -21,9 +21,16 @@ test.afterAll(async () => { await deleteMatter(taskId); });
 test('staff My Tasks renders the work grid', async ({ adminPage }) => {
   await adminPage.goto('my-tasks');
   await expect(adminPage.getByRole('heading', { name: 'My Tasks' })).toBeVisible();
-  const empty = adminPage.getByText(/all caught up/i);
+  // Wait for the query to settle (loading spinner gone) before deciding empty vs grid.
+  await expect(adminPage.getByText(/loading your tasks/i)).toHaveCount(0, { timeout: 15_000 });
+  // Two empty states exist: the page-level "all caught up" (no data at all) and the
+  // work-grid's own "No open steps." (grid empty but approvals present). Skip the
+  // column-header check in either case.
+  const empty = adminPage.getByText(/all caught up|no open steps/i);
   if (!(await empty.count())) {
-    await expect(adminPage.getByText('Priority', { exact: true }).first()).toBeVisible();
+    // Grid rendered → the Priority column header is present (may sit next to a sort
+    // icon in the same cell, so match by substring, not exact).
+    await expect(adminPage.getByText(/^Priority/).first()).toBeVisible();
   }
 });
 

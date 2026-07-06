@@ -11,6 +11,13 @@ import {
  * notifications API (deterministic). Fresh state per test.
  */
 
+// The approval-chain Approve/Reject live in the amber "Awaiting your approval"
+// banner. Scope to it — a pending matter's current step also renders its own
+// action buttons (e.g. "Approve for client"), making an unscoped "Approve" match
+// multiple elements.
+const approvalBanner = (page: import('@playwright/test').Page) =>
+  page.locator('div.card', { has: page.getByText(/awaiting your approval/i) });
+
 test('notification bell is present for staff', async ({ adminPage }) => {
   await adminPage.goto('dashboard');
   await expect(adminPage.getByRole('button', { name: 'Notifications' })).toBeVisible();
@@ -34,7 +41,7 @@ test('approving a pending matter notifies the creator (manager)', async ({ admin
   const pendingId = await createPendingMatter(); // manager-created
   try {
     await adminPage.goto(`tasks/${pendingId}`);
-    await adminPage.getByRole('button', { name: 'Approve' }).click();
+    await approvalBanner(adminPage).getByRole('button', { name: 'Approve' }).click();
     await expect(adminPage.getByText(/awaiting your approval/i)).toBeHidden();
     expect(await waitForNotification('manager', /approved/i)).toBeTruthy();
   } finally { await deleteMatter(pendingId); }
@@ -44,7 +51,7 @@ test('rejecting a pending matter notifies the creator (manager)', async ({ admin
   const pendingId = await createPendingMatter();
   try {
     await adminPage.goto(`tasks/${pendingId}`);
-    await adminPage.getByRole('button', { name: 'Reject' }).click();
+    await approvalBanner(adminPage).getByRole('button', { name: 'Reject' }).click();
     await adminPage.getByPlaceholder(/reason for rejection/i).fill('E2E reject reason');
     await adminPage.getByRole('button', { name: /confirm rejection/i }).click();
     await expect(adminPage.getByText(/this matter was rejected/i)).toBeVisible();
