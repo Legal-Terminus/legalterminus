@@ -2,6 +2,7 @@ import React, { Suspense } from 'react'
 import './Home.css'
 import Herosection from '../../Components/Herosection/Herosection'
 import Premiumbusiness from '../../Components/Premiumbusiness/Premiumbusiness'
+import HomePdfToolsCta from '../../Components/HomePdfToolsCta/HomePdfToolsCta'
 
 // Lazy load below-fold components
 const Workingprocess = React.lazy(() => import('../../Components/WorkingProcessPro/WorkingProcessPro'))
@@ -19,6 +20,7 @@ const Home = () => {
     <>
         <Herosection/>
         <Premiumbusiness/>
+        <HomePdfToolsCta/>
         <Suspense fallback={<div />}>
           <Workingprocess/>
         </Suspense>

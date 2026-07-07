@@ -32,6 +32,8 @@ const NON_SERVICE_PATHS = new Set([
   "/signup",
   "/forgot-password",
   "/my-profile",
+  // Utility tools page — no testimonials / video / client logos, footer only
+  "/pdf-tools",
   // Full reproduction page ships its own testimonials + client logos + contact
   "/company-registration-odisha",
 ]);

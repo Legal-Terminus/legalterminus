@@ -1,0 +1,111 @@
+.hpt-cta {
+  padding: 48px 20px;
+  background-color: #fff;
+}
+
+.hpt-cta-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 2.5rem 3rem;
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse 600px 300px at 90% 20%, rgba(25, 163, 95, 0.35), transparent 60%),
+    linear-gradient(135deg, #0b5f3a 0%, #19a35f 100%);
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(11, 95, 58, 0.22);
+}
+
+.hpt-cta-text {
+  max-width: 640px;
+}
+
+.hpt-cta-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  margin-bottom: 0.9rem;
+}
+
+.hpt-cta-text h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 0.6rem;
+  color: #fff;
+}
+
+.hpt-cta-text p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.hpt-cta-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  color: #0b5f3a;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 15px 32px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, gap 0.2s ease;
+}
+
+.hpt-cta-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.hpt-cta-btn:hover {
+  transform: translateY(-2px);
+  gap: 14px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+}
+
+.hpt-cta-btn:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 768px) {
+  .hpt-cta {
+    padding: 36px 15px;
+  }
+
+  .hpt-cta-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    padding: 2rem 1.75rem;
+  }
+
+  .hpt-cta-text h2 {
+    font-size: 1.6rem;
+  }
+
+  .hpt-cta-text p {
+    font-size: 0.98rem;
+  }
+
+  .hpt-cta-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

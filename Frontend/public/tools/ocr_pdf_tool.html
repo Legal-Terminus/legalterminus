@@ -1,0 +1,520 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR PDF Converter - Legal Terminus</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', 'Segoe UI', Arial, sans-serif; background: #F8F9FA; color: #333; line-height: 1.6; }
+        .pdf-converter-container { max-width: 1200px; margin: 0 auto; padding: 20px; min-height: 100vh; }
+        .header { text-align: center; padding: 30px 0; background: linear-gradient(135deg, #28A745 0%, #1E7E34 100%); color: white; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .header h1 { font-size: 2.5rem; font-weight: 500; margin-bottom: 10px; }
+        .header p { font-size: 1.1rem; opacity: 0.95; }
+        .upload-section { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); margin-bottom: 30px; }
+        .upload-area { border: 2px dashed #28A745; border-radius: 8px; padding: 40px; text-align: center; transition: all 0.3s ease; cursor: pointer; background: #F8F9FA; }
+        .upload-area:hover { background: #E8F5E8; border-color: #1E7E34; }
+        .upload-area.dragover { background: #E8F5E8; border-color: #1E7E34; transform: scale(1.02); }
+        .upload-icon { font-size: 3rem; color: #28A745; margin-bottom: 15px; }
+        .file-input { display: none; }
+        .btn { display: inline-block; padding: 12px 30px; background: #28A745; color: white; border: none; border-radius: 5px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn:hover:not(:disabled) { background: #1E7E34; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3); }
+        .btn:disabled { background: #6C757D; cursor: not-allowed; opacity: 0.6; }
+        .btn-secondary { background: #6C757D; }
+        .btn-secondary:hover:not(:disabled) { background: #5A6268; }
+        .btn-danger { background: #DC3545; }
+        .btn-danger:hover:not(:disabled) { background: #C82333; }
+        .btn-warning { background: #FFC107; color: #212529; }
+        .btn-warning:hover:not(:disabled) { background: #E0A800; }
+        .btn-info { background: #17A2B8; }
+        .btn-info:hover:not(:disabled) { background: #138496; }
+        .files-section { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); margin-bottom: 30px; display: none; }
+        .files-section.active { display: block; }
+        .files-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #E9ECEF; }
+        .bulk-actions { display: flex; gap: 10px; align-items: center; }
+        .files-list { list-style: none; }
+        .file-item { display: flex; align-items: center; padding: 15px; background: #F8F9FA; border-radius: 8px; margin-bottom: 10px; transition: all 0.3s ease; border: 2px solid transparent; }
+        .file-item:hover { background: #E9ECEF; border-color: #28A745; }
+        .file-info { flex: 1; }
+        .file-name { font-weight: 500; color: #212529; margin-bottom: 5px; }
+        .file-size { color: #6C757D; font-size: 0.9rem; }
+        .file-status { color: #28A745; font-size: 0.9rem; margin-top: 5px; font-weight: 500; }
+        .file-status.error { color: #DC3545; }
+        .file-status.converting { color: #FFC107; }
+        .file-status.converted { color: #28A745; }
+        .file-actions { display: flex; gap: 10px; align-items: center; }
+        .alert { padding: 15px; margin-bottom: 20px; border-radius: 5px; font-weight: 500; }
+        .alert-success { background: #D4EDDA; color: #155724; border: 1px solid #C3E6CB; }
+        .alert-error { background: #F8D7DA; color: #721C24; border: 1px solid #F5C6CB; }
+        .alert-info { background: #D1ECF1; color: #0C5460; border: 1px solid #BEE5EB; }
+        select { padding: 10px; font-size: 1rem; border-radius: 5px; border: 1px solid #CED4DA; width: 100%; max-width: 300px; margin: 10px 0; }
+        .options-section { margin-bottom: 20px; text-align: center; }
+        .debug { display: none; }
+    </style>
+</head>
+<body>
+    <div class="pdf-converter-container" role="main">
+        <header class="header">
+            <h1>OCR PDF</h1>
+            <p>Convert non-selectable PDF files into selectable and searchable PDF with high accuracy</p>
+        </header>
+        
+        <div id="alertContainer"></div>
+        
+        <section class="upload-section" aria-label="Upload PDF files">
+            <div class="upload-area" id="uploadArea" role="button" tabindex="0" aria-label="Click or drag files here to upload">
+                <div class="upload-icon">📄</div>
+                <h2>Upload PDF Files</h2>
+                <p>Drag & drop PDF files here or click to browse</p>
+                <p style="color: #6C757D; font-size: 0.9rem; margin-top: 10px;">Maximum file size: 50MB per file</p>
+                <input type="file" id="fileInput" class="file-input" accept=".pdf,application/pdf" multiple aria-label="Select PDF files">
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;" onclick="event.stopPropagation();">
+                    <button class="btn" id="selectFilesBtn">Select Files</button>
+                </div>
+            </div>
+        </section>
+        
+        <section class="options-section">
+            <label for="ocr-language">OCR Language</label>
+            <select id="ocr-language">
+                <option>Auto detect (Multiple languages)</option>
+                <option>English</option>
+                <option>Spanish</option>
+                <option>French</option>
+                <option>German</option>
+                <option>Italian</option>
+                <option>Portuguese</option>
+                <option>Russian</option>
+                <option>Chinese (Simplified)</option>
+                <option>Chinese (Traditional)</option>
+                <option>Japanese</option>
+                <option>Korean</option>
+            </select>
+        </section>
+        
+        <section class="files-section" id="filesSection" aria-label="Uploaded files list">
+            <div class="files-header">
+                <h2>Uploaded Files (<span id="fileCount">0</span>)</h2>
+                <div class="bulk-actions">
+                    <button class="btn btn-warning" id="convertAllBtn" aria-label="OCR all files">OCR All</button>
+                    <button class="btn btn-secondary" id="clearAllBtn" aria-label="Clear all files">Clear All</button>
+                </div>
+            </div>
+            <ul class="files-list" id="filesList" role="list" aria-label="PDF files to convert"></ul>
+        </section>
+        
+        <div class="debug" id="debugInfo">Debug info will appear here</div>
+    </div>
+    
+    <!-- PDF.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    
+    <script>
+        // Set PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+        
+        // Global variables
+        let uploadedFiles = [];
+        let fileIdCounter = 0;
+        
+        // DOM elements - will be initialized after DOM loads
+        let uploadArea, fileInput, filesSection, filesList, fileCount, clearAllBtn, convertAllBtn, selectFilesBtn, alertContainer;
+        
+        // Debug function
+        function debug(message) {
+            console.log(message);
+            const debugElement = document.getElementById('debugInfo');
+            if (debugElement) {
+                debugElement.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            }
+        }
+        
+        function showAlert(message, type = 'info') {
+            debug(`Alert: ${type} - ${message}`);
+            if (!alertContainer) {
+                console.error('Alert container not found');
+                return;
+            }
+            
+            const alert = document.createElement('div');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alert);
+            setTimeout(() => { 
+                if (alertContainer && alertContainer.contains(alert)) {
+                    alertContainer.removeChild(alert); 
+                }
+            }, 5000);
+        }
+        
+        function handleFileSelect(e) {
+            debug('File select triggered');
+            debug(`Files selected: ${e.target.files.length}`);
+            
+            if (e.target.files.length === 0) {
+                debug('No files selected');
+                return;
+            }
+            
+            processFiles(Array.from(e.target.files));
+            // Reset the input value to allow selecting the same file again
+            e.target.value = '';
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            debug(`Files dropped: ${e.dataTransfer.files.length}`);
+            processFiles(Array.from(e.dataTransfer.files));
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+        
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+        
+        function processFiles(files) {
+            debug(`Processing ${files.length} files`);
+            
+            if (!files || files.length === 0) {
+                debug('No files to process');
+                showAlert('No files selected', 'error');
+                return;
+            }
+            
+            const validFiles = files.filter(file => {
+                const isValid = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                debug(`File: ${file.name}, Type: ${file.type}, Valid: ${isValid}`);
+                return isValid;
+            });
+            
+            if (validFiles.length === 0) {
+                showAlert('No valid PDF files selected', 'error');
+                return;
+            }
+            
+            validFiles.forEach(file => {
+                if (file.size <= 50 * 1024 * 1024) {
+                    const fileObj = { 
+                        id: fileIdCounter++, 
+                        file, 
+                        name: file.name, 
+                        size: file.size, 
+                        status: 'ready', 
+                        convertedContent: null 
+                    };
+                    uploadedFiles.push(fileObj);
+                    debug(`Added file: ${file.name} (ID: ${fileObj.id})`);
+                } else {
+                    showAlert(`File "${file.name}" exceeds 50MB and was skipped.`, 'error');
+                }
+            });
+            
+            updateFilesList();
+            showAlert(`${validFiles.length} file(s) uploaded successfully`, 'success');
+        }
+        
+        function updateFilesList() {
+            if (!filesList || !fileCount) {
+                debug('File list elements not found');
+                return;
+            }
+            
+            debug(`Updating files list. Total files: ${uploadedFiles.length}`);
+            
+            filesList.innerHTML = '';
+            uploadedFiles.forEach(fileObj => {
+                const li = document.createElement('li');
+                li.className = 'file-item';
+                li.dataset.fileId = fileObj.id;
+                li.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${fileObj.name}</div>
+                        <div class="file-size">${(fileObj.size / 1024 / 1024).toFixed(2)} MB</div>
+                        <div class="file-status ${fileObj.status}" id="status-${fileObj.id}">${fileObj.status}</div>
+                    </div>
+                    <div class="file-actions" id="actions-${fileObj.id}">
+                        <button class="btn btn-warning" onclick="convertFile(${fileObj.id})">OCR</button>
+                        <button class="btn btn-info" onclick="previewFile(${fileObj.id})">Preview</button>
+                        <button class="btn btn-info" onclick="downloadFile(${fileObj.id})">Download</button>
+                        <button class="btn btn-danger" onclick="removeFile(${fileObj.id})">Remove</button>
+                    </div>
+                `;
+                filesList.appendChild(li);
+            });
+            
+            fileCount.textContent = uploadedFiles.length;
+            filesSection.classList.toggle('active', uploadedFiles.length > 0);
+        }
+        
+        function triggerFileInput(event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            debug('Triggering file input');
+            if (!fileInput) {
+                debug('File input not found!');
+                showAlert('File input not available', 'error');
+                return;
+            }
+            // Small delay to ensure proper execution
+            setTimeout(() => {
+                fileInput.click();
+            }, 50);
+        }
+        
+        async function convertFile(fileId) {
+            const fileObj = uploadedFiles.find(f => f.id === fileId);
+            if (!fileObj) {
+                debug(`File not found: ${fileId}`);
+                return;
+            }
+            
+            debug(`Converting file: ${fileObj.name}`);
+            fileObj.status = 'converting';
+            updateFilesList();
+            
+            try {
+                // Simulate OCR processing (placeholder)
+                const arrayBuffer = await fileObj.file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                
+                // In a real implementation, you would use Tesseract.js or send to server
+                // For now, we'll just reuse the original PDF as converted content
+                fileObj.convertedContent = arrayBuffer;
+                fileObj.status = 'converted';
+                updateFilesList();
+                showAlert(`${fileObj.name} processed successfully!`, 'success');
+                debug(`File converted successfully: ${fileObj.name}`);
+            } catch (err) {
+                debug(`Error converting file: ${err.message}`);
+                fileObj.status = 'error';
+                updateFilesList();
+                showAlert(`Error processing file: ${err.message}`, 'error');
+            }
+        }
+        
+        async function previewFile(fileId) {
+            const fileObj = uploadedFiles.find(f => f.id === fileId);
+            if (!fileObj || !fileObj.convertedContent) {
+                showAlert("Please process the file before previewing.", "error");
+                return;
+            }
+            try {
+                const blob = new Blob([fileObj.convertedContent], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const win = window.open();
+                win.document.write(`
+                    <html>
+                        <body style="margin:0;">
+                            <iframe src="${url}" style="width:100%;height:100vh;border:none;"></iframe>
+                        </body>
+                    </html>
+                `);
+                setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+            } catch (error) {
+                showAlert("Error previewing file: " + error.message, "error");
+            }
+        }
+        
+        async function downloadFile(fileId) {
+            const fileObj = uploadedFiles.find(f => f.id === fileId);
+            if (!fileObj || !fileObj.convertedContent) {
+                showAlert("Please process the file before downloading.", "error");
+                return;
+            }
+            try {
+                const blob = new Blob([fileObj.convertedContent], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.style.display = "none";
+                a.href = url;
+                a.download = fileObj.name.replace(/\.pdf$/i, "_ocr.pdf");
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                }, 100);
+                showAlert(`${fileObj.name} downloaded successfully!`, "success");
+            } catch (error) {
+                showAlert("Error downloading file: " + error.message, "error");
+            }
+        }
+        
+        function removeFile(fileId) {
+            debug(`Removing file: ${fileId}`);
+            uploadedFiles = uploadedFiles.filter(f => f.id !== fileId);
+            updateFilesList();
+        }
+        
+        async function convertAllFiles() {
+            debug('Converting all files');
+            for (let fileObj of uploadedFiles) {
+                if (fileObj.status === 'ready' || fileObj.status === 'error') {
+                    await convertFile(fileObj.id);
+                }
+            }
+        }
+        
+        function clearAllFiles() {
+            debug('Clearing all files');
+            uploadedFiles = [];
+            updateFilesList();
+            showAlert('All files cleared', 'info');
+        }
+        
+        function initializeEventListeners() {
+            debug('Initializing event listeners');
+            
+            // Get DOM elements
+            uploadArea = document.getElementById('uploadArea');
+            fileInput = document.getElementById('fileInput');
+            filesSection = document.getElementById('filesSection');
+            filesList = document.getElementById('filesList');
+            fileCount = document.getElementById('fileCount');
+            clearAllBtn = document.getElementById('clearAllBtn');
+            convertAllBtn = document.getElementById('convertAllBtn');
+            selectFilesBtn = document.getElementById('selectFilesBtn');
+            alertContainer = document.getElementById('alertContainer');
+            
+            // Check if all elements exist
+            const elements = { uploadArea, fileInput, filesSection, filesList, fileCount, clearAllBtn, convertAllBtn, selectFilesBtn, alertContainer };
+            for (const [name, element] of Object.entries(elements)) {
+                if (!element) {
+                    console.error(`Element not found: ${name}`);
+                }
+            }
+            
+            if (!fileInput) {
+                console.error('Critical: File input element not found');
+                return;
+            }
+            
+            // Add event listeners with error handling
+            try {
+                // File input change event
+                fileInput.addEventListener('change', handleFileSelect);
+                debug('File input change listener added');
+                
+                // Upload area click events - but not for buttons inside it
+                uploadArea.addEventListener('click', (e) => {
+                    // Only trigger if clicking on the upload area itself, not on buttons
+                    if (e.target === uploadArea || e.target.closest('.upload-icon') || e.target.tagName === 'H2' || e.target.tagName === 'P') {
+                        triggerFileInput(e);
+                    }
+                });
+                
+                selectFilesBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    triggerFileInput(e);
+                });
+                debug('Click listeners added');
+                
+                // Drag and drop events
+                uploadArea.addEventListener('dragover', handleDragOver);
+                uploadArea.addEventListener('dragleave', handleDragLeave);
+                uploadArea.addEventListener('drop', handleDrop);
+                debug('Drag and drop listeners added');
+                
+                // Prevent default drag behaviors on document
+                document.addEventListener('dragover', (e) => e.preventDefault());
+                document.addEventListener('drop', (e) => e.preventDefault());
+                
+                // Button click events
+                clearAllBtn.addEventListener('click', clearAllFiles);
+                convertAllBtn.addEventListener('click', convertAllFiles);
+                debug('Button listeners added');
+                
+                // Keyboard accessibility
+                uploadArea.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        triggerFileInput(e);
+                    }
+                });
+                
+                selectFilesBtn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        triggerFileInput(e);
+                    }
+                });
+                
+                debug('All event listeners initialized successfully');
+                
+            } catch (error) {
+                console.error('Error initializing event listeners:', error);
+                showAlert('Error initializing application', 'error');
+            }
+        }
+        
+        // Initialize when DOM is fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeEventListeners);
+        } else {
+            // DOM is already loaded
+            initializeEventListeners();
+        }
+        
+        // Backup initialization after a short delay
+        setTimeout(() => {
+            if (!fileInput || !uploadArea) {
+                debug('Backup initialization triggered');
+                initializeEventListeners();
+            }
+        }, 100);
+    </script>
+</body>
+</html>

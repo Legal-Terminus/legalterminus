@@ -91,6 +91,7 @@ const CompanyRegistrationOdisha = lazy(() => import("./Pages/CompanyRegistration
 const CompanyRegistrationLanding = lazy(() => import("./Pages/CompanyRegistrationLanding/CompanyRegistrationLanding"));
 const TrademarkLanding = lazy(() => import("./Pages/TrademarkLanding/TrademarkLanding"));
 const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
+const PdfTools = lazy(() => import("./Pages/PdfTools/PdfTools"));
 
 // Store scroll positions keyed by location.key
 const scrollPositions = {};
@@ -239,6 +240,7 @@ function App() {
             <Route path="/company-registration-odisha" element={<CompanyRegistrationOdisha />} />
             <Route path="/companyregistration-in-odisha" element={<CompanyRegistrationLanding />} />
             <Route path="/trademark-registration-in-odisha" element={<TrademarkLanding />} />
+            <Route path="/pdf-tools" element={<PdfTools />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>

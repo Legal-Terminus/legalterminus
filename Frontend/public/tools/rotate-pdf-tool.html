@@ -1,0 +1,567 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotate PDF - Legal Terminus</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', 'Segoe UI', Arial, sans-serif; background: #F8F9FA; color: #333; line-height: 1.6; }
+        .pdf-converter-container { max-width: 1200px; margin: 0 auto; padding: 20px; min-height: 100vh; }
+        .header { text-align: center; padding: 30px 0; background: linear-gradient(135deg, #28A745 0%, #1E7E34 100%); color: white; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .header h1 { font-size: 2.5rem; font-weight: 500; margin-bottom: 10px; }
+        .header p { font-size: 1.1rem; opacity: 0.95; }
+        .upload-section { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); margin-bottom: 30px; }
+        .upload-area { border: 2px dashed #28A745; border-radius: 8px; padding: 40px; text-align: center; transition: all 0.3s ease; cursor: pointer; background: #F8F9FA; }
+        .upload-area:hover { background: #E8F5E8; border-color: #1E7E34; }
+        .upload-area.dragover { background: #E8F5E8; border-color: #1E7E34; transform: scale(1.02); }
+        .upload-icon { font-size: 3rem; color: #28A745; margin-bottom: 15px; }
+        .file-input { display: none; }
+        .btn { display: inline-block; padding: 12px 30px; background: #28A745; color: white; border: none; border-radius: 5px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn:hover:not(:disabled) { background: #1E7E34; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3); }
+        .btn:disabled { background: #6C757D; cursor: not-allowed; opacity: 0.6; }
+        .btn-secondary { background: #6C757D; }
+        .btn-secondary:hover:not(:disabled) { background: #5A6268; }
+        .btn-danger { background: #DC3545; }
+        .btn-danger:hover:not(:disabled) { background: #C82333; }
+        .btn-warning { background: #FFC107; color: #212529; }
+        .btn-warning:hover:not(:disabled) { background: #E0A800; }
+        .btn-info { background: #17A2B8; }
+        .btn-info:hover:not(:disabled) { background: #138496; }
+        .files-section { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); margin-bottom: 30px; display: none; }
+        .files-section.active { display: block; }
+        .files-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #E9ECEF; }
+        .bulk-actions { display: flex; gap: 10px; align-items: center; }
+        .files-list { list-style: none; }
+        .file-item { display: flex; align-items: center; padding: 15px; background: #F8F9FA; border-radius: 8px; margin-bottom: 10px; transition: all 0.3s ease; border: 2px solid transparent; }
+        .file-item:hover { background: #E9ECEF; border-color: #28A745; }
+        .file-info { flex: 1; }
+        .file-name { font-weight: 500; color: #212529; margin-bottom: 5px; }
+        .file-size { color: #6C757D; font-size: 0.9rem; }
+        .file-status { color: #28A745; font-size: 0.9rem; margin-top: 5px; font-weight: 500; }
+        .file-status.error { color: #DC3545; }
+        .file-status.processing { color: #FFC107; }
+        .file-status.ready { color: #28A745; }
+        .file-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .thumbnail-container { max-width: 150px; margin-right: 20px; }
+        .thumbnail-container canvas { max-width: 100%; max-height: 200px; }
+        .thumbnail-container p { text-align: center; font-size: 0.9rem; margin-top: 5px; }
+        .alert { padding: 15px; margin-bottom: 20px; border-radius: 5px; font-weight: 500; }
+        .alert-success { background: #D4EDDA; color: #155724; border: 1px solid #C3E6CB; }
+        .alert-error { background: #F8D7DA; color: #721C24; border: 1px solid #F5C6CB; }
+        .alert-info { background: #D1ECF1; color: #0C5460; border: 1px solid #BEE5EB; }
+        .button-wrapper { margin-top: 20px; }
+        .debug { display: none; }
+    </style>
+</head>
+<body>
+    <div class="pdf-converter-container" role="main">
+        <header class="header">
+            <h1>Rotate PDF</h1>
+            <p>Rotate or delete pages in your PDF with ease</p>
+        </header>
+        
+        <div id="alertContainer"></div>
+        
+        <section class="upload-section" aria-label="Upload PDF files">
+            <div class="upload-area" id="uploadArea" role="button" tabindex="0" aria-label="Click or drag files here to upload">
+                <div class="upload-icon">📄</div>
+                <h2>Upload PDF File</h2>
+                <p>Drag & drop a PDF file here or click to browse</p>
+                <p style="color: #6C757D; font-size: 0.9rem; margin-top: 10px;">Maximum file size: 10MB</p>
+                <input type="file" id="fileInput" class="file-input" accept=".pdf,application/pdf" aria-label="Select PDF file">
+                <div class="button-wrapper" onclick="event.stopPropagation();">
+                    <button class="btn" id="selectFilesBtn">Select File</button>
+                </div>
+            </div>
+        </section>
+        
+        <section class="files-section" id="filesSection" aria-label="Uploaded files list">
+            <div class="files-header">
+                <h2>Uploaded File (<span id="fileCount">0</span>)</h2>
+                <div class="bulk-actions">
+                    <button class="btn btn-warning" id="downloadBtn" aria-label="Download rotated PDF">Download Rotated PDF</button>
+                    <button class="btn btn-secondary" id="clearBtn" aria-label="Clear file">Clear</button>
+                </div>
+            </div>
+            <ul class="files-list" id="filesList" role="list" aria-label="PDF file to rotate"></ul>
+        </section>
+        
+        <div class="debug" id="debugInfo">Debug info will appear here</div>
+    </div>
+
+    <!-- PDF.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- PDFLib.js Library -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        let uploadedFile = null;
+        let pdfDoc = null;
+        let pageRotations = [];
+        let deletedPages = [];
+        let fileIdCounter = 0;
+
+        // DOM elements
+        let uploadArea, fileInput, filesSection, filesList, fileCount, clearBtn, downloadBtn, selectFilesBtn, alertContainer;
+
+        // Debug function
+        function debug(message) {
+            console.log(message);
+            const debugElement = document.getElementById('debugInfo');
+            if (debugElement) {
+                debugElement.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            }
+        }
+
+        function initializeEventListeners() {
+            // Get DOM elements
+            uploadArea = document.getElementById('uploadArea');
+            fileInput = document.getElementById('fileInput');
+            filesSection = document.getElementById('filesSection');
+            filesList = document.getElementById('filesList');
+            fileCount = document.getElementById('fileCount');
+            clearBtn = document.getElementById('clearBtn');
+            downloadBtn = document.getElementById('downloadBtn');
+            selectFilesBtn = document.getElementById('selectFilesBtn');
+            alertContainer = document.getElementById('alertContainer');
+
+            debug('Initializing event listeners for PDF rotate tool');
+
+            // Check if all elements exist
+            const elements = { uploadArea, fileInput, filesSection, filesList, fileCount, clearBtn, downloadBtn, selectFilesBtn, alertContainer };
+            for (const [name, element] of Object.entries(elements)) {
+                if (!element) {
+                    console.error(`Element not found: ${name}`);
+                }
+            }
+
+            if (!fileInput) {
+                console.error('Critical: File input element not found');
+                return;
+            }
+
+            try {
+                // File input change event
+                fileInput.addEventListener('change', handleFileSelect);
+                debug('File input change listener added');
+
+                // Upload area click events - but not for buttons inside it
+                uploadArea.addEventListener('click', (e) => {
+                    // Only trigger if clicking on the upload area itself, not on buttons
+                    if (e.target === uploadArea || e.target.closest('.upload-icon') || e.target.tagName === 'H2' || e.target.tagName === 'P') {
+                        triggerFileInput(e);
+                    }
+                });
+                
+                selectFilesBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    triggerFileInput(e);
+                });
+                debug('Click listeners added');
+
+                // Drag and drop events
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('dragover');
+                });
+                uploadArea.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                });
+                uploadArea.addEventListener('drop', handleDrop);
+                debug('Drag and drop listeners added');
+
+                // Prevent default drag behaviors on document
+                document.addEventListener('dragover', (e) => e.preventDefault());
+                document.addEventListener('drop', (e) => e.preventDefault());
+
+                // Button click events
+                clearBtn.addEventListener('click', clearFile);
+                downloadBtn.addEventListener('click', downloadRotatedPDF);
+                debug('Button listeners added');
+
+                // Keyboard accessibility
+                uploadArea.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        triggerFileInput(e);
+                    }
+                });
+                
+                selectFilesBtn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        triggerFileInput(e);
+                    }
+                });
+
+                debug('All event listeners initialized successfully');
+
+            } catch (error) {
+                console.error('Error initializing event listeners:', error);
+                showAlert('Error initializing application', 'error');
+            }
+        }
+
+        function triggerFileInput(event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            debug('Triggering file input');
+            if (!fileInput) {
+                debug('File input not found!');
+                showAlert('File input not available', 'error');
+                return;
+            }
+            // Small delay to ensure proper execution
+            setTimeout(() => {
+                fileInput.click();
+            }, 50);
+        }
+
+        function showAlert(message, type = 'info') {
+            debug(`Alert: ${type} - ${message}`);
+            if (!alertContainer) {
+                console.error('Alert container not found');
+                return;
+            }
+
+            const alert = document.createElement('div');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alert);
+            setTimeout(() => {
+                if (alertContainer && alertContainer.contains(alert)) {
+                    alertContainer.removeChild(alert);
+                }
+            }, 5000);
+        }
+
+        function handleFileSelect(e) {
+            debug('File select triggered');
+            const files = Array.from(e.target.files);
+            debug(`Files selected: ${files.length}`);
+            
+            if (files.length > 0) {
+                processFile(files[0]);
+            } else {
+                debug('No files selected');
+            }
+            e.target.value = '';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            debug('Files dropped');
+            const files = Array.from(e.dataTransfer.files);
+            if (files.length > 0) processFile(files[0]);
+        }
+
+        async function processFile(file) {
+            debug(`Processing file: ${file.name}, Type: ${file.type}`);
+            
+            if (!file || file.type !== 'application/pdf') {
+                showAlert('Please upload a valid PDF file.', 'error');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert(`File "${file.name}" exceeds 10MB and was skipped.`, 'error');
+                return;
+            }
+
+            uploadedFile = { id: fileIdCounter++, file, name: file.name, size: file.size, status: 'processing' };
+            deletedPages = [];
+            showAlert('Uploading...', 'info');
+            debug(`File object created with ID: ${uploadedFile.id}`);
+            
+            const arrayBuffer = await file.arrayBuffer();
+            try {
+                pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                pageRotations = new Array(pdfDoc.numPages).fill(0);
+                uploadedFile.status = 'ready';
+                updateFilesList();
+                showAlert(`PDF loaded with ${pdfDoc.numPages} pages. Rotate or delete pages and download.`, 'success');
+                debug(`PDF loaded successfully with ${pdfDoc.numPages} pages`);
+            } catch (error) {
+                debug(`Error loading PDF: ${error.message}`);
+                uploadedFile = null;
+                updateFilesList();
+                showAlert('Error loading PDF: ' + error.message, 'error');
+            }
+        }
+
+        async function updateFilesList() {
+            if (!filesList || !fileCount) {
+                debug('File list elements not found');
+                return;
+            }
+
+            debug(`Updating files list. File: ${uploadedFile ? uploadedFile.name : 'none'}`);
+            
+            filesList.innerHTML = '';
+            if (uploadedFile) {
+                const li = document.createElement('li');
+                li.className = 'file-item';
+                li.dataset.fileId = uploadedFile.id;
+
+                const statusText = uploadedFile.status === 'processing' ? 'Processing...' : 'Ready to rotate';
+                li.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${uploadedFile.name}</div>
+                        <div class="file-size">${(uploadedFile.size / 1024).toFixed(2)} KB</div>
+                        <div class="file-status ${uploadedFile.status}" id="status-${uploadedFile.id}">${statusText}</div>
+                    </div>
+                    <div class="file-actions" id="actions-${uploadedFile.id}"></div>
+                `;
+                filesList.appendChild(li);
+                
+                if (uploadedFile.status === 'ready') {
+                    await renderThumbnails(uploadedFile.id);
+                }
+            }
+            const remainingPages = pdfDoc ? pdfDoc.numPages - deletedPages.length : 0;
+            fileCount.textContent = uploadedFile ? 1 : 0;
+            filesSection.classList.toggle('active', !!uploadedFile);
+            
+            if (downloadBtn) {
+                downloadBtn.disabled = !uploadedFile || uploadedFile.status !== 'ready' || remainingPages === 0;
+            }
+            
+            if (remainingPages === 0 && uploadedFile) {
+                showAlert('All pages have been deleted. Please upload a new PDF.', 'info');
+            }
+        }
+
+        async function renderThumbnails(fileId) {
+            if (!uploadedFile || uploadedFile.id !== fileId || !pdfDoc) {
+                debug('Cannot render thumbnails - missing data');
+                return;
+            }
+            
+            debug(`Rendering thumbnails for ${pdfDoc.numPages} pages`);
+            const actionsContainer = document.getElementById(`actions-${fileId}`);
+            if (!actionsContainer) {
+                debug('Actions container not found');
+                return;
+            }
+            
+            actionsContainer.innerHTML = '';
+
+            for (let i = 1; i <= pdfDoc.numPages; i++) {
+                if (deletedPages.includes(i - 1)) continue; // Skip deleted pages
+                
+                try {
+                    const page = await pdfDoc.getPage(i);
+                    const viewport = page.getViewport({ scale: 0.5 });
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const context = canvas.getContext('2d');
+
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport,
+                        transform: getRotationTransform(pageRotations[i - 1], viewport)
+                    }).promise;
+
+                    const container = document.createElement('div');
+                    container.className = 'thumbnail-container';
+                    container.innerHTML = `<p>Page ${i}</p>`;
+                    container.appendChild(canvas);
+
+                    const rotateLeft = document.createElement('button');
+                    rotateLeft.className = 'btn btn-warning';
+                    rotateLeft.textContent = 'Rotate Left';
+                    rotateLeft.onclick = () => rotatePage(i - 1, -90);
+
+                    const rotateRight = document.createElement('button');
+                    rotateRight.className = 'btn btn-warning';
+                    rotateRight.textContent = 'Rotate Right';
+                    rotateRight.onclick = () => rotatePage(i - 1, 90);
+
+                    const deletePageBtn = document.createElement('button');
+                    deletePageBtn.className = 'btn btn-danger';
+                    deletePageBtn.textContent = 'Delete Page';
+                    deletePageBtn.onclick = () => deletePage(i - 1);
+
+                    container.append(rotateLeft, rotateRight, deletePageBtn);
+                    actionsContainer.appendChild(container);
+                } catch (error) {
+                    debug(`Error rendering page ${i}: ${error.message}`);
+                }
+            }
+        }
+
+        function getRotationTransform(rotation, viewport) {
+            const rad = (rotation * Math.PI) / 180;
+            const cos = Math.cos(rad);
+            const sin = Math.sin(rad);
+            if (rotation === 90 || rotation === -90) {
+                return [cos, sin, -sin, cos, viewport.height * Math.abs(sin), 0];
+            } else if (rotation === 180 || rotation === -180) {
+                return [cos, sin, -sin, cos, viewport.width, viewport.height];
+            }
+            return [1, 0, 0, 1, 0, 0];
+        }
+
+        function rotatePage(pageIndex, degrees) {
+            debug(`Rotating page ${pageIndex + 1} by ${degrees} degrees`);
+            pageRotations[pageIndex] = (pageRotations[pageIndex] + degrees) % 360;
+            renderThumbnails(uploadedFile.id);
+        }
+
+        function deletePage(pageIndex) {
+            if (!deletedPages.includes(pageIndex)) {
+                deletedPages.push(pageIndex);
+                debug(`Deleted page ${pageIndex + 1}`);
+                showAlert(`Page ${pageIndex + 1} deleted.`, 'info');
+                renderThumbnails(uploadedFile.id);
+                updateFilesList();
+            }
+        }
+
+        async function downloadRotatedPDF() {
+            if (!uploadedFile || !pdfDoc) {
+                showAlert('No PDF file loaded.', 'error');
+                return;
+            }
+            if (pdfDoc.numPages - deletedPages.length === 0) {
+                showAlert('No pages left to download. Please upload a new PDF.', 'error');
+                return;
+            }
+            
+            debug('Starting PDF generation');
+            showAlert('Generating rotated PDF...', 'info');
+            
+            try {
+                const pdfBytes = await generateRotatedPDF();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'rotated_pdf.pdf';
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                showAlert('Download complete.', 'success');
+                debug('PDF download completed');
+            } catch (error) {
+                debug(`Error generating PDF: ${error.message}`);
+                showAlert('Error generating PDF: ' + error.message, 'error');
+            }
+        }
+
+        async function generateRotatedPDF() {
+            const pdfDocOut = await PDFLib.PDFDocument.create();
+            const srcPdf = await PDFLib.PDFDocument.load(await pdfDoc.getData());
+
+            for (let i = 1; i <= pdfDoc.numPages; i++) {
+                if (deletedPages.includes(i - 1)) continue; // Skip deleted pages
+                const [page] = await pdfDocOut.copyPages(srcPdf, [i - 1]);
+                const originalWidth = page.getWidth();
+                const originalHeight = page.getHeight();
+                page.setRotation(PDFLib.degrees(pageRotations[i - 1]));
+                page.setSize(originalWidth, originalHeight);
+                pdfDocOut.addPage(page);
+            }
+
+            return await pdfDocOut.save();
+        }
+
+        function clearFile() {
+            debug('Clearing file');
+            uploadedFile = null;
+            pdfDoc = null;
+            pageRotations = [];
+            deletedPages = [];
+            updateFilesList();
+            showAlert('File cleared.', 'info');
+        }
+
+        // Initialize when DOM is fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                initializeEventListeners();
+                
+                // Check if libraries are loaded
+                let checkAttempts = 0;
+                const maxAttempts = 5;
+                const checkLibraries = () => {
+                    checkAttempts++;
+                    if (typeof pdfjsLib === 'undefined' && checkAttempts >= maxAttempts) {
+                        showAlert('PDF.js library failed to load. Please refresh the page.', 'error');
+                    } else if (typeof PDFLib === 'undefined' && checkAttempts >= maxAttempts) {
+                        showAlert('PDFLib.js library failed to load. Please refresh the page.', 'error');
+                    } else if (checkAttempts < maxAttempts && (typeof pdfjsLib === 'undefined' || typeof PDFLib === 'undefined')) {
+                        setTimeout(checkLibraries, 1000);
+                    }
+                };
+                setTimeout(checkLibraries, 1000);
+            });
+        } else {
+            // DOM is already loaded
+            initializeEventListeners();
+        }
+
+        // Backup initialization after a short delay
+        setTimeout(() => {
+            if (!fileInput || !uploadArea) {
+                debug('Backup initialization triggered');
+                initializeEventListeners();
+            }
+        }, 100);
+    </script>
+</body>
+</html>
