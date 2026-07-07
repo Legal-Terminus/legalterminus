@@ -114,16 +114,22 @@ const PdfTools = () => {
   // anchoring for the duration this page is mounted stops that jump at the
   // source (no visible flick to the footer), and we pin the view to the top.
   useLayoutEffect(() => {
-    const html = document.documentElement
-    const prevAnchor = html.style.overflowAnchor
-    // Disable anchoring BEFORE the browser paints this mount, so inserting the
-    // hero above the footer never shifts the scroll position.
-    html.style.overflowAnchor = 'none'
-    window.scrollTo(0, 0)
-    const raf = requestAnimationFrame(() => window.scrollTo(0, 0))
+    // This site scrolls on <body> (body is the overflow container), so a plain
+    // window.scrollTo — used by the app's global ScrollManager — is a no-op on
+    // this route and the previous page's scroll position carries over, landing
+    // you on the footer. Reset EVERY possible scroll container to the top.
+    const toTop = () => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+      if (document.scrollingElement) document.scrollingElement.scrollTop = 0
+    }
+    toTop()
+    const raf = requestAnimationFrame(toTop)
+    const timer = setTimeout(toTop, 60)
     return () => {
       cancelAnimationFrame(raf)
-      html.style.overflowAnchor = prevAnchor
+      clearTimeout(timer)
     }
   }, [])
 

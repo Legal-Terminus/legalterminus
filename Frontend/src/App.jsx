@@ -9,6 +9,10 @@ import RouteLoaderWrapper from "./Components/PageLoader/RouteLoaderWrapper";
 import FloatIcon from "./Components/FloatIcon/FloatIcon";
 import LazyServiceFooterSections from "./Components/LazyServiceFooterSections/LazyServiceFooterSections";
 import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
+// Eager-loaded (not lazy) so its hero is in the DOM the instant we navigate —
+// this prevents the empty-route gap where the footer would sit at the top and
+// the browser would scroll-anchor down to it.
+import PdfTools from "./Pages/PdfTools/PdfTools";
 
 const MyProfile = lazy(() => import("./Pages/MyProfile/MyProfile"));
 const PaymentResult = lazy(() => import("./Pages/PaymentResult/PaymentResult"));
@@ -91,7 +95,6 @@ const CompanyRegistrationOdisha = lazy(() => import("./Pages/CompanyRegistration
 const CompanyRegistrationLanding = lazy(() => import("./Pages/CompanyRegistrationLanding/CompanyRegistrationLanding"));
 const TrademarkLanding = lazy(() => import("./Pages/TrademarkLanding/TrademarkLanding"));
 const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
-const PdfTools = lazy(() => import("./Pages/PdfTools/PdfTools"));
 
 // Store scroll positions keyed by location.key
 const scrollPositions = {};
