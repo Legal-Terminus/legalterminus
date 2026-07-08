@@ -204,6 +204,17 @@ export async function getMatter(taskId: string): Promise<Record<string, unknown>
   return body;
 }
 
+/** Read a matter AS a given role (applies that role's projection). Returns
+ *  `{ status, body }` so callers can assert both HTTP status and payload. */
+export async function getMatterAs(role: RoleKey, taskId: string): Promise<{ status: number; body: Record<string, unknown> | null }> {
+  const api = await apiAs(role);
+  const res = await api.get(`/api/tasks/${taskId}`);
+  const status = res.status();
+  const body = res.ok() ? await res.json() : null;
+  await api.dispose();
+  return { status, body };
+}
+
 /* ── Workflow DISCOVERY (no hardcoded steps — workflows are editable) ──────────
  * Tests must derive structure from the LIVE definition, never assume step numbers
  * or types. These helpers fetch the matter's pinned definition and answer generic
@@ -441,6 +452,43 @@ export async function createThrowawayDefinition(): Promise<string> {
   if (!res.ok()) throw new Error(`createThrowawayDefinition failed: ${res.status()} ${await res.text()}`);
   await api.dispose();
   return id;
+}
+
+/**
+ * #90: create a matter whose FIRST (active) step is an ADMIN-APPROVAL step
+ * (`assignedRole: 'admin'`). Builds a dedicated throwaway definition bound to a
+ * unique service key, then creates a paid (active) matter from it. Returns the
+ * matter id + the definition id for teardown (delete the matter, then the def).
+ */
+export async function createAdminApprovalMatter(): Promise<{ taskId: string; defId: string }> {
+  const api = await apiAs('admin');
+  const defId = `e2e-adminapprove-${Date.now()}`;
+  const serviceKey = `e2e-svc-adminapprove-${Date.now()}`;
+  const def = {
+    id: defId,
+    name: `E2E Admin Approval ${defId}`,
+    initialStep: 1,
+    serviceKeys: [serviceKey],
+    steps: [
+      // Step 1 requires ADMIN approval: assigned to the admin, uses COMPLETE_STEP.
+      { stepNumber: 1, title: 'Admin approval required', type: 'step',
+        assignedRole: 'admin', defaultAssigneeUid: env('E2E_ADMIN_UID'), clientVisible: true,
+        transitions: [{ event: 'COMPLETE_STEP', to: 2 }] },
+      { stepNumber: 2, title: 'Done', type: 'final' },
+    ],
+  };
+  const dres = await api.post('/api/workflow-definitions', { data: def });
+  if (!dres.ok()) throw new Error(`createAdminApprovalMatter def failed: ${dres.status()} ${await dres.text()}`);
+  const tres = await api.post('/api/tasks', {
+    data: {
+      clientUid: env('E2E_CLIENT_UID'), serviceKey,
+      paymentStatus: 'fully_paid', totalCost: 10000, amountReceived: 10000, paymentMode: 'E2E',
+    },
+  });
+  if (!tres.ok()) throw new Error(`createAdminApprovalMatter task failed: ${tres.status()} ${await tres.text()}`);
+  const taskId = (await tres.json()).id as string;
+  await api.dispose();
+  return { taskId, defId };
 }
 
 /** Delete a workflow definition by id (admin). Best-effort teardown. */

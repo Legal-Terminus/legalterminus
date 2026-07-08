@@ -1251,7 +1251,11 @@ function StepHeroPanel({
 }) {
   const events = new Set((step.transitions ?? []).map((t) => t.event));
   const spin = <Loader2 className="w-4 h-4 animate-spin" />;
-  const isClientStep = events.has('CLIENT_APPROVE');
+  // #90: an admin-approval step (assignedRole === 'admin') is admin-only to act on.
+  // Clients never see it (hidden server-side); a manager/team member may VIEW it but
+  // gets no approve/complete control — only an admin does.
+  const isAdminApprovalStep = step.assignedRole === 'admin';
+  const isClientStep = events.has('CLIENT_APPROVE') && !isAdminApprovalStep;
   const isGovtStep = events.has('GOVT_APPROVE');
   const ownerName = assignment?.staff.find((u) => u.uid === currentAssignee);
   // Prefer the staff-list object's name (admins/managers), else the server-resolved
@@ -1263,7 +1267,11 @@ function StepHeroPanel({
   // an explicit override-complete (mirrors the backend gate). An UNASSIGNED step
   // stays completable by any permitted staff (nobody to gate against yet).
   const isAssignee = !!role.uid && currentAssignee === role.uid;
-  const canComplete = role.isClient ? false : (!currentAssignee || isAssignee || role.isAdmin);
+  // #90: on an admin-approval step, only an admin may complete — a manager/team
+  // member is view-only regardless of assignment.
+  const canComplete = role.isClient ? false
+    : isAdminApprovalStep ? !!role.isAdmin
+    : (!currentAssignee || isAssignee || role.isAdmin);
   const completeIsOverride = role.isAdmin && !!currentAssignee && !isAssignee;
   const assignedToOther = !!currentAssignee && !isAssignee && !role.isAdmin;
 
@@ -1329,6 +1337,32 @@ function StepHeroPanel({
     } else if (assignedToOther) {
       wait = <AssignedToOtherNote assignee={assigneeLabel} />;
     } else wait = <WaitNote text="Our team is processing the next step." />;
+  } else if (isAdminApprovalStep) {
+    // #90: admin-approval step — ONLY an admin acts. Fire whichever advancing event
+    // the step declares (COMPLETE_STEP or, if configured that way, CLIENT_APPROVE).
+    // Managers/team members are view-only; clients never reach here (step hidden).
+    const approveEvent = events.has('COMPLETE_STEP') ? 'COMPLETE_STEP'
+      : events.has('CLIENT_APPROVE') ? 'CLIENT_APPROVE' : null;
+    const rejectEvent = events.has('REWORK') ? 'REWORK'
+      : events.has('CLIENT_REJECT') ? 'CLIENT_REJECT' : null;
+    if (role.isAdmin && approveEvent) {
+      actions = (
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
+            <button disabled={pending} onClick={() => fire(approveEvent)} className="btn-primary disabled:opacity-50">
+              {pending ? spin : <ShieldCheck className="w-4 h-4" />} Approve
+            </button>
+            {rejectEvent && (
+              <button disabled={pending} onClick={() => fire(rejectEvent, { required: true })} className="btn-secondary disabled:opacity-50">
+                <ThumbsDown className="w-4 h-4" /> Request Changes
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    } else {
+      wait = <WaitNote text="This step requires admin approval. Only an admin can approve or complete it." />;
+    }
   } else if (isClientStep) {
     if (role.isClient) {
       actions = (
@@ -1396,6 +1430,9 @@ function StepHeroPanel({
           </div>
         </div>
       );
+    } else if (isAdminApprovalStep) {
+      // #90: a manager/team member can view but not act — admin approval required.
+      wait = <WaitNote text="This step requires admin approval. Only an admin can approve or complete it." />;
     } else if (assignedToOther) {
       wait = <AssignedToOtherNote assignee={assigneeLabel} />;
     } else wait = <WaitNote text="Our team is working on this step." />;

@@ -100,6 +100,9 @@ function projectTaskForClient(task, visibleStepNumbers = null) {
   if (Array.isArray(safe.steps)) {
     safe.steps = safe.steps
       .filter((s) => !visibleStepNumbers || visibleStepNumbers.has(s.stepNumber))
+      // #90: admin-approval steps (assignedRole === 'admin') are internal controls —
+      // never surface them to the client.
+      .filter((s) => s.assignedRole !== 'admin')
       .map((s) => {
         const copy = { ...s };
         for (const k of CLIENT_STEP_HIDDEN) delete copy[k];
@@ -1185,6 +1188,27 @@ export async function transitionTask(req, res) {
     const clientEvents = new Set(['CLIENT_APPROVE', 'CLIENT_REJECT']);
     if (!isStaff && !isAssignedTeam && !(isOwnerClient && clientEvents.has(event?.type))) {
       return res.status(403).json({ message: 'Not allowed to advance this task' });
+    }
+
+    // ── #90: ADMIN-APPROVAL steps are admin-only ─────────────────────────────
+    // A step whose active assignee role is `admin` requires admin approval: it is
+    // client-hidden (see projectTaskForClient) and ONLY an admin may approve /
+    // complete it. Managers may view but not act; a client cannot act even via the
+    // client-approve path. This gate covers ALL step-advancing events (client +
+    // completion) before any other allowance below.
+    const activeStepSnap = await taskRef.collection('steps')
+      .where('status', '==', 'active').limit(1).get();
+    const activeStepData = activeStepSnap.empty ? null : activeStepSnap.docs[0].data();
+    const isAdminApprovalStep = activeStepData?.assignedRole === 'admin';
+    const ADVANCING_EVENTS = new Set([
+      'CLIENT_APPROVE', 'CLIENT_REJECT', 'COMPLETE_STEP', 'GOVT_APPROVE', 'GOVT_REJECT',
+      'BRANCH_DECISION', 'REWORK',
+    ]);
+    if (isAdminApprovalStep && ADVANCING_EVENTS.has(event?.type) && role !== 'admin') {
+      return res.status(403).json({
+        message: 'This step requires admin approval. Only an admin can approve or complete it.',
+        code: 'ADMIN_APPROVAL_REQUIRED',
+      });
     }
 
     // Override-on-behalf-of-client: admin/manager may advance a CLIENT-owned step

@@ -77,7 +77,7 @@ split dashboard tiles.
 | E-11 | Matter Creation, Pre-Assignment, Priority & UI Platform | Phase 1 | E11-S01 – E11-S08 |
 | E-12 | Client vs Internal View Separation | Phase 1 | E12-S01 – E12-S03 |
 | E-13 | Per-Step ETAs & SLA Tracking | Phase 1 / 2 | E13-S01 – E13-S05 |
-| E-14 | Matter Detail UX — Collapsible/Resizable Panels, Header Compaction, Table Wrap & Activity History | Phase 2 | E14-S01 – E14-S05 |
+| E-14 | Matter Detail UX — Collapsible/Resizable Panels, Header Compaction, Table Wrap & Activity History | Phase 2 | E14-S01 – E14-S06 |
 | E-15 | Document Naming & Step Configuration (Visibility, Status/Notes, Descriptions) | Phase 2 | E15-S01 – E15-S04 |
 | E-16 | Comment Draft Autosave | Phase 2 | E16-S01 |
 | E-17 | Professional Assignment on Matters | Phase 2 | E17-S01 |
@@ -2550,6 +2550,28 @@ before it breaches — depends on the notification/email subsystem (E-07).
 **Backend/Frontend**:
 - `backend/src/controllers/tasks.controller.js` (`transitionTask` terminal-status guard).
 - `Portal/src/pages/tasks/TaskDetailPage.tsx` (`isAdvanceable` gate on the step hero panel).
+
+---
+
+### E14-S06 — Admin-Approval Steps: Client-Hidden, Admin-Only Action [Phase 2]
+
+**Priority**: P1 | **Complexity**: M | **Linked spec story**: US-13 | **Dependencies**: E11-S02, E12-S01
+
+**Rationale** (#90): Steps that require **admin approval** were exposed to the client (visible + a working Approve button) and completable by non-admin staff. An admin-approval step must be an internal control: the client should never see or act on it, and only an **admin** may approve/complete it — a **manager can view but not act**.
+
+**Model** (chosen: reuse assignee = admin): a step is an "admin-approval step" when its **active step's `assignedRole === 'admin'`** (declared on the definition step / phase, stamped onto the step at matter creation). No new step type or schema migration.
+
+**Acceptance Criteria**:
+- **Client-hidden**: an admin-approval step is excluded from the client projection — the client never sees it in the step list, progress tracker, or as an actionable step (regardless of any `CLIENT_APPROVE` transition it carries).
+- **Admin-only action**: completion/approval events on an admin-approval step are accepted **only** from `role === 'admin'`. A manager, team member, or client is rejected (`403 ADMIN_APPROVAL_REQUIRED`), including the client-approve path — so a client can't approve it even via the API.
+- **Manager view-only**: a manager can open the matter and SEE the admin-approval step, but the UI shows no approve/complete control for them.
+- Existing non-admin steps are unaffected (team/client/govt behaviour unchanged).
+
+**e2e**: `step-execution.spec.ts` / a dedicated case — a client cannot see or approve an admin-approval step (API 403 + not in client projection); a manager sees it but has no action (API 403); an admin can complete it.
+
+**Backend/Frontend**:
+- `backend/src/controllers/tasks.controller.js` (`transitionTask` admin-approval gate; client projection excludes `assignedRole === 'admin'` steps).
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (hide the action for non-admins on an admin-approval step).
 
 ---
 
