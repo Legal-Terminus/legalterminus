@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { createMatter, deleteMatter, getMatter, currentStep, assignStep, advanceUntil, archiveMatterAs } from './api';
+import { createMatter, deleteMatter, getMatter, currentStep, assignStep, advanceUntil, archiveMatterAs, stopMatterAs, transitionStatusAs, getDefinitionForMatter, firstPlainStep } from './api';
 
 /**
  * GitHub #41 — Stop workflow for discontinued clients. An admin can stop an
@@ -14,6 +14,11 @@ import { createMatter, deleteMatter, getMatter, currentStep, assignStep, advance
  *
  * #72 — Stop workflow now lives inside the header ⋮ actions menu, so admin flows
  * open that menu first via `openStop`.
+ *
+ * #89 — A stopped (cancelled) matter is frozen: no one (not even an admin) can
+ * advance it via the transition endpoint; the only way back is the admin-only
+ * restart. This closes the hole where a manager could complete a step and
+ * silently re-activate a stopped workflow.
  */
 let taskId: string;
 test.beforeEach(async () => { taskId = await createMatter(); });
@@ -114,4 +119,37 @@ test('completed matter can be archived; the ⋮ menu offers Archive but not Stop
   await expect(async () => {
     expect((await getMatter(taskId)).status).toBe('archived');
   }).toPass({ timeout: 15_000 });
+});
+
+test('#89: a stopped matter cannot be advanced by a manager (only admin restart)', async ({ managerPage }) => {
+  // Admin stops the matter → cancelled.
+  expect(await stopMatterAs('admin', taskId)).toBe(200);
+  expect((await getMatter(taskId)).status).toBe('cancelled');
+
+  // A manager trying to advance the stopped matter is rejected (409) — this is the
+  // bug in #89: previously the transition re-activated the workflow.
+  const status = await transitionStatusAs('manager', taskId, { type: 'COMPLETE_STEP' });
+  expect(status).toBe(409);
+  // Still cancelled — it did not silently re-activate.
+  expect((await getMatter(taskId)).status).toBe('cancelled');
+
+  // UI: the manager sees the stopped banner and NO step-action control.
+  await managerPage.goto(`tasks/${taskId}`);
+  await managerPage.getByRole('button', { name: 'Steps', exact: true }).click();
+  await expect(managerPage.getByText(/this matter was stopped/i)).toBeVisible();
+  await expect(managerPage.getByRole('button', { name: /^complete step$/i })).toHaveCount(0);
+});
+
+test('#89: even an admin cannot advance a stopped matter without restarting first', async ({ adminPage }) => {
+  const def = await getDefinitionForMatter(taskId);
+  const plain = firstPlainStep(def);
+  test.skip(!plain, 'No plain step.');
+
+  expect(await stopMatterAs('admin', taskId)).toBe(200);
+  // The transition endpoint refuses (409) regardless of role — the only path back
+  // is the admin-only restart endpoint (covered by the restart test above).
+  expect(await transitionStatusAs('admin', taskId, { type: 'COMPLETE_STEP' })).toBe(409);
+  expect((await getMatter(taskId)).status).toBe('cancelled');
+
+  void adminPage;
 });

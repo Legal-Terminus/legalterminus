@@ -77,7 +77,7 @@ split dashboard tiles.
 | E-11 | Matter Creation, Pre-Assignment, Priority & UI Platform | Phase 1 | E11-S01 – E11-S08 |
 | E-12 | Client vs Internal View Separation | Phase 1 | E12-S01 – E12-S03 |
 | E-13 | Per-Step ETAs & SLA Tracking | Phase 1 / 2 | E13-S01 – E13-S05 |
-| E-14 | Matter Detail UX — Collapsible/Resizable Panels, Header Compaction, Table Wrap & Activity History | Phase 2 | E14-S01 – E14-S04 |
+| E-14 | Matter Detail UX — Collapsible/Resizable Panels, Header Compaction, Table Wrap & Activity History | Phase 2 | E14-S01 – E14-S05 |
 | E-15 | Document Naming & Step Configuration (Visibility, Status/Notes, Descriptions) | Phase 2 | E15-S01 – E15-S04 |
 | E-16 | Comment Draft Autosave | Phase 2 | E16-S01 |
 | E-17 | Professional Assignment on Matters | Phase 2 | E17-S01 |
@@ -2530,6 +2530,26 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 **Frontend screens/components**:
 - `Portal/src/pages/tasks/TaskDetailPage.tsx` (`MatterActionsMenu` `canStop` flag + status gate).
+
+---
+
+### E14-S05 — Stopped Matters Are Frozen: Restart Is Admin-Only [Phase 2]
+
+**Priority**: P1 | **Complexity**: S | **Linked spec story**: US-2 | **Dependencies**: E14-S01
+
+**Rationale** (#89): When an admin **stops** a workflow it becomes `cancelled`. Restart is already admin-only (`restartTask`), but the **transition endpoint had no status guard** — so any staff member (e.g. a manager) could complete a step on a cancelled matter, which silently **re-activated** it, bypassing the admin-only restart. Stopped work must stay stopped until an admin explicitly restarts it.
+
+**Acceptance Criteria**:
+- A `cancelled` (admin-stopped) matter **cannot be advanced** by anyone via `POST /api/tasks/:id/transition` — the backend rejects it (`409 MATTER_NOT_ACTIVE`, message "This matter was stopped. Only an admin can restart it.").
+- The same freeze applies to other terminal states (`completed`, `rejected`, `archived`).
+- The **only** way to reactivate a cancelled matter remains the admin-only restart (`restartTask`), unchanged.
+- **UI**: the current-step action panel (Complete Step / approve / etc.) is **not shown** on a non-advanceable matter (only `active`/`pending` show it), so a non-admin never sees a way to move a stopped matter forward.
+
+**e2e**: `stop-workflow.spec.ts` (a stopped matter can't be advanced by a manager — API 409 + no Complete Step control; only an admin can restart).
+
+**Backend/Frontend**:
+- `backend/src/controllers/tasks.controller.js` (`transitionTask` terminal-status guard).
+- `Portal/src/pages/tasks/TaskDetailPage.tsx` (`isAdvanceable` gate on the step hero panel).
 
 ---
 

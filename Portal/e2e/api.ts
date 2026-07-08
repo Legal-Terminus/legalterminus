@@ -250,6 +250,26 @@ export async function transition(role: 'admin' | 'manager', taskId: string, even
   return body;
 }
 
+/** Fire a transition as a role and return the HTTP status (does NOT throw on
+ *  non-2xx). For asserting that a move is rejected, e.g. #89 (a stopped matter
+ *  can't be advanced → 409). */
+export async function transitionStatusAs(role: RoleKey, taskId: string, event: Record<string, unknown>): Promise<number> {
+  const api = await apiAs(role);
+  const res = await api.post(`/api/tasks/${taskId}/transition`, { data: { event } });
+  const status = res.status();
+  await api.dispose();
+  return status;
+}
+
+/** Stop (cancel) a matter via the API (admin-only endpoint). Returns HTTP status. */
+export async function stopMatterAs(role: RoleKey, taskId: string, reason = 'E2E stop'): Promise<number> {
+  const api = await apiAs(role);
+  const res = await api.post(`/api/tasks/${taskId}/stop`, { data: { reason } });
+  const status = res.status();
+  await api.dispose();
+  return status;
+}
+
 /** Advance a matter generically, driven by the LIVE definition (no hardcoded
  *  steps). At each step: payment_gate → ADMIN_OVERRIDE_PAYMENT; a step with a
  *  COMPLETE_STEP transition → COMPLETE_STEP. Stops at `targetStepNumber` (if

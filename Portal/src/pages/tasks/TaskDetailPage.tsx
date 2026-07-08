@@ -771,7 +771,11 @@ function StepsTab({
   // The HERO panel — the one dominant zone: action (left) + meta (right) inside a
   // single elevated, bordered container, so the rail clearly belongs to the step.
   const currentStepUrgent = steps.find((s) => s.stepNumber === task.currentStepNumber)?.isUrgent ?? false;
-  const hero = !completed && currentDef ? (
+  // #89: only an ACTIVE (or pending-approval) matter is advanceable. A stopped
+  // (cancelled), rejected or archived matter must NOT show the step-action panel,
+  // or a non-admin could complete a step and silently re-activate the workflow.
+  const isAdvanceable = task.status === 'active' || task.status === 'pending';
+  const hero = !completed && isAdvanceable && currentDef ? (
     <StepHeroPanel
       taskId={task.id} step={currentDef} role={role} pending={pending} turn={currentTurn}
       onEvent={onEvent} assignment={assignment} currentAssignee={currentAssignee}

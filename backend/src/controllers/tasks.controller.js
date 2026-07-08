@@ -1151,6 +1151,22 @@ export async function transitionTask(req, res) {
     if (!taskSnap.exists) return res.status(404).json({ message: 'Task not found' });
     const task = taskSnap.data();
 
+    // ── #89: a stopped/terminal matter can't be advanced by anyone ───────────
+    // When an admin STOPS a workflow it becomes `cancelled`. Previously any staff
+    // member could still fire a step event (e.g. a manager completing a step),
+    // which silently re-activated the matter — bypassing the admin-only restart.
+    // Terminal matters are frozen: the ONLY way to reactivate a cancelled matter
+    // is the admin-only restart endpoint (`restartTask`). completed/rejected/
+    // archived are likewise not advanceable.
+    if (['cancelled', 'rejected', 'archived', 'completed'].includes(task.status)) {
+      return res.status(409).json({
+        message: task.status === 'cancelled'
+          ? 'This matter was stopped. Only an admin can restart it.'
+          : `This matter is ${task.status} and cannot be advanced.`,
+        code: 'MATTER_NOT_ACTIVE',
+      });
+    }
+
     // Authorization: admin/manager always; team_member if assigned the MATTER or
     // the CURRENT ACTIVE STEP; clients only their own client-facing approval events.
     // Step-level assignment matters for steps a team member owns without being the
