@@ -8,9 +8,6 @@ import ReportFiltersBar from '../../components/reports/ReportFiltersBar';
 import DataGrid from '../../components/common/DataGrid';
 import { taskReportColumns, taskReportGlobalFilter } from './reportColumns';
 
-const STATUS_OPTIONS = ['', 'pending', 'active', 'completed', 'cancelled', 'on_hold', 'pending_admin_approval', 'rejected'];
-const PAYMENT_OPTIONS = ['', 'not_paid', 'part_paid', 'fully_paid'];
-
 export default function AllTasksReport() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<ReportFilters>({});
@@ -27,34 +24,9 @@ export default function AllTasksReport() {
         <h1 className="text-xl font-semibold text-ink">All Matters</h1>
       </div>
 
-      <ReportFiltersBar
-        filters={filters}
-        onChange={setFilters}
-        extraFields={
-          <>
-            <div className="flex flex-col gap-0.5">
-              <label className="text-xs text-gray-500">Status</label>
-              <select
-                value={filters.status ?? ''}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value || undefined })}
-                className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
-              >
-                {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s || 'All'}</option>)}
-              </select>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <label className="text-xs text-gray-500">Payment</label>
-              <select
-                value={filters.paymentStatus ?? ''}
-                onChange={(e) => setFilters({ ...filters, paymentStatus: (e.target.value as ReportFilters['paymentStatus']) || undefined })}
-                className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
-              >
-                {PAYMENT_OPTIONS.map((s) => <option key={s} value={s}>{s || 'All'}</option>)}
-              </select>
-            </div>
-          </>
-        }
-      />
+      {/* #91: Status / Service / Payment / date filters are built into the bar and
+          combine with AND; the search box composes on top for client/assignee. */}
+      <ReportFiltersBar filters={filters} onChange={setFilters} />
 
       <div className="mt-4">
         <DataGrid<Task>

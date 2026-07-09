@@ -49,7 +49,7 @@ export default function PendingTasksReport() {
         <h1 className="text-xl font-semibold text-ink">Pending Matters</h1>
       </div>
 
-      <ReportFiltersBar filters={filters} onChange={setFilters} />
+      <ReportFiltersBar filters={filters} onChange={setFilters} criteria={{ status: false }} />
 
       {isLoading && <LoadingSpinner />}
       {isError && <p className="text-red-600 text-sm mt-4">Failed to load report.</p>}

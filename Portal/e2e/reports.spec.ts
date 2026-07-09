@@ -42,6 +42,54 @@ test('All Tasks report shows a real matter row and search filters it', async ({ 
   } finally { await deleteMatter(taskId); }
 });
 
+test('#91: All Tasks supports multiple filter criteria combined with AND', async ({ adminPage }) => {
+  const taskId = await createMatter(); // active, fully-paid incorporation matter
+  try {
+    await adminPage.goto('reports/all-tasks');
+    await expect(adminPage.getByRole('heading', { name: 'All Matters' })).toBeVisible();
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+
+    const statusFilter = adminPage.getByLabel('Filter by status');
+    const serviceFilter = adminPage.getByLabel('Filter by service');
+
+    // A NON-matching status hides the (active) matter.
+    await statusFilter.selectOption('completed');
+    await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
+
+    // Matching status brings it back…
+    await statusFilter.selectOption('active');
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+
+    // …AND a second criterion that does NOT match removes it again (AND semantics).
+    // Pick some service option other than the matter's; if only one exists, skip.
+    const serviceValues = await serviceFilter.locator('option').evaluateAll(
+      (opts) => (opts as HTMLOptionElement[]).map((o) => o.value).filter(Boolean),
+    );
+    test.skip(serviceValues.length < 2, 'Need ≥2 services to prove AND across two criteria.');
+    const otherService = serviceValues.find((v) => !/incorpor/i.test(v))!;
+    await serviceFilter.selectOption(otherService);
+    await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
+
+    // Clear resets every criterion → the row is back.
+    await adminPage.getByRole('button', { name: 'Clear' }).click();
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#91: the free-text search composes on top of the structured filters', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto('reports/all-tasks');
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+
+    // Structured: status = active (matches). Then search a non-matching client → gone.
+    await adminPage.getByLabel('Filter by status').selectOption('active');
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+    await adminPage.getByPlaceholder(/search by client/i).fill('zzz-no-such-client');
+    await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
+  } finally { await deleteMatter(taskId); }
+});
+
 test('Master Sheet report renders rows for the client', async ({ adminPage }) => {
   const taskId = await createMatter();
   try {

@@ -2764,6 +2764,29 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 ---
 
+### E18-S07 — Multiple-Criteria Report Filtering [Phase 2]
+
+**Priority**: P2 | **Complexity**: S | **Linked spec story**: US-7 | **Dependencies**: E18-S01, E18-S06
+
+**Rationale** (#91): The report search allowed only a single free-text value at a time, so a user couldn't narrow by more than one condition (e.g. "this client AND active only"). Users need to combine criteria — Client + Status, Client + Service, Service + Status — and see results satisfying **all** of them.
+
+**Design**: reuse the existing structured `ReportFilters` (already AND-combined server-side via chained Firestore `.where()`), surfaced through the shared `ReportFiltersBar`. Structured criteria (**Status**, **Service Type**, **Payment**, date range) combine with logical **AND**; the existing free-text **search box** composes on top (client-name / assignee / reason contains-search within the filtered set). No backend change — the query params were already supported.
+
+**Acceptance Criteria**:
+- The report filter bar exposes **Status**, **Service Type**, and **Payment** selectors (plus the existing date range), all applied together as **AND**.
+- Combining criteria works: e.g. Status=Active + Service=Incorporation returns only active incorporation matters; adding a client name in the search box narrows further.
+- **Clear** resets every criterion at once; it is disabled when no filter is set.
+- Reports whose status is intrinsic (Completed, Pending) omit the redundant Status selector but keep Service/Payment/date.
+- Applied consistently across the reports that use the bar (Master Sheet, All / Pending / Completed Matters). No duplicate per-report filter controls remain.
+- Purely a filtering/UX change — report data, columns and export are unchanged.
+
+**e2e**: `reports.spec.ts` — selecting Status + Service together returns only rows matching BOTH; the free-text box further narrows; Clear resets.
+
+**Frontend**:
+- `Portal/src/components/reports/ReportFiltersBar.tsx` (built-in Status/Service/Payment criteria + `criteria` prop), `MasterSheetReport.tsx` / `AllTasksReport.tsx` / `PendingTasksReport.tsx` / `CompletedTasksReport.tsx` (drop duplicated inline filters).
+
+---
+
 ## APPENDIX A — Infrastructure & Build System (Updated 2026-06-01)
 
 ### NPM Run Commands Standardization

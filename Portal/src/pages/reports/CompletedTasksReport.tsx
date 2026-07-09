@@ -24,7 +24,7 @@ export default function CompletedTasksReport() {
         <h1 className="text-xl font-semibold text-ink">Completed Matters</h1>
       </div>
 
-      <ReportFiltersBar filters={filters} onChange={setFilters} />
+      <ReportFiltersBar filters={filters} onChange={setFilters} criteria={{ status: false }} />
 
       <div className="mt-4">
         <DataGrid<Task>

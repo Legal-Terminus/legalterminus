@@ -30,9 +30,14 @@ test('E03-S06: a comment on Complete Step appears in the activity feed', async (
     await adminPage.getByPlaceholder(/add a comment/i).first().fill(comment);
     await completeBtn.first().click();
 
-    // The comment is recorded and surfaces in the Activity feed. The feed can sit
-    // in a sticky sidebar that's off-viewport at test size, so assert it's present
-    // in the DOM (recorded) rather than in-viewport visible.
+    // Completing advances the matter, so the comment is now on a PREVIOUS step. The
+    // Activity feed defaults to the current step (#73), so reveal earlier steps.
+    const showPrev = adminPage.getByRole('button', { name: /show previous steps/i });
+    await expect(showPrev.first()).toBeVisible({ timeout: 15_000 });
+    await showPrev.first().click();
+
+    // The comment is recorded and surfaces in the activity history (feed can sit in
+    // an off-viewport sticky rail, so assert it's attached to the DOM).
     await expect(adminPage.getByText(comment).first()).toBeAttached({ timeout: 15_000 });
   } finally { await deleteMatter(taskId); }
 });
