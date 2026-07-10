@@ -266,10 +266,13 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
             <span className="w-28 text-center">Client-visible</span>
           </div>
           <div className="card divide-y divide-hairline">
-            {serverSteps.map((s) => (
+            {serverSteps.map((s, i) => (
               <div key={s.stepNumber} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-4">
                 <span className="flex-1 text-sm text-ink min-w-0 truncate">
-                  <span className="text-ink-faint mr-1.5">{s.stepNumber}.</span>{s.title}
+                  {/* #66: display a continuous 1,2,3… sequence by list position. The
+                      stored stepNumber is the internal identity and CAN have gaps
+                      (deleted steps) — never surface it to the user. */}
+                  <span className="text-ink-faint mr-1.5">{i + 1}.</span>{s.title}
                 </span>
                 <select
                   className="input-field py-1.5 text-sm sm:w-[200px] shrink-0"

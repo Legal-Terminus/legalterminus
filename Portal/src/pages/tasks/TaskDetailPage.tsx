@@ -239,7 +239,14 @@ export default function TaskDetailPage() {
 
   const total = task.totalSteps ?? task.steps?.length ?? 0;
   const completed = task.status === 'completed';
-  const progressLabel = completed ? `Completed · ${total} of ${total}` : `Step ${task.currentStepNumber} of ${total}`;
+  // #66: show the current step by its 1,2,3… display POSITION, not the raw
+  // stepNumber (which can have gaps from deleted steps). Same position rule the
+  // step list uses (displayNumberOf, #55) — just applied to the subtitle too.
+  const orderedNums = [...(task.steps ?? [])].sort((a, b) => a.stepNumber - b.stepNumber).map((s) => s.stepNumber);
+  const currentDisplayNum = orderedNums.indexOf(task.currentStepNumber) + 1;
+  const progressLabel = completed
+    ? `Completed · ${total} of ${total}`
+    : `Step ${currentDisplayNum > 0 ? currentDisplayNum : task.currentStepNumber} of ${total}`;
   const stepDefs = definition?.steps ?? [];
   const currentDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber);
 
@@ -1135,6 +1142,11 @@ function ActivityThreadCard({ events, flush, definition, currentStep }: { events
   const titleByNum = new Map((definition?.steps ?? []).map((s) => [s.stepNumber, s.title]));
   const phaseNameById = new Map((definition?.phases ?? []).map((p) => [p.id, p.name]));
   const phaseByNum = new Map((definition?.steps ?? []).map((s) => [s.stepNumber, s.phaseId ? phaseNameById.get(s.phaseId) : undefined]));
+  // #66: stepNumber → continuous display position (1,2,3…), so the activity
+  // header matches the gap-free numbering shown everywhere else. Ordered by the
+  // definition's step sequence; raw stepNumber stays the internal identity.
+  const orderedDefNums = [...(definition?.steps ?? [])].sort((a, b) => a.stepNumber - b.stepNumber).map((s) => s.stepNumber);
+  const displayNumOf = (n: number) => { const i = orderedDefNums.indexOf(n); return i >= 0 ? i + 1 : n; };
   // The step acted upon is where the action was taken (fromStep); fall back to toStep.
   const stepOf = (e: TaskEvent) => e.fromStep ?? e.toStep ?? null;
 
@@ -1165,7 +1177,7 @@ function ActivityThreadCard({ events, flush, definition, currentStep }: { events
     return (
       <div key={n} className="space-y-3.5">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-          {phase ? `${phase} · ` : ''}Step {n}{title ? ` · ${title}` : ''}
+          {phase ? `${phase} · ` : ''}Step {displayNumOf(n)}{title ? ` · ${title}` : ''}
         </p>
         {list.map((e, i) => <ActivityRow key={`${n}-${i}`} e={e} />)}
       </div>

@@ -30,6 +30,36 @@ test('Step Settings editor shows assignee + ETA + client-visible per step', asyn
   await expect(adminPage.getByLabel(/Step \d+ client-visible/).first()).toBeVisible();
 });
 
+test('#66: Step Settings numbers the steps continuously (1,2,3…), not by gapped stepNumber', async ({ adminPage }) => {
+  await adminPage.goto(`services/${serviceKey}`);
+  await expect(adminPage.getByRole('button', { name: /Step Settings/ })).toBeVisible();
+
+  // The definition's stepNumbers are sparse (deleted steps leave gaps). Prove the
+  // UI shows a gap-free sequence by reading the leading "N." on each visible row.
+  // Each row's assignee <select> is uniquely present per step, so its count == step
+  // count; the number prefixes live in the sibling title span.
+  const selects = adminPage.getByLabel(/Step \d+ assignee/);
+  const count = await selects.count();
+  expect(count).toBeGreaterThan(5);
+
+  // Collect the visible leading numbers from the rendered step labels.
+  const labels = await adminPage.locator('span.text-ink-faint', { hasText: /^\d+\.$/ }).allInnerTexts();
+  const nums = labels.map((t) => parseInt(t, 10)).filter((n) => !Number.isNaN(n));
+  expect(nums.length).toBe(count);
+  // Must be exactly 1,2,3,…,count — continuous, no gaps, no skips.
+  expect(nums).toEqual(Array.from({ length: count }, (_, i) => i + 1));
+
+  // And the underlying identity is NOT renumbered: the aria-labels still carry the
+  // real (possibly gapped) stepNumbers, so at least one exceeds its display position.
+  const ariaNums: number[] = [];
+  for (let i = 0; i < count; i++) {
+    const al = await selects.nth(i).getAttribute('aria-label');
+    const m = al?.match(/Step (\d+) assignee/);
+    if (m) ariaNums.push(parseInt(m[1], 10));
+  }
+  expect(Math.max(...ariaNums)).toBeGreaterThanOrEqual(count); // gaps preserved in identity
+});
+
 test('team member can view Step Settings but not save', async ({ teamPage }) => {
   await teamPage.goto(`services/${serviceKey}`);
   await expect(teamPage.getByRole('button', { name: /Step Settings/ })).toBeVisible();

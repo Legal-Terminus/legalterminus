@@ -159,7 +159,11 @@ function buildWorkColumns(navigate: (to: string) => void) {
         return <span className={`badge ${DUE_BADGE_CLASS[info.tone]}`}>{info.label}</span>;
       },
     }),
-    wc.accessor('stepNumber', { header: 'Step #', size: 90, cell: (ctx) => <span className="badge bg-brand-50 text-brand-700">#{ctx.getValue()}</span> }),
+    // #66: the raw step-doc number badge was removed — in a cross-matter queue a
+    // bare "#20" implies a sequence position it isn't (stepNumber is an internal
+    // identity with gaps). The "Step" column above already names the step; a
+    // meaningful 1..N position would need each matter's ordered step list (extra
+    // per-row reads), which isn't worth it for this secondary surface.
     wc.accessor('bucket', {
       header: 'Queue',
       size: 150,
@@ -207,7 +211,7 @@ function StepCard({ row, navigate }: { row: MyStepRow; navigate: (to: string) =>
         <p className="text-sm font-semibold text-ink truncate">{row.stepTitle}</p>
         {row.isUrgent && <span className="badge bg-red-50 text-red-600 inline-flex items-center gap-1"><Flame className="w-3 h-3" fill="currentColor" /> Urgent</span>}
         {(() => { const info = dueInfo(row.dueAt); return info.tone !== 'none' && (info.tone === 'overdue' || info.tone === 'today' || info.tone === 'soon') ? <span className={`badge ${DUE_BADGE_CLASS[info.tone]}`}>{info.label}</span> : null; })()}
-        <span className="badge bg-brand-50 text-brand-700">#{row.stepNumber}</span>
+        {/* #66: raw step-number badge removed here too (see columns def). */}
         {row.bucket === 'assigned'
           ? <span className="badge bg-emerald-50 text-emerald-700">Mine</span>
           : <span className="badge bg-surface-card text-ink-muted">Available</span>}
