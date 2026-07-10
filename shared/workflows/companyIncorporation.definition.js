@@ -109,7 +109,11 @@ export const companyIncorporationDefinition = {
     step(17, 'Resubmission — Approval', { phaseId: 'name_reservation', transitions: next(18) }),
     step(18, 'Resubmission — Signature of client if required', { phaseId: 'name_reservation', transitions: next(19) }),
     step(19, 'Resubmit of Name reservation', { phaseId: 'name_reservation', cv: true, transitions: next(13) }),
-    step(20, 'Name Approval Letter Received (Department)', { phaseId: 'name_reservation', cv: true, transitions: next(22) }),
+    // #76: on completion, remind the client to clear any outstanding part payment
+    // (in-app + email). Configurable — move this effect to a different step to
+    // re-time the reminder; it only fires while the matter is still part-paid.
+    step(20, 'Name Approval Letter Received (Department)', { phaseId: 'name_reservation', cv: true,
+      effects: ['REMIND_PART_PAYMENT'], transitions: next(22) }),
 
     // ── Documentation ──
     // #54: "Part Payment Due" removed as a step — part-payment is surfaced as a

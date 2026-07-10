@@ -1477,6 +1477,19 @@ export async function transitionTask(req, res) {
           message: `A resubmission has been raised by the department for ${ctx}${branchTxt}. Our team will reach out with the details.`,
           taskId });
       }
+      // #76: configurable part-payment reminder. When a step carrying
+      // REMIND_PART_PAYMENT completes AND the matter is still only part-paid,
+      // push the client an in-app + email reminder to clear the balance. Which
+      // step triggers this is data (the effect on the definition step), so it is
+      // per-workflow configurable via the editor — not hardcoded to a step number.
+      // A fully-paid matter passing the step gets nothing (the guard), matching
+      // "continue until the remaining payment is received."
+      if (effects.includes('REMIND_PART_PAYMENT') && task.paymentStatus === 'part_paid') {
+        await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'warning',
+          title: 'Payment reminder',
+          message: `Please make the remaining payment for ${ctx} so we can proceed with completion and filing.${task.amountDue ? ` Balance due: ₹${task.amountDue}.` : ''}`,
+          taskId });
+      }
     } catch (e) {
       logger.warn({ err: e?.message }, 'transitionTask: notification step failed');
     }
