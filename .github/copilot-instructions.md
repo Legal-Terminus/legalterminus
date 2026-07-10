@@ -1,6 +1,6 @@
 # Legal Terminus - Copilot & BMad Instructions
 
-> **Single Source of Truth** — Copilot chats and BMad agents read this file for all project rules and workflows. All updates happen here.
+> **Ownership** — this file holds **rules and workflows** only. Story/sprint **status** lives in `_bmad-output/planning-artifacts/epics.md`, **design** in `_bmad-output/planning-artifacts/architecture.md`, **requirements** in `spec.md`. Never copy their content into this file — copies rot; link instead. Copilot chats and BMad agents read this file for all project rules.
 
 ---
 
@@ -9,7 +9,7 @@
 **CRITICAL: Before declaring ANY task complete:**
 
 - [ ] Code implemented and tested locally
-- [ ] All files committed to feature branch
+- [ ] All files committed to `main`
 - [ ] **Epic story status updated:** `_bmad-output/planning-artifacts/epics.md` (mark ✅ Completed, 🔄 In Progress, or ⏳ Not Started)
 - [ ] **Requirements updated if changed:** `spec.md` (user stories, workflows, Firestore schema, roles/permissions)
 - [ ] **Technical decisions documented:** `_bmad-output/planning-artifacts/architecture.md` (service layers, components, database changes, integrations)
@@ -18,22 +18,28 @@
 - [ ] **Playwright suite updated for the feature** — added/updated the matching spec in `Portal/e2e/` (+ `seed-e2e.js` fixtures if new state is needed) and it passes. See "🧪 TESTING WITH PLAYWRIGHT". Tests are part of "done", not a follow-up.
 - [ ] Backend/Frontend/Portal are all in sync if applicable
 
-**Key Rule:** Every commit must reference the related epic/story ID (e.g., "E01-S02: Implement Google Sign-In")
+**Key Rule:** Commits use Conventional Commits format — `type(scope): description (#issue)` (e.g., `feat(reports): multiple-criteria filtering in the report bar (#91)`). Reference the GitHub issue number in the subject; put the epic/story ID (e.g., `E01-S02`) in the body when the work is story-related.
 
 ---
 
 ## 📂 Key File Locations
 
 ```
-/Users/ankygoyal/Documents/git/legalterminus/Legal-Terminus/
+<repo root>/
 ├── _bmad-output/planning-artifacts/
 │   ├── epics.md              ← Story status + implementation notes
 │   └── architecture.md       ← Technical design decisions
 ├── spec.md                  ← Feature specifications + workflows
 ├── docs/
 │   └── constitution.md      ← Core principles (reference only)
+├── shared/
+│   └── workflows/           ← Workflow definitions, compiler, registry
+│       ├── companyIncorporation.definition.js  ← Incorporation workflow (seeded via db:seed:workflows)
+│       ├── compileDefinition.js / registry.js / definitionSchema.js
+│       └── stepList.js
 ├── Portal/                  ← Main app (Vite + React + TypeScript)
 │   ├── src/
+│   ├── e2e/                 ← Playwright suite
 │   └── .env.local           ← Local dev secrets (not committed)
 ├── backend/                 ← Node.js/Express API (port 5001)
 │   ├── src/
@@ -54,6 +60,17 @@
 - **Active (Maintained):** Portal (admin panel), Backend (API), Frontend (marketing site)
 - **Inactive/Deprecated:** AdminPannel/, ClientPannel/, EmployeePannel/ (do not modify)
 
+### ⚠️ Vocabulary: UI labels vs code terms
+The UI and the code use DIFFERENT words for the same concepts. Never mix them up when searching code or naming things:
+
+| UI / user-facing label | Code / Firestore term |
+|------------------------|------------------------|
+| **Matter** | `task` (Firestore `tasks` collection) |
+| **Service** | `workflowDefinition` |
+| **Task** (a step in a matter) | `step` |
+
+New code keeps the existing code terms; new UI copy uses the UI labels.
+
 ---
 
 ## 🚀 Common Workflows
@@ -67,7 +84,7 @@
 6. ✅ Update `epics.md` story with acceptance criteria + implementation notes
 7. ✅ Document in `architecture.md` if flow is complex
 8. ✅ Test both scenarios: new signup + existing user merge
-9. ✅ Create feature branch + PR with epic/story reference
+9. ✅ Commit to `main` referencing the issue + comment on and close the issue
 
 ### When adding a new Report or Admin feature:
 1. ✅ Create backend controller endpoint (`backend/src/controllers/`)
@@ -79,7 +96,7 @@
 7. ✅ Update `spec.md` with new fields or workflow changes
 8. ✅ Update `epics.md` story with acceptance criteria + file paths
 9. ✅ Test CSV export if applicable + mobile responsiveness
-10. ✅ Create feature branch + PR
+10. ✅ Commit to `main` referencing the issue + comment on and close the issue
 
 ### When adding a route or changing who can access a page:
 **⚠️ Access control is declarative and lives in ONE place: `Portal/src/routes/appRoutes.tsx` (`APP_ROUTES`). URLs are ROLE-NEUTRAL.**
@@ -101,22 +118,23 @@
 6. ✅ Document service in `architecture.md` → Service Layer section
 7. ✅ Test all entry points still work (e.g., team-members, clients, auth)
 8. ✅ Update `epics.md` with refactoring story
-9. ✅ Create feature branch + PR
+9. ✅ Commit to `main` referencing the issue + comment on and close the issue
 
 ### When fixing a bug:
 1. ✅ Identify root cause (document in commit message)
 2. ✅ Fix code + add inline comment explaining why
 3. ✅ Test fix locally (especially auth flows, Firestore writes, email sending)
 4. ✅ Update `epics.md` if related story needs status update
-5. ✅ Commit with `fix:` prefix + issue/story reference
-6. ✅ Create feature branch + PR
+5. ✅ Commit with `fix(scope):` prefix + issue reference
+6. ✅ Comment on and close the issue
 
-### Code Review & PR Process:
-1. **Branch naming:** `feature/story-id-description` (e.g., `feature/E01-S02-google-signin`)
-2. **Commit messages:** `[STORY-ID] Brief description` (e.g., `[E01-S02] Add Google Sign-In button`)
-3. **PR description:** Link to epic/story + key changes + testing notes
-4. **Before merge:** Verify Task Completion Checklist ✓
-5. **After merge:** Update sprint status in `epics.md`
+### Issue → Commit Workflow:
+1. **Refine the issue** (clarify scope, acceptance criteria)
+2. **Plan via BMAD** — record the story in `epics.md`
+3. **Implement + test** (including Playwright — see Task Completion Checklist)
+4. **Commit to `main`**: `type(scope): description (#issue)` — Conventional Commits; epic/story ID in the body when story-related
+5. **Comment on and close the issue** with a summary of the change
+6. **Update story status** in `epics.md`
 
 ---
 
@@ -135,7 +153,8 @@
 ### Run/Dev Commands
 | Command | Purpose | Port(s) | Working Dir |
 |---------|---------|---------|-------------|
-| `npm run dev:all` | Start all services in parallel (kills existing processes first) | 5001/5173/5174 | Root |
+| `npm run dev:all` | **Standard dev workflow — start everything** (kills existing processes first) | 5001/5173/5174 | Root |
+| `npm run dev:e2e` | Backend + portal only — used ONLY by Playwright's webServer, not for manual dev (use `dev:all` for that) | 5001/5173 | Root |
 | `npm run start:backend` | Start backend (production mode) | 5001 | Backend |
 | `npm run dev:backend` | Start backend (development mode with hot reload) | 5001 | Backend |
 | `npm run dev:portal` | Start portal admin app | 5173 | Portal |
@@ -152,24 +171,7 @@
 | Command | Purpose |
 |---------|---------|
 | `npm run cleanup:ports` | Kill processes on ports 5001, 5173, 5174 (useful if services hang) |
-
-### Quick Reference
-```bash
-# Most common dev workflow
-npm run dev:all        # Start everything (backend, portal, frontend)
-
-# Individual services
-npm run start:backend  # Backend only
-npm run dev:portal     # Portal only
-npm run dev:frontend   # Frontend only
-
-# Testing
-npm run test           # Run automated E2E tests (headless)
-npm run test:headed    # Run E2E tests with visible browser
-
-# If ports are stuck
-npm run cleanup:ports  # Kill and release ports
-```
+| `npm run db:setup` (from `backend/`) | Seed workflows + deploy Firestore indexes. Index deploy needs Firebase CLI auth (user-run or CI token) — project `legal-terminus-web` |
 
 ---
 
@@ -187,8 +189,8 @@ This project uses **BMad Method v6.8.0** for AI-driven development. Read `docs/c
 **Key Directories:**
 - `docs/constitution.md` — Core principles (Role-Gating, Workflow Engine, Single Source of Truth, etc.)
 - `_bmad/` — BMAD framework installation (agents, skills, workflows)
-- `.agents/skills/` — 44 BMAD skills available as agent instructions
-- `.github/agents/` — 6 BMAD agent command files for GitHub Copilot
+- `.agents/skills/` — BMAD skills available as agent instructions
+- `.github/agents/` — BMAD agent command files for GitHub Copilot
 - `_bmad-output/planning-artifacts/` — PRD, architecture, stories
 - `_bmad-output/implementation-artifacts/` — generated code artifacts
 
@@ -206,46 +208,21 @@ Services are called by multiple controllers for consistency.
 
 ---
 
-## 📋 Current Sprint Status
+## 📋 Story Status & Architecture Snapshots
 
-**Completed:**
-- ✅ Portal frontend scaffold (E01-S01)
-- ✅ Auth system: email, Google, signup, forgot password (E01-S02)
-- ✅ Role-based routing & protected routes (E01-S03)
-- ✅ App shell, sidebar, layout (E01-S04)
-- ✅ Team members CRUD — backend + frontend (E09-S01)
-- ✅ Clients CRUD — backend + frontend (E09-S02)
-- ✅ Hybrid auth UPSERT system (team members + clients + Google merge)
-- ✅ Reports: All Tasks, Completed, Pending, Master Sheet (E08-S01 partial)
-- ✅ CI/CD Portal deployment
-- ✅ **User management consolidation** — Clients, Team Members, Users merged into single `/users` page with role filter tabs (2026-06-13)
+**Story/sprint status lives ONLY in `_bmad-output/planning-artifacts/epics.md` — never duplicated here.** Read it at the start of story-related work; update it when a story's status changes.
 
-**User Management Architecture (consolidated):**
-- Single page: `Portal/src/pages/admin/UsersPage.tsx` at route `/users`
-- Single form: `Portal/src/pages/admin/UserFormPage.tsx` at routes `/users/new/:type` and `/users/edit/:type/:uid`
-- `:type` param = `"member"` (renders TeamMemberForm) or `"client"` (renders ClientForm)
-- Sidebar has ONE "Users" nav entry — no separate Clients / Team Members entries
-- Backend APIs unchanged: `/api/team-members` and `/api/clients` — both fetched and merged on the frontend
-
-**In Progress:**
-- 🔄 Workflow engine (E02): XState machine + task creation + transition endpoint
-- 🔄 Task management UI (E03): task list, step queue, admin task creation
-
-**Next:**
-- ⏳ E02-S01: XState Company Incorporation machine (41 steps)
-- ⏳ E02-S02: Backend transition endpoint (`POST /api/tasks/:taskId/transition`)
-- ⏳ E02-S03: Task creation endpoint with config layer merge (`POST /api/tasks`)
-- ⏳ E03-S03: Admin/Manager task creation UI + TaskDetailPage
+Architecture snapshots (e.g., the consolidated user-management pages at `Portal/src/pages/users/`, routes `/users`, `/users/new/:type`, `/users/edit/:type/:uid`) live in `architecture.md` — this file only carries the rules for keeping them true (see route/folder rules above).
 
 ---
 
 ## ⚙️ Workspace Rules
 
 1. **Every commit must include epic/story status** if work is story-related
-2. **No PR without updated spec.md** if requirements changed
+2. **No commit without updated spec.md** if requirements changed
 3. **All error messages must be user-friendly** (no Firebase error codes)
 4. **TypeScript strict mode** - no `any` types without justification
-5. **Feature branches only** - no commits to `main` directly
+5. **Work lands on `main`** — no long-lived feature branches; every commit references its GitHub issue and follows the Task Completion Checklist before push
 
 ### 🔐 Environment Variables & Secrets Management
 
@@ -328,6 +305,10 @@ Services are called by multiple controllers for consistency.
 ### 7. Secrets & keys
 - Service-account JSON, `.pem`, `.key`, `.p12`, and any `.env*` (except `.env.example`) are gitignored — never commit them. If a key is ever exposed, **rotate it** (don't just delete the file): GCP service-account keys via `gcloud iam service-accounts keys create/delete`, then update local env + GitHub Secrets together.
 
+### 8. Document downloads are proxied through the backend
+- File/document downloads MUST stream through an authenticated backend endpoint (`verifyToken` + role/ownership check) — the backend fetches from Storage and pipes the bytes to the client.
+- **NEVER return a client-visible signed URL** (even short-lived): signed links leak via history/logs/sharing and bypass role checks for their lifetime.
+
 ---
 
 ## 📊 LOGGING STANDARDS (Backend)
@@ -359,6 +340,7 @@ Services are called by multiple controllers for consistency.
 
 ## 🗃️ DATA MODEL HYGIENE
 
+- **Single-tenant by decision.** The portal serves ONE organization. Never add `tenantId`, org scoping, or any multi-tenancy scaffolding — it is deliberate scope, not an oversight.
 - **One field, one source of truth.** Don't mirror a value into a second field that must be kept in sync (the legacy `type`-mirrors-`role` pattern was removed — use `role` only).
 - **firestore.rules must match real document paths.** When you add a collection/subcollection the client SDK can reach, add a matching rule (e.g. payments live at `users/{uid}/payments/{txnId}` — the rule is there, not at a top-level `/payments`). Everything else is denied by the catch-all.
 
@@ -370,8 +352,8 @@ The Portal has an end-to-end Playwright suite in **`Portal/e2e/`** covering ever
 implemented epic across all four roles (admin / manager / team_member / client).
 
 **Layout & how it works:**
-- `Portal/playwright.config.ts` — starts the whole stack via `npm run dev:all`
-  (port cleanup + backend + frontend + portal) and waits for the Portal URL.
+- `Portal/playwright.config.ts` — starts the stack the tests need via `npm run dev:e2e`
+  (port cleanup + backend + portal) and waits for the Portal URL.
 - `e2e/auth.setup.ts` — a "setup" project that logs in each role ONCE and saves
   `storageState` to `e2e/.auth/<role>.json`. Every spec reuses it (no per-test
   login → fast, no Firebase auth throttling).
@@ -387,7 +369,7 @@ implemented epic across all four roles (admin / manager / team_member / client).
 ```bash
 # one-time per run / after flow changes: seed users + fixtures
 cd ../backend && node scripts/seed-e2e.js --write-env && cd ../Portal
-npm run test:e2e            # headless (boots the full stack via dev:all)
+npm run test:e2e            # headless (boots backend + portal via dev:e2e)
 npm run test:e2e:headed     # watch the browser
 npm run test:e2e:ui         # interactive debugger
 npm run test:e2e:report     # open last HTML report
@@ -420,13 +402,10 @@ spec in `Portal/e2e/` in the SAME change — this is part of "done", not a follo
 - **webServer = `npm run dev:e2e`** (backend + portal only; NOT `dev:all` which also
   boots the marketing app and can crash the run).
 
-### Current coverage (17 specs, ~69 tests — keep this list current)
-auth-rbac, matters, step-execution (gates/complete/client-approve), approvals,
-client-view (E12), documents (E05 full cycle), journey (cross-role lifecycle),
-notifications (E07 per-event), reports (content+filter), users (create + self-role
-lock), reassign (E09-S04), services-eta (E13-S01 + E11-S02 phase + E10-S02 sync),
-service-catalog (E04-S05), my-tasks, urgent (E11-S03/S05), leads (E08-S06),
-interactions (E03-S06 comment + E11-S07 confirm dialog).
+### Current coverage
+The suite covers every implemented epic across all four roles — the spec files in
+`Portal/e2e/*.spec.ts` ARE the coverage list (don't enumerate it here; enumerations rot).
+Before writing a new spec, `ls Portal/e2e/*.spec.ts` and extend the closest existing one.
 
 Do NOT run the suite automatically on unrelated edits; run it when you touch a
 covered flow, when explicitly asked, or before declaring a feature done.
@@ -491,34 +470,6 @@ covered flow, when explicitly asked, or before declaring a feature done.
    - Verify no horizontal scroll on any page
    - Verify all buttons are tappable (≥44px)
 
-### Example - Full-screen form page pattern (mobile-friendly):
-```tsx
-// Form page with responsive full-screen layout
-<PageShell title={id ? 'Edit' : 'New'}>
-  <div className="max-w-2xl mx-auto">
-    <div className="mb-6">
-      <button onClick={onClose} className="text-sm font-medium">← Back</button>
-    </div>
-    <div className="bg-white rounded-lg shadow p-4 md:p-6 lg:p-8">
-      <form className="space-y-3 md:space-y-4">
-        {/* Full-width input on mobile */}
-        <div>
-          <label className="block text-xs md:text-sm font-medium mb-1 md:mb-2">Field *</label>
-          <input className="w-full px-4 py-3 md:px-3 md:py-2 border rounded text-sm md:text-base" />
-        </div>
-        
-        {/* Responsive buttons with touch targets */}
-        <div className="flex gap-2 md:gap-3 pt-8 md:pt-10">
-          <button className="flex-1 px-4 py-3 md:px-4 md:py-2 border rounded text-sm md:text-base">Cancel</button>
-          <button className="flex-1 px-4 py-3 md:px-4 md:py-2 bg-blue-600 text-white rounded text-sm md:text-base">Submit</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</PageShell>
-```
-
 ### When adding new components:
 - Always include breakpoint tests in your commit message
-- Update component in Storybook if applicable
-- Tag `@mobile-tested` in PR description
+- Reference an existing form page (e.g., `Portal/src/pages/users/UserFormPage.tsx`) as the layout pattern instead of inventing a new one
