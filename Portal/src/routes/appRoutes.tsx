@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Package, Inbox,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 
@@ -109,7 +109,9 @@ export const APP_ROUTES: AppRoute[] = [
   // ── Self-service (all roles) — own profile + order history (migrated from the
   //    marketing site's /my-profile, which is now a redirect into the portal) ──
   { path: '/profile', element: <ProfilePage />, roles: ALL_ROLES, nav: { label: 'My Profile', icon: User, order: 10 } },
-  { path: '/orders',  element: <OrdersPage />,  roles: ALL_ROLES, nav: { label: 'My Orders', icon: Package, order: 11 } },
+  // "My Orders" removed from the sidebar for now (all roles) — the route stays
+  // reachable by URL so nothing 404s, but it no longer shows as a nav item.
+  { path: '/orders',  element: <OrdersPage />,  roles: ALL_ROLES },
   // Full notifications list (E07-S01) — reached from the topbar bell; no sidebar entry.
   { path: '/notifications', element: <NotificationsPage />, roles: ALL_ROLES },
 

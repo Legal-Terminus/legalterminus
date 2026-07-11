@@ -741,7 +741,9 @@ function StepsTab({
   // Pending-on breakdown: of the remaining (not done/skipped) steps, how many
   // need our team vs the client vs the registrar. Restores the at-a-glance
   // "who's the ball with" overview. Owner derived from the definition.
-  const ownerLabel = { team: 'Our team', client: 'Client', govt: 'Registrar' } as const;
+  // #92 (extended): from the CLIENT's own POV, "Client" reads third-person — show
+  // "You" consistently on client views.
+  const ownerLabel = { team: 'Our team', client: role.isClient ? 'You' : 'Client', govt: 'Registrar' } as const;
   const remaining = { team: 0, client: 0, govt: 0 };
   for (const s of steps) {
     if (s.status === 'completed' || s.status === 'skipped') continue;
@@ -832,6 +834,7 @@ function StepsTab({
       statusLabel={statusFor(step.stepNumber)}
       isCurrent={step.stepNumber === task.currentStepNumber && !completed}
       owner={ownerOf(step.stepNumber)}
+      ownerLabel={ownerLabel[ownerOf(step.stepNumber)]}
       comments={events.filter((e) => e.comment && (e.fromStep === step.stepNumber || e.toStep === step.stepNumber))}
       attachments={documents.filter((d) => d.stepNumber === step.stepNumber)}
       onOpenDoc={onOpenDoc}
@@ -903,7 +906,8 @@ function StepsTab({
       <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{remainingTotal} steps remaining</span>
       {(['team', 'client', 'govt'] as const).filter((k) => remaining[k] > 0).map((k) => (
         <span key={k} className="inline-flex items-center gap-1.5 text-sm">
-          <span className={`w-1.5 h-1.5 rounded-full ${k === 'team' ? 'bg-brand-600' : k === 'client' ? 'bg-blue-500' : 'bg-violet-500'}`} />
+          {/* #101: dots match the step-row owner edges (slate / amber / violet). */}
+          <span className={`w-1.5 h-1.5 rounded-full ${k === 'team' ? 'bg-slate-400' : k === 'client' ? 'bg-amber-500' : 'bg-violet-500'}`} />
           <span className="font-semibold text-ink">{remaining[k]}</span>
           <span className="text-ink-muted">{ownerLabel[k]}</span>
         </span>
@@ -1628,12 +1632,12 @@ function StepHeroPanel({
     </div>
   );
 
-  // #101: subtle owner-coloured left edge on the hero card, matching the step-row
-  // edges, so staff instantly see whose ball the current step is without reading
-  // the chip. team=brand, client=blue, govt=violet.
-  const heroEdge = turn === 'client' ? 'border-l-[3px] border-l-blue-500'
-    : turn === 'govt' ? 'border-l-[3px] border-l-violet-500'
-    : turn === 'team' ? 'border-l-[3px] border-l-brand-500' : '';
+  // #101: owner-coloured left edge on the hero card, matching the step-row edges,
+  // so staff instantly see whose ball the current step is. team=slate, client=
+  // amber, govt=violet (clearly distinct hues).
+  const heroEdge = turn === 'client' ? 'border-l-4 border-l-amber-500'
+    : turn === 'govt' ? 'border-l-4 border-l-violet-500'
+    : turn === 'team' ? 'border-l-4 border-l-slate-400' : '';
   return (
     <div className={`card overflow-hidden ring-1 ring-ink/5 shadow-card-hover ${heroEdge}`}>
       <div className="px-5 py-2.5 bg-surface-soft border-b border-hairline flex items-center justify-between gap-2">
@@ -1826,19 +1830,23 @@ const STATUS: Record<StepStatus, { label: string; cls: string }> = {
  *  recorded against this step (plus completion time / remark). */
 // #101: ownership → the page's established colour + a human label (for a11y, so
 // the coloured edge isn't colour-alone signalling).
-const OWNER_EDGE: Record<'team' | 'client' | 'govt', { border: string; label: string }> = {
-  team:   { border: 'border-l-brand-500',  label: 'Our team' },
-  client: { border: 'border-l-blue-500',   label: 'Client' },
-  govt:   { border: 'border-l-violet-500', label: 'Registrar' },
+// #101: three CLEARLY DISTINCT hues (not all-blue). Kept consistent with the
+// pending-bar dots and hero edge below. team=slate (neutral default), client=
+// amber (warm — "your action"), govt=violet.
+const OWNER_EDGE: Record<'team' | 'client' | 'govt', { border: string; dot: string; label: string }> = {
+  team:   { border: 'border-l-slate-400',  dot: 'bg-slate-400',  label: 'Our team' },
+  client: { border: 'border-l-amber-500',  dot: 'bg-amber-500',  label: 'Client' },
+  govt:   { border: 'border-l-violet-500', dot: 'bg-violet-500', label: 'Registrar' },
 };
 
-function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCurrent, owner, comments = [], attachments = [], onOpenDoc }: {
+function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCurrent, owner, ownerLabel, comments = [], attachments = [], onOpenDoc }: {
   step: TaskStep;
   displayNumber: number;
   description?: string;
   statusLabel?: string; // #81: audience-specific status text
   isCurrent: boolean;
   owner?: 'team' | 'client' | 'govt'; // #101: ball owner → left-edge colour
+  ownerLabel?: string; // #101/#92: audience-aware owner label for the tooltip ("You" for a client)
   comments?: TaskEvent[];
   attachments?: TaskDocument[];
   onOpenDoc?: (docId: string) => void;
@@ -1855,15 +1863,15 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
     comments.length ? `${comments.length} comment${comments.length > 1 ? 's' : ''}` : '',
     attachments.length ? `${attachments.length} file${attachments.length > 1 ? 's' : ''}` : '',
   ].filter(Boolean).join(' · ');
-  // #101: coloured left edge by owner; muted (thinner + faded) on past steps so
-  // they don't compete with upcoming ones.
+  // #101: solid owner-coloured left edge on EVERY row (a border-color, not opacity,
+  // so it stays visible on white pending rows too). Past rows keep the same hue,
+  // just a hair lighter via the border shade — not opacity (which hid it before).
   const edge = owner ? OWNER_EDGE[owner] : null;
-  const isPast = step.status === 'completed' || skipped;
-  const edgeCls = edge ? `border-l-[3px] ${edge.border} ${isPast ? 'opacity-50' : ''}` : '';
+  const edgeCls = edge ? `border-l-4 ${edge.border}` : '';
   return (
     <div
       className={`${edgeCls} ${isCurrent ? 'bg-surface-soft' : ''}`}
-      title={edge ? `${edge.label} step` : undefined}
+      title={edge ? `${ownerLabel ?? edge.label} step` : undefined}
     >
       <button
         onClick={() => expandable && setOpen((v) => !v)}

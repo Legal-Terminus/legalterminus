@@ -39,3 +39,24 @@ test('#93: the client sees reassuring copy on a payment-gate step (no dead-end)'
     await expect(clientPage.getByText('Waiting for payment to be recorded.')).toHaveCount(0);
   } finally { await deleteMatter(taskId); }
 });
+
+test('client-view wording: the steps-remaining breakdown says "You", not "Client"', async ({ clientPage }) => {
+  const taskId = await createMatter();
+  try {
+    await clientPage.goto(`tasks/${taskId}`);
+    await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    // The pending-on breakdown ("N steps remaining · … · N You · …") must never
+    // show the third-person "Client" label on a client's own view.
+    const remaining = clientPage.getByText(/steps remaining/i);
+    if (await remaining.count()) {
+      await expect(clientPage.getByText(/\bClient\b/).filter({ hasText: /^Client$/ })).toHaveCount(0);
+    }
+  } finally { await deleteMatter(taskId); }
+});
+
+test('My Orders is not shown in the sidebar nav', async ({ adminPage, clientPage }) => {
+  for (const page of [adminPage, clientPage]) {
+    await page.goto('tasks');
+    await expect(page.getByRole('link', { name: /my orders/i })).toHaveCount(0);
+  }
+});

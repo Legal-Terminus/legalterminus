@@ -3194,15 +3194,27 @@ not new engine code.
   theirs to tick).
 - **#96 — Collapse completed steps** behind a "Show completed (N)" toggle (default
   hidden), mirroring the Activity "Show previous steps" UX; ascending order kept.
-- **#101 — Owner colour-coding**: a subtle owner-coloured left edge on each step row
-  (team=brand / client=blue / registrar=violet, muted on past steps) + the same
-  edge on the current-step hero card, reusing the established pending-bar palette;
-  `title` label for a11y (not colour-alone).
+- **#101 — Owner colour-coding**: a solid owner-coloured left edge on **every** step
+  row + the current-step hero card, plus matching pending-bar dots.
+  **Revised (feedback):** the first pass used team=brand-500 / client=blue-500 which
+  were near-identical blues (indistinguishable) and were `opacity-50`-muted on past
+  rows (so pending rows showed no edge). Now three **clearly distinct** hues —
+  **team=slate-400, client=amber-500, govt=violet-500** — applied as a solid
+  `border-l-4` (border-colour, not opacity) so the edge is visible on white pending
+  rows too, consistent across rows / hero / pending-bar legend. `title` label for
+  a11y (not colour-alone).
 - **#102 — Collapsed Stages rail → self-sufficient timeline**: when the rail is
   collapsed the steps pane shows EVERY stage grouped with subheaders + a compact
   "Jump to stage…" dropdown, instead of being stranded on one stage.
+- **Client-view wording — "Client" → "You" (feedback, extends #92)**: from the
+  client's own POV, third-person "Client" reads wrong. The pending-bar breakdown
+  ("… · 2 Client · …") now shows **"2 You"** for a client, and the step-row owner
+  tooltip reads "You step" — consistent with #92's "Waiting on you". Staff views
+  keep "Client".
+- **My Orders removed from the sidebar (feedback)** for all roles. The `/orders`
+  route stays reachable by URL (no 404) but is no longer a nav item.
 - e2e: `matter-layout.spec.ts` (#73 current+previous, #96 collapse), `client-hero.spec.ts`
-  (#92/#93), plus existing specs updated for the #94 gate auto-pass.
+  (#92/#93 + Client→You), plus existing specs updated for the #94 gate auto-pass.
 
 ### Workflow / matter-lifecycle
 - **#51 — Remove Work Assigning step + payment-at-creation.** "Work Assigning"
