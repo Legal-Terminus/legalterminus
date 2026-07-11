@@ -18,9 +18,25 @@ import { logger } from '../config/logger.js';
 let _transporter = null;
 let _checked = false;
 
+/**
+ * Hard kill-switch: force email OFF regardless of whether creds are configured.
+ * Used so E2E / test runs NEVER send real mail (the seeded test accounts use fake
+ * addresses — sending would bounce and risk flagging the sender). Enabled by
+ * `EMAIL_DISABLED=true` (any truthy string) or `NODE_ENV=test`.
+ */
+function emailForceDisabled() {
+  const flag = String(process.env.EMAIL_DISABLED ?? '').toLowerCase();
+  return flag === 'true' || flag === '1' || flag === 'yes' || process.env.NODE_ENV === 'test';
+}
+
 function getTransporter() {
   if (_checked) return _transporter;
   _checked = true;
+  if (emailForceDisabled()) {
+    logger.warn('[email] EMAIL_DISABLED / test env — email sending disabled (no-op).');
+    _transporter = null;
+    return null;
+  }
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_APP_PASSWORD;
   if (!user || !pass) {
@@ -38,9 +54,38 @@ function getTransporter() {
   return _transporter;
 }
 
-/** Is email actually configured (vs. no-op)? Useful for tests/diagnostics. */
+/** Is email actually configured AND not force-disabled (vs. no-op)? */
 export function isEmailEnabled() {
-  return Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
+  return !emailForceDisabled() && Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
+}
+
+/**
+ * Diagnostic: verify the SMTP connection + App-Password auth WITHOUT sending an
+ * email (nodemailer's transporter.verify). Returns a plain object describing the
+ * config + verification result — used by the admin-only email health endpoint so
+ * a deployed environment can be checked without triggering a real user action.
+ * Never throws.
+ */
+export async function verifyEmailTransport() {
+  const enabled = isEmailEnabled();
+  const from = process.env.EMAIL_FROM || process.env.GMAIL_USER || null;
+  const user = process.env.GMAIL_USER || null;
+  if (!enabled) {
+    const reason = emailForceDisabled()
+      ? 'Email is force-disabled (EMAIL_DISABLED / test env) — no-op.'
+      : 'GMAIL_USER / GMAIL_APP_PASSWORD not set — email disabled (no-op).';
+    return { enabled: false, verified: false, from, user, error: reason };
+  }
+  const transporter = getTransporter();
+  if (!transporter) {
+    return { enabled: false, verified: false, from, user, error: 'Transport unavailable.' };
+  }
+  try {
+    await transporter.verify();
+    return { enabled: true, verified: true, from, user, error: null };
+  } catch (err) {
+    return { enabled: true, verified: false, from, user, error: err?.message || String(err) };
+  }
 }
 
 const escapeHtml = (s) =>
