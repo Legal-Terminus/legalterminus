@@ -60,6 +60,28 @@ test('#66: Step Settings numbers the steps continuously (1,2,3…), not by gappe
   expect(Math.max(...ariaNums)).toBeGreaterThanOrEqual(count); // gaps preserved in identity
 });
 
+test('#66: the "Configured Workflow" diagram numbers nodes continuously (1,2,3…)', async ({ adminPage }) => {
+  await adminPage.goto(`services/${serviceKey}`);
+  // Expand the Configured Workflow section if it's collapsed.
+  const section = adminPage.getByRole('button', { name: /Configured Workflow/ });
+  await expect(section).toBeVisible();
+
+  // Diagram nodes are prefixed with the DISPLAY position, e.g. "1. …", "2. …".
+  // The prefixes must form the gap-free sequence 1,2,3,… (matching the editor +
+  // Step Settings list), never the raw gapped stepNumber.
+  await expect(async () => {
+    const labels = await adminPage.locator('.react-flow__node').allInnerTexts();
+    const prefixes = labels
+      .map((t) => t.match(/^\s*(\d+)\.\s/))
+      .filter((m): m is RegExpMatchArray => !!m)
+      .map((m) => parseInt(m[1], 10));
+    expect(prefixes.length).toBeGreaterThan(5);
+    // The first several numbered nodes are strictly 1,2,3,… — no gaps.
+    const sorted = [...prefixes].sort((a, b) => a - b);
+    expect(sorted.slice(0, 5)).toEqual([1, 2, 3, 4, 5]);
+  }).toPass({ timeout: 15_000 });
+});
+
 test('team member can view Step Settings but not save', async ({ teamPage }) => {
   await teamPage.goto(`services/${serviceKey}`);
   await expect(teamPage.getByRole('button', { name: /Step Settings/ })).toBeVisible();

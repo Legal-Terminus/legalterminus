@@ -59,6 +59,17 @@ export default function ServiceDetailPage() {
     [definition]
   );
 
+  // #66: number the diagram nodes by continuous DISPLAY position (1,2,3…) over the
+  // ordered steps — matching the Step Settings list and editor — instead of the raw
+  // (gappy) stepNumber. Maps rawStepNumber → 1-based display index.
+  const displayNumbers = useMemo(() => {
+    const map: Record<number, number> = {};
+    [...(definition?.steps ?? [])]
+      .sort((a, b) => a.stepNumber - b.stepNumber)
+      .forEach((s, i) => { map[s.stepNumber] = i + 1; });
+    return map;
+  }, [definition]);
+
   // Config sync / health check (E10-S02) — flag a misconfigured workflow.
   const { data: sync } = useQuery({
     queryKey: ['workflow-sync-check', definitionId],
@@ -124,7 +135,7 @@ export default function ServiceDetailPage() {
             <span className="text-sm">Loading…</span>
           </div>
         ) : machine ? (
-          <WorkflowDiagram machine={machine} />
+          <WorkflowDiagram machine={machine} displayNumbers={displayNumbers} />
         ) : (
           <div className="p-8 text-center text-ink-muted text-sm">
             No workflow configured yet for this service.
