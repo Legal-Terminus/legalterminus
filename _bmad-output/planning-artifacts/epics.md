@@ -3146,6 +3146,12 @@ not new engine code.
   approval trigger is No-Payment (#51). (E-03.)
 - **#54 — Part-payment is an alert, not a step.** "Part Payment Due" step removed;
   a blinking part-paid banner shows to client + team with the "pay remaining" message.
+- **#76 — Part-payment reminder fires after Name Approval.** A configurable
+  per-step `REMIND_PART_PAYMENT` effect on the (editable) definition pushes the
+  client an in-app + email reminder to clear the balance when its step completes —
+  attached to step 20 "Name Approval Letter Received". Fires only while the matter
+  is still `part_paid` (a fully-paid matter gets nothing). `f13dcf52`.
+  e2e: `part-payment-reminder.spec.ts` (part-paid notifies; fully-paid does not). (E-06.)
 - **#58 — Payment gate only when unpaid + override reporting.** Step-29 full-payment
   gate auto-passes when created fully-paid (engine guard). New **Payment Overrides
   report** (`/reports/payment-overrides`) lists no-payment / gate-overridden matters. (E-08.)
@@ -3173,6 +3179,13 @@ not new engine code.
   (`/reports/unassigned`). (E-11, E-08.)
 - **#55 — Step numbering.** Client step list renders a display index (1,2,3,4…)
   over visible steps, not the stored stepNumber (which can gap when steps are hidden).
+- **#66 — Continuous step numbering everywhere.** The stored `stepNumber` is a
+  gappy internal identity (deleted steps leave holes: 1,4,5,7…). Every DISPLAY
+  surface now shows a gap-free 1..N position over the ordered steps instead:
+  Service **Step Settings** list, matter-detail subtitle, activity-thread headers
+  (`ff7ba72a`), and the Service Detail **"Configured Workflow" diagram** nodes
+  (`2519aa94`). Identity/state keys/transition targets are untouched.
+  e2e: `step-settings.spec.ts` (list + diagram are 1..N; aria-labels keep gaps).
 - **#53 — Client-approval → proceed.** Auto-advance + explicit "Client approval
   received, please proceed" notification to the next assignee. (E-07.)
 
