@@ -3179,6 +3179,11 @@ not new engine code.
   (`/reports/unassigned`). (E-11, E-08.)
 - **#55 — Step numbering.** Client step list renders a display index (1,2,3,4…)
   over visible steps, not the stored stepNumber (which can gap when steps are hidden).
+- **#69 — Completed steps struck through.** Per client request (completed steps
+  were confusing to identify), a completed step's TITLE renders with a subtle
+  `line-through` (muted, decoration-1) in the shared step row — applies to both the
+  client tracker and the internal list. Confined to the title text (icon + "Done"
+  badge + layout unchanged) to keep the design language. e2e: `interactions.spec.ts`.
 - **#66 — Continuous step numbering everywhere.** The stored `stepNumber` is a
   gappy internal identity (deleted steps leave holes: 1,4,5,7…). Every DISPLAY
   surface now shows a gap-free 1..N position over the ordered steps instead:

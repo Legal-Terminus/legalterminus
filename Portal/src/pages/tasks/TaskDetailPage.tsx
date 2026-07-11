@@ -1695,7 +1695,11 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
       >
         <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${step.status === 'completed' ? 'text-emerald-600' : skipped ? 'text-ink-faint' : isCurrent ? 'text-brand-600' : 'text-ink-faint'}`} />
         <div className="min-w-0 flex-1">
-          <p className={`text-sm ${isCurrent ? 'font-semibold text-ink' : 'text-ink-soft'}`}>{displayNumber}. {step.title}</p>
+          {/* #69: completed steps get a subtle line-through on the TITLE only (kept
+              muted, decoration-1) so "done" reads at a glance without disrupting the
+              row layout, icon, or "Done" badge — the checklist cue the client asked
+              for, applied lightly to preserve the design language. */}
+          <p className={`text-sm ${isCurrent ? 'font-semibold text-ink' : 'text-ink-soft'} ${step.status === 'completed' ? 'line-through decoration-1 decoration-ink-faint/60' : ''}`}>{displayNumber}. {step.title}</p>
           {statusLabel && <p className="text-[11px] text-ink-muted mt-0.5">{statusLabel}</p>}
           {description && !open && <p className="text-xs text-ink-muted mt-0.5 truncate">{description}</p>}
           {!open && countBits && <p className="text-[11px] text-ink-faint mt-0.5">{countBits}</p>}

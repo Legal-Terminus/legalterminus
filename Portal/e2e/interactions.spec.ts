@@ -118,3 +118,24 @@ test('E11-S07: deleting a matter uses the styled confirm dialog (not native)', a
     if (!deletedViaUi) await deleteMatter(taskId);
   }
 });
+
+test('#69: a completed step renders its title with a strikethrough', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    // Advance at least one step so there is a completed step to inspect.
+    await advanceUntil(taskId, (s) => s.stepNumber >= 2);
+    const at = (await getMatter(taskId)).currentStepNumber as number;
+    test.skip(at < 2, `Could not advance past step 1 (at ${at}) — no completed step to check.`);
+
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+
+    // The step list marks each completed step with a "Done" badge; its sibling title
+    // paragraph must carry line-through (#69). Find a Done row and assert on its title.
+    const doneBadge = adminPage.locator('span', { hasText: /^Done$/ }).first();
+    await expect(doneBadge).toBeVisible({ timeout: 15_000 });
+    // The title <p> is the first text line in the same row; it should be struck through.
+    const struckTitle = adminPage.locator('p.line-through').first();
+    await expect(struckTitle).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});

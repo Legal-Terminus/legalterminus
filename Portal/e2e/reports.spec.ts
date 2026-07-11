@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { createMatter, deleteMatter } from './api';
+import { createMatter, deleteMatter, getMatter } from './api';
 
 /**
  * E08 — Reports. Beyond "page loads": with a known fresh matter for the seeded
@@ -43,7 +43,11 @@ test('All Tasks report shows a real matter row and search filters it', async ({ 
 });
 
 test('#91: All Tasks supports multiple filter criteria combined with AND', async ({ adminPage }) => {
-  const taskId = await createMatter(); // active, fully-paid incorporation matter
+  const taskId = await createMatter();
+  // Filter by the matter's ACTUAL status (a fresh paid matter is `pending`, not
+  // necessarily `active`) so the assertions test the filter, not a wrong assumption.
+  const realStatus = (await getMatter(taskId)).status as string;
+  const otherStatus = realStatus === 'completed' ? 'active' : 'completed';
   try {
     await adminPage.goto('reports/all-tasks');
     await expect(adminPage.getByRole('heading', { name: 'All Matters' })).toBeVisible();
@@ -52,12 +56,12 @@ test('#91: All Tasks supports multiple filter criteria combined with AND', async
     const statusFilter = adminPage.getByLabel('Filter by status');
     const serviceFilter = adminPage.getByLabel('Filter by service');
 
-    // A NON-matching status hides the (active) matter.
-    await statusFilter.selectOption('completed');
+    // A NON-matching status hides the matter.
+    await statusFilter.selectOption(otherStatus);
     await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
 
-    // Matching status brings it back…
-    await statusFilter.selectOption('active');
+    // The MATCHING status brings it back…
+    await statusFilter.selectOption(realStatus);
     await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
 
     // …AND a second criterion that does NOT match removes it again (AND semantics).
@@ -78,12 +82,14 @@ test('#91: All Tasks supports multiple filter criteria combined with AND', async
 
 test('#91: the free-text search composes on top of the structured filters', async ({ adminPage }) => {
   const taskId = await createMatter();
+  const realStatus = (await getMatter(taskId)).status as string;
   try {
     await adminPage.goto('reports/all-tasks');
     await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
 
-    // Structured: status = active (matches). Then search a non-matching client → gone.
-    await adminPage.getByLabel('Filter by status').selectOption('active');
+    // Structured: status = the matter's real status (matches). Then a non-matching
+    // client in the search box → gone (search composes on top of the filter).
+    await adminPage.getByLabel('Filter by status').selectOption(realStatus);
     await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
     await adminPage.getByPlaceholder(/search by client/i).fill('zzz-no-such-client');
     await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
