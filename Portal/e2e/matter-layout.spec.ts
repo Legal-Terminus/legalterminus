@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { createMatter, deleteMatter, getDefinitionForMatter, firstPlainStep, advanceUntil } from './api';
+import { createMatter, deleteMatter, getDefinitionForMatter, firstPlainStep, advanceUntil, transition, currentStep } from './api';
 
 /**
  * #72 — collapsible + resizable matter panels (Stages / Activity / sidebar).
@@ -57,6 +57,57 @@ test('#73: Activity shows the current step by default with a Show previous steps
     if (await expander.count()) {
       await expander.first().click();
       await expect(adminPage.getByRole('button', { name: /hide previous steps/i }).first()).toBeVisible();
+    }
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#73: Activity defaults to CURRENT + immediately-PREVIOUS step; earlier steps hide behind the expander', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    const def = await getDefinitionForMatter(taskId);
+    // Need at least two plain (COMPLETE_STEP) steps in a row to leave three
+    // distinguishable comments: two steps back, one step back, and current.
+    const plainSteps = def.steps.filter((s) => s.type === 'step' && (s.transitions ?? []).some((t) => t.event === 'COMPLETE_STEP'));
+    test.skip(plainSteps.length < 2, 'Need at least 2 plain steps to prove the current+previous split.');
+
+    // Walk forward, leaving one COMPLETE_STEP transition (with a distinct remark)
+    // per hop so we can identify which comment landed on which step.
+    const remarkFor = (n: number) => `E2E remark step ${n}`;
+    let hops = 0;
+    for (let i = 0; i < 3 && hops < 2; i++) {
+      const at = await currentStep(taskId);
+      const step = def.steps.find((s) => s.stepNumber === at);
+      if (step?.type === 'step' && (step.transitions ?? []).some((t) => t.event === 'COMPLETE_STEP')) {
+        await transition('admin', taskId, { type: 'COMPLETE_STEP', remark: remarkFor(at) });
+        hops++;
+      } else {
+        await advanceUntil(taskId, () => true); // step over anything non-plain, one hop
+      }
+    }
+    test.skip(hops < 2, 'Could not accumulate two distinct plain-step comments.');
+
+    const finalStep = await currentStep(taskId);
+
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+
+    // The immediately-previous step's remark is visible WITHOUT expanding.
+    // (finalStep itself has no remark — the remark was left on the step BEFORE it.)
+    const previousStepNums = def.steps
+      .map((s) => s.stepNumber)
+      .filter((n) => n < finalStep)
+      .sort((a, b) => b - a);
+    const immediatelyPrevious = previousStepNums[0];
+    if (immediatelyPrevious != null) {
+      await expect(adminPage.getByText(remarkFor(immediatelyPrevious))).toBeVisible({ timeout: 15_000 });
+    }
+
+    // A step BEFORE that (two hops back) is hidden until "Show previous steps".
+    const twoBack = previousStepNums[1];
+    if (twoBack != null) {
+      await expect(adminPage.getByText(remarkFor(twoBack))).toHaveCount(0);
+      await adminPage.getByRole('button', { name: /show previous steps/i }).click();
+      await expect(adminPage.getByText(remarkFor(twoBack))).toBeVisible();
     }
   } finally { await deleteMatter(taskId); }
 });

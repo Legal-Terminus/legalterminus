@@ -491,6 +491,48 @@ export async function createAdminApprovalMatter(): Promise<{ taskId: string; def
   return { taskId, defId };
 }
 
+/**
+ * #81/#82: create a matter whose FIRST (active) step carries independent
+ * internal/client status+notes and multiple audience-tagged descriptions.
+ * Returns the matter id + def id for teardown.
+ */
+export async function createStatusNotesMatter(): Promise<{ taskId: string; defId: string }> {
+  const api = await apiAs('admin');
+  const defId = `e2e-statusnotes-${Date.now()}`;
+  const serviceKey = `e2e-svc-statusnotes-${Date.now()}`;
+  const def = {
+    id: defId,
+    name: `E2E Status Notes ${defId}`,
+    initialStep: 1,
+    serviceKeys: [serviceKey],
+    steps: [
+      {
+        stepNumber: 1, title: 'Step with status and notes', type: 'step', clientVisible: true,
+        internalStatus: 'INTERNAL-ABCD', internalNotes: 'Only staff see this note.',
+        clientStatus: 'CLIENT-ABCD', clientNote: 'Shown to the client.',
+        descriptions: [
+          { audience: 'internal', text: 'Internal description text.' },
+          { audience: 'client', text: 'Client description text.' },
+        ],
+        transitions: [{ event: 'COMPLETE_STEP', to: 2 }],
+      },
+      { stepNumber: 2, title: 'Done', type: 'final' },
+    ],
+  };
+  const dres = await api.post('/api/workflow-definitions', { data: def });
+  if (!dres.ok()) throw new Error(`createStatusNotesMatter def failed: ${dres.status()} ${await dres.text()}`);
+  const tres = await api.post('/api/tasks', {
+    data: {
+      clientUid: env('E2E_CLIENT_UID'), serviceKey,
+      paymentStatus: 'fully_paid', totalCost: 10000, amountReceived: 10000, paymentMode: 'E2E',
+    },
+  });
+  if (!tres.ok()) throw new Error(`createStatusNotesMatter task failed: ${tres.status()} ${await tres.text()}`);
+  const taskId = (await tres.json()).id as string;
+  await api.dispose();
+  return { taskId, defId };
+}
+
 /** Delete a workflow definition by id (admin). Best-effort teardown. */
 export async function deleteDefinition(id: string): Promise<void> {
   if (!id) return;

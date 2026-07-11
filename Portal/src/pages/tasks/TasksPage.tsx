@@ -13,6 +13,21 @@ import { useAuthStore } from '../../store/authStore';
 import { getTasks, deleteTask } from '../../api/tasks';
 import type { Task, TaskStatus, PaymentStatus } from '../../types/task';
 
+const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
+  { value: 'active', label: 'Active' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'pending_admin_approval', label: 'Pending admin approval' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'cancelled', label: 'Stopped' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'archived', label: 'Archived' },
+];
+const PAYMENT_OPTIONS: { value: PaymentStatus; label: string }[] = [
+  { value: 'fully_paid', label: 'Fully paid' },
+  { value: 'part_paid', label: 'Part paid' },
+  { value: 'not_paid', label: 'Not paid' },
+];
+
 /**
  * Unified Matters page for all roles, rendered as a sortable/searchable/paginated
  * grid (shared DataGrid — same UX as Users). Backend scopes rows per role. Staff
@@ -50,14 +65,35 @@ export default function TasksPage() {
     refetchInterval: 15_000,
   });
 
-  // Urgent-first default ordering (DataGrid sorting can override per-column).
-  const rows = useMemo(
-    () => [...tasks].sort((a, b) => {
-      if (!!a.isUrgent !== !!b.isUrgent) return a.isUrgent ? -1 : 1;
-      return (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '');
-    }),
+  // #91: structured multi-criteria filters (Status + Service), AND-combined,
+  // composing with the free-text search box below. All client-side — the grid
+  // already has the full role-scoped row set from getTasks().
+  const [statusFilter, setStatusFilter] = useState('');
+  const [serviceFilter, setServiceFilter] = useState('');
+  const [paymentFilter, setPaymentFilter] = useState('');
+  // Service options are derived from the tasks THEMSELVES (serviceName), not the
+  // full catalog — `workflowType` is a definition id, not the catalog's serviceKey,
+  // so filtering against catalog keys wouldn't match. Deriving from actual rows
+  // also naturally excludes services with no matters.
+  const serviceNames = useMemo(
+    () => [...new Set(tasks.map((t) => t.serviceName ?? t.workflowType).filter((v): v is string => !!v))].sort(),
     [tasks],
   );
+
+  // Urgent-first default ordering (DataGrid sorting can override per-column),
+  // then the structured filters (AND).
+  const rows = useMemo(
+    () => [...tasks]
+      .filter((t) => !statusFilter || t.status === statusFilter)
+      .filter((t) => !serviceFilter || (t.serviceName ?? t.workflowType) === serviceFilter)
+      .filter((t) => !paymentFilter || t.paymentStatus === paymentFilter)
+      .sort((a, b) => {
+        if (!!a.isUrgent !== !!b.isUrgent) return a.isUrgent ? -1 : 1;
+        return (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '');
+      }),
+    [tasks, statusFilter, serviceFilter, paymentFilter],
+  );
+  const hasAnyFilter = !!(statusFilter || serviceFilter || paymentFilter);
 
   const onDelete = async (task: Task) => {
     const ok = await confirm({
@@ -88,6 +124,50 @@ export default function TasksPage() {
         columns={columns}
         getRowId={(t) => t.id}
         onRowClick={(t) => navigate(`/tasks/${t.id}`)}
+        toolbar={
+          // #91: structured multi-criteria filters — Status / Service / Payment,
+          // AND-combined; the search box above composes on top for free text.
+          <div className="flex flex-wrap items-end gap-3 mb-4">
+            <div className="flex flex-col gap-0.5">
+              <label className="text-xs text-gray-500">Status</label>
+              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+                className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                aria-label="Filter by status">
+                <option value="">All statuses</option>
+                {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            {serviceNames.length > 1 && (
+              <div className="flex flex-col gap-0.5">
+                <label className="text-xs text-gray-500">Service</label>
+                <select value={serviceFilter} onChange={(e) => setServiceFilter(e.target.value)}
+                  className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  aria-label="Filter by service">
+                  <option value="">All services</option>
+                  {serviceNames.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+            )}
+            {!isClientView && (
+              <div className="flex flex-col gap-0.5">
+                <label className="text-xs text-gray-500">Payment</label>
+                <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value)}
+                  className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  aria-label="Filter by payment">
+                  <option value="">Any payment</option>
+                  {PAYMENT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+            )}
+            <button
+              onClick={() => { setStatusFilter(''); setServiceFilter(''); setPaymentFilter(''); }}
+              disabled={!hasAnyFilter}
+              className="self-end rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+            >
+              Clear
+            </button>
+          </div>
+        }
         searchPlaceholder={isClientView ? 'Search by service or status…' : 'Search by client, service, professional, or status…'}
         globalFilterFn={(row, _id, q) => {
           const t = row.original;

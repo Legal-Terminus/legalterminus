@@ -21,6 +21,16 @@ test.beforeAll(async () => {
   definitionId = defs.find((d: { serviceKeys?: string[] }) => (d.serviceKeys ?? []).includes(serviceKey)).id;
 });
 
+/** Expand the "Step Settings" collapsible section if it isn't already open
+ *  (its collapsed state persists in localStorage, #68). */
+async function openStepSettings(page: import('@playwright/test').Page) {
+  const toggle = page.getByRole('button', { name: /Step Settings/ });
+  await expect(toggle).toBeVisible();
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
+    await toggle.click();
+  }
+}
+
 test('Step Settings editor shows assignee + ETA + client-visible per step', async ({ adminPage }) => {
   await adminPage.goto(`services/${serviceKey}`);
   await expect(adminPage.getByRole('button', { name: /Step Settings/ })).toBeVisible();
@@ -198,6 +208,72 @@ test('client task projection drops non-client-visible steps; staff see all', asy
       if (settings.steps.some((x: { stepNumber: number }) => x.stepNumber === s.stepNumber)) {
         expect(visibleNums.has(s.stepNumber)).toBeTruthy();
       }
+    }
+  } finally {
+    await deleteMatter(taskId);
+  }
+});
+
+test('#80: toggling the Client-Visible CHECKBOX in the UI actually hides/shows the step for the client', async ({ adminPage, clientPage }) => {
+  // A fresh matter's step list already has multiple steps; pick any NON-current
+  // step to toggle (doesn't need to be in the past — the active-step hero panel
+  // isn't what we're proving here, so no advanceUntil / payment-gate traversal
+  // needed, which keeps this deterministic regardless of workflow shape).
+  const taskId = await createMatter();
+  try {
+    const api = await apiAs('admin');
+    const before = await (await api.get(`/api/tasks/${taskId}`)).json();
+    await api.dispose();
+
+    const stepsResp = await (await (await apiAs('admin')).get(`/api/workflow-definitions/${definitionId}/step-settings`)).json();
+    const target = stepsResp.steps.find((s: { stepNumber: number; clientVisible: boolean }) =>
+      s.stepNumber !== before.currentStepNumber && s.clientVisible !== false);
+    test.skip(!target, 'No non-current, client-visible step found to toggle.');
+    const targetStepNumber: number = target.stepNumber;
+    const stepTitle: string = target.title;
+
+    // Confirm the client's OWN matter actually includes this step before hiding it
+    // (otherwise the "hidden" assertion below would be trivially true).
+    const clientBefore = await (await (await apiAs('client')).get(`/api/tasks/${taskId}`)).json();
+    test.skip(!clientBefore.steps.some((s: { stepNumber: number }) => s.stepNumber === targetStepNumber),
+      'Target step is not in the client projection to begin with.');
+
+    await adminPage.goto(`services/${serviceKey}`);
+    await openStepSettings(adminPage);
+    const checkbox = adminPage.getByLabel(`Step ${targetStepNumber} client-visible`);
+    await expect(checkbox).toBeVisible();
+    const wasChecked = await checkbox.isChecked();
+
+    // Uncheck (or ensure unchecked) → save → verify hidden for the client.
+    if (wasChecked) await checkbox.uncheck();
+    await adminPage.getByRole('button', { name: /save step settings/i }).click();
+    await expect(adminPage.getByText(/step settings saved/i)).toBeVisible();
+
+    await clientPage.goto(`tasks/${taskId}`);
+    await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await expect(clientPage.getByText(stepTitle)).toHaveCount(0);
+
+    // Re-check → save → step reappears for the client.
+    await adminPage.goto(`services/${serviceKey}`);
+    await openStepSettings(adminPage);
+    const checkbox2 = adminPage.getByLabel(`Step ${targetStepNumber} client-visible`);
+    await expect(checkbox2).toBeVisible();
+    await checkbox2.check();
+    await adminPage.getByRole('button', { name: /save step settings/i }).click();
+    await expect(adminPage.getByText(/step settings saved/i)).toBeVisible();
+
+    await clientPage.reload();
+    await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await expect(clientPage.getByText(stepTitle).first()).toBeVisible();
+
+    // Restore original state if it wasn't visible to begin with.
+    if (!wasChecked) {
+      await adminPage.goto(`services/${serviceKey}`);
+      await openStepSettings(adminPage);
+      const restore = adminPage.getByLabel(`Step ${targetStepNumber} client-visible`);
+      await restore.uncheck();
+      await adminPage.getByRole('button', { name: /save step settings/i }).click();
+      await expect(adminPage.getByText(/step settings saved/i)).toBeVisible();
     }
   } finally {
     await deleteMatter(taskId);

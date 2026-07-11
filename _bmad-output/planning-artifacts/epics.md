@@ -2494,6 +2494,8 @@ before it breaches — depends on the notification/email subsystem (E-07).
 **Frontend screens/components**:
 - `Portal/src/pages/tasks/TaskDetailPage.tsx` (ActivityFeed / Section rendering).
 
+> **Follow-up (2026-07-11).** The client clarified the default was too narrow: hiding the *immediately-previous* step's activity by default (e.g. current = Step 23, but Step 22's "Documents requested / Reminder sent / Awaiting response" were hidden until expanding) still caused confusion. **Default now shows the CURRENT step's activity PLUS the immediately-PREVIOUS step's** — only step N-2 and earlier hide behind "Show previous steps". "Previous" is resolved from the ordered DEFINITION sequence (not `stepNumber − 1`, which can skip over gaps — #66). e2e: a new `matter-layout.spec.ts` case leaves distinct remarks on two consecutive plain steps and asserts the immediately-previous one is visible by default while the one before it is not (until expanded).
+
 ---
 
 ### E14-S03 — Table Column Overflow: Wrap + User-Resizable Columns [Phase 2]
@@ -2613,6 +2615,8 @@ before it breaches — depends on the notification/email subsystem (E-07).
 **Backend/Frontend**:
 - Workflow definition step flag (`clientVisible`), `projectTaskForClient`/client projection in `tasks.controller.js`, Workflow Editor step settings.
 
+> **Re-verified (2026-07-11).** The client reported it was "Not working" again after the original fix. Re-audited the full path end to end and added a genuine UI-DRIVEN e2e test (`step-settings.spec.ts`) that clicks the actual checkbox in the browser, saves, and checks the client's rendered step list (not just an API call) — it passes: unchecking hides the step for the client, re-checking restores it, both observed through real navigation. No code defect found in this pass; the mechanism works correctly today. If it's still reported as broken, the next step is a live screen-share/repro session, since static analysis and automated UI testing both show correct behavior.
+
 ---
 
 ### E15-S03 — Independent Internal vs Client Status & Notes per Step [Phase 2]
@@ -2631,6 +2635,8 @@ before it breaches — depends on the notification/email subsystem (E-07).
 **Backend/Frontend**:
 - Workflow definition step schema (`internalStatus`, `internalNotes`, `clientStatus`, `clientNote`), migration on load/seed, Workflow Editor, TaskDetailPage rendering split by audience.
 
+> **Bug found & fixed (2026-07-11).** The client reported the configured status "isn't showing/updating" for the active step, with a screenshot of the editor's Client Status field. Root cause: `statusFor()`/`descFor()` (the audience-aware readers) were only ever passed to `ExpandableStepRow` — the collapsed step-LIST row — and never to `StepHeroPanel`, the current-step ACTION card that's the primary place a user looks and acts. So a step's configured status/description had no visible home while it was the active step; it only appeared once the step was completed and the list row was inspected. Fixed by threading `statusLabel`/`description` into `StepHeroPanel` too: the status renders as a badge next to "Current step · N", and the audience-tagged description(s) replace the legacy raw `step.description` (falling back to it). Same fix serves #82 (multi-description) since `descFor()` already joins all of the viewer-audience descriptions. e2e: `hero-status-notes.spec.ts` proves staff see internal-only content and clients see client-only content, scoped to the hero panel specifically (not just the list row).
+
 ---
 
 ### E15-S04 — Multiple Audience-Tagged Descriptions per Step [Phase 2]
@@ -2646,6 +2652,10 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 **Backend/Frontend**:
 - Step schema `descriptions: [{ id, audience, text }]`, Workflow Editor list editor, TaskDetailPage renders the audience-filtered set.
+
+> **Bug fixed alongside #81 (2026-07-11)**: multi-descriptions had the same hero-panel gap — see the #81 follow-up above (same fix, `descFor()` now reaches `StepHeroPanel`).
+>
+> **Separate, NOT-YET-IMPLEMENTED ask surfaced in the client's latest comment**: configurable **structured comment/input fields** per step (e.g. "Comment 1: Company Name", "Comment 2: Business Object") — distinct from admin-authored *description* text, this is a mini-form the step's actor fills in. Out of scope for this fix; needs its own design (field definitions on the step schema, an input UI, and where the entered values are stored/surfaced). Flagged for a follow-up issue rather than silently reinterpreted as "more descriptions."
 
 ---
 
@@ -2784,6 +2794,8 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 **Frontend**:
 - `Portal/src/components/reports/ReportFiltersBar.tsx` (built-in Status/Service/Payment criteria + `criteria` prop), `MasterSheetReport.tsx` / `AllTasksReport.tsx` / `PendingTasksReport.tsx` / `CompletedTasksReport.tsx` (drop duplicated inline filters).
+
+> **Extended app-wide (2026-07-11).** The client called this out as valuable enough to apply everywhere, not just the report grids. Rolled the same Status/Service/Payment (AND-combined, composing with search) pattern onto the **Matters / My Services grid** (`TasksPage.tsx`) — previously free-text search only, now the single highest-traffic table in the app has structured filtering too. Implemented client-side (the grid already holds the full role-scoped row set from `getTasks()`, so no new backend endpoint was needed): Service options are derived from the tasks' own `serviceName` values (not the full catalog — `workflowType` is a definition id, not the catalog's `serviceKey`, so filtering against catalog keys wouldn't have matched); Payment is staff-only (not meaningful framed as "My Services" for a client). `Users` (role tabs + search) and `MyTasksPage` (already scoped to "mine") were reviewed and left as-is — they already have adequate multi-criteria filtering for their scope. e2e: `matters.spec.ts` proves Status + Payment combine with AND and Clear resets both.
 
 ---
 

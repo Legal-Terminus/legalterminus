@@ -60,3 +60,34 @@ test('matter detail opens with Steps/Documents/Payments tabs', async ({ adminPag
     await deleteMatter(taskId);
   }
 });
+
+test('#91: Matters grid supports multi-criteria filtering (Status + Payment, AND)', async ({ adminPage }) => {
+  const taskId = await createMatter(); // active/pending, fully_paid
+  try {
+    await adminPage.goto('tasks');
+    await expect(adminPage.getByRole('heading', { name: 'All Matters' })).toBeVisible();
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+
+    const statusFilter = adminPage.getByLabel('Filter by status');
+    const paymentFilter = adminPage.getByLabel('Filter by payment');
+    await expect(statusFilter).toBeVisible();
+    await expect(paymentFilter).toBeVisible();
+
+    // A non-matching status hides the row.
+    await statusFilter.selectOption('completed');
+    await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
+    await statusFilter.selectOption('');
+
+    // Matching payment status keeps it visible; a non-matching one hides it (AND
+    // with the cleared status filter above).
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+    await paymentFilter.selectOption('not_paid');
+    await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
+
+    // Clear resets everything.
+    await adminPage.getByRole('button', { name: 'Clear' }).click();
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+  } finally {
+    await deleteMatter(taskId);
+  }
+});

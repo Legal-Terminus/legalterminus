@@ -789,6 +789,8 @@ function StepsTab({
       currentAssigneeName={currentAssigneeName}
       displayNumber={displayNumberOf(task.currentStepNumber)}
       stepUrgent={currentStepUrgent} onAttach={onAttach}
+      statusLabel={statusFor(task.currentStepNumber)}
+      description={descFor(task.currentStepNumber)}
     />
   ) : completed ? (
     <div className="card p-5 flex items-center gap-2.5 bg-emerald-50 border-emerald-100">
@@ -1165,8 +1167,16 @@ function ActivityThreadCard({ events, flush, definition, currentStep }: { events
     ? [currentStep, ...stepNums.filter((n) => n !== currentStep)]
     : stepNums;
 
-  const currentGroups = orderedStepNums.filter((n) => n === currentStep);
-  const previousGroups = orderedStepNums.filter((n) => n !== currentStep);
+  // #73: default view = current step's activity PLUS the immediately-PREVIOUS
+  // step's activity (per the clarified requirement — only step N-2 and earlier
+  // hide behind "Show previous steps"). "Previous" is the prior step in the
+  // ordered DEFINITION sequence (orderedDefNums), not stepNumber-1 — stepNumber
+  // can gap (#66) when steps are deleted or hidden from this audience.
+  const currentIdx = currentStep != null ? orderedDefNums.indexOf(currentStep) : -1;
+  const immediatelyPreviousStep = currentIdx > 0 ? orderedDefNums[currentIdx - 1] : null;
+
+  const defaultGroups = orderedStepNums.filter((n) => n === currentStep || n === immediatelyPreviousStep);
+  const olderGroups = orderedStepNums.filter((n) => n !== currentStep && n !== immediatelyPreviousStep);
   // Events with no step reference (task-level) always show at the top.
   const unattached = groups.get(null) ?? [];
 
@@ -1184,7 +1194,7 @@ function ActivityThreadCard({ events, flush, definition, currentStep }: { events
     );
   };
 
-  const hasCurrent = currentGroups.length > 0 || unattached.length > 0;
+  const hasDefault = defaultGroups.length > 0 || unattached.length > 0;
 
   return (
     <div className="card p-5">
@@ -1195,21 +1205,21 @@ function ActivityThreadCard({ events, flush, definition, currentStep }: { events
       )}
       <div className="space-y-4">
         {unattached.length > 0 && <div className="space-y-3.5">{unattached.map((e, i) => <ActivityRow key={`u-${i}`} e={e} />)}</div>}
-        {currentGroups.map(renderGroup)}
-        {!hasCurrent && previousGroups.length > 0 && !showPrevious && (
+        {defaultGroups.map(renderGroup)}
+        {!hasDefault && olderGroups.length > 0 && !showPrevious && (
           <p className="text-sm text-ink-muted">No activity on the current step yet.</p>
         )}
 
-        {previousGroups.length > 0 && (
+        {olderGroups.length > 0 && (
           <div className="pt-1">
             <button
               onClick={() => setShowPrevious((v) => !v)}
               className="text-xs font-medium text-brand-700 inline-flex items-center gap-1 hover:underline"
             >
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showPrevious ? 'rotate-180' : ''}`} />
-              {showPrevious ? 'Hide previous steps' : `Show previous steps (${previousGroups.length})`}
+              {showPrevious ? 'Hide previous steps' : `Show previous steps (${olderGroups.length})`}
             </button>
-            {showPrevious && <div className="mt-3 space-y-4 border-t border-hairline pt-3">{previousGroups.map(renderGroup)}</div>}
+            {showPrevious && <div className="mt-3 space-y-4 border-t border-hairline pt-3">{olderGroups.map(renderGroup)}</div>}
           </div>
         )}
       </div>
@@ -1246,7 +1256,7 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach,
+  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description,
 }: {
   taskId: string;
   step: WorkflowStepDef;
@@ -1260,6 +1270,10 @@ function StepHeroPanel({
   turn?: 'team' | 'client' | 'govt' | null;
   stepUrgent?: boolean;
   onAttach: () => void;
+  /** #81: audience-specific status label (Internal/Client), shown as a badge. */
+  statusLabel?: string;
+  /** #81/#82: audience-tagged description text (multi-description + notes, joined). */
+  description?: string;
 }) {
   const events = new Set((step.transitions ?? []).map((t) => t.event));
   const spin = <Loader2 className="w-4 h-4 animate-spin" />;
@@ -1520,18 +1534,30 @@ function StepHeroPanel({
         <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted flex items-center gap-1.5">
           <PlayCircle className="w-3.5 h-3.5 text-brand-600" /> Current step · {displayNumber ?? step.stepNumber}
         </span>
-        {turn && (
-          <span className={`badge ${turn === 'client' ? 'bg-blue-50 text-blue-700' : turn === 'govt' ? 'bg-violet-50 text-violet-700' : 'bg-brand-50 text-brand-700'}`}>
-            {turn === 'client' ? 'Waiting on client' : turn === 'govt' ? 'With registrar' : 'With our team'}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5">
+          {/* #81: the audience-specific status configured in Step Settings — the
+              hero panel is the primary place a user looks, so it must render here
+              too (previously only shown in the collapsed step LIST row). */}
+          {statusLabel && (
+            <span className="badge bg-surface-soft text-ink-muted">{statusLabel}</span>
+          )}
+          {turn && (
+            <span className={`badge ${turn === 'client' ? 'bg-blue-50 text-blue-700' : turn === 'govt' ? 'bg-violet-50 text-violet-700' : 'bg-brand-50 text-brand-700'}`}>
+              {turn === 'client' ? 'Waiting on client' : turn === 'govt' ? 'With registrar' : 'With our team'}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Action (left) + meta (right) inside ONE panel. */}
       <div className="grid grid-cols-1 md:grid-cols-[1fr_240px]">
         <div className="p-5">
           <p className="text-base font-semibold text-ink">{step.title}</p>
-          {step.description && <p className="text-sm text-ink-muted mt-1">{step.description}</p>}
+          {/* #81/#82: audience-tagged description (Step Settings' multiple
+              descriptions + notes), falling back to the legacy single field. */}
+          {(description ?? step.description) && (
+            <p className="text-sm text-ink-muted mt-1 whitespace-pre-wrap break-words">{description ?? step.description}</p>
+          )}
 
           {/* #52: per-step checklist (display/tracking aid, generic on any step). */}
           {step.checklistItems && step.checklistItems.length > 0 && (
