@@ -906,8 +906,8 @@ function StepsTab({
       <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{remainingTotal} steps remaining</span>
       {(['team', 'client', 'govt'] as const).filter((k) => remaining[k] > 0).map((k) => (
         <span key={k} className="inline-flex items-center gap-1.5 text-sm">
-          {/* #101: dots match the step-row owner edges (slate / amber / violet). */}
-          <span className={`w-1.5 h-1.5 rounded-full ${k === 'team' ? 'bg-slate-400' : k === 'client' ? 'bg-amber-500' : 'bg-violet-500'}`} />
+          {/* #101: dots match the step-row owner edges (teal / amber / violet). */}
+          <span className={`w-1.5 h-1.5 rounded-full ${k === 'team' ? 'bg-teal-500' : k === 'client' ? 'bg-amber-500' : 'bg-violet-500'}`} />
           <span className="font-semibold text-ink">{remaining[k]}</span>
           <span className="text-ink-muted">{ownerLabel[k]}</span>
         </span>
@@ -1637,7 +1637,7 @@ function StepHeroPanel({
   // amber, govt=violet (clearly distinct hues).
   const heroEdge = turn === 'client' ? 'border-l-4 border-solid border-l-amber-500'
     : turn === 'govt' ? 'border-l-4 border-solid border-l-violet-500'
-    : turn === 'team' ? 'border-l-4 border-solid border-l-slate-400' : '';
+    : turn === 'team' ? 'border-l-4 border-solid border-l-teal-500' : '';
   return (
     <div className={`card overflow-hidden ring-1 ring-ink/5 shadow-card-hover ${heroEdge}`}>
       <div className="px-5 py-2.5 bg-surface-soft border-b border-hairline flex items-center justify-between gap-2">
@@ -1831,10 +1831,10 @@ const STATUS: Record<StepStatus, { label: string; cls: string }> = {
 // #101: ownership → the page's established colour + a human label (for a11y, so
 // the coloured edge isn't colour-alone signalling).
 // #101: three CLEARLY DISTINCT hues (not all-blue). Kept consistent with the
-// pending-bar dots and hero edge below. team=slate (neutral default), client=
-// amber (warm — "your action"), govt=violet.
+// pending-bar dots and hero edge below. team=teal (our active work), client=
+// amber (warm — "your action"), govt=violet. Three clearly distinct hues.
 const OWNER_EDGE: Record<'team' | 'client' | 'govt', { border: string; dot: string; label: string }> = {
-  team:   { border: 'border-l-slate-400',  dot: 'bg-slate-400',  label: 'Our team' },
+  team:   { border: 'border-l-teal-500',   dot: 'bg-teal-500',   label: 'Our team' },
   client: { border: 'border-l-amber-500',  dot: 'bg-amber-500',  label: 'Client' },
   govt:   { border: 'border-l-violet-500', dot: 'bg-violet-500', label: 'Registrar' },
 };
