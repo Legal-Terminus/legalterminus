@@ -3213,6 +3213,18 @@ not new engine code.
   keep "Client".
 - **My Orders removed from the sidebar (feedback)** for all roles. The `/orders`
   route stays reachable by URL (no 404) but is no longer a nav item.
+- **#101 edge render fix (feedback):** the owner left-edges weren't showing on the
+  step rows — a bare `border-l-4` with no border-style renders nothing (this project
+  has no border-style base). Added `border-solid` to the row + hero edge classes.
+- **Notification cleanup — no background job (feedback):** notifications were never
+  deleted (resolve only marked `read`), and the list returned ALL history unbounded.
+  Two event-driven cleanups, no cron: (A) `resolveNotificationsForTask` now **deletes**
+  the stale step-alerts it resolves on a matter advance (they'd already served their
+  purpose), instead of marking them read; (B) `listNotifications` fires a
+  fire-and-forget prune AFTER responding that **deletes the user's READ notifications
+  older than 7 days** — cleanup happens exactly when the user opens the bell, driven
+  by their own activity. Completion/approval notifications (their own entries, not
+  resolved here) are unaffected.
 - e2e: `matter-layout.spec.ts` (#73 current+previous, #96 collapse), `client-hero.spec.ts`
   (#92/#93 + Client→You), plus existing specs updated for the #94 gate auto-pass.
 

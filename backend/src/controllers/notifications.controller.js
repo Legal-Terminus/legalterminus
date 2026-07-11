@@ -30,6 +30,9 @@ const serialize = (doc) => {
   };
 };
 
+// How long a READ notification survives before it's pruned on next bell-open.
+const READ_NOTIFICATION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
 // GET /api/notifications — the current user's notifications, newest first.
 export const listNotifications = async (req, res) => {
   try {
@@ -45,6 +48,27 @@ export const listNotifications = async (req, res) => {
       .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
 
     res.status(200).json(items);
+
+    // Opportunistic cleanup (no cron): AFTER responding, fire-and-forget delete
+    // this user's READ notifications older than the TTL. Read = the user already
+    // saw/dismissed it; the age floor keeps anything recent. Cleanup happens
+    // exactly when the user looks, driven by their own activity.
+    (async () => {
+      try {
+        const cutoff = Date.now() - READ_NOTIFICATION_TTL_MS;
+        const stale = snap.docs.filter((doc) => {
+          const d = doc.data();
+          return d.read === true && toMillis(d.createdAt) > 0 && toMillis(d.createdAt) < cutoff;
+        });
+        if (stale.length === 0) return;
+        const batch = db.batch();
+        stale.forEach((doc) => batch.delete(doc.ref));
+        await batch.commit();
+        logger.info({ uid, pruned: stale.length }, '[notifications] pruned stale read notifications');
+      } catch (e) {
+        logger.warn({ err: e?.message }, '[notifications] prune-on-open failed (non-fatal)');
+      }
+    })();
   } catch (error) {
     logger.error({ err: error }, 'Error listing notifications:');
     res.status(500).json({ message: 'Internal server error' });
@@ -164,9 +188,13 @@ export const resolveNotificationsForTask = async (taskId, { stepNumber, stepNumb
       return true;
     });
     if (match.length === 0) return 0;
+    // A stale step-alert (its step is done / vacated) has no value once resolved,
+    // so DELETE it rather than just marking it read — keeps the bell and the
+    // notifications collection from accumulating dead "action needed / step ready"
+    // entries. (User-facing history that matters — completion/approval — is created
+    // as its own notification and is NOT resolved here.)
     const batch = db.batch();
-    const now = new Date();
-    match.forEach((doc) => batch.set(doc.ref, { read: true, readAt: now, resolvedAuto: true }, { merge: true }));
+    match.forEach((doc) => batch.delete(doc.ref));
     await batch.commit();
     return match.length;
   } catch (err) {

@@ -1635,9 +1635,9 @@ function StepHeroPanel({
   // #101: owner-coloured left edge on the hero card, matching the step-row edges,
   // so staff instantly see whose ball the current step is. team=slate, client=
   // amber, govt=violet (clearly distinct hues).
-  const heroEdge = turn === 'client' ? 'border-l-4 border-l-amber-500'
-    : turn === 'govt' ? 'border-l-4 border-l-violet-500'
-    : turn === 'team' ? 'border-l-4 border-l-slate-400' : '';
+  const heroEdge = turn === 'client' ? 'border-l-4 border-solid border-l-amber-500'
+    : turn === 'govt' ? 'border-l-4 border-solid border-l-violet-500'
+    : turn === 'team' ? 'border-l-4 border-solid border-l-slate-400' : '';
   return (
     <div className={`card overflow-hidden ring-1 ring-ink/5 shadow-card-hover ${heroEdge}`}>
       <div className="px-5 py-2.5 bg-surface-soft border-b border-hairline flex items-center justify-between gap-2">
@@ -1867,7 +1867,9 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
   // so it stays visible on white pending rows too). Past rows keep the same hue,
   // just a hair lighter via the border shade — not opacity (which hid it before).
   const edge = owner ? OWNER_EDGE[owner] : null;
-  const edgeCls = edge ? `border-l-4 ${edge.border}` : '';
+  // `border-solid` is required — a bare border-width with the default border-style
+  // (none) renders nothing, which is why the edge wasn't showing on the rows.
+  const edgeCls = edge ? `border-l-4 border-solid ${edge.border}` : '';
   return (
     <div
       className={`${edgeCls} ${isCurrent ? 'bg-surface-soft' : ''}`}
