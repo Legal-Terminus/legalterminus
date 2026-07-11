@@ -256,6 +256,41 @@ export async function createTask(req, res) {
     const cost = typeof totalCost === 'number' ? totalCost : received;
     const amountDue = Math.max(0, cost - received);
 
+    // #94: if the FIRST step is a payment gate and the matter is created already
+    // (part- or fully-)paid, the gate's `always` transition should pass on creation
+    // — otherwise the matter is stranded on step 1 "Waiting for payment to be
+    // recorded" until someone manually re-records payment. Creation previously
+    // hard-wrote `definition.initialStep`; instead RUN the compiled machine with
+    // the initial payment status in context and take the SETTLED step (the `always`
+    // gates fire on actor.start()). Only applies to active (not approval-pending)
+    // matters; a no-payment matter stays pending_admin_approval on step 1 as before.
+    let resolvedFirstStep = firstStep;
+    if (!needsApproval) {
+      try {
+        const machine = compileDefinition(definition);
+        const actor = createActor(machine, {
+          input: {
+            taskId: null,
+            clientUid,
+            workflowType: definition.id,
+            paymentStatus,
+            currentStepNumber: firstStep,
+            completedSteps: [],
+            activeParallelGroup: null,
+            branchDecision: null,
+            iterationCount: {},
+            adminOverride: false,
+          },
+        });
+        actor.start();
+        const settled = actor.getSnapshot().context.currentStepNumber;
+        actor.stop();
+        if (typeof settled === 'number') resolvedFirstStep = settled;
+      } catch (e) {
+        logger.warn({ err: e?.message }, 'createTask: initial gate resolution skipped (using initialStep)');
+      }
+    }
+
     // Per-step INSTANCE state, built from the definition's EXPLICIT step identity
     // (no regex parsing). Stored in a SUBCOLLECTION (tasks/{id}/steps/{stepNumber})
     // so independent step updates never race on a whole-array overwrite.
@@ -264,10 +299,12 @@ export async function createTask(req, res) {
     const now = new Date().toISOString();
     // Due-date projection (E13-S02). Only start the clock when work actually
     // starts: an admin-created matter is active now; a manager-created one waits
-    // for approval, so its due dates are stamped at approval time instead.
-    const firstStepDef = stepDefs.find((s) => s.stepNumber === firstStep);
+    // for approval, so its due dates are stamped at approval time instead. Project
+    // from the RESOLVED step (#94) — a payment gate that auto-passes on creation
+    // leaves the matter on a later step.
+    const firstStepDef = stepDefs.find((s) => s.stepNumber === resolvedFirstStep);
     const firstStepEta = etaDaysOf(firstStepDef);
-    const matterDueAt = needsApproval ? null : projectMatterDueAt(stepDefs, firstStep, now);
+    const matterDueAt = needsApproval ? null : projectMatterDueAt(stepDefs, resolvedFirstStep, now);
 
     const task = {
       // Workflow identity: definition + pinned version (NOT the service key).
@@ -290,7 +327,7 @@ export async function createTask(req, res) {
       // #51: matters created with no payment require admin approval before going live.
       createdWithoutPayment: noPaymentNeedsApproval,
       isUrgent: false,
-      currentStepNumber: firstStep,
+      currentStepNumber: resolvedFirstStep, // #94: after any creation-time gate auto-pass
       totalSteps: stepDefs.length, // denormalized count for list/report display
       matterDueAt, // projected completion (E13-S02); null while pending approval/untracked
       createdAt: now,
@@ -302,18 +339,29 @@ export async function createTask(req, res) {
     const ref = db.collection('tasks').doc();
     const batch = db.batch();
     batch.set(ref, task);
-    // While pending approval, even the first step stays `pending` (no work starts).
-    const firstStepStatus = needsApproval ? 'pending' : 'active';
+    // Step statuses at creation:
+    //  - pending approval → every step stays `pending` (no work starts);
+    //  - #94: any step the creation-time gate AUTO-PASSED (< resolvedFirstStep) is
+    //    marked `completed` (e.g. the step-1 payment gate on a part/fully-paid
+    //    matter), so the matter opens cleanly on the resolved step;
+    //  - the resolved step is `active`; later steps `pending`.
+    const statusForStep = (n) => {
+      if (needsApproval) return 'pending';
+      if (n < resolvedFirstStep) return 'completed';
+      if (n === resolvedFirstStep) return 'active';
+      return 'pending';
+    };
     for (const s of stepDefs) {
-      const isFirstActive = s.stepNumber === firstStep && !needsApproval;
+      const isActive = s.stepNumber === resolvedFirstStep && !needsApproval;
       batch.set(ref.collection('steps').doc(String(s.stepNumber)), {
         stepNumber: s.stepNumber,
         title: s.title,
         assignedRole: s.assignedRole ?? null,
         assignedTo: assigneeForStep(s),
-        status: s.stepNumber === firstStep ? firstStepStatus : 'pending',
-        // ETA clock (E13-S02): only the active first step gets a running due date.
-        ...(isFirstActive ? { startedAt: now, dueAt: addDaysIso(now, firstStepEta) } : {}),
+        status: statusForStep(s.stepNumber),
+        ...(s.stepNumber < resolvedFirstStep && !needsApproval ? { completedAt: now } : {}),
+        // ETA clock (E13-S02): only the active resolved step gets a running due date.
+        ...(isActive ? { startedAt: now, dueAt: addDaysIso(now, firstStepEta) } : {}),
       });
     }
     await batch.commit();
@@ -333,7 +381,7 @@ export async function createTask(req, res) {
       await notify({
         recipientUid: firstAssignee, actorUid: req.user.uid, type: 'info',
         title: 'New step assigned to you',
-        message: `${clientName} · ${task.serviceName}: ${firstStepDef?.title ?? `Step ${firstStep}`}`,
+        message: `${clientName} · ${task.serviceName}: ${firstStepDef?.title ?? `Step ${resolvedFirstStep}`}`,
         taskId: ref.id,
       });
     }
@@ -341,7 +389,7 @@ export async function createTask(req, res) {
     const steps = stepDefs.map((s) => ({
       stepNumber: s.stepNumber,
       title: s.title,
-      status: s.stepNumber === firstStep ? firstStepStatus : 'pending',
+      status: statusForStep(s.stepNumber),
     }));
     res.status(201).json({ id: ref.id, ...task, steps });
   } catch (err) {
@@ -1404,14 +1452,24 @@ export async function transitionTask(req, res) {
 
     await batch.commit();
 
-    // Resolve stale notifications. When the matter COMPLETES, clear all of its
-    // active alerts; otherwise clear the alerts tied to the step we just left
-    // (it's done, so its "action needed / step ready" alert is no longer relevant).
-    // Runs before we create fresh notifications below.
+    // Resolve stale notifications (#100). Notifications are keyed to the step the
+    // ball ARRIVES at (the step the recipient must act on). On any FORWARD move we
+    // must clear the alerts of EVERY vacated step up to the one we're landing on —
+    // not just the single departed step — because a payment-gate auto-pass, a
+    // branch skip, or any multi-step jump would otherwise orphan the skipped
+    // steps' alerts forever. On a BACKWARD move (REWORK re-entry) clear any alert
+    // for a step at/after where we land (its forward alert is now stale).
+    // Completion clears everything. Runs before we create fresh notifications.
     try {
       if (isComplete) {
         await resolveNotificationsForTask(taskId);
-      } else if (newStep !== task.currentStepNumber) {
+      } else if (newStep > task.currentStepNumber) {
+        // Forward: clear every step strictly before the arrival step.
+        await resolveNotificationsForTask(taskId, { stepNumberLte: newStep - 1 });
+      } else if (newStep < task.currentStepNumber) {
+        // Backward (REWORK): clear stale alerts for the step we left and anything
+        // after the step we return to, then the fresh notification below re-arms
+        // the returned-to step.
         await resolveNotificationsForTask(taskId, { stepNumber: task.currentStepNumber });
       }
     } catch (e) {
@@ -1461,6 +1519,27 @@ export async function transitionTask(req, res) {
           await notify({ recipientUid: task.assignedTo, actorUid: uid, type: 'info',
             title: 'Client responded', message: ctx, taskId });
         }
+      }
+
+      // #99: close the "Action needed" loop — when a step that was PENDING ON THE
+      // CLIENT completes (they acted, OR staff completed it on their behalf via
+      // override), send the client a confirmation that their action landed. Gated
+      // strictly on the DEPARTED step being client-owned, so internal→internal
+      // completions never spam the client. Fire-and-forget like every notify.
+      const departedDef = etaStepDefs.find((s) => s.stepNumber === task.currentStepNumber);
+      const departedWasClientStep = departedDef && deriveOwnerType(departedDef) === 'client';
+      const advancedForward = !isComplete && newStep > task.currentStepNumber;
+      if ((departedWasClientStep && (advancedForward || isComplete)) && task.clientUid) {
+        const stepTitle = departedDef?.title ?? `Step ${task.currentStepNumber}`;
+        const confirmMsg = role === 'client'
+          ? `Thanks — your action on “${stepTitle}” has been received. We'll take it from here.`
+          : `“${stepTitle}” has been completed on your matter. No further action is needed from you on this step.`;
+        // Use createNotification DIRECTLY (not notify()) so it is NOT suppressed
+        // when the client is the actor — the confirmation is FOR the client even
+        // when they completed the step themselves.
+        await createNotification({ recipientUid: task.clientUid, type: 'success',
+          title: 'Action received', message: confirmMsg, taskId, stepNumber: task.currentStepNumber })
+          .catch((e) => logger.warn({ err: e?.message }, '#99 client confirmation notify failed'));
       }
 
       // #60: declarative step EFFECTS. When the step we just acted on carries

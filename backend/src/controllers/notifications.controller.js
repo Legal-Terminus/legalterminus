@@ -120,7 +120,16 @@ export const createNotification = async ({ recipientUid, type = 'info', title, m
     try {
       const u = await db.collection('users').doc(recipientUid).get();
       const to = u.exists ? (u.data().email || u.data().emailIds?.[0]) : null;
-      if (to) await sendNotificationEmail({ to, title, message: message ?? '', taskId });
+      // #98: resolve the matter's serviceName so the email gets a stable,
+      // matter-scoped subject (Gmail threads all of a matter's emails together).
+      let serviceName;
+      if (to && taskId) {
+        try {
+          const t = await db.collection('tasks').doc(taskId).get();
+          if (t.exists) serviceName = t.data().serviceName || t.data().workflowType || undefined;
+        } catch { /* best-effort — fall back to the event title subject */ }
+      }
+      if (to) await sendNotificationEmail({ to, title, message: message ?? '', taskId, serviceName });
     } catch (err) {
       logger.warn({ err: err?.message }, '[email] notification email dispatch failed (non-fatal)');
     }
@@ -132,11 +141,15 @@ export const createNotification = async ({ recipientUid, type = 'info', title, m
 /**
  * Resolve (mark read) ACTIVE notifications tied to a matter — used when a matter
  * completes or a notified step is done, so stale "action needed" alerts clear from
- * everyone's unread list. Non-destructive (history is kept). When `stepNumber` is
- * given, only notifications for THAT step are resolved; otherwise ALL the matter's
- * active notifications are resolved. Fire-and-forget; never throws to the caller.
+ * everyone's unread list. Non-destructive (history is kept). Matching options:
+ *   - `stepNumber`   — resolve only notifications for THAT exact step;
+ *   - `stepNumberLte` (#100) — resolve notifications for EVERY step ≤ this number,
+ *     so a multi-step advance (payment-gate auto-pass, branch skip, jump) clears
+ *     the alerts of every vacated step, not just the single departed one;
+ *   - neither        — resolve ALL of the matter's active notifications.
+ * Fire-and-forget; never throws to the caller.
  */
-export const resolveNotificationsForTask = async (taskId, { stepNumber } = {}) => {
+export const resolveNotificationsForTask = async (taskId, { stepNumber, stepNumberLte } = {}) => {
   if (!taskId) return 0;
   try {
     const db = getDb();
@@ -144,6 +157,9 @@ export const resolveNotificationsForTask = async (taskId, { stepNumber } = {}) =
     const match = snap.docs.filter((doc) => {
       const d = doc.data();
       if (d.read === true) return false;
+      if (typeof stepNumberLte === 'number') {
+        return typeof d.stepNumber === 'number' && d.stepNumber <= stepNumberLte;
+      }
       if (typeof stepNumber === 'number') return d.stepNumber === stepNumber;
       return true;
     });

@@ -5,6 +5,7 @@ import {
   deleteDoc,
 } from "../config/firestore.js";
 import { logger } from "../config/logger.js";
+import { sendContactLeadEmail } from "../services/emailService.js";
 
 const COLLECTION = "contactLeads";
 
@@ -78,6 +79,11 @@ export const createContactLead = async (req, res) => {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+
+    // #20: email the team about the new enquiry (fire-and-forget — never blocks
+    // or fails the submission; no-op when email transport isn't configured).
+    sendContactLeadEmail({ fullName, company, phone, email, subject, message, state, preferredCallTime, source, sourceLabel, whatsapp })
+      .catch((e) => logger.warn({ err: e?.message }, "[CONTACT] lead email failed"));
 
     res.status(201).json({ success: true, lead });
   } catch (error) {

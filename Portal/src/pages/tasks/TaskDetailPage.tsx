@@ -775,6 +775,21 @@ function StepsTab({
   const stagesRail = useRail('matterLayout:stages', { initial: 210, min: 150, max: 340 });
   const activityRail = useRail('matterLayout:activity', { initial: 320, min: 240, max: 520 });
 
+  // #96: completed/skipped steps hide behind a "Show completed (N)" toggle so a
+  // long stage doesn't bury the active step under a wall of Done rows.
+  const [showCompleted, setShowCompleted] = useState(false);
+  const isDoneStatus = (s: TaskStep) => s.status === 'completed' || s.status === 'skipped';
+  // #101: owner (team/client/govt) per step, from the definition — drives the
+  // coloured left edge on rows and the hero card tint.
+  const ownerOf = (stepNumber: number): 'team' | 'client' | 'govt' => {
+    const def = stepDefs.find((d) => d.stepNumber === stepNumber);
+    return def ? deriveOwnerType(def) : 'team';
+  };
+  // #102: when the Stages rail is COLLAPSED, the pane becomes a self-sufficient
+  // full timeline (all stages, grouped) with a stage jump-dropdown — otherwise the
+  // list would be stranded on one stage with no navigation left.
+  const railCollapsed = stagesRail.collapsed && hasPhases;
+
   // The HERO panel — the one dominant zone: action (left) + meta (right) inside a
   // single elevated, bordered container, so the rail clearly belongs to the step.
   const currentStepUrgent = steps.find((s) => s.stepNumber === task.currentStepNumber)?.isUrgent ?? false;
@@ -807,23 +822,77 @@ function StepsTab({
       <ActivityThreadCard events={events} definition={definition} currentStep={task.currentStepNumber} flush />
     </Section>
   );
-  const stepsSection = (
-    <Section title={hasPhases ? `${stages[selectedStage]?.name} · steps` : 'All steps'} icon={<ListChecks className="w-3.5 h-3.5" />}>
-      <div className="card divide-y divide-hairline-soft">
-        {stageSteps.map((step) => (
-          <ExpandableStepRow
-            key={step.stepNumber}
-            step={step}
-            displayNumber={displayNumberOf(step.stepNumber)}
-            description={descFor(step.stepNumber)}
-            statusLabel={statusFor(step.stepNumber)}
-            isCurrent={step.stepNumber === task.currentStepNumber && !completed}
-            comments={events.filter((e) => e.comment && (e.fromStep === step.stepNumber || e.toStep === step.stepNumber))}
-            attachments={documents.filter((d) => d.stepNumber === step.stepNumber)}
-            onOpenDoc={onOpenDoc}
-          />
-        ))}
+  // Shared row renderer — used by both the single-stage and grouped views.
+  const renderStepRow = (step: TaskStep) => (
+    <ExpandableStepRow
+      key={step.stepNumber}
+      step={step}
+      displayNumber={displayNumberOf(step.stepNumber)}
+      description={descFor(step.stepNumber)}
+      statusLabel={statusFor(step.stepNumber)}
+      isCurrent={step.stepNumber === task.currentStepNumber && !completed}
+      owner={ownerOf(step.stepNumber)}
+      comments={events.filter((e) => e.comment && (e.fromStep === step.stepNumber || e.toStep === step.stepNumber))}
+      attachments={documents.filter((d) => d.stepNumber === step.stepNumber)}
+      onOpenDoc={onOpenDoc}
+    />
+  );
+
+  // #96: split a step list into (visible = active/pending) + (completed/skipped),
+  // rendering the completed set behind a "Show completed (N)" toggle. Ascending
+  // order is preserved — the completed rows sit in their normal position once shown.
+  const renderStepList = (list: TaskStep[]) => {
+    const doneCount = list.filter(isDoneStatus).length;
+    const visible = showCompleted ? list : list.filter((s) => !isDoneStatus(s));
+    return (
+      <>
+        <div className="card divide-y divide-hairline-soft">
+          {visible.map(renderStepRow)}
+          {visible.length === 0 && (
+            <p className="px-5 py-4 text-sm text-ink-muted">All steps here are completed.</p>
+          )}
+        </div>
+        {doneCount > 0 && (
+          <button
+            onClick={() => setShowCompleted((v) => !v)}
+            className="mt-2 text-xs font-medium text-brand-700 inline-flex items-center gap-1 hover:underline"
+          >
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showCompleted ? 'rotate-180' : ''}`} />
+            {showCompleted ? 'Hide completed' : `Show completed (${doneCount})`}
+          </button>
+        )}
+      </>
+    );
+  };
+
+  // #102: when the rail is collapsed, render EVERY stage's steps grouped with
+  // small stage subheaders (self-sufficient full timeline). Otherwise the classic
+  // single-stage view. Completed steps still collapse via #96.
+  const stepsSection = railCollapsed ? (
+    <Section
+      title="All steps"
+      icon={<ListChecks className="w-3.5 h-3.5" />}
+      action={<StageJumpDropdown stages={stages} onJump={(i) => { setSelectedStage(i); document.getElementById(`stage-group-${stages[i]?.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} />}
+    >
+      <div className="space-y-5">
+        {stages.map((st) => {
+          const group = steps.filter((s) => phaseIdOf.get(s.stepNumber) === st.id);
+          if (group.length === 0) return null;
+          const { done, total } = countsFor(st.id);
+          return (
+            <div key={st.id} id={`stage-group-${st.id}`}>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">
+                {st.name} · {done}/{total}
+              </p>
+              {renderStepList(group)}
+            </div>
+          );
+        })}
       </div>
+    </Section>
+  ) : (
+    <Section title={hasPhases ? `${stages[selectedStage]?.name} · steps` : 'All steps'} icon={<ListChecks className="w-3.5 h-3.5" />}>
+      {renderStepList(stageSteps)}
     </Section>
   );
 
@@ -1047,16 +1116,39 @@ function ActivityRail({ rail, children }: { rail: RailState; children: React.Rea
 }
 
 /** A labelled content section — gives the page clear Act → History → Steps zones. */
-function Section({ title, count, icon, children }: {
-  title: string; count?: number; icon: React.ReactNode; children: React.ReactNode;
+function Section({ title, count, icon, action, children }: {
+  title: string; count?: number; icon: React.ReactNode; action?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
     <section>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-2 flex items-center gap-1.5">
-        {icon}{title}{count != null && <span className="text-ink-faint/70 font-normal normal-case">· {count}</span>}
-      </p>
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint flex items-center gap-1.5">
+          {icon}{title}{count != null && <span className="text-ink-faint/70 font-normal normal-case">· {count}</span>}
+        </p>
+        {action}
+      </div>
       {children}
     </section>
+  );
+}
+
+// #102: a compact stage jump-dropdown shown in the steps section header while the
+// Stages rail is collapsed — quick navigation on long workflows without the rail.
+function StageJumpDropdown({ stages, onJump }: {
+  stages: { id: string; name: string; status: string }[];
+  onJump: (index: number) => void;
+}) {
+  if (stages.length === 0) return null;
+  return (
+    <select
+      onChange={(e) => { const i = Number(e.target.value); if (!Number.isNaN(i)) onJump(i); e.target.selectedIndex = 0; }}
+      defaultValue=""
+      aria-label="Jump to stage"
+      className="rounded-md border border-hairline bg-white px-2 py-1 text-xs text-ink-muted max-w-[180px]"
+    >
+      <option value="" disabled>Jump to stage…</option>
+      {stages.map((st, i) => <option key={st.id} value={i}>{st.name}</option>)}
+    </select>
   );
 }
 
@@ -1344,7 +1436,15 @@ function StepHeroPanel({
           )}
         </div>
       );
-    } else wait = <WaitNote text="Waiting for payment to be recorded." />;
+    } else {
+      // #93: a client on a payment gate previously saw a bare "Waiting for payment
+      // to be recorded." dead-end — no action, no context, and it contradicted the
+      // part-payment banner telling them to pay. Give reassuring, non-contradictory
+      // copy: recording is our job, nothing is needed from them on THIS step.
+      wait = role.isClient
+        ? <WaitNote text="Our team will confirm your payment once it's received — nothing is needed from you on this step." />
+        : <WaitNote text="Waiting for payment to be recorded." />;
+    }
   } else if (step.type === 'branch') {
     const branches = [...new Set((step.transitions ?? []).filter((t) => t.branch).map((t) => t.branch!))];
     if (role.isStaff && canComplete) {
@@ -1528,8 +1628,14 @@ function StepHeroPanel({
     </div>
   );
 
+  // #101: subtle owner-coloured left edge on the hero card, matching the step-row
+  // edges, so staff instantly see whose ball the current step is without reading
+  // the chip. team=brand, client=blue, govt=violet.
+  const heroEdge = turn === 'client' ? 'border-l-[3px] border-l-blue-500'
+    : turn === 'govt' ? 'border-l-[3px] border-l-violet-500'
+    : turn === 'team' ? 'border-l-[3px] border-l-brand-500' : '';
   return (
-    <div className="card overflow-hidden ring-1 ring-ink/5 shadow-card-hover">
+    <div className={`card overflow-hidden ring-1 ring-ink/5 shadow-card-hover ${heroEdge}`}>
       <div className="px-5 py-2.5 bg-surface-soft border-b border-hairline flex items-center justify-between gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted flex items-center gap-1.5">
           <PlayCircle className="w-3.5 h-3.5 text-brand-600" /> Current step · {displayNumber ?? step.stepNumber}
@@ -1543,7 +1649,10 @@ function StepHeroPanel({
           )}
           {turn && (
             <span className={`badge ${turn === 'client' ? 'bg-blue-50 text-blue-700' : turn === 'govt' ? 'bg-violet-50 text-violet-700' : 'bg-brand-50 text-brand-700'}`}>
-              {turn === 'client' ? 'Waiting on client' : turn === 'govt' ? 'With registrar' : 'With our team'}
+              {/* #92: from the client's own POV, "Waiting on client" reads third-person.
+                  Show "Waiting on you" for the client; staff keep "Waiting on client". */}
+              {turn === 'client' ? (role.isClient ? 'Waiting on you' : 'Waiting on client')
+                : turn === 'govt' ? 'With registrar' : 'With our team'}
             </span>
           )}
         </div>
@@ -1559,9 +1668,10 @@ function StepHeroPanel({
             <p className="text-sm text-ink-muted mt-1 whitespace-pre-wrap break-words">{description ?? step.description}</p>
           )}
 
-          {/* #52: per-step checklist (display/tracking aid, generic on any step). */}
+          {/* #52: per-step checklist (display/tracking aid, generic on any step).
+              #95: read-only for the client (it's a staff tracking list, not theirs). */}
           {step.checklistItems && step.checklistItems.length > 0 && (
-            <StepChecklist items={step.checklistItems} />
+            <StepChecklist items={step.checklistItems} readOnly={role.isClient} />
           )}
 
           {/* #61: per-step document upload (generic on any step that opts in). */}
@@ -1636,9 +1746,32 @@ function WaitNote({ text }: { text: string }) {
 // #52: generic per-step checklist. Items come from the workflow definition; check
 // state is local (a verification/tracking aid — the step still advances via its
 // normal action). A "N of M" counter shows progress at a glance.
-function StepChecklist({ items }: { items: string[] }) {
+function StepChecklist({ items, readOnly = false }: { items: string[]; readOnly?: boolean }) {
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const done = items.filter((_, i) => checked[i]).length;
+
+  // #95: for a CLIENT this is a staff-owned tracking list, not the client's to-do.
+  // Render it read-only (a plain bulleted status list) so it never implies the
+  // client must tick items. The checked state is local-only anyway (never
+  // persisted), so there's nothing meaningful to "un-tick" for the client.
+  if (readOnly) {
+    return (
+      <div className="mt-4 rounded-lg border border-hairline bg-surface-soft/40 p-3">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-2">
+          What we're tracking on this step
+        </p>
+        <ul className="flex flex-col gap-1.5">
+          {items.map((item, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm text-ink">
+              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-ink-faint shrink-0" aria-hidden="true" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-4 rounded-lg border border-hairline bg-surface-soft/40 p-3">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-2">
@@ -1691,12 +1824,21 @@ const STATUS: Record<StepStatus, { label: string; cls: string }> = {
 
 /** A step row. Expands to reveal details: the comments and document attachments
  *  recorded against this step (plus completion time / remark). */
-function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCurrent, comments = [], attachments = [], onOpenDoc }: {
+// #101: ownership → the page's established colour + a human label (for a11y, so
+// the coloured edge isn't colour-alone signalling).
+const OWNER_EDGE: Record<'team' | 'client' | 'govt', { border: string; label: string }> = {
+  team:   { border: 'border-l-brand-500',  label: 'Our team' },
+  client: { border: 'border-l-blue-500',   label: 'Client' },
+  govt:   { border: 'border-l-violet-500', label: 'Registrar' },
+};
+
+function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCurrent, owner, comments = [], attachments = [], onOpenDoc }: {
   step: TaskStep;
   displayNumber: number;
   description?: string;
   statusLabel?: string; // #81: audience-specific status text
   isCurrent: boolean;
+  owner?: 'team' | 'client' | 'govt'; // #101: ball owner → left-edge colour
   comments?: TaskEvent[];
   attachments?: TaskDocument[];
   onOpenDoc?: (docId: string) => void;
@@ -1713,8 +1855,16 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
     comments.length ? `${comments.length} comment${comments.length > 1 ? 's' : ''}` : '',
     attachments.length ? `${attachments.length} file${attachments.length > 1 ? 's' : ''}` : '',
   ].filter(Boolean).join(' · ');
+  // #101: coloured left edge by owner; muted (thinner + faded) on past steps so
+  // they don't compete with upcoming ones.
+  const edge = owner ? OWNER_EDGE[owner] : null;
+  const isPast = step.status === 'completed' || skipped;
+  const edgeCls = edge ? `border-l-[3px] ${edge.border} ${isPast ? 'opacity-50' : ''}` : '';
   return (
-    <div className={isCurrent ? 'bg-surface-soft' : ''}>
+    <div
+      className={`${edgeCls} ${isCurrent ? 'bg-surface-soft' : ''}`}
+      title={edge ? `${edge.label} step` : undefined}
+    >
       <button
         onClick={() => expandable && setOpen((v) => !v)}
         className={`w-full flex items-start gap-3 px-5 py-3 text-left ${expandable ? 'hover:bg-surface-soft/60' : 'cursor-default'}`}

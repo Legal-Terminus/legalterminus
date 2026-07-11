@@ -3147,6 +3147,63 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Client-view clarity, workflow-machine & email batch (2026-07-11 — #92–#102, #20)
+
+**Workflow machine / notifications (backend)**
+- **#94 — Payment-gate first step auto-advances on creation.** `createTask` never
+  ran the compiled XState machine — it hard-wrote `definition.initialStep`, so a
+  matter created part- or fully-paid was stranded on the step-1 payment gate
+  ("Waiting for payment to be recorded") instead of passing it. Fix: instantiate
+  the machine with the initial `paymentStatus` in context and take the SETTLED
+  `currentStepNumber` (the gate's `always` transition fires on `actor.start()`);
+  steps the gate auto-passed are marked `completed`. Root cause behind #92/#93's
+  confusing client screen. e2e: `step-execution.spec.ts` (#94).
+- **#100 — Client "Action needed" alerts orphaned on multi-step advances.**
+  Notifications were keyed to the ARRIVAL step but resolved by the single DEPARTED
+  step, so a gate auto-pass / branch skip / jump left the skipped step's alert
+  unread forever. Fix: `resolveNotificationsForTask` gains a `stepNumberLte` range
+  match; on any forward move `transitionTask` clears every vacated step (`≤ newStep-1`),
+  and backward REWORK clears the stale departed-step alert.
+- **#99 — Client confirmation when a client-pending step completes.** Closes the
+  "Action needed → done" loop: when a step that was client-owned completes (client
+  acted, or staff overrode on their behalf), the client gets an "Action received"
+  notification + email. Uses `createNotification` directly so it isn't suppressed
+  when the client is the actor. Gated on `deriveOwnerType(departedStep) === 'client'`.
+
+**Email (backend)**
+- **#97 — Brand re-skin.** `renderEmail` rebuilt table-based/inline-styled with the
+  portal's tokens (brand-600 CTA, ink/hairline/surface greys) + a Legal Terminus
+  wordmark header; email-safe (no external CSS/fonts), pre-wrap body.
+- **#98 — Matter-threaded emails.** Stable per-matter subject
+  `[Legal Terminus] <Service> (#<shortId>)` + a stable `References`/`In-Reply-To`
+  header (`<matter-{taskId}@legalterminus>`) so Gmail groups a matter's emails.
+  `createNotification` now resolves the task's `serviceName` for the subject.
+- **#20 — Contact-form email.** Now that the Gmail transport works, `createContactLead`
+  emails the team (`CONTACT_LEADS_EMAIL` → `GMAIL_USER`) on every submission,
+  `replyTo` set to the enquirer. Fire-and-forget; all ~60 forms covered via the one
+  controller. (Storage was already implemented under #30.)
+
+**Client-view / steps-list clarity (frontend — `TaskDetailPage.tsx`)**
+- **#92 — "Waiting on you"** for the client (was third-person "Waiting on client");
+  staff unchanged. Audience-aware chip via `role.isClient`.
+- **#93 — Payment-gate client copy** replaced the dead-end "Waiting for payment to
+  be recorded" with reassuring "…nothing is needed from you on this step." (staff
+  unchanged; recording stays staff-only).
+- **#95 — Read-only client checklist**: a staff-owned step's checklist renders as a
+  plain bulleted status list for the client (no interactive checkboxes it isn't
+  theirs to tick).
+- **#96 — Collapse completed steps** behind a "Show completed (N)" toggle (default
+  hidden), mirroring the Activity "Show previous steps" UX; ascending order kept.
+- **#101 — Owner colour-coding**: a subtle owner-coloured left edge on each step row
+  (team=brand / client=blue / registrar=violet, muted on past steps) + the same
+  edge on the current-step hero card, reusing the established pending-bar palette;
+  `title` label for a11y (not colour-alone).
+- **#102 — Collapsed Stages rail → self-sufficient timeline**: when the rail is
+  collapsed the steps pane shows EVERY stage grouped with subheaders + a compact
+  "Jump to stage…" dropdown, instead of being stranded on one stage.
+- e2e: `matter-layout.spec.ts` (#73 current+previous, #96 collapse), `client-hero.spec.ts`
+  (#92/#93), plus existing specs updated for the #94 gate auto-pass.
+
 ### Workflow / matter-lifecycle
 - **#51 — Remove Work Assigning step + payment-at-creation.** "Work Assigning"
   step removed (matter starts at step 4). Create Matter modal captures **payment

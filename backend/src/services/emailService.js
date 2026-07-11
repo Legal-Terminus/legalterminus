@@ -93,31 +93,131 @@ const escapeHtml = (s) =>
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
   ));
 
-/** Build a simple branded HTML + text body for a notification email. */
+// #97: Legal Terminus brand palette — mirrors the portal's Tailwind tokens so the
+// email reads as the product, not a generic template. Email-safe: inline styles,
+// table layout, no external CSS/fonts.
+const BRAND = {
+  primary: '#2563eb',   // brand-600 (CTA / accent)
+  primaryDark: '#1d4ed8', // brand-700
+  ink: '#111111',
+  inkSoft: '#374151',
+  inkMuted: '#6b7280',
+  inkFaint: '#9ca3af',
+  hairline: '#e5e7eb',
+  surfaceSoft: '#f8f9fa',
+};
+
+/**
+ * Build a branded HTML + text body for a notification email (#97).
+ * Table-based, inline-styled, dark-mode-tolerant; includes a Legal Terminus
+ * wordmark header (a small SVG-free text lockup — image logos are stripped by
+ * many clients, so a styled wordmark is the reliable brand cue).
+ */
 function renderEmail({ title, message, taskId }) {
   const base = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
   const link = taskId && base ? `${base}/portal/tasks/${taskId}` : (base ? `${base}/portal/` : null);
   const cta = link
-    ? `<p style="margin:24px 0"><a href="${link}" style="background:#4f46e5;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;display:inline-block">View in Portal</a></p>`
+    ? `<tr><td style="padding:24px 0 4px">
+         <a href="${link}" style="background:${BRAND.primary};color:#ffffff;text-decoration:none;padding:11px 20px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block">View in Portal →</a>
+       </td></tr>`
     : '';
-  const html = `<!doctype html><html><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111;line-height:1.5">
-    <div style="max-width:560px;margin:0 auto;padding:24px">
-      <p style="font-size:13px;color:#6b7280;margin:0 0 8px">Legal Terminus</p>
-      <h2 style="font-size:18px;margin:0 0 8px">${escapeHtml(title)}</h2>
-      <p style="margin:0;color:#374151">${escapeHtml(message)}</p>
-      ${cta}
-      <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-      <p style="font-size:12px;color:#9ca3af;margin:0">You're receiving this because you have an account on the Legal Terminus portal.</p>
-    </div></body></html>`;
-  const text = `${title}\n\n${message}${link ? `\n\nView in Portal: ${link}` : ''}\n\n— Legal Terminus`;
+  // Wordmark: a scales/□ mark box + the name, in brand colours.
+  const wordmark = `
+    <span style="display:inline-block;vertical-align:middle;width:26px;height:26px;line-height:26px;text-align:center;background:${BRAND.primary};color:#ffffff;border-radius:7px;font-weight:700;font-size:14px">LT</span>
+    <span style="display:inline-block;vertical-align:middle;margin-left:8px;font-weight:700;font-size:15px;color:${BRAND.ink};letter-spacing:.2px">Legal Terminus</span>`;
+
+  const html = `<!doctype html><html><body style="margin:0;padding:0;background:${BRAND.surfaceSoft}">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.surfaceSoft};font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+    <tr><td align="center" style="padding:28px 16px">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border:1px solid ${BRAND.hairline};border-radius:14px;overflow:hidden">
+        <tr><td style="padding:20px 28px;border-bottom:1px solid ${BRAND.hairline}">${wordmark}</td></tr>
+        <tr><td style="padding:28px 28px 4px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="font-size:19px;font-weight:700;color:${BRAND.ink};line-height:1.35;padding-bottom:10px">${escapeHtml(title)}</td></tr>
+            <tr><td style="font-size:15px;color:${BRAND.inkSoft};line-height:1.6;white-space:pre-wrap">${escapeHtml(message)}</td></tr>
+            ${cta}
+          </table>
+        </td></tr>
+        <tr><td style="padding:20px 28px;border-top:1px solid ${BRAND.hairline}">
+          <p style="margin:0;font-size:12px;color:${BRAND.inkFaint};line-height:1.5">You're receiving this because you have an account on the Legal Terminus portal.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table></body></html>`;
+  const text = `Legal Terminus\n\n${title}\n\n${message}${link ? `\n\nView in Portal: ${link}` : ''}\n\n— Legal Terminus`;
   return { html, text };
+}
+
+/** A short, stable, human id for a matter derived from its taskId (last 6 chars). */
+function shortMatterId(taskId) {
+  return taskId ? String(taskId).slice(-6) : '';
+}
+
+/**
+ * #20: send the TEAM an email when a website contact/consultation form is
+ * submitted. Recipient = CONTACT_LEADS_EMAIL, else EMAIL_FROM's address, else
+ * GMAIL_USER. Fire-and-forget; never throws. Reuses the branded template.
+ */
+export async function sendContactLeadEmail(lead = {}) {
+  try {
+    const transporter = getTransporter();
+    if (!transporter) {
+      logger.info({ source: lead.source }, '[email] (no-op) would send contact-lead email');
+      return false;
+    }
+    const to = process.env.CONTACT_LEADS_EMAIL || process.env.GMAIL_USER;
+    if (!to) return false;
+    const from = process.env.EMAIL_FROM || process.env.GMAIL_USER;
+    const title = `New enquiry: ${lead.fullName || lead.email || 'Website visitor'}`;
+    const lines = [
+      lead.fullName && `Name: ${lead.fullName}`,
+      lead.email && `Email: ${lead.email}`,
+      lead.phone && `Phone: ${lead.phone}`,
+      lead.company && `Company: ${lead.company}`,
+      lead.state && `State: ${lead.state}`,
+      lead.preferredCallTime && `Preferred call time: ${lead.preferredCallTime}`,
+      typeof lead.whatsapp === 'boolean' && `WhatsApp opt-in: ${lead.whatsapp ? 'yes' : 'no'}`,
+      (lead.sourceLabel || lead.source) && `From: ${lead.sourceLabel || lead.source}`,
+      lead.subject && `Subject: ${lead.subject}`,
+      lead.message && `\nMessage:\n${lead.message}`,
+    ].filter(Boolean);
+    const message = lines.join('\n');
+    // Reuse the branded renderer (no CTA link — internal alert).
+    const { html, text } = renderEmail({ title, message });
+    // Set replyTo to the enquirer so the team can respond directly.
+    await transporter.sendMail({
+      from, to, subject: `[Legal Terminus] ${title}`, text, html,
+      ...(lead.email ? { replyTo: lead.email } : {}),
+    });
+    return true;
+  } catch (err) {
+    logger.warn({ err: err?.message }, '[email] contact-lead email failed (non-fatal)');
+    return false;
+  }
+}
+
+/**
+ * Build a STABLE, matter-scoped subject (#98) so Gmail threads all of a matter's
+ * emails into one conversation. Same subject for every email on the matter — the
+ * per-event detail (assigned / approved / complete / …) lives in the body's
+ * heading, not the subject. Falls back to the event title when there's no matter
+ * context (e.g. account-level emails like a password-setup link).
+ */
+function matterSubject({ serviceName, taskId, title }) {
+  if (serviceName && taskId) return `[Legal Terminus] ${serviceName} (#${shortMatterId(taskId)})`;
+  if (serviceName) return `[Legal Terminus] ${serviceName}`;
+  return title || 'Legal Terminus';
 }
 
 /**
  * Send a notification email. Fire-and-forget friendly: never throws, returns a
  * boolean (sent / skipped-or-failed). Mirrors an in-app notification.
+ *
+ * #97: branded HTML template. #98: a stable per-matter subject + RFC-5322
+ * References/In-Reply-To headers derived from the matter id, so a matter's emails
+ * thread in Gmail even if the subject is ever edited.
  */
-export async function sendNotificationEmail({ to, title, message, taskId }) {
+export async function sendNotificationEmail({ to, title, message, taskId, serviceName }) {
   try {
     if (!to || !title) return false;
     const transporter = getTransporter();
@@ -127,7 +227,14 @@ export async function sendNotificationEmail({ to, title, message, taskId }) {
     }
     const { html, text } = renderEmail({ title, message, taskId });
     const from = process.env.EMAIL_FROM || process.env.GMAIL_USER;
-    await transporter.sendMail({ from, to, subject: title, text, html });
+    const subject = matterSubject({ serviceName, taskId, title });
+    // Threading headers (#98): a stable Message-ID root per matter. Setting the
+    // SAME references value on every email of a matter makes Gmail group them.
+    const threadRef = taskId ? `<matter-${taskId}@legalterminus>` : undefined;
+    await transporter.sendMail({
+      from, to, subject, text, html,
+      ...(threadRef ? { references: threadRef, inReplyTo: threadRef } : {}),
+    });
     return true;
   } catch (err) {
     logger.warn({ err: err?.message, to }, '[email] send failed (non-fatal)');

@@ -19,17 +19,19 @@ test.beforeEach(async () => { taskId = await createMatter(); });
 test.afterEach(async () => { await deleteMatter(taskId); });
 
 test('payment gate blocks until override, then advances', async ({ adminPage }) => {
-  // A payment gate only BLOCKS when the matter isn't fully paid — the beforeEach
-  // matter is fully_paid (sails through). Use a part-paid, still-active matter.
+  // A payment gate only BLOCKS when the matter isn't sufficiently paid. A part-paid
+  // matter now sails through any `part_paid` gate (incl. step-1, which auto-passes
+  // ON CREATION per #94) and parks at the first `fully_paid` gate. Advance to
+  // whichever gate the matter actually STOPS at, and use that step as the anchor.
   await deleteMatter(taskId);
   taskId = await createPartPaidMatter();
   const def = await getDefinitionForMatter(taskId);
-  const gate = firstPaymentGate(def);
-  test.skip(!gate, 'This workflow has no payment gate.');
+  test.skip(!firstPaymentGate(def), 'This workflow has no payment gate.');
 
-  // Advance to the gate (no-op if it is the first step).
   await advanceUntil(taskId, (s) => s.type === 'payment_gate');
-  expect((await getMatter(taskId)).currentStepNumber).toBe(gate!.stepNumber);
+  const gateStep = (await getMatter(taskId)).currentStepNumber as number;
+  const parkedOnGate = def.steps.find((s) => s.stepNumber === gateStep)?.type === 'payment_gate';
+  test.skip(!parkedOnGate, `Part-paid matter did not park on a blocking gate (at ${gateStep}).`);
 
   await adminPage.goto(`tasks/${taskId}`);
   await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
@@ -37,7 +39,7 @@ test('payment gate blocks until override, then advances', async ({ adminPage }) 
   await adminPage.getByRole('button', { name: /admin override/i }).click();
 
   await expect(async () => {
-    expect((await getMatter(taskId)).currentStepNumber as number).toBeGreaterThan(gate!.stepNumber);
+    expect((await getMatter(taskId)).currentStepNumber as number).toBeGreaterThan(gateStep);
   }).toPass({ timeout: 15_000 });
 });
 
@@ -45,11 +47,12 @@ test('payment override is admin-only: a manager is rejected and never sees the b
   await deleteMatter(taskId);
   taskId = await createPartPaidMatter();
   const def = await getDefinitionForMatter(taskId);
-  const gate = firstPaymentGate(def);
-  test.skip(!gate, 'This workflow has no payment gate.');
+  test.skip(!firstPaymentGate(def), 'This workflow has no payment gate.');
 
   await advanceUntil(taskId, (s) => s.type === 'payment_gate');
-  expect((await getMatter(taskId)).currentStepNumber).toBe(gate!.stepNumber);
+  const gateStep = (await getMatter(taskId)).currentStepNumber as number;
+  const parkedOnGate = def.steps.find((s) => s.stepNumber === gateStep)?.type === 'payment_gate';
+  test.skip(!parkedOnGate, `Part-paid matter did not park on a blocking gate (at ${gateStep}).`);
 
   // API: a manager firing the override is forbidden.
   await expect(transition('manager', taskId, { type: 'ADMIN_OVERRIDE_PAYMENT' }))
@@ -66,9 +69,11 @@ test('payment gate: Mark as Paid sets paid status and advances', async ({ adminP
   await deleteMatter(taskId);
   taskId = await createPartPaidMatter();
   const def = await getDefinitionForMatter(taskId);
-  const gate = firstPaymentGate(def);
-  test.skip(!gate, 'This workflow has no payment gate.');
+  test.skip(!firstPaymentGate(def), 'This workflow has no payment gate.');
   await advanceUntil(taskId, (s) => s.type === 'payment_gate');
+  const gateStep = (await getMatter(taskId)).currentStepNumber as number;
+  const parkedOnGate = def.steps.find((s) => s.stepNumber === gateStep)?.type === 'payment_gate';
+  test.skip(!parkedOnGate, `Part-paid matter did not park on a blocking gate (at ${gateStep}).`);
 
   await adminPage.goto(`tasks/${taskId}`);
   await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
@@ -76,9 +81,29 @@ test('payment gate: Mark as Paid sets paid status and advances', async ({ adminP
 
   await expect(async () => {
     const m = await getMatter(taskId);
-    expect(m.currentStepNumber as number).toBeGreaterThan(gate!.stepNumber);
+    expect(m.currentStepNumber as number).toBeGreaterThan(gateStep);
     expect(m.paymentStatus).toBe('fully_paid');
   }).toPass({ timeout: 15_000 });
+});
+
+test('#94: a matter whose FIRST step is a payment gate auto-advances past it on creation when (part/fully) paid', async () => {
+  const def = await getDefinitionForMatter(taskId);
+  const first = def.steps.find((s) => s.stepNumber === def.initialStep);
+  test.skip(first?.type !== 'payment_gate', 'This workflow’s first step is not a payment gate.');
+
+  // The beforeEach matter is fully_paid → the step-1 gate should NOT strand it.
+  const m = await getMatter(taskId);
+  expect(m.currentStepNumber as number).toBeGreaterThan(def.initialStep);
+
+  // And a PART-paid matter also passes a `part_paid` first gate on creation.
+  const partId = await createPartPaidMatter();
+  try {
+    const pm = await getMatter(partId);
+    // first gate requires part_paid → passes; matter must not be stranded on step 1.
+    if (first?.gate?.requires === 'part_paid') {
+      expect(pm.currentStepNumber as number).toBeGreaterThan(def.initialStep);
+    }
+  } finally { await deleteMatter(partId); }
 });
 
 test('plain step: Complete Step advances the workflow', async ({ adminPage }) => {
