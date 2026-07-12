@@ -1,18 +1,36 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
   getPaginationRowModel,
   flexRender,
+  type Column,
   type ColumnDef,
+  type ColumnFiltersState,
   type ColumnSizingState,
   type SortingState,
   type Row,
+  type Table,
 } from '@tanstack/react-table';
-import { Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, ListFilter, X } from 'lucide-react';
 import ErrorBoundary from './ErrorBoundary';
+
+/**
+ * #91 (app-wide): an Excel-style per-column filter. A funnel icon in each
+ * filterable column header opens a popover listing that column's DISTINCT values
+ * as checkboxes (with a type-to-narrow box + Select all / Clear). Multiple columns
+ * filter with AND; each column keeps the set of values you ticked. Composes with
+ * the global search box and any structured toolbar filters. Purely client-side.
+ */
+function columnValuesFilter<T>(row: Row<T>, columnId: string, filterValue: unknown): boolean {
+  if (!Array.isArray(filterValue) || filterValue.length === 0) return true;
+  const v = row.getValue(columnId);
+  return filterValue.includes(v == null || v === '' ? '(Blank)' : String(v));
+}
 
 /**
  * Reusable data grid built on TanStack Table — the single source for the
@@ -45,6 +63,12 @@ export interface DataGridProps<T> {
   onRowClick?: (row: T) => void;
   /** Stable id used to persist user-adjusted column widths to localStorage. */
   tableId?: string;
+  /**
+   * #91: show the Excel-style per-column filter funnel in each header. Default on.
+   * A column opts out via `columnDef.meta.disableColumnFilter = true` (e.g. a
+   * free-form or action column where a value picker makes no sense).
+   */
+  columnFilters?: boolean;
 }
 
 export default function DataGrid<T>({
@@ -63,9 +87,11 @@ export default function DataGrid<T>({
   toolbar,
   onRowClick,
   tableId,
+  columnFilters: enableColumnFilters = true,
 }: DataGridProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [search, setSearch] = useState('');
+  const [colFilters, setColFilters] = useState<ColumnFiltersState>([]);
   const sizingKey = tableId ? `dataGridColSizing:${tableId}` : null;
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(() => {
     if (!sizingKey) return {};
@@ -90,19 +116,25 @@ export default function DataGrid<T>({
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, globalFilter: search, columnSizing },
+    state: { sorting, globalFilter: search, columnSizing, columnFilters: colFilters },
     onSortingChange: setSorting,
     onGlobalFilterChange: setSearch,
     onColumnSizingChange: setColumnSizing,
+    onColumnFiltersChange: setColFilters,
     getRowId: getRowId ? (row, index) => getRowId(row, index) : undefined,
     globalFilterFn: globalFilterFn
       ? (row, columnId, value) => globalFilterFn(row, columnId, String(value))
       : 'auto',
+    // #91: every column filters by the "set of ticked distinct values" model
+    // (Excel-style). Columns can still opt out of the UI via meta.
+    defaultColumn: { filterFn: columnValuesFilter },
     columnResizeMode: 'onChange',
     enableColumnResizing: true,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
     ...(pageSize > 0
       ? { getPaginationRowModel: getPaginationRowModel(), initialState: { pagination: { pageSize } } }
       : {}),
@@ -139,7 +171,10 @@ export default function DataGrid<T>({
         </div>
       ) : error ? (
         <div className="card p-12 text-center text-sm text-red-600">{error.message}</div>
-      ) : rows.length === 0 ? (
+      ) : rows.length === 0 && colFilters.length === 0 ? (
+        // True empty state (no data / no search hits). When COLUMN filters are
+        // active we keep the table + headers rendered instead, so the funnel
+        // buttons stay reachable and the user can clear their filter (#91).
         <div className="card p-16 flex flex-col items-center justify-center text-ink-faint">
           <p className="text-sm font-medium">{search ? 'No results found' : emptyLabel}</p>
         </div>
@@ -173,6 +208,12 @@ export default function DataGrid<T>({
                                 : <ArrowUpDown className="w-3 h-3 opacity-40 shrink-0 mt-0.5" />
                             )}
                           </span>
+                          {/* #91: Excel-style per-column value filter. */}
+                          {enableColumnFilters
+                            && !(header.column.columnDef.meta as { disableColumnFilter?: boolean } | undefined)?.disableColumnFilter
+                            && header.column.getCanFilter() && (
+                            <ColumnFilterMenu column={header.column} table={table} />
+                          )}
                           {header.column.getCanResize() && (
                             <div
                               onMouseDown={header.getResizeHandler()}
@@ -191,6 +232,17 @@ export default function DataGrid<T>({
                   </div>
                 ))}
                 <div className="max-h-[70vh] overflow-y-auto">
+                  {rows.length === 0 && (
+                    <div className="px-5 py-8 text-sm text-ink-muted flex items-center gap-2">
+                      No rows match the current column filters.
+                      <button
+                        onClick={() => table.resetColumnFilters()}
+                        className="text-brand-700 text-xs font-medium hover:underline"
+                      >
+                        Clear filters
+                      </button>
+                    </div>
+                  )}
                   {rows.map((row) => (
                     <div
                       key={row.id}
@@ -257,6 +309,104 @@ export default function DataGrid<T>({
             </div>
           )}
         </ErrorBoundary>
+      )}
+    </div>
+  );
+}
+
+/**
+ * #91 — Excel-style column filter popover. A funnel button in the header opens a
+ * panel listing the column's DISTINCT values (from the faceted row model, i.e.
+ * respecting the other columns' filters — exactly how Excel behaves) as
+ * checkboxes, with a type-to-narrow box and Select all / Clear. The ticked set
+ * becomes the column's filter value (see `columnValuesFilter`).
+ */
+function ColumnFilterMenu<T>({ column, table }: { column: Column<T, unknown>; table: Table<T> }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close on outside click.
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  // Distinct values for this column, computed over rows that pass every OTHER
+  // filter (faceting) — mirrors Excel. "(Blank)" stands in for null/empty.
+  const uniqueValues = useMemo(() => {
+    if (!open) return [] as string[];
+    const map = column.getFacetedUniqueValues();
+    const vals = new Set<string>();
+    for (const key of map.keys()) {
+      vals.add(key == null || key === '' ? '(Blank)' : String(key));
+    }
+    return [...vals].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, column, table.getState().columnFilters, table.getState().globalFilter, table.options.data]);
+
+  const selected = (column.getFilterValue() as string[] | undefined) ?? [];
+  const isActive = selected.length > 0;
+  const shown = query
+    ? uniqueValues.filter((v) => v.toLowerCase().includes(query.toLowerCase()))
+    : uniqueValues;
+
+  const toggle = (v: string) => {
+    const next = selected.includes(v) ? selected.filter((x) => x !== v) : [...selected, v];
+    column.setFilterValue(next.length ? next : undefined);
+  };
+
+  return (
+    <div ref={ref} className="relative inline-block align-middle ml-1">
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        className={`p-0.5 rounded align-middle ${isActive ? 'text-brand-600 bg-brand-50' : 'text-ink-faint hover:text-ink'}`}
+        title="Filter column"
+        aria-label={`Filter ${String(column.id)}`}
+      >
+        <ListFilter className="w-3.5 h-3.5" />
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 top-full mt-1 z-50 w-56 bg-white border border-hairline rounded-lg shadow-card p-2 normal-case font-normal tracking-normal"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <input
+            autoFocus
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search values…"
+            className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs mb-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
+          />
+          <div className="flex items-center justify-between px-1 pb-1.5 text-[11px]">
+            <button onClick={() => column.setFilterValue(shown.length ? [...shown] : undefined)} className="text-brand-700 hover:underline">Select all</button>
+            <button
+              onClick={() => { column.setFilterValue(undefined); setQuery(''); }}
+              className={`inline-flex items-center gap-0.5 hover:underline ${isActive ? 'text-red-600' : 'text-ink-faint'}`}
+            >
+              <X className="w-3 h-3" /> Clear
+            </button>
+          </div>
+          <div className="max-h-56 overflow-y-auto space-y-0.5">
+            {shown.length === 0 && <p className="px-1 py-2 text-xs text-ink-faint">No values</p>}
+            {shown.map((v) => (
+              <label key={v} className="flex items-center gap-2 px-1 py-1 rounded hover:bg-surface-soft cursor-pointer text-xs text-ink">
+                <input
+                  type="checkbox"
+                  className="h-3.5 w-3.5"
+                  checked={selected.includes(v)}
+                  onChange={() => toggle(v)}
+                />
+                <span className="truncate">{v}</span>
+              </label>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

@@ -153,6 +153,7 @@ function buildWorkColumns(navigate: (to: string) => void) {
       id: 'due',
       header: 'Due',
       size: 120,
+      meta: { disableColumnFilter: true }, // #91: raw day-count values — picker useless
       cell: (ctx) => {
         const info = dueInfo(ctx.row.original.dueAt);
         if (info.tone === 'none') return <span className="text-xs text-ink-faint">—</span>;
@@ -173,7 +174,7 @@ function buildWorkColumns(navigate: (to: string) => void) {
         return <span className="badge bg-surface-card text-ink-muted">Available</span>;
       },
     }),
-    wc.accessor((r) => r.updatedAt ?? '', { id: 'updatedAt', header: 'Updated', size: 120, cell: (ctx) => <span className="block truncate text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span> }),
+    wc.accessor((r) => r.updatedAt ?? '', { id: 'updatedAt', header: 'Updated', size: 120, meta: { disableColumnFilter: true }, cell: (ctx) => <span className="block truncate text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span> }),
   ] as ReturnType<typeof wc.accessor>[];
 }
 
@@ -198,7 +199,7 @@ function buildApprovalColumns(navigate: (to: string) => void) {
     }),
     ac.accessor('createdByName', { header: 'Created by', size: 160, cell: (ctx) => <span className="block truncate text-sm text-ink-muted">{ctx.getValue()}</span> }),
     ac.display({ id: 'status', header: 'Status', size: 150, cell: () => <span className="badge bg-amber-100 text-amber-800">Needs approval</span> }),
-    ac.accessor((r) => r.createdAt ?? '', { id: 'createdAt', header: 'Created', size: 120, cell: (ctx) => <span className="block truncate text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span> }),
+    ac.accessor((r) => r.createdAt ?? '', { id: 'createdAt', header: 'Created', size: 120, meta: { disableColumnFilter: true }, cell: (ctx) => <span className="block truncate text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span> }),
   ] as ReturnType<typeof ac.accessor>[];
 }
 

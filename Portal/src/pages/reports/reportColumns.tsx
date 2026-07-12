@@ -63,6 +63,7 @@ export function taskReportColumns() {
     col.accessor((t) => t.updatedAt ?? '', {
       id: 'updatedAt',
       header: 'Updated',
+      meta: { disableColumnFilter: true }, // #91: unique timestamps — picker useless
       size: 120,
       cell: (ctx) => <span className="text-xs text-ink-faint">{formatDate(ctx.getValue() as string)}</span>,
     }),

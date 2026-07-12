@@ -32,7 +32,7 @@ export default function MasterSheetReport() {
   const columns = useMemo(() => [
     col.accessor('clientName', { header: 'Client', size: 160, cell: (c) => <span className="text-sm font-medium text-ink truncate">{c.getValue()}</span> }),
     col.accessor('serviceType', { header: 'Service', size: 170, cell: (c) => <span className="text-sm text-ink-muted truncate">{c.getValue()}</span> }),
-    col.accessor((r) => r.createdAt, { id: 'createdAt', header: 'Created', size: 110, cell: (c) => <span className="text-xs text-ink-faint">{formatDate(c.getValue() as string)}</span> }),
+    col.accessor((r) => r.createdAt, { id: 'createdAt', header: 'Created', size: 110, meta: { disableColumnFilter: true }, cell: (c) => <span className="text-xs text-ink-faint">{formatDate(c.getValue() as string)}</span> }),
     col.accessor((r) => `${r.currentStep}/${r.totalSteps}`, { id: 'step', header: 'Step', size: 80, cell: (c) => <span className="text-sm text-ink-muted">{c.getValue() as string}</span> }),
     col.accessor('taskStatus', { header: 'Status', size: 110, cell: (c) => <span className="text-sm text-ink-muted">{c.getValue()}</span> }),
     col.accessor('priority', { header: 'Priority', size: 90, cell: (c) => <span className={`text-xs font-medium ${c.getValue() === 'High' ? 'text-red-600' : 'text-ink-muted'}`}>{c.getValue()}</span> }),
@@ -47,7 +47,7 @@ export default function MasterSheetReport() {
     col.accessor('amountDue', { header: 'Due (₹)', size: 100, cell: (c) => <span className="text-sm text-ink-muted">₹{(c.getValue() ?? 0).toLocaleString('en-IN')}</span> }),
     col.accessor('paymentMode', { header: 'Mode', size: 90, cell: (c) => <span className="text-xs text-ink-muted">{c.getValue() || '—'}</span> }),
     col.accessor('referralSource', { header: 'Referral', size: 120, cell: (c) => <span className="text-xs text-ink-muted truncate">{c.getValue() || '—'}</span> }),
-    col.accessor((r) => r.lastUpdated ?? '', { id: 'lastUpdated', header: 'Updated', size: 110, cell: (c) => <span className="text-xs text-ink-faint">{formatDate(c.getValue() as string)}</span> }),
+    col.accessor((r) => r.lastUpdated ?? '', { id: 'lastUpdated', header: 'Updated', size: 110, meta: { disableColumnFilter: true }, cell: (c) => <span className="text-xs text-ink-faint">{formatDate(c.getValue() as string)}</span> }),
   ] as ReturnType<typeof col.accessor>[], []);
 
   const onExportXlsx = async () => {

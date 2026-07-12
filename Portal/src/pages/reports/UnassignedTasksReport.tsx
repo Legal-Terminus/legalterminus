@@ -31,7 +31,7 @@ function columns(): ColumnDef<UnassignedRow, unknown>[] {
       cell: (c) => <span className="text-sm text-ink-muted truncate">{c.getValue() as string}</span> }),
     col.accessor((r) => r.assignedRole ?? '—', { id: 'role', header: 'Role', size: 130,
       cell: (c) => <span className="text-sm text-ink-muted">{(c.getValue() as string).replace(/_/g, ' ')}</span> }),
-    col.accessor((r) => r.dueAt ?? '', { id: 'due', header: 'Due', size: 120,
+    col.accessor((r) => r.dueAt ?? '', { id: 'due', header: 'Due', size: 120, meta: { disableColumnFilter: true },
       cell: (c) => {
         const info = dueInfo(c.getValue() as string);
         return info.tone === 'none' ? <span className="text-xs text-ink-faint">—</span>

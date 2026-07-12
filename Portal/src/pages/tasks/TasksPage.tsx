@@ -282,6 +282,8 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
         id: 'due',
         header: 'Due',
         size: 120,
+        // #91: a value picker over raw day-counts is meaningless — opt out.
+        meta: { disableColumnFilter: true },
         cell: (ctx) => {
           const info = dueInfo(ctx.row.original.matterDueAt);
           if (info.tone === 'none') return <span className="text-xs text-ink-faint">—</span>;
@@ -293,6 +295,8 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
       id: 'updatedAt',
       header: 'Updated',
       size: 120,
+      // #91: every timestamp is unique — a distinct-value picker is useless here.
+      meta: { disableColumnFilter: true },
       cell: (ctx) => <span className="block truncate text-xs text-ink-muted">{timeAgo(ctx.getValue() as string)}</span>,
     }),
     col.display({

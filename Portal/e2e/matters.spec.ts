@@ -91,3 +91,28 @@ test('#91: Matters grid supports multi-criteria filtering (Status + Payment, AND
     await deleteMatter(taskId);
   }
 });
+
+test('#91: Excel-style column filter — tick a status value to filter, clear to reset', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto('tasks');
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+
+    // Open the Status column's funnel menu.
+    await adminPage.getByRole('button', { name: 'Filter status' }).click();
+    // The popover lists the column's distinct values with checkboxes. Tick a value
+    // that does NOT match the fresh matter ('completed' — the new matter is
+    // active/pending), which filters the grid down to only completed rows.
+    const popover = adminPage.locator('div').filter({ has: adminPage.getByPlaceholder('Search values…') }).last();
+    const completedOption = popover.locator('label', { hasText: /^completed$/ });
+    test.skip(!(await completedOption.count()), 'No completed matters in the grid to filter by.');
+    await completedOption.locator('input[type="checkbox"]').check();
+
+    // The fresh (non-completed) matter disappears.
+    await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
+
+    // Clear inside the popover restores it.
+    await popover.getByRole('button', { name: /clear/i }).click();
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});
