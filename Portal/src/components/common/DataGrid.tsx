@@ -27,6 +27,18 @@ import ErrorBoundary from './ErrorBoundary';
  * the global search box and any structured toolbar filters. Purely client-side.
  */
 function columnValuesFilter<T>(row: Row<T>, columnId: string, filterValue: unknown): boolean {
+  // Numeric RANGE filter: { min?, max? } — used when a column's values are all
+  // numbers (amounts, counts). Blank/non-numeric cells are excluded by a range.
+  if (filterValue && typeof filterValue === 'object' && !Array.isArray(filterValue)) {
+    const { min, max } = filterValue as { min?: number; max?: number };
+    const raw = row.getValue(columnId);
+    const n = typeof raw === 'number' ? raw : parseFloat(String(raw));
+    if (Number.isNaN(n)) return false;
+    if (min != null && n < min) return false;
+    if (max != null && n > max) return false;
+    return true;
+  }
+  // Distinct-value (checkbox set) filter.
   if (!Array.isArray(filterValue) || filterValue.length === 0) return true;
   const v = row.getValue(columnId);
   return filterValue.includes(v == null || v === '' ? '(Blank)' : String(v));
@@ -338,19 +350,30 @@ function ColumnFilterMenu<T>({ column, table }: { column: Column<T, unknown>; ta
 
   // Distinct values for this column, computed over rows that pass every OTHER
   // filter (faceting) — mirrors Excel. "(Blank)" stands in for null/empty.
-  const uniqueValues = useMemo(() => {
-    if (!open) return [] as string[];
+  // A column whose (non-blank) values are ALL numeric gets a RANGE (Min–Max)
+  // filter instead of a value picker — checkboxes over amounts are useless.
+  const { uniqueValues, isNumeric } = useMemo(() => {
+    if (!open) return { uniqueValues: [] as string[], isNumeric: false };
     const map = column.getFacetedUniqueValues();
     const vals = new Set<string>();
+    let numeric = map.size > 0;
     for (const key of map.keys()) {
-      vals.add(key == null || key === '' ? '(Blank)' : String(key));
+      if (key == null || key === '') { vals.add('(Blank)'); continue; }
+      if (typeof key !== 'number' && Number.isNaN(parseFloat(String(key)))) numeric = false;
+      vals.add(String(key));
     }
-    return [...vals].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    return {
+      uniqueValues: [...vals].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+      isNumeric: numeric,
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, column, table.getState().columnFilters, table.getState().globalFilter, table.options.data]);
 
-  const selected = (column.getFilterValue() as string[] | undefined) ?? [];
-  const isActive = selected.length > 0;
+  const filterValue = column.getFilterValue();
+  const selected = Array.isArray(filterValue) ? (filterValue as string[]) : [];
+  const range = (filterValue && typeof filterValue === 'object' && !Array.isArray(filterValue)
+    ? filterValue : {}) as { min?: number; max?: number };
+  const isActive = selected.length > 0 || range.min != null || range.max != null;
   const shown = query
     ? uniqueValues.filter((v) => v.toLowerCase().includes(query.toLowerCase()))
     : uniqueValues;
@@ -358,6 +381,12 @@ function ColumnFilterMenu<T>({ column, table }: { column: Column<T, unknown>; ta
   const toggle = (v: string) => {
     const next = selected.includes(v) ? selected.filter((x) => x !== v) : [...selected, v];
     column.setFilterValue(next.length ? next : undefined);
+  };
+
+  const setRange = (patch: { min?: number; max?: number }) => {
+    const next = { ...range, ...patch };
+    if (next.min == null && next.max == null) column.setFilterValue(undefined);
+    else column.setFilterValue(next);
   };
 
   return (
@@ -375,37 +404,73 @@ function ColumnFilterMenu<T>({ column, table }: { column: Column<T, unknown>; ta
           className="absolute left-0 top-full mt-1 z-50 w-56 bg-white border border-hairline rounded-lg shadow-card p-2 normal-case font-normal tracking-normal"
           onClick={(e) => e.stopPropagation()}
         >
-          <input
-            autoFocus
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search values…"
-            className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs mb-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
-          />
-          <div className="flex items-center justify-between px-1 pb-1.5 text-[11px]">
-            <button onClick={() => column.setFilterValue(shown.length ? [...shown] : undefined)} className="text-brand-700 hover:underline">Select all</button>
-            <button
-              onClick={() => { column.setFilterValue(undefined); setQuery(''); }}
-              className={`inline-flex items-center gap-0.5 hover:underline ${isActive ? 'text-red-600' : 'text-ink-faint'}`}
-            >
-              <X className="w-3 h-3" /> Clear
-            </button>
-          </div>
-          <div className="max-h-56 overflow-y-auto space-y-0.5">
-            {shown.length === 0 && <p className="px-1 py-2 text-xs text-ink-faint">No values</p>}
-            {shown.map((v) => (
-              <label key={v} className="flex items-center gap-2 px-1 py-1 rounded hover:bg-surface-soft cursor-pointer text-xs text-ink">
+          {isNumeric ? (
+            /* Numeric column → RANGE filter (Min–Max), not a value picker. */
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
                 <input
-                  type="checkbox"
-                  className="h-3.5 w-3.5"
-                  checked={selected.includes(v)}
-                  onChange={() => toggle(v)}
+                  autoFocus
+                  type="number"
+                  value={range.min ?? ''}
+                  onChange={(e) => setRange({ min: e.target.value === '' ? undefined : Number(e.target.value) })}
+                  placeholder="Min"
+                  aria-label="Minimum"
+                  className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-brand-400"
                 />
-                <span className="truncate">{v}</span>
-              </label>
-            ))}
-          </div>
+                <span className="text-ink-faint text-xs">–</span>
+                <input
+                  type="number"
+                  value={range.max ?? ''}
+                  onChange={(e) => setRange({ max: e.target.value === '' ? undefined : Number(e.target.value) })}
+                  placeholder="Max"
+                  aria-label="Maximum"
+                  className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-brand-400"
+                />
+              </div>
+              <div className="flex justify-end px-1 text-[11px]">
+                <button
+                  onClick={() => column.setFilterValue(undefined)}
+                  className={`inline-flex items-center gap-0.5 hover:underline ${isActive ? 'text-red-600' : 'text-ink-faint'}`}
+                >
+                  <X className="w-3 h-3" /> Clear
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <input
+                autoFocus
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search values…"
+                className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs mb-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
+              />
+              <div className="flex items-center justify-between px-1 pb-1.5 text-[11px]">
+                <button onClick={() => column.setFilterValue(shown.length ? [...shown] : undefined)} className="text-brand-700 hover:underline">Select all</button>
+                <button
+                  onClick={() => { column.setFilterValue(undefined); setQuery(''); }}
+                  className={`inline-flex items-center gap-0.5 hover:underline ${isActive ? 'text-red-600' : 'text-ink-faint'}`}
+                >
+                  <X className="w-3 h-3" /> Clear
+                </button>
+              </div>
+              <div className="max-h-56 overflow-y-auto space-y-0.5">
+                {shown.length === 0 && <p className="px-1 py-2 text-xs text-ink-faint">No values</p>}
+                {shown.map((v) => (
+                  <label key={v} className="flex items-center gap-2 px-1 py-1 rounded hover:bg-surface-soft cursor-pointer text-xs text-ink">
+                    <input
+                      type="checkbox"
+                      className="h-3.5 w-3.5"
+                      checked={selected.includes(v)}
+                      onChange={() => toggle(v)}
+                    />
+                    <span className="truncate">{v}</span>
+                  </label>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -1833,10 +1833,10 @@ const STATUS: Record<StepStatus, { label: string; cls: string }> = {
 // #101: three CLEARLY DISTINCT hues (not all-blue). Kept consistent with the
 // pending-bar dots and hero edge below. team=teal (our active work), client=
 // amber (warm — "your action"), govt=violet. Three clearly distinct hues.
-const OWNER_EDGE: Record<'team' | 'client' | 'govt', { border: string; dot: string; label: string }> = {
-  team:   { border: 'border-l-teal-500',   dot: 'bg-teal-500',   label: 'Our team' },
-  client: { border: 'border-l-amber-500',  dot: 'bg-amber-500',  label: 'Client' },
-  govt:   { border: 'border-l-violet-500', dot: 'bg-violet-500', label: 'Registrar' },
+const OWNER_EDGE: Record<'team' | 'client' | 'govt', { dot: string; label: string }> = {
+  team:   { dot: 'bg-teal-500',   label: 'Our team' },
+  client: { dot: 'bg-amber-500',  label: 'Client' },
+  govt:   { dot: 'bg-violet-500', label: 'Registrar' },
 };
 
 function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCurrent, owner, ownerLabel, comments = [], attachments = [], onOpenDoc }: {
@@ -1863,18 +1863,19 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
     comments.length ? `${comments.length} comment${comments.length > 1 ? 's' : ''}` : '',
     attachments.length ? `${attachments.length} file${attachments.length > 1 ? 's' : ''}` : '',
   ].filter(Boolean).join(' · ');
-  // #101: solid owner-coloured left edge on EVERY row (a border-color, not opacity,
-  // so it stays visible on white pending rows too). Past rows keep the same hue,
-  // just a hair lighter via the border shade — not opacity (which hid it before).
+  // #101: owner-coloured left edge on EVERY row, as an absolutely-positioned
+  // BACKGROUND bar, not a border — the parent list uses `divide-y
+  // divide-hairline-soft`, whose divide-color rule sets the border-color
+  // SHORTHAND on every child except the first (higher-specificity
+  // `> :not([hidden]) ~ :not([hidden])` selector), which silently wiped a
+  // border-left edge on all rows but the first. A bg bar can't be overridden.
   const edge = owner ? OWNER_EDGE[owner] : null;
-  // `border-solid` is required — a bare border-width with the default border-style
-  // (none) renders nothing, which is why the edge wasn't showing on the rows.
-  const edgeCls = edge ? `border-l-4 border-solid ${edge.border}` : '';
   return (
     <div
-      className={`${edgeCls} ${isCurrent ? 'bg-surface-soft' : ''}`}
+      className={`relative ${isCurrent ? 'bg-surface-soft' : ''}`}
       title={edge ? `${ownerLabel ?? edge.label} step` : undefined}
     >
+      {edge && <span aria-hidden="true" className={`absolute left-0 top-0 bottom-0 w-1 ${edge.dot}`} />}
       <button
         onClick={() => expandable && setOpen((v) => !v)}
         className={`w-full flex items-start gap-3 px-5 py-3 text-left ${expandable ? 'hover:bg-surface-soft/60' : 'cursor-default'}`}

@@ -127,3 +127,23 @@ test('#96: completed steps hide behind a "Show completed (N)" toggle in the step
     await expect(adminPage.getByRole('button', { name: /hide completed/i }).first()).toBeVisible();
   } finally { await deleteMatter(taskId); }
 });
+
+test('#101: EVERY step row shows an owner colour bar (incl. pending rows)', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+
+    // Rows are title-attributed "<Owner> step" and carry an absolute bg bar.
+    const rows = adminPage.locator('div[title$=" step"]');
+    await expect(rows.first()).toBeVisible({ timeout: 15_000 });
+    const count = await rows.count();
+    expect(count).toBeGreaterThan(1);
+    // Every row (not just the first — the old divide-color bug hit rows 2+) must
+    // contain a coloured bar span.
+    for (let i = 0; i < Math.min(count, 8); i++) {
+      const bars = rows.nth(i).locator('span.bg-teal-500, span.bg-amber-500, span.bg-violet-500');
+      await expect(bars.first()).toBeAttached();
+    }
+  } finally { await deleteMatter(taskId); }
+});

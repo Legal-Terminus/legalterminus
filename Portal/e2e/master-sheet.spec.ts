@@ -89,3 +89,24 @@ test('#88: body cells wrap (do not clip) so long text cannot overflow the column
     expect(cls).not.toContain('overflow-hidden');
   } finally { await deleteMatter(taskId); }
 });
+
+test('#91: numeric columns filter by RANGE (Min–Max), not value checkboxes', async ({ adminPage }) => {
+  const taskId = await createMatter(); // totalCost 10000
+  try {
+    await adminPage.goto('reports/master-sheet');
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+
+    // Open the Total Fees column funnel → numeric column shows Min/Max inputs.
+    await adminPage.getByRole('button', { name: 'Filter totalFees' }).click();
+    const min = adminPage.getByLabel('Minimum');
+    await expect(min).toBeVisible();
+
+    // A minimum above every real fee filters the test matter out…
+    await min.fill('99999999');
+    await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
+
+    // …and Clear restores it.
+    await adminPage.getByRole('button', { name: /clear/i }).last().click();
+    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});
