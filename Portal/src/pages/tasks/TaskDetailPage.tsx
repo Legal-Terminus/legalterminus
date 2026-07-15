@@ -6,7 +6,7 @@ import {
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase,
   ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw, Check,
-  ChevronsLeft, ChevronsRight, MoreVertical,
+  ChevronsLeft, ChevronsRight, MoreVertical, Users,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
@@ -723,6 +723,20 @@ function StepsTab({
     return role.isClient ? s.clientStatus : s.internalStatus;
   };
 
+  // #105: the info the client should review before Approve / Request Changes on a
+  // client-approval step. It's the LATEST comment the internal team left targeting
+  // this step (the "Name & Object shared by our team" message). For a client the
+  // event feed masks staff as "Our team", so we take the most recent commented
+  // event that arrives at (toStep) or sits on (fromStep) this step and was NOT
+  // authored by the client themselves.
+  const approvalNoteFor = (n: number): { text: string; by: string; at: string | null } | undefined => {
+    const relevant = events
+      .filter((e) => e.comment && (e.toStep === n || e.fromStep === n) && e.byName !== 'You')
+      .sort((a, b) => (a.at ?? '').localeCompare(b.at ?? ''));
+    const last = relevant[relevant.length - 1];
+    return last?.comment ? { text: last.comment, by: last.byName, at: last.at } : undefined;
+  };
+
   // Stage (phase) data drives the left rail. phaseId comes from the definition.
   const phaseList = definition?.phases ?? [];
   const hasPhases = phaseList.length > 0;
@@ -808,6 +822,7 @@ function StepsTab({
       stepUrgent={currentStepUrgent} onAttach={onAttach}
       statusLabel={statusFor(task.currentStepNumber)}
       description={descFor(task.currentStepNumber)}
+      approvalNote={approvalNoteFor(task.currentStepNumber)}
     />
   ) : completed ? (
     <div className="card p-5 flex items-center gap-2.5 bg-emerald-50 border-emerald-100">
@@ -1352,7 +1367,7 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description,
+  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote,
 }: {
   taskId: string;
   step: WorkflowStepDef;
@@ -1370,6 +1385,8 @@ function StepHeroPanel({
   statusLabel?: string;
   /** #81/#82: audience-tagged description text (multi-description + notes, joined). */
   description?: string;
+  /** #105: latest internal-team message for the client to review before approving. */
+  approvalNote?: { text: string; by: string; at: string | null };
 }) {
   const events = new Set((step.transitions ?? []).map((t) => t.event));
   const spin = <Loader2 className="w-4 h-4 animate-spin" />;
@@ -1670,6 +1687,22 @@ function StepHeroPanel({
               descriptions + notes), falling back to the legacy single field. */}
           {(description ?? step.description) && (
             <p className="text-sm text-ink-muted mt-1 whitespace-pre-wrap break-words">{description ?? step.description}</p>
+          )}
+
+          {/* #105: read-only info box the client reviews before Approve / Request
+              Changes — the latest message the internal team left on this step
+              (e.g. the proposed names & objects to review). Client-approval steps
+              only; hidden when the team hasn't left anything yet. */}
+          {role.isClient && isClientStep && approvalNote && (
+            <div className="mt-3 rounded-lg border border-brand-200 bg-brand-50/60 p-4">
+              <p className="text-xs font-semibold text-brand-800 inline-flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5" /> Shared by our team
+              </p>
+              <p className="text-sm text-ink mt-1.5 whitespace-pre-wrap break-words">{approvalNote.text}</p>
+              <p className="text-[11px] text-ink-faint mt-2">
+                {approvalNote.by}{approvalNote.at ? ` · ${relTime(approvalNote.at)}` : ''}
+              </p>
+            </div>
           )}
 
           {/* #52: per-step checklist (display/tracking aid, generic on any step).

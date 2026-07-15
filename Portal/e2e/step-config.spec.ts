@@ -72,3 +72,64 @@ test('#81: a team member cannot write step config (admin-only)', async () => {
   expect(put.status()).toBe(403);
   await team.dispose();
 });
+
+/* ── #103 / #105 / #106 — client step names, approval info box, custom prompt ── */
+
+import {
+  createClientTitleMatter, deleteMatter, deleteDefinition, getMatterAs,
+  transition, getNotifications,
+} from './api';
+
+test('#103: the client sees the CLIENT step name; staff see the internal name', async ({ adminPage, clientPage }) => {
+  const { taskId, defId } = await createClientTitleMatter();
+  try {
+    // Staff view shows the internal title (step 2 in the list).
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await expect(adminPage.getByText('INTERNAL-ONLY-NAME').first()).toBeVisible();
+
+    // Client view shows the client-facing title — and never the internal one.
+    await clientPage.goto(`tasks/${taskId}`);
+    await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await expect(clientPage.getByText('CLIENT-FRIENDLY-NAME').first()).toBeVisible();
+    await expect(clientPage.getByText('INTERNAL-ONLY-NAME')).toHaveCount(0);
+
+    // API-level: the client projection swaps title and drops clientTitle.
+    const { body } = await getMatterAs('client', taskId);
+    const s2 = (body?.steps as Array<{ stepNumber: number; title: string; clientTitle?: string }> | undefined)
+      ?.find((s) => s.stepNumber === 2);
+    expect(s2?.title).toBe('CLIENT-FRIENDLY-NAME');
+    expect(s2?.clientTitle).toBeUndefined();
+  } finally { await deleteMatter(taskId); await deleteDefinition(defId); }
+});
+
+test('#105: the client sees the team\'s hand-off comment in an info box above Approve', async ({ clientPage }) => {
+  const { taskId, defId } = await createClientTitleMatter();
+  try {
+    // Staff complete the prep step WITH a comment — the hand-off note the client
+    // must review (e.g. the proposed names). The matter lands on the approval step.
+    const note = `Proposed: ABC Technologies Private Limited ${Date.now()}`;
+    await transition('admin', taskId, { type: 'COMPLETE_STEP', remark: note });
+
+    await clientPage.goto(`tasks/${taskId}`);
+    await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    // The info box surfaces the staff comment (author masked as "Our team").
+    await expect(clientPage.getByText('Shared by our team').first()).toBeVisible();
+    await expect(clientPage.getByText(note).first()).toBeVisible();
+    // And the Approve control renders below it.
+    await expect(clientPage.getByRole('button', { name: /^approve$/i })).toBeVisible();
+  } finally { await deleteMatter(taskId); await deleteDefinition(defId); }
+});
+
+test('#106: the client\'s "your turn" notification uses the step\'s custom prompt', async () => {
+  const { taskId, defId } = await createClientTitleMatter();
+  try {
+    // Advancing to the client-approval step fires the client notify with the
+    // step's CUSTOM prompt instead of the generic "Action needed" copy.
+    await transition('admin', taskId, { type: 'COMPLETE_STEP' });
+    const notes = await getNotifications('client');
+    const hit = notes.find((n) => n.title === 'Please review your business names');
+    expect(hit, `expected the custom-prompt notification; got: ${notes.slice(0, 5).map((n) => n.title).join(' | ')}`).toBeTruthy();
+    expect(hit?.message).toContain('Kindly review the proposed names');
+  } finally { await deleteMatter(taskId); await deleteDefinition(defId); }
+});

@@ -3148,6 +3148,36 @@ The following stories are tagged `[Phase 2]` and are scoped for the next plannin
 
 ## APPENDIX B — Change Log: GitHub-issue fixes (2026-06-27)
 
+### Step config + client-facing emails (2026-07-12, #103–#106)
+- **#103 — Separate Internal / Client step names.** New `step.clientTitle` on the
+  definition. The client sees `clientTitle` (falling back to the internal `title`)
+  everywhere — matter step list, hero, diagram — via the definition + task
+  projections (`projectDefinitionForClient`, `projectTaskForClient`), and it's
+  stamped onto the task step at creation. Editor gains a "Client step name" field
+  under the (now explicitly labelled "Internal") step name. The existing
+  Internal/Client status+notes block is KEPT (least-destructive, per decision).
+- **#104 — Email subject names the organisation.** `matterSubject` now includes the
+  client's `organisation` when known:
+  `[Legal Terminus] ABC Technologies Pvt. Ltd. | Company Incorporation (#9Dr8eq)`.
+  Resolved from the matter's client user in the email dispatch path. Gmail
+  threading is unaffected — it keys on the stable `References` header (`#98`), not
+  the subject, so a changing org string doesn't split the thread.
+- **#105 — Read-only info box for client approvals.** On a client-approval step, a
+  boxed "Shared by our team" note renders above Approve / Request Changes, showing
+  the LATEST internal-team comment targeting that step (per-matter, dynamic) with
+  author + relative time. Sourced from the matter's activity feed (staff comments
+  reach the client via the client-safe event projection). Hidden until the team
+  leaves something.
+- **#106 — Editable client email per step.** New `step.clientPromptTitle` /
+  `clientPromptMessage`. When a client-owned step becomes the client's turn,
+  `transitionTask` uses these as the notification/email title+body instead of the
+  generic auto-generated text; blank falls back to the old copy. Editor exposes
+  the two fields on client steps only.
+- e2e: `step-config.spec.ts` (client sees clientTitle; approval info box shows the
+  team's latest comment), `admin-approval.spec.ts` unaffected.
+
+## APPENDIX B — Change Log: GitHub-issue fixes (2026-06-27)
+
 Code changes shipped today in response to GitHub issues. These refine/extend the
 epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),

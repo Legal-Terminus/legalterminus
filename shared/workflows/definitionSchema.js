@@ -27,7 +27,10 @@
  *
  * WorkflowStepDef = {
  *   stepNumber: number,         // unique within the definition (explicit identity — NOT parsed)
- *   title: string,              // explicit display title (no snake_case inference)
+ *   title: string,              // INTERNAL display title (no snake_case inference)
+ *   clientTitle?: string,       // #103: client-facing step name; falls back to `title`
+ *   clientPromptTitle?: string, // #106: custom email title when this client step is the client's turn
+ *   clientPromptMessage?: string, // #106: custom email body for that prompt (else auto-generated)
  *   description?: string,       // optional client/staff-facing explanation of the step
  *   type: 'step' | 'payment_gate' | 'branch' | 'final',
  *   assignedRole?: string,      // default responsible role

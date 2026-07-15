@@ -105,6 +105,10 @@ function projectTaskForClient(task, visibleStepNumbers = null) {
       .filter((s) => s.assignedRole !== 'admin')
       .map((s) => {
         const copy = { ...s };
+        // #103: the client sees the client-facing step name when one is set,
+        // falling back to the internal title. clientTitle itself is then dropped.
+        if (copy.clientTitle) copy.title = copy.clientTitle;
+        delete copy.clientTitle;
         for (const k of CLIENT_STEP_HIDDEN) delete copy[k];
         return copy;
       });
@@ -356,6 +360,9 @@ export async function createTask(req, res) {
       batch.set(ref.collection('steps').doc(String(s.stepNumber)), {
         stepNumber: s.stepNumber,
         title: s.title,
+        // #103: separate client-facing step name (falls back to the internal title
+        // when unset). Stamped at creation so the client's matter shows it.
+        clientTitle: s.clientTitle ?? null,
         assignedRole: s.assignedRole ?? null,
         assignedTo: assigneeForStep(s),
         status: statusForStep(s.stepNumber),
@@ -378,10 +385,20 @@ export async function createTask(req, res) {
       })));
     } else {
       const firstAssignee = assigneeForStep(firstStepDef ?? {});
+      // #106/#103: when the FIRST step is client-owned the recipient is the
+      // client — use the step's custom client prompt (and client-facing name),
+      // not internal staff wording.
+      const firstIsClientOwned = firstAssignee === clientUid;
+      const title = firstIsClientOwned
+        ? ((firstStepDef?.clientPromptTitle ?? '').trim() || 'Action needed on your service')
+        : 'New step assigned to you';
+      const message = firstIsClientOwned
+        ? ((firstStepDef?.clientPromptMessage ?? '').trim()
+            || `${task.serviceName}: ${firstStepDef?.clientTitle || firstStepDef?.title || `Step ${resolvedFirstStep}`}`)
+        : `${clientName} · ${task.serviceName}: ${firstStepDef?.title ?? `Step ${resolvedFirstStep}`}`;
       await notify({
         recipientUid: firstAssignee, actorUid: req.user.uid, type: 'info',
-        title: 'New step assigned to you',
-        message: `${clientName} · ${task.serviceName}: ${firstStepDef?.title ?? `Step ${resolvedFirstStep}`}`,
+        title, message,
         taskId: ref.id,
       });
     }
@@ -1489,10 +1506,16 @@ export async function transitionTask(req, res) {
         const newDef = etaStepDefs.find((s) => s.stepNumber === newStep);
         const owner = deriveOwnerType(newDef);
         if (owner === 'client') {
-          // The ball is now with the client — prompt them to act.
+          // The ball is now with the client — prompt them to act. #106: the
+          // operations team can customise this prompt per step in the workflow
+          // editor (clientPromptTitle / clientPromptMessage); fall back to the
+          // generic auto-generated text when unset.
+          const promptTitle = (newDef?.clientPromptTitle ?? '').trim() || 'Action needed on your service';
+          // #103: the client-facing prompt names the step by its CLIENT title.
+          const promptMessage = (newDef?.clientPromptMessage ?? '').trim()
+            || `${ctx}: ${newDef?.clientTitle || newDef?.title || `Step ${newStep}`}`;
           await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'info',
-            title: 'Action needed on your service',
-            message: `${ctx}: ${newDef?.title ?? `Step ${newStep}`}`, taskId, stepNumber: newStep });
+            title: promptTitle, message: promptMessage, taskId, stepNumber: newStep });
         } else {
           // Internal step — notify its assignee (pre-assigned or matter owner).
           const nextStepSnap = await taskRef.collection('steps').doc(String(newStep)).get();

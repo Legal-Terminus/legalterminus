@@ -52,6 +52,10 @@ function withMigratedDescriptions(def) {
 function projectDefinitionForClient(def) {
   const steps = (def.steps ?? []).map((s) => {
     const copy = { ...s };
+    // #103: client sees the client-facing step name (falls back to the internal
+    // title); the internal title / clientTitle field are not exposed as such.
+    if (copy.clientTitle) copy.title = copy.clientTitle;
+    delete copy.clientTitle;
     for (const f of INTERNAL_STEP_FIELDS) delete copy[f];
     if (Array.isArray(copy.descriptions)) {
       // Client sees only descriptions explicitly tagged for the client audience.

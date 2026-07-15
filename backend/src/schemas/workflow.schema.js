@@ -84,6 +84,11 @@ const gateSchema = z.object({
 const stepSchema = z.object({
   stepNumber: z.number().int().min(1),
   title: z.string().trim().min(1).max(160),
+  // #103: separate client-facing step name (falls back to `title` when unset).
+  clientTitle: z.string().trim().max(160).optional(),
+  // #106: custom client email/notification when this client step becomes their turn.
+  clientPromptTitle: z.string().trim().max(200).optional(),
+  clientPromptMessage: z.string().trim().max(4000).optional(),
   description: z.string().trim().max(2000).optional(),
   type: z.enum(['step', 'payment_gate', 'branch', 'final']),
   assignedRole: z.string().trim().max(60).optional(),

@@ -574,7 +574,7 @@ function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, onA
     >
       <div className="flex items-center gap-2 mb-3">
         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand-50 text-xs font-semibold text-brand-700 shrink-0">{index + 1}</span>
-        <input className={`${inputCls} font-medium`} value={step.title} onChange={(e) => onPatch({ title: e.target.value })} aria-label={`Step ${step.stepNumber} title`} placeholder="What is this step called?" />
+        <input className={`${inputCls} font-medium`} value={step.title} onChange={(e) => onPatch({ title: e.target.value })} aria-label={`Step ${step.stepNumber} title`} placeholder="Internal step name (our team)" />
         <div className="flex items-center gap-1 shrink-0">
           <button onClick={onLocate} className="text-ink-faint hover:text-brand-600" aria-label="Locate in chart" title="Locate in chart"><Crosshair className="w-4 h-4" /></button>
           <button onClick={() => onMove(-1)} disabled={index === 0} className="text-ink-faint hover:text-ink disabled:opacity-30" aria-label="Move up"><ChevronUp className="w-4 h-4" /></button>
@@ -582,6 +582,46 @@ function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, onA
           <button onClick={handleRemove} className="text-ink-faint hover:text-red-600" aria-label="Remove step"><Trash2 className="w-4 h-4" /></button>
         </div>
       </div>
+
+      {/* #103: separate client-facing step name. Blank → the client sees the
+          internal name above. Lets the client see a friendlier label. */}
+      <div className="mb-3 pl-8">
+        <LabeledField label="Client step name" hint="What the CLIENT sees for this step. Leave blank to reuse the internal name above.">
+          <input
+            className={inputCls}
+            value={step.clientTitle ?? ''}
+            onChange={(e) => onPatch({ clientTitle: e.target.value || undefined })}
+            aria-label={`Step ${step.stepNumber} client name`}
+            placeholder={step.title ? `Defaults to “${step.title}”` : 'Client-facing name (optional)'}
+          />
+        </LabeledField>
+      </div>
+
+      {/* #106: editable email/notification the client receives when this step
+          becomes their turn. Only meaningful for CLIENT-owned steps. */}
+      {kind === 'client' && (
+        <div className="mb-3 pl-8 grid grid-cols-1 gap-2">
+          <LabeledField label="Client email — subject line" hint="The email/notification TITLE the client gets when it's their turn on this step. Blank → “Action needed on your service”.">
+            <input
+              className={inputCls}
+              value={step.clientPromptTitle ?? ''}
+              onChange={(e) => onPatch({ clientPromptTitle: e.target.value || undefined })}
+              aria-label={`Step ${step.stepNumber} client email subject`}
+              placeholder="Action needed on your service"
+            />
+          </LabeledField>
+          <LabeledField label="Client email — message" hint="The email/notification BODY. Blank → an auto-generated line naming the service and step.">
+            <textarea
+              className={`${inputCls} resize-y`}
+              rows={3}
+              value={step.clientPromptMessage ?? ''}
+              onChange={(e) => onPatch({ clientPromptMessage: e.target.value || undefined })}
+              aria-label={`Step ${step.stepNumber} client email message`}
+              placeholder="e.g. Dear Client, please review the proposed name & objects and approve or request changes."
+            />
+          </LabeledField>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2.5">
         <LabeledField label="What kind of step?" hint={KIND_HINT[kind]}>

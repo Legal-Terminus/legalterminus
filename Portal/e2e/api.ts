@@ -533,6 +533,49 @@ export async function createStatusNotesMatter(): Promise<{ taskId: string; defId
   return { taskId, defId };
 }
 
+/**
+ * #103/#105/#106: create a matter whose FIRST (active) step is a CLIENT-approval
+ * step carrying a separate client-facing name (clientTitle) and a custom client
+ * prompt (clientPromptTitle/Message). Returns matter id + def id for teardown.
+ */
+export async function createClientTitleMatter(): Promise<{ taskId: string; defId: string }> {
+  const api = await apiAs('admin');
+  const defId = `e2e-clienttitle-${Date.now()}`;
+  const serviceKey = `e2e-svc-clienttitle-${Date.now()}`;
+  // Mirrors the real flow: a staff prep step hands off (with a comment) to a
+  // client-approval step that carries a client-facing name + custom prompt.
+  const def = {
+    id: defId,
+    name: `E2E Client Title ${defId}`,
+    initialStep: 1,
+    serviceKeys: [serviceKey],
+    steps: [
+      { stepNumber: 1, title: 'Prepare names (staff)', type: 'step', clientVisible: true,
+        transitions: [{ event: 'COMPLETE_STEP', to: 2 }] },
+      {
+        stepNumber: 2, title: 'INTERNAL-ONLY-NAME', clientTitle: 'CLIENT-FRIENDLY-NAME',
+        type: 'step', clientVisible: true,
+        clientPromptTitle: 'Please review your business names',
+        clientPromptMessage: 'Kindly review the proposed names and approve.',
+        transitions: [{ event: 'CLIENT_APPROVE', to: 3 }, { event: 'CLIENT_REJECT', to: 1 }],
+      },
+      { stepNumber: 3, title: 'Done', type: 'final' },
+    ],
+  };
+  const dres = await api.post('/api/workflow-definitions', { data: def });
+  if (!dres.ok()) throw new Error(`createClientTitleMatter def failed: ${dres.status()} ${await dres.text()}`);
+  const tres = await api.post('/api/tasks', {
+    data: {
+      clientUid: env('E2E_CLIENT_UID'), serviceKey,
+      paymentStatus: 'fully_paid', totalCost: 10000, amountReceived: 10000, paymentMode: 'E2E',
+    },
+  });
+  if (!tres.ok()) throw new Error(`createClientTitleMatter task failed: ${tres.status()} ${await tres.text()}`);
+  const taskId = (await tres.json()).id as string;
+  await api.dispose();
+  return { taskId, defId };
+}
+
 /** Delete a workflow definition by id (admin). Best-effort teardown. */
 export async function deleteDefinition(id: string): Promise<void> {
   if (!id) return;

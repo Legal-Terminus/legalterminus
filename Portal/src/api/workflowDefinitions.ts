@@ -27,6 +27,12 @@ export interface StepDescription {
 export interface WorkflowStepDef {
   stepNumber: number;
   title: string;
+  /** #103: client-facing step name. Falls back to `title` when unset. */
+  clientTitle?: string;
+  /** #106: custom email/notification the client gets when this (client-owned)
+   *  step becomes their turn. Blank → the generic auto-generated prompt. */
+  clientPromptTitle?: string;
+  clientPromptMessage?: string;
   description?: string;
   type: 'step' | 'payment_gate' | 'branch' | 'final';
   assignedRole?: string;

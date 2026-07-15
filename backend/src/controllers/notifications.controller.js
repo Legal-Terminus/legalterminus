@@ -146,14 +146,24 @@ export const createNotification = async ({ recipientUid, type = 'info', title, m
       const to = u.exists ? (u.data().email || u.data().emailIds?.[0]) : null;
       // #98: resolve the matter's serviceName so the email gets a stable,
       // matter-scoped subject (Gmail threads all of a matter's emails together).
+      // #104: also resolve the client's ORGANISATION so the subject can name the
+      // specific org (a client may have several orgs each with active services).
       let serviceName;
+      let organisation;
       if (to && taskId) {
         try {
           const t = await db.collection('tasks').doc(taskId).get();
-          if (t.exists) serviceName = t.data().serviceName || t.data().workflowType || undefined;
+          if (t.exists) {
+            const td = t.data();
+            serviceName = td.serviceName || td.workflowType || undefined;
+            if (td.clientUid) {
+              const c = await db.collection('users').doc(td.clientUid).get();
+              if (c.exists) organisation = c.data().organisation || undefined;
+            }
+          }
         } catch { /* best-effort — fall back to the event title subject */ }
       }
-      if (to) await sendNotificationEmail({ to, title, message: message ?? '', taskId, serviceName });
+      if (to) await sendNotificationEmail({ to, title, message: message ?? '', taskId, serviceName, organisation });
     } catch (err) {
       logger.warn({ err: err?.message }, '[email] notification email dispatch failed (non-fatal)');
     }

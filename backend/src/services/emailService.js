@@ -202,10 +202,16 @@ export async function sendContactLeadEmail(lead = {}) {
  * per-event detail (assigned / approved / complete / …) lives in the body's
  * heading, not the subject. Falls back to the event title when there's no matter
  * context (e.g. account-level emails like a password-setup link).
+ *
+ * #104: include the client's ORGANISATION name when known, since one client can
+ * have several organisations each with active services — so both sides can tell
+ * at a glance which matter an email is about:
+ *   [Legal Terminus] ABC Technologies Pvt. Ltd. | Company Incorporation (#9Dr8eq)
  */
-function matterSubject({ serviceName, taskId, title }) {
-  if (serviceName && taskId) return `[Legal Terminus] ${serviceName} (#${shortMatterId(taskId)})`;
-  if (serviceName) return `[Legal Terminus] ${serviceName}`;
+function matterSubject({ serviceName, taskId, title, organisation }) {
+  const org = organisation && organisation.trim() ? `${organisation.trim()} | ` : '';
+  if (serviceName && taskId) return `[Legal Terminus] ${org}${serviceName} (#${shortMatterId(taskId)})`;
+  if (serviceName) return `[Legal Terminus] ${org}${serviceName}`;
   return title || 'Legal Terminus';
 }
 
@@ -217,7 +223,7 @@ function matterSubject({ serviceName, taskId, title }) {
  * References/In-Reply-To headers derived from the matter id, so a matter's emails
  * thread in Gmail even if the subject is ever edited.
  */
-export async function sendNotificationEmail({ to, title, message, taskId, serviceName }) {
+export async function sendNotificationEmail({ to, title, message, taskId, serviceName, organisation }) {
   try {
     if (!to || !title) return false;
     const transporter = getTransporter();
@@ -227,7 +233,7 @@ export async function sendNotificationEmail({ to, title, message, taskId, servic
     }
     const { html, text } = renderEmail({ title, message, taskId });
     const from = process.env.EMAIL_FROM || process.env.GMAIL_USER;
-    const subject = matterSubject({ serviceName, taskId, title });
+    const subject = matterSubject({ serviceName, taskId, title, organisation });
     // Threading headers (#98): a stable Message-ID root per matter. Setting the
     // SAME references value on every email of a matter makes Gmail group them.
     const threadRef = taskId ? `<matter-${taskId}@legalterminus>` : undefined;
