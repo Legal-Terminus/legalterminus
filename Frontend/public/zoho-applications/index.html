@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zoho Books, Payroll & Inventory — Legal Terminus | Authorized Zoho Partner in Odisha</title>
+  <meta name="description" content="Legal Terminus is your authorized Zoho partner in Odisha. Set up Zoho Books, Zoho Payroll and Zoho Inventory with GST-ready configuration, data migration, training and local support." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --green:#45a049;            /* brand green */
+      --green-topbar:#4CAF50;
+      --green-bright:#22c55e;
+      --green-light:#4ade80;
+      --green-mid:#16a34a;
+      --green-deep:#166534;
+      --green-btn:#21b738;
+      --green-btn-hover:#1aa130;
+      --green-text-on:#022c22;
+      --navy-1:#071c2e; --navy-2:#0d2845;
+      --foot-1:#0a1628; --foot-2:#0d1f3c; --foot-3:#0f2545;
+      --gold:#c89a4b;
+      --ink:#0f172a; --ink-2:#374151; --muted:#64748b; --muted-2:#94a3b8;
+      --line:#e5e7eb; --bg:#f8f9fa; --card-border:rgba(34,197,94,.45);
+      --shadow-card:0 12px 35px rgba(0,0,0,.06);
+      --font-head:'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-body:'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:var(--font-body);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.6;}
+    a{text-decoration:none;color:inherit;}
+    img{max-width:100%;display:block;}
+    .wrap{max-width:1200px;width:calc(100% - 4rem);margin:0 auto;}
+    :focus-visible{outline:3px solid var(--green);outline-offset:2px;border-radius:6px;}
+
+    /* ---------- TOP BAR ---------- */
+    .topbar{background:linear-gradient(135deg,var(--green-topbar) 0%,var(--green) 100%);color:#fff;font-size:14px;padding:10px 0;}
+    .topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+    .topbar-contact{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .topbar-link{color:#fff;font-weight:600;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:6px;background:rgba(255,255,255,.10);transition:background .18s ease;}
+    .topbar-link:hover{background:rgba(255,255,255,.18);}
+    .topbar-tag{color:rgba(255,255,255,.95);font-weight:600;letter-spacing:.2px;display:inline-flex;align-items:center;gap:8px;}
+    .topbar-tag .dot{width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.25);}
+
+    /* ---------- NAV ---------- */
+    .main-nav{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.98);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,.05);}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:14px 0;}
+    .brand{display:flex;align-items:center;gap:12px;}
+    .brand img{width:190px;height:52px;object-fit:contain;filter:brightness(1.05) contrast(1.05);}
+    .brand .fallback{font-family:var(--font-head);font-weight:900;font-size:22px;color:var(--green-deep);letter-spacing:-.5px;}
+    .nav-links{display:flex;align-items:center;gap:28px;list-style:none;}
+    .nav-links a{font-family:var(--font-head);font-weight:700;font-size:15.5px;color:#1a1a1a;position:relative;padding:6px 2px;transition:color .25s ease;}
+    .nav-links a::after{content:'';position:absolute;bottom:-4px;left:50%;width:0;height:3px;background:linear-gradient(135deg,var(--green-bright),var(--green-mid));border-radius:2px;transform:translateX(-50%);transition:width .35s ease;}
+    .nav-links a:hover{color:var(--green-deep);}
+    .nav-links a:hover::after{width:80%;}
+    .nav-cta{font-family:var(--font-head);font-weight:800;font-size:14.5px;color:#fff;background:linear-gradient(135deg,var(--green-bright),var(--green-mid));padding:11px 22px;border-radius:10px;box-shadow:0 8px 20px -8px var(--green-mid);transition:transform .2s ease,opacity .2s ease;}
+    .nav-cta:hover{transform:translateY(-2px);opacity:.95;}
+    .nav-toggle{display:none;}
+
+    /* ---------- HERO ---------- */
+    .hero{padding:64px 0 70px;background:
+        radial-gradient(ellipse 900px 500px at 12% 18%,rgba(34,197,94,.12),transparent 60%),
+        radial-gradient(ellipse 700px 420px at 88% 82%,rgba(34,197,94,.08),transparent 60%),
+        linear-gradient(160deg,var(--navy-1) 0%,var(--navy-2) 50%,var(--navy-1) 100%);}
+    .hero-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:64px;align-items:center;}
+    .hero-tag{display:inline-flex;align-items:center;gap:8px;padding:9px 20px;background:linear-gradient(135deg,var(--green-bright),var(--green-light));color:var(--green-text-on);font-family:var(--font-head);font-size:13px;font-weight:800;border-radius:30px;letter-spacing:.4px;margin-bottom:22px;}
+    .hero h1{font-family:var(--font-head);font-size:clamp(2rem,4.4vw,3.05rem);font-weight:900;line-height:1.1;color:#fff;letter-spacing:-.5px;margin-bottom:20px;text-wrap:balance;}
+    .hero h1 span{color:var(--green-light);}
+    .hero p.lede{font-size:17px;line-height:1.8;color:#d1d5db;max-width:620px;margin-bottom:30px;}
+    .hero-features{display:grid;grid-template-columns:1fr 1fr;gap:14px 28px;margin-bottom:34px;}
+    .hero-feature{font-size:15px;color:#f8fafc;padding-left:12px;border-left:3px solid var(--green-bright);}
+    .hero-cta-row{display:flex;flex-wrap:wrap;gap:14px;}
+    .btn-primary{font-family:var(--font-head);font-weight:800;font-size:15.5px;color:var(--green-text-on);background:linear-gradient(135deg,var(--green-bright),var(--green-light));padding:14px 28px;border-radius:12px;display:inline-flex;align-items:center;gap:9px;transition:transform .2s ease,opacity .2s ease;border:none;cursor:pointer;}
+    .btn-primary:hover{transform:translateY(-2px);opacity:.94;}
+    .btn-outline-light{font-family:var(--font-head);font-weight:700;font-size:15.5px;color:#fff;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.28);padding:14px 26px;border-radius:12px;display:inline-flex;align-items:center;gap:9px;transition:background .2s ease,transform .2s ease;}
+    .btn-outline-light:hover{background:rgba(255,255,255,.14);transform:translateY(-2px);}
+
+    /* hero contact card */
+    .hero-card{background:#fff;border-radius:18px;padding:34px 30px;border:1px solid rgba(34,197,94,.25);box-shadow:0 20px 60px rgba(0,0,0,.35);}
+    .hero-card h3{font-family:var(--font-head);font-size:22px;font-weight:900;color:var(--ink);margin-bottom:6px;}
+    .hero-card .sub{font-size:14px;color:var(--muted);margin-bottom:22px;}
+    .hero-card .action{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;margin-bottom:12px;transition:border-color .2s ease,transform .2s ease,box-shadow .2s ease;}
+    .hero-card .action:hover{border-color:var(--green-bright);transform:translateY(-2px);box-shadow:0 10px 24px rgba(34,197,94,.12);}
+    .hero-card .action .ico{width:42px;height:42px;border-radius:10px;flex:none;display:grid;place-items:center;background:rgba(34,197,94,.10);color:var(--green-mid);}
+    .hero-card .action .ico svg{width:20px;height:20px;}
+    .hero-card .action .lbl{font-size:12px;color:var(--muted);}
+    .hero-card .action .val{font-family:var(--font-head);font-weight:700;font-size:15px;color:var(--ink);}
+    .hero-card .note{margin-top:8px;font-size:12.5px;color:var(--muted);text-align:center;}
+    .hero-card .note strong{color:var(--green-mid);}
+
+    /* ---------- SECTION SHELL ---------- */
+    section{scroll-margin-top:90px;}
+    .sec{padding:72px 0;}
+    .sec-head{text-align:center;max-width:760px;margin:0 auto 46px;}
+    .eyebrow{font-family:var(--font-head);font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--green-mid);display:inline-block;margin-bottom:12px;}
+    .sec-head h2{font-family:var(--font-head);font-size:clamp(1.7rem,3.4vw,2.3rem);font-weight:800;color:var(--ink);letter-spacing:-.4px;line-height:1.18;text-wrap:balance;}
+    .sec-head p{margin-top:14px;font-size:16px;color:var(--muted);line-height:1.7;}
+
+    /* ---------- TRUST BAND ---------- */
+    .trust{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+    .trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;}
+    .trust-item{padding:34px 26px;text-align:center;border-right:1px solid var(--line);}
+    .trust-item:last-child{border-right:none;}
+    .trust-item .ico{width:52px;height:52px;margin:0 auto 14px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(34,197,94,.04));color:var(--green-mid);}
+    .trust-item .ico svg{width:24px;height:24px;}
+    .trust-item h4{font-family:var(--font-head);font-size:16px;font-weight:800;color:var(--ink);margin-bottom:6px;}
+    .trust-item p{font-size:13.5px;color:var(--muted);line-height:1.55;}
+
+    /* ---------- PRODUCT CARDS ---------- */
+    .products{background:var(--bg);}
+    .prod-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px;}
+    .prod-card{background:#fff;border:1.5px solid var(--card-border);border-radius:16px;box-shadow:var(--shadow-card);padding:30px 28px;display:flex;flex-direction:column;transition:transform .2s ease,box-shadow .2s ease;}
+    .prod-card:hover{transform:translateY(-6px);box-shadow:0 22px 50px rgba(0,0,0,.10);}
+    .prod-top{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+    .prod-badge{width:52px;height:52px;border-radius:14px;flex:none;display:grid;place-items:center;color:#fff;font-family:var(--font-head);font-weight:900;font-size:20px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);}
+    .prod-badge.books{background:linear-gradient(150deg,#22c55e,#16a34a);}
+    .prod-badge.payroll{background:linear-gradient(150deg,#3b82f6,#1d4ed8);}
+    .prod-badge.inventory{background:linear-gradient(150deg,#f59e0b,#d97706);}
+    .prod-name{font-family:var(--font-head);font-size:20px;font-weight:800;color:var(--ink);}
+    .prod-name small{display:block;font-family:var(--font-body);font-weight:600;font-size:12px;color:var(--green-mid);letter-spacing:.3px;margin-top:2px;}
+    .prod-tagline{font-size:14px;color:var(--ink-2);line-height:1.6;margin:8px 0 18px;}
+    .prod-list{list-style:none;margin:0 0 24px;padding:0;flex:1;}
+    .prod-list li{font-size:13.6px;color:#111827;line-height:1.55;display:flex;gap:11px;margin-bottom:11px;}
+    .prod-list li::before{content:'';width:8px;height:8px;margin-top:6px;border-radius:50%;background:var(--green-btn);flex:none;}
+    .prod-actions{display:flex;flex-direction:column;gap:10px;margin-top:auto;}
+    .btn-zoho{background:var(--green-btn);color:#fff;font-family:var(--font-head);font-weight:700;font-size:15px;padding:13px 20px;border-radius:8px;text-align:center;display:inline-flex;align-items:center;justify-content:center;gap:9px;transition:background .2s ease,transform .15s ease,box-shadow .15s ease;}
+    .btn-zoho:hover{background:var(--green-btn-hover);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.12);}
+    .btn-setup{background:#fff;color:var(--green-deep);border:1.5px solid var(--card-border);font-family:var(--font-head);font-weight:700;font-size:14px;padding:11px 20px;border-radius:8px;text-align:center;transition:background .2s ease;}
+    .btn-setup:hover{background:rgba(34,197,94,.06);}
+
+    /* ---------- PROCESS ---------- */
+    .process{background:#fff;}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
+    .step{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:26px 22px;position:relative;overflow:hidden;}
+    .step::before{content:'';position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--green-bright),var(--green-mid));}
+    .step .num{font-family:var(--font-head);font-size:13px;font-weight:800;letter-spacing:2px;color:var(--green-mid);}
+    .step h4{font-family:var(--font-head);font-size:17px;font-weight:800;color:var(--ink);margin:12px 0 8px;}
+    .step p{font-size:13.8px;color:var(--muted);line-height:1.6;}
+
+    /* ---------- FAQ ---------- */
+    .faq{background:var(--bg);}
+    .faq-list{max-width:840px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
+    .faq-item{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .2s ease,box-shadow .2s ease;}
+    .faq-item[open]{border-color:var(--card-border);box-shadow:var(--shadow-card);}
+    .faq-item summary{list-style:none;cursor:pointer;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:var(--font-head);font-weight:700;font-size:16px;color:var(--ink);}
+    .faq-item summary::-webkit-details-marker{display:none;}
+    .faq-item summary .plus{width:26px;height:26px;flex:none;border-radius:50%;background:rgba(34,197,94,.10);color:var(--green-mid);display:grid;place-items:center;font-size:18px;font-weight:700;transition:transform .25s ease;}
+    .faq-item[open] summary .plus{transform:rotate(45deg);}
+    .faq-item .ans{padding:0 24px 22px;font-size:14.5px;color:var(--ink-2);line-height:1.7;}
+
+    /* ---------- CTA BAND ---------- */
+    .cta-band{padding:66px 0;background:
+        radial-gradient(ellipse 700px 400px at 80% 10%,rgba(34,197,94,.18),transparent 60%),
+        linear-gradient(160deg,var(--navy-1),var(--navy-2));}
+    .cta-inner{text-align:center;max-width:760px;margin:0 auto;}
+    .cta-inner h2{font-family:var(--font-head);font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:900;color:#fff;letter-spacing:-.4px;margin-bottom:14px;text-wrap:balance;}
+    .cta-inner p{font-size:16.5px;color:#d1d5db;line-height:1.7;margin-bottom:30px;}
+    .cta-row{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;}
+    .btn-wa{background:#1FA855;color:#fff;font-family:var(--font-head);font-weight:800;font-size:15.5px;padding:14px 28px;border-radius:12px;display:inline-flex;align-items:center;gap:9px;transition:background .2s ease,transform .2s ease;}
+    .btn-wa:hover{background:#178c46;transform:translateY(-2px);}
+
+    /* ---------- FOOTER ---------- */
+    .footer{background:linear-gradient(160deg,var(--foot-1) 0%,var(--foot-2) 55%,var(--foot-3) 100%);color:#fff;padding:66px 0 0;letter-spacing:.4px;}
+    .footer-cols{display:grid;grid-template-columns:1.4fr 1fr 1.2fr;gap:44px;padding-bottom:44px;}
+    .footer-brand .fb-logo{font-family:var(--font-head);font-weight:900;font-size:24px;color:#fff;margin-bottom:14px;}
+    .footer-brand .fb-logo span{color:var(--green);}
+    .footer-brand p{color:#c7d0dd;font-size:14px;line-height:1.75;max-width:340px;}
+    .footer-partner{margin-top:18px;display:inline-flex;align-items:center;gap:9px;padding:8px 14px;border-radius:30px;background:rgba(69,160,73,.14);border:1px solid rgba(69,160,73,.4);font-size:12.5px;font-weight:700;color:#bfe6c2;}
+    .footer-partner .dot{width:8px;height:8px;border-radius:50%;background:var(--green);}
+    .footer-col h4{font-family:var(--font-head);font-size:17px;font-weight:700;margin-bottom:22px;padding-bottom:12px;position:relative;}
+    .footer-col h4::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:3px;background:var(--green);border-radius:2px;}
+    .footer-links{list-style:none;}
+    .footer-links li{margin:12px 0;}
+    .footer-links a{color:#c7d0dd;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:10px;transition:color .25s ease,transform .25s ease;}
+    .footer-links a .arw{color:var(--green);font-size:12px;}
+    .footer-links a:hover{color:#fff;transform:translateX(6px);}
+    .footer-contact-item{display:flex;gap:13px;align-items:flex-start;margin-bottom:16px;}
+    .footer-contact-item .ci{width:38px;height:38px;border-radius:9px;flex:none;background:#fff;color:var(--green);display:grid;place-items:center;}
+    .footer-contact-item .ci svg{width:18px;height:18px;}
+    .footer-contact-item .lbl{font-size:12px;color:#9aa8ba;}
+    .footer-contact-item a,.footer-contact-item span{color:#eef2f7;font-size:14px;font-weight:500;}
+    .footer-contact-item a:hover{color:var(--green);}
+    .footer-bottom{background:var(--green);margin-top:8px;position:relative;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;padding:22px 0;}
+    .footer-bottom .fb-in{max-width:1200px;width:calc(100% - 4rem);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+    .footer-bottom .copyright{color:#fff;font-weight:600;font-size:14px;}
+    .footer-bottom .disclaimer{color:rgba(255,255,255,.9);font-size:12px;max-width:640px;line-height:1.55;}
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width:1024px){
+      .hero-grid{grid-template-columns:1fr;gap:44px;}
+      .trust-grid{grid-template-columns:repeat(2,1fr);}
+      .trust-item:nth-child(2){border-right:none;}
+      .trust-item{border-bottom:1px solid var(--line);}
+      .prod-grid{grid-template-columns:1fr 1fr;}
+      .steps{grid-template-columns:repeat(2,1fr);}
+      .footer-cols{grid-template-columns:1fr 1fr;}
+    }
+    @media (max-width:768px){
+      .wrap{width:calc(100% - 2rem);}
+      .nav-links{display:none;}
+      .nav-toggle{display:inline-flex;}
+      .hero-features{grid-template-columns:1fr;}
+      .prod-grid{grid-template-columns:1fr;max-width:460px;margin:0 auto;}
+      .trust-grid{grid-template-columns:1fr;}
+      .trust-item{border-right:none;}
+      .steps{grid-template-columns:1fr;}
+      .footer-cols{grid-template-columns:1fr;gap:34px;}
+      .footer-bottom .fb-in{flex-direction:column;text-align:center;}
+    }
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="topbar-contact">
+        <a class="topbar-link" href="tel:+918280045432" aria-label="Call us">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.3 15.3 0 006.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 013 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.3 1l-2.2 2.2z"/></svg>
+          +91 82800 45432
+        </a>
+        <a class="topbar-link" href="mailto:sales23@legalterminus.com" aria-label="Email us">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          sales23@legalterminus.com
+        </a>
+      </div>
+      <div class="topbar-tag"><span class="dot"></span>Authorized Zoho Partner · Odisha</div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <header class="main-nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="/" aria-label="Legal Terminus home">
+        <img src="/logo-animated.gif" alt="Legal Terminus" onerror="this.style.display='none';this.nextElementSibling.style.display='inline';" />
+        <span class="fallback" style="display:none;">Legal Terminus</span>
+      </a>
+      <nav aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="#products">Zoho Apps</a></li>
+          <li><a href="#process">How We Help</a></li>
+          <li><a href="#faq">FAQs</a></li>
+        </ul>
+      </nav>
+      <a class="nav-cta" href="#contact">Talk to an Expert</a>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="hero-tag">✦ Zoho for Business in Odisha</span>
+        <h1>Run your finances, payroll &amp; stock on <span>Zoho</span> — set up by your local partner.</h1>
+        <p class="lede">Legal Terminus is your authorized Zoho partner in Bhubaneswar and across Odisha. Start with the three apps that keep an Indian business running — <strong style="color:#fff;">Zoho Books, Zoho Payroll and Zoho Inventory</strong> — and let our team handle GST-ready setup, data migration and training.</p>
+        <div class="hero-features">
+          <div class="hero-feature">GST-ready configuration</div>
+          <div class="hero-feature">Data migration from Tally / Excel</div>
+          <div class="hero-feature">On-ground training in Odisha</div>
+          <div class="hero-feature">Ongoing local support</div>
+        </div>
+        <div class="hero-cta-row">
+          <a class="btn-primary" href="#products">Explore the Apps
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn-outline-light" href="https://wa.me/918280008183" target="_blank" rel="noopener">Chat on WhatsApp</a>
+        </div>
+      </div>
+
+      <aside class="hero-card" id="contact">
+        <h3>Talk to a Zoho Expert</h3>
+        <p class="sub">Free consultation · based in Odisha. We’ll recommend the right setup and get your accounts live.</p>
+        <a class="action" href="tel:+918280045432">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.3 15.3 0 006.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 013 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.3 1l-2.2 2.2z"/></svg></span>
+          <span><span class="lbl">Call us</span><br><span class="val">+91 82800 45432</span></span>
+        </a>
+        <a class="action" href="https://wa.me/918280008183" target="_blank" rel="noopener">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15l-1.4 5 5.2-1.4A10 10 0 1012 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-.4-.1-.9-.3-1.6-.6-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-2 .9-2.2c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6c-.2.2-.3.4-.1.7.6 1.1 1.4 1.8 2.4 2.3.2.1.4.1.5-.1l.6-.7c.2-.2.3-.2.6-.1l1.9.9c.3.1.4.2.4.4.1.2.1.8-.1 1.4z"/></svg></span>
+          <span><span class="lbl">WhatsApp</span><br><span class="val">+91 82800 08183</span></span>
+        </a>
+        <a class="action" href="mailto:sales23@legalterminus.com">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></span>
+          <span><span class="lbl">Email</span><br><span class="val">sales23@legalterminus.com</span></span>
+        </a>
+        <p class="note"><strong>Odisha-based team</strong> · Delhi · UP · MP</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- TRUST BAND -->
+  <div class="trust">
+    <div class="wrap">
+      <div class="trust-grid">
+        <div class="trust-item">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+          <h4>Authorized Partner</h4>
+          <p>Official Zoho partner serving businesses across Odisha.</p>
+        </div>
+        <div class="trust-item">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>
+          <h4>GST &amp; India-Ready</h4>
+          <p>Every app configured for Indian tax and compliance.</p>
+        </div>
+        <div class="trust-item">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+          <h4>Local Support</h4>
+          <p>On-ground help and training in your own timezone.</p>
+        </div>
+        <div class="trust-item">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+          <h4>End-to-End Migration</h4>
+          <p>Move your data from Tally or Excel without the mess.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTS -->
+  <section class="sec products" id="products">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Zoho Applications</span>
+        <h2>Three apps, one connected business</h2>
+        <p>Books, Payroll and Inventory share the same data and work as one system. Open a direct Zoho account for any app below — and we’ll set it up for you.</p>
+      </div>
+
+      <div class="prod-grid">
+        <!-- BOOKS -->
+        <article class="prod-card">
+          <div class="prod-top">
+            <span class="prod-badge books">B</span>
+            <span class="prod-name">Zoho Books<small>Accounting &amp; GST</small></span>
+          </div>
+          <p class="prod-tagline">Online accounting that manages your finances, automates workflows and keeps you GST-ready — all in one place.</p>
+          <ul class="prod-list">
+            <li>GST-compliant invoicing &amp; return filing (GSTR-1, 3B)</li>
+            <li>Quotes, invoices, payments &amp; auto-reminders</li>
+            <li>Bank reconciliation &amp; expense tracking</li>
+            <li>Real-time reports &amp; financial dashboards</li>
+            <li>Role-based access for your team &amp; CA</li>
+          </ul>
+          <div class="prod-actions">
+            <a class="btn-zoho" href="https://www.zoho.com/in/books/" target="_blank" rel="noopener">Open Zoho Books account
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>
+            </a>
+            <a class="btn-setup" href="#contact">Set it up with us</a>
+          </div>
+        </article>
+
+        <!-- PAYROLL -->
+        <article class="prod-card">
+          <div class="prod-top">
+            <span class="prod-badge payroll">P</span>
+            <span class="prod-name">Zoho Payroll<small>Salaries &amp; Compliance</small></span>
+          </div>
+          <p class="prod-tagline">Payroll software built for India — process pay runs in minutes and stay compliant with every statutory requirement.</p>
+          <ul class="prod-list">
+            <li>Automated salary &amp; payslip generation</li>
+            <li>EPF, ESI, PT &amp; TDS handled automatically</li>
+            <li>Direct salary deposits &amp; payment reports</li>
+            <li>Employee self-service portal &amp; app</li>
+            <li>Works seamlessly with Zoho Books</li>
+          </ul>
+          <div class="prod-actions">
+            <a class="btn-zoho" href="https://www.zoho.com/in/payroll/" target="_blank" rel="noopener">Open Zoho Payroll account
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>
+            </a>
+            <a class="btn-setup" href="#contact">Set it up with us</a>
+          </div>
+        </article>
+
+        <!-- INVENTORY -->
+        <article class="prod-card">
+          <div class="prod-top">
+            <span class="prod-badge inventory">I</span>
+            <span class="prod-name">Zoho Inventory<small>Stock &amp; Orders</small></span>
+          </div>
+          <p class="prod-tagline">End-to-end inventory and order management to control stock, fulfil orders and grow across every sales channel.</p>
+          <ul class="prod-list">
+            <li>Order, warehouse &amp; stock management</li>
+            <li>Multi-channel selling — Amazon, Flipkart, Shopify</li>
+            <li>Real-time tracking &amp; low-stock alerts</li>
+            <li>Batch, serial number &amp; barcode tracking</li>
+            <li>Shipping integrations with live tracking</li>
+          </ul>
+          <div class="prod-actions">
+            <a class="btn-zoho" href="https://www.zoho.com/inventory/" target="_blank" rel="noopener">Open Zoho Inventory account
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>
+            </a>
+            <a class="btn-setup" href="#contact">Set it up with us</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="sec process" id="process">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">How We Help</span>
+        <h2>You pick the apps. We make them work.</h2>
+        <p>Opening a Zoho account is the easy part. Turning it into a system your team actually uses — that’s where a local partner earns its place.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="num">STEP 01</div><h4>Consult</h4><p>We study how your business runs today and recommend the exact apps and plan that fit — no over-buying.</p></div>
+        <div class="step"><div class="num">STEP 02</div><h4>Configure &amp; Migrate</h4><p>GST settings, chart of accounts, users and roles set up right — with your data moved from Tally or Excel.</p></div>
+        <div class="step"><div class="num">STEP 03</div><h4>Automate</h4><p>Connect Books, Payroll and Inventory so your finance, salaries and stock talk to each other automatically.</p></div>
+        <div class="step"><div class="num">STEP 04</div><h4>Train &amp; Support</h4><p>Hands-on training for your staff and ongoing support you can reach in Odisha — not a distant ticket queue.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="sec faq" id="faq">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">FAQs</span>
+        <h2>Questions, answered</h2>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item" open>
+          <summary>Is Zoho Books GST-compliant for Indian businesses?<span class="plus">+</span></summary>
+          <div class="ans">Yes. The India edition of Zoho Books is built for GST — you can raise GST invoices, generate GSTR-1 and GSTR-3B, and file returns directly. We configure your GSTIN, tax rates and HSN/SAC codes during setup.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Do I need a separate account for each app?<span class="plus">+</span></summary>
+          <div class="ans">You sign in with one Zoho account and add the apps you need. Books, Payroll and Inventory share the same customer, item and tax data, so they work together as one connected system. You can start with just one and add the others later.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Can you migrate my existing data from Tally or Excel?<span class="plus">+</span></summary>
+          <div class="ans">Yes. Migration is part of what we do — masters, opening balances, item lists, customers and historical transactions are moved and verified so you start clean on Zoho.</div>
+        </details>
+        <details class="faq-item">
+          <summary>Do you provide setup and training in Odisha?<span class="plus">+</span></summary>
+          <div class="ans">Absolutely. As your local Zoho partner we handle implementation, hands-on staff training and ongoing support on the ground in Bhubaneswar and across Odisha — reachable in your own timezone.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-band">
+    <div class="wrap cta-inner">
+      <h2>Ready to move your business onto Zoho?</h2>
+      <p>Tell us whether it’s accounting, payroll, stock — or all three — and we’ll recommend a plan and get your accounts live.</p>
+      <div class="cta-row">
+        <a class="btn-primary" href="tel:+918280045432">Call +91 82800 45432</a>
+        <a class="btn-wa" href="https://wa.me/918280008183" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15l-1.4 5 5.2-1.4A10 10 0 1012 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-.4-.1-.9-.3-1.6-.6-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-2 .9-2.2c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6c-.2.2-.3.4-.1.7.6 1.1 1.4 1.8 2.4 2.3.2.1.4.1.5-.1l.6-.7c.2-.2.3-.2.6-.1l1.9.9c.3.1.4.2.4.4.1.2.1.8-.1 1.4z"/></svg>
+          WhatsApp us
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-cols">
+        <div class="footer-brand">
+          <div class="fb-logo">Legal <span>Terminus</span></div>
+          <p>Business consultancy and documentation done the professional way — company incorporation, trademark, GST, tax and now Zoho implementation for growing businesses.</p>
+          <span class="footer-partner"><span class="dot"></span>Authorized Zoho Partner — Odisha</span>
+        </div>
+        <div class="footer-col">
+          <h4>Zoho Apps</h4>
+          <ul class="footer-links">
+            <li><a href="https://www.zoho.com/in/books/" target="_blank" rel="noopener"><span class="arw">▸</span>Zoho Books</a></li>
+            <li><a href="https://www.zoho.com/in/payroll/" target="_blank" rel="noopener"><span class="arw">▸</span>Zoho Payroll</a></li>
+            <li><a href="https://www.zoho.com/inventory/" target="_blank" rel="noopener"><span class="arw">▸</span>Zoho Inventory</a></li>
+            <li><a href="#process"><span class="arw">▸</span>Implementation &amp; Support</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Get in Touch</h4>
+          <div class="footer-contact-item">
+            <span class="ci"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.3 15.3 0 006.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 013 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.3 1l-2.2 2.2z"/></svg></span>
+            <div><div class="lbl">Call / WhatsApp</div><a href="tel:+918280045432">+91 82800 45432</a></div>
+          </div>
+          <div class="footer-contact-item">
+            <span class="ci"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></span>
+            <div><div class="lbl">Email</div><a href="mailto:sales23@legalterminus.com">sales23@legalterminus.com</a></div>
+          </div>
+          <div class="footer-contact-item">
+            <span class="ci"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z"/></svg></span>
+            <div><div class="lbl">Offices</div><span>Odisha · Delhi · Uttar Pradesh · Madhya Pradesh</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="fb-in">
+        <div class="copyright">© 2023–2026 Legal Terminus Private Limited</div>
+        <div class="disclaimer">Zoho and its product names are trademarks of Zoho Corporation. Legal Terminus is an independent authorized implementation partner and is not Zoho Corporation. Product links open the official Zoho sign-up pages.</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
