@@ -65,10 +65,41 @@ test('email templates: admin edits persist and round-trip; reset restores defaul
 test('Settings > Email Templates page loads for an admin and lists the templates', async ({ adminPage }) => {
   await adminPage.goto('settings/email-templates');
   await expect(adminPage.getByRole('heading', { name: 'Email Templates' })).toBeVisible();
-  // Both audience groups + at least one known template label.
+  // Both audience groups + at least one known template label (collapsible cards).
   await expect(adminPage.getByText('Client emails')).toBeVisible();
   await expect(adminPage.getByText('Internal team emails')).toBeVisible();
-  await expect(adminPage.getByText(/Welcome email/i)).toBeVisible();
+  await expect(adminPage.getByRole('button', { name: /Welcome email/i })).toBeVisible();
+});
+
+test('email templates auto-save: editing fires a save automatically (no Save button)', async ({ adminPage }) => {
+  await adminPage.goto('settings/email-templates');
+  // There is NO Save button — saving is automatic.
+  await expect(adminPage.getByRole('button', { name: /^Save changes$/i })).toHaveCount(0);
+
+  // Expand the Welcome email card (collapsed by default) and edit the subject.
+  await adminPage.getByRole('button', { name: /Welcome email/i }).click();
+  const value = `Auto-saved subject ${Date.now()}`;
+
+  // Editing auto-fires a PUT carrying the new value (debounced) — no button click.
+  // Capture the request body to assert the edit was actually persisted.
+  const [putReq] = await Promise.all([
+    adminPage.waitForRequest((r) =>
+      r.url().includes('/api/settings/email-templates') && r.method() === 'PUT',
+      { timeout: 15_000 }),
+    adminPage.getByLabel(/Welcome email subject/i).fill(value),
+  ]);
+  const sent = JSON.parse(putReq.postData() || '{}');
+  expect(sent.templates?.client_welcome?.subject).toBe(value);
+  // The "Saving…/Saved" auto-save status is shown (not a manual Save button).
+  await expect(adminPage.getByText(/Changes save automatically|Saving|Saved/i).first()).toBeVisible();
+
+  // Restore the default (also auto-saves) so the run stays idempotent.
+  await Promise.all([
+    adminPage.waitForRequest((r) =>
+      r.url().includes('/api/settings/email-templates') && r.method() === 'PUT',
+      { timeout: 15_000 }),
+    adminPage.getByRole('button', { name: /^Reset$/i }).first().click(),
+  ]);
 });
 
 test('a client cannot reach the Settings page', async ({ clientPage }) => {
