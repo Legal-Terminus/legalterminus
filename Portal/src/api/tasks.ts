@@ -43,6 +43,7 @@ export const assignServiceToClient = (input: {
   clientUid: string;
   serviceKey: string;
   serviceName?: string;
+  organisation?: string; // #104: per-matter organisation (used in email subjects)
   // #51: payment captured at creation. 'not_paid' routes the matter to admin
   // approval; part/full capture amounts that mirror into the Payment module.
   paymentStatus?: 'not_paid' | 'part_paid' | 'fully_paid';

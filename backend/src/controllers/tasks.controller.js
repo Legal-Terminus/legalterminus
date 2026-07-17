@@ -4,6 +4,8 @@ import { logger } from "../config/logger.js";
 import { getCompiledForServiceKey, getCompiledById } from '../services/workflowDefinitions.service.js';
 import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { createNotification, resolveNotificationsForTask } from './notifications.controller.js';
+import { sendTemplatedEmail } from '../services/emailService.js';
+import { renderTemplate } from '../services/emailTemplates.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
 import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE } from '../../../shared/workflows/definitionSchema.js';
 
@@ -184,7 +186,7 @@ export async function createTask(req, res) {
     }
 
     // Body validated by taskCreateSchema (incl. #51 payment fields).
-    const { clientUid, serviceKey, serviceName,
+    const { clientUid, serviceKey, serviceName, organisation,
             paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, professionalUid } = req.body;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
@@ -319,6 +321,10 @@ export async function createTask(req, res) {
       serviceName: serviceName || definition.name || serviceKey,
       clientUid,
       clientName,
+      // #104: organisation is entered per-matter at creation (a client can have
+      // several orgs). Stored ON the matter and used in all its email subjects.
+      // Falls back to the client profile's organisation when not supplied.
+      organisation: (organisation && organisation.trim()) || c.organisation || null,
       assignedTo: null,
       professionalUid: professional.professionalUid, // #85
       professionalName: professional.professionalName, // #85 (snapshot for display/reports)
@@ -375,12 +381,16 @@ export async function createTask(req, res) {
 
     // Notifications (E07-S01). A manager-created matter pings admins to approve;
     // an active matter pings the first step's pre-assigned owner that work is theirs.
+    // #109: internal notification copy comes from EDITABLE templates.
     if (needsApproval) {
       const admins = await adminUids();
+      const t = await renderTemplate('approval_needed', {
+        clientName, organisation: task.organisation ?? '', serviceName: task.serviceName,
+      });
       await Promise.all(admins.map((a) => notify({
         recipientUid: a, actorUid: req.user.uid, type: 'warning',
-        title: 'Matter awaiting your approval',
-        message: `${clientName} · ${task.serviceName} was created and needs admin approval.`,
+        title: t?.subject || 'Matter awaiting your approval',
+        message: t?.body || `${clientName} · ${task.serviceName} was created and needs admin approval.`,
         taskId: ref.id,
       })));
     } else {
@@ -389,18 +399,45 @@ export async function createTask(req, res) {
       // client — use the step's custom client prompt (and client-facing name),
       // not internal staff wording.
       const firstIsClientOwned = firstAssignee === clientUid;
-      const title = firstIsClientOwned
-        ? ((firstStepDef?.clientPromptTitle ?? '').trim() || 'Action needed on your service')
-        : 'New step assigned to you';
-      const message = firstIsClientOwned
-        ? ((firstStepDef?.clientPromptMessage ?? '').trim()
-            || `${task.serviceName}: ${firstStepDef?.clientTitle || firstStepDef?.title || `Step ${resolvedFirstStep}`}`)
-        : `${clientName} · ${task.serviceName}: ${firstStepDef?.title ?? `Step ${resolvedFirstStep}`}`;
-      await notify({
-        recipientUid: firstAssignee, actorUid: req.user.uid, type: 'info',
-        title, message,
-        taskId: ref.id,
-      });
+      if (firstIsClientOwned) {
+        const title = (firstStepDef?.clientPromptTitle ?? '').trim() || 'Action needed on your service';
+        const message = (firstStepDef?.clientPromptMessage ?? '').trim()
+          || `${task.serviceName}: ${firstStepDef?.clientTitle || firstStepDef?.title || `Step ${resolvedFirstStep}`}`;
+        await notify({ recipientUid: firstAssignee, actorUid: req.user.uid, type: 'info', title, message, taskId: ref.id });
+      } else {
+        // #109: internal "step assigned" copy from the editable template.
+        const t = await renderTemplate('step_assigned', {
+          clientName, serviceName: task.serviceName,
+          stepName: firstStepDef?.title ?? `Step ${resolvedFirstStep}`,
+        });
+        await notify({
+          recipientUid: firstAssignee, actorUid: req.user.uid, type: 'info',
+          title: t?.subject || 'New step assigned to you',
+          message: t?.body || `${clientName} · ${task.serviceName}: ${firstStepDef?.title ?? `Step ${resolvedFirstStep}`}`,
+          taskId: ref.id,
+        });
+      }
+    }
+
+    // #108: send the CLIENT a "matter created" confirmation email (editable
+    // template). Fire-and-forget; never blocks creation. Uses the matter's
+    // organisation + service in the subject.
+    try {
+      const clientEmail = c.email || (Array.isArray(c.emailIds) ? c.emailIds[0] : null);
+      if (clientEmail) {
+        const rendered = await renderTemplate('matter_created', {
+          clientName, organisation: task.organisation ?? '', serviceName: task.serviceName,
+          portalUrl: (process.env.FRONTEND_URL || '').replace(/\/$/, '') + '/portal/',
+        });
+        if (rendered) {
+          await sendTemplatedEmail({
+            to: clientEmail, subject: rendered.subject, body: rendered.body,
+            taskId: ref.id, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
+          });
+        }
+      }
+    } catch (e) {
+      logger.warn({ err: e?.message }, '[EMAIL] matter-created email failed');
     }
 
     const steps = stepDefs.map((s) => ({

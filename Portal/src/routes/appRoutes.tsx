@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 
@@ -17,6 +17,7 @@ import ServiceDetail from '../pages/services/ServiceDetailPage';
 import WorkflowEditorPage from '../pages/workflow/WorkflowEditorPage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import OrdersPage from '../pages/orders/OrdersPage';
+import EmailTemplatesPage from '../pages/settings/EmailTemplatesPage';
 import NotificationsPage from '../pages/notifications/NotificationsPage';
 
 // Reports
@@ -108,6 +109,8 @@ export const APP_ROUTES: AppRoute[] = [
 
   // ── Self-service (all roles) — own profile + order history (migrated from the
   //    marketing site's /my-profile, which is now a redirect into the portal) ──
+  // #107/#108/#109: admin-only Settings — Email Templates.
+  { path: '/settings/email-templates', element: <EmailTemplatesPage />, roles: ['admin'], nav: { label: 'Settings', icon: Settings, order: 9 } },
   { path: '/profile', element: <ProfilePage />, roles: ALL_ROLES, nav: { label: 'My Profile', icon: User, order: 10 } },
   // "My Orders" removed from the sidebar for now (all roles) — the route stays
   // reachable by URL so nothing 404s, but it no longer shows as a nav item.

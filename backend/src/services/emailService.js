@@ -223,6 +223,41 @@ function matterSubject({ serviceName, taskId, title, organisation }) {
  * References/In-Reply-To headers derived from the matter id, so a matter's emails
  * thread in Gmail even if the subject is ever edited.
  */
+/**
+ * #107/#108/#109: send an email from an EDITABLE template (rendered by the
+ * emailTemplates service). The caller passes the already-rendered `subject` and
+ * `body`. For matter-scoped emails, pass `taskId` (+ serviceName/organisation) so
+ * it threads and gets the standard `[Legal Terminus] Org | Service (#id)` subject
+ * wrapper; for account-level emails (e.g. welcome) omit them and the template's
+ * own subject is used verbatim (prefixed with the brand tag).
+ */
+export async function sendTemplatedEmail({ to, subject, body, taskId, serviceName, organisation }) {
+  try {
+    if (!to || !subject) return false;
+    const transporter = getTransporter();
+    if (!transporter) {
+      logger.info({ to, subject }, '[email] (no-op) would send templated email');
+      return false;
+    }
+    const { html, text } = renderEmail({ title: subject, message: body, taskId });
+    const from = process.env.EMAIL_FROM || process.env.GMAIL_USER;
+    // Matter emails thread + get the org|service wrapper; account emails use the
+    // template subject as-is (brand-tagged).
+    const finalSubject = taskId
+      ? matterSubject({ serviceName, taskId, title: subject, organisation })
+      : `[Legal Terminus] ${subject}`;
+    const threadRef = taskId ? `<matter-${taskId}@legalterminus>` : undefined;
+    await transporter.sendMail({
+      from, to, subject: finalSubject, text, html,
+      ...(threadRef ? { references: threadRef, inReplyTo: threadRef } : {}),
+    });
+    return true;
+  } catch (err) {
+    logger.warn({ err: err?.message, to }, '[email] templated send failed (non-fatal)');
+    return false;
+  }
+}
+
 export async function sendNotificationEmail({ to, title, message, taskId, serviceName, organisation }) {
   try {
     if (!to || !title) return false;

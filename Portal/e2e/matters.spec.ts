@@ -34,6 +34,9 @@ test('admin creates a matter via the modal, then it can be deleted', async ({ ad
 
   await adminPage.getByPlaceholder(/search clients/i).fill('E2E Client');
   await adminPage.getByRole('button', { name: /E2E Client/ }).first().click();
+  // #104: Organisation is required on the matter (prefilled from the client, but
+  // fill it explicitly so the test doesn't depend on the client's profile org).
+  await adminPage.getByLabel('Organisation name').fill('E2E Test Org');
   // Service is the first select; the payment-status select (#51) is separate.
   await adminPage.locator('select').first().selectOption({ index: 1 });
   // #51: choose Full Payment so the matter is created active (not sent to approval).

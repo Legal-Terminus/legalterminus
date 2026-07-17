@@ -117,7 +117,7 @@ export async function resolveServiceKey(): Promise<string> {
  * (admin → matter goes active immediately). Service key is resolved from the live
  * workflow definitions unless one is passed. Returns the new task id.
  */
-export async function createMatter(opts?: { serviceKey?: string; serviceName?: string }): Promise<string> {
+export async function createMatter(opts?: { serviceKey?: string; serviceName?: string; organisation?: string }): Promise<string> {
   const serviceKey = opts?.serviceKey ?? (await resolveServiceKey());
   const api = await apiAs('admin');
   // #51: payment status is chosen at creation; 'not_paid' now routes the matter to
@@ -126,6 +126,7 @@ export async function createMatter(opts?: { serviceKey?: string; serviceName?: s
   const res = await api.post('/api/tasks', {
     data: {
       clientUid: env('E2E_CLIENT_UID'), serviceKey, serviceName: opts?.serviceName,
+      ...(opts?.organisation ? { organisation: opts.organisation } : {}),
       paymentStatus: 'fully_paid', totalCost: 10000, amountReceived: 10000, paymentMode: 'E2E',
     },
   });

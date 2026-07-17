@@ -1,7 +1,8 @@
 import crypto from 'crypto';
 import { db, admin } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
-import { sendNotificationEmail } from './emailService.js';
+import { sendNotificationEmail, sendTemplatedEmail } from './emailService.js';
+import { renderTemplate } from './emailTemplates.service.js';
 
 const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 
@@ -234,6 +235,21 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
         logger.info(`[EMAIL] Password setup link for ${email} (emailed: ${resetEmailSent})`);
       } catch (e) {
         logger.warn({ err: e }, `[EMAIL] Could not generate/send password reset for ${email}:`);
+      }
+    }
+
+    // #107: a new CLIENT gets a one-time Welcome email (editable template).
+    // Fire-and-forget — never blocks user creation. Only for clients (staff get
+    // the account-setup mail above, not a client-facing welcome).
+    if (sendEmail && role === 'client') {
+      try {
+        const rendered = await renderTemplate('client_welcome', {
+          clientName: profileData.name || 'there',
+          portalUrl: (process.env.FRONTEND_URL || '').replace(/\/$/, '') + '/portal/',
+        });
+        if (rendered) await sendTemplatedEmail({ to: email, subject: rendered.subject, body: rendered.body });
+      } catch (e) {
+        logger.warn({ err: e?.message }, `[EMAIL] welcome email failed for ${email}`);
       }
     }
 

@@ -156,7 +156,10 @@ export const createNotification = async ({ recipientUid, type = 'info', title, m
           if (t.exists) {
             const td = t.data();
             serviceName = td.serviceName || td.workflowType || undefined;
-            if (td.clientUid) {
+            // #104: use the MATTER's organisation (entered at creation). Fall back
+            // to the client profile only for older matters created before the field.
+            organisation = td.organisation || undefined;
+            if (!organisation && td.clientUid) {
               const c = await db.collection('users').doc(td.clientUid).get();
               if (c.exists) organisation = c.data().organisation || undefined;
             }

@@ -3148,6 +3148,32 @@ The following stories are tagged `[Phase 2]` and are scoped for the next plannin
 
 ## APPENDIX B — Change Log: GitHub-issue fixes (2026-06-27)
 
+### Editable email templates + per-matter org (2026-07-17, #104 #107 #108 #109)
+- **New admin Settings section.** Added a `Settings` sidebar entry (admin-only) →
+  **Email Templates** page (`Portal/src/pages/settings/EmailTemplatesPage.tsx`).
+  Backed by a new `settings/emailTemplates` Firestore doc +
+  `GET/PUT /api/settings/email-templates` (admin). A
+  `emailTemplates.service.js` holds built-in DEFAULTS + a `renderTemplate(key,vars)`
+  helper doing `{{placeholder}}` substitution; overrides merge over defaults, so
+  emails always have copy even before anyone edits. `sendTemplatedEmail()` added to
+  the email service (renders via the branded template, threads matter emails).
+- **#104 (revised) — Per-matter organisation.** The org used in email subjects now
+  comes from the MATTER, not the client profile (a client can have several orgs).
+  Added a **required Organisation field to Create Matter** (prefilled from the
+  client's profile, editable), stored as `task.organisation`, and used by the
+  notification email subject (falls back to client profile for pre-existing
+  matters). `taskCreateSchema` accepts `organisation`.
+- **#107 — Welcome email.** A new CLIENT user triggers a one-time `client_welcome`
+  templated email (fire-and-forget in `userService.upsertUser`).
+- **#108 — Matter-created email.** Creating a matter sends the client a
+  `matter_created` templated email (subject carries org | service | #id).
+- **#109 — Internal templates.** The `approval_needed` ("Matter awaiting your
+  approval") and `step_assigned` ("New step assigned to you") internal
+  notifications now render from the editable templates too, editable in the same
+  Settings page.
+- e2e: `email-templates.spec.ts` (matter stores org; template store admin-only +
+  round-trips + reset; Settings page loads for admin, blocked for client).
+
 ### Step config + client-facing emails (2026-07-12, #103–#106)
 - **#103 — Separate Internal / Client step names.** New `step.clientTitle` on the
   definition. The client sees `clientTitle` (falling back to the internal `title`)

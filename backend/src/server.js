@@ -27,6 +27,7 @@ import serviceConfigRoutes from "./routes/serviceConfig.routes.js";
 import notificationsRoutes from "./routes/notifications.routes.js";
 import workflowDefinitionsRoutes from "./routes/workflowDefinitions.routes.js";
 import healthRoutes from "./routes/health.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
 import initializeFirebase from "./config/firebase.js";
 
 // Load environment variables
@@ -124,6 +125,7 @@ app.use("/api/service-config", serviceConfigRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/workflow-definitions", workflowDefinitionsRoutes);
 app.use("/api/health", healthRoutes);
+app.use("/api/settings", settingsRoutes);
 
 /* ================= HEALTH CHECK ================= */
 app.get("/health", (req, res) => res.json({ status: "ok" }));

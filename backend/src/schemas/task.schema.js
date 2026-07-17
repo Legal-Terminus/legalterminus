@@ -15,6 +15,8 @@ export const taskCreateSchema = z.object({
   clientUid: shortText,
   serviceKey: shortText,
   serviceName: z.string().trim().max(200).optional(),
+  // #104: per-matter organisation name (entered at creation), used in email subjects.
+  organisation: z.string().trim().max(200).optional(),
   paymentStatus: z.enum(['not_paid', 'part_paid', 'fully_paid']).default('not_paid'),
   totalCost: z.number().min(0).max(1e9).optional(),
   amountReceived: z.number().min(0).max(1e9).optional(),
