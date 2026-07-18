@@ -69,7 +69,12 @@ test('#91: Matters grid supports multi-criteria filtering (Status + Payment, AND
   try {
     await adminPage.goto('tasks');
     await expect(adminPage.getByRole('heading', { name: 'All Matters' })).toBeVisible();
-    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+    // Scope to the GRID rows (clickable rows), NOT any element containing the text —
+    // the filter <select>s contain hidden <option>s whose text can include the
+    // client name, which would otherwise match and never be "visible".
+    const rows = adminPage.locator('.cursor-pointer');
+    const clientRow = rows.filter({ hasText: 'E2E Client' });
+    await expect(clientRow.first()).toBeVisible();
 
     const statusFilter = adminPage.getByLabel('Filter by status');
     const paymentFilter = adminPage.getByLabel('Filter by payment');
@@ -78,18 +83,18 @@ test('#91: Matters grid supports multi-criteria filtering (Status + Payment, AND
 
     // A non-matching status hides the row.
     await statusFilter.selectOption('completed');
-    await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
+    await expect(clientRow).toHaveCount(0);
     await statusFilter.selectOption('');
 
     // Matching payment status keeps it visible; a non-matching one hides it (AND
     // with the cleared status filter above).
-    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+    await expect(clientRow.first()).toBeVisible();
     await paymentFilter.selectOption('not_paid');
-    await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
+    await expect(clientRow).toHaveCount(0);
 
     // Clear resets everything.
     await adminPage.getByRole('button', { name: 'Clear' }).click();
-    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+    await expect(clientRow.first()).toBeVisible();
   } finally {
     await deleteMatter(taskId);
   }
@@ -99,7 +104,9 @@ test('#91: Excel-style column filter — tick a status value to filter, clear to
   const taskId = await createMatter();
   try {
     await adminPage.goto('tasks');
-    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+    // Scope to grid rows (see note above) so dropdown <option>s can't match.
+    const clientRow = adminPage.locator('.cursor-pointer').filter({ hasText: 'E2E Client' });
+    await expect(clientRow.first()).toBeVisible();
 
     // Open the Status column's funnel menu.
     await adminPage.getByRole('button', { name: 'Filter status' }).click();
@@ -111,11 +118,11 @@ test('#91: Excel-style column filter — tick a status value to filter, clear to
     test.skip(!(await completedOption.count()), 'No completed matters in the grid to filter by.');
     await completedOption.locator('input[type="checkbox"]').check();
 
-    // The fresh (non-completed) matter disappears.
-    await expect(adminPage.getByText('E2E Client')).toHaveCount(0);
+    // The fresh (non-completed) matter's row disappears.
+    await expect(clientRow).toHaveCount(0);
 
     // Clear inside the popover restores it.
     await popover.getByRole('button', { name: /clear/i }).click();
-    await expect(adminPage.getByText('E2E Client').first()).toBeVisible();
+    await expect(clientRow.first()).toBeVisible();
   } finally { await deleteMatter(taskId); }
 });
