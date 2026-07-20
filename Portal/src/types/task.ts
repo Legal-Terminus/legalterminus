@@ -29,6 +29,8 @@ export interface Task {
   serviceName?: string;
   clientUid: string;
   clientName?: string;
+  /** #104: per-matter organisation (entered at creation; used in headers + email subjects). */
+  organisation?: string;
   assignedTo?: string;
   /** Resolved matter-owner display name (#48). */
   assignedToName?: string | null;

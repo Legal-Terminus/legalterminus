@@ -26,6 +26,17 @@ export const taskCreateSchema = z.object({
 }).strict().refine(
   (b) => b.paymentStatus === 'not_paid' || typeof b.amountReceived === 'number',
   { message: 'amountReceived is required for part/full payment', path: ['amountReceived'] },
+).refine(
+  // #117: "Full payment" must actually BE full — reject it while a balance is due.
+  // (totalCost omitted → nothing to compare against, so don't block.)
+  (b) => b.paymentStatus !== 'fully_paid'
+    || typeof b.totalCost !== 'number'
+    || (b.amountReceived ?? 0) >= b.totalCost,
+  {
+    message: 'Payment Status cannot be set to "Full Payment" because an outstanding balance exists. '
+      + 'Please either receive the full amount or change the Payment Status to "Part Payment".',
+    path: ['paymentStatus'],
+  },
 );
 
 // PATCH /api/tasks/:taskId — currently only isUrgent is writable here.

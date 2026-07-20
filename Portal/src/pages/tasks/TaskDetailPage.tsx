@@ -259,7 +259,15 @@ export default function TaskDetailPage() {
   return (
     <PageShell
       title={task.serviceName || task.workflowType}
-      subtitle={isClient ? progressLabel : `${task.clientName ?? ''}${task.clientName ? ' · ' : ''}${progressLabel} · ${task.status}`}
+      // #118: show the matter's ORGANISATION next to the client name — a client can
+      // have several matters under different organisations, so the name alone is
+      // ambiguous. Clients see it too (they may hold matters for multiple orgs).
+      subtitle={[
+        ...(isClient ? [] : [task.clientName]),
+        task.organisation,
+        progressLabel,
+        ...(isClient ? [] : [task.status]),
+      ].filter(Boolean).join(' · ')}
       back={
         <button
           onClick={() => navigate('/tasks')}
@@ -788,7 +796,11 @@ function StepsTab({
     : steps;
 
   // #72: collapsible + drag-resizable Stages and Activity rails (persisted).
-  const stagesRail = useRail('matterLayout:stages', { initial: 210, min: 150, max: 340 });
+  // #119/#120: the Stages rail starts COLLAPSED so users land on the continuous
+  // all-steps timeline (the collapsed pane shows every step grouped by stage with
+  // a "Jump to stage…" picker) instead of one stage at a time. Expanding the rail
+  // switches back to per-stage focus — the choice is the user's and is persisted.
+  const stagesRail = useRail('matterLayout:stages', { initial: 210, min: 150, max: 340, defaultCollapsed: true });
   const activityRail = useRail('matterLayout:activity', { initial: 320, min: 240, max: 520 });
 
   // #96: completed/skipped steps hide behind a "Show completed (N)" toggle so a
@@ -1059,15 +1071,19 @@ function StagesRail({ stages, selected, onSelect, countsFor, rail }: {
 }) {
   return (
     <nav className="hidden lg:block xl:sticky xl:top-4 self-start">
+      {/* #119/#120: this toggle is a VIEW CHOICE, not just show/hide — collapsed
+          shows every step in one continuous timeline; expanded focuses one stage
+          at a time. Labels say so, and the choice persists per user. */}
       {rail.collapsed ? (
-        // Collapsed: a single labelled button that expands the rail.
+        // Collapsed: a labelled button that switches back to per-stage browsing.
         <button
           onClick={rail.toggle}
           className="w-full flex flex-col items-center gap-1 py-2 text-ink-faint hover:text-ink rounded-lg hover:bg-white/60"
-          title="Expand stages" aria-label="Expand stages"
+          title="Browse by stage (currently showing all steps)"
+          aria-label="Browse by stage"
         >
           <ChevronsRight className="w-4 h-4" />
-          <span className="text-[10px] font-semibold uppercase tracking-wide [writing-mode:vertical-rl]">Stages</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wide [writing-mode:vertical-rl]">By stage</span>
         </button>
       ) : (
         <div className="flex items-center justify-between mb-2 px-2">
@@ -1075,9 +1091,10 @@ function StagesRail({ stages, selected, onSelect, countsFor, rail }: {
           <button
             onClick={rail.toggle}
             className="inline-flex items-center gap-1 text-[11px] text-ink-faint hover:text-ink px-1.5 py-0.5 rounded hover:bg-white/60"
-            title="Collapse stages" aria-label="Collapse stages"
+            title="Show all steps in one continuous list"
+            aria-label="Show all steps"
           >
-            <ChevronsLeft className="w-3.5 h-3.5" /> Hide
+            <ChevronsLeft className="w-3.5 h-3.5" /> All steps
           </button>
         </div>
       )}
@@ -1439,6 +1456,15 @@ function StepHeroPanel({
     draft.clear(); // #83: drop the draft once submitted
   };
 
+  // #121: the "waiting" line under the step title was hardcoded ("Our team is
+  // working on this step."), so it couldn't be tailored per service/step. When an
+  // admin HAS configured a client-facing description for this step (Workflow
+  // Settings → Client note / description) that text is already rendered above the
+  // actions, so the generic line is redundant noise — suppress it and let the
+  // configured copy speak. With nothing configured we keep the generic fallback.
+  const hasConfiguredDescription = Boolean((description ?? step.description ?? '').trim());
+  const waitingText = (fallback: string) => (hasConfiguredDescription ? '' : fallback);
+
   let actions: React.ReactNode = null;     // buttons (actionable)
   let wait: React.ReactNode = null;        // passive "waiting" note for the other role
 
@@ -1483,7 +1509,7 @@ function StepHeroPanel({
       );
     } else if (assignedToOther) {
       wait = <AssignedToOtherNote assignee={assigneeLabel} />;
-    } else wait = <WaitNote text="Our team is processing the next step." />;
+    } else wait = <WaitNote text={waitingText('Our team is processing the next step.')} />;
   } else if (isAdminApprovalStep) {
     // #90: admin-approval step — ONLY an admin acts. Fire whichever advancing event
     // the step declares (COMPLETE_STEP or, if configured that way, CLIENT_APPROVE).
@@ -1582,7 +1608,7 @@ function StepHeroPanel({
       wait = <WaitNote text="This step requires admin approval. Only an admin can approve or complete it." />;
     } else if (assignedToOther) {
       wait = <AssignedToOtherNote assignee={assigneeLabel} />;
-    } else wait = <WaitNote text="Our team is working on this step." />;
+    } else wait = <WaitNote text={waitingText('Our team is working on this step.')} />;
   }
 
   // Right-side meta block (shared by desktop column + mobile stack). The
@@ -1777,6 +1803,9 @@ function ActionComposer({ comment, onChange, error, disabled, savedLabel }: {
 
 
 function WaitNote({ text }: { text: string }) {
+  // #121: an empty string means the step's configured client description already
+  // covers it — render nothing rather than an empty line.
+  if (!text) return null;
   return <p className="text-sm text-ink-muted">{text}</p>;
 }
 

@@ -35,10 +35,13 @@ function usePersisted<T>(key: string, initial: T): [T, (v: T) => void] {
 
 export function useRail(
   storageKey: string,
-  { initial, min, max }: { initial: number; min: number; max: number },
+  { initial, min, max, defaultCollapsed = false }:
+    { initial: number; min: number; max: number; defaultCollapsed?: boolean },
 ): RailState {
   const [width, setWidthRaw] = usePersisted(`${storageKey}:w`, initial);
-  const [collapsed, setCollapsed] = usePersisted(`${storageKey}:c`, false);
+  // `defaultCollapsed` only sets the FIRST-RUN state — a user's own choice is
+  // persisted and always wins on later visits (#119).
+  const [collapsed, setCollapsed] = usePersisted(`${storageKey}:c`, defaultCollapsed);
   const drag = useRef<{ startX: number; startW: number; side: 'left' | 'right' } | null>(null);
 
   const setWidth = useCallback((w: number) => setWidthRaw(clamp(w, min, max)), [setWidthRaw, min, max]);

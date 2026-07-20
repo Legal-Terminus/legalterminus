@@ -100,6 +100,13 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
     if (showAmounts && !(Number(amountReceived) >= 0 && amountReceived !== '')) {
       setError('Enter the amount received.'); return;
     }
+    // #117: "Full payment" must actually be full — block it while a balance is due.
+    if (paymentStatus === 'fully_paid' && Number(totalCost) > 0
+        && (Number(amountReceived) || 0) < Number(totalCost)) {
+      setError('Payment Status cannot be set to "Full Payment" because an outstanding balance exists. '
+        + 'Please either receive the full amount or change the Payment Status to "Part Payment".');
+      return;
+    }
     create.mutate();
   }
 

@@ -1124,6 +1124,17 @@ export async function updatePayment(req, res) {
     const derived = amountPaid <= 0 ? 'not_paid' : amountDue > 0 ? 'part_paid' : 'fully_paid';
     const paymentStatus = req.body.paymentStatus ?? derived;
 
+    // #117: "Full payment" must actually BE full. An explicit fully_paid while a
+    // balance remains would otherwise persist a wrong payment record. (The same
+    // rule is enforced at creation by taskCreateSchema.)
+    if (paymentStatus === 'fully_paid' && amountDue > 0) {
+      return res.status(400).json({
+        message: 'Payment Status cannot be set to "Full Payment" because an outstanding balance exists. '
+          + 'Please either receive the full amount or change the Payment Status to "Part Payment".',
+        code: 'PAYMENT_BALANCE_DUE',
+      });
+    }
+
     const now = new Date().toISOString();
     const update = { totalCost, amountPaid, amountDue, paymentMode, paymentStatus, updatedAt: now };
 

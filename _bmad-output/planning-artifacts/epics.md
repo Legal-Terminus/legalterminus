@@ -3290,6 +3290,39 @@ not new engine code.
 - e2e: `matter-layout.spec.ts` (#73 current+previous, #96 collapse), `client-hero.spec.ts`
   (#92/#93 + Client→You), plus existing specs updated for the #94 gate auto-pass.
 
+### Batch A — matter clarity & payment integrity (2026-07-18)
+- **#117 — "Full payment" must actually be full (High).** Creating/editing a matter
+  with `paymentStatus = fully_paid` while `amountReceived < totalCost` saved a wrong
+  payment record (the due amount computed correctly, but the status lied). Now
+  rejected at **three** layers: `taskCreateSchema` (Zod refine), the `updatePayment`
+  controller (400 `PAYMENT_BALANCE_DUE` — the merged totals aren't visible to the
+  schema there), and an inline guard in Create Matter so it fails before submit.
+  All three use the issue's exact wording.
+- **#118 — Organisation in the matter header.** A client can hold matters for several
+  organisations, so the client name alone was ambiguous. The header subtitle now
+  reads `Client · Organisation · Step N of M · status` (clients see
+  `Organisation · progress`). Uses the per-matter `organisation` from #104, and
+  degrades gracefully on older matters that predate the field.
+- **#119 + #120 — Stages panel default + continuous timeline (one change).** The
+  collapsed-rail "every step in one list, grouped by stage, with a Jump-to-stage
+  picker" view already existed (built for #102). #119 asked for the rail to start
+  collapsed and #120 asked to stop forcing stage-by-stage browsing — so the rail now
+  **defaults to collapsed**, which lands users directly on the continuous timeline.
+  Per stakeholder direction this is a **user choice, not a removal**: expanding the
+  rail restores per-stage focus, and the toggle is relabelled to say so
+  ("All steps" ⇄ "By stage") instead of merely hiding a panel. `useRail` gained a
+  `defaultCollapsed` option; a user's own preference is still persisted and wins.
+- **#121 — Client-facing step message no longer hardcoded.** The hero panel always
+  printed "Our team is working on this step.". When an admin has configured a
+  client description for the step (Workflow Settings → Client note / description)
+  that text — already rendered above the actions — now **replaces** the generic
+  line rather than duplicating it; with nothing configured the generic copy remains.
+- e2e: `batch-a.spec.ts` — fully_paid rejected on create AND edit while a balance is
+  due (and accepted at the full amount), the organisation shows in the header, and
+  the stages rail defaults to the all-steps timeline with a reversible view toggle.
+
+---
+
 ### Workflow / matter-lifecycle
 - **#51 — Remove Work Assigning step + payment-at-creation.** "Work Assigning"
   step removed (matter starts at step 4). Create Matter modal captures **payment
