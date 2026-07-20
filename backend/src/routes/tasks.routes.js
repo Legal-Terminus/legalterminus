@@ -4,6 +4,7 @@ import { validate } from '../middleware/validate.middleware.js';
 import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema } from '../schemas/task.schema.js';
 import { listTasks, getTask, createTask, patchTask, updatePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument } from '../controllers/documents.controller.js';
+import { listMessages, createMessage } from '../controllers/messages.controller.js';
 
 const router = Router();
 
@@ -15,6 +16,10 @@ router.get('/my-steps',                      requireRole('admin', 'manager', 'te
 router.post('/',                             requireRole('admin', 'manager'), validate(taskCreateSchema), createTask);
 router.get('/:taskId',                       getTask);
 router.get('/:taskId/events',                listTaskEvents);
+// #123: per-matter discussion thread (client + internal). Clients see only
+// client-visible messages; staff opt in per message (controller-enforced).
+router.get('/:taskId/messages',              listMessages);
+router.post('/:taskId/messages',             createMessage);
 router.patch('/:taskId',                     validate(taskUpdateSchema), patchTask);
 // Edit payment details after creation (#78) — admin/manager.
 router.patch('/:taskId/payment',             requireRole('admin', 'manager'), validate(taskPaymentUpdateSchema), updatePayment);

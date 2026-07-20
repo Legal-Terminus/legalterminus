@@ -953,6 +953,20 @@ export async function listTaskEvents(req, res) {
     // generic label so we never expose individual team-member identities.
     if (isClient) {
       events = events.filter((e) => CLIENT_EVENT_WHITELIST.has(e.type));
+
+      // #115: internal team COMMENTS are private by default. A staff comment is
+      // only shown to the client when it was explicitly marked "Visible to client"
+      // (`commentClientVisible === true`). This FAILS CLOSED: comments written
+      // before the toggle existed have no flag, so they stay internal — a privacy
+      // fix must not keep leaking historic notes. The event itself still shows
+      // (so the client sees that the step progressed), just without the note.
+      // The client's OWN comments are always visible back to them.
+      events = events.map((e) => {
+        if (!e.comment) return e;
+        const isOwn = e.byUid && e.byUid === req.user.uid;
+        if (isOwn || e.commentClientVisible === true) return e;
+        return { ...e, comment: null };
+      });
     }
 
     // Resolve actor names in one batched pass (small N; dedupe uids). For clients
@@ -1505,6 +1519,10 @@ export async function transitionTask(req, res) {
       fromStep: task.currentStepNumber,
       toStep: newStep,
       comment,
+      // #115: staff comments are INTERNAL by default — the client only sees this
+      // note if it was explicitly marked "Visible to client" in the composer. A
+      // client's own comment is inherently visible to them.
+      commentClientVisible: role === 'client' ? true : event?.commentClientVisible === true,
       byUid: uid ?? null,
       byRole: role ?? null,
       // Records that staff advanced a client-owned step on the client's behalf, so

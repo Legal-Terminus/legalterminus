@@ -3290,6 +3290,39 @@ not new engine code.
 - e2e: `matter-layout.spec.ts` (#73 current+previous, #96 collapse), `client-hero.spec.ts`
   (#92/#93 + Client→You), plus existing specs updated for the #94 gate auto-pass.
 
+### Batch C — matter discussion thread & comment privacy (2026-07-18)
+- **#123 — Per-matter DISCUSSION THREAD (client ⇄ internal team).** Scoped down from
+  the original "chatbot in the bottom corner" after a sizing analysis (posted on the
+  ticket: a realtime chat is ~3–4.5 weeks because the portal has **no** realtime
+  layer and deliberately routes all data through the authed backend). Stakeholder
+  chose the **client-visible discussion thread** option. Delivered as a new
+  **Discussion tab** beside Steps/Documents/Payments: one thread per matter stored at
+  `tasks/{id}/messages` (deliberately NOT reusing `events`, which is an append-only
+  audit trail with different retention/permissions). `GET/POST /api/tasks/:id/messages`.
+  **Polling at 10s** — the app's existing live-data pattern, so no Firestore
+  security-rules layer and the browser still never talks to Firestore directly.
+  New messages raise an in-app notification **and** an email via the editable
+  template store (`matter_message`, #107-#109).
+- **#115 — Internal comments are private by default (fail closed).** Every staff
+  comment used to reach the client's completed history. Both the discussion thread
+  and **step comments** now carry a per-message **"Visible to client"** toggle,
+  defaulting to **OFF**; the client feed only shows a staff note when it was
+  explicitly shared (`commentClientVisible === true`). Per stakeholder decision this
+  **fails closed for existing comments**: historic notes have no flag, so they are
+  now hidden — a privacy fix must not keep leaking old internal notes. The event
+  itself still shows (the client sees the step progressed), just without the note.
+  A client's own comments/messages remain visible to them, and staff authors are
+  masked to "Our team" in the client view (consistent with E12-S02).
+- e2e: `discussion.spec.ts` (4) — an internal message is hidden from the client while
+  a shared one is visible, staff authors are masked, a client can post and staff see
+  it, cross-matter reads are refused, and the Discussion tab posts from the UI. 9/9
+  including setup.
+- Known pre-existing (NOT from this batch, verified by stashing the changes and
+  re-running): two `interactions.spec.ts` cases fail because `advanceUntil` can't
+  traverse a client-turn step to reach a staff Complete-Step turn.
+
+---
+
 ### Batch B — document lifecycle & payment-alert timing (2026-07-18)
 - **#113 — Draft → Submit document workflow + delete.** An upload used to become
   reviewable immediately, so a mistaken file was instantly in the reviewer's queue.

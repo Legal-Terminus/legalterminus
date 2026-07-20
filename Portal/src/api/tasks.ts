@@ -27,6 +27,8 @@ export interface WorkflowEventInput {
   branch?: string;
   remark?: string;
   reason?: string;
+  /** #115: share THIS step comment with the client (staff opt-in; default false). */
+  commentClientVisible?: boolean;
 }
 
 /** Advance a task by firing a workflow event. Backend enforces guards. */

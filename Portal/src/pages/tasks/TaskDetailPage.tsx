@@ -4,13 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, CheckCircle2, Circle, CircleSlash, Loader2, PlayCircle,
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
-  ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase,
+  ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase, Eye, EyeOff,
   ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw, Check,
   ChevronsLeft, ChevronsRight, MoreVertical, Users,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
+import DiscussionPanel from '../../components/messages/DiscussionPanel';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
@@ -21,7 +22,7 @@ import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
 import type { Task, TaskStep, StepStatus, PaymentStatus } from '../../types/task';
 
-type TabKey = 'steps' | 'documents' | 'payments';
+type TabKey = 'steps' | 'documents' | 'payments' | 'discussion';
 
 /**
  * Task detail. Staff see an operational view (per-step actions). Clients see their
@@ -254,6 +255,8 @@ export default function TaskDetailPage() {
     { key: 'steps', label: 'Steps', icon: ListChecks },
     { key: 'documents', label: 'Documents', icon: FileText },
     { key: 'payments', label: 'Payments', icon: IndianRupee },
+    // #123: per-matter discussion thread (client + internal team).
+    { key: 'discussion', label: 'Discussion', icon: MessageSquare },
   ];
 
   return (
@@ -464,6 +467,7 @@ export default function TaskDetailPage() {
         />
       )}
       {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} />}
+      {tab === 'discussion' && <DiscussionPanel taskId={taskId!} isStaff={isStaff} />}
       {tab === 'payments' && <PaymentsTab task={task} canEdit={canAssign} />}
     </PageShell>
   );
@@ -1447,6 +1451,9 @@ function StepHeroPanel({
   const draft = useCommentDraft(taskId, step.stepNumber, role.uid ?? null);
   const [comment, setComment] = useState('');
   const [needComment, setNeedComment] = useState(false);
+  // #115: staff opt-in to share THIS comment with the client (default off, so an
+  // internal note is never exposed by accident).
+  const [shareComment, setShareComment] = useState(false);
 
   // Restore the saved draft when it loads (or the step/user changes).
   useEffect(() => { setComment(draft.initial); }, [draft.initial]);
@@ -1461,8 +1468,10 @@ function StepHeroPanel({
     const c = comment.trim();
     if (opts?.required && !c) { setNeedComment(true); return; }
     setNeedComment(false);
-    onEvent({ type, remark: c || undefined, ...opts?.extra });
+    // #115: staff comments are internal unless explicitly shared with the client.
+    onEvent({ type, remark: c || undefined, commentClientVisible: shareComment, ...opts?.extra });
     setComment('');
+    setShareComment(false); // don't carry the choice to the next action
     draft.clear(); // #83: drop the draft once submitted
   };
 
@@ -1764,6 +1773,9 @@ function StepHeroPanel({
                 error={needComment ? 'Please add a comment explaining the requested changes.' : null}
                 disabled={pending}
                 savedLabel={comment.trim() ? draftSavedLabel(draft.savedAt) : null}
+                showShare={role.isStaff}
+                share={shareComment}
+                onShareChange={setShareComment}
               />
               {actions}
             </div>
@@ -1784,12 +1796,16 @@ function StepHeroPanel({
  * actions and required on rejections (enforced by the caller via the `error`
  * prop). Document attachment lives in the step's right-hand Documents block.
  */
-function ActionComposer({ comment, onChange, error, disabled, savedLabel }: {
+function ActionComposer({ comment, onChange, error, disabled, savedLabel, showShare, share, onShareChange }: {
   comment: string;
   onChange: (v: string) => void;
   error: string | null;
   disabled: boolean;
   savedLabel?: string | null; // #83: e.g. "Draft saved 2 minutes ago"
+  /** #115: staff-only "Visible to client" toggle for this comment. */
+  showShare?: boolean;
+  share?: boolean;
+  onShareChange?: (v: boolean) => void;
 }) {
   return (
     <div className="mb-3">
@@ -1801,6 +1817,22 @@ function ActionComposer({ comment, onChange, error, disabled, savedLabel }: {
         placeholder="Add a comment (optional)…"
         className={`input-field text-sm w-full resize-y ${error ? 'border-red-400' : ''}`}
       />
+      {/* #115: comments are internal by default; staff tick this to share one. */}
+      {showShare && (
+        <label className="mt-1.5 inline-flex items-center gap-2 text-[11px] text-ink-muted cursor-pointer">
+          <input
+            type="checkbox"
+            className="h-3.5 w-3.5"
+            checked={!!share}
+            disabled={disabled}
+            onChange={(e) => onShareChange?.(e.target.checked)}
+            aria-label="Visible to client"
+          />
+          {share
+            ? <span className="inline-flex items-center gap-1 text-emerald-700"><Eye className="w-3 h-3" /> Visible to client</span>
+            : <span className="inline-flex items-center gap-1"><EyeOff className="w-3 h-3" /> Internal only — tick to share with the client</span>}
+        </label>
+      )}
       {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
       {!error && savedLabel && (
         <p className="text-[11px] text-ink-faint mt-1 flex items-center gap-1">

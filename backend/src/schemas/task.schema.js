@@ -78,6 +78,8 @@ export const taskTransitionSchema = z.object({
     amount: z.number().optional(),
     mode: z.string().trim().max(40).optional(),
     reason: z.string().trim().max(500).optional(),
+    // #115: staff opt-in to share this step comment with the client (default off).
+    commentClientVisible: z.boolean().optional(),
   }).passthrough(),
 }).strict();
 

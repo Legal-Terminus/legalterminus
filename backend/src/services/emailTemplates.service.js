@@ -46,6 +46,19 @@ export const TEMPLATE_DEFS = {
       'You can track the status of your matter anytime by logging into the Client Portal.\n\n' +
       '— The Legal Terminus Team',
   },
+  matter_message: {
+    label: 'Client — New discussion message',
+    audience: 'client',
+    description: 'Sent when a message is posted in a matter\'s discussion thread (#123).',
+    placeholders: ['clientName', 'organisation', 'serviceName', 'senderName', 'message'],
+    subject: 'New message on your service',
+    body:
+      'Hello {{clientName}},\n\n' +
+      'You have a new message from {{senderName}} regarding {{serviceName}}:\n\n' +
+      '{{message}}\n\n' +
+      'You can reply from the Discussion tab of your matter in the Client Portal.\n\n' +
+      '— The Legal Terminus Team',
+  },
   approval_needed: {
     label: 'Internal — Matter awaiting approval',
     audience: 'internal',
