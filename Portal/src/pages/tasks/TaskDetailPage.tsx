@@ -12,6 +12,7 @@ import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import DiscussionPanel from '../../components/messages/DiscussionPanel';
+import SendReminderButton from '../../components/tasks/SendReminderButton';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
@@ -1691,6 +1692,14 @@ function StepHeroPanel({
           <Paperclip className="w-3.5 h-3.5" /> Attach document
         </button>
       </div>
+      {/* #111: staff can chase the client from the step. Wording comes from the
+          editable templates; repeats are allowed and each send is audited. */}
+      {role.isStaff && (
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">Client reminder</p>
+          <SendReminderButton taskId={taskId} stepNumber={step.stepNumber} />
+        </div>
+      )}
     </div>
   );
 

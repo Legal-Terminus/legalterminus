@@ -3290,6 +3290,30 @@ not new engine code.
 - e2e: `matter-layout.spec.ts` (#73 current+previous, #96 collapse), `client-hero.spec.ts`
   (#92/#93 + Client→You), plus existing specs updated for the #94 gate auto-pass.
 
+### #111 — Manual reminder emails from a workflow step (2026-07-18)
+- Staff can chase a client from the step itself: a **Send reminder** control in the
+  step's right-hand actions (staff only — a client can't nudge themselves;
+  `requireRole('admin','manager','team_member')` on the endpoint).
+- **"Multiple reminder option"** read as *escalating tone*, not just repeats: three
+  editable templates — **gentle → follow-up → urgent** — offered in a picker. A
+  reminder may ALSO be sent repeatedly; the control shows how many have gone and
+  when the last one was, so chasing is visible rather than guessed at.
+- Copy is never hardcoded: all three live in the **editable template store**
+  (Settings → Email Templates) with the placeholders the issue asked for —
+  `{{clientName}} {{organisation}} {{serviceName}} {{matterId}} {{currentStep}}`.
+  `{{currentStep}}` resolves to the **client-facing** step name (#103), since the
+  email goes to the client.
+- Each send writes a `REMINDER_SENT` audit event (who, when, which template) and
+  raises the client's in-app alert as well as the email. A **60s cooldown** (429
+  `REMINDER_COOLDOWN`) stops a double-click spamming the client, and terminal
+  matters (completed/cancelled/rejected/archived) are refused (409).
+- e2e: `reminders.spec.ts` (5) — send + history + repeatability, unknown template
+  rejected (400), **a client is refused (403)**, the three templates are present and
+  advertise the required placeholders, and the control shows for staff but not the
+  client. 10/10 including setup; email-templates + discussion specs re-run green.
+
+---
+
 ### Batch C — matter discussion thread & comment privacy (2026-07-18)
 - **#123 — Per-matter DISCUSSION THREAD (client ⇄ internal team).** Scoped down from
   the original "chatbot in the bottom corner" after a sizing analysis (posted on the

@@ -5,6 +5,7 @@ import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, taskListQu
 import { listTasks, getTask, createTask, patchTask, updatePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument } from '../controllers/documents.controller.js';
 import { listMessages, createMessage } from '../controllers/messages.controller.js';
+import { listReminders, sendReminder } from '../controllers/reminders.controller.js';
 
 const router = Router();
 
@@ -18,6 +19,11 @@ router.get('/:taskId',                       getTask);
 router.get('/:taskId/events',                listTaskEvents);
 // #123: per-matter discussion thread (client + internal). Clients see only
 // client-visible messages; staff opt in per message (controller-enforced).
+// #111: manual reminder emails from a step — STAFF ONLY (a client can't nudge
+// themselves). Copy comes from the editable template store; repeats are allowed
+// and each send is audited.
+router.get('/:taskId/reminders',             requireRole('admin', 'manager', 'team_member'), listReminders);
+router.post('/:taskId/reminders',            requireRole('admin', 'manager', 'team_member'), sendReminder);
 router.get('/:taskId/messages',              listMessages);
 router.post('/:taskId/messages',             createMessage);
 router.patch('/:taskId',                     validate(taskUpdateSchema), patchTask);

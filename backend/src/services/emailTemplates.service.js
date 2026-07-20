@@ -59,6 +59,50 @@ export const TEMPLATE_DEFS = {
       'You can reply from the Discussion tab of your matter in the Client Portal.\n\n' +
       '— The Legal Terminus Team',
   },
+  // #111 — MANUAL reminders a staff member sends from a step. Several variants so
+  // the team can pick the right tone; all are editable here and support the same
+  // placeholders. `reminder_gentle` is the default offered in the picker.
+  reminder_gentle: {
+    label: 'Client — Reminder (gentle)',
+    audience: 'client',
+    description: 'Manual reminder sent from a workflow step — first, polite nudge (#111).',
+    placeholders: ['clientName', 'organisation', 'serviceName', 'matterId', 'currentStep'],
+    subject: 'A gentle reminder about your service',
+    body:
+      'Hello {{clientName}},\n\n' +
+      'This is a friendly reminder regarding your {{serviceName}} matter.\n\n' +
+      'We are currently at: {{currentStep}}. To keep things moving, we need your input on this step.\n\n' +
+      'You can review and respond from the Client Portal at any time.\n\n' +
+      '— The Legal Terminus Team',
+  },
+  reminder_followup: {
+    label: 'Client — Reminder (follow-up)',
+    audience: 'client',
+    description: 'Manual reminder — a firmer follow-up when the first nudge went unanswered (#111).',
+    placeholders: ['clientName', 'organisation', 'serviceName', 'matterId', 'currentStep'],
+    subject: 'Following up on your service',
+    body:
+      'Hello {{clientName}},\n\n' +
+      'We haven\'t yet received what we need to progress your {{serviceName}} matter.\n\n' +
+      'Pending step: {{currentStep}}.\n\n' +
+      'Your matter is on hold until we hear from you. Please respond via the Client Portal, ' +
+      'or reply to this email if you need any help.\n\n' +
+      '— The Legal Terminus Team',
+  },
+  reminder_urgent: {
+    label: 'Client — Reminder (urgent)',
+    audience: 'client',
+    description: 'Manual reminder — urgent, for time-critical or repeatedly unanswered steps (#111).',
+    placeholders: ['clientName', 'organisation', 'serviceName', 'matterId', 'currentStep'],
+    subject: 'Urgent: action needed on your service',
+    body:
+      'Hello {{clientName}},\n\n' +
+      'Your {{serviceName}} matter requires your urgent attention.\n\n' +
+      'Outstanding step: {{currentStep}}.\n\n' +
+      'Further delay may affect timelines or incur additional filing costs. Please act at your ' +
+      'earliest convenience via the Client Portal, or contact us directly.\n\n' +
+      '— The Legal Terminus Team',
+  },
   approval_needed: {
     label: 'Internal — Matter awaiting approval',
     audience: 'internal',
@@ -135,3 +179,10 @@ export async function renderTemplate(key, vars = {}) {
   const t = all[key] || TEMPLATE_DEFS[key];
   return { subject: fillTemplate(t.subject, vars), body: fillTemplate(t.body, vars) };
 }
+
+/**
+ * #111: the manual-reminder template keys, in the order the picker offers them.
+ * Kept here so the endpoint and the UI agree on what a valid reminder is.
+ */
+export const REMINDER_TEMPLATE_KEYS = ['reminder_gentle', 'reminder_followup', 'reminder_urgent'];
+export const isReminderTemplate = (key) => REMINDER_TEMPLATE_KEYS.includes(key);
