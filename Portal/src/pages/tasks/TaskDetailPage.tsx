@@ -13,6 +13,8 @@ import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import DiscussionPanel from '../../components/messages/DiscussionPanel';
 import SendReminderButton from '../../components/tasks/SendReminderButton';
+import RichTextEditor from '../../components/common/RichTextEditor';
+import RichText from '../../components/common/RichText';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
@@ -1384,7 +1386,7 @@ function ActivityRow({ e }: { e: TaskEvent }) {
           <span className="text-ink-faint"> · {relTime(e.at)}</span>
         </p>
         {e.comment && (
-          <p className="text-sm text-ink-muted mt-1 bg-surface-soft rounded-lg px-3 py-2 whitespace-pre-wrap break-words">{e.comment}</p>
+          <RichText html={e.comment} className="text-sm text-ink-muted mt-1 bg-surface-soft rounded-lg px-3 py-2" />
         )}
       </div>
     </div>
@@ -1452,9 +1454,13 @@ function StepHeroPanel({
   const draft = useCommentDraft(taskId, step.stepNumber, role.uid ?? null);
   const [comment, setComment] = useState('');
   const [needComment, setNeedComment] = useState(false);
-  // #115: staff opt-in to share THIS comment with the client (default off, so an
-  // internal note is never exposed by accident).
-  const [shareComment, setShareComment] = useState(false);
+  // #115: staff opt-in to share THIS comment with the client. Default OFF so an
+  // internal note is never exposed by accident — EXCEPT on a client-approval step,
+  // where the comment IS the hand-off the client must read before approving (#105:
+  // "Proposed names & objects…"). There, sharing is the obvious intent, so it
+  // defaults ON and staff can untick it to keep a note internal.
+  const isClientApprovalStep = new Set((step.transitions ?? []).map((t) => t.event)).has('CLIENT_APPROVE');
+  const [shareComment, setShareComment] = useState(isClientApprovalStep);
 
   // Restore the saved draft when it loads (or the step/user changes).
   useEffect(() => { setComment(draft.initial); }, [draft.initial]);
@@ -1472,7 +1478,7 @@ function StepHeroPanel({
     // #115: staff comments are internal unless explicitly shared with the client.
     onEvent({ type, remark: c || undefined, commentClientVisible: shareComment, ...opts?.extra });
     setComment('');
-    setShareComment(false); // don't carry the choice to the next action
+    setShareComment(isClientApprovalStep); // back to this step's sensible default
     draft.clear(); // #83: drop the draft once submitted
   };
 
@@ -1752,7 +1758,7 @@ function StepHeroPanel({
               <p className="text-xs font-semibold text-brand-800 inline-flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5" /> Shared by our team
               </p>
-              <p className="text-sm text-ink mt-1.5 whitespace-pre-wrap break-words">{approvalNote.text}</p>
+              <RichText html={approvalNote.text} className="text-sm text-ink mt-1.5" />
               <p className="text-[11px] text-ink-faint mt-2">
                 {approvalNote.by}{approvalNote.at ? ` · ${relTime(approvalNote.at)}` : ''}
               </p>
@@ -1818,14 +1824,17 @@ function ActionComposer({ comment, onChange, error, disabled, savedLabel, showSh
 }) {
   return (
     <div className="mb-3">
-      <textarea
-        value={comment}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        rows={2}
-        placeholder="Add a comment (optional)…"
-        className={`input-field text-sm w-full resize-y ${error ? 'border-red-400' : ''}`}
-      />
+      {/* #122: rich text — paste tables/formatting from Word, Excel or email. */}
+      <div className={error ? 'rounded-lg ring-1 ring-red-400' : ''}>
+        <RichTextEditor
+          value={comment}
+          onChange={onChange}
+          disabled={disabled}
+          placeholder="Add a comment (optional)…"
+          ariaLabel="Add a comment"
+          rows={2}
+        />
+      </div>
       {/* #115: comments are internal by default; staff tick this to share one. */}
       {showShare && (
         <label className="mt-1.5 inline-flex items-center gap-2 text-[11px] text-ink-muted cursor-pointer">

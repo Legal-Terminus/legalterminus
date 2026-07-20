@@ -3290,6 +3290,42 @@ not new engine code.
 - e2e: `matter-layout.spec.ts` (#73 current+previous, #96 collapse), `client-hero.spec.ts`
   (#92/#93 + Client→You), plus existing specs updated for the #94 gate auto-pass.
 
+### #122 — Rich text in comments & discussion messages (2026-07-18)
+- **Phase 1 delivered: formatting + tables.** Step comments and discussion messages
+  now accept **bold / italic / strike, bullet + numbered lists, headings, links and
+  TABLES**, so content pasted from Word, Excel, email or a website keeps its
+  structure instead of collapsing to plain text. Editor: **TipTap**
+  (`RichTextEditor`), with a compact toolbar and an Insert-table control.
+- **Security — sanitised on the SERVER, on WRITE** (`richText.service.js`, using
+  `sanitize-html`). The editor is a convenience, NOT a control: a client could POST
+  to the API directly, so the browser is never trusted. A strict allow-list keeps
+  formatting/lists/tables/links and strips `<script>`, `<style>`, `<iframe>`, ALL
+  event handlers (`on*`) and inline styles; `href` is limited to http/https/mailto
+  (so `javascript:`/`data:` URLs die) and surviving links get
+  `target=_blank rel="noopener noreferrer"`. Sanitising on write means every render
+  site is safe without having to remember to sanitise in each one. Content that is
+  empty once stripped (e.g. a lone `<script>`) is rejected as an empty message.
+- **Plain-text projection** (`richTextToPlain`) is used for email bodies and
+  notification previews, where HTML would be noise or unsafe to inject.
+- **Backward compatible:** every pre-#122 comment is plain text, so `RichText` only
+  treats a value as markup when it actually looks like markup — legacy comments
+  still render as text with line breaks preserved (a literal "<b>" stays literal).
+- **Interaction fixed (#115 ↔ #105):** #115 made staff comments internal by default,
+  which silently emptied #105's client info box. Resolved on the server: a comment
+  is client-visible by default when the transition **lands on a client-owned step** —
+  that comment IS the hand-off the client must read before approving. Staff can
+  still force it internal by sending `commentClientVisible: false`, and comments on
+  internal steps remain private. Caught by the regression run, not by inspection.
+- **NOT in this phase: pasted images.** That needs upload + storage (inlining base64
+  blobs into comments would bloat documents and bypass the document cycle) and is
+  flagged as a follow-up.
+- e2e: `rich-text.spec.ts` (5) — formatting/tables round-trip, **script tags and
+  event handlers stripped server-side**, a script-only message rejected, step
+  comments sanitised too, and the composer exposes formatting controls. 10/10;
+  step-config + discussion re-run green (19/19).
+
+---
+
 ### #111 — Manual reminder emails from a workflow step (2026-07-18)
 - Staff can chase a client from the step itself: a **Send reminder** control in the
   step's right-hand actions (staff only — a client can't nudge themselves;

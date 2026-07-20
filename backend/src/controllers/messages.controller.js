@@ -3,6 +3,7 @@ import { logger } from '../config/logger.js';
 import { createNotification } from './notifications.controller.js';
 import { sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
+import { sanitizeRichText, richTextToPlain } from '../services/richText.service.js';
 
 /**
  * #123 — per-matter DISCUSSION THREAD (client ⇄ internal team).
@@ -98,8 +99,13 @@ export async function createMessage(req, res) {
     const task = await loadAuthorizedTask(req, res, taskId);
     if (!task) return;
 
-    const body = String(req.body?.body ?? '').trim().slice(0, MAX_BODY);
-    if (!body) return res.status(400).json({ message: 'Message cannot be empty.' });
+    // #122: messages may be RICH TEXT. Sanitise on the server (never trust the
+    // browser — a client could POST here directly), so everything stored is safe
+    // and every render site can display it without re-sanitising.
+    const raw = String(req.body?.body ?? '');
+    const body = sanitizeRichText(raw, { maxLength: MAX_BODY });
+    // Reject content that is empty once stripped (e.g. a lone <script>).
+    if (!richTextToPlain(body)) return res.status(400).json({ message: 'Message cannot be empty.' });
 
     const isClient = req.user.role === 'client';
     // Fail closed: staff must opt IN to share a message with the client.
@@ -121,7 +127,10 @@ export async function createMessage(req, res) {
     try {
       const recipient = isClient ? (task.assignedTo ?? null) : (clientVisible ? task.clientUid : null);
       if (recipient && recipient !== req.user.uid) {
-        const preview = body.length > 140 ? `${body.slice(0, 140)}…` : body;
+        // Notification/email previews use the PLAIN projection — HTML would be
+        // noise in a bell popup and unsafe to inject into an email template.
+        const plain = richTextToPlain(body);
+        const preview = plain.length > 140 ? `${plain.slice(0, 140)}…` : plain;
         await createNotification({
           recipientUid: recipient,
           type: 'info',
@@ -137,7 +146,7 @@ export async function createMessage(req, res) {
             clientName: task.clientName ?? '',
             organisation: task.organisation ?? '',
             serviceName: task.serviceName ?? '',
-            message: body,
+            message: richTextToPlain(body),
             senderName: isClient ? (task.clientName || 'Your client') : 'Our team',
           });
           if (rendered) {

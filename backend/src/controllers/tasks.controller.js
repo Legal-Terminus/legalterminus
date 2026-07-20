@@ -6,6 +6,7 @@ import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { createNotification, resolveNotificationsForTask } from './notifications.controller.js';
 import { sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
+import { sanitizeRichText, richTextToPlain } from '../services/richText.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
 import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE } from '../../../shared/workflows/definitionSchema.js';
 
@@ -1428,7 +1429,13 @@ export async function transitionTask(req, res) {
     const isComplete = after === 'completed' || snap.status === 'done';
 
     const now = new Date().toISOString();
-    const comment = (event?.remark || event?.reason || '').toString().trim().slice(0, 2000) || null;
+    // #122: a step comment may be RICH TEXT (pasted tables/formatting). Sanitise
+    // on the server — never trust HTML from a browser — so every render site can
+    // display it safely without re-sanitising.
+    const rawComment = (event?.remark || event?.reason || '').toString();
+    const cleanComment = sanitizeRichText(rawComment, { maxLength: 8000 });
+    // Empty once stripped (e.g. a lone <script>) counts as no comment.
+    const comment = richTextToPlain(cleanComment) ? cleanComment : null;
 
     // ── Due-date stamping (E13-S02) ──
     // ETAs come from the pinned definition (already loaded as `compiled`).
@@ -1511,6 +1518,10 @@ export async function transitionTask(req, res) {
       });
     }
 
+    // The step we're ARRIVING at — used to decide whether a comment is a
+    // client-facing hand-off note (#115/#105) and for ETA stamping below.
+    const arrivingDef = compiled.definition.steps.find((s) => s.stepNumber === newStep) ?? null;
+
     // Append to the task's event history (audit trail of who did what, when).
     const eventRef = taskRef.collection('events').doc();
     batch.set(eventRef, {
@@ -1520,9 +1531,16 @@ export async function transitionTask(req, res) {
       toStep: newStep,
       comment,
       // #115: staff comments are INTERNAL by default — the client only sees this
-      // note if it was explicitly marked "Visible to client" in the composer. A
-      // client's own comment is inherently visible to them.
-      commentClientVisible: role === 'client' ? true : event?.commentClientVisible === true,
+      // note if it was explicitly marked "Visible to client". Two exceptions where
+      // sharing IS the intent, so the default flips to visible:
+      //   • the client's own comment (inherently theirs), and
+      //   • a HAND-OFF comment: the move lands on a client-owned step, so the note
+      //     is what the client must read before acting (#105's info box). Staff can
+      //     still force it internal by sending commentClientVisible: false.
+      commentClientVisible: role === 'client'
+        ? true
+        : (event?.commentClientVisible === true
+            || (event?.commentClientVisible !== false && deriveOwnerType(arrivingDef ?? {}) === 'client')),
       byUid: uid ?? null,
       byRole: role ?? null,
       // Records that staff advanced a client-owned step on the client's behalf, so

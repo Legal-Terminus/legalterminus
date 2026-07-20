@@ -34,6 +34,7 @@
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
     "razorpay": "^2.9.6",
+    "sanitize-html": "^2.17.6",
     "sharp": "^0.34.5",
     "slugify": "^1.6.6",
     "xstate": "^5.32.1",

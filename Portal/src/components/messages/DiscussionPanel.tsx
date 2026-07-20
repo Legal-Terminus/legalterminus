@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, Loader2, MessageSquare, Eye, EyeOff } from 'lucide-react';
 import { getMessages, postMessage, type MatterMessage } from '../../api/messages';
 import { useToast } from '../common/toastContext';
+import RichTextEditor from '../common/RichTextEditor';
+import RichText from '../common/RichText';
 
 /**
  * #123 — the matter's discussion thread. One conversation per matter; staff tick
@@ -78,14 +80,13 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
 
       {/* Composer */}
       <div className="border-t border-hairline p-3 space-y-2">
-        <textarea
+        {/* #122: rich text — paste tables/formatting from Word, Excel or email. */}
+        <RichTextEditor
           value={body}
-          onChange={(e) => setBody(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit(); }}
-          rows={2}
+          onChange={setBody}
           placeholder="Write a message…"
-          aria-label="Message"
-          className="input-field w-full resize-y text-sm"
+          ariaLabel="Message"
+          rows={2}
         />
         <div className="flex items-center justify-between gap-3">
           {isStaff ? (
@@ -137,7 +138,7 @@ function MessageBubble({ m, isStaff }: { m: MatterMessage; isStaff: boolean }) {
             </span>
           )}
         </div>
-        <p className="text-sm whitespace-pre-wrap break-words">{m.body}</p>
+        <RichText html={m.body} className={mine ? "text-sm [&_a]:text-white [&_th]:bg-white/10" : "text-sm"} />
         {m.createdAt && (
           <p className={`text-[10px] mt-1 ${mine ? 'text-white/60' : 'text-ink-faint'}`}>
             {new Date(m.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}

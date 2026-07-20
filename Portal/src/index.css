@@ -99,3 +99,33 @@
     @apply nav-pill bg-white text-ink shadow-card;
   }
 }
+
+/* #122 — rendering for user-authored rich text (comments / discussion messages).
+   Scoped to .rich-text and the editor so it can't leak into app chrome. */
+@layer components {
+  .rich-text, .ProseMirror {
+    @apply text-sm text-ink;
+  }
+  .rich-text p, .ProseMirror p { @apply my-1; }
+  .rich-text ul, .ProseMirror ul { @apply list-disc pl-5 my-1; }
+  .rich-text ol, .ProseMirror ol { @apply list-decimal pl-5 my-1; }
+  .rich-text h2, .ProseMirror h2 { @apply text-base font-semibold mt-2 mb-1; }
+  .rich-text h3, .ProseMirror h3 { @apply text-sm font-semibold mt-2 mb-1; }
+  .rich-text a, .ProseMirror a { @apply text-brand-700 underline; }
+  .rich-text blockquote, .ProseMirror blockquote {
+    @apply border-l-2 border-hairline pl-3 text-ink-muted my-1;
+  }
+  .rich-text code, .ProseMirror code {
+    @apply bg-surface-soft rounded px-1 py-0.5 text-[0.85em];
+  }
+  /* Tables — the main reason this feature exists (pasted from Excel/Word). */
+  .rich-text table, .ProseMirror table {
+    @apply w-full my-2 border-collapse text-xs;
+  }
+  .rich-text td, .rich-text th, .ProseMirror td, .ProseMirror th {
+    @apply border border-hairline px-2 py-1 align-top;
+  }
+  .rich-text th, .ProseMirror th { @apply bg-surface-soft font-semibold text-left; }
+  /* A wide pasted table must scroll inside the bubble, not blow out the layout. */
+  .rich-text { @apply overflow-x-auto; }
+}

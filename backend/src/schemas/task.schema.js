@@ -74,7 +74,9 @@ export const taskTransitionSchema = z.object({
     // Event-specific optional fields (validated loosely; controller/engine enforce semantics).
     newStatus: z.enum(['not_paid', 'part_paid', 'fully_paid']).optional(),
     branch: z.string().trim().max(40).optional(),
-    remark: z.string().trim().max(2000).optional(),
+    // #122: comments may be rich text (HTML), so the cap is generous — the
+    // controller sanitises and re-caps to 8000 chars of CLEAN markup.
+    remark: z.string().trim().max(20000).optional(),
     amount: z.number().optional(),
     mode: z.string().trim().max(40).optional(),
     reason: z.string().trim().max(500).optional(),
