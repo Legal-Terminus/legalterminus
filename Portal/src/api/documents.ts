@@ -8,7 +8,9 @@ import { getIdToken } from 'firebase/auth';
  * download issue short-lived signed URLs too — bytes never route through our API.
  */
 export type DocumentStatus =
-  | 'awaiting_upload' | 'pending_review' | 'approved' | 'rejected' | 'archived';
+  // #113: `draft` = uploaded but not yet submitted (viewable/deletable by the
+  // uploader). Only Submit flips drafts to `pending_review`.
+  | 'awaiting_upload' | 'draft' | 'pending_review' | 'approved' | 'rejected' | 'archived';
 
 export interface TaskDocument {
   docId: string;
@@ -25,6 +27,8 @@ export interface TaskDocument {
   reviewedAt: string | null;
   expiresAt: string | null;
   archivedAt: string | null;
+  /** #113: when the draft was submitted for review. */
+  submittedAt?: string | null;
 }
 
 /** Allowed upload types (mirrors the backend allow-list) + max size. */
@@ -104,7 +108,8 @@ export async function uploadDocument(
   });
   if (!put.ok) throw new Error('Upload failed. Please try again.');
 
-  // Step 3 — confirm; backend flips status to pending_review + notifies the reviewer.
+  // Step 3 — confirm; backend stores it as a DRAFT (#113). It becomes reviewable
+  // only when the user presses Submit (submitDocuments).
   return apiFetch<TaskDocument>(
     `/api/tasks/${taskId}/documents/${docId}/confirm`,
     { method: 'POST', body: JSON.stringify({ uploaded: true }) },
@@ -143,4 +148,23 @@ export const reviewDocument = (
   apiFetch<TaskDocument>(`/api/tasks/${taskId}/documents/${docId}/review`, {
     method: 'POST',
     body: JSON.stringify({ action, remark }),
+  });
+
+/**
+ * #113: submit the caller's DRAFT documents for review (optionally scoped to a
+ * step). Drafts are viewable/deletable until this is called.
+ */
+export const submitDocuments = (taskId: string, stepNumber?: number | null) =>
+  apiFetch<{ success: boolean; submitted: number }>(`/api/tasks/${taskId}/documents/submit`, {
+    method: 'POST',
+    body: JSON.stringify(stepNumber == null ? {} : { stepNumber }),
+  });
+
+/**
+ * #113: delete a document. An admin may delete any; the uploader may delete their
+ * own while it is still a draft.
+ */
+export const deleteDocument = (taskId: string, docId: string) =>
+  apiFetch<{ success: boolean; id: string }>(`/api/tasks/${taskId}/documents/${docId}`, {
+    method: 'DELETE',
   });

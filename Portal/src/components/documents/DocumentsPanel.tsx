@@ -2,13 +2,16 @@ import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FileText, Upload, Download, Check, X, Loader2, AlertCircle,
-  CheckCircle2, Clock, Archive,
+  CheckCircle2, Clock, Archive, Send, Trash2, FilePlus2,
 } from 'lucide-react';
 import {
   getDocuments, uploadDocument, openDocument, reviewDocument,
+  submitDocuments, deleteDocument,
   ALLOWED_DOC_EXT, type TaskDocument, type DocumentStatus,
 } from '../../api/documents';
 import { useToast } from '../common/toastContext';
+import { useConfirm } from '../common/confirmContext';
+import { useAuthStore } from '../../store/authStore';
 
 /**
  * Documents tab (E-05). Staff review uploads (approve/reject); clients upload and
@@ -17,6 +20,8 @@ import { useToast } from '../common/toastContext';
  */
 export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; isStaff: boolean }) {
   const toast = useToast();
+  const confirm = useConfirm();
+  const isAdmin = useAuthStore((s) => s.role) === 'admin';
   const queryClient = useQueryClient();
   const { data: docs = [], isLoading, error } = useQuery({
     queryKey: ['documents', taskId],
@@ -29,11 +34,41 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
 
   const upload = useMutation({
     mutationFn: ({ file, docType }: { file: File; docType?: string }) => uploadDocument(taskId, file, undefined, docType),
-    onSuccess: () => { invalidate(); toast.success('Document uploaded — awaiting review.'); },
+    // #113: an upload is now a DRAFT — say so, so the user knows to press Submit.
+    onSuccess: () => { invalidate(); toast.success('Document added as a draft — press Submit to send it for review.'); },
     onError: (e: Error) => toast.error(e.message || 'Upload failed.'),
   });
 
-  const active = docs.filter((d) => d.status !== 'archived');
+  // #113: submit all drafts for review.
+  const submit = useMutation({
+    mutationFn: () => submitDocuments(taskId),
+    onSuccess: (r) => {
+      invalidate();
+      toast.success(r.submitted === 1 ? 'Document submitted for review.' : `${r.submitted} documents submitted for review.`);
+    },
+    onError: (e: Error) => toast.error(e.message || 'Could not submit documents.'),
+  });
+
+  // #113: delete a mistaken upload (admin any; uploader's own drafts).
+  const remove = useMutation({
+    mutationFn: (docId: string) => deleteDocument(taskId, docId),
+    onSuccess: () => { invalidate(); toast.success('Document deleted.'); },
+    onError: (e: Error) => toast.error(e.message || 'Could not delete the document.'),
+  });
+
+  const askDelete = async (doc: TaskDocument) => {
+    const ok = await confirm({
+      title: 'Delete this document?',
+      message: `"${doc.fileName}" will be permanently removed from this matter. This cannot be undone.`,
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (ok) remove.mutate(doc.docId);
+  };
+
+  // #113: drafts are staged separately from documents already under review.
+  const drafts = docs.filter((d) => d.status === 'draft');
+  const active = docs.filter((d) => d.status !== 'archived' && d.status !== 'draft');
   const archived = docs.filter((d) => d.status === 'archived');
 
   if (isLoading) {
@@ -52,7 +87,45 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
       {/* Uploader — both roles can add a document (staff on behalf of the client too). */}
       <Uploader onPick={(file, docType) => upload.mutate({ file, docType })} busy={upload.isPending} />
 
-      {active.length === 0 && archived.length === 0 ? (
+      {/* #113: DRAFTS — uploaded but not yet submitted. Viewable + deletable here;
+          one Submit sends them all for review. */}
+      {drafts.length > 0 && (
+        <section className="card p-4 border-brand-200 bg-brand-50/40">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-ink">
+                Drafts ({drafts.length}) — not yet submitted
+              </p>
+              <p className="text-xs text-ink-muted mt-0.5">
+                Review them below, then submit. You can delete a draft if it was added by mistake.
+              </p>
+            </div>
+            <button
+              onClick={() => submit.mutate()}
+              disabled={submit.isPending}
+              className="btn-primary shrink-0 inline-flex items-center gap-1.5 disabled:opacity-50"
+            >
+              {submit.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              Submit {drafts.length > 1 ? `all (${drafts.length})` : ''}
+            </button>
+          </div>
+          <div className="space-y-2.5">
+            {drafts.map((d) => (
+              <DocumentCard
+                key={d.docId}
+                doc={d}
+                taskId={taskId}
+                isStaff={isStaff}
+                onChanged={invalidate}
+                onDelete={() => askDelete(d)}
+                deleting={remove.isPending}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {active.length === 0 && archived.length === 0 && drafts.length === 0 ? (
         <div className="card p-12 text-center">
           <FileText className="w-10 h-10 text-hairline mx-auto mb-3" />
           <p className="text-sm font-medium text-ink">No documents yet</p>
@@ -69,6 +142,10 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
               onChanged={invalidate}
               onReupload={(f) => upload.mutate({ file: f, docType: d.docType ?? undefined })}
               reuploading={upload.isPending}
+              // #113: an admin can remove a document uploaded by mistake even
+              // after submission (the backend enforces the same rule).
+              onDelete={isAdmin ? () => askDelete(d) : undefined}
+              deleting={remove.isPending}
             />
           ))}
         </div>
@@ -140,6 +217,7 @@ function Uploader({ onPick, busy }: { onPick: (f: File, docType?: string) => voi
 
 const STATUS_META: Record<DocumentStatus, { label: string; cls: string; Icon: typeof Clock }> = {
   awaiting_upload: { label: 'Awaiting upload', cls: 'bg-surface-card text-ink-muted', Icon: Clock },
+  draft:           { label: 'Draft',           cls: 'bg-brand-50 text-brand-700',     Icon: FilePlus2 },
   pending_review:  { label: 'Pending review',  cls: 'bg-amber-50 text-amber-700',     Icon: Clock },
   approved:        { label: 'Approved',        cls: 'bg-emerald-50 text-emerald-700', Icon: CheckCircle2 },
   rejected:        { label: 'Rejected',        cls: 'bg-red-50 text-red-600',          Icon: AlertCircle },
@@ -147,7 +225,7 @@ const STATUS_META: Record<DocumentStatus, { label: string; cls: string; Icon: ty
 };
 
 function DocumentCard({
-  doc, taskId, isStaff, onChanged, archived, onReupload, reuploading,
+  doc, taskId, isStaff, onChanged, archived, onReupload, reuploading, onDelete, deleting,
 }: {
   doc: TaskDocument;
   taskId: string;
@@ -156,6 +234,9 @@ function DocumentCard({
   archived?: boolean;
   onReupload?: (f: File) => void;
   reuploading?: boolean;
+  /** #113: when provided, a Delete action is shown (confirmed by the caller). */
+  onDelete?: () => void;
+  deleting?: boolean;
 }) {
   const toast = useToast();
   const reuploadRef = useRef<HTMLInputElement>(null);
@@ -195,16 +276,30 @@ function DocumentCard({
             </div>
           </div>
         </div>
-        {doc.status !== 'awaiting_upload' && (
-          <button
-            onClick={() => open.mutate()}
-            disabled={open.isPending}
-            className="btn-secondary py-1.5 px-3 text-xs inline-flex items-center gap-1.5 shrink-0"
-          >
-            {open.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-            Open
-          </button>
-        )}
+        {/* #113: View (open) + Delete actions. Upload is the panel's own control. */}
+        <div className="flex items-center gap-2 shrink-0">
+          {doc.status !== 'awaiting_upload' && (
+            <button
+              onClick={() => open.mutate()}
+              disabled={open.isPending}
+              className="btn-secondary py-1.5 px-3 text-xs inline-flex items-center gap-1.5"
+            >
+              {open.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              View
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={onDelete}
+              disabled={deleting}
+              title="Delete this document"
+              aria-label={`Delete ${doc.fileName}`}
+              className="py-1.5 px-2 text-xs rounded-lg text-red-600 hover:bg-red-50 inline-flex items-center gap-1 disabled:opacity-50"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Rejection remark — visible to both roles so the client knows what to fix. */}

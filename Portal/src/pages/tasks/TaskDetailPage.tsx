@@ -944,7 +944,17 @@ function StepsTab({
 
   // #54: part-payment alert — a blinking banner shown to BOTH client and team when
   // only part payment has been received, replacing the old "Part Payment Due" step.
-  const partPaymentAlert = !completed && task.paymentStatus === 'part_paid' && (
+  //
+  // #124: don't nag from step 1. The balance is usually collected at a specific
+  // point in the service, so the alert only starts once the matter REACHES the step
+  // configured to chase it — the same `REMIND_PART_PAYMENT` effect that drives the
+  // reminder email (#76), so one setting controls both. Workflows with no such step
+  // configured keep the previous always-on behaviour. It stops automatically once
+  // the balance is cleared (paymentStatus is no longer part_paid).
+  const partPaymentFromStep = stepDefs.find((s) => (s.effects ?? []).includes('REMIND_PART_PAYMENT'))?.stepNumber;
+  const partPaymentDue = partPaymentFromStep == null
+    || task.currentStepNumber >= partPaymentFromStep;
+  const partPaymentAlert = !completed && task.paymentStatus === 'part_paid' && partPaymentDue && (
     <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 flex items-start gap-2.5 animate-pulse">
       <CreditCard className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
       <div className="min-w-0">

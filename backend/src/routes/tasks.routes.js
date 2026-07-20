@@ -3,7 +3,7 @@ import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema } from '../schemas/task.schema.js';
 import { listTasks, getTask, createTask, patchTask, updatePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask } from '../controllers/tasks.controller.js';
-import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument } from '../controllers/documents.controller.js';
+import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument } from '../controllers/documents.controller.js';
 
 const router = Router();
 
@@ -34,9 +34,13 @@ router.post('/:taskId/archive',              requireRole('admin'), archiveTask);
 // Clients may upload/confirm/list/download on their OWN matter; only staff review.
 router.get('/:taskId/documents',                       listDocuments);
 router.post('/:taskId/documents/signed-upload-url',    validate(signedUploadUrlSchema), createSignedUploadUrl);
+// #113: literal path registered BEFORE the /:docId routes so it can never be
+// captured as a docId. Drafts become reviewable only on SUBMIT.
+router.post('/:taskId/documents/submit',               submitDocuments);
 router.post('/:taskId/documents/:docId/confirm',       validate(confirmUploadSchema), confirmUpload);
 router.get('/:taskId/documents/:docId/download',       downloadDocument);
 router.post('/:taskId/documents/:docId/review',        requireRole('admin', 'manager', 'team_member'), validate(reviewDocumentSchema), reviewDocument);
+router.delete('/:taskId/documents/:docId',             deleteDocument);
 
 router.delete('/:taskId',                    requireRole('admin'), deleteTask);
 

@@ -11,9 +11,16 @@ import { createNotification } from './notifications.controller.js';
  *     directly by the browser via a signed PUT URL — no backend bandwidth).
  *   • Metadata → Firestore `tasks/{taskId}/documents/{docId}`.
  *
- * Lifecycle status: `awaiting_upload` → `pending_review` → `approved` | `rejected`.
- * A rejected doc's replacement archives the old one (status `archived`) so the
- * history is preserved (E05-S03).
+ * Lifecycle status (#113):
+ *   `awaiting_upload` → `draft` → `pending_review` → `approved` | `rejected`
+ * An upload lands as `draft` — the uploader can view, replace or delete it. Only
+ * SUBMIT flips drafts to `pending_review`, making them reviewable.
+ *
+ * #112: uploading does NOT archive unreviewed documents. Only an already-REVIEWED
+ * doc (`approved`/`rejected`) is superseded to `archived` when a replacement is
+ * uploaded for the same scope, so every unreviewed document stays visible and is
+ * approved/rejected individually. `archived` therefore means "superseded after
+ * review", never "buried before anyone looked at it".
  *
  * NOTE: documents are intentionally DECOUPLED from the XState workflow machine —
  * they have their own status lifecycle + endpoints rather than firing machine
@@ -179,55 +186,164 @@ export async function confirmUpload(req, res) {
     const now = new Date();
     const batch = db.batch();
 
-    // Re-upload (E05-S03): archive the prior active (non-archived) document so
-    // there's a single active doc, but history is preserved. Read ALL docs and
-    // filter in memory — Firestore `where('stepNumber','==',null)` doesn't match
-    // null fields reliably, so step-less uploads must be matched here, not in the
-    // query. Scope: same step when this doc HAS a step; otherwise matter-wide
-    // (covers step-less uploads, which is how the client uploader submits today).
+    // #112: only supersede documents that were ALREADY REVIEWED. Previously every
+    // prior non-archived doc in scope was archived on each upload, which silently
+    // buried documents before anyone could review them — so a client uploading
+    // three files left only the last one reviewable. Unreviewed docs (draft /
+    // pending_review) now coexist and are approved or rejected individually.
+    // Read ALL docs and filter in memory — Firestore `where('stepNumber','==',null)`
+    // doesn't match null fields reliably, so step-less uploads must be matched here.
     const all = await docsCol(taskId).get();
     all.forEach((s) => {
       if (s.id === docId) return;
       const sd = s.data();
-      if (sd.status === 'archived' || sd.status === 'awaiting_upload') return;
+      // Never touch: already archived, still awaiting bytes, or NOT YET REVIEWED.
+      if (sd.status !== 'approved' && sd.status !== 'rejected') return;
       const sameScope = doc.stepNumber != null ? sd.stepNumber === doc.stepNumber : true;
       if (sameScope) batch.set(s.ref, { status: 'archived', archivedAt: now }, { merge: true });
     });
 
+    // #113: an upload lands as DRAFT — the uploader can still view, replace or
+    // delete it. It only becomes reviewable when they press Submit (see
+    // submitDocuments), which flips every draft to `pending_review` at once.
     batch.set(ref, {
-      status: 'pending_review',
+      status: 'draft',
       uploadedAt: now,
       expiresAt: new Date(now.getTime() + ONE_YEAR_MS),
     }, { merge: true });
 
     await batch.commit();
 
-    // Notify the reviewer (matter owner, else the step's assignee) that a document
-    // is awaiting review (E05-S02 / E07-S01). Best-effort.
-    try {
-      let reviewer = task.assignedTo ?? null;
-      if (!reviewer && doc.stepNumber != null) {
-        const stepSnap = await db.collection('tasks').doc(taskId).collection('steps').doc(String(doc.stepNumber)).get();
-        reviewer = stepSnap.exists ? stepSnap.data().assignedTo : null;
-      }
-      if (reviewer && reviewer !== req.user.uid) {
-        await createNotification({
-          recipientUid: reviewer,
-          type: 'info',
-          title: 'Document awaiting review',
-          message: `${task.clientName ?? ''} · ${task.serviceName ?? ''}: ${doc.fileName}`,
-          taskId,
-        });
-      }
-    } catch (e) {
-      logger.warn({ err: e?.message }, 'confirmUpload: reviewer notification failed');
-    }
+    // #113: NO reviewer notification here — the document is only a draft. The
+    // reviewer is pinged on SUBMIT (submitDocuments), which is when it actually
+    // becomes reviewable.
 
     const updated = await ref.get();
     res.json(serialize(updated));
   } catch (err) {
     logger.error({ err }, 'confirmUpload error:');
     res.status(500).json({ message: 'Failed to confirm upload' });
+  }
+}
+
+/**
+ * #113 — POST /api/tasks/:taskId/documents/submit
+ * Flips the caller's DRAFT documents to `pending_review` so the internal team can
+ * review them. Optionally scoped to a step via body `{ stepNumber }`. Clients may
+ * only submit their own drafts; staff may submit any on the matter. Notifies the
+ * reviewer once for the whole batch (rather than per file).
+ */
+export async function submitDocuments(req, res) {
+  try {
+    const { taskId } = req.params;
+    const stepNumber = req.body?.stepNumber ?? null;
+    const task = await loadAuthorizedTask(req, res, taskId);
+    if (!task) return;
+
+    const all = await docsCol(taskId).get();
+    const now = new Date();
+    const batch = db.batch();
+    const submitted = [];
+
+    all.forEach((s) => {
+      const d = s.data();
+      if (d.status !== 'draft') return;
+      // A client may only submit their OWN drafts; staff may submit any.
+      if (req.user.role === 'client' && d.uploadedBy !== req.user.uid) return;
+      if (stepNumber != null && d.stepNumber !== stepNumber) return;
+      batch.set(s.ref, { status: 'pending_review', submittedAt: now }, { merge: true });
+      submitted.push({ id: s.id, fileName: d.fileName, stepNumber: d.stepNumber ?? null });
+    });
+
+    if (submitted.length === 0) {
+      return res.status(409).json({ message: 'No draft documents to submit.', code: 'NO_DRAFTS' });
+    }
+
+    await batch.commit();
+
+    // Notify the reviewer once for the batch (matter owner, else step assignee).
+    try {
+      let reviewer = task.assignedTo ?? null;
+      const firstStep = submitted.find((d) => d.stepNumber != null)?.stepNumber ?? null;
+      if (!reviewer && firstStep != null) {
+        const stepSnap = await db.collection('tasks').doc(taskId).collection('steps').doc(String(firstStep)).get();
+        reviewer = stepSnap.exists ? stepSnap.data().assignedTo : null;
+      }
+      if (reviewer && reviewer !== req.user.uid) {
+        const names = submitted.map((d) => d.fileName).join(', ');
+        await createNotification({
+          recipientUid: reviewer,
+          type: 'info',
+          title: submitted.length === 1 ? 'Document awaiting review' : `${submitted.length} documents awaiting review`,
+          message: `${task.clientName ?? ''} · ${task.serviceName ?? ''}: ${names}`.slice(0, 500),
+          taskId,
+        });
+      }
+    } catch (e) {
+      logger.warn({ err: e?.message }, 'submitDocuments: reviewer notification failed');
+    }
+
+    res.json({ success: true, submitted: submitted.length, documents: submitted });
+  } catch (err) {
+    logger.error({ err }, 'submitDocuments error:');
+    res.status(500).json({ message: 'Failed to submit documents' });
+  }
+}
+
+/**
+ * #113 — DELETE /api/tasks/:taskId/documents/:docId
+ * Deletes a document uploaded by mistake. An ADMIN may delete any document; the
+ * uploader may delete their own while it is still a DRAFT (not yet submitted).
+ * Removes the stored object (best-effort) and the metadata, and records the
+ * deletion on the matter's activity log.
+ */
+export async function deleteDocument(req, res) {
+  try {
+    const { taskId, docId } = req.params;
+    const task = await loadAuthorizedTask(req, res, taskId);
+    if (!task) return;
+
+    const ref = docsCol(taskId).doc(docId);
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Document not found' });
+    const doc = snap.data();
+
+    const isAdmin = req.user.role === 'admin';
+    const isOwnDraft = doc.uploadedBy === req.user.uid && doc.status === 'draft';
+    if (!isAdmin && !isOwnDraft) {
+      return res.status(403).json({
+        message: 'Only an admin can delete a submitted document. You can delete your own documents while they are still drafts.',
+        code: 'DELETE_NOT_ALLOWED',
+      });
+    }
+
+    // Remove the bytes (best-effort — metadata removal is what matters).
+    try {
+      if (doc.objectPath) await getBucket().file(doc.objectPath).delete({ ignoreNotFound: true });
+    } catch (e) {
+      logger.warn({ err: e?.message, objectPath: doc.objectPath }, 'deleteDocument: object delete failed');
+    }
+
+    await ref.delete();
+
+    // Audit trail on the matter's activity log.
+    try {
+      await db.collection('tasks').doc(taskId).collection('events').add({
+        type: 'DOCUMENT_DELETED',
+        actorUid: req.user.uid ?? null,
+        byRole: req.user.role ?? null,
+        comment: `Deleted document "${doc.fileName}"${doc.stepNumber != null ? ` (step ${doc.stepNumber})` : ''}`,
+        stepNumber: doc.stepNumber ?? null,
+        at: new Date().toISOString(),
+      });
+    } catch (e) {
+      logger.warn({ err: e?.message }, 'deleteDocument: activity log failed');
+    }
+
+    res.json({ success: true, id: docId });
+  } catch (err) {
+    logger.error({ err }, 'deleteDocument error:');
+    res.status(500).json({ message: 'Failed to delete document' });
   }
 }
 

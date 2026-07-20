@@ -3290,6 +3290,37 @@ not new engine code.
 - e2e: `matter-layout.spec.ts` (#73 current+previous, #96 collapse), `client-hero.spec.ts`
   (#92/#93 + Client→You), plus existing specs updated for the #94 gate auto-pass.
 
+### Batch B — document lifecycle & payment-alert timing (2026-07-18)
+- **#113 — Draft → Submit document workflow + delete.** An upload used to become
+  reviewable immediately, so a mistaken file was instantly in the reviewer's queue.
+  New lifecycle: `awaiting_upload` → **`draft`** → `pending_review` → `approved`|`rejected`.
+  Uploads land as **drafts** (the uploader can View, replace or **Delete** them);
+  one **Submit** flips every draft to `pending_review` and notifies the reviewer
+  **once for the batch** (previously one ping per file). New endpoints:
+  `POST /:taskId/documents/submit` and `DELETE /:taskId/documents/:docId`
+  (admin may delete any; the uploader may delete their own while still a draft),
+  with a confirm dialog and a `DOCUMENT_DELETED` activity event. The literal
+  `/submit` route is registered BEFORE `/:docId` so it can't be captured as an id.
+- **#112 — Unreviewed documents are never auto-archived.** Uploading previously
+  archived *every* prior active doc in scope, so a client uploading three files left
+  only the last one reviewable — earlier ones were buried before anyone looked. The
+  supersede sweep now only archives documents that were **already reviewed**
+  (`approved`/`rejected`). Unreviewed docs coexist in Pending Review and are
+  approved/rejected individually; `archived` now strictly means "superseded after
+  review", never "buried before review".
+- **#124 — Part-payment alert starts at a configured step.** The blinking alert
+  appeared from step 1 for any `part_paid` matter, cluttering the whole workflow.
+  It now starts only once the matter reaches the step configured to chase the
+  balance — reusing the **same `REMIND_PART_PAYMENT` step effect that drives the
+  reminder email (#76)**, so one setting controls both. Workflows with no such step
+  keep the previous always-on behaviour, and the alert stops by itself once the
+  balance clears (status is no longer `part_paid`).
+- e2e: `documents.spec.ts` — the full cycle re-expressed for draft→submit, plus
+  **#112** (two submitted docs BOTH stay pending, neither archived) and **#113**
+  (a draft is deletable before submission). 11/11.
+
+---
+
 ### Batch A — matter clarity & payment integrity (2026-07-18)
 - **#117 — "Full payment" must actually be full (High).** Creating/editing a matter
   with `paymentStatus = fully_paid` while `amountReceived < totalCost` saved a wrong
