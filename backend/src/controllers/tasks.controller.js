@@ -4,6 +4,7 @@ import { logger } from "../config/logger.js";
 import { getCompiledForServiceKey, getCompiledById } from '../services/workflowDefinitions.service.js';
 import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { createNotification, resolveNotificationsForTask } from './notifications.controller.js';
+import { finalizeMatterDocuments } from './documents.controller.js';
 import { sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
 import { sanitizeRichText, richTextToPlain } from '../services/richText.service.js';
@@ -1669,6 +1670,14 @@ export async function transitionTask(req, res) {
     // steps' alerts forever. On a BACKWARD move (REWORK re-entry) clear any alert
     // for a step at/after where we land (its forward alert is now stale).
     // Completion clears everything. Runs before we create fresh notifications.
+    // #131: when the MATTER completes, collapse superseded document versions into
+    // Version History (keep the latest approved per scope). Until then every
+    // version stays visible in the main list. Best-effort — never blocks the move.
+    if (isComplete) {
+      try { await finalizeMatterDocuments(taskId); }
+      catch (e) { logger.warn({ err: e?.message }, 'transitionTask: document finalisation failed'); }
+    }
+
     try {
       if (isComplete) {
         await resolveNotificationsForTask(taskId);

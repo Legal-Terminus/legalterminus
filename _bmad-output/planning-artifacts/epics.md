@@ -3350,6 +3350,33 @@ not new engine code.
 
 ---
 
+### #131 — Document version history: keep versions visible until matter completes (2026-07-22)
+- Chosen **Option 2**: during a matter, EVERY document version — approved,
+  re-submitted, rejected, pending — stays visible in the main list (in chronological
+  order), so the team can compare and track progression. `confirmUpload` no longer
+  archives the prior version on re-upload (the #112 supersede-on-reupload step is
+  removed).
+- Superseded versions collapse into **Version History only when the MATTER
+  COMPLETES** (stakeholder's chosen trigger). `finalizeMatterDocuments(taskId)` runs
+  from `transitionTask` on the completing move (best-effort, never blocks the
+  transition): grouped by scope = (stepNumber, docType), it keeps the **latest
+  approved** version in the main list and archives the rest; a scope with no
+  approved version keeps its most recent doc (an unreviewed doc isn't hidden at
+  completion).
+- **Bug caught in verification:** the "latest" comparison used
+  `new Date(firestoreTimestamp)`, which yields `NaN` → unstable sort → the WRONG
+  version kept. Fixed `ms()` to normalise via `toISO` (Timestamp/Date/ISO). Found by
+  a direct unit check, not inspection.
+- Frontend: the main list now sorts chronologically (oldest→newest) so a document's
+  progression reads top-to-bottom; existing status badges + uploader labels (#125)
+  distinguish versions. Version History still holds only truly-archived (post-
+  completion) versions.
+- e2e: `doc-versions.spec.ts` (API-level) — an approved version and a newer version
+  both stay active (neither archived) during the matter; the completion archive is
+  covered by a direct `finalizeMatterDocuments` unit verification.
+
+---
+
 ### Batch D — documents, discussion & reopen-step (2026-07-22)
 Follow-ups raised after the earlier batches went to QA. Each shipped as its own commit.
 - **#112 (reopened) — draft docs hidden from the client.** Internal drafts were

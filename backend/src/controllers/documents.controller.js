@@ -199,22 +199,13 @@ export async function confirmUpload(req, res) {
     const now = new Date();
     const batch = db.batch();
 
-    // #112: only supersede documents that were ALREADY REVIEWED. Previously every
-    // prior non-archived doc in scope was archived on each upload, which silently
-    // buried documents before anyone could review them — so a client uploading
-    // three files left only the last one reviewable. Unreviewed docs (draft /
-    // pending_review) now coexist and are approved or rejected individually.
-    // Read ALL docs and filter in memory — Firestore `where('stepNumber','==',null)`
-    // doesn't match null fields reliably, so step-less uploads must be matched here.
-    const all = await docsCol(taskId).get();
-    all.forEach((s) => {
-      if (s.id === docId) return;
-      const sd = s.data();
-      // Never touch: already archived, still awaiting bytes, or NOT YET REVIEWED.
-      if (sd.status !== 'approved' && sd.status !== 'rejected') return;
-      const sameScope = doc.stepNumber != null ? sd.stepNumber === doc.stepNumber : true;
-      if (sameScope) batch.set(s.ref, { status: 'archived', archivedAt: now }, { merge: true });
-    });
+    // #131 (Option 2): re-uploading NO LONGER archives the prior version. Every
+    // version — approved, re-submitted or rejected — stays visible in the main
+    // list in chronological order while the matter is in progress, so the team can
+    // compare and track progression. Superseded versions are collapsed into Version
+    // History in one pass only when the MATTER COMPLETES (see finalizeMatterDocuments,
+    // called from transitionTask). (#112 previously archived already-reviewed
+    // versions here — that early archive is removed.)
 
     // #113: an upload lands as DRAFT — the uploader can still view, replace or
     // delete it. It only becomes reviewable when they press Submit (see
@@ -464,5 +455,63 @@ export async function reviewDocument(req, res) {
   } catch (err) {
     logger.error({ err }, 'reviewDocument error:');
     res.status(500).json({ message: 'Failed to review document' });
+  }
+}
+
+/**
+ * #131 (Option 2) — collapse superseded document versions into Version History
+ * when the MATTER COMPLETES. Called from transitionTask on the completing move.
+ *
+ * Grouping is by scope = (stepNumber, docType) so unrelated documents don't
+ * compete. Within a scope, the LATEST APPROVED version stays visible in the main
+ * list; every earlier version is archived. A scope with no approved version keeps
+ * its most recent document visible (we don't hide an unreviewed doc at completion).
+ * Never throws — a failure here must not block the workflow transition.
+ */
+export async function finalizeMatterDocuments(taskId) {
+  try {
+    const snap = await docsCol(taskId).get();
+    const docs = snap.docs
+      .map((d) => ({ ref: d.ref, id: d.id, ...d.data() }))
+      // Only real, still-active documents are candidates (skip drafts/awaiting/archived).
+      .filter((d) => ['pending_review', 'approved', 'rejected'].includes(d.status));
+    if (docs.length === 0) return;
+
+    // Group by scope. `stepNumber` may be null (step-less client uploads).
+    const scopeKey = (d) => `${d.stepNumber ?? 'none'}::${(d.docType ?? '').toLowerCase()}`;
+    const groups = new Map();
+    for (const d of docs) {
+      const k = scopeKey(d);
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(d);
+    }
+
+    // Robust timestamp → ms: Firestore Timestamp (toMillis), Date, or ISO string.
+    // `new Date(firestoreTimestamp)` yields NaN, which would make the sort unstable
+    // and keep the WRONG version — so normalise via toISO first.
+    const ms = (d) => {
+      const iso = toISO(d.uploadedAt) || toISO(d.createdAt);
+      const t = iso ? new Date(iso).getTime() : 0;
+      return Number.isFinite(t) ? t : 0;
+    };
+    const now = new Date();
+    const batch = db.batch();
+    let archived = 0;
+
+    for (const list of groups.values()) {
+      if (list.length < 2) continue; // nothing to collapse in a single-version scope
+      // Prefer the latest APPROVED; else the latest overall.
+      const approved = list.filter((d) => d.status === 'approved').sort((a, b) => ms(b) - ms(a));
+      const keep = approved[0] ?? [...list].sort((a, b) => ms(b) - ms(a))[0];
+      for (const d of list) {
+        if (d.id === keep.id) continue;
+        batch.set(d.ref, { status: 'archived', archivedAt: now }, { merge: true });
+        archived += 1;
+      }
+    }
+
+    if (archived > 0) await batch.commit();
+  } catch (err) {
+    logger.warn({ err: err?.message, taskId }, 'finalizeMatterDocuments failed (non-fatal)');
   }
 }

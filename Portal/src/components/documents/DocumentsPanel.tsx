@@ -100,7 +100,13 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
 
   // #113: drafts are staged separately from documents already under review.
   const drafts = docs.filter((d) => d.status === 'draft');
-  const active = docs.filter((d) => d.status !== 'archived' && d.status !== 'draft');
+  // #131: every version (approved / re-submitted / rejected / pending) stays in the
+  // main list during the matter — shown in CHRONOLOGICAL order so a document's
+  // progression reads top-to-bottom. Superseded versions only move to Version
+  // History once the matter completes (backend finalizeMatterDocuments).
+  const active = docs
+    .filter((d) => d.status !== 'archived' && d.status !== 'draft')
+    .sort((a, b) => (a.uploadedAt ?? '').localeCompare(b.uploadedAt ?? ''));
   const archived = docs.filter((d) => d.status === 'archived');
 
   // #127: only real (uploaded) documents are downloadable.
