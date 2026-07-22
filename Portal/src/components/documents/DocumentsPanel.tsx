@@ -22,6 +22,12 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
   const toast = useToast();
   const confirm = useConfirm();
   const isAdmin = useAuthStore((s) => s.role) === 'admin';
+  const myUid = useAuthStore((s) => s.user?.uid ?? null);
+  // #128: the delete icon shows ONLY when a delete is actually allowed — an admin
+  // may remove any document; anyone else (incl. the client) may remove only their
+  // OWN document while it is still a draft. A submitted document is view/download
+  // only. This mirrors the backend rule exactly, so the icon never lies.
+  const canDelete = (d: TaskDocument) => isAdmin || (d.uploadedBy === myUid && d.status === 'draft');
   const queryClient = useQueryClient();
   const { data: docs = [], isLoading, error } = useQuery({
     queryKey: ['documents', taskId],
@@ -117,7 +123,7 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
                 taskId={taskId}
                 isStaff={isStaff}
                 onChanged={invalidate}
-                onDelete={() => askDelete(d)}
+                onDelete={canDelete(d) ? () => askDelete(d) : undefined}
                 deleting={remove.isPending}
               />
             ))}
@@ -142,9 +148,9 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
               onChanged={invalidate}
               onReupload={(f) => upload.mutate({ file: f, docType: d.docType ?? undefined })}
               reuploading={upload.isPending}
-              // #113: an admin can remove a document uploaded by mistake even
-              // after submission (the backend enforces the same rule).
-              onDelete={isAdmin ? () => askDelete(d) : undefined}
+              // #113/#128: an admin may still remove a submitted doc; a client
+              // gets no delete on a submitted document (view/download only).
+              onDelete={canDelete(d) ? () => askDelete(d) : undefined}
               deleting={remove.isPending}
             />
           ))}
