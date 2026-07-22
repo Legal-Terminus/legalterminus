@@ -699,6 +699,114 @@ export async function restartTask(req, res) {
   }
 }
 
+// ─── POST /api/tasks/:taskId/steps/:stepNumber/reopen ──────────────────────
+// #116 — REOPEN a completed step (ADMIN ONLY, per the stakeholder's decision:
+// "Option A — Rewind Workflow, with Admin approval").
+//
+// Semantics chosen (rewind, not edit-in-place): the workflow moves BACK to the
+// chosen step. That step becomes `active` again; every step AFTER it that had
+// already been done reverts to `pending` so the work is re-done in order. This
+// keeps the engine consistent (exactly one active step) and leaves a clear audit
+// trail, rather than allowing two "active" steps at once (which is where state
+// corruption lives). A completed matter is reactivated in the process.
+export async function reopenStep(req, res) {
+  try {
+    const { role, uid } = req.user;
+    if (role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden: only an admin can reopen a completed step.' });
+    }
+    const { taskId } = req.params;
+    const target = Number(req.params.stepNumber);
+    if (!Number.isInteger(target)) return res.status(400).json({ message: 'Invalid step number.' });
+
+    const taskRef = db.collection('tasks').doc(taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+
+    // Only a live or completed matter can be rewound. A stopped/rejected/archived
+    // matter must go through its own restart path first.
+    if (!['active', 'pending', 'completed'].includes(task.status)) {
+      return res.status(409).json({
+        message: `This matter is ${task.status} and cannot have a step reopened.`,
+        code: 'MATTER_NOT_REOPENABLE',
+      });
+    }
+    // Can't reopen the current or a future step — there's nothing to rewind to.
+    if (task.status !== 'completed' && target >= task.currentStepNumber) {
+      return res.status(409).json({
+        message: 'Only a step BEFORE the current one can be reopened.',
+        code: 'STEP_NOT_BEFORE_CURRENT',
+      });
+    }
+
+    const targetRef = taskRef.collection('steps').doc(String(target));
+    const targetSnap = await targetRef.get();
+    if (!targetSnap.exists) return res.status(404).json({ message: 'Step not found on this matter.' });
+    if (!['completed', 'skipped'].includes(targetSnap.data().status)) {
+      return res.status(409).json({ message: 'Only a completed step can be reopened.', code: 'STEP_NOT_COMPLETED' });
+    }
+
+    const now = new Date().toISOString();
+    const comment = (req.body?.reason || '').toString().trim().slice(0, 500) || null;
+    const batch = db.batch();
+
+    // Target step → active again.
+    batch.set(targetRef, { status: 'active', startedAt: now, completedAt: null, reopenedAt: now }, { merge: true });
+
+    // Every step AFTER the target that was already done reverts to pending, so the
+    // remaining workflow is worked through again in order.
+    const laterDone = await taskRef.collection('steps')
+      .where('stepNumber', '>', target)
+      .get();
+    laterDone.forEach((d) => {
+      const st = d.data().status;
+      if (st === 'completed' || st === 'skipped' || st === 'active') {
+        batch.set(d.ref, { status: 'pending', completedAt: null, startedAt: null }, { merge: true });
+      }
+    });
+
+    // Re-project the matter's due date from the reopened step; reactivate a
+    // completed matter.
+    let matterDueAt = null;
+    try {
+      const compiled = await getCompiledById(task.workflowDefinitionId);
+      if (compiled) {
+        const etaStepDefs = compiled.definition.steps.filter((s) => s.type !== 'final');
+        matterDueAt = projectMatterDueAt(etaStepDefs, target, now);
+      }
+    } catch (e) {
+      logger.warn({ err: e?.message }, 'reopenStep: ETA re-projection skipped');
+    }
+
+    batch.set(taskRef, {
+      status: 'active',
+      currentStepNumber: target,
+      matterDueAt,
+      updatedAt: now,
+    }, { merge: true });
+
+    // Audit trail.
+    batch.set(taskRef.collection('events').doc(), {
+      type: 'STEP_REOPENED',
+      fromStep: task.currentStepNumber,
+      toStep: target,
+      comment: comment ? `Step reopened: ${comment}` : 'Step reopened by admin.',
+      commentClientVisible: false, // internal action
+      byUid: uid ?? null,
+      byRole: role ?? null,
+      at: now,
+    });
+
+    await batch.commit();
+
+    res.json({ success: true, status: 'active', currentStepNumber: target });
+  } catch (err) {
+    logger.error({ err }, 'reopenStep error:');
+    res.status(500).json({ message: 'Failed to reopen the step' });
+  }
+}
+
 // ─── GET /api/tasks ────────────────────────────────────────────────────────
 // Paginated + role-scoped. Filters (status/assignedTo/isUrgent) combined with
 // orderBy(updatedAt) require composite indexes — see firestore.indexes.json.

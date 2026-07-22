@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema } from '../schemas/task.schema.js';
-import { listTasks, getTask, createTask, patchTask, updatePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask } from '../controllers/tasks.controller.js';
+import { listTasks, getTask, createTask, patchTask, updatePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument } from '../controllers/documents.controller.js';
 import { listMessages, createMessage } from '../controllers/messages.controller.js';
 import { listReminders, sendReminder } from '../controllers/reminders.controller.js';
@@ -38,6 +38,8 @@ router.post('/:taskId/reject',               requireRole('admin'), validate(task
 router.post('/:taskId/stop',                 requireRole('admin'), validate(taskStopSchema), stopTask);
 // Restart a previously stopped matter, resuming from where it left off (#71) — admin-only.
 router.post('/:taskId/restart',              requireRole('admin'), restartTask);
+// #116: reopen a completed step (admin-only rewind). Controller enforces the rest.
+router.post('/:taskId/steps/:stepNumber/reopen', requireRole('admin'), reopenStep);
 // Archive a matter (non-destructive) — admin-only (#70); the alternative to admin-only delete.
 router.post('/:taskId/archive',              requireRole('admin'), archiveTask);
 

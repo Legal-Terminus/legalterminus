@@ -194,3 +194,11 @@ export const assignStep = (taskId: string, stepNumber: number, assignedTo: strin
     method: 'PATCH',
     body: JSON.stringify({ assignedTo }),
   });
+
+/** #116: reopen a completed step — ADMIN only. Rewinds the workflow to that step
+ *  (later steps revert to pending). Returns the new current step. */
+export const reopenStep = (taskId: string, stepNumber: number, reason?: string) =>
+  apiFetch<{ success: boolean; status: string; currentStepNumber: number }>(
+    `/api/tasks/${taskId}/steps/${stepNumber}/reopen`,
+    { method: 'POST', body: JSON.stringify(reason ? { reason } : {}) },
+  );

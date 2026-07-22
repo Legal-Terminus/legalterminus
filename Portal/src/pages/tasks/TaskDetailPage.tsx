@@ -17,7 +17,7 @@ import RichTextEditor from '../../components/common/RichTextEditor';
 import RichText from '../../components/common/RichText';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, reopenStep, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
 import { useRail, type RailState } from '../../hooks/useResizablePanels';
@@ -170,6 +170,28 @@ export default function TaskDetailPage() {
     },
     onError: (err: Error) => toast.error(err.message || 'Could not reject this matter.'),
   });
+
+  // #116: reopen a completed step (admin-only). Rewinds the workflow to that step;
+  // later steps revert to pending. Confirmed via the styled dialog first.
+  const reopen = useMutation({
+    mutationFn: (stepNumber: number) => reopenStep(taskId!, stepNumber),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['task-events', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      toast.success('Step reopened — the workflow is back at that step.');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not reopen the step.'),
+  });
+  const onReopen = async (stepNumber: number, stepTitle: string) => {
+    const ok = await confirm({
+      title: 'Reopen this step?',
+      message: `The workflow will move back to "${stepTitle}". Any steps completed after it will return to pending and need to be done again. This is recorded on the activity log.`,
+      confirmLabel: 'Reopen step',
+      tone: 'danger',
+    });
+    if (ok) reopen.mutate(stepNumber);
+  };
 
   // Stop/cancel an in-flight matter when a client discontinues (GitHub #41).
   // Staff-only; reason captured via a small inline composer (see StopMatterBanner).
@@ -467,6 +489,8 @@ export default function TaskDetailPage() {
           documents={documents}
           onAttach={() => setTab('documents')}
           onOpenDoc={(docId) => openDocument(taskId!, docId)}
+          // #116: admins can rewind the workflow to a completed step.
+          onReopen={role === 'admin' ? onReopen : undefined}
         />
       )}
       {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} />}
@@ -690,7 +714,7 @@ interface StepAssignment {
 }
 
 function StepsTab({
-  task, definition, stepDefs, currentDef, completed, role, pending, onEvent, assignment, events, documents, onAttach, onOpenDoc,
+  task, definition, stepDefs, currentDef, completed, role, pending, onEvent, assignment, events, documents, onAttach, onOpenDoc, onReopen,
 }: {
   task: Task;
   definition?: WorkflowDefinition;
@@ -705,6 +729,7 @@ function StepsTab({
   documents: TaskDocument[];
   onAttach: () => void;
   onOpenDoc: (docId: string) => void;
+  onReopen?: (stepNumber: number, stepTitle: string) => void; // #116 admin-only
 }) {
   const steps = task.steps ?? [];
   // #55: display steps in clean serial order (1,2,3,4…). The stored `stepNumber`
@@ -872,6 +897,7 @@ function StepsTab({
       comments={events.filter((e) => e.comment && (e.fromStep === step.stepNumber || e.toStep === step.stepNumber))}
       attachments={documents.filter((d) => d.stepNumber === step.stepNumber)}
       onOpenDoc={onOpenDoc}
+      onReopen={onReopen}
     />
   );
 
@@ -1961,7 +1987,7 @@ const OWNER_EDGE: Record<'team' | 'client' | 'govt', { dot: string; label: strin
   govt:   { dot: 'bg-violet-500', label: 'Registrar' },
 };
 
-function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCurrent, owner, ownerLabel, comments = [], attachments = [], onOpenDoc }: {
+function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCurrent, owner, ownerLabel, comments = [], attachments = [], onOpenDoc, onReopen }: {
   step: TaskStep;
   displayNumber: number;
   description?: string;
@@ -1972,14 +1998,17 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
   comments?: TaskEvent[];
   attachments?: TaskDocument[];
   onOpenDoc?: (docId: string) => void;
+  onReopen?: (stepNumber: number, stepTitle: string) => void; // #116 admin-only, completed steps
 }) {
   const s = STATUS[step.status] ?? STATUS.pending;
   const skipped = step.status === 'skipped';
   const Icon = step.status === 'completed' ? CheckCircle2 : skipped ? CircleSlash : isCurrent ? PlayCircle : Circle;
   // Expandable when there's anything to show: a remark, completion info, comments,
   // or attachments — on completed AND in-progress steps.
+  // #116: an admin can reopen a COMPLETED step (rewind the workflow to it).
+  const canReopen = !!onReopen && step.status === 'completed';
   const hasDetails = !!(step.remark || step.completedAt || comments.length || attachments.length);
-  const expandable = hasDetails;
+  const expandable = hasDetails || canReopen;
   const [open, setOpen] = useState(false);
   const countBits = [
     comments.length ? `${comments.length} comment${comments.length > 1 ? 's' : ''}` : '',
@@ -2049,6 +2078,16 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
                 </button>
               ))}
             </div>
+          )}
+
+          {/* #116: admin-only — rewind the workflow back to this completed step. */}
+          {canReopen && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onReopen!(step.stepNumber, step.title); }}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 hover:text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5"
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> Reopen step
+            </button>
           )}
         </div>
       )}
