@@ -96,9 +96,18 @@ export async function listDocuments(req, res) {
     if (!task) return;
 
     const snap = await docsCol(taskId).get();
-    const docs = snap.docs
+    let docs = snap.docs
       .map(serialize)
       .sort((a, b) => (b.uploadedAt ?? '').localeCompare(a.uploadedAt ?? ''));
+
+    // #112: a DRAFT is not yet submitted — it must stay internal. The client only
+    // sees a document once it has been submitted for review (pending_review and
+    // beyond). `awaiting_upload` (no bytes yet) is hidden from everyone. This also
+    // means a staff member's in-progress draft never leaks to the client.
+    if (req.user.role === 'client') {
+      docs = docs.filter((d) => d.status !== 'draft' && d.status !== 'awaiting_upload');
+    }
+
     res.json({ data: docs });
   } catch (err) {
     logger.error({ err }, 'listDocuments error:');
