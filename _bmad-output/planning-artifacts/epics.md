@@ -3350,6 +3350,44 @@ not new engine code.
 
 ---
 
+### Batch D — documents, discussion & reopen-step (2026-07-22)
+Follow-ups raised after the earlier batches went to QA. Each shipped as its own commit.
+- **#112 (reopened) — draft docs hidden from the client.** Internal drafts were
+  visible to the client before submission. `listDocuments` now excludes `draft` /
+  `awaiting_upload` from the client response; a doc appears to the client only once
+  submitted for review. (`0cd2e25d`)
+- **#128 — no delete icon on a client's SUBMITTED document.** The delete icon now
+  shows only when a delete is actually allowed (admin any; others only their OWN
+  still-draft doc), mirroring the backend rule so the UI never offers a refused
+  action. Submitted = view/download only for the client. (`c8fd78ad`)
+- **#125 — label documents by uploader.** Each doc carries a badge — "Legal
+  Terminus" (internal) or "Client" — captured at upload (`uploaderRole`). Chosen
+  over fully separate sections per the stakeholder's note. (`edd8a0ce`)
+- **#126 — multi-file upload.** The picker accepts multiple files; each is validated
+  and uploaded individually (a bad file is skipped, not blocking the rest) and lands
+  as its own draft. (`cba7a8d9`)
+- **#127 — bulk download as a zip.** Per-doc checkbox + Select all + "Download
+  selected (N)"; files are fetched through the authed backend (no signed URLs) and
+  zipped client-side with JSZip (duplicate names de-duped). (`5c74844e`)
+- **#129 — no approval email; email only on re-submit.** Approving a document is
+  now IN-APP ONLY; email is reserved for a rejection, reframed as "Re-submit
+  required". Added an optional `email` flag to `createNotification` (default true,
+  all existing callers unchanged). (`b36a63c6`)
+- **#123 (follow-up) — client sees "Legal Terminus" as the sender**, not the generic
+  "Our team", in the Discussion thread and the message email. (`edca73b8`)
+- **#116 — reopen a completed step (admin-only rewind).** Per the stakeholder's
+  choice (Option A + admin approval): reopening moves the workflow BACK to that
+  step; later done steps revert to pending; a completed matter reactivates; ETA
+  re-projects; `STEP_REOPENED` is audited. `POST /:taskId/steps/:n/reopen` refuses
+  non-admins (403), current/future/non-completed steps (409) and terminal matters.
+  UI: an admin-only "Reopen step" action on a completed row behind a confirm dialog.
+  (`e692a405`)
+- e2e: `documents.spec.ts` (already covers #112/#113), `reopen-step.spec.ts` (4).
+  Note: reopen targets are read from the matter's real completed steps because
+  stored step numbers are intentionally gappy (payment gates auto-pass steps).
+
+---
+
 ### Batch C — matter discussion thread & comment privacy (2026-07-18)
 - **#123 — Per-matter DISCUSSION THREAD (client ⇄ internal team).** Scoped down from
   the original "chatbot in the bottom corner" after a sizing analysis (posted on the
