@@ -120,7 +120,7 @@ export const markAllRead = async (req, res) => {
  * Reusable helper for other backend code (task transitions, document review,
  * payment events) to emit an in-app notification. Fire-and-forget friendly.
  */
-export const createNotification = async ({ recipientUid, type = 'info', title, message, taskId, stepNumber }) => {
+export const createNotification = async ({ recipientUid, type = 'info', title, message, taskId, stepNumber, email = true }) => {
   if (!recipientUid || !title) {
     throw new Error('createNotification requires recipientUid and title');
   }
@@ -136,6 +136,12 @@ export const createNotification = async ({ recipientUid, type = 'info', title, m
     read: false,
     createdAt: new Date(),
   });
+
+  // #129: some notifications should NOT be emailed (e.g. a document APPROVAL is
+  // in-app only — the client doesn't need an inbox message for good news; email is
+  // reserved for actions that need them, like "re-submit required"). Default true
+  // so all existing callers keep mirroring to email.
+  if (email === false) return ref.id;
 
   // E07-S02: mirror every in-app notification to EMAIL (Gmail SMTP). Fire-and-
   // forget — resolve the recipient's email and send without blocking or throwing.

@@ -441,15 +441,19 @@ export async function reviewDocument(req, res) {
     }, { merge: true });
 
     // Notify the client of the outcome (E05-S02 / E07-S01). Best-effort.
+    // #129: an APPROVAL is in-app ONLY — the client doesn't need an email for good
+    // news, and it reduces inbox noise. A REJECTION ("re-submit required") is
+    // emailed too, since the client must act (upload a corrected document).
     try {
       await createNotification({
         recipientUid: task.clientUid,
         type: isApprove ? 'success' : 'error',
-        title: isApprove ? 'Document approved' : 'Document needs changes',
+        title: isApprove ? 'Document approved' : 'Re-submit required',
         message: isApprove
           ? `${task.serviceName ?? ''}: ${doc.fileName} was approved.`
-          : `${task.serviceName ?? ''}: ${doc.fileName} was rejected — ${remark.toString().trim()}`,
+          : `${task.serviceName ?? ''}: ${doc.fileName} needs changes — please upload a corrected version. ${remark.toString().trim()}`,
         taskId,
+        email: !isApprove, // #129: email only when the client must re-submit
       });
     } catch (e) {
       logger.warn({ err: e?.message }, 'reviewDocument: client notification failed');
