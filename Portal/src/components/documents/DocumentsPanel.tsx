@@ -45,6 +45,24 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
     onError: (e: Error) => toast.error(e.message || 'Upload failed.'),
   });
 
+  // #126: upload MANY files in one action. Each file is validated + uploaded
+  // individually (a bad one doesn't block the rest) and lands as its own draft.
+  const [multiBusy, setMultiBusy] = useState(false);
+  const uploadMany = async (files: File[], docType?: string) => {
+    setMultiBusy(true);
+    let ok = 0; const failed: string[] = [];
+    for (const file of files) {
+      // uploadDocument validates size + type per file and throws on a bad one, so
+      // one invalid file is reported but never blocks the others.
+      try { await uploadDocument(taskId, file, undefined, docType); ok += 1; }
+      catch (e) { failed.push(`${file.name}: ${(e as Error).message || 'upload failed'}`); }
+    }
+    invalidate();
+    setMultiBusy(false);
+    if (ok) toast.success(ok === 1 ? 'Document added as a draft — press Submit.' : `${ok} documents added as drafts — press Submit.`);
+    if (failed.length) toast.error(`${failed.length} file(s) skipped. ${failed.slice(0, 2).join(' · ')}${failed.length > 2 ? '…' : ''}`);
+  };
+
   // #113: submit all drafts for review.
   const submit = useMutation({
     mutationFn: () => submitDocuments(taskId),
@@ -91,7 +109,7 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
   return (
     <div className="space-y-5">
       {/* Uploader — both roles can add a document (staff on behalf of the client too). */}
-      <Uploader onPick={(file, docType) => upload.mutate({ file, docType })} busy={upload.isPending} />
+      <Uploader onPick={(files, docType) => uploadMany(files, docType)} busy={upload.isPending || multiBusy} />
 
       {/* #113: DRAFTS — uploaded but not yet submitted. Viewable + deletable here;
           one Submit sends them all for review. */}
@@ -178,14 +196,14 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
 // Common document types (#79) — free text is still allowed via the datalist.
 const COMMON_DOC_TYPES = ['PAN', 'TAN', 'Aadhaar', 'Address Proof', 'Photograph', 'Bank Statement', 'Rent Agreement', 'MOA', 'AOA', 'Board Resolution', 'Invoice', 'Other'];
 
-function Uploader({ onPick, busy }: { onPick: (f: File, docType?: string) => void; busy: boolean }) {
+function Uploader({ onPick, busy }: { onPick: (files: File[], docType?: string) => void; busy: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [docType, setDocType] = useState('');
   return (
     <div className="card p-4 flex items-end justify-between gap-3 flex-wrap">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-ink">Upload a document</p>
-        <p className="text-xs text-ink-muted mt-0.5 mb-2">PDF, JPG, PNG, DOCX or Excel · max 10MB</p>
+        <p className="text-xs text-ink-muted mt-0.5 mb-2">PDF, JPG, PNG, DOCX or Excel · max 10MB · select multiple files at once</p>
         <label className="block">
           <span className="text-xs text-ink-muted">Document type <span className="text-ink-faint">(e.g. PAN, TAN, Address proof)</span></span>
           <input
@@ -204,16 +222,17 @@ function Uploader({ onPick, busy }: { onPick: (f: File, docType?: string) => voi
         ref={inputRef}
         type="file"
         accept={ALLOWED_DOC_EXT}
+        multiple
         className="hidden"
         onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) { onPick(f, docType.trim() || undefined); setDocType(''); }
-          e.target.value = ''; // allow re-picking the same file
+          const files = Array.from(e.target.files ?? []);
+          if (files.length) { onPick(files, docType.trim() || undefined); setDocType(''); }
+          e.target.value = ''; // allow re-picking the same file(s)
         }}
       />
       <button onClick={() => inputRef.current?.click()} disabled={busy} className="btn-primary inline-flex items-center gap-1.5">
         {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-        {busy ? 'Uploading…' : 'Choose file'}
+        {busy ? 'Uploading…' : 'Choose file(s)'}
       </button>
     </div>
   );
