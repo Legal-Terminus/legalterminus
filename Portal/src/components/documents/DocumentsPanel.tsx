@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FileText, Upload, Download, Check, X, Loader2, AlertCircle,
-  CheckCircle2, Clock, Archive, Send, Trash2, FilePlus2,
+  CheckCircle2, Clock, Archive, Send, Trash2, FilePlus2, Building2,
 } from 'lucide-react';
 import {
   getDocuments, uploadDocument, openDocument, reviewDocument,
@@ -274,10 +274,19 @@ function DocumentCard({
                 secondary. Falls back to just the file name when no type was set. */}
             <p className="text-sm font-medium text-ink truncate">{doc.docType || doc.fileName}</p>
             {doc.docType && <p className="text-[11px] text-ink-faint truncate">{doc.fileName}</p>}
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className={`badge ${meta.cls} inline-flex items-center gap-1`}>
                 <meta.Icon className="w-3 h-3" /> {meta.label}
               </span>
+              {/* #125: who uploaded it — Legal Terminus (internal) or the Client. */}
+              {doc.uploaderRole && (
+                <span className={`badge inline-flex items-center gap-1 ${
+                  doc.uploaderRole === 'client' ? 'bg-blue-50 text-blue-700' : 'bg-brand-50 text-brand-700'
+                }`}>
+                  <Building2 className="w-3 h-3" />
+                  {doc.uploaderRole === 'client' ? 'Client' : 'Legal Terminus'}
+                </span>
+              )}
               {doc.stepNumber != null && <span className="text-[11px] text-ink-faint">Step {doc.stepNumber}</span>}
             </div>
           </div>

@@ -22,6 +22,8 @@ export interface TaskDocument {
   status: DocumentStatus;
   rejectionRemark: string | null;
   uploadedBy: string | null;
+  /** #125: who uploaded — labels the doc 'Legal Terminus' or 'Client'. */
+  uploaderRole?: 'client' | 'staff' | null;
   uploadedAt: string | null;
   reviewedBy: string | null;
   reviewedAt: string | null;

@@ -64,6 +64,7 @@ const serialize = (doc) => {
     status: d.status ?? 'awaiting_upload',
     rejectionRemark: d.rejectionRemark ?? null,
     uploadedBy: d.uploadedBy ?? null,
+    uploaderRole: d.uploaderRole ?? null, // #125: 'client' | 'staff'
     uploadedAt: toISO(d.uploadedAt),
     reviewedBy: d.reviewedBy ?? null,
     reviewedAt: toISO(d.reviewedAt),
@@ -153,6 +154,9 @@ export async function createSignedUploadUrl(req, res) {
       objectPath,
       status: 'awaiting_upload',
       uploadedBy: req.user.uid ?? null,
+      // #125: remember whether the CLIENT or the internal team uploaded this, so
+      // the Documents tab can label each file 'Legal Terminus' or 'Client'.
+      uploaderRole: req.user.role === 'client' ? 'client' : 'staff',
       createdAt: new Date(),
     });
 
