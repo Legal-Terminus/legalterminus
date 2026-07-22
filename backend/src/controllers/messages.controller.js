@@ -21,6 +21,8 @@ import { sanitizeRichText, richTextToPlain } from '../services/richText.service.
 
 const MESSAGES_SUB = 'messages';
 const MAX_BODY = 4000;
+// #123: how a staff sender is shown to the CLIENT in the discussion thread.
+const CLIENT_FACING_SENDER = 'Legal Terminus';
 
 const toISO = (ts) => {
   if (!ts) return null;
@@ -44,8 +46,8 @@ async function loadAuthorizedTask(req, res, taskId) {
 
 /**
  * GET /api/tasks/:taskId/messages — the thread, oldest first.
- * Clients receive ONLY client-visible messages, and staff authors are masked to
- * "Our team" (consistent with the client-safe activity feed, E12-S02).
+ * Clients receive ONLY client-visible messages, and staff authors are shown as the
+ * company name ("Legal Terminus") — never individual staff identities (#123).
  */
 export async function listMessages(req, res) {
   try {
@@ -76,7 +78,9 @@ export async function listMessages(req, res) {
       authorRole: m.authorRole ?? null,
       isMine: m.authorUid === req.user.uid,
       authorName: isClient
-        ? (m.authorUid === req.user.uid ? 'You' : 'Our team')
+        // #123 follow-up: the client sees the COMPANY name as the sender, not the
+        // generic "Our team". Their own messages still read "You".
+        ? (m.authorUid === req.user.uid ? 'You' : CLIENT_FACING_SENDER)
         : (names.get(m.authorUid) ?? (m.authorRole === 'client' ? (task.clientName || 'Client') : 'Team member')),
     }));
 
@@ -147,7 +151,7 @@ export async function createMessage(req, res) {
             organisation: task.organisation ?? '',
             serviceName: task.serviceName ?? '',
             message: richTextToPlain(body),
-            senderName: isClient ? (task.clientName || 'Your client') : 'Our team',
+            senderName: isClient ? (task.clientName || 'Your client') : CLIENT_FACING_SENDER,
           });
           if (rendered) {
             await sendTemplatedEmail({
