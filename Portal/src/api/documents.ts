@@ -123,17 +123,20 @@ export async function uploadDocument(
  * the browser never receives a Google Storage signed URL (nothing replayable).
  * Fetches the bytes as a blob with the auth header, then opens an object URL.
  */
-export async function openDocument(taskId: string, docId: string): Promise<void> {
+async function fetchDocumentBlob(taskId: string, docId: string): Promise<Blob> {
   const base = import.meta.env.VITE_API_BASE_URL ?? '';
   const headers: Record<string, string> = {};
   if (auth.currentUser) headers.Authorization = `Bearer ${await getIdToken(auth.currentUser)}`;
-
   const res = await fetch(`${base}/api/tasks/${taskId}/documents/${docId}/download`, { headers });
   if (!res.ok) {
-    const msg = await res.json().catch(() => ({ message: 'Failed to open document' }));
-    throw new Error((msg as { message?: string }).message ?? 'Failed to open document');
+    const msg = await res.json().catch(() => ({ message: 'Failed to fetch document' }));
+    throw new Error((msg as { message?: string }).message ?? 'Failed to fetch document');
   }
-  const blob = await res.blob();
+  return res.blob();
+}
+
+export async function openDocument(taskId: string, docId: string): Promise<void> {
+  const blob = await fetchDocumentBlob(taskId, docId);
   const url = URL.createObjectURL(blob);
   window.open(url, '_blank', 'noopener,noreferrer');
   // Revoke shortly after so the tab has time to load it.
@@ -170,3 +173,55 @@ export const deleteDocument = (taskId: string, docId: string) =>
   apiFetch<{ success: boolean; id: string }>(`/api/tasks/${taskId}/documents/${docId}`, {
     method: 'DELETE',
   });
+
+/**
+ * #127 — bulk download. Fetches the selected documents (each streamed through the
+ * authenticated backend, same as a single open — no signed URLs) and packages
+ * them into ONE .zip in the browser, then triggers a download. Client-side zipping
+ * keeps the backend unchanged and reuses the existing per-file auth.
+ */
+export async function downloadDocumentsZip(
+  taskId: string,
+  docs: { docId: string; fileName: string }[],
+  zipName = 'documents.zip',
+): Promise<{ ok: number; failed: string[] }> {
+  const JSZip = (await import('jszip')).default;
+  const zip = new JSZip();
+  const failed: string[] = [];
+  const used = new Set<string>();
+  let ok = 0;
+
+  for (const d of docs) {
+    try {
+      const blob = await fetchDocumentBlob(taskId, d.docId);
+      // De-dupe identical file names so nothing is silently overwritten in the zip.
+      let name = d.fileName || `${d.docId}`;
+      if (used.has(name)) {
+        const dot = name.lastIndexOf('.');
+        const base = dot > 0 ? name.slice(0, dot) : name;
+        const ext = dot > 0 ? name.slice(dot) : '';
+        let i = 2;
+        while (used.has(`${base} (${i})${ext}`)) i += 1;
+        name = `${base} (${i})${ext}`;
+      }
+      used.add(name);
+      zip.file(name, blob);
+      ok += 1;
+    } catch (e) {
+      failed.push(`${d.fileName}: ${(e as Error).message || 'failed'}`);
+    }
+  }
+
+  if (ok > 0) {
+    const content = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(content);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = zipName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }
+  return { ok, failed };
+}

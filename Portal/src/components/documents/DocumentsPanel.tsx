@@ -2,11 +2,11 @@ import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FileText, Upload, Download, Check, X, Loader2, AlertCircle,
-  CheckCircle2, Clock, Archive, Send, Trash2, FilePlus2, Building2,
+  CheckCircle2, Clock, Archive, Send, Trash2, FilePlus2, Building2, DownloadCloud, Square, CheckSquare,
 } from 'lucide-react';
 import {
   getDocuments, uploadDocument, openDocument, reviewDocument,
-  submitDocuments, deleteDocument,
+  submitDocuments, deleteDocument, downloadDocumentsZip,
   ALLOWED_DOC_EXT, type TaskDocument, type DocumentStatus,
 } from '../../api/documents';
 import { useToast } from '../common/toastContext';
@@ -28,6 +28,14 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
   // OWN document while it is still a draft. A submitted document is view/download
   // only. This mirrors the backend rule exactly, so the icon never lies.
   const canDelete = (d: TaskDocument) => isAdmin || (d.uploadedBy === myUid && d.status === 'draft');
+
+  // #127: bulk download — pick documents, get one zip. Only real (uploaded) docs
+  // can be downloaded, so selection is limited to those.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [zipping, setZipping] = useState(false);
+  const toggleSel = (id: string) => setSelected((prev) => {
+    const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next;
+  });
   const queryClient = useQueryClient();
   const { data: docs = [], isLoading, error } = useQuery({
     queryKey: ['documents', taskId],
@@ -95,6 +103,27 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
   const active = docs.filter((d) => d.status !== 'archived' && d.status !== 'draft');
   const archived = docs.filter((d) => d.status === 'archived');
 
+  // #127: only real (uploaded) documents are downloadable.
+  const downloadable = active.filter((d) => d.status !== 'awaiting_upload');
+  const allSelected = downloadable.length > 0 && downloadable.every((d) => selected.has(d.docId));
+  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(downloadable.map((d) => d.docId)));
+  const downloadSelected = async () => {
+    const picked = downloadable.filter((d) => selected.has(d.docId));
+    if (!picked.length) return;
+    setZipping(true);
+    try {
+      const { ok, failed } = await downloadDocumentsZip(
+        taskId, picked.map((d) => ({ docId: d.docId, fileName: d.fileName })),
+        'documents.zip',
+      );
+      if (ok) toast.success(`Downloaded ${ok} document${ok > 1 ? 's' : ''} as a zip.`);
+      if (failed.length) toast.error(`${failed.length} file(s) could not be added.`);
+      setSelected(new Set());
+    } catch (e) {
+      toast.error((e as Error).message || 'Could not build the download.');
+    } finally { setZipping(false); }
+  };
+
   if (isLoading) {
     return (
       <div className="card p-12 flex items-center justify-center text-ink-faint">
@@ -157,6 +186,28 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
         </div>
       ) : (
         <div className="space-y-2.5">
+          {/* #127: bulk-download toolbar — Select all + Download selected as a zip. */}
+          {downloadable.length > 0 && (
+            <div className="flex items-center justify-between gap-3 px-1">
+              <button
+                onClick={toggleAll}
+                className="inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink"
+              >
+                {allSelected ? <CheckSquare className="w-4 h-4 text-brand-600" /> : <Square className="w-4 h-4" />}
+                Select all
+              </button>
+              {selected.size > 0 && (
+                <button
+                  onClick={downloadSelected}
+                  disabled={zipping}
+                  className="btn-secondary py-1.5 px-3 text-xs inline-flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {zipping ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <DownloadCloud className="w-3.5 h-3.5" />}
+                  Download selected ({selected.size})
+                </button>
+              )}
+            </div>
+          )}
           {active.map((d) => (
             <DocumentCard
               key={d.docId}
@@ -170,6 +221,10 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
               // gets no delete on a submitted document (view/download only).
               onDelete={canDelete(d) ? () => askDelete(d) : undefined}
               deleting={remove.isPending}
+              // #127: selectable for bulk download (only uploaded docs).
+              selectable={d.status !== 'awaiting_upload'}
+              selected={selected.has(d.docId)}
+              onToggleSelect={() => toggleSel(d.docId)}
             />
           ))}
         </div>
@@ -251,6 +306,7 @@ const STATUS_META: Record<DocumentStatus, { label: string; cls: string; Icon: ty
 
 function DocumentCard({
   doc, taskId, isStaff, onChanged, archived, onReupload, reuploading, onDelete, deleting,
+  selectable, selected, onToggleSelect,
 }: {
   doc: TaskDocument;
   taskId: string;
@@ -262,6 +318,10 @@ function DocumentCard({
   /** #113: when provided, a Delete action is shown (confirmed by the caller). */
   onDelete?: () => void;
   deleting?: boolean;
+  /** #127: bulk-download selection. */
+  selectable?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }) {
   const toast = useToast();
   const reuploadRef = useRef<HTMLInputElement>(null);
@@ -282,9 +342,19 @@ function DocumentCard({
   });
 
   return (
-    <div className={`card p-4 ${archived ? 'opacity-70' : ''}`}>
+    <div className={`card p-4 ${archived ? 'opacity-70' : ''} ${selected ? 'ring-1 ring-brand-300' : ''}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
+          {/* #127: selection checkbox for bulk download. */}
+          {selectable && (
+            <input
+              type="checkbox"
+              className="h-4 w-4 mt-0.5 shrink-0"
+              checked={!!selected}
+              onChange={onToggleSelect}
+              aria-label={`Select ${doc.fileName}`}
+            />
+          )}
           <span className="w-9 h-9 rounded-lg bg-surface-soft flex items-center justify-center shrink-0">
             <FileText className="w-4 h-4 text-ink-muted" />
           </span>
