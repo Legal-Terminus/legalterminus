@@ -128,6 +128,52 @@ test('#96: completed steps hide behind a "Show completed (N)" toggle in the step
   } finally { await deleteMatter(taskId); }
 });
 
+test('#120/#55: steps render as ONE continuous timeline numbered 1..N (no stage gaps like 3→37)', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    // Advance a few steps so the matter is mid-flow (creation auto-jumps to step 4
+    // via the payment gate — exactly the case that used to display "1,2,3,37…").
+    await advanceUntil(taskId, (s) => s.stepNumber >= 5);
+
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+
+    // Reveal completed rows so the WHOLE timeline is visible.
+    const showCompleted = adminPage.getByRole('button', { name: /show completed \(\d+\)/i });
+    if (await showCompleted.count()) await showCompleted.first().click();
+
+    // Read the leading "N." from each step row TITLE (the first paragraph in a row
+    // — description/status paragraphs never start with "N."). The set of numbers
+    // must be a contiguous 1..N with no gaps — the whole point of #120/#55 (before
+    // the fix a single stage showed 1,2,3,37,38,39).
+    const titles = adminPage.locator('div[title$=" step"] > button > div > p.text-sm').filter({ hasText: /^\d+\.\s/ });
+    await expect(titles.first()).toBeVisible({ timeout: 15_000 });
+    const texts = await titles.allInnerTexts();
+    const nums = [...new Set(texts.map((t) => parseInt(t.match(/^(\d+)\./)?.[1] ?? '0', 10)).filter((n) => n > 0))]
+      .sort((a, b) => a - b);
+    expect(nums.length).toBeGreaterThan(3);
+    // Contiguous from 1, no jumps.
+    expect(nums).toEqual(Array.from({ length: nums.length }, (_, i) => i + 1));
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#120/#55: the current-step header shows a real position (never "· 0")', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await advanceUntil(taskId, (s) => s.stepNumber >= 5);
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+
+    // The hero subtitle reads "Current step · N" — N must be a real 1-based
+    // position, never 0 (the empty-`steps` regression showed "· 0").
+    const hero = adminPage.getByText(/Current step · \d+/i).first();
+    await expect(hero).toBeVisible({ timeout: 15_000 });
+    const label = await hero.innerText();
+    const n = parseInt(label.match(/·\s*(\d+)/)?.[1] ?? '0', 10);
+    expect(n).toBeGreaterThan(0);
+  } finally { await deleteMatter(taskId); }
+});
+
 test('#101: EVERY step row shows an owner colour bar (incl. pending rows)', async ({ adminPage }) => {
   const taskId = await createMatter();
   try {

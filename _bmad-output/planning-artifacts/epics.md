@@ -3350,6 +3350,34 @@ not new engine code.
 
 ---
 
+### #120 + #55 — Single continuous step timeline; steps numbered 1..N (2026-07-22)
+- **#120** (single continuous timeline) and **#55** (step serial numbers appear out
+  of order) turned out to be the SAME problem. The matter step list was scoped per
+  STAGE, so within one stage it showed the steps' global positions — e.g. Onboarding
+  displayed `1, 2, 3, 37, 38, 39`, which reads as broken numbering (#55). #120 asked
+  for one sequential timeline with no stage-wise grouping.
+- **Fix:** the step list is now ONE continuous vertical timeline of every step in
+  order, regardless of the Stages rail state — no per-stage slicing. Numbers are the
+  1-based display position across the whole (gap-free) list, so a single view reads
+  `1, 2, 3, 4, 5, 6 …` with no jumps. A connecting progress line runs behind the row
+  icons: solid green through completed steps, brand ring on the current step, dotted
+  grey ahead (matches the #120 design mockup).
+- **Stages rail KEPT** (stakeholder decision) purely as context + jump-nav: it still
+  shows per-stage "x/y done", and "Jump to stage…" now scrolls the timeline to that
+  stage's first step instead of filtering the list. Phase data is untouched, so the
+  SLA report and workflow editor are unaffected.
+- **Second bug found from a screenshot:** a matter whose step machine never
+  materialised (#94 creation-skips-machine) arrived with an EMPTY `steps` array but a
+  valid `currentStepNumber` → the UI showed "CURRENT STEP · 0", every stage "0/0
+  done", and "All steps here are completed". Fixed by falling back to the workflow
+  DEFINITION when `steps` is empty: render all defined steps with status derived from
+  the matter's position (before current = completed, at = active, after = pending).
+  This also repairs the "Step 0 of N" header.
+- e2e (`matter-layout.spec.ts`): the timeline renders a contiguous `1..N` (asserts no
+  `3→37` gap); the current-step header shows a real 1-based position, never "· 0".
+
+---
+
 ### #131 — Document version history: keep versions visible until matter completes (2026-07-22)
 - Chosen **Option 2**: during a matter, EVERY document version — approved,
   re-submitted, rejected, pending — stays visible in the main list (in chronological

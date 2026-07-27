@@ -263,17 +263,21 @@ export default function TaskDetailPage() {
     );
   }
 
-  const total = task.totalSteps ?? task.steps?.length ?? 0;
   const completed = task.status === 'completed';
+  const stepDefs = definition?.steps ?? [];
   // #66: show the current step by its 1,2,3… display POSITION, not the raw
   // stepNumber (which can have gaps from deleted steps). Same position rule the
   // step list uses (displayNumberOf, #55) — just applied to the subtitle too.
-  const orderedNums = [...(task.steps ?? [])].sort((a, b) => a.stepNumber - b.stepNumber).map((s) => s.stepNumber);
+  // Fall back to the DEFINITION's steps when the matter has no materialised
+  // `steps` (a #94 creation-skipped-machine matter) so the count/position never
+  // collapse to 0 ("Step 0 of 0").
+  const numberSource = (task.steps && task.steps.length > 0) ? task.steps : stepDefs;
+  const total = task.totalSteps ?? numberSource.length ?? 0;
+  const orderedNums = [...numberSource].sort((a, b) => a.stepNumber - b.stepNumber).map((s) => s.stepNumber);
   const currentDisplayNum = orderedNums.indexOf(task.currentStepNumber) + 1;
   const progressLabel = completed
     ? `Completed · ${total} of ${total}`
     : `Step ${currentDisplayNum > 0 ? currentDisplayNum : task.currentStepNumber} of ${total}`;
-  const stepDefs = definition?.steps ?? [];
   const currentDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber);
 
   const TABS: { key: TabKey; label: string; icon: typeof ListChecks }[] = [
@@ -731,7 +735,28 @@ function StepsTab({
   onOpenDoc: (docId: string) => void;
   onReopen?: (stepNumber: number, stepTitle: string) => void; // #116 admin-only
 }) {
-  const steps = task.steps ?? [];
+  // A matter created before its step machine materialised (see #94) can arrive
+  // with an EMPTY `steps` array while still having a valid `currentStepNumber`.
+  // That produced "CURRENT STEP · 0", every stage "0/0 done", and an empty step
+  // list. When `steps` is missing, synthesise the timeline from the workflow
+  // DEFINITION instead: every defined step, with a status derived from the
+  // matter's position — before current = completed, at current = active, after =
+  // pending. The synthetic rows carry no per-step assignee/remark (there are no
+  // instance records), which is correct — there's nothing recorded yet.
+  const defForSteps = definition?.steps ?? [];
+  const steps: TaskStep[] = (task.steps && task.steps.length > 0)
+    ? task.steps
+    : [...defForSteps]
+        .sort((a, b) => a.stepNumber - b.stepNumber)
+        .map((d) => ({
+          stepNumber: d.stepNumber,
+          title: d.title,
+          status: task.status === 'completed' || d.stepNumber < task.currentStepNumber
+            ? 'completed'
+            : d.stepNumber === task.currentStepNumber
+              ? 'active'
+              : 'pending',
+        } as TaskStep));
   // #55: display steps in clean serial order (1,2,3,4…). The stored `stepNumber`
   // is the internal identity and CAN have gaps — e.g. for clients, steps the
   // workflow hides (clientVisible:false) are filtered out server-side, leaving
@@ -821,17 +846,11 @@ function StepsTab({
     setSyncedActive(activeIndex);
     setSelectedStage(activeIndex);
   }
-  const shownPhaseId = stages[selectedStage]?.id;
-  // Steps belonging to the shown stage (for the step list in the pane).
-  const stageSteps = hasPhases
-    ? steps.filter((s) => phaseIdOf.get(s.stepNumber) === shownPhaseId)
-    : steps;
-
   // #72: collapsible + drag-resizable Stages and Activity rails (persisted).
-  // #119/#120: the Stages rail starts COLLAPSED so users land on the continuous
-  // all-steps timeline (the collapsed pane shows every step grouped by stage with
-  // a "Jump to stage…" picker) instead of one stage at a time. Expanding the rail
-  // switches back to per-stage focus — the choice is the user's and is persisted.
+  // #119/#120: the Stages rail starts COLLAPSED. The step list is now a single
+  // continuous timeline regardless of rail state (#120), so the rail is purely a
+  // context + jump-to-stage aid — expanding it highlights a stage and its "Jump
+  // to stage…" scrolls the timeline there; it no longer slices the list.
   const stagesRail = useRail('matterLayout:stages', { initial: 210, min: 150, max: 340, defaultCollapsed: true });
   const activityRail = useRail('matterLayout:activity', { initial: 320, min: 240, max: 520 });
 
@@ -845,10 +864,6 @@ function StepsTab({
     const def = stepDefs.find((d) => d.stepNumber === stepNumber);
     return def ? deriveOwnerType(def) : 'team';
   };
-  // #102: when the Stages rail is COLLAPSED, the pane becomes a self-sufficient
-  // full timeline (all stages, grouped) with a stage jump-dropdown — otherwise the
-  // list would be stranded on one stage with no navigation left.
-  const railCollapsed = stagesRail.collapsed && hasPhases;
 
   // The HERO panel — the one dominant zone: action (left) + meta (right) inside a
   // single elevated, bordered container, so the rail clearly belongs to the step.
@@ -883,8 +898,11 @@ function StepsTab({
       <ActivityThreadCard events={events} definition={definition} currentStep={task.currentStepNumber} flush />
     </Section>
   );
-  // Shared row renderer — used by both the single-stage and grouped views.
-  const renderStepRow = (step: TaskStep) => (
+  // #120: shared row renderer. `pos` tells the row where it sits in the VISIBLE
+  // timeline so it can draw the connecting line (a segment above and below the
+  // node): green when the adjoining step is completed, dotted-grey when it's still
+  // ahead. `first`/`last` trim the line at the ends so it doesn't dangle.
+  const renderStepRow = (step: TaskStep, pos: { first: boolean; last: boolean; prevDone: boolean }) => (
     <ExpandableStepRow
       key={step.stepNumber}
       step={step}
@@ -898,19 +916,29 @@ function StepsTab({
       attachments={documents.filter((d) => d.stepNumber === step.stepNumber)}
       onOpenDoc={onOpenDoc}
       onReopen={onReopen}
+      timelineFirst={pos.first}
+      timelineLast={pos.last}
+      timelinePrevDone={pos.prevDone}
     />
   );
 
   // #96: split a step list into (visible = active/pending) + (completed/skipped),
   // rendering the completed set behind a "Show completed (N)" toggle. Ascending
   // order is preserved — the completed rows sit in their normal position once shown.
+  // #120: rendered as a continuous vertical timeline (see renderStepRow) — the
+  // connecting line is computed from adjacency within the VISIBLE list so hiding
+  // completed steps never leaves a broken/dangling segment.
   const renderStepList = (list: TaskStep[]) => {
     const doneCount = list.filter(isDoneStatus).length;
     const visible = showCompleted ? list : list.filter((s) => !isDoneStatus(s));
     return (
       <>
         <div className="card divide-y divide-hairline-soft">
-          {visible.map(renderStepRow)}
+          {visible.map((step, i) => renderStepRow(step, {
+            first: i === 0,
+            last: i === visible.length - 1,
+            prevDone: i > 0 && isDoneStatus(visible[i - 1]),
+          }))}
           {visible.length === 0 && (
             <p className="px-5 py-4 text-sm text-ink-muted">All steps here are completed.</p>
           )}
@@ -928,34 +956,29 @@ function StepsTab({
     );
   };
 
-  // #102: when the rail is collapsed, render EVERY stage's steps grouped with
-  // small stage subheaders (self-sufficient full timeline). Otherwise the classic
-  // single-stage view. Completed steps still collapse via #96.
-  const stepsSection = railCollapsed ? (
+  // #120/#55: the step list is ONE continuous vertical timeline — every step in
+  // order, numbered 1..N (a gap-free display position across the whole matter, so
+  // no "3 → 37" jumps), with a connecting progress line that runs green through
+  // completed steps and dotted-grey ahead. Stage grouping was removed from this
+  // list (the stakeholder asked for a single sequential timeline, not stage-wise
+  // sections); the Stages rail is kept purely as jump-nav + per-stage progress.
+  // A "Jump to stage…" picker scrolls the timeline to the first step of a stage.
+  const stepsSection = (
     <Section
       title="All steps"
       icon={<ListChecks className="w-3.5 h-3.5" />}
-      action={<StageJumpDropdown stages={stages} onJump={(i) => { setSelectedStage(i); document.getElementById(`stage-group-${stages[i]?.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} />}
+      action={hasPhases ? (
+        <StageJumpDropdown
+          stages={stages}
+          onJump={(i) => {
+            setSelectedStage(i);
+            const first = steps.find((s) => phaseIdOf.get(s.stepNumber) === stages[i]?.id);
+            if (first != null) document.getElementById(`step-row-${first.stepNumber}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }}
+        />
+      ) : undefined}
     >
-      <div className="space-y-5">
-        {stages.map((st) => {
-          const group = steps.filter((s) => phaseIdOf.get(s.stepNumber) === st.id);
-          if (group.length === 0) return null;
-          const { done, total } = countsFor(st.id);
-          return (
-            <div key={st.id} id={`stage-group-${st.id}`}>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">
-                {st.name} · {done}/{total}
-              </p>
-              {renderStepList(group)}
-            </div>
-          );
-        })}
-      </div>
-    </Section>
-  ) : (
-    <Section title={hasPhases ? `${stages[selectedStage]?.name} · steps` : 'All steps'} icon={<ListChecks className="w-3.5 h-3.5" />}>
-      {renderStepList(stageSteps)}
+      {renderStepList(steps)}
     </Section>
   );
 
@@ -1987,7 +2010,7 @@ const OWNER_EDGE: Record<'team' | 'client' | 'govt', { dot: string; label: strin
   govt:   { dot: 'bg-violet-500', label: 'Registrar' },
 };
 
-function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCurrent, owner, ownerLabel, comments = [], attachments = [], onOpenDoc, onReopen }: {
+function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCurrent, owner, ownerLabel, comments = [], attachments = [], onOpenDoc, onReopen, timelineFirst = false, timelineLast = false, timelinePrevDone = false }: {
   step: TaskStep;
   displayNumber: number;
   description?: string;
@@ -1999,6 +2022,9 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
   attachments?: TaskDocument[];
   onOpenDoc?: (docId: string) => void;
   onReopen?: (stepNumber: number, stepTitle: string) => void; // #116 admin-only, completed steps
+  timelineFirst?: boolean;   // #120: this is the first visible row (no line above)
+  timelineLast?: boolean;    // #120: this is the last visible row (no line below)
+  timelinePrevDone?: boolean; // #120: the previous visible step is completed → line above is green
 }) {
   const s = STATUS[step.status] ?? STATUS.pending;
   const skipped = step.status === 'skipped';
@@ -2021,8 +2047,16 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
   // `> :not([hidden]) ~ :not([hidden])` selector), which silently wiped a
   // border-left edge on all rows but the first. A bg bar can't be overridden.
   const edge = owner ? OWNER_EDGE[owner] : null;
+  const isDone = step.status === 'completed';
+  // #120: the vertical timeline connector runs BEHIND the node icon. The segment
+  // ABOVE is solid green when the previous visible step is done; the segment BELOW
+  // is solid green when THIS step is done; anything not yet reached is a dotted
+  // grey line. Ends are trimmed so the line never dangles past the first/last row.
+  const lineCls = (green: boolean) =>
+    green ? 'bg-emerald-500' : 'border-l-2 border-dotted border-hairline';
   return (
     <div
+      id={`step-row-${step.stepNumber}`}
       className={`relative ${isCurrent ? 'bg-surface-soft' : ''}`}
       title={edge ? `${ownerLabel ?? edge.label} step` : undefined}
     >
@@ -2031,7 +2065,16 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
         onClick={() => expandable && setOpen((v) => !v)}
         className={`w-full flex items-start gap-3 px-5 py-3 text-left ${expandable ? 'hover:bg-surface-soft/60' : 'cursor-default'}`}
       >
-        <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${step.status === 'completed' ? 'text-emerald-600' : skipped ? 'text-ink-faint' : isCurrent ? 'text-brand-600' : 'text-ink-faint'}`} />
+        {/* #120: timeline node — icon with connecting line segments above/below. */}
+        <span className="relative shrink-0 mt-0.5 w-4 self-stretch flex justify-center" aria-hidden="true">
+          {!timelineFirst && (
+            <span className={`absolute left-1/2 -translate-x-1/2 top-0 h-[calc(50%-9px)] w-0.5 ${lineCls(timelinePrevDone)}`} />
+          )}
+          {!timelineLast && (
+            <span className={`absolute left-1/2 -translate-x-1/2 bottom-0 top-[calc(50%+9px)] w-0.5 ${lineCls(isDone)}`} />
+          )}
+          <Icon className={`w-4 h-4 relative z-10 bg-surface rounded-full ${isDone ? 'text-emerald-600' : skipped ? 'text-ink-faint' : isCurrent ? 'text-brand-600' : 'text-ink-faint'}`} />
+        </span>
         <div className="min-w-0 flex-1">
           {/* #69: completed steps get a subtle line-through on the TITLE only (kept
               muted, decoration-1) so "done" reads at a glance without disrupting the
