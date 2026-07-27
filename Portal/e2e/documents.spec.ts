@@ -56,14 +56,17 @@ test.describe.serial('E-05 document cycle', () => {
     await expect(clientPage.getByText('Pending review').first()).toBeVisible();
   });
 
-  test('staff approves; the reviewed old version is archived', async ({ adminPage }) => {
+  // #131: during a matter, EVERY version stays visible — re-uploading no longer
+  // archives the prior (already-reviewed) version. Approving the re-uploaded copy
+  // therefore leaves the earlier rejected version STILL VISIBLE (not in history);
+  // superseded versions collapse into Version History only when the matter
+  // completes (covered by doc-versions.spec.ts + a finalize unit check).
+  test('#131: approving keeps the earlier reviewed version visible (not archived mid-matter)', async ({ adminPage }) => {
     await openDocumentsTab(adminPage, taskId);
     await adminPage.getByRole('button', { name: 'Approve' }).first().click();
     await expect(adminPage.getByText('Approved').first()).toBeVisible();
-    const history = adminPage.getByText(/version history/i);
-    await expect(history).toBeVisible();
-    await history.click();
-    await expect(adminPage.getByText('Archived').first()).toBeVisible();
+    // Nothing has been archived yet — no Version History section appears.
+    await expect(adminPage.getByText(/version history/i)).toHaveCount(0);
   });
 });
 
