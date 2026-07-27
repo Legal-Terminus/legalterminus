@@ -24,6 +24,9 @@ export interface TaskDocument {
   uploadedBy: string | null;
   /** #125: who uploaded — labels the doc 'Legal Terminus' or 'Client'. */
   uploaderRole?: 'client' | 'staff' | null;
+  /** #125: whether the client can see this doc. Staff uploads default internal-only;
+   *  client uploads default visible. Staff toggle this via setDocumentVisibility. */
+  clientVisible?: boolean;
   uploadedAt: string | null;
   reviewedBy: string | null;
   reviewedAt: string | null;
@@ -163,6 +166,15 @@ export const submitDocuments = (taskId: string, stepNumber?: number | null) =>
   apiFetch<{ success: boolean; submitted: number }>(`/api/tasks/${taskId}/documents/submit`, {
     method: 'POST',
     body: JSON.stringify(stepNumber == null ? {} : { stepNumber }),
+  });
+
+/**
+ * #125: staff share/hide a document from the client. Staff-only on the server.
+ */
+export const setDocumentVisibility = (taskId: string, docId: string, clientVisible: boolean) =>
+  apiFetch<{ success: boolean; document: TaskDocument }>(`/api/tasks/${taskId}/documents/${docId}/visibility`, {
+    method: 'PATCH',
+    body: JSON.stringify({ clientVisible }),
   });
 
 /**

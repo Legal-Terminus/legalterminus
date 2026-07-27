@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema } from '../schemas/task.schema.js';
+import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema } from '../schemas/task.schema.js';
 import { listTasks, getTask, createTask, patchTask, updatePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep } from '../controllers/tasks.controller.js';
-import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument } from '../controllers/documents.controller.js';
+import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument, setDocumentVisibility } from '../controllers/documents.controller.js';
 import { listMessages, createMessage } from '../controllers/messages.controller.js';
 import { listReminders, sendReminder } from '../controllers/reminders.controller.js';
 
@@ -53,6 +53,8 @@ router.post('/:taskId/documents/submit',               submitDocuments);
 router.post('/:taskId/documents/:docId/confirm',       validate(confirmUploadSchema), confirmUpload);
 router.get('/:taskId/documents/:docId/download',       downloadDocument);
 router.post('/:taskId/documents/:docId/review',        requireRole('admin', 'manager', 'team_member'), validate(reviewDocumentSchema), reviewDocument);
+// #125: internal team toggles whether a document is shared with the client.
+router.patch('/:taskId/documents/:docId/visibility',   requireRole('admin', 'manager', 'team_member'), validate(documentVisibilitySchema), setDocumentVisibility);
 router.delete('/:taskId/documents/:docId',             deleteDocument);
 
 router.delete('/:taskId',                    requireRole('admin'), deleteTask);

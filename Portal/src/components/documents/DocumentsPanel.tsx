@@ -2,11 +2,11 @@ import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FileText, Upload, Download, Check, X, Loader2, AlertCircle,
-  CheckCircle2, Clock, Archive, Send, Trash2, FilePlus2, Building2, DownloadCloud, Square, CheckSquare,
+  CheckCircle2, Clock, Archive, Send, Trash2, FilePlus2, Building2, DownloadCloud, Square, CheckSquare, Eye, EyeOff,
 } from 'lucide-react';
 import {
   getDocuments, uploadDocument, openDocument, reviewDocument,
-  submitDocuments, deleteDocument, downloadDocumentsZip,
+  submitDocuments, deleteDocument, downloadDocumentsZip, setDocumentVisibility,
   ALLOWED_DOC_EXT, type TaskDocument, type DocumentStatus,
 } from '../../api/documents';
 import { useToast } from '../common/toastContext';
@@ -342,6 +342,13 @@ function DocumentCard({
     onError: (e: Error) => toast.error(e.message || 'Could not update the document.'),
   });
 
+  // #125: internal team shares/hides a document from the client.
+  const visibility = useMutation({
+    mutationFn: (next: boolean) => setDocumentVisibility(taskId, doc.docId, next),
+    onSuccess: (_r, next) => { onChanged(); toast.success(next ? 'Shared with the client.' : 'Hidden from the client — internal only.'); },
+    onError: (e: Error) => toast.error(e.message || 'Could not change visibility.'),
+  });
+
   const open = useMutation({
     mutationFn: () => openDocument(taskId, doc.docId),
     onError: (e: Error) => toast.error(e.message || 'Could not open the document.'),
@@ -382,12 +389,38 @@ function DocumentCard({
                   {doc.uploaderRole === 'client' ? 'Client' : 'Legal Terminus'}
                 </span>
               )}
+              {/* #125: STAFF-ONLY sharing state, so the team can see at a glance
+                  which documents the client can view. Hidden from the client (they
+                  only ever see docs already shared with them). Not shown on drafts
+                  (nothing to share yet) or archived versions. */}
+              {isStaff && !archived && doc.status !== 'draft' && doc.status !== 'awaiting_upload' && (
+                <span className={`badge inline-flex items-center gap-1 ${
+                  doc.clientVisible ? 'bg-emerald-50 text-emerald-700' : 'bg-surface-soft text-ink-muted'
+                }`}>
+                  {doc.clientVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                  {doc.clientVisible ? 'Shared with client' : 'Internal only'}
+                </span>
+              )}
               {doc.stepNumber != null && <span className="text-[11px] text-ink-faint">Step {doc.stepNumber}</span>}
             </div>
           </div>
         </div>
         {/* #113: View (open) + Delete actions. Upload is the panel's own control. */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* #125: staff share/hide toggle. Only meaningful once a doc exists and is
+              past draft; never on archived versions. */}
+          {isStaff && !archived && doc.status !== 'draft' && doc.status !== 'awaiting_upload' && (
+            <button
+              onClick={() => visibility.mutate(!doc.clientVisible)}
+              disabled={visibility.isPending}
+              title={doc.clientVisible ? 'Hide from the client (internal only)' : 'Share with the client'}
+              className="btn-secondary py-1.5 px-3 text-xs inline-flex items-center gap-1.5 disabled:opacity-50"
+            >
+              {visibility.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                : doc.clientVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              {doc.clientVisible ? 'Make internal' : 'Share'}
+            </button>
+          )}
           {doc.status !== 'awaiting_upload' && (
             <button
               onClick={() => open.mutate()}

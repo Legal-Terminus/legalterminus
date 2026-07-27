@@ -65,6 +65,9 @@ const serialize = (doc) => {
     rejectionRemark: d.rejectionRemark ?? null,
     uploadedBy: d.uploadedBy ?? null,
     uploaderRole: d.uploaderRole ?? null, // #125: 'client' | 'staff'
+    // #125: whether the client can see this doc. Defaults by uploader (client
+    // uploads visible, staff uploads internal) when the field is absent (legacy).
+    clientVisible: d.clientVisible ?? (d.uploaderRole === 'client'),
     uploadedAt: toISO(d.uploadedAt),
     reviewedBy: d.reviewedBy ?? null,
     reviewedAt: toISO(d.reviewedAt),
@@ -101,12 +104,20 @@ export async function listDocuments(req, res) {
       .map(serialize)
       .sort((a, b) => (b.uploadedAt ?? '').localeCompare(a.uploadedAt ?? ''));
 
-    // #112: a DRAFT is not yet submitted — it must stay internal. The client only
-    // sees a document once it has been submitted for review (pending_review and
-    // beyond). `awaiting_upload` (no bytes yet) is hidden from everyone. This also
-    // means a staff member's in-progress draft never leaks to the client.
+    // What a CLIENT may see (#112 + #125):
+    //  • Their OWN uploads — any status (draft included) so they can review and
+    //    Submit them; `awaiting_upload` (no bytes yet) is the only exception.
+    //  • A doc someone else uploaded ONLY once it is (a) submitted for review or
+    //    beyond AND (b) marked client-visible. Staff uploads are internal-only by
+    //    default (#125) and appear to the client only after staff shares them.
+    // Staff (any non-client role) see everything.
     if (req.user.role === 'client') {
-      docs = docs.filter((d) => d.status !== 'draft' && d.status !== 'awaiting_upload');
+      docs = docs.filter((d) => {
+        if (d.status === 'awaiting_upload') return false;
+        if (d.uploadedBy === req.user.uid) return true;      // own upload
+        const submitted = d.status !== 'draft';
+        return submitted && d.clientVisible === true;         // shared by staff
+      });
     }
 
     res.json({ data: docs });
@@ -157,6 +168,11 @@ export async function createSignedUploadUrl(req, res) {
       // #125: remember whether the CLIENT or the internal team uploaded this, so
       // the Documents tab can label each file 'Legal Terminus' or 'Client'.
       uploaderRole: req.user.role === 'client' ? 'client' : 'staff',
+      // #125: default client visibility depends on WHO uploaded. A client's own
+      // upload is theirs to see and submit → visible. A staff upload is internal
+      // by default (a working document) → the internal team explicitly SHARES it
+      // with the client via the per-document toggle when it's ready.
+      clientVisible: req.user.role === 'client',
       createdAt: new Date(),
     });
 
@@ -291,6 +307,36 @@ export async function submitDocuments(req, res) {
   } catch (err) {
     logger.error({ err }, 'submitDocuments error:');
     res.status(500).json({ message: 'Failed to submit documents' });
+  }
+}
+
+/**
+ * #125 — PATCH /api/tasks/:taskId/documents/:docId/visibility
+ * Body: { clientVisible: boolean }. Internal team (staff only) controls whether a
+ * document is shared with the client or kept internal-only. A client cannot change
+ * visibility (and cannot hide their own upload from themselves). Returns the
+ * updated document.
+ */
+export async function setDocumentVisibility(req, res) {
+  try {
+    const { taskId, docId } = req.params;
+    const { clientVisible } = req.body; // shape validated by schema (boolean)
+
+    // Staff-only: a client may never toggle sharing. clientWrites:false makes
+    // loadAuthorizedTask reject a client with 403.
+    const task = await loadAuthorizedTask(req, res, taskId, { clientWrites: false });
+    if (!task) return;
+
+    const ref = docsCol(taskId).doc(docId);
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Document not found' });
+
+    await ref.set({ clientVisible: !!clientVisible }, { merge: true });
+    const updated = await ref.get();
+    res.json({ success: true, document: serialize(updated) });
+  } catch (err) {
+    logger.error({ err }, 'setDocumentVisibility error:');
+    res.status(500).json({ message: 'Failed to update document visibility' });
   }
 }
 

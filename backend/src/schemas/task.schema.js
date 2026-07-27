@@ -118,6 +118,11 @@ export const reviewDocumentSchema = z.object({
   path: ['remark'],
 });
 
+// #125: PATCH document visibility — staff share/hide a doc from the client.
+export const documentVisibilitySchema = z.object({
+  clientVisible: z.boolean(),
+}).strict();
+
 // GET /api/tasks list filters (+ pagination merged in route).
 export const taskListQuerySchema = z.object({
   status: z.enum([
