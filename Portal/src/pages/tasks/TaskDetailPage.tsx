@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft, CheckCircle2, Circle, CircleSlash, Loader2, PlayCircle,
+  ArrowLeft, CheckCircle2, CircleSlash, Loader2, PlayCircle,
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase, Eye, EyeOff,
   ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw, Check,
@@ -810,6 +810,14 @@ function StepsTab({
     ? phaseProgress(definition!, task.currentStepNumber, stepStatuses)
     : { phases: [], activeIndex: -1 };
   const phaseIdOf = new Map((definition?.steps ?? []).map((s) => [s.stepNumber, s.phaseId ?? null]));
+  // #120: the step's stage NAME — shown as a small tag on each timeline row so it's
+  // clear which stage a step belongs to (the list is one flat timeline, no group
+  // headers). Falls back to null when the workflow has no phases.
+  const stageNameById = new Map(stages.map((st) => [st.id, st.name]));
+  const stageNameOf = (stepNumber: number): string | null => {
+    const pid = phaseIdOf.get(stepNumber);
+    return pid ? stageNameById.get(pid) ?? null : null;
+  };
   // done/total counts per phase for the rail sub-labels.
   const countsFor = (phaseId: string) => {
     const nums = steps.filter((s) => phaseIdOf.get(s.stepNumber) === phaseId);
@@ -898,15 +906,15 @@ function StepsTab({
       <ActivityThreadCard events={events} definition={definition} currentStep={task.currentStepNumber} flush />
     </Section>
   );
-  // #120: shared row renderer. `pos` tells the row where it sits in the VISIBLE
-  // timeline so it can draw the connecting line (a segment above and below the
-  // node): green when the adjoining step is completed, dotted-grey when it's still
-  // ahead. `first`/`last` trim the line at the ends so it doesn't dangle.
-  const renderStepRow = (step: TaskStep, pos: { first: boolean; last: boolean; prevDone: boolean }) => (
+  // #120: shared row renderer. Each row is a prominent status node (filled tick /
+  // current ring / hollow pending) plus a small STAGE tag so it's clear which stage
+  // the step belongs to in the single flat timeline.
+  const renderStepRow = (step: TaskStep) => (
     <ExpandableStepRow
       key={step.stepNumber}
       step={step}
       displayNumber={displayNumberOf(step.stepNumber)}
+      stageName={stageNameOf(step.stepNumber)}
       description={descFor(step.stepNumber)}
       statusLabel={statusFor(step.stepNumber)}
       isCurrent={step.stepNumber === task.currentStepNumber && !completed}
@@ -916,29 +924,19 @@ function StepsTab({
       attachments={documents.filter((d) => d.stepNumber === step.stepNumber)}
       onOpenDoc={onOpenDoc}
       onReopen={onReopen}
-      timelineFirst={pos.first}
-      timelineLast={pos.last}
-      timelinePrevDone={pos.prevDone}
     />
   );
 
   // #96: split a step list into (visible = active/pending) + (completed/skipped),
   // rendering the completed set behind a "Show completed (N)" toggle. Ascending
   // order is preserved — the completed rows sit in their normal position once shown.
-  // #120: rendered as a continuous vertical timeline (see renderStepRow) — the
-  // connecting line is computed from adjacency within the VISIBLE list so hiding
-  // completed steps never leaves a broken/dangling segment.
   const renderStepList = (list: TaskStep[]) => {
     const doneCount = list.filter(isDoneStatus).length;
     const visible = showCompleted ? list : list.filter((s) => !isDoneStatus(s));
     return (
       <>
         <div className="card divide-y divide-hairline-soft">
-          {visible.map((step, i) => renderStepRow(step, {
-            first: i === 0,
-            last: i === visible.length - 1,
-            prevDone: i > 0 && isDoneStatus(visible[i - 1]),
-          }))}
+          {visible.map(renderStepRow)}
           {visible.length === 0 && (
             <p className="px-5 py-4 text-sm text-ink-muted">All steps here are completed.</p>
           )}
@@ -2010,9 +2008,10 @@ const OWNER_EDGE: Record<'team' | 'client' | 'govt', { dot: string; label: strin
   govt:   { dot: 'bg-violet-500', label: 'Registrar' },
 };
 
-function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCurrent, owner, ownerLabel, comments = [], attachments = [], onOpenDoc, onReopen, timelineFirst = false, timelineLast = false, timelinePrevDone = false }: {
+function ExpandableStepRow({ step, displayNumber, stageName, description, statusLabel, isCurrent, owner, ownerLabel, comments = [], attachments = [], onOpenDoc, onReopen }: {
   step: TaskStep;
   displayNumber: number;
+  stageName?: string | null; // #120: which stage this step belongs to (shown as a tag)
   description?: string;
   statusLabel?: string; // #81: audience-specific status text
   isCurrent: boolean;
@@ -2022,13 +2021,9 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
   attachments?: TaskDocument[];
   onOpenDoc?: (docId: string) => void;
   onReopen?: (stepNumber: number, stepTitle: string) => void; // #116 admin-only, completed steps
-  timelineFirst?: boolean;   // #120: this is the first visible row (no line above)
-  timelineLast?: boolean;    // #120: this is the last visible row (no line below)
-  timelinePrevDone?: boolean; // #120: the previous visible step is completed → line above is green
 }) {
   const s = STATUS[step.status] ?? STATUS.pending;
   const skipped = step.status === 'skipped';
-  const Icon = step.status === 'completed' ? CheckCircle2 : skipped ? CircleSlash : isCurrent ? PlayCircle : Circle;
   // Expandable when there's anything to show: a remark, completion info, comments,
   // or attachments — on completed AND in-progress steps.
   // #116: an admin can reopen a COMPLETED step (rewind the workflow to it).
@@ -2048,12 +2043,18 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
   // border-left edge on all rows but the first. A bg bar can't be overridden.
   const edge = owner ? OWNER_EDGE[owner] : null;
   const isDone = step.status === 'completed';
-  // #120: the vertical timeline connector runs BEHIND the node icon. The segment
-  // ABOVE is solid green when the previous visible step is done; the segment BELOW
-  // is solid green when THIS step is done; anything not yet reached is a dotted
-  // grey line. Ends are trimmed so the line never dangles past the first/last row.
-  const lineCls = (green: boolean) =>
-    green ? 'bg-emerald-500' : 'border-l-2 border-dotted border-hairline';
+  // #120: the status node is a prominent CIRCLE, not a small line marker — a filled
+  // green disc with a white tick for a completed step, a brand ring with a filled
+  // dot for the current step, a muted slash for a skipped step, and a hollow grey
+  // ring for a pending step. This is the primary at-a-glance status cue the
+  // stakeholder asked for (the connecting line was removed).
+  const nodeCls = isDone
+    ? 'bg-emerald-500 border-emerald-500 text-white'
+    : skipped
+      ? 'bg-transparent border-hairline text-ink-faint'
+      : isCurrent
+        ? 'bg-brand-50 border-brand-500 text-brand-600'
+        : 'bg-transparent border-hairline text-transparent';
   return (
     <div
       id={`step-row-${step.stepNumber}`}
@@ -2065,17 +2066,22 @@ function ExpandableStepRow({ step, displayNumber, description, statusLabel, isCu
         onClick={() => expandable && setOpen((v) => !v)}
         className={`w-full flex items-start gap-3 px-5 py-3 text-left ${expandable ? 'hover:bg-surface-soft/60' : 'cursor-default'}`}
       >
-        {/* #120: timeline node — icon with connecting line segments above/below. */}
-        <span className="relative shrink-0 mt-0.5 w-4 self-stretch flex justify-center" aria-hidden="true">
-          {!timelineFirst && (
-            <span className={`absolute left-1/2 -translate-x-1/2 top-0 h-[calc(50%-9px)] w-0.5 ${lineCls(timelinePrevDone)}`} />
-          )}
-          {!timelineLast && (
-            <span className={`absolute left-1/2 -translate-x-1/2 bottom-0 top-[calc(50%+9px)] w-0.5 ${lineCls(isDone)}`} />
-          )}
-          <Icon className={`w-4 h-4 relative z-10 bg-surface rounded-full ${isDone ? 'text-emerald-600' : skipped ? 'text-ink-faint' : isCurrent ? 'text-brand-600' : 'text-ink-faint'}`} />
+        {/* #120: prominent status node — a 24px circle whose fill/ring encodes the
+            step status. Completed shows a bold white tick; current a filled dot. */}
+        <span
+          aria-hidden="true"
+          className={`shrink-0 mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center ${nodeCls}`}
+        >
+          {isDone ? <Check className="w-3.5 h-3.5" strokeWidth={3} />
+            : skipped ? <CircleSlash className="w-3.5 h-3.5" />
+            : isCurrent ? <span className="w-2 h-2 rounded-full bg-brand-600" />
+            : null}
         </span>
         <div className="min-w-0 flex-1">
+          {/* #120: small stage tag so it's clear which stage the step belongs to. */}
+          {stageName && (
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint mb-0.5">{stageName}</p>
+          )}
           {/* #69: completed steps get a subtle line-through on the TITLE only (kept
               muted, decoration-1) so "done" reads at a glance without disrupting the
               row layout, icon, or "Done" badge — the checklist cue the client asked

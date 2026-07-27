@@ -3375,6 +3375,12 @@ not new engine code.
   This also repairs the "Step 0 of N" header.
 - e2e (`matter-layout.spec.ts`): the timeline renders a contiguous `1..N` (asserts no
   `3→37` gap); the current-step header shows a real 1-based position, never "· 0".
+- **Follow-up (stakeholder feedback):** the green connecting LINE read as unclear, so
+  it was removed. Instead the status NODE is now a prominent 24px circle — filled
+  green with a bold white tick (completed), brand ring + filled dot (current), muted
+  ring/slash (skipped), hollow ring (pending) — matching the mockup's emphasis. Each
+  row also carries a small uppercase STAGE tag (e.g. "NAME RESERVATION") above the
+  title so it's clear which stage a step belongs to in the flat timeline.
 
 ---
 
