@@ -3381,6 +3381,10 @@ not new engine code.
   ring/slash (skipped), hollow ring (pending) — matching the mockup's emphasis. Each
   row also carries a small uppercase STAGE tag (e.g. "NAME RESERVATION") above the
   title so it's clear which stage a step belongs to in the flat timeline.
+- **Follow-up 2 (stakeholder feedback):** completed steps now default to SHOWN. With
+  them hidden a mid-flow matter's timeline started at "37. Checklist Sent to Client",
+  which read as broken — the continuous 1..N and its green ticks are the point.
+  "Hide completed" still collapses them on demand.
 
 ---
 

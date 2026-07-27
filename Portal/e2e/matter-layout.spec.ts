@@ -104,10 +104,10 @@ test('#73: Activity defaults to CURRENT + immediately-PREVIOUS step; earlier ste
   } finally { await deleteMatter(taskId); }
 });
 
-test('#96: completed steps hide behind a "Show completed (N)" toggle in the steps list', async ({ adminPage }) => {
+test('#96/#120: completed steps are SHOWN by default and can be collapsed via "Hide completed"', async ({ adminPage }) => {
   const taskId = await createMatter();
   try {
-    // Advance a couple of steps so there ARE completed steps to collapse.
+    // Advance a couple of steps so there ARE completed steps in the list.
     await advanceUntil(taskId, (s) => s.stepNumber >= 3);
     const at = (await getMatter(taskId)).currentStepNumber as number;
     test.skip(at < 3, `Could not advance far enough (at ${at}) to have completed steps.`);
@@ -115,16 +115,16 @@ test('#96: completed steps hide behind a "Show completed (N)" toggle in the step
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
 
-    // The toggle appears with a count and defaults to HIDDEN.
-    const toggle = adminPage.getByRole('button', { name: /show completed \(\d+\)/i });
-    await expect(toggle.first()).toBeVisible({ timeout: 15_000 });
+    // #120: default is SHOWN — completed rows (and their "Done" labels) are visible
+    // immediately, and the toggle reads "Hide completed", so the timeline starts at
+    // step 1 rather than at the current mid-flow step.
+    await expect(adminPage.getByText('Done', { exact: true }).first()).toBeVisible({ timeout: 15_000 });
+    const hide = adminPage.getByRole('button', { name: /hide completed/i });
+    await expect(hide.first()).toBeVisible();
 
-    // No "Done" status label is shown while collapsed (completed rows are hidden).
-    // After clicking, completed rows (and their "Done" labels) appear.
-    await toggle.first().click();
-    await expect(adminPage.getByText('Done', { exact: true }).first()).toBeVisible();
-    // Toggle flips to "Hide completed".
-    await expect(adminPage.getByRole('button', { name: /hide completed/i }).first()).toBeVisible();
+    // Clicking collapses them behind "Show completed (N)".
+    await hide.first().click();
+    await expect(adminPage.getByRole('button', { name: /show completed \(\d+\)/i }).first()).toBeVisible();
   } finally { await deleteMatter(taskId); }
 });
 

@@ -862,9 +862,12 @@ function StepsTab({
   const stagesRail = useRail('matterLayout:stages', { initial: 210, min: 150, max: 340, defaultCollapsed: true });
   const activityRail = useRail('matterLayout:activity', { initial: 320, min: 240, max: 520 });
 
-  // #96: completed/skipped steps hide behind a "Show completed (N)" toggle so a
-  // long stage doesn't bury the active step under a wall of Done rows.
-  const [showCompleted, setShowCompleted] = useState(false);
+  // #96/#120: completed/skipped steps can hide behind a "Show completed (N)" toggle.
+  // DEFAULT to SHOWN (#120 feedback): with them hidden, a mid-flow matter's timeline
+  // started at (say) "37. Checklist Sent to Client", which reads as broken — the
+  // continuous 1..N sequence and its green ticks are the whole point. Users can
+  // still collapse the done rows with "Hide completed".
+  const [showCompleted, setShowCompleted] = useState(true);
   const isDoneStatus = (s: TaskStep) => s.status === 'completed' || s.status === 'skipped';
   // #101: owner (team/client/govt) per step, from the definition — drives the
   // coloured left edge on rows and the hero card tint.
