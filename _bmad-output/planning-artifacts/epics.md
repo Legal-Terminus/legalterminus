@@ -3350,6 +3350,38 @@ not new engine code.
 
 ---
 
+### #132 — Render rich-text step remarks/comments (no raw HTML tags) (2026-07-28)
+- A completed step's remark/comments are stored as sanitised rich-text HTML (#122),
+  but the EXPANDED step row printed them as plain text — so "<p>Received</p>" showed
+  its raw tags while plain-text comments looked fine (inconsistent, unprofessional).
+- Fix: the expanded row now renders `step.remark` and each comment through the
+  existing `RichText` component (server-sanitised HTML → formatted; legacy plain text
+  still rendered as-is). The activity thread already used `RichText`; this closes the
+  one remaining raw-render site.
+- e2e (`richtext-render.spec.ts`): complete a step with remark `<p>Received</p>`,
+  expand it, assert it reads "Received" and the row contains no literal `<p>`.
+
+### #112 (follow-up) — Clients can submit their OWN uploaded documents (2026-07-28)
+- #112's earlier fix hid ALL drafts from clients, which also hid a client's OWN
+  upload — so a client upload was stuck as a draft only staff could submit. Now
+  `listDocuments` hides only drafts the client didn't upload; a client sees (and can
+  Submit) their own drafts. The submit endpoint already permitted a client to submit
+  their own drafts, so no other change was needed. On submit the reviewer is notified
+  and the doc becomes visible to the internal team.
+
+### #125 (follow-up) — Per-document client-visibility toggle for the internal team (2026-07-28)
+- The team can now control which documents the client sees. New `clientVisible` field
+  + `PATCH /documents/:docId/visibility` (staff-only) + a "Share / Make internal"
+  toggle and "Shared with client / Internal only" badge on each DocumentCard.
+- **Default by uploader (stakeholder rule):** a STAFF upload is INTERNAL-ONLY by
+  default (a working document) and appears to the client only after staff shares it;
+  a CLIENT upload is client-visible (they see and submit their own). Legacy docs with
+  no field fall back to this same by-uploader default.
+- Client list rule: a client sees a doc if it's their own upload (any status) OR it's
+  submitted AND `clientVisible`. A client can never toggle visibility (403).
+- e2e (`doc-visibility.spec.ts`): client submits own upload; staff upload hidden
+  until shared then hidden again; client toggle → 403.
+
 ### #120 + #55 — Single continuous step timeline; steps numbered 1..N (2026-07-22)
 - **#120** (single continuous timeline) and **#55** (step serial numbers appear out
   of order) turned out to be the SAME problem. The matter step list was scoped per
