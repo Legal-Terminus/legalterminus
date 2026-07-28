@@ -23,7 +23,8 @@
  * GitHub issue mapping (2026-06-27):
  *   #51 — "Work Assigning" (old SI 3) removed; matter starts at step 4. Payment
  *         status + No-Payment→admin-approval handled at matter creation (code).
- *   #52 — step 4 "Name & Objects received" carries a `checklistItems` list.
+ *   #52/#134 — step 4 "Name & Objects received" carried a verification checklist;
+ *         removed in #134 (no longer required on either screen).
  *   #54 — "Part Payment Due" (old SI 21) removed; part-payment shown as an alert.
  *   #56 — step 28 "Form Check" is an approval step: COMPLETE_STEP→29 (approve),
  *         REWORK→27 (reject/need-correction, notifies the step-27 owner).
@@ -80,14 +81,9 @@ export const companyIncorporationDefinition = {
     // by the gate above, not a discrete step. SI 3 "Work Assigning" removed (#51).
     // #51: "Work Assigning" removed as a discrete step — adding a workflow to a
     // client IS the assignment. The matter now starts at step 4.
-    step(4, 'Name & Objects received', { phaseId: 'onboarding', cv: true, transitions: next(5),
-      // #52: tracked as a checklist for verification/usability.
-      checklistItems: [
-        'Proposed company name(s) received',
-        'Business objects / main activities received',
-        'Promoter / director details received',
-        'Registered office details received',
-      ] }),
+    // #134: the verification checklist here was removed at the stakeholder's
+    // request (no longer required on either the internal or client screen).
+    step(4, 'Name & Objects received', { phaseId: 'onboarding', cv: true, transitions: next(5) }),
     step(5, 'Checklist Received', { phaseId: 'onboarding', cv: true, transitions: next(6) }),
 
     // ── Name Reservation ──
