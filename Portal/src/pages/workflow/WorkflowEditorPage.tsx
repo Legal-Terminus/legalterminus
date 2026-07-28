@@ -749,6 +749,11 @@ function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, onA
         <StepDescriptionsEditor step={step} onPatch={onPatch} />
       </div>
 
+      {/* #134: manage the step's verification checklist (add / edit / remove). */}
+      <div className="mt-3">
+        <StepChecklistEditor step={step} onPatch={onPatch} />
+      </div>
+
       {/* Advanced (raw) — power users */}
       <div className="mt-3 pt-2 border-t border-hairline-soft" />
       <button onClick={() => setShowAdvanced((v) => !v)} className="inline-flex items-center gap-1 text-xs text-ink-faint hover:text-ink">
@@ -849,6 +854,55 @@ function StepDescriptionsEditor({ step, onPatch }: {
                 placeholder="Description text…"
               />
               <button onClick={() => remove(i)} className="shrink-0 p-1.5 text-ink-faint hover:text-red-600" title="Delete description" aria-label="Delete description">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * #134: manage a step's verification checklist. The internal team tracks these on
+ * the step (client sees them read-only, #95). Admin can add, edit and remove items;
+ * an empty list removes the checklist from the step entirely. Maps 1:1 to the
+ * engine's `checklistItems[]`.
+ */
+function StepChecklistEditor({ step, onPatch }: {
+  step: WorkflowStepDef;
+  onPatch: (next: Partial<WorkflowStepDef>) => void;
+}) {
+  const list = step.checklistItems ?? [];
+  // Persist: an empty list drops the field so no checklist renders on the step.
+  const commit = (next: string[]) => onPatch({ checklistItems: next.length ? next : undefined });
+  const add = () => commit([...list, '']);
+  const update = (i: number, text: string) => commit(list.map((t, j) => (j === i ? text : t)));
+  const remove = (i: number) => commit(list.filter((_, j) => j !== i));
+
+  return (
+    <div className="rounded-lg border border-hairline p-3">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Checklist</p>
+        <button onClick={add} className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">
+          <Plus className="w-3.5 h-3.5" /> Add item
+        </button>
+      </div>
+      {list.length === 0 ? (
+        <p className="text-xs text-ink-faint">No checklist items. Add one to track sub-tasks for this step.</p>
+      ) : (
+        <div className="space-y-2">
+          {list.map((text, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                className="flex-1 min-w-0 rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                value={text}
+                onChange={(e) => update(i, e.target.value)}
+                placeholder="Checklist item…"
+                aria-label={`Checklist item ${i + 1}`}
+              />
+              <button onClick={() => remove(i)} className="shrink-0 p-1.5 text-ink-faint hover:text-red-600" title="Remove item" aria-label="Remove checklist item">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>

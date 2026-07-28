@@ -3350,14 +3350,23 @@ not new engine code.
 
 ---
 
-### #134 — Remove the Step 4 verification checklist (2026-07-28)
-- The "Name & Objects received" step (step 4; shown as step 2/3) carried a 4-item
-  verification checklist (proposed name / business objects / promoter / registered
-  office received). Removed at the stakeholder's request from the workflow
-  definition, so it no longer appears on either the internal or client screen.
-- Definition-only change (`companyIncorporation.definition.js`); the `checklistItems`
-  spread already no-ops when absent. Existing matters keep their pinned version;
-  re-seeding (`db:seed:workflows`) applies it to new matters.
+### #134 — Checklist editor in the Workflow Editor (team removes items via UI) (2026-07-28)
+- KEY FINDING: the live incorporation workflow is a UI-edited Firestore definition
+  (43 steps, different titles) that DIVERGES from the repo source
+  (`companyIncorporation.definition.js`, 44 steps). The definition is served from
+  Firestore, so editing the source file does NOT change running matters. My initial
+  source-only edit was therefore ineffective and was reverted.
+- The step carrying the #134 checklist is the LIVE step 4 "Awaiting Proposed Company
+  Name & Business Objects" — but the Workflow Editor had no UI to edit
+  `checklistItems`, so the team couldn't remove them.
+- Fix (stakeholder-chosen, self-service): added a per-step **Checklist editor** to
+  the Workflow Editor's step card (next to Descriptions) — add / edit / remove items;
+  an empty list drops the field so no checklist renders. The save path already stores
+  the whole definition, so items persist and removal sticks. The team now removes the
+  four items themselves via Edit workflow → the step → Checklist → remove → Save &
+  publish. Issue kept OPEN pending the team doing that on QA/prod.
+- e2e (`workflow-editor.spec.ts`): the editor exposes the Checklist section + Add
+  item; checklist add and remove both persist through save.
 
 ### #135 — Hide SKIPPED steps from the client step timeline (2026-07-28)
 - A step the workflow branched past showed on the client screen as "Skipped" — noise

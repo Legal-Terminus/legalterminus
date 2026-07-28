@@ -236,6 +236,45 @@ test('create-from-scratch via API: requires id+service, persists, deletes', asyn
   await deleteDefinition(id);
 });
 
+test('#134: the editor exposes a per-step Checklist editor (add item)', async ({ adminPage }) => {
+  await adminPage.goto(`services/${serviceKey}/edit`);
+  await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
+  // Every step card now has a Checklist editor with an "Add item" control.
+  await expect(adminPage.getByText('Checklist', { exact: true }).first()).toBeVisible();
+  const addItem = adminPage.getByRole('button', { name: /add item/i }).first();
+  await expect(addItem).toBeVisible();
+  await addItem.click();
+  // A blank checklist-item input appears, editable.
+  await expect(adminPage.getByLabel(/checklist item 1/i).first()).toBeVisible();
+});
+
+test('#134: checklist items add AND remove persist through save (isolated definition)', async () => {
+  // API round-trip on the throwaway (the same body the editor UI PATCHes): add two
+  // checklist items to step 1, save, then remove them, save — both persist.
+  const api = await apiAs('admin');
+  const before = await (await api.get(`/api/workflow-definitions/${throwawayId}`)).json();
+  const { id: _i, version: _v, createdAt: _c, updatedAt: _u, updatedBy: _b, ...body } = before;
+  void _i; void _v; void _c; void _u; void _b;
+
+  // Add.
+  body.steps = body.steps.map((s: { stepNumber: number }) =>
+    s.stepNumber === 1 ? { ...s, checklistItems: ['First item', 'Second item'] } : s);
+  expect((await api.patch(`/api/workflow-definitions/${throwawayId}`, { data: body })).ok()).toBeTruthy();
+  let after = await (await api.get(`/api/workflow-definitions/${throwawayId}`)).json();
+  expect(after.steps.find((s: { stepNumber: number }) => s.stepNumber === 1).checklistItems).toEqual(['First item', 'Second item']);
+
+  // Remove (empty list → the editor drops the field). Rebuild the body from `after`.
+  const { id: _i2, version: _v2, createdAt: _c2, updatedAt: _u2, updatedBy: _b2, ...body2 } = after;
+  void _i2; void _v2; void _c2; void _u2; void _b2;
+  body2.steps = body2.steps.map((s: { stepNumber: number }) =>
+    s.stepNumber === 1 ? { ...s, checklistItems: undefined } : s);
+  expect((await api.patch(`/api/workflow-definitions/${throwawayId}`, { data: body2 })).ok()).toBeTruthy();
+  after = await (await api.get(`/api/workflow-definitions/${throwawayId}`)).json();
+  const s1 = after.steps.find((s: { stepNumber: number }) => s.stepNumber === 1);
+  expect(s1.checklistItems ?? []).toEqual([]);
+  await api.dispose();
+});
+
 test('admin can edit a step’s outcomes (add a second outcome) on the throwaway', async () => {
   // Outcome rows (#1) map 1:1 to transitions — adding an outcome adds a transition.
   const api = await apiAs('admin');
