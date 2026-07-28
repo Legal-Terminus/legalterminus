@@ -18,7 +18,7 @@ import { useAuthStore } from '../../store/authStore';
  * re-upload after rejection. Active documents show first; archived (superseded)
  * versions are listed under a history section so the trail is preserved.
  */
-export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; isStaff: boolean }) {
+export default function DocumentsPanel({ taskId, isStaff, workflowType }: { taskId: string; isStaff: boolean; workflowType?: string }) {
   const toast = useToast();
   const confirm = useConfirm();
   const isAdmin = useAuthStore((s) => s.role) === 'admin';
@@ -143,6 +143,10 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
 
   return (
     <div className="space-y-5">
+      {/* #136: document upload guidelines — shown to BOTH roles so the right
+          documents are uploaded and rejections drop. Incorporation-specific. */}
+      <UploadGuidelines workflowType={workflowType} />
+
       {/* Uploader — both roles can add a document (staff on behalf of the client too). */}
       <Uploader onPick={(files, docType) => uploadMany(files, docType)} busy={upload.isPending || multiBusy} />
 
@@ -249,6 +253,35 @@ export default function DocumentsPanel({ taskId, isStaff }: { taskId: string; is
         </details>
       )}
     </div>
+  );
+}
+
+/* ── Upload guidelines (#136) ────────────────────────────────────────────────
+   Incorporation-specific advice so the correct documents are uploaded and
+   rejections drop. Shown to BOTH the internal team and the client. Collapsible so
+   it informs without dominating the tab. Currently only the incorporation
+   workflow has guidelines; other workflows render nothing. */
+const INCORPORATION_GUIDELINES = [
+  'All uploaded documents must be clear, complete, and easily readable.',
+  'All Identity and Address Proofs must be self-attested by the respective individual before uploading.',
+  'Utility Bills (Electricity/Gas/Water/Telephone, etc.) should not be older than 2 months from the date of upload.',
+  'The Rental Agreement must be duly executed and signed by all parties and at least two witnesses. If the tenancy period is up to 11 months, a notarized agreement is generally acceptable. For a tenancy period exceeding 11 months, the agreement should be duly registered with the concerned Sub-Registrar Office.',
+];
+
+function UploadGuidelines({ workflowType }: { workflowType?: string }) {
+  if (workflowType !== 'company-incorporation') return null;
+  return (
+    <details className="card p-0 overflow-hidden border-amber-200 bg-amber-50/40" open>
+      <summary className="flex items-center gap-2 px-4 py-3 cursor-pointer select-none text-sm font-semibold text-amber-900">
+        <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+        Document Upload Guidelines (Incorporation)
+      </summary>
+      <ul className="px-4 pb-4 pl-10 space-y-1.5 list-disc marker:text-amber-500">
+        {INCORPORATION_GUIDELINES.map((g, i) => (
+          <li key={i} className="text-sm text-amber-900/90 leading-relaxed">{g}</li>
+        ))}
+      </ul>
+    </details>
   );
 }
 

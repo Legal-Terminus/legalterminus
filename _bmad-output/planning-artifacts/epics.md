@@ -3350,6 +3350,40 @@ not new engine code.
 
 ---
 
+### #134 — Remove the Step 4 verification checklist (2026-07-28)
+- The "Name & Objects received" step (step 4; shown as step 2/3) carried a 4-item
+  verification checklist (proposed name / business objects / promoter / registered
+  office received). Removed at the stakeholder's request from the workflow
+  definition, so it no longer appears on either the internal or client screen.
+- Definition-only change (`companyIncorporation.definition.js`); the `checklistItems`
+  spread already no-ops when absent. Existing matters keep their pinned version;
+  re-seeding (`db:seed:workflows`) applies it to new matters.
+
+### #135 — Hide SKIPPED steps from the client step timeline (2026-07-28)
+- A step the workflow branched past showed on the client screen as "Skipped" — noise
+  to them. The client now sees only completed, current and pending steps; staff still
+  see skipped steps (they need the full trail). Filtered at the source
+  (`role.isClient` → drop `skipped`), so display numbering and stage counts renumber
+  cleanly around the removed rows.
+
+### #136 — Document Upload Guidelines (Incorporation) in the Documents tab (2026-07-28)
+- Added a collapsible "Document Upload Guidelines (Incorporation)" panel at the top
+  of the Documents tab, shown to BOTH the internal team and the client, so the right
+  documents are uploaded and rejections drop. Four stakeholder-specified points
+  (clarity, self-attestation, utility-bill age, rental-agreement execution/notary/
+  registration). Incorporation-only (`workflowType === 'company-incorporation'`);
+  other workflows render nothing.
+
+### #132 (reopened) — Step detail shows only the LATEST comment (2026-07-28)
+- The expanded step view listed ALL comments, which was cluttered. It now shows only
+  the latest comment per step (both screens), with a "+N earlier comments in Activity
+  history" pointer. The full trail moved to Activity.
+- Per the same comment, the CLIENT now has an Activity history too — but their events
+  are already server-filtered to the client-safe feed (client-visible comments only,
+  staff masked as "Our team"), so it shows exactly the "Visible to client" history
+  without leaking internal notes. This intentionally revisits the earlier #42
+  "no client Activity" decision for this need.
+
 ### #132 — Render rich-text step remarks/comments (no raw HTML tags) (2026-07-28)
 - A completed step's remark/comments are stored as sanitised rich-text HTML (#122),
   but the EXPANDED step row printed them as plain text — so "<p>Received</p>" showed

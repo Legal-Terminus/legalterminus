@@ -497,7 +497,7 @@ export default function TaskDetailPage() {
           onReopen={role === 'admin' ? onReopen : undefined}
         />
       )}
-      {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} />}
+      {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} workflowType={task.workflowType} />}
       {tab === 'discussion' && <DiscussionPanel taskId={taskId!} isStaff={isStaff} />}
       {tab === 'payments' && <PaymentsTab task={task} canEdit={canAssign} />}
     </PageShell>
@@ -744,7 +744,7 @@ function StepsTab({
   // pending. The synthetic rows carry no per-step assignee/remark (there are no
   // instance records), which is correct — there's nothing recorded yet.
   const defForSteps = definition?.steps ?? [];
-  const steps: TaskStep[] = (task.steps && task.steps.length > 0)
+  const allSteps: TaskStep[] = (task.steps && task.steps.length > 0)
     ? task.steps
     : [...defForSteps]
         .sort((a, b) => a.stepNumber - b.stepNumber)
@@ -757,6 +757,13 @@ function StepsTab({
               ? 'active'
               : 'pending',
         } as TaskStep));
+  // #135: the CLIENT never sees SKIPPED steps — a step the workflow branched past
+  // is internal noise to them. They see completed, current and pending only. Staff
+  // still see skipped steps (they need the full trail). Filtering here means the
+  // display numbering, stage counts and lists all renumber cleanly around them.
+  const steps: TaskStep[] = role.isClient
+    ? allSteps.filter((s) => s.status !== 'skipped')
+    : allSteps;
   // #55: display steps in clean serial order (1,2,3,4…). The stored `stepNumber`
   // is the internal identity and CAN have gaps — e.g. for clients, steps the
   // workflow hides (clientVisible:false) are filtered out server-side, leaving
@@ -902,9 +909,12 @@ function StepsTab({
   ) : null;
 
   // Quieter sections below the hero — clearly separated by section headers.
-  // The workflow Activity stream is an INTERNAL/ops view — clients don't need it
-  // on their service screen (GitHub #42), so it's staff-only here.
-  const activitySection = !role.isClient && events.length > 0 && (
+  // #132: the step detail now shows only the LATEST comment; the full trail lives
+  // here in Activity. The client sees this too now — but their `events` are already
+  // filtered server-side to client-visible entries, so their Activity shows exactly
+  // the comments marked "Visible to client" (the internal-only ops noise from #42
+  // never reaches them).
+  const activitySection = events.length > 0 && (
     <Section title="Activity" count={events.length} icon={<MessageSquare className="w-3.5 h-3.5" />}>
       <ActivityThreadCard events={events} definition={definition} currentStep={task.currentStepNumber} flush />
     </Section>
@@ -2034,6 +2044,10 @@ function ExpandableStepRow({ step, displayNumber, stageName, description, status
   const hasDetails = !!(step.remark || step.completedAt || comments.length || attachments.length);
   const expandable = hasDetails || canReopen;
   const [open, setOpen] = useState(false);
+  // #132: only the latest comment shows in the step detail; the rest are in Activity.
+  const latestComment = comments.length
+    ? [...comments].sort((a, b) => (a.at ?? '').localeCompare(b.at ?? '')).at(-1)
+    : undefined;
   const countBits = [
     comments.length ? `${comments.length} comment${comments.length > 1 ? 's' : ''}` : '',
     attachments.length ? `${attachments.length} file${attachments.length > 1 ? 's' : ''}` : '',
@@ -2106,15 +2120,21 @@ function ExpandableStepRow({ step, displayNumber, stageName, description, status
               handles legacy plain-text values. */}
           {step.remark && <RichText html={step.remark} className="text-sm text-ink-muted bg-surface-soft rounded-lg px-3 py-2" />}
 
-          {comments.length > 0 && (
+          {/* #132: show ONLY the LATEST comment per step (both screens) — the full
+              per-step history was cluttered and hard to review. Earlier comments
+              live in the Activity history. */}
+          {latestComment && (
             <div className="space-y-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Comments</p>
-              {comments.map((c, i) => (
-                <div key={i} className="text-sm text-ink-muted bg-surface-soft rounded-lg px-3 py-2">
-                  <RichText html={c.comment ?? ''} className="text-ink-soft" />
-                  <span className="block text-[11px] text-ink-faint mt-0.5">{c.byName}{c.at ? ` · ${relTime(c.at)}` : ''}</span>
-                </div>
-              ))}
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Latest comment</p>
+              <div className="text-sm text-ink-muted bg-surface-soft rounded-lg px-3 py-2">
+                <RichText html={latestComment.comment ?? ''} className="text-ink-soft" />
+                <span className="block text-[11px] text-ink-faint mt-0.5">{latestComment.byName}{latestComment.at ? ` · ${relTime(latestComment.at)}` : ''}</span>
+              </div>
+              {comments.length > 1 && (
+                <p className="text-[11px] text-ink-faint">
+                  +{comments.length - 1} earlier {comments.length - 1 === 1 ? 'comment' : 'comments'} in Activity history
+                </p>
+              )}
             </div>
           )}
 

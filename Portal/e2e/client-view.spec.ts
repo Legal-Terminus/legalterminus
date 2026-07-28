@@ -26,7 +26,7 @@ test('staff matter detail SHOWS the matter owner control', async ({ adminPage })
   await expect(adminPage.getByText('Matter owner')).toBeVisible();
 });
 
-test('#42: client does NOT see the workflow Activity stream (staff-only)', async ({ adminPage, clientPage }) => {
+test('#132: client Activity shows only client-visible history; staff names never leak', async ({ adminPage, clientPage }) => {
   // Generate real activity via API (advances off the gate through plain steps,
   // recording events), so the feed exists for staff regardless of current step.
   await advanceUntil(taskId);
@@ -36,11 +36,12 @@ test('#42: client does NOT see the workflow Activity stream (staff-only)', async
   await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
   await expect(adminPage.getByText('Activity').first()).toBeAttached();
 
-  // The client does NOT (removed from the client service screen, #42), and no
-  // internal staff names leak.
+  // #132: the client now HAS an Activity history (the step detail shows only the
+  // latest comment; older ones live here). But it is the client-safe feed —
+  // internal staff identities are still masked to "Our team", never leaked.
   await clientPage.goto(`tasks/${taskId}`);
   await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
-  await expect(clientPage.getByText('Activity')).toHaveCount(0);
+  await expect(clientPage.getByText('Activity').first()).toBeAttached();
   await expect(clientPage.getByText('E2E Admin')).toHaveCount(0);
   await expect(clientPage.getByText('E2E Team')).toHaveCount(0);
 });
