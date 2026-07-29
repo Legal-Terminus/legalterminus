@@ -3350,6 +3350,29 @@ not new engine code.
 
 ---
 
+### #111 (regression) — Reminder tone options were clipped by the hero card (2026-07-28)
+- The "Send reminder" dropdown (gentle / follow-up / urgent) rendered `absolute`
+  INSIDE the hero panel, which is `overflow-hidden` (for its rounded edge/tint). The
+  menu was clipped by the card's bottom edge, so the tone options never appeared.
+- Fix: render the menu FIXED-positioned, anchored to the button via
+  getBoundingClientRect, so it escapes the clip. Closes on scroll/resize/outside
+  click. (`SendReminderButton.tsx`.)
+- e2e: the existing #111 picker test now also asserts an option's bounding box sits
+  fully within the viewport — a clipped menu fails this guard.
+
+### #115 / #117 — investigated, could NOT reproduce (2026-07-28)
+- **#115** ("Visible to client" checkbox not working): two live round-trips proved it
+  works — staff tick → complete → the client's event feed shows the shared comment;
+  the server stores `commentClientVisible: true` and the client filter surfaces it.
+  No code change; asked the user for an exact repro (browser/step/role).
+- **#117** ("Full Payment Received" auto-completes at creation): does NOT reproduce on
+  the LIVE definition. Across fully_paid / part_paid / no_payment, a new matter lands
+  on step 1 and the step-29 "Full Payment Received" gate stays `pending` (0 completed
+  steps). The live def's initialStep is a non-gate client step, so the creation
+  machine never cascades to the later full-payment gate. Likely already resolved by
+  the definition restructure (the source def still has an early step-1 gate that
+  would cascade — another DB-vs-source divergence). Asked the user to confirm.
+
 ### #134 — Checklist editor in the Workflow Editor (team removes items via UI) (2026-07-28)
 - KEY FINDING: the live incorporation workflow is a UI-edited Firestore definition
   (43 steps, different titles) that DIVERGES from the repo source

@@ -71,10 +71,21 @@ test('#111: the step shows a Send reminder control for staff, not for the client
 
     // Opening it offers the tone options. Scope to the picker — "Urgent" also
     // appears on the step's "Mark step urgent" control.
-    await btn.click();
+    await btn.first().click();
     const picker = adminPage.locator('div').filter({ hasText: /^Choose a reminder/ }).last();
     await expect(picker.getByText('Gentle nudge')).toBeVisible();
     await expect(picker.getByText('Time-critical or repeatedly ignored')).toBeVisible();
+
+    // #111 regression guard: the menu is FIXED-positioned so the hero card's
+    // `overflow-hidden` can't clip it. An option must be fully inside the viewport
+    // and actually clickable (a clipped menu fails this).
+    const option = picker.getByText('Gentle nudge');
+    const box = await option.boundingBox();
+    const vp = adminPage.viewportSize()!;
+    expect(box).not.toBeNull();
+    expect(box!.y).toBeGreaterThanOrEqual(0);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(vp.height);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(vp.width);
 
     // The client never sees it.
     await clientPage.goto(`tasks/${taskId}`);

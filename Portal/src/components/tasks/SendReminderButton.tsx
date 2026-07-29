@@ -18,6 +18,18 @@ export default function SendReminderButton({ taskId, stepNumber }: {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  // #111: the menu is rendered FIXED (not absolutely inside this component), because
+  // the hero card that hosts this button is `overflow-hidden` for its rounded edge —
+  // an absolutely-positioned dropdown was CLIPPED by that card, so the reminder
+  // options never appeared. A fixed menu anchored to the button escapes the clip.
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+  const MENU_W = 240;
+  const openMenu = () => {
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) setMenuPos({ top: r.bottom + 4, left: Math.max(8, r.right - MENU_W) });
+    setOpen(true);
+  };
 
   const { data: history = [] } = useQuery({
     queryKey: ['reminders', taskId],
@@ -28,8 +40,16 @@ export default function SendReminderButton({ taskId, stepNumber }: {
   useEffect(() => {
     if (!open) return;
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    // Any scroll/resize would detach the fixed menu from the button → just close it.
+    const close = () => setOpen(false);
     document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    return () => {
+      document.removeEventListener('mousedown', h);
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+    };
   }, [open]);
 
   const send = useMutation({
@@ -53,7 +73,8 @@ export default function SendReminderButton({ taskId, stepNumber }: {
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => setOpen((v) => !v)}
+        ref={btnRef}
+        onClick={() => (open ? setOpen(false) : openMenu())}
         disabled={send.isPending}
         className="btn-secondary py-1.5 px-3 text-xs w-full inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
         title={lastLabel ?? 'Send a reminder email to the client'}
@@ -69,8 +90,11 @@ export default function SendReminderButton({ taskId, stepNumber }: {
         </p>
       )}
 
-      {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 w-60 bg-white border border-hairline rounded-lg shadow-card py-1">
+      {open && menuPos && (
+        <div
+          className="fixed z-50 w-60 bg-white border border-hairline rounded-lg shadow-card py-1"
+          style={{ top: menuPos.top, left: menuPos.left }}
+        >
           <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
             Choose a reminder
           </p>
