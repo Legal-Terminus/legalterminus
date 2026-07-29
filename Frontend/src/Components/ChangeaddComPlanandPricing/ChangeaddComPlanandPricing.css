@@ -48,7 +48,11 @@
   padding: 28px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  /* Stack from the top: with space-between, the popular/full-service cards (whose
+     badge is a direct flex child) got the leftover height distributed between the
+     badge and the plan name — a big blank gap. The footer pins to the bottom via
+     margin-top:auto instead. */
+  justify-content: flex-start;
 }
 
 /* Plan header */
@@ -124,7 +128,8 @@
 /* Button */
 .plan-footer {
   text-align: center;
-  margin-top: 20px;
+  margin-top: auto;
+  padding-top: 20px;
 }
 
 .plan-button {
