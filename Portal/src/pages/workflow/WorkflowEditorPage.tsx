@@ -754,6 +754,28 @@ function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, onA
         <StepChecklistEditor step={step} onPatch={onPatch} />
       </div>
 
+      {/* #117: where the part-payment chase begins. Once THIS step completes, a
+          part-paid matter starts showing the blinking balance-due alert (and the
+          reminder email effect fires). Set it on e.g. "Name Approval Received". */}
+      <label className="mt-3 flex items-start gap-2 text-xs text-ink-muted cursor-pointer">
+        <input
+          type="checkbox"
+          className="h-3.5 w-3.5 mt-0.5"
+          checked={(step.effects ?? []).includes('REMIND_PART_PAYMENT')}
+          onChange={(e) => {
+            const rest = (step.effects ?? []).filter((x) => x !== 'REMIND_PART_PAYMENT');
+            const next = e.target.checked ? [...rest, 'REMIND_PART_PAYMENT'] : rest;
+            onPatch({ effects: next.length ? next : undefined });
+          }}
+          aria-label={`Step ${step.stepNumber} starts the part-payment reminder`}
+        />
+        <span>
+          <strong className="text-ink-soft">Chase part payment after this step.</strong>{' '}
+          Once this step completes, part-paid matters show the blinking balance-due
+          alert until the balance is recorded. Only one step should carry this.
+        </span>
+      </label>
+
       {/* Advanced (raw) — power users */}
       <div className="mt-3 pt-2 border-t border-hairline-soft" />
       <button onClick={() => setShowAdvanced((v) => !v)} className="inline-flex items-center gap-1 text-xs text-ink-faint hover:text-ink">

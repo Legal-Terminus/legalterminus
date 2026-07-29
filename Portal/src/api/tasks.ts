@@ -202,3 +202,11 @@ export const reopenStep = (taskId: string, stepNumber: number, reason?: string) 
     `/api/tasks/${taskId}/steps/${stepNumber}/reopen`,
     { method: 'POST', body: JSON.stringify(reason ? { reason } : {}) },
   );
+
+/** #105: staff post a client-visible note onto a step WITHOUT advancing it —
+ *  fills the client's read-only info box on approval steps. */
+export const postStepNote = (taskId: string, stepNumber: number, note: string) =>
+  apiFetch<{ success: boolean; at: string }>(
+    `/api/tasks/${taskId}/steps/${stepNumber}/note`,
+    { method: 'POST', body: JSON.stringify({ note }) },
+  );

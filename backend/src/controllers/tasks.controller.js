@@ -151,6 +151,7 @@ const CLIENT_EVENT_WHITELIST = new Set([
   'GOVT_APPROVE',
   'GOVT_REJECT',
   'RECORD_PAYMENT',
+  'STEP_NOTE', // #105: a client-visible note the team posted onto a step
 ]);
 
 // Task IDs in which this user is assigned at least one STEP, across all matters.
@@ -809,6 +810,61 @@ export async function reopenStep(req, res) {
   } catch (err) {
     logger.error({ err }, 'reopenStep error:');
     res.status(500).json({ message: 'Failed to reopen the step' });
+  }
+}
+
+// ─── POST /api/tasks/:taskId/steps/:stepNumber/note ────────────────────────
+// #105 — staff post a CLIENT-VISIBLE note onto a step WITHOUT advancing it.
+// A comment normally rides along with a step action, but a client-approval step
+// the matter LANDS on has no incoming comment — so the team had no way to put
+// the review info ("proposed names & objects…") in front of the client. This
+// records a comment-only STEP_NOTE event (always client-visible: sharing is the
+// point) that the step's info box surfaces, and pings the client.
+export async function postStepNote(req, res) {
+  try {
+    const { taskId } = req.params;
+    const stepNumber = Number(req.params.stepNumber);
+    const snap = await db.collection('tasks').doc(taskId).get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+
+    const clean = sanitizeRichText((req.body?.note ?? '').toString(), { maxLength: 8000 });
+    if (!richTextToPlain(clean)) {
+      return res.status(400).json({ message: 'The note is empty.' });
+    }
+
+    const now = new Date().toISOString();
+    await db.collection('tasks').doc(taskId).collection('events').add({
+      type: 'STEP_NOTE',
+      fromStep: stepNumber,
+      toStep: stepNumber,
+      comment: clean,
+      commentClientVisible: true, // sharing with the client IS the intent
+      byUid: req.user.uid ?? null,
+      byRole: req.user.role ?? null,
+      at: now,
+    });
+
+    // Ping the client — the note is information they should review.
+    try {
+      if (task.clientUid) {
+        await createNotification({
+          recipientUid: task.clientUid,
+          type: 'info',
+          title: 'New information on your service',
+          message: `${task.serviceName ?? task.workflowType ?? 'Your service'}: our team shared details for your review.`,
+          taskId,
+          stepNumber,
+        });
+      }
+    } catch (e) {
+      logger.warn({ err: e?.message }, 'postStepNote: client notification failed');
+    }
+
+    res.status(201).json({ success: true, at: now });
+  } catch (err) {
+    logger.error({ err }, 'postStepNote error:');
+    res.status(500).json({ message: 'Failed to save the note' });
   }
 }
 
@@ -1615,20 +1671,40 @@ export async function transitionTask(req, res) {
     //    it was effectively completed, not skipped (it just didn't need action);
     //  - a conditional branch step that doesn't apply on this path (e.g. the
     //    resubmission steps 14–19 when Govt approves at 13) → genuinely skipped.
+    //
+    // #117/#55: "between" is measured in the definition's AUTHORED order (the
+    // editor's sequence), NOT the numeric stepNumber range. Steps inserted later
+    // in the editor keep high identity numbers, so the flow can legitimately jump
+    // e.g. 3 → 37 with steps 4–36 still AHEAD in the flow. The old numeric sweep
+    // treated everything in 4..36 as bypassed — wrongly auto-completing the
+    // "Full Payment Received" gate (#117) and mass-skipping upcoming steps. Only
+    // the steps the flow actually passed over — those sitting between the departed
+    // and the landed step in authored order — are swept.
     const fromStep = task.currentStepNumber;
-    if (newStep > fromStep + 1) {
-      const typeByNum = new Map(compiled.definition.steps.map((s) => [s.stepNumber, s.type]));
-      const between = await taskRef.collection('steps')
-        .where('stepNumber', '>', fromStep)
-        .where('stepNumber', '<', newStep)
-        .get();
-      between.forEach((d) => {
-        if (d.data().status !== 'pending') return;
-        const isGate = typeByNum.get(d.data().stepNumber) === 'payment_gate';
-        batch.set(d.ref, isGate
-          ? { status: 'completed', completedAt: now }
-          : { status: 'skipped' }, { merge: true });
-      });
+    {
+      const authored = compiled.definition.steps.map((s) => s.stepNumber);
+      const fromIdx = authored.indexOf(fromStep);
+      const toIdx = authored.indexOf(newStep);
+      // Fall back to the legacy numeric range only if either step is missing from
+      // the pinned definition (shouldn't happen; defensive for legacy data).
+      const betweenNums = (fromIdx !== -1 && toIdx !== -1)
+        ? (toIdx > fromIdx + 1 ? authored.slice(fromIdx + 1, toIdx) : [])
+        : (newStep > fromStep + 1
+            ? authored.filter((n) => n > fromStep && n < newStep)
+            : []);
+      if (betweenNums.length) {
+        const typeByNum = new Map(compiled.definition.steps.map((s) => [s.stepNumber, s.type]));
+        const docs = await Promise.all(
+          betweenNums.map((n) => taskRef.collection('steps').doc(String(n)).get()),
+        );
+        docs.forEach((d) => {
+          if (!d.exists || d.data().status !== 'pending') return;
+          const isGate = typeByNum.get(d.data().stepNumber) === 'payment_gate';
+          batch.set(d.ref, isGate
+            ? { status: 'completed', completedAt: now }
+            : { status: 'skipped' }, { merge: true });
+        });
+      }
     }
 
     // The step we're ARRIVING at — used to decide whether a comment is a

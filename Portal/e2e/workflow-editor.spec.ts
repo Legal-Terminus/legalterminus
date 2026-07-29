@@ -275,6 +275,25 @@ test('#134: checklist items add AND remove persist through save (isolated defini
   await api.dispose();
 });
 
+test('#117: the editor exposes the part-payment chase toggle and it persists', async ({ adminPage }) => {
+  // UI: every step card offers the checkbox.
+  await adminPage.goto(`services/${serviceKey}/edit`);
+  await expect(adminPage.getByRole('heading', { name: 'Edit Workflow' })).toBeVisible();
+  await expect(adminPage.getByText(/chase part payment after this step/i).first()).toBeVisible();
+
+  // API round-trip on the throwaway: setting/clearing REMIND_PART_PAYMENT persists.
+  const api = await apiAs('admin');
+  const before = await (await api.get(`/api/workflow-definitions/${throwawayId}`)).json();
+  const { id: _i, version: _v, createdAt: _c, updatedAt: _u, updatedBy: _b, ...body } = before;
+  void _i; void _v; void _c; void _u; void _b;
+  body.steps = body.steps.map((s: { stepNumber: number }) =>
+    s.stepNumber === 1 ? { ...s, effects: ['REMIND_PART_PAYMENT'] } : s);
+  expect((await api.patch(`/api/workflow-definitions/${throwawayId}`, { data: body })).ok()).toBeTruthy();
+  const after = await (await api.get(`/api/workflow-definitions/${throwawayId}`)).json();
+  expect(after.steps.find((s: { stepNumber: number }) => s.stepNumber === 1).effects).toEqual(['REMIND_PART_PAYMENT']);
+  await api.dispose();
+});
+
 test('admin can edit a step’s outcomes (add a second outcome) on the throwaway', async () => {
   // Outcome rows (#1) map 1:1 to transitions — adding an outcome adds a transition.
   const api = await apiAs('admin');

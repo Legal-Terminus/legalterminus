@@ -6,7 +6,7 @@ import {
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase, Eye, EyeOff,
   ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw, Check,
-  ChevronsLeft, ChevronsRight, MoreVertical, Users,
+  ChevronsLeft, ChevronsRight, MoreVertical, Users, Send,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
@@ -17,7 +17,7 @@ import RichTextEditor from '../../components/common/RichTextEditor';
 import RichText from '../../components/common/RichText';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, reopenStep, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, reopenStep, postStepNote, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
 import { useRail, type RailState } from '../../hooks/useResizablePanels';
@@ -87,6 +87,18 @@ export default function TaskDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
     onError: (err: Error) => toast.error(err.message || 'Could not advance the task.'),
+  });
+
+  // #105: staff share a note onto the current (client-approval) step WITHOUT
+  // advancing it — the client reads it in the step's info box.
+  const shareNote = useMutation({
+    mutationFn: (vars: { stepNumber: number; note: string }) =>
+      postStepNote(taskId!, vars.stepNumber, vars.note),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task-events', taskId] });
+      toast.success('Note shared with the client.');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not share the note.'),
   });
 
   // Step assignment is an admin/manager action; team members can't reassign.
@@ -273,7 +285,15 @@ export default function TaskDetailPage() {
   // collapse to 0 ("Step 0 of 0").
   const numberSource = (task.steps && task.steps.length > 0) ? task.steps : stepDefs;
   const total = task.totalSteps ?? numberSource.length ?? 0;
-  const orderedNums = [...numberSource].sort((a, b) => a.stepNumber - b.stepNumber).map((s) => s.stepNumber);
+  // #55: position follows the definition's AUTHORED order (the editor's sequence),
+  // not the numeric stepNumber sort — steps inserted later keep high identity
+  // numbers, so numeric order no longer matches the real flow. Steps missing from
+  // the definition sort to the end by number (defensive).
+  const authoredIdx = new Map(stepDefs.map((s, i) => [s.stepNumber, i]));
+  const authPos = (n: number) => authoredIdx.get(n) ?? 1e9 + n;
+  const orderedNums = [...numberSource]
+    .sort((a, b) => authPos(a.stepNumber) - authPos(b.stepNumber))
+    .map((s) => s.stepNumber);
   const currentDisplayNum = orderedNums.indexOf(task.currentStepNumber) + 1;
   const progressLabel = completed
     ? `Completed · ${total} of ${total}`
@@ -482,6 +502,8 @@ export default function TaskDetailPage() {
           role={{ isStaff, isClient, canOverrideClient: canAssign, isAdmin: role === 'admin', uid: currentUserUid }}
           pending={advance.isPending}
           onEvent={(e) => advance.mutate(e)}
+          onShareNote={(stepNumber, note) => shareNote.mutate({ stepNumber, note })}
+          sharingNote={shareNote.isPending}
           assignment={canAssign ? {
             staff,
             assigning: assign.isPending,
@@ -718,7 +740,7 @@ interface StepAssignment {
 }
 
 function StepsTab({
-  task, definition, stepDefs, currentDef, completed, role, pending, onEvent, assignment, events, documents, onAttach, onOpenDoc, onReopen,
+  task, definition, stepDefs, currentDef, completed, role, pending, onEvent, assignment, events, documents, onAttach, onOpenDoc, onReopen, onShareNote, sharingNote,
 }: {
   task: Task;
   definition?: WorkflowDefinition;
@@ -728,6 +750,9 @@ function StepsTab({
   role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null };
   pending: boolean;
   onEvent: (e: WorkflowEventInput) => void;
+  /** #105: staff share a note onto a step without advancing it. */
+  onShareNote?: (stepNumber: number, note: string) => void;
+  sharingNote?: boolean;
   assignment?: StepAssignment;
   events: TaskEvent[];
   documents: TaskDocument[];
@@ -744,14 +769,21 @@ function StepsTab({
   // pending. The synthetic rows carry no per-step assignee/remark (there are no
   // instance records), which is correct — there's nothing recorded yet.
   const defForSteps = definition?.steps ?? [];
+  // #55: the definition's AUTHORED array order is the real flow sequence — steps
+  // inserted later in the editor keep high identity numbers, so a numeric sort no
+  // longer matches the flow (e.g. the flow runs …3 → 37 → 38 → 4…). Everything
+  // below (list order, display numbering, fallback statuses) follows authored
+  // position; steps missing from the definition sort to the end by number.
+  const authoredIdx = new Map(defForSteps.map((s, i) => [s.stepNumber, i]));
+  const authPos = (n: number) => authoredIdx.get(n) ?? 1e9 + n;
   const allSteps: TaskStep[] = (task.steps && task.steps.length > 0)
-    ? task.steps
-    : [...defForSteps]
-        .sort((a, b) => a.stepNumber - b.stepNumber)
+    ? [...task.steps].sort((a, b) => authPos(a.stepNumber) - authPos(b.stepNumber))
+    : defForSteps
         .map((d) => ({
           stepNumber: d.stepNumber,
           title: d.title,
-          status: task.status === 'completed' || d.stepNumber < task.currentStepNumber
+          status: task.status === 'completed'
+            || authPos(d.stepNumber) < authPos(task.currentStepNumber)
             ? 'completed'
             : d.stepNumber === task.currentStepNumber
               ? 'active'
@@ -764,11 +796,9 @@ function StepsTab({
   const steps: TaskStep[] = role.isClient
     ? allSteps.filter((s) => s.status !== 'skipped')
     : allSteps;
-  // #55: display steps in clean serial order (1,2,3,4…). The stored `stepNumber`
-  // is the internal identity and CAN have gaps — e.g. for clients, steps the
-  // workflow hides (clientVisible:false) are filtered out server-side, leaving
-  // 1,2,3,5,7. Number by POSITION in the visible, ordered list instead.
-  const orderedStepNumbers = [...steps].sort((a, b) => a.stepNumber - b.stepNumber).map((s) => s.stepNumber);
+  // #55: display steps in clean serial order (1,2,3,4…) by POSITION in the
+  // visible, authored-ordered list — the stored `stepNumber` is identity only.
+  const orderedStepNumbers = steps.map((s) => s.stepNumber);
   const displayNumberOf = (stepNumber: number) => orderedStepNumbers.indexOf(stepNumber) + 1;
   const currentStepInstance = steps.find((s) => s.stepNumber === task.currentStepNumber);
   const currentAssignee = currentStepInstance?.assignedTo ?? null;
@@ -900,6 +930,8 @@ function StepsTab({
       statusLabel={statusFor(task.currentStepNumber)}
       description={descFor(task.currentStepNumber)}
       approvalNote={approvalNoteFor(task.currentStepNumber)}
+      onShareNote={onShareNote}
+      sharingNote={sharingNote}
     />
   ) : completed ? (
     <div className="card p-5 flex items-center gap-2.5 bg-emerald-50 border-emerald-100">
@@ -1012,15 +1044,17 @@ function StepsTab({
   // #54: part-payment alert — a blinking banner shown to BOTH client and team when
   // only part payment has been received, replacing the old "Part Payment Due" step.
   //
-  // #124: don't nag from step 1. The balance is usually collected at a specific
-  // point in the service, so the alert only starts once the matter REACHES the step
-  // configured to chase it — the same `REMIND_PART_PAYMENT` effect that drives the
-  // reminder email (#76), so one setting controls both. Workflows with no such step
-  // configured keep the previous always-on behaviour. It stops automatically once
-  // the balance is cleared (paymentStatus is no longer part_paid).
+  // #124/#117: don't nag from step 1. The balance is chased from a specific point
+  // in the service — the alert starts only once the step carrying the
+  // `REMIND_PART_PAYMENT` effect (the same setting that drives the reminder email,
+  // #76) has been COMPLETED (stakeholder: e.g. after "Name Approval Received").
+  // Workflows with no such step configured keep the previous always-on behaviour.
+  // It stops automatically once the balance is cleared (paymentStatus is no longer
+  // part_paid) — and it never shows for Full/No Payment matters, which are not
+  // `part_paid` in the first place.
   const partPaymentFromStep = stepDefs.find((s) => (s.effects ?? []).includes('REMIND_PART_PAYMENT'))?.stepNumber;
   const partPaymentDue = partPaymentFromStep == null
-    || task.currentStepNumber >= partPaymentFromStep;
+    || allSteps.find((s) => s.stepNumber === partPaymentFromStep)?.status === 'completed';
   const partPaymentAlert = !completed && task.paymentStatus === 'part_paid' && partPaymentDue && (
     <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 flex items-start gap-2.5 animate-pulse">
       <CreditCard className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
@@ -1314,6 +1348,7 @@ const EVENT_VERB: Record<string, string> = {
   ADMIN_OVERRIDE_PAYMENT: 'overrode the payment gate',
   BRANCH_DECISION: 'made a decision',
   CLIENT_APPROVE: 'approved',
+  STEP_NOTE: 'shared a note', // #105
   CLIENT_REJECT: 'requested changes',
   GOVT_APPROVE: 'marked Govt approved',
   GOVT_REJECT: 'marked Govt rejected',
@@ -1461,7 +1496,7 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote,
+  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, onShareNote, sharingNote,
 }: {
   taskId: string;
   step: WorkflowStepDef;
@@ -1481,6 +1516,9 @@ function StepHeroPanel({
   description?: string;
   /** #105: latest internal-team message for the client to review before approving. */
   approvalNote?: { text: string; by: string; at: string | null };
+  /** #105: staff share a note onto this step without advancing it. */
+  onShareNote?: (stepNumber: number, note: string) => void;
+  sharingNote?: boolean;
 }) {
   const events = new Set((step.transitions ?? []).map((t) => t.event));
   const spin = <Loader2 className="w-4 h-4 animate-spin" />;
@@ -1513,6 +1551,7 @@ function StepHeroPanel({
   // #83: the draft autosaves per matter/step/user and restores on reopen.
   const draft = useCommentDraft(taskId, step.stepNumber, role.uid ?? null);
   const [comment, setComment] = useState('');
+  const [noteDraft, setNoteDraft] = useState(''); // #105: note-to-client draft
   const [needComment, setNeedComment] = useState(false);
   // #115: staff opt-in to share THIS comment with the client. Default OFF so an
   // internal note is never exposed by accident — EXCEPT on a client-approval step,
@@ -1811,17 +1850,49 @@ function StepHeroPanel({
 
           {/* #105: read-only info box the client reviews before Approve / Request
               Changes — the latest message the internal team left on this step
-              (e.g. the proposed names & objects to review). Client-approval steps
-              only; hidden when the team hasn't left anything yet. */}
-          {role.isClient && isClientStep && approvalNote && (
+              (e.g. the proposed names & objects to review). Shown to the STAFF too
+              so they see exactly what the client sees. Hidden when empty. */}
+          {isClientStep && approvalNote && (
             <div className="mt-3 rounded-lg border border-brand-200 bg-brand-50/60 p-4">
               <p className="text-xs font-semibold text-brand-800 inline-flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5" /> Shared by our team
+                <Users className="w-3.5 h-3.5" /> {role.isClient ? 'Shared by our team' : 'Visible to the client'}
               </p>
               <RichText html={approvalNote.text} className="text-sm text-ink mt-1.5" />
               <p className="text-[11px] text-ink-faint mt-2">
                 {approvalNote.by}{approvalNote.at ? ` · ${relTime(approvalNote.at)}` : ''}
               </p>
+            </div>
+          )}
+
+          {/* #105: STAFF "Note to client" on a waiting client-approval step — post
+              (or update) the review info WITHOUT advancing the step. The note
+              becomes the client's info box above Approve / Request Changes. */}
+          {role.isStaff && isClientStep && onShareNote && (
+            <div className="mt-3">
+              <p className="text-xs font-semibold text-ink-muted mb-1.5 inline-flex items-center gap-1.5">
+                <Send className="w-3.5 h-3.5" /> Note to client
+              </p>
+              <RichTextEditor
+                value={noteDraft}
+                onChange={setNoteDraft}
+                disabled={!!sharingNote}
+                placeholder="What should the client review? e.g. the proposed names & objects…"
+                ariaLabel="Note to client"
+                rows={3}
+              />
+              <button
+                onClick={() => {
+                  const v = noteDraft.trim();
+                  if (!v) return;
+                  onShareNote(step.stepNumber, v);
+                  setNoteDraft('');
+                }}
+                disabled={!!sharingNote || !noteDraft.trim()}
+                className="btn-secondary py-1.5 px-3 text-xs mt-1.5 inline-flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {sharingNote ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                {approvalNote ? 'Update the shared note' : 'Share with client'}
+              </button>
             </div>
           )}
 

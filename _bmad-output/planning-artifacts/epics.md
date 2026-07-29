@@ -3350,6 +3350,40 @@ not new engine code.
 
 ---
 
+### #117 + #55 — Flow follows the AUTHORED order, not numeric stepNumbers (2026-07-29)
+- ROOT CAUSE (shared): steps inserted later in the Workflow Editor keep high
+  identity numbers, so the flow legitimately jumps e.g. 3 → 37 while steps 4–36 are
+  still AHEAD. Two things assumed numeric order == flow order:
+  1) `transitionTask`'s forward-jump sweep marked everything NUMERICALLY between as
+     bypassed — auto-completing the "Full Payment Received" gate (#117: "after step
+     3 it closes itself") and mass-skipping upcoming steps (also the #135 noise).
+     The sweep now measures "between" in the definition's AUTHORED order; a gate
+     completes only when the flow actually passes through it.
+  2) The matter timeline sorted by stepNumber (#55: "Checklist send to client is
+     4th in the flow but shows as 37"). The timeline (order, display numbers,
+     fallback statuses, progress header) now follows authored position.
+- #117 part-payment blinking: the alert now starts only once the step carrying
+  REMIND_PART_PAYMENT is COMPLETED (stakeholder: after "Name Approval Received"),
+  and a new Workflow-Editor checkbox ("Chase part payment after this step") lets
+  the team place that flag themselves (the live def is UI-managed; effects had no
+  UI). Full/No-Payment matters never blink (only `part_paid` does — unchanged).
+- e2e (`flow-order.spec.ts`): an authored-out-of-order throwaway def proves the
+  gate stays pending across the jump, completes when reached, and the timeline
+  renders authored order 1..N. Editor toggle round-trip in workflow-editor.spec.ts.
+
+### #105 — "Note to client" on client-approval steps (Option A, approved) (2026-07-29)
+- A comment could only ride along with a step ACTION, so a client-approval step the
+  matter LANDS on had an empty info box (nothing ever arrived with it). Staff can
+  now post/update a client-visible note onto the step WITHOUT advancing it:
+  `POST /tasks/:id/steps/:n/note` (staff-only, sanitised rich text) records a
+  comment-only STEP_NOTE event (whitelisted for clients, masked as "Our team") and
+  pings the client with an in-app notification.
+- The hero shows a "Note to client" composer for staff on client-approval steps;
+  the read-only info box now renders for BOTH roles (staff see exactly what the
+  client sees, labelled "Visible to the client").
+- e2e: note posts without advancing; the client's feed carries it masked; the
+  client UI shows the info box; a client is refused (403).
+
 ### #137 — Step comments no longer display twice (2026-07-29)
 - The completing transition stores its comment BOTH as the event comment and as
   `step.remark`, so the expanded step row rendered the same text twice (remark box
