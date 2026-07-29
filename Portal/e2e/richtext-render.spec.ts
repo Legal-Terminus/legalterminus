@@ -20,7 +20,7 @@ test('#132: a completed step renders a rich-text remark as text, not raw <p> tag
     await advanceUntil(taskId, (s) => s.stepNumber === plain!.stepNumber);
     const at = await currentStep(taskId);
     test.skip(at !== plain!.stepNumber, `Did not land on the plain step (at ${at}).`);
-    await transition('admin', taskId, { type: 'COMPLETE_STEP', remark: '<p>Received</p>' });
+    await transition('admin', taskId, { type: 'COMPLETE_STEP', remark: '<p>REMARK-137-ONCE</p>' });
 
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
@@ -35,9 +35,12 @@ test('#132: a completed step renders a rich-text remark as text, not raw <p> tag
     await expect(row).toBeVisible({ timeout: 15_000 });
     await row.getByRole('button').first().click(); // expand
 
-    // The remark reads "Received" (rendered) …
-    await expect(row.getByText('Received', { exact: false }).first()).toBeVisible();
-    // … and the raw "<p>" markup is NOT present anywhere in the row.
+    // The comment reads rendered (no raw tags) …
+    await expect(row.getByText('REMARK-137-ONCE').first()).toBeVisible();
+    // … the raw "<p>" markup is NOT present anywhere in the row …
     await expect(row).not.toContainText('<p>');
+    // … and (#137) it appears exactly ONCE — only in the "Latest comment" section,
+    // not duplicated by a separate remark box.
+    await expect(row.getByText('REMARK-137-ONCE')).toHaveCount(1);
   } finally { await deleteMatter(taskId); }
 });

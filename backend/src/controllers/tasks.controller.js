@@ -93,7 +93,11 @@ async function adminUids() {
 // cannot leak it regardless of the caller. Staff get the full payload unchanged.
 
 // Internal step fields a client should never see (assignment/audit metadata).
-const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedRole', 'completedBy', 'isUrgent'];
+// #137/#115: `remark` mirrors the completing transition's comment. The EVENT feed
+// masks comments that aren't client-visible (fail closed), but the raw remark on
+// the step record bypassed that — so it must never reach the client either. The
+// client sees a comment only via the (filtered) event feed.
+const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedRole', 'completedBy', 'isUrgent', 'remark'];
 
 // Strip internal ownership/assignment from a task + its steps for a client, and
 // (when a visibility set is supplied) DROP steps the workflow marks as not

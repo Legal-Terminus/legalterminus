@@ -3350,6 +3350,19 @@ not new engine code.
 
 ---
 
+### #137 — Step comments no longer display twice (2026-07-29)
+- The completing transition stores its comment BOTH as the event comment and as
+  `step.remark`, so the expanded step row rendered the same text twice (remark box
+  + "Latest comment"). The remark box is removed — the Latest comment section is
+  the single render site (per the ticket).
+- Privacy hardening found during the fix: `remark` was NOT stripped from the
+  client's task payload, so an INTERNAL-ONLY comment (#115 fail-closed event
+  masking) still leaked to the client via `task.steps[].remark`. `remark` is now in
+  CLIENT_STEP_HIDDEN — a client only ever sees comments through the filtered event
+  feed.
+- e2e: richtext-render.spec.ts now asserts the comment text appears exactly ONCE
+  in the expanded row.
+
 ### #133 — Website: one "Book Free Consultation" CTA replaces per-card Buy Now (2026-07-29)
 - Payment is paused this phase, so every service page's pricing cards drop their
   per-card "Buy Now" (which opened the checkout/payment modal) in favour of ONE

@@ -2115,10 +2115,10 @@ function ExpandableStepRow({ step, displayNumber, stageName, description, status
         <div className="px-5 pb-4 pl-12 space-y-2">
           {description && <p className="text-xs text-ink-muted whitespace-pre-wrap break-words">{description}</p>}
           {step.completedAt && <p className="text-xs text-ink-faint">Completed {relTime(step.completedAt)}</p>}
-          {/* #132: remark/comments may be rich text (TipTap) — render via RichText
-              so HTML is formatted, not shown as raw "<p>…</p>" tags. RichText also
-              handles legacy plain-text values. */}
-          {step.remark && <RichText html={step.remark} className="text-sm text-ink-muted bg-surface-soft rounded-lg px-3 py-2" />}
+          {/* #137: step.remark is NOT rendered here — the completing transition
+              stores the same text as its event comment, so the remark box showed
+              every comment TWICE (once here, once under "Latest comment"). The
+              Latest comment section below is the single place a comment renders. */}
 
           {/* #132: show ONLY the LATEST comment per step (both screens) — the full
               per-step history was cluttered and hard to review. Earlier comments
