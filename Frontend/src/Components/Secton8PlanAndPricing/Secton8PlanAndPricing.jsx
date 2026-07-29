@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./Section8PlanAndPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+import ConsultationModal from "../ConsultationModal/ConsultationModal";
 
 const PLANS = [
   {
@@ -71,6 +72,9 @@ const PLANS = [
 
 const Section8PlanAndPricing = () => {
   const [activePlan, setActivePlan] = useState(null);
+  // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
+  // Consultation" button below opens the consultation popup instead.
+  const [showConsult, setShowConsult] = useState(false);
 
   return (
     <>
@@ -112,6 +116,9 @@ const Section8PlanAndPricing = () => {
                   </div>
                 </div>
 
+                {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
+                    place (not deleted) so it can be re-enabled later. */}
+                {false && (
                 <div className="s8-plan-footer">
                   <button
                     className={`s8-plan-button${plan.popular ? " s8-plan-button--popular" : ""}`}
@@ -120,8 +127,20 @@ const Section8PlanAndPricing = () => {
                     Buy Now
                   </button>
                 </div>
+                )}
               </article>
             ))}
+          </div>
+
+          {/* #133: one shared CTA below the plans — opens the consultation popup. */}
+          <div className="consult-cta-row">
+            <button
+              type="button"
+              className="consult-cta-button"
+              onClick={() => setShowConsult(true)}
+            >
+              📅 Book Free Consultation
+            </button>
           </div>
 
         </div>
@@ -130,6 +149,12 @@ const Section8PlanAndPricing = () => {
       {activePlan && (
         <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="section8-company" />
       )}
+
+      <ConsultationModal
+        open={showConsult}
+        onClose={() => setShowConsult(false)}
+        source="section8-company"
+      />
     </>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "../PvtltdPlanandPricing/PvtltdPlanandPricing.css";
 import "./ShopRegPlanandPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+import ConsultationModal from "../ConsultationModal/ConsultationModal";
 
 const PLANS = [
   {
@@ -56,6 +57,9 @@ const PLANS = [
 
 const ShopRegPlanandPricing = () => {
   const [activePlan, setActivePlan] = useState(null);
+  // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
+  // Consultation" button below opens the consultation popup instead.
+  const [showConsult, setShowConsult] = useState(false);
 
   return (
     <>
@@ -102,14 +106,29 @@ const ShopRegPlanandPricing = () => {
                       </ul>
                     </div>
                   </div>
+                  {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
+                      place (not deleted) so it can be re-enabled later. */}
+                  {false && (
                   <div className="plan-footer">
                     <button className="plan-button" onClick={() => setActivePlan(plan)}>
                       Buy Now
                     </button>
                   </div>
+                  )}
                 </article>
               );
             })}
+          </div>
+
+          {/* #133: one shared CTA below the plans — opens the consultation popup. */}
+          <div className="consult-cta-row">
+            <button
+              type="button"
+              className="consult-cta-button"
+              onClick={() => setShowConsult(true)}
+            >
+              📅 Book Free Consultation
+            </button>
           </div>
 
         </div>
@@ -122,6 +141,12 @@ const ShopRegPlanandPricing = () => {
           source="shop-establishment"
         />
       )}
+
+      <ConsultationModal
+        open={showConsult}
+        onClose={() => setShowConsult(false)}
+        source="shop-establishment"
+      />
     </>
   );
 };

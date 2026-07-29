@@ -1,0 +1,56 @@
+/* #133 — popup wrapper for the shared ConsultationForm. Styling is limited to the
+   overlay + dialog chrome; the form keeps its own look from ConsultationForm.css. */
+.consult-modal-overlay {
+  position: fixed;
+  inset: 0;
+  /* Above the sticky navbar (9999) and every other layer on the site. */
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.55);
+  overflow-y: auto;
+}
+
+.consult-modal-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  margin: auto;
+}
+
+/* Neutralise the form's inline-aside sizing so it centers nicely in the popup. */
+.consult-modal-dialog .cf-wrapper {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.consult-modal-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.consult-modal-close:hover {
+  background: #f1f5f9;
+}
+
+@media (max-width: 520px) {
+  .consult-modal-close {
+    top: 6px;
+    right: 6px;
+  }
+}

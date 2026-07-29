@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./CIOplans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+import ConsultationModal from "../ConsultationModal/ConsultationModal";
 
 
 const PLANS = [
@@ -11,6 +12,9 @@ const PLANS = [
 
 const PricingSection = () => {
   const [activePlan, setActivePlan] = useState(null);
+  // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
+  // Consultation" button below opens the consultation popup instead.
+  const [showConsult, setShowConsult] = useState(false);
 
   return (
 
@@ -57,9 +61,13 @@ const PricingSection = () => {
               </div>
             </div>
 
+            {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
+                place (not deleted) so it can be re-enabled later. */}
+            {false && (
             <div className="po-footer">
               <button className="po-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
+            )}
           </article>
 
           {/* Enriched */}
@@ -84,9 +92,13 @@ const PricingSection = () => {
               </div>
             </div>
 
+            {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
+                place (not deleted) so it can be re-enabled later. */}
+            {false && (
             <div className="po-footer">
               <button className="po-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
+            )}
           </article>
 
           {/* Supreme */}
@@ -125,11 +137,26 @@ const PricingSection = () => {
               </div>
             </div>
 
+            {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
+                place (not deleted) so it can be re-enabled later. */}
+            {false && (
             <div className="po-footer">
               <button className="po-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>
+            )}
           </article>
 
+        </div>
+
+        {/* #133: one shared CTA below the plans — opens the consultation popup. */}
+        <div className="consult-cta-row">
+          <button
+            type="button"
+            className="consult-cta-button"
+            onClick={() => setShowConsult(true)}
+          >
+            📅 Book Free Consultation
+          </button>
         </div>
       </div>
     </section>
@@ -140,6 +167,12 @@ const PricingSection = () => {
         <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="cio-registration" />
 
       )}
+
+      <ConsultationModal
+        open={showConsult}
+        onClose={() => setShowConsult(false)}
+        source="cio-registration"
+      />
 
     </>
 

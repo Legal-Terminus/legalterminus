@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./PtoopcPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+import ConsultationModal from "../ConsultationModal/ConsultationModal";
 
 const PLANS = [
   {
@@ -91,6 +92,9 @@ const PLANS = [
 
 const PtoopcPlans = () => {
   const [activePlan, setActivePlan] = useState(null);
+  // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
+  // Consultation" button below opens the consultation popup instead.
+  const [showConsult, setShowConsult] = useState(false);
 
   return (
     <>
@@ -132,6 +136,9 @@ const PtoopcPlans = () => {
                   </div>
                 </div>
 
+                {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
+                    place (not deleted) so it can be re-enabled later. */}
+                {false && (
                 <div className="opcplan-footer">
                   <button
                     className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
@@ -140,8 +147,20 @@ const PtoopcPlans = () => {
                     Buy Now
                   </button>
                 </div>
+                )}
               </article>
             ))}
+          </div>
+
+          {/* #133: one shared CTA below the plans — opens the consultation popup. */}
+          <div className="consult-cta-row">
+            <button
+              type="button"
+              className="consult-cta-button"
+              onClick={() => setShowConsult(true)}
+            >
+              📅 Book Free Consultation
+            </button>
           </div>
 
         </div>
@@ -150,6 +169,12 @@ const PtoopcPlans = () => {
       {activePlan && (
         <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="proprietorship-to-opc" />
       )}
+
+      <ConsultationModal
+        open={showConsult}
+        onClose={() => setShowConsult(false)}
+        source="proprietorship-to-opc"
+      />
     </>
   );
 };

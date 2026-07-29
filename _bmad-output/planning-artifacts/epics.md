@@ -3350,6 +3350,38 @@ not new engine code.
 
 ---
 
+### #133 — Website: one "Book Free Consultation" CTA replaces per-card Buy Now (2026-07-29)
+- Payment is paused this phase, so every service page's pricing cards drop their
+  per-card "Buy Now" (which opened the checkout/payment modal) in favour of ONE
+  centred "📅 Book Free Consultation" button below the plans (per the design).
+- Clicking it opens the EXISTING ConsultationForm in a new thin popup wrapper
+  (`ConsultationModal` — portal to <body>, overlay, ✕/Escape/backdrop close). The
+  form itself is untouched; it posts the page's `source` so every lead records
+  which page it came from (requirement 5).
+- **Strictly additive across 82 pricing components** (verified: 0 deleted lines):
+  Buy Now buttons are HIDDEN via `{false && (…)}` — the CheckoutModal wiring is kept
+  intact for when payment is re-enabled (stakeholder decision). Each file reuses its
+  existing CheckoutModal `source` string on the ConsultationModal.
+- Popup rendered via React portal because the pricing sections animate with CSS
+  transforms (a transformed ancestor breaks position:fixed — the popup slid under
+  the navbar); z-index 100000 clears the navbar's 9999.
+- Verification: hosted-vs-local rendered-text diff across all 84 routes — 81
+  identical bar the intended Buy Now→CTA diff; 3 flagged were carousel timing +
+  pre-existing repo-vs-deployed drift (team's pdf-tools/itr commits), unrelated.
+  Visual + click-through checks on sample pages; submit verified against the API.
+
+### #133 follow-up — pricing-card badge whitespace fix (2026-07-29)
+- Stakeholder-reported (pre-existing on production): on cards with a "MOST POPULAR"/
+  "FULL-SERVICE" badge, the card's `justify-content: space-between` distributed the
+  leftover height BETWEEN the badge (a direct flex child) and the plan name — a big
+  blank gap on e.g. /private-limited-company-registration-in-india.
+- Fix: `flex-start` + footer `margin-top: auto` (footer still pins to the bottom).
+  Applied IDENTICALLY to all 7 CSS files that redefine the colliding global
+  `.plan-card` (bundle order decides the winner, so all copies must agree), plus the
+  `prf-*` and `s8-*` card families found by an automated badge-gap scan.
+- Scan: measured badge→name pixel gap on every route; before: 3 routes flagged
+  (pvt-ltd, /partnership 79px, /section-8 208px); after: 0 of 84 routes.
+
 ### #111 (regression) — Reminder tone options were clipped by the hero card (2026-07-28)
 - The "Send reminder" dropdown (gentle / follow-up / urgent) rendered `absolute`
   INSIDE the hero panel, which is `overflow-hidden` (for its rounded edge/tint). The
