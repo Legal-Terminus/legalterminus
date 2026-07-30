@@ -104,20 +104,27 @@ test.describe.serial('flow-order lifecycle', () => {
     expect(await stepStatus(5)).toBe('active');
   });
 
-  test('#139: the client never sees a "Show to Client"-disabled step — even as the current step', async ({ clientPage }) => {
-    // The matter now SITS on the hidden step (5). The client must not see it.
+  test('#139: on a hidden step, the client sees the LAST visible step as current (no trace of the hidden one)', async ({ clientPage }) => {
+    // The matter now SITS on the hidden step (5). The client must not see it —
+    // instead they keep seeing the last visible step (Bravo, 6) as in progress.
     const client = await apiAs('client');
     const def = await (await client.get(`/api/workflow-definitions/${defId}`)).json();
     expect((def.steps ?? []).some((s: { stepNumber: number }) => s.stepNumber === 5)).toBe(false);
     const t = await (await client.get(`/api/tasks/${taskId}`)).json();
     expect((t.steps ?? []).some((s: { stepNumber: number }) => s.stepNumber === 5)).toBe(false);
+    // Server-side fallback: current step = Bravo (6), flagged, shown in-progress.
+    expect(t.currentStepNumber).toBe(6);
+    expect(t.currentStepFallback).toBe(true);
+    expect((t.steps as Array<{ stepNumber: number; status: string }>).find((s) => s.stepNumber === 6)?.status).toBe('active');
     await client.dispose();
 
     await clientPage.goto(`tasks/${taskId}`);
     await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
-    // No hidden-step title anywhere; a calm generic card instead of the step.
+    // No hidden-step title anywhere; Bravo presented as the current step with a
+    // calm note and no action buttons.
     await expect(clientPage.getByText('HiddenInternal')).toHaveCount(0);
-    await expect(clientPage.getByText(/our team is working on your service/i).first()).toBeVisible({ timeout: 15_000 });
+    await expect(clientPage.getByText('Bravo').first()).toBeVisible({ timeout: 15_000 });
+    await expect(clientPage.getByText(/no action is needed from you right now/i).first()).toBeVisible();
   });
 
   test('#117/#140: the gate completes only when reached; the hidden step completes on departure', async () => {

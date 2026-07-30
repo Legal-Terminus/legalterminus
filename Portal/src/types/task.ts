@@ -44,6 +44,10 @@ export interface Task {
   professionalUid?: string | null; // #85
   professionalName?: string | null; // #85 (snapshot for display)
   currentStepNumber: number;
+  /** #139: CLIENT projection only — the real current step is hidden ("Show to
+   *  Client" off), so currentStepNumber points at the LAST visible step, shown
+   *  as in-progress but without action buttons. */
+  currentStepFallback?: boolean;
   totalSteps?: number;
   steps?: TaskStep[];
   isUrgent?: boolean;

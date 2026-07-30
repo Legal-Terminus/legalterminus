@@ -937,6 +937,7 @@ function StepsTab({
       approvalNote={approvalNoteFor(task.currentStepNumber)}
       onShareNote={onShareNote}
       sharingNote={sharingNote}
+      fallbackView={!!task.currentStepFallback}
     />
   ) : completed ? (
     <div className="card p-5 flex items-center gap-2.5 bg-emerald-50 border-emerald-100">
@@ -1515,7 +1516,7 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, onShareNote, sharingNote,
+  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, onShareNote, sharingNote, fallbackView = false,
 }: {
   taskId: string;
   step: WorkflowStepDef;
@@ -1538,6 +1539,8 @@ function StepHeroPanel({
   /** #105: staff share a note onto this step without advancing it. */
   onShareNote?: (stepNumber: number, note: string) => void;
   sharingNote?: boolean;
+  /** #139: client fallback view — the shown step is the last visible one, not actionable. */
+  fallbackView?: boolean;
 }) {
   const events = new Set((step.transitions ?? []).map((t) => t.event));
   const spin = <Loader2 className="w-4 h-4 animate-spin" />;
@@ -1753,6 +1756,14 @@ function StepHeroPanel({
     } else if (assignedToOther) {
       wait = <AssignedToOtherNote assignee={assigneeLabel} />;
     } else wait = <WaitNote text={waitingText('Our team is working on this step.')} />;
+  }
+
+  // #139: the client is looking at the LAST visible step while the real current
+  // step is hidden ("Show to Client" off). The step shows as in progress, but it
+  // is not actually actionable — no buttons, just a calm progress note.
+  if (fallbackView) {
+    actions = null;
+    wait = <WaitNote text="Our team is working on your service — no action is needed from you right now." />;
   }
 
   // Right-side meta block (shared by desktop column + mobile stack). The

@@ -3350,6 +3350,23 @@ not new engine code.
 
 ---
 
+### #139 (clarified) — client keeps seeing the LAST visible step while on a hidden one (2026-07-30)
+- Stakeholder clarification after the first fix: rather than a generic "our team is
+  working" card, the client should CONTINUE SEEING the last "Show to Client" step
+  (in authored order) as the current, in-progress step until the flow reaches the
+  next visible one.
+- Server: `projectTaskForClient` rewrites the client's `currentStepNumber` to the
+  nearest previous visible step (authored order), flags `currentStepFallback: true`,
+  and presents that step's status as `active`. The hidden step itself still never
+  reaches the client (definition + steps stripped, fail closed).
+- Frontend: on `currentStepFallback` the hero renders that step normally but with
+  NO action buttons — a calm "no action is needed from you right now" note (a
+  completed client-approval step must not offer Approve again). The earlier generic
+  card remains only for the edge where no previous visible step exists.
+- e2e: parked on the hidden step, the client's task shows currentStepNumber = the
+  last visible step + fallback flag + active status; UI shows that step with the
+  calm note and zero trace of the hidden title.
+
 ### #138 + #139 + #140 — comment attribution, hidden-step leak, and the last numeric-order bugs (2026-07-30)
 - **#138**: the step row attributed a comment to BOTH its fromStep and toStep, so a
   completing comment echoed on the next in-progress step. A comment now belongs

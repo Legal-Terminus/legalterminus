@@ -113,7 +113,8 @@ const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedRole', 'completedBy', 'isUrge
 // (when a visibility set is supplied) DROP steps the workflow marks as not
 // client-visible (`clientVisible === false` on the definition step). When no set
 // is given, all steps are kept (back-compat / staff projection).
-function projectTaskForClient(task, visibleStepNumbers = null) {
+function projectTaskForClient(task, view = null) {
+  const visibleStepNumbers = view?.visible ?? null;
   const { assignedTo, createdBy, isUrgent, adminOverride, ...safe } = task;
   if (Array.isArray(safe.steps)) {
     safe.steps = safe.steps
@@ -131,6 +132,32 @@ function projectTaskForClient(task, visibleStepNumbers = null) {
         return copy;
       });
   }
+  // #139: while the matter sits on a step hidden from the client ("Show to
+  // Client" off), the client keeps seeing the LAST visible step before it (in
+  // AUTHORED order) as the current, in-progress step — until the flow reaches the
+  // next visible one. `currentStepFallback` tells the UI to render that step
+  // without action buttons (it is not truly actionable).
+  if (
+    visibleStepNumbers && Array.isArray(view?.authored)
+    && typeof safe.currentStepNumber === 'number'
+    && !visibleStepNumbers.has(safe.currentStepNumber)
+  ) {
+    const idx = view.authored.indexOf(safe.currentStepNumber);
+    if (idx !== -1) {
+      for (let i = idx - 1; i >= 0; i--) {
+        const n = view.authored[i];
+        if (visibleStepNumbers.has(n)) {
+          safe.currentStepNumber = n;
+          safe.currentStepFallback = true;
+          if (Array.isArray(safe.steps)) {
+            safe.steps = safe.steps.map((s) =>
+              s.stepNumber === n ? { ...s, status: 'active' } : s);
+          }
+          break;
+        }
+      }
+    }
+  }
   return safe;
 }
 
@@ -143,7 +170,12 @@ async function clientVisibleStepSet(task) {
     const compiled = await getCompiledById(task.workflowDefinitionId);
     const steps = compiled?.definition?.steps;
     if (!Array.isArray(steps)) return null;
-    return new Set(steps.filter((s) => s.clientVisible !== false).map((s) => s.stepNumber));
+    return {
+      visible: new Set(steps.filter((s) => s.clientVisible !== false).map((s) => s.stepNumber)),
+      // #139: authored (flow) order — used to fall back to the LAST visible step
+      // while the matter sits on a hidden one.
+      authored: steps.map((s) => s.stepNumber),
+    };
   } catch {
     return null;
   }
