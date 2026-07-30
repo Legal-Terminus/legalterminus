@@ -186,20 +186,24 @@ export const createNotification = async ({ recipientUid, type = 'info', title, m
  * completes or a notified step is done, so stale "action needed" alerts clear from
  * everyone's unread list. Non-destructive (history is kept). Matching options:
  *   - `stepNumber`   — resolve only notifications for THAT exact step;
- *   - `stepNumberLte` (#100) — resolve notifications for EVERY step ≤ this number,
- *     so a multi-step advance (payment-gate auto-pass, branch skip, jump) clears
- *     the alerts of every vacated step, not just the single departed one;
+ *   - `stepNumberIn` (#140) — resolve notifications for every step in this list.
+ *     Step identity numbers are NOT flow-ordered (authored order is), so callers
+ *     pass the exact set of vacated steps instead of a numeric range;
+ *   - `stepNumberLte` (#100, legacy) — resolve notifications for EVERY step ≤ this
+ *     number (kept for callers without a definition to order by);
  *   - neither        — resolve ALL of the matter's active notifications.
  * Fire-and-forget; never throws to the caller.
  */
-export const resolveNotificationsForTask = async (taskId, { stepNumber, stepNumberLte } = {}) => {
+export const resolveNotificationsForTask = async (taskId, { stepNumber, stepNumberLte, stepNumberIn } = {}) => {
   if (!taskId) return 0;
   try {
     const db = getDb();
     const snap = await db.collection(COLLECTION).where('taskId', '==', taskId).get();
+    const inSet = Array.isArray(stepNumberIn) ? new Set(stepNumberIn) : null;
     const match = snap.docs.filter((doc) => {
       const d = doc.data();
       if (d.read === true) return false;
+      if (inSet) return typeof d.stepNumber === 'number' && inSet.has(d.stepNumber);
       if (typeof stepNumberLte === 'number') {
         return typeof d.stepNumber === 'number' && d.stepNumber <= stepNumberLte;
       }

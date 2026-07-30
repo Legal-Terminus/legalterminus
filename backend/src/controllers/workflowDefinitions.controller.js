@@ -50,7 +50,11 @@ function withMigratedDescriptions(def) {
 }
 
 function projectDefinitionForClient(def) {
-  const steps = (def.steps ?? []).map((s) => {
+  // #139: a step with "Show to Client" disabled must NEVER reach the client —
+  // not even its title. It was stripped from the matter's step list but still
+  // travelled in the definition, so the client's "current step" panel rendered
+  // it whenever the matter sat on a hidden step. Drop such steps entirely.
+  const steps = (def.steps ?? []).filter((s) => s.clientVisible !== false).map((s) => {
     const copy = { ...s };
     // #103: client sees the client-facing step name (falls back to the internal
     // title); the internal title / clientTitle field are not exposed as such.

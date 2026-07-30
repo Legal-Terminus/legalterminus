@@ -295,9 +295,14 @@ export default function TaskDetailPage() {
     .sort((a, b) => authPos(a.stepNumber) - authPos(b.stepNumber))
     .map((s) => s.stepNumber);
   const currentDisplayNum = orderedNums.indexOf(task.currentStepNumber) + 1;
+  // #139: for a CLIENT, the current step may be hidden ("Show to Client" off) —
+  // the server strips it from both the step list and the definition, so it has no
+  // position here. Never leak its raw number; say "In progress" instead.
   const progressLabel = completed
     ? `Completed · ${total} of ${total}`
-    : `Step ${currentDisplayNum > 0 ? currentDisplayNum : task.currentStepNumber} of ${total}`;
+    : currentDisplayNum > 0
+      ? `Step ${currentDisplayNum} of ${total}`
+      : `In progress · ${total} steps`;
   const currentDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber);
 
   const TABS: { key: TabKey; label: string; icon: typeof ListChecks }[] = [
@@ -938,6 +943,14 @@ function StepsTab({
       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
       <p className="text-sm text-emerald-700 font-medium">This service is complete.</p>
     </div>
+  ) : role.isClient && isAdvanceable && !currentDef ? (
+    // #139: the matter sits on a step hidden from the client ("Show to Client"
+    // off) — the server strips it from everything the client receives, so there
+    // is no currentDef. Show a calm generic card instead of the hidden step.
+    <div className="card p-5 flex items-center gap-2.5">
+      <Loader2 className="w-4 h-4 text-brand-600 animate-spin" />
+      <p className="text-sm text-ink-muted">Our team is working on your service — no action is needed from you right now.</p>
+    </div>
   ) : null;
 
   // Quieter sections below the hero — clearly separated by section headers.
@@ -965,7 +978,13 @@ function StepsTab({
       isCurrent={step.stepNumber === task.currentStepNumber && !completed}
       owner={ownerOf(step.stepNumber)}
       ownerLabel={ownerLabel[ownerOf(step.stepNumber)]}
-      comments={events.filter((e) => e.comment && (e.fromStep === step.stepNumber || e.toStep === step.stepNumber))}
+      // #138: a comment belongs to the step it was made ON (fromStep — the step
+      // that was completed/acted on), NOT the step the move landed on. Matching
+      // toStep too showed the previous step's comment on the current in-progress
+      // step. (Comment-only STEP_NOTEs have fromStep === toStep, so they still
+      // attach to their own step; the hero info box keeps its own arriving-note
+      // logic via approvalNoteFor.)
+      comments={events.filter((e) => e.comment && e.fromStep === step.stepNumber)}
       attachments={documents.filter((d) => d.stepNumber === step.stepNumber)}
       onOpenDoc={onOpenDoc}
       onReopen={onReopen}

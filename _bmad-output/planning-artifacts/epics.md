@@ -3350,6 +3350,30 @@ not new engine code.
 
 ---
 
+### #138 + #139 + #140 — comment attribution, hidden-step leak, and the last numeric-order bugs (2026-07-30)
+- **#138**: the step row attributed a comment to BOTH its fromStep and toStep, so a
+  completing comment echoed on the next in-progress step. A comment now belongs
+  only to the step it was made ON (fromStep); STEP_NOTEs (from==to) still attach to
+  their own step; the hero info box keeps its arriving-note logic (#105).
+- **#139**: `projectDefinitionForClient` stripped internal FIELDS but kept
+  clientVisible:false STEPS — so the client's current-step panel rendered a hidden
+  step whenever the matter sat on one. Hidden steps are now dropped from the
+  client's definition entirely (fail closed). Frontend: when the client's current
+  step is hidden, the header says "In progress · N steps" (never the raw number)
+  and a calm "Our team is working on your service" card replaces the hero.
+- **#140**: the remaining numeric-order assumptions in `transitionTask` (after
+  #117/#55): `isBackward` compared identity numbers, so an authored-forward but
+  numerically-backward move (e.g. …39 → 4) was misread as REWORK and reset the
+  completed step to `pending` — exactly "completed step stays Pending". Direction
+  is now measured in authored order, as are: the stale-notification clearing (new
+  `stepNumberIn` option — exact vacated-step set instead of a numeric ≤ range) and
+  `projectMatterDueAt` (remaining-ETA walk in authored order).
+- e2e (`flow-order.spec.ts`, serial lifecycle on the out-of-order def, now with a
+  clientVisible:false step): every departed step completes across numerically-
+  backward forward moves; the client never sees the hidden step (def, task, UI);
+  the completing comment renders only on its own row; plus the existing #117/#55/
+  #105 assertions. 29-test regression sweep green.
+
 ### #117 + #55 — Flow follows the AUTHORED order, not numeric stepNumbers (2026-07-29)
 - ROOT CAUSE (shared): steps inserted later in the Workflow Editor keep high
   identity numbers, so the flow legitimately jumps e.g. 3 → 37 while steps 4–36 are

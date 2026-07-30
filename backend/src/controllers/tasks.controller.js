@@ -34,10 +34,20 @@ function etaDaysOf(stepDef) {
 // still lie ahead (current step included). Every step has an ETA (its configured
 // value or the 2-day default), so this always projects a date.
 function projectMatterDueAt(stepDefs, fromStepNumber, fromIso) {
+  // #140/#55: `stepDefs` arrives in the definition's AUTHORED (flow) order —
+  // "remaining work" = the current step and everything AFTER it in that order.
+  // Identity numbers aren't flow-ordered, so a numeric comparison over- or
+  // under-counted the remaining ETAs. Falls back to the numeric filter only if
+  // the current step isn't in the definition (legacy/defensive).
   let total = 0;
   let any = false;
+  let reached = false;
+  const present = stepDefs.some((s) => s.stepNumber === fromStepNumber);
   for (const s of stepDefs) {
-    if (s.stepNumber < fromStepNumber) continue;
+    if (present) {
+      if (s.stepNumber === fromStepNumber) reached = true;
+      if (!reached) continue;
+    } else if (s.stepNumber < fromStepNumber) continue;
     total += etaDaysOf(s);
     any = true;
   }
@@ -1628,11 +1638,23 @@ export async function transitionTask(req, res) {
     const batch = db.batch();
     batch.set(taskRef, taskUpdate, { merge: true });
 
+    // #140/#117/#55: direction and "between" are measured in the definition's
+    // AUTHORED order — step identity numbers are NOT flow-ordered (a forward move
+    // can land on a LOWER number, e.g. …39 → 4). Comparing numbers misread such
+    // moves as REWORK and reset the completed step to 'pending' (#140).
+    const authoredNums = compiled.definition.steps.map((s) => s.stepNumber);
+    const authFromIdx = authoredNums.indexOf(task.currentStepNumber);
+    const authToIdx = authoredNums.indexOf(newStep);
+    const authOrdered = authFromIdx !== -1 && authToIdx !== -1;
+    const isForwardMove = authOrdered
+      ? authToIdx > authFromIdx
+      : newStep > task.currentStepNumber; // defensive fallback (legacy data)
+
     if (newStep !== task.currentStepNumber) {
       const leftRef = taskRef.collection('steps').doc(String(task.currentStepNumber));
       // #56: a backward move (REWORK / reject) does NOT complete the rejected step
       // — it goes back to `pending` to be redone; the prior step reactivates below.
-      const isBackward = newStep < task.currentStepNumber;
+      const isBackward = !isForwardMove;
       if (isBackward) {
         batch.set(leftRef, {
           status: 'pending',
@@ -1682,15 +1704,12 @@ export async function transitionTask(req, res) {
     // and the landed step in authored order — are swept.
     const fromStep = task.currentStepNumber;
     {
-      const authored = compiled.definition.steps.map((s) => s.stepNumber);
-      const fromIdx = authored.indexOf(fromStep);
-      const toIdx = authored.indexOf(newStep);
       // Fall back to the legacy numeric range only if either step is missing from
       // the pinned definition (shouldn't happen; defensive for legacy data).
-      const betweenNums = (fromIdx !== -1 && toIdx !== -1)
-        ? (toIdx > fromIdx + 1 ? authored.slice(fromIdx + 1, toIdx) : [])
+      const betweenNums = authOrdered
+        ? (authToIdx > authFromIdx + 1 ? authoredNums.slice(authFromIdx + 1, authToIdx) : [])
         : (newStep > fromStep + 1
-            ? authored.filter((n) => n > fromStep && n < newStep)
+            ? authoredNums.filter((n) => n > fromStep && n < newStep)
             : []);
       if (betweenNums.length) {
         const typeByNum = new Map(compiled.definition.steps.map((s) => [s.stepNumber, s.type]));
@@ -1761,10 +1780,13 @@ export async function transitionTask(req, res) {
     try {
       if (isComplete) {
         await resolveNotificationsForTask(taskId);
-      } else if (newStep > task.currentStepNumber) {
-        // Forward: clear every step strictly before the arrival step.
-        await resolveNotificationsForTask(taskId, { stepNumberLte: newStep - 1 });
-      } else if (newStep < task.currentStepNumber) {
+      } else if (isForwardMove && newStep !== task.currentStepNumber) {
+        // Forward: clear every step strictly before the arrival step — in
+        // AUTHORED order (#140), since identity numbers aren't flow-ordered.
+        await resolveNotificationsForTask(taskId, authOrdered
+          ? { stepNumberIn: authoredNums.slice(0, authToIdx) }
+          : { stepNumberLte: newStep - 1 });
+      } else if (!isForwardMove && newStep !== task.currentStepNumber) {
         // Backward (REWORK): clear stale alerts for the step we left and anything
         // after the step we return to, then the fresh notification below re-arms
         // the returned-to step.
@@ -1832,7 +1854,8 @@ export async function transitionTask(req, res) {
       // completions never spam the client. Fire-and-forget like every notify.
       const departedDef = etaStepDefs.find((s) => s.stepNumber === task.currentStepNumber);
       const departedWasClientStep = departedDef && deriveOwnerType(departedDef) === 'client';
-      const advancedForward = !isComplete && newStep > task.currentStepNumber;
+      // #140: forward is measured in authored order, not by identity number.
+      const advancedForward = !isComplete && isForwardMove && newStep !== task.currentStepNumber;
       if ((departedWasClientStep && (advancedForward || isComplete)) && task.clientUid) {
         const stepTitle = departedDef?.title ?? `Step ${task.currentStepNumber}`;
         const confirmMsg = role === 'client'
