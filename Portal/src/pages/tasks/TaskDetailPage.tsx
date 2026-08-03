@@ -6,7 +6,7 @@ import {
   CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase, Eye, EyeOff,
   ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw, Check,
-  ChevronsLeft, ChevronsRight, MoreVertical, Users, Send,
+  ChevronsLeft, ChevronsRight, MoreVertical, Users,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
@@ -17,7 +17,7 @@ import RichTextEditor from '../../components/common/RichTextEditor';
 import RichText from '../../components/common/RichText';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, reopenStep, postStepNote, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, reopenStep, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
 import { useRail, type RailState } from '../../hooks/useResizablePanels';
@@ -89,17 +89,6 @@ export default function TaskDetailPage() {
     onError: (err: Error) => toast.error(err.message || 'Could not advance the task.'),
   });
 
-  // #105: staff share a note onto the current (client-approval) step WITHOUT
-  // advancing it — the client reads it in the step's info box.
-  const shareNote = useMutation({
-    mutationFn: (vars: { stepNumber: number; note: string }) =>
-      postStepNote(taskId!, vars.stepNumber, vars.note),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['task-events', taskId] });
-      toast.success('Note shared with the client.');
-    },
-    onError: (err: Error) => toast.error(err.message || 'Could not share the note.'),
-  });
 
   // Step assignment is an admin/manager action; team members can't reassign.
   const canAssign = role === 'admin' || role === 'manager';
@@ -507,8 +496,6 @@ export default function TaskDetailPage() {
           role={{ isStaff, isClient, canOverrideClient: canAssign, isAdmin: role === 'admin', uid: currentUserUid }}
           pending={advance.isPending}
           onEvent={(e) => advance.mutate(e)}
-          onShareNote={(stepNumber, note) => shareNote.mutate({ stepNumber, note })}
-          sharingNote={shareNote.isPending}
           assignment={canAssign ? {
             staff,
             assigning: assign.isPending,
@@ -745,7 +732,7 @@ interface StepAssignment {
 }
 
 function StepsTab({
-  task, definition, stepDefs, currentDef, completed, role, pending, onEvent, assignment, events, documents, onAttach, onOpenDoc, onReopen, onShareNote, sharingNote,
+  task, definition, stepDefs, currentDef, completed, role, pending, onEvent, assignment, events, documents, onAttach, onOpenDoc, onReopen,
 }: {
   task: Task;
   definition?: WorkflowDefinition;
@@ -755,9 +742,6 @@ function StepsTab({
   role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null };
   pending: boolean;
   onEvent: (e: WorkflowEventInput) => void;
-  /** #105: staff share a note onto a step without advancing it. */
-  onShareNote?: (stepNumber: number, note: string) => void;
-  sharingNote?: boolean;
   assignment?: StepAssignment;
   events: TaskEvent[];
   documents: TaskDocument[];
@@ -830,15 +814,17 @@ function StepsTab({
     return role.isClient ? s.clientStatus : s.internalStatus;
   };
 
-  // #105: the info the client should review before Approve / Request Changes on a
-  // client-approval step. It's the LATEST comment the internal team left targeting
-  // this step (the "Name & Object shared by our team" message). For a client the
-  // event feed masks staff as "Our team", so we take the most recent commented
-  // event that arrives at (toStep) or sits on (fromStep) this step and was NOT
-  // authored by the client themselves.
+  // #142 (generalises #105): the info card at the top of the CURRENT step shows
+  // the latest comment that ARRIVED here — the previous step's hand-off comment
+  // (its completing/approving comment) or a posted step note (from == to). That's
+  // the "previous communication" the current owner should read before acting.
+  // Visibility is enforced by the events feed itself: a client's feed only
+  // carries client-visible comments (internal-only ones surface for staff alone),
+  // and a client's own comment ('You') isn't echoed back to them — but it DOES
+  // reach the internal team on the next step.
   const approvalNoteFor = (n: number): { text: string; by: string; at: string | null } | undefined => {
     const relevant = events
-      .filter((e) => e.comment && (e.toStep === n || e.fromStep === n) && e.byName !== 'You')
+      .filter((e) => e.comment && e.toStep === n && e.byName !== 'You')
       .sort((a, b) => (a.at ?? '').localeCompare(b.at ?? ''));
     const last = relevant[relevant.length - 1];
     return last?.comment ? { text: last.comment, by: last.byName, at: last.at } : undefined;
@@ -935,8 +921,6 @@ function StepsTab({
       statusLabel={statusFor(task.currentStepNumber)}
       description={descFor(task.currentStepNumber)}
       approvalNote={approvalNoteFor(task.currentStepNumber)}
-      onShareNote={onShareNote}
-      sharingNote={sharingNote}
       fallbackView={!!task.currentStepFallback}
     />
   ) : completed ? (
@@ -1516,7 +1500,7 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, onShareNote, sharingNote, fallbackView = false,
+  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, fallbackView = false,
 }: {
   taskId: string;
   step: WorkflowStepDef;
@@ -1536,9 +1520,6 @@ function StepHeroPanel({
   description?: string;
   /** #105: latest internal-team message for the client to review before approving. */
   approvalNote?: { text: string; by: string; at: string | null };
-  /** #105: staff share a note onto this step without advancing it. */
-  onShareNote?: (stepNumber: number, note: string) => void;
-  sharingNote?: boolean;
   /** #139: client fallback view — the shown step is the last visible one, not actionable. */
   fallbackView?: boolean;
 }) {
@@ -1573,7 +1554,6 @@ function StepHeroPanel({
   // #83: the draft autosaves per matter/step/user and restores on reopen.
   const draft = useCommentDraft(taskId, step.stepNumber, role.uid ?? null);
   const [comment, setComment] = useState('');
-  const [noteDraft, setNoteDraft] = useState(''); // #105: note-to-client draft
   const [needComment, setNeedComment] = useState(false);
   // #115: staff opt-in to share THIS comment with the client. Default OFF so an
   // internal note is never exposed by accident — EXCEPT on a client-approval step,
@@ -1878,51 +1858,21 @@ function StepHeroPanel({
             <p className="text-sm text-ink-muted mt-1 whitespace-pre-wrap break-words">{description ?? step.description}</p>
           )}
 
-          {/* #105: read-only info box the client reviews before Approve / Request
-              Changes — the latest message the internal team left on this step
-              (e.g. the proposed names & objects to review). Shown to the STAFF too
-              so they see exactly what the client sees. Hidden when empty. */}
-          {isClientStep && approvalNote && (
+          {/* #142 (generalises #105): the previous step's latest comment carried
+              forward as an info card — the "previous communication" the current
+              owner reads before acting. Shown to BOTH roles on ANY step; the
+              events feed already enforces visibility (a client only ever receives
+              client-visible comments, and a client's own comment reaches the
+              team, not themselves). Hidden when there's nothing to show. */}
+          {approvalNote && (
             <div className="mt-3 rounded-lg border border-brand-200 bg-brand-50/60 p-4">
               <p className="text-xs font-semibold text-brand-800 inline-flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5" /> {role.isClient ? 'Shared by our team' : 'Visible to the client'}
+                <Users className="w-3.5 h-3.5" /> {role.isClient ? 'Shared by our team' : 'From the previous step'}
               </p>
               <RichText html={approvalNote.text} className="text-sm text-ink mt-1.5" />
               <p className="text-[11px] text-ink-faint mt-2">
                 {approvalNote.by}{approvalNote.at ? ` · ${relTime(approvalNote.at)}` : ''}
               </p>
-            </div>
-          )}
-
-          {/* #105: STAFF "Note to client" on a waiting client-approval step — post
-              (or update) the review info WITHOUT advancing the step. The note
-              becomes the client's info box above Approve / Request Changes. */}
-          {role.isStaff && isClientStep && onShareNote && (
-            <div className="mt-3">
-              <p className="text-xs font-semibold text-ink-muted mb-1.5 inline-flex items-center gap-1.5">
-                <Send className="w-3.5 h-3.5" /> Note to client
-              </p>
-              <RichTextEditor
-                value={noteDraft}
-                onChange={setNoteDraft}
-                disabled={!!sharingNote}
-                placeholder="What should the client review? e.g. the proposed names & objects…"
-                ariaLabel="Note to client"
-                rows={3}
-              />
-              <button
-                onClick={() => {
-                  const v = noteDraft.trim();
-                  if (!v) return;
-                  onShareNote(step.stepNumber, v);
-                  setNoteDraft('');
-                }}
-                disabled={!!sharingNote || !noteDraft.trim()}
-                className="btn-secondary py-1.5 px-3 text-xs mt-1.5 inline-flex items-center gap-1.5 disabled:opacity-50"
-              >
-                {sharingNote ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                {approvalNote ? 'Update the shared note' : 'Share with client'}
-              </button>
             </div>
           )}
 

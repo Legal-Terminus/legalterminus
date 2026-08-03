@@ -44,7 +44,7 @@ test.beforeAll(async () => {
       { stepNumber: 5, title: 'HiddenInternal', type: 'step', clientVisible: false, transitions: [{ event: 'COMPLETE_STEP', to: 2 }] },
       { stepNumber: 2, title: 'Charlie', type: 'payment_gate', gate: { requires: 'fully_paid', onPass: 3, onWait: 2 } },
       { stepNumber: 3, title: 'Delta', type: 'step', defaultAssigneeUid: '__CLIENT__', transitions: [{ event: 'CLIENT_APPROVE', to: 4 }] },
-      { stepNumber: 4, title: 'Omega', type: 'final' },
+      { stepNumber: 4, title: 'Omega', type: 'final', clientVisible: false },
     ],
   };
   const res = await api.post('/api/workflow-definitions', { data: def });
@@ -93,6 +93,9 @@ test.describe.serial('flow-order lifecycle', () => {
     const bravo = adminPage.locator('#step-row-6:visible').first();
     await expect(bravo).toBeVisible();
     await expect(bravo).not.toContainText('COMMENT-138-X');
+    // #142: but the HERO carries it forward as "From the previous step", so the
+    // current owner reads the hand-off without opening the previous step.
+    await expect(adminPage.getByText('From the previous step').first()).toBeVisible();
   });
 
   test('#140: an authored-forward but numerically-backward move COMPLETES the departed step', async () => {
@@ -125,6 +128,9 @@ test.describe.serial('flow-order lifecycle', () => {
     await expect(clientPage.getByText('HiddenInternal')).toHaveCount(0);
     await expect(clientPage.getByText('Bravo').first()).toBeVisible({ timeout: 15_000 });
     await expect(clientPage.getByText(/no action is needed from you right now/i).first()).toBeVisible();
+    // #142: the Alpha→Bravo hand-off comment was INTERNAL (staff-owned arrival,
+    // not marked visible) — it must never surface on the client screen.
+    await expect(clientPage.getByText('COMMENT-138-X')).toHaveCount(0);
   });
 
   test('#117/#140: the gate completes only when reached; the hidden step completes on departure', async () => {
@@ -176,5 +182,26 @@ test.describe.serial('flow-order lifecycle', () => {
     const res = await client.post(`/api/tasks/${taskId}/steps/3/note`, { data: { note: 'nope' } });
     expect(res.status()).toBe(403);
     await client.dispose();
+  });
+
+  test('#141: after completion (onto a HIDDEN final step) the client sees Done, never In Progress', async ({ clientPage }) => {
+    // The client approves Delta (3) → Omega (4, final, clientVisible:false) →
+    // matter completes while "sitting" on a hidden step. The #139 fallback must
+    // NOT re-activate the last visible step on a finished matter.
+    const client = await apiAs('client');
+    const res = await client.post(`/api/tasks/${taskId}/transition`, { data: { event: { type: 'CLIENT_APPROVE' } } });
+    expect(res.ok()).toBeTruthy();
+
+    const t = await (await client.get(`/api/tasks/${taskId}`)).json();
+    expect(t.status).toBe('completed');
+    expect(t.currentStepFallback ?? false).toBe(false);
+    const statuses = (t.steps as Array<{ status: string }>).map((s) => s.status);
+    expect(statuses).not.toContain('active');
+    await client.dispose();
+
+    await clientPage.goto(`tasks/${taskId}`);
+    await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await expect(clientPage.getByText(/service is complete/i).first()).toBeVisible({ timeout: 15_000 });
+    await expect(clientPage.getByText('In progress', { exact: true })).toHaveCount(0);
   });
 });
