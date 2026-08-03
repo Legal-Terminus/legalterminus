@@ -1391,7 +1391,11 @@ function ActivityThreadCard({ events, flush, definition, currentStep }: { events
   // #66: stepNumber → continuous display position (1,2,3…), so the activity
   // header matches the gap-free numbering shown everywhere else. Ordered by the
   // definition's step sequence; raw stepNumber stays the internal identity.
-  const orderedDefNums = [...(definition?.steps ?? [])].sort((a, b) => a.stepNumber - b.stepNumber).map((s) => s.stepNumber);
+  // #73/#55: the definition's AUTHORED array order IS the flow sequence. Sorting
+  // numerically broke "immediately previous" once steps were rearranged in the
+  // editor (they keep their original identity numbers), so the Activity panel
+  // defaulted to the wrong step's activity.
+  const orderedDefNums = (definition?.steps ?? []).map((s) => s.stepNumber);
   const displayNumOf = (n: number) => { const i = orderedDefNums.indexOf(n); return i >= 0 ? i + 1 : n; };
   // The step acted upon is where the action was taken (fromStep); fall back to toStep.
   const stepOf = (e: TaskEvent) => e.fromStep ?? e.toStep ?? null;

@@ -809,11 +809,26 @@ export async function reopenStep(req, res) {
 
     // Every step AFTER the target that was already done reverts to pending, so the
     // remaining workflow is worked through again in order.
-    const laterDone = await taskRef.collection('steps')
-      .where('stepNumber', '>', target)
-      .get();
+    // #143: "after" is measured in the definition's AUTHORED order — identity
+    // numbers are not flow-ordered, so `stepNumber > target` also reset steps that
+    // come BEFORE the target in the flow but happen to carry higher numbers
+    // (e.g. 45/46/47 sit between steps 5 and 6). Those must stay completed.
+    const laterNums = await (async () => {
+      try {
+        const compiled = await getCompiledById(task.workflowDefinitionId);
+        const authored = compiled?.definition?.steps?.map((s) => s.stepNumber);
+        if (Array.isArray(authored)) {
+          const i = authored.indexOf(target);
+          if (i !== -1) return new Set(authored.slice(i + 1));
+        }
+      } catch { /* fall through to the numeric fallback */ }
+      return null;
+    })();
+    const laterDone = await taskRef.collection('steps').get();
     laterDone.forEach((d) => {
-      const st = d.data().status;
+      const { stepNumber, status: st } = d.data();
+      const isLater = laterNums ? laterNums.has(stepNumber) : stepNumber > target;
+      if (!isLater) return;
       if (st === 'completed' || st === 'skipped' || st === 'active') {
         batch.set(d.ref, { status: 'pending', completedAt: null, startedAt: null }, { merge: true });
       }
