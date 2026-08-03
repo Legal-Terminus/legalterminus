@@ -202,6 +202,26 @@ export default function WorkflowEditorPage() {
   const setDraft = (updater: (d: WorkflowDefinition | null) => WorkflowDefinition | null) =>
     setSeeded((s) => (s ? { ...s, draft: updater(s.draft)! } : s));
 
+  // #130: start a NEW workflow from an existing one. Authoring a 40-step service
+  // flow from a blank canvas is impractical, so an admin can copy a proven
+  // workflow's steps/phases onto a different service and edit from there. Only
+  // the structure is copied — id, name and service binding stay this workflow's
+  // own (a service key may power exactly one workflow).
+  const copyFrom = async (sourceId: string) => {
+    // The list endpoint returns summaries (no steps), so fetch the full source.
+    let src: WorkflowDefinition;
+    try { src = await getWorkflowDefinition(sourceId); }
+    catch { toast.error('Could not load that workflow to copy from.'); return; }
+    setDraft((d) => (d ? {
+      ...d,
+      initialStep: src.initialStep,
+      phases: structuredClone(src.phases ?? []),
+      steps: structuredClone(src.steps ?? []),
+      name: d.name || `${src.name} (copy)`,
+    } : d));
+    toast.success(`Copied the steps from “${src.name}”. Edit them for this service, then create.`);
+  };
+
   const errors = useMemo(() => {
     if (!draft) return [];
     const base = validate(draft);
@@ -355,6 +375,22 @@ export default function WorkflowEditorPage() {
                   {availableServices.length === 0 && (
                     <p className="text-[11px] text-amber-700 mt-0.5">Every service already has a workflow. Edit an existing one instead.</p>
                   )}
+                </div>
+              )}
+              {/* #130: copy a proven workflow's steps instead of authoring 40+
+                  steps from scratch, then edit them for this service. */}
+              {isCreate && (defs ?? []).length > 0 && (
+                <div className="flex flex-col gap-0.5">
+                  <FieldLabel label="Start from an existing workflow" hint="Copies that workflow's stages and steps into this one so you can edit rather than build from scratch. The service binding and name stay yours." />
+                  <select
+                    className={inputCls}
+                    value=""
+                    onChange={(e) => { if (e.target.value) copyFrom(e.target.value); }}
+                    aria-label="Start from an existing workflow"
+                  >
+                    <option value="">Start from scratch</option>
+                    {(defs ?? []).map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  </select>
                 </div>
               )}
             </div>

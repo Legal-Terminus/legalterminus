@@ -294,6 +294,28 @@ test('#117: the editor exposes the part-payment chase toggle and it persists', a
   await api.dispose();
 });
 
+test('#130: create mode offers "Start from an existing workflow" (copy a proven flow)', async ({ adminPage }) => {
+  await adminPage.goto('services');
+  await adminPage.getByRole('button', { name: /new workflow/i }).click();
+  await expect(adminPage.getByRole('heading', { name: 'New Workflow' })).toBeVisible();
+
+  // The copy picker is present and lists existing workflows.
+  const picker = adminPage.getByLabel('Start from an existing workflow');
+  await expect(picker).toBeVisible();
+  const options = await picker.locator('option').allInnerTexts();
+  expect(options[0]).toMatch(/start from scratch/i);
+  expect(options.length).toBeGreaterThan(1);
+
+  // Copying pulls that workflow's steps into the draft (a blank one has 2 steps).
+  const stepsToggle = adminPage.getByRole('button', { name: /^Steps \(\d+\)/ });
+  const before = await stepsToggle.innerText();
+  await picker.selectOption({ index: 1 });
+  await expect(adminPage.getByText(/copied the steps from/i)).toBeVisible();
+  await expect(async () => {
+    expect(await stepsToggle.innerText()).not.toBe(before);
+  }).toPass({ timeout: 10_000 });
+});
+
 test('admin can edit a step’s outcomes (add a second outcome) on the throwaway', async () => {
   // Outcome rows (#1) map 1:1 to transitions — adding an outcome adds a transition.
   const api = await apiAs('admin');

@@ -3350,6 +3350,30 @@ not new engine code.
 
 ---
 
+### #143 / #73 / #125 / #130 (2026-08-03)
+- **#143** (resubmission resets earlier steps): NOT reproducible on the current
+  build — verified against the live definition (CLIENT_REJECT 9 → 6 leaves 4, 5,
+  45, 46, 47 `completed`; the timeline renders 1–6 Done, 7 In progress). It was a
+  symptom of the #140 numeric-direction bug, fixed after the report was filed.
+  A genuine sibling of the same family WAS found and fixed in `reopenStep`: the
+  "reset everything after the target" sweep used `stepNumber > target`, which also
+  reset steps that precede the target in AUTHORED order but carry higher numbers
+  (45/46/47 sit between 5 and 6). Now measured in authored order.
+- **#73** (Activity previous-step): the panel's `orderedDefNums` sorted numerically,
+  so "immediately previous" resolved to the wrong step once the workflow was
+  rearranged — which is what the stakeholder saw as the feature regressing. Now
+  uses the definition's authored array order, restoring current + previous.
+- **#125** (wording): the document badge now reads "Re-submission Required" instead
+  of "Rejected" — it states what's needed rather than sounding like a dead end.
+- **#130** (workflow templates per service): the create flow already supports
+  binding a new workflow to any free service; the practical blocker was authoring
+  40+ steps from a blank canvas. Added **"Start from an existing workflow"** to
+  create mode — copies a proven workflow's stages/steps into the new draft (fetching
+  the full source definition, since the list endpoint returns summaries) while the
+  name and service binding stay the new workflow's own. The 4 requested services
+  (Trademark, GST, FSSAI, Udyam) are all present and unbound, so the team can now
+  create each by copying incorporation and editing.
+
 ### #141 — completed matter no longer shows the last step "In Progress" (2026-07-30)
 - Regression from the #139 fallback: it rewrote the client's current step to the
   last visible one and presented it as ACTIVE without checking the matter's status.
