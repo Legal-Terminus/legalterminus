@@ -42,7 +42,9 @@ test.describe.serial('E-05 document cycle', () => {
     const remark = 'E2E: please re-upload a clearer copy.';
     await adminPage.getByPlaceholder(/reason for rejection/i).fill(remark);
     await adminPage.getByRole('button', { name: 'Confirm rejection' }).click();
-    await expect(adminPage.getByText('Rejected').first()).toBeVisible();
+    // #125: the badge reads "Re-submission Required" (not "Rejected") — it tells
+    // the client what's needed rather than sounding like a dead end.
+    await expect(adminPage.getByText('Re-submission Required').first()).toBeVisible();
     await expect(adminPage.getByText(remark)).toBeVisible();
   });
 

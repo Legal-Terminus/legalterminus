@@ -339,7 +339,9 @@ const STATUS_META: Record<DocumentStatus, { label: string; cls: string; Icon: ty
   draft:           { label: 'Draft',           cls: 'bg-brand-50 text-brand-700',     Icon: FilePlus2 },
   pending_review:  { label: 'Pending review',  cls: 'bg-amber-50 text-amber-700',     Icon: Clock },
   approved:        { label: 'Approved',        cls: 'bg-emerald-50 text-emerald-700', Icon: CheckCircle2 },
-  rejected:        { label: 'Rejected',        cls: 'bg-red-50 text-red-600',          Icon: AlertCircle },
+  // #125: "Rejected" reads as a dead end; the client is being asked to send a new
+  // copy, so the badge says what's needed instead.
+  rejected:        { label: 'Re-submission Required', cls: 'bg-red-50 text-red-600',   Icon: AlertCircle },
   archived:        { label: 'Archived',        cls: 'bg-surface-card text-ink-faint', Icon: Archive },
 };
 
