@@ -137,8 +137,13 @@ function projectTaskForClient(task, view = null) {
   // AUTHORED order) as the current, in-progress step — until the flow reaches the
   // next visible one. `currentStepFallback` tells the UI to render that step
   // without action buttons (it is not truly actionable).
+  // #141: NEVER on a finished matter — presenting the last visible step as
+  // "active" after completion showed the final step as In Progress forever. On a
+  // terminal status every step keeps its real (completed) state.
+  const terminal = ['completed', 'cancelled', 'archived', 'rejected'].includes(safe.status);
   if (
-    visibleStepNumbers && Array.isArray(view?.authored)
+    !terminal
+    && visibleStepNumbers && Array.isArray(view?.authored)
     && typeof safe.currentStepNumber === 'number'
     && !visibleStepNumbers.has(safe.currentStepNumber)
   ) {

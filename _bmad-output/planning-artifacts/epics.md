@@ -3350,6 +3350,31 @@ not new engine code.
 
 ---
 
+### #141 — completed matter no longer shows the last step "In Progress" (2026-07-30)
+- Regression from the #139 fallback: it rewrote the client's current step to the
+  last visible one and presented it as ACTIVE without checking the matter's status.
+  With a hidden final step, a COMPLETED matter showed its last visible step as
+  In Progress forever. The fallback now runs only on non-terminal matters
+  (completed / cancelled / archived / rejected keep every step's real state).
+- e2e: client approves onto a hidden final step → matter completes; the client's
+  task has no active steps, no fallback flag, and the UI shows "service is
+  complete" with zero "In progress" badges.
+
+### #142 — previous step's comment carried forward as the current step's info card (2026-07-30)
+- Generalises the #105 info box: the top of the CURRENT step now shows the latest
+  comment that ARRIVED with the hand-off (the previous step's completing comment,
+  or a posted step note) — for BOTH roles, on any step type. Labels: client
+  "Shared by our team", staff "From the previous step".
+- Visibility is enforced by the events feed itself: internal-only comments surface
+  for staff alone (the client's feed masks them); a client's comment reaches the
+  internal team on the next step but is not echoed back to its author.
+- The separate #105 "Note to client" composer UI was removed per the ticket (the
+  backend STEP_NOTE endpoint remains; existing notes still surface in the card,
+  since a note targets its own step).
+- e2e: staff hero shows "From the previous step" with the hand-off comment; the
+  internal-only comment never appears on the client screen; #105's posted-note
+  path still green.
+
 ### #139 (clarified) — client keeps seeing the LAST visible step while on a hidden one (2026-07-30)
 - Stakeholder clarification after the first fix: rather than a generic "our team is
   working" card, the client should CONTINUE SEEING the last "Show to Client" step
