@@ -5,6 +5,7 @@ import { assignServiceToClient } from '../../api/tasks';
 import { getAllUsers, displayName } from '../../api/users';
 import { getServiceCatalog } from '../../api/services';
 import { getWorkflowDefinitions } from '../../api/workflowDefinitions';
+import { PAYMENT_MODES } from '../../lib/paymentModes';
 
 /**
  * Create Matter (E11-S01) — a modal launched from the Matters page. Pick a client
@@ -22,6 +23,7 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
   const [totalCost, setTotalCost] = useState('');
   const [amountReceived, setAmountReceived] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
+  const [paymentDescription, setPaymentDescription] = useState(''); // #147
   const [professionalUid, setProfessionalUid] = useState(''); // #85
   const [organisation, setOrganisation] = useState(''); // #104
   const [orgEdited, setOrgEdited] = useState(false);
@@ -82,6 +84,7 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
           totalCost: Number(totalCost) || undefined,
           amountReceived: Number(amountReceived) || 0,
           paymentMode: paymentMode || undefined,
+          paymentDescription: paymentDescription.trim() || undefined, // #147
         } : {}),
       });
     },
@@ -203,7 +206,7 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
               type="text"
               value={organisation}
               onChange={(e) => { setOrganisation(e.target.value); setOrgEdited(true); }}
-              placeholder="e.g. ABC Technologies Pvt. Ltd."
+              placeholder="e.g. ABC Technologies Private Limited"
               className="input-field w-full"
               aria-label="Organisation name"
             />
@@ -271,13 +274,42 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
                   <span className="block text-ink-muted mb-1">Amount Received</span>
                   <input type="number" min={0} value={amountReceived} onChange={(e) => setAmountReceived(e.target.value)} className="input-field w-full" placeholder="0" />
                 </label>
+                {/* #145: a dropdown (not free text), matching the Payments tab
+                    editor — both render the shared PAYMENT_MODES list. */}
                 <label className="text-sm">
                   <span className="block text-ink-muted mb-1">Mode of Payment</span>
-                  <input type="text" value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)} className="input-field w-full" placeholder="UPI / NEFT / Cash…" />
+                  <select
+                    aria-label="Mode of Payment"
+                    value={paymentMode}
+                    onChange={(e) => setPaymentMode(e.target.value)}
+                    className="input-field w-full"
+                  >
+                    <option value="">Select mode…</option>
+                    {PAYMENT_MODES.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
                 </label>
                 <label className="text-sm">
                   <span className="block text-ink-muted mb-1">Amount Due</span>
                   <input type="text" readOnly value={amountDue} className="input-field w-full bg-surface-card text-ink-muted" />
+                </label>
+                {/* #147: optional free-text note for how the payment arrived —
+                    useful when one payment is split across several modes
+                    (e.g. "₹1,000 via UPI and ₹500 in Cash"). */}
+                <label className="text-sm col-span-2">
+                  <span className="block text-ink-muted mb-1">
+                    Payment Description <span className="text-ink-faint font-normal">(optional)</span>
+                  </span>
+                  <textarea
+                    aria-label="Payment Description"
+                    value={paymentDescription}
+                    onChange={(e) => setPaymentDescription(e.target.value)}
+                    rows={3}
+                    maxLength={1000}
+                    className="input-field w-full resize-y"
+                    placeholder="e.g. Received ₹1,000 via UPI and ₹500 in Cash."
+                  />
                 </label>
               </div>
             )}

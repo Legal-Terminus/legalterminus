@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
-import { apiAs, createMatter, deleteMatter, getMatter } from './api';
+import { apiAs, createMatter, deleteMatter, getMatter, resolveServiceKey } from './api';
+import { env } from './helpers';
 
 /**
  * API-level coverage for the additive matter features:
@@ -79,4 +80,63 @@ test('#78: admin edits payment; amounts + status recompute; manager allowed, cli
   const forbidden = await client.patch(`/api/tasks/${taskId}/payment`, { data: { paymentMode: 'Cash' } });
   expect(forbidden.status()).toBe(403);
   await client.dispose();
+});
+
+test('#147: payment description is saved at creation, editable, and clearable', async () => {
+  const api = await apiAs('admin');
+  const serviceKey = await resolveServiceKey();
+
+  // Saved at CREATION alongside the other payment fields.
+  const created = await api.post('/api/tasks', {
+    data: {
+      clientUid: env('E2E_CLIENT_UID'), serviceKey,
+      paymentStatus: 'part_paid', totalCost: 10000, amountReceived: 1500, paymentMode: 'UPI',
+      paymentDescription: 'Received ₹1,000 via UPI and ₹500 in Cash.',
+    },
+  });
+  expect(created.ok()).toBeTruthy();
+  const newId = (await created.json()).id as string;
+
+  try {
+    expect((await getMatter(newId)).paymentDescription)
+      .toBe('Received ₹1,000 via UPI and ₹500 in Cash.');
+
+    // Editable after creation.
+    const patch = await api.patch(`/api/tasks/${newId}/payment`, {
+      data: { paymentDescription: 'Balance ₹8,500 pending — cheque promised.' },
+    });
+    expect(patch.ok()).toBeTruthy();
+    expect((await patch.json()).paymentDescription).toBe('Balance ₹8,500 pending — cheque promised.');
+
+    // Untouched by an unrelated payment edit (preserved, not wiped).
+    await api.patch(`/api/tasks/${newId}/payment`, { data: { amountPaid: 2000 } });
+    expect((await getMatter(newId)).paymentDescription).toBe('Balance ₹8,500 pending — cheque promised.');
+
+    // Explicitly clearable.
+    await api.patch(`/api/tasks/${newId}/payment`, { data: { paymentDescription: '' } });
+    expect((await getMatter(newId)).paymentDescription).toBeFalsy();
+  } finally {
+    await api.dispose();
+    await deleteMatter(newId);
+  }
+});
+
+test('#145: create-matter accepts the dropdown payment modes', async () => {
+  const api = await apiAs('admin');
+  const serviceKey = await resolveServiceKey();
+  // The mode the Create Matter dropdown submits is stored verbatim on the matter.
+  const res = await api.post('/api/tasks', {
+    data: {
+      clientUid: env('E2E_CLIENT_UID'), serviceKey,
+      paymentStatus: 'part_paid', totalCost: 5000, amountReceived: 2000, paymentMode: 'Bank Transfer',
+    },
+  });
+  expect(res.ok()).toBeTruthy();
+  const newId = (await res.json()).id as string;
+  try {
+    expect((await getMatter(newId)).paymentMode).toBe('Bank Transfer');
+  } finally {
+    await api.dispose();
+    await deleteMatter(newId);
+  }
 });

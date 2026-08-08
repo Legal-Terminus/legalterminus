@@ -52,6 +52,7 @@ export const assignServiceToClient = (input: {
   totalCost?: number;
   amountReceived?: number;
   paymentMode?: string;
+  paymentDescription?: string; // #147: note on how the payment was received
   professionalUid?: string; // #85: optional handling professional (staff UID)
 }) =>
   apiFetch<Task>('/api/tasks', { method: 'POST', body: JSON.stringify(input) });
@@ -74,6 +75,7 @@ export interface PaymentUpdate {
   totalCost?: number;
   amountPaid?: number;
   paymentMode?: string | null;
+  paymentDescription?: string | null; // #147
   paymentStatus?: PaymentStatus;
 }
 export const updatePayment = (id: string, body: PaymentUpdate) =>

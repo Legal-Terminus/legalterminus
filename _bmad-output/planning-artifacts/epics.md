@@ -3350,6 +3350,30 @@ not new engine code.
 
 ---
 
+### #145 / #146 / #147 — Create Matter payment fields (2026-08-08)
+- **#145** (mode of payment as a dropdown): the Create Matter form's free-text
+  "Mode of Payment" input is now a `<select>`. The option list moved out of
+  `TaskDetailPage` into **`Portal/src/lib/paymentModes.ts`** (`PAYMENT_MODES`), so
+  the Create Matter form and the Payments tab editor render the SAME list and
+  cannot drift — that shared list was the point of the issue ("similar to the
+  Payment Mode dropdown in Workflow > Payment"). Free text is still accepted by
+  the API; the Payments tab keeps its `Other` fallback so a legacy/out-of-list
+  value is never silently dropped.
+- **#146** (placeholder): `e.g. ABC Technologies Pvt. Ltd.` →
+  `e.g. ABC Technologies Private Limited`.
+- **#147** (payment description): new optional `paymentDescription` (≤1000 chars)
+  on the matter — a multi-line note for payments split across modes ("Received
+  ₹1,000 via UPI and ₹500 in Cash"). Captured in Create Matter, shown in the
+  Payments tab read view, and editable there. Added to BOTH `taskCreateSchema`
+  and `taskPaymentUpdateSchema` (`.strict()` — an unlisted field 400s). The
+  update path PRESERVES it unless explicitly provided, so an unrelated amount
+  edit doesn't wipe the note; passing `''` clears it.
+- e2e: `matter-payments-docs.spec.ts` extended — #147 (saved at creation,
+  editable, preserved across an unrelated edit, clearable) and #145 (a dropdown
+  mode persists). 10/10 green.
+
+---
+
 ### #143 / #73 / #125 / #130 (2026-08-03)
 - **#143** (resubmission resets earlier steps): NOT reproducible on the current
   build — verified against the live definition (CLIENT_REJECT 9 → 6 leaves 4, 5,

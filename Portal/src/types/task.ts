@@ -41,6 +41,8 @@ export interface Task {
   amountDue?: number;
   totalCost?: number;
   paymentMode?: string | null;
+  /** #147: free-text note on how the payment was received (e.g. split across modes). */
+  paymentDescription?: string | null;
   professionalUid?: string | null; // #85
   professionalName?: string | null; // #85 (snapshot for display)
   currentStepNumber: number;

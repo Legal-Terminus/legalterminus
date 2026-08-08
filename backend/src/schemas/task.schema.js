@@ -21,6 +21,9 @@ export const taskCreateSchema = z.object({
   totalCost: z.number().min(0).max(1e9).optional(),
   amountReceived: z.number().min(0).max(1e9).optional(),
   paymentMode: z.string().trim().max(60).optional(),
+  // #147: free-text note on how the payment arrived — for payments split across
+  // several modes (e.g. "₹1,000 via UPI and ₹500 in Cash"). Optional.
+  paymentDescription: z.string().trim().max(1000).optional(),
   // #85: optional handling professional (a staff user UID). Validated in controller.
   professionalUid: z.string().trim().max(200).nullable().optional(),
 }).strict().refine(
@@ -58,6 +61,8 @@ export const taskPaymentUpdateSchema = z.object({
   amountPaid: z.number().min(0).max(1e9).optional(),
   paymentMode: z.string().trim().max(60).nullable().optional(),
   paymentStatus: z.enum(['not_paid', 'part_paid', 'fully_paid']).optional(),
+  // #147: editable after creation alongside the other payment details.
+  paymentDescription: z.string().trim().max(1000).nullable().optional(),
 }).strict().refine((b) => Object.keys(b).length > 0, {
   message: 'No payment fields provided',
 });

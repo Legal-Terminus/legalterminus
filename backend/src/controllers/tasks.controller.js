@@ -241,7 +241,8 @@ export async function createTask(req, res) {
 
     // Body validated by taskCreateSchema (incl. #51 payment fields).
     const { clientUid, serviceKey, serviceName, organisation,
-            paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, professionalUid } = req.body;
+            paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
+            professionalUid } = req.body;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
     if (!compiled) {
@@ -388,6 +389,8 @@ export async function createTask(req, res) {
       amountDue,
       totalCost: cost,
       paymentMode: paymentMode ?? null,
+      // #147: how the payment arrived, when split across modes. Free text, optional.
+      paymentDescription: paymentDescription || null,
       // #51: matters created with no payment require admin approval before going live.
       createdWithoutPayment: noPaymentNeedsApproval,
       isUrgent: false,
@@ -1361,6 +1364,10 @@ export async function updatePayment(req, res) {
     const totalCost = 'totalCost' in req.body ? req.body.totalCost : (task.totalCost ?? 0);
     const amountPaid = 'amountPaid' in req.body ? req.body.amountPaid : (task.amountPaid ?? 0);
     const paymentMode = 'paymentMode' in req.body ? (req.body.paymentMode || null) : (task.paymentMode ?? null);
+    // #147: preserved unless explicitly provided.
+    const paymentDescription = 'paymentDescription' in req.body
+      ? (req.body.paymentDescription || null)
+      : (task.paymentDescription ?? null);
     if (amountPaid > totalCost) {
       return res.status(400).json({ message: 'Amount paid cannot exceed the total cost.' });
     }
@@ -1382,7 +1389,7 @@ export async function updatePayment(req, res) {
     }
 
     const now = new Date().toISOString();
-    const update = { totalCost, amountPaid, amountDue, paymentMode, paymentStatus, updatedAt: now };
+    const update = { totalCost, amountPaid, amountDue, paymentMode, paymentDescription, paymentStatus, updatedAt: now };
 
     const batch = db.batch();
     batch.set(taskRef, update, { merge: true });
@@ -1397,7 +1404,7 @@ export async function updatePayment(req, res) {
     });
     await batch.commit();
 
-    res.json({ success: true, paymentStatus, amountPaid, amountDue, totalCost, paymentMode });
+    res.json({ success: true, paymentStatus, amountPaid, amountDue, totalCost, paymentMode, paymentDescription });
   } catch (err) {
     logger.error({ err }, 'updatePayment error:');
     res.status(500).json({ message: 'Failed to update payment' });

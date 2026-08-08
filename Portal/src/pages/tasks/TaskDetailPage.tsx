@@ -24,6 +24,7 @@ import { useRail, type RailState } from '../../hooks/useResizablePanels';
 import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
 import type { Task, TaskStep, StepStatus, PaymentStatus } from '../../types/task';
+import { PAYMENT_MODES } from '../../lib/paymentModes';
 
 type TabKey = 'steps' | 'documents' | 'payments' | 'discussion';
 
@@ -2233,9 +2234,8 @@ const PAYMENT: Record<PaymentStatus, { label: string; cls: string }> = {
   fully_paid: { label: 'Fully paid', cls: 'bg-emerald-50 text-emerald-700' },
 };
 
-// Payment modes offered in the editor (#78). Free-text is still accepted by the
-// API, but these cover the common cases and keep entries consistent.
-const PAYMENT_MODES = ['UPI', 'Bank Transfer', 'Cash', 'Credit Card', 'Debit Card', 'Cheque', 'Other'];
+// Payment modes offered in the editor (#78) — shared with Create Matter (#145)
+// so the two lists cannot drift. See `lib/paymentModes.ts`.
 
 function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
   const toast = useToast();
@@ -2246,11 +2246,13 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
   const [totalCost, setTotalCost] = useState(String(task.totalCost ?? task.amountPaid ?? 0));
   const [amountPaid, setAmountPaid] = useState(String(task.amountPaid ?? 0));
   const [paymentMode, setPaymentMode] = useState(task.paymentMode ?? '');
+  const [paymentDescription, setPaymentDescription] = useState(task.paymentDescription ?? ''); // #147
 
   const startEdit = () => {
     setTotalCost(String(task.totalCost ?? task.amountPaid ?? 0));
     setAmountPaid(String(task.amountPaid ?? 0));
     setPaymentMode(task.paymentMode ?? '');
+    setPaymentDescription(task.paymentDescription ?? '');
     setEditing(true);
   };
 
@@ -2259,6 +2261,7 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
       totalCost: Number(totalCost) || 0,
       amountPaid: Number(amountPaid) || 0,
       paymentMode: paymentMode.trim() || null,
+      paymentDescription: paymentDescription.trim() || null, // #147
     }),
     onSuccess: () => {
       toast.success('Payment updated.');
@@ -2307,6 +2310,13 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
               <p className="text-sm font-semibold text-ink">₹{(task.amountDue ?? 0).toLocaleString('en-IN')}</p>
             </div>
           </div>
+          {/* #147: how the payment arrived — only shown when recorded. */}
+          {task.paymentDescription && (
+            <div className="mt-4">
+              <p className="text-xs text-ink-muted">Payment description</p>
+              <p className="text-sm text-ink whitespace-pre-wrap">{task.paymentDescription}</p>
+            </div>
+          )}
           <p className="text-xs text-ink-faint mt-4">
             Payments are recorded by our team as they are received.
           </p>
@@ -2327,12 +2337,25 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
           </div>
           <label className="block">
             <span className="text-xs text-ink-muted">Payment mode</span>
-            <select value={PAYMENT_MODES.includes(paymentMode) || paymentMode === '' ? paymentMode : 'Other'}
+            <select value={(PAYMENT_MODES as readonly string[]).includes(paymentMode) || paymentMode === '' ? paymentMode : 'Other'}
               onChange={(e) => setPaymentMode(e.target.value === 'Other' ? '' : e.target.value)}
               className="input-field mt-1">
               <option value="">— Not set —</option>
               {PAYMENT_MODES.map((m) => <option key={m} value={m === 'Other' ? 'Other' : m}>{m}</option>)}
             </select>
+          </label>
+          {/* #147: editable note for payments split across modes. */}
+          <label className="block">
+            <span className="text-xs text-ink-muted">Payment description</span>
+            <textarea
+              aria-label="Payment description"
+              value={paymentDescription}
+              onChange={(e) => setPaymentDescription(e.target.value)}
+              rows={3}
+              maxLength={1000}
+              className="input-field mt-1 w-full resize-y"
+              placeholder="e.g. Received ₹1,000 via UPI and ₹500 in Cash."
+            />
           </label>
           <div className="flex items-center justify-between text-xs">
             <span className="text-ink-muted">Amount due: <span className="font-semibold text-ink">₹{dueNum.toLocaleString('en-IN')}</span></span>
