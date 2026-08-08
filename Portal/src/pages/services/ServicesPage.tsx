@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Layers, Pencil, Loader2, Workflow, Search, Plus } from 'lucide-react';
+import { Layers, Pencil, Loader2, Workflow, Search, Plus, CircleSlash } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
 import { useAuthStore } from '../../store/authStore';
@@ -9,6 +9,13 @@ import {
   getServiceCatalog, groupByCategory, updateService,
   type CatalogService,
 } from '../../api/services';
+import { getWorkflowDefinitions } from '../../api/workflowDefinitions';
+
+/** #155: the bit of a workflow definition a service tile needs to advertise. */
+interface ConfiguredWorkflow {
+  name: string;
+  stepCount: number;
+}
 
 /**
  * Service catalog — lists every service Legal Terminus offers, grouped by
@@ -16,10 +23,14 @@ import {
  * GET /api/service-config (see src/api/services.ts).
  *
  * Staff-only (clients excluded). Each service's display name is editable in
- * place: click a card to edit, Enter/blur to save, Escape to cancel.
+ * place: click a card to edit, Enter/blur to save, Escape to cancel. Each card
+ * also shows whether a workflow is configured for it (#155) — a service with no
+ * definition cannot start a matter, and that was previously invisible here.
  */
 export default function ServicesPage() {
   const [search, setSearch] = useState('');
+  // #155: 'unconfigured' surfaces exactly the services still missing a workflow.
+  const [filter, setFilter] = useState<'all' | 'configured' | 'unconfigured'>('all');
   const navigate = useNavigate();
   const role = useAuthStore((s) => s.role);
 
@@ -29,21 +40,50 @@ export default function ServicesPage() {
     staleTime: 5 * 60 * 1000, // backend caches 5 min; mirror it client-side
   });
 
-  // Filter by service name / category / key, then group the matches.
+  // #155: a service is only usable once a workflow definition claims its key.
+  // The summary list already carries serviceKeys + stepCount, so one cheap query
+  // tells every tile whether it is configured — no per-card fetch.
+  const { data: defs } = useQuery({
+    queryKey: ['workflow-definitions'],
+    queryFn: getWorkflowDefinitions,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  /** serviceKey → the definition serving it (first match wins, as on the detail page). */
+  const workflowByServiceKey = useMemo(() => {
+    const map = new Map<string, ConfiguredWorkflow>();
+    for (const def of defs ?? []) {
+      for (const key of def.serviceKeys ?? []) {
+        if (!map.has(key)) map.set(key, { name: def.name, stepCount: def.stepCount });
+      }
+    }
+    return map;
+  }, [defs]);
+
+  // Filter by service name / category / key and by workflow state, then group.
   const categories = useMemo(() => {
     if (!data) return [];
     const q = search.trim().toLowerCase();
-    const services = !q
-      ? data.services
-      : Object.fromEntries(
-          Object.entries(data.services).filter(([key, svc]) =>
-            svc.displayName.toLowerCase().includes(q) ||
-            svc.category.toLowerCase().includes(q) ||
-            key.toLowerCase().includes(q)
-          )
-        );
-    return groupByCategory(services);
-  }, [data, search]);
+    const matches = Object.entries(data.services).filter(([key, svc]) => {
+      const textMatch = !q ||
+        svc.displayName.toLowerCase().includes(q) ||
+        svc.category.toLowerCase().includes(q) ||
+        key.toLowerCase().includes(q);
+      if (!textMatch) return false;
+      if (filter === 'all') return true;
+      const configured = workflowByServiceKey.has(key);
+      return filter === 'configured' ? configured : !configured;
+    });
+    return groupByCategory(Object.fromEntries(matches));
+  }, [data, search, filter, workflowByServiceKey]);
+
+  // Counts drive the filter chips (and tell an admin at a glance how much of the
+  // catalog is still unconfigured).
+  const counts = useMemo(() => {
+    const all = Object.keys(data?.services ?? {});
+    const configured = all.filter((k) => workflowByServiceKey.has(k)).length;
+    return { all: all.length, configured, unconfigured: all.length - configured };
+  }, [data, workflowByServiceKey]);
 
   return (
     <PageShell
@@ -56,7 +96,7 @@ export default function ServicesPage() {
       ) : undefined}
     >
       {/* Text search */}
-      <div className="relative mb-5">
+      <div className="relative mb-3">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
         <input
           type="text"
@@ -65,6 +105,29 @@ export default function ServicesPage() {
           onChange={(e) => setSearch(e.target.value)}
           className="input-field pl-10"
         />
+      </div>
+
+      {/* #155: workflow-state filter — jump straight to the services that still
+          need a workflow configured. */}
+      <div className="flex items-center gap-2 mb-5">
+        {([
+          { id: 'all', label: 'All services', count: counts.all },
+          { id: 'configured', label: 'Workflow set', count: counts.configured },
+          { id: 'unconfigured', label: 'No workflow', count: counts.unconfigured },
+        ] as const).map((chip) => (
+          <button
+            key={chip.id}
+            onClick={() => setFilter(chip.id)}
+            aria-pressed={filter === chip.id}
+            className={`badge transition-colors ${
+              filter === chip.id
+                ? 'bg-ink text-white'
+                : 'bg-surface-card text-ink-muted hover:text-ink'
+            }`}
+          >
+            {chip.label} · {chip.count}
+          </button>
+        ))}
       </div>
 
       {isLoading && (
@@ -85,7 +148,11 @@ export default function ServicesPage() {
         <div className="card p-12 text-center text-ink-muted text-sm">
           {search.trim()
             ? `No services match “${search.trim()}”.`
-            : 'No services are available yet.'}
+            : filter === 'unconfigured'
+              ? 'Every service has a workflow configured.'
+              : filter === 'configured'
+                ? 'No service has a workflow configured yet.'
+                : 'No services are available yet.'}
         </div>
       )}
 
@@ -96,7 +163,11 @@ export default function ServicesPage() {
               <h2 className="text-sm font-semibold text-ink mb-3">{cat.name}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {cat.services.map((svc) => (
-                  <ServiceCard key={svc.key} service={svc} />
+                  <ServiceCard
+                    key={svc.key}
+                    service={svc}
+                    workflow={workflowByServiceKey.get(svc.key)}
+                  />
                 ))}
               </div>
             </section>
@@ -107,8 +178,18 @@ export default function ServicesPage() {
   );
 }
 
-/** A single service card. Click to edit its display name inline; toggle active. */
-function ServiceCard({ service }: { service: CatalogService }) {
+/**
+ * A single service card. Click to edit its display name inline; toggle active.
+ * `workflow` is the definition serving this service, or undefined when none is
+ * configured (#155) — the card says which, since an unconfigured service looks
+ * identical to a working one but cannot start a matter.
+ */
+function ServiceCard({
+  service, workflow,
+}: {
+  service: CatalogService;
+  workflow?: ConfiguredWorkflow;
+}) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const toast = useToast();
@@ -171,6 +252,21 @@ function ServiceCard({ service }: { service: CatalogService }) {
           {inactive && (
             <span className="badge bg-surface-card text-ink-muted">Inactive</span>
           )}
+          {/* #155: workflow state, at a glance. */}
+          {workflow ? (
+            <span
+              className="badge bg-emerald-50 text-emerald-700 inline-flex items-center gap-1"
+              title={`${workflow.name} · ${workflow.stepCount} step${workflow.stepCount === 1 ? '' : 's'}`}
+            >
+              <Workflow className="w-3 h-3" aria-hidden />
+              Workflow set
+            </span>
+          ) : (
+            <span className="badge bg-amber-50 text-amber-700 inline-flex items-center gap-1">
+              <CircleSlash className="w-3 h-3" aria-hidden />
+              No workflow
+            </span>
+          )}
         </div>
         {mutation.isPending ? (
           <Loader2 className="w-4 h-4 text-ink-faint animate-spin" />
@@ -212,12 +308,17 @@ function ServiceCard({ service }: { service: CatalogService }) {
         <p className="mt-1 text-xs text-ink-muted">{service.category}</p>
       </div>
 
-      {/* View configured workflow */}
+      {/* View configured workflow. #155: when nothing is configured the link
+          still goes to the detail page, but says so rather than promising a
+          diagram that isn't there. */}
       <button
         onClick={() => navigate(`/services/${service.key}`)}
         className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted hover:text-ink transition-colors"
       >
-        <Workflow className="w-3.5 h-3.5" /> View workflow
+        <Workflow className="w-3.5 h-3.5" />
+        {workflow
+          ? `View workflow · ${workflow.stepCount} step${workflow.stepCount === 1 ? '' : 's'}`
+          : 'Set up workflow'}
         <span aria-hidden>→</span>
       </button>
 

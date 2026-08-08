@@ -3350,6 +3350,33 @@ not new engine code.
 
 ---
 
+### #155 — service catalog tiles show whether a workflow is configured (2026-08-08)
+- **Problem.** Every tile on /services looked identical whether or not a workflow
+  definition claimed its service key. A service with no definition cannot start a
+  matter, but you only discovered that by opening the detail page one tile at a
+  time — on a catalog of dozens, that's unusable.
+- **Fix (Portal only, no backend change).** `GET /api/workflow-definitions`
+  already returns `serviceKeys` and `stepCount` per definition, so ONE existing
+  query answers the question for the whole grid. `ServicesPage` builds a
+  `serviceKey → {name, stepCount}` map (first match wins, matching the resolution
+  rule `ServiceDetailPage` already uses) and each card renders either a green
+  **"Workflow set"** badge (tooltip: definition name + step count) or an amber
+  **"No workflow"** badge.
+- The card's footer link now reads **"View workflow · N steps"** when configured
+  and **"Set up workflow"** when not, instead of promising a diagram that isn't
+  there.
+- **Filter chips** — All / Workflow set / No workflow, each with a live count —
+  let an admin jump straight to the unconfigured backlog. Counts partition the
+  catalog, so `configured + unconfigured === all` is an invariant worth asserting.
+- The empty state now distinguishes "no search matches" from "every service has a
+  workflow" and "no service has one yet".
+- e2e: `service-catalog.spec.ts` +2 — the badge appears for a service that really
+  does resolve a definition (cross-checked against the detail page NOT showing
+  "No workflow configured yet"), and the chips partition the catalog with each
+  filter excluding the opposite badge. **10 passed.**
+
+---
+
 ### #144 — the final internal-only step is now shown, and must be completed (2026-08-08)
 - **Root cause (not what the report assumed).** This was NOT a `clientVisible`
   bug. `type: 'final'` was doing DOUBLE DUTY and every code path filtered on it:
