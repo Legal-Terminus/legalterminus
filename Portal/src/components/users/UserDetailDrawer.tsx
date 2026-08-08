@@ -58,7 +58,9 @@ export default function UserDetailDrawer({ user, onClose, onEdit, canEdit }: {
             <Section title="Client details">
               <Field icon={<Building2 className="w-3.5 h-3.5" />} label="Organisation" value={user.organisation} />
               <Field label="Business name" value={user.businessName} />
-              <Field label="Professional" value={user.professionalName} />
+              {/* #150: labelled "Reference" on the client record (field name
+                  unchanged — see ClientForm). */}
+              <Field label="Reference" value={user.professionalName} />
               <Field label="Group company" value={user.groupCompany} />
               <Field label="GST number" value={user.gstNumber} />
               <Field label="PAN" value={user.panNumber} />

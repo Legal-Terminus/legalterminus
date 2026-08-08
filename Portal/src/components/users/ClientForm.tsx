@@ -382,15 +382,18 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
                   className="input-field"
                 />
               </div>
-              {/* #62: map this client to a handling professional and/or group company. */}
+              {/* #62: map this client to a reference and/or group company.
+                  #150: the LABEL is "Reference" — the stored field stays
+                  `professionalName` so existing client records and the mapping
+                  report keep working without a data migration. */}
               <div>
-                <label className="input-label">Professional</label>
+                <label className="input-label">Reference</label>
                 <input
                   type="text"
                   name="professionalName"
                   value={formData.professionalName ?? ''}
                   onChange={handleChange}
-                  placeholder="Handling professional"
+                  placeholder="Who referred this client"
                   className="input-field"
                 />
               </div>

@@ -3350,6 +3350,20 @@ not new engine code.
 
 ---
 
+### #150 — client "Professional" field relabelled "Reference" (2026-08-08)
+- Add/Edit Client → Business Details: the **Professional** label becomes
+  **Reference** (placeholder "Who referred this client"); the read-only user
+  detail drawer matches. **Group / Parent Company is unchanged.**
+- The stored field stays `professionalName` — a label-only change. Renaming the
+  key would need a data migration and would break the Professional / Group
+  Mapping report, for no user-visible gain.
+- NOT related to the matter-level Professional (#85) or the staff Professional
+  (#151) — three different concepts that happen to share a word.
+- e2e: `users.spec.ts` — the client form shows "Reference", no longer shows
+  "Professional", and still has Group / Parent Company. 11/11 green.
+
+---
+
 ### #145 / #146 / #147 — Create Matter payment fields (2026-08-08)
 - **#145** (mode of payment as a dropdown): the Create Matter form's free-text
   "Mode of Payment" input is now a `<select>`. The option list moved out of

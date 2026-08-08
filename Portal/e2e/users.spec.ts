@@ -80,3 +80,15 @@ test('E09-S02: admin creates a client end-to-end', async ({ adminPage }) => {
     await deleteUserByEmail(email);
   }
 });
+
+test('#150: the client form labels the reference field "Reference", not "Professional"', async ({ adminPage }) => {
+  await adminPage.goto('users/new/client');
+  // The Business Details field is relabelled; the underlying input name is
+  // unchanged (professionalName) so existing records keep working.
+  const reference = adminPage.locator('input[name="professionalName"]');
+  await expect(reference).toBeVisible();
+  await expect(adminPage.getByText('Reference', { exact: true })).toBeVisible();
+  await expect(adminPage.getByText('Professional', { exact: true })).toHaveCount(0);
+  // Group / Parent Company is untouched by the rename.
+  await expect(adminPage.locator('input[name="groupCompany"]')).toBeVisible();
+});
