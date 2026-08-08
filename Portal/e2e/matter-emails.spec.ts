@@ -130,6 +130,29 @@ test('#149: a client cannot change the matter’s recipients', async () => {
   }
 });
 
+test('#149: the recipient list is not exposed to the client', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  const client = await apiAs('client');
+  try {
+    await admin.patch(`/api/tasks/${taskId}`, {
+      data: { ccEmails: ['internal-cc@example.com'] },
+    });
+
+    // The client may read their own matter, but who staff copy on its mail is
+    // staff configuration — it must not come back in the client's projection.
+    const res = await client.get(`/api/tasks/${taskId}`);
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(body.ccEmails).toBeUndefined();
+    expect(JSON.stringify(body)).not.toContain('internal-cc@example.com');
+  } finally {
+    await admin.dispose();
+    await client.dispose();
+    await deleteMatter(taskId);
+  }
+});
+
 /* ── UI ─────────────────────────────────────────────────────────────────────── */
 
 test('#149: the Create Matter form offers additional email addresses', async ({ adminPage }) => {

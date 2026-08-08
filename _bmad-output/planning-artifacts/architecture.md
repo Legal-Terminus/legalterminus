@@ -535,11 +535,15 @@ app.use("/api/notifications", notifRoutes);
 | `GET` | `/api/tasks/my-steps` | admin, manager, team_member | Cross-matter step worklist ("My Tasks") — active step of each open matter, bucketed assigned/unassigned |
 | `GET` | `/api/tasks/:taskId` | admin, manager, team_member, client | Get single task with steps |
 | `GET` | `/api/tasks/:taskId/events` | admin, manager, team_member, client (own) | Activity thread — name-enriched audit events; entries reference the actioned step |
-| `PATCH` | `/api/tasks/:taskId` | admin, manager | Update matter (isUrgent; **assignedTo** = matter owner, cascades to active step) |
-| `DELETE` | `/api/tasks/:taskId` | admin | Hard-delete matter + cascade `steps`/`events` subcollections |
+| `PATCH` | `/api/tasks/:taskId` | admin, manager | Update matter (isUrgent; **assignedTo** = matter owner, cascades to active step; **organisation** editable at any time incl. after completion (#153); **ccEmails** additional email recipients (#149)) |
+| `DELETE` | `/api/tasks/:taskId` | admin | Hard-delete matter + cascade `steps`/`events`/`documents`/`payments` subcollections (explicit list — add new subcollections there) |
 | `POST` | `/api/tasks/:taskId/transition` | admin, manager, team_member, client (own approval) | Fire workflow event (with optional `remark`), persist new state |
 | `GET` | `/api/tasks/:taskId/steps` | admin, manager, team_member, client | List all steps for a task |
 | `PATCH` | `/api/tasks/:taskId/steps/:stepId` | admin, manager | Update step (**assignedTo** = step owner, isUrgent) |
+| `GET` | `/api/tasks/:taskId/payments` | admin, manager | Payment ledger (#148) — oldest first, each with the balance due after it. **Team and client refused (403)** |
+| `POST` | `/api/tasks/:taskId/payments` | admin, manager | Record one payment received; rolls up amountPaid/amountDue/paymentStatus |
+| `PATCH` | `/api/tasks/:taskId/payments/:paymentId` | admin, manager | Correct a recorded payment; re-rolls the totals |
+| `DELETE` | `/api/tasks/:taskId/payments/:paymentId` | admin, manager | Remove a mistaken payment; re-rolls the totals |
 | `POST` | `/api/tasks/:taskId/approve` | admin, manager | Approve pending task |
 | `POST` | `/api/tasks/:taskId/reject` | admin, manager | Reject pending task with reason |
 

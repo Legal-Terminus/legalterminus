@@ -3379,6 +3379,10 @@ not new engine code.
   pointing at routes that did not exist.
 - Pre-existing matters need no backfill: they simply start with an empty ledger,
   and their existing `amountPaid` stands until the first payment is recorded.
+- **Delete cascade.** Firestore does not cascade, and `deleteTask` sweeps
+  subcollections from an EXPLICIT list — so a new subcollection is orphaned
+  unless it is added there. `payments` was added, with a test that deletes a
+  matter holding a payment and asserts the ledger goes with it.
 - e2e: new `payment-history.spec.ts` (10) — instalments accumulate with correct
   running balances, settling the balance flips to `fully_paid`, correcting and
   deleting a payment re-rolls the totals, overpayment is refused, the ledger
@@ -3409,6 +3413,10 @@ not new engine code.
   untouched — it has no matter context.
 - Shared `Portal/src/lib/ccEmails.ts` parses/validates/formats the comma-separated
   form so Create Matter and the matter screen can't drift.
+- **Not exposed to the client.** `ccEmails` is staff configuration — who gets
+  copied on this matter's mail — so it is stripped in `projectTaskForClient`
+  alongside the other internal fields, with a test asserting the address never
+  appears anywhere in the client's payload.
 - e2e: new `matter-emails.spec.ts` (8) — set at creation, added/edited/removed
   later, duplicates and the client's own address stripped, an invalid address
   refused with no partial write, a client refused (403), the create form offers

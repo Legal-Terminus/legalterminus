@@ -133,7 +133,10 @@ const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedRole', 'completedBy', 'isUrge
 // is given, all steps are kept (back-compat / staff projection).
 function projectTaskForClient(task, view = null) {
   const visibleStepNumbers = view?.visible ?? null;
-  const { assignedTo, createdBy, isUrgent, adminOverride, ...safe } = task;
+  // #149: ccEmails is staff configuration (who gets copied on this matter's mail)
+  // — not the client's to enumerate, so it is stripped alongside the other
+  // internal fields.
+  const { assignedTo, createdBy, isUrgent, adminOverride, ccEmails, ...safe } = task;
   if (Array.isArray(safe.steps)) {
     safe.steps = safe.steps
       .filter((s) => !visibleStepNumbers || visibleStepNumbers.has(s.stepNumber))
@@ -1420,7 +1423,8 @@ async function rollUpPayments(taskRef, task, batch, now) {
   return { amountPaid, amountDue, paymentStatus, totalCost };
 }
 
-/** Shape one ledger doc for the API. `dueAfter` is the balance AFTER this payment. */
+/** Shape one ledger doc for the API. The running `dueAfter` is added by the
+ *  caller, which needs the whole ordered list to compute it. */
 function paymentRow(doc) {
   const d = doc.data();
   return {
@@ -2342,10 +2346,11 @@ export async function deleteTask(req, res) {
     if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
 
     // Full cleanup — Firestore does NOT cascade. Remove EVERY subcollection
-    // (steps, events, AND documents metadata) plus the matter's Storage objects,
-    // so deleting a matter leaves nothing orphaned (steps/events/docs/files).
+    // (steps, events, documents metadata AND the #148 payment ledger) plus the
+    // matter's Storage objects, so deleting a matter leaves nothing orphaned.
+    // NOTE: this list is explicit — a NEW subcollection must be added here too.
     const counts = {};
-    for (const sub of ['steps', 'events', 'documents']) {
+    for (const sub of ['steps', 'events', 'documents', 'payments']) {
       const subSnap = await taskRef.collection(sub).get();
       counts[sub] = subSnap.size;
       if (subSnap.empty) continue;

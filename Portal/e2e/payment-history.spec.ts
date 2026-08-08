@@ -198,6 +198,26 @@ test('#148: a client is refused the payment history', async () => {
   }
 });
 
+test('#148: deleting a matter also deletes its payment ledger', async () => {
+  const taskId = await createPartPaidMatter();
+  const api = await apiAs('admin');
+  try {
+    await api.post(`/api/tasks/${taskId}/payments`, { data: { amount: 1500, mode: 'UPI' } });
+    expect((await (await api.get(`/api/tasks/${taskId}/payments`)).json()).payments).toHaveLength(1);
+
+    // Firestore does not cascade — the delete handler sweeps subcollections by an
+    // explicit list, so a new one (like this ledger) must be added to it or the
+    // payment docs are orphaned. Guard that here.
+    const del = await api.delete(`/api/tasks/${taskId}`);
+    expect(del.ok()).toBeTruthy();
+    // The matter is gone, and so is everything under it.
+    expect((await api.get(`/api/tasks/${taskId}/payments`)).status()).toBe(404);
+  } finally {
+    await api.dispose();
+    await deleteMatter(taskId); // best-effort; already gone
+  }
+});
+
 /* ── UI ─────────────────────────────────────────────────────────────────────── */
 
 test('#148: admin sees the Payments tab with a history table', async ({ adminPage }) => {

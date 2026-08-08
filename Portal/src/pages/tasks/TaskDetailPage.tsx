@@ -394,73 +394,6 @@ export default function TaskDetailPage() {
                 {assignOwner.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
               </span>
             </label>
-            {/* Organisation (#153) — correctable at ANY time, including after the
-                matter completes. Commits on Enter or blur; Escape reverts. */}
-            <label className="flex items-center gap-2">
-              <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Organisation</span>
-              <span className="relative inline-flex items-center">
-                <input
-                  type="text"
-                  aria-label="Organisation"
-                  className="input-field py-1.5 text-sm max-w-[160px]"
-                  placeholder="—"
-                  maxLength={200}
-                  defaultValue={task.organisation ?? ''}
-                  key={task.organisation ?? ''} // resync when the server value changes
-                  disabled={editOrganisation.isPending}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); }
-                    else if (e.key === 'Escape') {
-                      e.preventDefault();
-                      e.currentTarget.value = task.organisation ?? '';
-                      e.currentTarget.blur();
-                    }
-                  }}
-                  onBlur={(e) => {
-                    const next = e.target.value.trim();
-                    if (next === (task.organisation ?? '')) return; // no-op edit
-                    editOrganisation.mutate(next || null);
-                  }}
-                />
-                {editOrganisation.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
-              </span>
-            </label>
-            {/* CC recipients (#149) — comma-separated; committed on Enter/blur. */}
-            <label className="flex items-center gap-2">
-              <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">CC</span>
-              <span className="relative inline-flex items-center">
-                <input
-                  type="text"
-                  aria-label="Additional email addresses"
-                  title="Additional email addresses CC'd on every email for this matter"
-                  className="input-field py-1.5 text-sm max-w-[160px]"
-                  placeholder="—"
-                  defaultValue={formatCcEmails(task.ccEmails)}
-                  key={formatCcEmails(task.ccEmails)} // resync on server change
-                  disabled={editCcEmails.isPending}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); }
-                    else if (e.key === 'Escape') {
-                      e.preventDefault();
-                      e.currentTarget.value = formatCcEmails(task.ccEmails);
-                      e.currentTarget.blur();
-                    }
-                  }}
-                  onBlur={(e) => {
-                    const next = parseCcEmails(e.target.value);
-                    if (formatCcEmails(next) === formatCcEmails(task.ccEmails)) return; // no-op
-                    const problem = validateCcEmails(next);
-                    if (problem) {
-                      toast.error(problem);
-                      e.target.value = formatCcEmails(task.ccEmails);
-                      return;
-                    }
-                    editCcEmails.mutate(next);
-                  }}
-                />
-                {editCcEmails.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
-              </span>
-            </label>
             {/* Professional (#85) — the handling staff member. */}
             <label className="flex items-center gap-2">
               <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Professional</span>
@@ -587,6 +520,85 @@ export default function TaskDetailPage() {
           );
         })}
       </div>
+
+      {/* Matter details (#153 organisation, #149 CC recipients) — admin/manager
+          only. These live in the BODY, not the header action bar: the header is
+          `shrink-0`, so extra controls there push the subtitle off-screen (#118
+          regression). Both commit on Enter/blur; Escape reverts. */}
+      {canAssign && (
+        <div className="card p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label className="block">
+            <span className="text-xs text-ink-muted">Organisation</span>
+            <span className="relative flex items-center mt-1">
+              <input
+                type="text"
+                aria-label="Organisation"
+                className="input-field py-1.5 text-sm w-full"
+                placeholder="—"
+                maxLength={200}
+                defaultValue={task.organisation ?? ''}
+                key={`org-${task.organisation ?? ''}`} // resync on server change
+                disabled={editOrganisation.isPending}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); }
+                  else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    e.currentTarget.value = task.organisation ?? '';
+                    e.currentTarget.blur();
+                  }
+                }}
+                onBlur={(e) => {
+                  const next = e.target.value.trim();
+                  if (next === (task.organisation ?? '')) return; // no-op edit
+                  editOrganisation.mutate(next || null);
+                }}
+              />
+              {editOrganisation.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
+            </span>
+            <span className="block text-xs text-ink-faint mt-1">
+              Editable at any time, including after the matter completes.
+            </span>
+          </label>
+
+          <label className="block">
+            <span className="text-xs text-ink-muted">Additional email addresses</span>
+            <span className="relative flex items-center mt-1">
+              <input
+                type="text"
+                aria-label="Additional email addresses"
+                className="input-field py-1.5 text-sm w-full"
+                placeholder="accounts@example.com, cfo@example.com"
+                defaultValue={formatCcEmails(task.ccEmails)}
+                key={`cc-${formatCcEmails(task.ccEmails)}`} // resync on server change
+                disabled={editCcEmails.isPending}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); }
+                  else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    e.currentTarget.value = formatCcEmails(task.ccEmails);
+                    e.currentTarget.blur();
+                  }
+                }}
+                onBlur={(e) => {
+                  const next = parseCcEmails(e.target.value);
+                  if (formatCcEmails(next) === formatCcEmails(task.ccEmails)) return; // no-op
+                  const problem = validateCcEmails(next);
+                  if (problem) {
+                    toast.error(problem);
+                    e.target.value = formatCcEmails(task.ccEmails);
+                    return;
+                  }
+                  editCcEmails.mutate(next);
+                }}
+              />
+              {editCcEmails.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
+            </span>
+            <span className="block text-xs text-ink-faint mt-1">
+              Copied (CC) on every email for this matter. The client&apos;s own address is the main recipient.
+            </span>
+          </label>
+        </div>
+      )}
 
       {tab === 'steps' && (
         <StepsTab
