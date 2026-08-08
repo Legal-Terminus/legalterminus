@@ -9,7 +9,7 @@ import { sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
 import { sanitizeRichText, richTextToPlain } from '../services/richText.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
-import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE } from '../../../shared/workflows/definitionSchema.js';
+import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE, materialisableSteps, isTerminalStep } from '../../../shared/workflows/definitionSchema.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
 // Add `days` (may be fractional) to an ISO instant, returning an ISO string.
@@ -149,16 +149,27 @@ function projectTaskForClient(task, view = null) {
   ) {
     const idx = view.authored.indexOf(safe.currentStepNumber);
     if (idx !== -1) {
-      for (let i = idx - 1; i >= 0; i--) {
-        const n = view.authored[i];
-        if (visibleStepNumbers.has(n)) {
-          safe.currentStepNumber = n;
-          safe.currentStepFallback = true;
-          if (Array.isArray(safe.steps)) {
-            safe.steps = safe.steps.map((s) =>
-              s.stepNumber === n ? { ...s, status: 'active' } : s);
+      // #144: if NOTHING client-visible remains ahead, the client's journey is
+      // genuinely over — only internal wrap-up (e.g. the final master-sheet
+      // update) is left. Reactivating the last visible step here would show it
+      // as "In Progress" forever, which is exactly the #141 symptom arriving
+      // through a different door. Leave every step in its real (completed)
+      // state so the client's timeline simply ends.
+      const moreVisibleAhead = view.authored
+        .slice(idx + 1)
+        .some((n) => visibleStepNumbers.has(n));
+      if (moreVisibleAhead) {
+        for (let i = idx - 1; i >= 0; i--) {
+          const n = view.authored[i];
+          if (visibleStepNumbers.has(n)) {
+            safe.currentStepNumber = n;
+            safe.currentStepFallback = true;
+            if (Array.isArray(safe.steps)) {
+              safe.steps = safe.steps.map((s) =>
+                s.stepNumber === n ? { ...s, status: 'active' } : s);
+            }
+            break;
           }
-          break;
         }
       }
     }
@@ -355,7 +366,7 @@ export async function createTask(req, res) {
     // Per-step INSTANCE state, built from the definition's EXPLICIT step identity
     // (no regex parsing). Stored in a SUBCOLLECTION (tasks/{id}/steps/{stepNumber})
     // so independent step updates never race on a whole-array overwrite.
-    const stepDefs = definition.steps.filter((s) => s.type !== 'final');
+    const stepDefs = materialisableSteps(definition.steps);
 
     const now = new Date().toISOString();
     // Due-date projection (E13-S02). Only start the clock when work actually
@@ -537,7 +548,7 @@ export async function approveTask(req, res) {
     try {
       const compiled = await getCompiledById(task.workflowDefinitionId);
       if (compiled) {
-        const stepDefs = compiled.definition.steps.filter((s) => s.type !== 'final');
+        const stepDefs = materialisableSteps(compiled.definition.steps);
         const firstDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber);
         firstDueAt = addDaysIso(now, etaDaysOf(firstDef));
         matterDueAt = projectMatterDueAt(stepDefs, task.currentStepNumber, now);
@@ -714,7 +725,7 @@ export async function restartTask(req, res) {
     try {
       const compiled = await getCompiledById(task.workflowDefinitionId);
       if (compiled) {
-        const stepDefs = compiled.definition.steps.filter((s) => s.type !== 'final');
+        const stepDefs = materialisableSteps(compiled.definition.steps);
         const currentDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber);
         stepDueAt = addDaysIso(now, etaDaysOf(currentDef));
         matterDueAt = projectMatterDueAt(stepDefs, task.currentStepNumber, now);
@@ -843,7 +854,7 @@ export async function reopenStep(req, res) {
     try {
       const compiled = await getCompiledById(task.workflowDefinitionId);
       if (compiled) {
-        const etaStepDefs = compiled.definition.steps.filter((s) => s.type !== 'final');
+        const etaStepDefs = materialisableSteps(compiled.definition.steps);
         matterDueAt = projectMatterDueAt(etaStepDefs, target, now);
       }
     } catch (e) {
@@ -1677,7 +1688,7 @@ export async function transitionTask(req, res) {
 
     // ── Due-date stamping (E13-S02) ──
     // ETAs come from the pinned definition (already loaded as `compiled`).
-    const etaStepDefs = compiled.definition.steps.filter((s) => s.type !== 'final');
+    const etaStepDefs = materialisableSteps(compiled.definition.steps);
     const etaByNum = new Map(etaStepDefs.map((s) => [s.stepNumber, etaDaysOf(s)]));
     // Re-project the matter's completion from the step we're landing on.
     const matterDueAt = isComplete ? null : projectMatterDueAt(etaStepDefs, newStep, now);
@@ -1745,6 +1756,24 @@ export async function transitionTask(req, res) {
         ? { startedAt: now, dueAt: addDaysIso(now, etaByNum.get(newStep) ?? null) }
         : {};
       batch.set(nextRef, { status: 'active', ...startedNew }, { merge: true });
+    } else if (newStep === task.currentStepNumber) {
+      // #144: completing an AUTHORED final step (e.g. "Final Incorporation Master
+      // Sheet update") terminates the machine WITHOUT changing currentStepNumber
+      // — step_44 targets the `completed` state directly, so no setStep runs and
+      // the "step we left" branch above never fires. Close the step explicitly,
+      // otherwise it would sit `active` forever on a finished matter (the very
+      // symptom #141 fixed for the client projection).
+      const finalRef = taskRef.collection('steps').doc(String(newStep));
+      const finalSnap = await finalRef.get();
+      const finalDueAt = finalSnap.exists ? finalSnap.data().dueAt : null;
+      const onTime = finalDueAt ? (new Date(now).getTime() <= new Date(finalDueAt).getTime()) : null;
+      batch.set(finalRef, {
+        status: 'completed',
+        completedBy: uid ?? null,
+        completedAt: now,
+        ...(onTime != null ? { onTime } : {}),
+        ...(comment ? { remark: comment } : {}),
+      }, { merge: true });
     }
 
     // Forward JUMP over intermediate steps. Two reasons a step can be bypassed:

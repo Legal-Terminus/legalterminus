@@ -304,6 +304,10 @@ export async function advanceUntil(
     // can traverse a WHOLE workflow — the live incorporation def gates its very
     // first step behind CLIENT_APPROVE, which would otherwise strand us at step 1.
     const events = stepEvents(step);
+    // #144: an AUTHORED final step (real internal work) carries no transitions in
+    // the stored definition — the compiler synthesises its COMPLETE_STEP edge.
+    // Without this the walker stalls on it instead of finishing the matter.
+    if (step.type === 'final' && events.size === 0) events.add('COMPLETE_STEP');
     let ev: Record<string, unknown> | null = null;
     if (step.type === 'payment_gate') ev = { type: 'ADMIN_OVERRIDE_PAYMENT' };
     else if (events.has('COMPLETE_STEP')) ev = { type: 'COMPLETE_STEP' };

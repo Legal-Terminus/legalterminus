@@ -149,7 +149,10 @@ test.describe.serial('flow-order lifecycle', () => {
     const titles = adminPage.locator('div[title$=" step"] > button > div > p.text-sm').filter({ hasText: /^\d+\.\s/ });
     await expect(titles.first()).toBeVisible({ timeout: 15_000 });
     const seq = [...new Set((await titles.allInnerTexts()).map((t) => t.trim()))];
-    expect(seq).toEqual(['1. Alpha', '2. Bravo', '3. HiddenInternal', '4. Charlie', '5. Delta']);
+    // #144: Omega is an AUTHORED final step — real internal work — so staff DO
+    // see it as the last row. It used to be filtered out with the synthetic end
+    // marker, which is what hid the final internal step from the team.
+    expect(seq).toEqual(['1. Alpha', '2. Bravo', '3. HiddenInternal', '4. Charlie', '5. Delta', '6. Omega']);
   });
 
   test('#105: staff post a Note to client on the waiting approval step; the client receives it', async ({ clientPage }) => {
@@ -184,17 +187,58 @@ test.describe.serial('flow-order lifecycle', () => {
     await client.dispose();
   });
 
-  test('#141: after completion (onto a HIDDEN final step) the client sees Done, never In Progress', async ({ clientPage }) => {
-    // The client approves Delta (3) → Omega (4, final, clientVisible:false) →
-    // matter completes while "sitting" on a hidden step. The #139 fallback must
-    // NOT re-activate the last visible step on a finished matter.
+  test('#144: the client approval lands on the internal final step — the matter is NOT yet complete', async () => {
+    // Delta (3) → Omega (4, final, clientVisible:false). Omega is REAL internal
+    // work, so the flow must PARK on it. Before the fix the machine treated any
+    // `final` step as a terminal state: the matter completed the instant it
+    // arrived, Omega was never materialised, and no one could action it.
     const client = await apiAs('client');
     const res = await client.post(`/api/tasks/${taskId}/transition`, { data: { event: { type: 'CLIENT_APPROVE' } } });
     expect(res.ok()).toBeTruthy();
+    await client.dispose();
 
+    const m = await getMatter(taskId);
+    expect(m.status).toBe('active');          // was wrongly 'completed'
+    expect(m.currentStepNumber).toBe(4);
+    expect(await stepStatus(3)).toBe('completed');
+    expect(await stepStatus(4)).toBe('active'); // the step now EXISTS and is live
+
+    // #144: meanwhile the CLIENT's timeline simply ends — nothing visible remains
+    // ahead, so the #139 fallback must not reactivate Delta and show it as "In
+    // Progress" for as long as the internal wrap-up takes.
+    const c = await apiAs('client');
+    const ct = await (await c.get(`/api/tasks/${taskId}`)).json();
+    expect((ct.steps as Array<{ stepNumber: number }>).some((s) => s.stepNumber === 4)).toBe(false);
+    expect(ct.currentStepFallback ?? false).toBe(false);
+    expect((ct.steps as Array<{ status: string }>).map((s) => s.status)).not.toContain('active');
+    await c.dispose();
+  });
+
+  test('#144: staff see the internal final step and can complete it; that completes the matter', async ({ adminPage }) => {
+    // It is visible on the staff timeline with a working action control…
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    const omega = adminPage.locator('#step-row-4:visible').first();
+    await expect(omega).toBeVisible({ timeout: 15_000 });
+    await expect(omega).toContainText('Omega');
+
+    // …and completing it finishes the matter (the authored final has no stored
+    // transitions — the synthesised COMPLETE_STEP edge is what makes it actionable).
+    await transition('admin', taskId, { type: 'COMPLETE_STEP' });
+    const m = await getMatter(taskId);
+    expect(m.status).toBe('completed');
+    expect(await stepStatus(4)).toBe('completed'); // closed, not left 'active'
+  });
+
+  test('#141/#144: the client never sees the internal final step, and never a stuck In Progress', async ({ clientPage }) => {
+    // The client's journey ended at Delta. Omega is internal, so it must not
+    // appear — and the #139 fallback must NOT re-activate Delta to fill the gap
+    // (that is the #141 symptom arriving through a different door).
+    const client = await apiAs('client');
     const t = await (await client.get(`/api/tasks/${taskId}`)).json();
     expect(t.status).toBe('completed');
     expect(t.currentStepFallback ?? false).toBe(false);
+    expect((t.steps as Array<{ stepNumber: number }>).some((s) => s.stepNumber === 4)).toBe(false);
     const statuses = (t.steps as Array<{ status: string }>).map((s) => s.status);
     expect(statuses).not.toContain('active');
     await client.dispose();
@@ -202,6 +246,7 @@ test.describe.serial('flow-order lifecycle', () => {
     await clientPage.goto(`tasks/${taskId}`);
     await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
     await expect(clientPage.getByText(/service is complete/i).first()).toBeVisible({ timeout: 15_000 });
+    await expect(clientPage.getByText('Omega')).toHaveCount(0);
     await expect(clientPage.getByText('In progress', { exact: true })).toHaveCount(0);
   });
 });

@@ -66,6 +66,45 @@
 export const STEP_TYPES = ['step', 'payment_gate', 'branch', 'final'];
 export const PAYMENT_REQUIREMENTS = ['fully_paid', 'part_paid'];
 
+// #144: `type: 'final'` carries TWO different meanings, and conflating them hid
+// real work from the internal team.
+//
+//  1. A SYNTHETIC terminal marker — stepNumber 9999, title "Completed"/"Done",
+//     appended by `convertMachineToDefinition` purely so the machine has an end
+//     state. Nobody performs it; it must never appear in a matter's step list.
+//  2. An AUTHORED last step that happens to be marked final — e.g. "Final
+//     Incorporation Master Sheet update" (internal-only). This IS real work: a
+//     person has to do it, and the matter isn't truly finished until they have.
+//
+// Every step of both kinds used to be filtered out of a matter's materialised
+// steps, so kind (2) was invisible to staff and the matter auto-completed one
+// step early (#144). This predicate separates them: only the synthetic marker is
+// excluded, so authored final steps materialise like any other step.
+export const SYNTHETIC_FINAL_STEP_NUMBER = 9999;
+const SYNTHETIC_FINAL_TITLES = new Set(['completed', 'done']);
+
+/** True for the auto-generated end marker — a `final` step with no real work. */
+export function isSyntheticFinalStep(step) {
+  if (!step || step.type !== 'final') return false;
+  if (step.stepNumber === SYNTHETIC_FINAL_STEP_NUMBER) return true;
+  // Converted/legacy definitions place the marker inline with a generic title
+  // and no transitions of its own.
+  return SYNTHETIC_FINAL_TITLES.has(String(step.title ?? '').trim().toLowerCase());
+}
+
+/**
+ * Steps that get a per-matter instance record. Excludes ONLY the synthetic end
+ * marker — an authored `final` step is real work and must be materialised (#144).
+ */
+export function materialisableSteps(steps) {
+  return (steps ?? []).filter((s) => !isSyntheticFinalStep(s));
+}
+
+/** True when the matter has no further work after this step completes (#144). */
+export function isTerminalStep(step) {
+  return Boolean(step) && step.type === 'final';
+}
+
 // #46: sentinel assignee meaning "this matter's client". Stored as a step's
 // defaultAssigneeUid (or a phase assignment); resolved to the actual clientUid at
 // matter creation. Lets client-owned steps (e.g. approvals) auto-route to the

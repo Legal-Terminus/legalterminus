@@ -3350,6 +3350,52 @@ not new engine code.
 
 ---
 
+### #144 — the final internal-only step is now shown, and must be completed (2026-08-08)
+- **Root cause (not what the report assumed).** This was NOT a `clientVisible`
+  bug. `type: 'final'` was doing DOUBLE DUTY and every code path filtered on it:
+  1. a SYNTHETIC end marker (stepNumber 9999, titled "Completed"/"Done") appended
+     by `convertMachineToDefinition` — nobody performs it; and
+  2. an AUTHORED last step that is REAL internal work ("Final Incorporation
+     Master Sheet update", internal-only).
+  `steps.filter((s) => s.type !== 'final')` dropped BOTH, so kind (2) was never
+  materialised, never displayed **to anyone** (staff included — not a client-only
+  symptom), and the matter auto-completed one step early because the compiler
+  turned it into a terminal XState state.
+- Confirmed against live data: **all three production workflows** were affected —
+  incorporation (44), GST (44), udyam (48). Not incorporation-only, as reported.
+- **Fix.** `isSyntheticFinalStep` / `materialisableSteps` / `isTerminalStep` in
+  `shared/workflows/definitionSchema.js` separate the two meanings. The compiler
+  now parks on an authored final awaiting `COMPLETE_STEP` (only the synthetic
+  marker compiles to a bare terminal state), the transition handler closes that
+  step explicitly on completion (XState fires no `setStep`, so `newStep ===
+  currentStepNumber` and the normal "step we left" branch never runs — it would
+  have sat `active` forever), and all 12 `type !== 'final'` filters across
+  `tasks.controller.js` + `workflowDefinitions.controller.js` now use the helper
+  so the step is also configurable (assignee / ETA / visibility).
+- **Second-order bug caught while fixing.** The #139 client fallback would have
+  re-activated the last VISIBLE step while the matter sat on the internal final
+  one — showing the client "In Progress" forever, i.e. the #141 symptom through a
+  new door. Guarded with `moreVisibleAhead`: when nothing client-visible remains
+  ahead, the client's timeline simply ends.
+- The Portal and `e2e/api.ts#advanceUntil` both mirror the compiler's synthesised
+  `COMPLETE_STEP` edge — an authored final has NO stored transitions, so without
+  that the step rendered with no action button and the walker stalled on it.
+- **Existing matters deliberately NOT migrated.** `backend/scripts/backfill-final-step-instances.js`
+  is provided (dry-run verified) but was NOT run. Nothing depends on it: an active
+  matter self-heals when the flow reaches its final step (the transition writes
+  with `{ merge: true }`); only the denormalised `totalSteps` and the pre-arrival
+  listing stay stale. Matters already closed by the old behaviour keep their
+  history as-is. The fix is forward-looking — every NEW matter materialises it.
+- e2e: `flow-order.spec.ts` — its fixture already ends in an authored final
+  (`Omega`, `clientVisible:false`). Updated #55 (staff now see `6. Omega`) and
+  split #141 into: the approval PARKS on the internal step (matter still active),
+  staff see it and can complete it (that completes the matter), and the client
+  never sees it nor a stuck "In Progress" — mid-flight and after. **16/16 green.**
+  Two failures elsewhere in `step-settings.spec.ts`/`journey.spec.ts` were
+  verified PRE-EXISTING on clean `main` (stash + re-run), unrelated to this change.
+
+---
+
 ### #150 — client "Professional" field relabelled "Reference" (2026-08-08)
 - Add/Edit Client → Business Details: the **Professional** label becomes
   **Reference** (placeholder "Who referred this client"); the read-only user

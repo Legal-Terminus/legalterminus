@@ -1,6 +1,6 @@
 import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
-import { validateDefinition, CLIENT_ASSIGNEE } from '../../../shared/workflows/definitionSchema.js';
+import { validateDefinition, CLIENT_ASSIGNEE, materialisableSteps } from '../../../shared/workflows/definitionSchema.js';
 import { invalidateWorkflowCache } from '../services/workflowDefinitions.service.js';
 
 const COLLECTION = 'workflowDefinitions';
@@ -241,7 +241,7 @@ export async function syncCheckDefinition(req, res) {
 
     // Soft warnings → usable but worth fixing.
     const warnings = [];
-    const steps = (def.steps ?? []).filter((s) => s.type !== 'final');
+    const steps = materialisableSteps(def.steps ?? []);
     const reachable = reachableSteps(def);
     const unreachable = steps.filter((s) => !reachable.has(s.stepNumber)).map((s) => s.stepNumber);
     if (unreachable.length) {
@@ -347,8 +347,7 @@ export async function getStepEtas(req, res) {
     const snap = await getDb().collection(COLLECTION).doc(req.params.id).get();
     if (!snap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
     const def = snap.data();
-    const steps = (def.steps ?? [])
-      .filter((s) => s.type !== 'final')
+    const steps = materialisableSteps(def.steps ?? [])
       .map((s) => ({
         stepNumber: s.stepNumber,
         title: s.title,
@@ -408,7 +407,7 @@ export async function putStepEtas(req, res) {
     res.json({
       definitionId: id,
       version,
-      steps: steps.filter((s) => s.type !== 'final').map((s) => ({
+      steps: materialisableSteps(steps).map((s) => ({
         stepNumber: s.stepNumber,
         title: s.title,
         phaseId: s.phaseId ?? null,
@@ -430,8 +429,7 @@ export async function getStepAssignees(req, res) {
     const snap = await getDb().collection(COLLECTION).doc(req.params.id).get();
     if (!snap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
     const def = snap.data();
-    const steps = (def.steps ?? [])
-      .filter((s) => s.type !== 'final')
+    const steps = materialisableSteps(def.steps ?? [])
       .map((s) => ({
         stepNumber: s.stepNumber,
         title: s.title,
@@ -500,7 +498,7 @@ export async function putStepAssignees(req, res) {
     res.json({
       definitionId: id,
       version,
-      steps: steps.filter((s) => s.type !== 'final').map((s) => ({
+      steps: materialisableSteps(steps).map((s) => ({
         stepNumber: s.stepNumber,
         title: s.title,
         phaseId: s.phaseId ?? null,
@@ -524,8 +522,7 @@ export async function getStepSettings(req, res) {
     const snap = await getDb().collection(COLLECTION).doc(req.params.id).get();
     if (!snap.exists) return res.status(404).json({ message: 'Workflow definition not found' });
     const def = snap.data();
-    const steps = (def.steps ?? [])
-      .filter((s) => s.type !== 'final')
+    const steps = materialisableSteps(def.steps ?? [])
       .map((s) => ({
         stepNumber: s.stepNumber,
         title: s.title,
@@ -597,7 +594,7 @@ export async function putStepSettings(req, res) {
     res.json({
       definitionId: id,
       version,
-      steps: steps.filter((s) => s.type !== 'final').map((s) => ({
+      steps: materialisableSteps(steps).map((s) => ({
         stepNumber: s.stepNumber,
         title: s.title,
         type: s.type,

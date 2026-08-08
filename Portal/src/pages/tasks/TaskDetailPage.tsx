@@ -1528,7 +1528,12 @@ function StepHeroPanel({
   /** #139: client fallback view — the shown step is the last visible one, not actionable. */
   fallbackView?: boolean;
 }) {
+  // #144: an AUTHORED final step (real internal work, e.g. "Final Incorporation
+  // Master Sheet update") carries NO transitions in the stored definition — the
+  // compiler synthesises its COMPLETE_STEP → terminal edge. Mirror that here, or
+  // the step would render with no action and staff could never finish it.
   const events = new Set((step.transitions ?? []).map((t) => t.event));
+  if (step.type === 'final' && events.size === 0) events.add('COMPLETE_STEP');
   const spin = <Loader2 className="w-4 h-4 animate-spin" />;
   // #90: an admin-approval step (assignedRole === 'admin') is admin-only to act on.
   // Clients never see it (hidden server-side); a manager/team member may VIEW it but

@@ -1,5 +1,5 @@
 import { createMachine, assign } from 'xstate';
-import { stateKeyFor, waitingKeyFor, FINAL_STATE_KEY } from './definitionSchema.js';
+import { stateKeyFor, waitingKeyFor, FINAL_STATE_KEY, isSyntheticFinalStep } from './definitionSchema.js';
 
 /**
  * Compile a stored WorkflowDefinition (data) into an XState v5 machine (engine).
@@ -18,7 +18,21 @@ function compileStep(step) {
   const key = stateKeyFor(step.stepNumber);
 
   if (step.type === 'final') {
-    return { [key]: { type: 'final', meta: stepMeta(step) } };
+    // #144: an AUTHORED final step (e.g. "Final Incorporation Master Sheet
+    // update") is real internal work — the flow must PARK on it and wait for a
+    // COMPLETE_STEP, then terminate. Compiling it straight to an XState final
+    // state made the machine finish the instant it arrived, so the step was
+    // never actionable and never shown. Only the synthetic end marker is a bare
+    // final state.
+    if (isSyntheticFinalStep(step)) {
+      return { [key]: { type: 'final', meta: stepMeta(step) } };
+    }
+    return {
+      [key]: {
+        meta: stepMeta(step),
+        on: { COMPLETE_STEP: { target: FINAL_STATE_KEY } },
+      },
+    };
   }
 
   if (step.type === 'payment_gate') {
@@ -105,13 +119,17 @@ const guards = {
 
 export function compileDefinition(def) {
   let states = {};
-  let hasFinal = false;
+  let hasTerminal = false;
   for (const step of def.steps) {
     states = { ...states, ...compileStep(step) };
-    if (step.type === 'final') hasFinal = true;
+    // #144: only the SYNTHETIC marker compiles to a terminal state. An authored
+    // final step parks for its COMPLETE_STEP and then targets FINAL_STATE_KEY,
+    // so the machine still needs that terminal state to exist.
+    if (isSyntheticFinalStep(step)) hasTerminal = true;
   }
-  // Ensure a terminal state exists even if the definition omits an explicit final.
-  if (!hasFinal && !states[FINAL_STATE_KEY]) {
+  // Ensure a terminal state exists — for definitions with no final step at all,
+  // and for those whose only final is an authored (actionable) one.
+  if (!hasTerminal && !states[FINAL_STATE_KEY]) {
     states[FINAL_STATE_KEY] = { type: 'final' };
   }
 
