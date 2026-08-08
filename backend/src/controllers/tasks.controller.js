@@ -1280,6 +1280,15 @@ export async function patchTask(req, res) {
     const update = {};
     if ('isUrgent' in req.body) update.isUrgent = req.body.isUrgent;
 
+    // #153: correct the organisation name at any point in the matter's life,
+    // including after completion. Deliberately NOT gated on task.status — a typo
+    // discovered after closing is exactly the case this exists for. Purely a
+    // display label: no step, payment, document or activity state depends on it.
+    if ('organisation' in req.body) {
+      const org = (req.body.organisation ?? '').trim();
+      update.organisation = org || null;
+    }
+
     // #85: set/clear the handling professional (staff user). Snapshot the name.
     if ('professionalUid' in req.body) {
       const pUid = req.body.professionalUid || null;

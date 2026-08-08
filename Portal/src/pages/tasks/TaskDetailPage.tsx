@@ -17,7 +17,7 @@ import RichTextEditor from '../../components/common/RichTextEditor';
 import RichText from '../../components/common/RichText';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setTaskUrgent, setStepUrgent, reopenStep, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setTaskUrgent, setStepUrgent, reopenStep, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
 import { useRail, type RailState } from '../../hooks/useResizablePanels';
@@ -130,6 +130,19 @@ export default function TaskDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
     onError: (err: Error) => toast.error(err.message || 'Could not update the professional.'),
+  });
+
+  // #153: correct the organisation name at any point — including AFTER the matter
+  // completes. It's a label, so nothing about the workflow, payments, documents or
+  // history changes; the matter list and reports pick up the new value on refetch.
+  const editOrganisation = useMutation({
+    mutationFn: (organisation: string | null) => setMatterOrganisation(taskId!, organisation),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      toast.success('Organisation name updated.');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not update the organisation name.'),
   });
 
   // Urgent flag (E03-S05 UI / Issue 3): admin/manager can flag the whole matter
@@ -358,6 +371,37 @@ export default function TaskDetailPage() {
                   ))}
                 </select>
                 {assignOwner.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
+              </span>
+            </label>
+            {/* Organisation (#153) — correctable at ANY time, including after the
+                matter completes. Commits on Enter or blur; Escape reverts. */}
+            <label className="flex items-center gap-2">
+              <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Organisation</span>
+              <span className="relative inline-flex items-center">
+                <input
+                  type="text"
+                  aria-label="Organisation"
+                  className="input-field py-1.5 text-sm max-w-[160px]"
+                  placeholder="—"
+                  maxLength={200}
+                  defaultValue={task.organisation ?? ''}
+                  key={task.organisation ?? ''} // resync when the server value changes
+                  disabled={editOrganisation.isPending}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); }
+                    else if (e.key === 'Escape') {
+                      e.preventDefault();
+                      e.currentTarget.value = task.organisation ?? '';
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const next = e.target.value.trim();
+                    if (next === (task.organisation ?? '')) return; // no-op edit
+                    editOrganisation.mutate(next || null);
+                  }}
+                />
+                {editOrganisation.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
               </span>
             </label>
             {/* Professional (#85) — the handling staff member. */}

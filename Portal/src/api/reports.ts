@@ -38,6 +38,8 @@ export const getPendingTasksReport = (filters: ReportFilters = {}) =>
 export interface SlaBreach {
   taskId: string;
   clientName: string;
+  /** #152: the matter's organisation — a client can have several. */
+  organisation: string;
   serviceType: string;
   serviceName: string;
   stepNumber: number;
@@ -134,6 +136,8 @@ export const getUnassignedReport = () =>
 export interface MasterSheetRow {
   taskId: string;
   clientName: string;
+  /** #152: the matter's organisation — a client can have several. */
+  organisation: string;
   serviceType: string;
   currentStep: number;
   totalSteps: number;

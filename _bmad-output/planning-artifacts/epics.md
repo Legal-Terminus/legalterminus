@@ -3350,6 +3350,61 @@ not new engine code.
 
 ---
 
+### #151 — Professional field in the Role & Access section (2026-08-08)
+- **Ask.** A "Professional" selector directly below the Role & Access cards on the
+  user form, saved with the profile and editable later.
+- **A dropdown of staff, not free text.** The value is a real person, so it stores
+  `professionalUid` (the stable reference) plus `professionalTitle` (a snapshot of
+  the display name, so lists and exports need no join) — the same shape #85 uses
+  for a matter's handling professional.
+- **Naming matters here.** The client record already has `professionalName`, which
+  #150 relabelled to **"Reference"** — a different concept entirely. The new field
+  is deliberately NOT called `professionalName`; the snapshot is
+  `professionalTitle` so the two can never be confused or overwritten.
+- Backend validates before any write: the UID must exist and must not be a client
+  (`resolveProfessional`). Client errors are tagged with a status so they surface
+  as 400s rather than a masked 500. `''` clears the field; an absent key leaves it
+  untouched — so an unrelated PATCH can't wipe it.
+- On CREATE the empty value is omitted rather than written as explicit nulls, so
+  new users aren't littered with empty fields.
+- Shown on the user detail drawer for both clients and staff.
+- e2e: `users.spec.ts` +3 — the dropdown renders below the Role & Access heading
+  (asserted by bounding box, since placement IS the ask) and excludes clients; a
+  chosen professional round-trips into storage with its snapshot name; the field
+  is editable later and can be cleared; assigning a client is rejected (400).
+  **23 passed** (with #152/#153).
+
+---
+
+### #152 / #153 — organisation name in reports, and editable at any time (2026-08-08)
+- **#152 — the column.** A client can hold matters for several organisations, so
+  the Client column alone doesn't identify a row. Added **Organisation** next to
+  Client in all five named reports.
+  - All Matters / Completed / Pending share `reportColumns.tsx`, and their
+    endpoints already return whole task docs — so one shared column definition
+    covered three reports with no backend change. Sorting and column filtering
+    come free from the accessor; global search was extended to match on it.
+  - Master Sheet and SLA build their own row shapes server-side, so those needed
+    `organisation` added to the row builders, the TS row types, the column defs,
+    the search predicates, and the Master Sheet's XLSX + CSV exports.
+- **#153 — editable at any time.** `taskUpdateSchema` didn't accept `organisation`
+  at all, so it was write-once at creation. Now accepted on PATCH and handled in
+  `patchTask`, **deliberately not gated on `task.status`** — a typo found after a
+  matter closes is exactly the case the issue describes. It is a display label:
+  no step, payment, document or activity state reads it.
+- The matter screen gets an inline Organisation input in the header controls
+  (Enter/blur commits, Escape reverts), gated on `canAssign` (admin/manager) —
+  not on status, so a completed matter is still correctable. Clients see the
+  organisation but get no editor; the backend refuses their PATCH with a 403.
+- e2e: new `organisation.spec.ts` (8) — editable while active and after
+  completion, with the rename asserted NOT to disturb status, step cursor or
+  payment state; clearable; client PATCH is 403; the field reaches all-tasks,
+  pending, completed, master-sheet (JSON **and** CSV, with Organisation asserted
+  to sit immediately after Client) and SLA rows; staff see the editor and clients
+  don't. **23 passed** (with #151).
+
+---
+
 ### #155 — service catalog tiles show whether a workflow is configured (2026-08-08)
 - **Problem.** Every tile on /services looked identical whether or not a workflow
   definition claimed its service key. A service with no definition cannot start a

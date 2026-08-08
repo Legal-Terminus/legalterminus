@@ -64,6 +64,13 @@ export const setMatterProfessional = (id: string, professionalUid: string | null
     method: 'PATCH',
     body: JSON.stringify({ professionalUid }),
   });
+/** #153: correct a matter's organisation name at any time — during an active
+ *  matter and after completion. Admin/manager. Pass null/'' to clear it. */
+export const setMatterOrganisation = (id: string, organisation: string | null) =>
+  apiFetch<{ success: boolean }>(`/api/tasks/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ organisation }),
+  });
 export const updateTask = (id: string, body: Partial<Task>) =>
   apiFetch<Task>(`/api/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
 export const deleteTask = (id: string) =>

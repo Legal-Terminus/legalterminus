@@ -289,6 +289,8 @@ export async function getSlaReport(req, res) {
           breaches.push({
             taskId: taskDoc.id,
             clientName: t.clientName ?? t.clientUid ?? 'Unknown',
+            // #152: which organisation this matter belongs to.
+            organisation: t.organisation ?? '',
             serviceType: serviceKey,
             serviceName: serviceLabel,
             stepNumber: s.stepNumber,
@@ -390,6 +392,9 @@ export async function getMasterSheet(req, res) {
         return {
           taskId: doc.id,
           clientName: await resolveClient(d.clientUid),
+          // #152: a client can run matters for several organisations, so the
+          // client name alone doesn't identify the matter. Sits next to Client.
+          organisation: d.organisation ?? '',
           serviceType: d.serviceName ?? d.workflowType ?? '',
           currentStep: d.currentStepNumber ?? 0,
           totalSteps,
@@ -415,7 +420,7 @@ export async function getMasterSheet(req, res) {
 
     if (format === 'csv') {
       const headers = [
-        'Task ID', 'Client', 'Service', 'Created', 'Step', 'Total Steps', 'Status',
+        'Task ID', 'Client', 'Organisation', 'Service', 'Created', 'Step', 'Total Steps', 'Status',
         'Priority', 'Assigned To', 'Professional', 'Pending Reason', 'Pending From',
         'Approval Pending From', 'Payment Status', 'Total Fees', 'Amount Paid',
         'Amount Due', 'Payment Mode', 'Referral Source', 'Last Updated',
@@ -425,7 +430,7 @@ export async function getMasterSheet(req, res) {
         headers.join(','),
         ...rows.map((r) =>
           [
-            r.taskId, r.clientName, r.serviceType, r.createdAt, r.currentStep, r.totalSteps, r.taskStatus,
+            r.taskId, r.clientName, r.organisation, r.serviceType, r.createdAt, r.currentStep, r.totalSteps, r.taskStatus,
             r.priority, r.assignedTo, r.professional, r.pendingReason, r.pendingFrom,
             r.approvalPendingFrom, r.paymentStatus, r.totalFees, r.amountPaid,
             r.amountDue, r.paymentMode, r.referralSource, r.lastUpdated,

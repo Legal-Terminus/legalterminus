@@ -32,6 +32,15 @@ function slaColumns(): ColumnDef<SlaBreach, unknown>[] {
         </span>
       ),
     }),
+    // #152: next to Client — a client can run matters for several organisations.
+    col.accessor((b) => b.organisation ?? '', {
+      id: 'organisation',
+      header: 'Organisation',
+      size: 170,
+      cell: (ctx) => (
+        <span className="text-sm text-ink-muted truncate">{(ctx.getValue() as string) || '—'}</span>
+      ),
+    }),
     col.accessor((b) => b.serviceName, {
       id: 'service',
       header: 'Service',
@@ -83,6 +92,7 @@ function slaGlobalFilter(row: { original: SlaBreach }, _id: string, q: string) {
   const s = q.toLowerCase();
   return (
     b.clientName.toLowerCase().includes(s) ||
+    (b.organisation ?? '').toLowerCase().includes(s) || // #152
     b.serviceName.toLowerCase().includes(s) ||
     b.stepTitle.toLowerCase().includes(s) ||
     (b.assigneeName ?? '').toLowerCase().includes(s)

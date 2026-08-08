@@ -27,6 +27,17 @@ export function taskReportColumns() {
         </span>
       ),
     }),
+    // #152: a client can run matters for several organisations, so Client alone
+    // doesn't identify a row. Sits immediately next to Client, and inherits the
+    // grid's sorting/column-filtering like every other accessor column.
+    col.accessor((t) => t.organisation ?? '', {
+      id: 'organisation',
+      header: 'Organisation',
+      size: 180,
+      cell: (ctx) => (
+        <span className="text-sm text-ink-muted truncate">{(ctx.getValue() as string) || '—'}</span>
+      ),
+    }),
     col.accessor((t) => t.serviceName || t.workflowType, {
       id: 'service',
       header: 'Service',
@@ -75,6 +86,7 @@ export function taskReportGlobalFilter(row: { original: Task }, _id: string, q: 
   const s = q.toLowerCase();
   return (
     (t.clientName ?? t.clientUid ?? '').toLowerCase().includes(s) ||
+    (t.organisation ?? '').toLowerCase().includes(s) || // #152
     (t.serviceName ?? t.workflowType ?? '').toLowerCase().includes(s) ||
     (t.status ?? '').toLowerCase().includes(s)
   );

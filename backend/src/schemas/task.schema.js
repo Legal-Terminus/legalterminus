@@ -45,6 +45,10 @@ export const taskCreateSchema = z.object({
 // PATCH /api/tasks/:taskId — currently only isUrgent is writable here.
 export const taskUpdateSchema = z.object({
   isUrgent: z.boolean().optional(),
+  // #153: the organisation name is correctable at ANY time — during an active
+  // matter and after it completes. It is a label, not workflow state: changing it
+  // touches no steps, payments, documents or history.
+  organisation: z.string().trim().max(200).nullable().optional(),
   // Assign the whole matter to a staff user (UID), or null/'' to unassign.
   assignedTo: z.string().trim().max(200).nullable().optional(),
   // #85: set/clear the handling professional (a staff user UID). Validated in controller.

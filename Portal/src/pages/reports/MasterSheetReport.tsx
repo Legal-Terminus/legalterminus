@@ -31,6 +31,8 @@ export default function MasterSheetReport() {
 
   const columns = useMemo(() => [
     col.accessor('clientName', { header: 'Client', size: 160, cell: (c) => <span className="text-sm font-medium text-ink truncate">{c.getValue()}</span> }),
+    // #152: next to Client — a client can run matters for several organisations.
+    col.accessor('organisation', { header: 'Organisation', size: 170, cell: (c) => <span className="text-sm text-ink-muted truncate">{c.getValue() || '—'}</span> }),
     col.accessor('serviceType', { header: 'Service', size: 170, cell: (c) => <span className="text-sm text-ink-muted truncate">{c.getValue()}</span> }),
     col.accessor((r) => r.createdAt, { id: 'createdAt', header: 'Created', size: 110, meta: { disableColumnFilter: true }, cell: (c) => <span className="text-xs text-ink-faint">{formatDate(c.getValue() as string)}</span> }),
     col.accessor((r) => `${r.currentStep}/${r.totalSteps}`, { id: 'step', header: 'Step', size: 80, cell: (c) => <span className="text-sm text-ink-muted">{c.getValue() as string}</span> }),
@@ -53,6 +55,7 @@ export default function MasterSheetReport() {
   const onExportXlsx = async () => {
     const cols: ExportColumn<MasterSheetRow>[] = [
       { header: 'Client', value: (r) => r.clientName },
+      { header: 'Organisation', value: (r) => r.organisation }, // #152
       { header: 'Service', value: (r) => r.serviceType },
       { header: 'Created', value: (r) => formatDate(r.createdAt) },
       { header: 'Current Step', value: (r) => `${r.currentStep}/${r.totalSteps}` },
@@ -100,12 +103,13 @@ export default function MasterSheetReport() {
           columns={columns}
           getRowId={(r) => r.taskId}
           onRowClick={(r) => navigate(`/tasks/${r.taskId}`)}
-          searchPlaceholder="Search client, service, professional, assignee, reason…"
+          searchPlaceholder="Search client, organisation, service, professional, assignee, reason…"
           globalFilterFn={(row, _id, q) => {
             const r = row.original;
             const s = q.toLowerCase();
             return (
               r.clientName.toLowerCase().includes(s) ||
+              (r.organisation ?? '').toLowerCase().includes(s) || // #152
               r.serviceType.toLowerCase().includes(s) ||
               r.assignedTo.toLowerCase().includes(s) ||
               (r.professional ?? '').toLowerCase().includes(s) ||
