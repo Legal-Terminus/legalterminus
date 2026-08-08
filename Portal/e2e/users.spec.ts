@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { deleteUserByEmail } from './api';
+import { deleteUserByEmail, findUserByEmail, apiAs } from './api';
 
 /**
  * E09 — User management: grid + role tabs, the self-role-change guard (E09-S03),
@@ -91,4 +91,121 @@ test('#150: the client form labels the reference field "Reference", not "Profess
   await expect(adminPage.getByText('Professional', { exact: true })).toHaveCount(0);
   // Group / Parent Company is untouched by the rename.
   await expect(adminPage.locator('input[name="groupCompany"]')).toBeVisible();
+});
+
+/* ── #151: Professional field in the Role & Access section ─────────────────── */
+
+test('#151: the Professional dropdown sits in Role & Access and lists staff only', async ({ adminPage }) => {
+  await adminPage.goto('users/new/member');
+
+  const professional = adminPage.locator('select[name="professionalUid"]');
+  await expect(professional).toBeVisible();
+
+  // It must render BELOW the Role & Access heading — that placement is the ask.
+  const heading = adminPage.getByRole('heading', { name: 'Role & Access' });
+  await expect(heading).toBeVisible();
+  const [headingBox, selectBox] = [await heading.boundingBox(), await professional.boundingBox()];
+  expect(selectBox!.y).toBeGreaterThan(headingBox!.y);
+
+  // Defaults to unset, and "None" is a real choice (the field is optional).
+  await expect(professional).toHaveValue('');
+  await expect(professional.locator('option[value=""]')).toHaveText('None');
+
+  // Options are staff; the seeded client must not be offered as a professional.
+  const optionText = (await professional.locator('option').allInnerTexts()).join('|');
+  expect(optionText).not.toContain(process.env.E2E_CLIENT_EMAIL ?? '@@no-such-client@@');
+});
+
+test('#151: choosing a professional in the form persists it on the user', async ({ adminPage }) => {
+  const email = `e2e-prof-${Date.now()}@legalterminus.test`;
+  try {
+    await adminPage.goto('users/new/member');
+    await adminPage.locator('input[name="name"]').fill('E2E Prof Member');
+    await adminPage.locator('input[name="email"]').fill(email);
+    await adminPage.locator('input[name="phone"]').fill('9876500003');
+    await adminPage.locator('input[name="designation"]').fill('QA Tester');
+
+    // Pick a real professional (index 0 is "None").
+    const select = adminPage.locator('select[name="professionalUid"]');
+    const chosenUid = await select.locator('option').nth(1).getAttribute('value');
+    expect(chosenUid, 'need at least one staff user to act as professional').toBeTruthy();
+    await select.selectOption(chosenUid!);
+
+    await adminPage.getByRole('button', { name: /create member/i }).click();
+    await expect(adminPage).toHaveURL(/\/users(\?|$)/, { timeout: 15_000 });
+
+    // Assert against the stored record rather than re-navigating the grid — the
+    // UI round-trip is covered below and kept off this test's critical path.
+    const uid = await findUserByEmail(email);
+    expect(uid).toBeTruthy();
+    const api = await apiAs('admin');
+    const saved = await (await api.get(`/api/portal/users/${uid}`)).json();
+    await api.dispose();
+    expect(saved.professionalUid).toBe(chosenUid);
+    // The display name is snapshotted alongside the UID, for lists and exports.
+    expect(saved.professionalTitle).toBeTruthy();
+  } finally {
+    await deleteUserByEmail(email);
+  }
+});
+
+test('#151: the professional stays editable later and can be cleared', async ({ adminPage }) => {
+  const email = `e2e-profedit-${Date.now()}@legalterminus.test`;
+  const api = await apiAs('admin');
+  try {
+    // Seed via the API so the test spends its budget on the EDIT path, which is
+    // what "should remain editable later from the user's profile" actually means.
+    const staff = await (await api.get('/api/portal/users?role=team_member')).json();
+    const pro = (staff.data ?? staff)[0];
+    expect(pro, 'need a staff user to act as professional').toBeTruthy();
+
+    const created = await api.post('/api/portal/users', {
+      data: {
+        name: 'E2E Prof Edit', email, phone: '9876500004',
+        role: 'team_member', designation: 'QA Tester',
+        professionalUid: pro.uid,
+      },
+    });
+    expect(created.ok()).toBeTruthy();
+    const uid = (await created.json()).uid;
+
+    // The edit form loads with the stored professional preselected.
+    await adminPage.goto(`users/edit/member/${uid}`);
+    const editSelect = adminPage.locator('select[name="professionalUid"]');
+    await expect(editSelect).toHaveValue(pro.uid);
+
+    // Clear it back to None — the change must stick.
+    await editSelect.selectOption('');
+    await adminPage.getByRole('button', { name: /update member/i }).click();
+    await expect(adminPage).toHaveURL(/\/users(\?|$)/, { timeout: 15_000 });
+
+    const after = await (await api.get(`/api/portal/users/${uid}`)).json();
+    expect(after.professionalUid ?? null).toBeNull();
+    expect(after.professionalTitle ?? null).toBeNull();
+  } finally {
+    await api.dispose();
+    await deleteUserByEmail(email);
+  }
+});
+
+test('#151: a client cannot be assigned as a professional', async () => {
+  const api = await apiAs('admin');
+  const email = `e2e-profbad-${Date.now()}@legalterminus.test`;
+  try {
+    const clients = await (await api.get('/api/portal/users?role=client')).json();
+    const client = (clients.data ?? clients)[0];
+    expect(client, 'need a seeded client').toBeTruthy();
+
+    const res = await api.post('/api/portal/users', {
+      data: {
+        name: 'E2E Prof Bad', email, phone: '9876500005',
+        role: 'team_member', designation: 'QA Tester',
+        professionalUid: client.uid,
+      },
+    });
+    expect(res.status()).toBe(400);
+  } finally {
+    await api.dispose();
+    await deleteUserByEmail(email);
+  }
 });

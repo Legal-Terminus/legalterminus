@@ -20,8 +20,12 @@ export interface PortalUser {
   // client fields
   organisation?: string;
   businessName?: string;
-  /** #62: handling professional + parent/group company mapping. */
+  /** #62/#150: the client's free-text "Reference". Distinct from professionalUid. */
   professionalName?: string;
+  /** #151: staff professional this user is assigned under (Role & Access). */
+  professionalUid?: string | null;
+  /** #151: snapshot of that professional's display name, for lists/exports. */
+  professionalTitle?: string | null;
   groupCompany?: string;
   gstNumber?: string;
   panNumber?: string;

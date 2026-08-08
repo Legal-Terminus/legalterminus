@@ -21,6 +21,36 @@ const COLLECTION = 'users';
 
 const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 
+/**
+ * #151: resolve the "Professional" picked in Role & Access to a {uid, name} pair.
+ * Mirrors the matter-level handling professional (#85): store the UID as the
+ * stable reference and snapshot the display name so lists and exports don't need
+ * a join. An empty string means "clear it"; `undefined` means "leave unchanged".
+ *
+ * Throws an Error with `.status` so callers can surface a 400 rather than a 500.
+ */
+async function resolveProfessional(professionalUid) {
+  if (professionalUid === undefined) return {}; // field absent — don't touch it
+  if (professionalUid === '') return { professionalUid: null, professionalTitle: null };
+
+  const doc = await db.collection(COLLECTION).doc(professionalUid).get();
+  if (!doc.exists) {
+    const err = new Error('Professional not found');
+    err.status = 400;
+    throw err;
+  }
+  const p = doc.data();
+  if (p.role === 'client') {
+    const err = new Error('Professional must be a staff user');
+    err.status = 400;
+    throw err;
+  }
+  return {
+    professionalUid,
+    professionalTitle: p.name || p.fullName || p.email || null,
+  };
+}
+
 /* ================= LIST USERS ================= */
 // GET /api/portal/users?role=client|team_member|manager|admin  (role optional)
 export const listUsers = async (req, res) => {
@@ -125,7 +155,7 @@ export const createUser = async (req, res) => {
     const {
       name, email, phone, role,
       designation, joiningDate, fathersName, dateOfBirth, address,
-      organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
+      organisation, businessName, professionalName, professionalUid, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
     } = req.body;
 
     // Privilege guard: a manager cannot create admin/manager accounts (escalation).
@@ -133,11 +163,15 @@ export const createUser = async (req, res) => {
       return res.status(403).json({ message: `You are not allowed to assign the role '${role}'.` });
     }
 
+    // #151: validate + snapshot the assigned professional before any write.
+    const professional = await resolveProfessional(professionalUid);
+
     // Build role-appropriate profile (clean() strips undefined for the other role's fields).
     const profileData = clean({
       name, email, phone,
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state,
+      ...professional,
       emailIds: role === 'client'
         ? (emailIds && emailIds.length > 0 ? emailIds : [email])
         : undefined,
@@ -159,6 +193,9 @@ export const createUser = async (req, res) => {
       message: result.message,
     });
   } catch (error) {
+    // resolveProfessional() tags client errors with a status (#151) — surface
+    // those as 400s instead of masking a bad reference as a server fault.
+    if (error?.status) return res.status(error.status).json({ message: error.message });
     logger.error({ err: error }, 'Error creating user:');
     res.status(500).json({ message: "Internal server error" });
   }
@@ -177,8 +214,11 @@ export const updateUser = async (req, res) => {
     const {
       name, phone, role,
       designation, joiningDate, fathersName, dateOfBirth, address,
-      organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
+      organisation, businessName, professionalName, professionalUid, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
     } = req.body;
+
+    // #151: validate + snapshot the assigned professional before any write.
+    const professional = await resolveProfessional(professionalUid);
 
     // Role is a privileged field: only admin may write it (BMAD E09-S03).
     // For any non-admin caller we drop `role` from the update entirely — it can
@@ -202,6 +242,8 @@ export const updateUser = async (req, res) => {
       role: writableRole,
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state,
+      // #151: {} when absent (leave as-is), explicit nulls when cleared to "None".
+      ...professional,
       emailIds: emailIds && emailIds.length > 0 ? emailIds : undefined,
       updatedAt: new Date().toISOString(),
       updatedBy: adminUid,
@@ -222,6 +264,8 @@ export const updateUser = async (req, res) => {
 
     res.status(200).json({ uid, message: 'User updated successfully', roleChanged: !!role && role !== current.role });
   } catch (error) {
+    // resolveProfessional() tags client errors with a status (#151).
+    if (error?.status) return res.status(error.status).json({ message: error.message });
     logger.error({ err: error }, 'Error updating user:');
     res.status(500).json({ message: "Internal server error" });
   }

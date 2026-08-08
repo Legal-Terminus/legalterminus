@@ -19,8 +19,12 @@ const profileFields = {
   organisation: optLong,
   businessName: optLong,
   // #62: map a client to a handling professional and/or parent/group company, for
-  // reporting "clients per professional / per group".
+  // reporting "clients per professional / per group". Note this is the CLIENT's
+  // free-text "Reference" (#150) — distinct from `professionalUid` below.
   professionalName: optLong,
+  // #151: the staff professional this user reports to / is assigned under, picked
+  // from the staff directory in the Role & Access section. Empty string clears it.
+  professionalUid: z.string().trim().max(128).optional(),
   groupCompany: optLong,
   gstNumber: z.string().trim().max(30).optional(),
   panNumber: z.string().trim().max(20).optional(),

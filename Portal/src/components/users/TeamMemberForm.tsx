@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createUser, updateUser, type PortalUser } from '../../api/users';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createUser, updateUser, getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { useAuthStore } from '../../store/authStore';
 import { useConfirm } from '../common/confirmContext';
 import { assignableRolesFor } from '../../lib/roles';
@@ -22,6 +22,8 @@ interface TeamMember {
   fathersName?: string;
   dateOfBirth?: string;
   address?: string;
+  /** #151: staff professional this user is assigned under ('' = none). */
+  professionalUid?: string;
 }
 
 interface TeamMemberFormProps {
@@ -75,9 +77,21 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
     fathersName: member?.fathersName,
     dateOfBirth: member?.dateOfBirth,
     address: member?.address,
+    professionalUid: member?.professionalUid ?? '',
     uid: member?.uid,
   });
   const [error, setError] = useState('');
+
+  // #151: the Professional dropdown lists STAFF only — a client can never be
+  // somebody's professional (the backend enforces the same rule). Editing a user
+  // must not offer them as their own professional.
+  const { data: professionals = [] } = useQuery({
+    queryKey: ['portalUsers', 'staff'],
+    queryFn: getAllUsers,
+    select: (users: PortalUser[]) => users.filter((u) => u.role !== 'client'),
+    staleTime: 60_000,
+  });
+  const professionalOptions = professionals.filter((u) => u.uid !== member?.uid);
 
   const mutation = useMutation({
     mutationFn: (data: TeamMember) => {
@@ -88,7 +102,11 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
         void _email; // email is immutable — intentionally dropped from the PATCH payload
         return updateUser(uid, updates);
       }
-      return createUser({ ...data, role: data.role });
+      // #151: on CREATE an empty professional means "never set", so omit the key
+      // rather than writing explicit nulls onto every new user. On PATCH the
+      // empty string is meaningful — it clears an existing value.
+      const { professionalUid, ...rest } = data;
+      return createUser(professionalUid ? { ...data, role: data.role } : { ...rest, role: data.role });
     },
     onSuccess: () => {
       // Refresh the users grid (and this user's detail) so the new/updated row
@@ -286,6 +304,31 @@ export default function TeamMemberForm({ member, onClose, onSuccess }: TeamMembe
                   </button>
                 );
               })}
+            </div>
+
+            {/* #151: Professional — sits directly below the role cards, inside
+                Role & Access. Staff-only options; editable later from the same
+                form. Optional: a user need not report to anyone. */}
+            <div className="mt-4">
+              <label htmlFor="professionalUid" className="input-label">Professional</label>
+              <div className="relative">
+                <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  id="professionalUid"
+                  name="professionalUid"
+                  value={formData.professionalUid ?? ''}
+                  onChange={handleChange}
+                  className="input-field pl-10"
+                >
+                  <option value="">None</option>
+                  {professionalOptions.map((u) => (
+                    <option key={u.uid} value={u.uid}>{displayName(u)}</option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                The staff professional this user is assigned under. Optional, and editable later.
+              </p>
             </div>
           </div>
 

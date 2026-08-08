@@ -67,11 +67,15 @@ export default function UserDetailDrawer({ user, onClose, onEdit, canEdit }: {
               <Field label="Aadhaar" value={user.aadhaarNumber} />
               <Field label="State" value={user.state} />
               <Field label="Address" value={user.address} />
+              {/* #151: assigned staff professional (distinct from "Reference"). */}
+              <Field label="Professional" value={user.professionalTitle} />
             </Section>
           ) : (
             <Section title="Team member details">
               <Field icon={<Briefcase className="w-3.5 h-3.5" />} label="Designation" value={user.designation} />
               <Field label="Joining date" value={user.joiningDate} />
+              {/* #151: assigned staff professional, set in Role & Access. */}
+              <Field label="Professional" value={user.professionalTitle} />
               <Field label="Father's name" value={user.fathersName} />
               <Field label="Date of birth" value={user.dateOfBirth} />
               <Field label="Address" value={user.address} />
