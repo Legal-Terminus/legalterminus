@@ -3350,6 +3350,72 @@ not new engine code.
 
 ---
 
+### #148 — payment history (multiple payment records per matter) (2026-08-09)
+- **Ask.** Clients pay in instalments, so a matter needs a LEDGER — every payment
+  recorded separately with its date, amount, mode and the balance remaining after
+  it — instead of one overwritten "latest payment" figure.
+- **Storage: `tasks/{taskId}/payments` subcollection**, one doc per payment,
+  mirroring the existing `steps` subcollection. Chosen over an array field on the
+  task because two people recording instalments concurrently would clobber each
+  other in an array; separate docs cannot.
+- The task doc keeps `amountPaid` / `amountDue` / `paymentStatus` as **rollups**
+  recomputed from the ledger on every add, edit and delete, so the summary card,
+  the matter list, the reports and the payment gate all keep working unchanged.
+- **Two writers had to be reconciled.** The pre-existing `PATCH /payment` editor
+  (#78) sets `amountPaid` directly. Once a ledger exists that would silently
+  desync the two, so it now refuses a conflicting `amountPaid` with
+  `PAYMENT_LEDGER_AUTHORITATIVE` (400) while still allowing edits to total cost,
+  mode and description. Without this the two numbers drift with no error.
+- **Unpriced matters.** With `totalCost` 0 (no fee agreed), `amountDue` is also 0,
+  so the naive derivation would call any payment "fully_paid" and open a payment
+  gate on a matter nobody has priced. Both derivation sites treat money received
+  against a zero cost as `part_paid`, and the overpayment guard is skipped.
+- **Access.** Admin and Manager may view, add, edit and delete. A **Team member is
+  refused every payment endpoint (403) and never sees the Payments tab at all** —
+  the tab is removed from the list, not merely disabled. `firestore.rules` gains a
+  matching `tasks/{taskId}/payments` block: read for admin/manager only, writes
+  denied (the backend Admin SDK bypasses rules).
+- Wires up `Portal/src/api/payments.ts`, which was previously a dead module
+  pointing at routes that did not exist.
+- Pre-existing matters need no backfill: they simply start with an empty ledger,
+  and their existing `amountPaid` stands until the first payment is recorded.
+- e2e: new `payment-history.spec.ts` (10) — instalments accumulate with correct
+  running balances, settling the balance flips to `fully_paid`, correcting and
+  deleting a payment re-rolls the totals, overpayment is refused, the ledger
+  guard blocks a behind-the-back `amountPaid`, manager can record, **team is 403
+  on all four endpoints**, client is 403, admin sees the history table, and a
+  team member has no Payments tab.
+
+---
+
+### #149 — multiple email addresses per matter (To + CC) (2026-08-09)
+- **Ask.** A matter should carry several email addresses; the primary stays the
+  To recipient and the rest are CC'd on every automated email.
+- **There was no CC support anywhere** — both `sendNotificationEmail` and
+  `sendTemplatedEmail` took a single `to`. Both now accept `cc`, normalised by a
+  shared `normaliseCc()` that trims, lowercases, de-duplicates and **drops any
+  address equal to the To**, so nobody is ever both To and CC.
+- Stored as `ccEmails` on the MATTER (not the client profile) — the same client
+  can want different recipients on different matters. Settable at creation and
+  patchable at any time; `[]` clears, an absent key leaves it untouched.
+- **CC applies only to the client's own copy.** In the central notification
+  dispatch and in matter messages, the CC list is attached only when the
+  recipient is the matter's client — staff notifications are internal and must
+  not be broadcast to the client's extra addresses. This was the one place the
+  feature could have leaked internal mail.
+- Covers all four automated senders: notifications (the central mirror for every
+  in-app notification), reminders, the matter-created confirmation, and matter
+  messages. Account-level mail (welcome, password reset) is deliberately
+  untouched — it has no matter context.
+- Shared `Portal/src/lib/ccEmails.ts` parses/validates/formats the comma-separated
+  form so Create Matter and the matter screen can't drift.
+- e2e: new `matter-emails.spec.ts` (8) — set at creation, added/edited/removed
+  later, duplicates and the client's own address stripped, an invalid address
+  refused with no partial write, a client refused (403), the create form offers
+  the field, staff can edit from the matter screen, and clients get no editor.
+
+---
+
 ### #151 — Professional field in the Role & Access section (2026-08-08)
 - **Ask.** A "Professional" selector directly below the Role & Access cards on the
   user form, saved with the profile and editable later.

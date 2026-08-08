@@ -156,6 +156,7 @@ export const createNotification = async ({ recipientUid, type = 'info', title, m
       // specific org (a client may have several orgs each with active services).
       let serviceName;
       let organisation;
+      let cc;
       if (to && taskId) {
         try {
           const t = await db.collection('tasks').doc(taskId).get();
@@ -169,10 +170,16 @@ export const createNotification = async ({ recipientUid, type = 'info', title, m
               const c = await db.collection('users').doc(td.clientUid).get();
               if (c.exists) organisation = c.data().organisation || undefined;
             }
+            // #149: the matter's additional recipients ride along as CC — but
+            // ONLY on the client's own copy. Staff notifications are internal and
+            // must not be broadcast to the client's extra addresses.
+            if (td.clientUid && recipientUid === td.clientUid) {
+              cc = Array.isArray(td.ccEmails) && td.ccEmails.length ? td.ccEmails : undefined;
+            }
           }
         } catch { /* best-effort — fall back to the event title subject */ }
       }
-      if (to) await sendNotificationEmail({ to, title, message: message ?? '', taskId, serviceName, organisation });
+      if (to) await sendNotificationEmail({ to, cc, title, message: message ?? '', taskId, serviceName, organisation });
     } catch (err) {
       logger.warn({ err: err?.message }, '[email] notification email dispatch failed (non-fatal)');
     }

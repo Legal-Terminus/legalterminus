@@ -61,6 +61,17 @@ service cloud.firestore {
           || (isSignedIn() && role() == 'client' && get(/databases/$(database)/documents/tasks/$(taskId)).data.clientUid == request.auth.uid);
         allow write: if isAdminOrManager();
       }
+
+      // ── tasks/{taskId}/payments/{paymentId} ──────────────────────────────
+      // #148: the matter's payment ledger — one doc per instalment received.
+      // Admin/manager ONLY: a team member must not see payment information at
+      // all (not even on a matter assigned to them), and neither must the
+      // client. Writes go through the backend Admin SDK, which bypasses rules;
+      // this denies any direct client-SDK write.
+      match /payments/{paymentId} {
+        allow read: if isAdminOrManager();
+        allow write: if false;
+      }
     }
 
     // ── workflowTemplates/{workflowId} ─────────────────────────────────────

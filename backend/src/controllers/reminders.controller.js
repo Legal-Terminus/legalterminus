@@ -113,7 +113,11 @@ export async function sendReminder(req, res) {
     if (!rendered) return res.status(500).json({ message: 'Could not render the reminder template.' });
 
     const sent = await sendTemplatedEmail({
-      to, subject: rendered.subject, body: rendered.body,
+      to,
+      // #149: the matter's additional recipients are CC'd — this email goes to
+      // the client, so everyone they nominated should see it.
+      cc: task.ccEmails,
+      subject: rendered.subject, body: rendered.body,
       taskId, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
     });
 

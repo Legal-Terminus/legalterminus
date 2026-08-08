@@ -17,6 +17,9 @@ export const taskCreateSchema = z.object({
   serviceName: z.string().trim().max(200).optional(),
   // #104: per-matter organisation name (entered at creation), used in email subjects.
   organisation: z.string().trim().max(200).optional(),
+  // #149: additional email addresses for THIS matter. The client's own address
+  // stays the To recipient; these are CC'd on every automated email.
+  ccEmails: z.array(z.string().trim().toLowerCase().email().max(254)).max(20).optional(),
   paymentStatus: z.enum(['not_paid', 'part_paid', 'fully_paid']).default('not_paid'),
   totalCost: z.number().min(0).max(1e9).optional(),
   amountReceived: z.number().min(0).max(1e9).optional(),
@@ -49,6 +52,9 @@ export const taskUpdateSchema = z.object({
   // matter and after it completes. It is a label, not workflow state: changing it
   // touches no steps, payments, documents or history.
   organisation: z.string().trim().max(200).nullable().optional(),
+  // #149: add / edit / remove the matter's CC recipients at any time. An empty
+  // array clears them; an absent key leaves them untouched.
+  ccEmails: z.array(z.string().trim().toLowerCase().email().max(254)).max(20).optional(),
   // Assign the whole matter to a staff user (UID), or null/'' to unassign.
   assignedTo: z.string().trim().max(200).nullable().optional(),
   // #85: set/clear the handling professional (a staff user UID). Validated in controller.
@@ -67,6 +73,29 @@ export const taskPaymentUpdateSchema = z.object({
   paymentStatus: z.enum(['not_paid', 'part_paid', 'fully_paid']).optional(),
   // #147: editable after creation alongside the other payment details.
   paymentDescription: z.string().trim().max(1000).nullable().optional(),
+}).strict().refine((b) => Object.keys(b).length > 0, {
+  message: 'No payment fields provided',
+});
+
+// POST /api/tasks/:taskId/payments — record ONE payment against a matter (#148).
+// Payments accumulate in a subcollection; the task doc keeps amountPaid/amountDue
+// as rollups recomputed from the ledger, so instalments never overwrite each other.
+export const paymentCreateSchema = z.object({
+  amount: z.number().positive().max(1e9),
+  mode: z.string().trim().min(1).max(60),
+  // Defaults to "now" when omitted; back-dating a received payment is allowed.
+  paidAt: z.string().trim().max(40).optional(),
+  reference: z.string().trim().max(200).optional(),
+  notes: z.string().trim().max(1000).optional(),
+}).strict();
+
+// PATCH /api/tasks/:taskId/payments/:paymentId — correct a recorded payment.
+export const paymentUpdateSchema = z.object({
+  amount: z.number().positive().max(1e9).optional(),
+  mode: z.string().trim().min(1).max(60).optional(),
+  paidAt: z.string().trim().max(40).optional(),
+  reference: z.string().trim().max(200).nullable().optional(),
+  notes: z.string().trim().max(1000).nullable().optional(),
 }).strict().refine((b) => Object.keys(b).length > 0, {
   message: 'No payment fields provided',
 });

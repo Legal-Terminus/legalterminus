@@ -136,6 +136,20 @@ Both apps share the **same Cloud Run backend** and the same **Firebase project**
 - Per-step **instance state** lives in a **subcollection** `tasks/{id}/steps/{stepNumber}`
   (status/assignee/title/assignedRole) — not an array on the task doc (avoids whole-array write
   races). A denormalized `totalSteps` is kept on the task for cheap list/report display.
+- Payments (#148) live in a **subcollection** `tasks/{id}/payments/{paymentId}` — one doc per
+  instalment received (amount / mode / paidAt / reference / notes / recordedBy). Same reasoning as
+  `steps`: two people recording payments concurrently would clobber an array field. The task doc
+  keeps **`amountPaid` / `amountDue` / `paymentStatus` as rollups** recomputed from the ledger on
+  every add, edit and delete, so the summary card, matter list, reports and payment gate read
+  unchanged fields. Once a ledger exists it is authoritative: the older single-figure
+  `PATCH /api/tasks/:id/payment` refuses a conflicting `amountPaid` (400
+  `PAYMENT_LEDGER_AUTHORITATIVE`) rather than letting the two silently drift. **Admin/manager only** —
+  team members are refused all four endpoints and the Payments tab is removed from their UI;
+  `firestore.rules` mirrors this (read admin/manager, writes denied).
+- `ccEmails` (#149) on the task doc: additional recipients CC'd on every automated email for that
+  matter. Stored on the MATTER, not the client profile, since one client can want different
+  recipients per matter. The CC list is attached **only to the client's own copy** of an email —
+  staff notifications are internal and are never broadcast to it.
 - `GET /api/tasks` is paginated (`{ data, nextCursor }`) + role-scoped; composite indexes for
   role-scope × filter × `updatedAt` are in `firestore.indexes.json`.
 - Zod validation on task endpoints (`backend/src/schemas/task.schema.js`).

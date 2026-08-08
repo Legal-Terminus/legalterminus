@@ -208,6 +208,31 @@ export async function sendContactLeadEmail(lead = {}) {
  * at a glance which matter an email is about:
  *   [Legal Terminus] ABC Technologies Pvt. Ltd. | Company Incorporation (#9Dr8eq)
  */
+/**
+ * #149: normalise the CC list for a send. A matter can carry several email
+ * addresses — the primary is the To recipient and the rest are CC'd on every
+ * automated email. Accepts a string or array, trims, lowercases, de-duplicates,
+ * and drops anything equal to the To address so nobody is both To and CC.
+ */
+function normaliseCc(cc, to) {
+  if (!cc) return [];
+  const toSet = new Set(
+    (Array.isArray(to) ? to : String(to).split(','))
+      .map((a) => String(a).trim().toLowerCase())
+      .filter(Boolean)
+  );
+  const list = Array.isArray(cc) ? cc : String(cc).split(',');
+  const seen = new Set();
+  const out = [];
+  for (const raw of list) {
+    const addr = String(raw ?? '').trim().toLowerCase();
+    if (!addr || toSet.has(addr) || seen.has(addr)) continue;
+    seen.add(addr);
+    out.push(addr);
+  }
+  return out;
+}
+
 function matterSubject({ serviceName, taskId, title, organisation }) {
   const org = organisation && organisation.trim() ? `${organisation.trim()} | ` : '';
   if (serviceName && taskId) return `[Legal Terminus] ${org}${serviceName} (#${shortMatterId(taskId)})`;
@@ -231,12 +256,13 @@ function matterSubject({ serviceName, taskId, title, organisation }) {
  * wrapper; for account-level emails (e.g. welcome) omit them and the template's
  * own subject is used verbatim (prefixed with the brand tag).
  */
-export async function sendTemplatedEmail({ to, subject, body, taskId, serviceName, organisation }) {
+export async function sendTemplatedEmail({ to, cc, subject, body, taskId, serviceName, organisation }) {
   try {
     if (!to || !subject) return false;
+    const ccList = normaliseCc(cc, to);
     const transporter = getTransporter();
     if (!transporter) {
-      logger.info({ to, subject }, '[email] (no-op) would send templated email');
+      logger.info({ to, cc: ccList, subject }, '[email] (no-op) would send templated email');
       return false;
     }
     const { html, text } = renderEmail({ title: subject, message: body, taskId });
@@ -249,6 +275,7 @@ export async function sendTemplatedEmail({ to, subject, body, taskId, serviceNam
     const threadRef = taskId ? `<matter-${taskId}@legalterminus>` : undefined;
     await transporter.sendMail({
       from, to, subject: finalSubject, text, html,
+      ...(ccList.length ? { cc: ccList } : {}),
       ...(threadRef ? { references: threadRef, inReplyTo: threadRef } : {}),
     });
     return true;
@@ -258,12 +285,13 @@ export async function sendTemplatedEmail({ to, subject, body, taskId, serviceNam
   }
 }
 
-export async function sendNotificationEmail({ to, title, message, taskId, serviceName, organisation }) {
+export async function sendNotificationEmail({ to, cc, title, message, taskId, serviceName, organisation }) {
   try {
     if (!to || !title) return false;
+    const ccList = normaliseCc(cc, to);
     const transporter = getTransporter();
     if (!transporter) {
-      logger.info({ to, title }, '[email] (no-op) would send notification email');
+      logger.info({ to, cc: ccList, title }, '[email] (no-op) would send notification email');
       return false;
     }
     const { html, text } = renderEmail({ title, message, taskId });
@@ -274,6 +302,7 @@ export async function sendNotificationEmail({ to, title, message, taskId, servic
     const threadRef = taskId ? `<matter-${taskId}@legalterminus>` : undefined;
     await transporter.sendMail({
       from, to, subject, text, html,
+      ...(ccList.length ? { cc: ccList } : {}),
       ...(threadRef ? { references: threadRef, inReplyTo: threadRef } : {}),
     });
     return true;

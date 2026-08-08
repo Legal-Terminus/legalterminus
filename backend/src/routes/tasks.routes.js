@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema } from '../schemas/task.schema.js';
-import { listTasks, getTask, createTask, patchTask, updatePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep, postStepNote } from '../controllers/tasks.controller.js';
+import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema } from '../schemas/task.schema.js';
+import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments, createPayment, patchPayment, deletePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep, postStepNote } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument, setDocumentVisibility } from '../controllers/documents.controller.js';
 import { listMessages, createMessage } from '../controllers/messages.controller.js';
 import { listReminders, sendReminder } from '../controllers/reminders.controller.js';
@@ -29,6 +29,12 @@ router.post('/:taskId/messages',             createMessage);
 router.patch('/:taskId',                     validate(taskUpdateSchema), patchTask);
 // Edit payment details after creation (#78) — admin/manager.
 router.patch('/:taskId/payment',             requireRole('admin', 'manager'), validate(taskPaymentUpdateSchema), updatePayment);
+// Payment HISTORY (#148) — a matter's payments are a ledger, since clients pay in
+// instalments. Admin/manager only; Team must not see payment data at all.
+router.get('/:taskId/payments',              requireRole('admin', 'manager'), listPayments);
+router.post('/:taskId/payments',             requireRole('admin', 'manager'), validate(paymentCreateSchema), createPayment);
+router.patch('/:taskId/payments/:paymentId', requireRole('admin', 'manager'), validate(paymentUpdateSchema), patchPayment);
+router.delete('/:taskId/payments/:paymentId', requireRole('admin', 'manager'), deletePayment);
 router.patch('/:taskId/steps/:stepId',       patchStep);
 router.post('/:taskId/transition',           validate(taskTransitionSchema), transitionTask);
 // Approval chain (E03-S04): admin-only approve / reject of a pending matter.

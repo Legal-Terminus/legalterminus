@@ -31,6 +31,8 @@ export interface Task {
   clientName?: string;
   /** #104: per-matter organisation (entered at creation; used in headers + email subjects). */
   organisation?: string;
+  /** #149: extra recipients CC'd on every automated email for this matter. */
+  ccEmails?: string[];
   assignedTo?: string;
   /** Resolved matter-owner display name (#48). */
   assignedToName?: string | null;

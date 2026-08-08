@@ -155,7 +155,11 @@ export async function createMessage(req, res) {
           });
           if (rendered) {
             await sendTemplatedEmail({
-              to, subject: rendered.subject, body: rendered.body,
+              to,
+              // #149: CC the matter's additional recipients on the CLIENT's copy
+              // only — staff copies are internal and must not be broadcast.
+              cc: recipient === task.clientUid ? task.ccEmails : undefined,
+              subject: rendered.subject, body: rendered.body,
               taskId, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
             });
           }

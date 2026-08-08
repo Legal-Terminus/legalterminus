@@ -17,7 +17,7 @@ import RichTextEditor from '../../components/common/RichTextEditor';
 import RichText from '../../components/common/RichText';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setTaskUrgent, setStepUrgent, reopenStep, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
 import { useRail, type RailState } from '../../hooks/useResizablePanels';
@@ -25,6 +25,8 @@ import { getAllUsers, displayName, type PortalUser } from '../../api/users';
 import { getWorkflowDefinition, phaseProgress, deriveOwnerType, type WorkflowStepDef, type WorkflowDefinition } from '../../api/workflowDefinitions';
 import type { Task, TaskStep, StepStatus, PaymentStatus } from '../../types/task';
 import { PAYMENT_MODES } from '../../lib/paymentModes';
+import { getPayments, recordPayment, deletePaymentEntry } from '../../api/payments';
+import { parseCcEmails, validateCcEmails, formatCcEmails } from '../../lib/ccEmails';
 
 type TabKey = 'steps' | 'documents' | 'payments' | 'discussion';
 
@@ -143,6 +145,18 @@ export default function TaskDetailPage() {
       toast.success('Organisation name updated.');
     },
     onError: (err: Error) => toast.error(err.message || 'Could not update the organisation name.'),
+  });
+
+  // #149: add / edit / remove the matter's additional email recipients at any
+  // time. The client's own address stays the To; these are CC'd on every
+  // automated email for this matter (the backend strips the primary if entered).
+  const editCcEmails = useMutation({
+    mutationFn: (ccEmails: string[]) => setMatterCcEmails(taskId!, ccEmails),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      toast.success('Email recipients updated.');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not update the email recipients.'),
   });
 
   // Urgent flag (E03-S05 UI / Issue 3): admin/manager can flag the whole matter
@@ -308,10 +322,17 @@ export default function TaskDetailPage() {
       : `In progress · ${total} steps`;
   const currentDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber);
 
+  // #148: a Team member must not see the Payments tab or ANY payment information.
+  // The client keeps their own view of what they owe. The backend refuses the
+  // payment endpoints for team_member regardless, so this is presentation only.
+  const canSeePayments = role !== 'team_member';
+
   const TABS: { key: TabKey; label: string; icon: typeof ListChecks }[] = [
     { key: 'steps', label: 'Steps', icon: ListChecks },
     { key: 'documents', label: 'Documents', icon: FileText },
-    { key: 'payments', label: 'Payments', icon: IndianRupee },
+    ...(canSeePayments
+      ? [{ key: 'payments' as const, label: 'Payments', icon: IndianRupee }]
+      : []),
     // #123: per-matter discussion thread (client + internal team).
     { key: 'discussion', label: 'Discussion', icon: MessageSquare },
   ];
@@ -402,6 +423,42 @@ export default function TaskDetailPage() {
                   }}
                 />
                 {editOrganisation.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
+              </span>
+            </label>
+            {/* CC recipients (#149) — comma-separated; committed on Enter/blur. */}
+            <label className="flex items-center gap-2">
+              <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">CC</span>
+              <span className="relative inline-flex items-center">
+                <input
+                  type="text"
+                  aria-label="Additional email addresses"
+                  title="Additional email addresses CC'd on every email for this matter"
+                  className="input-field py-1.5 text-sm max-w-[160px]"
+                  placeholder="—"
+                  defaultValue={formatCcEmails(task.ccEmails)}
+                  key={formatCcEmails(task.ccEmails)} // resync on server change
+                  disabled={editCcEmails.isPending}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); }
+                    else if (e.key === 'Escape') {
+                      e.preventDefault();
+                      e.currentTarget.value = formatCcEmails(task.ccEmails);
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const next = parseCcEmails(e.target.value);
+                    if (formatCcEmails(next) === formatCcEmails(task.ccEmails)) return; // no-op
+                    const problem = validateCcEmails(next);
+                    if (problem) {
+                      toast.error(problem);
+                      e.target.value = formatCcEmails(task.ccEmails);
+                      return;
+                    }
+                    editCcEmails.mutate(next);
+                  }}
+                />
+                {editCcEmails.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
               </span>
             </label>
             {/* Professional (#85) — the handling staff member. */}
@@ -2328,6 +2385,7 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
   const overpaid = paidNum > totalNum;
 
   return (
+    <div className="space-y-4">
     <div className="card p-5">
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-ink">Payment status</p>
@@ -2417,6 +2475,237 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
             </button>
             <button disabled={save.isPending} onClick={() => setEditing(false)} className="btn-secondary">Cancel</button>
           </div>
+        </div>
+      )}
+    </div>
+
+    {/* #148: the payment LEDGER — clients pay in instalments, so every payment
+        received is its own record rather than one overwritten latest figure. */}
+    <PaymentHistory task={task} canEdit={canEdit} />
+    </div>
+  );
+}
+
+/**
+ * #148 — Payment History. Each payment received is recorded separately with its
+ * date, amount, mode and the balance remaining after it. The task's amountPaid /
+ * amountDue / paymentStatus are rollups the backend recomputes from this ledger,
+ * so recording a payment here is what keeps the summary above honest.
+ *
+ * Admin/manager only: the tab itself is hidden from Team, and the API refuses
+ * them regardless.
+ */
+function paymentDate(iso: string | null): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function PaymentHistory({ task, canEdit }: { task: Task; canEdit: boolean }) {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [adding, setAdding] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [mode, setMode] = useState<string>(PAYMENT_MODES[0]);
+  const [paidAt, setPaidAt] = useState(() => new Date().toISOString().slice(0, 10));
+  const [reference, setReference] = useState('');
+  const [notes, setNotes] = useState('');
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['payments', task.id],
+    queryFn: () => getPayments(task.id),
+  });
+
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['payments', task.id] });
+    queryClient.invalidateQueries({ queryKey: ['task', task.id] });
+    queryClient.invalidateQueries({ queryKey: ['task-events', task.id] });
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+  };
+
+  const resetForm = () => {
+    setAmount(''); setMode(PAYMENT_MODES[0]);
+    setPaidAt(new Date().toISOString().slice(0, 10));
+    setReference(''); setNotes('');
+  };
+
+  const add = useMutation({
+    mutationFn: () => recordPayment(task.id, {
+      amount: Number(amount) || 0,
+      mode,
+      paidAt: new Date(paidAt).toISOString(),
+      reference: reference.trim() || undefined,
+      notes: notes.trim() || undefined,
+    }),
+    onSuccess: () => {
+      toast.success('Payment recorded.');
+      setAdding(false);
+      resetForm();
+      refresh();
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not record the payment.'),
+  });
+
+  const remove = useMutation({
+    mutationFn: (paymentId: string) => deletePaymentEntry(task.id, paymentId),
+    onSuccess: () => { toast.success('Payment removed.'); refresh(); },
+    onError: (err: Error) => toast.error(err.message || 'Could not remove the payment.'),
+  });
+
+  const payments = data?.payments ?? [];
+  const amountNum = Number(amount) || 0;
+  const remaining = data?.amountDue ?? 0;
+  const exceeds = amountNum > remaining;
+
+  return (
+    <div className="card p-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-ink">Payment history</p>
+          <p className="text-xs text-ink-muted mt-0.5">
+            Every payment received, in the order it arrived.
+          </p>
+        </div>
+        {canEdit && !adding && (
+          <button onClick={() => setAdding(true)} className="btn-secondary text-xs py-1 px-2">
+            Record payment
+          </button>
+        )}
+      </div>
+
+      {adding && (
+        <div className="mt-4 space-y-3 border-b border-hairline pb-4">
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="text-xs text-ink-muted">Amount received (₹)</span>
+              <input
+                type="number" min="0" step="0.01" value={amount} aria-label="Amount received"
+                onChange={(e) => setAmount(e.target.value)} className="input-field mt-1"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs text-ink-muted">Payment date</span>
+              <input
+                type="date" value={paidAt} aria-label="Payment date"
+                onChange={(e) => setPaidAt(e.target.value)} className="input-field mt-1"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs text-ink-muted">Payment mode</span>
+              <select
+                value={mode} aria-label="Payment mode"
+                onChange={(e) => setMode(e.target.value)} className="input-field mt-1"
+              >
+                {PAYMENT_MODES.map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-xs text-ink-muted">Reference (optional)</span>
+              <input
+                type="text" value={reference} maxLength={200} aria-label="Reference"
+                onChange={(e) => setReference(e.target.value)} className="input-field mt-1"
+                placeholder="UTR / cheque no."
+              />
+            </label>
+          </div>
+          <label className="block">
+            <span className="text-xs text-ink-muted">Notes (optional)</span>
+            <input
+              type="text" value={notes} maxLength={1000} aria-label="Payment notes"
+              onChange={(e) => setNotes(e.target.value)} className="input-field mt-1"
+            />
+          </label>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-ink-muted">
+              Remaining due: <span className="font-semibold text-ink">₹{remaining.toLocaleString('en-IN')}</span>
+            </span>
+            {exceeds && <span className="text-red-600">Exceeds the amount still due</span>}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={add.isPending || amountNum <= 0 || exceeds}
+              onClick={() => add.mutate()}
+              className="btn-primary disabled:opacity-50"
+            >
+              {add.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Save payment
+            </button>
+            <button
+              disabled={add.isPending}
+              onClick={() => { setAdding(false); resetForm(); }}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isLoading && <p className="text-sm text-ink-faint mt-4">Loading payment history…</p>}
+      {isError && <p className="text-sm text-red-600 mt-4">Could not load the payment history.</p>}
+
+      {!isLoading && !isError && payments.length === 0 && (
+        <p className="text-sm text-ink-muted mt-4">No payments recorded yet.</p>
+      )}
+
+      {payments.length > 0 && (
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-ink-muted border-b border-hairline">
+                <th className="pb-2 pr-3 font-medium">Date</th>
+                <th className="pb-2 pr-3 font-medium">Amount</th>
+                <th className="pb-2 pr-3 font-medium">Mode</th>
+                <th className="pb-2 pr-3 font-medium">Due after</th>
+                <th className="pb-2 pr-3 font-medium">Recorded by</th>
+                {canEdit && <th className="pb-2 font-medium sr-only">Actions</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-hairline-soft">
+              {payments.map((p) => (
+                <tr key={p.id}>
+                  <td className="py-2 pr-3 text-ink-muted whitespace-nowrap">{paymentDate(p.paidAt)}</td>
+                  <td className="py-2 pr-3 font-semibold text-ink whitespace-nowrap">
+                    ₹{p.amount.toLocaleString('en-IN')}
+                  </td>
+                  <td className="py-2 pr-3 text-ink-muted">{p.mode || '—'}</td>
+                  <td className="py-2 pr-3 text-ink-muted whitespace-nowrap">
+                    ₹{p.dueAfter.toLocaleString('en-IN')}
+                  </td>
+                  <td className="py-2 pr-3 text-ink-muted truncate max-w-[140px]">
+                    {p.recordedByName || '—'}
+                    {p.reference && <span className="block text-xs text-ink-faint">{p.reference}</span>}
+                  </td>
+                  {canEdit && (
+                    <td className="py-2 text-right">
+                      <button
+                        onClick={() => remove.mutate(p.id)}
+                        disabled={remove.isPending}
+                        className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                        aria-label={`Remove payment of ₹${p.amount}`}
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-hairline">
+                <td className="pt-2 pr-3 text-xs text-ink-muted">Total</td>
+                <td className="pt-2 pr-3 text-sm font-semibold text-ink">
+                  ₹{(data?.amountPaid ?? 0).toLocaleString('en-IN')}
+                </td>
+                <td className="pt-2 pr-3" />
+                <td className="pt-2 pr-3 text-sm font-semibold text-ink">
+                  ₹{(data?.amountDue ?? 0).toLocaleString('en-IN')}
+                </td>
+                <td className="pt-2 pr-3" />
+                {canEdit && <td className="pt-2" />}
+              </tr>
+            </tfoot>
+          </table>
         </div>
       )}
     </div>

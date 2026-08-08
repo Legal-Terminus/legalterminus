@@ -46,6 +46,8 @@ export const assignServiceToClient = (input: {
   serviceKey: string;
   serviceName?: string;
   organisation?: string; // #104: per-matter organisation (used in email subjects)
+  /** #149: extra recipients CC'd on every email for this matter. */
+  ccEmails?: string[];
   // #51: payment captured at creation. 'not_paid' routes the matter to admin
   // approval; part/full capture amounts that mirror into the Payment module.
   paymentStatus?: 'not_paid' | 'part_paid' | 'fully_paid';
@@ -70,6 +72,13 @@ export const setMatterOrganisation = (id: string, organisation: string | null) =
   apiFetch<{ success: boolean }>(`/api/tasks/${id}`, {
     method: 'PATCH',
     body: JSON.stringify({ organisation }),
+  });
+
+/** #149: replace a matter's CC recipients. Admin/manager. [] clears them. */
+export const setMatterCcEmails = (id: string, ccEmails: string[]) =>
+  apiFetch<{ success: boolean }>(`/api/tasks/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ ccEmails }),
   });
 export const updateTask = (id: string, body: Partial<Task>) =>
   apiFetch<Task>(`/api/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(body) });

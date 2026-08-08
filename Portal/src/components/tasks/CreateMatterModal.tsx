@@ -6,6 +6,7 @@ import { getAllUsers, displayName } from '../../api/users';
 import { getServiceCatalog } from '../../api/services';
 import { getWorkflowDefinitions } from '../../api/workflowDefinitions';
 import { PAYMENT_MODES } from '../../lib/paymentModes';
+import { parseCcEmails, validateCcEmails } from '../../lib/ccEmails';
 
 /**
  * Create Matter (E11-S01) — a modal launched from the Matters page. Pick a client
@@ -27,6 +28,7 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
   const [professionalUid, setProfessionalUid] = useState(''); // #85
   const [organisation, setOrganisation] = useState(''); // #104
   const [orgEdited, setOrgEdited] = useState(false);
+  const [ccEmails, setCcEmails] = useState(''); // #149
   const [error, setError] = useState('');
   const showAmounts = paymentStatus !== 'not_paid';
   const amountDue = Math.max(0, (Number(totalCost) || 0) - (Number(amountReceived) || 0));
@@ -78,6 +80,7 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
       return assignServiceToClient({
         clientUid, serviceKey: svc.key, serviceName: svc.displayName,
         organisation: organisation.trim(),
+        ...(parseCcEmails(ccEmails).length ? { ccEmails: parseCcEmails(ccEmails) } : {}), // #149
         paymentStatus,
         ...(professionalUid ? { professionalUid } : {}),
         ...(showAmounts ? {
@@ -100,6 +103,9 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
     if (!clientUid) { setError('Please select a client.'); return; }
     if (!organisation.trim()) { setError('Please enter the organisation name for this matter.'); return; }
     if (!serviceKey) { setError('Please select a service.'); return; }
+    // #149: catch a mistyped CC address before the request round-trips.
+    const ccError = validateCcEmails(parseCcEmails(ccEmails));
+    if (ccError) { setError(ccError); return; }
     if (showAmounts && !(Number(amountReceived) >= 0 && amountReceived !== '')) {
       setError('Enter the amount received.'); return;
     }
@@ -211,6 +217,26 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
               aria-label="Organisation name"
             />
             <p className="text-xs text-ink-faint mt-1">Used in this matter's email subjects. Prefilled from the client — edit if this matter is for a different organisation.</p>
+          </div>
+
+          {/* #149: additional recipients for this matter. The client's own address
+              stays the To; these are CC'd on every automated email. */}
+          <div>
+            <label className="block text-sm font-medium text-ink-soft mb-1.5">
+              Additional email addresses
+            </label>
+            <input
+              type="text"
+              value={ccEmails}
+              onChange={(e) => setCcEmails(e.target.value)}
+              placeholder="accounts@abc.com, cfo@abc.com"
+              className="input-field w-full"
+              aria-label="Additional email addresses"
+            />
+            <p className="text-xs text-ink-faint mt-1">
+              Comma-separated. The client&apos;s own address is the main recipient; these are
+              copied (CC) on every email for this matter. Editable later.
+            </p>
           </div>
 
           {/* Service picker */}

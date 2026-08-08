@@ -59,6 +59,24 @@ function projectMatterDueAt(stepDefs, fromStepNumber, fromIso) {
 // frontend showed "Unassigned" for team members because it derived the name from
 // a staff list it only fetches for admins/managers; returning the name from the
 // API removes that client-side dependency entirely.
+/**
+ * #149: clean a matter's CC list. Lowercases, trims, de-duplicates and drops the
+ * primary (To) address, so a recipient can never appear as both To and CC.
+ * Returns [] for an empty/absent list — the stored shape is always an array.
+ */
+function dedupeCcEmails(list, primaryEmail) {
+  const primary = String(primaryEmail ?? '').trim().toLowerCase();
+  const seen = new Set();
+  const out = [];
+  for (const raw of list ?? []) {
+    const addr = String(raw ?? '').trim().toLowerCase();
+    if (!addr || addr === primary || seen.has(addr)) continue;
+    seen.add(addr);
+    out.push(addr);
+  }
+  return out;
+}
+
 async function resolveUserNames(uids) {
   const unique = [...new Set(uids.filter(Boolean))];
   const byUid = {};
@@ -251,7 +269,7 @@ export async function createTask(req, res) {
     }
 
     // Body validated by taskCreateSchema (incl. #51 payment fields).
-    const { clientUid, serviceKey, serviceName, organisation,
+    const { clientUid, serviceKey, serviceName, organisation, ccEmails,
             paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
             professionalUid } = req.body;
 
@@ -391,6 +409,10 @@ export async function createTask(req, res) {
       // several orgs). Stored ON the matter and used in all its email subjects.
       // Falls back to the client profile's organisation when not supplied.
       organisation: (organisation && organisation.trim()) || c.organisation || null,
+      // #149: additional recipients for this matter. The client's own address is
+      // always the To; these ride along as CC on every automated email. The
+      // client's own address is filtered out so nobody is both To and CC.
+      ccEmails: dedupeCcEmails(ccEmails, c.email),
       assignedTo: null,
       professionalUid: professional.professionalUid, // #85
       professionalName: professional.professionalName, // #85 (snapshot for display/reports)
@@ -499,7 +521,9 @@ export async function createTask(req, res) {
         });
         if (rendered) {
           await sendTemplatedEmail({
-            to: clientEmail, subject: rendered.subject, body: rendered.body,
+            to: clientEmail,
+            cc: task.ccEmails, // #149: additional recipients for this matter
+            subject: rendered.subject, body: rendered.body,
             taskId: ref.id, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
           });
         }
@@ -1289,6 +1313,17 @@ export async function patchTask(req, res) {
       update.organisation = org || null;
     }
 
+    // #149: add / edit / remove the matter's CC recipients at any time. An empty
+    // array clears them. The client's own address is stripped — it is the To.
+    if ('ccEmails' in req.body) {
+      let primaryEmail = null;
+      if (task.clientUid) {
+        const c = await db.collection('users').doc(task.clientUid).get();
+        if (c.exists) primaryEmail = c.data().email ?? null;
+      }
+      update.ccEmails = dedupeCcEmails(req.body.ccEmails, primaryEmail);
+    }
+
     // #85: set/clear the handling professional (staff user). Snapshot the name.
     if ('professionalUid' in req.body) {
       const pUid = req.body.professionalUid || null;
@@ -1361,6 +1396,268 @@ export async function patchTask(req, res) {
   }
 }
 
+// ─── Payment history (#148) ────────────────────────────────────────────────
+// Clients pay in instalments, so a matter needs a LEDGER, not a single latest
+// figure. Each payment is its own doc in tasks/{id}/payments; the task doc keeps
+// amountPaid/amountDue/paymentStatus as rollups recomputed from that ledger after
+// every change. Writing per-payment docs (rather than an array field) is what
+// makes concurrent instalment entry safe — two admins recording at once can't
+// clobber each other. Admin/manager only; Team never sees payments at all.
+
+/** Recompute the task's payment rollups from its ledger, inside a batch. */
+async function rollUpPayments(taskRef, task, batch, now) {
+  const snap = await taskRef.collection('payments').get();
+  const amountPaid = snap.docs.reduce((sum, d) => sum + (d.data().amount ?? 0), 0);
+  const totalCost = task.totalCost ?? 0;
+  const amountDue = Math.max(0, totalCost - amountPaid);
+  // Derive status from the amounts — the ledger is now the source of truth. With
+  // no agreed cost, money received is a part payment, never "fully paid": calling
+  // it full would open a payment gate on a matter nobody has priced.
+  const paymentStatus = amountPaid <= 0
+    ? 'not_paid'
+    : (amountDue > 0 || totalCost <= 0) ? 'part_paid' : 'fully_paid';
+  batch.set(taskRef, { amountPaid, amountDue, paymentStatus, updatedAt: now }, { merge: true });
+  return { amountPaid, amountDue, paymentStatus, totalCost };
+}
+
+/** Shape one ledger doc for the API. `dueAfter` is the balance AFTER this payment. */
+function paymentRow(doc) {
+  const d = doc.data();
+  return {
+    id: doc.id,
+    amount: d.amount ?? 0,
+    mode: d.mode ?? '',
+    paidAt: d.paidAt ?? d.recordedAt ?? null,
+    reference: d.reference ?? null,
+    notes: d.notes ?? null,
+    recordedBy: d.recordedBy ?? null,
+    recordedByName: d.recordedByName ?? null,
+    recordedAt: d.recordedAt ?? null,
+  };
+}
+
+// GET /api/tasks/:taskId/payments — the matter's payment history, oldest first.
+export async function listPayments(req, res) {
+  try {
+    const { role } = req.user;
+    // #148: Team must not see payment information at all.
+    if (role !== 'admin' && role !== 'manager') {
+      return res.status(403).json({ message: 'Forbidden: admin or manager required' });
+    }
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+
+    const ledger = await taskRef.collection('payments').get();
+    const rows = ledger.docs
+      .map(paymentRow)
+      .sort((a, b) => String(a.paidAt ?? '').localeCompare(String(b.paidAt ?? '')));
+
+    // Running balance per row: what remained due immediately after that payment.
+    const totalCost = task.totalCost ?? 0;
+    let running = 0;
+    const payments = rows.map((r) => {
+      running += r.amount;
+      return { ...r, dueAfter: Math.max(0, totalCost - running) };
+    });
+
+    res.json({
+      payments,
+      totalCost,
+      amountPaid: task.amountPaid ?? 0,
+      amountDue: task.amountDue ?? Math.max(0, totalCost - (task.amountPaid ?? 0)),
+      paymentStatus: task.paymentStatus ?? 'not_paid',
+    });
+  } catch (err) {
+    logger.error({ err }, 'listPayments error:');
+    res.status(500).json({ message: 'Failed to fetch payment history' });
+  }
+}
+
+// POST /api/tasks/:taskId/payments — record one received payment.
+export async function createPayment(req, res) {
+  try {
+    const { role, uid } = req.user;
+    if (role !== 'admin' && role !== 'manager') {
+      return res.status(403).json({ message: 'Forbidden: admin or manager required' });
+    }
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+
+    const now = new Date().toISOString();
+    const { amount, mode, paidAt, reference, notes } = req.body;
+
+    // Overpayment guard, mirroring the single-figure editor: the ledger total
+    // may not exceed the agreed cost.
+    const existing = await taskRef.collection('payments').get();
+    const already = existing.docs.reduce((sum, d) => sum + (d.data().amount ?? 0), 0);
+    const totalCost = task.totalCost ?? 0;
+    // totalCost 0 means "no fee agreed yet" — don't block recording against it.
+    if (totalCost > 0 && already + amount > totalCost) {
+      return res.status(400).json({
+        message: `This payment would exceed the total cost. ₹${Math.max(0, totalCost - already)} remains due.`,
+        code: 'PAYMENT_EXCEEDS_TOTAL',
+      });
+    }
+
+    const actor = await db.collection('users').doc(uid).get().catch(() => null);
+    const actorName = actor?.exists
+      ? (actor.data().name || actor.data().fullName || actor.data().email || null)
+      : null;
+
+    const paymentRef = taskRef.collection('payments').doc();
+    const batch = db.batch();
+    batch.set(paymentRef, {
+      amount,
+      mode,
+      paidAt: paidAt || now,
+      reference: reference ?? null,
+      notes: notes ?? null,
+      recordedBy: uid ?? null,
+      recordedByName: actorName,
+      recordedAt: now,
+    });
+    // The rollup must count the payment we're about to write, which the ledger
+    // read above cannot see yet — fold it in explicitly.
+    const newPaid = already + amount;
+    const newDue = Math.max(0, totalCost - newPaid);
+    // Same rule as rollUpPayments: unpriced matters can't reach "fully paid".
+    const newStatus = newPaid <= 0
+      ? 'not_paid'
+      : (newDue > 0 || totalCost <= 0) ? 'part_paid' : 'fully_paid';
+    batch.set(taskRef, {
+      amountPaid: newPaid, amountDue: newDue, paymentStatus: newStatus,
+      // Keep the single-figure fields meaningful: the latest mode is the one shown
+      // in the matter header and reports.
+      paymentMode: mode,
+      updatedAt: now,
+    }, { merge: true });
+    batch.set(taskRef.collection('events').doc(), {
+      type: 'PAYMENT_RECORDED',
+      fromStep: task.currentStepNumber,
+      toStep: task.currentStepNumber,
+      comment: `Payment received: ₹${amount} via ${mode}. ₹${newDue} remaining of ₹${totalCost}.`,
+      byUid: uid ?? null,
+      byRole: role ?? null,
+      at: now,
+    });
+    await batch.commit();
+
+    res.status(201).json({
+      id: paymentRef.id,
+      amountPaid: newPaid, amountDue: newDue, paymentStatus: newStatus, totalCost,
+    });
+  } catch (err) {
+    logger.error({ err }, 'createPayment error:');
+    res.status(500).json({ message: 'Failed to record payment' });
+  }
+}
+
+// PATCH /api/tasks/:taskId/payments/:paymentId — correct a recorded payment.
+export async function patchPayment(req, res) {
+  try {
+    const { role, uid } = req.user;
+    if (role !== 'admin' && role !== 'manager') {
+      return res.status(403).json({ message: 'Forbidden: admin or manager required' });
+    }
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+
+    const paymentRef = taskRef.collection('payments').doc(req.params.paymentId);
+    const paymentSnap = await paymentRef.get();
+    if (!paymentSnap.exists) return res.status(404).json({ message: 'Payment not found' });
+
+    const now = new Date().toISOString();
+    const patch = {};
+    for (const k of ['amount', 'mode', 'paidAt']) {
+      if (k in req.body) patch[k] = req.body[k];
+    }
+    for (const k of ['reference', 'notes']) {
+      if (k in req.body) patch[k] = req.body[k] || null;
+    }
+
+    // Overpayment guard against the ledger MINUS this row's old amount.
+    if ('amount' in patch) {
+      const all = await taskRef.collection('payments').get();
+      const others = all.docs
+        .filter((d) => d.id !== paymentRef.id)
+        .reduce((sum, d) => sum + (d.data().amount ?? 0), 0);
+      const totalCost = task.totalCost ?? 0;
+      if (totalCost > 0 && others + patch.amount > totalCost) {
+        return res.status(400).json({
+          message: `This amount would exceed the total cost. ₹${Math.max(0, totalCost - others)} is available.`,
+          code: 'PAYMENT_EXCEEDS_TOTAL',
+        });
+      }
+    }
+
+    await paymentRef.set(patch, { merge: true });
+
+    const batch = db.batch();
+    const rolled = await rollUpPayments(taskRef, task, batch, now);
+    batch.set(taskRef.collection('events').doc(), {
+      type: 'PAYMENT_UPDATED',
+      fromStep: task.currentStepNumber,
+      toStep: task.currentStepNumber,
+      comment: `Payment corrected: ₹${rolled.amountPaid} paid of ₹${rolled.totalCost} (${rolled.paymentStatus.replace('_', ' ')}).`,
+      byUid: uid ?? null,
+      byRole: role ?? null,
+      at: now,
+    });
+    await batch.commit();
+
+    res.json({ success: true, ...rolled });
+  } catch (err) {
+    logger.error({ err }, 'patchPayment error:');
+    res.status(500).json({ message: 'Failed to update payment' });
+  }
+}
+
+// DELETE /api/tasks/:taskId/payments/:paymentId — remove a mistaken entry.
+export async function deletePayment(req, res) {
+  try {
+    const { role, uid } = req.user;
+    if (role !== 'admin' && role !== 'manager') {
+      return res.status(403).json({ message: 'Forbidden: admin or manager required' });
+    }
+    const taskRef = db.collection('tasks').doc(req.params.taskId);
+    const snap = await taskRef.get();
+    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const task = snap.data();
+
+    const paymentRef = taskRef.collection('payments').doc(req.params.paymentId);
+    const paymentSnap = await paymentRef.get();
+    if (!paymentSnap.exists) return res.status(404).json({ message: 'Payment not found' });
+    const removed = paymentSnap.data().amount ?? 0;
+
+    await paymentRef.delete();
+
+    const now = new Date().toISOString();
+    const batch = db.batch();
+    const rolled = await rollUpPayments(taskRef, task, batch, now);
+    batch.set(taskRef.collection('events').doc(), {
+      type: 'PAYMENT_DELETED',
+      fromStep: task.currentStepNumber,
+      toStep: task.currentStepNumber,
+      comment: `Payment of ₹${removed} removed. ₹${rolled.amountDue} remaining of ₹${rolled.totalCost}.`,
+      byUid: uid ?? null,
+      byRole: role ?? null,
+      at: now,
+    });
+    await batch.commit();
+
+    res.json({ success: true, ...rolled });
+  } catch (err) {
+    logger.error({ err }, 'deletePayment error:');
+    res.status(500).json({ message: 'Failed to delete payment' });
+  }
+}
+
 // ─── PATCH /api/tasks/:taskId/payment ──────────────────────────────────────
 // Edit a matter's payment details after creation (#78). Admin/manager only.
 // Accepts any subset of { totalCost, amountPaid, paymentMode, paymentStatus }.
@@ -1380,9 +1677,28 @@ export async function updatePayment(req, res) {
     if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
     const task = snap.data();
 
+    // #148: once a payment LEDGER exists it is the source of truth for how much
+    // has been received — this endpoint must not set a conflicting figure behind
+    // its back. Editing the total cost, mode or description stays allowed; the
+    // paid amount is then only movable by adding/correcting a ledger entry.
+    const ledger = await taskRef.collection('payments').get();
+    const hasLedger = !ledger.empty;
+    if (hasLedger && 'amountPaid' in req.body) {
+      const ledgerTotal = ledger.docs.reduce((sum, d) => sum + (d.data().amount ?? 0), 0);
+      if (req.body.amountPaid !== ledgerTotal) {
+        return res.status(400).json({
+          message: 'This matter has a payment history, so the amount paid is the sum of its payments. '
+            + 'Record, edit or remove a payment instead of setting the total directly.',
+          code: 'PAYMENT_LEDGER_AUTHORITATIVE',
+        });
+      }
+    }
+
     // Start from current values, overlay the provided fields.
     const totalCost = 'totalCost' in req.body ? req.body.totalCost : (task.totalCost ?? 0);
-    const amountPaid = 'amountPaid' in req.body ? req.body.amountPaid : (task.amountPaid ?? 0);
+    const amountPaid = hasLedger
+      ? ledger.docs.reduce((sum, d) => sum + (d.data().amount ?? 0), 0)
+      : ('amountPaid' in req.body ? req.body.amountPaid : (task.amountPaid ?? 0));
     const paymentMode = 'paymentMode' in req.body ? (req.body.paymentMode || null) : (task.paymentMode ?? null);
     // #147: preserved unless explicitly provided.
     const paymentDescription = 'paymentDescription' in req.body
