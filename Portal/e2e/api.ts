@@ -395,11 +395,21 @@ export async function waitForTaskNotification(role: RoleKey, taskId: string, tim
 }
 
 /** Poll a role's notifications until one matches `re` (titles), or time out. */
-export async function waitForNotification(role: RoleKey, re: RegExp, timeoutMs = 20_000): Promise<boolean> {
+export async function waitForNotification(
+  role: RoleKey,
+  re: RegExp,
+  timeoutMs = 20_000,
+  taskId?: string,
+): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const list = await getNotifications(role);
-    if (list.some((n) => re.test(n.title) || re.test(n.message))) return true;
+    // `taskId` scopes the match to ONE matter. The feed is shared across every
+    // matter a role can see, so an unscoped wait can pass on a notification left
+    // by an unrelated test (a false green) — pass it whenever you have it.
+    if (list.some((n) =>
+      (!taskId || n.taskId === taskId) && (re.test(n.title) || re.test(n.message))
+    )) return true;
     await new Promise((r) => setTimeout(r, 2000));
   }
   return false;

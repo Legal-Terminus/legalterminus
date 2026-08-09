@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures';
 import {
   createPartPaidMatter, createMatter, deleteMatter, getDefinitionForMatter,
-  advanceUntil, getMatter, waitForNotification, getNotifications,
+  advanceUntil, getMatter, waitForNotification, getNotifications, apiAs,
 } from './api';
 
 /**
@@ -29,12 +29,28 @@ test('part-paid matter: completing the reminder step notifies the client', async
     const trigger = await reminderStep(taskId);
     test.skip(trigger === null, 'no REMIND_PART_PAYMENT step in this workflow');
 
-    // Advance PAST the trigger step so its completion effect fires.
-    await advanceUntil(taskId, (s) => s.stepNumber > (trigger as number));
+    // Land ON the trigger step, then complete it — the effect fires on THAT
+    // step's completion. Advancing with `> trigger` can route around it (the
+    // flow branches), leaving the effect never executed and the test red for a
+    // reason unrelated to the feature.
+    await advanceUntil(taskId, (s) => s.stepNumber === (trigger as number));
+    const at = await getMatter(taskId);
+    test.skip(at.currentStepNumber !== trigger,
+      `could not land on the reminder step (at ${at.currentStepNumber})`);
+
+    const api = await apiAs('admin');
+    const fired = await api.post(`/api/tasks/${taskId}/transition`, {
+      data: { event: { type: 'COMPLETE_STEP' } },
+    });
+    await api.dispose();
+    expect(fired.ok()).toBeTruthy();
+
     const m = await getMatter(taskId);
     expect(m.currentStepNumber).toBeGreaterThan(trigger as number);
 
-    const gotReminder = await waitForNotification('client', /payment reminder/i);
+    // Scoped to THIS matter: the client's feed is shared, so an unscoped wait
+    // could pass on a reminder left by another test — a false green.
+    const gotReminder = await waitForNotification('client', /payment reminder/i, 20_000, taskId);
     expect(gotReminder, 'client should receive a Payment reminder').toBe(true);
   } finally {
     await deleteMatter(taskId);
