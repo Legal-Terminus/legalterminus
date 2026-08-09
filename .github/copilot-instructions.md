@@ -154,7 +154,7 @@ New code keeps the existing code terms; new UI copy uses the UI labels.
 | Command | Purpose | Port(s) | Working Dir |
 |---------|---------|---------|-------------|
 | `npm run dev:all` | **Standard dev workflow — start everything** (kills existing processes first) | 5001/5173/5174 | Root |
-| `npm run dev:e2e` | Backend + portal only — used ONLY by Playwright's webServer, not for manual dev (use `dev:all` for that) | 5001/5173 | Root |
+| `npm run dev:e2e` | Backend + portal only — used ONLY by Playwright's webServer, not for manual dev (use `dev:all` for that). Sets `EMAIL_DISABLED=true`, which also lifts the API rate limit for the run — see "Always let Playwright boot the backend" | 5001/5173 | Root |
 | `npm run start:backend` | Start backend (production mode) | 5001 | Backend |
 | `npm run dev:backend` | Start backend (development mode with hot reload) | 5001 | Backend |
 | `npm run dev:portal` | Start portal admin app | 5173 | Portal |
@@ -374,6 +374,33 @@ npm run test:e2e:headed     # watch the browser
 npm run test:e2e:ui         # interactive debugger
 npm run test:e2e:report     # open last HTML report
 ```
+
+### ⚠️ Always let Playwright boot the backend (rate limits)
+
+The API is rate-limited: **1000 requests / 15 min** globally and **20 / 15 min** on
+the sensitive routes (`/api/auth`, `/api/payment`, `/api/contact`). The full suite
+is ~260 tests from ONE IP inside a single window and blows past 1000 on its own.
+
+`backend/src/server.js` therefore lifts both ceilings to 100 000 **for E2E only**,
+gated on `EMAIL_DISABLED=true` (or `NODE_ENV=test`) — the same kill-switch
+`emailService` uses. Production keeps the real limits; do NOT raise those.
+
+`npm run dev:e2e` → `start:backend:e2e` sets `EMAIL_DISABLED=true`, and
+Playwright's `webServer` runs `dev:e2e`, so the normal path Just Works.
+
+**The caveat:** if you point Playwright at a backend you started yourself with a
+plain `npm start` (or `dev:all`), the flag is NOT set and the 1000-request cap
+applies again. Past ~1000 requests every later call returns `429` and tests fail
+with *misleading* errors — e.g. `workflow-definitions did not return a list` —
+rather than anything that mentions rate limiting. The tail of the run gets
+poisoned, and WHICH specs fail shifts between otherwise identical runs, so it
+reads like flakiness.
+
+- Symptom to recognise: unrelated late-running specs failing on malformed API
+  responses, with a different set failing each run.
+- Confirm it: `grep -c 429 <run log>` — anything above 0 means the cap was hit.
+- Fix: use `npm run dev:e2e` (let Playwright own the server), or export
+  `EMAIL_DISABLED=true` before starting the backend manually.
 
 ### 🔴 MANDATE: new features MUST update the Playwright suite
 When you build or change a feature/flow, you **must** add or update the matching
