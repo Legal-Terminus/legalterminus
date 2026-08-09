@@ -351,12 +351,16 @@ export async function deleteNewestClientMatter(): Promise<void> {
 }
 
 /** Read the current notifications for a role (via the real API). */
-export async function getNotifications(role: RoleKey): Promise<Array<{ title: string; message: string; read: boolean }>> {
+export async function getNotifications(
+  role: RoleKey,
+): Promise<Array<{ title: string; message: string; read: boolean; taskId?: string }>> {
   const api = await apiAs(role);
   const res = await api.get('/api/notifications');
   const body = await res.json();
   await api.dispose();
-  return body as Array<{ title: string; message: string; read: boolean }>;
+  // `taskId` is exposed so callers can scope assertions to ONE matter — the feed
+  // is shared across every matter a role can see.
+  return body as Array<{ title: string; message: string; read: boolean; taskId?: string }>;
 }
 
 /** Count a role's notifications that deep-link to a given matter (by taskId). */

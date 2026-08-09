@@ -29,11 +29,17 @@ async function openStepSettings(page: import('@playwright/test').Page) {
   if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
     await toggle.click();
   }
+  // Wait for the rows to actually render. Clicking the toggle only flips state;
+  // the 43-step list mounts asynchronously, and callers immediately count rows —
+  // so returning early makes them read 0 and fail intermittently.
+  await expect(page.getByLabel(/Step \d+ assignee/).first()).toBeVisible();
 }
 
 test('Step Settings editor shows assignee + ETA + client-visible per step', async ({ adminPage }) => {
   await adminPage.goto(`services/${serviceKey}`);
-  await expect(adminPage.getByRole('button', { name: /Step Settings/ })).toBeVisible();
+  // Collapsed state persists in localStorage (#68) — expand explicitly so this
+  // test does not depend on the order it happens to run in.
+  await openStepSettings(adminPage);
   // First step's three controls are present.
   await expect(adminPage.getByLabel(/Step \d+ assignee/).first()).toBeVisible();
   await expect(adminPage.getByLabel(/Step \d+ ETA in days/).first()).toBeVisible();
@@ -42,7 +48,10 @@ test('Step Settings editor shows assignee + ETA + client-visible per step', asyn
 
 test('#66: Step Settings numbers the steps continuously (1,2,3…), not by gapped stepNumber', async ({ adminPage }) => {
   await adminPage.goto(`services/${serviceKey}`);
-  await expect(adminPage.getByRole('button', { name: /Step Settings/ })).toBeVisible();
+  // The section is collapsible and its state persists in localStorage (#68), so
+  // it is NOT reliably open on arrival — expand it explicitly rather than relying
+  // on whatever an earlier test happened to leave behind.
+  await openStepSettings(adminPage);
 
   // The definition's stepNumbers are sparse (deleted steps leave gaps). Prove the
   // UI shows a gap-free sequence by reading the leading "N." on each visible row.
@@ -215,11 +224,20 @@ test('client task projection drops non-client-visible steps; staff see all', asy
 });
 
 test('#80: toggling the Client-Visible CHECKBOX in the UI actually hides/shows the step for the client', async ({ adminPage, clientPage }) => {
+  // Legitimately heavy: four full page loads across two roles (hide → verify →
+  // show → verify), each re-rendering a 43-step editor. It sat just under the
+  // 120s default and tipped over once teardown was added, so give it headroom
+  // rather than trimming the coverage.
+  test.setTimeout(180_000);
   // A fresh matter's step list already has multiple steps; pick any NON-current
   // step to toggle (doesn't need to be in the past — the active-step hero panel
   // isn't what we're proving here, so no advanceUntil / payment-gate traversal
   // needed, which keeps this deterministic regardless of workflow shape).
   const taskId = await createMatter();
+  // Hoisted so the `finally` can restore the shared definition even when an
+  // assertion fails partway through.
+  let targetStepNumber: number | undefined;
+  let wasChecked: boolean | undefined;
   try {
     const api = await apiAs('admin');
     const before = await (await api.get(`/api/tasks/${taskId}`)).json();
@@ -229,20 +247,25 @@ test('#80: toggling the Client-Visible CHECKBOX in the UI actually hides/shows t
     const target = stepsResp.steps.find((s: { stepNumber: number; clientVisible: boolean }) =>
       s.stepNumber !== before.currentStepNumber && s.clientVisible !== false);
     test.skip(!target, 'No non-current, client-visible step found to toggle.');
-    const targetStepNumber: number = target.stepNumber;
-    const stepTitle: string = target.title;
+    targetStepNumber = target.stepNumber as number;
 
     // Confirm the client's OWN matter actually includes this step before hiding it
     // (otherwise the "hidden" assertion below would be trivially true).
     const clientBefore = await (await (await apiAs('client')).get(`/api/tasks/${taskId}`)).json();
-    test.skip(!clientBefore.steps.some((s: { stepNumber: number }) => s.stepNumber === targetStepNumber),
-      'Target step is not in the client projection to begin with.');
+    const clientStep = clientBefore.steps.find(
+      (s: { stepNumber: number }) => s.stepNumber === targetStepNumber);
+    test.skip(!clientStep, 'Target step is not in the client projection to begin with.');
+
+    // Take the title from the CLIENT's projection, not the staff settings row:
+    // #103 substitutes a step's `clientTitle` for `title` in the client view, so
+    // asserting on the internal title finds nothing when the two differ.
+    const stepTitle: string = clientStep.title;
 
     await adminPage.goto(`services/${serviceKey}`);
     await openStepSettings(adminPage);
     const checkbox = adminPage.getByLabel(`Step ${targetStepNumber} client-visible`);
     await expect(checkbox).toBeVisible();
-    const wasChecked = await checkbox.isChecked();
+    wasChecked = await checkbox.isChecked();
 
     // Uncheck (or ensure unchecked) → save → verify hidden for the client.
     if (wasChecked) await checkbox.uncheck();
@@ -266,16 +289,26 @@ test('#80: toggling the Client-Visible CHECKBOX in the UI actually hides/shows t
     await clientPage.getByRole('button', { name: 'Steps', exact: true }).click();
     await expect(clientPage.getByText(stepTitle).first()).toBeVisible();
 
-    // Restore original state if it wasn't visible to begin with.
-    if (!wasChecked) {
-      await adminPage.goto(`services/${serviceKey}`);
-      await openStepSettings(adminPage);
-      const restore = adminPage.getByLabel(`Step ${targetStepNumber} client-visible`);
-      await restore.uncheck();
-      await adminPage.getByRole('button', { name: /save step settings/i }).click();
-      await expect(adminPage.getByText(/step settings saved/i)).toBeVisible();
-    }
   } finally {
+    // Restore the shared definition NO MATTER WHAT. This test mutates a LIVE
+    // workflow definition that every later spec reads, so a mid-test failure used
+    // to leave client-visibility switched off for the rest of the run — which is
+    // how one failure here cascaded into unrelated ones. Restoring in `finally`
+    // (not inside the try) keeps the suite order-independent.
+    // Restore via the API, not the UI: a page load + expand + save cycle costs
+    // ~20s and would push this already-long test past its timeout. The endpoint
+    // is the same one the Save button calls, so the effect is identical.
+    try {
+      if (targetStepNumber !== undefined && wasChecked !== undefined) {
+        const api = await apiAs('admin');
+        await api.put(`/api/workflow-definitions/${definitionId}/step-settings`, {
+          data: { settings: { [String(targetStepNumber)]: { clientVisible: wasChecked } } },
+        });
+        await api.dispose();
+      }
+    } catch {
+      // Best-effort cleanup — never mask the real failure with a teardown error.
+    }
     await deleteMatter(taskId);
   }
 });

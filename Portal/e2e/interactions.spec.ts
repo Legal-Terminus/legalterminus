@@ -25,16 +25,21 @@ test('E03-S06: a comment on Complete Step appears in the activity feed', async (
     test.skip(!(await completeBtn.count()), 'Current step is not a staff Complete-Step turn.');
 
     // The Steps tab renders a comment composer PER step; the current step's is
-    // FIRST in DOM order.
+    // FIRST in DOM order. #122 made this a TipTap rich-text editor — a
+    // contenteditable, not an <input> — so `getByPlaceholder(...).fill()` hangs
+    // forever. Address it by its textbox role and type into it.
     const comment = `E2E note ${Date.now()}`;
-    await adminPage.getByPlaceholder(/add a comment/i).first().fill(comment);
+    await adminPage.getByRole('textbox', { name: 'Add a comment' }).first()
+      .pressSequentially(comment);
     await completeBtn.first().click();
 
-    // Completing advances the matter, so the comment is now on a PREVIOUS step. The
-    // Activity feed defaults to the current step (#73), so reveal earlier steps.
+    // Completing advances the matter and the comment lands in the activity feed.
+    // The feed already shows the just-completed step's entry, so "Show previous
+    // steps" is often absent — expand it only when present, and assert on the
+    // COMMENT itself rather than on the disclosure control (which was the real
+    // reason this test failed: it required a button the page no longer needs).
     const showPrev = adminPage.getByRole('button', { name: /show previous steps/i });
-    await expect(showPrev.first()).toBeVisible({ timeout: 15_000 });
-    await showPrev.first().click();
+    if (await showPrev.count()) await showPrev.first().click();
 
     // The comment is recorded and surfaces in the activity history (feed can sit in
     // an off-viewport sticky rail, so assert it's attached to the DOM).
@@ -58,16 +63,19 @@ test('#83: a comment draft autosaves, restores on reload, and clears after submi
     test.skip(!(await completeBtn.count()), 'Current step is not a staff Complete-Step turn.');
 
     // The current step's composer is FIRST in DOM order (Steps tab has one per step).
+    // #122 made it a TipTap contenteditable, so address it by role and TYPE —
+    // `fill()` on a contenteditable hangs, and it has no value to assert on.
     const draft = `E2E draft ${Date.now()}`;
-    const box = adminPage.getByPlaceholder(/add a comment/i).first();
-    await box.fill(draft);
+    const box = adminPage.getByRole('textbox', { name: 'Add a comment' }).first();
+    await box.pressSequentially(draft);
     // Give the debounced autosave time to persist.
     await expect(adminPage.getByText(/draft saved/i)).toBeVisible({ timeout: 5_000 });
 
     // Reload — the draft restores itself into the box.
     await adminPage.reload();
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
-    await expect(adminPage.getByPlaceholder(/add a comment/i).first()).toHaveValue(draft);
+    await expect(adminPage.getByRole('textbox', { name: 'Add a comment' }).first())
+      .toContainText(draft);
 
     // Submit the step action — the draft is consumed and cleared.
     await adminPage.getByRole('button', { name: /^complete step$/i }).first().click();
@@ -76,8 +84,8 @@ test('#83: a comment draft autosaves, restores on reload, and clears after submi
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
     // The next step's composer starts empty (draft did not leak across steps).
-    const nextBox = adminPage.getByPlaceholder(/add a comment/i).first();
-    if (await nextBox.count()) await expect(nextBox).toHaveValue('');
+    const nextBox = adminPage.getByRole('textbox', { name: 'Add a comment' }).first();
+    if (await nextBox.count()) await expect(nextBox).toHaveText('');
   } finally { await deleteMatter(taskId); }
 });
 

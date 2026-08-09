@@ -3350,6 +3350,41 @@ not new engine code.
 
 ---
 
+### E2E suite repair — 8 long-standing failures, all test defects (2026-08-09)
+- Established a **baseline** by running the full suite at the pre-work commit
+  (`4a7c1773`): **17 failed / 201 passed**, versus 9 / 248 on the branch. That
+  comparison is what separated "mine" from "pre-existing" — and it caught one
+  real regression of mine (#111) that per-issue spec runs had missed.
+- **No product code was changed.** All eight were tests that had drifted behind
+  deliberate product changes, or that leaked shared state:
+  - `discussion` — asserted the client-facing sender mask was "Our team";
+    `edca73b8` deliberately changed it to the company name.
+  - `interactions` ×2 — `#122` made the step comment box a TipTap
+    **contenteditable**; Playwright's `fill()` on one **hangs forever**, which is
+    why both burned the full 120s with no assertion error. Now uses
+    `getByRole('textbox')` + `pressSequentially`, matching `rich-text.spec.ts`.
+    One also demanded a "Show previous steps" control the page no longer needs.
+  - `journey` / `notifications` — `#113` (`7cf42103`) made uploads **drafts**;
+    neither test pressed **Submit**, and it is Submit (not upload) that moves a
+    doc to `pending_review` and notifies the reviewer.
+  - `part-payment-reminder` — asserted over the client's ENTIRE notification
+    feed, so it read the reminder the preceding test deliberately fires. Now
+    scoped by `taskId` (and `getNotifications` exposes it).
+  - `step-settings #80` — restored the **shared live workflow definition** inside
+    `try` rather than `finally`, so a mid-test failure left client-visibility off
+    for the rest of the run. **This is what made failures migrate between runs.**
+    Restore moved to `finally` and switched to the API (a UI restore cost ~20s and
+    pushed the test over its budget). It also read the step title from the STAFF
+    settings row while asserting on the CLIENT's view — `#103` substitutes
+    `clientTitle` there, so the two differ.
+- Fixing #80's ordering exposed two more latent defects it had been masking:
+  `#66` and the first test never expanded the collapsible Step Settings section
+  (they relied on whatever localStorage held, #68), and `openStepSettings()`
+  returned before the 43-step list had mounted, so callers counted 0 rows.
+- Result: `step-settings` 13/13 in 56s (was timing out); the other six specs green.
+
+---
+
 ### #148 — payment history (multiple payment records per matter) (2026-08-09)
 - **Ask.** Clients pay in instalments, so a matter needs a LEDGER — every payment
   recorded separately with its date, amount, mode and the balance remaining after

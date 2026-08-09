@@ -98,6 +98,9 @@ test('client document upload notifies the reviewer; review notifies the client',
       buffer: Buffer.from('%PDF-1.4\ntrailer<</Root 1 0 R>>\n%%EOF', 'utf8'),
     });
     await expect(clientPage.getByText(/awaiting review|uploaded/i)).toBeVisible();
+    // #113 (7cf42103): the upload is a DRAFT until Submit — and it is Submit, not
+    // the upload, that notifies the reviewer. Without this no notification fires.
+    await clientPage.getByRole('button', { name: /^Submit/ }).click();
     expect(await waitForNotification('team', /document awaiting review/i)).toBeTruthy();
 
     // Staff approves → client gets "Document approved".

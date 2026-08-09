@@ -34,8 +34,10 @@ test('#123/#115: an internal message is hidden from the client; a shared one is 
     expect(staffBodies).toContain(secret);
 
     // Staff authors are MASKED for the client (never individual identities).
+    // #123 follow-up (edca73b8): the mask is the COMPANY name, not the older
+    // generic "Our team" — this assertion tracked the superseded wording.
     const sharedForClient = (seen.data ?? []).find((m: { body: string }) => m.body === shared);
-    expect(sharedForClient.authorName).toBe('Our team');
+    expect(sharedForClient.authorName).toBe('Legal Terminus');
 
     await admin.dispose(); await client.dispose();
   } finally { await deleteMatter(taskId); }

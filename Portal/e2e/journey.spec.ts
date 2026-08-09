@@ -32,6 +32,9 @@ test.describe.serial('matter lifecycle across roles', () => {
     const file = pdfFile('journey');
     await clientPage.locator('input[type="file"]').first().setInputFiles(file);
     await expect(clientPage.getByText(/awaiting review|uploaded/i)).toBeVisible();
+    // #113 (7cf42103): an upload lands as a DRAFT — the client must press Submit
+    // before it becomes reviewable. Without this the doc stays "Draft" forever.
+    await clientPage.getByRole('button', { name: /^Submit/ }).click();
     await expect(clientPage.getByText('Pending review').first()).toBeVisible();
   });
 

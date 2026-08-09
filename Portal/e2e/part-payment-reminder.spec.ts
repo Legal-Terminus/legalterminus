@@ -51,10 +51,15 @@ test('fully-paid matter: the reminder step does NOT notify the client', async ()
     const m = await getMatter(taskId);
     expect(m.currentStepNumber).toBeGreaterThan(trigger as number);
 
-    // Give any async effect a moment, then assert NO payment-reminder reached the client.
+    // Give any async effect a moment, then assert NO payment-reminder reached the
+    // client FOR THIS MATTER. Scoping by taskId is essential: the client's feed is
+    // shared across matters, and the part-paid test above deliberately fires a
+    // reminder — an unscoped check reads that one and fails this test.
     await new Promise((r) => setTimeout(r, 3000));
     const list = await getNotifications('client');
-    const hasReminder = list.some((n) => /payment reminder/i.test(n.title) || /payment reminder/i.test(n.message));
+    const hasReminder = list.some((n) =>
+      n.taskId === taskId
+      && (/payment reminder/i.test(n.title) || /payment reminder/i.test(n.message)));
     expect(hasReminder, 'fully-paid matter must not trigger a payment reminder').toBe(false);
   } finally {
     await deleteMatter(taskId);
