@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Workflow, Check, Loader2, AlertTriangle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Workflow, Check, Loader2, AlertTriangle, AlertCircle, Plus } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
 import { useToast } from '../../components/common/toastContext';
@@ -86,10 +86,19 @@ export default function ServiceDetailPage() {
       subtitle={service?.category}
       action={
         <div className="flex items-center gap-2">
-          {role === 'admin' && definitionId && (
-            <button onClick={() => navigate(`/services/${serviceKey}/edit`)} className="btn-primary">
-              <Workflow className="w-4 h-4" /> Edit workflow
-            </button>
+          {/* #156: a service with NO workflow used to show no action at all — a
+              dead end. Offer Create here, pre-attached to this service, so every
+              service can get a workflow from its own page. */}
+          {role === 'admin' && !loading && (
+            definitionId ? (
+              <button onClick={() => navigate(`/services/${serviceKey}/edit`)} className="btn-primary">
+                <Workflow className="w-4 h-4" /> Edit workflow
+              </button>
+            ) : (
+              <button onClick={() => navigate(`/services/${serviceKey}/edit?new=1`)} className="btn-primary">
+                <Plus className="w-4 h-4" /> Create workflow
+              </button>
+            )
           )}
           <button onClick={() => navigate('/services')} className="btn-secondary">
             <ArrowLeft className="w-4 h-4" /> Back to Services
@@ -137,8 +146,17 @@ export default function ServiceDetailPage() {
         ) : machine ? (
           <WorkflowDiagram machine={machine} displayNumbers={displayNumbers} />
         ) : (
-          <div className="p-8 text-center text-ink-muted text-sm">
-            No workflow configured yet for this service.
+          <div className="p-8 text-center text-sm">
+            <p className="text-ink-muted">No workflow configured yet for this service.</p>
+            {/* #156: don't dead-end — offer the action right where the gap is. */}
+            {role === 'admin' && (
+              <button
+                onClick={() => navigate(`/services/${serviceKey}/edit?new=1`)}
+                className="btn-primary mt-3 inline-flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" /> Create workflow for this service
+              </button>
+            )}
           </div>
         )}
       </CollapsibleSection>

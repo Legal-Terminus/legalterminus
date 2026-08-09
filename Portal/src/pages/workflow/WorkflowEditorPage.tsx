@@ -193,8 +193,11 @@ export default function WorkflowEditorPage() {
   const [seeded, setSeeded] = useState<{ key: string; draft: WorkflowDefinition } | null>(null);
   const serverKey = isCreate ? 'new' : (serverDef ? `${serverDef.id}@${serverDef.version}` : null);
   if (serverKey && seeded?.key !== serverKey) {
+    // #156: creating from a SERVICE page (/services/:key/edit?new=1) pre-attaches
+    // that service, so the admin never has to re-pick what they just clicked from.
+    // `?service=` stays supported for links that carry it explicitly.
     const initial = isCreate
-      ? emptyDefinition(newId, searchParams.get('service') ?? undefined)
+      ? emptyDefinition(newId, searchParams.get('service') ?? serviceKey ?? undefined)
       : structuredClone(serverDef!);
     setSeeded({ key: serverKey, draft: initial });
   }

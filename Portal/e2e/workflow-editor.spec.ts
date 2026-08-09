@@ -334,3 +334,79 @@ test('admin can edit a step’s outcomes (add a second outcome) on the throwaway
   expect((a1.transitions ?? []).length).toBe(2);
   await api.dispose();
 });
+
+/* ── #156: every service can get a workflow, from its own page ─────────────── */
+
+/** An active service that has NO workflow definition yet, or null if all are taken. */
+async function unconfiguredServiceKey(): Promise<string | null> {
+  const api = await apiAs('admin');
+  const [catalog, defs] = await Promise.all([
+    (await api.get('/api/service-config/all')).json(),
+    (await api.get('/api/workflow-definitions')).json(),
+  ]);
+  await api.dispose();
+  const taken = new Set((defs as Array<{ serviceKeys?: string[] }>)
+    .flatMap((d) => d.serviceKeys ?? []));
+  const free = Object.values(catalog.services as Record<string, { key: string; active: boolean }>)
+    .find((s) => s.active && !taken.has(s.key));
+  return free?.key ?? null;
+}
+
+test('#156: a service with NO workflow offers Create (not a dead end)', async ({ adminPage }) => {
+  const key = await unconfiguredServiceKey();
+  test.skip(!key, 'Every active service already has a workflow.');
+
+  await adminPage.goto(`services/${key}`);
+  // The header action says Create, not Edit — previously there was NO action at
+  // all here, which is the dead end the issue reports.
+  await expect(adminPage.getByRole('button', { name: /create workflow/i }).first()).toBeVisible();
+  await expect(adminPage.getByRole('button', { name: /^edit workflow$/i })).toHaveCount(0);
+
+  // The empty state offers the same action inline.
+  await expect(
+    adminPage.getByRole('button', { name: /create workflow for this service/i }),
+  ).toBeVisible();
+});
+
+test('#156: Create opens the editor with THIS service pre-attached', async ({ adminPage }) => {
+  const key = await unconfiguredServiceKey();
+  test.skip(!key, 'Every active service already has a workflow.');
+
+  await adminPage.goto(`services/${key}`);
+  await adminPage.getByRole('button', { name: /create workflow/i }).first().click();
+
+  // Lands in create mode on this service's route…
+  await expect(adminPage).toHaveURL(new RegExp(`/services/${key}/edit\\?new=1`));
+  // …with the service picker already set to the service we came from, so the
+  // admin never re-picks what they just clicked (nothing is saved here).
+  const picker = adminPage.locator('select').filter({ hasText: /select a service/i }).first();
+  await expect(picker).toHaveValue(key!);
+});
+
+test('#156: a service WITH a workflow still shows Edit, not Create', async ({ adminPage }) => {
+  // resolveServiceKey() returns a service that HAS a definition.
+  const key = await resolveServiceKey();
+  await adminPage.goto(`services/${key}`);
+  await expect(adminPage.getByRole('button', { name: /^edit workflow$/i })).toBeVisible();
+  await expect(adminPage.getByRole('button', { name: /create workflow/i })).toHaveCount(0);
+});
+
+test('#156: the catalog "New workflow" button names its purpose', async ({ adminPage }) => {
+  await adminPage.goto('services');
+  // The button was ambiguous ("New workflow" — attached to what?). It now says a
+  // workflow always powers a service, which is what the editor enforces on save.
+  const btn = adminPage.getByRole('button', { name: /new workflow for a service/i });
+  await expect(btn).toBeVisible();
+  await btn.click();
+  await expect(adminPage).toHaveURL(/\/workflows\/new/);
+  await expect(adminPage.getByText(/powers which service/i)).toBeVisible();
+});
+
+test('#156: non-admins get no create affordance', async ({ teamPage }) => {
+  const key = await unconfiguredServiceKey();
+  test.skip(!key, 'Every active service already has a workflow.');
+  await teamPage.goto(`services/${key}`);
+  await expect(teamPage.getByRole('button', { name: /create workflow/i })).toHaveCount(0);
+  await teamPage.goto('services');
+  await expect(teamPage.getByRole('button', { name: /new workflow/i })).toHaveCount(0);
+});

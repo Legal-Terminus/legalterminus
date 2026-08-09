@@ -89,9 +89,17 @@ export default function ServicesPage() {
     <PageShell
       title="Service Catalog"
       subtitle="Every service Legal Terminus offers, grouped by category. Click a card to rename it."
+      /* #156: the button IS attached to a service — the editor makes you pick one
+         before saving. It just never said so, which read as "unattached". The
+         label and tooltip now state it; per-tile "Create workflow" is the shorter
+         path when you already know which service you want. */
       action={role === 'admin' ? (
-        <button onClick={() => navigate('/workflows/new')} className="btn-primary inline-flex items-center gap-1.5">
-          <Plus className="w-4 h-4" /> New workflow
+        <button
+          onClick={() => navigate('/workflows/new')}
+          title="Build a new workflow and choose which service it powers"
+          className="btn-primary inline-flex items-center gap-1.5"
+        >
+          <Plus className="w-4 h-4" /> New workflow for a service
         </button>
       ) : undefined}
     >
@@ -167,6 +175,7 @@ export default function ServicesPage() {
                     key={svc.key}
                     service={svc}
                     workflow={workflowByServiceKey.get(svc.key)}
+                    canCreate={role === 'admin'}
                   />
                 ))}
               </div>
@@ -185,10 +194,12 @@ export default function ServicesPage() {
  * identical to a working one but cannot start a matter.
  */
 function ServiceCard({
-  service, workflow,
+  service, workflow, canCreate,
 }: {
   service: CatalogService;
   workflow?: ConfiguredWorkflow;
+  /** #156: admins can create a workflow for a service that has none. */
+  canCreate: boolean;
 }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -308,17 +319,22 @@ function ServiceCard({
         <p className="mt-1 text-xs text-ink-muted">{service.category}</p>
       </div>
 
-      {/* View configured workflow. #155: when nothing is configured the link
-          still goes to the detail page, but says so rather than promising a
-          diagram that isn't there. */}
+      {/* #155: say which state this service is in. #156: when nothing is
+          configured, an admin goes STRAIGHT to the editor with this service
+          pre-attached — previously the only route was the read-only detail page,
+          which offered no way to create one. Non-admins still just view. */}
       <button
-        onClick={() => navigate(`/services/${service.key}`)}
+        onClick={() => navigate(
+          !workflow && canCreate
+            ? `/services/${service.key}/edit?new=1`
+            : `/services/${service.key}`,
+        )}
         className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted hover:text-ink transition-colors"
       >
         <Workflow className="w-3.5 h-3.5" />
         {workflow
           ? `View workflow · ${workflow.stepCount} step${workflow.stepCount === 1 ? '' : 's'}`
-          : 'Set up workflow'}
+          : canCreate ? 'Create workflow' : 'No workflow yet'}
         <span aria-hidden>→</span>
       </button>
 

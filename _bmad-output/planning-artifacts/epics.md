@@ -3350,6 +3350,42 @@ not new engine code.
 
 ---
 
+### #156 — create a workflow for any service, self-service (2026-08-09)
+- **Problem.** A service with no workflow was a DEAD END: `ServiceDetailPage`
+  gated its action button on `definitionId`, so the one page dedicated to that
+  service offered no way to give it a workflow. The only route was the catalog's
+  "New workflow" button, which didn't say it attaches to a service — so it read
+  as orphaned (hence the issue's second question).
+- **The backend already supported all of this.** `POST /api/workflow-definitions`
+  exists and the editor already forces a service choice before saving; the gap
+  was purely ENTRY POINTS.
+- Three affordances added, all admin-only:
+  - service detail header — **Create workflow** when none exists, **Edit
+    workflow** when one does;
+  - the "No workflow configured yet" empty state gets an inline create button,
+    i.e. the action appears exactly where the gap is noticed;
+  - an unconfigured tile's footer link goes straight to the editor instead of the
+    read-only detail page.
+- **Editor bug found while wiring this.** Create-mode pre-fill read only
+  `?service=`, never the route's `:serviceKey`, so arriving from a service page
+  via `?new=1` left the required picker EMPTY — the admin had to re-pick the
+  service they had just clicked from. Now falls back to the route param.
+- **The "New workflow" button is kept, not removed.** It is not unattached: the
+  editor requires a service before save ("A new workflow must be tied to a
+  service"). It simply never said so. Relabelled **"New workflow for a service"**
+  with a tooltip; the per-tile action is the shorter path when the service is
+  already known.
+- **Scope note.** This covers *existing* services that lack a workflow. Creating
+  a BRAND-NEW service is still not possible through the UI — `/api/service-config`
+  exposes only GET and PATCH, no POST, so new services are seeded by script. Out
+  of scope for this issue; worth its own ticket.
+- e2e: `workflow-editor.spec.ts` +5 — an unconfigured service offers Create and
+  not Edit, Create lands in the editor with that service pre-selected, a
+  configured service still shows Edit only, the catalog button names its purpose
+  and reaches the service picker, and non-admins get no create affordance.
+
+---
+
 ### E2E suite repair — 8 long-standing failures, all test defects (2026-08-09)
 - Established a **baseline** by running the full suite at the pre-work commit
   (`4a7c1773`): **17 failed / 201 passed**, versus 9 / 248 on the branch. That
