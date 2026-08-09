@@ -157,6 +157,9 @@ test('#153: staff see an Organisation editor on the matter screen', async ({ adm
   const taskId = await createMatter({ organisation: ORG });
   try {
     await adminPage.goto(`tasks/${taskId}`);
+    // Matter details is collapsed by default so it costs no vertical space on
+    // the step view (#111 needs room for the reminder picker) — expand it.
+    await adminPage.getByRole('button', { name: /matter details/i }).click();
     const field = adminPage.getByLabel('Organisation', { exact: true });
     await expect(field).toBeVisible();
     await expect(field).toHaveValue(ORG);
@@ -171,7 +174,8 @@ test('#153: a client sees the organisation but gets no editor', async ({ clientP
     await clientPage.goto(`tasks/${taskId}`);
     // The name is shown (clients may hold matters for several orgs) …
     await expect(clientPage.getByText(ORG, { exact: false }).first()).toBeVisible();
-    // … but the editable control is staff-only.
+    // … but the editable control is staff-only: no Matter details section at all.
+    await expect(clientPage.getByRole('button', { name: /matter details/i })).toHaveCount(0);
     await expect(clientPage.getByLabel('Organisation', { exact: true })).toHaveCount(0);
   } finally {
     await deleteMatter(taskId);

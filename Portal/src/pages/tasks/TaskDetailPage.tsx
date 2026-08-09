@@ -9,6 +9,7 @@ import {
   ChevronsLeft, ChevronsRight, MoreVertical, Users,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
+import CollapsibleSection from '../../components/common/CollapsibleSection';
 import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import DiscussionPanel from '../../components/messages/DiscussionPanel';
@@ -521,12 +522,50 @@ export default function TaskDetailPage() {
         })}
       </div>
 
+      {tab === 'steps' && (
+        <StepsTab
+          task={task}
+          definition={definition}
+          stepDefs={stepDefs}
+          currentDef={currentDef}
+          completed={completed}
+          role={{ isStaff, isClient, canOverrideClient: canAssign, isAdmin: role === 'admin', uid: currentUserUid }}
+          pending={advance.isPending}
+          onEvent={(e) => advance.mutate(e)}
+          assignment={canAssign ? {
+            staff,
+            assigning: assign.isPending,
+            onAssign: (stepNumber, assignedTo) => assign.mutate({ stepNumber, assignedTo }),
+            onToggleUrgent: (stepNumber, next) => toggleStepUrgent.mutate({ stepNumber, next }),
+            urgentPending: toggleStepUrgent.isPending,
+          } : undefined}
+          events={events}
+          documents={documents}
+          onAttach={() => setTab('documents')}
+          onOpenDoc={(docId) => openDocument(taskId!, docId)}
+          // #116: admins can rewind the workflow to a completed step.
+          onReopen={role === 'admin' ? onReopen : undefined}
+        />
+      )}
+      {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} workflowType={task.workflowType} />}
+      {tab === 'discussion' && <DiscussionPanel taskId={taskId!} isStaff={isStaff} />}
+      {tab === 'payments' && <PaymentsTab task={task} canEdit={canAssign} />}
       {/* Matter details (#153 organisation, #149 CC recipients) — admin/manager
-          only. These live in the BODY, not the header action bar: the header is
-          `shrink-0`, so extra controls there push the subtitle off-screen (#118
-          regression). Both commit on Enter/blur; Escape reverts. */}
+          only. Deliberately placed LAST and collapsed by default: anything above
+          the step content displaces it, and the #111 reminder picker needs room
+          at the bottom of the viewport (it opens downward from the step rail).
+          They are also NOT in the header action bar: that is `shrink-0`, so extra
+          controls there push the page subtitle off-screen (#118).
+          Both fields commit on Enter/blur; Escape reverts. */}
       {canAssign && (
-        <div className="card p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <CollapsibleSection
+          id="matter-details"
+          title="Matter details"
+          hint="Organisation and additional email recipients"
+          defaultOpen={false}
+          className="card p-4 mt-4"
+        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="block">
             <span className="text-xs text-ink-muted">Organisation</span>
             <span className="relative flex items-center mt-1">
@@ -598,36 +637,8 @@ export default function TaskDetailPage() {
             </span>
           </label>
         </div>
+        </CollapsibleSection>
       )}
-
-      {tab === 'steps' && (
-        <StepsTab
-          task={task}
-          definition={definition}
-          stepDefs={stepDefs}
-          currentDef={currentDef}
-          completed={completed}
-          role={{ isStaff, isClient, canOverrideClient: canAssign, isAdmin: role === 'admin', uid: currentUserUid }}
-          pending={advance.isPending}
-          onEvent={(e) => advance.mutate(e)}
-          assignment={canAssign ? {
-            staff,
-            assigning: assign.isPending,
-            onAssign: (stepNumber, assignedTo) => assign.mutate({ stepNumber, assignedTo }),
-            onToggleUrgent: (stepNumber, next) => toggleStepUrgent.mutate({ stepNumber, next }),
-            urgentPending: toggleStepUrgent.isPending,
-          } : undefined}
-          events={events}
-          documents={documents}
-          onAttach={() => setTab('documents')}
-          onOpenDoc={(docId) => openDocument(taskId!, docId)}
-          // #116: admins can rewind the workflow to a completed step.
-          onReopen={role === 'admin' ? onReopen : undefined}
-        />
-      )}
-      {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} workflowType={task.workflowType} />}
-      {tab === 'discussion' && <DiscussionPanel taskId={taskId!} isStaff={isStaff} />}
-      {tab === 'payments' && <PaymentsTab task={task} canEdit={canAssign} />}
     </PageShell>
   );
 }

@@ -170,6 +170,9 @@ test('#149: staff can edit the recipients from the matter screen', async ({ admi
     await api.patch(`/api/tasks/${taskId}`, { data: { ccEmails: ['existing@example.com'] } });
 
     await adminPage.goto(`tasks/${taskId}`);
+    // Matter details is collapsed by default (it must not eat vertical space on
+    // the step view — see #111) — expand it before editing.
+    await adminPage.getByRole('button', { name: /matter details/i }).click();
     const field = adminPage.getByLabel('Additional email addresses');
     await expect(field).toHaveValue('existing@example.com');
 
@@ -190,6 +193,7 @@ test('#149: a client gets no recipients editor', async ({ clientPage }) => {
   const taskId = await createMatter();
   try {
     await clientPage.goto(`tasks/${taskId}`);
+    await expect(clientPage.getByRole('button', { name: /matter details/i })).toHaveCount(0);
     await expect(clientPage.getByLabel('Additional email addresses')).toHaveCount(0);
   } finally {
     await deleteMatter(taskId);
