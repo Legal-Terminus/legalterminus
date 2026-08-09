@@ -79,9 +79,17 @@ app.use(express.json({ limit: "1mb" }));
 /* ================= RATE LIMITING ================= */
 // Lenient global cap across all API routes — catches broad abuse without
 // affecting normal interactive use.
+// The full Playwright suite drives ~260 tests through this API from ONE IP in a
+// single window and legitimately exceeds 1000 requests, so every run poisoned its
+// own tail with 429s ("workflow-definitions did not return a list"). Raise the
+// ceiling for E2E only — production keeps the real limit. Mirrors the
+// EMAIL_DISABLED kill-switch used by emailService.
+const isE2E = String(process.env.EMAIL_DISABLED ?? "").toLowerCase() === "true"
+  || process.env.NODE_ENV === "test";
+
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000,
+  max: isE2E ? 100_000 : 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: "Too many requests, please try again later." },
@@ -97,7 +105,7 @@ app.use("/api", globalLimiter);
 //   rotating IPs once authenticated.
 const sensitiveLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,
+  max: isE2E ? 100_000 : 20, // see isE2E above — real limit in production
   standardHeaders: true,
   legacyHeaders: false,
   store: new FirestoreStore(),
