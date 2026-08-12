@@ -614,11 +614,15 @@ function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, onA
       <div className="flex items-center gap-2 mb-3">
         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand-50 text-xs font-semibold text-brand-700 shrink-0">{index + 1}</span>
         <input className={`${inputCls} font-medium`} value={step.title} onChange={(e) => onPatch({ title: e.target.value })} aria-label={`Step ${step.stepNumber} title`} placeholder="Internal step name (our team)" />
-        <div className="flex items-center gap-1 shrink-0">
-          <button onClick={onLocate} className="text-ink-faint hover:text-brand-600" aria-label="Locate in chart" title="Locate in chart"><Crosshair className="w-4 h-4" /></button>
-          <button onClick={() => onMove(-1)} disabled={index === 0} className="text-ink-faint hover:text-ink disabled:opacity-30" aria-label="Move up"><ChevronUp className="w-4 h-4" /></button>
-          <button onClick={() => onMove(1)} disabled={index === total - 1} className="text-ink-faint hover:text-ink disabled:opacity-30" aria-label="Move down"><ChevronDown className="w-4 h-4" /></button>
-          <button onClick={handleRemove} className="text-ink-faint hover:text-red-600" aria-label="Remove step"><Trash2 className="w-4 h-4" /></button>
+        {/* #162: these were four bare 16px icons packed into ~70px with the
+            destructive one in the middle. Each now has a ≥36px tap target, and
+            delete is pushed away from the move controls by a divider. */}
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button onClick={onLocate} className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-faint hover:text-brand-600 hover:bg-surface-soft" aria-label="Locate in chart" title="Locate in chart"><Crosshair className="w-4 h-4" /></button>
+          <button onClick={() => onMove(-1)} disabled={index === 0} className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-faint hover:text-ink hover:bg-surface-soft disabled:opacity-30" aria-label="Move up"><ChevronUp className="w-4 h-4" /></button>
+          <button onClick={() => onMove(1)} disabled={index === total - 1} className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-faint hover:text-ink hover:bg-surface-soft disabled:opacity-30" aria-label="Move down"><ChevronDown className="w-4 h-4" /></button>
+          <span aria-hidden="true" className="w-px h-5 bg-hairline mx-1" />
+          <button onClick={handleRemove} className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-faint hover:text-red-600 hover:bg-red-50" aria-label="Remove step"><Trash2 className="w-4 h-4" /></button>
         </div>
       </div>
 
@@ -897,9 +901,11 @@ function StepDescriptionsEditor({ step, onPatch }: {
       ) : (
         <div className="space-y-2">
           {list.map((d, i) => (
-            <div key={d.id ?? i} className="flex items-start gap-2">
+            /* #162: the textarea was squeezed to ~90px beside the audience select
+               on a phone; stack them below sm. */
+            <div key={d.id ?? i} className="flex flex-col sm:flex-row items-stretch sm:items-start gap-2">
               <select
-                className="w-28 shrink-0 rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-full sm:w-28 sm:shrink-0 rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 value={d.audience ?? 'client'}
                 onChange={(e) => update(i, { audience: e.target.value as 'internal' | 'client' })}
                 aria-label="Description audience"
@@ -1012,9 +1018,13 @@ function OutcomeRows({ step, allSteps, otherStepNum, onPatch, showColors }: {
         const dot = showColors ? outcomeColor(t.event, t.branch, t.to) : null;
         return (
           <div key={i} className="rounded-md border border-hairline bg-white p-2">
-            <div className="flex items-end gap-2">
-              {dot && <span className="w-2.5 h-2.5 rounded-full shrink-0 mb-2.5" style={{ backgroundColor: dot }} title="Matches this arrow's colour in the chart" />}
-              <div className="flex-1 min-w-0">
+            {/* #162: on a phone two side-by-side selects left ~40% of 390px each, so
+                the values truncated to "When done∨ → Awaiting P∨" and you couldn't
+                read where an outcome routed. Stack below sm; the arrow turns into a
+                downward cue. */}
+            <div className="flex flex-col sm:flex-row sm:items-end gap-2">
+              {dot && <span className="w-2.5 h-2.5 rounded-full shrink-0 mb-2.5 hidden sm:block" style={{ backgroundColor: dot }} title="Matches this arrow's colour in the chart" />}
+              <div className="flex-1 min-w-0 w-full">
                 <span className="block text-[11px] text-ink-faint mb-0.5">Outcome</span>
                 <select
                   className={inputCls}
@@ -1029,14 +1039,20 @@ function OutcomeRows({ step, allSteps, otherStepNum, onPatch, showColors }: {
                   {OUTCOME_TYPES.map((o) => <option key={o.event} value={o.event}>{o.label}</option>)}
                 </select>
               </div>
-              <span className="text-ink-faint shrink-0 pb-1.5">→</span>
-              <div className="flex-1 min-w-0">
+              <span className="text-ink-faint shrink-0 pb-1.5 hidden sm:inline">→</span>
+              <div className="flex-1 min-w-0 w-full">
                 <span className="block text-[11px] text-ink-faint mb-0.5">Go to step</span>
                 <select className={inputCls} value={t.to} onChange={(e) => setRow(i, { to: Number(e.target.value) })} aria-label="Go to step">
                   {allSteps.map((s) => <option key={s.stepNumber} value={s.stepNumber}>{s.title}</option>)}
                 </select>
               </div>
-              <button onClick={() => removeRow(i)} className="text-ink-faint hover:text-red-600 shrink-0 pb-1.5" aria-label="Remove outcome"><Trash2 className="w-4 h-4" /></button>
+              <button
+                onClick={() => removeRow(i)}
+                className="text-ink-faint hover:text-red-600 shrink-0 sm:pb-1.5 inline-flex items-center justify-center gap-1.5 w-full sm:w-auto min-h-[40px] sm:min-h-0 rounded-md border border-hairline sm:border-0 text-xs sm:text-sm"
+                aria-label="Remove outcome"
+              >
+                <Trash2 className="w-4 h-4" /><span className="sm:hidden">Remove outcome</span>
+              </button>
             </div>
             {isBranch && (
               <div className="mt-2">
