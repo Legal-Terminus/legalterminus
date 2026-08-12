@@ -391,8 +391,12 @@ function DocumentCard({
 
   return (
     <div className={`card p-4 ${archived ? 'opacity-70' : ''} ${selected ? 'ring-1 ring-brand-300' : ''}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3 min-w-0">
+      {/* #158: on a phone the action cluster (Share/View/delete) used to hold the
+          row hostage as shrink-0, collapsing the filename column to ~35px ("Ad…").
+          The row now stacks below sm, and the info block claims the space with
+          flex-1 min-w-0 so the name ellipsizes properly instead of vanishing. */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
           {/* #127: selection checkbox for bulk download. */}
           {selectable && (
             <input
@@ -410,7 +414,7 @@ function DocumentCard({
             {/* #79: show the document type name (PAN, TAN, …) with the file name as
                 secondary. Falls back to just the file name when no type was set. */}
             <p className="text-sm font-medium text-ink truncate">{doc.docType || doc.fileName}</p>
-            {doc.docType && <p className="text-[11px] text-ink-faint truncate">{doc.fileName}</p>}
+            {doc.docType && <p className="text-[11px] text-ink-faint break-all line-clamp-2 sm:line-clamp-1">{doc.fileName}</p>}
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className={`badge ${meta.cls} inline-flex items-center gap-1`}>
                 <meta.Icon className="w-3 h-3" /> {meta.label}
@@ -441,7 +445,7 @@ function DocumentCard({
           </div>
         </div>
         {/* #113: View (open) + Delete actions. Upload is the panel's own control. */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto sm:shrink-0">
           {/* #125: staff share/hide toggle. Only meaningful once a doc exists and is
               past draft; never on archived versions. */}
           {isStaff && !archived && doc.status !== 'draft' && doc.status !== 'awaiting_upload' && (
