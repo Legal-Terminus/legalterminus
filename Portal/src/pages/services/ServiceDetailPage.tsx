@@ -24,6 +24,8 @@ import { compileDefinition } from '@shared/workflows/compileDefinition.js';
  * XState machine client-side via the shared compiler — no hardcoded machine.
  */
 export default function ServiceDetailPage() {
+  // #160: mobile opt-in for the (desktop-oriented) workflow diagram.
+  const [showDiagramOnMobile, setShowDiagramOnMobile] = useState(false);
   const { serviceKey } = useParams<{ serviceKey: string }>();
   const navigate = useNavigate();
   const role = useAuthStore((s) => s.role);
@@ -144,7 +146,42 @@ export default function ServiceDetailPage() {
             <span className="text-sm">Loading…</span>
           </div>
         ) : machine ? (
-          <WorkflowDiagram machine={machine} displayNumbers={displayNumbers} />
+          /* #160: the diagram is a fit-to-view canvas — on a phone a 40+ node
+             workflow shrinks until labels are ~5px and nodes clip at the card
+             edge, i.e. unreadable and untappable. Below sm it's collapsed behind
+             an explicit toggle (the Step Settings list below is the readable
+             mobile view); from sm up it renders as before. */
+          <>
+            <div className="sm:hidden">
+              {showDiagramOnMobile ? (
+                <>
+                  <button
+                    onClick={() => setShowDiagramOnMobile(false)}
+                    className="btn-secondary w-full py-2 text-sm mb-3"
+                  >
+                    Hide diagram
+                  </button>
+                  <WorkflowDiagram machine={machine} displayNumbers={displayNumbers} />
+                </>
+              ) : (
+                <div className="p-4 text-center">
+                  <p className="text-sm text-ink-muted mb-3">
+                    The workflow diagram is designed for a larger screen. The step
+                    list below shows the same workflow in a readable form.
+                  </p>
+                  <button
+                    onClick={() => setShowDiagramOnMobile(true)}
+                    className="btn-secondary w-full py-2 text-sm"
+                  >
+                    Show diagram anyway
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="hidden sm:block">
+              <WorkflowDiagram machine={machine} displayNumbers={displayNumbers} />
+            </div>
+          </>
         ) : (
           <div className="p-8 text-center text-sm">
             <p className="text-ink-muted">No workflow configured yet for this service.</p>
