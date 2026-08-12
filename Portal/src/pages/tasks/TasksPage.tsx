@@ -344,7 +344,15 @@ function MatterCard({ task, isClientView, canDelete, deleting, onDelete }: {
           {secondary && <p className="text-xs text-ink-muted mt-0.5 truncate">{secondary}</p>}
         </div>
         {canDelete && (
-          <button onClick={(e) => { e.stopPropagation(); onDelete(task); }} disabled={deleting} className="p-1.5 rounded-lg text-ink-faint hover:text-red-600 hover:bg-red-50 disabled:opacity-40 shrink-0">
+          /* #163: was a ~28px lone icon at the card corner — easy to hit by
+             accident while scrolling. Now a 40px target with an accessible name. */
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(task); }}
+            disabled={deleting}
+            aria-label="Delete matter"
+            title="Delete matter"
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg text-ink-faint hover:text-red-600 hover:bg-red-50 disabled:opacity-40 shrink-0"
+          >
             <Trash2 className="w-4 h-4" />
           </button>
         )}

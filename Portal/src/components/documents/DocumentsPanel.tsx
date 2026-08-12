@@ -304,7 +304,7 @@ function Uploader({ onPick, busy }: { onPick: (files: File[], docType?: string) 
             list="doc-type-options"
             value={docType}
             onChange={(e) => setDocType(e.target.value)}
-            placeholder="Select or type a document type"
+            placeholder="Document type"
             className="input-field mt-1 max-w-xs"
           />
           <datalist id="doc-type-options">

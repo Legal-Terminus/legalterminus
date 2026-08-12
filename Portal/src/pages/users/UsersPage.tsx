@@ -316,7 +316,7 @@ export default function UsersPage() {
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
         <input
           type="text"
-          placeholder="Search users by name, email, role, phone…"
+          placeholder="Search users…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="input-field pl-10"
@@ -434,7 +434,10 @@ export default function UsersPage() {
                       <Calendar className="w-3.5 h-3.5" />
                       {formatDate(user.createdAt)}
                     </span>
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    {/* #163: Delete sat flush against Edit on every card. gap-3
+                        plus btn-danger's red styling keeps the destructive action
+                        visually and physically separate from the routine one. */}
+                    <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                       <button onClick={() => handleEdit(user)} className="btn-secondary py-1.5 px-3 text-xs">
                         <Pencil className="w-3.5 h-3.5" /> Edit
                       </button>
