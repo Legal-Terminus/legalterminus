@@ -80,8 +80,12 @@
   .badge-red   { @apply badge bg-red-50 text-red-700; }
 
   /* ── Page shell ── */
+  /* #157/#163: on a phone the action cluster (assignment dropdowns, Add buttons)
+     used to share one non-wrapping row with the title, crushing the title column
+     to ~40px so it wrapped one word per line. Stack below md: title block first,
+     actions on their own full-width row underneath. */
   .page-header {
-    @apply bg-white border-b border-hairline px-4 md:px-6 py-3 flex items-center justify-between gap-3;
+    @apply bg-white border-b border-hairline px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3;
   }
   .page-content {
     @apply p-4 md:p-6;

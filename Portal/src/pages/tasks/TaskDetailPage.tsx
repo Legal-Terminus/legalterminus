@@ -361,7 +361,10 @@ export default function TaskDetailPage() {
       }
       action={
         canAssign ? (
-          <div className="flex items-center gap-1.5">
+          /* #157: on mobile this cluster sits on its own full-width row under the
+             title (see .page-header), so the two selects share the row evenly and
+             keep their labels instead of being two unlabelled 140px stubs. */
+          <div className="flex items-center gap-1.5 w-full md:w-auto">
             {/* Matter-level Urgent flame (Issue 3). Filled red = urgent. */}
             <button
               onClick={() => toggleMatterUrgent.mutate(!task.isUrgent)}
@@ -377,12 +380,12 @@ export default function TaskDetailPage() {
               <Flame className="w-[18px] h-[18px]" fill={task.isUrgent ? 'currentColor' : 'none'} />
             </button>
             {/* Matter owner — assigns the WHOLE matter (all steps) to one user. */}
-            <label className="flex items-center gap-2">
+            <label className="flex items-center gap-2 min-w-0 flex-1 md:flex-none">
               <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Matter owner</span>
-              <span className="relative inline-flex items-center">
+              <span className="relative inline-flex items-center min-w-0 flex-1 md:flex-none">
                 <select
                   aria-label="Matter owner"
-                  className="input-field py-1.5 pr-8 text-sm max-w-[140px]"
+                  className="input-field py-1.5 pr-8 text-sm w-full md:w-auto md:max-w-[140px]"
                   value={task.assignedTo ?? ''}
                   disabled={assignOwner.isPending}
                   onChange={(e) => assignOwner.mutate(e.target.value || null)}
@@ -396,12 +399,12 @@ export default function TaskDetailPage() {
               </span>
             </label>
             {/* Professional (#85) — the handling staff member. */}
-            <label className="flex items-center gap-2">
+            <label className="flex items-center gap-2 min-w-0 flex-1 md:flex-none">
               <span className="text-xs text-ink-muted shrink-0 hidden sm:inline">Professional</span>
-              <span className="relative inline-flex items-center">
+              <span className="relative inline-flex items-center min-w-0 flex-1 md:flex-none">
                 <select
                   aria-label="Professional"
-                  className="input-field py-1.5 pr-8 text-sm max-w-[140px]"
+                  className="input-field py-1.5 pr-8 text-sm w-full md:w-auto md:max-w-[140px]"
                   value={task.professionalUid ?? ''}
                   disabled={assignProfessional.isPending}
                   onChange={(e) => assignProfessional.mutate(e.target.value || null)}
