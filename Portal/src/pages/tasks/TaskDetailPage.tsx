@@ -501,15 +501,20 @@ export default function TaskDetailPage() {
         />
       )}
 
-      {/* Tabs — underline style */}
-      <div className="flex items-center gap-1 border-b border-hairline mb-4">
+      {/* Tabs — underline style.
+          #159/#161: four tabs don't fit 390px, and the row previously just clipped
+          the last one to a sliver with no hint it could scroll. It now scrolls
+          horizontally with a visible edge fade, and each tab is shrink-0 so labels
+          never get squashed. `scrollbar-none` keeps the mobile look clean. */}
+      <div className="relative mb-4">
+        <div className="flex items-center gap-1 border-b border-hairline overflow-x-auto scrollbar-none scroll-smooth">
         {TABS.map((t) => {
           const active = tab === t.key;
           return (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`relative inline-flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-medium transition-colors -mb-px ${
+              className={`relative shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-medium transition-colors -mb-px ${
                 active ? 'text-ink' : 'text-ink-muted hover:text-ink'
               }`}
             >
@@ -523,6 +528,10 @@ export default function TaskDetailPage() {
             </button>
           );
         })}
+        </div>
+        {/* Edge fade: the visual cue that the row scrolls (pointer-events-none so
+            it never blocks a tap on the tab beneath it). */}
+        <span aria-hidden="true" className="pointer-events-none absolute right-0 top-0 bottom-px w-8 bg-gradient-to-l from-white to-transparent sm:hidden" />
       </div>
 
       {tab === 'steps' && (

@@ -87,6 +87,15 @@
   .page-header {
     @apply bg-white border-b border-hairline px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3;
   }
+  /* #159/#161: horizontally scrollable tab/filter rows on mobile — hide the
+     scrollbar chrome; the edge fade provides the affordance instead. */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
   .page-content {
     @apply p-4 md:p-6;
   }

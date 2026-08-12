@@ -289,8 +289,12 @@ export default function UsersPage() {
         </div>
       }
     >
-      {/* Role filter tabs */}
-      <div className="flex items-center gap-0.5 mb-4 overflow-x-auto pb-0.5">
+      {/* Role filter tabs.
+          #161: the row scrolled but clipped "Managers" to "Man…" with no hint it
+          could scroll. Same treatment as the matter tabs: hidden scrollbar chrome
+          plus an edge fade as the affordance. */}
+      <div className="relative mb-4">
+      <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none pb-0.5">
         <div className="nav-pill-container shrink-0">
           {ROLE_TABS.map((tab) => (
             <button
@@ -303,6 +307,8 @@ export default function UsersPage() {
             </button>
           ))}
         </div>
+      </div>
+        <span aria-hidden="true" className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent sm:hidden" />
       </div>
 
       {/* Search */}
