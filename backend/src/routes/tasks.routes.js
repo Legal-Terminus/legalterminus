@@ -31,7 +31,9 @@ router.patch('/:taskId',                     validate(taskUpdateSchema), patchTa
 router.patch('/:taskId/payment',             requireRole('admin', 'manager'), validate(taskPaymentUpdateSchema), updatePayment);
 // Payment HISTORY (#148) — a matter's payments are a ledger, since clients pay in
 // instalments. Admin/manager only; Team must not see payment data at all.
-router.get('/:taskId/payments',              requireRole('admin', 'manager'), listPayments);
+// #165: clients may READ their own matter's ledger (ownership enforced in the
+// controller); writing stays admin/manager. Team members remain excluded (#148).
+router.get('/:taskId/payments',              requireRole('admin', 'manager', 'client'), listPayments);
 router.post('/:taskId/payments',             requireRole('admin', 'manager'), validate(paymentCreateSchema), createPayment);
 router.patch('/:taskId/payments/:paymentId', requireRole('admin', 'manager'), validate(paymentUpdateSchema), patchPayment);
 router.delete('/:taskId/payments/:paymentId', requireRole('admin', 'manager'), deletePayment);

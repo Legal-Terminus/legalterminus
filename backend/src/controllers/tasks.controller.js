@@ -1445,13 +1445,20 @@ export async function listPayments(req, res) {
   try {
     const { role } = req.user;
     // #148: Team must not see payment information at all.
-    if (role !== 'admin' && role !== 'manager') {
+    // #165: a CLIENT may read the ledger for THEIR OWN matter — they are the one
+    // paying, and the tab already shows them what they owe, so a 403 here just
+    // rendered "Could not load the payment history" on their own invoice.
+    // Ownership is checked below once the matter is loaded.
+    if (role !== 'admin' && role !== 'manager' && role !== 'client') {
       return res.status(403).json({ message: 'Forbidden: admin or manager required' });
     }
     const taskRef = db.collection('tasks').doc(req.params.taskId);
     const snap = await taskRef.get();
     if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
     const task = snap.data();
+    if (role === 'client' && task.clientUid !== req.user.uid) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
 
     const ledger = await taskRef.collection('payments').get();
     const rows = ledger.docs
@@ -1463,7 +1470,12 @@ export async function listPayments(req, res) {
     let running = 0;
     const payments = rows.map((r) => {
       running += r.amount;
-      return { ...r, dueAfter: Math.max(0, totalCost - running) };
+      const row = { ...r, dueAfter: Math.max(0, totalCost - running) };
+      // #165: the client sees their OWN ledger, but never which staff member
+      // recorded a payment — internal identities are masked for clients across
+      // the portal (events, documents), and this is no exception.
+      if (role === 'client') { delete row.recordedBy; delete row.recordedByName; }
+      return row;
     });
 
     res.json({
