@@ -139,7 +139,7 @@ function buildWorkColumns(navigate: (to: string) => void) {
         return (
           <button onClick={() => navigate(`/tasks/${r.taskId}`)} className="text-left min-w-0 group">
             <span className="text-sm font-semibold text-ink truncate group-hover:text-brand-700 block">{r.stepTitle}</span>
-            <span className="block text-xs text-ink-muted truncate">{r.clientName || 'Unknown client'} · {r.serviceName}</span>
+            <span className="block text-xs text-ink-muted truncate">{[r.clientName || 'Client unavailable', r.serviceName].filter(Boolean).join(' · ')}</span>
           </button>
         );
       },
@@ -192,7 +192,7 @@ function buildApprovalColumns(navigate: (to: string) => void) {
               <span className="text-sm font-semibold text-ink truncate group-hover:text-brand-700">{r.serviceName}</span>
               {r.isUrgent && <span className="badge bg-red-50 text-red-600 inline-flex items-center gap-1 shrink-0"><Flame className="w-3 h-3" fill="currentColor" /> Urgent</span>}
             </span>
-            <span className="block text-xs text-ink-muted truncate">{r.clientName || 'Unknown client'}</span>
+            <span className="block text-xs text-ink-muted truncate">{r.clientName || 'Client unavailable'}</span>
           </button>
         );
       },
@@ -217,7 +217,7 @@ function StepCard({ row, navigate }: { row: MyStepRow; navigate: (to: string) =>
           ? <span className="badge bg-emerald-50 text-emerald-700">Mine</span>
           : <span className="badge bg-surface-card text-ink-muted">Available</span>}
       </div>
-      <p className="text-xs text-ink-muted mt-1 truncate">{row.clientName || 'Unknown client'} · {row.serviceName}</p>
+      <p className="text-xs text-ink-muted mt-1 truncate">{[row.clientName || 'Client unavailable', row.serviceName].filter(Boolean).join(' · ')}</p>
     </div>
   );
 }
@@ -230,7 +230,7 @@ function ApprovalCard({ row, navigate }: { row: MyApprovalRow; navigate: (to: st
         {row.isUrgent && <span className="badge bg-red-50 text-red-600 inline-flex items-center gap-1"><Flame className="w-3 h-3" fill="currentColor" /> Urgent</span>}
         <span className="badge bg-amber-100 text-amber-800">Needs approval</span>
       </div>
-      <p className="text-xs text-ink-muted mt-1 truncate">{row.clientName || 'Unknown client'} · created by {row.createdByName}</p>
+      <p className="text-xs text-ink-muted mt-1 truncate">{row.clientName || 'Client unavailable'} · created by {row.createdByName}</p>
     </div>
   );
 }

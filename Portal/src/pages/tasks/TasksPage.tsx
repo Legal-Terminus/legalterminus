@@ -199,7 +199,7 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
   navigate: (to: string) => void;
 }) {
   return [
-    col.accessor((t) => (isClientView ? (t.serviceName || t.workflowType) : (t.clientName || 'Unknown client')), {
+    col.accessor((t) => (isClientView ? (t.serviceName || t.workflowType) : (t.clientName || 'Client unavailable')), {
       id: 'primary',
       header: isClientView ? 'Service' : 'Client',
       size: 240,
@@ -256,9 +256,13 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
       size: 180,
       cell: (ctx) => {
         const t = ctx.row.original;
+        // #164: with no known total, the old code fell back to currentStepNumber
+        // as the numerator over a zero denominator — rendering nonsense like
+        // "13/0" (and treating an internal step NUMBER as a position). When the
+        // total is unknown we show no fraction at all.
         const total = t.totalSteps ?? t.steps?.length ?? 0;
         const isDone = t.status === 'completed';
-        const displayStep = isDone ? total : Math.min(t.currentStepNumber, total || t.currentStepNumber);
+        const displayStep = total ? Math.min(t.currentStepNumber, total) : 0;
         const pct = isDone ? 100 : (total ? Math.round(((displayStep - 1) / total) * 100) : 0);
         return (
           <div className="flex items-center gap-2">
@@ -266,7 +270,7 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
               <div className="h-full bg-ink/70 rounded-full" style={{ width: `${pct}%` }} />
             </div>
             <span className="text-[11px] text-ink-faint shrink-0">
-              {isDone ? `${total}/${total}` : `${displayStep}/${total}`}
+              {!total ? '—' : isDone ? `${total}/${total}` : `${displayStep}/${total}`}
             </span>
           </div>
         );
@@ -325,12 +329,13 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
 function MatterCard({ task, isClientView, canDelete, deleting, onDelete }: {
   task: Task; isClientView: boolean; canDelete: boolean; deleting: boolean; onDelete: (t: Task) => void;
 }) {
+  // #164: see the table cell above — never render "n/0".
   const total = task.totalSteps ?? task.steps?.length ?? 0;
   const isDone = task.status === 'completed';
-  const displayStep = isDone ? total : Math.min(task.currentStepNumber, total || task.currentStepNumber);
+  const displayStep = total ? Math.min(task.currentStepNumber, total) : 0;
   const pct = isDone ? 100 : (total ? Math.round(((displayStep - 1) / total) * 100) : 0);
   const payment = PAYMENT[task.paymentStatus] ?? PAYMENT.not_paid;
-  const primary = isClientView ? (task.serviceName || task.workflowType) : (task.clientName || 'Unknown client');
+  const primary = isClientView ? (task.serviceName || task.workflowType) : (task.clientName || 'Client unavailable');
   const secondary = isClientView ? '' : (task.serviceName || task.workflowType);
 
   return (
@@ -365,7 +370,7 @@ function MatterCard({ task, isClientView, canDelete, deleting, onDelete }: {
         <div className="h-1.5 flex-1 rounded-full bg-surface-card overflow-hidden">
           <div className="h-full bg-ink/70 rounded-full" style={{ width: `${pct}%` }} />
         </div>
-        <span className="text-[11px] text-ink-faint shrink-0">{isDone ? `${total}/${total}` : `${displayStep}/${total}`}</span>
+        <span className="text-[11px] text-ink-faint shrink-0">{!total ? '—' : isDone ? `${total}/${total}` : `${displayStep}/${total}`}</span>
       </div>
     </div>
   );

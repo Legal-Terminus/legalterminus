@@ -90,6 +90,22 @@ async function resolveUserNames(uids) {
   return byUid;
 }
 
+// #164: `clientName` is a SNAPSHOT written at creation, so a matter created
+// before the field existed (or whose client was renamed/removed since) carries an
+// empty name and the list rendered the literal "Unknown client". Backfill the
+// missing ones live from `clientUid` in one batched pass; genuinely unresolvable
+// clients keep an empty name so the UI can show its own placeholder.
+async function backfillClientNames(rows) {
+  const missing = rows.filter((t) => !t.clientName && t.clientUid);
+  if (missing.length === 0) return rows;
+  const byUid = await resolveUserNames(missing.map((t) => t.clientUid));
+  for (const t of missing) {
+    const name = byUid[t.clientUid];
+    if (name) t.clientName = name;
+  }
+  return rows;
+}
+
 // ─── Notifications (E07-S01) ────────────────────────────────────────────────
 // Fire-and-forget in-app notification. NEVER let a notification failure break the
 // workflow action that triggered it — we log and move on. Skips self-notification
@@ -1000,6 +1016,7 @@ export async function listTasks(req, res) {
       if (status) rows = rows.filter((t) => t.status === status);
       if (isUrgent === 'true') rows = rows.filter((t) => t.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
+      await backfillClientNames(rows); // #164
       return res.json({ data: rows, nextCursor: null });
     }
 
@@ -1022,6 +1039,7 @@ export async function listTasks(req, res) {
     const snap = await query.get();
     let data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     const nextCursor = data.length === limit ? snap.docs[snap.docs.length - 1].id : null;
+    await backfillClientNames(data); // #164
     // E12-S01: strip internal ownership from the client's own matter list.
     if (role === 'client') data = data.map(projectTaskForClient);
     res.json({ data, nextCursor });
@@ -1087,7 +1105,22 @@ export async function listMySteps(req, res) {
         const active = await db.collection('tasks').doc(taskId).collection('steps')
           .where('status', '==', 'active').limit(1).get();
         if (active.empty) return;
-        const step = active.docs[0].data();
+        const stepDoc = active.docs[0];
+        const step = stepDoc.data();
+        // #164: a step record can be missing its denormalised title (and even its
+        // stepNumber — the doc id IS the step number). Resolve the title from the
+        // pinned workflow DEFINITION first, then the doc id, so the row never
+        // renders the literal "Step undefined".
+        const stepNumber = step.stepNumber ?? Number(stepDoc.id);
+        const hasStepNumber = Number.isFinite(stepNumber);
+        let stepTitle = step.title;
+        if (!stepTitle && hasStepNumber) {
+          try {
+            const compiled = await getCompiledById(t.workflowDefinitionId);
+            stepTitle = compiled?.definition?.steps?.find((x) => x.stepNumber === stepNumber)?.title;
+          } catch { /* definition unavailable — fall through to the generic label */ }
+        }
+        if (!stepTitle) stepTitle = hasStepNumber ? `Step ${stepNumber}` : 'Untitled step';
         const assignedTo = step.assignedTo ?? null;
         // #50: "My Tasks" shows only steps that are MINE or UNASSIGNED (the shared
         // pickup pool) — for EVERY staff role, incl. admin/manager. Steps assigned
@@ -1096,14 +1129,15 @@ export async function listMySteps(req, res) {
         if (assignedTo && assignedTo !== uid) return;
         rows.push({
           taskId,
-          clientName: t.clientName ?? '',
+          clientName: t.clientName ?? '', // #164: backfilled below when empty
+          clientUid: t.clientUid ?? null,
           serviceName: t.serviceName ?? t.workflowType ?? '',
           // Effective urgency (E11-S03): the matter is urgent OR its active step is.
           // An urgent step flags the row even if the matter itself isn't.
           isUrgent: !!t.isUrgent || !!step.isUrgent,
           updatedAt: t.updatedAt ?? null,
-          stepNumber: step.stepNumber,
-          stepTitle: step.title ?? `Step ${step.stepNumber}`,
+          stepNumber: hasStepNumber ? stepNumber : null,
+          stepTitle,
           assignedRole: step.assignedRole ?? null,
           assignedTo,
           // Due date of the active step (E13-S03) — drives the lateness column.
@@ -1115,6 +1149,8 @@ export async function listMySteps(req, res) {
     );
 
     // Resolve assignee names for the rows (#48) in one batched pass.
+    await backfillClientNames(rows); // #164
+    for (const r of rows) delete r.clientUid; // helper-only; not part of the payload
     const stepNames = await resolveUserNames(rows.map((r) => r.assignedTo));
     rows.forEach((r) => { r.assigneeName = r.assignedTo ? (stepNames[r.assignedTo] ?? null) : null; });
 
