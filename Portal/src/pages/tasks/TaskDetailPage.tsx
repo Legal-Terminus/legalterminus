@@ -502,24 +502,31 @@ export default function TaskDetailPage() {
       )}
 
       {/* Tabs — underline style.
-          #159/#161: four tabs don't fit 390px, and the row previously just clipped
-          the last one to a sliver with no hint it could scroll. It now scrolls
-          horizontally with a visible edge fade, and each tab is shrink-0 so labels
-          never get squashed. `scrollbar-none` keeps the mobile look clean. */}
+          #159/#161: four tabs don't fit 390px side by side, so the row used to clip
+          the last one to a sliver. Scrolling fixed the clipping but still hid a tab
+          behind a swipe. Instead the row now DISTRIBUTES evenly on mobile: each tab
+          is an equal-width cell (~97px of 390px) with the icon above a smaller
+          label, so all four are visible at once with a large tap target and nothing
+          to scroll. From sm up it returns to the original inline row. */}
       <div className="relative mb-4">
-        <div className="flex items-center gap-1 border-b border-hairline overflow-x-auto scrollbar-none scroll-smooth">
+        {/* Column count follows the tab count (a team member has no Payments tab,
+            #148), so the row always fills the width with no empty cell. */}
+        <div
+          className="grid sm:flex sm:items-center sm:gap-1 border-b border-hairline"
+          style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}
+        >
         {TABS.map((t) => {
           const active = tab === t.key;
           return (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`relative shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-medium transition-colors -mb-px ${
+              className={`relative sm:shrink-0 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-1.5 px-1 sm:px-3.5 py-2 sm:py-2.5 text-[11px] sm:text-sm font-medium transition-colors -mb-px min-w-0 ${
                 active ? 'text-ink' : 'text-ink-muted hover:text-ink'
               }`}
             >
-              <t.icon className={`w-4 h-4 ${active ? 'text-ink' : 'text-ink-faint'}`} />
-              {t.label}
+              <t.icon className={`w-4 h-4 shrink-0 ${active ? 'text-ink' : 'text-ink-faint'}`} />
+              <span className="truncate max-w-full">{t.label}</span>
               <span
                 className={`absolute left-0 right-0 -bottom-px h-0.5 rounded-full transition-all ${
                   active ? 'bg-ink' : 'bg-transparent'
@@ -529,9 +536,6 @@ export default function TaskDetailPage() {
           );
         })}
         </div>
-        {/* Edge fade: the visual cue that the row scrolls (pointer-events-none so
-            it never blocks a tap on the tab beneath it). */}
-        <span aria-hidden="true" className="pointer-events-none absolute right-0 top-0 bottom-px w-8 bg-gradient-to-l from-white to-transparent sm:hidden" />
       </div>
 
       {tab === 'steps' && (
