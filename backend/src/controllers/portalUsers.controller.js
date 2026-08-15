@@ -393,3 +393,110 @@ export const removeUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+/* ── #166: additional logins for a client organisation ──────────────────────
+ *
+ * A client may need to give a partner or team member access to the same matters.
+ * Rather than sharing one password, each person gets their OWN Firebase Auth
+ * account whose users doc carries `primaryClientUid` pointing at the account that
+ * owns the matters. Authorisation resolves through that link (see
+ * `clientScopeUid` in tasks.controller.js), so an additional login can do exactly
+ * what the primary can — approve, reject, upload, download — while the audit
+ * trail still records which individual acted.
+ *
+ * Only a PRIMARY client can host logins: an additional login cannot itself spawn
+ * more (no chains), which keeps the link one level deep and easy to reason about.
+ */
+
+/** Load a client that is allowed to host additional logins, or send an error. */
+async function loadPrimaryClient(res, uid) {
+  const snap = await db.collection(COLLECTION).doc(uid).get();
+  if (!snap.exists) { res.status(404).json({ message: 'User not found' }); return null; }
+  const data = snap.data();
+  if (data.role !== 'client') {
+    res.status(400).json({ message: 'Additional logins can only be added to a client.' });
+    return null;
+  }
+  if (data.primaryClientUid) {
+    res.status(400).json({
+      message: 'This is already an additional login. Add further logins on the main client account.',
+    });
+    return null;
+  }
+  return data;
+}
+
+// GET /api/portal/users/:uid/logins
+export const listClientLogins = async (req, res) => {
+  try {
+    const primary = await loadPrimaryClient(res, req.params.uid);
+    if (!primary) return;
+
+    const snap = await db.collection(COLLECTION)
+      .where('primaryClientUid', '==', req.params.uid)
+      .get();
+
+    const logins = snap.docs.map((d) => {
+      const u = d.data();
+      return { uid: d.id, email: u.email, name: u.name ?? null, status: u.status ?? 'active', createdAt: u.createdAt ?? null };
+    });
+    res.json({ data: logins });
+  } catch (err) {
+    logger.error({ err }, 'listClientLogins error:');
+    res.status(500).json({ message: 'Failed to load additional logins' });
+  }
+};
+
+// POST /api/portal/users/:uid/logins  { email, name? }
+export const addClientLogin = async (req, res) => {
+  try {
+    const primaryUid = req.params.uid;
+    const primary = await loadPrimaryClient(res, primaryUid);
+    if (!primary) return;
+
+    const { email, name } = req.body;
+    if (email === primary.email) {
+      return res.status(400).json({ message: 'That is already the main login for this client.' });
+    }
+
+    // Refuse if the address already belongs to ANY account — silently re-pointing
+    // an existing user (possibly staff) at this client would be a privilege bug.
+    const existing = await db.collection(COLLECTION).where('email', '==', email).limit(1).get();
+    if (!existing.empty) {
+      return res.status(409).json({ message: 'That email already belongs to another user.' });
+    }
+
+    const result = await upsertUser(email, 'client', {
+      name: name || email.split('@')[0],
+      // The link that makes this account act for the primary client.
+      primaryClientUid: primaryUid,
+      organisation: primary.organisation ?? undefined,
+    }, { sendEmail: true, authProvider: 'email', createdBy: req.user?.uid ?? null });
+
+    res.status(201).json({ uid: result.uid, email, name: name || email.split('@')[0], primaryClientUid: primaryUid });
+  } catch (err) {
+    logger.error({ err }, 'addClientLogin error:');
+    res.status(500).json({ message: 'Failed to add the additional login' });
+  }
+};
+
+// DELETE /api/portal/users/:uid/logins/:loginUid
+export const removeClientLogin = async (req, res) => {
+  try {
+    const { uid: primaryUid, loginUid } = req.params;
+    const snap = await db.collection(COLLECTION).doc(loginUid).get();
+    if (!snap.exists) return res.status(404).json({ message: 'Login not found' });
+
+    // Only remove a login that actually belongs to THIS client — never a primary
+    // account, and never someone else's login.
+    if (snap.data().primaryClientUid !== primaryUid) {
+      return res.status(400).json({ message: 'That login does not belong to this client.' });
+    }
+
+    await deleteUser(loginUid);
+    res.json({ message: 'Additional login removed' });
+  } catch (err) {
+    logger.error({ err }, 'removeClientLogin error:');
+    res.status(500).json({ message: 'Failed to remove the additional login' });
+  }
+};

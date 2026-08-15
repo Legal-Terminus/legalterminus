@@ -1,0 +1,180 @@
+import { test, expect } from './fixtures';
+import { apiAs, createMatter, deleteMatter } from './api';
+import { env } from './helpers';
+
+/**
+ * #168 — a referring professional gets a login that shows ONLY the matters they
+ * are explicitly named on, and only ever read-only.
+ *
+ * The requirement is mostly NEGATIVE ("Professional A must not see Matters 1, 3,
+ * 4 of the same client"), so these tests deliberately create several matters for
+ * the SAME client and grant access to just one. A test that only proved the
+ * granted matter is visible would pass even if isolation were completely broken.
+ */
+
+const PRO_UID = () => env('E2E_PRO_UID');
+
+test('#168: a professional sees ONLY the granted matter, not the client’s others', async () => {
+  const granted = await createMatter({ organisation: 'E2E Pro Granted' });
+  const hiddenA = await createMatter({ organisation: 'E2E Pro Hidden A' });
+  const hiddenB = await createMatter({ organisation: 'E2E Pro Hidden B' });
+  const admin = await apiAs('admin');
+  try {
+    // Grant access to ONE of the three (all belong to the same client).
+    const patch = await admin.patch(`/api/tasks/${granted}`, {
+      data: { accessProfessionalUids: [PRO_UID()] },
+    });
+    expect(patch.ok()).toBeTruthy();
+
+    const pro = await apiAs('pro');
+    const list = await (await pro.get('/api/tasks')).json();
+    const ids = (list.data ?? []).map((t: { id: string }) => t.id);
+
+    expect(ids).toContain(granted);
+    // The isolation guarantee — the other matters of the SAME client are invisible.
+    expect(ids).not.toContain(hiddenA);
+    expect(ids).not.toContain(hiddenB);
+    await pro.dispose();
+  } finally {
+    await admin.dispose();
+    await Promise.all([deleteMatter(granted), deleteMatter(hiddenA), deleteMatter(hiddenB)]);
+  }
+});
+
+test('#168: direct URL access to a non-granted matter is refused', async () => {
+  const granted = await createMatter();
+  const hidden = await createMatter();
+  const admin = await apiAs('admin');
+  try {
+    await admin.patch(`/api/tasks/${granted}`, { data: { accessProfessionalUids: [PRO_UID()] } });
+
+    const pro = await apiAs('pro');
+    // Guessing the id of another matter must not work — the list filter is not
+    // the only thing standing between a professional and someone else's matter.
+    expect((await pro.get(`/api/tasks/${granted}`)).status()).toBe(200);
+    expect((await pro.get(`/api/tasks/${hidden}`)).status()).toBe(403);
+    // Sub-resources are guarded too, not just the matter document.
+    expect((await pro.get(`/api/tasks/${hidden}/documents`)).status()).toBe(403);
+    expect((await pro.get(`/api/tasks/${hidden}/events`)).status()).toBe(403);
+    expect((await pro.get(`/api/tasks/${hidden}/payments`)).status()).toBe(403);
+    expect((await pro.get(`/api/tasks/${hidden}/messages`)).status()).toBe(403);
+    await pro.dispose();
+  } finally {
+    await admin.dispose();
+    await Promise.all([deleteMatter(granted), deleteMatter(hidden)]);
+  }
+});
+
+test('#168: a professional is view-only — every write is refused', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  try {
+    await admin.patch(`/api/tasks/${taskId}`, { data: { accessProfessionalUids: [PRO_UID()] } });
+
+    const pro = await apiAs('pro');
+    // They CAN read this matter…
+    expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(200);
+
+    // …but every mutating verb is blocked, including on the matter they can see.
+    // Blocked centrally (denyReadOnlyRoles), so this holds for routes that do not
+    // guard themselves individually.
+    expect((await pro.patch(`/api/tasks/${taskId}`, { data: { isUrgent: true } })).status()).toBe(403);
+    expect((await pro.post(`/api/tasks/${taskId}/transition`, {
+      data: { event: { type: 'COMPLETE_STEP' } },
+    })).status()).toBe(403);
+    expect((await pro.post(`/api/tasks/${taskId}/messages`, {
+      data: { body: 'should not post', clientVisible: true },
+    })).status()).toBe(403);
+    expect((await pro.delete(`/api/tasks/${taskId}`)).status()).toBe(403);
+
+    // And they cannot create matters at all.
+    expect((await pro.post('/api/tasks', {
+      data: { clientUid: env('E2E_CLIENT_UID'), serviceKey: 'incorporation' },
+    })).status()).toBe(403);
+    await pro.dispose();
+  } finally {
+    await admin.dispose();
+    await deleteMatter(taskId);
+  }
+});
+
+test('#168: access granted later appears; revoked access disappears', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  try {
+    const pro = await apiAs('pro');
+    // Before the grant: invisible.
+    expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(403);
+
+    // Granted AFTER creation — the issue requires both paths to work.
+    await admin.patch(`/api/tasks/${taskId}`, { data: { accessProfessionalUids: [PRO_UID()] } });
+    expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(200);
+
+    // Revoked by sending an empty list — access is read live, never snapshotted,
+    // so it must vanish immediately rather than on next login.
+    await admin.patch(`/api/tasks/${taskId}`, { data: { accessProfessionalUids: [] } });
+    expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(403);
+    await pro.dispose();
+  } finally {
+    await admin.dispose();
+    await deleteMatter(taskId);
+  }
+});
+
+test('#168: a matter can be created with professional access already set', async () => {
+  const admin = await apiAs('admin');
+  let taskId = '';
+  try {
+    const res = await admin.post('/api/tasks', {
+      data: {
+        clientUid: env('E2E_CLIENT_UID'),
+        serviceKey: 'incorporation',
+        organisation: 'E2E Pro At Creation',
+        paymentStatus: 'fully_paid', totalCost: 1000, amountReceived: 1000, paymentMode: 'E2E',
+        accessProfessionalUids: [PRO_UID()],
+      },
+    });
+    expect(res.ok()).toBeTruthy();
+    taskId = (await res.json()).id;
+
+    const pro = await apiAs('pro');
+    expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(200);
+    await pro.dispose();
+  } finally {
+    await admin.dispose();
+    if (taskId) await deleteMatter(taskId);
+  }
+});
+
+test('#168: only a professional account can be granted matter access', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  try {
+    // Handing the allowlist a client or staff uid must be refused outright — a
+    // silent no-op would look like a successful grant.
+    const bad = await admin.patch(`/api/tasks/${taskId}`, {
+      data: { accessProfessionalUids: [env('E2E_CLIENT_UID')] },
+    });
+    expect(bad.status()).toBe(400);
+
+    const bad2 = await admin.patch(`/api/tasks/${taskId}`, {
+      data: { accessProfessionalUids: [env('E2E_TEAM_UID')] },
+    });
+    expect(bad2.status()).toBe(400);
+  } finally {
+    await admin.dispose();
+    await deleteMatter(taskId);
+  }
+});
+
+test('#168: a professional cannot reach staff-only areas', async () => {
+  const pro = await apiAs('pro');
+  try {
+    // Reports, the user directory and the workflow editor are staff surfaces.
+    expect((await pro.get('/api/reports/all-tasks')).status()).toBe(403);
+    expect((await pro.get('/api/portal/users')).status()).toBe(403);
+    expect((await pro.get('/api/tasks/my-steps')).status()).toBe(403);
+  } finally {
+    await pro.dispose();
+  }
+});

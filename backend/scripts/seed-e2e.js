@@ -29,6 +29,9 @@ const USERS = {
   manager:     { email: 'e2e-manager@legalterminus.test', password: 'E2eManager!2026', name: 'E2E Manager', role: 'manager' },
   team_member: { email: 'e2e-team@legalterminus.test',    password: 'E2eTeam!2026',    name: 'E2E Team',    role: 'team_member' },
   client:      { email: 'e2e-client@legalterminus.test',  password: 'E2eClient!2026',  name: 'E2E Client',  role: 'client' },
+  // #168: an external referring professional — view-only, and only on the
+  // matters they are explicitly named on.
+  professional: { email: 'e2e-pro@legalterminus.test',    password: 'E2ePro!2026',     name: 'E2E Professional', role: 'professional' },
 };
 
 async function ensureAuthUser({ email, password, name, role }) {
@@ -128,6 +131,9 @@ async function cleanupPriorFixtures() {
       `E2E_MANAGER_UID=${uid.manager}`,
       `E2E_TEAM_UID=${uid.team_member}`,
       `E2E_CLIENT_UID=${uid.client}`,
+      `E2E_PRO_EMAIL=${USERS.professional.email}`,
+      `E2E_PRO_PASSWORD=${USERS.professional.password}`,
+      `E2E_PRO_UID=${uid.professional}`,
       // Web API key — lets Portal/e2e/api.ts mint ID tokens to create/delete a
       // fresh matter/lead per run via the backend (no shared mutable fixtures).
       `E2E_FIREBASE_API_KEY=${process.env.VITE_FIREBASE_API_KEY ?? process.env.FIREBASE_API_KEY ?? ''}`,

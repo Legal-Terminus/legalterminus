@@ -7,10 +7,14 @@
  */
 
 export const ROLES = [
-  { key: 'admin',       label: 'Admin',       staff: true },
-  { key: 'manager',     label: 'Manager',     staff: true },
-  { key: 'team_member', label: 'Team Member', staff: true },
-  { key: 'client',      label: 'Client',      staff: false },
+  { key: 'admin',        label: 'Admin',        staff: true },
+  { key: 'manager',      label: 'Manager',      staff: true },
+  { key: 'team_member',  label: 'Team Member',  staff: true },
+  { key: 'client',       label: 'Client',       staff: false },
+  // #168: a referring professional (CA/CS/advocate) with VIEW-ONLY access to the
+  // specific matters they are named on — never the client's other matters. Not
+  // staff: they must not appear in assignee pickers or reach staff-only routes.
+  { key: 'professional', label: 'Professional', staff: false },
 ];
 
 export const VALID_ROLES = ROLES.map((r) => r.key);
@@ -23,6 +27,16 @@ export const STAFF_ROLES = ROLES.filter((r) => r.staff).map((r) => r.key);
 export const USER_MANAGER_ROLES = ['admin', 'manager']; // create/edit users
 export const USER_DELETE_ROLES = ['admin'];             // delete users
 export const ROLE_CHANGE_ROLES = ['admin'];             // change a user's role
+
+/**
+ * #168: roles that may NEVER mutate anything. Enforced centrally by the
+ * `denyReadOnlyRoles` middleware on every non-GET route, so a professional stays
+ * view-only even if a future route forgets to guard itself — the safe default is
+ * "blocked", not "allowed".
+ */
+export const READ_ONLY_ROLES = ['professional'];
+
+export const isReadOnlyRole = (role) => READ_ONLY_ROLES.includes(role);
 
 /**
  * Which roles a given actor is allowed to ASSIGN when creating/editing a user.

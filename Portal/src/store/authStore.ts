@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import type { User } from 'firebase/auth';
 
-export type Role = 'admin' | 'manager' | 'team_member' | 'client';
+// Roles are defined once in lib/roles.ts; re-exported here for existing importers.
+export type { Role } from '../lib/roles';
+import type { Role } from '../lib/roles';
 
 interface AuthState {
   user: User | null;

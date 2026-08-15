@@ -6,7 +6,7 @@
  * so no role names are hardcoded across the app.
  */
 
-export type Role = 'admin' | 'manager' | 'team_member' | 'client';
+export type Role = 'admin' | 'manager' | 'team_member' | 'client' | 'professional';
 
 export interface RoleDef {
   /** Stable key stored in Firestore `users/{uid}.role`. */
@@ -36,13 +36,25 @@ export const ROLES: RoleDef[] = [
     order: 1,
   },
   {
+    // #168: an external referring professional (CA/CS/advocate) with view-only
+    // access to the specific matters they are named on. Not staff — they must
+    // not appear in assignee pickers.
+    key: 'professional',
+    label: 'Professional',
+    pluralLabel: 'Professionals',
+    staff: false,
+    badgeClass: 'bg-violet-50 text-violet-700',
+    avatarClass: 'bg-violet-50 text-violet-700',
+    order: 2,
+  },
+  {
     key: 'team_member',
     label: 'Team Member',
     pluralLabel: 'Team Members',
     staff: true,
     badgeClass: 'bg-brand-50 text-brand-700',
     avatarClass: 'bg-brand-50 text-brand-700',
-    order: 2,
+    order: 3,
   },
   {
     key: 'manager',
@@ -51,7 +63,7 @@ export const ROLES: RoleDef[] = [
     staff: true,
     badgeClass: 'bg-amber-50 text-amber-700',
     avatarClass: 'bg-amber-50 text-amber-700',
-    order: 3,
+    order: 4,
   },
   {
     key: 'admin',
@@ -60,7 +72,7 @@ export const ROLES: RoleDef[] = [
     staff: true,
     badgeClass: 'bg-red-50 text-red-700',
     avatarClass: 'bg-surface-card text-ink',
-    order: 4,
+    order: 5,
   },
 ];
 

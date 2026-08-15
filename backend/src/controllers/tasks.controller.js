@@ -143,6 +143,56 @@ async function adminUids() {
 // client sees a comment only via the (filtered) event feed.
 const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedRole', 'completedBy', 'isUrgent', 'remark'];
 
+/**
+ * #166 — the client identity a request acts as.
+ *
+ * A client organisation can have several logins (a partner, a team member). Each
+ * gets its OWN Firebase Auth account so passwords and audit trails stay separate,
+ * with `primaryClientUid` pointing at the account that owns the matters. Matter
+ * ownership is always keyed on that primary uid, so every `clientUid` comparison
+ * must go through here rather than using `req.user.uid` directly.
+ *
+ * A primary client has no `primaryClientUid` and simply resolves to itself.
+ */
+export function clientScopeUid(user) {
+  return user?.primaryClientUid || user?.uid;
+}
+
+/**
+ * #168 — may this professional see this matter? Explicit allowlist only: being
+ * the client's referrer grants nothing on its own, so a professional named on
+ * Matter 2 cannot reach Matters 1, 3 or 4 of the same client.
+ */
+export function professionalCanSee(task, uid) {
+  return Array.isArray(task?.accessProfessionalUids)
+    && task.accessProfessionalUids.includes(uid);
+}
+
+/**
+ * #168 — validate a requested professional allowlist.
+ *
+ * Every uid must exist AND hold the `professional` role. Granting access to a
+ * staff or client account here would hand it a second, unaudited route into the
+ * matter, so a wrong uid is a 400 rather than a silent no-op. Returns
+ * `{ uids }` on success or `{ error }` for the caller to surface.
+ */
+async function resolveAccessProfessionals(uids) {
+  if (uids === undefined) return { uids: [] };
+  const unique = [...new Set((uids ?? []).filter(Boolean))];
+  if (unique.length === 0) return { uids: [] };
+
+  const snaps = await Promise.all(
+    unique.map((u) => db.collection('users').doc(u).get()),
+  );
+  for (let i = 0; i < snaps.length; i++) {
+    if (!snaps[i].exists) return { error: `Professional not found: ${unique[i]}` };
+    if (snaps[i].data().role !== 'professional') {
+      return { error: `User ${unique[i]} is not a professional and cannot be granted matter access.` };
+    }
+  }
+  return { uids: unique };
+}
+
 // Strip internal ownership/assignment from a task + its steps for a client, and
 // (when a visibility set is supplied) DROP steps the workflow marks as not
 // client-visible (`clientVisible === false` on the definition step). When no set
@@ -290,7 +340,7 @@ export async function createTask(req, res) {
     // Body validated by taskCreateSchema (incl. #51 payment fields).
     const { clientUid, serviceKey, serviceName, organisation, ccEmails,
             paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
-            professionalUid } = req.body;
+            professionalUid, accessProfessionalUids } = req.body;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
     if (!compiled) {
@@ -318,6 +368,12 @@ export async function createTask(req, res) {
 
     // #85: optional handling professional — must be a STAFF user (never a client).
     // Snapshot the name for display/exports; store the UID as the stable ref.
+    // #168: validate every granted professional exists and actually holds the
+    // `professional` role — a stray uid here would silently grant nothing, or
+    // worse, grant a staff/client account an unintended view.
+    const accessUids = await resolveAccessProfessionals(accessProfessionalUids);
+    if (accessUids.error) return res.status(400).json({ message: accessUids.error });
+
     let professional = { professionalUid: null, professionalName: null };
     if (professionalUid) {
       const pDoc = await db.collection('users').doc(professionalUid).get();
@@ -435,6 +491,9 @@ export async function createTask(req, res) {
       assignedTo: null,
       professionalUid: professional.professionalUid, // #85
       professionalName: professional.professionalName, // #85 (snapshot for display/reports)
+      // #168: allowlist of EXTERNAL professionals with view-only access to this
+      // matter. Distinct from professionalUid above (the internal staff handler).
+      accessProfessionalUids: accessUids.uids,
       status: initialStatus,
       paymentStatus,
       amountPaid: received,
@@ -1023,7 +1082,14 @@ export async function listTasks(req, res) {
     let query = db.collection('tasks');
     // Clients can only see their own tasks
     if (role === 'client') {
-      query = query.where('clientUid', '==', uid);
+      query = query.where('clientUid', '==', clientScopeUid(req.user));
+    }
+    // #168: a professional sees ONLY the matters they are explicitly granted,
+    // never the rest of that client's book. `accessProfessionalUids` is an
+    // allowlist per matter (distinct from #85's `professionalUid`, which is the
+    // internal staff member handling the work).
+    if (role === 'professional') {
+      query = query.where('accessProfessionalUids', 'array-contains', uid);
     }
 
     if (status)           query = query.where('status', '==', status);
@@ -1041,7 +1107,9 @@ export async function listTasks(req, res) {
     const nextCursor = data.length === limit ? snap.docs[snap.docs.length - 1].id : null;
     await backfillClientNames(data); // #164
     // E12-S01: strip internal ownership from the client's own matter list.
-    if (role === 'client') data = data.map(projectTaskForClient);
+    // #168: a professional gets the same external-facing projection — they are
+    // an outside party, so internal assignment/urgency must not leak either.
+    if (role === 'client' || role === 'professional') data = data.map(projectTaskForClient);
     res.json({ data, nextCursor });
   } catch (err) {
     logger.error({ err: err }, 'listTasks error:');
@@ -1207,8 +1275,15 @@ export async function getTask(req, res) {
     if (!doc.exists) return res.status(404).json({ message: 'Task not found' });
 
     const data = doc.data();
-    // Clients can only see their own task
-    if (req.user.role === 'client' && data.clientUid !== req.user.uid) {
+    // Clients can only see their own task (#166: via the primary client uid, so
+    // additional logins on the same organisation resolve to the same matters).
+    if (req.user.role === 'client' && data.clientUid !== clientScopeUid(req.user)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    // #168: a professional reaches ONLY the matters they are named on. Direct URL
+    // access to any other matter — including another matter of the same client —
+    // must 403, which is the isolation the issue asks for.
+    if (req.user.role === 'professional' && !professionalCanSee(data, req.user.uid)) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
@@ -1248,7 +1323,10 @@ export async function listTaskEvents(req, res) {
     const taskRef = db.collection('tasks').doc(req.params.taskId);
     const taskSnap = await taskRef.get();
     if (!taskSnap.exists) return res.status(404).json({ message: 'Task not found' });
-    if (req.user.role === 'client' && taskSnap.data().clientUid !== req.user.uid) {
+    if (req.user.role === 'professional' && !professionalCanSee(taskSnap.data(), req.user.uid)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    if (req.user.role === 'client' && taskSnap.data().clientUid !== clientScopeUid(req.user)) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
@@ -1361,6 +1439,15 @@ export async function patchTask(req, res) {
         if (c.exists) primaryEmail = c.data().email ?? null;
       }
       update.ccEmails = dedupeCcEmails(req.body.ccEmails, primaryEmail);
+    }
+
+    // #168: grant/revoke external professional access AFTER creation. Sending a
+    // shorter array revokes; [] revokes all. A revoked professional loses the
+    // matter from their list immediately — access is read live, never snapshotted.
+    if ('accessProfessionalUids' in req.body) {
+      const resolved = await resolveAccessProfessionals(req.body.accessProfessionalUids);
+      if (resolved.error) return res.status(400).json({ message: resolved.error });
+      update.accessProfessionalUids = resolved.uids;
     }
 
     // #85: set/clear the handling professional (staff user). Snapshot the name.
@@ -1492,7 +1579,10 @@ export async function listPayments(req, res) {
     const snap = await taskRef.get();
     if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
     const task = snap.data();
-    if (role === 'client' && task.clientUid !== req.user.uid) {
+    if (role === 'professional' && !professionalCanSee(task, req.user.uid)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    if (role === 'client' && task.clientUid !== clientScopeUid(req.user)) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
@@ -1938,7 +2028,8 @@ export async function transitionTask(req, res) {
         isAssignedTeam = true; // owns the active step → may advance it
       }
     }
-    const isOwnerClient = role === 'client' && task.clientUid === uid;
+    // #166: an additional client login approves/rejects exactly as the primary.
+    const isOwnerClient = role === 'client' && task.clientUid === clientScopeUid(req.user);
     const clientEvents = new Set(['CLIENT_APPROVE', 'CLIENT_REJECT']);
     if (!isStaff && !isAssignedTeam && !(isOwnerClient && clientEvents.has(event?.type))) {
       return res.status(403).json({ message: 'Not allowed to advance this task' });

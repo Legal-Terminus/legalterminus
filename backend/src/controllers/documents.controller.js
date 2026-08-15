@@ -85,7 +85,21 @@ async function loadAuthorizedTask(req, res, taskId, { clientWrites = true } = {}
   const role = req.user.role;
   if (role === 'client') {
     if (!clientWrites) { res.status(403).json({ message: 'Forbidden' }); return null; }
-    if (task.clientUid !== req.user.uid) { res.status(403).json({ message: 'Forbidden' }); return null; }
+    // #166: additional client logins act with the primary client's scope, so a
+    // partner added to the account can upload/download on the same matters.
+    if (task.clientUid !== (req.user.primaryClientUid || req.user.uid)) {
+      res.status(403).json({ message: 'Forbidden' }); return null;
+    }
+  }
+  // #168: this gate previously let EVERY non-client role through, so a
+  // professional would have reached documents on any matter. They may read only
+  // the matters they are named on (writes are blocked globally by
+  // denyReadOnlyRoles, so reaching here at all means a read).
+  if (role === 'professional'
+      && !(Array.isArray(task.accessProfessionalUids)
+           && task.accessProfessionalUids.includes(req.user.uid))) {
+    res.status(403).json({ message: 'Forbidden' });
+    return null;
   }
   return task;
 }

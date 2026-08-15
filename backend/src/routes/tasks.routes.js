@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
+import { verifyToken, requireRole, denyReadOnlyRoles } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema } from '../schemas/task.schema.js';
 import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments, createPayment, patchPayment, deletePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep, postStepNote } from '../controllers/tasks.controller.js';
@@ -10,6 +10,9 @@ import { listReminders, sendReminder } from '../controllers/reminders.controller
 const router = Router();
 
 router.use(verifyToken);
+// #168: professionals are view-only — block every mutating method up front so a
+// new route cannot accidentally grant them write access.
+router.use(denyReadOnlyRoles);
 
 router.get('/',                              validate(taskListQuerySchema, 'query'), listTasks);
 // Cross-matter step worklist for staff ("My Tasks"). MUST precede '/:taskId'.

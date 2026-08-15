@@ -13,6 +13,8 @@ type RoleFixtures = {
   managerPage: Page;
   teamPage: Page;
   clientPage: Page;
+  /** #168: external professional — view-only, allowlisted matters only. */
+  proPage: Page;
 };
 
 async function rolePage(browser: Browser, role: RoleKey) {
@@ -33,6 +35,12 @@ export const test = base.extend<RoleFixtures>({
     const { context, page } = await rolePage(browser, 'team');
     await use(page); await context.close();
   },
+  proPage: async ({ browser }, use) => {
+    const { context, page } = await rolePage(browser, 'pro');
+    await use(page);
+    await context.close();
+  },
+
   clientPage: async ({ browser }, use) => {
     const { context, page } = await rolePage(browser, 'client');
     await use(page); await context.close();

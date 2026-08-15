@@ -1,6 +1,7 @@
 import admin from "firebase-admin";
 import { getDb } from "../config/firebase.js";
 import { logger } from "../config/logger.js";
+import { isReadOnlyRole } from '../config/roles.js';
 
 /**
  * Short-lived cache for the Firestore role fallback (uid → { role, expires }).
@@ -12,15 +13,18 @@ import { logger } from "../config/logger.js";
 const ROLE_CACHE_TTL_MS = 60 * 1000;
 const roleCache = new Map();
 
-const getCachedRole = (uid) => {
+// #166: the cache holds the whole resolved identity, not just the role — a cache
+// HIT must still carry primaryClientUid or additional client logins would lose
+// their link to the owning client for the next 60s and 403 intermittently.
+const getCachedIdentity = (uid) => {
   const hit = roleCache.get(uid);
-  if (hit && hit.expires > Date.now()) return hit.role;
+  if (hit && hit.expires > Date.now()) return hit.identity;
   roleCache.delete(uid);
   return undefined;
 };
 
-const setCachedRole = (uid, role) => {
-  roleCache.set(uid, { role, expires: Date.now() + ROLE_CACHE_TTL_MS });
+const setCachedIdentity = (uid, identity) => {
+  roleCache.set(uid, { identity, expires: Date.now() + ROLE_CACHE_TTL_MS });
 };
 
 /**
@@ -54,16 +58,24 @@ export const verifyToken = async (req, res, next) => {
     // within the TTL for everyone, with no token-refresh/revocation dance.
     // Falls back to the token claim only if the Firestore read fails.
     if (decoded.uid) {
-      const cached = getCachedRole(decoded.uid);
+      const cached = getCachedIdentity(decoded.uid);
       if (cached) {
-        req.user.role = cached;
+        if (cached.role) req.user.role = cached.role;
+        req.user.primaryClientUid = cached.primaryClientUid ?? null;
       } else {
         try {
           const doc = await getDb().collection("users").doc(decoded.uid).get();
-          const role = doc.exists ? doc.data()?.role : undefined;
+          const data = doc.exists ? doc.data() : undefined;
+          const role = data?.role;
+          // #166: an additional client login points at the account that owns the
+          // matters. Only honoured for clients — it must never let some other
+          // role borrow a client's scope.
+          const primaryClientUid =
+            role === 'client' && data?.primaryClientUid ? data.primaryClientUid : null;
+          req.user.primaryClientUid = primaryClientUid;
           if (role) {
             req.user.role = role;
-            setCachedRole(decoded.uid, role);
+            setCachedIdentity(decoded.uid, { role, primaryClientUid });
           }
           // else: keep whatever role the token claim had (fallback)
         } catch (e) {
@@ -95,4 +107,27 @@ export const requireRole = (...allowedRoles) => {
     }
     next();
   };
+};
+
+/**
+ * #168 — global read-only enforcement.
+ *
+ * A `professional` may only ever READ. Rather than adding a guard to every
+ * mutating route (and relying on nobody forgetting one), this blocks any
+ * non-idempotent method outright for roles listed in READ_ONLY_ROLES. New routes
+ * are therefore safe by default: a professional is blocked unless the method is
+ * a read.
+ *
+ * Mounted once, after verifyToken, on the whole /api surface.
+ */
+const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+export const denyReadOnlyRoles = (req, res, next) => {
+  if (req.user && isReadOnlyRole(req.user.role) && !READ_METHODS.has(req.method)) {
+    return res.status(403).json({
+      success: false,
+      error: 'Forbidden: your access to this matter is view-only.',
+    });
+  }
+  next();
 };

@@ -12,6 +12,22 @@ service cloud.firestore {
       return request.auth.token.role;
     }
 
+    // #166: an additional client login acts for the account that OWNS the matters.
+    // The link is stamped on the custom claim at provisioning so rules can resolve
+    // it without a document read on every check.
+    function clientScopeUid() {
+      return request.auth.token.primaryClientUid != null
+        ? request.auth.token.primaryClientUid
+        : request.auth.uid;
+    }
+
+    // #168: an external professional reads ONLY the matters naming them.
+    function isGrantedProfessional(task) {
+      return isSignedIn() && role() == 'professional'
+        && task.accessProfessionalUids != null
+        && request.auth.uid in task.accessProfessionalUids;
+    }
+
     function isAdmin() {
       return isSignedIn() && role() == 'admin';
     }
@@ -46,7 +62,8 @@ service cloud.firestore {
       // Client can only read tasks where they are the client
       allow read: if isAdminOrManager()
         || (isSignedIn() && role() == 'team_member' && resource.data.assignedTo == request.auth.uid)
-        || (isSignedIn() && role() == 'client' && resource.data.clientUid == request.auth.uid);
+        || (isSignedIn() && role() == 'client' && resource.data.clientUid == clientScopeUid())
+        || isGrantedProfessional(resource.data);
 
       // Only admin and manager can create/update tasks
       allow create, update: if isAdminOrManager();
@@ -58,7 +75,8 @@ service cloud.firestore {
       match /steps/{stepId} {
         allow read: if isAdminOrManager()
           || (isSignedIn() && role() == 'team_member' && get(/databases/$(database)/documents/tasks/$(taskId)).data.assignedTo == request.auth.uid)
-          || (isSignedIn() && role() == 'client' && get(/databases/$(database)/documents/tasks/$(taskId)).data.clientUid == request.auth.uid);
+          || (isSignedIn() && role() == 'client' && get(/databases/$(database)/documents/tasks/$(taskId)).data.clientUid == clientScopeUid())
+          || isGrantedProfessional(get(/databases/$(database)/documents/tasks/$(taskId)).data);
         allow write: if isAdminOrManager();
       }
 

@@ -1,6 +1,9 @@
 import { apiFetch } from './client';
-
-export type Role = 'admin' | 'manager' | 'team_member' | 'client';
+// Single source of truth for roles is lib/roles.ts — re-exported here so existing
+// importers keep working while there is only ONE definition of the union (#168
+// added 'professional' and three separate copies of this type had drifted).
+export type { Role } from '../lib/roles';
+import type { Role } from '../lib/roles';
 
 /** Unified user shape across all roles (backed by the `users` collection). */
 export interface PortalUser {

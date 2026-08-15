@@ -143,7 +143,13 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
       // (e.g. Google-only user whose Auth record hasn't been resolved). Non-fatal:
       // claims will be set correctly on their next login.
       try {
-        await admin.auth().setCustomUserClaims(uid, { role });
+        // #166: firestore.rules resolves an additional client login's scope from
+        // the CLAIM (rules cannot read the user doc cheaply), so it must be
+        // stamped alongside the role wherever claims are written.
+        await admin.auth().setCustomUserClaims(uid, clean({
+          role,
+          primaryClientUid: profileData?.primaryClientUid ?? undefined,
+        }));
       } catch (claimsErr) {
         logger.warn({ err: claimsErr }, `[UPSERT] Could not set claims for ${uid} (no Auth record yet):`);
       }
@@ -218,7 +224,10 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
     await db.collection('users').doc(newUid).set(clean(firestoreData));
 
     // Set custom claims
-    await admin.auth().setCustomUserClaims(newUid, { role });
+    await admin.auth().setCustomUserClaims(newUid, clean({
+      role,
+      primaryClientUid: profileData?.primaryClientUid ?? undefined,
+    })); // #166
 
     // Generate a password-setup link and email it via the Gmail transport
     // (E07-S02). `resetEmailSent` reflects an actual send (false when email is

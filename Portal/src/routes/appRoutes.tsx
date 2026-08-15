@@ -4,6 +4,7 @@ import {
   LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
+import { ALL_ROLE_KEYS } from '../lib/roles';
 
 // Pages are organised by FEATURE, never by role (role-neutral architecture).
 import DashboardPage from '../pages/dashboard/DashboardPage';
@@ -68,7 +69,9 @@ export interface AppRoute {
   nav?: RouteNav;     // omit for routes that aren't nav links (edit forms, detail pages)
 }
 
-const ALL_ROLES: Role[] = ['admin', 'manager', 'team_member', 'client'];
+// Derived from the role registry (not hardcoded) so adding a role — e.g. #168's
+// `professional` — reaches the shared pages without editing every route.
+const ALL_ROLES: Role[] = ALL_ROLE_KEYS;
 
 export const APP_ROUTES: AppRoute[] = [
   // ── Shared across roles — one path, view adapts to role ──

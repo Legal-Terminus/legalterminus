@@ -1,7 +1,8 @@
 import { expect, type Page } from '@playwright/test';
 
 /** Role keys used across the suite. */
-export type RoleKey = 'admin' | 'manager' | 'team' | 'client';
+// #168: 'pro' is the external view-only professional.
+export type RoleKey = 'admin' | 'manager' | 'team' | 'client' | 'pro';
 
 /** Read a required env var with a clear, actionable error. */
 export function env(name: string): string {

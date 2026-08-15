@@ -65,3 +65,13 @@ export const reassignWorkSchema = z
     toUid: z.string().trim().min(1, "toUid is required"),
   })
   .strict();
+
+// POST /api/portal/users/:uid/logins — add an ADDITIONAL login to a client
+// organisation (#166). The new account is a real Firebase Auth user with its own
+// password; `name` is optional and defaults to the email's local part.
+export const clientLoginSchema = z
+  .object({
+    email,
+    name: z.string().trim().max(120).optional(),
+  })
+  .strict();

@@ -27,7 +27,7 @@ setup('backend is ready', async ({ request }) => {
   }).toPass({ timeout: 90_000, intervals: [1000] });
 });
 
-const roles: RoleKey[] = ['admin', 'manager', 'team', 'client'];
+const roles: RoleKey[] = ['admin', 'manager', 'team', 'client', 'pro'];
 
 for (const role of roles) {
   setup(`authenticate ${role}`, async ({ page }) => {
