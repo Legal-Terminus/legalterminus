@@ -160,3 +160,26 @@ test('#166: a client cannot manage their own additional logins', async () => {
     await client.dispose();
   }
 });
+
+/* ── UI ─────────────────────────────────────────────────────────────────────── */
+
+test('#166: staff can add and remove a login from the client form', async ({ adminPage }) => {
+  const email = `e2e-ui-login-${Date.now()}@legalterminus.test`;
+  try {
+    await adminPage.goto(`users/edit/client/${CLIENT_UID()}`);
+
+    // The panel is distinct from "Additional Emails" (contact only, no login).
+    await expect(adminPage.getByRole('heading', { name: 'Additional Logins' })).toBeVisible();
+    await expect(adminPage.getByText('(contact only — no login)')).toBeVisible();
+
+    await adminPage.getByLabel('Login email').fill(email);
+    await adminPage.getByRole('button', { name: /add login/i }).click();
+    await expect(adminPage.getByText(email)).toBeVisible({ timeout: 15_000 });
+
+    // Remove it again.
+    await adminPage.getByRole('button', { name: `Remove login ${email}` }).click();
+    await expect(adminPage.getByText(email)).toHaveCount(0, { timeout: 15_000 });
+  } finally {
+    await deleteUserByEmail(email);
+  }
+});

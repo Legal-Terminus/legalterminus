@@ -166,6 +166,40 @@ export function clientScopeUid(user) {
  * another matter for the same client, grants nothing: a professional named on
  * Matter 2 cannot reach Matters 1, 3 or 4.
  */
+/* ── #167: recurring matters (reminder + one-click duplicate) ──────────────
+ *
+ * There is no scheduler in this backend, so nothing is created automatically.
+ * A recurring matter carries a NEXT DUE date; staff are reminded when it falls
+ * due and duplicate the matter in one click, which rolls the schedule forward.
+ * The cycle stops after a year (per the issue) or when an admin/manager clears
+ * the recurrence.
+ */
+const RECURRENCE_MONTHS = { monthly: 1, quarterly: 3 };
+const RECURRENCE_YEAR_MS = 365 * 86_400_000;
+
+/** Add whole months, clamping to month end (31 Jan + 1 month → 28/29 Feb). */
+export function addMonthsIso(iso, months) {
+  const d = new Date(iso);
+  const day = d.getUTCDate();
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + months);
+  const lastDay = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  d.setUTCDate(Math.min(day, lastDay));
+  return d.toISOString();
+}
+
+/** The recurrence fields to stamp when (re)arming a schedule from `fromIso`. */
+export function recurrenceFields(recurrence, fromIso, endsAtIso) {
+  if (!recurrence) return { recurrence: null, recurrenceNextDueAt: null, recurrenceEndsAt: null };
+  const months = RECURRENCE_MONTHS[recurrence];
+  return {
+    recurrence,
+    recurrenceNextDueAt: addMonthsIso(fromIso, months),
+    // Stops on its own after a year so an abandoned matter cannot nag forever.
+    recurrenceEndsAt: endsAtIso ?? new Date(new Date(fromIso).getTime() + RECURRENCE_YEAR_MS).toISOString(),
+  };
+}
+
 export function professionalCanSee(task, uid) {
   return Boolean(uid) && task?.professionalUid === uid;
 }
@@ -318,7 +352,7 @@ export async function createTask(req, res) {
     // Body validated by taskCreateSchema (incl. #51 payment fields).
     const { clientUid, serviceKey, serviceName, organisation, ccEmails,
             paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
-            professionalUid } = req.body;
+            professionalUid, recurrence } = req.body;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
     if (!compiled) {
@@ -463,6 +497,8 @@ export async function createTask(req, res) {
       // client's own address is filtered out so nobody is both To and CC.
       ccEmails: dedupeCcEmails(ccEmails, c.email),
       assignedTo: null,
+      // #167: recurrence is armed from creation time; null when not recurring.
+      ...recurrenceFields(recurrence ?? null, now),
       professionalUid: professional.professionalUid, // #85
       professionalName: professional.professionalName, // #85 (snapshot for display/reports)
       status: initialStatus,
@@ -1408,6 +1444,12 @@ export async function patchTask(req, res) {
         if (c.exists) primaryEmail = c.data().email ?? null;
       }
       update.ccEmails = dedupeCcEmails(req.body.ccEmails, primaryEmail);
+    }
+
+    // #167: set the cadence, or null to STOP recurring. Re-arms from now, so
+    // switching monthly→quarterly moves the next reminder a quarter out.
+    if ('recurrence' in req.body) {
+      Object.assign(update, recurrenceFields(req.body.recurrence || null, new Date().toISOString()));
     }
 
     // #85: set/clear the handling professional (staff user). Snapshot the name.
@@ -2541,5 +2583,110 @@ export async function archiveTask(req, res) {
   } catch (err) {
     logger.error({ err }, 'archiveTask error:');
     res.status(500).json({ message: 'Failed to archive matter' });
+  }
+}
+
+/* ── #167: recurring matters — due list + one-click duplicate ─────────────── */
+
+// GET /api/tasks/recurring/due
+// Matters whose next occurrence is due (or overdue). Staff-only; this is the
+// list the reminder points at, and the safety net if the notification is missed.
+export async function listRecurringDue(req, res) {
+  try {
+    const { role } = req.user;
+    if (role !== 'admin' && role !== 'manager') {
+      return res.status(403).json({ message: 'Forbidden: admin or manager required' });
+    }
+    const now = new Date().toISOString();
+    const snap = await db.collection('tasks')
+      .where('recurrenceNextDueAt', '<=', now)
+      .get();
+
+    const rows = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      // An expired schedule (past its one-year end) stops appearing without
+      // anyone having to clear it.
+      .filter((t) => t.recurrence && (!t.recurrenceEndsAt || t.recurrenceEndsAt > now))
+      .map((t) => ({
+        id: t.id,
+        serviceName: t.serviceName,
+        clientName: t.clientName,
+        organisation: t.organisation ?? null,
+        recurrence: t.recurrence,
+        recurrenceNextDueAt: t.recurrenceNextDueAt,
+        recurrenceEndsAt: t.recurrenceEndsAt ?? null,
+      }))
+      .sort((a, b) => (a.recurrenceNextDueAt ?? '').localeCompare(b.recurrenceNextDueAt ?? ''));
+
+    res.json({ data: rows });
+  } catch (err) {
+    logger.error({ err }, 'listRecurringDue error:');
+    res.status(500).json({ message: 'Failed to load recurring matters' });
+  }
+}
+
+// POST /api/tasks/:taskId/duplicate
+// Create a fresh matter from an existing one — same client, service, org,
+// professional and CC list — and roll the parent's schedule forward one period.
+// Payment is deliberately NOT copied: the new period has to be charged and
+// collected on its own terms.
+export async function duplicateTask(req, res) {
+  try {
+    const { role, uid } = req.user;
+    if (role !== 'admin' && role !== 'manager') {
+      return res.status(403).json({ message: 'Forbidden: admin or manager required' });
+    }
+
+    const srcRef = db.collection('tasks').doc(req.params.taskId);
+    const srcSnap = await srcRef.get();
+    if (!srcSnap.exists) return res.status(404).json({ message: 'Matter not found' });
+    const src = srcSnap.data();
+
+    // Re-run the normal creation path so the copy is a REAL matter: current
+    // workflow version, freshly materialised steps, correct dates and notifications.
+    // Reusing createTask keeps one definition of "what a matter is".
+    const fakeReq = {
+      user: req.user,
+      body: {
+        clientUid: src.clientUid,
+        serviceKey: src.serviceKey,
+        ...(src.serviceName ? { serviceName: src.serviceName } : {}),
+        ...(src.organisation ? { organisation: src.organisation } : {}),
+        ...(Array.isArray(src.ccEmails) && src.ccEmails.length ? { ccEmails: src.ccEmails } : {}),
+        ...(src.professionalUid ? { professionalUid: src.professionalUid } : {}),
+        // The copy is not itself recurring — the PARENT holds the schedule, so a
+        // duplicate never spawns a second competing series.
+        paymentStatus: 'not_paid',
+      },
+    };
+
+    let created = null;
+    const fakeRes = {
+      status(code) { this._code = code; return this; },
+      json(payload) { created = { code: this._code ?? 200, payload }; return this; },
+    };
+    await createTask(fakeReq, fakeRes);
+
+    if (!created || (created.code >= 400)) {
+      return res.status(created?.code ?? 500).json(created?.payload ?? { message: 'Duplicate failed' });
+    }
+
+    // Roll the parent forward one period from its DUE date (not from today), so a
+    // late duplicate doesn't push the whole series later.
+    if (src.recurrence) {
+      const from = src.recurrenceNextDueAt || new Date().toISOString();
+      const next = addMonthsIso(from, RECURRENCE_MONTHS[src.recurrence]);
+      const ended = src.recurrenceEndsAt && next > src.recurrenceEndsAt;
+      await srcRef.update(ended
+        // Past its one-year window: stop cleanly rather than silently continuing.
+        ? { recurrence: null, recurrenceNextDueAt: null, recurrenceEndsAt: null, updatedAt: new Date().toISOString() }
+        : { recurrenceNextDueAt: next, updatedAt: new Date().toISOString() });
+    }
+
+    logger.info({ from: req.params.taskId, to: created.payload?.id, by: uid }, '#167 duplicated recurring matter');
+    res.status(201).json(created.payload);
+  } catch (err) {
+    logger.error({ err }, 'duplicateTask error:');
+    res.status(500).json({ message: 'Failed to duplicate the matter' });
   }
 }

@@ -26,6 +26,7 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
   const [paymentMode, setPaymentMode] = useState('');
   const [paymentDescription, setPaymentDescription] = useState(''); // #147
   const [professionalUid, setProfessionalUid] = useState(''); // #85
+  const [recurrence, setRecurrence] = useState<'' | 'monthly' | 'quarterly'>(''); // #167
   const [organisation, setOrganisation] = useState(''); // #104
   const [orgEdited, setOrgEdited] = useState(false);
   const [ccEmails, setCcEmails] = useState(''); // #149
@@ -85,6 +86,7 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
         ...(parseCcEmails(ccEmails).length ? { ccEmails: parseCcEmails(ccEmails) } : {}), // #149
         paymentStatus,
         ...(professionalUid ? { professionalUid } : {}),
+        ...(recurrence ? { recurrence } : {}), // #167
         ...(showAmounts ? {
           totalCost: Number(totalCost) || undefined,
           amountReceived: Number(amountReceived) || 0,
@@ -277,6 +279,29 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
                 <option key={u.uid} value={u.uid}>{displayName(u)}</option>
               ))}
             </select>
+          </div>
+
+          {/* #167: recurring services (e.g. GST returns). Nothing is created
+              automatically — this schedules a REMINDER to duplicate the matter. */}
+          <div>
+            <label className="block text-sm font-medium text-ink-soft mb-1.5">
+              Repeats <span className="text-ink-faint font-normal">(optional)</span>
+            </label>
+            <select
+              aria-label="Repeats"
+              value={recurrence}
+              onChange={(e) => setRecurrence(e.target.value as '' | 'monthly' | 'quarterly')}
+              className="input-field w-full"
+            >
+              <option value="">Does not repeat</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+            </select>
+            {recurrence && (
+              <p className="mt-1 text-xs text-ink-faint">
+                You&apos;ll be reminded when the next one is due and can create it in one click. Stops after a year.
+              </p>
+            )}
           </div>
 
           {/* Payment (#51) */}

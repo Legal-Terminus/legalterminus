@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { verifyToken, requireRole, denyReadOnlyRoles } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema } from '../schemas/task.schema.js';
-import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments, createPayment, patchPayment, deletePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep, postStepNote } from '../controllers/tasks.controller.js';
+import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments, createPayment, patchPayment, deletePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep, postStepNote, listRecurringDue, duplicateTask } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument, setDocumentVisibility } from '../controllers/documents.controller.js';
 import { listMessages, createMessage } from '../controllers/messages.controller.js';
 import { listReminders, sendReminder } from '../controllers/reminders.controller.js';
@@ -18,6 +18,10 @@ router.get('/',                              validate(taskListQuerySchema, 'quer
 // Cross-matter step worklist for staff ("My Tasks"). MUST precede '/:taskId'.
 router.get('/my-steps',                      requireRole('admin', 'manager', 'team_member'), listMySteps);
 router.post('/',                             requireRole('admin', 'manager'), validate(taskCreateSchema), createTask);
+// #167 — recurring matters. NOTE: /recurring/due is registered before /:taskId
+// so it isn't captured as a task id.
+router.get('/recurring/due',                 requireRole('admin', 'manager'), listRecurringDue);
+router.post('/:taskId/duplicate',            requireRole('admin', 'manager'), duplicateTask);
 router.get('/:taskId',                       getTask);
 router.get('/:taskId/events',                listTaskEvents);
 // #123: per-matter discussion thread (client + internal). Clients see only

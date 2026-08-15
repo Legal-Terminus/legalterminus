@@ -18,7 +18,7 @@ import RichTextEditor from '../../components/common/RichTextEditor';
 import RichText from '../../components/common/RichText';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
 import { useRail, type RailState } from '../../hooks/useResizablePanels';
@@ -47,6 +47,11 @@ export default function TaskDetailPage() {
   const currentUserUid = useAuthStore((s) => s.user?.uid ?? null);
   const isStaff = role === 'admin' || role === 'manager' || role === 'team_member';
   const isClient = role === 'client';
+  // #168: an external professional is neither staff nor the client. Anything
+  // gated on `isStaff` correctly excludes them, but anything gated on
+  // `!isClient` would WRONGLY treat them as internal — so branches that mean
+  // "outside party" must use this.
+  const isExternalViewer = role === 'client' || role === 'professional';
   const [tab, setTab] = useState<TabKey>('steps');
 
   const { data: task, isLoading, error } = useQuery({
@@ -146,6 +151,20 @@ export default function TaskDetailPage() {
       toast.success('Organisation name updated.');
     },
     onError: (err: Error) => toast.error(err.message || 'Could not update the organisation name.'),
+  });
+
+  // #167: set or stop the recurring cadence. Setting it (re-)arms the reminder
+  // from now; clearing it is the issue's "Stop Recurring".
+  const editRecurrence = useMutation({
+    mutationFn: (recurrence: 'monthly' | 'quarterly' | null) =>
+      updateTask(taskId!, { recurrence } as Partial<Task>),
+    onSuccess: (_d, recurrence) => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['recurring-due'] });
+      toast.success(recurrence ? `Repeats ${recurrence}. You'll be reminded when the next one is due.` : 'Recurring stopped.');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not update the schedule.'),
   });
 
   // #149: add / edit / remove the matter's additional email recipients at any
@@ -326,7 +345,9 @@ export default function TaskDetailPage() {
   // #148: a Team member must not see the Payments tab or ANY payment information.
   // The client keeps their own view of what they owe. The backend refuses the
   // payment endpoints for team_member regardless, so this is presentation only.
-  const canSeePayments = role !== 'team_member';
+  // #168: a professional is an outside referrer — the client's fees are not
+  // theirs to see, so Payments is hidden for them too.
+  const canSeePayments = role !== 'team_member' && role !== 'professional';
 
   const TABS: { key: TabKey; label: string; icon: typeof ListChecks }[] = [
     { key: 'steps', label: 'Steps', icon: ListChecks },
@@ -545,7 +566,7 @@ export default function TaskDetailPage() {
           stepDefs={stepDefs}
           currentDef={currentDef}
           completed={completed}
-          role={{ isStaff, isClient, canOverrideClient: canAssign, isAdmin: role === 'admin', uid: currentUserUid }}
+          role={{ isStaff, isClient, isExternalViewer, canOverrideClient: canAssign, isAdmin: role === 'admin', uid: currentUserUid }}
           pending={advance.isPending}
           onEvent={(e) => advance.mutate(e)}
           assignment={canAssign ? {
@@ -612,6 +633,32 @@ export default function TaskDetailPage() {
             </span>
             <span className="block text-xs text-ink-faint mt-1">
               Editable at any time, including after the matter completes.
+            </span>
+          </label>
+
+          {/* #167: recurring cadence. Nothing is created automatically — staff
+              are reminded when the next one is due and duplicate it in one
+              click, which rolls this schedule forward. */}
+          <label className="block">
+            <span className="text-xs text-ink-muted">Repeats</span>
+            <span className="relative flex items-center mt-1">
+              <select
+                aria-label="Repeats"
+                className="input-field py-1.5 text-sm w-full"
+                value={task.recurrence ?? ''}
+                disabled={editRecurrence.isPending}
+                onChange={(e) => editRecurrence.mutate((e.target.value || null) as 'monthly' | 'quarterly' | null)}
+              >
+                <option value="">Does not repeat</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+              </select>
+              {editRecurrence.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-8" />}
+            </span>
+            <span className="block text-xs text-ink-faint mt-1">
+              {task.recurrence && task.recurrenceNextDueAt
+                ? `Next due ${new Date(task.recurrenceNextDueAt).toLocaleDateString()} — you'll be reminded to duplicate it. Stops after a year.`
+                : 'Reminds you to create the next one; nothing is created automatically.'}
             </span>
           </label>
 
@@ -880,7 +927,7 @@ function StepsTab({
   stepDefs: WorkflowStepDef[];
   currentDef?: WorkflowStepDef;
   completed: boolean;
-  role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null };
+  role: { isStaff: boolean; isClient: boolean; isExternalViewer?: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null };
   pending: boolean;
   onEvent: (e: WorkflowEventInput) => void;
   assignment?: StepAssignment;
@@ -1649,7 +1696,7 @@ function StepHeroPanel({
 }: {
   taskId: string;
   step: WorkflowStepDef;
-  role: { isStaff: boolean; isClient: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null };
+  role: { isStaff: boolean; isClient: boolean; isExternalViewer?: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null };
   pending: boolean;
   onEvent: (e: WorkflowEventInput) => void;
   assignment?: StepAssignment;
@@ -1901,7 +1948,7 @@ function StepHeroPanel({
   // step (E12-S01). It only renders for staff.
   const metaBlock = (
     <div className="space-y-4">
-      {!role.isClient && (
+      {!role.isExternalViewer && (
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">Step owner</p>
         {assignment ? (

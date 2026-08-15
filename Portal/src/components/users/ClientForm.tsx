@@ -6,6 +6,7 @@ import { assignServiceToClient } from '../../api/tasks';
 import { getWorkflowDefinitions } from '../../api/workflowDefinitions';
 import { useAuthStore } from '../../store/authStore';
 import { assignableRolesFor, isStaffRole, roleLabel, type Role } from '../../lib/roles';
+import ClientLoginsPanel from './ClientLoginsPanel';
 import {
   ArrowLeft, User, Mail, Phone, MapPin, Building2, Briefcase, Shield,
   FileText, AlertCircle, Save, X, Plus, Workflow, CheckCircle2,
@@ -305,7 +306,7 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
                 <Mail className="w-3.5 h-3.5 text-brand-600" />
               </div>
               <h3 className="text-sm font-semibold text-gray-700">Additional Emails</h3>
-              <span className="text-xs text-gray-400 font-normal">(optional)</span>
+              <span className="text-xs text-gray-400 font-normal">(contact only — no login)</span>
               <div className="flex-1 h-px bg-gray-100" />
             </div>
             <div className="flex gap-2 mb-3">
@@ -345,6 +346,10 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
               </div>
             )}
           </div>
+
+          {/* #166: additional LOGINS — only meaningful once the client exists,
+              since a login attaches to a saved account. */}
+          {id && <ClientLoginsPanel clientUid={id} />}
 
           {/* Business Details */}
           <div>

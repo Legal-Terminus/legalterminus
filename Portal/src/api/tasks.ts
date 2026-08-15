@@ -228,3 +228,29 @@ export const postStepNote = (taskId: string, stepNumber: number, note: string) =
     `/api/tasks/${taskId}/steps/${stepNumber}/note`,
     { method: 'POST', body: JSON.stringify({ note }) },
   );
+
+/* ── #167: recurring matters ──────────────────────────────────────────────── */
+
+export type Recurrence = 'monthly' | 'quarterly';
+
+export interface RecurringDueRow {
+  id: string;
+  serviceName: string;
+  clientName: string;
+  organisation: string | null;
+  recurrence: Recurrence;
+  recurrenceNextDueAt: string;
+  recurrenceEndsAt: string | null;
+}
+
+/** Matters whose next occurrence is due or overdue (admin/manager). */
+export const getRecurringDue = () =>
+  apiFetch<{ data: RecurringDueRow[] }>('/api/tasks/recurring/due').then((r) => r.data);
+
+/**
+ * Create the next occurrence from an existing matter and roll its schedule
+ * forward one period. Payment is not copied — the new period is charged on its
+ * own terms.
+ */
+export const duplicateTask = (taskId: string) =>
+  apiFetch<{ id: string }>(`/api/tasks/${taskId}/duplicate`, { method: 'POST' });

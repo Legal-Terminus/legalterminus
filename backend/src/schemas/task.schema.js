@@ -29,6 +29,10 @@ export const taskCreateSchema = z.object({
   paymentDescription: z.string().trim().max(1000).optional(),
   // #85: optional handling professional (a staff user UID). Validated in controller.
   professionalUid: z.string().trim().max(200).nullable().optional(),
+  // #167: mark the matter as recurring. Staff are reminded when the next one is
+  // due and duplicate it in one click — there is no scheduler, so nothing is
+  // created automatically (see recurrence.controller.js).
+  recurrence: z.enum(['monthly', 'quarterly']).nullable().optional(),
 }).strict().refine(
   (b) => b.paymentStatus === 'not_paid' || typeof b.amountReceived === 'number',
   { message: 'amountReceived is required for part/full payment', path: ['amountReceived'] },
@@ -59,6 +63,10 @@ export const taskUpdateSchema = z.object({
   assignedTo: z.string().trim().max(200).nullable().optional(),
   // #85: set/clear the handling professional (a staff user UID). Validated in controller.
   professionalUid: z.string().trim().max(200).nullable().optional(),
+  // #167: mark the matter as recurring. Staff are reminded when the next one is
+  // due and duplicate it in one click — there is no scheduler, so nothing is
+  // created automatically (see recurrence.controller.js).
+  recurrence: z.enum(['monthly', 'quarterly']).nullable().optional(),
 }).strict().refine((b) => Object.keys(b).length > 0, {
   message: 'No updatable fields provided',
 });

@@ -124,3 +124,30 @@ export const reassignUserWork = (uid: string, toUid: string) =>
     method: 'POST',
     body: JSON.stringify({ toUid }),
   });
+
+/* ── #166: additional logins for a client organisation ────────────────────── */
+
+/**
+ * An extra person who can sign in on a client's account. Each is a real auth
+ * account with its own password and audit trail — NOT the same thing as the
+ * "Additional Emails" contact list, which grants no access.
+ */
+export interface ClientLogin {
+  uid: string;
+  email: string;
+  name: string | null;
+  status: string;
+  createdAt: string | null;
+}
+
+export const getClientLogins = (uid: string) =>
+  apiFetch<{ data: ClientLogin[] }>(`${BASE}/${uid}/logins`).then((r) => r.data);
+
+export const addClientLogin = (uid: string, body: { email: string; name?: string }) =>
+  apiFetch<ClientLogin>(`${BASE}/${uid}/logins`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+
+export const removeClientLogin = (uid: string, loginUid: string) =>
+  apiFetch<{ message: string }>(`${BASE}/${uid}/logins/${loginUid}`, { method: 'DELETE' });

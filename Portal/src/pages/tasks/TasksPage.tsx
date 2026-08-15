@@ -9,6 +9,7 @@ import { useConfirm } from '../../components/common/confirmContext';
 import { useToast } from '../../components/common/toastContext';
 import { dueInfo, DUE_BADGE_CLASS } from '../../lib/dueDate';
 import CreateMatterModal from '../../components/tasks/CreateMatterModal';
+import RecurringDueBanner from '../../components/tasks/RecurringDueBanner';
 import { useAuthStore } from '../../store/authStore';
 import { getTasks, deleteTask } from '../../api/tasks';
 import type { Task, TaskStatus, PaymentStatus } from '../../types/task';
@@ -35,9 +36,13 @@ const PAYMENT_OPTIONS: { value: PaymentStatus; label: string }[] = [
  */
 export default function TasksPage() {
   const role = useAuthStore((s) => s.role);
-  const isClientView = role === 'client';
+  // #168: a professional is an EXTERNAL viewer like a client — same stripped
+  // layout (no internal ownership columns, no delete), just a different scope.
+  const isClientView = role === 'client' || role === 'professional';
   const canDelete = role === 'admin';
   const canCreate = role === 'admin' || role === 'manager';
+  // #167: only admin/manager can read the due list or duplicate.
+  const canSeeRecurring = canCreate;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const confirm = useConfirm();
@@ -55,6 +60,8 @@ export default function TasksPage() {
     manager:     { title: 'Matters',     body: 'Matters visible to you and your team.' },
     team_member: { title: 'My Matters',  body: 'Matters with tasks assigned to you.' },
     client:      { title: 'My Services', body: 'Your active services and their status.' },
+    // #168: an external professional sees only the matters they are assigned to.
+    professional: { title: 'Matters', body: 'Matters you are the professional on.' },
   };
   const c = copy[role ?? ''] ?? { title: 'Matters', body: '' };
 
@@ -118,6 +125,9 @@ export default function TasksPage() {
       ) : undefined}
     >
       {showCreate && <CreateMatterModal onClose={() => setShowCreate(false)} />}
+      {/* #167: recurring renewals that have fallen due — renders nothing when
+          there are none, so it only appears when there is something to act on. */}
+      {canSeeRecurring && <RecurringDueBanner />}
       <DataGrid<Task>
           tableId="tasks"
         data={rows}

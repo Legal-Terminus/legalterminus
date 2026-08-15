@@ -180,3 +180,32 @@ test('#168: a professional cannot reach staff-only areas', async () => {
     await pro.dispose();
   }
 });
+
+/* ── UI ─────────────────────────────────────────────────────────────────────── */
+
+test('#168: the professional portal lists only their matter, view-only', async ({ adminPage, proPage }) => {
+  const granted = await createMatter({ organisation: 'E2E Pro UI Granted' });
+  const hidden = await createMatter({ organisation: 'E2E Pro UI Hidden' });
+  const admin = await apiAs('admin');
+  try {
+    await admin.patch(`/api/tasks/${granted}`, { data: { professionalUid: PRO_UID() } });
+
+    await proPage.goto('tasks');
+    await expect(proPage.getByText('E2E Pro UI Granted').first()).toBeVisible({ timeout: 15_000 });
+    // The client's other matter must not appear in their list.
+    await expect(proPage.getByText('E2E Pro UI Hidden')).toHaveCount(0);
+
+    // No create control — they cannot start matters.
+    await expect(proPage.getByRole('button', { name: /create matter/i })).toHaveCount(0);
+
+    // On the matter itself: no Payments tab (an outside referrer has no business
+    // with the client's fees) and no internal step-owner block.
+    await proPage.goto(`tasks/${granted}`);
+    await expect(proPage.getByRole('button', { name: 'Steps', exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(proPage.getByRole('button', { name: 'Payments', exact: true })).toHaveCount(0);
+    await expect(proPage.getByText('Step owner')).toHaveCount(0);
+  } finally {
+    await admin.dispose();
+    await Promise.all([deleteMatter(granted), deleteMatter(hidden)]);
+  }
+});

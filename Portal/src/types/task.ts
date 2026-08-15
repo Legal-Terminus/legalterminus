@@ -47,6 +47,10 @@ export interface Task {
   paymentDescription?: string | null;
   professionalUid?: string | null; // #85
   professionalName?: string | null; // #85 (snapshot for display)
+  /** #167: recurring cadence, or null/absent when the matter is one-off. */
+  recurrence?: 'monthly' | 'quarterly' | null;
+  recurrenceNextDueAt?: string | null;
+  recurrenceEndsAt?: string | null;
   currentStepNumber: number;
   /** #139: CLIENT projection only — the real current step is hidden ("Show to
    *  Client" off), so currentStepNumber points at the LAST visible step, shown
