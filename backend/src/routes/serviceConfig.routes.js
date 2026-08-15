@@ -17,7 +17,7 @@ import { getDb } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { serviceUpdateSchema } from '../schemas/content.schema.js';
+import { serviceUpdateSchema, serviceCreateSchema, serviceCategoryCreateSchema } from '../schemas/content.schema.js';
 
 const router = express.Router();
 
@@ -93,6 +93,89 @@ router.get(
     } catch (err) {
       logger.error({ err }, '[serviceConfig] Failed to fetch (all):');
       res.status(500).json({ error: 'Failed to load service config.' });
+    }
+  }
+);
+
+/**
+ * POST /api/service-config
+ *   Create a new SERVICE CATEGORY. Admin-only — a category is catalog structure,
+ *   not day-to-day data. (#173)
+ */
+router.post(
+  '/',
+  verifyToken,
+  requireRole('admin'),
+  validate(serviceCategoryCreateSchema),
+  async (req, res) => {
+    try {
+      const { id, name, order } = req.body;
+      const db = getDb();
+      const ref = db.collection('serviceCategories').doc(id);
+      if ((await ref.get()).exists) {
+        return res.status(409).json({ error: 'A category with that id already exists.' });
+      }
+
+      await ref.set({ id, name, order: order ?? 99, services: {} });
+      invalidateServiceConfigCache();
+      res.status(201).json({ id, name, order: order ?? 99, services: {} });
+    } catch (err) {
+      logger.error({ err }, '[serviceConfig] Failed to create category:');
+      res.status(500).json({ error: 'Failed to create category.' });
+    }
+  }
+);
+
+/**
+ * POST /api/service-config/:categoryId
+ *   Add a service to an existing category. Admin-only. (#173)
+ *
+ *   The key is the identity a workflow binds to through its `serviceKeys`, so it
+ *   must be unique across the WHOLE catalog, not just this category — a duplicate
+ *   would make `getCompiledForServiceKey` resolve the wrong workflow and silently
+ *   mis-route matters.
+ */
+router.post(
+  '/:categoryId',
+  verifyToken,
+  requireRole('admin'),
+  validate(serviceCreateSchema),
+  async (req, res) => {
+    try {
+      const { categoryId } = req.params;
+      const { key, displayName, active } = req.body;
+      const db = getDb();
+
+      const ref = db.collection('serviceCategories').doc(categoryId);
+      const snap = await ref.get();
+      if (!snap.exists) {
+        return res.status(404).json({ error: 'Category not found.' });
+      }
+
+      // Uniqueness across every category, not just this one.
+      const all = await db.collection('serviceCategories').get();
+      for (const doc of all.docs) {
+        if (doc.data()?.services?.[key]) {
+          return res.status(409).json({
+            error: `That service key is already used in "${doc.data().name}". Keys must be unique across the catalog.`,
+          });
+        }
+      }
+
+      const service = { key, displayName, active: active !== false };
+      await ref.update({ [`services.${key}`]: service });
+      invalidateServiceConfigCache();
+
+      res.status(201).json({
+        key,
+        categoryId,
+        category: snap.data()?.name,
+        displayName,
+        active: service.active,
+      });
+    } catch (err) {
+      logger.error({ err }, '[serviceConfig] Failed to create service:');
+      res.status(500).json({ error: 'Failed to create service.' });
     }
   }
 );

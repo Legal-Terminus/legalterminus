@@ -88,6 +88,33 @@ export const serviceUpdateSchema = z.object({
   message: "At least one field (displayName or active) is required",
 });
 
+/* ── #173: add a service / category to the catalog ────────────────────── */
+
+// A service key is the stable identity a workflow binds to via `serviceKeys`, so
+// it is URL-safe, lowercase and immutable once created. Anything looser risks a
+// key that collides or cannot round-trip through a route param.
+// NOT .toLowerCase() — coercing here would hand the caller a key they never
+// typed, and the key is immutable and binds workflows. The UI derives a
+// lowercase suggestion; the API rejects anything that isn't already valid.
+const catalogKey = z.string().trim()
+  .min(2).max(60)
+  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and single hyphens (e.g. trademark-renewal)');
+
+// POST /api/service-config/:categoryId — add a service to an existing category.
+export const serviceCreateSchema = z.object({
+  key: catalogKey,
+  displayName: shortText,
+  active: z.boolean().optional(),
+}).strict();
+
+// POST /api/service-config — add a new SERVICE category (distinct from the blog
+// categoryCreateSchema above).
+export const serviceCategoryCreateSchema = z.object({
+  id: catalogKey,
+  name: shortText,
+  order: z.number().int().min(0).max(999).optional(),
+}).strict();
+
 /* ── Contact lead (public submit) ─────────────────────────────────────── */
 export const contactCreateSchema = z.object({
   fullName: z.string().trim().max(100).optional(),

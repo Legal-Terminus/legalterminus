@@ -10,6 +10,7 @@ import {
   type CatalogService,
 } from '../../api/services';
 import { getWorkflowDefinitions } from '../../api/workflowDefinitions';
+import AddServiceModal from '../../components/services/AddServiceModal';
 
 /** #155: the bit of a workflow definition a service tile needs to advertise. */
 interface ConfiguredWorkflow {
@@ -31,6 +32,7 @@ export default function ServicesPage() {
   const [search, setSearch] = useState('');
   // #155: 'unconfigured' surfaces exactly the services still missing a workflow.
   const [filter, setFilter] = useState<'all' | 'configured' | 'unconfigured'>('all');
+  const [showAddService, setShowAddService] = useState(false); // #173
   const navigate = useNavigate();
   const role = useAuthStore((s) => s.role);
 
@@ -77,6 +79,13 @@ export default function ServicesPage() {
     return groupByCategory(Object.fromEntries(matches));
   }, [data, search, filter, workflowByServiceKey]);
 
+  // #173: the ADD modal needs every category, not the filtered view — otherwise a
+  // search or filter would hide categories you could add to.
+  const allCategories = useMemo(
+    () => (data ? groupByCategory(data.services) : []),
+    [data],
+  );
+
   // Counts drive the filter chips (and tell an admin at a glance how much of the
   // catalog is still unconfigured).
   const counts = useMemo(() => {
@@ -94,15 +103,30 @@ export default function ServicesPage() {
          label and tooltip now state it; per-tile "Create workflow" is the shorter
          path when you already know which service you want. */
       action={role === 'admin' ? (
-        <button
-          onClick={() => navigate('/workflows/new')}
-          title="Build a new workflow and choose which service it powers"
-          className="btn-primary inline-flex items-center gap-1.5"
-        >
-          <Plus className="w-4 h-4" /> New workflow for a service
-        </button>
+        <div className="flex items-center gap-2">
+          {/* #173: the catalog itself is now editable — adding a service no
+              longer needs a seed script. */}
+          <button
+            onClick={() => setShowAddService(true)}
+            title="Add a service to the catalog"
+            className="btn-secondary inline-flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" /> Add service
+          </button>
+          <button
+            onClick={() => navigate('/workflows/new')}
+            title="Build a new workflow and choose which service it powers"
+            className="btn-primary inline-flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" /> New workflow for a service
+          </button>
+        </div>
       ) : undefined}
     >
+      {showAddService && (
+        <AddServiceModal categories={allCategories} onClose={() => setShowAddService(false)} />
+      )}
+
       {/* Text search */}
       <div className="relative mb-3">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />

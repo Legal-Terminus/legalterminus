@@ -67,3 +67,36 @@ export function groupByCategory(
   cats.sort((a, b) => a.name.localeCompare(b.name));
   return cats;
 }
+
+/* ── #173: add services and categories to the catalog ─────────────────────── */
+
+export interface ServiceCreate {
+  key: string;
+  displayName: string;
+  active?: boolean;
+}
+
+/** Add a service to an existing category (admin). */
+export const createService = (categoryId: string, body: ServiceCreate) =>
+  apiFetch<CatalogService>(`/api/service-config/${categoryId}`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+
+/** Add a new service category (admin). */
+export const createServiceCategory = (body: { id: string; name: string; order?: number }) =>
+  apiFetch<{ id: string; name: string; order: number }>('/api/service-config', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+
+/**
+ * Derive a catalog key from a display name — "Trademark Renewal" →
+ * "trademark-renewal". The key is the identity a workflow binds to and is
+ * immutable once created, so it is suggested rather than silently imposed.
+ */
+export const slugifyServiceKey = (name: string) =>
+  name.trim().toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
