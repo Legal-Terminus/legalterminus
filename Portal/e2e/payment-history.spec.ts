@@ -187,11 +187,17 @@ test('#148: a team member is refused every payment endpoint', async () => {
   }
 });
 
-test('#148: a client is refused the payment history', async () => {
+test('#148/#165: a client CAN read their own matter’s payment history', async () => {
   const taskId = await createPartPaidMatter();
   const api = await apiAs('client');
   try {
-    expect((await api.get(`/api/tasks/${taskId}/payments`)).status()).toBe(403);
+    // #165 (3ba3bdb7) deliberately opened this up: the client is the one paying,
+    // and the Payments tab already shows what they owe, so refusing the ledger
+    // was hiding their own money from them. This assertion tracked the old rule.
+    const res = await api.get(`/api/tasks/${taskId}/payments`);
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(Array.isArray(body.payments)).toBeTruthy();
   } finally {
     await api.dispose();
     await deleteMatter(taskId);
