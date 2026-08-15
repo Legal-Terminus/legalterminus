@@ -22,7 +22,7 @@ test('#168: a professional sees ONLY the granted matter, not the client’s othe
   try {
     // Grant access to ONE of the three (all belong to the same client).
     const patch = await admin.patch(`/api/tasks/${granted}`, {
-      data: { accessProfessionalUids: [PRO_UID()] },
+      data: { professionalUid: PRO_UID() },
     });
     expect(patch.ok()).toBeTruthy();
 
@@ -46,7 +46,7 @@ test('#168: direct URL access to a non-granted matter is refused', async () => {
   const hidden = await createMatter();
   const admin = await apiAs('admin');
   try {
-    await admin.patch(`/api/tasks/${granted}`, { data: { accessProfessionalUids: [PRO_UID()] } });
+    await admin.patch(`/api/tasks/${granted}`, { data: { professionalUid: PRO_UID() } });
 
     const pro = await apiAs('pro');
     // Guessing the id of another matter must not work — the list filter is not
@@ -69,7 +69,7 @@ test('#168: a professional is view-only — every write is refused', async () =>
   const taskId = await createMatter();
   const admin = await apiAs('admin');
   try {
-    await admin.patch(`/api/tasks/${taskId}`, { data: { accessProfessionalUids: [PRO_UID()] } });
+    await admin.patch(`/api/tasks/${taskId}`, { data: { professionalUid: PRO_UID() } });
 
     const pro = await apiAs('pro');
     // They CAN read this matter…
@@ -107,12 +107,12 @@ test('#168: access granted later appears; revoked access disappears', async () =
     expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(403);
 
     // Granted AFTER creation — the issue requires both paths to work.
-    await admin.patch(`/api/tasks/${taskId}`, { data: { accessProfessionalUids: [PRO_UID()] } });
+    await admin.patch(`/api/tasks/${taskId}`, { data: { professionalUid: PRO_UID() } });
     expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(200);
 
     // Revoked by sending an empty list — access is read live, never snapshotted,
     // so it must vanish immediately rather than on next login.
-    await admin.patch(`/api/tasks/${taskId}`, { data: { accessProfessionalUids: [] } });
+    await admin.patch(`/api/tasks/${taskId}`, { data: { professionalUid: null } });
     expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(403);
     await pro.dispose();
   } finally {
@@ -131,7 +131,7 @@ test('#168: a matter can be created with professional access already set', async
         serviceKey: 'incorporation',
         organisation: 'E2E Pro At Creation',
         paymentStatus: 'fully_paid', totalCost: 1000, amountReceived: 1000, paymentMode: 'E2E',
-        accessProfessionalUids: [PRO_UID()],
+        professionalUid: PRO_UID(),
       },
     });
     expect(res.ok()).toBeTruthy();
@@ -146,21 +146,23 @@ test('#168: a matter can be created with professional access already set', async
   }
 });
 
-test('#168: only a professional account can be granted matter access', async () => {
+test('#168: a client can never be the matter professional', async () => {
   const taskId = await createMatter();
   const admin = await apiAs('admin');
   try {
-    // Handing the allowlist a client or staff uid must be refused outright — a
-    // silent no-op would look like a successful grant.
+    // A CLIENT can never be the matter's professional — that would hand the
+    // client's own account a second, differently-scoped route into matters.
     const bad = await admin.patch(`/api/tasks/${taskId}`, {
-      data: { accessProfessionalUids: [env('E2E_CLIENT_UID')] },
+      data: { professionalUid: env('E2E_CLIENT_UID') },
     });
     expect(bad.status()).toBe(400);
 
-    const bad2 = await admin.patch(`/api/tasks/${taskId}`, {
-      data: { accessProfessionalUids: [env('E2E_TEAM_UID')] },
+    // A staff member IS allowed (that is #85's original meaning) — they simply
+    // have no `professional` role, so this grants no professional-portal view.
+    const staffOk = await admin.patch(`/api/tasks/${taskId}`, {
+      data: { professionalUid: env('E2E_TEAM_UID') },
     });
-    expect(bad2.status()).toBe(400);
+    expect(staffOk.ok()).toBeTruthy();
   } finally {
     await admin.dispose();
     await deleteMatter(taskId);

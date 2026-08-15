@@ -159,39 +159,17 @@ export function clientScopeUid(user) {
 }
 
 /**
- * #168 — may this professional see this matter? Explicit allowlist only: being
- * the client's referrer grants nothing on its own, so a professional named on
- * Matter 2 cannot reach Matters 1, 3 or 4 of the same client.
+ * #168 — may this professional see this matter?
+ *
+ * Access is the matter's OWN `professionalUid` (#85) — the professional assigned
+ * to this matter, and nothing else. Being the client's referrer, or handling
+ * another matter for the same client, grants nothing: a professional named on
+ * Matter 2 cannot reach Matters 1, 3 or 4.
  */
 export function professionalCanSee(task, uid) {
-  return Array.isArray(task?.accessProfessionalUids)
-    && task.accessProfessionalUids.includes(uid);
+  return Boolean(uid) && task?.professionalUid === uid;
 }
 
-/**
- * #168 — validate a requested professional allowlist.
- *
- * Every uid must exist AND hold the `professional` role. Granting access to a
- * staff or client account here would hand it a second, unaudited route into the
- * matter, so a wrong uid is a 400 rather than a silent no-op. Returns
- * `{ uids }` on success or `{ error }` for the caller to surface.
- */
-async function resolveAccessProfessionals(uids) {
-  if (uids === undefined) return { uids: [] };
-  const unique = [...new Set((uids ?? []).filter(Boolean))];
-  if (unique.length === 0) return { uids: [] };
-
-  const snaps = await Promise.all(
-    unique.map((u) => db.collection('users').doc(u).get()),
-  );
-  for (let i = 0; i < snaps.length; i++) {
-    if (!snaps[i].exists) return { error: `Professional not found: ${unique[i]}` };
-    if (snaps[i].data().role !== 'professional') {
-      return { error: `User ${unique[i]} is not a professional and cannot be granted matter access.` };
-    }
-  }
-  return { uids: unique };
-}
 
 // Strip internal ownership/assignment from a task + its steps for a client, and
 // (when a visibility set is supplied) DROP steps the workflow marks as not
@@ -340,7 +318,7 @@ export async function createTask(req, res) {
     // Body validated by taskCreateSchema (incl. #51 payment fields).
     const { clientUid, serviceKey, serviceName, organisation, ccEmails,
             paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
-            professionalUid, accessProfessionalUids } = req.body;
+            professionalUid } = req.body;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
     if (!compiled) {
@@ -368,18 +346,14 @@ export async function createTask(req, res) {
 
     // #85: optional handling professional — must be a STAFF user (never a client).
     // Snapshot the name for display/exports; store the UID as the stable ref.
-    // #168: validate every granted professional exists and actually holds the
-    // `professional` role — a stray uid here would silently grant nothing, or
-    // worse, grant a staff/client account an unintended view.
-    const accessUids = await resolveAccessProfessionals(accessProfessionalUids);
-    if (accessUids.error) return res.status(400).json({ message: accessUids.error });
-
     let professional = { professionalUid: null, professionalName: null };
     if (professionalUid) {
       const pDoc = await db.collection('users').doc(professionalUid).get();
       if (!pDoc.exists) return res.status(400).json({ message: 'Professional not found' });
       const p = pDoc.data();
-      if (p.role === 'client') return res.status(400).json({ message: 'Professional must be a staff user' });
+      // #168: a professional may be a staff member OR a `professional` account
+      // (the latter then gets view-only portal access to this matter). Never a client.
+      if (p.role === 'client') return res.status(400).json({ message: 'A client cannot be the matter professional' });
       professional = { professionalUid, professionalName: p.name || p.fullName || p.email || null };
     }
 
@@ -491,9 +465,6 @@ export async function createTask(req, res) {
       assignedTo: null,
       professionalUid: professional.professionalUid, // #85
       professionalName: professional.professionalName, // #85 (snapshot for display/reports)
-      // #168: allowlist of EXTERNAL professionals with view-only access to this
-      // matter. Distinct from professionalUid above (the internal staff handler).
-      accessProfessionalUids: accessUids.uids,
       status: initialStatus,
       paymentStatus,
       amountPaid: received,
@@ -1084,12 +1055,10 @@ export async function listTasks(req, res) {
     if (role === 'client') {
       query = query.where('clientUid', '==', clientScopeUid(req.user));
     }
-    // #168: a professional sees ONLY the matters they are explicitly granted,
-    // never the rest of that client's book. `accessProfessionalUids` is an
-    // allowlist per matter (distinct from #85's `professionalUid`, which is the
-    // internal staff member handling the work).
+    // #168: a professional sees ONLY the matters they are assigned to as the
+    // matter's professional (#85) — never the rest of that client's book.
     if (role === 'professional') {
-      query = query.where('accessProfessionalUids', 'array-contains', uid);
+      query = query.where('professionalUid', '==', uid);
     }
 
     if (status)           query = query.where('status', '==', status);
@@ -1441,22 +1410,13 @@ export async function patchTask(req, res) {
       update.ccEmails = dedupeCcEmails(req.body.ccEmails, primaryEmail);
     }
 
-    // #168: grant/revoke external professional access AFTER creation. Sending a
-    // shorter array revokes; [] revokes all. A revoked professional loses the
-    // matter from their list immediately — access is read live, never snapshotted.
-    if ('accessProfessionalUids' in req.body) {
-      const resolved = await resolveAccessProfessionals(req.body.accessProfessionalUids);
-      if (resolved.error) return res.status(400).json({ message: resolved.error });
-      update.accessProfessionalUids = resolved.uids;
-    }
-
     // #85: set/clear the handling professional (staff user). Snapshot the name.
     if ('professionalUid' in req.body) {
       const pUid = req.body.professionalUid || null;
       if (pUid) {
         const p = await db.collection('users').doc(pUid).get();
         if (!p.exists) return res.status(400).json({ message: 'Professional not found' });
-        if (p.data().role === 'client') return res.status(400).json({ message: 'Professional must be a staff user' });
+        if (p.data().role === 'client') return res.status(400).json({ message: 'A client cannot be the matter professional' });
         update.professionalUid = pUid;
         update.professionalName = p.data().name || p.data().fullName || p.data().email || null;
       } else {

@@ -43,7 +43,9 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
     () => users.filter((u) => u.role === 'client'),
     [users],
   );
-  // #85: professionals = active staff users (never clients).
+  // #85/#168: the matter's Professional — a staff member OR a `professional`
+  // account. Picking a `professional` account also grants that person view-only
+  // portal access to THIS matter (and no other). Never a client.
   const staff = useMemo(
     () => users.filter((u) => u.role !== 'client').sort((a, b) => displayName(a).localeCompare(displayName(b))),
     [users],
@@ -258,7 +260,8 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
             )}
           </div>
 
-          {/* Professional (#85) — optional handling staff member. */}
+          {/* Professional (#85) — also grants a `professional` account view-only
+              access to this matter (#168). */}
           <div>
             <label className="block text-sm font-medium text-ink-soft mb-1.5">
               Professional <span className="text-ink-faint font-normal">(optional)</span>

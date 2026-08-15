@@ -21,11 +21,11 @@ service cloud.firestore {
         : request.auth.uid;
     }
 
-    // #168: an external professional reads ONLY the matters naming them.
+    // #168: a professional reads ONLY the matters they are the professional on
+    // (the matter's own professionalUid, #85) — never the client's other matters.
     function isGrantedProfessional(task) {
       return isSignedIn() && role() == 'professional'
-        && task.accessProfessionalUids != null
-        && request.auth.uid in task.accessProfessionalUids;
+        && task.professionalUid == request.auth.uid;
     }
 
     function isAdmin() {

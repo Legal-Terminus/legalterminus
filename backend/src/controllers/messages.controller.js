@@ -38,11 +38,9 @@ async function loadAuthorizedTask(req, res, taskId) {
   const snap = await db.collection('tasks').doc(taskId).get();
   if (!snap.exists) { res.status(404).json({ message: 'Matter not found' }); return null; }
   const task = snap.data();
-  // #168: a professional may READ a matter's discussion only if named on it;
-  // writes are already blocked globally by denyReadOnlyRoles.
-  if (req.user.role === 'professional'
-      && !(Array.isArray(task.accessProfessionalUids)
-           && task.accessProfessionalUids.includes(req.user.uid))) {
+  // #168: a professional may READ a matter's discussion only if they are the
+  // matter's professional; writes are blocked globally by denyReadOnlyRoles.
+  if (req.user.role === 'professional' && task.professionalUid !== req.user.uid) {
     res.status(403).json({ message: 'Forbidden' });
     return null;
   }

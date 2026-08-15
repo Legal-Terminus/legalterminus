@@ -17,11 +17,11 @@
       ]
     },
     {
-      "_comment": "#168 — a professional's matter list: array-contains on the access allowlist, ordered like every other list query.",
+      "_comment": "#168 — a professional's matter list: their assigned matters (#85 professionalUid), ordered like every other list query.",
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "accessProfessionalUids", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "professionalUid", "order": "ASCENDING" },
         { "fieldPath": "updatedAt",     "order": "DESCENDING" }
       ]
     },

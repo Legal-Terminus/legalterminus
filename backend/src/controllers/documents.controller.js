@@ -93,11 +93,9 @@ async function loadAuthorizedTask(req, res, taskId, { clientWrites = true } = {}
   }
   // #168: this gate previously let EVERY non-client role through, so a
   // professional would have reached documents on any matter. They may read only
-  // the matters they are named on (writes are blocked globally by
+  // the matter they are the professional on (writes are blocked globally by
   // denyReadOnlyRoles, so reaching here at all means a read).
-  if (role === 'professional'
-      && !(Array.isArray(task.accessProfessionalUids)
-           && task.accessProfessionalUids.includes(req.user.uid))) {
+  if (role === 'professional' && task.professionalUid !== req.user.uid) {
     res.status(403).json({ message: 'Forbidden' });
     return null;
   }
