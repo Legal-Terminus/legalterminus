@@ -211,3 +211,29 @@ test('#168: the professional portal lists only their matter, view-only', async (
     await Promise.all([deleteMatter(granted), deleteMatter(hidden)]);
   }
 });
+
+test('#169: the documents gate denies by default, not just for clients', async () => {
+  const granted = await createMatter();
+  const hidden = await createMatter();
+  const admin = await apiAs('admin');
+  try {
+    await admin.patch(`/api/tasks/${granted}`, { data: { professionalUid: PRO_UID() } });
+    const pro = await apiAs('pro');
+
+    // The gate used to check ONLY the client role and let every other role fall
+    // through, so a professional reached documents on any matter. Each role is
+    // now explicitly allowed and anything else refused.
+    expect((await pro.get(`/api/tasks/${granted}/documents`)).status()).toBe(200);
+    expect((await pro.get(`/api/tasks/${hidden}/documents`)).status()).toBe(403);
+
+    // Staff keep cross-matter access — that is the job, and the deny-by-default
+    // rewrite must not have taken it away.
+    const team = await apiAs('team');
+    expect((await team.get(`/api/tasks/${hidden}/documents`)).status()).toBe(200);
+    await team.dispose();
+    await pro.dispose();
+  } finally {
+    await admin.dispose();
+    await Promise.all([deleteMatter(granted), deleteMatter(hidden)]);
+  }
+});

@@ -76,30 +76,41 @@ const serialize = (doc) => {
   };
 };
 
-// Authorization: staff (admin/manager/team_member) may act on any matter's docs;
-// a client may only act on their OWN matter's docs. Returns the task data or null.
+/**
+ * Authorization for every document endpoint. Returns the task data, or null
+ * after sending the error response.
+ *
+ * #169: this gate is DENY-BY-DEFAULT. It used to check only the `client` role
+ * and `return task` for everything else, so any role that wasn't a client — a
+ * category that grew the moment a non-staff role existed — reached documents on
+ * ANY matter. Each role is now explicitly allowed; anything unrecognised is
+ * refused, so adding a role can never silently grant document access.
+ */
 async function loadAuthorizedTask(req, res, taskId, { clientWrites = true } = {}) {
   const snap = await db.collection('tasks').doc(taskId).get();
   if (!snap.exists) { res.status(404).json({ message: 'Matter not found' }); return null; }
   const task = snap.data();
   const role = req.user.role;
+  const deny = () => { res.status(403).json({ message: 'Forbidden' }); return null; };
+
+  // Staff act on any matter's documents — that is the job.
+  if (role === 'admin' || role === 'manager' || role === 'team_member') return task;
+
   if (role === 'client') {
-    if (!clientWrites) { res.status(403).json({ message: 'Forbidden' }); return null; }
+    if (!clientWrites) return deny();
     // #166: additional client logins act with the primary client's scope, so a
     // partner added to the account can upload/download on the same matters.
-    if (task.clientUid !== (req.user.primaryClientUid || req.user.uid)) {
-      res.status(403).json({ message: 'Forbidden' }); return null;
-    }
+    if (task.clientUid !== (req.user.primaryClientUid || req.user.uid)) return deny();
+    return task;
   }
-  // #168: this gate previously let EVERY non-client role through, so a
-  // professional would have reached documents on any matter. They may read only
-  // the matter they are the professional on (writes are blocked globally by
-  // denyReadOnlyRoles, so reaching here at all means a read).
-  if (role === 'professional' && task.professionalUid !== req.user.uid) {
-    res.status(403).json({ message: 'Forbidden' });
-    return null;
+
+  // #168: a professional reads only the matter they are the professional on.
+  // (Writes are blocked globally by denyReadOnlyRoles, so reaching here is a read.)
+  if (role === 'professional') {
+    return task.professionalUid === req.user.uid ? task : deny();
   }
-  return task;
+
+  return deny();
 }
 
 // ─── GET /api/tasks/:taskId/documents ──────────────────────────────────────
