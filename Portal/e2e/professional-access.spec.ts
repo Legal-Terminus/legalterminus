@@ -237,3 +237,56 @@ test('#169: the documents gate denies by default, not just for clients', async (
     await Promise.all([deleteMatter(granted), deleteMatter(hidden)]);
   }
 });
+
+/* ── #168 follow-up: assign a Professional AFTER the matter exists ─────────── */
+
+test('#168: the Professional control is visible and usable on an existing matter', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+
+    // Visible, not merely present — the reported problem was "there is no option
+    // to add a Professional after creation", which is a discoverability claim.
+    const select = adminPage.getByLabel('Professional', { exact: true });
+    await expect(select).toBeVisible();
+    await expect(select).toBeInViewport();
+    await expect(select).toBeEnabled();
+
+    // Assigning from here works and shows the professional as an option.
+    await select.selectOption(PRO_UID());
+    await expect.poll(async () => {
+      const api = await apiAs('admin');
+      const t = await (await api.get(`/api/tasks/${taskId}`)).json();
+      await api.dispose();
+      return t.professionalUid;
+    }, { timeout: 15_000 }).toBe(PRO_UID());
+  } finally {
+    await deleteMatter(taskId);
+  }
+});
+
+test('#168: a professional is NOT offered as a Matter owner or step assignee', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+
+    // A professional is view-only, so routing work to one would assign it to an
+    // account that cannot act. Both dropdowns were fed by ONE list filtered only
+    // as role !== 'client', which included professionals.
+    const owner = adminPage.getByLabel('Matter owner', { exact: true });
+    await expect(owner).toBeVisible();
+    const ownerValues = await owner.locator('option').evaluateAll(
+      (els) => els.map((e) => (e as HTMLOptionElement).value),
+    );
+    expect(ownerValues).not.toContain(PRO_UID());
+
+    // …but they ARE offered as the matter's Professional.
+    const prof = adminPage.getByLabel('Professional', { exact: true });
+    const profValues = await prof.locator('option').evaluateAll(
+      (els) => els.map((e) => (e as HTMLOptionElement).value),
+    );
+    expect(profValues).toContain(PRO_UID());
+  } finally {
+    await deleteMatter(taskId);
+  }
+});

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -101,13 +101,25 @@ export default function TaskDetailPage() {
 
   // Step assignment is an admin/manager action; team members can't reassign.
   const canAssign = role === 'admin' || role === 'manager';
-  const { data: staff = [] } = useQuery({
+  const { data: assignableUsers = [] } = useQuery({
     queryKey: ['portalUsers', 'staff'],
     queryFn: getAllUsers,
     enabled: canAssign,
     select: (users: PortalUser[]) => users.filter((u) => u.role !== 'client'),
     staleTime: 60_000,
   });
+
+  // #168: STAFF only — who can be given work. A `professional` is view-only, so
+  // routing a matter or step to one would assign work to an account that cannot
+  // act on it. The one list used to feed both dropdowns.
+  const staff = useMemo(
+    () => assignableUsers.filter((u: PortalUser) => u.role !== 'professional'),
+    [assignableUsers],
+  );
+
+  // #85/#168: who may be the matter's Professional — a staff member OR a
+  // `professional` account (the latter then gets view-only access to this matter).
+  const professionals = assignableUsers;
 
   const assign = useMutation({
     mutationFn: ({ stepNumber, assignedTo }: { stepNumber: number; assignedTo: string | null }) =>
@@ -431,7 +443,7 @@ export default function TaskDetailPage() {
                   onChange={(e) => assignProfessional.mutate(e.target.value || null)}
                 >
                   <option value="">None</option>
-                  {staff.map((u) => (
+                  {professionals.map((u) => (
                     <option key={u.uid} value={u.uid}>{displayName(u)}</option>
                   ))}
                 </select>
