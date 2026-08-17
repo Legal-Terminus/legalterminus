@@ -109,9 +109,14 @@ const BRAND = {
 
 /**
  * Build a branded HTML + text body for a notification email (#97).
- * Table-based, inline-styled, dark-mode-tolerant; includes a Legal Terminus
- * wordmark header (a small SVG-free text lockup — image logos are stripped by
- * many clients, so a styled wordmark is the reliable brand cue).
+ * Table-based, inline-styled, dark-mode-tolerant.
+ *
+ * #110: the header now carries the real LT logo, served from the app itself
+ * (FRONTEND_URL) rather than a third-party host. Many clients block remote
+ * images by default, so the styled text lockup is KEPT as the alt text and
+ * fallback — the image is an upgrade, never the only brand cue. Without a
+ * configured FRONTEND_URL there is no absolute URL to serve, so we fall back to
+ * text alone rather than emitting a broken image.
  */
 function renderEmail({ title, message, taskId }) {
   const base = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
@@ -121,10 +126,13 @@ function renderEmail({ title, message, taskId }) {
          <a href="${link}" style="background:${BRAND.primary};color:#ffffff;text-decoration:none;padding:11px 20px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block">View in Portal →</a>
        </td></tr>`
     : '';
-  // Wordmark: a scales/□ mark box + the name, in brand colours.
-  const wordmark = `
-    <span style="display:inline-block;vertical-align:middle;width:26px;height:26px;line-height:26px;text-align:center;background:${BRAND.primary};color:#ffffff;border-radius:7px;font-weight:700;font-size:14px">LT</span>
-    <span style="display:inline-block;vertical-align:middle;margin-left:8px;font-weight:700;font-size:15px;color:${BRAND.ink};letter-spacing:.2px">Legal Terminus</span>`;
+  // #110: the real logo when we can build an absolute URL, else the text lockup.
+  // `alt` carries the brand name so a blocked image still reads correctly.
+  const wordmark = base
+    ? `<img src="${base}/portal/lt-logo@1x.png" alt="Legal Terminus" width="150" height="39"
+             style="display:block;border:0;outline:none;text-decoration:none;height:auto;max-width:150px" />`
+    : `<span style="display:inline-block;vertical-align:middle;width:26px;height:26px;line-height:26px;text-align:center;background:${BRAND.primary};color:#ffffff;border-radius:7px;font-weight:700;font-size:14px">LT</span>
+       <span style="display:inline-block;vertical-align:middle;margin-left:8px;font-weight:700;font-size:15px;color:${BRAND.ink};letter-spacing:.2px">Legal Terminus</span>`;
 
   const html = `<!doctype html><html><body style="margin:0;padding:0;background:${BRAND.surfaceSoft}">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.surfaceSoft};font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">

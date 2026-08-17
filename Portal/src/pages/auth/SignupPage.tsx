@@ -3,7 +3,8 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { Link } from 'react-router-dom';
 import { apiFetch } from '../../api/client';
-import { Scale, AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
+import { LTMark } from '../../components/common/LTLogo';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -58,7 +59,7 @@ export default function SignupPage() {
       <div className="hidden md:flex md:w-1/2 bg-ink flex-col justify-between p-10">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
-            <Scale className="w-4 h-4 text-white" />
+            <LTMark className="h-7 w-auto text-white" />
           </div>
           <span className="text-sm font-semibold text-white">Legal Terminus</span>
         </div>
@@ -77,7 +78,7 @@ export default function SignupPage() {
       <div className="flex-1 flex flex-col justify-center px-6 py-12 md:px-12 lg:px-20">
         <div className="flex items-center gap-2.5 mb-10 md:hidden">
           <div className="w-8 h-8 bg-ink rounded-lg flex items-center justify-center">
-            <Scale className="w-4 h-4 text-white" />
+            <LTMark className="h-7 w-auto text-white" />
           </div>
           <span className="text-sm font-semibold text-ink">Legal Terminus</span>
         </div>

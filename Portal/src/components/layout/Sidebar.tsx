@@ -1,7 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { navForRole, isNavActive } from './navConfig';
-import { Scale, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { LTMark } from '../common/LTLogo';
 
 interface Props {
   onClose: () => void;
@@ -19,11 +20,12 @@ export default function Sidebar({ onClose, collapsed = false, onToggleCollapse }
       {/* Logo row */}
       <div className={`h-14 flex items-center border-b border-hairline shrink-0 ${collapsed ? 'md:justify-center px-2' : 'justify-between px-4'}`}>
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-ink rounded-lg flex items-center justify-center shrink-0">
-            <Scale className="w-3.5 h-3.5 text-white" />
-          </div>
+          {/* #110: the real LT mark. Collapsed shows the mark alone; expanded
+              pairs it with the name, which the mark's aria-label already carries
+              — so the text is decorative here. */}
+          <LTMark className="h-8 w-auto shrink-0 text-ink" />
           {!collapsed && (
-            <div>
+            <div aria-hidden>
               <p className="text-sm font-semibold text-ink leading-tight">Legal Terminus</p>
               <p className="text-[10px] text-ink-faint uppercase tracking-wider">Portal</p>
             </div>

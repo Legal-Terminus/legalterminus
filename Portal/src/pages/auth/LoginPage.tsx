@@ -4,7 +4,8 @@ import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 
 import { auth } from '../../lib/firebase';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiFetch } from '../../api/client';
-import { Scale, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
+import { LTMark, LTLockup } from '../../components/common/LTLogo';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -84,11 +85,13 @@ export default function LoginPage() {
     <div className="min-h-dvh bg-white flex flex-col md:flex-row">
       {/* Left panel — branding (desktop only) */}
       <div className="hidden md:flex md:w-1/2 bg-ink flex-col justify-between p-10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
-            <Scale className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-sm font-semibold text-white">Legal Terminus</span>
+        {/* #110: on this DARK panel we use the vector mark plus live text rather
+            than the raster lockup. The lockup's "TERMINUS" is black, and
+            recolouring a flattened PNG to white wrecks the anti-aliased edges —
+            the mark is true vector and adapts cleanly via currentColor. */}
+        <div className="flex items-center gap-3 text-white">
+          <LTMark className="h-11 w-auto shrink-0" />
+          <span className="text-lg font-semibold tracking-tight text-white">Legal Terminus</span>
         </div>
         <div>
           <h2 className="text-3xl font-semibold text-white leading-snug">
@@ -104,11 +107,8 @@ export default function LoginPage() {
       {/* Right panel — form */}
       <div className="flex-1 flex flex-col justify-center px-6 py-12 md:px-12 lg:px-20">
         {/* Mobile logo */}
-        <div className="flex items-center gap-2.5 mb-10 md:hidden">
-          <div className="w-8 h-8 bg-ink rounded-lg flex items-center justify-center">
-            <Scale className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-sm font-semibold text-ink">Legal Terminus</span>
+        <div className="mb-10 md:hidden">
+          <LTLockup className="h-10" />
         </div>
 
         <div className="w-full max-w-sm mx-auto md:mx-0">

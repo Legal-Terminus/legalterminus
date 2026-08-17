@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { Link } from 'react-router-dom';
-import { Scale, AlertCircle, Mail } from 'lucide-react';
+import { AlertCircle, Mail } from 'lucide-react';
+import { LTMark } from '../../components/common/LTLogo';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -30,7 +31,7 @@ export default function ForgotPasswordPage() {
         {/* Logo */}
         <div className="flex items-center gap-2.5 mb-10">
           <div className="w-8 h-8 bg-ink rounded-lg flex items-center justify-center">
-            <Scale className="w-4 h-4 text-white" />
+            <LTMark className="h-7 w-auto text-white" />
           </div>
           <span className="text-sm font-semibold text-ink">Legal Terminus</span>
         </div>

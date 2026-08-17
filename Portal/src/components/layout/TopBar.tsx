@@ -3,7 +3,8 @@ import { useAuthStore } from '../../store/authStore';
 import NotificationBell from '../notifications/NotificationBell';
 import { auth } from '../../lib/firebase';
 import { signOut as firebaseSignOut } from 'firebase/auth';
-import { Menu, LogOut, ChevronDown, Scale } from 'lucide-react';
+import { Menu, LogOut, ChevronDown } from 'lucide-react';
+import { LTMark } from '../common/LTLogo';
 
 interface Props {
   onMenuClick: () => void;
@@ -37,9 +38,7 @@ export default function TopBar({ onMenuClick }: Props) {
           <Menu className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-ink rounded-lg flex items-center justify-center">
-            <Scale className="w-3.5 h-3.5 text-white" />
-          </div>
+          <LTMark className="h-7 w-auto text-ink" />
           <div>
             <p className="text-sm font-semibold text-ink leading-tight">Legal Terminus</p>
             <p className="text-[10px] text-ink-faint uppercase tracking-wider leading-none">Portal</p>
