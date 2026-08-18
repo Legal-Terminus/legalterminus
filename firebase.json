@@ -349,6 +349,7 @@
         "destination": "/trademark-registration-in-odisha",
         "type": 301
       }
-    ]
+    ],
+    "trailingSlash": false
   }
 }

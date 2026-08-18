@@ -11,7 +11,9 @@
     "build:frontend": "cd /Users/ankygoyal/Documents/git/legalterminus/Legal-Terminus/Frontend && npm run build",
     "dev:frontend": "cd /Users/ankygoyal/Documents/git/legalterminus/Legal-Terminus/Frontend && npm run dev",
     "test:pages": "playwright test",
-    "test:pages:headed": "HEADED=1 playwright test"
+    "test:pages:headed": "HEADED=1 playwright test",
+    "prerender": "node scripts/prerender.mjs",
+    "postbuild": "npm run prerender"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
