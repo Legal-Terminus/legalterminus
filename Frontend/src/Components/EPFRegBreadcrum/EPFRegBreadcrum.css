@@ -99,6 +99,10 @@
   gap: 55px;
   padding-top: 15px;
   border-top: 1px solid rgba(34, 197, 94, 0.2);
+  /* Inherited text-align: justify from the hero description stretches these
+     short stat labels ("Pvt    Ltd    companies"). Justify belongs only on the
+     long paragraph it was written for. */
+  text-align: left;
 }
 
 .lt-public-highlights h3 {
@@ -112,6 +116,9 @@
   font-size: 14.5px;
   color: #9ca3af;
   letter-spacing: 0.4px;
+  /* These labels INHERIT text-align: justify from the hero description,
+     which stretches a 3-word line into "Pvt    Ltd    companies". */
+  text-align: left;
 }
 
 /* ================= FORM CARD ================= */
