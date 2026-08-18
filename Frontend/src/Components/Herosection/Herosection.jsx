@@ -21,37 +21,37 @@ const SERVICES = [
     icon: <FaBuilding />,
     title: 'Business Registration',
     text: 'Start your business with ease',
-    to: '/private-limited-company-registration-in-india',
+    to: '/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india',
   },
   {
     icon: <FaShieldAlt />,
     title: 'Compliance',
     text: 'Stay compliant, stay secure',
-    to: '/annual-filing-company',
+    to: '/registrations-returns/return-filing/annual-filing-company',
   },
   {
     icon: <FaPercent />,
     title: 'GST Registration',
     text: 'Hassle-free GST registration',
-    to: '/gst-registration',
+    to: '/registrations-returns/registrations/gst-registration-in-india',
   },
   {
     icon: <FaFileInvoiceDollar />,
     title: 'ITR Filing',
     text: 'File returns with confidence',
-    to: '/itr-individual',
+    to: '/registrations-returns/return-filing/itr-filing-individual',
   },
   {
     icon: <FaRegistered />,
     title: 'Trademark',
     text: 'Protect your brand identity',
-    to: '/trademark/application',
+    to: '/trademark/registration-and-compliance-services/trademark-registration-in-india',
   },
   {
     icon: <FaFileAlt />,
     title: 'Returns',
     text: 'Timely filing, zero hassle',
-    to: '/gst-return-filing',
+    to: '/registrations-returns/return-filing/gst-return-filing',
   },
 ]
 

@@ -174,65 +174,65 @@ function App() {
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
             <Route path="/payment/result" element={<PaymentResult />} />
-            <Route path="/one-person-company" element={<OPC />} />
-            <Route path="/public-limited-company-registration-in-india" element={<Publicltd />} />
-            <Route path="/incorption-registration-in-india" element={<IncorptionPage />} />
-            <Route path="/trust" element={<Trust />} />
-            <Route path="/society" element={<Society />} />
-            <Route path="/section-8" element={<Section8 />} />
-            <Route path="/llp" element={<LLP />} />
-            <Route path="/gst-registration" element={<GSTRegistration />} />
-            <Route path="/gst-return-filing" element={<GSTReturn />} />
-            <Route path="/epf" element={<EPFReg />} />
-            <Route path="/udyam" element={<UdyamReg />} />
-            <Route path="/esic" element={<ESICReg />} />
-            <Route path="/professional-tax" element={<ProfessionalReg />} />
-            <Route path="/shop-establishment" element={<ShopReg />} />
-            <Route path="/proprietorship" element={<Proprietorship />} />
-            <Route path="/iec" element={<IEC />} />
-            <Route path="/food-license" element={<FoodLicense />} />
-            <Route path="/trade-license" element={<TradeLicense />} />
-            <Route path="/partnership" element={<Parternership />} />
-            <Route path="/conversion/partnership-to-private" element={<PartnershiptoPrivate />} />
-            <Route path="/conversion/llp-to-private" element={<LlptoPrivate />} />
-            <Route path="/conversion/private-to-llp" element={<PritoLlp />} />
-            <Route path="/labour-license" element={<LabourLicense />} />
-            <Route path="/bar-code" element={<BCRegistration />} />
-            <Route path="/iso" element={<ISOCertification />} />
-            <Route path="/conversion/proprietorship-to-opc" element={<ProprietorshipOPC />} />
-            <Route path="/conversion/proprietorship-to-private" element={<PropritorshipPLC />} />
-            <Route path="/conversion/partnership-to-llp" element={<PartnershipLLP />} />
-            <Route path="/updation/change-name-company" element={<ChangeInCompany />} />
-            <Route path="/updation/change-address-llp" element={<CIROfficeAddress />} />
-            <Route path="/updation/change-object-llp" element={<ChangeInObject />} />
-            <Route path="/updation/change-name-llp" element={<ChangeLlp />} />
-            <Route path="/updation/change-address-company" element={<ChangeaddCom />} />
-            <Route path="/updation/change-object-company" element={<ChangeObjectCom />} />
-            <Route path="/updation/increase-authorised-capital" element={<Increase />} />
-            <Route path="/updation/add-remove-director" element={<Add />} />
-            <Route path="/windup/dissolve-private" element={<DissolvePrivate />} />
-            <Route path="/windup/dissolve-llp" element={<DissolveLLP />} />
-            <Route path="/windup/dissolve-partnership" element={<DissolvePartnership />} />
+            <Route path="/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india" element={<OPC />} />
+            <Route path="/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india" element={<Publicltd />} />
+            <Route path="/setting-up-a-business/profit-making-structures/incorporation-of-wholly-owned-subsidiary-in-india" element={<IncorptionPage />} />
+            <Route path="/setting-up-a-business/non-profit-making-structures/trust-registration-in-india" element={<Trust />} />
+            <Route path="/setting-up-a-business/non-profit-making-structures/society-registration-in-india" element={<Society />} />
+            <Route path="/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india" element={<Section8 />} />
+            <Route path="/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india" element={<LLP />} />
+            <Route path="/registrations-returns/registrations/gst-registration-in-india" element={<GSTRegistration />} />
+            <Route path="/registrations-returns/return-filing/gst-return-filing" element={<GSTReturn />} />
+            <Route path="/registrations-returns/registrations/epf-registration-in-india" element={<EPFReg />} />
+            <Route path="/registrations-returns/registrations/udyam-registration-in-india" element={<UdyamReg />} />
+            <Route path="/registrations-returns/registrations/esic-registration-in-india" element={<ESICReg />} />
+            <Route path="/registrations-returns/registrations/professional-tax-registration" element={<ProfessionalReg />} />
+            <Route path="/registrations-returns/registrations/shop-commercial-establishments-registration-in-india" element={<ShopReg />} />
+            <Route path="/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india" element={<Proprietorship />} />
+            <Route path="/registrations-returns/license-certifications/importer-exporter-code-registration" element={<IEC />} />
+            <Route path="/registrations-returns/license-certifications/food-license-and-registration" element={<FoodLicense />} />
+            <Route path="/registrations-returns/license-certifications/trade-license-registration" element={<TradeLicense />} />
+            <Route path="/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india" element={<Parternership />} />
+            <Route path="/event-based-compliances/conversion-in-form-of-business/partnership-firm-to-private-limited-company" element={<PartnershiptoPrivate />} />
+            <Route path="/event-based-compliances/conversion-in-form-of-business/conversion-of-llp-into-private-limited-company" element={<LlptoPrivate />} />
+            <Route path="/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-into-llp" element={<PritoLlp />} />
+            <Route path="/registrations-returns/license-certifications/labour-license-registration" element={<LabourLicense />} />
+            <Route path="/registrations-returns/license-certifications/bar-code-registration" element={<BCRegistration />} />
+            <Route path="/registrations-returns/license-certifications/iso-certification-in-india" element={<ISOCertification />} />
+            <Route path="/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-opc-private-limited-company" element={<ProprietorshipOPC />} />
+            <Route path="/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-private-limited-company" element={<PropritorshipPLC />} />
+            <Route path="/event-based-compliances/conversion-in-form-of-business/conversion-of-partnership-into-limited-liability-partnership" element={<PartnershipLLP />} />
+            <Route path="/event-based-compliances/change-company-name" element={<ChangeInCompany />} />
+            <Route path="/event-based-compliances/change-in-registered-office-address-for-llp" element={<CIROfficeAddress />} />
+            <Route path="/event-based-compliances/changing-the-objects-of-llp" element={<ChangeInObject />} />
+            <Route path="/event-based-compliances/name-change-process-in-india-for-llp" element={<ChangeLlp />} />
+            <Route path="/event-based-compliances/change-in-registered-office-address" element={<ChangeaddCom />} />
+            <Route path="/event-based-compliances/change-in-object-clause-of-a-company" element={<ChangeObjectCom />} />
+            <Route path="/event-based-compliances/increase-authorized-share-capital-company" element={<Increase />} />
+            <Route path="/event-based-compliances/add-or-remove-a-director-company" element={<Add />} />
+            <Route path="/event-based-compliances/windup-services/process-of-winding-up-of-a-company" element={<DissolvePrivate />} />
+            <Route path="/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership" element={<DissolveLLP />} />
+            <Route path="/event-based-compliances/windup-services/dissolution-of-partnership-firm" element={<DissolvePartnership />} />
             <Route path="/windup/wind-up-plc" element={<WindupPLC />} />
-            <Route path="/trademark/opposition" element={<TrademarktoOpposition />} />
-            <Route path="/trademark/hearing" element={<TrademarktoHearing />} />
-            <Route path="/trademark/renewal" element={<TMRenewal />} />
-            <Route path="/trademark/application" element={<TMApplication />} />
-            <Route path="/trademark/exam-reply" element={<ReplyOfExaminationReport />} />
-            <Route path="/conversion/private-to-public" element={<PrivatetoPublic />} />
-            <Route path="/conversion/public-to-private" element={<PublictoPrivate />} />
+            <Route path="/trademark/registration-and-compliance-services/trademark-opposition-in-india" element={<TrademarktoOpposition />} />
+            <Route path="/trademark/registration-and-compliance-services/trademark-hearing-in-india" element={<TrademarktoHearing />} />
+            <Route path="/trademark/registration-and-compliance-services/trademark-renewal-in-india" element={<TMRenewal />} />
+            <Route path="/trademark/registration-and-compliance-services/trademark-registration-in-india" element={<TMApplication />} />
+            <Route path="/trademark/registration-and-compliance-services/reply-to-examination-report-trademark" element={<ReplyOfExaminationReport />} />
+            <Route path="/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-to-public-limited-company" element={<PrivatetoPublic />} />
+            <Route path="/event-based-compliances/conversion-in-form-of-business/conversion-of-public-limited-company-to-private-limited-company" element={<PublictoPrivate />} />
             <Route path="/updation/change-name-company-to-company" element={<ChangetoCompany />} />
             <Route path="/updation/change-name-llp-to-llp" element={<ChangetoLlp />} />
-            <Route path="/olwf" element={<OLWF />} />
-            <Route path="/startup-india" element={<StartupIndia />} />
-            <Route path="/startup-odisha" element={<StartupOdisha />} />
-            <Route path="/itr-individual" element={<ITRIndividual />} />
-            <Route path="/itr-business" element={<ITRBusiness />} />
-            <Route path="/annual-filing-company" element={<AnnualFilingCompany />} />
-            <Route path="/annual-filing-llp" element={<AnnualFilingLLP />} />
-            <Route path="/epf-return" element={<EPFReturn />} />
-            <Route path="/esi-return" element={<ESIReturn />} />
-            <Route path="/professional-tax-return" element={<ProfessionalTaxReturn />} />
+            <Route path="/registrations-returns/license-certifications/odisha-labour-welfare-fund-olwf-registration" element={<OLWF />} />
+            <Route path="/registrations-returns/registrations/startup-india-registration" element={<StartupIndia />} />
+            <Route path="/registrations-returns/registrations/startup-odisha-registration" element={<StartupOdisha />} />
+            <Route path="/registrations-returns/return-filing/itr-filing-individual" element={<ITRIndividual />} />
+            <Route path="/registrations-returns/return-filing/itr-filing-company" element={<ITRBusiness />} />
+            <Route path="/registrations-returns/return-filing/annual-filing-company" element={<AnnualFilingCompany />} />
+            <Route path="/registrations-returns/return-filing/annual-filing-llp" element={<AnnualFilingLLP />} />
+            <Route path="/registrations-returns/return-filing/epf-return-filing" element={<EPFReturn />} />
+            <Route path="/registrations-returns/return-filing/esi-return-filing" element={<ESIReturn />} />
+            <Route path="/registrations-returns/return-filing/professional-tax-return-filing" element={<ProfessionalTaxReturn />} />
             <Route path="/about" element={<About />} />
             <Route path="/media" element={<Media />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -243,7 +243,7 @@ function App() {
             <Route path="/policies/refund" element={<RefundPolicy />} />
             <Route path="/confidentiality-policy" element={<ConfidentialityPolicy />} />
             <Route path="/policies/confidentiality" element={<ConfidentialityPolicy />} />
-            <Route path="/private-limited-company-registration-in-india" element={<PrivateLimitedCopy2 />} />
+            <Route path="/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india" element={<PrivateLimitedCopy2 />} />
             <Route path="/company-registration-consultancy-in-odisha" element={<CompanyRegOdisha />} />
             <Route path="/company-registration-odisha" element={<CompanyRegistrationOdisha />} />
             <Route path="/companyregistration-in-odisha" element={<CompanyRegistrationLanding />} />

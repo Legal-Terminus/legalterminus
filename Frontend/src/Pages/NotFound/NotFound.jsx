@@ -29,10 +29,10 @@ export default function NotFound() {
           </p>
 
           <div className="lt-nf__links">
-            <Link to="/private-limited-company-registration-in-india">Company Registration</Link>
-            <Link to="/gst-registration">GST Registration</Link>
-            <Link to="/trademark/application">Trademark Registration</Link>
-            <Link to="/gst-return-filing">GST Return Filing</Link>
+            <Link to="/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india">Company Registration</Link>
+            <Link to="/registrations-returns/registrations/gst-registration-in-india">GST Registration</Link>
+            <Link to="/trademark/registration-and-compliance-services/trademark-registration-in-india">Trademark Registration</Link>
+            <Link to="/registrations-returns/return-filing/gst-return-filing">GST Return Filing</Link>
             <Link to="/blog">Blog</Link>
             <Link to="/contact/us">Contact Us</Link>
           </div>

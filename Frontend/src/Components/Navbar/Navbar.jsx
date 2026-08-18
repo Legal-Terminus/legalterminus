@@ -44,11 +44,11 @@ const navData = [
         items: [
           {
             label: "Private Limited Company Registration In India",
-            href: "/private-limited-company-registration-in-india",
+            href: "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
           },
           {
             label: "Incorporation Of Wholly Owned Subsidiary In India",
-            href: "/incorption-registration-in-india",
+            href: "/setting-up-a-business/profit-making-structures/incorporation-of-wholly-owned-subsidiary-in-india",
           },
           {
             label: "Public Limited Company Registration In India",
@@ -56,19 +56,19 @@ const navData = [
           },
           {
             label: "One Person Company Registration In India",
-            href: "/one-person-company",
+            href: "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
           },
           {
             label: "Limited Liability Partnership Registration In India",
-            href: "/llp",
+            href: "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
           },
           {
             label: "Partnership Firm Registration In India",
-            href: "/partnership",
+            href: "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
           },
           {
             label: "Proprietorship Firm Registration In India",
-            href: "/proprietorship",
+            href: "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
           },
         ],
       },
@@ -78,10 +78,10 @@ const navData = [
         items: [
           {
             label: "Non-Profit Company/ Sec-8 Company Registration In India",
-            href: "/section-8",
+            href: "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
           },
-          { label: "Trust Registration In India", href: "/trust" },
-          { label: "Society Registration In India", href: "/society" },
+          { label: "Trust Registration In India", href: "/setting-up-a-business/non-profit-making-structures/trust-registration-in-india" },
+          { label: "Society Registration In India", href: "/setting-up-a-business/non-profit-making-structures/society-registration-in-india" },
         ],
       },
     ],
@@ -94,46 +94,46 @@ const navData = [
         id: "registrations-main",
         label: "Registrations",
         items: [
-          { label: "GST Registration In India", href: "/gst-registration" },
-          { label: "Udyam Registration In India", href: "/udyam" },
-          { label: "EPF Registration In India", href: "/epf" },
-          { label: "ESIC Registration In India", href: "/esic" },
+          { label: "GST Registration In India", href: "/registrations-returns/registrations/gst-registration-in-india" },
+          { label: "Udyam Registration In India", href: "/registrations-returns/registrations/udyam-registration-in-india" },
+          { label: "EPF Registration In India", href: "/registrations-returns/registrations/epf-registration-in-india" },
+          { label: "ESIC Registration In India", href: "/registrations-returns/registrations/esic-registration-in-india" },
           // Hidden from menu (page kept): Professional Tax Registration -> /professional-tax
           {
             label: "Shop & Commercial Establishments Registration In India",
-            href: "/shop-establishment",
+            href: "/registrations-returns/registrations/shop-commercial-establishments-registration-in-india",
           },
           {
             label: "Odisha Labour Welfare Fund (OLWF) Registration",
-            href: "/olwf",
+            href: "/registrations-returns/license-certifications/odisha-labour-welfare-fund-olwf-registration",
           },
-          { label: "Startup India Registration", href: "/startup-india" },
-          { label: "Startup Odisha Registration", href: "/startup-odisha" },
+          { label: "Startup India Registration", href: "/registrations-returns/registrations/startup-india-registration" },
+          { label: "Startup Odisha Registration", href: "/registrations-returns/registrations/startup-odisha-registration" },
         ],
       },
       {
         id: "licenses",
         label: "License & Certifications",
         items: [
-          { label: "Importer Exporter Code Registration", href: "/iec" },
-          { label: "Food License And Registration", href: "/food-license" },
-          { label: "Trade License Registration", href: "/trade-license" },
-          { label: "Labour License Registration", href: "/labour-license" },
-          { label: "Bar Code Registration", href: "/bar-code" },
-          { label: "ISO Certification In India", href: "/iso" },
+          { label: "Importer Exporter Code Registration", href: "/registrations-returns/license-certifications/importer-exporter-code-registration" },
+          { label: "Food License And Registration", href: "/registrations-returns/license-certifications/food-license-and-registration" },
+          { label: "Trade License Registration", href: "/registrations-returns/license-certifications/trade-license-registration" },
+          { label: "Labour License Registration", href: "/registrations-returns/license-certifications/labour-license-registration" },
+          { label: "Bar Code Registration", href: "/registrations-returns/license-certifications/bar-code-registration" },
+          { label: "ISO Certification In India", href: "/registrations-returns/license-certifications/iso-certification-in-india" },
         ],
       },
       {
         id: "return-filing",
         label: "Return Filing",
         items: [
-          { label: "GST Return Filing", href: "/gst-return-filing" },
-          { label: "ITR Filing (Business)", href: "/itr-business" },
-          { label: "ITR Filing (Individual)", href: "/itr-individual" },
-          { label: "Annual Filing (Company)", href: "/annual-filing-company" },
-          { label: "Annual Filing (LLP)", href: "/annual-filing-llp" },
-          { label: "EPF Return Filing", href: "/epf-return" },
-          { label: "ESI Return Filing", href: "/esi-return" },
+          { label: "GST Return Filing", href: "/registrations-returns/return-filing/gst-return-filing" },
+          { label: "ITR Filing (Business)", href: "/registrations-returns/return-filing/itr-filing-company" },
+          { label: "ITR Filing (Individual)", href: "/registrations-returns/return-filing/itr-filing-individual" },
+          { label: "Annual Filing (Company)", href: "/registrations-returns/return-filing/annual-filing-company" },
+          { label: "Annual Filing (LLP)", href: "/registrations-returns/return-filing/annual-filing-llp" },
+          { label: "EPF Return Filing", href: "/registrations-returns/return-filing/epf-return-filing" },
+          { label: "ESI Return Filing", href: "/registrations-returns/return-filing/esi-return-filing" },
           // Hidden from menu (page kept): Professional Tax Return Filing -> /professional-tax-return
         ],
       },
@@ -149,27 +149,27 @@ const navData = [
         items: [
           {
             label: "Proprietorship Firm To OPC Private Limited Company",
-            href: "/conversion/proprietorship-to-opc",
+            href: "/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-opc-private-limited-company",
           },
           {
             label: "Proprietorship Firm To Private Limited Company",
-            href: "/conversion/proprietorship-to-private",
+            href: "/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-private-limited-company",
           },
           {
             label: "Partnership Firm To Limited Liability Partnership",
-            href: "/conversion/partnership-to-llp",
+            href: "/event-based-compliances/conversion-in-form-of-business/conversion-of-partnership-into-limited-liability-partnership",
           },
           {
             label: "Partnership Firm To Private Limited Company",
-            href: "/conversion/partnership-to-private",
+            href: "/event-based-compliances/conversion-in-form-of-business/partnership-firm-to-private-limited-company",
           },
           {
             label: "LLP To Private Limited Company",
-            href: "/conversion/llp-to-private",
+            href: "/event-based-compliances/conversion-in-form-of-business/conversion-of-llp-into-private-limited-company",
           },
           {
             label: "Private Limited Company To Limited Liability Partnership",
-            href: "/conversion/private-to-llp",
+            href: "/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-into-llp",
           },
           // Hidden from menu (pages kept):
           // Private Limited Company To Public Limited Company -> /conversion/private-to-public
@@ -201,14 +201,14 @@ const navData = [
         id: "tm-services",
         label: "Registration And Compliance Services",
         items: [
-          { label: "Trademark Application", href: "/trademark/application" },
-          { label: "Trademark Renewal", href: "/trademark/renewal" },
+          { label: "Trademark Application", href: "/trademark/registration-and-compliance-services/trademark-registration-in-india" },
+          { label: "Trademark Renewal", href: "/trademark/registration-and-compliance-services/trademark-renewal-in-india" },
           {
             label: "Reply Of Examination Report",
-            href: "/trademark/exam-reply",
+            href: "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
           },
-          { label: "Trademark Opposition", href: "/trademark/opposition" },
-          { label: "Trademark Hearing", href: "/trademark/hearing" },
+          { label: "Trademark Opposition", href: "/trademark/registration-and-compliance-services/trademark-opposition-in-india" },
+          { label: "Trademark Hearing", href: "/trademark/registration-and-compliance-services/trademark-hearing-in-india" },
         ],
       },
     ],

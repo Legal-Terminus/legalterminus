@@ -13,7 +13,9 @@
     "test:pages": "playwright test",
     "test:pages:headed": "HEADED=1 playwright test",
     "prerender": "node scripts/prerender.mjs",
-    "postbuild": "npm run prerender"
+    "postbuild": "npm run prerender",
+    "sitemap": "node scripts/gen-sitemap.mjs",
+    "prebuild": "npm run sitemap"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

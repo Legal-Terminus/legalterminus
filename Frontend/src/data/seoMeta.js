@@ -27,211 +27,211 @@ export const SEO_META = {
   },
 
   /* ── Setting up a business — profit-making ── */
-  '/private-limited-company-registration-in-india': {
+  '/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india': {
     title: 'Private Limited Company Registration in India | Legal Terminus',
     description: svc('Register your Private Limited Company', 'Name approval, DSC, DIN and MOA/AOA included.'),
   },
-  '/incorption-registration-in-india': {
+  '/setting-up-a-business/profit-making-structures/incorporation-of-wholly-owned-subsidiary-in-india': {
     title: 'Wholly Owned Subsidiary Registration | Legal Terminus',
     description: svc('Set up a Wholly Owned Subsidiary in India', 'Build your global presence.'),
   },
-  '/public-limited-company-registration-in-india': {
+  '/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india': {
     title: 'Public Limited Company Registration in India | Legal Terminus',
     description: svc('Register a Public Limited Company'),
   },
-  '/one-person-company': {
+  '/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india': {
     title: 'One Person Company (OPC) Registration | Legal Terminus',
     description: svc('Register a One Person Company'),
   },
-  '/llp': {
+  '/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india': {
     title: 'LLP Registration in India | Legal Terminus',
     description: svc('Register a Limited Liability Partnership'),
   },
-  '/partnership': {
+  '/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india': {
     title: 'Partnership Firm Registration | Legal Terminus',
     description: svc('Register a Partnership Firm'),
   },
-  '/proprietorship': {
+  '/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india': {
     title: 'Proprietorship Firm Registration | Legal Terminus',
     description: svc('Register a Proprietorship Firm'),
   },
 
   /* ── Setting up a business — non-profit ── */
-  '/section-8': {
+  '/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india': {
     title: 'Section-8 Company Registration | Legal Terminus',
     description: svc('Register a Section-8 (non-profit) Company'),
   },
-  '/trust': {
+  '/setting-up-a-business/non-profit-making-structures/trust-registration-in-india': {
     title: 'Trust Registration Online | Legal Terminus',
     description: svc('Register a Trust'),
   },
-  '/society': {
+  '/setting-up-a-business/non-profit-making-structures/society-registration-in-india': {
     title: 'Society Registration | Legal Terminus',
     description: svc('Register a Society'),
   },
 
   /* ── Registrations ── */
-  '/gst-registration': {
+  '/registrations-returns/registrations/gst-registration-in-india': {
     title: 'GST Registration in India | Legal Terminus',
     description: svc('Get GST registration', 'GSTIN typically issued in days.'),
   },
-  '/udyam': {
+  '/registrations-returns/registrations/udyam-registration-in-india': {
     title: 'Udyam (MSME) Registration | Legal Terminus',
     description: svc('Get Udyam / MSME registration'),
   },
-  '/epf': {
+  '/registrations-returns/registrations/epf-registration-in-india': {
     title: 'EPF Registration | Legal Terminus',
     description: svc('Get EPF registration for your establishment'),
   },
-  '/esic': {
+  '/registrations-returns/registrations/esic-registration-in-india': {
     title: 'ESIC Registration | Legal Terminus',
     description: svc('Get ESIC registration for your establishment'),
   },
-  '/professional-tax': {
+  '/registrations-returns/registrations/professional-tax-registration': {
     title: 'Professional Tax Registration | Legal Terminus',
     description: svc('Get Professional Tax registration'),
   },
-  '/shop-establishment': {
+  '/registrations-returns/registrations/shop-commercial-establishments-registration-in-india': {
     title: 'Shop & Establishment Registration | Legal Terminus',
     description: svc('Register under the Shops & Commercial Establishments Act'),
   },
-  '/olwf': {
+  '/registrations-returns/license-certifications/odisha-labour-welfare-fund-olwf-registration': {
     title: 'OLWF Registration in Odisha | Legal Terminus',
     description: svc('Get Odisha Labour Welfare Fund registration'),
   },
-  '/startup-india': {
+  '/registrations-returns/registrations/startup-india-registration': {
     title: 'Startup India Registration | Legal Terminus',
     description: svc('Get Startup India (DPIIT) recognition'),
   },
-  '/startup-odisha': {
+  '/registrations-returns/registrations/startup-odisha-registration': {
     title: 'Startup Odisha Registration | Legal Terminus',
     description: svc('Get Startup Odisha recognition'),
   },
 
   /* ── Licenses & certifications ── */
-  '/iec': {
+  '/registrations-returns/license-certifications/importer-exporter-code-registration': {
     title: 'IEC Registration in India | Legal Terminus',
     description: svc('Get your Importer Exporter Code'),
   },
-  '/food-license': {
+  '/registrations-returns/license-certifications/food-license-and-registration': {
     title: 'FSSAI Food License & Registration | Legal Terminus',
     description: svc('Get your FSSAI food license'),
   },
-  '/trade-license': {
+  '/registrations-returns/license-certifications/trade-license-registration': {
     title: 'Trade License Registration | Legal Terminus',
     description: svc('Get a Trade License'),
   },
-  '/labour-license': {
+  '/registrations-returns/license-certifications/labour-license-registration': {
     title: 'Labour Licence Registration | Legal Terminus',
     description: svc('Get a Labour Licence'),
   },
-  '/bar-code': {
+  '/registrations-returns/license-certifications/bar-code-registration': {
     title: 'Bar Code Registration | Legal Terminus',
     description: svc('Register bar codes for your products'),
   },
-  '/iso': {
+  '/registrations-returns/license-certifications/iso-certification-in-india': {
     title: 'ISO Certification in India | Legal Terminus',
     description: svc('Get ISO certification'),
   },
 
   /* ── Return filing ── */
-  '/gst-return-filing': {
+  '/registrations-returns/return-filing/gst-return-filing': {
     title: 'GST Return Filing | Legal Terminus',
     description: svc('File GST returns on time, every time'),
   },
-  '/itr-business': {
+  '/registrations-returns/return-filing/itr-filing-company': {
     title: 'ITR Filing for Businesses | Legal Terminus',
     description: svc('File your business income-tax return'),
   },
-  '/itr-individual': {
+  '/registrations-returns/return-filing/itr-filing-individual': {
     title: 'ITR Filing for Individuals | Legal Terminus',
     description: svc('File your personal income-tax return'),
   },
-  '/annual-filing-company': {
+  '/registrations-returns/return-filing/annual-filing-company': {
     title: 'Annual Filing for Companies | Legal Terminus',
     description: svc('Complete your company’s annual ROC filing'),
   },
-  '/annual-filing-llp': {
+  '/registrations-returns/return-filing/annual-filing-llp': {
     title: 'Annual Filing for LLPs | Legal Terminus',
     description: svc('Complete your LLP’s annual filing'),
   },
-  '/epf-return': {
+  '/registrations-returns/return-filing/epf-return-filing': {
     title: 'EPF Return Filing | Legal Terminus',
     description: svc('File EPF returns'),
   },
-  '/esi-return': {
+  '/registrations-returns/return-filing/esi-return-filing': {
     title: 'ESI Return Filing | Legal Terminus',
     description: svc('File ESI returns'),
   },
-  '/professional-tax-return': {
+  '/registrations-returns/return-filing/professional-tax-return-filing': {
     title: 'Professional Tax Return Filing | Legal Terminus',
     description: svc('File Professional Tax returns'),
   },
 
   /* ── Conversions ── */
-  '/conversion/proprietorship-to-opc': {
+  '/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-opc-private-limited-company': {
     title: 'Convert Proprietorship to OPC Private Limited | Legal Terminus',
     description: svc('Convert your Proprietorship into an OPC Private Limited Company'),
   },
-  '/conversion/proprietorship-to-private': {
+  '/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-private-limited-company': {
     title: 'Proprietorship to Private Limited | Legal Terminus',
     description: svc('Convert your Proprietorship into a Private Limited Company'),
   },
-  '/conversion/partnership-to-llp': {
+  '/event-based-compliances/conversion-in-form-of-business/conversion-of-partnership-into-limited-liability-partnership': {
     title: 'Convert Partnership Firm to LLP | Legal Terminus',
     description: svc('Convert your Partnership Firm into an LLP'),
   },
-  '/conversion/partnership-to-private': {
+  '/event-based-compliances/conversion-in-form-of-business/partnership-firm-to-private-limited-company': {
     title: 'Partnership to Private Limited | Legal Terminus',
     description: svc('Convert your Partnership Firm into a Private Limited Company'),
   },
-  '/conversion/llp-to-private': {
+  '/event-based-compliances/conversion-in-form-of-business/conversion-of-llp-into-private-limited-company': {
     title: 'Convert LLP to Private Limited Company | Legal Terminus',
     description: svc('Convert your LLP into a Private Limited Company'),
   },
-  '/conversion/private-to-llp': {
+  '/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-into-llp': {
     title: 'Private Limited Company to LLP | Legal Terminus',
     description: svc('Convert your Private Limited Company into an LLP'),
   },
-  '/conversion/private-to-public': {
+  '/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-to-public-limited-company': {
     title: 'Private Limited to Public Limited | Legal Terminus',
     description: svc('Convert your Private Limited Company into a Public Limited Company'),
   },
-  '/conversion/public-to-private': {
+  '/event-based-compliances/conversion-in-form-of-business/conversion-of-public-limited-company-to-private-limited-company': {
     title: 'Public Limited to Private Limited | Legal Terminus',
     description: svc('Convert your Public Limited Company into a Private Limited Company'),
   },
 
   /* ── Event-based updations ── */
-  '/updation/change-name-llp': {
+  '/event-based-compliances/name-change-process-in-india-for-llp': {
     title: 'Change of LLP Name | Legal Terminus',
     description: svc('Change your LLP’s name'),
   },
-  '/updation/change-address-company': {
+  '/event-based-compliances/change-in-registered-office-address': {
     title: 'Change Registered Office Address | Legal Terminus',
     description: svc('Change your company’s registered office address'),
   },
-  '/updation/change-object-company': {
+  '/event-based-compliances/change-in-object-clause-of-a-company': {
     title: 'Change in Object Clause of a Company | Legal Terminus',
     description: svc('Change your company’s object clause'),
   },
-  '/updation/increase-authorised-capital': {
+  '/event-based-compliances/increase-authorized-share-capital-company': {
     title: 'Increase Authorised Share Capital | Legal Terminus',
     description: svc('Increase your company’s authorised share capital'),
   },
-  '/updation/add-remove-director': {
+  '/event-based-compliances/add-or-remove-a-director-company': {
     title: 'Add or Remove a Director | Legal Terminus',
     description: svc('Add or remove a company director'),
   },
-  '/updation/change-name-company': {
+  '/event-based-compliances/change-company-name': {
     title: 'Change of Company Name | Legal Terminus',
     description: svc('Change your company’s name'),
   },
-  '/updation/change-address-llp': {
+  '/event-based-compliances/change-in-registered-office-address-for-llp': {
     title: 'Change of Registered Office Address (LLP) | Legal Terminus',
     description: svc('Change your LLP’s registered office address'),
   },
-  '/updation/change-object-llp': {
+  '/event-based-compliances/changing-the-objects-of-llp': {
     title: 'Change in Objects of an LLP | Legal Terminus',
     description: svc('Change your LLP’s objects'),
   },
@@ -245,15 +245,15 @@ export const SEO_META = {
   },
 
   /* ── Wind-up ── */
-  '/windup/dissolve-private': {
+  '/event-based-compliances/windup-services/process-of-winding-up-of-a-company': {
     title: 'Winding Up a Private Limited Company | Legal Terminus',
     description: svc('Dissolve a Private Limited Company'),
   },
-  '/windup/dissolve-llp': {
+  '/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership': {
     title: 'Winding Up an LLP | Legal Terminus',
     description: svc('Dissolve a Limited Liability Partnership'),
   },
-  '/windup/dissolve-partnership': {
+  '/event-based-compliances/windup-services/dissolution-of-partnership-firm': {
     title: 'Dissolving a Partnership Firm | Legal Terminus',
     description: svc('Dissolve a Partnership Firm'),
   },
@@ -263,23 +263,23 @@ export const SEO_META = {
   },
 
   /* ── Trademark ── */
-  '/trademark/application': {
+  '/trademark/registration-and-compliance-services/trademark-registration-in-india': {
     title: 'Trademark Registration in India | Legal Terminus',
     description: svc('Register your trademark', 'Search, application and filing handled for you.'),
   },
-  '/trademark/renewal': {
+  '/trademark/registration-and-compliance-services/trademark-renewal-in-india': {
     title: 'Trademark Renewal in India | Legal Terminus',
     description: svc('Renew your trademark before it lapses'),
   },
-  '/trademark/exam-reply': {
+  '/trademark/registration-and-compliance-services/reply-to-examination-report-trademark': {
     title: 'Reply to Trademark Examination Report | Legal Terminus',
     description: svc('File a reply to a trademark examination report'),
   },
-  '/trademark/opposition': {
+  '/trademark/registration-and-compliance-services/trademark-opposition-in-india': {
     title: 'Trademark Opposition in India | Legal Terminus',
     description: svc('Oppose or defend a trademark application'),
   },
-  '/trademark/hearing': {
+  '/trademark/registration-and-compliance-services/trademark-hearing-in-india': {
     title: 'Trademark Hearing in India | Legal Terminus',
     description: svc('Get representation for your trademark hearing'),
   },

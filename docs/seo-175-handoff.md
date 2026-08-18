@@ -36,8 +36,8 @@ Written for any agent or developer picking this up.
 | `firebase.json` | **591 server-level 301 redirects** covering 457 of the 463 live WordPress URLs. All are EXACT `source` paths (each listed with and without its trailing slash, since Firebase globs treat those as distinct) — regex was removed after review. Server 301s are what transfer ranking; a client-side `<Navigate>` would not. |
 | `Frontend/scripts/prerender.mjs` | NEW. Postbuild step: serves `dist/`, visits all 78 indexable routes headless, writes rendered HTML to `dist/<route>/index.html`. Fixes the SPA-invisible-to-crawlers problem. Build FAILS if any route misses. |
 | `Frontend/src/Pages/NotFound/` | NEW page. There was no catch-all route, so unknown URLs rendered an empty frame at HTTP 200 (a soft 404). Scoped `lt-nf__*` CSS so no existing page's styling can be affected. |
-| `Frontend/public/sitemap.xml` | NEW. 78 indexable URLs (canonical short routes; `noindex` routes excluded). |
-| `Frontend/public/robots.txt` | NEW. Allows all, disallows `/my-profile` + `/payment/`, points at the sitemap. |
+| `Frontend/scripts/gen-sitemap.mjs` | NEW. Generates sitemap.xml + robots.txt from `seoMeta.js` as a **prebuild** step, so they can never drift from the routes. (They did drift once — the URL rename instantly left 74 stale entries in a hand-run sitemap.) Excludes `noindex` and canonical aliases. |
+| `Frontend/src/data/urlMap.js` | NEW. Old short route → canonical WordPress URL. Source of truth for the rename; drives the legacy 301s. |
 
 ## Mapping decisions worth knowing
 
@@ -50,6 +50,35 @@ Written for any agent or developer picking this up.
   The WP subsidiary URL redirects there. The route was NOT renamed (constraint 1).
 - `/company-registration-consultancy-in-odisha` matches WordPress exactly — no
   redirect needed. Same for `/`.
+
+## URL RENAME — the React routes now ARE the WordPress URLs
+
+The short routes (`/society`, `/llp`, `/gst-registration`) were replaced with the
+full WordPress paths
+(`/setting-up-a-business/non-profit-making-structures/society-registration-in-india`).
+
+**Why:** those URLs are what currently rank; they carry the keywords; and a 301
+passes most authority but not all. Adopting them loses nothing, whereas
+redirecting away from 57 ranking URLs leaks equity on every one.
+
+`Frontend/src/data/urlMap.js` is the SINGLE SOURCE OF TRUTH for the rename and
+must be kept — it documents old→new and drives the legacy redirects. If a route
+is ever renamed again, add it there rather than editing paths ad hoc.
+
+What the rename touched (all mechanical, no content changed):
+- `App.jsx` — 57 route paths
+- `seoMeta.js` — 57 keys (canonicals regenerate from them)
+- **internal links in 4 components** (Navbar, Herosection, Legalhelp, NotFound) —
+  89 references. Missing these would have made every internal link a 301 hop,
+  wasting crawl budget and diluting link equity.
+- `firebase.json` — 112 now-native redirects dropped (they would have LOOPED),
+  306 retargeted, 114 legacy short-URL 301s added so old links still work.
+
+Two deliberate exceptions, both in `urlMap.js`:
+- `/conversion/private-to-public` adopts the CORRECTED spelling; WordPress has a
+  truncated slug (`...public-limited-compan`), still redirected in.
+- `/trademark-registration-in-odisha` is NOT renamed — the only deep WP URL is a
+  *Bhubaneswar* page, a different city and a different page.
 
 ## The sheet is NOT the full URL list
 
