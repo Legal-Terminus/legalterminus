@@ -91,10 +91,6 @@
       {
         "source": "/blog/**",
         "destination": "/index.html"
-      },
-      {
-        "source": "**",
-        "destination": "/404.html"
       }
     ],
     "redirects": [
