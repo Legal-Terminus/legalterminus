@@ -18,22 +18,22 @@ export const DEFAULT_DESCRIPTION =
 // Reads naturally after both noun phrases ("GST registration") and imperatives
 // ("Renew your trademark before it lapses").
 const svc = (name, extra = '') =>
-  `${name} — handled online, end to end, by Legal Terminus with transparent pricing and expert CA/CS support.${extra ? ' ' + extra : ''}`;
+  `${name} — online, end to end, with transparent pricing and expert CA/CS support.${extra ? ' ' + extra : ''}`;
 
 export const SEO_META = {
   '/': {
-    title: 'Company, Trademark & GST Registration in India | Legal Terminus',
+    title: 'Company, Trademark & GST Registration | Legal Terminus',
     description: DEFAULT_DESCRIPTION,
   },
 
   /* ── Setting up a business — profit-making ── */
   '/private-limited-company-registration-in-india': {
     title: 'Private Limited Company Registration in India | Legal Terminus',
-    description: svc('Register your Private Limited Company', 'Name approval, DSC, DIN, MOA/AOA and incorporation certificate.'),
+    description: svc('Register your Private Limited Company', 'Name approval, DSC, DIN and MOA/AOA included.'),
   },
   '/incorption-registration-in-india': {
-    title: 'Incorporation of Wholly Owned Subsidiary in India | Legal Terminus',
-    description: svc('Set up a Wholly Owned Subsidiary in India', 'Build your global presence with a fully online process.'),
+    title: 'Wholly Owned Subsidiary Registration | Legal Terminus',
+    description: svc('Set up a Wholly Owned Subsidiary in India', 'Build your global presence.'),
   },
   '/public-limited-company-registration-in-india': {
     title: 'Public Limited Company Registration in India | Legal Terminus',
@@ -44,7 +44,7 @@ export const SEO_META = {
     description: svc('Register a One Person Company'),
   },
   '/llp': {
-    title: 'Limited Liability Partnership (LLP) Registration | Legal Terminus',
+    title: 'LLP Registration in India | Legal Terminus',
     description: svc('Register a Limited Liability Partnership'),
   },
   '/partnership': {
@@ -92,11 +92,11 @@ export const SEO_META = {
     description: svc('Get Professional Tax registration'),
   },
   '/shop-establishment': {
-    title: 'Shop & Commercial Establishment Registration | Legal Terminus',
+    title: 'Shop & Establishment Registration | Legal Terminus',
     description: svc('Register under the Shops & Commercial Establishments Act'),
   },
   '/olwf': {
-    title: 'Odisha Labour Welfare Fund (OLWF) Registration | Legal Terminus',
+    title: 'OLWF Registration in Odisha | Legal Terminus',
     description: svc('Get Odisha Labour Welfare Fund registration'),
   },
   '/startup-india': {
@@ -110,7 +110,7 @@ export const SEO_META = {
 
   /* ── Licenses & certifications ── */
   '/iec': {
-    title: 'Importer Exporter Code (IEC) Registration | Legal Terminus',
+    title: 'IEC Registration in India | Legal Terminus',
     description: svc('Get your Importer Exporter Code'),
   },
   '/food-license': {
@@ -174,7 +174,7 @@ export const SEO_META = {
     description: svc('Convert your Proprietorship into an OPC Private Limited Company'),
   },
   '/conversion/proprietorship-to-private': {
-    title: 'Convert Proprietorship to Private Limited Company | Legal Terminus',
+    title: 'Proprietorship to Private Limited | Legal Terminus',
     description: svc('Convert your Proprietorship into a Private Limited Company'),
   },
   '/conversion/partnership-to-llp': {
@@ -182,7 +182,7 @@ export const SEO_META = {
     description: svc('Convert your Partnership Firm into an LLP'),
   },
   '/conversion/partnership-to-private': {
-    title: 'Convert Partnership Firm to Private Limited Company | Legal Terminus',
+    title: 'Partnership to Private Limited | Legal Terminus',
     description: svc('Convert your Partnership Firm into a Private Limited Company'),
   },
   '/conversion/llp-to-private': {
@@ -190,15 +190,15 @@ export const SEO_META = {
     description: svc('Convert your LLP into a Private Limited Company'),
   },
   '/conversion/private-to-llp': {
-    title: 'Convert Private Limited Company to LLP | Legal Terminus',
+    title: 'Private Limited Company to LLP | Legal Terminus',
     description: svc('Convert your Private Limited Company into an LLP'),
   },
   '/conversion/private-to-public': {
-    title: 'Convert Private Limited to Public Limited Company | Legal Terminus',
+    title: 'Private Limited to Public Limited | Legal Terminus',
     description: svc('Convert your Private Limited Company into a Public Limited Company'),
   },
   '/conversion/public-to-private': {
-    title: 'Convert Public Limited to Private Limited Company | Legal Terminus',
+    title: 'Public Limited to Private Limited | Legal Terminus',
     description: svc('Convert your Public Limited Company into a Private Limited Company'),
   },
 
@@ -208,7 +208,7 @@ export const SEO_META = {
     description: svc('Change your LLP’s name'),
   },
   '/updation/change-address-company': {
-    title: 'Change of Registered Office Address (Company) | Legal Terminus',
+    title: 'Change Registered Office Address | Legal Terminus',
     description: svc('Change your company’s registered office address'),
   },
   '/updation/change-object-company': {
@@ -286,7 +286,7 @@ export const SEO_META = {
 
   /* ── Landing pages ── */
   '/company-registration-consultancy-in-odisha': {
-    title: 'Company Registration Consultancy in Odisha | Legal Terminus',
+    title: 'Company Registration in Odisha | Legal Terminus',
     description: svc('Register your company in Odisha', 'Local expertise, fully online.'),
   },
   '/trademark-registration-in-odisha': {
@@ -325,13 +325,13 @@ export const SEO_META = {
   },
 
   /* ── Policies ── */
-  '/policies/privacy': { title: 'Privacy Policy | Legal Terminus', description: 'How Legal Terminus collects, uses and protects your data.' },
+  '/policies/privacy': { title: 'Privacy Policy | Legal Terminus', description: 'How Legal Terminus collects, uses and protects your data.', canonicalPath: '/privacy-policy' },
   '/privacy-policy': { title: 'Privacy Policy | Legal Terminus', description: 'How Legal Terminus collects, uses and protects your data.' },
-  '/policies/terms': { title: 'Terms & Conditions | Legal Terminus', description: 'The terms governing use of Legal Terminus services.' },
+  '/policies/terms': { title: 'Terms & Conditions | Legal Terminus', description: 'The terms governing use of Legal Terminus services.', canonicalPath: '/terms-conditions' },
   '/terms-conditions': { title: 'Terms & Conditions | Legal Terminus', description: 'The terms governing use of Legal Terminus services.' },
-  '/policies/refund': { title: 'Refund Policy | Legal Terminus', description: 'The Legal Terminus refund policy.' },
+  '/policies/refund': { title: 'Refund Policy | Legal Terminus', description: 'The Legal Terminus refund policy.', canonicalPath: '/refund-policy' },
   '/refund-policy': { title: 'Refund Policy | Legal Terminus', description: 'The Legal Terminus refund policy.' },
-  '/policies/confidentiality': { title: 'Confidentiality Policy | Legal Terminus', description: 'How Legal Terminus keeps your information confidential.' },
+  '/policies/confidentiality': { title: 'Confidentiality Policy | Legal Terminus', description: 'How Legal Terminus keeps your information confidential.', canonicalPath: '/confidentiality-policy' },
   '/confidentiality-policy': { title: 'Confidentiality Policy | Legal Terminus', description: 'How Legal Terminus keeps your information confidential.' },
 
   /* ── Auth (kept out of search) ── */

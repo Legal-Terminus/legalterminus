@@ -20,7 +20,12 @@ export default function SeoHead() {
 
   const title = meta?.title ?? DEFAULT_TITLE;
   const description = meta?.description ?? DEFAULT_DESCRIPTION;
-  const canonical = `${SITE_URL}${key === "/" ? "/" : key}`;
+  // A duplicate route points its canonical at the PREFERRED url rather than at
+  // itself: /policies/privacy and /privacy-policy render identical pages, and
+  // two self-referencing canonicals tell Google both are authoritative — it then
+  // picks one arbitrarily and the ranking can split.
+  const canonicalPath = meta?.canonicalPath ?? key;
+  const canonical = `${SITE_URL}${canonicalPath === "/" ? "/" : canonicalPath}`;
 
   return (
     <>
