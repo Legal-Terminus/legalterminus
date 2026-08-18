@@ -28,6 +28,8 @@ const BlogDetails = lazy(() => import("./Pages/BlogDetails/BlogDetails"));
 const OPC = lazy(() => import("./Pages/OPC/OPC"));
 const Publicltd = lazy(() => import("./Pages/Publicltd/Publicltd"));
 const IncorptionPage = lazy(() => import("./Pages/IncorptionPage/IncorptionPage"));
+// #175: catch-all 404 — unknown URLs previously rendered an empty page at HTTP 200.
+const NotFound = lazy(() => import("./Pages/NotFound/NotFound"));
 const Trust = lazy(() => import("./Pages/Trust/Trust"));
 const Society = lazy(() => import("./Pages/Society/Society"));
 const Section8 = lazy(() => import("./Pages/Section8/Section8"));
@@ -247,6 +249,8 @@ function App() {
             <Route path="/companyregistration-in-odisha" element={<CompanyRegistrationLanding />} />
             <Route path="/trademark-registration-in-odisha" element={<TrademarkLanding />} />
             <Route path="/pdf-tools" element={<PdfTools />} />
+            {/* #175: must stay LAST — matches only when no other route does. */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </RouteLoaderWrapper>
