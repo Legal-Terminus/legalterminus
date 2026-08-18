@@ -49,8 +49,52 @@
         }
       },
       {
-        "source": "**",
+        "source": "/forgot-password",
         "destination": "/index.html"
+      },
+      {
+        "source": "/forgot-password/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/login",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/login/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/my-profile",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/my-profile/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/payment/result",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/payment/result/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/signup",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/signup/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/blog/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "**",
+        "destination": "/404.html"
       }
     ],
     "redirects": [
