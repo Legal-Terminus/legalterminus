@@ -131,9 +131,49 @@ async function main() {
     }),
   );
 
+  // #175: snapshot the 404 page to dist/404.html. Firebase serves that file for
+  // any path no rewrite claims, so crawlers hitting a dead link get a real
+  // "Page Not Found" with noindex — instead of the SPA shell, which (being the
+  // home page's HTML) made every dead URL look like a duplicate homepage.
+  // It must NOT go through index.html: prerendering snapshots the live DOM, so a
+  // noindex placed in the shared shell would be inherited by every prerendered
+  // page and de-index the whole site.
+  {
+    const page = await context.newPage();
+    try {
+      await page.goto(`http://localhost:${PORT}/__not-found__`, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT });
+      await page.waitForFunction(() => document.title.includes('Not Found'), { timeout: NAV_TIMEOUT });
+      await page.waitForTimeout(400);
+      // Same head-dedupe as the routes: React 19 leaves the shell's <title> in
+      // place alongside its own, and the stale one would win for crawlers.
+      await page.evaluate(() => {
+        const keepLast = (sel, keyOf) => {
+          const seen = new Map();
+          for (const el of document.head.querySelectorAll(sel)) seen.set(keyOf(el), el);
+          const keep = new Set(seen.values());
+          for (const el of document.head.querySelectorAll(sel)) if (!keep.has(el)) el.remove();
+        };
+        keepLast('meta[name]', (el) => `name:${el.getAttribute('name')}`);
+        keepLast('link[rel="canonical"]', () => 'canonical');
+        const current = document.title;
+        const titles = [...document.head.querySelectorAll('title')];
+        titles.slice(1).forEach((el) => el.remove());
+        if (titles[0]) titles[0].textContent = current;
+      });
+      await writeFile(path.join(DIST, '404.html'), await page.content(), 'utf8');
+      console.log('[prerender] 404.html written');
+    } catch (err) {
+      console.error('[prerender] could not snapshot 404.html:', err.message.split('\n')[0]);
+      process.exit(1);
+    } finally {
+      await page.close();
+    }
+  }
+
   await context.close();
   await browser.close();
   await server.httpServer.close();
+
 
   const failed = results.filter((r) => !r.ok);
   console.log(`[prerender] ${results.length - failed.length}/${results.length} routes written`);
