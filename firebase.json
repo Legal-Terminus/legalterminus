@@ -1670,17 +1670,1342 @@
         "type": 301
       },
       {
-        "source": "/product/*",
-        "destination": "/",
-        "type": 301
-      },
-      {
-        "source": "/product-category/*",
-        "destination": "/",
-        "type": 301
-      },
-      {
         "source": "/elementor-hf/*",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/product-category/add-or-remove-a-director-company",
+        "destination": "/updation/add-remove-director",
+        "type": 301
+      },
+      {
+        "source": "/product-category/add-or-remove-a-director-company/",
+        "destination": "/updation/add-remove-director",
+        "type": 301
+      },
+      {
+        "source": "/product-category/annual-filing-company",
+        "destination": "/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/annual-filing-company/",
+        "destination": "/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/annual-filing-llp",
+        "destination": "/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/annual-filing-llp/",
+        "destination": "/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/bar-code-registration",
+        "destination": "/bar-code",
+        "type": 301
+      },
+      {
+        "source": "/product-category/bar-code-registration/",
+        "destination": "/bar-code",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-name-company",
+        "destination": "/updation/change-name-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-name-company/",
+        "destination": "/updation/change-name-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-name-llp",
+        "destination": "/updation/change-name-llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-name-llp/",
+        "destination": "/updation/change-name-llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-object-company",
+        "destination": "/updation/change-object-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-object-company/",
+        "destination": "/updation/change-object-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-registered-office-address-company",
+        "destination": "/updation/change-address-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-registered-office-address-company/",
+        "destination": "/updation/change-address-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/dissolve-a-limited-liability-partnership",
+        "destination": "/windup/dissolve-llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/dissolve-a-limited-liability-partnership/",
+        "destination": "/windup/dissolve-llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/dissolve-a-private-limited-company",
+        "destination": "/windup/dissolve-private",
+        "type": 301
+      },
+      {
+        "source": "/product-category/dissolve-a-private-limited-company/",
+        "destination": "/windup/dissolve-private",
+        "type": 301
+      },
+      {
+        "source": "/product-category/epf-return-filing",
+        "destination": "/epf-return",
+        "type": 301
+      },
+      {
+        "source": "/product-category/epf-return-filing/",
+        "destination": "/epf-return",
+        "type": 301
+      },
+      {
+        "source": "/product-category/esi-return-filing",
+        "destination": "/esi-return",
+        "type": 301
+      },
+      {
+        "source": "/product-category/esi-return-filing/",
+        "destination": "/esi-return",
+        "type": 301
+      },
+      {
+        "source": "/product-category/esic-registration",
+        "destination": "/esic",
+        "type": 301
+      },
+      {
+        "source": "/product-category/esic-registration/",
+        "destination": "/esic",
+        "type": 301
+      },
+      {
+        "source": "/product-category/food-license-fssai",
+        "destination": "/food-license",
+        "type": 301
+      },
+      {
+        "source": "/product-category/food-license-fssai/",
+        "destination": "/food-license",
+        "type": 301
+      },
+      {
+        "source": "/product-category/gst-registration",
+        "destination": "/gst-registration",
+        "type": 301
+      },
+      {
+        "source": "/product-category/gst-registration/",
+        "destination": "/gst-registration",
+        "type": 301
+      },
+      {
+        "source": "/product-category/gst-returns-filing",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product-category/gst-returns-filing/",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product-category/importer-exporter-code",
+        "destination": "/iec",
+        "type": 301
+      },
+      {
+        "source": "/product-category/importer-exporter-code/",
+        "destination": "/iec",
+        "type": 301
+      },
+      {
+        "source": "/product-category/increase-in-authorised-capital-company",
+        "destination": "/updation/increase-authorised-capital",
+        "type": 301
+      },
+      {
+        "source": "/product-category/increase-in-authorised-capital-company/",
+        "destination": "/updation/increase-authorised-capital",
+        "type": 301
+      },
+      {
+        "source": "/product-category/iso-certification",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product-category/iso-certification/",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product-category/itr-filing-business",
+        "destination": "/itr-business",
+        "type": 301
+      },
+      {
+        "source": "/product-category/itr-filing-business/",
+        "destination": "/itr-business",
+        "type": 301
+      },
+      {
+        "source": "/product-category/itr-filing-individual",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product-category/itr-filing-individual/",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product-category/limited-liability-partnership",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/limited-liability-partnership/",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/non-profit-company-sec-8-company",
+        "destination": "/section-8",
+        "type": 301
+      },
+      {
+        "source": "/product-category/non-profit-company-sec-8-company/",
+        "destination": "/section-8",
+        "type": 301
+      },
+      {
+        "source": "/product-category/one-person-company",
+        "destination": "/one-person-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/one-person-company/",
+        "destination": "/one-person-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/partnership-firm",
+        "destination": "/partnership",
+        "type": 301
+      },
+      {
+        "source": "/product-category/partnership-firm/",
+        "destination": "/partnership",
+        "type": 301
+      },
+      {
+        "source": "/product-category/pf-registration",
+        "destination": "/epf",
+        "type": 301
+      },
+      {
+        "source": "/product-category/pf-registration/",
+        "destination": "/epf",
+        "type": 301
+      },
+      {
+        "source": "/product-category/private-limited-company",
+        "destination": "/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/private-limited-company/",
+        "destination": "/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/professional-tax-return-filing",
+        "destination": "/professional-tax-return",
+        "type": 301
+      },
+      {
+        "source": "/product-category/professional-tax-return-filing/",
+        "destination": "/professional-tax-return",
+        "type": 301
+      },
+      {
+        "source": "/product-category/proprietorship-firm",
+        "destination": "/proprietorship",
+        "type": 301
+      },
+      {
+        "source": "/product-category/proprietorship-firm/",
+        "destination": "/proprietorship",
+        "type": 301
+      },
+      {
+        "source": "/product-category/public-limited-company",
+        "destination": "/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/public-limited-company/",
+        "destination": "/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/reply-of-examination-report",
+        "destination": "/trademark/exam-reply",
+        "type": 301
+      },
+      {
+        "source": "/product-category/reply-of-examination-report/",
+        "destination": "/trademark/exam-reply",
+        "type": 301
+      },
+      {
+        "source": "/product-category/trade-mark-application",
+        "destination": "/trademark/application",
+        "type": 301
+      },
+      {
+        "source": "/product-category/trade-mark-application/",
+        "destination": "/trademark/application",
+        "type": 301
+      },
+      {
+        "source": "/product-category/udyam-registration",
+        "destination": "/udyam",
+        "type": 301
+      },
+      {
+        "source": "/product-category/udyam-registration/",
+        "destination": "/udyam",
+        "type": 301
+      },
+      {
+        "source": "/product-category/add-or-remove-a-partner-or-designated-partner-llp",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/add-or-remove-a-partner-or-designated-partner-llp/",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-elemental",
+        "destination": "/proprietorship",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-elemental/",
+        "destination": "/proprietorship",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-supreme",
+        "destination": "/proprietorship",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-supreme/",
+        "destination": "/proprietorship",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-enriched-2",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-enriched-2/",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-enriched",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-enriched/",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-elemental-2",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-elemental-2/",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-elemental",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-elemental/",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-supreme",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-supreme/",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-supreme-2",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-supreme-2/",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-enriched-2",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-enriched-2/",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-supreme-2",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-supreme-2/",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-elemental",
+        "destination": "/itr-business",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-elemental/",
+        "destination": "/itr-business",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-elemental-2",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-elemental-2/",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-elemental",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-elemental/",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-supreme",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-supreme/",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-enriched",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-enriched/",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-supreme",
+        "destination": "/trademark/exam-reply",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-supreme/",
+        "destination": "/trademark/exam-reply",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-enriched",
+        "destination": "/trademark/exam-reply",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-enriched/",
+        "destination": "/trademark/exam-reply",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-elemental",
+        "destination": "/trademark/exam-reply",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-elemental/",
+        "destination": "/trademark/exam-reply",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-enriched",
+        "destination": "/itr-business",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-enriched/",
+        "destination": "/itr-business",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-supreme",
+        "destination": "/itr-business",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-supreme/",
+        "destination": "/itr-business",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-supreme",
+        "destination": "/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-supreme/",
+        "destination": "/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-elemental",
+        "destination": "/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-elemental/",
+        "destination": "/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-enriched",
+        "destination": "/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-enriched/",
+        "destination": "/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-elemental",
+        "destination": "/esi-return",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-elemental/",
+        "destination": "/esi-return",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-elemental",
+        "destination": "/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-elemental/",
+        "destination": "/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-enriched",
+        "destination": "/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-enriched/",
+        "destination": "/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-supreme",
+        "destination": "/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-supreme/",
+        "destination": "/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-elemental",
+        "destination": "/epf-return",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-elemental/",
+        "destination": "/epf-return",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-name-company-elemental",
+        "destination": "/updation/change-name-company",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-name-company-elemental/",
+        "destination": "/updation/change-name-company",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-elemental",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-elemental/",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-supreme",
+        "destination": "/updation/add-remove-director",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-supreme/",
+        "destination": "/updation/add-remove-director",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-enriched",
+        "destination": "/updation/add-remove-director",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-enriched/",
+        "destination": "/updation/add-remove-director",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-elemental",
+        "destination": "/updation/add-remove-director",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-elemental/",
+        "destination": "/updation/add-remove-director",
+        "type": 301
+      },
+      {
+        "source": "/product/increase-in-authorised-capital-company-elemental",
+        "destination": "/updation/increase-authorised-capital",
+        "type": 301
+      },
+      {
+        "source": "/product/increase-in-authorised-capital-company-elemental/",
+        "destination": "/updation/increase-authorised-capital",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-object-company-elemental",
+        "destination": "/updation/change-object-company",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-object-company-elemental/",
+        "destination": "/updation/change-object-company",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-supreme",
+        "destination": "/updation/change-address-company",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-supreme/",
+        "destination": "/updation/change-address-company",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-enriched",
+        "destination": "/updation/change-address-company",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-enriched/",
+        "destination": "/updation/change-address-company",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-elemental",
+        "destination": "/updation/change-address-company",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-elemental/",
+        "destination": "/updation/change-address-company",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-elemental",
+        "destination": "/windup/dissolve-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-elemental/",
+        "destination": "/windup/dissolve-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-supreme",
+        "destination": "/windup/dissolve-private",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-supreme/",
+        "destination": "/windup/dissolve-private",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-elemental",
+        "destination": "/windup/dissolve-private",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-elemental/",
+        "destination": "/windup/dissolve-private",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-supreme",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-supreme/",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-enriched",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-enriched/",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-enriched",
+        "destination": "/windup/dissolve-private",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-enriched/",
+        "destination": "/windup/dissolve-private",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-enriched",
+        "destination": "/windup/dissolve-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-enriched/",
+        "destination": "/windup/dissolve-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-enriched",
+        "destination": "/professional-tax-return",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-enriched/",
+        "destination": "/professional-tax-return",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-elemental",
+        "destination": "/professional-tax-return",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-elemental/",
+        "destination": "/professional-tax-return",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-supreme",
+        "destination": "/windup/dissolve-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-supreme/",
+        "destination": "/windup/dissolve-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-elemental-2",
+        "destination": "/professional-tax-return",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-elemental-2/",
+        "destination": "/professional-tax-return",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-enriched-2",
+        "destination": "/epf-return",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-enriched-2/",
+        "destination": "/epf-return",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-supreme",
+        "destination": "/epf-return",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-supreme/",
+        "destination": "/epf-return",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-elemental",
+        "destination": "/esic",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-elemental/",
+        "destination": "/esic",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-enriched",
+        "destination": "/esic",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-enriched/",
+        "destination": "/esic",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-supreme",
+        "destination": "/esic",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-supreme/",
+        "destination": "/esic",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-elemental",
+        "destination": "/food-license",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-elemental/",
+        "destination": "/food-license",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-supreme",
+        "destination": "/food-license",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-supreme/",
+        "destination": "/food-license",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-elemental",
+        "destination": "/epf",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-elemental/",
+        "destination": "/epf",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-enriched",
+        "destination": "/epf",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-enriched/",
+        "destination": "/epf",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-supreme",
+        "destination": "/epf",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-supreme/",
+        "destination": "/epf",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-elemental",
+        "destination": "/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-elemental/",
+        "destination": "/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-enriched",
+        "destination": "/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-enriched/",
+        "destination": "/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-supreme",
+        "destination": "/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-supreme/",
+        "destination": "/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-enriched",
+        "destination": "/udyam",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-enriched/",
+        "destination": "/udyam",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-supreme",
+        "destination": "/udyam",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-supreme/",
+        "destination": "/udyam",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-elemental-2",
+        "destination": "/esi-return",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-elemental-2/",
+        "destination": "/esi-return",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-enriched",
+        "destination": "/esi-return",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-enriched/",
+        "destination": "/esi-return",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-14001-elemental",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-14001-elemental/",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-9001-elemental",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-9001-elemental/",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-22000-elemental",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-22000-elemental/",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-27001-elemental",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-27001-elemental/",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-9001-iaf-elemental",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-9001-iaf-elemental/",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-18001-elemental",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-18001-elemental/",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-name-llp-elemental",
+        "destination": "/updation/change-name-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-name-llp-elemental/",
+        "destination": "/updation/change-name-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-elemental",
+        "destination": "/udyam",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-elemental/",
+        "destination": "/udyam",
+        "type": 301
+      },
+      {
+        "source": "/product/importer-exporter-code-elemental",
+        "destination": "/iec",
+        "type": 301
+      },
+      {
+        "source": "/product/importer-exporter-code-elemental/",
+        "destination": "/iec",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-elemental",
+        "destination": "/trademark/application",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-elemental/",
+        "destination": "/trademark/application",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-elemental",
+        "destination": "/gst-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-elemental/",
+        "destination": "/gst-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-enriched",
+        "destination": "/gst-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-enriched/",
+        "destination": "/gst-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-supreme",
+        "destination": "/gst-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-supreme/",
+        "destination": "/gst-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-enriched",
+        "destination": "/food-license",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-enriched/",
+        "destination": "/food-license",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-elemental",
+        "destination": "/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-elemental/",
+        "destination": "/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-enriched",
+        "destination": "/trademark/application",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-enriched/",
+        "destination": "/trademark/application",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-supreme",
+        "destination": "/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-supreme/",
+        "destination": "/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-supreme",
+        "destination": "/trademark/application",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-supreme/",
+        "destination": "/trademark/application",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-enriched",
+        "destination": "/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-enriched/",
+        "destination": "/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-supreme",
+        "destination": "/one-person-company",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-supreme/",
+        "destination": "/one-person-company",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-enriched",
+        "destination": "/one-person-company",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-enriched/",
+        "destination": "/one-person-company",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-elemental",
+        "destination": "/one-person-company",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-elemental/",
+        "destination": "/one-person-company",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-enriched",
+        "destination": "/proprietorship",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-enriched/",
+        "destination": "/proprietorship",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-elemental",
+        "destination": "/section-8",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-elemental/",
+        "destination": "/section-8",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-enriched",
+        "destination": "/section-8",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-enriched/",
+        "destination": "/section-8",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-supreme",
+        "destination": "/section-8",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-supreme/",
+        "destination": "/section-8",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-supreme",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-supreme/",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-enriched",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-enriched/",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-elemental",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-elemental/",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "source": "/product/bar-code-registration-elemental",
+        "destination": "/bar-code",
+        "type": 301
+      },
+      {
+        "source": "/product/bar-code-registration-elemental/",
+        "destination": "/bar-code",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-elemental",
+        "destination": "/partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-elemental/",
+        "destination": "/partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-enriched",
+        "destination": "/partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-enriched/",
+        "destination": "/partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-supreme",
+        "destination": "/partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-supreme/",
+        "destination": "/partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/*",
         "destination": "/",
         "type": 301
       }

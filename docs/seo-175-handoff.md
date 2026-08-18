@@ -33,7 +33,9 @@ Written for any agent or developer picking this up.
 | `Frontend/src/data/seoMeta.js` | NEW. Route → `{title, description, noindex?}` for 83 routes. Titles follow the sheet's page names; descriptions are first-pass copy meant to be refined. |
 | `Frontend/src/Components/SeoHead/SeoHead.jsx` | NEW. Reads the map by pathname, emits title/description/canonical/OG/twitter + `noindex` for auth pages, via **React 19 native head hoisting** (no helmet dependency). Trailing slashes normalised. Unknown paths fall back to site defaults. |
 | `Frontend/src/App.jsx` | One import + one `<SeoHead />` line beside `<ScrollManager />`. **Nothing else.** |
-| `firebase.json` | 59 server-level **301 redirects**, WordPress URL → React route, as `regex` entries tolerating the trailing slash (`^/old-path/?$`). Server 301s are what transfer ranking — a client-side `<Navigate>` would not. |
+| `firebase.json` | **591 server-level 301 redirects** covering 457 of the 463 live WordPress URLs. All are EXACT `source` paths (each listed with and without its trailing slash, since Firebase globs treat those as distinct) — regex was removed after review. Server 301s are what transfer ranking; a client-side `<Navigate>` would not. |
+| `Frontend/scripts/prerender.mjs` | NEW. Postbuild step: serves `dist/`, visits all 78 indexable routes headless, writes rendered HTML to `dist/<route>/index.html`. Fixes the SPA-invisible-to-crawlers problem. Build FAILS if any route misses. |
+| `Frontend/src/Pages/NotFound/` | NEW page. There was no catch-all route, so unknown URLs rendered an empty frame at HTTP 200 (a soft 404). Scoped `lt-nf__*` CSS so no existing page's styling can be affected. |
 | `Frontend/public/sitemap.xml` | NEW. 78 indexable URLs (canonical short routes; `noindex` routes excluded). |
 | `Frontend/public/robots.txt` | NEW. Allows all, disallows `/my-profile` + `/payment/`, points at the sitemap. |
 
@@ -48,6 +50,25 @@ Written for any agent or developer picking this up.
   The WP subsidiary URL redirects there. The route was NOT renamed (constraint 1).
 - `/company-registration-consultancy-in-odisha` matches WordPress exactly — no
   redirect needed. Same for `/`.
+
+## The sheet is NOT the full URL list
+
+The sheet has ~64 URLs. The **live WordPress sitemap has 463**
+(`legalterminus.com/sitemap_index.xml` → 9 sub-sitemaps). Always work from the
+live sitemap, not the sheet. Breakdown: 103 pages, 100 products, 147 tags, 69
+posts, 34 product categories, 7 categories, plus templates/author.
+
+### WooCommerce (133 URLs) — mapped to service pages, not the homepage
+
+The WordPress site sells plans through WooCommerce: `/product/<service>-<tier>`
+(Elemental / Enriched / Supreme) and `/product-category/<service>`. The React
+site sells the SAME tiers inline on each service page via `ProCheckoutModal`, so
+each product URL now 301s to its service page — where that exact plan is still
+purchasable. An earlier version sent all 133 to `/`, which would have discarded
+~130 ranking URLs and dumped purchase-intent visitors on the homepage.
+
+**See #178** — whether that React checkout actually works end to end is a
+separate go-live blocker, and these redirects assume it does.
 
 ## UNMAPPED — needs an owner decision (do not guess)
 
@@ -73,15 +94,26 @@ their content is generic company boilerplate; inconclusive.)
   WordPress (content/design parity), and any redirect smoke-test on a Firebase
   preview channel (`firebase hosting:channel:deploy seo-test`).
 
-## Known limitation — documented risk, deliberately out of scope
+## Prerendering — DONE (was the SPA risk)
 
-The site is still a **client-rendered SPA**: crawlers that do not execute
-JavaScript (and all social link-preview bots) see an empty shell with the
-default title. Google renders JS but slower/less reliably. The fix is
-**prerendering or SSR** of the ~80 static marketing routes at build time —
-recommended before or shortly after go-live, but it is a build-pipeline change
-and was not part of this task. The head metadata added here is the
-foundation that prerendering will snapshot.
+`npm run build` now runs `scripts/prerender.mjs` as a postbuild step: 78/78
+routes are snapshotted to `dist/<route>/index.html`. Firebase matches static
+files before rewrites, so crawlers and social preview bots get complete HTML
+while users still get the SPA hydrating over it.
+
+Three traps found while building it, all fixed — re-check these if it is ever
+rewritten:
+1. React 19 hoists head tags but leaves the PREVIOUS route's behind, so snapshots
+   carried the home page's description/canonical FIRST. Crawlers honour the
+   first, so 77 of 78 pages would have shipped the wrong description.
+2. Title needs the OPPOSITE dedupe rule from meta tags: React inserts its title
+   before the static one from `index.html`, so "keep last" preserves the generic
+   fallback. `document.title` is authoritative.
+3. `waitUntil: 'networkidle'` never settles on routes with polling or slow lazy
+   chunks. Waits for actual render instead, with one retry.
+
+Still client-rendered: `/blog/:slug` (dynamic). Unknown slugs fall back to the
+blog listing rather than dead-ending.
 
 ## How to verify (for the owner)
 
