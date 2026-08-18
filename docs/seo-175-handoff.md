@@ -113,6 +113,37 @@ Options for the owner: build the two pages later, or accept the ranking loss.
 `/updation/change-name-llp-to-llp` were investigated as possible matches —
 their content is generic company boilerplate; inconclusive.)
 
+## DEPLOYED & VERIFIED on legal-terminus-web.web.app
+
+All checks below were run against the DEPLOYED site, not the emulator — see the
+warning at the end of this section for why that distinction matters.
+
+| Check | Result |
+|---|---|
+| Indexable routes serving | **78/78** HTTP 200 |
+| Auth routes (not prerendered) | **5/5** HTTP 200 via the SPA shell |
+| Legacy short-URL 301s | **57/57** to the correct canonical |
+| WooCommerce / legacy WP 301s | verified (`/product/*`, `/about-us`, `/our-blog`, `/tag/*`) |
+| Dead URLs | **HTTP 404** + "Page Not Found" + `noindex,follow` |
+| Crawler view (no JS) | 91–189KB real HTML, correct title, `<h1>`, self-canonical |
+| Sitemap / robots | 200, 74 URLs, 0 stale short URLs |
+
+### ⚠️ The emulator disagrees with production — always verify against the deploy
+
+Three separate times a green signal hid a real failure during this work:
+
+1. A workflow run reported **success** while every deploy step was **skipped**
+   (the change-detector saw no `Frontend/` change in that commit). The site was
+   still serving the old build.
+2. Adding `noindex` to `index.html` to fix the soft-404 silently applied it to
+   **every prerendered page** — prerendering snapshots the live DOM, so the shell's
+   meta tag was inherited. It would have de-indexed the entire site. Caught only
+   by asserting "0 real pages carry noindex".
+3. The emulator returned **404** for dead URLs while production returned **200**:
+   the emulator applies Firebase's `404.html` convention, production applied the
+   `**` rewrite — and *a rewrite always responds 200*. The fix was to remove the
+   catch-all so the convention fires.
+
 ## Verification status
 
 - `npm run build:frontend` — clean.
