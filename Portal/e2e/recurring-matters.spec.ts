@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { apiAs, createMatter, deleteMatter, getMatter } from './api';
+import { apiAs, createMatter, deleteMatter, getMatter, waitForNotification } from './api';
 
 /**
  * #167 — recurring matters, as a REMINDER + one-click duplicate rather than an
@@ -200,6 +200,107 @@ test('#167: a client never sees the recurring controls', async ({ clientPage }) 
     await expect(clientPage.getByRole('button', { name: /matter details/i })).toHaveCount(0);
     await expect(clientPage.getByLabel('Repeats', { exact: true })).toHaveCount(0);
   } finally {
+    await deleteMatter(taskId);
+  }
+});
+
+/* ── #167: AUTOMATIC creation (the sweep) ───────────────────────────────────── */
+
+test('#167: a due schedule auto-creates the next matter, rolls forward, and notifies', async () => {
+  const parent = await createMatter({ organisation: 'E2E Auto Recurring' });
+  const api = await apiAs('admin');
+  let createdId = '';
+  try {
+    // Arm the schedule, then pin its next due date into the PAST — the same
+    // control an admin uses to align renewals to statutory dates (GST returns
+    // fall on fixed calendar days, not "a month after someone clicked").
+    await api.patch(`/api/tasks/${parent}`, { data: { recurrence: 'monthly' } });
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString();
+    const pin = await api.patch(`/api/tasks/${parent}`, { data: { recurrenceNextDueAt: yesterday } });
+    expect(pin.ok()).toBeTruthy();
+
+    // Fire the sweep explicitly (the admin "Run now" path — same function the
+    // background trigger and Cloud Scheduler call).
+    const run = await api.post('/api/internal/run-recurring');
+    expect(run.ok()).toBeTruthy();
+    const { created } = await run.json();
+
+    // Our parent's next matter is among the created ids.
+    const kids: string[] = [];
+    for (const id of created) {
+      const t = await (await api.get(`/api/tasks/${id}`)).json();
+      if (t.organisation === 'E2E Auto Recurring' && id !== parent) kids.push(id);
+    }
+    expect(kids.length).toBe(1);
+    createdId = kids[0];
+
+    const child = await (await api.get(`/api/tasks/${createdId}`)).json();
+    // Unpaid auto-created matters land in the approval queue — nothing goes
+    // live without a human seeing it.
+    expect(child.status).toBe('pending_admin_approval');
+    // The copy is never itself recurring; the parent owns the series.
+    expect(child.recurrence ?? null).toBeNull();
+
+    // The parent's schedule rolled into the FUTURE (no immediate re-trigger).
+    const after = await getMatter(parent);
+    expect(new Date(after.recurrenceNextDueAt).getTime()).toBeGreaterThan(Date.now());
+
+    // The people who run renewals were told, scoped to the NEW matter.
+    expect(await waitForNotification('admin', /recurring matter created/i, 20_000, createdId)).toBe(true);
+  } finally {
+    await api.dispose();
+    if (createdId) await deleteMatter(createdId);
+    await deleteMatter(parent);
+  }
+});
+
+test('#167: a second sweep does not double-create (schedule already rolled)', async () => {
+  const parent = await createMatter({ organisation: 'E2E No Double' });
+  const api = await apiAs('admin');
+  const kids: string[] = [];
+  try {
+    await api.patch(`/api/tasks/${parent}`, { data: { recurrence: 'monthly' } });
+    await api.patch(`/api/tasks/${parent}`, {
+      data: { recurrenceNextDueAt: new Date(Date.now() - 86_400_000).toISOString() },
+    });
+
+    for (let i = 0; i < 2; i++) {
+      const run = await api.post('/api/internal/run-recurring');
+      expect(run.ok()).toBeTruthy();
+      const { created } = await run.json();
+      for (const id of created) {
+        const t = await (await api.get(`/api/tasks/${id}`)).json();
+        if (t.organisation === 'E2E No Double') kids.push(id);
+      }
+    }
+    // Exactly one matter across both runs — the roll-forward is the idempotency.
+    expect(kids.length).toBe(1);
+  } finally {
+    await api.dispose();
+    await Promise.all(kids.map((id) => deleteMatter(id)));
+    await deleteMatter(parent);
+  }
+});
+
+test('#167: only an admin (or the cron secret) can fire the sweep', async () => {
+  for (const role of ['manager', 'team', 'client', 'pro'] as const) {
+    const api = await apiAs(role);
+    const res = await api.post('/api/internal/run-recurring');
+    expect([401, 403]).toContain(res.status());
+    await api.dispose();
+  }
+});
+
+test('#167: the next-due date cannot exist without a cadence', async () => {
+  const taskId = await createMatter();
+  const api = await apiAs('admin');
+  try {
+    const res = await api.patch(`/api/tasks/${taskId}`, {
+      data: { recurrenceNextDueAt: new Date().toISOString() },
+    });
+    expect(res.status()).toBe(400);
+  } finally {
+    await api.dispose();
     await deleteMatter(taskId);
   }
 });

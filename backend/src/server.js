@@ -20,6 +20,8 @@ import authRoutes from "./routes/auth.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import tasksRoutes from "./routes/tasks.routes.js";
+import { recurringSweepTrigger, runRecurringSweep } from "./controllers/tasks.controller.js";
+import { verifyToken } from "./middleware/auth.middleware.js";
 import reportsRoutes from "./routes/reports.routes.js";
 import leadsRoutes from "./routes/leads.routes.js";
 import portalUsersRoutes from "./routes/portalUsers.routes.js";
@@ -125,6 +127,35 @@ app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/auth", sensitiveLimiter, authRoutes);
 app.use("/api/payment", sensitiveLimiter, paymentRoutes);
 app.use("/api/contact", sensitiveLimiter, contactRoutes);
+// #167: any API traffic may trigger the recurring-matter sweep in the
+// background (throttled per instance, lock-serialised across instances). On
+// Cloud Run traffic is exactly what wakes the service, so the trigger and the
+// platform lifecycle line up — an in-process cron would never fire at scale-zero.
+app.use("/api", recurringSweepTrigger);
+
+// #167: explicit trigger for Cloud Scheduler (x-cron-secret) or an admin "Run
+// now". Mounted OUTSIDE the routers because a Scheduler call carries no Firebase
+// token — verifyToken would 401 it before the secret could be checked.
+app.post("/api/internal/run-recurring", async (req, res) => {
+  const secret = process.env.CRON_SECRET;
+  const bySecret = secret && req.headers["x-cron-secret"] === secret;
+  if (!bySecret) {
+    // Fall back to an authenticated admin (the "Run now" path).
+    await new Promise((resolve) => verifyToken(req, res, resolve));
+    if (res.headersSent) return;                       // verifyToken already 401'd
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+  }
+  try {
+    const result = await runRecurringSweep({ force: true, actorUid: req.user?.uid ?? null });
+    res.json(result);
+  } catch (err) {
+    logger.error({ err }, "run-recurring failed:");
+    res.status(500).json({ success: false, error: "Sweep failed" });
+  }
+});
+
 app.use("/api/tasks", tasksRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/leads", leadsRoutes);

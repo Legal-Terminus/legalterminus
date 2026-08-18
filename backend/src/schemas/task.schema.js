@@ -29,9 +29,8 @@ export const taskCreateSchema = z.object({
   paymentDescription: z.string().trim().max(1000).optional(),
   // #85: optional handling professional (a staff user UID). Validated in controller.
   professionalUid: z.string().trim().max(200).nullable().optional(),
-  // #167: mark the matter as recurring. Staff are reminded when the next one is
-  // due and duplicate it in one click — there is no scheduler, so nothing is
-  // created automatically (see recurrence.controller.js).
+  // #167: mark the matter as recurring. A due schedule auto-creates the next
+  // matter via the sweep in tasks.controller.js (runRecurringSweep).
   recurrence: z.enum(['monthly', 'quarterly']).nullable().optional(),
 }).strict().refine(
   (b) => b.paymentStatus === 'not_paid' || typeof b.amountReceived === 'number',
@@ -63,10 +62,12 @@ export const taskUpdateSchema = z.object({
   assignedTo: z.string().trim().max(200).nullable().optional(),
   // #85: set/clear the handling professional (a staff user UID). Validated in controller.
   professionalUid: z.string().trim().max(200).nullable().optional(),
-  // #167: mark the matter as recurring. Staff are reminded when the next one is
-  // due and duplicate it in one click — there is no scheduler, so nothing is
-  // created automatically (see recurrence.controller.js).
+  // #167: set/change the cadence, or null to STOP recurring.
   recurrence: z.enum(['monthly', 'quarterly']).nullable().optional(),
+  // #167: pin the next occurrence to an exact date. Statutory deadlines are
+  // calendar-fixed (GST returns fall on the 11th/20th), not "a month after
+  // someone clicked", so the schedule must be alignable.
+  recurrenceNextDueAt: z.string().datetime({ offset: true }).optional(),
 }).strict().refine((b) => Object.keys(b).length > 0, {
   message: 'No updatable fields provided',
 });

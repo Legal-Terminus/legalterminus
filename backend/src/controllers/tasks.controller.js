@@ -1451,6 +1451,16 @@ export async function patchTask(req, res) {
     if ('recurrence' in req.body) {
       Object.assign(update, recurrenceFields(req.body.recurrence || null, new Date().toISOString()));
     }
+    // #167: pin the next occurrence to an exact date (statutory deadlines are
+    // calendar-fixed). Requires a live schedule — either set in this same patch
+    // or already on the matter — so a date can never exist without a cadence.
+    if ('recurrenceNextDueAt' in req.body) {
+      const cadence = 'recurrence' in req.body ? req.body.recurrence : task.recurrence;
+      if (!cadence) {
+        return res.status(400).json({ message: 'Set a recurrence before choosing its next due date.' });
+      }
+      update.recurrenceNextDueAt = new Date(req.body.recurrenceNextDueAt).toISOString();
+    }
 
     // #85: set/clear the handling professional (staff user). Snapshot the name.
     if ('professionalUid' in req.body) {
@@ -2630,63 +2640,195 @@ export async function listRecurringDue(req, res) {
 // professional and CC list — and roll the parent's schedule forward one period.
 // Payment is deliberately NOT copied: the new period has to be charged and
 // collected on its own terms.
+/**
+ * Core of "create the next matter from this one" — shared by the manual
+ * Duplicate button and the automatic sweep (#167), so both paths create
+ * identical matters and roll the schedule identically.
+ *
+ * Returns { ok, code, payload } rather than writing to a response.
+ */
+async function duplicateMatterCore(taskId, actorUser) {
+  const srcRef = db.collection('tasks').doc(taskId);
+  const srcSnap = await srcRef.get();
+  if (!srcSnap.exists) return { ok: false, code: 404, payload: { message: 'Matter not found' } };
+  const src = srcSnap.data();
+
+  // Re-run the normal creation path so the copy is a REAL matter: current
+  // workflow version, freshly materialised steps, correct dates and notifications.
+  // Reusing createTask keeps one definition of "what a matter is".
+  const fakeReq = {
+    user: actorUser,
+    body: {
+      clientUid: src.clientUid,
+      serviceKey: src.serviceKey,
+      ...(src.serviceName ? { serviceName: src.serviceName } : {}),
+      ...(src.organisation ? { organisation: src.organisation } : {}),
+      ...(Array.isArray(src.ccEmails) && src.ccEmails.length ? { ccEmails: src.ccEmails } : {}),
+      ...(src.professionalUid ? { professionalUid: src.professionalUid } : {}),
+      // The copy is not itself recurring — the PARENT holds the schedule, so a
+      // duplicate never spawns a second competing series.
+      paymentStatus: 'not_paid',
+    },
+  };
+
+  let created = null;
+  const fakeRes = {
+    status(code) { this._code = code; return this; },
+    json(payload) { created = { code: this._code ?? 200, payload }; return this; },
+  };
+  await createTask(fakeReq, fakeRes);
+
+  if (!created || created.code >= 400) {
+    return { ok: false, code: created?.code ?? 500, payload: created?.payload ?? { message: 'Duplicate failed' } };
+  }
+
+  // Roll the parent forward from its DUE date (not from today), so a late
+  // duplicate doesn't push the whole series later — and keep rolling until the
+  // next due date is in the FUTURE. Without that, a schedule that sat overdue
+  // for several periods (downtime, holidays) would immediately read as due
+  // again and each successive sweep would create another back-dated matter — a
+  // backlog flood. One matter is created for the CURRENT period; skipped
+  // periods are recorded in the log and left to staff judgement.
+  if (src.recurrence) {
+    const now = new Date().toISOString();
+    let next = addMonthsIso(src.recurrenceNextDueAt || now, RECURRENCE_MONTHS[src.recurrence]);
+    let skipped = 0;
+    while (next <= now) { next = addMonthsIso(next, RECURRENCE_MONTHS[src.recurrence]); skipped++; }
+    if (skipped > 0) {
+      logger.warn({ taskId, skipped }, '#167 recurrence was overdue by multiple periods; skipped to the next future date');
+    }
+    const ended = src.recurrenceEndsAt && next > src.recurrenceEndsAt;
+    await srcRef.update(ended
+      // Past its one-year window: stop cleanly rather than silently continuing.
+      ? { recurrence: null, recurrenceNextDueAt: null, recurrenceEndsAt: null, updatedAt: now }
+      : { recurrenceNextDueAt: next, updatedAt: now });
+  }
+
+  logger.info({ from: taskId, to: created.payload?.id, by: actorUser?.uid ?? 'system' }, '#167 duplicated recurring matter');
+  return { ok: true, code: 201, payload: created.payload };
+}
+
 export async function duplicateTask(req, res) {
   try {
-    const { role, uid } = req.user;
+    const { role } = req.user;
     if (role !== 'admin' && role !== 'manager') {
       return res.status(403).json({ message: 'Forbidden: admin or manager required' });
     }
-
-    const srcRef = db.collection('tasks').doc(req.params.taskId);
-    const srcSnap = await srcRef.get();
-    if (!srcSnap.exists) return res.status(404).json({ message: 'Matter not found' });
-    const src = srcSnap.data();
-
-    // Re-run the normal creation path so the copy is a REAL matter: current
-    // workflow version, freshly materialised steps, correct dates and notifications.
-    // Reusing createTask keeps one definition of "what a matter is".
-    const fakeReq = {
-      user: req.user,
-      body: {
-        clientUid: src.clientUid,
-        serviceKey: src.serviceKey,
-        ...(src.serviceName ? { serviceName: src.serviceName } : {}),
-        ...(src.organisation ? { organisation: src.organisation } : {}),
-        ...(Array.isArray(src.ccEmails) && src.ccEmails.length ? { ccEmails: src.ccEmails } : {}),
-        ...(src.professionalUid ? { professionalUid: src.professionalUid } : {}),
-        // The copy is not itself recurring — the PARENT holds the schedule, so a
-        // duplicate never spawns a second competing series.
-        paymentStatus: 'not_paid',
-      },
-    };
-
-    let created = null;
-    const fakeRes = {
-      status(code) { this._code = code; return this; },
-      json(payload) { created = { code: this._code ?? 200, payload }; return this; },
-    };
-    await createTask(fakeReq, fakeRes);
-
-    if (!created || (created.code >= 400)) {
-      return res.status(created?.code ?? 500).json(created?.payload ?? { message: 'Duplicate failed' });
-    }
-
-    // Roll the parent forward one period from its DUE date (not from today), so a
-    // late duplicate doesn't push the whole series later.
-    if (src.recurrence) {
-      const from = src.recurrenceNextDueAt || new Date().toISOString();
-      const next = addMonthsIso(from, RECURRENCE_MONTHS[src.recurrence]);
-      const ended = src.recurrenceEndsAt && next > src.recurrenceEndsAt;
-      await srcRef.update(ended
-        // Past its one-year window: stop cleanly rather than silently continuing.
-        ? { recurrence: null, recurrenceNextDueAt: null, recurrenceEndsAt: null, updatedAt: new Date().toISOString() }
-        : { recurrenceNextDueAt: next, updatedAt: new Date().toISOString() });
-    }
-
-    logger.info({ from: req.params.taskId, to: created.payload?.id, by: uid }, '#167 duplicated recurring matter');
-    res.status(201).json(created.payload);
+    const result = await duplicateMatterCore(req.params.taskId, req.user);
+    res.status(result.code).json(result.payload);
   } catch (err) {
     logger.error({ err }, 'duplicateTask error:');
     res.status(500).json({ message: 'Failed to duplicate the matter' });
   }
+}
+
+/* ── #167: the automatic sweep ──────────────────────────────────────────────
+ *
+ * There is no scheduler in this deployment (Cloud Run scales to zero, so an
+ * in-process cron would simply never fire while idle). Instead the sweep runs
+ * DUE-ON-READ: any authenticated API request may trigger it in the background,
+ * throttled in memory per instance and serialised across instances by a
+ * Firestore lock. A protected endpoint also exposes it for Cloud Scheduler
+ * later and for an admin "Run now" — same function, different trigger.
+ */
+
+const SWEEP_RECENCY_MS = 10 * 60 * 1000; // don't re-sweep within 10 minutes…
+const SWEEP_LOCK_MS = 2 * 60 * 1000;     // …and never run two sweeps at once.
+
+/**
+ * Create the next matter for every recurring schedule that has fallen due.
+ *
+ * `force` skips the 10-minute recency check (an explicit "Run now") but still
+ * honours the concurrency lock — two forced runs cannot double-create either.
+ * Returns { created: [...ids], skipped? } for callers and tests.
+ */
+export async function runRecurringSweep({ force = false, actorUid = null } = {}) {
+  const lockRef = db.collection('system').doc('recurringSweep');
+  const nowMs = Date.now();
+
+  // Claim the lock transactionally: this is what makes the sweep safe to fire
+  // from ANY request on ANY instance, any number of times.
+  const claimed = await db.runTransaction(async (tx) => {
+    const snap = await tx.get(lockRef);
+    const d = snap.exists ? snap.data() : {};
+    if (d.lockedAtMs && nowMs - d.lockedAtMs < SWEEP_LOCK_MS) return 'locked';
+    if (!force && d.lastRunAtMs && nowMs - d.lastRunAtMs < SWEEP_RECENCY_MS) return 'recent';
+    tx.set(lockRef, { lockedAtMs: nowMs }, { merge: true });
+    return 'ok';
+  });
+  if (claimed !== 'ok') return { created: [], skipped: claimed };
+
+  const created = [];
+  try {
+    const now = new Date().toISOString();
+    const snap = await db.collection('tasks').where('recurrenceNextDueAt', '<=', now).get();
+    const due = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      // An expired schedule (past its one-year end) is skipped and left for
+      // duplicateMatterCore's roll-forward to clear if ever touched manually.
+      .filter((t) => t.recurrence && (!t.recurrenceEndsAt || t.recurrenceEndsAt > now));
+
+    for (const task of due) {
+      // The system acts with admin authority: an unpaid copy lands in the
+      // admin-approval queue exactly as a hand-created one would, so nothing
+      // goes live without a human seeing it.
+      const result = await duplicateMatterCore(task.id, { uid: actorUid, role: 'admin' });
+      if (!result.ok) {
+        logger.error({ taskId: task.id, code: result.code }, '#167 sweep could not create the next matter');
+        continue;
+      }
+      created.push(result.payload.id);
+
+      // Tell the people who run renewals. createNotification mirrors to email.
+      // NOTE: actorUid is deliberately NOT passed. `notify` suppresses a
+      // notification when recipient === actor (right for "you did this, so you
+      // don't need telling"), but a recurrence firing is a SCHEDULED event, not
+      // the actor's doing — the admin who happened to trigger the sweep still
+      // needs to know a matter was created in their name.
+      const leads = await staffLeadUids();
+      const label = `${task.serviceName}${task.organisation ? ` — ${task.organisation}` : ''} (${task.clientName})`;
+      for (const uidTo of leads) {
+        await notify({
+          recipientUid: uidTo,
+          type: 'info',
+          title: 'Recurring matter created',
+          message: `The next ${task.recurrence} matter for ${label} was created automatically and is awaiting payment/approval.`,
+          taskId: result.payload.id,
+        });
+      }
+    }
+  } finally {
+    await lockRef.set({ lockedAtMs: null, lastRunAtMs: Date.now(), lastCreatedCount: created.length }, { merge: true });
+  }
+
+  if (created.length) logger.info({ count: created.length, created }, '#167 sweep created recurring matters');
+  return { created };
+}
+
+// Admin + manager uids — the audience for renewal notifications.
+async function staffLeadUids() {
+  try {
+    const snap = await db.collection('users').where('role', 'in', ['admin', 'manager']).get();
+    return snap.docs.map((d) => d.id);
+  } catch (err) {
+    logger.warn({ err: err?.message }, 'staffLeadUids lookup failed');
+    return [];
+  }
+}
+
+// Per-instance throttle so the middleware costs nothing on hot paths: at most
+// one Firestore lock check per minute per instance.
+let _lastSweepCheckMs = 0;
+
+/** Express middleware: fire the sweep in the background, never blocking. */
+export function recurringSweepTrigger(req, res, next) {
+  const now = Date.now();
+  if (now - _lastSweepCheckMs > 60_000) {
+    _lastSweepCheckMs = now;
+    setImmediate(() => {
+      runRecurringSweep().catch((err) =>
+        logger.warn({ err: err?.message }, '#167 background sweep failed'));
+    });
+  }
+  next();
 }
