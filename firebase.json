@@ -8,31 +8,347 @@
   },
   "hosting": {
     "public": "Frontend/dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "headers": [
       {
         "source": "/index.html",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
         ]
       },
       {
         "source": "/assets/**",
         "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
         ]
       }
     ],
     "rewrites": [
       {
         "source": "/api/**",
-        "run": { "serviceId": "legal-terminus-api", "region": "asia-south2" }
+        "run": {
+          "serviceId": "legal-terminus-api",
+          "region": "asia-south2"
+        }
       },
       {
         "source": "/portal/**",
-        "run": { "serviceId": "legal-terminal-portal", "region": "asia-south2" }
+        "run": {
+          "serviceId": "legal-terminal-portal",
+          "region": "asia-south2"
+        }
       },
-      { "source": "**", "destination": "/index.html" }
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "redirects": [
+      {
+        "regex": "^/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india/?$",
+        "destination": "/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "regex": "^/setting-up-a-business/profit-making-structures/incorporation-of-wholly-owned-subsidiary-in-india/?$",
+        "destination": "/incorption-registration-in-india",
+        "type": 301
+      },
+      {
+        "regex": "^/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india/?$",
+        "destination": "/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "regex": "^/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india/?$",
+        "destination": "/one-person-company",
+        "type": 301
+      },
+      {
+        "regex": "^/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india/?$",
+        "destination": "/llp",
+        "type": 301
+      },
+      {
+        "regex": "^/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india/?$",
+        "destination": "/partnership",
+        "type": 301
+      },
+      {
+        "regex": "^/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india/?$",
+        "destination": "/proprietorship",
+        "type": 301
+      },
+      {
+        "regex": "^/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india/?$",
+        "destination": "/section-8",
+        "type": 301
+      },
+      {
+        "regex": "^/setting-up-a-business/non-profit-making-structures/trust-registration-in-india/?$",
+        "destination": "/trust",
+        "type": 301
+      },
+      {
+        "regex": "^/setting-up-a-business/non-profit-making-structures/society-registration-in-india/?$",
+        "destination": "/society",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/registrations/gst-registration-in-india/?$",
+        "destination": "/gst-registration",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/registrations/udyam-registration-in-india/?$",
+        "destination": "/udyam",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/registrations/epf-registration-in-india/?$",
+        "destination": "/epf",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/registrations/esic-registration-in-india/?$",
+        "destination": "/esic",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/registrations/professional-tax-registration/?$",
+        "destination": "/professional-tax",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/registrations/shop-commercial-establishments-registration-in-india/?$",
+        "destination": "/shop-establishment",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/license-certifications/odisha-labour-welfare-fund-olwf-registration/?$",
+        "destination": "/olwf",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/registrations/startup-india-registration/?$",
+        "destination": "/startup-india",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/registrations/startup-odisha-registration/?$",
+        "destination": "/startup-odisha",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/license-certifications/importer-exporter-code-registration/?$",
+        "destination": "/iec",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/license-certifications/food-license-and-registration/?$",
+        "destination": "/food-license",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/license-certifications/trade-license-registration/?$",
+        "destination": "/trade-license",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/license-certifications/labour-license-registration/?$",
+        "destination": "/labour-license",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/license-certifications/bar-code-registration/?$",
+        "destination": "/bar-code",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/license-certifications/iso-certification-in-india/?$",
+        "destination": "/iso",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/return-filing/gst-return-filing/?$",
+        "destination": "/gst-return-filing",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/return-filing/itr-filing-company/?$",
+        "destination": "/itr-business",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/return-filing/itr-filing-individual/?$",
+        "destination": "/itr-individual",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/return-filing/annual-filing-company/?$",
+        "destination": "/annual-filing-company",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/return-filing/annual-filing-llp/?$",
+        "destination": "/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/return-filing/epf-return-filing/?$",
+        "destination": "/epf-return",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/return-filing/esi-return-filing/?$",
+        "destination": "/esi-return",
+        "type": 301
+      },
+      {
+        "regex": "^/registrations-returns/return-filing/professional-tax-return-filing/?$",
+        "destination": "/professional-tax-return",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-opc-private-limited-company/?$",
+        "destination": "/conversion/proprietorship-to-opc",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-private-limited-company/?$",
+        "destination": "/conversion/proprietorship-to-private",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/conversion-in-form-of-business/conversion-of-partnership-into-limited-liability-partnership/?$",
+        "destination": "/conversion/partnership-to-llp",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/conversion-in-form-of-business/partnership-firm-to-private-limited-company/?$",
+        "destination": "/conversion/partnership-to-private",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/conversion-in-form-of-business/conversion-of-llp-into-private-limited-company/?$",
+        "destination": "/conversion/llp-to-private",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-into-llp/?$",
+        "destination": "/conversion/private-to-llp",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-to-public-limited-compan/?$",
+        "destination": "/conversion/private-to-public",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/conversion-in-form-of-business/conversion-of-public-limited-company-to-private-limited-company/?$",
+        "destination": "/conversion/public-to-private",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/name-change-process-in-india-for-llp/?$",
+        "destination": "/updation/change-name-llp",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/change-in-registered-office-address/?$",
+        "destination": "/updation/change-address-company",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/change-in-object-clause-of-a-company/?$",
+        "destination": "/updation/change-object-company",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/increase-authorized-share-capital-company/?$",
+        "destination": "/updation/increase-authorised-capital",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/add-or-remove-a-director-company/?$",
+        "destination": "/updation/add-remove-director",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/change-company-name/?$",
+        "destination": "/updation/change-name-company",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/change-in-registered-office-address-for-llp/?$",
+        "destination": "/updation/change-address-llp",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/changing-the-objects-of-llp/?$",
+        "destination": "/updation/change-object-llp",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/windup-services/process-of-winding-up-of-a-company/?$",
+        "destination": "/windup/dissolve-private",
+        "type": 301
+      },
+      {
+        "regex": "^/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership/?$",
+        "destination": "/windup/dissolve-llp",
+        "type": 301
+      },
+      {
+        "regex": "^/trademark/registration-and-compliance-services/trademark-registration-in-india/?$",
+        "destination": "/trademark/application",
+        "type": 301
+      },
+      {
+        "regex": "^/trademark/registration-and-compliance-services/trademark-renewal-in-india/?$",
+        "destination": "/trademark/renewal",
+        "type": 301
+      },
+      {
+        "regex": "^/trademark/registration-and-compliance-services/reply-to-examination-report-trademark/?$",
+        "destination": "/trademark/exam-reply",
+        "type": 301
+      },
+      {
+        "regex": "^/trademark/registration-and-compliance-services/trademark-opposition-in-india/?$",
+        "destination": "/trademark/opposition",
+        "type": 301
+      },
+      {
+        "regex": "^/trademark/registration-and-compliance-services/trademark-hearing-in-india/?$",
+        "destination": "/trademark/hearing",
+        "type": 301
+      },
+      {
+        "regex": "^/about-us/?$",
+        "destination": "/about",
+        "type": 301
+      },
+      {
+        "regex": "^/contact-us/?$",
+        "destination": "/contact/us",
+        "type": 301
+      },
+      {
+        "regex": "^/get-trademark-registration-in-odisha/?$",
+        "destination": "/trademark-registration-in-odisha",
+        "type": 301
+      }
     ]
   }
 }

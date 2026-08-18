@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /my-profile
+Disallow: /payment/
+
+Sitemap: https://legalterminus.com/sitemap.xml

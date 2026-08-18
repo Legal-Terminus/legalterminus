@@ -1,5 +1,6 @@
 import React, { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
+import SeoHead from "./Components/SeoHead/SeoHead";
 import "./App.css";
 
 import Navbar from "./Components/Navbar/Navbar";
@@ -153,6 +154,8 @@ function ConditionalFooter() {
 function App() {
   return (
     <Router>
+      {/* #175: head-only SEO metadata (title/meta/canonical) — renders no DOM. */}
+      <SeoHead />
       <ScrollManager />
       <ConditionalNavbar />
 
