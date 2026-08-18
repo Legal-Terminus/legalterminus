@@ -10,6 +10,15 @@ const BlogPost = () => {
   const navigate = useNavigate();
   const post = getPostBySlug(slug);
 
+  // Built from the CURRENT origin so shared links are correct on whichever host
+  // the site is served from (staging today, legalterminus.com after cutover).
+  // encodeURIComponent because the URL is a query-string parameter.
+  const shareUrl = encodeURIComponent(
+    typeof window !== "undefined"
+      ? `${window.location.origin}/blog/${slug}`
+      : `https://legalterminus.com/blog/${slug}`,
+  );
+
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -115,11 +124,14 @@ const BlogPost = () => {
               <span className="blogpost-tags-label">Category:</span>
               <span className="blogpost-tag-chip">{post.category}</span>
             </div>
+            {/* Share links must use the CURRENT origin: they previously hardcoded
+                the staging host, so every shared post would have pointed at
+                legal-terminus-web.web.app once the custom domain went live. */}
             <div className="blogpost-share-row">
               <span className="blogpost-share-label">Share:</span>
               <a
                 className="blogpost-share-link"
-                href={`https://www.facebook.com/sharer/sharer.php?u=https://legal-terminus-web.web.app/blog/${slug}`}
+                href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Share on Facebook"
@@ -128,7 +140,7 @@ const BlogPost = () => {
               </a>
               <a
                 className="blogpost-share-link"
-                href={`https://www.linkedin.com/sharing/share-offsite/?url=https://legal-terminus-web.web.app/blog/${slug}`}
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Share on LinkedIn"
@@ -137,7 +149,7 @@ const BlogPost = () => {
               </a>
               <a
                 className="blogpost-share-link"
-                href={`https://twitter.com/intent/tweet?url=https://legal-terminus-web.web.app/blog/${slug}&text=${encodeURIComponent(post.title)}`}
+                href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${encodeURIComponent(post.title)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Share on Twitter"
