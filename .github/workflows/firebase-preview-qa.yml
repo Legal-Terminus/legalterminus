@@ -219,6 +219,15 @@ jobs:
         run: npm ci
         working-directory: Frontend
 
+      # #175: prerendering (postbuild) drives a headless Chromium to snapshot every
+      # marketing route. Playwright is a devDependency, but its BROWSER BINARY is
+      # not — `npm ci` alone leaves the runner without it and the build fails with
+      # "Executable doesn't exist". Install just Chromium, with deps for CI.
+      - name: Install Playwright Chromium (for prerendering)
+        if: steps.changes.outputs.frontend == 'true'
+        run: npx playwright install --with-deps chromium
+        working-directory: Frontend
+
       - name: Build Frontend
         if: steps.changes.outputs.frontend == 'true'
         run: npm run build
