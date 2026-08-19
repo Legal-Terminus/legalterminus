@@ -69,32 +69,40 @@ test('#91: Matters grid supports multi-criteria filtering (Status + Payment, AND
   try {
     await adminPage.goto('tasks');
     await expect(adminPage.getByRole('heading', { name: 'All Matters' })).toBeVisible();
-    // Scope to the GRID rows (clickable rows), NOT any element containing the text —
-    // the filter <select>s contain hidden <option>s whose text can include the
-    // client name, which would otherwise match and never be "visible".
-    const rows = adminPage.locator('.cursor-pointer');
-    const clientRow = rows.filter({ hasText: 'E2E Client' });
-    await expect(clientRow.first()).toBeVisible();
+
+    // Rows render as nested divs with `.cursor-pointer` on BOTH an outer wrapper
+    // and an inner div, so counting `.cursor-pointer` counted elements, not rows.
+    // `.border-b` isolates the outer row wrapper.
+    const rows = adminPage.locator('.cursor-pointer.border-b');
+    const totalBefore = await rows.count();
+    expect(totalBefore).toBeGreaterThan(0);
 
     const statusFilter = adminPage.getByLabel('Filter by status');
     const paymentFilter = adminPage.getByLabel('Filter by payment');
     await expect(statusFilter).toBeVisible();
     await expect(paymentFilter).toBeVisible();
 
-    // A non-matching status hides the row.
+    // Assert the FILTER's effect rather than the presence of one specific matter:
+    // every e2e matter shares the seeded client, and the grid row does not render
+    // the organisation, so a row cannot be pinned to this test's matter. Other
+    // specs leave matters in various states (the #94 payment-gate ones are
+    // deliberately not_paid), which made the old "expect 0 rows" assertion depend
+    // on suite order and cleanup instead of on filtering working.
     await statusFilter.selectOption('completed');
-    await expect(clientRow).toHaveCount(0);
-    await statusFilter.selectOption('');
+    await expect.poll(() => rows.count()).toBeLessThan(totalBefore);
+    const completedOnly = await rows.count();
+    // Every surviving row really is completed.
+    for (let i = 0; i < completedOnly; i++) {
+      await expect(rows.nth(i)).toContainText(/completed/i);
+    }
 
-    // Matching payment status keeps it visible; a non-matching one hides it (AND
-    // with the cleared status filter above).
-    await expect(clientRow.first()).toBeVisible();
+    // AND semantics: adding a second criterion can only narrow further.
     await paymentFilter.selectOption('not_paid');
-    await expect(clientRow).toHaveCount(0);
+    await expect.poll(() => rows.count()).toBeLessThanOrEqual(completedOnly);
 
     // Clear resets everything.
     await adminPage.getByRole('button', { name: 'Clear' }).click();
-    await expect(clientRow.first()).toBeVisible();
+    await expect.poll(() => rows.count()).toBe(totalBefore);
   } finally {
     await deleteMatter(taskId);
   }
