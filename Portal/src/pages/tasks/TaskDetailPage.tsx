@@ -28,6 +28,7 @@ import type { Task, TaskStep, StepStatus, PaymentStatus } from '../../types/task
 import { PAYMENT_MODES } from '../../lib/paymentModes';
 import { getPayments, recordPayment, deletePaymentEntry } from '../../api/payments';
 import { parseCcEmails, validateCcEmails, formatCcEmails } from '../../lib/ccEmails';
+import { usePageTitle } from '../../hooks/useDocumentTitle';
 
 type TabKey = 'steps' | 'documents' | 'payments' | 'discussion';
 
@@ -321,6 +322,15 @@ export default function TaskDetailPage() {
   };
 
   const noun = isClient ? 'Service' : 'Matter';
+
+  // #177: identify WHICH matter in the tab — staff routinely keep several open,
+  // and every tab previously read "Legal Terminus Portal". Organisation is the
+  // discriminator when one client has several matters for different orgs.
+  // MUST be above the early returns below: a hook after a conditional return
+  // changes the hook count between renders and React throws.
+  usePageTitle(task
+    ? `${task.serviceName || task.workflowType}${task.organisation ? ` — ${task.organisation}` : ''}`
+    : null);
 
   if (isLoading) {
     return (

@@ -3,8 +3,10 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export default function AppLayout() {
+  useDocumentTitle(); // #177: tab title follows the current route
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // #72: desktop collapse to an icon rail, persisted.
   const [collapsed, setCollapsed] = useState<boolean>(() => {

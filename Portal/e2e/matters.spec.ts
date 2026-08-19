@@ -126,3 +126,32 @@ test('#91: Excel-style column filter — tick a status value to filter, clear to
     await expect(clientRow.first()).toBeVisible();
   } finally { await deleteMatter(taskId); }
 });
+
+/* ── #177: the browser tab identifies the current page ──────────────────────── */
+
+test('#177: tab titles follow the route, and a matter names itself', async ({ adminPage }) => {
+  const taskId = await createMatter({ organisation: 'E2E Title Org' });
+  try {
+    // Every page used to read "Legal Terminus Portal", so several open matters
+    // were indistinguishable in the tab bar.
+    await adminPage.goto('tasks');
+    await expect.poll(() => adminPage.title()).toContain('Matters');
+
+    await adminPage.goto('users');
+    await expect.poll(() => adminPage.title()).toContain('Users');
+
+    // The matter tab carries enough to tell it apart from another matter.
+    await adminPage.goto(`tasks/${taskId}`);
+    await expect.poll(() => adminPage.title(), { timeout: 15_000 }).toContain('E2E Title Org');
+    expect(await adminPage.title()).toContain('Legal Terminus');
+  } finally {
+    await deleteMatter(taskId);
+  }
+});
+
+test('#177: a client sees their own vocabulary in the tab', async ({ clientPage }) => {
+  // The nav says "My Services" to a client, not "Matters" — the title follows
+  // the same per-role wording rather than restating it.
+  await clientPage.goto('tasks');
+  await expect.poll(() => clientPage.title()).toContain('My Services');
+});
