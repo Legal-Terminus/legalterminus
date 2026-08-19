@@ -414,3 +414,44 @@ test('#181: a matter can be created with additional professionals set', async ()
     if (taskId) await deleteMatter(taskId);
   }
 });
+
+/* ── #179: a matter can be raised under a Professional's name ───────────────── */
+
+test('#179: professionals appear in the client picker, badged', async ({ adminPage }) => {
+  await adminPage.goto('tasks');
+  await adminPage.getByRole('button', { name: /create matter/i }).first().click();
+
+  // The field is labelled for both, so its purpose is clear before opening it.
+  await expect(adminPage.getByText('or Professional')).toBeVisible();
+
+  await adminPage.getByPlaceholder(/search clients or professionals/i).fill('E2E Professional');
+  const row = adminPage.getByRole('button').filter({ hasText: 'E2E Professional' }).first();
+  await expect(row).toBeVisible({ timeout: 10_000 });
+  // Badged, so a professional is never mistaken for a client in this list.
+  await expect(row.getByText('Professional', { exact: true })).toBeVisible();
+});
+
+test('#179: a matter created under a professional stores them as the client', async () => {
+  const api = await apiAs('admin');
+  let taskId = '';
+  try {
+    // The backend validates that the user EXISTS but does not require the client
+    // role, so a professional is a valid matter owner — this pins that.
+    const res = await api.post('/api/tasks', {
+      data: {
+        clientUid: env('E2E_PRO_UID'), serviceKey: 'incorporation',
+        organisation: 'E2E Pro-Owned Matter',
+        paymentStatus: 'fully_paid', totalCost: 1000, amountReceived: 1000, paymentMode: 'E2E',
+      },
+    });
+    expect(res.ok()).toBeTruthy();
+    taskId = (await res.json()).id;
+
+    const t = await (await api.get(`/api/tasks/${taskId}`)).json();
+    expect(t.clientUid).toBe(env('E2E_PRO_UID'));
+    expect(t.clientName).toBeTruthy();
+  } finally {
+    await api.dispose();
+    if (taskId) await deleteMatter(taskId);
+  }
+});
