@@ -11,6 +11,7 @@ import { getFirebaseAuth, getFirebaseDb } from "../../utils/firebase";
 import { saveUserProfile } from "../../utils/userProfile";
 import { registerUser } from "../../utils/registerUser";
 import "./Login.css";
+import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -254,7 +255,7 @@ const Login = () => {
             <img
               className="logo-gif"
               src="/logo-animated.gif"
-              onError={(e) => (e.target.src = "https://legalterminus.com/wp-content/uploads/2023/09/Legal-Terminus-LOGO-GIF_300-x-150.gif")}
+              onError={(e) => (e.target.src = LOGO_ASSET)}
               alt="Legal Terminus"
             />
           </div>

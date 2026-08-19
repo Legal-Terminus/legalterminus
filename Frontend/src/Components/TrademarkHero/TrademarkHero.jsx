@@ -1,6 +1,7 @@
 import React from "react";
 import "../CompanyRegHero/CompanyRegHero.css";
 import ConsultationForm from "../ConsultationForm/ConsultationForm";
+import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
 
 const FEATURES = [
   {
@@ -29,7 +30,7 @@ const TrademarkHero = () => {
         <div className="crh-content">
           <a href="/" className="crh-logo">
             <img
-              src="https://legalterminus.com/wp-content/uploads/2023/09/Legal-Terminus-LOGO-GIF_300-x-150.gif"
+              src={LOGO_ASSET}
               alt="Legal Terminus"
             />
           </a>

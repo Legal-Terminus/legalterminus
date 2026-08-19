@@ -19,6 +19,7 @@ import {
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "../../utils/firebase";
 import "./Navbar.css";
+import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
 
 // Module-level style constants — avoids new object allocation on every render
 const ROTATE_STYLE = { transform: "rotate(90deg)" };
@@ -28,8 +29,7 @@ const PADDING_LEFT_12 = { paddingLeft: 12 };
 const MARGIN_LEFT_12 = { marginLeft: 12 };
 const MARGIN_TOP_6 = { marginTop: 6 };
 
-const LOGO_GIF =
-  "https://legalterminus.com/wp-content/uploads/2023/09/Legal-Terminus-LOGO-GIF_300-x-150.gif";
+const LOGO_GIF = LOGO_ASSET;
 
 // ... same navData as before (kept for brevity) ...
 const navData = [
