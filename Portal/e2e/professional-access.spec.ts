@@ -290,3 +290,127 @@ test('#168: a professional is NOT offered as a Matter owner or step assignee', a
     await deleteMatter(taskId);
   }
 });
+
+/* ── #181: additional professionals on a matter ─────────────────────────────── */
+
+test('#181: an additional professional sees ONLY the matter they were added to', async () => {
+  const granted = await createMatter({ organisation: 'E2E Extra Pro Granted' });
+  const hidden = await createMatter({ organisation: 'E2E Extra Pro Hidden' });
+  const admin = await apiAs('admin');
+  try {
+    // Granted by EMAIL (what staff actually type), not uid.
+    const res = await admin.patch(`/api/tasks/${granted}`, {
+      data: { additionalProfessionalEmails: [env('E2E_PRO_EMAIL')] },
+    });
+    expect(res.ok()).toBeTruthy();
+
+    const pro = await apiAs('pro');
+    expect((await pro.get(`/api/tasks/${granted}`)).status()).toBe(200);
+    // The whole point of per-matter grants: the other matter stays invisible.
+    expect((await pro.get(`/api/tasks/${hidden}`)).status()).toBe(403);
+
+    const ids = ((await (await pro.get('/api/tasks')).json()).data ?? []).map((t: { id: string }) => t.id);
+    expect(ids).toContain(granted);
+    expect(ids).not.toContain(hidden);
+    await pro.dispose();
+  } finally {
+    await admin.dispose();
+    await Promise.all([deleteMatter(granted), deleteMatter(hidden)]);
+  }
+});
+
+test('#181: access is by uid, so it survives and is revocable by email list', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  try {
+    await admin.patch(`/api/tasks/${taskId}`, {
+      data: { additionalProfessionalEmails: [env('E2E_PRO_EMAIL')] },
+    });
+    // Stored as resolved uids — an email is mutable, a uid is not, so access
+    // cannot be transferred by someone changing their address.
+    const t = await (await admin.get(`/api/tasks/${taskId}`)).json();
+    expect(t.additionalProfessionalUids).toContain(env('E2E_PRO_UID'));
+
+    const pro = await apiAs('pro');
+    expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(200);
+
+    // Empty list revokes.
+    await admin.patch(`/api/tasks/${taskId}`, { data: { additionalProfessionalEmails: [] } });
+    expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(403);
+    await pro.dispose();
+  } finally {
+    await admin.dispose();
+    await deleteMatter(taskId);
+  }
+});
+
+test('#181: an unknown or non-professional email is refused, not silently ignored', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  try {
+    // A typo must NOT look like a successful grant — otherwise nobody finds out
+    // until the professional says they cannot see the matter.
+    const typo = await admin.patch(`/api/tasks/${taskId}`, {
+      data: { additionalProfessionalEmails: ['nosuchperson@legalterminus.test'] },
+    });
+    expect(typo.status()).toBe(400);
+
+    // A real account that is not a Professional is also refused.
+    const wrongRole = await admin.patch(`/api/tasks/${taskId}`, {
+      data: { additionalProfessionalEmails: [env('E2E_CLIENT_EMAIL')] },
+    });
+    expect(wrongRole.status()).toBe(400);
+
+    // Neither attempt granted anything.
+    const t = await (await admin.get(`/api/tasks/${taskId}`)).json();
+    expect(t.additionalProfessionalUids ?? []).toEqual([]);
+  } finally {
+    await admin.dispose();
+    await deleteMatter(taskId);
+  }
+});
+
+test('#181: an additional professional stays view-only', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  try {
+    await admin.patch(`/api/tasks/${taskId}`, {
+      data: { additionalProfessionalEmails: [env('E2E_PRO_EMAIL')] },
+    });
+    const pro = await apiAs('pro');
+    expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(200);
+    // Being added to a matter grants reading, never writing.
+    expect((await pro.patch(`/api/tasks/${taskId}`, { data: { isUrgent: true } })).status()).toBe(403);
+    expect((await pro.post(`/api/tasks/${taskId}/transition`, {
+      data: { event: { type: 'COMPLETE_STEP' } },
+    })).status()).toBe(403);
+    await pro.dispose();
+  } finally {
+    await admin.dispose();
+    await deleteMatter(taskId);
+  }
+});
+
+test('#181: a matter can be created with additional professionals set', async () => {
+  const admin = await apiAs('admin');
+  let taskId = '';
+  try {
+    const res = await admin.post('/api/tasks', {
+      data: {
+        clientUid: env('E2E_CLIENT_UID'), serviceKey: 'incorporation',
+        organisation: 'E2E Extra Pro At Creation',
+        paymentStatus: 'fully_paid', totalCost: 1000, amountReceived: 1000, paymentMode: 'E2E',
+        additionalProfessionalEmails: [env('E2E_PRO_EMAIL')],
+      },
+    });
+    expect(res.ok()).toBeTruthy();
+    taskId = (await res.json()).id;
+
+    const pro = await apiAs('pro');
+    expect((await pro.get(`/api/tasks/${taskId}`)).status()).toBe(200);
+    await pro.dispose();
+  } finally {
+    await admin.dispose();
+    if (taskId) await deleteMatter(taskId);
+  }
+});

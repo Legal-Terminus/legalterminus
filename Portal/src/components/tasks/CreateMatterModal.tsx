@@ -227,7 +227,7 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
               stays the To; these are CC'd on every automated email. */}
           <div>
             <label className="block text-sm font-medium text-ink-soft mb-1.5">
-              Additional email addresses
+              Additional client email addresses
             </label>
             <input
               type="text"
@@ -235,7 +235,7 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
               onChange={(e) => setCcEmails(e.target.value)}
               placeholder="accounts@abc.com, cfo@abc.com"
               className="input-field w-full"
-              aria-label="Additional email addresses"
+              aria-label="Additional client email addresses"
             />
             <p className="text-xs text-ink-faint mt-1">
               Comma-separated. The client&apos;s own address is the main recipient; these are

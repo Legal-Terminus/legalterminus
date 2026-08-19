@@ -165,6 +165,19 @@ export default function TaskDetailPage() {
     onError: (err: Error) => toast.error(err.message || 'Could not update the organisation name.'),
   });
 
+  // #181: replace the matter's additional-professional list. The backend
+  // resolves each email to a Professional account and rejects unknown addresses,
+  // so a typo surfaces as an error rather than a silent no-grant.
+  const editProEmails = useMutation({
+    mutationFn: (emails: string[]) =>
+      updateTask(taskId!, { additionalProfessionalEmails: emails } as Partial<Task>),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      toast.success('Professional access updated.');
+    },
+    onError: (err: Error) => toast.error(err.message || 'Could not update professional access.'),
+  });
+
   // #167: set or stop the recurring cadence. Setting it (re-)arms the reminder
   // from now; clearing it is the issue's "Stop Recurring".
   const editRecurrence = useMutation({
@@ -675,11 +688,11 @@ export default function TaskDetailPage() {
           </label>
 
           <label className="block">
-            <span className="text-xs text-ink-muted">Additional email addresses</span>
+            <span className="text-xs text-ink-muted">Additional client email addresses</span>
             <span className="relative flex items-center mt-1">
               <input
                 type="text"
-                aria-label="Additional email addresses"
+                aria-label="Additional client email addresses"
                 className="input-field py-1.5 text-sm w-full"
                 placeholder="accounts@example.com, cfo@example.com"
                 defaultValue={formatCcEmails(task.ccEmails)}
@@ -709,6 +722,48 @@ export default function TaskDetailPage() {
             </span>
             <span className="block text-xs text-ink-faint mt-1">
               Copied (CC) on every email for this matter. The client&apos;s own address is the main recipient.
+            </span>
+          </label>
+
+          {/* #181: additional PROFESSIONALS on this matter. Unlike the CC list
+              above, these are not just email recipients — each address must be a
+              Professional account, and being listed here grants that person
+              view-only access to THIS matter only. */}
+          <label className="block">
+            <span className="text-xs text-ink-muted">Additional professional email addresses</span>
+            <span className="relative flex items-center mt-1">
+              <input
+                type="text"
+                aria-label="Additional professional email addresses"
+                className="input-field py-1.5 text-sm w-full"
+                placeholder="ca@firm.com, cs@firm.com"
+                defaultValue={formatCcEmails(task.additionalProfessionalEmails)}
+                key={`pro-${formatCcEmails(task.additionalProfessionalEmails)}`}
+                disabled={editProEmails.isPending}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); }
+                  else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    e.currentTarget.value = formatCcEmails(task.additionalProfessionalEmails);
+                    e.currentTarget.blur();
+                  }
+                }}
+                onBlur={(e) => {
+                  const next = parseCcEmails(e.target.value);
+                  if (formatCcEmails(next) === formatCcEmails(task.additionalProfessionalEmails)) return;
+                  const problem = validateCcEmails(next);
+                  if (problem) {
+                    toast.error(problem);
+                    e.target.value = formatCcEmails(task.additionalProfessionalEmails);
+                    return;
+                  }
+                  editProEmails.mutate(next);
+                }}
+              />
+              {editProEmails.isPending && <Loader2 className="w-4 h-4 animate-spin text-ink-faint absolute right-2" />}
+            </span>
+            <span className="block text-xs text-ink-faint mt-1">
+              Each must already be a Professional account. They get view-only access to this matter — and no others.
             </span>
           </label>
         </div>

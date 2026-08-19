@@ -28,6 +28,10 @@ export const taskCreateSchema = z.object({
   // several modes (e.g. "₹1,000 via UPI and ₹500 in Cash"). Optional.
   paymentDescription: z.string().trim().max(1000).optional(),
   // #85: optional handling professional (a staff user UID). Validated in controller.
+  // #181: ADDITIONAL professionals on this matter, by email. Each gets the same
+  // view-only access as the named `professionalUid` — access is granted PER
+  // MATTER, so nobody inherits a professional's whole book of work.
+  additionalProfessionalEmails: z.array(z.string().trim().toLowerCase().email().max(254)).max(20).optional(),
   professionalUid: z.string().trim().max(200).nullable().optional(),
   // #167: mark the matter as recurring. A due schedule auto-creates the next
   // matter via the sweep in tasks.controller.js (runRecurringSweep).
@@ -60,6 +64,10 @@ export const taskUpdateSchema = z.object({
   ccEmails: z.array(z.string().trim().toLowerCase().email().max(254)).max(20).optional(),
   // Assign the whole matter to a staff user (UID), or null/'' to unassign.
   assignedTo: z.string().trim().max(200).nullable().optional(),
+  // #181: ADDITIONAL professionals on this matter, by email. Each gets the same
+  // view-only access as the named `professionalUid` — access is granted PER
+  // MATTER, so nobody inherits a professional's whole book of work.
+  additionalProfessionalEmails: z.array(z.string().trim().toLowerCase().email().max(254)).max(20).optional(),
   // #85: set/clear the handling professional (a staff user UID). Validated in controller.
   professionalUid: z.string().trim().max(200).nullable().optional(),
   // #167: set/change the cadence, or null to STOP recurring.

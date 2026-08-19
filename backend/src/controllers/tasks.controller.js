@@ -201,7 +201,49 @@ export function recurrenceFields(recurrence, fromIso, endsAtIso) {
 }
 
 export function professionalCanSee(task, uid) {
-  return Boolean(uid) && task?.professionalUid === uid;
+  if (!uid) return false;
+  // #85: the named professional on the matter.
+  if (task?.professionalUid === uid) return true;
+  // #181: additional professionals granted access to THIS matter. Stored as
+  // resolved uids (not emails) so a later email change cannot silently transfer
+  // or revoke access.
+  return Array.isArray(task?.additionalProfessionalUids)
+    && task.additionalProfessionalUids.includes(uid);
+}
+
+/**
+ * #181 — resolve additional-professional EMAILS to uids.
+ *
+ * Staff type email addresses (they know the person, not their uid), but access
+ * is stored by uid: emails are mutable and re-assignable, so keying access on
+ * them would let an address change hand someone else's access away.
+ *
+ * Every address must already belong to a `professional` account. An unknown
+ * address is a 400 rather than a silent no-op — otherwise a typo looks like a
+ * successful grant and nobody discovers it until the professional complains
+ * they cannot see the matter.
+ */
+async function resolveAdditionalProfessionals(emails) {
+  if (emails === undefined) return { skip: true };
+  const unique = [...new Set((emails ?? []).map((e) => e.trim().toLowerCase()).filter(Boolean))];
+  if (!unique.length) return { uids: [], emails: [] };
+
+  const found = new Map();
+  // Firestore `in` takes 30 values per query; chunk to stay within it.
+  for (let i = 0; i < unique.length; i += 30) {
+    const snap = await db.collection('users').where('email', 'in', unique.slice(i, i + 30)).get();
+    snap.docs.forEach((d) => found.set(d.data().email, { uid: d.id, role: d.data().role }));
+  }
+
+  const missing = unique.filter((e) => !found.has(e));
+  if (missing.length) {
+    return { error: `No account found for: ${missing.join(', ')}. Add them as a Professional user first.` };
+  }
+  const wrongRole = unique.filter((e) => found.get(e).role !== 'professional');
+  if (wrongRole.length) {
+    return { error: `Not a Professional account: ${wrongRole.join(', ')}.` };
+  }
+  return { uids: unique.map((e) => found.get(e).uid), emails: unique };
 }
 
 
@@ -352,7 +394,7 @@ export async function createTask(req, res) {
     // Body validated by taskCreateSchema (incl. #51 payment fields).
     const { clientUid, serviceKey, serviceName, organisation, ccEmails,
             paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
-            professionalUid, recurrence } = req.body;
+            professionalUid, additionalProfessionalEmails, recurrence } = req.body;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
     if (!compiled) {
@@ -380,6 +422,10 @@ export async function createTask(req, res) {
 
     // #85: optional handling professional — must be a STAFF user (never a client).
     // Snapshot the name for display/exports; store the UID as the stable ref.
+    // #181: additional professionals for THIS matter (resolved email -> uid).
+    const extraPros = await resolveAdditionalProfessionals(additionalProfessionalEmails);
+    if (extraPros.error) return res.status(400).json({ message: extraPros.error });
+
     let professional = { professionalUid: null, professionalName: null };
     if (professionalUid) {
       const pDoc = await db.collection('users').doc(professionalUid).get();
@@ -501,6 +547,9 @@ export async function createTask(req, res) {
       ...recurrenceFields(recurrence ?? null, now),
       professionalUid: professional.professionalUid, // #85
       professionalName: professional.professionalName, // #85 (snapshot for display/reports)
+      // #181: uids drive access; emails are kept only to render the field back.
+      additionalProfessionalUids: extraPros.uids ?? [],
+      additionalProfessionalEmails: extraPros.emails ?? [],
       status: initialStatus,
       paymentStatus,
       amountPaid: received,
@@ -1093,8 +1142,25 @@ export async function listTasks(req, res) {
     }
     // #168: a professional sees ONLY the matters they are assigned to as the
     // matter's professional (#85) — never the rest of that client's book.
+    // #181: a professional's matters are those they are NAMED on (#85) plus
+    // those they were added to as an additional professional. Firestore cannot
+    // OR two fields in one query, so fetch both and merge — the same approach
+    // the team_member branch above uses. Volumes per professional are small.
     if (role === 'professional') {
-      query = query.where('professionalUid', '==', uid);
+      const [named, extra] = await Promise.all([
+        db.collection('tasks').where('professionalUid', '==', uid).get(),
+        db.collection('tasks').where('additionalProfessionalUids', 'array-contains', uid).get(),
+      ]);
+      const byId = new Map();
+      for (const snap of [named, extra]) {
+        snap.docs.forEach((d) => byId.set(d.id, { id: d.id, ...d.data() }));
+      }
+      let rows = [...byId.values()];
+      if (status) rows = rows.filter((r) => r.status === status);
+      if (isUrgent === 'true') rows = rows.filter((r) => r.isUrgent === true);
+      rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
+      await backfillClientNames(rows);
+      return res.json({ data: rows.map(projectTaskForClient), nextCursor: null });
     }
 
     if (status)           query = query.where('status', '==', status);
@@ -1460,6 +1526,15 @@ export async function patchTask(req, res) {
         return res.status(400).json({ message: 'Set a recurrence before choosing its next due date.' });
       }
       update.recurrenceNextDueAt = new Date(req.body.recurrenceNextDueAt).toISOString();
+    }
+
+    // #181: replace the additional-professional list. Sending [] revokes all;
+    // omitting the key leaves it untouched.
+    if ('additionalProfessionalEmails' in req.body) {
+      const resolved = await resolveAdditionalProfessionals(req.body.additionalProfessionalEmails);
+      if (resolved.error) return res.status(400).json({ message: resolved.error });
+      update.additionalProfessionalUids = resolved.uids;
+      update.additionalProfessionalEmails = resolved.emails;
     }
 
     // #85: set/clear the handling professional (staff user). Snapshot the name.

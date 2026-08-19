@@ -48,6 +48,8 @@ export interface Task {
   professionalUid?: string | null; // #85
   professionalName?: string | null; // #85 (snapshot for display)
   /** #167: recurring cadence, or null/absent when the matter is one-off. */
+  /** #181: additional professionals with view-only access to THIS matter. */
+  additionalProfessionalEmails?: string[];
   recurrence?: 'monthly' | 'quarterly' | null;
   recurrenceNextDueAt?: string | null;
   recurrenceEndsAt?: string | null;
