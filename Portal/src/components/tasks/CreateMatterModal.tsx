@@ -40,8 +40,17 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
     queryFn: getAllUsers,
     staleTime: 60_000,
   });
+  // #179: a matter can be raised under a PROFESSIONAL's name as well as a
+  // client's — some work is managed for the professional rather than an end
+  // client. Both appear in this picker; professionals carry a badge in the list
+  // and in the selected-state so the two are never confused.
   const clients = useMemo(
-    () => users.filter((u) => u.role === 'client'),
+    () => users
+      .filter((u) => u.role === 'client' || u.role === 'professional')
+      // Clients first (the common case), then professionals, each A-Z.
+      .sort((a, b) => (a.role === b.role
+        ? displayName(a).localeCompare(displayName(b))
+        : a.role === 'client' ? -1 : 1)),
     [users],
   );
   // #85/#168: the matter's Professional — a staff member OR a `professional`
@@ -160,10 +169,19 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
 
           {/* Client picker */}
           <div>
-            <label className="block text-sm font-medium text-ink-soft mb-1.5">Client</label>
+            <label className="block text-sm font-medium text-ink-soft mb-1.5">
+              Client <span className="text-ink-faint font-normal">or Professional</span>
+            </label>
             {selectedClient ? (
               <div className="flex items-center justify-between gap-2 input-field">
-                <span className="truncate text-sm">{displayName(selectedClient)}</span>
+                <span className="truncate text-sm">
+                  {displayName(selectedClient)}
+                  {/* #179: keep the badge after selection — otherwise the form
+                      gives no hint that this matter is under a professional. */}
+                  {selectedClient.role === 'professional' && (
+                    <span className="ml-2 badge bg-violet-50 text-violet-700">Professional</span>
+                  )}
+                </span>
                 <button
                   className="text-xs text-brand-600 hover:underline shrink-0"
                   onClick={() => { setClientUid(''); setClientSearch(''); }}
@@ -179,16 +197,16 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
                     type="text"
                     value={clientSearch}
                     onChange={(e) => setClientSearch(e.target.value)}
-                    placeholder="Search clients by name or email…"
+                    placeholder="Search clients or professionals by name or email…"
                     className="input-field pl-9 w-full"
                     autoFocus
                   />
                 </div>
                 <div className="mt-2 max-h-44 overflow-y-auto rounded-xl border border-hairline divide-y divide-hairline">
                   {usersLoading ? (
-                    <p className="text-sm text-ink-faint p-3">Loading clients…</p>
+                    <p className="text-sm text-ink-faint p-3">Loading…</p>
                   ) : filteredClients.length === 0 ? (
-                    <p className="text-sm text-ink-faint p-3">No matching clients.</p>
+                    <p className="text-sm text-ink-faint p-3">No matching client or professional.</p>
                   ) : (
                     filteredClients.slice(0, 50).map((c) => (
                       <button
@@ -196,7 +214,15 @@ export default function CreateMatterModal({ onClose }: { onClose: () => void }) 
                         onClick={() => setClientUid(c.uid)}
                         className="w-full text-left px-3 py-2 hover:bg-surface-card transition-colors"
                       >
-                        <p className="text-sm text-ink truncate">{displayName(c)}</p>
+                        <p className="text-sm text-ink truncate">
+                          {displayName(c)}
+                          {/* #179: a professional in the client picker is the
+                              exception, so it is labelled — an unlabelled name
+                              here would read as a client. */}
+                          {c.role === 'professional' && (
+                            <span className="ml-2 badge bg-violet-50 text-violet-700">Professional</span>
+                          )}
+                        </p>
                         {c.email && <p className="text-xs text-ink-faint truncate">{c.email}</p>}
                       </button>
                     ))

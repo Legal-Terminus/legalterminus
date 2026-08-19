@@ -2807,8 +2807,15 @@ export async function duplicateTask(req, res) {
  * later and for an admin "Run now" — same function, different trigger.
  */
 
-const SWEEP_RECENCY_MS = 10 * 60 * 1000; // don't re-sweep within 10 minutes…
-const SWEEP_LOCK_MS = 2 * 60 * 1000;     // …and never run two sweeps at once.
+// Recurring matters fall due on CALENDAR dates, so sweeping every few minutes
+// buys nothing — 6h cuts the Firestore lock reads by ~97% while bounding the
+// worst-case lag to a quarter of a day. Not 24h: with due-on-read there is no
+// guarantee WHEN traffic arrives, so a sweep at 09:00 would push the next
+// possible one to 09:00 tomorrow, making a matter due at 09:05 wait a full day.
+// Cloud Scheduler (POST /api/internal/run-recurring) passes force:true and
+// bypasses this entirely, which is the way to make timing unconditional.
+const SWEEP_RECENCY_MS = 6 * 60 * 60 * 1000; // don't re-sweep within 6 hours…
+const SWEEP_LOCK_MS = 2 * 60 * 1000;         // …and never run two sweeps at once.
 
 /**
  * Create the next matter for every recurring schedule that has fallen due.
