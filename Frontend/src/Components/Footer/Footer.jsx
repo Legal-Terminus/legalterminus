@@ -57,34 +57,34 @@ const Footer = () => {
             <h3 className="footer-title">Service Links</h3>
             <ul className="footer-links">
               <li>
-                <a href="#privacy">
+                <Link to="/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india">
                   <span className="link-icon">→</span>
                   <span className="link-text">Business Registration</span>
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#support">
+                <Link to="/registrations-returns/registrations/gst-registration-in-india">
                   <span className="link-icon">→</span>
                   <span className="link-text">Registration Srvices</span>
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#disclaimer">
+                <Link to="/registrations-returns/return-filing/gst-return-filing">
                   <span className="link-icon">→</span>
                   <span className="link-text">Compliances Services</span>
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#faq">
+                <Link to="/trademark/registration-and-compliance-services/trademark-registration-in-india">
                   <span className="link-icon">→</span>
                   <span className="link-text">Trademark Services</span>
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#terms">
+                <Link to="/registrations-returns/license-certifications/food-license-and-registration">
                   <span className="link-icon">→</span>
                   <span className="link-text">Licenses</span>
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
