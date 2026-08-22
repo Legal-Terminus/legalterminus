@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from "react";
+import React, { lazy, Suspense, useEffect, useLayoutEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 import SeoHead from "./Components/SeoHead/SeoHead";
 import "./App.css";
@@ -107,31 +107,95 @@ if (typeof window !== "undefined") {
   window.history.scrollRestoration = "manual";
 }
 
+// This site scrolls on <body>, not the viewport: Herosection.css declares
+// `html, body { height: 100%; overflow-x: hidden }` globally, which stops body's
+// overflow from propagating to the viewport and makes <body> its own scroll
+// container. Window-level scroll APIs are therefore unreliable here —
+// window.scrollTo is a no-op and window.scrollY reads 0 — so read and write
+// every candidate scroll container instead. (PdfTools.jsx carries a local
+// version of this workaround; it is now redundant but harmless.)
+const readScrollTop = () =>
+  window.scrollY ||
+  document.scrollingElement?.scrollTop ||
+  document.body.scrollTop ||
+  document.documentElement.scrollTop ||
+  0;
+
+const writeScrollTop = (top) => {
+  window.scrollTo({ top, behavior: "instant" });
+  document.documentElement.scrollTop = top;
+  document.body.scrollTop = top;
+  if (document.scrollingElement) document.scrollingElement.scrollTop = top;
+};
+
+// True while we are driving the scroll position ourselves after a navigation.
+// The scroll events our own writes emit must not be mistaken for the user
+// scrolling, or we would record the reset offset over the position they left.
+let isSettling = false;
+
 function ScrollManager() {
   const { pathname, key } = useLocation();
   const navType = useNavigationType();
 
-  useEffect(() => {
-    if (navType === "POP") {
-      const saved = scrollPositions[key] ?? 0;
-      // Delay slightly so lazy-loaded content finishes rendering
-      const id = setTimeout(() => {
-        window.scrollTo({ top: saved, behavior: "instant" });
-      }, 50);
-      return () => clearTimeout(id);
-    } else {
-      window.scrollTo({ top: 0, behavior: "instant" });
-    }
+  useLayoutEffect(() => {
+    const target = navType === "POP" ? (scrollPositions[key] ?? 0) : 0;
+
+    // Route components are lazy-loaded behind a null Suspense fallback, so for a
+    // moment the footer sits alone at the top of an almost-empty document. Two
+    // things go wrong if we only set the offset once, here:
+    //   - scroll anchoring drags the viewport back down when the real content
+    //     mounts ABOVE the footer, undoing the reset;
+    //   - on a back/forward restore the document is not yet tall enough to hold
+    //     the saved offset, so the write clamps to near zero.
+    // Suspend anchoring and keep re-applying across frames until it takes.
+    const root = document.documentElement;
+    const prevAnchor = root.style.overflowAnchor;
+    root.style.overflowAnchor = "none";
+    isSettling = true;
+
+    let raf = 0;
+    // A restore needs longer, since it waits on the chunk to render full height.
+    const deadline = performance.now() + (target > 0 ? 1200 : 250);
+
+    let release = 0;
+    const done = () => {
+      root.style.overflowAnchor = prevAnchor;
+      // The scroll events our writes emit are delivered asynchronously, so keep
+      // ignoring them for a beat after the last write.
+      release = setTimeout(() => { isSettling = false; }, 100);
+    };
+
+    const settle = () => {
+      writeScrollTop(target);
+      // For a restore, stop as soon as the offset sticks so we never fight a
+      // user who starts scrolling. For a reset to top there is nothing to fight,
+      // so hold it down for the whole (short) window while content mounts.
+      const landed = target > 0 && Math.abs(readScrollTop() - target) <= 2;
+      if (!landed && performance.now() < deadline) {
+        raf = requestAnimationFrame(settle);
+      } else {
+        done();
+      }
+    };
+    settle();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(release);
+      root.style.overflowAnchor = prevAnchor;
+      isSettling = false;
+    };
   }, [pathname, key, navType]);
 
-  // Save scroll position just before leaving this entry
+  // Track this entry's scroll position as the user moves. Listen in the capture
+  // phase on document: scroll events do not bubble, so a window listener never
+  // sees the ones targeting <body>. Deliberately no save-on-cleanup — React runs
+  // the layout effect above (which resets to the top) before this passive
+  // cleanup, so saving here would record the reset instead of where the user was.
   useEffect(() => {
-    const save = () => { scrollPositions[key] = window.scrollY; };
-    window.addEventListener("scroll", save, { passive: true });
-    return () => {
-      save();
-      window.removeEventListener("scroll", save);
-    };
+    const save = () => { if (!isSettling) scrollPositions[key] = readScrollTop(); };
+    document.addEventListener("scroll", save, { capture: true, passive: true });
+    return () => document.removeEventListener("scroll", save, { capture: true });
   }, [key]);
 
   return null;
