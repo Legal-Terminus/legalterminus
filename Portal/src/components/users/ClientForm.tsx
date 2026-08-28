@@ -131,6 +131,14 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
       setError('Designation is required when assigning a staff role.');
       return;
     }
+    // #183: Reference is mandatory when CREATING a client, so every account records
+    // who referred it. Deliberately NOT enforced on edit: clients created before
+    // this rule have no reference, and blocking their edits (e.g. correcting a
+    // phone number) would be a regression.
+    if (!id && !formData.professionalName?.trim()) {
+      setError('Reference is required when creating a client.');
+      return;
+    }
     setError('');
     mutation.mutate(formData);
   };
@@ -392,7 +400,7 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
                   `professionalName` so existing client records and the mapping
                   report keep working without a data migration. */}
               <div>
-                <label className="input-label">Reference</label>
+                <label className="input-label">Reference{!id && <span className="text-red-400"> *</span>}</label>
                 <input
                   type="text"
                   name="professionalName"
@@ -400,6 +408,7 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
                   onChange={handleChange}
                   placeholder="Who referred this client"
                   className="input-field"
+                  required={!id}
                 />
               </div>
               <div>

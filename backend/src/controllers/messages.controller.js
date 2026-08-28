@@ -69,9 +69,15 @@ export async function listMessages(req, res) {
 
     if (isClient) rows = rows.filter((m) => m.clientVisible === true);
 
-    // Resolve author names for staff; clients see "Our team" for staff authors and
-    // "You" for their own (never individual staff identities).
-    const uids = isClient ? [] : [...new Set(rows.map((m) => m.authorUid).filter(Boolean))];
+    // Resolve author names. Staff see every author's real name. Clients see the
+    // COMPANY name for staff authors (#123 — never expose individual staff
+    // identities), but the REAL name for fellow client users on the same account:
+    // #182 — access is granted at ACCOUNT scope (primaryClientUid), so a matter can
+    // have several client logins. Labelling a colleague's message "Legal Terminus"
+    // made their own team's messages look like they came from us.
+    const uids = isClient
+      ? [...new Set(rows.filter((m) => m.authorRole === 'client').map((m) => m.authorUid).filter(Boolean))]
+      : [...new Set(rows.map((m) => m.authorUid).filter(Boolean))];
     const names = new Map();
     if (uids.length) {
       const docs = await Promise.all(uids.map((u) => db.collection('users').doc(u).get()));
@@ -86,9 +92,13 @@ export async function listMessages(req, res) {
       authorRole: m.authorRole ?? null,
       isMine: m.authorUid === req.user.uid,
       authorName: isClient
-        // #123 follow-up: the client sees the COMPANY name as the sender, not the
-        // generic "Our team". Their own messages still read "You".
-        ? (m.authorUid === req.user.uid ? 'You' : CLIENT_FACING_SENDER)
+        // Own messages read "You"; a colleague on the same client account reads as
+        // their real name (#182); staff authors stay masked as the company (#123).
+        ? (m.authorUid === req.user.uid
+          ? 'You'
+          : (m.authorRole === 'client'
+            ? (names.get(m.authorUid) ?? task.clientName ?? 'Client')
+            : CLIENT_FACING_SENDER))
         : (names.get(m.authorUid) ?? (m.authorRole === 'client' ? (task.clientName || 'Client') : 'Team member')),
     }));
 

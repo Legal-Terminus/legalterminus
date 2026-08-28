@@ -1428,8 +1428,12 @@ export async function listTaskEvents(req, res) {
     }
 
     // Resolve actor names in one batched pass (small N; dedupe uids). For clients
-    // we skip the lookup entirely — staff actors are masked, the client sees self.
-    const uids = isClient ? [] : [...new Set(events.map((e) => e.byUid).filter(Boolean))];
+    // we look up ONLY fellow client actors: staff stay masked (#123), but a
+    // colleague on the same client account must read as their real name (#182) —
+    // access is account-scoped, so several client logins can act on one matter.
+    const uids = isClient
+      ? [...new Set(events.filter((e) => e.byRole === 'client').map((e) => e.byUid).filter(Boolean))]
+      : [...new Set(events.map((e) => e.byUid).filter(Boolean))];
     const nameByUid = {};
     await Promise.all(uids.map(async (u) => {
       const us = await db.collection('users').doc(u).get();
@@ -1437,10 +1441,14 @@ export async function listTaskEvents(req, res) {
       nameByUid[u] = d ? (d.name || d.fullName || d.email || 'User') : 'User';
     }));
 
-    // Mask the actor for a client: their own actions read as "You"; everyone
-    // else (staff, registrar, system) is collapsed to "Our team".
-    const nameForClient = (e) =>
-      e.byUid && e.byUid === req.user.uid ? 'You' : 'Our team';
+    // Mask the actor for a client: their own actions read as "You"; a colleague on
+    // the same client account reads as their real name (#182); everyone else
+    // (staff, registrar, system) is collapsed to "Our team".
+    const nameForClient = (e) => {
+      if (e.byUid && e.byUid === req.user.uid) return 'You';
+      if (e.byRole === 'client' && e.byUid) return nameByUid[e.byUid] ?? 'Client';
+      return 'Our team';
+    };
 
     res.json({
       data: events.map((e) => ({
