@@ -104,7 +104,9 @@ test('#150: the client form labels the reference field "Reference", not "Profess
   // unchanged (professionalName) so existing records keep working.
   const reference = adminPage.locator('input[name="professionalName"]');
   await expect(reference).toBeVisible();
-  await expect(adminPage.getByText('Reference', { exact: true })).toBeVisible();
+  // #183 appended a required marker to this label, so match the label element
+  // rather than an exact text node — the point of #150 is the WORD, not the glyph.
+  await expect(adminPage.locator('label', { hasText: /^Reference\s*\*?$/ })).toBeVisible();
   await expect(adminPage.getByText('Professional', { exact: true })).toHaveCount(0);
   // Group / Parent Company is untouched by the rename.
   await expect(adminPage.locator('input[name="groupCompany"]')).toBeVisible();
