@@ -158,7 +158,7 @@ test('#149: the recipient list is not exposed to the client', async () => {
 test('#149: the Create Matter form offers additional email addresses', async ({ adminPage }) => {
   await adminPage.goto('tasks');
   await adminPage.getByRole('button', { name: /create matter/i }).first().click();
-  const field = adminPage.getByLabel('Additional email addresses');
+  const field = adminPage.getByLabel('Additional client email addresses');
   await expect(field).toBeVisible();
   await expect(adminPage.getByText(/copied \(CC\) on every email/i)).toBeVisible();
 });
@@ -173,7 +173,7 @@ test('#149: staff can edit the recipients from the matter screen', async ({ admi
     // Matter details is collapsed by default (it must not eat vertical space on
     // the step view — see #111) — expand it before editing.
     await adminPage.getByRole('button', { name: /matter details/i }).click();
-    const field = adminPage.getByLabel('Additional email addresses');
+    const field = adminPage.getByLabel('Additional client email addresses');
     await expect(field).toHaveValue('existing@example.com');
 
     // Editing commits on blur and persists.
@@ -194,7 +194,7 @@ test('#149: a client gets no recipients editor', async ({ clientPage }) => {
   try {
     await clientPage.goto(`tasks/${taskId}`);
     await expect(clientPage.getByRole('button', { name: /matter details/i })).toHaveCount(0);
-    await expect(clientPage.getByLabel('Additional email addresses')).toHaveCount(0);
+    await expect(clientPage.getByLabel('Additional client email addresses')).toHaveCount(0);
   } finally {
     await deleteMatter(taskId);
   }
