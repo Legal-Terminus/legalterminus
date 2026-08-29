@@ -10,9 +10,19 @@ export const CATEGORIES = [
   "EPF",
   "ESI",
   "Bookkeeping",
+  "GST",
 ];
 
 export const posts = [
+  {
+    id: 21520,
+    slug: "gst-registration-a-simple-step-by-step-guide",
+    title: "GST Registration | A Simple Step-by-Step Guide",
+    excerpt: "If your business needs GST registration, the good news is — the process is 100% online and completely free. Here's a step-by-step breakdown in simple words.",
+    date: "August 29, 2026",
+    category: "GST",
+    image: "/blog-images/gst-registration-guide.webp",
+  },
   {
     id: 21517,
     slug: "restaurants-facing-income-tax-checks-latest-update",

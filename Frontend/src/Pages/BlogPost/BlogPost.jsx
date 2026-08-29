@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getPostBySlug, getRelatedPosts, posts, CATEGORIES } from "../../data/blogData";
+import { blogContent } from "../../data/blogContent";
 import "./BlogPost.css";
 
 const WP_API = "https://legalterminus.com/wp-json/wp/v2/posts";
@@ -19,12 +20,17 @@ const BlogPost = () => {
       : `https://legalterminus.com/blog/${slug}`,
   );
 
+  // Locally stored articles render immediately, no network round-trip.
+  const localContent = blogContent[slug] || null;
+
   const [content, setContent] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!localContent);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!post) { navigate("/blog", { replace: true }); return; }
+    if (localContent) return;
+
     setLoading(true);
     setError(false);
     setContent(null);
@@ -41,6 +47,8 @@ const BlogPost = () => {
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  const displayContent = localContent || content;
 
   if (!post) return null;
 
@@ -111,10 +119,10 @@ const BlogPost = () => {
             </div>
           )}
 
-          {content && !loading && (
+          {displayContent && !loading && (
             <div
               className="blogpost-content"
-              dangerouslySetInnerHTML={{ __html: content }}
+              dangerouslySetInnerHTML={{ __html: displayContent }}
             />
           )}
 
