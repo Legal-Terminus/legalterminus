@@ -20,7 +20,7 @@ import { chromium } from '@playwright/test';
 import { preview } from 'vite';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -31,7 +31,7 @@ const CONCURRENCY = 4;             // parallel pages; keeps a full run to ~1-2 m
 
 /** Routes to snapshot: everything in the SEO map except noindex + dynamic ones. */
 async function indexableRoutes() {
-  const { SEO_META } = await import(path.join(ROOT, 'src/data/seoMeta.js'));
+  const { SEO_META } = await import(pathToFileURL(path.join(ROOT, 'src/data/seoMeta.js')).href);
   return Object.entries(SEO_META)
     .filter(([route, meta]) => !meta.noindex && !route.includes(':'))
     .map(([route]) => route);
@@ -81,6 +81,18 @@ async function snapshot(context, route) {
       const titles = [...document.head.querySelectorAll('title')];
       titles.slice(1).forEach((el) => el.remove());
       if (titles[0]) titles[0].textContent = current;
+
+      // GTM's official snippet self-installs: its inline bootstrap runs synchronously
+      // on load and does document.createElement('script') + insertBefore to add its
+      // own <script src=gtm.js> — a DOM mutation the network abort below can't stop.
+      // Left in place, this injected element would be captured into the static
+      // snapshot, and the original inline bootstrap (which stays in the HTML
+      // unchanged) would inject a SECOND copy when a real visitor's browser runs it.
+      // The original bootstrap has no `src` attribute (it's inline code), so this
+      // selector can only ever match the dynamically-injected duplicate.
+      document.head
+        .querySelectorAll('script[src^="https://www.googletagmanager.com/gtm.js"]')
+        .forEach((el) => el.remove());
     });
 
     const html = await page.content();
@@ -114,6 +126,21 @@ async function main() {
     // Identify as a bot so any analytics/consent scripts can opt out of the snapshot.
     userAgent: 'Mozilla/5.0 (compatible; LegalTerminusPrerender/1.0)',
   });
+
+  // Never let the Google tag (or GTM) run during a snapshot. Prerendering visits
+  // every indexable route in a real browser, so without this each build would
+  // register a live page_view/container load for every route — all from the
+  // local preview server, polluting the property with traffic no human generated.
+  // Aborting the request also keeps gtag's injected runtime out of the captured
+  // HTML; gtag's <script> tag itself still ships as static markup, because it
+  // lives in index.html and nothing here removes it. GTM's bootstrap is
+  // different — it's self-injecting, so this abort alone doesn't stop it from
+  // adding its own <script> element to the DOM; that's handled separately by the
+  // cleanup in page.evaluate() below (see the comment there).
+  await context.route(
+    /(googletagmanager\.com|google-analytics\.com|analytics\.google\.com)/,
+    (route) => route.abort(),
+  );
 
   const results = [];
   const queue = [...routes];
@@ -159,6 +186,12 @@ async function main() {
         const titles = [...document.head.querySelectorAll('title')];
         titles.slice(1).forEach((el) => el.remove());
         if (titles[0]) titles[0].textContent = current;
+
+        // Same GTM self-injection cleanup as the route snapshot above — see the
+        // comment there for why this selector only ever matches the duplicate.
+        document.head
+          .querySelectorAll('script[src^="https://www.googletagmanager.com/gtm.js"]')
+          .forEach((el) => el.remove());
       });
       await writeFile(path.join(DIST, '404.html'), await page.content(), 'utf8');
       console.log('[prerender] 404.html written');
