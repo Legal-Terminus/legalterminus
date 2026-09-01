@@ -12,12 +12,12 @@
  */
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://legalterminus.com';
 
-const { SEO_META } = await import(path.join(ROOT, 'src/data/seoMeta.js'));
+const { SEO_META } = await import(pathToFileURL(path.join(ROOT, 'src/data/seoMeta.js')).href);
 
 const indexable = Object.entries(SEO_META)
   .filter(([route, meta]) => !meta.noindex && !meta.canonicalPath && !route.includes(':'))
