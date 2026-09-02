@@ -8,8 +8,8 @@ const PLANS = [
     id: "elemental",
     name: "Elemental",
     badge: "BASIC",
-    oldPrice: 5999,
-    price: 3999,
+    oldPrice: 7999,
+    price: 4999,
     services: [
       "Company name search & availability report",
       "1 RUN / SPICe+ name approval",
@@ -26,8 +26,8 @@ const PLANS = [
     name: "Enriched",
     badge: "★ MOST POPULAR",
     popular: true,
-    oldPrice: 7999,
-    price: 5999,
+    oldPrice: 13999,
+    price: 7999,
     services: [
       "Everything in Elemental",
       "Share certificates for shareholders",
