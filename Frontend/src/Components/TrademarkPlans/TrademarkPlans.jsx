@@ -2,6 +2,7 @@ import { useState } from "react";
 import "../PubpvtPlans/PubpvtPlans.css";
 import "../CompanyRegPlans/CompanyRegPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
+import ConsultationModal from "../ConsultationModal/ConsultationModal";
 
 const PLANS = [
   {
@@ -54,6 +55,9 @@ const PLANS = [
 
 const TrademarkPlans = () => {
   const [activePlan, setActivePlan] = useState(null);
+  // Per-card "Register Now" (payment) replaced with a single shared "Book Free
+  // Consultation" button below the cards, same as CompanyRegPlans.
+  const [showConsult, setShowConsult] = useState(false);
 
   return (
     <>
@@ -89,6 +93,7 @@ const TrademarkPlans = () => {
                   </div>
                 </div>
 
+                {false && (
                 <div className="opcplan-footer">
                   <button
                     className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
@@ -97,8 +102,19 @@ const TrademarkPlans = () => {
                     Register Now
                   </button>
                 </div>
+                )}
               </article>
             ))}
+          </div>
+
+          <div className="consult-cta-row">
+            <button
+              type="button"
+              className="consult-cta-button"
+              onClick={() => setShowConsult(true)}
+            >
+              📅 Book Free Consultation
+            </button>
           </div>
 
         </div>
@@ -111,6 +127,12 @@ const TrademarkPlans = () => {
           source="trademark-application"
         />
       )}
+
+      <ConsultationModal
+        open={showConsult}
+        onClose={() => setShowConsult(false)}
+        source="trademark-application"
+      />
     </>
   );
 };
