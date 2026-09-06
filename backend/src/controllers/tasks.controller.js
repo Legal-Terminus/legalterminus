@@ -5,7 +5,7 @@ import { getCompiledForServiceKey, getCompiledById } from '../services/workflowD
 import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { createNotification, resolveNotificationsForTask } from './notifications.controller.js';
 import { finalizeMatterDocuments } from './documents.controller.js';
-import { sendTemplatedEmail } from '../services/emailService.js';
+import { publicSiteUrl, sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
 import { sanitizeRichText, richTextToPlain } from '../services/richText.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
@@ -651,7 +651,7 @@ export async function createTask(req, res) {
       if (clientEmail) {
         const rendered = await renderTemplate('matter_created', {
           clientName, organisation: task.organisation ?? '', serviceName: task.serviceName,
-          portalUrl: (process.env.FRONTEND_URL || '').replace(/\/$/, '') + '/portal/',
+          portalUrl: `${publicSiteUrl()}/portal/`,
         });
         if (rendered) {
           await sendTemplatedEmail({
