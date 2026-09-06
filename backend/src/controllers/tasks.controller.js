@@ -154,6 +154,27 @@ const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedRole', 'completedBy', 'isUrge
  *
  * A primary client has no `primaryClientUid` and simply resolves to itself.
  */
+/**
+ * #188 — a matter's "Additional client email addresses" (ccEmails) now grant
+ * PORTAL ACCESS to that matter, not just an email copy.
+ *
+ * The field stores plain emails, not uids: whoever is listed may not have an
+ * account yet. So access is matched on email at read time — if they already have
+ * a login they see the matter immediately, and if they sign up later with that
+ * address it appears automatically, with no invite flow to run or keep in sync.
+ *
+ * Access is per-MATTER: being cc'd on one matter grants nothing on the client's
+ * others. Comparison is lowercased both sides (the schema lowercases on write,
+ * but older rows and auth emails may not be).
+ */
+export function clientCanSeeMatter(user, task) {
+  if (!task) return false;
+  if (task.clientUid === clientScopeUid(user)) return true;
+  const email = String(user?.email ?? '').trim().toLowerCase();
+  if (!email) return false;
+  return (task.ccEmails ?? []).some((e) => String(e).trim().toLowerCase() === email);
+}
+
 export function clientScopeUid(user) {
   return user?.primaryClientUid || user?.uid;
 }
@@ -1136,9 +1157,26 @@ export async function listTasks(req, res) {
     }
 
     let query = db.collection('tasks');
-    // Clients can only see their own tasks
+    // Clients see their own matters PLUS any matter they were added to as an
+    // additional client contact (#188). Firestore cannot OR two fields in one
+    // query, so fetch both and merge — the same approach the team_member and
+    // professional branches use.
     if (role === 'client') {
-      query = query.where('clientUid', '==', clientScopeUid(req.user));
+      const email = String(req.user?.email ?? '').trim().toLowerCase();
+      const [own, cc] = await Promise.all([
+        db.collection('tasks').where('clientUid', '==', clientScopeUid(req.user)).get(),
+        email
+          ? db.collection('tasks').where('ccEmails', 'array-contains', email).get()
+          : Promise.resolve({ docs: [] }),
+      ]);
+      const byId = new Map();
+      for (const d of [...own.docs, ...cc.docs]) byId.set(d.id, { id: d.id, ...d.data() });
+      let rows = [...byId.values()];
+      if (status) rows = rows.filter((t) => t.status === status);
+      if (isUrgent === 'true') rows = rows.filter((t) => t.isUrgent === true);
+      rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
+      await backfillClientNames(rows); // #164
+      return res.json({ data: rows.map(projectTaskForClient), nextCursor: null });
     }
     // #168: a professional sees ONLY the matters they are assigned to as the
     // matter's professional (#85) — never the rest of that client's book.
@@ -1348,7 +1386,7 @@ export async function getTask(req, res) {
     const data = doc.data();
     // Clients can only see their own task (#166: via the primary client uid, so
     // additional logins on the same organisation resolve to the same matters).
-    if (req.user.role === 'client' && data.clientUid !== clientScopeUid(req.user)) {
+    if (req.user.role === 'client' && !clientCanSeeMatter(req.user, data)) { // #188
       return res.status(403).json({ message: 'Forbidden' });
     }
     // #168: a professional reaches ONLY the matters they are named on. Direct URL
@@ -1397,7 +1435,7 @@ export async function listTaskEvents(req, res) {
     if (req.user.role === 'professional' && !professionalCanSee(taskSnap.data(), req.user.uid)) {
       return res.status(403).json({ message: 'Forbidden' });
     }
-    if (req.user.role === 'client' && taskSnap.data().clientUid !== clientScopeUid(req.user)) {
+    if (req.user.role === 'client' && !clientCanSeeMatter(req.user, taskSnap.data())) { // #188
       return res.status(403).json({ message: 'Forbidden' });
     }
 
@@ -1677,7 +1715,7 @@ export async function listPayments(req, res) {
     if (role === 'professional' && !professionalCanSee(task, req.user.uid)) {
       return res.status(403).json({ message: 'Forbidden' });
     }
-    if (role === 'client' && task.clientUid !== clientScopeUid(req.user)) {
+    if (role === 'client' && !clientCanSeeMatter(req.user, task)) { // #188
       return res.status(403).json({ message: 'Forbidden' });
     }
 

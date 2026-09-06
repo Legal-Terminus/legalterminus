@@ -4,6 +4,7 @@ import { createNotification } from './notifications.controller.js';
 import { sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
 import { sanitizeRichText, richTextToPlain } from '../services/richText.service.js';
+import { clientCanSeeMatter } from './tasks.controller.js';
 
 /**
  * #123 — per-matter DISCUSSION THREAD (client ⇄ internal team).
@@ -45,8 +46,8 @@ async function loadAuthorizedTask(req, res, taskId) {
     return null;
   }
   // #166: additional client logins share the primary client's scope.
-  if (req.user.role === 'client'
-      && task.clientUid !== (req.user.primaryClientUid || req.user.uid)) {
+  // #188: additional client contacts on this matter can take part too.
+  if (req.user.role === 'client' && !clientCanSeeMatter(req.user, task)) {
     res.status(403).json({ message: 'Forbidden' }); return null;
   }
   return task;
