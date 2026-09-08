@@ -117,6 +117,8 @@ const CroBreadcrum = () => {
           <ConsultationForm
             source="company-registration-odisha"
             subtitle="Talk to our company registration expert in Odisha"
+            locationField="city"
+            fixedState="Odisha"
           />
         </div>
       </div>

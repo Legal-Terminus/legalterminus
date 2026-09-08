@@ -140,6 +140,8 @@ const CroPlans = () => {
         open={showConsult}
         onClose={() => setShowConsult(false)}
         source="company-registration-odisha"
+        locationField="city"
+        fixedState="Odisha"
       />
     </>
   );
