@@ -3,78 +3,123 @@ import "../OPCFAQ/OPCFAQ.css";
 
 const faqs = [
   {
-    q: "How many members are required to form a Private Limited Company?",
-    a: "A minimum of two persons are required to form a Private Limited Company, and a maximum of up to 200 persons can be members of a single Private Limited Company.",
+    question: "How many directors and shareholders do I need for a Public Limited Company?",
+    answer:
+      "Minimum 3 directors (max 15 without special resolution) and minimum 7 subscribers / shareholders (no upper limit). Section 3(1)(a) and Section 149 of the Companies Act, 2013 govern this. Compare this to Private Limited which needs only 2 directors and 2 shareholders.",
   },
   {
-    q: "How many directors does a Private Limited Company need?",
-    a: "A minimum of two directors are required in a Private Limited Company, with an upper cap of up to 15 directors. At least one director must be a resident of India.",
+    question: "Is there a minimum capital requirement to register a PLC in 2026?",
+    answer:
+      "No. The Companies (Amendment) Act, 2015 abolished the earlier ₹5 lakh minimum paid-up capital requirement for Public Limited Companies. You can start with any amount, but most companies choose ₹1 lakh to ₹5 lakh authorized capital based on their business needs.",
   },
   {
-    q: "Who are the directors of a company?",
-    a: "Directors are officers of the company responsible for managing the company and making the decisions about its operation on a day-to-day basis, for the benefit of the shareholders.",
+    question: "How long does it take to register a Public Limited Company?",
+    answer:
+      "On average, it takes 10–15 working days, depending on approvals and document accuracy. Delays usually happen due to name rejection or incorrect documents.",
   },
   {
-    q: "Who are the shareholders of a company?",
-    a: "Shareholders are the owners of companies limited by shares. As the beneficial owners of a limited company, they are not involved in its day-to-day management or financial affairs.",
+    question: "What's the difference between a Public Limited and a Private Limited Company?",
+    answer: (
+      <span>
+        Three big differences:<br />
+        (1) Min directors / subscribers — Public Limited needs 3 directors &amp; 7 shareholders; Private Limited needs 2 each.<br />
+        (2) Share transfer — PLC is free, Pvt Ltd is restricted by AOA.<br />
+        (3) Public fundraising — PLC can issue shares to the public and list on stock exchanges; Pvt Ltd cannot.
+      </span>
+    ),
   },
   {
-    q: "Is there a minimum capital requirement to register a company?",
-    a: "No. A Private Limited Company can be incorporated with any amount of capital — there is no lower or upper limit on the capital. Government fees are relaxed for authorized capital up to ₹15,00,000.",
+    question: "Can I convert a Private Limited Company into a Public Limited Company later?",
+    answer: (
+      <span>
+        Yes. A Private Limited Company can be converted into a Public Limited Company by:
+        <ul style={{marginTop: "8px", paddingLeft: "20px"}}>
+          <li>Passing a special resolution</li>
+          <li>Amending MOA &amp; AOA</li>
+          <li>Filing required forms with MCA</li>
+        </ul>
+        The process usually takes 30–45 days.
+      </span>
+    ),
   },
   {
-    q: "What are the basic documents needed for company registration?",
-    a: "You need the PAN card of all directors/shareholders, ID proof (Passport/Voter ID/Aadhaar/Driving Licence), address proof (utility bill or bank statement, not older than 2 months), passport-size photographs, a rent agreement for the registered office, the latest electricity bill, and an NOC from the property owner.",
+    question: "What is SPICe+ and AGILE-PRO-S?",
+    answer:
+      "SPICe+ (INC-32) is the master incorporation form on MCA21 V3 — a single window that handles name reservation (Part A) and incorporation (Part B). AGILE-PRO-S (INC-35) is the linked form that bundles PAN, TAN, EPFO, ESIC, GST, Professional Tax, Shops & Establishment, and bank account opening. One filing, one set of forms — that's the post-2020 reform.",
   },
   {
-    q: "What is the procedure to register a Private Limited Company?",
-    a: "It is a 7-step process: document submission, company name & objects finalisation, name reservation, obtaining Digital Signature Certificates, incorporation document preparation (MOA, AOA, SPICe+), final form upload and fee payment, and issuance of the Certificate of Incorporation.",
+    question: "Are stamp duty charges included in the registration fees?",
+    answer:
+      "No. Stamp duty is charged separately and depends on your state and authorized capital. The exact amount is shown during filing and must be paid online.",
   },
   {
-    q: "How long does company incorporation take?",
-    a: "Incorporating a company can take anywhere between 10 to 15 working days, subject to submission of correct information and complete documentation.",
+    question: "Do all 7 subscribers and 3 directors need a Digital Signature Certificate?",
+    answer:
+      "Yes. All subscribers to the MOA must sign electronically using a Class 3 DSC. All directors also need DSCs to sign SPICe+, the consent letter (DIR-2) and eform-INC 9.",
   },
   {
-    q: "How does Legal Terminus assist with company registration in Odisha?",
-    a: "Legal Terminus provides hassle-free incorporation within a reasonable timeframe at competitive, transparent fees. We are based in Bhubaneswar, offer 100% online assistance with a local office visit option, and provide a free telephonic consultation to understand your requirements before you commit.",
+    question: "What annual compliance does a PLC have to do after incorporation?",
+    answer:
+      "Unlisted PLC: AGM within 6 months of FY-end, Form MGT-7 (annual return), AOC-4 (financial statements), DIR-3 KYC for every director, INC-22A (ACTIVE) if not already filed, statutory audit, board meetings (4 per year minimum), and event-based filings (PAS-3, MGT-14, etc.) when triggered. Listed PLC adds quarterly results, LODR disclosures, insider trading code, related party transaction reporting — substantially heavier.",
+  },
+  {
+    question: "How can Legal Terminus help with company registration in Odisha?",
+    answer: (
+      <span>
+        Legal Terminus handles the complete process, including:
+        <ul style={{marginTop: "8px", paddingLeft: "20px"}}>
+          <li>Name approval and document preparation</li>
+          <li>Filing of all required forms</li>
+          <li>End-to-end coordination until Certificate of Incorporation</li>
+        </ul>
+        We are based in Bhubaneswar, offer 100% online assistance with a local office visit option, and provide a free telephonic consultation to understand your requirements before you commit.
+      </span>
+    ),
   },
 ];
 
 const CroFAQ = () => {
-  const [activeIndex, setActiveIndex] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  const toggle = (index) => {
-    setActiveIndex(activeIndex === index ? null : index);
+  const toggleFaq = (index) => {
+    setActiveIndex((prev) => (prev === index ? -1 : index));
   };
 
   return (
     <section className="opcfaq-section" id="faq">
       <div className="opcfaq-container">
-        <h2 className="opcfaq-title">Company Registration in Odisha — FAQs</h2>
-        <p className="opcfaq-subtitle">
-          Everything you need to know about registering your company in Bhubaneswar and across Odisha
-        </p>
+
+        <div className="opcfaq-header">
+          <h2 className="opcfaq-title">Company Registration in Odisha — FAQs</h2>
+          <p className="opcfaq-intro">
+            Everything you need to know about registering your company in Bhubaneswar and across Odisha
+          </p>
+        </div>
 
         <div className="opcfaq-list">
-          {faqs.map((faq, index) => (
-            <div
-              className={`opcfaq-item ${activeIndex === index ? "active" : ""}`}
-              key={index}
-            >
-              <button
-                className="opcfaq-question"
-                onClick={() => toggle(index)}
-                aria-expanded={activeIndex === index}
+          {faqs.map((item, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <div
+                key={index}
+                className={`opcfaq-item ${isActive ? "active" : ""}`}
               >
-                <span>{faq.q}</span>
-                <span className="opcfaq-icon">{activeIndex === index ? "−" : "+"}</span>
-              </button>
-              <div className="opcfaq-answer">
-                <p>{faq.a}</p>
+                <button
+                  type="button"
+                  className="opcfaq-question"
+                  onClick={() => toggleFaq(index)}
+                >
+                  <span>{item.question}</span>
+                  <span className={`opcfaq-icon ${isActive ? "open" : ""}`}>▾</span>
+                </button>
+                <div className={`opcfaq-answer ${isActive ? "open" : ""}`}>
+                  <div className="opcfaq-answer-content">{item.answer}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
       </div>
     </section>
   );
