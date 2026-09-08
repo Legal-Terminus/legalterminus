@@ -31,6 +31,7 @@ const EMPTY = {
   email: '',
   phone: '',
   state: '',
+  city: '',
   preferredCallTime: '',
   whatsapp: true,
 };
@@ -39,14 +40,19 @@ const EMPTY = {
  * Shared "Get Expert Assistance / Book Free Consultation" form used across all service pages.
  *
  * Props:
- *   source   {string}  - identifies which page the lead came from (e.g. "private-limited")
- *   subtitle {string}  - short line below the title (e.g. "Talk to our GST registration expert")
- *   title    {string}  - optional, defaults to "Get Expert Assistance"
+ *   source       {string}  - identifies which page the lead came from (e.g. "private-limited")
+ *   subtitle     {string}  - short line below the title (e.g. "Talk to our GST registration expert")
+ *   title        {string}  - optional, defaults to "Get Expert Assistance"
+ *   locationField {'state'|'city'} - 'state' (default) shows the state dropdown; 'city' shows a
+ *                  plain city text input instead, for pages already scoped to one state
+ *   fixedState   {string}  - state value submitted when locationField is 'city' (defaults to "Odisha")
  */
 const ConsultationForm = ({
   source = 'unknown',
   subtitle = 'Talk to our expert',
   title = 'Get Expert Assistance',
+  locationField = 'state',
+  fixedState = 'Odisha',
 }) => {
   const [form, setForm] = useState(EMPTY);
   const [loading, setLoading] = useState(false);
@@ -76,10 +82,12 @@ const ConsultationForm = ({
           fullName: form.fullName,
           email: form.email,
           phone: form.phone,
-          state: form.state,
+          state: locationField === 'city' ? fixedState : form.state,
           preferredCallTime: form.preferredCallTime,
           subject: `Consultation request – ${source}`,
-          message: `Lead from service page: ${source}`,
+          message: locationField === 'city' && form.city
+            ? `Lead from service page: ${source} (City: ${form.city})`
+            : `Lead from service page: ${source}`,
           source,
           sourceLabel: getServiceDisplayName(source),
           whatsapp: form.whatsapp,
@@ -143,15 +151,27 @@ const ConsultationForm = ({
               maxLength={15}
             />
 
-            <select
-              className="cf-input cf-select"
-              name="state"
-              value={form.state}
-              onChange={handleChange}
-            >
-              <option value="">Select Your State</option>
-              {STATES.map((s) => <option key={s}>{s}</option>)}
-            </select>
+            {locationField === 'city' ? (
+              <input
+                className="cf-input cf-input--dark-placeholder"
+                type="text"
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+                placeholder="Enter City"
+                maxLength={100}
+              />
+            ) : (
+              <select
+                className="cf-input cf-select"
+                name="state"
+                value={form.state}
+                onChange={handleChange}
+              >
+                <option value="">Select Your State</option>
+                {STATES.map((s) => <option key={s}>{s}</option>)}
+              </select>
+            )}
 
             <select
               className="cf-input cf-select"

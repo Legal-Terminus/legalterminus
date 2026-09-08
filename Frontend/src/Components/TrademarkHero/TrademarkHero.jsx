@@ -114,6 +114,8 @@ const TrademarkHero = () => {
             source="trademark-application"
             title="Talk to an Expert"
             subtitle="Book your free consultation — our trademark expert calls you back."
+            locationField="city"
+            fixedState="Odisha"
           />
         </div>
       </div>
