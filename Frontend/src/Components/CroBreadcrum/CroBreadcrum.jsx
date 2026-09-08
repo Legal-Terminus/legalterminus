@@ -6,7 +6,7 @@ import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
 
 const CroBreadcrum = () => {
   return (
-    <section className="lt-public-hero cro-hero-light">
+    <section className="lt-public-hero">
       <div className="lt-public-container">
 
         <div className="lt-public-content">
