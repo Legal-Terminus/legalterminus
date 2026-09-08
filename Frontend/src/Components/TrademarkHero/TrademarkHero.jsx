@@ -41,8 +41,7 @@ const TrademarkHero = () => {
           </span>
 
           <h1 className="crh-title">
-            Trademark Registration <br />
-            in <span className="crh-title-accent">Odisha</span>
+            Trademark Registration in <span className="crh-title-accent">Odisha</span>
           </h1>
 
           <p className="crh-subtitle">
