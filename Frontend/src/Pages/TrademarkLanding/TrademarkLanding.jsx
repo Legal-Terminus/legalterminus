@@ -18,18 +18,12 @@ const TmarkDocuments = React.lazy(() => import('../../Components/TmarkDocuments/
 const TmarkFAQ = React.lazy(() => import('../../Components/TmarkFAQ/TmarkFAQ'))
 const TrademarkPlans = React.lazy(() => import('../../Components/TrademarkPlans/TrademarkPlans'))
 const TrademarkTerms = React.lazy(() => import('../../Components/TrademarkTerms/TrademarkTerms'))
-const OurClients = React.lazy(() => import('../../Components/OurClients/OurClients'))
 
 const TrademarkLanding = () => {
   return (
     <div className="cro-page">
       {/* Custom-designed hero */}
       <TrademarkHero />
-
-      {/* Client logos / social proof */}
-      <Suspense fallback={<div />}>
-        <OurClients />
-      </Suspense>
 
       <div id="plans">
         <Suspense fallback={<div />}>

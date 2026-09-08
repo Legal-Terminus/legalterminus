@@ -41,6 +41,12 @@ const NON_SERVICE_PATHS = new Set([
 // Routes where the client-logos carousel is hidden (but testimonials/video stay)
 const HIDE_CLIENT_LOGOS_PATHS = new Set([
   "/companyregistration-in-odisha",
+]);
+
+// Routes where the video testimonial is hidden — client logos move up to sit
+// directly after the regular testimonial instead
+const HIDE_VIDEO_TESTIMONIAL_PATHS = new Set([
+  "/company-registration-consultancy-in-odisha",
   "/trademark-registration-in-odisha",
 ]);
 
@@ -110,7 +116,7 @@ function LazyServiceFooterSections() {
       {shouldRender && (
         <React.Suspense fallback={null}>
           <PvtltdTestimonial />
-          <PvtltdVideoTestimonial />
+          {!HIDE_VIDEO_TESTIMONIAL_PATHS.has(pathname) && <PvtltdVideoTestimonial />}
           {!HIDE_CLIENT_LOGOS_PATHS.has(pathname) && <PvtltdOurclints />}
         </React.Suspense>
       )}

@@ -204,6 +204,10 @@ function ScrollManager() {
 // Routes that render as standalone landing pages (no global navbar / footer)
 const STANDALONE_LANDING_ROUTES = ["/companyregistration-in-odisha", "/trademark-registration-in-odisha"];
 
+// Routes that keep the global navbar but only show the disclaimer + copyright
+// bar instead of the full footer (columns, socials, contact block)
+const MINIMAL_FOOTER_ROUTES = ["/company-registration-consultancy-in-odisha"];
+
 function ConditionalNavbar() {
   const { pathname } = useLocation();
   if (STANDALONE_LANDING_ROUTES.includes(pathname)) return null;
@@ -212,8 +216,11 @@ function ConditionalNavbar() {
 
 function ConditionalFooter() {
   const { pathname } = useLocation();
-  // Standalone landing page: no full footer, just the disclaimer + copyright bar
-  if (STANDALONE_LANDING_ROUTES.includes(pathname)) return <CompanyRegBottomBar />;
+  // Standalone landing page or minimal-footer page: no full footer, just the
+  // disclaimer + copyright bar
+  if (STANDALONE_LANDING_ROUTES.includes(pathname) || MINIMAL_FOOTER_ROUTES.includes(pathname)) {
+    return <CompanyRegBottomBar />;
+  }
   return <Footer />;
 }
 
