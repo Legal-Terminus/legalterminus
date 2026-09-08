@@ -4,10 +4,18 @@ import ConsultationForm from '../ConsultationForm/ConsultationForm';
 import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
 
 const FEATURES = [
-  { title: "100% Online + Bhubaneswar Office" },
-  { title: "Free Expert Consultation" },
-  { title: "Transparent, No Hidden Charges" },
-  { title: "Incorporation in 10–15 Days" },
+  {
+    title: "100% Online Filing + Bhubaneswar Office",
+    text: "File your incorporation from anywhere with expert guidance, or visit our Bhubaneswar office for personalized, face-to-face support.",
+  },
+  {
+    title: "Free Expert Consultation",
+    text: "Talk to our CA/CS experts to choose the right business structure — Pvt Ltd, OPC or Section 8 — for your goals.",
+  },
+  {
+    title: "Incorporation in 10–15 Days",
+    text: "Track every stage, from name approval to your Certificate of Incorporation, with regular updates and transparent, no-hidden-charge pricing.",
+  },
 ];
 
 const CroBreadcrum = () => {
@@ -26,30 +34,25 @@ const CroBreadcrum = () => {
 
           <span className="crh-badge">
             <span className="crh-badge-dot" />
-            Company Registration Consultancy in Odisha
+            Company Registration in Odisha
           </span>
 
           <h1 className="crh-title">
-            Company Registration Consultancy
+            Company Registration
             <span className="crh-title-accent"> in Odisha</span>
             <br />
             <span className="crh-title-accent">Start Your Business the Right Way</span>
           </h1>
 
           <p className="crh-subtitle">
-            Setting up a company in Bhubaneswar or anywhere across Odisha? Legal Terminus gives you
-            expert, end-to-end assistance with proper documentation and complete compliance support —
-            from name approval, DSC and DIN to MOA &amp; AOA, PAN, TAN and the Certificate of
-            Incorporation, all filed on MCA21 V3. Whether it's a Private Limited, One Person Company,
-            LLP or Public Limited, we register the right structure for your business. Consultancy
-            services start from <strong>₹4,999</strong> (excluding government fees) with transparent,
-            no-hidden-charge pricing and a free consultation to understand your requirements.
+            Get your business legally registered under the Companies Act, 2013 — Private Limited, OPC
+            or Section 8 — filed on the official MCA21 portal with complete expert support.
           </p>
 
           <div className="crh-price">
-            <div className="crh-price-icon">₹</div>
+            <div className="crh-price-icon">🏢</div>
             <div className="crh-price-text">
-              <strong>Consultancy services starting from ₹4,999</strong>
+              <strong>Company registration starting from ₹4,999</strong>
               <span>excluding government fees</span>
             </div>
           </div>
@@ -70,6 +73,7 @@ const CroBreadcrum = () => {
                 </span>
                 <div className="crh-feature-body">
                   <h3>{f.title}</h3>
+                  <p>{f.text}</p>
                 </div>
               </li>
             ))}
