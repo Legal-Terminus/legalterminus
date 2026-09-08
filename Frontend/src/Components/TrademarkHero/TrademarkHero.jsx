@@ -104,6 +104,13 @@ const TrademarkHero = () => {
                 <span>Odisha&apos;s top-rated legal, tax &amp; compliance platform</span>
               </div>
             </div>
+
+            <div className="crh-trust-divider" />
+
+            <div className="crh-trust-count">
+              <strong>7+</strong>
+              <span>Years of Legal Expertise</span>
+            </div>
           </div>
         </div>
 
