@@ -40,8 +40,6 @@ const CroBreadcrum = () => {
           <h1 className="crh-title">
             Company Registration
             <span className="crh-title-accent"> in Odisha</span>
-            <br />
-            <span className="crh-title-accent">Start Your Business the Right Way</span>
           </h1>
 
           <p className="crh-subtitle">
