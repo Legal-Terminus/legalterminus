@@ -25,7 +25,7 @@ const BannerContact = () => {
         </p>
 
         <a
-          href="tel:+911234567890"
+          href="tel:+918280093456"
           className="contactbanner-btn"
           aria-label="Call our team"
         >

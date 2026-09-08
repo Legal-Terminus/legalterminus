@@ -49,7 +49,7 @@ const Incorporation = () => {
                 See what's included
               </a>
               <a
-                href="tel:"
+                href="tel:+918280093456"
                 className="incorporation-cta-secondary"
                 aria-label="Contact Legal Terminus"
               >
@@ -224,7 +224,7 @@ const Incorporation = () => {
             <a className="incorporation-cta-secondary" href="#contact" aria-label="Request quote">
               Request quote
             </a>
-            <a className="incorporation-quick" href="tel:" aria-label="Quick call">
+            <a className="incorporation-quick" href="tel:+918280093456" aria-label="Quick call">
               Quick call
             </a>
           </div>
