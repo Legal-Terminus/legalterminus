@@ -1,0 +1,57 @@
+/* ============================================================
+   CroBreadcrum — light/mint theme override for the Company
+   Registration Odisha hero, matching the Trademark Odisha hero's
+   palette (CompanyRegHero.css) while keeping OPCBreadcrum's shared
+   layout. Scoped to .cro-hero-light so the shared OPCBreadcrum.css
+   used by ~35 other hero components stays untouched.
+   ============================================================ */
+
+.cro-hero-light.lt-public-hero {
+  background:
+    radial-gradient(ellipse 700px 480px at 88% 12%, rgba(74, 222, 128, 0.18), transparent 60%),
+    radial-gradient(ellipse 600px 520px at 6% 92%, rgba(34, 197, 94, 0.14), transparent 60%),
+    linear-gradient(165deg, #f1f7f0 0%, #e7f2e6 45%, #eef6ee 100%);
+}
+
+.cro-hero-light .lt-public-logo {
+  display: block;
+  width: fit-content;
+  margin: 0 0 18px;
+  line-height: 0;
+}
+
+.cro-hero-light .lt-public-logo img {
+  width: 200px;
+  height: 55px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.cro-hero-light .lt-public-content {
+  color: #334155;
+}
+
+.cro-hero-light .lt-public-title,
+.cro-hero-light .lt-title-india {
+  color: #0c1c2c;
+}
+
+.cro-hero-light .lt-title-tagline {
+  color: #16a34a;
+}
+
+.cro-hero-light .lt-public-description {
+  color: #475569;
+}
+
+.cro-hero-light .lt-feature-item {
+  color: #1e293b;
+}
+
+.cro-hero-light .lt-public-highlights {
+  border-top-color: rgba(34, 197, 94, 0.25);
+}
+
+.cro-hero-light .lt-public-highlights p {
+  color: #64748b;
+}

@@ -1,13 +1,19 @@
 import React from "react";
 import "../OPCBreadcrum/OPCBreadcrum.css";
+import "./CroBreadcrum.css";
 import ConsultationForm from '../ConsultationForm/ConsultationForm';
+import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
 
 const CroBreadcrum = () => {
   return (
-    <section className="lt-public-hero">
+    <section className="lt-public-hero cro-hero-light">
       <div className="lt-public-container">
 
         <div className="lt-public-content">
+
+          <a href="/" className="lt-public-logo">
+            <img src={LOGO_ASSET} alt="Legal Terminus" />
+          </a>
 
           <span className="lt-public-tag">
             Company Registration Consultancy in Odisha
