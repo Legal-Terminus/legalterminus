@@ -15,8 +15,10 @@ import './ConsultationModal.css';
  *   source   {string}    - passed straight through to ConsultationForm (which page)
  *   title    {string}    - optional, forwarded to ConsultationForm
  *   subtitle {string}    - optional, forwarded to ConsultationForm
+ *   locationField {'state'|'city'} - optional, forwarded to ConsultationForm
+ *   fixedState    {string}         - optional, forwarded to ConsultationForm
  */
-const ConsultationModal = ({ open, onClose, source, title, subtitle }) => {
+const ConsultationModal = ({ open, onClose, source, title, subtitle, locationField, fixedState }) => {
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -42,6 +44,8 @@ const ConsultationModal = ({ open, onClose, source, title, subtitle }) => {
           source={source}
           {...(title ? { title } : {})}
           {...(subtitle ? { subtitle } : {})}
+          {...(locationField ? { locationField } : {})}
+          {...(fixedState ? { fixedState } : {})}
         />
       </div>
     </div>,

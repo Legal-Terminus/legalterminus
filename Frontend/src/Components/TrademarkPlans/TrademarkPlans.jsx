@@ -135,6 +135,8 @@ const TrademarkPlans = () => {
         open={showConsult}
         onClose={() => setShowConsult(false)}
         source="trademark-registration-odisha"
+        locationField="city"
+        fixedState="Odisha"
       />
     </>
   );
