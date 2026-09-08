@@ -26,7 +26,7 @@ const CroBreadcrum = () => {
             from name approval, DSC and DIN to MOA &amp; AOA, PAN, TAN and the Certificate of
             Incorporation, all filed on MCA21 V3. Whether it's a Private Limited, One Person Company,
             LLP or Public Limited, we register the right structure for your business. Consultancy
-            services start from <strong>₹3,999</strong> (excluding government fees) with transparent,
+            services start from <strong>₹4,999</strong> (excluding government fees) with transparent,
             no-hidden-charge pricing and a free consultation to understand your requirements.
           </p>
 
