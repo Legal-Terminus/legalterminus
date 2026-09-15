@@ -52,7 +52,7 @@ const navData = [
           },
           {
             label: "Public Limited Company Registration In India",
-            href: "/Public-Limited-Company-Registration-in-India",
+            href: "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
           },
           {
             label: "One Person Company Registration In India",
