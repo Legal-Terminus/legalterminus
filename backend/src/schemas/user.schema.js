@@ -47,6 +47,14 @@ export const createUserSchema = z
     if (val.role !== "client" && !val.designation) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["designation"], message: "designation is required for staff roles" });
     }
+    // #183: every CLIENT account must record who referred it. Enforced on create
+    // only — updateUserSchema keeps it optional so the clients that predate this
+    // rule stay editable (see ClientForm.tsx for the matching UI rule).
+    // NB: the field is stored as `professionalName` but labelled "Reference" in the
+    // UI (#150 renamed the label only, to avoid a data migration).
+    if (val.role === "client" && !val.professionalName?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["professionalName"], message: "Reference is required when creating a client" });
+    }
   });
 
 // PATCH /api/portal/users/:uid — everything optional; role handled by controller authz.

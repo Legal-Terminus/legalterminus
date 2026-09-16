@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import { db, getBucket } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { createNotification } from './notifications.controller.js';
+import { clientCanSeeMatter } from './tasks.controller.js';
 
 /**
  * Document Cycle (E-05) — signed-URL upload, review, and re-upload.
@@ -100,7 +101,8 @@ async function loadAuthorizedTask(req, res, taskId, { clientWrites = true } = {}
     if (!clientWrites) return deny();
     // #166: additional client logins act with the primary client's scope, so a
     // partner added to the account can upload/download on the same matters.
-    if (task.clientUid !== (req.user.primaryClientUid || req.user.uid)) return deny();
+    // #188: so can someone listed as an additional client contact on THIS matter.
+    if (!clientCanSeeMatter(req.user, task)) return deny();
     return task;
   }
 

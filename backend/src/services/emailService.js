@@ -118,8 +118,24 @@ const BRAND = {
  * configured FRONTEND_URL there is no absolute URL to serve, so we fall back to
  * text alone rather than emitting a broken image.
  */
+/**
+ * The public site URL used for every absolute link we put in an email (portal
+ * deep links, the logo) and for payment redirects.
+ *
+ * FRONTEND_URL is the override for local dev and any non-production deploy. It
+ * defaults to the live site rather than an empty string: emails were going out
+ * pointing at the old *.web.app host because the deployed variable still held it,
+ * and an empty value silently produced a relative "/portal/" link that means
+ * nothing in an inbox. A wrong-but-live URL is the failure mode we actually hit,
+ * so the safe default is the canonical domain.
+ */
+const PUBLIC_SITE_URL = 'https://legalterminus.com';
+export function publicSiteUrl() {
+  return (process.env.FRONTEND_URL || PUBLIC_SITE_URL).replace(/\/$/, '');
+}
+
 function renderEmail({ title, message, taskId }) {
-  const base = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
+  const base = publicSiteUrl();
   const link = taskId && base ? `${base}/portal/tasks/${taskId}` : (base ? `${base}/portal/` : null);
   const cta = link
     ? `<tr><td style="padding:24px 0 4px">

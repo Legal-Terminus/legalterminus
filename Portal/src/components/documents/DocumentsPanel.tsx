@@ -13,6 +13,26 @@ import { useToast } from '../common/toastContext';
 import { useConfirm } from '../common/confirmContext';
 import { useAuthStore } from '../../store/authStore';
 
+// #187: one place that maps the stored uploader role to what users see, so the
+// badge, the filter and the uploader sort can never disagree. Documents uploaded
+// before the role was recorded are treated as internal (the default at the time).
+function uploaderLabel(role?: 'client' | 'staff' | null) {
+  return role === 'client' ? 'Client' : 'Legal Terminus';
+}
+
+// #186: upload date AND time — "when did this arrive" is the whole point, so the
+// time matters, not just the day. Returns '' when the timestamp is missing so the
+// caller can omit the line entirely rather than render "Invalid Date".
+function formatUploadedAt(iso?: string | null) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  });
+}
+
 /**
  * Documents tab (E-05). Staff review uploads (approve/reject); clients upload and
  * re-upload after rejection. Active documents show first; archived (superseded)
@@ -31,6 +51,11 @@ export default function DocumentsPanel({ taskId, isStaff, workflowType }: { task
 
   // #127: bulk download — pick documents, get one zip. Only real (uploaded) docs
   // can be downloaded, so selection is limited to those.
+  // #186/#187: document list filter + sort (main list only; drafts and version
+  // history are short, purpose-specific lists where these would add noise).
+  type SortBy = 'newest' | 'oldest' | 'uploader-asc' | 'uploader-desc';
+  const [uploaderFilter, setUploaderFilter] = useState<'all' | 'client' | 'staff'>('all');
+  const [sortBy, setSortBy] = useState<SortBy>('newest');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [zipping, setZipping] = useState(false);
   const toggleSel = (id: string) => setSelected((prev) => {
@@ -104,9 +129,24 @@ export default function DocumentsPanel({ taskId, isStaff, workflowType }: { task
   // main list during the matter — shown in CHRONOLOGICAL order so a document's
   // progression reads top-to-bottom. Superseded versions only move to Version
   // History once the matter completes (backend finalizeMatterDocuments).
-  const active = docs
-    .filter((d) => d.status !== 'archived' && d.status !== 'draft')
-    .sort((a, b) => (a.uploadedAt ?? '').localeCompare(b.uploadedAt ?? ''));
+  // #186/#187: the main list is filterable by uploader and sortable by upload
+  // time or uploader. Defaults to NEWEST first — the previous chronological
+  // (oldest-first) order buried the document you just uploaded at the bottom.
+  const activeAll = docs.filter((d) => d.status !== 'archived' && d.status !== 'draft');
+  const active = activeAll
+    .filter((d) => uploaderFilter === 'all' || (d.uploaderRole ?? 'staff') === uploaderFilter)
+    .sort((a, b) => {
+      if (sortBy === 'uploader-asc' || sortBy === 'uploader-desc') {
+        // Group by uploader, then keep newest-first within each group so the
+        // secondary order is still meaningful rather than arbitrary.
+        const av = uploaderLabel(a.uploaderRole), bv = uploaderLabel(b.uploaderRole);
+        const cmp = av.localeCompare(bv);
+        if (cmp !== 0) return sortBy === 'uploader-asc' ? cmp : -cmp;
+        return (b.uploadedAt ?? '').localeCompare(a.uploadedAt ?? '');
+      }
+      const cmp = (a.uploadedAt ?? '').localeCompare(b.uploadedAt ?? '');
+      return sortBy === 'oldest' ? cmp : -cmp;
+    });
   const archived = docs.filter((d) => d.status === 'archived');
 
   // #127: only real (uploaded) documents are downloadable.
@@ -114,6 +154,9 @@ export default function DocumentsPanel({ taskId, isStaff, workflowType }: { task
   const allSelected = downloadable.length > 0 && downloadable.every((d) => selected.has(d.docId));
   const toggleAll = () => setSelected(allSelected ? new Set() : new Set(downloadable.map((d) => d.docId)));
   const downloadSelected = async () => {
+    // #187: only ever zip what is VISIBLE. Selecting rows and then changing the
+    // uploader filter would otherwise silently include documents the user can no
+    // longer see (`downloadable` is already the filtered list, so this holds).
     const picked = downloadable.filter((d) => selected.has(d.docId));
     if (!picked.length) return;
     setZipping(true);
@@ -196,6 +239,67 @@ export default function DocumentsPanel({ taskId, isStaff, workflowType }: { task
         </div>
       ) : (
         <div className="space-y-2.5">
+          {/* #186/#187: filter by uploader + sort by upload time or uploader.
+              Shown once there is more than one document — with a single row
+              there is nothing to filter or reorder. The counts make it obvious
+              when a filter is hiding something. */}
+          {activeAll.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2 px-1">
+              <label className="inline-flex items-center gap-1.5 text-xs text-ink-muted">
+                <span className="hidden sm:inline">Uploaded by</span>
+                <select
+                  className="input-field py-1 px-2 text-xs w-auto"
+                  value={uploaderFilter}
+                  onChange={(e) => {
+                    setUploaderFilter(e.target.value as typeof uploaderFilter);
+                    setSelected(new Set()); // #187: don't keep hidden rows selected
+                  }}
+                  aria-label="Filter by uploader"
+                >
+                  <option value="all">Everyone ({activeAll.length})</option>
+                  <option value="staff">
+                    Legal Terminus ({activeAll.filter((d) => (d.uploaderRole ?? 'staff') === 'staff').length})
+                  </option>
+                  <option value="client">
+                    Client ({activeAll.filter((d) => d.uploaderRole === 'client').length})
+                  </option>
+                </select>
+              </label>
+              <label className="inline-flex items-center gap-1.5 text-xs text-ink-muted">
+                <span className="hidden sm:inline">Sort</span>
+                <select
+                  className="input-field py-1 px-2 text-xs w-auto"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortBy)}
+                  aria-label="Sort documents"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="uploader-asc">Uploader (A–Z)</option>
+                  <option value="uploader-desc">Uploader (Z–A)</option>
+                </select>
+              </label>
+              {uploaderFilter !== 'all' && (
+                <button
+                  onClick={() => setUploaderFilter('all')}
+                  className="text-xs text-brand-700 hover:underline"
+                >
+                  Clear filter
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* A filter that hides everything must say so, not look like an empty tab. */}
+          {activeAll.length > 0 && active.length === 0 && (
+            <p className="text-sm text-ink-muted px-1 py-3">
+              No documents uploaded by {uploaderLabel(uploaderFilter === 'client' ? 'client' : 'staff')}.{' '}
+              <button onClick={() => setUploaderFilter('all')} className="text-brand-700 hover:underline">
+                Show all
+              </button>
+            </p>
+          )}
+
           {/* #127: bulk-download toolbar — Select all + Download selected as a zip. */}
           {downloadable.length > 0 && (
             <div className="flex items-center justify-between gap-3 px-1">
@@ -425,7 +529,7 @@ function DocumentCard({
                   doc.uploaderRole === 'client' ? 'bg-blue-50 text-blue-700' : 'bg-brand-50 text-brand-700'
                 }`}>
                   <Building2 className="w-3 h-3" />
-                  {doc.uploaderRole === 'client' ? 'Client' : 'Legal Terminus'}
+                  {uploaderLabel(doc.uploaderRole)}
                 </span>
               )}
               {/* #125: STAFF-ONLY sharing state, so the team can see at a glance
@@ -442,6 +546,14 @@ function DocumentCard({
               )}
               {doc.stepNumber != null && <span className="text-[11px] text-ink-faint">Step {doc.stepNumber}</span>}
             </div>
+            {/* #186: when the document arrived — date AND time, so uploads on the
+                same day are still distinguishable. Omitted when unknown (older
+                records) rather than rendering a placeholder. */}
+            {formatUploadedAt(doc.uploadedAt) && (
+              <p className="text-[11px] text-ink-faint mt-1">
+                Uploaded {formatUploadedAt(doc.uploadedAt)}
+              </p>
+            )}
           </div>
         </div>
         {/* #113: View (open) + Delete actions. Upload is the panel's own control. */}

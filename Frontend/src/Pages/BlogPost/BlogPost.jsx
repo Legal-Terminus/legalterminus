@@ -4,8 +4,6 @@ import { getPostBySlug, getRelatedPosts, posts, CATEGORIES } from "../../data/bl
 import { blogContent } from "../../data/blogContent";
 import "./BlogPost.css";
 
-const WP_API = "https://legalterminus.com/wp-json/wp/v2/posts";
-
 const BlogPost = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -35,17 +33,19 @@ const BlogPost = () => {
     setError(false);
     setContent(null);
 
-    fetch(`${WP_API}?slug=${slug}&_fields=content`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data && data[0] && data[0].content) {
-          setContent(data[0].content.rendered);
-        } else {
-          setError(true);
-        }
+    // #184: bodies are bundled, not fetched — WordPress is decommissioned. Loaded
+    // via dynamic import so the ~1MB of article HTML is a separate chunk that only
+    // downloads when someone actually opens a post, not on every page of the site.
+    let cancelled = false;
+    import("../../data/blogContent")
+      .then(({ postContent }) => {
+        if (cancelled) return;
+        const html = postContent[slug];
+        if (html) setContent(html); else setError(true);
       })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .catch(() => { if (!cancelled) setError(true); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [slug]);
 
   const displayContent = localContent || content;
@@ -106,15 +106,11 @@ const BlogPost = () => {
 
           {error && !loading && (
             <div className="blogpost-error">
+              {/* #184: previously linked to the WordPress copy, but that URL now
+                  301s back into this app — an off-site link would loop. The
+                  content is bundled, so this only shows for an unknown slug. */}
               <p>
-                Unable to load the full article. Read it on the{" "}
-                <a
-                  href={`https://legalterminus.com/${slug}/`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Legal Terminus website →
-                </a>
+                This article isn’t available. <Link to="/blog">Browse all articles →</Link>
               </p>
             </div>
           )}
@@ -261,18 +257,6 @@ const BlogPost = () => {
             </div>
           )}
 
-          {/* Read full on source */}
-          <div className="blogpost-sidebar-card blogpost-sidebar-source">
-            <p>Read the original article on:</p>
-            <a
-              href={`https://legalterminus.com/${slug}/`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="blogpost-source-btn"
-            >
-              legalterminus.com →
-            </a>
-          </div>
         </aside>
       </div>
     </main>

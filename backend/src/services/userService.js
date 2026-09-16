@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { db, admin } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
-import { sendNotificationEmail, sendTemplatedEmail } from './emailService.js';
+import { publicSiteUrl, sendNotificationEmail, sendTemplatedEmail } from './emailService.js';
 import { renderTemplate } from './emailTemplates.service.js';
 
 const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
@@ -254,7 +254,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
       try {
         const rendered = await renderTemplate('client_welcome', {
           clientName: profileData.name || 'there',
-          portalUrl: (process.env.FRONTEND_URL || '').replace(/\/$/, '') + '/portal/',
+          portalUrl: `${publicSiteUrl()}/portal/`,
         });
         if (rendered) await sendTemplatedEmail({ to: email, subject: rendered.subject, body: rendered.body });
       } catch (e) {

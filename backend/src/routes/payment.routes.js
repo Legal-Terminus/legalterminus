@@ -4,6 +4,7 @@ import axios from 'axios';
 import { getDb } from '../config/firebase.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 import { logger } from "../config/logger.js";
+import { publicSiteUrl } from '../services/emailService.js';
 
 const router = express.Router();
 
@@ -56,7 +57,8 @@ router.post('/initiate', verifyToken, async (req, res) => {
   const key       = PAYU_KEY();
   const txnid     = `LT-${Date.now()}`;
   const amountStr = Number(amount).toFixed(2);
-  const { BASE_URL, FRONTEND_URL } = process.env;
+  const { BASE_URL } = process.env;
+  const FRONTEND_URL = publicSiteUrl();
 
   const surl = `${BASE_URL}/api/payment/redirect?txnId=${txnid}&planName=${encodeURIComponent(planName)}&userId=${encodeURIComponent(userId || '')}&amount=${amount}&source=${encodeURIComponent(source || 'unknown')}&sourceLabel=${encodeURIComponent(sourceLabel || '')}&status_type=success`;
   const furl = `${BASE_URL}/api/payment/redirect?txnId=${txnid}&planName=${encodeURIComponent(planName)}&userId=${encodeURIComponent(userId || '')}&amount=${amount}&source=${encodeURIComponent(source || 'unknown')}&sourceLabel=${encodeURIComponent(sourceLabel || '')}&status_type=failure`;
@@ -94,7 +96,7 @@ router.post('/initiate', verifyToken, async (req, res) => {
 router.post('/redirect', express.urlencoded({ extended: true }), async (req, res) => {
   const body = req.body;
   const { txnId, planName, userId, amount, source, sourceLabel } = req.query;
-  const { FRONTEND_URL } = process.env;
+  const FRONTEND_URL = publicSiteUrl();
 
   logger.info(`PayU redirect: txnId=${txnId}, status=${body.status}, userId=${userId}`);
 

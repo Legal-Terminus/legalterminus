@@ -71,6 +71,7 @@ test('E09-S02: admin creates a client end-to-end', async ({ adminPage }) => {
     await adminPage.locator('input[name="email"]').fill(email);
     await adminPage.locator('input[name="phone"]').fill('9876500002');
     await adminPage.locator('input[name="address"]').fill('123 E2E Street, Test City'); // required for clients
+    await adminPage.locator('input[name="professionalName"]').fill('E2E Referrer'); // #183: Reference is required on create
     await adminPage.getByRole('button', { name: /create client/i }).click();
 
     await expect(adminPage).toHaveURL(/\/users(\?|$)/, { timeout: 15_000 });
@@ -81,13 +82,31 @@ test('E09-S02: admin creates a client end-to-end', async ({ adminPage }) => {
   }
 });
 
+test('#183: Reference is required when creating a client', async ({ adminPage }) => {
+  await adminPage.goto('users');
+  await adminPage.getByRole('button', { name: 'Add Client' }).click();
+  await expect(adminPage).toHaveURL(/users\/new\/client/);
+
+  // Fill everything EXCEPT Reference — the form must refuse to submit.
+  await adminPage.locator('input[name="name"]').fill('E2E Missing Ref');
+  await adminPage.locator('input[name="email"]').fill(`e2e-noref-${Date.now()}@legalterminus.test`);
+  await adminPage.locator('input[name="phone"]').fill('9876500003');
+  await adminPage.locator('input[name="address"]').fill('123 E2E Street, Test City');
+  await adminPage.getByRole('button', { name: /create client/i }).click();
+
+  // Still on the form (no navigation) — the client was not created.
+  await expect(adminPage).toHaveURL(/users\/new\/client/);
+});
+
 test('#150: the client form labels the reference field "Reference", not "Professional"', async ({ adminPage }) => {
   await adminPage.goto('users/new/client');
   // The Business Details field is relabelled; the underlying input name is
   // unchanged (professionalName) so existing records keep working.
   const reference = adminPage.locator('input[name="professionalName"]');
   await expect(reference).toBeVisible();
-  await expect(adminPage.getByText('Reference', { exact: true })).toBeVisible();
+  // #183 appended a required marker to this label, so match the label element
+  // rather than an exact text node — the point of #150 is the WORD, not the glyph.
+  await expect(adminPage.locator('label', { hasText: /^Reference\s*\*?$/ })).toBeVisible();
   await expect(adminPage.getByText('Professional', { exact: true })).toHaveCount(0);
   // Group / Parent Company is untouched by the rename.
   await expect(adminPage.locator('input[name="groupCompany"]')).toBeVisible();
