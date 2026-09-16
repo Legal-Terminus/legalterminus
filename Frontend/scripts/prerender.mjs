@@ -54,8 +54,25 @@ async function snapshot(context, route) {
       () => document.querySelector('#root')?.innerText?.trim().length > 200,
       { timeout: NAV_TIMEOUT },
     );
-    // Below-the-fold sections are React.lazy + Suspense; let them settle.
-    await page.waitForTimeout(600);
+    // Below-the-fold sections are React.lazy + Suspense; let them settle. A
+    // fixed delay silently undershoots on routes with many lazy sections
+    // (observed: /trademark-registration-in-odisha's 13 lazy sections can take
+    // >600ms to mount, especially under this loop's own CONCURRENCY, which
+    // froze the snapshot with only the hero + first section — no error, no
+    // failed request, just an incomplete DOM that still cleared the length
+    // guard below). Poll until the rendered text stops growing instead of
+    // guessing a fixed duration. Require 3 CONSECUTIVE unchanged readings
+    // (not just one) — the page-loader's own text can transiently match the
+    // waitForFunction gate above before the hero has actually swapped in, and
+    // a single unchanged reading during that lull looks identical to "done".
+    let lastLength = -1;
+    let stableCount = 0;
+    for (let i = 0; i < 20 && stableCount < 3; i++) {
+      const length = await page.evaluate(() => document.body.innerText.length);
+      stableCount = length === lastLength ? stableCount + 1 : 0;
+      lastLength = length;
+      await page.waitForTimeout(300);
+    }
 
     // React 19 hoists <title>/<meta>/<link> into <head>, but on a CLIENT-SIDE
     // navigation it appends the new tags without removing the previous page's.
