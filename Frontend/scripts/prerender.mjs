@@ -110,6 +110,11 @@ async function snapshot(context, route) {
       document.head
         .querySelectorAll('script[src^="https://www.googletagmanager.com/gtm.js"]')
         .forEach((el) => el.remove());
+
+      // Same self-injection problem, same fix, for the Meta Pixel's fbevents.js.
+      document.head
+        .querySelectorAll('script[src^="https://connect.facebook.net/"]')
+        .forEach((el) => el.remove());
     });
 
     const html = await page.content();
@@ -144,18 +149,20 @@ async function main() {
     userAgent: 'Mozilla/5.0 (compatible; LegalTerminusPrerender/1.0)',
   });
 
-  // Never let the Google tag (or GTM) run during a snapshot. Prerendering visits
-  // every indexable route in a real browser, so without this each build would
-  // register a live page_view/container load for every route — all from the
-  // local preview server, polluting the property with traffic no human generated.
-  // Aborting the request also keeps gtag's injected runtime out of the captured
-  // HTML; gtag's <script> tag itself still ships as static markup, because it
-  // lives in index.html and nothing here removes it. GTM's bootstrap is
-  // different — it's self-injecting, so this abort alone doesn't stop it from
-  // adding its own <script> element to the DOM; that's handled separately by the
-  // cleanup in page.evaluate() below (see the comment there).
+  // Never let the Google tag, GTM, or the Meta Pixel fire during a snapshot.
+  // Prerendering visits every indexable route in a real browser, so without
+  // this each build would register a live page_view/container load AND a
+  // Meta PageView for every route — all from the local preview server,
+  // polluting both properties with traffic no human generated. Aborting the
+  // request also keeps gtag's/fbq's injected runtime out of the captured
+  // HTML; the inline bootstrap scripts themselves still ship as static
+  // markup, because they live in index.html and nothing here removes them.
+  // GTM's and the Pixel's bootstraps are different — both are self-injecting,
+  // so this abort alone doesn't stop them from adding their own <script>
+  // element to the DOM; that's handled separately by the cleanup in
+  // page.evaluate() below (see the comment there).
   await context.route(
-    /(googletagmanager\.com|google-analytics\.com|analytics\.google\.com)/,
+    /(googletagmanager\.com|google-analytics\.com|analytics\.google\.com|connect\.facebook\.net|facebook\.com\/tr)/,
     (route) => route.abort(),
   );
 
@@ -204,10 +211,14 @@ async function main() {
         titles.slice(1).forEach((el) => el.remove());
         if (titles[0]) titles[0].textContent = current;
 
-        // Same GTM self-injection cleanup as the route snapshot above — see the
-        // comment there for why this selector only ever matches the duplicate.
+        // Same GTM / Meta Pixel self-injection cleanup as the route snapshot
+        // above — see the comment there for why these selectors only ever
+        // match the dynamically-injected duplicate.
         document.head
           .querySelectorAll('script[src^="https://www.googletagmanager.com/gtm.js"]')
+          .forEach((el) => el.remove());
+        document.head
+          .querySelectorAll('script[src^="https://connect.facebook.net/"]')
           .forEach((el) => el.remove());
       });
       await writeFile(path.join(DIST, '404.html'), await page.content(), 'utf8');
