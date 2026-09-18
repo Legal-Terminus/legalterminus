@@ -175,6 +175,37 @@ export function clientCanSeeMatter(user, task) {
   return (task.ccEmails ?? []).some((e) => String(e).trim().toLowerCase() === email);
 }
 
+/**
+ * #189 — the matters list showed progress as `min(currentStepNumber, totalSteps)`,
+ * i.e. it treated the step's IDENTITY NUMBER as a position. Since step numbers are
+ * identity only and not flow-ordered (see #117/#55), a matter sitting on step 32 of
+ * a 20-step workflow clamped to 20 and reported "20/20 complete" with 9 steps done;
+ * others under-reported for the same reason.
+ *
+ * Progress is now the COUNT of finished steps. The list endpoint can't afford a
+ * steps-subcollection read per row, so the count is denormalised onto the task doc
+ * and refreshed after any step-status change via this helper. Recomputing (rather
+ * than incrementing at each of the ~8 write sites) means the number cannot drift
+ * out of sync, and it self-heals for matters created before the field existed.
+ *
+ * Returns the count, or null if it could not be read (never throws — progress is
+ * display data and must not fail a transition).
+ */
+export async function refreshCompletedStepCount(taskRef) {
+  try {
+    const steps = await taskRef.collection('steps').get();
+    const completedStepCount = steps.docs.filter((d) => {
+      const st = d.data().status;
+      return st === 'completed' || st === 'skipped';
+    }).length;
+    await taskRef.set({ completedStepCount, totalSteps: steps.size }, { merge: true });
+    return completedStepCount;
+  } catch (err) {
+    logger.warn({ err: err?.message }, 'refreshCompletedStepCount failed (non-fatal)');
+    return null;
+  }
+}
+
 export function clientScopeUid(user) {
   return user?.primaryClientUid || user?.uid;
 }
@@ -623,6 +654,7 @@ export async function createTask(req, res) {
       });
     }
     await batch.commit();
+    await refreshCompletedStepCount(ref); // #189
 
     // Notifications (E07-S01). A manager-created matter pings admins to approve;
     // an active matter pings the first step's pre-assigned owner that work is theirs.
@@ -1060,6 +1092,7 @@ export async function reopenStep(req, res) {
     });
 
     await batch.commit();
+    await refreshCompletedStepCount(taskRef); // #189
 
     res.json({ success: true, status: 'active', currentStepNumber: target });
   } catch (err) {
@@ -2449,6 +2482,7 @@ export async function transitionTask(req, res) {
     });
 
     await batch.commit();
+    await refreshCompletedStepCount(taskRef); // #189
 
     // Resolve stale notifications (#100). Notifications are keyed to the step the
     // ball ARRIVES at (the step the recipient must act on). On any FORWARD move we

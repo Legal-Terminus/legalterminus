@@ -60,6 +60,10 @@ export interface Task {
   currentStepFallback?: boolean;
   totalSteps?: number;
   steps?: TaskStep[];
+  /** #189: denormalised count of finished (completed|skipped) steps, kept in sync
+   *  server-side. Progress must come from this, never from currentStepNumber —
+   *  step numbers are identity only and are not flow-ordered. */
+  completedStepCount?: number;
   isUrgent?: boolean;
   // Projected matter completion (E13-S02); null while pending approval/untracked.
   matterDueAt?: string | null;

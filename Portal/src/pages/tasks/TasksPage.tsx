@@ -199,6 +199,28 @@ export default function TasksPage() {
   );
 }
 
+/**
+ * #189 — matter progress. Counts FINISHED steps; never derives progress from
+ * `currentStepNumber`, which is an identity number and not a flow position
+ * (see #117/#55): a matter on step 32 of a 20-step workflow used to clamp to 20
+ * and report "20/20 complete" with 9 steps actually done.
+ *
+ * Prefers the server-maintained `completedStepCount`, falls back to counting any
+ * embedded steps (matters that predate the field), and shows no fraction at all
+ * when neither is available rather than inventing one.
+ */
+function matterProgress(t: Task) {
+  const total = t.totalSteps ?? t.steps?.length ?? 0;
+  const isDone = t.status === 'completed';
+  const counted = t.completedStepCount
+    ?? (t.steps
+      ? t.steps.filter((s) => s.status === 'completed' || s.status === 'skipped').length
+      : undefined);
+  const done = isDone ? total : Math.min(counted ?? 0, total);
+  const known = total > 0 && (isDone || counted != null);
+  return { total, done, known, pct: total ? Math.round((done / total) * 100) : 0, label: !known ? '—' : `${done}/${total}` };
+}
+
 const col = createColumnHelper<Task>();
 
 function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }: {
@@ -266,22 +288,15 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
       size: 180,
       cell: (ctx) => {
         const t = ctx.row.original;
-        // #164: with no known total, the old code fell back to currentStepNumber
-        // as the numerator over a zero denominator — rendering nonsense like
-        // "13/0" (and treating an internal step NUMBER as a position). When the
-        // total is unknown we show no fraction at all.
-        const total = t.totalSteps ?? t.steps?.length ?? 0;
-        const isDone = t.status === 'completed';
-        const displayStep = total ? Math.min(t.currentStepNumber, total) : 0;
-        const pct = isDone ? 100 : (total ? Math.round(((displayStep - 1) / total) * 100) : 0);
+        // #189/#164: progress counts FINISHED steps (see matterProgress) — not
+        // currentStepNumber, and never a fraction over a zero denominator.
+        const { pct, label } = matterProgress(t);
         return (
           <div className="flex items-center gap-2">
             <div className="h-1.5 w-24 rounded-full bg-surface-card overflow-hidden">
               <div className="h-full bg-ink/70 rounded-full" style={{ width: `${pct}%` }} />
             </div>
-            <span className="text-[11px] text-ink-faint shrink-0">
-              {!total ? '—' : isDone ? `${total}/${total}` : `${displayStep}/${total}`}
-            </span>
+            <span className="text-[11px] text-ink-faint shrink-0">{label}</span>
           </div>
         );
       },
@@ -339,11 +354,8 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
 function MatterCard({ task, isClientView, canDelete, deleting, onDelete }: {
   task: Task; isClientView: boolean; canDelete: boolean; deleting: boolean; onDelete: (t: Task) => void;
 }) {
-  // #164: see the table cell above — never render "n/0".
-  const total = task.totalSteps ?? task.steps?.length ?? 0;
-  const isDone = task.status === 'completed';
-  const displayStep = total ? Math.min(task.currentStepNumber, total) : 0;
-  const pct = isDone ? 100 : (total ? Math.round(((displayStep - 1) / total) * 100) : 0);
+  // #189/#164: same rule as the table cell — count finished steps.
+  const { pct, label: progressLabel } = matterProgress(task);
   const payment = PAYMENT[task.paymentStatus] ?? PAYMENT.not_paid;
   const primary = isClientView ? (task.serviceName || task.workflowType) : (task.clientName || 'Client unavailable');
   const secondary = isClientView ? '' : (task.serviceName || task.workflowType);
@@ -380,7 +392,7 @@ function MatterCard({ task, isClientView, canDelete, deleting, onDelete }: {
         <div className="h-1.5 flex-1 rounded-full bg-surface-card overflow-hidden">
           <div className="h-full bg-ink/70 rounded-full" style={{ width: `${pct}%` }} />
         </div>
-        <span className="text-[11px] text-ink-faint shrink-0">{!total ? '—' : isDone ? `${total}/${total}` : `${displayStep}/${total}`}</span>
+        <span className="text-[11px] text-ink-faint shrink-0">{progressLabel}</span>
       </div>
     </div>
   );
