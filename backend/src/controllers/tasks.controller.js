@@ -7,7 +7,7 @@ import { createNotification, resolveNotificationsForTask } from './notifications
 import { finalizeMatterDocuments } from './documents.controller.js';
 import { publicSiteUrl, sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
-import { sanitizeRichText, richTextToPlain } from '../services/richText.service.js';
+import { sanitizeRichText, richTextToPlain, checkWordLimit } from '../services/richText.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
 import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE, materialisableSteps, isTerminalStep } from '../../../shared/workflows/definitionSchema.js';
 
@@ -1147,6 +1147,15 @@ export async function postStepNote(req, res) {
     if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
     const task = snap.data();
 
+    // #194: check the cap on the UNTRUNCATED text — the 8000-char cap below would
+    // otherwise cut an over-long note under the word limit and save it silently.
+    const noteWl = checkWordLimit(sanitizeRichText((req.body?.note ?? '').toString(), { maxLength: 200000 }));
+    if (!noteWl.ok) {
+      return res.status(400).json({
+        message: `A note may be at most ${noteWl.limit} words (this one has ${noteWl.words}).`,
+        code: 'WORD_LIMIT_EXCEEDED',
+      });
+    }
     const clean = sanitizeRichText((req.body?.note ?? '').toString(), { maxLength: 8000 });
     if (!richTextToPlain(clean)) {
       return res.status(400).json({ message: 'The note is empty.' });
@@ -2349,6 +2358,14 @@ export async function transitionTask(req, res) {
     // on the server — never trust HTML from a browser — so every render site can
     // display it safely without re-sanitising.
     const rawComment = (event?.remark || event?.reason || '').toString();
+    // #194: as above — cap checked before truncation so nothing is silently cut.
+    const commentWl = checkWordLimit(sanitizeRichText(rawComment, { maxLength: 200000 }));
+    if (!commentWl.ok) {
+      return res.status(400).json({
+        message: `A comment may be at most ${commentWl.limit} words (this one has ${commentWl.words}).`,
+        code: 'WORD_LIMIT_EXCEEDED',
+      });
+    }
     const cleanComment = sanitizeRichText(rawComment, { maxLength: 8000 });
     // Empty once stripped (e.g. a lone <script>) counts as no comment.
     const comment = richTextToPlain(cleanComment) ? cleanComment : null;
