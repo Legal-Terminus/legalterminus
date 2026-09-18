@@ -8,7 +8,8 @@ const PLANS = [
   {
     id: "elemental",
     name: "Elemental",
-    displayName: "ELEMENTAL",
+    badge: "BASIC",
+    oldPrice: 2249,
     price: 1499,
     services: [
       "On-Call consultation with expert",
@@ -22,8 +23,9 @@ const PLANS = [
   {
     id: "enriched",
     name: "Enriched",
-    displayName: "ENRICHED",
+    badge: "★ MOST POPULAR",
     popular: true,
+    oldPrice: 9749,
     price: 6499,
     services: [
       "On-Call consultation with expert",
@@ -38,7 +40,8 @@ const PLANS = [
   {
     id: "supreme",
     name: "Supreme",
-    displayName: "SUPREME",
+    badge: "✦ FULL HEARING COVERAGE",
+    oldPrice: 22499,
     price: 12499,
     services: [
       "On-Call consultation with expert",
@@ -79,9 +82,15 @@ const TrademarkPlans = () => {
               >
                 <div>
                   <div className="opcplan-header">
-                    <div className="opcplan-name">{plan.displayName}</div>
-                    <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}/-</div>
-                    <div className="opcplan-meta">Excluding govt fee</div>
+                    {plan.badge && (
+                      <div className={`opcplan-badge${plan.popular ? " opcplan-badge--popular" : ""}`}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    <div className="opcplan-name">{plan.name}</div>
+                    <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
                   <div className="opcplan-body">
