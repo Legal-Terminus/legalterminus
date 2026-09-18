@@ -176,6 +176,37 @@ export function clientCanSeeMatter(user, task) {
 }
 
 /**
+ * #191 — resolve each matter's CURRENT STEP NAME for the list view.
+ *
+ * The list stores only `currentStepNumber`; the human name lives in the matter's
+ * pinned workflow definition. Definitions are cached in memory and shared across
+ * matters (a page is typically 1-2 distinct workflows), so this adds no
+ * meaningful cost — and doing it server-side keeps the client from having to
+ * fetch a definition per row.
+ *
+ * Staff see the internal step title. Never throws: a matter whose definition is
+ * missing simply carries no name rather than failing the whole list.
+ */
+async function attachCurrentStepNames(rows) {
+  const ids = [...new Set(rows.map((t) => t.workflowDefinitionId).filter(Boolean))];
+  const titlesByDef = new Map();
+  await Promise.all(ids.map(async (id) => {
+    try {
+      const compiled = await getCompiledById(id);
+      const steps = compiled?.definition?.steps;
+      if (Array.isArray(steps)) {
+        titlesByDef.set(id, new Map(steps.map((x) => [x.stepNumber, x.title])));
+      }
+    } catch { /* leave this definition unresolved */ }
+  }));
+  for (const t of rows) {
+    const byNum = titlesByDef.get(t.workflowDefinitionId);
+    t.currentStepTitle = byNum?.get(t.currentStepNumber) ?? null;
+  }
+  return rows;
+}
+
+/**
  * #189 — the matters list showed progress as `min(currentStepNumber, totalSteps)`,
  * i.e. it treated the step's IDENTITY NUMBER as a position. Since step numbers are
  * identity only and not flow-ordered (see #117/#55), a matter sitting on step 32 of
@@ -1186,6 +1217,7 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((t) => t.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows); // #164
+      await attachCurrentStepNames(rows); // #191
       return res.json({ data: rows, nextCursor: null });
     }
 
@@ -1252,6 +1284,7 @@ export async function listTasks(req, res) {
     // #168: a professional gets the same external-facing projection — they are
     // an outside party, so internal assignment/urgency must not leak either.
     if (role === 'client' || role === 'professional') data = data.map(projectTaskForClient);
+    await attachCurrentStepNames(data); // #191
     res.json({ data, nextCursor });
   } catch (err) {
     logger.error({ err: err }, 'listTasks error:');

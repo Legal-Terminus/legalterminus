@@ -64,6 +64,9 @@ export interface Task {
    *  server-side. Progress must come from this, never from currentStepNumber —
    *  step numbers are identity only and are not flow-ordered. */
   completedStepCount?: number;
+  /** #191: the current step's name, resolved server-side from the matter's pinned
+   *  workflow definition (staff list only — the list itself stores only a number). */
+  currentStepTitle?: string | null;
   isUrgent?: boolean;
   // Projected matter completion (E13-S02); null while pending approval/untracked.
   matterDueAt?: string | null;

@@ -186,7 +186,11 @@ export default function TasksPage() {
             (t.clientName ?? '').toLowerCase().includes(s) ||
             (t.serviceName ?? t.workflowType ?? '').toLowerCase().includes(s) ||
             (t.professionalName ?? '').toLowerCase().includes(s) || // #85
-            (t.status ?? '').toLowerCase().includes(s)
+            (t.status ?? '').toLowerCase().includes(s) ||
+            // #191: the two new columns are searchable too — the search matches an
+            // explicit field list, so adding a column alone would not cover it.
+            (t.currentStepTitle ?? '').toLowerCase().includes(s) ||
+            (t.organisation ?? '').toLowerCase().includes(s)
           );
         }}
         isLoading={isLoading}
@@ -253,6 +257,35 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
         );
       },
     }),
+    // #191: the team could not tell from the list WHERE a matter had got to, or
+    // which organisation it belonged to. Both are text columns so the existing
+    // search, sort and pagination pick them up with no extra wiring.
+    ...(isClientView ? [] : [
+      col.accessor((t) => t.currentStepTitle ?? '', {
+        id: 'currentStep',
+        header: 'Current Step',
+        size: 200,
+        cell: (ctx) => {
+          const v = ctx.getValue();
+          const done = ctx.row.original.status === 'completed';
+          if (done) return <span className="text-xs text-emerald-700">Completed</span>;
+          return v
+            ? <span className="text-xs text-ink-soft line-clamp-2">{v}</span>
+            : <span className="text-xs text-ink-faint">—</span>;
+        },
+      }),
+      col.accessor((t) => t.organisation ?? '', {
+        id: 'organisation',
+        header: 'Organisation',
+        size: 170,
+        cell: (ctx) => {
+          const v = ctx.getValue();
+          return v
+            ? <span className="text-xs text-ink-soft truncate">{v}</span>
+            : <span className="text-xs text-ink-faint">—</span>;
+        },
+      }),
+    ]),
     col.accessor('status', {
       header: 'Status',
       size: 150,
