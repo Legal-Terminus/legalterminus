@@ -529,6 +529,13 @@ export async function getStepSettings(req, res) {
         type: s.type,
         phaseId: s.phaseId ?? null,
         assigneeUid: s.defaultAssigneeUid ?? null,
+        // #192: a step may have SEVERAL default assignees. `assigneeUid` remains the
+        // primary (first) one so existing queries/filters/indexes keep working;
+        // `assigneeUids` is the full list. Older steps have only the single field,
+        // so the list falls back to it.
+        assigneeUids: Array.isArray(s.defaultAssigneeUids) && s.defaultAssigneeUids.length
+          ? s.defaultAssigneeUids
+          : (s.defaultAssigneeUid ? [s.defaultAssigneeUid] : []),
         etaDays: typeof s.typicalDurationDays === 'number' ? s.typicalDurationDays : null,
         clientVisible: s.clientVisible !== false, // default-visible
       }));
@@ -556,6 +563,11 @@ export async function putStepSettings(req, res) {
         return res.status(400).json({ message: `Unknown step ${key} for this workflow` });
       }
       if (val.assigneeUid && val.assigneeUid !== CLIENT_ASSIGNEE) uidsToCheck.add(val.assigneeUid); // #46 sentinel
+      // #192: every uid in the multi-assignee list is validated the same way — a
+      // step must never end up assigned to a client or a non-existent user.
+      for (const u of val.assigneeUids ?? []) {
+        if (u && u !== CLIENT_ASSIGNEE) uidsToCheck.add(u);
+      }
     }
 
     // Every assignee must exist and be staff (never a client).
@@ -573,6 +585,21 @@ export async function putStepSettings(req, res) {
       if ('assigneeUid' in v) {
         if (v.assigneeUid == null) delete copy.defaultAssigneeUid;
         else copy.defaultAssigneeUid = v.assigneeUid;
+      }
+      // #192: the list is the source of truth when supplied; `defaultAssigneeUid`
+      // is kept as its FIRST entry so every existing consumer (My Tasks routing,
+      // the matters filter, the steps/assignedTo collection-group index) keeps
+      // working unchanged. An empty list clears both.
+      if ('assigneeUids' in v) {
+        const list = (v.assigneeUids ?? []).filter(Boolean);
+        const unique = [...new Set(list)];
+        if (unique.length === 0) {
+          delete copy.defaultAssigneeUids;
+          delete copy.defaultAssigneeUid;
+        } else {
+          copy.defaultAssigneeUids = unique;
+          copy.defaultAssigneeUid = unique[0];
+        }
       }
       if ('etaDays' in v) {
         if (v.etaDays == null) delete copy.typicalDurationDays;

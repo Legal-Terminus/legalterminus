@@ -12,6 +12,10 @@ export interface TaskStep {
   /** Resolved assignee display name (#48) — server-provided so every staff role
    *  sees the real assignee without fetching the user list. */
   assigneeName?: string | null;
+  /** #192: every assignee's uid, and their resolved names. `assignedTo` /
+   *  `assigneeName` remain the primary, so single-assignee code keeps working. */
+  assignedToUids?: string[];
+  assigneeNames?: string[];
   completedBy?: string;
   completedAt?: string;
   deadline?: string;

@@ -444,11 +444,26 @@ const CLIENT_EVENT_WHITELIST = new Set([
 async function taskIdsWithStepAssignedTo(uid) {
   const ids = new Set();
   try {
-    const snap = await db.collectionGroup('steps').where('assignedTo', '==', uid).get();
-    snap.forEach((d) => {
-      const parent = d.ref.parent.parent; // tasks/{taskId}/steps/{n} → tasks/{taskId}
-      if (parent) ids.add(parent.id);
-    });
+    // #192: a step can have several assignees. `assignedTo` is the primary and
+    // `assignedToUids` holds everyone, so BOTH are queried — otherwise a
+    // secondary assignee would see the step in My Tasks but not the matter in
+    // their Matters list. Each needs its own collection-group field override
+    // (see firestore.indexes.json); they are unioned into the same id set.
+    // Settled, not all: one missing index must not wipe out the other query's hits.
+    const results = await Promise.allSettled([
+      db.collectionGroup('steps').where('assignedTo', '==', uid).get(),
+      db.collectionGroup('steps').where('assignedToUids', 'array-contains', uid).get(),
+    ]);
+    for (const r of results) {
+      if (r.status !== 'fulfilled') {
+        logger.warn({ err: r.reason?.message }, 'taskIdsWithStepAssignedTo: one query failed (index missing?)');
+        continue;
+      }
+      r.value.forEach((d) => {
+        const parent = d.ref.parent.parent; // tasks/{taskId}/steps/{n} → tasks/{taskId}
+        if (parent) ids.add(parent.id);
+      });
+    }
   } catch (err) {
     // Most likely the steps/assignedTo collection-group index isn't deployed yet
     // (FAILED_PRECONDITION). Degrade gracefully: team members still see matters
@@ -539,6 +554,17 @@ export async function createTask(req, res) {
       if (configured) return configured;
       if (deriveOwnerType(s) === 'client') return clientUid; // auto-assign client steps
       return null;
+    };
+    // #192: a step can have SEVERAL default assignees. `assignedTo` stays the
+    // primary (so My Tasks routing, the matters filter and the steps/assignedTo
+    // collection-group index are untouched) and `assignedToUids` carries everyone.
+    // The sentinel resolves per-entry, so a mixed client+staff list still works.
+    const assigneesForStep = (s) => {
+      const list = Array.isArray(s.defaultAssigneeUids) ? s.defaultAssigneeUids.filter(Boolean) : [];
+      const resolved = [...new Set(list.map((u) => (u === CLIENT_ASSIGNEE ? clientUid : u)))];
+      if (resolved.length) return resolved;
+      const single = assigneeForStep(s);
+      return single ? [single] : [];
     };
 
     // Approval gate: matter creation does NOT require admin approval in general
@@ -677,7 +703,10 @@ export async function createTask(req, res) {
         // when unset). Stamped at creation so the client's matter shows it.
         clientTitle: s.clientTitle ?? null,
         assignedRole: s.assignedRole ?? null,
-        assignedTo: assigneeForStep(s),
+        // #192: primary + full list. Keeping `assignedTo` as list[0] means every
+        // existing query keeps working while any listed member can act.
+        assignedTo: assigneesForStep(s)[0] ?? null,
+        assignedToUids: assigneesForStep(s),
         status: statusForStep(s.stepNumber),
         ...(s.stepNumber < resolvedFirstStep && !needsApproval ? { completedAt: now } : {}),
         // ETA clock (E13-S02): only the active resolved step gets a running due date.
@@ -1374,11 +1403,17 @@ export async function listMySteps(req, res) {
         }
         if (!stepTitle) stepTitle = hasStepNumber ? `Step ${stepNumber}` : 'Untitled step';
         const assignedTo = step.assignedTo ?? null;
+        // #192: with several assignees, the step belongs in the basket of EVERY
+        // one of them — not just the primary. Falls back to the single field for
+        // steps created before the list existed.
+        const assignedList = Array.isArray(step.assignedToUids) && step.assignedToUids.length
+          ? step.assignedToUids
+          : (assignedTo ? [assignedTo] : []);
         // #50: "My Tasks" shows only steps that are MINE or UNASSIGNED (the shared
         // pickup pool) — for EVERY staff role, incl. admin/manager. Steps assigned
         // to someone ELSE never belong in my basket (admins still see all work via
         // Matters / Reports). This drops the old "Elsewhere" bucket.
-        if (assignedTo && assignedTo !== uid) return;
+        if (assignedList.length && !assignedList.includes(uid)) return;
         rows.push({
           taskId,
           clientName: t.clientName ?? '', // #164: backfilled below when empty
@@ -1395,7 +1430,9 @@ export async function listMySteps(req, res) {
           // Due date of the active step (E13-S03) — drives the lateness column.
           dueAt: step.dueAt ?? null,
           // After the #50 filter only 'assigned' (mine) or 'unassigned' (pool) remain.
-          bucket: assignedTo === uid ? 'assigned' : 'unassigned',
+          // #192: a secondary assignee owns the step just as much as the primary,
+          // so it belongs in their own queue — not the shared pickup pool.
+          bucket: assignedList.includes(uid) ? 'assigned' : 'unassigned',
         });
       })
     );
@@ -1488,9 +1525,23 @@ export async function getTask(req, res) {
     // Staff view (#48): resolve assignee UIDs → names server-side so EVERY staff
     // role (incl. team members, who don't fetch the user list) sees the real
     // assignee instead of a false "Unassigned".
-    const names = await resolveUserNames([data.assignedTo, ...steps.map((s) => s.assignedTo)]);
+    // #192: resolve names for EVERY assignee, not just the primary, so the step
+    // can show "A, B and C" rather than one name plus a silent remainder.
+    const names = await resolveUserNames([
+      data.assignedTo,
+      ...steps.flatMap((s) => [s.assignedTo, ...(s.assignedToUids ?? [])]),
+    ]);
     full.assignedToName = data.assignedTo ? (names[data.assignedTo] ?? null) : null;
-    full.steps = steps.map((s) => ({ ...s, assigneeName: s.assignedTo ? (names[s.assignedTo] ?? null) : null }));
+    full.steps = steps.map((s) => {
+      const list = Array.isArray(s.assignedToUids) && s.assignedToUids.length
+        ? s.assignedToUids
+        : (s.assignedTo ? [s.assignedTo] : []);
+      return {
+        ...s,
+        assigneeName: s.assignedTo ? (names[s.assignedTo] ?? null) : null,
+        assigneeNames: list.map((u) => names[u] ?? null).filter(Boolean),
+      };
+    });
     res.json(full);
   } catch (err) {
     logger.error({ err: err }, 'getTask error:');
@@ -1706,7 +1757,13 @@ export async function patchTask(req, res) {
         const stepData = activeSnap.docs[0].data();
         const stepOwnedByOther = stepData.assignedTo && stepData.assignedTo !== task.assignedTo;
         if (!stepOwnedByOther) {
-          batch.set(stepRef, { assignedTo: newAssignee, updatedAt: update.updatedAt }, { merge: true });
+          // #192: move the multi-assignee list with the primary, or the previous
+          // assignees would linger in `assignedToUids` and keep access.
+          batch.set(stepRef, {
+            assignedTo: newAssignee,
+            assignedToUids: newAssignee ? [newAssignee] : [],
+            updatedAt: update.updatedAt,
+          }, { merge: true });
         }
       }
     }
@@ -2122,7 +2179,15 @@ export async function patchStep(req, res) {
       // Assign/unassign this step to a specific staff user. `null`/'' clears it
       // (back to the shared/unassigned pool). Surfaced in the My Tasks worklist.
       const reassigning = assignedTo !== undefined && (assignedTo || null) !== (prev.assignedTo ?? null);
-      if (assignedTo !== undefined) update.assignedTo = assignedTo || null;
+      if (assignedTo !== undefined) {
+        update.assignedTo = assignedTo || null;
+        // #192: keep the multi-assignee list in step with a reassignment. Without
+        // this, reassigning a step would leave the PREVIOUS assignees in
+        // `assignedToUids` — they would keep seeing it in My Tasks and could still
+        // complete it. A per-step reassignment is a deliberate "this is now
+        // theirs", so the list collapses to exactly that person (or empties).
+        update.assignedToUids = assignedTo ? [assignedTo] : [];
+      }
 
       const batch = db.batch();
       batch.set(stepRef, update, { merge: true });
@@ -2232,8 +2297,13 @@ export async function transitionTask(req, res) {
     if (role === 'team_member' && !isAssignedTeam) {
       const activeSnap = await taskRef.collection('steps')
         .where('status', '==', 'active').limit(1).get();
-      if (!activeSnap.empty && activeSnap.docs[0].data().assignedTo === uid) {
-        isAssignedTeam = true; // owns the active step → may advance it
+      if (!activeSnap.empty) {
+        // #192: a step may carry several assignees; any of them owns it.
+        const sd = activeSnap.docs[0].data();
+        const owners = Array.isArray(sd.assignedToUids) && sd.assignedToUids.length
+          ? sd.assignedToUids
+          : (sd.assignedTo ? [sd.assignedTo] : []);
+        if (owners.includes(uid)) isAssignedTeam = true; // owns the active step → may advance it
       }
     }
     // #166: an additional client login approves/rejects exactly as the primary.
@@ -2297,8 +2367,16 @@ export async function transitionTask(req, res) {
     if (COMPLETION_EVENTS.has(event?.type)) {
       const activeSnap = await taskRef.collection('steps')
         .where('status', '==', 'active').limit(1).get();
-      const stepAssignee = activeSnap.empty ? null : (activeSnap.docs[0].data().assignedTo ?? null);
-      const isAssignee = stepAssignee != null && stepAssignee === uid;
+      const activeStep = activeSnap.empty ? null : activeSnap.docs[0].data();
+      const stepAssignee = activeStep?.assignedTo ?? null;
+      // #192: a step may be assigned to SEVERAL people, and any one of them may
+      // complete it (first to finish moves the workflow on — the model chosen for
+      // this feature). The list falls back to the single field for steps created
+      // before it existed, so the rule is unchanged for them.
+      const stepAssignees = Array.isArray(activeStep?.assignedToUids) && activeStep.assignedToUids.length
+        ? activeStep.assignedToUids
+        : (stepAssignee != null ? [stepAssignee] : []);
+      const isAssignee = stepAssignees.includes(uid);
       if (!isAssignee) {
         if (role === 'admin') {
           isAdminCompletionOverride = true; // allowed, but flagged + audited below

@@ -259,6 +259,9 @@ export interface StepSettingRow {
   type: string;
   phaseId: string | null;
   assigneeUid: string | null;
+  /** #192: all default assignees for the step. `assigneeUid` is the first entry,
+   *  kept so single-assignee consumers keep working. */
+  assigneeUids?: string[];
   etaDays: number | null;
   clientVisible: boolean;
 }
@@ -272,6 +275,9 @@ export interface StepSettings {
 /** Partial per-step update: omitted sub-fields stay unchanged; null clears. */
 export type StepSettingPatch = Partial<{
   assigneeUid: string | null;
+  /** #192: all default assignees for the step. `assigneeUid` is the first entry,
+   *  kept so single-assignee consumers keep working. */
+  assigneeUids?: string[];
   etaDays: number | null;
   clientVisible: boolean;
 }>;

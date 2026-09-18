@@ -1058,7 +1058,14 @@ function StepsTab({
   const currentAssignee = currentStepInstance?.assignedTo ?? null;
   // Server-resolved name (#48) — used so team members (who don't fetch the staff
   // list) still see the real assignee instead of a false "Unassigned".
-  const currentAssigneeName = currentStepInstance?.assigneeName ?? null;
+  // #192: a step can be assigned to several people — show them all, so the panel
+  // doesn't name one person and silently omit the rest. Falls back to the single
+  // name for steps created before the list existed.
+  const currentAssigneeName = (() => {
+    const names = currentStepInstance?.assigneeNames ?? [];
+    if (names.length > 1) return names.join(', ');
+    return names[0] ?? currentStepInstance?.assigneeName ?? null;
+  })();
   // #81/#82: the step's audience-appropriate description text. Staff see internal
   // descriptions/notes; clients see client ones. Falls back to the legacy single
   // `description`. (The backend already strips internal fields for clients.)
