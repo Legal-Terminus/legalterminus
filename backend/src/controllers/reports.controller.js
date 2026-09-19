@@ -1,6 +1,7 @@
 import { deriveOwnerType } from '../../../shared/workflows/definitionSchema.js';
 import { db } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
+import { buildFirmWorkbook } from '../services/workbookExport.service.js';
 import { getCompiledById } from '../services/workflowDefinitions.service.js';
 
 // ─── Helper: map Firestore doc → plain object ──────────────────────────────
@@ -669,5 +670,46 @@ export async function getMyServices(req, res) {
   } catch (err) {
     logger.error({ err }, 'getMyServices error:');
     res.status(500).json({ message: 'Failed to fetch your services' });
+  }
+}
+
+// ─── GET /api/reports/workbook ─────────────────────────────────────────────
+/**
+ * The whole firm as one .xlsx a person can open.
+ *
+ * Admin-only: this is every matter, client, document record and payment in the
+ * firm, so it sits above the manager-level reports on this router.
+ *
+ * Streamed from the backend rather than handed over as a signed URL, per the
+ * document-download rule — the bytes never exist at a client-visible address.
+ *
+ * Ported from Ambyflow (Story 37.4). One difference: Ambyflow resolves a
+ * per-workspace Firestore handle from the request (`req.db`); here the module
+ * `db` IS the firm's database, so it is passed directly.
+ */
+export async function getFirmWorkbook(req, res) {
+  try {
+    const firmName = process.env.BRAND_ORG_NAME || 'Legal Terminus';
+    const { buffer, counts } = await buildFirmWorkbook(db, {
+      firmName,
+      generatedAt: new Date().toISOString(),
+      generatedFor: req.user?.email ?? req.user?.uid ?? null,
+    });
+
+    logger.info({ counts }, 'firm workbook exported');
+
+    const stamp = new Date().toISOString().slice(0, 10);
+    const base = firmName
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .toLowerCase() || 'firm';
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${base}-export-${stamp}.xlsx"`);
+    res.setHeader('Content-Length', String(buffer.length));
+    return res.send(buffer);
+  } catch (err) {
+    logger.error({ err }, 'getFirmWorkbook error:');
+    return res.status(500).json({ message: 'Failed to build the export' });
   }
 }
