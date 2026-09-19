@@ -11,6 +11,8 @@ import { renderTemplate } from '../services/emailTemplates.service.js';
 import { sanitizeRichText, richTextToPlain, checkWordLimit } from '../services/richText.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
 import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE, materialisableSteps, isTerminalStep } from '../../../shared/workflows/definitionSchema.js';
+import { resolveDueDate, definitionNeedsAnchorDate } from '../../../shared/workflows/dueRules.js';
+import { getOverrides, makeStatutoryResolver } from '../services/statutoryCalendar.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
 // Add `days` (may be fractional) to an ISO instant, returning an ISO string.
@@ -29,6 +31,31 @@ function etaDaysOf(stepDef) {
   return typeof stepDef?.typicalDurationDays === 'number'
     ? stepDef.typicalDurationDays
     : DEFAULT_STEP_ETA_DAYS;
+}
+
+/**
+ * The ONE place a step's due date is decided (ported from Ambyflow, E01-S35-1).
+ *
+ * A `dueRule` (date-anchored, possibly BACKWARD — "5 days before filing") wins
+ * where it resolves; otherwise the duration ETA applies exactly as before.
+ * Falling back rather than failing is deliberate: a matter created without an
+ * anchor date still gets a sensible deadline instead of none, so no existing
+ * workflow changes behaviour.
+ *
+ * Returns an ISO instant, because that is what `dueAt` has always held and the
+ * SLA report and the reminder sweep both parse it.
+ */
+function resolveStepDueAt(stepDef, { nowIso, matterStart, anchorDate, resolveStatutory }) {
+  const ruled = resolveDueDate(stepDef?.dueRule, {
+    matterStart: matterStart ?? nowIso,
+    stepStart: nowIso,
+    anchorDate,
+    resolveStatutory,
+  });
+  // End of the due DAY: a deadline of "the 11th" is not missed at 00:00 on the
+  // 11th, which is what a bare date would mean once parsed as an instant.
+  if (ruled) return `${ruled}T23:59:59.999Z`;
+  return addDaysIso(nowIso, etaDaysOf(stepDef));
 }
 
 // Projected whole-matter completion: `from` + the sum of ETAs of the steps that
@@ -493,13 +520,24 @@ export async function createTask(req, res) {
     // Body validated by taskCreateSchema (incl. #51 payment fields).
     const { clientUid, serviceKey, serviceName, organisation, ccEmails,
             paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
-            professionalUid, additionalProfessionalEmails, recurrence } = req.body;
+            professionalUid, additionalProfessionalEmails, recurrence, anchorDate } = req.body;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
     if (!compiled) {
       return res.status(400).json({ message: `No workflow configured for service '${serviceKey}'` });
     }
     const { definition } = compiled;
+
+    // E35: a service whose deadlines hang off a real-world date (an AGM, a
+    // notice) cannot compute them without it. Refuse with a message that says
+    // WHAT is missing, rather than letting every such step fall back to a
+    // duration and quietly miss its real deadline.
+    if (definitionNeedsAnchorDate(definition) && !anchorDate) {
+      return res.status(400).json({
+        message: 'This service schedules its deadlines from a key date (for example the AGM or notice date). Please provide one.',
+        code: 'ANCHOR_DATE_REQUIRED',
+      });
+    }
 
     // Config sync guard (E10-S02): never instantiate a structurally-broken
     // definition (dangling transitions/gates, bad phaseIds) — it would create a
@@ -632,13 +670,25 @@ export async function createTask(req, res) {
     // from the RESOLVED step (#94) — a payment gate that auto-passes on creation
     // leaves the matter on a later step.
     const firstStepDef = stepDefs.find((s) => s.stepNumber === resolvedFirstStep);
-    const firstStepEta = etaDaysOf(firstStepDef);
+    // E35: the statutory table is read ONCE per matter creation, not per step —
+    // it is cached anyway, but a step loop should not re-enter the service.
+    const statutoryResolver = makeStatutoryResolver(await getOverrides(db));
+    const firstStepDueAt = resolveStepDueAt(firstStepDef, {
+      nowIso: now,
+      matterStart: now,
+      anchorDate: anchorDate ?? null,
+      resolveStatutory: (key) => statutoryResolver(key, { anchorDate: anchorDate ?? null }),
+    });
     const matterDueAt = needsApproval ? null : projectMatterDueAt(stepDefs, resolvedFirstStep, now);
 
     const task = {
       // Workflow identity: definition + pinned version (NOT the service key).
       workflowDefinitionId: definition.id,
       workflowVersion: definition.version ?? 1,
+      // E35: the real-world date this matter's deadlines hang off (AGM, notice
+      // date). Stored date-only — a deadline is a calendar fact, and carrying a
+      // time through the arithmetic lands it a day early or late by timezone.
+      anchorDate: anchorDate ? String(anchorDate).slice(0, 10) : null,
       workflowType: definition.id, // back-compat for reports/list display
       serviceKey,
       serviceName: serviceName || definition.name || serviceKey,
@@ -726,7 +776,7 @@ export async function createTask(req, res) {
         status: statusForStep(s.stepNumber),
         ...(isAutoPassed(s.stepNumber) && !needsApproval ? { completedAt: now } : {}),
         // ETA clock (E13-S02): only the active resolved step gets a running due date.
-        ...(isActive ? { startedAt: now, dueAt: addDaysIso(now, firstStepEta) } : {}),
+        ...(isActive ? { startedAt: now, dueAt: firstStepDueAt } : {}),
       });
     }
     await batch.commit();
@@ -2516,6 +2566,8 @@ export async function transitionTask(req, res) {
     // ETAs come from the pinned definition (already loaded as `compiled`).
     const etaStepDefs = materialisableSteps(compiled.definition.steps);
     const etaByNum = new Map(etaStepDefs.map((s) => [s.stepNumber, etaDaysOf(s)]));
+    // E35: same resolver as creation, so ONE place decides every step's dueAt.
+    const transitionStatutory = makeStatutoryResolver(await getOverrides(db));
     // Re-project the matter's completion from the step we're landing on.
     const matterDueAt = isComplete ? null : projectMatterDueAt(etaStepDefs, newStep, now);
 
@@ -2579,7 +2631,21 @@ export async function transitionTask(req, res) {
       // Start the new active step's clock (only on an actual step change, so a
       // payment/override that stays on the same step doesn't reset its due date).
       const startedNew = newStep !== task.currentStepNumber
-        ? { startedAt: now, dueAt: addDaysIso(now, etaByNum.get(newStep) ?? null) }
+        ? {
+          startedAt: now,
+          // Resolved from `etaStepDefs`, which is in scope above — a dueRule
+          // wins where it resolves, otherwise the duration ETA as before.
+          dueAt: resolveStepDueAt(
+            etaStepDefs.find((st) => st.stepNumber === newStep)
+              ?? { typicalDurationDays: etaByNum.get(newStep) ?? null },
+            {
+              nowIso: now,
+              matterStart: task.createdAt ?? now,
+              anchorDate: task.anchorDate ?? null,
+              resolveStatutory: (key) => transitionStatutory(key, { anchorDate: task.anchorDate ?? null }),
+            },
+          ),
+        }
         : {};
       batch.set(nextRef, { status: 'active', ...startedNew }, { merge: true });
     } else if (newStep === task.currentStepNumber) {
