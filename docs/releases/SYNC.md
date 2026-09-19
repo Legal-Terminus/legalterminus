@@ -55,18 +55,26 @@ went with each one.
 
 | `v1.1.0` | `v1.1.0-lt.2` | 2026-09-19 | **E37.4 — firm workbook export.** `GET /api/reports/workbook`, admin-only. Ported by content: `req.db` → module `db`, workspace vocabulary → firm. 9 tests came with it (suite 56 → 65). Adds `xlsx`. |
 
+| `v1.1.0` | `v1.1.0-lt.3` | 2026-09-19 | **E35 — statutory deadline engine.** Date-anchored `dueRule`s (forward, backward, statutory) + the firm-editable calendar at `/api/settings/statutory-calendar`. Wired into matter creation and every transition through one resolver. 25 tests. |
+| `v1.1.0` | `v1.1.0-lt.3` | 2026-09-19 | **E34 — step conditions & form steps.** Server-evaluated `stepCondition` on the matter, and `GET/PUT /api/tasks/:id/form/:stepNumber`. 38 tests. |
+
 *Add a row when an Ambyflow release reaches LT. An Ambyflow release that is not
 applicable still gets a row, marked "no-op — nothing applicable".*
 
 ### Known gap at the baseline
 
 `v1.1.0-lt.1` aligns the NUMBERS; it does not claim LT contains every Ambyflow
-feature. LT is missing several whole epics — conditions and client data
-collection (E34) and the statutory deadline engine (E35), plus service deletion
-— and the multi-tenant and platform machinery that will never apply.
+**All queued epics are now ported.** E37.4 (workbook export), E35 (statutory
+deadlines) and E34 (conditions and forms) are in LT as of `v1.1.0-lt.3`; the
+multi-assignee step work (#192) was applied directly earlier.
 
-**Ported since:** E37.4 (firm workbook export) in `v1.1.0-lt.2`. The
-multi-assignee step work (#192) was already applied directly.
+What remains unported is deliberate and always will be: the multi-tenant
+machinery (workspace resolution, the control plane) and the platform console,
+neither of which has meaning in a single-firm installation. Service deletion is
+the one open item — small, and not yet requested.
+
+LT's backend test suite went 56 → 128 across the three ports, because the tests
+travelled with the code rather than being left behind.
 
 That is deliberate. Those are features, not fixes: each needs porting by
 content and testing on LT-QA before it reaches production, which is exactly the
