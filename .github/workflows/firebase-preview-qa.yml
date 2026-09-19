@@ -128,8 +128,20 @@ jobs:
         id: deploy-backend
         if: steps.changes.outputs.backend == 'true'
         run: |
+          # Build identity for /health. The image does not carry .git (the
+          # Dockerfile deliberately does not COPY it), so there is nothing to
+          # interrogate at runtime — without these, /health reports 'unknown'
+          # and "is the fix deployed?" has no answer.
+          VERSION=$(node -p "require('./package.json').version")
+          BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "Deploying v$VERSION (${{ github.sha }})"
+
           gcloud run deploy ${{ env.SERVICE_NAME }} \
             --image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/backend:${{ github.sha }} \
+            --set-env-vars="APP_VERSION=$VERSION" \
+            --set-env-vars="GIT_SHA=${{ github.sha }}" \
+            --set-env-vars="BUILT_AT=$BUILT_AT" \
+            --set-env-vars="DEPLOYMENT_MODE=qa" \
             --region=${{ env.REGION }} \
             --platform=managed \
             --allow-unauthenticated \
