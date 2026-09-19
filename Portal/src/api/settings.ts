@@ -97,3 +97,32 @@ export const deleteWebhook = (id: string) =>
 
 export const getWebhookDeliveries = (id: string) =>
   apiFetch<{ data: WebhookDelivery[] }>(`/api/settings/webhooks/${id}/deliveries`);
+
+/** The statutory calendar (ported from Ambyflow, Story 35.3). */
+export interface CalendarRow {
+  key: string;
+  label: string;
+  kind: 'day_of_month' | 'fixed_date' | 'anchor_offset' | null;
+  day: number | null;
+  date: string | null;
+  offsetDays: number | null;
+  /** Where the answer came from, so the screen can offer a revert. */
+  source: 'platform' | 'workspace' | 'period';
+  resolved: string | null;
+}
+
+export const getStatutoryCalendar = (month?: string) =>
+  apiFetch<{ rows: CalendarRow[]; month: string | null }>(
+    `/api/settings/statutory-calendar${month ? `?month=${month}` : ''}`,
+  );
+
+/** `entry: null` reverts to the shipped default rather than freezing it. */
+export const setStatutoryOverride = (
+  key: string,
+  entry: Record<string, unknown> | null,
+  periodKey?: string,
+) =>
+  apiFetch<{ rows: CalendarRow[] }>(`/api/settings/statutory-calendar/${key}`, {
+    method: 'PUT',
+    body: JSON.stringify({ entry, periodKey: periodKey ?? null }),
+  });

@@ -48,6 +48,18 @@ export interface WorkflowStepDef {
   /** When true, the step renders a per-step document upload control (#61). */
   allowDocUpload?: boolean;
   /** #81: independent internal vs client status + notes (fully separate). */
+  /** E34 — who this step applies to. A step whose condition does not match is
+   *  reported as not-applicable; a person still confirms every skip. */
+  condition?: { field: string; op: string; value?: string | string[] };
+  /** E34 — structured questions the client answers in the portal. */
+  form?: import('./tasks').StepForm;
+  /** E35 — a date-anchored deadline. A negative `offsetDays` schedules
+   *  BACKWARD ("five days before filing"). Absent = the duration ETA. */
+  dueRule?: {
+    anchor: 'matter_start' | 'step_start' | 'anchor_date' | 'statutory';
+    offsetDays?: number;
+    statutoryKey?: string;
+  };
   internalStatus?: string;
   internalNotes?: string;
   clientStatus?: string;

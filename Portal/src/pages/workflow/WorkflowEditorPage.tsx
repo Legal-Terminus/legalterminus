@@ -19,6 +19,8 @@ import {
 import { outcomeColor } from '../../workflows/machineToGraph';
 import { getServiceCatalog } from '../../api/services';
 import { compileDefinition } from '@shared/workflows/compileDefinition.js';
+import StepDueRuleEditor from '../../components/workflow/StepDueRuleEditor';
+import StepConditionEditor from '../../components/workflow/StepConditionEditor';
 
 /**
  * Workflow Editor (E10-S01) — plain-language authoring for non-technical admins.
@@ -707,6 +709,15 @@ function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, onA
           <input type="checkbox" className="h-4 w-4" checked={step.clientVisible !== false} onChange={(e) => onPatch({ clientVisible: e.target.checked })} aria-label="Visible to client" />
           <FieldLabel label="Visible to the client" hint="If on, the client sees this step on their progress view. Turn off for internal-only steps." />
         </label>
+      </div>
+
+      {/* E35/E34: a date-anchored deadline, and who the step applies to. Both
+          sit beside "Expected time" because each is an alternative to it — a
+          rule wins where it resolves, and a condition decides whether the step
+          runs at all. */}
+      <div className="mt-3 space-y-3">
+        <StepDueRuleEditor step={step} onPatch={onPatch} />
+        <StepConditionEditor step={step} onPatch={onPatch} />
       </div>
 
       {/* What happens next? — payment checkpoints are a gate (special); every other

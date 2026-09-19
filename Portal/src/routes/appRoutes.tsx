@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 import { ALL_ROLE_KEYS } from '../lib/roles';
@@ -24,6 +24,7 @@ import WorkflowEditorPage from '../pages/workflow/WorkflowEditorPage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import OrdersPage from '../pages/orders/OrdersPage';
 import EmailTemplatesPage from '../pages/settings/EmailTemplatesPage';
+import StatutoryCalendarPage from '../pages/settings/StatutoryCalendarPage';
 import NotificationsPage from '../pages/notifications/NotificationsPage';
 
 // Reports
@@ -92,6 +93,10 @@ export const APP_ROUTES: AppRoute[] = [
   // out of the product without a human present.
   { path: '/settings/api-keys', element: <ApiKeysPage />, roles: ['admin'], nav: { label: 'API Keys', icon: KeyRound, order: 10 } },
   { path: '/settings/webhooks', element: <WebhooksPage />, roles: ['admin'], nav: { label: 'Webhooks', icon: Webhook, order: 11 } },
+  // E35: reading the compliance calendar is open to any staff member — it is a
+  // view of the firm's year. EDITING is admin-only, enforced on the route in
+  // settings.routes.js, because one edit moves every deadline on that key.
+  { path: '/settings/statutory-calendar', element: <StatutoryCalendarPage />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Statutory Calendar', icon: CalendarDays, order: 12 } },
   // E22-S01: the matters board (pipeline view). Staff only — a client has no
   // pipeline, and the board shows internal step ownership.
   { path: '/matters/board',     element: <MattersBoardPage />, roles: ['admin', 'manager', 'team_member'] },

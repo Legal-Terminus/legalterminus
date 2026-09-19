@@ -292,3 +292,44 @@ export interface BoardLane {
  * only. Read-only — the board never moves a matter.
  */
 export const getMattersBoard = () => apiFetch<{ lanes: BoardLane[] }>('/api/matters/board');
+
+/** Form steps (ported from Ambyflow, Story 34.3). */
+export interface FormField {
+  key: string;
+  label: string;
+  type: 'text' | 'longtext' | 'number' | 'date' | 'select' | 'yesno';
+  required?: boolean;
+  help?: string | null;
+  options?: string[];
+  /** Staff-only; the server omits these from the client view. */
+  internalNote?: string;
+  mapsTo?: string;
+}
+
+export interface StepForm {
+  title?: string | null;
+  description?: string | null;
+  fields: FormField[];
+}
+
+export interface FormStepState {
+  form: StepForm;
+  answers: Record<string, unknown>;
+  status: 'empty' | 'draft' | 'submitted';
+  submittedAt: string | null;
+}
+
+export const getFormStep = (taskId: string, stepNumber: number) =>
+  apiFetch<FormStepState>(`/api/tasks/${taskId}/form/${stepNumber}`);
+
+/** `submit: false` saves a partial draft; `true` enforces required fields. */
+export const saveFormStep = (
+  taskId: string,
+  stepNumber: number,
+  answers: Record<string, unknown>,
+  submit: boolean,
+) =>
+  apiFetch<{ status: string; answers: Record<string, unknown>; profileUpdated?: string[] }>(
+    `/api/tasks/${taskId}/form/${stepNumber}`,
+    { method: 'PUT', body: JSON.stringify({ answers, submit }) },
+  );
