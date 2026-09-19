@@ -58,6 +58,8 @@ went with each one.
 | `v1.1.0` | `v1.1.0-lt.3` | 2026-09-19 | **E35 — statutory deadline engine.** Date-anchored `dueRule`s (forward, backward, statutory) + the firm-editable calendar at `/api/settings/statutory-calendar`. Wired into matter creation and every transition through one resolver. 25 tests. |
 | `v1.1.0` | `v1.1.0-lt.3` | 2026-09-19 | **E34 — step conditions & form steps.** Server-evaluated `stepCondition` on the matter, and `GET/PUT /api/tasks/:id/form/:stepNumber`. 38 tests. |
 
+| `v1.1.0` | `v1.1.0-lt.4` | 2026-09-19 | **E34/E35 screens.** Settings → Statutory Calendar; deadline-rule and condition editors in the workflow editor; the form step on the matter page. Backends shipped in `-lt.3` with no way to reach them. |
+
 *Add a row when an Ambyflow release reaches LT. An Ambyflow release that is not
 applicable still gets a row, marked "no-op — nothing applicable".*
 
