@@ -14,10 +14,14 @@ import { parseCcEmails, validateCcEmails } from '../../lib/ccEmails';
  * profile's "Assign Service" uses, incl. the E03-S04 approval gate). Chosen as a
  * modal (vs. a dedicated route) for mobile-friendliness.
  */
-export default function CreateMatterModal({ onClose }: { onClose: () => void }) {
+export default function CreateMatterModal({ onClose, initialClientUid }: {
+  onClose: () => void;
+  /** E-19: pre-select the client when opened from their Client 360 screen. */
+  initialClientUid?: string;
+}) {
   const queryClient = useQueryClient();
   const [clientSearch, setClientSearch] = useState('');
-  const [clientUid, setClientUid] = useState('');
+  const [clientUid, setClientUid] = useState(initialClientUid ?? '');
   const [serviceKey, setServiceKey] = useState('');
   // #51: payment status chosen at creation; part/full reveal amount fields.
   const [paymentStatus, setPaymentStatus] = useState<'not_paid' | 'part_paid' | 'fully_paid'>('not_paid');

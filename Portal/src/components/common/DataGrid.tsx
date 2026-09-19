@@ -68,6 +68,9 @@ export interface DataGridProps<T> {
   isLoading?: boolean;
   error?: Error | null;
   emptyLabel?: string;
+  /** Optional call-to-action shown under the empty message (E-19). Hidden while a
+   *  search is active — "no results for your search" needs no "add one" button. */
+  emptyAction?: ReactNode;
   loadingLabel?: string;
   /** Extra content shown between the search box and the table (e.g. filter tabs). */
   toolbar?: ReactNode;
@@ -95,6 +98,7 @@ export default function DataGrid<T>({
   isLoading,
   error,
   emptyLabel = 'No results',
+  emptyAction,
   loadingLabel = 'Loading…',
   toolbar,
   onRowClick,
@@ -189,6 +193,7 @@ export default function DataGrid<T>({
         // buttons stay reachable and the user can clear their filter (#91).
         <div className="card p-16 flex flex-col items-center justify-center text-ink-faint">
           <p className="text-sm font-medium">{search ? 'No results found' : emptyLabel}</p>
+          {!search && emptyAction && <div className="mt-3">{emptyAction}</div>}
         </div>
       ) : (
         <ErrorBoundary>
