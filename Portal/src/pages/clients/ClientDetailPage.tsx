@@ -15,6 +15,7 @@ import ClientKpiStrip from './components/ClientKpiStrip';
 import ClientMattersList from './components/ClientMattersList';
 import AttentionFeed from './components/AttentionFeed';
 import { ClientMoneyTable, ClientRenewals } from './components/ClientMoney';
+import { eventLabel } from '../../lib/eventLabels';
 
 /**
  * Stories 30.3–30.5 — the Client 360 (Epic 30).
@@ -179,7 +180,12 @@ export default function ClientDetailPage() {
           <div className="card divide-y divide-hairline overflow-hidden">
             {activity.map((e) => (
               <Link key={e.id} to={`/tasks/${e.taskId}`} className="block p-3 hover:bg-surface-soft">
-                <p className="text-sm text-ink truncate">{e.comment || e.type || 'Activity'}</p>
+                {/* Falling back to `e.type` printed the raw workflow event —
+                    "COMPLETE_STEP", "BRANCH_DECISION" — on a client-facing
+                    page. eventLabel() gives the standalone human form, and
+                    sentence-cases anything it does not know rather than
+                    leaking a new constant. */}
+                <p className="text-sm text-ink truncate">{e.comment || eventLabel(e.type)}</p>
                 <p className="text-xs text-ink-muted truncate">
                   {e.serviceName}{e.at ? ` · ${relDate(e.at)}` : ''}
                 </p>
