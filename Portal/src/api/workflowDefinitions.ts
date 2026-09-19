@@ -53,6 +53,16 @@ export interface WorkflowStepDef {
   condition?: { field: string; op: string; value?: string | string[] };
   /** E34 — structured questions the client answers in the portal. */
   form?: import('./tasks').StepForm;
+  /** E32 — declarative actions this step runs. The EDITOR understands these
+   *  (they are authored here); the runtime that executes them is not ported. */
+  actions?: Array<{
+    id?: string;
+    type: string;
+    on?: 'entry' | 'exit';
+    to?: string;
+    templateKey?: string;
+    [k: string]: unknown;
+  }>;
   /** E35 — a date-anchored deadline. A negative `offsetDays` schedules
    *  BACKWARD ("five days before filing"). Absent = the duration ETA. */
   dueRule?: {

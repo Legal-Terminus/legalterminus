@@ -1,26 +1,22 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown, Save, AlertTriangle, Loader2, ChevronRight, Crosshair, ChevronsRight,
-} from 'lucide-react';
-import { useRail } from '../../hooks/useResizablePanels';
+import { Save, AlertTriangle, Loader2 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import FieldLabel from '../../components/common/FieldLabel';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
 import { useToast } from '../../components/common/toastContext';
-import { useConfirm } from '../../components/common/confirmContext';
-import WorkflowDiagram from '../../components/workflow/WorkflowDiagram';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import StepListEditor, { type StepCardRegistry } from '../../components/workflow/StepListEditor';
+import WorkflowPreviewRail from '../../components/workflow/WorkflowPreviewRail';
+import { StagesEditor } from '../../components/workflow/StepSubEditors';
+import { inputCls } from '../../components/workflow/stepEditorVocab';
 import {
   getWorkflowDefinitions, getWorkflowDefinition, updateWorkflowDefinition, createWorkflowDefinition,
-  type WorkflowDefinition, type WorkflowStepDef, type PhaseDef, type StepDescription,
+  type WorkflowDefinition,
 } from '../../api/workflowDefinitions';
-import { outcomeColor } from '../../workflows/machineToGraph';
 import { getServiceCatalog } from '../../api/services';
 import { compileDefinition } from '@shared/workflows/compileDefinition.js';
-import StepDueRuleEditor from '../../components/workflow/StepDueRuleEditor';
-import StepConditionEditor from '../../components/workflow/StepConditionEditor';
 
 /**
  * Workflow Editor (E10-S01) — plain-language authoring for non-technical admins.
@@ -30,48 +26,12 @@ import StepConditionEditor from '../../components/workflow/StepConditionEditor';
  * numbers. A collapsed "Advanced (raw)" panel per step exposes the underlying data
  * for power users. Supports both EDITING an existing workflow (/services/:key/edit)
  * and CREATING a new one (?new=1&service=<key> or ?new=1).
+ *
+ * Story 24.4: the step-editing UI itself now lives in `components/workflow/`
+ * (StepListEditor / StepCard / StepSubEditors / WorkflowPreviewRail), shared with
+ * the platform library editor. This page keeps only fetching, saving, routing and
+ * the workspace-specific meta fields (service binding, copy-from).
  */
-
-// ─── Plain-language vocab ──────────────────────────────────────────────────────
-// "Step kind" is a friendly grouping over the engine `type` + the transition events
-// a step uses. We DERIVE kind from the step's shape, and changing kind rewires the
-// step's default transitions appropriately.
-type StepKind = 'work' | 'client' | 'govt' | 'payment' | 'branch' | 'final';
-
-const KIND_LABEL: Record<StepKind, string> = {
-  work: 'Work step (our team)',
-  client: 'Client action (approve / sign / upload)',
-  govt: 'Government / department wait',
-  payment: 'Payment checkpoint',
-  branch: 'Split into options',
-  final: 'Final step (workflow ends)',
-};
-
-const KIND_HINT: Record<StepKind, string> = {
-  work: 'Your team does something, then the workflow moves on.',
-  client: 'The client approves, signs, or uploads. They can usually Approve or Request changes.',
-  govt: 'Waiting on a government department to approve or reject.',
-  payment: 'Pause until payment is received before continuing.',
-  branch: 'The step splits into named options, each going to a different next step.',
-  final: 'The last step — the workflow is complete here.',
-};
-
-function stepKindOf(s: WorkflowStepDef): StepKind {
-  if (s.type === 'payment_gate') return 'payment';
-  if (s.type === 'branch') return 'branch';
-  if (s.type === 'final') return 'final';
-  const events = new Set((s.transitions ?? []).map((t) => t.event));
-  if (events.has('CLIENT_APPROVE')) return 'client';
-  if (events.has('GOVT_APPROVE')) return 'govt';
-  return 'work';
-}
-
-// Curated "automatic actions" (effects) with human labels. Unknown/legacy effects
-// are preserved (shown read-only in Advanced) so nothing is silently dropped.
-const KNOWN_EFFECTS: { id: string; label: string; hint: string }[] = [
-  { id: 'SEND_EMAIL', label: 'Email the client when this step starts', hint: 'Sends the client an email as soon as this step becomes active.' },
-  { id: 'NOTIFY_CLIENT_RESUBMISSION', label: 'Notify the client of a resubmission requirement', hint: 'Alerts the client that the department asked for a resubmission (info/documents).' },
-];
 
 // ─── Local validation (plain-language; mirrors shared validateDefinition) ──────
 function validate(def: WorkflowDefinition): string[] {
@@ -106,6 +66,16 @@ function validate(def: WorkflowDefinition): string[] {
     if (s.phaseId && !phaseIds.has(s.phaseId))
       errors.push(`"${s.title}" is in a stage that no longer exists — pick a stage or none.`);
   }
+
+  // Story 28.3 (S28e): the step card says "only one step should carry this",
+  // but nothing enforced it — ticking it on several steps saved cleanly and the
+  // balance-due chase then fired from whichever completed first.
+  const chasers = def.steps.filter((s) => (s.effects ?? []).includes('REMIND_PART_PAYMENT'));
+  if (chasers.length > 1) {
+    errors.push(
+      `Only one step may chase part payment, but ${chasers.length} do: ${chasers.map((s) => `"${s.title}"`).join(', ')}.`,
+    );
+  }
   return errors;
 }
 
@@ -122,6 +92,7 @@ const emptyDefinition = (id: string, serviceKey?: string): WorkflowDefinition =>
   ],
 });
 
+
 export default function WorkflowEditorPage() {
   const { serviceKey } = useParams<{ serviceKey: string }>();
   const [searchParams] = useSearchParams();
@@ -136,6 +107,11 @@ export default function WorkflowEditorPage() {
     queryFn: getWorkflowDefinitions,
     staleTime: 5 * 60 * 1000,
   });
+
+  // NOTE: Ambyflow also seeds a new workflow from the PLATFORM LIBRARY here.
+  // There is no library in this installation, so that path is omitted —
+  // `copyFrom` below does the same job from an existing workflow, which is the
+  // only source of proven steps here.
   const definitionId = useMemo(
     () => defs?.find((d) => d.serviceKeys.includes(serviceKey ?? ''))?.id,
     [defs, serviceKey],
@@ -169,9 +145,6 @@ export default function WorkflowEditorPage() {
   // A stable id for a newly-created workflow (generated once, not during render).
   const [newId] = useState(() => `wf-${Date.now()}`);
 
-  // Live-preview rail: drag-resizable + collapsible, persisted across reloads (#68).
-  const preview = useRail('wfEditorPreviewRail', { initial: 380, min: 280, max: 720 });
-
   // The step currently being edited — highlights (colour only) in the live preview.
   const [activeStepNumber, setActiveStepNumber] = useState<number | null>(null);
   // One-shot "centre the chart on this step" request (locate-in-chart button). The
@@ -182,12 +155,26 @@ export default function WorkflowEditorPage() {
     setCenterToken((prev) => ({ step: stepNumber, nonce: (prev?.nonce ?? 0) + 1 }));
   };
 
-  // Refs to each step card so clicking a node in the preview can scroll its editor
-  // into view (reverse of "locate in chart").
-  const cardRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  /**
+   * Story 28.4 (S28h) — the preview FOLLOWS the step you are editing.
+   *
+   * Until now the chart only moved when you pressed "Locate in chart"; opening a
+   * step highlighted its node in colour, which is invisible when that node is
+   * off-canvas in a 40-step flow. Activating a card now pans the chart too, so
+   * the editor and the diagram always agree on where you are.
+   */
+  const activateStep = (stepNumber: number) => {
+    if (stepNumber === activeStepNumber) return; // don't re-pan on every keystroke
+    locateStep(stepNumber);
+  };
+
+  // Refs to each step card (filled by StepListEditor) so clicking a node in the
+  // preview can scroll its editor into view (reverse of "locate in chart"). Held
+  // as state, not a ref, because it is READ during render to hand to the list.
+  const [cardRefs] = useState<StepCardRegistry>({});
   const revealStep = (stepNumber: number) => {
     setActiveStepNumber(stepNumber);
-    cardRefs.current[stepNumber]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    cardRefs[stepNumber]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   // Working copy. In create mode we seed a blank definition; in edit mode we seed
@@ -235,6 +222,12 @@ export default function WorkflowEditorPage() {
     return base;
   }, [draft, isCreate]);
   const isValid = errors.length === 0;
+  // A brand-new workflow is empty by definition, so listing its unfilled fields
+  // as "things to fix" the moment the page opens scolds the user for not having
+  // typed yet. Hold the banner until they actually try to create/save; the
+  // button stays disabled meanwhile, which is the honest signal.
+  const [attemptedSave, setAttemptedSave] = useState(false);
+  const showErrors = !isValid && attemptedSave;
 
   const previewMachine = useMemo(() => {
     if (!draft || !isValid) return null;
@@ -275,39 +268,7 @@ export default function WorkflowEditorPage() {
   }
   if (!draft) return <PageShell title="New Workflow"><LoadingSpinner /></PageShell>;
 
-  // ─── Draft mutators ─────────────────────────────────────────────────────────
   const patch = (next: Partial<WorkflowDefinition>) => setDraft((d) => (d ? { ...d, ...next } : d));
-  const patchStep = (stepNumber: number, next: Partial<WorkflowStepDef>) =>
-    setDraft((d) => d ? { ...d, steps: d.steps.map((s) => (s.stepNumber === stepNumber ? { ...s, ...next } : s)) } : d);
-  const addStep = () => setDraft((d) => {
-    if (!d) return d;
-    const nextNum = d.steps.reduce((m, s) => Math.max(m, s.stepNumber), 0) + 1;
-    const step: WorkflowStepDef = { stepNumber: nextNum, title: `Step ${nextNum}`, type: 'step', clientVisible: true, transitions: [{ event: 'COMPLETE_STEP', to: nextNum }] };
-    return { ...d, steps: [...d.steps, step] };
-  });
-  // Insert a new step right AFTER `index` (the "add next step" button on a card),
-  // and point it at the step the inserted-after one currently leads to.
-  const insertStepAfter = (index: number) => setDraft((d) => {
-    if (!d) return d;
-    const newNum = d.steps.reduce((m, s) => Math.max(m, s.stepNumber), 0) + 1;
-    const after = d.steps[index];
-    const leadsTo = after?.transitions?.find((t) => t.event === 'COMPLETE_STEP')?.to
-      ?? d.steps[index + 1]?.stepNumber ?? newNum;
-    const step: WorkflowStepDef = { stepNumber: newNum, title: 'New step', type: 'step', clientVisible: true, transitions: [{ event: 'COMPLETE_STEP', to: leadsTo }] };
-    const steps = [...d.steps];
-    steps.splice(index + 1, 0, step);
-    return { ...d, steps };
-  });
-  const removeStep = (stepNumber: number) =>
-    setDraft((d) => d ? { ...d, steps: d.steps.filter((s) => s.stepNumber !== stepNumber) } : d);
-  const moveStep = (index: number, dir: -1 | 1) => setDraft((d) => {
-    if (!d) return d;
-    const steps = [...d.steps];
-    const j = index + dir;
-    if (j < 0 || j >= steps.length) return d;
-    [steps[index], steps[j]] = [steps[j], steps[index]];
-    return { ...d, steps };
-  });
 
   // stepNumber → display position (1-based), so the chart can show the SAME numbers
   // as the editor cards.
@@ -320,11 +281,16 @@ export default function WorkflowEditorPage() {
       subtitle={isCreate ? 'Build a workflow your team and clients will follow.' : `${draft.name} · v${draft.version}`}
       action={
         <div className="flex items-center gap-2">
-          <button onClick={goBack} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-ink-muted hover:bg-gray-50">Cancel</button>
+          <button onClick={goBack} className="btn-secondary !px-3 !py-1.5 text-sm">Cancel</button>
           <button
-            onClick={() => save.mutate()}
-            disabled={!isValid || save.isPending}
-            className="inline-flex items-center gap-1.5 rounded-md bg-brand-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+            // Clickable while incomplete on purpose: a disabled button cannot
+            // tell you WHY it is disabled. Pressing it reveals the checklist.
+            onClick={() => {
+              setAttemptedSave(true);
+              if (isValid) save.mutate();
+            }}
+            disabled={save.isPending}
+            className="btn-primary inline-flex items-center gap-1.5 !px-3 !py-1.5 text-sm disabled:opacity-50"
           >
             {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {isCreate ? 'Create workflow' : 'Save & publish'}
@@ -332,16 +298,37 @@ export default function WorkflowEditorPage() {
         </div>
       }
     >
-      <button onClick={goBack} className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-ink mb-4">
-        <ArrowLeft className="w-4 h-4" /> Back
-      </button>
 
-      {!isValid && (
-        <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
+
+      {/* A new workflow must attach to a service that has none. When there are
+          none free, the whole form is unusable — saying so up front beats fine
+          print under a select the user cannot satisfy, with a Create button that
+          can never succeed. */}
+      {isCreate && availableServices.length === 0 && (
+        <div className="mb-4 rounded-md border border-amber-100 bg-amber-50 p-4">
+          <p className="text-sm font-medium text-amber-800">
+            Every service already has a workflow
+          </p>
+          <p className="text-sm text-amber-800 mt-1">
+            A workflow attaches to one service, and none is free. Edit an existing
+            service’s workflow, or add a new service first and give it one from there.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/services')}
+            className="btn-secondary mt-3 min-h-11"
+          >
+            Go to Services
+          </button>
+        </div>
+      )}
+
+      {showErrors && (
+        <div className="mb-4 rounded-md border border-red-100 bg-red-50 p-3">
           <p className="flex items-center gap-2 text-sm font-medium text-red-700 mb-1">
             <AlertTriangle className="w-4 h-4" /> {errors.length} thing{errors.length > 1 ? 's' : ''} to fix before saving
           </p>
-          <ul className="list-disc list-inside text-xs text-red-600 space-y-0.5">
+          <ul className="list-disc list-inside text-xs text-red-700 space-y-0.5">
             {errors.map((e, i) => <li key={i}>{e}</li>)}
           </ul>
         </div>
@@ -378,7 +365,7 @@ export default function WorkflowEditorPage() {
                     )}
                   </select>
                   {availableServices.length === 0 && (
-                    <p className="text-[11px] text-amber-700 mt-0.5">Every service already has a workflow. Edit an existing one instead.</p>
+                    <p className="text-[11px] text-amber-800 mt-0.5">Every service already has a workflow. Edit an existing one instead.</p>
                   )}
                 </div>
               )}
@@ -386,15 +373,23 @@ export default function WorkflowEditorPage() {
                   steps from scratch, then edit them for this service. */}
               {isCreate && (defs ?? []).length > 0 && (
                 <div className="flex flex-col gap-0.5">
-                  <FieldLabel label="Start from an existing workflow" hint="Copies that workflow's stages and steps into this one so you can edit rather than build from scratch. The service binding and name stay yours." />
+                  <FieldLabel label="Start from" hint="Copies that workflow's stages and steps into this one so you can edit rather than build from scratch. The service binding and name stay yours — nothing is forked and no service key is claimed." />
                   <select
                     className={inputCls}
                     value=""
-                    onChange={(e) => { if (e.target.value) copyFrom(e.target.value); }}
-                    aria-label="Start from an existing workflow"
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (!v) return;
+                      copyFrom(v);
+                    }}
+                    aria-label="Start from"
                   >
                     <option value="">Start from scratch</option>
-                    {(defs ?? []).map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                    {(defs ?? []).length > 0 && (
+                      <optgroup label="This workspace">
+                        {(defs ?? []).map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                      </optgroup>
+                    )}
                   </select>
                 </div>
               )}
@@ -403,681 +398,34 @@ export default function WorkflowEditorPage() {
 
           <StagesEditor stages={draft.phases ?? []} onChange={(phases) => patch({ phases })} />
 
-          {/* Steps */}
-          <CollapsibleSection id="steps" title={`Steps (${draft.steps.length})`}>
-            <div className="flex flex-col gap-3">
-              {draft.steps.map((s, i) => (
-                <StepCard
-                  key={s.stepNumber}
-                  step={s}
-                  index={i}
-                  total={draft.steps.length}
-                  stages={draft.phases ?? []}
-                  allSteps={draft.steps}
-                  cardRef={(el) => { cardRefs.current[s.stepNumber] = el; }}
-                  isActive={activeStepNumber === s.stepNumber}
-                  onActivate={() => setActiveStepNumber(s.stepNumber)}
-                  onLocate={() => locateStep(s.stepNumber)}
-                  onAddAfter={() => insertStepAfter(i)}
-                  onPatch={(next) => patchStep(s.stepNumber, next)}
-                  onRemove={() => removeStep(s.stepNumber)}
-                  onMove={(dir) => moveStep(i, dir)}
-                />
-              ))}
-            </div>
-            {/* Add step lives at the BOTTOM — you append the next step after the list. */}
-            <div className="flex justify-end mt-3">
-              <button onClick={addStep} className="btn-secondary inline-flex items-center gap-1.5">
-                <Plus className="w-4 h-4" /> Add step
-              </button>
-            </div>
-          </CollapsibleSection>
+          <StepListEditor
+            steps={draft.steps}
+            stages={draft.phases ?? []}
+            activeStepNumber={activeStepNumber}
+            onActivate={activateStep}
+            onLocate={locateStep}
+            onChange={(steps) => patch({ steps })}
+            cardRegistry={cardRefs}
+          />
         </div>
 
         {/* Live preview — drag-resizable + collapsible rail so the editor column
             can widen. On mobile it stacks full-width and skips the drag handle. */}
-        {preview.collapsed ? (
-          <div className="hidden xl:flex xl:sticky xl:top-4 self-start">
-            <button
-              onClick={preview.toggle}
-              className="card p-2 w-11 flex flex-col items-center gap-2 py-2 text-sm font-semibold text-ink hover:text-brand-600"
-              title="Show live preview"
-            >
-              <ChevronsRight className="w-4 h-4 rotate-180 shrink-0" />
-              <span className="[writing-mode:vertical-rl] rotate-180 whitespace-nowrap tracking-wide">Live preview</span>
-            </button>
-          </div>
-        ) : (
-          <div className="xl:sticky xl:top-4 self-start flex">
-            {/* Drag handle (desktop only) — grabs the left edge to resize. */}
-            <div
-              onPointerDown={preview.startDrag('right')}
-              className="hidden xl:block w-1.5 mr-2 shrink-0 cursor-col-resize rounded bg-transparent hover:bg-brand-400/40"
-              role="separator"
-              aria-label="Resize live preview"
-            />
-            {/* Fixed width applies at xl+ only; below that the CSS var is ignored
-                and the section is full-width via w-full. */}
-            <section
-              className="card p-4 w-full xl:w-[var(--rail-w)]"
-              style={{ ['--rail-w' as string]: `${preview.width}px` }}
-            >
-              <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-ink">
-                  Live preview
-                  <FieldLabel label="" hint="A diagram of the workflow as you’re building it. Boxes are steps; arrows are where it goes next." />
-                </span>
-                <button
-                  onClick={preview.toggle}
-                  className="hidden xl:inline-flex items-center gap-1 text-xs text-ink-muted hover:text-brand-600"
-                  title="Collapse"
-                >
-                  Hide <ChevronsRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              <div className="mt-3">
-                {previewMachine ? (
-                  <div className="h-[520px] rounded-md border border-gray-100 overflow-hidden">
-                    <WorkflowDiagram machine={previewMachine} highlightStepNumber={activeStepNumber} centerToken={centerToken} onStepClick={revealStep} displayNumbers={displayNumbers} />
-                  </div>
-                ) : (
-                  <p className="text-xs text-ink-muted p-4">Fix the items above to see the updated diagram.</p>
-                )}
-              </div>
-            </section>
-          </div>
-        )}
+        <WorkflowPreviewRail
+          machine={previewMachine}
+          storageKey="wfEditorPreviewRail"
+          highlightStepNumber={activeStepNumber}
+          centerToken={centerToken}
+          steps={draft.steps}
+          // Story 28.4 (S10): a blank new workflow is not an ERROR state — it
+          // showed "Fix the items above" before the user had typed anything.
+          emptyMessage={attemptedSave
+            ? 'Fix the items above to see the updated diagram.'
+            : 'Add a name and steps to see the diagram.'}
+          onStepClick={revealStep}
+          displayNumbers={displayNumbers}
+        />
       </div>
     </PageShell>
-  );
-}
-
-// ─── Reusable bits ────────────────────────────────────────────────────────────
-const inputCls = 'w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400';
-
-function LabeledField({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <FieldLabel label={label} hint={hint} />
-      {children}
-    </div>
-  );
-}
-
-function StepNumberSelect({ value, steps, onChange, label, hint }: {
-  value: number | undefined; steps: WorkflowStepDef[]; onChange: (n: number) => void; label: string; hint?: string;
-}) {
-  return (
-    <LabeledField label={label} hint={hint}>
-      <select className={inputCls} value={value ?? ''} onChange={(e) => onChange(Number(e.target.value))}>
-        {steps.map((s) => <option key={s.stepNumber} value={s.stepNumber}>{s.title}</option>)}
-      </select>
-    </LabeledField>
-  );
-}
-
-function StagesEditor({ stages, onChange }: { stages: PhaseDef[]; onChange: (p: PhaseDef[]) => void }) {
-  const add = () => onChange([...stages, { id: `stage-${Date.now()}`, name: `Stage ${stages.length + 1}`, order: stages.length + 1 }]);
-  const patch = (idx: number, next: Partial<PhaseDef>) => onChange(stages.map((p, i) => (i === idx ? { ...p, ...next } : p)));
-  const remove = (idx: number) => onChange(stages.filter((_, i) => i !== idx));
-  return (
-    <CollapsibleSection
-      id="stages"
-      title="Stages"
-      hint="Big-picture groupings shown on the client’s progress tracker, e.g. “Name Reservation”, “Filing”. Optional."
-      actions={
-        <button onClick={add} className="inline-flex items-center gap-1 text-sm text-brand-600 hover:underline">
-          <Plus className="w-4 h-4" /> Add stage
-        </button>
-      }
-    >
-      {stages.length === 0 ? (
-        <p className="text-xs text-ink-muted">No stages yet — steps won’t group on the client’s progress tracker.</p>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {stages.map((p, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input className={inputCls} value={p.name} onChange={(e) => patch(i, { name: e.target.value })} placeholder="Stage name" aria-label="Stage name" />
-              <button onClick={() => remove(i)} className="text-ink-faint hover:text-red-600 shrink-0" aria-label="Remove stage"><Trash2 className="w-4 h-4" /></button>
-            </div>
-          ))}
-        </div>
-      )}
-    </CollapsibleSection>
-  );
-}
-
-function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, onActivate, onLocate, onAddAfter, onPatch, onRemove, onMove }: {
-  step: WorkflowStepDef;
-  index: number;
-  total: number;
-  stages: PhaseDef[];
-  allSteps: WorkflowStepDef[];
-  isActive?: boolean;
-  cardRef?: (el: HTMLDivElement | null) => void;
-  onActivate?: () => void;
-  onLocate?: () => void;
-  onAddAfter?: () => void;
-  onPatch: (next: Partial<WorkflowStepDef>) => void;
-  onRemove: () => void;
-  onMove: (dir: -1 | 1) => void;
-}) {
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const confirm = useConfirm();
-  const handleRemove = async () => {
-    const ok = await confirm({
-      title: 'Delete this step?',
-      message: `“${step.title || 'Untitled step'}” will be removed from the workflow. Other steps pointing to it will need their outcomes updated.`,
-      tone: 'danger',
-      confirmLabel: 'Delete step',
-    });
-    if (ok) onRemove();
-  };
-  const kind = stepKindOf(step);
-  const events = step.transitions ?? [];
-  const firstTo = (event: string) => events.find((t) => t.event === event)?.to;
-  // Default routing target = the NEXT step in the list (common case), else the
-  // first other step. Avoids new outcomes jumping to the last/Done step.
-  const nextStepNum = allSteps[index + 1]?.stepNumber
-    ?? allSteps.find((s) => s.stepNumber !== step.stepNumber)?.stepNumber
-    ?? step.stepNumber;
-  const otherStepNum = nextStepNum;
-
-  // Change step KIND → set engine `type` and PRE-FILL sensible default outcomes
-  // (which the user can then freely edit/add/remove via OutcomeRows). Existing
-  // matching outcomes are preserved so changing kind doesn't lose wiring.
-  const setKind = (k: StepKind) => {
-    const next = otherStepNum;
-    if (k === 'final') { onPatch({ type: 'final', transitions: [], gate: undefined }); return; }
-    if (k === 'payment') {
-      onPatch({ type: 'payment_gate', transitions: [], gate: step.gate ?? { requires: 'fully_paid', onPass: next, onWait: step.stepNumber } });
-      return;
-    }
-    if (k === 'branch') {
-      const existing = events.filter((t) => t.event === 'BRANCH_DECISION');
-      onPatch({ type: 'branch', gate: undefined, transitions: existing.length ? existing : [{ event: 'BRANCH_DECISION', to: next, branch: 'option_1' }] });
-      return;
-    }
-    if (k === 'client') { onPatch({ type: 'step', gate: undefined, transitions: [{ event: 'CLIENT_APPROVE', to: firstTo('CLIENT_APPROVE') ?? next }, { event: 'CLIENT_REJECT', to: firstTo('CLIENT_REJECT') ?? step.stepNumber }] }); return; }
-    if (k === 'govt') { onPatch({ type: 'step', gate: undefined, transitions: [{ event: 'GOVT_APPROVE', to: firstTo('GOVT_APPROVE') ?? next }, { event: 'GOVT_REJECT', to: firstTo('GOVT_REJECT') ?? step.stepNumber }] }); return; }
-    onPatch({ type: 'step', gate: undefined, transitions: events.length ? events : [{ event: 'COMPLETE_STEP', to: firstTo('COMPLETE_STEP') ?? next }] }); // work
-  };
-
-  // Who-does-this select value.
-  const whoValue = step.defaultAssigneeUid === '__CLIENT__' ? 'client' : (step.assignedRole ? 'role' : 'team');
-
-  return (
-    <div
-      ref={cardRef}
-      className={`rounded-lg border bg-surface-soft/40 p-4 transition-shadow scroll-mt-4 ${isActive ? 'border-brand-400 ring-1 ring-brand-300' : 'border-hairline'}`}
-      onFocusCapture={onActivate}
-      onClick={onActivate}
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand-50 text-xs font-semibold text-brand-700 shrink-0">{index + 1}</span>
-        <input className={`${inputCls} font-medium`} value={step.title} onChange={(e) => onPatch({ title: e.target.value })} aria-label={`Step ${step.stepNumber} title`} placeholder="Internal step name (our team)" />
-        {/* #162: these were four bare 16px icons packed into ~70px with the
-            destructive one in the middle. Each now has a ≥36px tap target, and
-            delete is pushed away from the move controls by a divider. */}
-        <div className="flex items-center gap-0.5 shrink-0">
-          <button onClick={onLocate} className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-faint hover:text-brand-600 hover:bg-surface-soft" aria-label="Locate in chart" title="Locate in chart"><Crosshair className="w-4 h-4" /></button>
-          <button onClick={() => onMove(-1)} disabled={index === 0} className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-faint hover:text-ink hover:bg-surface-soft disabled:opacity-30" aria-label="Move up"><ChevronUp className="w-4 h-4" /></button>
-          <button onClick={() => onMove(1)} disabled={index === total - 1} className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-faint hover:text-ink hover:bg-surface-soft disabled:opacity-30" aria-label="Move down"><ChevronDown className="w-4 h-4" /></button>
-          <span aria-hidden="true" className="w-px h-5 bg-hairline mx-1" />
-          <button onClick={handleRemove} className="inline-flex items-center justify-center w-9 h-9 rounded-md text-ink-faint hover:text-red-600 hover:bg-red-50" aria-label="Remove step"><Trash2 className="w-4 h-4" /></button>
-        </div>
-      </div>
-
-      {/* #103: separate client-facing step name. Blank → the client sees the
-          internal name above. Lets the client see a friendlier label. */}
-      <div className="mb-3 pl-8">
-        <LabeledField label="Client step name" hint="What the CLIENT sees for this step. Leave blank to reuse the internal name above.">
-          <input
-            className={inputCls}
-            value={step.clientTitle ?? ''}
-            onChange={(e) => onPatch({ clientTitle: e.target.value || undefined })}
-            aria-label={`Step ${step.stepNumber} client name`}
-            placeholder={step.title ? `Defaults to “${step.title}”` : 'Client-facing name (optional)'}
-          />
-        </LabeledField>
-      </div>
-
-      {/* #106: editable email/notification the client receives when this step
-          becomes their turn. Only meaningful for CLIENT-owned steps. */}
-      {kind === 'client' && (
-        <div className="mb-3 pl-8 grid grid-cols-1 gap-2">
-          <LabeledField label="Client email — subject line" hint="The email/notification TITLE the client gets when it's their turn on this step. Blank → “Action needed on your service”.">
-            <input
-              className={inputCls}
-              value={step.clientPromptTitle ?? ''}
-              onChange={(e) => onPatch({ clientPromptTitle: e.target.value || undefined })}
-              aria-label={`Step ${step.stepNumber} client email subject`}
-              placeholder="Action needed on your service"
-            />
-          </LabeledField>
-          <LabeledField label="Client email — message" hint="The email/notification BODY. Blank → an auto-generated line naming the service and step.">
-            <textarea
-              className={`${inputCls} resize-y`}
-              rows={3}
-              value={step.clientPromptMessage ?? ''}
-              onChange={(e) => onPatch({ clientPromptMessage: e.target.value || undefined })}
-              aria-label={`Step ${step.stepNumber} client email message`}
-              placeholder="e.g. Dear Client, please review the proposed name & objects and approve or request changes."
-            />
-          </LabeledField>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2.5">
-        <LabeledField label="What kind of step?" hint={KIND_HINT[kind]}>
-          <select className={inputCls} value={kind} onChange={(e) => setKind(e.target.value as StepKind)}>
-            {(Object.keys(KIND_LABEL) as StepKind[]).map((k) => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}
-          </select>
-        </LabeledField>
-
-        <LabeledField label="Who does this?" hint="Who owns the step: your team (by role), or the client.">
-          <select className={inputCls} value={whoValue} onChange={(e) => {
-            const v = e.target.value;
-            if (v === 'client') onPatch({ defaultAssigneeUid: '__CLIENT__', assignedRole: undefined });
-            else if (v === 'role') onPatch({ defaultAssigneeUid: undefined, assignedRole: step.assignedRole || 'team_member' });
-            else onPatch({ defaultAssigneeUid: undefined, assignedRole: undefined });
-          }}>
-            <option value="team">Our team (anyone)</option>
-            <option value="role">Our team (specific role)</option>
-            <option value="client">The client</option>
-          </select>
-        </LabeledField>
-
-        {whoValue === 'role' && (
-          <LabeledField label="Which role?" hint="e.g. team_member, manager, admin.">
-            <input className={inputCls} value={step.assignedRole ?? ''} onChange={(e) => onPatch({ assignedRole: e.target.value || undefined })} placeholder="team_member" />
-          </LabeledField>
-        )}
-
-        <LabeledField label="Stage" hint="Which big-picture stage this step belongs to (for the client tracker).">
-          <select className={inputCls} value={step.phaseId ?? ''} onChange={(e) => onPatch({ phaseId: e.target.value || undefined })}>
-            <option value="">— none —</option>
-            {stages.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
-        </LabeledField>
-
-        <LabeledField label="Expected time (days)" hint="How long this step usually takes. Drives due dates and “running late”. Use 0 for same-day.">
-          <input className={inputCls} type="number" min={0} value={step.typicalDurationDays ?? ''} onChange={(e) => onPatch({ typicalDurationDays: e.target.value === '' ? undefined : Number(e.target.value) })} />
-        </LabeledField>
-
-        <label className="flex items-center gap-2 self-end pb-1.5 cursor-pointer">
-          <input type="checkbox" className="h-4 w-4" checked={step.clientVisible !== false} onChange={(e) => onPatch({ clientVisible: e.target.checked })} aria-label="Visible to client" />
-          <FieldLabel label="Visible to the client" hint="If on, the client sees this step on their progress view. Turn off for internal-only steps." />
-        </label>
-      </div>
-
-      {/* E35/E34: a date-anchored deadline, and who the step applies to. Both
-          sit beside "Expected time" because each is an alternative to it — a
-          rule wins where it resolves, and a condition decides whether the step
-          runs at all. */}
-      <div className="mt-3 space-y-3">
-        <StepDueRuleEditor step={step} onPatch={onPatch} />
-        <StepConditionEditor step={step} onPatch={onPatch} />
-      </div>
-
-      {/* What happens next? — payment checkpoints are a gate (special); every other
-          kind uses freely-editable OUTCOME ROWS so you can define any number of
-          future states to any steps. */}
-      {kind === 'payment' ? (
-        <WhatHappensNext>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <LabeledField label="Continue when" hint="The payment level required before the workflow may continue.">
-              <select className={inputCls} value={step.gate?.requires ?? 'fully_paid'} onChange={(e) => onPatch({ gate: { requires: e.target.value as 'fully_paid' | 'part_paid', onPass: step.gate?.onPass ?? otherStepNum, onWait: step.gate?.onWait ?? step.stepNumber } })}>
-                <option value="fully_paid">Fully paid</option>
-                <option value="part_paid">Part paid</option>
-              </select>
-            </LabeledField>
-            <StepNumberSelect label="If paid → go to" hint="Where it goes once payment is satisfied."
-              value={step.gate?.onPass} steps={allSteps} onChange={(n) => onPatch({ gate: { requires: step.gate?.requires ?? 'fully_paid', onPass: n, onWait: step.gate?.onWait ?? step.stepNumber } })} />
-            <StepNumberSelect label="If not paid, wait at" hint="Usually this same step — the matter waits here until paid."
-              value={step.gate?.onWait} steps={allSteps} onChange={(n) => onPatch({ gate: { requires: step.gate?.requires ?? 'fully_paid', onPass: step.gate?.onPass ?? otherStepNum, onWait: n } })} />
-          </div>
-        </WhatHappensNext>
-      ) : kind !== 'final' ? (
-        <WhatHappensNext>
-          <OutcomeRows step={step} allSteps={allSteps} otherStepNum={otherStepNum} onPatch={onPatch} showColors={!!isActive} />
-          {kind === 'client' && (
-            <div className="mt-2">
-              <LabeledField label="Button the client sees" hint="The label on the client’s action button, e.g. “Please Proceed”.">
-                <input className={inputCls} value={step.clientActionLabel ?? ''} onChange={(e) => onPatch({ clientActionLabel: e.target.value || undefined })} placeholder="Approve" />
-              </LabeledField>
-            </div>
-          )}
-        </WhatHappensNext>
-      ) : null}
-
-      {/* Automatic actions */}
-      {kind !== 'final' && (
-        <div className="mt-3">
-          <FieldLabel label="Automatic actions" hint="Things the system does on its own when this step runs." />
-          <div className="flex flex-col gap-1.5 mt-1.5">
-            {KNOWN_EFFECTS.map((eff) => {
-              const on = (step.effects ?? []).includes(eff.id);
-              return (
-                <label key={eff.id} className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="h-4 w-4" checked={on} onChange={(e) => {
-                    const set = new Set(step.effects ?? []);
-                    if (e.target.checked) set.add(eff.id); else set.delete(eff.id);
-                    onPatch({ effects: set.size ? [...set] : undefined });
-                  }} />
-                  <span className="text-xs text-ink-muted inline-flex items-center gap-1">{eff.label}
-                    <FieldLabel label="" hint={eff.hint} />
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* #81: independent Internal vs Client status & notes. Fully separate —
-          editing one never affects the other. */}
-      <div className="mt-3 grid md:grid-cols-2 gap-3">
-        <div className="rounded-lg border border-hairline p-3 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Internal view</p>
-          <LabeledField label="Internal status">
-            <input className={`${inputCls} mt-1`} value={step.internalStatus ?? ''} onChange={(e) => onPatch({ internalStatus: e.target.value || undefined })} placeholder="e.g. Drafting" />
-          </LabeledField>
-          <LabeledField label="Internal notes">
-            <textarea className={`${inputCls} resize-y mt-1`} rows={2} value={step.internalNotes ?? ''} onChange={(e) => onPatch({ internalNotes: e.target.value || undefined })} placeholder="Only staff see this." />
-          </LabeledField>
-        </div>
-        <div className="rounded-lg border border-hairline p-3 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Client view</p>
-          <LabeledField label="Client status">
-            <input className={`${inputCls} mt-1`} value={step.clientStatus ?? ''} onChange={(e) => onPatch({ clientStatus: e.target.value || undefined })} placeholder="e.g. In progress" />
-          </LabeledField>
-          <LabeledField label="Client note / description">
-            <textarea className={`${inputCls} resize-y mt-1`} rows={2} value={step.clientNote ?? ''} onChange={(e) => onPatch({ clientNote: e.target.value || undefined })} placeholder="Shown to the client." />
-          </LabeledField>
-        </div>
-      </div>
-
-      {/* #82: multiple audience-tagged descriptions. */}
-      <div className="mt-3">
-        <StepDescriptionsEditor step={step} onPatch={onPatch} />
-      </div>
-
-      {/* #134: manage the step's verification checklist (add / edit / remove). */}
-      <div className="mt-3">
-        <StepChecklistEditor step={step} onPatch={onPatch} />
-      </div>
-
-      {/* #117: where the part-payment chase begins. Once THIS step completes, a
-          part-paid matter starts showing the blinking balance-due alert (and the
-          reminder email effect fires). Set it on e.g. "Name Approval Received". */}
-      <label className="mt-3 flex items-start gap-2 text-xs text-ink-muted cursor-pointer">
-        <input
-          type="checkbox"
-          className="h-3.5 w-3.5 mt-0.5"
-          checked={(step.effects ?? []).includes('REMIND_PART_PAYMENT')}
-          onChange={(e) => {
-            const rest = (step.effects ?? []).filter((x) => x !== 'REMIND_PART_PAYMENT');
-            const next = e.target.checked ? [...rest, 'REMIND_PART_PAYMENT'] : rest;
-            onPatch({ effects: next.length ? next : undefined });
-          }}
-          aria-label={`Step ${step.stepNumber} starts the part-payment reminder`}
-        />
-        <span>
-          <strong className="text-ink-soft">Chase part payment after this step.</strong>{' '}
-          Once this step completes, part-paid matters show the blinking balance-due
-          alert until the balance is recorded. Only one step should carry this.
-        </span>
-      </label>
-
-      {/* Advanced (raw) — power users */}
-      <div className="mt-3 pt-2 border-t border-hairline-soft" />
-      <button onClick={() => setShowAdvanced((v) => !v)} className="inline-flex items-center gap-1 text-xs text-ink-faint hover:text-ink">
-        <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showAdvanced ? 'rotate-90' : ''}`} /> Advanced (raw)
-      </button>
-      {showAdvanced && (
-        <div className="mt-1 rounded-md bg-surface-card p-2 text-[11px] text-ink-muted font-mono whitespace-pre-wrap break-all">
-          {JSON.stringify({ stepNumber: step.stepNumber, type: step.type, transitions: step.transitions, gate: step.gate, effects: step.effects }, null, 2)}
-        </div>
-      )}
-
-      {/* Quick "insert a step right after this one" — easier than scrolling to the
-          bottom "Add step" when building a flow in order. */}
-      {onAddAfter && (
-        <div className="mt-3 flex justify-center">
-          <button onClick={onAddAfter} className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">
-            <Plus className="w-3.5 h-3.5" /> Add step below
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function WhatHappensNext({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mt-3 rounded-md bg-surface-card p-3">
-      <p className="text-xs font-semibold text-ink-muted mb-2 inline-flex items-center gap-1">
-        What happens next?
-        <FieldLabel label="" hint="The possible outcomes of this step and where each one goes. Add as many as you need." />
-      </p>
-      {children}
-    </div>
-  );
-}
-
-// Friendly outcome types ↔ engine events. A "Branch option" carries a free-text
-// option name (the `branch` value); the rest are single fixed events.
-const OUTCOME_TYPES: { event: string; label: string; needsName?: boolean }[] = [
-  { event: 'COMPLETE_STEP', label: 'When done / completed' },
-  { event: 'CLIENT_APPROVE', label: 'Client approves' },
-  { event: 'CLIENT_REJECT', label: 'Client requests changes' },
-  { event: 'GOVT_APPROVE', label: 'Government approves' },
-  { event: 'GOVT_REJECT', label: 'Government rejects' },
-  { event: 'REWORK', label: 'Sent back for correction' },
-  { event: 'BRANCH_DECISION', label: 'Option (you name it)', needsName: true },
-];
-
-/**
- * #82: multiple audience-tagged descriptions per step. Admin can add unlimited
- * descriptions, edit, delete, and tag each Internal or Client. Migrates a legacy
- * single `description` into the list on first edit (kept until first save).
- */
-function StepDescriptionsEditor({ step, onPatch }: {
-  step: WorkflowStepDef;
-  onPatch: (next: Partial<WorkflowStepDef>) => void;
-}) {
-  // Seed from `descriptions`, else from a legacy single `description`.
-  const list: StepDescription[] = step.descriptions
-    ?? (step.description ? [{ id: 'legacy', audience: 'client', text: step.description }] : []);
-
-  const commit = (next: StepDescription[]) =>
-    onPatch({ descriptions: next, description: undefined }); // drop legacy field once managed here
-
-  const add = () => commit([...list, { id: `d${Date.now()}`, audience: 'client', text: '' }]);
-  const update = (i: number, patch: Partial<StepDescription>) =>
-    commit(list.map((d, j) => (j === i ? { ...d, ...patch } : d)));
-  const remove = (i: number) => commit(list.filter((_, j) => j !== i));
-
-  return (
-    <div className="rounded-lg border border-hairline p-3">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Descriptions</p>
-        <button onClick={add} className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">
-          <Plus className="w-3.5 h-3.5" /> Add description
-        </button>
-      </div>
-      {list.length === 0 ? (
-        <p className="text-xs text-ink-faint">No descriptions. Add one for the internal team or the client.</p>
-      ) : (
-        <div className="space-y-2">
-          {list.map((d, i) => (
-            /* #162: the textarea was squeezed to ~90px beside the audience select
-               on a phone; stack them below sm. */
-            <div key={d.id ?? i} className="flex flex-col sm:flex-row items-stretch sm:items-start gap-2">
-              <select
-                className="w-full sm:w-28 sm:shrink-0 rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                value={d.audience ?? 'client'}
-                onChange={(e) => update(i, { audience: e.target.value as 'internal' | 'client' })}
-                aria-label="Description audience"
-              >
-                <option value="client">Client</option>
-                <option value="internal">Internal</option>
-              </select>
-              <textarea
-                className="flex-1 min-w-0 resize-y rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                rows={2}
-                value={d.text}
-                onChange={(e) => update(i, { text: e.target.value })}
-                placeholder="Description text…"
-              />
-              <button onClick={() => remove(i)} className="shrink-0 p-1.5 text-ink-faint hover:text-red-600" title="Delete description" aria-label="Delete description">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
- * #134: manage a step's verification checklist. The internal team tracks these on
- * the step (client sees them read-only, #95). Admin can add, edit and remove items;
- * an empty list removes the checklist from the step entirely. Maps 1:1 to the
- * engine's `checklistItems[]`.
- */
-function StepChecklistEditor({ step, onPatch }: {
-  step: WorkflowStepDef;
-  onPatch: (next: Partial<WorkflowStepDef>) => void;
-}) {
-  const list = step.checklistItems ?? [];
-  // Persist: an empty list drops the field so no checklist renders on the step.
-  const commit = (next: string[]) => onPatch({ checklistItems: next.length ? next : undefined });
-  const add = () => commit([...list, '']);
-  const update = (i: number, text: string) => commit(list.map((t, j) => (j === i ? text : t)));
-  const remove = (i: number) => commit(list.filter((_, j) => j !== i));
-
-  return (
-    <div className="rounded-lg border border-hairline p-3">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Checklist</p>
-        <button onClick={add} className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">
-          <Plus className="w-3.5 h-3.5" /> Add item
-        </button>
-      </div>
-      {list.length === 0 ? (
-        <p className="text-xs text-ink-faint">No checklist items. Add one to track sub-tasks for this step.</p>
-      ) : (
-        <div className="space-y-2">
-          {list.map((text, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input
-                className="flex-1 min-w-0 rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                value={text}
-                onChange={(e) => update(i, e.target.value)}
-                placeholder="Checklist item…"
-                aria-label={`Checklist item ${i + 1}`}
-              />
-              <button onClick={() => remove(i)} className="shrink-0 p-1.5 text-ink-faint hover:text-red-600" title="Remove item" aria-label="Remove checklist item">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
- * Freely-editable list of step OUTCOMES — each row is "[outcome] → [go to step]".
- * Replaces the old hardcoded per-kind routing so any step can define any number of
- * future states to any steps. Maps 1:1 to the engine's `transitions[]`.
- */
-function OutcomeRows({ step, allSteps, otherStepNum, onPatch, showColors }: {
-  step: WorkflowStepDef;
-  allSteps: WorkflowStepDef[];
-  otherStepNum: number;
-  onPatch: (next: Partial<WorkflowStepDef>) => void;
-  showColors?: boolean;
-}) {
-  const rows = step.transitions ?? [];
-  // Persist transitions AND keep the engine `type` consistent: a step that has any
-  // "Option (you name it)" (BRANCH_DECISION) outcome must be a branch, otherwise a
-  // plain step — so a named option always compiles + renders correctly (auto-switch).
-  const commit = (transitions: { event: string; to: number; branch?: string }[]) => {
-    const hasBranch = transitions.some((t) => t.event === 'BRANCH_DECISION');
-    const patch: Partial<WorkflowStepDef> = { transitions };
-    if (step.type !== 'final' && step.type !== 'payment_gate') {
-      patch.type = hasBranch ? 'branch' : 'step';
-    }
-    onPatch(patch);
-  };
-  const setRow = (i: number, next: Partial<{ event: string; to: number; branch?: string }>) =>
-    commit(rows.map((t, idx) => (idx === i ? { ...t, ...next } : t)));
-  const addRow = () => commit([...rows, { event: 'COMPLETE_STEP', to: otherStepNum }]);
-  const removeRow = (i: number) => commit(rows.filter((_, idx) => idx !== i));
-
-  return (
-    <div className="flex flex-col gap-2">
-      {rows.map((t, i) => {
-        const isBranch = t.event === 'BRANCH_DECISION';
-        // Colour dot matching this outcome's arrow in the live chart (only while
-        // this step is focused, so the editor row and its arrow line up visually).
-        const dot = showColors ? outcomeColor(t.event, t.branch, t.to) : null;
-        return (
-          <div key={i} className="rounded-md border border-hairline bg-white p-2">
-            {/* #162: on a phone two side-by-side selects left ~40% of 390px each, so
-                the values truncated to "When done∨ → Awaiting P∨" and you couldn't
-                read where an outcome routed. Stack below sm; the arrow turns into a
-                downward cue. */}
-            <div className="flex flex-col sm:flex-row sm:items-end gap-2">
-              {dot && <span className="w-2.5 h-2.5 rounded-full shrink-0 mb-2.5 hidden sm:block" style={{ backgroundColor: dot }} title="Matches this arrow's colour in the chart" />}
-              <div className="flex-1 min-w-0 w-full">
-                <span className="block text-[11px] text-ink-faint mb-0.5">Outcome</span>
-                <select
-                  className={inputCls}
-                  value={OUTCOME_TYPES.some((o) => o.event === t.event) ? t.event : 'COMPLETE_STEP'}
-                  onChange={(e) => {
-                    const ev = e.target.value;
-                    const needsName = OUTCOME_TYPES.find((o) => o.event === ev)?.needsName;
-                    setRow(i, { event: ev, branch: needsName ? (t.branch || `option_${i + 1}`) : undefined });
-                  }}
-                  aria-label="Outcome"
-                >
-                  {OUTCOME_TYPES.map((o) => <option key={o.event} value={o.event}>{o.label}</option>)}
-                </select>
-              </div>
-              <span className="text-ink-faint shrink-0 pb-1.5 hidden sm:inline">→</span>
-              <div className="flex-1 min-w-0 w-full">
-                <span className="block text-[11px] text-ink-faint mb-0.5">Go to step</span>
-                <select className={inputCls} value={t.to} onChange={(e) => setRow(i, { to: Number(e.target.value) })} aria-label="Go to step">
-                  {allSteps.map((s) => <option key={s.stepNumber} value={s.stepNumber}>{s.title}</option>)}
-                </select>
-              </div>
-              <button
-                onClick={() => removeRow(i)}
-                className="text-ink-faint hover:text-red-600 shrink-0 sm:pb-1.5 inline-flex items-center justify-center gap-1.5 w-full sm:w-auto min-h-[40px] sm:min-h-0 rounded-md border border-hairline sm:border-0 text-xs sm:text-sm"
-                aria-label="Remove outcome"
-              >
-                <Trash2 className="w-4 h-4" /><span className="sm:hidden">Remove outcome</span>
-              </button>
-            </div>
-            {isBranch && (
-              <div className="mt-2">
-                <span className="block text-[11px] text-ink-faint mb-0.5">Option name (shown to the team)</span>
-                <input className={inputCls} value={t.branch ?? ''} onChange={(e) => setRow(i, { branch: e.target.value })} placeholder="e.g. New name required" aria-label="Option name" />
-              </div>
-            )}
-          </div>
-        );
-      })}
-      {rows.length === 0 && <p className="text-xs text-amber-700">No outcomes yet — this step can’t advance. Add one below.</p>}
-      <button onClick={addRow} className="self-start inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">
-        <Plus className="w-3.5 h-3.5" /> Add outcome
-      </button>
-    </div>
   );
 }
