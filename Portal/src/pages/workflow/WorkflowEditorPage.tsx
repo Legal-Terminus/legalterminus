@@ -227,7 +227,12 @@ export default function WorkflowEditorPage() {
   // typed yet. Hold the banner until they actually try to create/save; the
   // button stays disabled meanwhile, which is the honest signal.
   const [attemptedSave, setAttemptedSave] = useState(false);
-  const showErrors = !isValid && attemptedSave;
+  // Shown as soon as the workflow is invalid, not only after a save attempt.
+  // Ambyflow waits for `attemptedSave` so a half-built workflow does not nag;
+  // this editor replaced one that surfaced problems immediately, and the save
+  // button below is disabled meanwhile — a disabled button with no stated
+  // reason is worse than the nagging.
+  const showErrors = !isValid;
 
   const previewMachine = useMemo(() => {
     if (!draft || !isValid) return null;
@@ -289,7 +294,9 @@ export default function WorkflowEditorPage() {
               setAttemptedSave(true);
               if (isValid) save.mutate();
             }}
-            disabled={save.isPending}
+            // Disabled while invalid: the old editor blocked the click rather
+            // than accepting it and failing server-side.
+            disabled={save.isPending || !isValid}
             className="btn-primary inline-flex items-center gap-1.5 !px-3 !py-1.5 text-sm disabled:opacity-50"
           >
             {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -373,7 +380,7 @@ export default function WorkflowEditorPage() {
                   steps from scratch, then edit them for this service. */}
               {isCreate && (defs ?? []).length > 0 && (
                 <div className="flex flex-col gap-0.5">
-                  <FieldLabel label="Start from" hint="Copies that workflow's stages and steps into this one so you can edit rather than build from scratch. The service binding and name stay yours — nothing is forked and no service key is claimed." />
+                  <FieldLabel label="Start from an existing workflow" hint="Copies that workflow's stages and steps into this one so you can edit rather than build from scratch. The service binding and name stay yours — nothing is forked and no service key is claimed." />
                   <select
                     className={inputCls}
                     value=""
@@ -382,7 +389,7 @@ export default function WorkflowEditorPage() {
                       if (!v) return;
                       copyFrom(v);
                     }}
-                    aria-label="Start from"
+                    aria-label="Start from an existing workflow"
                   >
                     <option value="">Start from scratch</option>
                     {(defs ?? []).length > 0 && (

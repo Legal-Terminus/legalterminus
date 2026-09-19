@@ -50,7 +50,14 @@ export default function StepListEditor({
    * just asked for it), and any step carrying a validation error is force-opened
    * so "Fix this step" is never hidden behind a collapsed summary.
    */
-  const [expandedStep, setExpandedStep] = useState<number | null>(null);
+  // Opens on the FIRST step rather than all-collapsed. Ambyflow starts closed,
+  // but this editor replaced one that showed every step expanded — landing on a
+  // wall of collapsed summaries reads as an empty page, and a workflow's first
+  // step is what an author looks at anyway. The accordion is unchanged: opening
+  // another still closes this one.
+  const [expandedStep, setExpandedStep] = useState<number | null>(
+    () => steps[0]?.stepNumber ?? null,
+  );
   const [filter, setFilter] = useState('');
 
   // Open a newly added step. Steps never reuse a number, so a max that grew
