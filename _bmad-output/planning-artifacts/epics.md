@@ -2830,6 +2830,10 @@ Legal-Terminus already uses — so it is ADDITIVE to the consolidated `/admin/us
 
 **Priority**: P2 | **Complexity**: L | **Dependencies**: E09 (users), E13-S02 (step ETAs)
 
+> **✅ BUILT (2026-09-19).** `clientRollup.service.js` + `clientProfile.service.js`, ported with
+> ZERO workspace coupling. Verified against live data: 11 clients, correct per-client figures
+> (2 active / 2 overdue / ₹1,000 outstanding / ₹1,100 collected for the first row).
+
 **Rationale**: The roster and the Client 360 screen both need per-client aggregates. Computing them
 in the Portal would mean fetching every matter for every client on screen; computing them per
 request, page-bounded, keeps the cost proportional to what is actually displayed.
@@ -2855,6 +2859,10 @@ request, page-bounded, keeps the cost proportional to what is actually displayed
 
 **Priority**: P2 | **Complexity**: M | **Dependencies**: E19-S01
 
+> **✅ BUILT (2026-09-19).** `GET /api/clients` (admin/manager), `/clients` page. `/tags` is
+> declared BEFORE `/:uid` so it is not captured as a client id. Client and team-member access
+> both refused (tested).
+
 **Rationale**: Staff need to scan the whole client base with the figures that matter, then drill in.
 
 **Acceptance Criteria**:
@@ -2872,6 +2880,10 @@ request, page-bounded, keeps the cost proportional to what is actually displayed
 ### E19-S03 — Client 360 Detail Screen [Phase 2]
 
 **Priority**: P2 | **Complexity**: L | **Dependencies**: E19-S01, E19-S02
+
+> **✅ BUILT (2026-09-19).** `GET /api/clients/:uid` + `ClientDetailPage` with the KPI strip,
+> matters list and money panels. A STAFF uid 404s through this route — that role check is the
+> only thing standing between it and a staff record.
 
 **Rationale**: One screen for health, value, commitments and coverage. Composed of small components
 deliberately — the matter page had to be broken up at ~2,900 lines; this one starts assembled.
@@ -2905,6 +2917,10 @@ the firm.
 
 **Priority**: P2 | **Complexity**: M | **Dependencies**: E04 (client portal), E12 (client/internal split)
 
+> **✅ BUILT (2026-09-19).** `markAwaitingClient` / `annotateAwaitingClient` in
+> `tasks.controller.js`, wired into BOTH client list branches (the client's own and the #188
+> cc-contact branch). `ClientCockpit` replaces the single static "My Services" tile.
+
 **Rationale**: A client's dashboard answers one question — where has my work got to, and does it need
 me? Today the answer is a link.
 
@@ -2926,6 +2942,11 @@ me? Today the answer is a link.
 
 **Priority**: P2 | **Complexity**: M | **Dependencies**: E20-S01, E13 (SLA), E18 (reports)
 
+> **✅ BUILT (2026-09-19).** `PracticeCockpit` + a new `owner` field on every SLA breach
+> (`deriveOwnerType`), so "needs the firm" can be separated from "waiting on others".
+> ⚠️ The statutory-deadlines panel is OMITTED — it belongs to the statutory-calendar feature,
+> which is not in these epics. It slots into the marked gap when that lands.
+
 **Rationale**: Staff need "what needs the firm" and "what are we waiting on" without opening reports.
 
 **Acceptance Criteria**:
@@ -2940,6 +2961,11 @@ me? Today the answer is a link.
 ---
 
 ## E-21 — Public API v1 & Webhooks [Phase 2]
+
+> **⏳ NOT YET BUILT (as of 2026-09-19).** E-19, E-20, E-22 and E-23 are implemented and tested;
+> this epic is planned but not started. It is the largest remaining piece (~1,900 lines across
+> API keys, the versioned read API, writes and webhooks) and is deliberately left as a separate
+> unit of work rather than rushed in alongside the others.
 
 **Goal**: Let other systems read and create Legal-Terminus data without a human in a browser.
 
@@ -3024,6 +3050,11 @@ search across everything.
 
 **Priority**: P2 | **Complexity**: M | **Dependencies**: E03 (matters)
 
+> **✅ BUILT (2026-09-19).** `GET /api/matters/board` + `/matters/board`. Required exporting
+> `resolveUserNames` from `tasks.controller.js` and adapting its signature (single-tenant takes
+> the uid list only). Tested that the board never shows a team member a matter their LIST would
+> hide.
+
 **Acceptance Criteria**:
 - A board at `/matters/board` groups live matters into columns by their stage.
 - Role scoping mirrors the matters list exactly — a team member sees what they would see in the list.
@@ -3038,6 +3069,9 @@ search across everything.
 ### E22-S02 — Global Search [Phase 2]
 
 **Priority**: P2 | **Complexity**: M | **Dependencies**: E03, E09
+
+> **✅ BUILT (2026-09-19).** `GET /api/search`. Ported with zero real coupling (both
+> "workspace" hits in the source were prose). 11/11 tests, weighted to the negative cases.
 
 **Acceptance Criteria**:
 - One search box finds matters and clients by name, organisation and service.
@@ -3057,6 +3091,9 @@ search across everything.
 ### E23-S01 — Honest Step Progress Helper [Phase 2]
 
 **Priority**: P2 | **Complexity**: S | **Dependencies**: #189
+
+> **✅ BUILT (2026-09-19).** `Portal/src/lib/stepProgress.ts`. Unit-verified 6/6 against a
+> gapped definition, including the #139 no-leak case.
 
 **Rationale**: `currentStepNumber` is a stable step ID, not a position — ids are `max+1` and never
 reused, so a real matter sits at "step 46" in a 21-step workflow. Treating the id as a position
@@ -3079,6 +3116,9 @@ matter actually at position 18).
 
 **Priority**: P3 | **Complexity**: S | **Dependencies**: #194
 
+> **✅ BUILT (2026-09-19).** `Btn` hoisted to module scope; `disabled` passed at all 11 call
+> sites.
+
 **Rationale**: `Btn` is declared INSIDE `Toolbar`, so it is a brand-new component type on every
 render: React unmounts and remounts the subtree instead of updating it, losing focus and DOM state
 and defeating memoisation.
@@ -3094,6 +3134,11 @@ and defeating memoisation.
 ### E23-S03 — E2E Helper Parity [Phase 2]
 
 **Priority**: P3 | **Complexity**: S | **Dependencies**: none
+
+> **✅ BUILT (2026-09-19).** `apiAsCredentials`, `mintIdTokenDirect`, `signUpWithPassword`,
+> `createGappedDefinition`, `matterTab`. The fixture tests guard the fixtures themselves — a
+> throwaway user really signs in, and is a team member NOT an admin, so permission tests built
+> on them cannot pass for the wrong reason.
 
 **Rationale**: Tests that need a *second real user* currently cannot be written: LT has no way to act
 as anyone but the fixed role accounts, so "can this person actually do X?" gets answered by a shared

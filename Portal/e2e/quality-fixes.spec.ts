@@ -53,10 +53,16 @@ test('E23-S03: the gapped definition really is gapped', async () => {
 test('E23-S02: the editor toolbar survives re-renders with focus intact', async ({ adminPage }) => {
   // Btn is now module-scope, so toggling a mark must not remount the toolbar and
   // steal focus from the editor. Typing after a toolbar click is the observable.
-  await adminPage.goto('tasks');
-  const anyMatter = adminPage.getByRole('row').nth(1);
-  await expect(anyMatter).toBeVisible({ timeout: 20_000 });
-  await anyMatter.click();
+  // Open a matter via the API so this test does not depend on the list's
+  // layout (it renders CARDS, not table rows, at the default viewport).
+  const { apiAs } = await import('./api');
+  const api = await apiAs('admin');
+  const list = await (await api.get('/api/tasks?limit=1')).json();
+  await api.dispose();
+  const taskId = (list.data ?? [])[0]?.id;
+  test.skip(!taskId, 'no matters available to open');
+  await adminPage.goto(`tasks/${taskId}`);
+  await adminPage.waitForTimeout(2000);
 
   const editor = adminPage.locator('[role="textbox"]').first();
   if (await editor.count() === 0) {
