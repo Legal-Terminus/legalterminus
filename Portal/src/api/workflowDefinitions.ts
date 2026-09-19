@@ -290,3 +290,9 @@ export const putStepSettings = (id: string, settings: Record<string, StepSetting
     method: 'PUT',
     body: JSON.stringify({ settings }),
   });
+
+export const OWNER_STYLE: Record<OwnerType, { dot: string; chip: string; label: string }> = {
+  team:   { dot: 'bg-teal-500',   chip: 'bg-teal-50 text-teal-800',     label: 'Our team' },
+  client: { dot: 'bg-amber-500',  chip: 'bg-amber-50 text-amber-800',   label: 'Client' },
+  govt:   { dot: 'bg-violet-500', chip: 'bg-violet-50 text-violet-800', label: 'Registrar' },
+};

@@ -254,3 +254,41 @@ export const getRecurringDue = () =>
  */
 export const duplicateTask = (taskId: string) =>
   apiFetch<{ id: string }>(`/api/tasks/${taskId}/duplicate`, { method: 'POST' });
+
+/** Who owns a board card's current step. Same union as `OwnerType` in
+ *  workflowDefinitions — named separately because the board's read model is
+ *  server-shaped and must not drift with the editor's type. */
+export type BoardOwner = 'team' | 'client' | 'govt';
+
+export interface BoardCard {
+  /** Story 31.2 + board fix: progress by step POSITION, not stepNumber. */
+  stepPosition?: number | null;
+  stepTotal?: number | null;
+  progressPct?: number | null;
+  id: string;
+  clientName: string;
+  organisation: string;
+  serviceName: string;
+  stepTitle: string;
+  stepNumber: number | null;
+  owner: BoardOwner;
+  phaseId: string;
+  isUrgent: boolean;
+  assignedTo: string | null;
+  assignedToName: string | null;
+  daysInStep: number | null;
+}
+
+export interface BoardLane {
+  defId: string;
+  name: string;
+  total: number;
+  columns: { id: string; name: string; cards: BoardCard[] }[];
+}
+
+/**
+ * The board's read model: phases and step ownership joined server-side, because
+ * neither lives on the task document and the definitions list returns summaries
+ * only. Read-only — the board never moves a matter.
+ */
+export const getMattersBoard = () => apiFetch<{ lanes: BoardLane[] }>('/api/matters/board');
