@@ -10,6 +10,7 @@ import pinoHttp from "pino-http";
 
 import { FirestoreStore } from "./middleware/firestoreRateLimitStore.js";
 import { logger } from "./config/logger.js";
+import { versionInfo } from "./config/version.js";
 
 import blogRoutes from "./routes/blog.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
@@ -187,7 +188,10 @@ app.use("/api/health", healthRoutes);
 app.use("/api/settings", settingsRoutes);
 
 /* ================= HEALTH CHECK ================= */
-app.get("/health", (req, res) => res.json({ status: "ok" }));
+// Also reports WHICH BUILD this is. "Is the fix deployed?" was unanswerable
+// without it: a reported bug turned out to be already fixed on main, with no
+// way to tell whether the running deploy carried it. No secrets here.
+app.get("/health", (req, res) => res.json({ status: "ok", ...versionInfo() }));
 
 /* ================= 404 HANDLER ================= */
 app.use((req, res) => {

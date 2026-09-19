@@ -4,6 +4,7 @@
   "description": "Legal Terminus - Workflow Management Portal & Backend",
   "private": true,
   "scripts": {
+    "release": "node scripts/release.mjs",
     "build:all": "npm run build:backend && npm run build:frontend && npm run build:portal",
     "build:backend": "cd backend && npm run build:backend",
     "build:frontend": "cd Frontend && npm run build:frontend",
