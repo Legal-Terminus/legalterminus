@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { verifyApiToken, requireScope } from '../middleware/apiToken.middleware.js';
 import {
   listMatters, getMatter, listMatterDocuments, listClients,
@@ -34,7 +34,12 @@ const tokenRateLimit = rateLimit({
   legacyHeaders: false,
   // Keyed by the TOKEN, not the IP: one noisy integration must not throttle
   // another, and a key cannot dodge its limit by moving hosts.
-  keyGenerator: (req) => `token:${req.user?.tokenId ?? req.ip}`,
+  // The IP fallback must go through `ipKeyGenerator`, which normalises IPv6 to
+  // its /64 prefix — keying on a raw IPv6 address lets a caller rotate through
+  // the addresses in their own subnet and bypass the limit entirely. In
+  // practice auth runs first so `tokenId` is always present; the fallback only
+  // covers a request that somehow reached here unauthenticated.
+  keyGenerator: (req) => (req.user?.tokenId ? `token:${req.user.tokenId}` : ipKeyGenerator(req.ip)),
   handler: (req, res) => {
     res.status(429).json({
       error: 'rate_limited',
