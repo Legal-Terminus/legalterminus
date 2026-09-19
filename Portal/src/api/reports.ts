@@ -48,6 +48,8 @@ export interface SlaBreach {
   phaseName: string;
   assigneeUid: string | null;
   assigneeName: string | null;
+  /** E20-S02: who the step is waiting on — a client's lateness is not the firm's. */
+  owner: 'team' | 'client' | 'govt';
   dueAt: string;
   startedAt: string | null;
   severity: 'overdue' | 'at_risk';

@@ -1,3 +1,4 @@
+import { deriveOwnerType } from '../../../shared/workflows/definitionSchema.js';
 import { db } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
 import { getCompiledById } from '../services/workflowDefinitions.service.js';
@@ -212,7 +213,7 @@ export async function getSlaReport(req, res) {
     const snap = await query.get();
 
     // Caches so we resolve each definition / user once per request.
-    const defCache = new Map();  // definitionId → { stepPhase: Map, phaseName: Map } | null
+    const defCache = new Map();  // definitionId → { stepPhase, phaseName, stepOwner } | null
     const resolveDef = async (definitionId) => {
       if (!definitionId) return null;
       if (defCache.has(definitionId)) return defCache.get(definitionId);
@@ -223,7 +224,10 @@ export async function getSlaReport(req, res) {
           const def = compiled.definition;
           const stepPhase = new Map((def.steps ?? []).map((s) => [s.stepNumber, s.phaseId ?? null]));
           const phaseName = new Map((def.phases ?? []).map((p) => [p.id, p.name]));
-          meta = { stepPhase, phaseName };
+          // E20-S02: who a late step is waiting on. A client's lateness is not
+          // the firm's, so the practice cockpit must be able to separate them.
+          const stepOwner = new Map((def.steps ?? []).map((s) => [s.stepNumber, deriveOwnerType(s)]));
+          meta = { stepPhase, phaseName, stepOwner };
         }
       } catch { /* non-fatal: report without phase grouping */ }
       defCache.set(definitionId, meta);
@@ -299,6 +303,10 @@ export async function getSlaReport(req, res) {
             phaseName: phaseLabel,
             assigneeUid,
             assigneeName: await resolveUser(assigneeUid),
+            // E20-S02: who this late step waits on. Defaults to 'team' when the
+            // definition is unreadable — the firm chasing its own work is the
+            // safe default; wrongly blaming a client is not.
+            owner: meta?.stepOwner.get(s.stepNumber) ?? 'team',
             dueAt: s.dueAt,
             startedAt: s.startedAt ?? null,
             severity,                       // 'overdue' | 'at_risk'

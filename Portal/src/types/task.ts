@@ -71,6 +71,10 @@ export interface Task {
   /** #191: the current step's name, resolved server-side from the matter's pinned
    *  workflow definition (staff list only — the list itself stores only a number). */
   currentStepTitle?: string | null;
+  /** E20-S01: does this matter await the CLIENT's action? Server-derived from the
+   *  current step's owner; absent (not false) when the definition is unavailable,
+   *  because a wrong "needs you" is worse than no badge at all. */
+  awaitingClient?: boolean;
   isUrgent?: boolean;
   // Projected matter completion (E13-S02); null while pending approval/untracked.
   matterDueAt?: string | null;

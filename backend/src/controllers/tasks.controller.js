@@ -77,7 +77,7 @@ function dedupeCcEmails(list, primaryEmail) {
   return out;
 }
 
-async function resolveUserNames(uids) {
+export async function resolveUserNames(uids) {
   const unique = [...new Set(uids.filter(Boolean))];
   const byUid = {};
   await Promise.all(unique.map(async (uid) => {
@@ -1229,6 +1229,42 @@ export async function postStepNote(req, res) {
 // Paginated + role-scoped. Filters (status/assignedTo/isUrgent) combined with
 // orderBy(updatedAt) require composite indexes — see firestore.indexes.json.
 // Returns { data, nextCursor }.
+
+/**
+ * E20-S01 — annotate rows with `awaitingClient`, resolving each matter's pinned
+ * definition once per definition (not once per row).
+ *
+ * A missing or unreadable definition means "unknown", never a wrong "needs you":
+ * telling a client to act when they need not is worse than telling them nothing.
+ */
+async function annotateAwaitingClient(rows) {
+  const defIds = [...new Set(rows.map((t) => t.workflowDefinitionId).filter(Boolean))];
+  const defs = new Map();
+  await Promise.all(defIds.map(async (id) => {
+    try {
+      const compiled = await getCompiledById(id);
+      if (compiled?.definition) defs.set(id, compiled.definition);
+    } catch {
+      // A missing definition means "unknown", never a wrong "needs you".
+    }
+  }));
+  return rows.map((t) => markAwaitingClient(t, t.workflowDefinitionId ? defs.get(t.workflowDefinitionId) : null));
+}
+
+/**
+ * Pure half of the above, so the rule is testable without Firestore.
+ *
+ * A matter awaits the CLIENT when it is active and its current step is
+ * client-owned. `currentStepFallback` (#139) means the real current step is
+ * hidden from the client, so the number points at the last VISIBLE step — the
+ * matter is not genuinely waiting on them, and must not be flagged as such.
+ */
+export function markAwaitingClient(task, definition) {
+  if (task.status !== 'active' || task.currentStepFallback) return { ...task, awaitingClient: false };
+  const step = definition?.steps?.find((s) => s.stepNumber === task.currentStepNumber);
+  return { ...task, awaitingClient: !!step && deriveOwnerType(step) === 'client' };
+}
+
 export async function listTasks(req, res) {
   try {
     const { isUrgent, status, assignedTo, limit = 25, cursor } = req.query;
@@ -1279,7 +1315,9 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((t) => t.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows); // #164
-      return res.json({ data: rows.map(projectTaskForClient), nextCursor: null });
+      // E20-S01: the client cockpit needs to know which matters await THEM.
+      const projected = await annotateAwaitingClient(rows.map(projectTaskForClient));
+      return res.json({ data: projected, nextCursor: null });
     }
     // #168: a professional sees ONLY the matters they are assigned to as the
     // matter's professional (#85) — never the rest of that client's book.
@@ -1301,7 +1339,9 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((r) => r.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows);
-      return res.json({ data: rows.map(projectTaskForClient), nextCursor: null });
+      // E20-S01: same annotation for the client's own list.
+      const projected = await annotateAwaitingClient(rows.map(projectTaskForClient));
+      return res.json({ data: projected, nextCursor: null });
     }
 
     if (status)           query = query.where('status', '==', status);

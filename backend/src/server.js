@@ -31,6 +31,8 @@ import workflowDefinitionsRoutes from "./routes/workflowDefinitions.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import searchRoutes from "./routes/search.routes.js";
+import clientsRoutes from "./routes/clients.routes.js";
+import mattersBoardRoutes from "./routes/mattersBoard.routes.js";
 import initializeFirebase from "./config/firebase.js";
 
 // Load environment variables
@@ -125,6 +127,10 @@ app.use("/api/admin/category", categoryRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/video-testimonials", videoTestimonialRoutes);
 app.use("/api/testimonials", testimonialRoutes);
+// E22-S01: the matters board (pipeline view), staff only.
+app.use("/api/matters", mattersBoardRoutes);
+// E-19: Client 360 — per-client monitoring (admin/manager only).
+app.use("/api/clients", clientsRoutes);
 // E22-S02: global search. Every role searches; the controller scopes results.
 app.use("/api/search", searchRoutes);
 app.use("/api/auth", sensitiveLimiter, authRoutes);

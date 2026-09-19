@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 import { ALL_ROLE_KEYS } from '../lib/roles';
@@ -12,6 +12,9 @@ import TasksPage from '../pages/tasks/TasksPage';
 import MyTasksPage from '../pages/tasks/MyTasksPage';
 import TaskDetail from '../pages/tasks/TaskDetailPage';
 import UsersPage from '../pages/users/UsersPage';
+import ClientsPage from '../pages/clients/ClientsPage';
+import ClientDetailPage from '../pages/clients/ClientDetailPage';
+import MattersBoardPage from '../pages/tasks/MattersBoardPage';
 import UserFormPage from '../pages/users/UserFormPage';
 import Services from '../pages/services/ServicesPage';
 import ServiceDetail from '../pages/services/ServiceDetailPage';
@@ -83,6 +86,13 @@ export const APP_ROUTES: AppRoute[] = [
 
   // ── Admin + Manager (per BMAD E08-S01 reports, E09-S02 user/client mgmt) ──
   { path: '/users',             element: <UsersPage />,     roles: ['admin', 'manager'], nav: { label: 'Users', icon: Users, mobile: true } },
+  // E22-S01: the matters board (pipeline view). Staff only — a client has no
+  // pipeline, and the board shows internal step ownership.
+  { path: '/matters/board',     element: <MattersBoardPage />, roles: ['admin', 'manager', 'team_member'] },
+  // E-19: Client 360 — monitoring the client book. Distinct from /users, which
+  // manages accounts and roles; this answers "what is going on with this client?"
+  { path: '/clients',           element: <ClientsPage />,   roles: ['admin', 'manager'], nav: { label: 'Clients', icon: Contact, mobile: true } },
+  { path: '/clients/:uid',      element: <ClientDetailPage />, roles: ['admin', 'manager'] },
   { path: '/reports',           element: <ReportsPage />,   roles: ['admin', 'manager'], nav: { label: 'Reports', icon: BarChart2, mobile: true } },
   { path: '/reports/all-tasks',    element: <AllTasksReport />,       roles: ['admin', 'manager'] },
   { path: '/reports/completed',    element: <CompletedTasksReport />, roles: ['admin', 'manager'] },
