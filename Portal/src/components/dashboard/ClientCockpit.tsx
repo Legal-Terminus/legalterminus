@@ -89,9 +89,14 @@ function currentStepLabel(task: Task): string | null {
   const steps = task.steps ?? [];
   const exact = steps.find((s) => s.stepNumber === task.currentStepNumber);
   if (exact) return exact.title;
-  const visibleBefore = steps
-    .filter((s) => s.stepNumber < (task.currentStepNumber ?? 0))
-    .sort((a, b) => b.stepNumber - a.stepNumber)[0];
+  // #195: "before" means earlier in AUTHORED order, never a lower step NUMBER —
+  // `steps` already arrives in flow order, so take the last one preceding the
+  // current step's position. Sorting by number names the wrong step on any
+  // workflow whose ids don't ascend with its flow.
+  const idx = steps.findIndex((s) => s.stepNumber === task.currentStepNumber);
+  const visibleBefore = idx > 0
+    ? steps[idx - 1]
+    : (idx === -1 ? steps[steps.length - 1] : undefined);
   return visibleBefore ? `After: ${visibleBefore.title}` : null;
 }
 
