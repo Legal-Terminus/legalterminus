@@ -160,10 +160,19 @@ function currentSize(editor: Editor) {
   return TEXT_SIZES.some((t) => t.value === size) ? size : 'normal';
 }
 
-function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
-  const Btn = ({ on, active, title, children }: {
-    on: () => void; active?: boolean; title: string; children: React.ReactNode;
-  }) => (
+/**
+ * A single toolbar button (E23-S02).
+ *
+ * Defined at module scope, NOT inside Toolbar: a component declared during
+ * render is a brand-new type on every render, so React unmounts and remounts
+ * the whole subtree instead of updating it — losing focus and DOM state, and
+ * defeating memoisation. `disabled` is therefore passed as a prop rather than
+ * captured from the enclosing closure.
+ */
+function Btn({ on, active, title, disabled, children }: {
+  on: () => void; active?: boolean; title: string; disabled?: boolean; children: React.ReactNode;
+}) {
+  return (
     <button
       type="button"
       onClick={on}
@@ -176,23 +185,25 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
       {children}
     </button>
   );
+}
 
+function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
   return (
     <div className="flex flex-wrap items-center gap-0.5 border-b border-hairline px-1.5 py-1">
-      <Btn on={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold">
+      <Btn disabled={disabled} on={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold">
         <Bold className="w-3.5 h-3.5" />
       </Btn>
-      <Btn on={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic">
+      <Btn disabled={disabled} on={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic">
         <Italic className="w-3.5 h-3.5" />
       </Btn>
-      <Btn on={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough">
+      <Btn disabled={disabled} on={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough">
         <Strikethrough className="w-3.5 h-3.5" />
       </Btn>
       <span className="w-px h-4 bg-hairline mx-1" />
-      <Btn on={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="Bullet list">
+      <Btn disabled={disabled} on={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="Bullet list">
         <List className="w-3.5 h-3.5" />
       </Btn>
-      <Btn on={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="Numbered list">
+      <Btn disabled={disabled} on={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="Numbered list">
         <ListOrdered className="w-3.5 h-3.5" />
       </Btn>
       <span className="w-px h-4 bg-hairline mx-1" />
@@ -201,7 +212,7 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
           choices for instructions, not free-form design, and a fixed set stays
           legible against the comment background and survives server sanitising. */}
       {TEXT_COLORS.map((c) => (
-        <Btn
+        <Btn disabled={disabled}
           key={c.value}
           on={() => editor.chain().focus().setColor(c.value).run()}
           active={editor.isActive('textStyle', { color: c.value })}
@@ -210,7 +221,7 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
           <Baseline className="w-3.5 h-3.5" style={{ color: c.value }} />
         </Btn>
       ))}
-      <Btn
+      <Btn disabled={disabled}
         on={() => editor.chain().focus().unsetColor().run()}
         title="Text colour: default"
       >
@@ -218,7 +229,7 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
       </Btn>
       {/* Highlight — the "marker pen" for drawing the eye to a line. */}
       {HIGHLIGHTS.map((h) => (
-        <Btn
+        <Btn disabled={disabled}
           key={h.value}
           on={() => editor.chain().focus().toggleHighlight({ color: h.value }).run()}
           active={editor.isActive('highlight', { color: h.value })}
@@ -247,7 +258,7 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
         </select>
       </label>
       <span className="w-px h-4 bg-hairline mx-1" />
-      <Btn
+      <Btn disabled={disabled}
         on={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
         active={editor.isActive('table')}
         title="Insert table"
@@ -255,8 +266,8 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
         <TableIcon className="w-3.5 h-3.5" />
       </Btn>
       <span className="ml-auto inline-flex items-center gap-0.5">
-        <Btn on={() => editor.chain().focus().undo().run()} title="Undo"><Undo2 className="w-3.5 h-3.5" /></Btn>
-        <Btn on={() => editor.chain().focus().redo().run()} title="Redo"><Redo2 className="w-3.5 h-3.5" /></Btn>
+        <Btn disabled={disabled} on={() => editor.chain().focus().undo().run()} title="Undo"><Undo2 className="w-3.5 h-3.5" /></Btn>
+        <Btn disabled={disabled} on={() => editor.chain().focus().redo().run()} title="Redo"><Redo2 className="w-3.5 h-3.5" /></Btn>
       </span>
     </div>
   );
