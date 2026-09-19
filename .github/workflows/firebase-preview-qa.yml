@@ -167,7 +167,23 @@ jobs:
             --update-env-vars="BASE_URL=${BACKEND_URL}" \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
 
-          echo "✅ Backend live at: $BACKEND_URL"
+          # Prove the service actually SERVES this build before calling it live.
+          # A deploy can succeed while the container crashes on boot (a bad
+          # import, a missing env var) — #184 shipped a fix that never reached
+          # production and the run still went green. Retried, because a fresh
+          # revision can take a few seconds to accept traffic.
+          for i in 1 2 3 4 5 6; do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$BACKEND_URL/health" || echo 000)
+            [ "$CODE" = "200" ] && break
+            echo "   health check $i/6 → $CODE, retrying in 5s"
+            sleep 5
+          done
+          if [ "$CODE" != "200" ]; then
+            echo "::error::Backend deployed but /health returned $CODE — the revision is not serving."
+            exit 1
+          fi
+
+          echo "✅ Backend live at: $BACKEND_URL (health 200)"
           echo "BACKEND_URL=${BACKEND_URL}" >> $GITHUB_OUTPUT
 
       # ── Build & Deploy Portal → Cloud Run ──────────────────────────────────
@@ -210,7 +226,19 @@ jobs:
             --region=${{ env.REGION }} \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
             --format='value(status.url)')
-          echo "✅ Portal live at: $PORTAL_URL"
+          # Same check for the Portal: it must actually serve its index, not
+          # merely have been deployed.
+          for i in 1 2 3 4 5 6; do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$PORTAL_URL/portal/" || echo 000)
+            case "$CODE" in 200|304) break ;; esac
+            echo "   portal check $i/6 → $CODE, retrying in 5s"
+            sleep 5
+          done
+          case "$CODE" in
+            200|304) echo "✅ Portal live at: $PORTAL_URL (HTTP $CODE)" ;;
+            *) echo "::error::Portal deployed but returned $CODE — the revision is not serving."; exit 1 ;;
+          esac
+
           echo "PORTAL_URL=${PORTAL_URL}" >> $GITHUB_OUTPUT
 
       # ── Build & Deploy Frontend → Firebase Hosting ─────────────────────────
