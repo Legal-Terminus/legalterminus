@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { apiAs, createMatter, deleteMatter, advanceUntil, getMatter } from './api';
+import { apiAs, createMatter, deleteMatter, advanceUntil, advanceSteps, getMatter } from './api';
 
 /**
  * #191 — the Matters list gains Current Step and Organisation columns so the team
@@ -12,7 +12,7 @@ const ORG = `E2E Org ${Date.now()}`;
 test('#191: the list API resolves the current step NAME, not just a number', async () => {
   const taskId = await createMatter({ organisation: ORG });
   try {
-    await advanceUntil(taskId, (s) => s.stepNumber >= 5);
+    await advanceSteps(taskId, 4);
     const admin = await apiAs('admin');
     const body = await (await admin.get('/api/tasks?limit=50')).json();
     const row = (body.data as Array<Record<string, unknown>>).find((r) => r.id === taskId);
@@ -36,7 +36,7 @@ test('#191: the list API resolves the current step NAME, not just a number', asy
 test('#191: both columns render and are searchable', async ({ adminPage }) => {
   const taskId = await createMatter({ organisation: ORG });
   try {
-    await advanceUntil(taskId, (s) => s.stepNumber >= 5);
+    await advanceSteps(taskId, 4);
     const full = await getMatter(taskId);
     const steps = (full.steps ?? []) as Array<{ stepNumber: number; title: string }>;
     const stepName = steps.find((x) => x.stepNumber === full.currentStepNumber)?.title ?? '';

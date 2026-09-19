@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { apiAs, createMatter, deleteMatter, getMatter, advanceUntil } from './api';
+import { apiAs, createMatter, deleteMatter, getMatter, advanceUntil, advanceSteps } from './api';
 
 /**
  * #116 — reopen a completed step (ADMIN ONLY, rewind semantics).
@@ -10,7 +10,7 @@ test('#116: admin reopens a completed step; the workflow rewinds to it', async (
   const taskId = await createMatter();
   try {
     // Advance a few steps so there is at least one COMPLETED step behind the current.
-    await advanceUntil(taskId, (s) => s.stepNumber >= 3);
+    await advanceSteps(taskId, 2);
     const m = await getMatter(taskId);
     // Step numbers are GAPPY (a payment gate can auto-pass 2-3), so pick a real
     // completed step from the matter rather than assuming current-1 exists.
@@ -36,7 +36,7 @@ test('#116: admin reopens a completed step; the workflow rewinds to it', async (
 test('#116: a manager cannot reopen a step (admin only)', async () => {
   const taskId = await createMatter();
   try {
-    await advanceUntil(taskId, (s) => s.stepNumber >= 3);
+    await advanceSteps(taskId, 2);
     const m = await getMatter(taskId);
     const completed = ((m.steps ?? []) as Array<{ stepNumber: number; status: string }>)
       .filter((s) => s.status === 'completed').map((s) => s.stepNumber);
@@ -64,7 +64,7 @@ test('#116: reopening the current/future step is refused', async () => {
 test('#116: a completed step shows a Reopen action for an admin', async ({ adminPage }) => {
   const taskId = await createMatter();
   try {
-    await advanceUntil(taskId, (s) => s.stepNumber >= 3);
+    await advanceSteps(taskId, 2);
     const cur = (await getMatter(taskId)).currentStepNumber as number;
     test.skip(cur < 3, 'Not advanced.');
 

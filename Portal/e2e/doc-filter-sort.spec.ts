@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { apiAs, createMatter, deleteMatter, advanceUntil } from './api';
+import { apiAs, createMatter, deleteMatter, advanceUntil, advanceSteps } from './api';
 import type { APIRequestContext, Page } from '@playwright/test';
 
 /**
@@ -29,7 +29,7 @@ let taskId: string;
 
 test.beforeAll(async () => {
   taskId = await createMatter();
-  await advanceUntil(taskId, (s) => s.stepNumber >= 6);
+  await advanceSteps(taskId, 5);
   const admin = await apiAs('admin');
   await upload(admin, taskId, 'StaffAlpha.pdf');          // 1st (oldest)
   await admin.dispose();

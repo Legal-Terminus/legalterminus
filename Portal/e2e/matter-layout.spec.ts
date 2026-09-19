@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { createMatter, deleteMatter, getDefinitionForMatter, firstPlainStep, advanceUntil, transition, currentStep, getMatter } from './api';
+import { createMatter, deleteMatter, getDefinitionForMatter, firstPlainStep, advanceUntil, advanceSteps, transition, currentStep, getMatter } from './api';
 
 /**
  * #72 — collapsible + resizable matter panels (Stages / Activity / sidebar).
@@ -108,7 +108,7 @@ test('#96/#120: completed steps are SHOWN by default and can be collapsed via "H
   const taskId = await createMatter();
   try {
     // Advance a couple of steps so there ARE completed steps in the list.
-    await advanceUntil(taskId, (s) => s.stepNumber >= 3);
+    await advanceSteps(taskId, 2);
     const at = (await getMatter(taskId)).currentStepNumber as number;
     test.skip(at < 3, `Could not advance far enough (at ${at}) to have completed steps.`);
 
@@ -133,7 +133,7 @@ test('#120/#55: steps render as ONE continuous timeline numbered 1..N (no stage 
   try {
     // Advance a few steps so the matter is mid-flow (creation auto-jumps to step 4
     // via the payment gate — exactly the case that used to display "1,2,3,37…").
-    await advanceUntil(taskId, (s) => s.stepNumber >= 5);
+    await advanceSteps(taskId, 4);
 
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
@@ -160,7 +160,7 @@ test('#120/#55: steps render as ONE continuous timeline numbered 1..N (no stage 
 test('#120/#55: the current-step header shows a real position (never "· 0")', async ({ adminPage }) => {
   const taskId = await createMatter();
   try {
-    await advanceUntil(taskId, (s) => s.stepNumber >= 5);
+    await advanceSteps(taskId, 4);
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
 

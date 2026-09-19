@@ -77,6 +77,10 @@ test('#194: a message over 1,000 words is refused by the API', async () => {
 test('#194: an over-limit step COMMENT is refused on transition', async () => {
   const taskId = await createMatter();
   try {
+    // Capture where the matter actually STARTS rather than assuming step 1.
+    // The default service now resolves to a workflow whose initialStep is 45
+    // (#195), and a hardcoded 1 asserted the fixture, not the behaviour.
+    const before = await getMatter(taskId);
     const admin = await apiAs('admin');
     const res = await admin.post(`/api/tasks/${taskId}/transition`, {
       data: { event: { type: 'COMPLETE_STEP', remark: `<p>${Array(1200).fill('w').join(' ')}</p>` } },
@@ -85,7 +89,7 @@ test('#194: an over-limit step COMMENT is refused on transition', async () => {
     expect((await res.json()).code).toBe('WORD_LIMIT_EXCEEDED');
     // The matter did not advance on a rejected comment.
     const after = await getMatter(taskId);
-    expect(after.currentStepNumber).toBe(1);
+    expect(after.currentStepNumber).toBe(before.currentStepNumber);
     await admin.dispose();
   } finally { await deleteMatter(taskId); }
 });

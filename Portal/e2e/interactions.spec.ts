@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { createMatter, deleteMatter, getDefinitionForMatter, firstPlainStep, advanceUntil, getMatter } from './api';
+import { createMatter, deleteMatter, getDefinitionForMatter, firstPlainStep, advanceUntil, advanceSteps, getMatter } from './api';
 
 /**
  * E03-S06 (comment on a step action) + E11-S07 (styled confirm dialog, not native
@@ -131,7 +131,7 @@ test('#69: a completed step renders its title with a strikethrough', async ({ ad
   const taskId = await createMatter();
   try {
     // Advance at least one step so there is a completed step to inspect.
-    await advanceUntil(taskId, (s) => s.stepNumber >= 2);
+    await advanceSteps(taskId, 1);
     const at = (await getMatter(taskId)).currentStepNumber as number;
     test.skip(at < 2, `Could not advance past step 1 (at ${at}) — no completed step to check.`);
 

@@ -330,6 +330,28 @@ export async function stopMatterAs(role: RoleKey, taskId: string, reason = 'E2E 
  *  COMPLETE_STEP transition → COMPLETE_STEP. Stops at `targetStepNumber` (if
  *  given) or at the first step needing client/govt/branch input. Returns the
  *  step number it stopped on. */
+/**
+ * Advance a matter by N steps in AUTHORED order.
+ *
+ * Tests that want "some completed steps to look at" used to say
+ * `advanceUntil(id, (s) => s.stepNumber >= 3)`. That is the step-number-as-
+ * position mistake (#117/#55/#189/#195) wearing a test costume: on a workflow
+ * whose flow starts at step 45, the predicate is ALREADY TRUE, so advanceUntil
+ * returns without advancing and the test silently asserts against a matter
+ * where nothing has happened.
+ *
+ * Counting advances is what those tests actually mean, and it holds whatever
+ * the definition's numbering looks like.
+ */
+export async function advanceSteps(taskId: string, count: number): Promise<number> {
+  const def = await getDefinitionForMatter(taskId);
+  const order = def.steps.map((s) => s.stepNumber);
+  const start = (await getMatter(taskId)).currentStepNumber as number;
+  const startPos = order.indexOf(start);
+  const targetPos = startPos < 0 ? count : startPos + count;
+  return advanceUntil(taskId, (s) => order.indexOf(s.stepNumber) >= targetPos);
+}
+
 export async function advanceUntil(
   taskId: string,
   stop?: (s: WfStep) => boolean,

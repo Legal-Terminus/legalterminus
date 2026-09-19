@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { apiAs, createMatter, deleteMatter, advanceUntil, getMatter } from './api';
+import { apiAs, createMatter, deleteMatter, advanceUntil, advanceSteps, getMatter } from './api';
 
 /**
  * #189 — the matters list reported progress as `min(currentStepNumber, totalSteps)`,
@@ -17,7 +17,7 @@ test('#189: completedStepCount tracks actual finished steps, not the step number
     expect(before.completedStepCount, 'starts at zero completed').toBe(0);
 
     // Advance a few steps, then compare the counter with the real statuses.
-    await advanceUntil(taskId, (s) => s.stepNumber >= 6);
+    await advanceSteps(taskId, 5);
     const after = await getMatter(taskId);
     const steps = (after.steps ?? []) as Array<{ status: string }>;
     const reallyDone = steps.filter((s) => s.status === 'completed' || s.status === 'skipped').length;
@@ -36,7 +36,7 @@ test('#189: completedStepCount tracks actual finished steps, not the step number
 test('#189: the matters list never shows a full bar before the work is done', async ({ adminPage }) => {
   const taskId = await createMatter();
   try {
-    await advanceUntil(taskId, (s) => s.stepNumber >= 6);
+    await advanceSteps(taskId, 5);
     const m = await getMatter(taskId);
     const total = m.totalSteps as number;
     const done = m.completedStepCount as number;
