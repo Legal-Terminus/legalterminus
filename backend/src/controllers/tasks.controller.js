@@ -12,6 +12,8 @@ import { sanitizeRichText, richTextToPlain, checkWordLimit } from '../services/r
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
 import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE, materialisableSteps, isTerminalStep } from '../../../shared/workflows/definitionSchema.js';
 import { resolveDueDate, definitionNeedsAnchorDate } from '../../../shared/workflows/dueRules.js';
+import { evaluateCondition, describeSkipReason } from '../../../shared/workflows/conditions.js';
+import { deriveProfile } from '../services/clientProfile.service.js';
 import { getOverrides, makeStatutoryResolver } from '../services/statutoryCalendar.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
@@ -1598,6 +1600,38 @@ export async function listMySteps(req, res) {
 }
 
 // ─── GET /api/tasks/:taskId ────────────────────────────────────────────────
+/**
+ * E34 — does the CURRENT step apply to this client?
+ *
+ * A RECOMMENDATION, never an action: a person confirms every skip. Evaluated
+ * here rather than in the Portal so it matches the engine exactly.
+ *
+ * Fails OPEN — an evaluation problem must never hide a step or break the page.
+ *
+ * Ported from Ambyflow (Story 34.2); `getCompiledById` takes only the
+ * definition id here, and `db` is the module handle.
+ */
+async function evaluateCurrentStepCondition(task) {
+  try {
+    const stepDef = (await getCompiledById(task.workflowDefinitionId))
+      ?.definition?.steps?.find((s) => s.stepNumber === task.currentStepNumber);
+    if (!stepDef?.condition) return null;
+
+    const clientSnap = task.clientUid ? await db.collection('users').doc(task.clientUid).get() : null;
+    const profile = clientSnap?.exists ? deriveProfile(clientSnap.data()) : null;
+    if (evaluateCondition(stepDef.condition, profile)) return null;
+
+    return {
+      stepNumber: task.currentStepNumber,
+      applies: false,
+      reason: describeSkipReason(stepDef.condition),
+    };
+  } catch (err) {
+    logger.warn({ err: err?.message, taskId: task.id }, 'step condition evaluation failed');
+    return null;
+  }
+}
+
 export async function getTask(req, res) {
   try {
     const doc = await db.collection('tasks').doc(req.params.taskId).get();
@@ -1650,6 +1684,13 @@ export async function getTask(req, res) {
         assigneeNames: list.map((u) => names[u] ?? null).filter(Boolean),
       };
     });
+
+    // E34: does the current step apply to this client? Staff only, and a
+    // recommendation rather than an action — a person confirms every skip.
+    if (req.user.role !== 'client') {
+      full.stepCondition = await evaluateCurrentStepCondition(full);
+    }
+
     res.json(full);
   } catch (err) {
     logger.error({ err: err }, 'getTask error:');
