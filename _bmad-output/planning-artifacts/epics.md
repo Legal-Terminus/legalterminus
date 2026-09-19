@@ -82,6 +82,11 @@ split dashboard tiles.
 | E-16 | Comment Draft Autosave | Phase 2 | E16-S01 |
 | E-17 | Professional Assignment on Matters | Phase 2 | E17-S01 |
 | E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S06 |
+| E-19 | Client 360 (Per-Client Status for Staff) | Phase 2 | E19-S01 – E19-S03 |
+| E-20 | Dashboard Cockpits | Phase 2 | E20-S01 – E20-S02 |
+| E-21 | Public API v1 & Webhooks | Phase 2 | E21-S01 – E21-S04 |
+| E-22 | Matters Board & Global Search | Phase 2 | E22-S01 – E22-S02 |
+| E-23 | Quality Fixes Ported from cometflow | Phase 2 | E23-S01 – E23-S03 |
 
 ---
 
@@ -2802,6 +2807,305 @@ before it breaches — depends on the notification/email subsystem (E-07).
 > **Numeric columns → RANGE filters (feedback, 2026-07-12).** Checkboxes over amounts (₹0 / ₹5000 / ₹7000…) are useless. A column whose (non-blank) faceted values are ALL numeric now renders **Min–Max inputs** instead of the value picker; the shared filter fn handles both shapes (`string[]` set vs `{min,max}` range; a range excludes blank/non-numeric cells). e2e: `master-sheet.spec.ts` — Min above every fee hides the row; Clear restores.
 >
 > **#101 edge regression (feedback, 2026-07-12).** After the border-solid fix, the owner edge STILL only painted on the FIRST step row: the list container's `divide-hairline-soft` sets the border-color **shorthand** on every child except the first (`> :not([hidden]) ~ :not([hidden])`, higher specificity), silently overriding `border-left-color` on rows 2+. Replaced the border with an **absolutely-positioned background bar** (`w-1 bg-teal/amber/violet-500`) that no border utility can touch. e2e: `matter-layout.spec.ts` asserts EVERY step row (not just the first) contains a colour bar.
+
+---
+
+---
+
+## E-19 — Client 360 (Per-Client Status for Staff) [Phase 2]
+
+**Goal**: Answer "what is going on with this client?" on one screen. The data model is
+matter-centric — balances, stuck steps, renewals and activity all live per matter — so a firm that
+thinks in client relationships has to reconstruct that picture by opening matters one at a time.
+This epic aggregates it per CLIENT.
+
+**Ported from**: the cometflow portal (Epic 30, "Client 360"), adapted to single-tenant. Nothing here
+is workspace-shaped: it reads `users where role == 'client'` — the same collection and role
+Legal-Terminus already uses — so it is ADDITIVE to the consolidated `/admin/users` page
+(see `feedback-users-one-page`), not a replacement for it.
+
+---
+
+### E19-S01 — Per-Client Relationship Rollups (service) [Phase 2]
+
+**Priority**: P2 | **Complexity**: L | **Dependencies**: E09 (users), E13-S02 (step ETAs)
+
+**Rationale**: The roster and the Client 360 screen both need per-client aggregates. Computing them
+in the Portal would mean fetching every matter for every client on screen; computing them per
+request, page-bounded, keeps the cost proportional to what is actually displayed.
+
+**Acceptance Criteria**:
+- A service returns, per client: `activeMatters`, `withClient` (awaiting the client), `overdue`,
+  `outstanding`, `lifetimeCollected`, `nextRenewalAt`, `lastActivityAt`.
+- Aggregation is **page-bounded**: a roster page holds ≤25 clients; their matters are read with
+  chunked `where('clientUid','in',chunk)` queries rather than one read per client.
+- **No figure is derived from `currentStepNumber` as a position.** Step numbers are identity only
+  (see `project-authored-step-order`, #117/#55/#189) — "overdue" comes from step `dueAt`/status and
+  progress from `completedStepCount`, never from arithmetic on the step id.
+- A client with no matters returns zeroes, not nulls or a missing key.
+- The service never throws on a malformed matter: it skips it and still returns the rest.
+
+**Backend**:
+- `backend/src/services/clientRollup.service.js` (new)
+- `backend/src/services/clientProfile.service.js` (new)
+
+---
+
+### E19-S02 — Clients Roster [Phase 2]
+
+**Priority**: P2 | **Complexity**: M | **Dependencies**: E19-S01
+
+**Rationale**: Staff need to scan the whole client base with the figures that matter, then drill in.
+
+**Acceptance Criteria**:
+- `GET /api/clients` returns the paged roster with each client's E19-S01 rollup.
+- Staff-only (admin/manager/team_member). A client calling it receives 403 — never another
+  client's data.
+- The roster page lists clients with their key figures and links each row to the Client 360.
+- Sorting/searching by name, and filtering to clients that need attention (overdue or outstanding).
+
+**Backend**: `backend/src/controllers/clients.controller.js` (new), `routes/clients.routes.js`
+**Frontend**: `Portal/src/pages/clients/ClientsPage.tsx`, `Portal/src/api/clients.ts`
+
+---
+
+### E19-S03 — Client 360 Detail Screen [Phase 2]
+
+**Priority**: P2 | **Complexity**: L | **Dependencies**: E19-S01, E19-S02
+
+**Rationale**: One screen for health, value, commitments and coverage. Composed of small components
+deliberately — the matter page had to be broken up at ~2,900 lines; this one starts assembled.
+
+**Acceptance Criteria**:
+- `GET /api/clients/:uid` returns the client, their matters, and the rollup; 404 when the uid is not
+  a `role === 'client'` user (never leak a staff record through this route).
+- The screen renders: a **KPI strip** (active matters, with client, overdue, outstanding, lifetime
+  collected, next renewal), the client's **matters list** with live state, and **money** (balances,
+  renewals).
+- Every figure on the screen is derived from the same data as the rows beneath it, so a count can
+  never disagree with the list it counts.
+- Pending-document counts come from an aggregation query, not by reading every document.
+
+**Backend**: `clients.controller.js` (`getClient`)
+**Frontend**: `ClientDetailPage.tsx` + `components/ClientKpiStrip.tsx`, `ClientMattersList.tsx`, `ClientMoney.tsx`
+
+---
+
+## E-20 — Dashboard Cockpits [Phase 2]
+
+**Goal**: Replace static navigation tiles with dashboards that state the position. A client currently
+gets one "My Services" tile and no figures at all; staff get tiles rather than a view of what needs
+the firm.
+
+**Ported from**: cometflow Stories 39.1–39.2.
+
+---
+
+### E20-S01 — Client Cockpit [Phase 2]
+
+**Priority**: P2 | **Complexity**: M | **Dependencies**: E04 (client portal), E12 (client/internal split)
+
+**Rationale**: A client's dashboard answers one question — where has my work got to, and does it need
+me? Today the answer is a link.
+
+**Acceptance Criteria**:
+- The client dashboard shows **Needs you**, **In progress**, **Amount due**, **Completed**, each
+  linking to the filtered list.
+- **The figures and the rows come from the SAME query.** This is the point: it makes the
+  "0 in progress while she has active matters" class of bug structurally impossible.
+- "Waiting on you" lists the matters actually awaiting client action; "Your services" lists the rest.
+- The current-step label respects client visibility (#139) — a hidden step is never named to a client.
+- Nothing on this screen is computed from `currentStepNumber` as a position.
+
+**Backend**: `markAwaitingClient` + `awaitingClient` annotation in `tasks.controller.js`
+**Frontend**: `Portal/src/components/dashboard/ClientCockpit.tsx`, `CockpitStat.tsx`
+
+---
+
+### E20-S02 — Practice Cockpit (staff) [Phase 2]
+
+**Priority**: P2 | **Complexity**: M | **Dependencies**: E20-S01, E13 (SLA), E18 (reports)
+
+**Rationale**: Staff need "what needs the firm" and "what are we waiting on" without opening reports.
+
+**Acceptance Criteria**:
+- **Needs the firm**: overdue steps, due-within-N-days, unassigned work, awaiting approval.
+- **Waiting on others**: waiting on clients, with the registrar, open matters, fees outstanding.
+- **Most overdue** lists the worst offenders, linking to the SLA report (`/reports/sla`, which
+  already exists).
+- Every tile links to the report or list it is drawn from, so a number is always traceable.
+
+**Frontend**: `PracticeCockpit.tsx`, reusing `getSlaReport`/`getUnassignedReport`/`getRevenueReport`
+
+---
+
+## E-21 — Public API v1 & Webhooks [Phase 2]
+
+**Goal**: Let other systems read and create Legal-Terminus data without a human in a browser.
+
+**Ported from**: cometflow Stories 33.1/33.3 (API) and its webhooks service. Measured coupling before
+porting: `publicApi.controller.js` has **zero** workspace references; `apiTokens` uses `workspaceId`
+only as a scoping key on the token record, which collapses to a constant in single-tenant.
+
+---
+
+### E21-S01 — API Keys [Phase 2]
+
+**Priority**: P3 | **Complexity**: M | **Dependencies**: E01 (auth)
+
+**Acceptance Criteria**:
+- Admin can mint a named key with explicit **scopes** (`read:matters`, `read:clients`,
+  `read:documents_meta`, `write:matters`, `write:clients`), list keys, and revoke one.
+- The key is shown **once** at creation and stored only as a hash; a lost key is replaced, not recovered.
+- Revocation takes effect immediately on the next request.
+- Every key action is audited (who, when, which key — never the secret).
+
+**Backend**: `services/apiTokens.service.js`, `controllers/apiTokens.controller.js`, `middleware/apiToken.middleware.js`
+**Frontend**: `Portal/src/pages/settings/ApiKeysPage.tsx`
+
+---
+
+### E21-S02 — Versioned Read API [Phase 2]
+
+**Priority**: P3 | **Complexity**: M | **Dependencies**: E21-S01
+
+**Rationale**: Versioned from day one, and reads before writes — a leaked key cannot change anything.
+
+**Acceptance Criteria**:
+- `GET /api/v1/matters`, `/api/v1/matters/:id`, `/api/v1/matters/:id/documents`, `/api/v1/clients`.
+- **`/api/v1` accepts ONLY API keys; every other route accepts ONLY Firebase ID tokens.** The
+  separation is structural (a separate router + middleware), not a branch inside shared auth, so a
+  bug in one cannot let a credential cross into the other.
+- A request without the required scope is refused 403 before any data is read.
+- Responses are the external projection — internal assignment/urgency never leak (as E12 requires).
+- Rate-limited per key.
+
+**Backend**: `routes/publicApi.routes.js`, `controllers/publicApi.controller.js`
+
+---
+
+### E21-S03 — Write API [Phase 2]
+
+**Priority**: P3 | **Complexity**: M | **Dependencies**: E21-S02
+
+**Acceptance Criteria**:
+- `POST /api/v1/matters` and `POST /api/v1/clients`, each behind its own write scope.
+- Bodies pass the SAME validation schemas as the portal routes — no second, looser path into the data.
+- Every write is audited with the key id that made it.
+
+**Backend**: `controllers/publicApiWrite.controller.js`
+
+---
+
+### E21-S04 — Outbound Webhooks [Phase 2]
+
+**Priority**: P3 | **Complexity**: L | **Dependencies**: E21-S01
+
+**Acceptance Criteria**:
+- Admin registers target URLs for events: `matter.created`, `matter.step_entered`,
+  `matter.completed`, `payment.recorded`, `document.approved`, `matter.stuck`, `form.submitted`.
+- Deliveries are signed, retried with backoff, and their history is visible per target.
+- A failing target is disabled rather than retried forever, and never blocks the action that
+  triggered it — emitting is fire-and-forget from the caller's perspective.
+
+**Backend**: `services/webhooks.service.js`, `webhookTargets.service.js`, `webhookEmit.service.js`, `controllers/webhooks.controller.js`
+**Frontend**: `Portal/src/pages/settings/WebhooksPage.tsx`
+
+---
+
+## E-22 — Matters Board & Global Search [Phase 2]
+
+**Goal**: Two ways to find and see work that the list view does not give: a pipeline board, and
+search across everything.
+
+---
+
+### E22-S01 — Matters Board [Phase 2]
+
+**Priority**: P2 | **Complexity**: M | **Dependencies**: E03 (matters)
+
+**Acceptance Criteria**:
+- A board at `/matters/board` groups live matters into columns by their stage.
+- Role scoping mirrors the matters list exactly — a team member sees what they would see in the list.
+- Columns are derived from the pinned workflow definition, in AUTHORED order (never sorted by step number).
+- The board and the list agree: the same matter appears in both, in the same state.
+
+**Backend**: `controllers/mattersBoard.controller.js`
+**Frontend**: `Portal/src/pages/matters/MattersBoardPage.tsx`
+
+---
+
+### E22-S02 — Global Search [Phase 2]
+
+**Priority**: P2 | **Complexity**: M | **Dependencies**: E03, E09
+
+**Acceptance Criteria**:
+- One search box finds matters and clients by name, organisation and service.
+- A query below the minimum length is rejected rather than prefix-matching half the database.
+- Results are role-scoped: a user only ever sees what they may already see.
+
+**Backend**: `controllers/search.controller.js` (zero workspace coupling — ports as-is)
+
+---
+
+## E-23 — Quality Fixes Ported from cometflow [Phase 2]
+
+**Goal**: Three defects/omissions that cometflow already fixed and Legal-Terminus still carries.
+
+---
+
+### E23-S01 — Honest Step Progress Helper [Phase 2]
+
+**Priority**: P2 | **Complexity**: S | **Dependencies**: #189
+
+**Rationale**: `currentStepNumber` is a stable step ID, not a position — ids are `max+1` and never
+reused, so a real matter sits at "step 46" in a 21-step workflow. Treating the id as a position
+renders 214%; clamping it to the total is just as wrong the other way ("21/21, 95% done" for a
+matter actually at position 18).
+
+**Acceptance Criteria**:
+- A shared `stepProgress()` helper resolves a true position from the matter's ordered step list, and
+  **returns null rather than guessing** when the list is unavailable.
+- It prefers the server's `completedStepCount` (#189) where present: position is not progress —
+  steps get skipped, and reopening one un-does finished work while the position stays put.
+- A client who cannot see the current step (#139) gets no number leaked.
+- Unit-tested against a GAPPED definition, not a tidy 1..N one.
+
+**Frontend**: `Portal/src/lib/stepProgress.ts` (new)
+
+---
+
+### E23-S02 — Toolbar Button Remount Fix [Phase 2]
+
+**Priority**: P3 | **Complexity**: S | **Dependencies**: #194
+
+**Rationale**: `Btn` is declared INSIDE `Toolbar`, so it is a brand-new component type on every
+render: React unmounts and remounts the subtree instead of updating it, losing focus and DOM state
+and defeating memoisation.
+
+**Acceptance Criteria**:
+- `Btn` is defined at module scope and takes `disabled` as a prop rather than closing over it.
+- Editor behaviour is unchanged; typing no longer loses focus through toolbar re-renders.
+
+**Frontend**: `Portal/src/components/common/RichTextEditor.tsx`
+
+---
+
+### E23-S03 — E2E Helper Parity [Phase 2]
+
+**Priority**: P3 | **Complexity**: S | **Dependencies**: none
+
+**Rationale**: Tests that need a *second real user* currently cannot be written: LT has no way to act
+as anyone but the fixed role accounts, so "can this person actually do X?" gets answered by a shared
+account that may hold access for unrelated reasons.
+
+**Acceptance Criteria**:
+- `apiAsCredentials(email, password)` — act as an arbitrary user.
+- `createGappedDefinition()` — a workflow whose step ids are non-contiguous and run past the count,
+  so progress logic is exercised against the shape that actually ships.
+- `openMatter(page, taskId, tab)` / `matterTab(page, tab)` — navigate without hand-rolled selectors.
+
+**E2E**: `Portal/e2e/api.ts`, `Portal/e2e/helpers.ts`
 
 ---
 
