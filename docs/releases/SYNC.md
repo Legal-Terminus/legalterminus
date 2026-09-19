@@ -53,6 +53,8 @@ went with each one.
 | — | `v1.0.0` | 2026-09-19 | Production baseline, before the sync process existed. LT's own 1198-commit history. |
 | `v1.1.0` | `v1.1.0-lt.1` | 2026-09-19 | **Baseline alignment, not a code port.** Sets both repos to the same release number so drift is measurable from here. Carried across: versioning (`/health` build identity, release script), the sync process and this ledger, the client-activity fixes (raw HTML → formatted text, `COMPLETE_STEP` → "Step completed"). |
 
+| `v1.1.0` | `v1.1.0-lt.2` | 2026-09-19 | **E37.4 — firm workbook export.** `GET /api/reports/workbook`, admin-only. Ported by content: `req.db` → module `db`, workspace vocabulary → firm. 9 tests came with it (suite 56 → 65). Adds `xlsx`. |
+
 *Add a row when an Ambyflow release reaches LT. An Ambyflow release that is not
 applicable still gets a row, marked "no-op — nothing applicable".*
 
@@ -60,9 +62,11 @@ applicable still gets a row, marked "no-op — nothing applicable".*
 
 `v1.1.0-lt.1` aligns the NUMBERS; it does not claim LT contains every Ambyflow
 feature. LT is missing several whole epics — conditions and client data
-collection (E34), the statutory deadline engine (E35), the customer workbook
-export (E37.4), service deletion, and the multi-assignee step work — plus the
-multi-tenant and platform machinery that will never apply.
+collection (E34) and the statutory deadline engine (E35), plus service deletion
+— and the multi-tenant and platform machinery that will never apply.
+
+**Ported since:** E37.4 (firm workbook export) in `v1.1.0-lt.2`. The
+multi-assignee step work (#192) was already applied directly.
 
 That is deliberate. Those are features, not fixes: each needs porting by
 content and testing on LT-QA before it reaches production, which is exactly the
