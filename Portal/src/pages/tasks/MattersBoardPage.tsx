@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import MatterViewToggle, { rememberView } from '../../components/tasks/MatterViewToggle';
+import MatterViewToggle from '../../components/tasks/MatterViewToggle';
+import { rememberView } from '../../lib/matterView';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Flame, Info } from 'lucide-react';

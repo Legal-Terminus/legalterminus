@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
 import { ArrowRight, Flame, Trash2, Plus } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
+import MatterViewToggle from '../../components/tasks/MatterViewToggle';
 import DataGrid from '../../components/common/DataGrid';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useToast } from '../../components/common/toastContext';
@@ -118,11 +119,20 @@ export default function TasksPage() {
     <PageShell
       title={c.title}
       subtitle={c.body}
-      action={canCreate ? (
-        <button onClick={() => setShowCreate(true)} className="btn-primary inline-flex items-center gap-1.5">
-          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Create Matter</span><span className="sm:hidden">Create</span>
-        </button>
-      ) : undefined}
+      // E22-S01: the Board/List switch lives here, beside Create. Without it the
+      // board is reachable only by typing its URL — the list had no way across,
+      // which is the one-way door MatterViewToggle exists to close. Staff only:
+      // a client has no pipeline and the board shows internal step ownership.
+      action={(
+        <div className="inline-flex items-center gap-2">
+          {!isClientView && <MatterViewToggle current="list" />}
+          {canCreate && (
+            <button onClick={() => setShowCreate(true)} className="btn-primary inline-flex items-center gap-1.5">
+              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Create Matter</span><span className="sm:hidden">Create</span>
+            </button>
+          )}
+        </div>
+      )}
     >
       {showCreate && <CreateMatterModal onClose={() => setShowCreate(false)} />}
       {/* #167: recurring renewals that have fallen due — renders nothing when

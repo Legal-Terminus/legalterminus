@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { LayoutGrid, List } from 'lucide-react';
+import { rememberView, type MatterView } from '../../lib/matterView';
 
 /**
  * Board / List switch for the Matters surface.
@@ -13,21 +14,6 @@ import { LayoutGrid, List } from 'lucide-react';
  * the list. Wrapped in try/catch: a browser with site data blocked must still
  * render, it simply forgets the preference.
  */
-
-const KEY = 'matters:view';
-
-export type MatterView = 'board' | 'list';
-
-export function readPreferredView(): MatterView | null {
-  try {
-    const v = localStorage.getItem(KEY);
-    return v === 'board' || v === 'list' ? v : null;
-  } catch { return null; }
-}
-
-export function rememberView(view: MatterView) {
-  try { localStorage.setItem(KEY, view); } catch { /* private mode */ }
-}
 
 export default function MatterViewToggle({ current }: { current: MatterView }) {
   const navigate = useNavigate();
