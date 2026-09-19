@@ -685,13 +685,28 @@ export async function createTask(req, res) {
     batch.set(ref, task);
     // Step statuses at creation:
     //  - pending approval → every step stays `pending` (no work starts);
-    //  - #94: any step the creation-time gate AUTO-PASSED (< resolvedFirstStep) is
-    //    marked `completed` (e.g. the step-1 payment gate on a part/fully-paid
-    //    matter), so the matter opens cleanly on the resolved step;
+    //  - #94: any step the creation-time gate AUTO-PASSED (authored BEFORE the
+    //    resolved step) is marked `completed` (e.g. the step-1 payment gate on a
+    //    part/fully-paid matter), so the matter opens cleanly on the resolved step;
     //  - the resolved step is `active`; later steps `pending`.
+    //
+    // #195: "before the resolved step" means EARLIER IN AUTHORED ORDER, not a
+    // lower step NUMBER. Step numbers are identity — a step added later keeps a
+    // high id, and a re-ordered workflow can start at step 45 with steps 6, 8
+    // and 23 still ahead of it. Comparing numbers marked all of those completed
+    // the instant the matter was created (11 of them on the Trademark
+    // workflow, Payment and TM-A Prepared among them). Same defect family as
+    // #117 / #55 / #189.
+    const authoredPos = new Map(stepDefs.map((s, i) => [s.stepNumber, i]));
+    const firstPos = authoredPos.get(resolvedFirstStep) ?? 0;
+    /** Is this step genuinely behind the resolved start, in FLOW order? */
+    const isAutoPassed = (n) => {
+      const pos = authoredPos.get(n);
+      return pos != null && pos < firstPos;
+    };
     const statusForStep = (n) => {
       if (needsApproval) return 'pending';
-      if (n < resolvedFirstStep) return 'completed';
+      if (isAutoPassed(n)) return 'completed';
       if (n === resolvedFirstStep) return 'active';
       return 'pending';
     };
@@ -709,7 +724,7 @@ export async function createTask(req, res) {
         assignedTo: assigneesForStep(s)[0] ?? null,
         assignedToUids: assigneesForStep(s),
         status: statusForStep(s.stepNumber),
-        ...(s.stepNumber < resolvedFirstStep && !needsApproval ? { completedAt: now } : {}),
+        ...(isAutoPassed(s.stepNumber) && !needsApproval ? { completedAt: now } : {}),
         // ETA clock (E13-S02): only the active resolved step gets a running due date.
         ...(isActive ? { startedAt: now, dueAt: addDaysIso(now, firstStepEta) } : {}),
       });
