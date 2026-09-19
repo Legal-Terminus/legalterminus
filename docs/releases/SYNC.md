@@ -60,6 +60,8 @@ went with each one.
 
 | `v1.1.0` | `v1.1.0-lt.4` | 2026-09-19 | **E34/E35 screens.** Settings → Statutory Calendar; deadline-rule and condition editors in the workflow editor; the form step on the matter page. Backends shipped in `-lt.3` with no way to reach them. |
 
+| `v1.1.0` | `v1.1.0-lt.5` | 2026-09-19 | **E28 — rebuilt workflow editor.** 1083-line page → 431 + extracted step components, so the -lt.4 deadline/condition editors sit inside StepCard rather than bolted below the form. Library seeding and the automation runtime deliberately excluded. |
+
 *Add a row when an Ambyflow release reaches LT. An Ambyflow release that is not
 applicable still gets a row, marked "no-op — nothing applicable".*
 
