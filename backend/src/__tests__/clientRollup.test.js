@@ -105,3 +105,67 @@ test('isClientStep identifies client-owned steps', () => {
   assert.equal(isClientStep(null), false, 'a missing step is not a client step');
   assert.equal(isClientStep({}), false);
 });
+
+/**
+ * #188 regression — an ADDITIONAL CONTACT's matters must be counted.
+ *
+ * Found in production: Lokesh Kharbash could open a GST matter (he is on its
+ * ccEmails) but the roster showed him 0 matters, because the rollup only
+ * counted matters whose `clientUid` was his. The figures contradicted the
+ * access rule, which is worse than either being wrong alone — staff looking at
+ * the roster would conclude a client with live, overdue work needed nothing.
+ */
+test('fetchMattersForClients counts matters a client is only CC’d on', async () => {
+  const { fetchMattersForClients } = await import('../services/clientRollup.service.js');
+  const owned = { id: 'm1', clientUid: 'owner', status: 'active' };
+  const ccd = { id: 'm2', clientUid: 'someone-else', status: 'active', ccEmails: ['cc@x.test'] };
+
+  const db = {
+    collection: () => ({
+      where: (field, op) => ({
+        get: async () => ({
+          docs: field === 'clientUid'
+            ? [{ id: owned.id, data: () => owned }]
+            : [{ id: ccd.id, data: () => ccd }],
+        }),
+      }),
+    }),
+  };
+
+  const byClient = await fetchMattersForClients(
+    db, ['u1'], new Map([['u1', 'cc@x.test']]),
+  );
+  const ids = (byClient.get('u1') ?? []).map((t) => t.id);
+  assert.ok(ids.includes('m2'), 'the CC’d matter is counted');
+});
+
+test('a matter is never counted twice when a client both owns it and is CC’d', async () => {
+  const { fetchMattersForClients } = await import('../services/clientRollup.service.js');
+  // The same matter comes back from BOTH queries. Counting it twice would
+  // inflate every figure on the roster row.
+  const m = { id: 'm1', clientUid: 'u1', status: 'active', ccEmails: ['me@x.test'] };
+  const db = {
+    collection: () => ({
+      where: () => ({ get: async () => ({ docs: [{ id: m.id, data: () => m }] }) }),
+    }),
+  };
+  const byClient = await fetchMattersForClients(db, ['u1'], new Map([['u1', 'me@x.test']]));
+  assert.equal((byClient.get('u1') ?? []).length, 1, 'counted exactly once');
+});
+
+test('a client with no email is unaffected by the CC lookup', async () => {
+  const { fetchMattersForClients } = await import('../services/clientRollup.service.js');
+  const m = { id: 'm1', clientUid: 'u1', status: 'active' };
+  let ccQueried = false;
+  const db = {
+    collection: () => ({
+      where: (field) => {
+        if (field === 'ccEmails') ccQueried = true;
+        return { get: async () => ({ docs: field === 'clientUid' ? [{ id: m.id, data: () => m }] : [] }) };
+      },
+    }),
+  };
+  const byClient = await fetchMattersForClients(db, ['u1'], new Map());
+  assert.equal((byClient.get('u1') ?? []).length, 1);
+  assert.equal(ccQueried, false, 'no pointless query when nobody has an email');
+});

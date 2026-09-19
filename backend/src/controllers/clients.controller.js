@@ -1,5 +1,6 @@
 import { db } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
+import { richTextToPlain } from '../services/richText.service.js';
 import {
   buildRollups,
   fetchCurrentSteps,
@@ -93,8 +94,19 @@ export async function getClient(req, res) {
       return res.status(404).json({ message: 'Client not found' });
     }
 
-    const snap = await db.collection('tasks').where('clientUid', '==', uid).get();
-    const tasks = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    // #188: the matters this client can actually SEE — the ones they own, plus
+    // any they are an additional contact on. Anything less makes the 360 screen
+    // disagree with what the client themselves is shown.
+    const email = String(doc.data().email ?? '').trim().toLowerCase();
+    const [owned, cc] = await Promise.all([
+      db.collection('tasks').where('clientUid', '==', uid).get(),
+      email
+        ? db.collection('tasks').where('ccEmails', 'array-contains', email).get()
+        : Promise.resolve({ docs: [] }),
+    ]);
+    const byId = new Map();
+    for (const d of [...owned.docs, ...cc.docs]) byId.set(d.id, { id: d.id, ...d.data() });
+    const tasks = [...byId.values()];
     const currentSteps = await fetchCurrentSteps(db, tasks);
 
     const now = Date.now();
@@ -188,12 +200,22 @@ async function fetchRecentActivity(db, tasks) {
     try {
       const snap = await db.collection('tasks').doc(t.id).collection('events')
         .orderBy('at', 'desc').limit(ACTIVITY_LIMIT).get();
-      return snap.docs.map((d) => ({
-        id: d.id,
-        taskId: t.id,
-        serviceName: t.serviceName ?? t.workflowType ?? '',
-        ...d.data(),
-      }));
+      return snap.docs.map((d) => {
+        const e = d.data();
+        return {
+          id: d.id,
+          taskId: t.id,
+          serviceName: t.serviceName ?? t.workflowType ?? '',
+          ...e,
+          // Comments are stored as sanitised rich-text HTML (#122). This feed
+          // renders ONE TRUNCATED LINE per event, so the markup was showing up
+          // literally — "<p>Dear Ma'am,</p><p></p><p>As requested…". Block tags
+          // cannot render inside a single-line row anyway, so the projection is
+          // plain text rather than HTML: the preview reads as a sentence, and
+          // the full formatting is one click away on the matter itself.
+          ...(e.comment ? { comment: richTextToPlain(e.comment) } : {}),
+        };
+      });
     } catch {
       return [];
     }

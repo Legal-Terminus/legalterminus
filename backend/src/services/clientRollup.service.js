@@ -228,16 +228,46 @@ export function clientIdentity(doc) {
  * Fetch every matter belonging to the given clients, chunked to stay inside the
  * `in` ceiling. Returns clientUid → task docs (with ids).
  */
-export async function fetchMattersForClients(db, uids) {
+export async function fetchMattersForClients(db, uids, emailByUid = new Map()) {
   const byClient = new Map(uids.map((u) => [u, []]));
+  const seen = new Map(uids.map((u) => [u, new Set()]));
+
   for (const part of chunk(uids)) {
     const snap = await db.collection('tasks').where('clientUid', 'in', part).get();
     for (const doc of snap.docs) {
       const t = { id: doc.id, ...doc.data() };
       const list = byClient.get(t.clientUid);
-      if (list) list.push(t);
+      if (list) { list.push(t); seen.get(t.clientUid).add(doc.id); }
     }
   }
+
+  // #188: an ADDITIONAL CONTACT on a matter can genuinely see it, so the roster
+  // must count it too — otherwise the figures contradict the access rule and a
+  // client with real work shows "0 matters". Matched on email, exactly as
+  // `clientCanSeeMatter` does; a client added by email but never made the
+  // matter's owner is the whole point of that feature.
+  const emails = [...new Set([...emailByUid.values()].map((e) => String(e).trim().toLowerCase()).filter(Boolean))];
+  if (emails.length) {
+    const byEmail = new Map();
+    for (const [uid, e] of emailByUid) {
+      const k = String(e).trim().toLowerCase();
+      if (k) byEmail.set(k, uid);
+    }
+    for (const part of chunk(emails)) {
+      const snap = await db.collection('tasks').where('ccEmails', 'array-contains-any', part).get();
+      for (const doc of snap.docs) {
+        const t = { id: doc.id, ...doc.data() };
+        for (const raw of t.ccEmails ?? []) {
+          const uid = byEmail.get(String(raw).trim().toLowerCase());
+          // Skip a matter the client already owns — it must not be counted twice.
+          if (!uid || seen.get(uid)?.has(doc.id)) continue;
+          byClient.get(uid)?.push(t);
+          seen.get(uid)?.add(doc.id);
+        }
+      }
+    }
+  }
+
   return byClient;
 }
 
@@ -277,9 +307,13 @@ export async function fetchDocsPending(db, taskIdToClient) {
     for (const doc of snap.docs) {
       // documents live at tasks/{taskId}/documents/{docId}
       const taskId = doc.ref.parent.parent?.id;
-      const client = taskId ? taskIdToClient.get(taskId) : null;
-      if (!client) continue;
-      counts.set(client, (counts.get(client) ?? 0) + 1);
+      const owners = taskId ? taskIdToClient.get(taskId) : null;
+      if (!owners) continue;
+      // #188: a matter can be visible to several clients (its owner and each CC
+      // contact); the pending-document count belongs to each of them.
+      for (const client of Array.isArray(owners) ? owners : [owners]) {
+        counts.set(client, (counts.get(client) ?? 0) + 1);
+      }
     }
   } catch {
     // The collection-group index may not be deployed yet — a missing docs count
@@ -296,10 +330,28 @@ export async function buildRollups(db, clientDocs, now = Date.now()) {
   const uids = clientDocs.map((d) => d.id);
   if (uids.length === 0) return [];
 
-  const mattersByClient = await fetchMattersForClients(db, uids);
-  const allTasks = [...mattersByClient.values()].flat();
+  // #188: pass each client's email so matters they are only a CC contact on are
+  // counted too — they can genuinely see those, so the roster must agree.
+  const emailByUid = new Map(
+    clientDocs.map((d) => [d.id, (d.data()?.email ?? '').toString()]).filter(([, e]) => e),
+  );
+  const mattersByClient = await fetchMattersForClients(db, uids, emailByUid);
 
-  const taskIdToClient = new Map(allTasks.map((t) => [t.id, t.clientUid]));
+  // De-duplicate for the shared lookups: one matter can now appear under several
+  // clients (its owner and each CC contact), and fetching its steps twice would
+  // double the reads for no benefit.
+  const allTasks = [...new Map([...mattersByClient.values()].flat().map((t) => [t.id, t])).values()];
+
+  // Attribute a matter's pending documents to EVERY client who can see it, not
+  // just its owner — otherwise a CC contact's count silently belongs to someone
+  // else. A Map keyed by task id would collapse those, so this is a list.
+  const taskIdToClient = new Map();
+  for (const [uid, tasks] of mattersByClient) {
+    for (const t of tasks) {
+      if (!taskIdToClient.has(t.id)) taskIdToClient.set(t.id, []);
+      taskIdToClient.get(t.id).push(uid);
+    }
+  }
   const [currentSteps, docsPending] = await Promise.all([
     fetchCurrentSteps(db, allTasks),
     fetchDocsPending(db, taskIdToClient),
