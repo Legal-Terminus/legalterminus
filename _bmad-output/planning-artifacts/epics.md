@@ -86,7 +86,7 @@ split dashboard tiles.
 | E-20 | Dashboard Cockpits | Phase 2 | E20-S01 – E20-S02 |
 | E-21 | Public API v1 & Webhooks | Phase 2 | E21-S01 – E21-S04 |
 | E-22 | Matters Board & Global Search | Phase 2 | E22-S01 – E22-S02 |
-| E-23 | Quality Fixes Ported from cometflow | Phase 2 | E23-S01 – E23-S03 |
+| E-23 | Quality Fixes & Backend Test Runner | Phase 2 | E23-S01 – E23-S04 |
 
 ---
 
@@ -2962,10 +2962,15 @@ me? Today the answer is a link.
 
 ## E-21 — Public API v1 & Webhooks [Phase 2]
 
-> **⏳ NOT YET BUILT (as of 2026-09-19).** E-19, E-20, E-22 and E-23 are implemented and tested;
-> this epic is planned but not started. It is the largest remaining piece (~1,900 lines across
-> API keys, the versioned read API, writes and webhooks) and is deliberately left as a separate
-> unit of work rather than rushed in alongside the others.
+> **✅ BUILT (2026-09-19).** All four stories. Mounted at `/api/v1` (keys only) and
+> `/api/settings/api-tokens` + `/api/settings/webhooks` (admin session only).
+>
+> Verified end-to-end in both directions: an admin's Firebase ID token is refused on `/api/v1`
+> with 401, and an API key is refused on every session route. That separation is the epic's
+> whole point and is structural — separate middleware, not a branch in shared auth.
+>
+> Webhook headers were rebranded from `x-cometflow-*` to `x-legalterminus-*`; a copied header
+> would tell every subscriber which product this really is and collide if a firm used both.
 
 **Goal**: Let other systems read and create Legal-Terminus data without a human in a browser.
 
@@ -2978,6 +2983,10 @@ only as a scoping key on the token record, which collapses to a constant in sing
 ### E21-S01 — API Keys [Phase 2]
 
 **Priority**: P3 | **Complexity**: M | **Dependencies**: E01 (auth)
+
+> **✅ BUILT.** scrypt-hashed secrets (a key is password-equivalent, so a leaked table is not
+> directly usable), constant-time comparison, secret shown ONCE. Revocation takes effect on the
+> next request. Every auth failure answers identically so valid ids cannot be enumerated.
 
 **Acceptance Criteria**:
 - Admin can mint a named key with explicit **scopes** (`read:matters`, `read:clients`,
@@ -2994,6 +3003,10 @@ only as a scoping key on the token record, which collapses to a constant in sing
 ### E21-S02 — Versioned Read API [Phase 2]
 
 **Priority**: P3 | **Complexity**: M | **Dependencies**: E21-S01
+
+> **✅ BUILT.** `GET /api/v1/matters`, `/matters/:id`, `/matters/:id/documents`, `/clients`.
+> Scope-gated before any read; rate-limited per KEY (not per IP) so one noisy integration
+> cannot throttle another.
 
 **Rationale**: Versioned from day one, and reads before writes — a leaked key cannot change anything.
 
@@ -3014,6 +3027,9 @@ only as a scoping key on the token record, which collapses to a constant in sing
 
 **Priority**: P3 | **Complexity**: M | **Dependencies**: E21-S02
 
+> **✅ BUILT.** `POST /api/v1/matters` and `/clients`, each behind its own write scope and
+> validated by the SAME schema the UI uses — no second, looser path into the data.
+
 **Acceptance Criteria**:
 - `POST /api/v1/matters` and `POST /api/v1/clients`, each behind its own write scope.
 - Bodies pass the SAME validation schemas as the portal routes — no second, looser path into the data.
@@ -3026,6 +3042,15 @@ only as a scoping key on the token record, which collapses to a constant in sing
 ### E21-S04 — Outbound Webhooks [Phase 2]
 
 **Priority**: P3 | **Complexity**: L | **Dependencies**: E21-S01
+
+> **✅ BUILT.** Seven events wired at their post-commit points in tasks/documents controllers —
+> fire-and-forget, so a firm's slow endpoint never delays the person who clicked the button and
+> a webhook failure never fails their action.
+>
+> ⚠️ SSRF is the real risk here: a webhook makes the SERVER fetch a URL an admin names. Targets
+> must be https and are refused if they resolve to loopback, private ranges, carrier-grade NAT,
+> or link-local — which includes `169.254.169.254`, the cloud metadata endpoint that hands out
+> service-account credentials. Unparseable input fails CLOSED. 11 unit tests cover exactly this.
 
 **Acceptance Criteria**:
 - Admin registers target URLs for events: `matter.created`, `matter.step_entered`,
@@ -3128,6 +3153,30 @@ and defeating memoisation.
 - Editor behaviour is unchanged; typing no longer loses focus through toolbar re-renders.
 
 **Frontend**: `Portal/src/components/common/RichTextEditor.tsx`
+
+---
+
+### E23-S04 — Backend Unit-Test Runner [Phase 2]
+
+**Priority**: P2 | **Complexity**: S | **Dependencies**: none
+
+> **✅ BUILT (2026-09-19).** `npm test` in `backend/` runs Node's built-in `node --test`. No new
+> dependency, no config, no framework.
+
+**Rationale**: this backend had NO automated unit coverage — Playwright e2e was the only thing
+checking it, and pure functions ported from the cometflow portal arrived without their tests.
+E2e cannot cheaply cover the branches that matter (a corrupt hash, an unparseable date, an
+SSRF-shaped URL), because setting those states up through HTTP is slow and sometimes impossible.
+
+**Acceptance Criteria**:
+- `npm test` discovers and runs `src/__tests__/**/*.test.js`.
+- Coverage targets the rules where a plausible implementation is quietly wrong, not line count.
+- Every test states the CONSEQUENCE it guards, so a later reader knows what breaking it costs.
+
+**Built**: 41 tests — clientRollup money/counts/overdue (11), awaitingClient (9), API key
+secret handling (11), webhook SSRF + signing (10). Writing them caught a real misconception:
+step ownership comes from `deriveOwnerType` (ownerType / payment_gate / CLIENT_APPROVE), NOT
+from `assignedRole`, which silently yields "team".
 
 ---
 

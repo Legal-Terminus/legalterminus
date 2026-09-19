@@ -33,6 +33,9 @@ import settingsRoutes from "./routes/settings.routes.js";
 import searchRoutes from "./routes/search.routes.js";
 import clientsRoutes from "./routes/clients.routes.js";
 import mattersBoardRoutes from "./routes/mattersBoard.routes.js";
+import publicApiRoutes from "./routes/publicApi.routes.js";
+import apiTokensRoutes from "./routes/apiTokens.routes.js";
+import webhooksRoutes from "./routes/webhooks.routes.js";
 import initializeFirebase from "./config/firebase.js";
 
 // Load environment variables
@@ -127,6 +130,14 @@ app.use("/api/admin/category", categoryRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/video-testimonials", videoTestimonialRoutes);
 app.use("/api/testimonials", testimonialRoutes);
+// E21-S02/S03: the PUBLIC API. Mounted before the session routes and guarded by
+// its own credential type — /api/v1 accepts ONLY API keys, never an ID token.
+// Note it is deliberately NOT under the global /api session limiter chain.
+app.use("/api/v1", publicApiRoutes);
+// E21-S04: outbound webhook subscriptions (admin only).
+app.use("/api/settings/webhooks", webhooksRoutes);
+// E21-S01: API key management (admin only, session-authenticated).
+app.use("/api/settings/api-tokens", apiTokensRoutes);
 // E22-S01: the matters board (pipeline view), staff only.
 app.use("/api/matters", mattersBoardRoutes);
 // E-19: Client 360 — per-client monitoring (admin/manager only).

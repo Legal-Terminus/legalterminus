@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { db, getBucket } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
+import { emitWebhook } from '../services/webhookEmit.service.js';
 import { createNotification } from './notifications.controller.js';
 import { clientCanSeeMatter } from './tasks.controller.js';
 
@@ -519,6 +520,12 @@ export async function reviewDocument(req, res) {
       });
     } catch (e) {
       logger.warn({ err: e?.message }, 'reviewDocument: client notification failed');
+    }
+
+    // E21-S04: only APPROVAL is an event a firm's system acts on; a rejection
+    // is an internal review step that a re-upload will follow.
+    if (isApprove) {
+      emitWebhook(db, 'document.approved', { matterId: taskId, documentId: docId });
     }
 
     const updated = await ref.get();

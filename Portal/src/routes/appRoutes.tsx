@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 import { ALL_ROLE_KEYS } from '../lib/roles';
@@ -15,6 +15,8 @@ import UsersPage from '../pages/users/UsersPage';
 import ClientsPage from '../pages/clients/ClientsPage';
 import ClientDetailPage from '../pages/clients/ClientDetailPage';
 import MattersBoardPage from '../pages/tasks/MattersBoardPage';
+import ApiKeysPage from '../pages/settings/ApiKeysPage';
+import WebhooksPage from '../pages/settings/WebhooksPage';
 import UserFormPage from '../pages/users/UserFormPage';
 import Services from '../pages/services/ServicesPage';
 import ServiceDetail from '../pages/services/ServiceDetailPage';
@@ -86,6 +88,10 @@ export const APP_ROUTES: AppRoute[] = [
 
   // ── Admin + Manager (per BMAD E08-S01 reports, E09-S02 user/client mgmt) ──
   { path: '/users',             element: <UsersPage />,     roles: ['admin', 'manager'], nav: { label: 'Users', icon: Users, mobile: true } },
+  // E-21: integrations. ADMIN ONLY — a key or a webhook target moves firm data
+  // out of the product without a human present.
+  { path: '/settings/api-keys', element: <ApiKeysPage />, roles: ['admin'], nav: { label: 'API Keys', icon: KeyRound, order: 10 } },
+  { path: '/settings/webhooks', element: <WebhooksPage />, roles: ['admin'], nav: { label: 'Webhooks', icon: Webhook, order: 11 } },
   // E22-S01: the matters board (pipeline view). Staff only — a client has no
   // pipeline, and the board shows internal step ownership.
   { path: '/matters/board',     element: <MattersBoardPage />, roles: ['admin', 'manager', 'team_member'] },

@@ -1,6 +1,7 @@
 import { createActor } from 'xstate';
 import { db, getBucket } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
+import { emitWebhook } from "../services/webhookEmit.service.js";
 import { getCompiledForServiceKey, getCompiledById } from '../services/workflowDefinitions.service.js';
 import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { createNotification, resolveNotificationsForTask } from './notifications.controller.js';
@@ -784,6 +785,8 @@ export async function createTask(req, res) {
       title: s.title,
       status: statusForStep(s.stepNumber),
     }));
+    // E21-S04: post-commit, fire-and-forget (see webhookEmit.service.js).
+    emitWebhook(db, 'matter.created', { matterId: ref.id, clientId: task.clientUid ?? null });
     res.status(201).json({ id: ref.id, ...task, steps });
   } catch (err) {
     logger.error({ err }, 'createTask error:');
@@ -1993,6 +1996,12 @@ export async function createPayment(req, res) {
     });
     await batch.commit();
 
+    // E21-S04: the amounts are the firm's OWN figures coming back, not client
+    // PII — everything else is an id to re-fetch.
+    emitWebhook(db, 'payment.recorded', {
+      matterId: req.params.taskId, paymentId: paymentRef.id, amount, paymentStatus: newStatus,
+    });
+
     res.status(201).json({
       id: paymentRef.id,
       amountPaid: newPaid, amountDue: newDue, paymentStatus: newStatus, totalCost,
@@ -2666,6 +2675,16 @@ export async function transitionTask(req, res) {
     if (isComplete) {
       try { await finalizeMatterDocuments(taskId); }
       catch (e) { logger.warn({ err: e?.message }, 'transitionTask: document finalisation failed'); }
+    }
+
+    // E21-S04: fire-and-forget, AFTER the transition has committed. A firm's
+    // slow endpoint must never delay the person who clicked the button, and a
+    // webhook failure must never fail their action.
+    if (newStep !== task.currentStepNumber) {
+      emitWebhook(db, 'matter.step_entered', { matterId: taskId, stepNumber: newStep });
+    }
+    if (isComplete && task.status !== 'completed') {
+      emitWebhook(db, 'matter.completed', { matterId: taskId });
     }
 
     try {
