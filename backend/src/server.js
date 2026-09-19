@@ -30,6 +30,7 @@ import notificationsRoutes from "./routes/notifications.routes.js";
 import workflowDefinitionsRoutes from "./routes/workflowDefinitions.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
+import searchRoutes from "./routes/search.routes.js";
 import initializeFirebase from "./config/firebase.js";
 
 // Load environment variables
@@ -124,6 +125,8 @@ app.use("/api/admin/category", categoryRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/video-testimonials", videoTestimonialRoutes);
 app.use("/api/testimonials", testimonialRoutes);
+// E22-S02: global search. Every role searches; the controller scopes results.
+app.use("/api/search", searchRoutes);
 app.use("/api/auth", sensitiveLimiter, authRoutes);
 app.use("/api/payment", sensitiveLimiter, paymentRoutes);
 app.use("/api/contact", sensitiveLimiter, contactRoutes);
