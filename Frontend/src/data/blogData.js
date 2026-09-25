@@ -15,6 +15,15 @@ export const CATEGORIES = [
 
 export const posts = [
   {
+    id: 21521,
+    slug: "why-your-logo-needs-legal-protection-and-how-to-get-it-registered-in-india",
+    title: "Why Your Logo Needs Legal Protection — And How to Get It Registered in India",
+    excerpt: "A familiar symbol can tell customers who you are before they even read your name — and that recognition has real commercial value. Here's how logo registration actually works under the Trade Marks Act, 1999.",
+    date: "September 25, 2026",
+    category: "Trademark",
+    image: "/blog-images/why-your-logo-needs-legal-protection.webp",
+  },
+  {
     id: 21520,
     slug: "gst-registration-a-simple-step-by-step-guide",
     title: "GST Registration | A Simple Step-by-Step Guide",

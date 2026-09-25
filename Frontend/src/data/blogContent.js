@@ -42,6 +42,279 @@ export const blogContent = {
 
     <p>👉 To register your GST, visit <a href="https://www.legalterminus.com" target="_blank" rel="noopener noreferrer">www.legalterminus.com</a></p>
   `,
+
+  "restaurants-facing-income-tax-checks-latest-update": `
+    <p>The Income Tax Department in India has clearly entered a <strong>new era of data intelligence and real-time monitoring</strong>. Recent communications sent to certain restaurant businesses demonstrate just how <strong>vigilant, technology-driven, and proactive</strong> the tax administration has become.</p>
+    <p>For years, many businesses assumed that turnover declared in the Income Tax Return could remain largely unquestioned unless a detailed scrutiny was initiated. However, the present approach of the department shows that <strong>data analytics and cross-verification tools are now being actively used to identify inconsistencies.</strong></p>
+
+    <h2>How the Department Is Detecting Turnover Mismatches</h2>
+    <p>Modern tax administration no longer relies only on information submitted by taxpayers. The department is increasingly <strong>leveraging third-party data sources and digital footprints</strong> to validate disclosures. In the case of restaurants and similar businesses, several data points can be cross-verified:</p>
+    <ol>
+      <li><strong>Billing Platform Integrations:</strong> Many restaurants now use digital POS and billing systems. These systems generate <strong>detailed transaction records</strong>, which can be analysed through information available with service providers or through regulatory reporting channels.</li>
+      <li><strong>GST Data Matching:</strong> Restaurants typically file GST returns that disclose taxable turnover. The department can easily <strong>compare GST filings with the turnover reported in Income Tax Returns</strong>, and any significant mismatch may trigger verification.</li>
+      <li><strong>Payment Gateway &amp; Digital Transactions:</strong> A large portion of restaurant revenue now comes through <strong>UPI, credit cards, and payment gateways</strong>. These transactions create digital trails that can be analysed.</li>
+      <li><strong>Data Analytics &amp; AI-Based Risk Profiling:</strong> The Income Tax Department has invested heavily in <strong>advanced analytics systems and AI-driven risk assessment tools</strong>, allowing it to identify patterns that suggest possible under-reporting of income.</li>
+    </ol>
+    <p>This level of monitoring clearly reflects a <strong>more transparent and technology-driven tax ecosystem</strong>.</p>
+
+    <h2>What Businesses Should Learn from This</h2>
+    <p>This development sends an important message to taxpayers, especially those operating in sectors with <strong>high volumes of digital transactions</strong>.</p>
+    <ul>
+      <li>Maintain consistency across all filings</li>
+      <li>Ensure proper accounting of POS and billing data</li>
+      <li>Avoid selective reporting of digital transactions</li>
+      <li>Periodically review past filings</li>
+    </ul>
+    <p><strong>A Positive Signal for the Tax Ecosystem</strong></p>
+    <p>Rather than viewing such communications as a threat, it is more constructive to see them as <strong>a reflection of a maturing tax administration</strong>.</p>
+    <p>In many ways, this also demonstrates that <strong>India's tax administration is evolving rapidly with technology</strong>, making voluntary compliance the safest and smartest approach for businesses.</p>
+    <p>In today's environment, <strong>data leaves a trail — and the tax department knows how to follow it.</strong></p>
+  `,
+
+  "can-using-blue-jay-get-you-in-trouble-with-a-global-brand": `
+    <p>What happens when an Indian garment business adopts a name nearly identical to a world-famous sports team's brand? This was at the heart of the showdown between <a href="https://www.mlb.com/" target="_blank" rel="noopener noreferrer">Major League Baseball Properties Inc. (MLB)</a> and a Delhi-based clothing partnership over the trademark <strong>'BLUE-JAY'</strong>, pitting global IP reach against local commerce.</p>
+
+    <h2>A Brand Battle Unfolds</h2>
+    <p><strong>MLB</strong>, owner of the <strong>'BLUE JAYS'</strong> mark, discovered a Delhi garment partnership selling goods under <strong>'BLUE-JAYS'</strong> — just one letter and a hyphen away from the storied Toronto Blue Jays franchise. The dispute reached the Delhi High Court, asking: does global goodwill win in Indian markets?</p>
+
+    <h2>Court's Findings</h2>
+    <ul>
+      <li><strong>Prior User Supremacy:</strong> The Court reaffirmed that a 'prior adopter' and 'prior user' of a trademark, even globally, holds superior rights over later Indian registration, citing both domestic and Supreme Court precedents.</li>
+      <li><strong>Goodwill &amp; Global Reputation:</strong> MLB's extensive worldwide reputation, backed with brand presence, media coverage, online visibility, and merchandise, meant Indian consumers could easily associate <strong>'BLUE-JAY'</strong> goods with MLB.</li>
+      <li><strong>Deceptive Similarity:</strong> Dropping an 'S' and adding a hyphen did not create distinction. The marks remained confusingly similar, risking consumer confusion and unfair brand association.</li>
+      <li><strong>Dishonest Adoption:</strong> The defendant's shifting explanations for adopting the mark raised suspicion and undermined claims of honest use.</li>
+      <li><strong>Bad Faith &amp; Cancellation:</strong> Adoption with an intent to ride on another's goodwill justified cancellation of the mark, regardless of local registration or subsequent use.</li>
+    </ul>
+
+    <h2>The Verdict</h2>
+    <p>The DHC ordered the <strong>'BLUE-JAY'</strong> trademark registration cancelled and removed from the register in Class 25.</p>
+
+    <h2>Lessons for Businesses</h2>
+    <ul>
+      <li>Check for global brands before adopting similar names, even if not widely used in India.</li>
+      <li>Do not assume a small change avoids deceptive similarity claims.</li>
+      <li>Register early and maintain consistent documentation to prove priority and good faith — monitor and enforce your brand actively in India and abroad.</li>
+    </ul>
+
+    <h2>Case Details</h2>
+    <ul>
+      <li><strong>Case Name:</strong> Major League Baseball Properties Inc. v. Manish Vijay &amp; Ors.</li>
+      <li><strong>Mark at Issue:</strong> Plaintiff's "BLUE JAYS" v. Defendant's "BLUE-JAY"</li>
+      <li><strong>Court &amp; Judge:</strong> Delhi High Court, Justice Saurabh Banerjee</li>
+      <li><strong>Date:</strong> 1 July 2025</li>
+      <li><strong>Result:</strong> Trademark 'BLUE-JAY' registration cancelled in Class 25</li>
+      <li><strong>Citation:</strong> C.O. (COMM.IPD-TM) 279/2023, 1 July 2025</li>
+    </ul>
+
+    <h2>Closing Thought</h2>
+    <p>Copying the essence of a famous brand, even with local tweaks, is a ticket to legal trouble, not business success.</p>
+
+    <h2>Disclaimer</h2>
+    <p>This article is provided for informational purposes only and is not intended as legal advice. Legal Terminus is not responsible for any changes in laws or regulations that occur after the publication date of this article. For specific legal advice, please consult with a qualified attorney.</p>
+    <p>Regards,<br/>CS Shipra Mishra<br/>(B. Com, LL.B, FCS, Insolvency Professional, Registered TM Agent)</p>
+  `,
+
+  "why-your-logo-needs-legal-protection-and-how-to-get-it-registered-in-india": `
+    <p>Think about some of the brands you use every day.</p>
+    <p>Sometimes you do not need to read the company name at all. A familiar symbol, shape, colour arrangement or design is enough to tell you whose product you are looking at.<br/>
+    That instant recognition has commercial value.</p>
+
+    <p>A good logo may begin as a design file on someone's computer, but over time it can become one of the most recognisable parts of a business. Money is spent promoting it, customers begin associating it with a particular source, and the logo eventually starts carrying the reputation of the business wherever it appears.</p>
+
+    <p>That is exactly why legal protection should not be an afterthought.<br/>
+    In India, a logo capable of functioning as a trademark can be registered under the Trade Marks Act, 1999. Registration gives its proprietor important statutory rights and puts the business in a much stronger position if another trader later adopts an identical or deceptively similar mark.<br/>
+    But logo registration is slightly more nuanced than simply uploading an image and paying a fee.<br/>
+    Here is how it actually works.</p>
+
+    <p>👉 Visit <a href="https://www.legalterminus.com" target="_blank" rel="noopener noreferrer">our website</a> for more information.</p>
+
+    <h2>First, What Does &ldquo;Trademarking a Logo&rdquo; Mean?</h2>
+
+    <p>A trademark is not limited to a business name.<br/>
+    Under Indian trademark law, a mark may include, among other things, a device, brand, heading, label, name, word, letter, numeral, shape of goods, packaging or combination of colours, provided the legal requirements for registration are satisfied.<br/>
+    A logo generally falls within the concept of a device mark or may contain a combination of word and device elements.</p>
+
+    <p>Imagine a business called GREENLEAF.<br/>
+    It could potentially seek protection in different ways:</p>
+    <ul>
+      <li>GREENLEAF as a word mark protects the word itself, subject to the scope of registration.</li>
+      <li>A stylised GREENLEAF logo containing a particular leaf device, lettering and arrangement may separately be filed as a device mark.</li>
+    </ul>
+
+    <p>This distinction matters.<br/>
+    Registering only a logo does not necessarily give the proprietor the same breadth of protection that a separate registration of the underlying word mark may provide. Likewise, registering only the word may not fully reflect the importance of a distinctive device or visual identity.<br/>
+    For an important brand, businesses therefore often consider whether the word mark, logo/device mark, or both should be separately protected.</p>
+
+    <h3>Does Creating a Logo Automatically Give You Trademark Rights?</h3>
+
+    <img src="/blog-images/logo-automatic-trademark-rights.webp" alt="Does Creating a Logo Automatically Give You Trademark Rights - Legal Terminus" loading="lazy" />
+
+    <p>Not quite.<br/>
+    This is an area where businesses frequently misunderstand the law.<br/>
+    Using a logo in business may create rights based on prior use and goodwill, and an unregistered mark may, in appropriate circumstances, be protected through an action for passing off.<br/>
+    But trademark registration creates a statutory right.</p>
+
+    <p>Section 28 of the Trade Marks Act provides the registered proprietor, subject to the other provisions of the Act and the validity of the registration, the exclusive right to use the registered trademark in relation to the goods or services for which it is registered and to obtain relief in respect of infringement.<br/>
+    So it would be incorrect to say that an unregistered logo has &ldquo;no legal protection&rdquo;.</p>
+
+    <p>The more accurate position is this:<br/>
+    An unregistered logo may have protection based on use and goodwill, but registration provides a much stronger statutory framework for enforcement.<br/>
+    There may also be separate copyright considerations in an original artistic logo, but copyright and trademark protection are different legal rights and should not be treated as interchangeable.</p>
+
+    <h3>™ and ®: A Small Symbol With an Important Difference</h3>
+
+    <p>You will often see ™ and ® beside brand names and logos.<br/>
+    They do not mean the same thing.<br/>
+    The ™ symbol is commonly used to indicate that a business claims a particular sign as its trademark. It is not necessary to wait for registration before using ™, and it should not be described as a symbol available only after a trademark application has been filed.<br/>
+    The ® symbol, on the other hand, represents a registered trademark.<br/>
+    It should therefore be used only after the mark has actually been registered.<br/>
+    Filing an application does not entitle an applicant to start representing the mark as registered.</p>
+
+    <h2>Before Filing: Decide What You Actually Want to Protect</h2>
+
+    <p>One of the biggest mistakes occurs before Form TM-A is even opened.<br/>
+    Businesses often say:<br/>
+    &ldquo;Register my logo.&rdquo;<br/>
+    But several questions need to be answered first.</p>
+
+    <ul>
+      <li>Who actually owns the mark? Is it the individual founder, partnership, LLP or company?</li>
+      <li>Which goods or services will be provided under the logo?</li>
+      <li>Under which class or classes of the Nice Classification do those goods or services fall?</li>
+      <li>Is the logo already in use, or is it proposed to be used?</li>
+      <li>Does the applicant also need a separate word-mark application?</li>
+      <li>And most importantly, is the proposed logo sufficiently distinctive and clear of earlier conflicting marks?</li>
+    </ul>
+
+    <p>Getting these questions wrong can create difficulties long after filing.</p>
+
+    <h2>Step 1: Conduct a Proper Trademark Search</h2>
+
+    <p>A trademark search is not legally the same thing as obtaining registration, but commercially it is one of the most important pre-filing exercises.<br/>
+    For a logo, searching only the words appearing in the design may not be enough.</p>
+
+    <p>The search should ordinarily consider:</p>
+    <ul>
+      <li>identical and phonetically similar word elements;</li>
+      <li>earlier marks covering the same or similar goods and services;</li>
+      <li>visually similar device marks; and</li>
+      <li>relevant figurative elements classified under the Vienna Classification used for device features.</li>
+    </ul>
+
+    <p>For example, if a logo contains a lion, crown, sun and shield, those visual elements may have to be considered independently of the brand name written beneath them.<br/>
+    A search cannot guarantee registration because examination remains the Registrar's function, but it can identify obvious conflicts before money and time are invested in the application.</p>
+
+    <h2>Step 2: Prepare the Application Correctly</h2>
+
+    <p>An ordinary application for registration is made in Form TM-A.<br/>
+    The application must correctly identify the applicant, provide the representation of the trademark, specify the goods or services and the relevant class or classes, and contain the other required particulars.<br/>
+    Where necessary, the application should also sufficiently describe the mark.<br/>
+    This description becomes especially important where the device contains several elements, such as stylised letters, symbols, taglines or graphical features.<br/>
+    A vague or inaccurate description can later result in a compliance requirement from the Registry.</p>
+
+    <p>Where a trademark agent or legal practitioner is appointed to act on behalf of the applicant, the authorisation is executed in Form TM-M in accordance with Rule 19 of the Trade Marks Rules, 2017.</p>
+
+    <p>The official electronic filing fee presently prescribed for a TM-A application is ₹4,500 per mark per class for an individual, startup or small enterprise, and ₹9,000 per mark per class in other cases. Physical filing attracts higher fees.<br/>
+    The applicable official fee should always be checked against the prevailing fee schedule at the time of filing.</p>
+
+    <h2>Step 3: Examination by the Trade Marks Registry</h2>
+
+    <p>Filing an application does not mean that the logo is registered.<br/>
+    The Registry examines the application.<br/>
+    Under Rule 33 of the Trade Marks Rules, 2017, the examination includes a search amongst earlier registered and pending trademarks to identify identical or deceptively similar marks relating to the same or similar goods or services.<br/>
+    If the Registrar has an objection, an Examination Report is issued.</p>
+
+    <p>Two provisions appear frequently in examination reports:</p>
+    <ul>
+      <li><strong>Section 9</strong>, dealing broadly with absolute grounds for refusal, including lack of distinctiveness, descriptive character and other prohibited characteristics.</li>
+      <li><strong>Section 11</strong>, dealing broadly with relative grounds for refusal arising from conflict with earlier trademarks.</li>
+    </ul>
+
+    <p>Logo applications are not immune from either objection merely because they contain artwork.<br/>
+    Adding a simple border, ordinary font or commonplace device to otherwise descriptive wording does not necessarily make the mark distinctive.</p>
+
+    <h2>Step 4: Reply to the Examination Report</h2>
+
+    <p>This is another point where the timeline must be stated precisely.<br/>
+    Under Rule 33(4), the applicant is required to respond within one month from the date of receipt of the Examination Report.<br/>
+    Failure to respond may result in the application being treated as abandoned.</p>
+
+    <p>A hearing is not automatically scheduled immediately after an objection.<br/>
+    The applicant first submits a response explaining why the objections should be waived, supported by legal submissions and, where relevant, evidence.<br/>
+    If the Registrar considers the response satisfactory, the application may be accepted.<br/>
+    If the response is not satisfactory, or where a hearing becomes necessary, an opportunity of hearing may be provided.</p>
+
+    <p>An objection therefore does not mean that the trademark has been rejected.<br/>
+    It means that the Registry has raised an issue which the applicant has an opportunity to answer.</p>
+
+    <h2>Step 5: Acceptance and Publication in the Trade Marks Journal</h2>
+
+    <p>If the application is accepted, it is advertised in the Trade Marks Journal.<br/>
+    Publication serves an important purpose.<br/>
+    Trademark registration does not concern only the applicant and the Registry. Earlier rights holders must also have an opportunity to object if they believe the proposed registration affects their rights.</p>
+
+    <p>Under Rule 42, a notice of opposition may be filed in Form TM-O within four months from the date of publication of the Trade Marks Journal in which the mark was advertised or re-advertised.<br/>
+    If nobody opposes within the prescribed period, the application can ordinarily proceed towards registration, subject to the provisions of the Act.</p>
+
+    <h2>Step 6: What If Someone Opposes the Logo?</h2>
+
+    <p>An opposition changes the nature of the proceeding considerably.<br/>
+    The opponent files its grounds of opposition, which may include earlier trademark rights, prior use, likelihood of confusion or other statutory grounds.</p>
+
+    <p>Once the Registry serves the opposition upon the applicant, the applicant must file a counterstatement in Form TM-O within two months from receipt of the notice of opposition.<br/>
+    This deadline deserves particular attention.<br/>
+    Section 21 provides that if the applicant does not submit the counterstatement within the prescribed two-month period, the trademark application is deemed to have been abandoned.</p>
+
+    <p>If the counterstatement is filed, the matter proceeds through the prescribed evidence stages and ultimately to hearing and decision.<br/>
+    Opposition should therefore never be treated as ordinary correspondence that can simply be answered whenever convenient.</p>
+
+    <h2>Step 7: Registration Certificate</h2>
+
+    <p>Where the application has been accepted and no opposition is filed within the permitted period, or where an opposition is ultimately decided in favour of the applicant, the mark proceeds towards registration in accordance with Section 23.<br/>
+    Importantly, once registered, the trademark is registered as of the date on which the application was made, subject to the statutory provisions.</p>
+
+    <p>The Registrar then issues the registration certificate.<br/>
+    At that stage, the proprietor can legitimately use the ® symbol in relation to the registered trademark.</p>
+
+    <h2>How Long Does the Registration Last?</h2>
+
+    <p>Trademark registration in India is for ten years and may be renewed repeatedly for further periods of ten years.<br/>
+    Renewal is made in Form TM-R with the prescribed fee.<br/>
+    Under the current Rules, a renewal request can be made up to one year before expiry.<br/>
+    The law also contains provisions dealing with renewal after expiry upon payment of surcharge and, in appropriate circumstances, restoration of a mark that has been removed for non-renewal.</p>
+
+    <p>A valuable logo can therefore remain protected indefinitely, provided its registration is properly maintained and renewed.</p>
+
+    <h2>Why Register a Logo If You Already Registered the Brand Name?</h2>
+
+    <p>Because the two registrations may protect different aspects of the brand.</p>
+
+    <p>Suppose the word &ldquo;NATURAA&rdquo; is registered as a word mark.<br/>
+    Five years later, customers have also begun recognising a highly distinctive tree-and-river emblem used with NATURAA.<br/>
+    If competitors begin imitating that visual device while using a different name, the word-mark registration alone may not provide the same position as a separate registration covering the device itself.</p>
+
+    <p>That is why established businesses often build a trademark portfolio rather than relying upon a single application.<br/>
+    A portfolio may include the principal word mark, important logos, sub-brands and other distinctive brand elements, depending upon their commercial significance.</p>
+
+    <h2>A Logo Is More Than Artwork Once Customers Recognise It</h2>
+
+    <p>A designer may create a logo in a few days.<br/>
+    Building recognition around it can take years.<br/>
+    Every advertisement, product package, website visit, social-media campaign and customer experience gradually adds commercial meaning to that design.</p>
+
+    <p>Trademark registration is therefore not merely about obtaining a certificate.<br/>
+    It is about protecting the identity through which customers recognise the business.</p>
+
+    <p>The practical approach is simple:<br/>
+    Search before filing. Identify the correct owner. Select the correct goods, services and classes. Decide whether the word mark and logo need separate protection. File accurately. And monitor every statutory communication after filing.</p>
+
+    <p>Because by the time a logo becomes valuable enough for someone else to imitate, the best time to think about protecting it may already have passed.</p>
+
+    <p>👉 Do you want to register your logo? <a href="https://www.legalterminus.com" target="_blank" rel="noopener noreferrer">Contact us today.</a></p>
+
+    <h2>Disclaimer</h2>
+    <p>This article is intended solely for general information and awareness and should not be construed as legal advice, professional opinion or a substitute for advice based on the facts of a particular matter. Trademark registrability, classification, examination, opposition, registration and enforcement depend upon the facts and circumstances of each case and the law and Trade Marks Registry practice prevailing at the relevant time. Readers should obtain appropriate professional advice before filing, opposing, enforcing or otherwise acting in relation to a trademark.</p>
+  `,
 };
 
 // Blog post BODIES, keyed by slug.
