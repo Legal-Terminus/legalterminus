@@ -32,6 +32,46 @@ export async function idToken(role: RoleKey): Promise<string> {
   return body.idToken as string;
 }
 
+/**
+ * Mint a token for an ARBITRARY user (E23-S03) — not one of the seeded roles.
+ *
+ * Deliberately UNCACHED: the cache above is keyed by role, and these users are
+ * created per test. Needed to answer "can THIS person actually do X?" with that
+ * person's own token, rather than with a shared role account that may hold
+ * access for unrelated reasons.
+ */
+export async function mintIdTokenDirect(email: string, password: string): Promise<string> {
+  const ctx = await request.newContext();
+  const res = await ctx.post(
+    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY()}`,
+    { data: { email, password, returnSecureToken: true } },
+  );
+  if (!res.ok()) throw new Error(`token mint failed for ${email}: ${res.status()} ${await res.text()}`);
+  const body = await res.json();
+  await ctx.dispose();
+  return body.idToken as string;
+}
+
+/** Create the Firebase Auth record for a throwaway user, so they can sign in. */
+export async function signUpWithPassword(email: string, password: string): Promise<void> {
+  const ctx = await request.newContext();
+  const res = await ctx.post(
+    `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY()}`,
+    { data: { email, password, returnSecureToken: true } },
+  );
+  if (!res.ok()) throw new Error(`signUp failed for ${email}: ${res.status()} ${await res.text()}`);
+  await ctx.dispose();
+}
+
+/** An APIRequestContext acting as an arbitrary user (E23-S03). */
+export async function apiAsCredentials(email: string, password: string): Promise<APIRequestContext> {
+  const token = await mintIdTokenDirect(email, password);
+  return request.newContext({
+    baseURL: API_BASE,
+    extraHTTPHeaders: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  });
+}
+
 /** An APIRequestContext that sends the role's bearer token on every request. */
 export async function apiAs(role: RoleKey): Promise<APIRequestContext> {
   const token = await idToken(role);
@@ -45,10 +85,13 @@ export interface CreatedMatter { id: string }
 
 /** Create a throwaway team_member user (for the reassign/offboard test) and return
  *  its uid. Created via the real user endpoint as admin. */
-export async function createThrowawayStaff(): Promise<{ uid: string; name: string; email: string }> {
+export async function createThrowawayStaff(opts?: { password?: string }): Promise<{ uid: string; name: string; email: string }> {
   const api = await apiAs('admin');
   const email = `e2e-temp-${Date.now()}@legalterminus.test`;
   const name = `E2E Temp ${Date.now().toString().slice(-5)}`;
+  // E23-S03: with a password the user can actually SIGN IN, so a test can act as
+  // them (apiAsCredentials) instead of inferring access from a shared account.
+  if (opts?.password) await signUpWithPassword(email, opts.password);
   const res = await api.post('/api/portal/users', {
     data: { name, email, phone: '9990000000', role: 'team_member', designation: 'E2E Temp' },
   });
@@ -287,6 +330,28 @@ export async function stopMatterAs(role: RoleKey, taskId: string, reason = 'E2E 
  *  COMPLETE_STEP transition → COMPLETE_STEP. Stops at `targetStepNumber` (if
  *  given) or at the first step needing client/govt/branch input. Returns the
  *  step number it stopped on. */
+/**
+ * Advance a matter by N steps in AUTHORED order.
+ *
+ * Tests that want "some completed steps to look at" used to say
+ * `advanceUntil(id, (s) => s.stepNumber >= 3)`. That is the step-number-as-
+ * position mistake (#117/#55/#189/#195) wearing a test costume: on a workflow
+ * whose flow starts at step 45, the predicate is ALREADY TRUE, so advanceUntil
+ * returns without advancing and the test silently asserts against a matter
+ * where nothing has happened.
+ *
+ * Counting advances is what those tests actually mean, and it holds whatever
+ * the definition's numbering looks like.
+ */
+export async function advanceSteps(taskId: string, count: number): Promise<number> {
+  const def = await getDefinitionForMatter(taskId);
+  const order = def.steps.map((s) => s.stepNumber);
+  const start = (await getMatter(taskId)).currentStepNumber as number;
+  const startPos = order.indexOf(start);
+  const targetPos = startPos < 0 ? count : startPos + count;
+  return advanceUntil(taskId, (s) => order.indexOf(s.stepNumber) >= targetPos);
+}
+
 export async function advanceUntil(
   taskId: string,
   stop?: (s: WfStep) => boolean,
@@ -644,4 +709,35 @@ export async function createPendingMatter(): Promise<string> {
   const body = await res.json();
   await api.dispose();
   return body.id as string;
+}
+
+/**
+ * A workflow whose step IDs are NON-CONTIGUOUS and run past the step count —
+ * exactly what real editing produces, because a new step takes `max + 1` and a
+ * number is never reused (E23-S03).
+ *
+ * Every other fixture builds tidy 1..N ids, which is why step-number-as-position
+ * bugs (#117, #55, #189) survived a green suite. Progress and ordering logic must
+ * be exercised against THIS shape.
+ */
+export async function createGappedDefinition(serviceKey?: string): Promise<string> {
+  const api = await apiAs('admin');
+  const id = `e2e-gap-${Date.now()}`;
+  const res = await api.post('/api/workflow-definitions', {
+    data: {
+      id,
+      name: `E2E Gapped ${id}`,
+      initialStep: 5,
+      serviceKeys: serviceKey ? [serviceKey] : [],
+      steps: [
+        { stepNumber: 5, title: 'Kickoff', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 17 }] },
+        { stepNumber: 17, title: 'Middle', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 31 }] },
+        { stepNumber: 31, title: 'Late', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 46 }] },
+        { stepNumber: 46, title: 'Done', type: 'final' },
+      ],
+    },
+  });
+  if (!res.ok()) throw new Error(`createGappedDefinition failed: ${res.status()} ${await res.text()}`);
+  await api.dispose();
+  return id;
 }

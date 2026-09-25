@@ -13,6 +13,7 @@ import {
   getTeamPerformance,
   getStorageReport,
   getMyServices,
+  getFirmWorkbook,
 } from '../controllers/reports.controller.js';
 
 const router = Router();
@@ -22,6 +23,10 @@ router.use(verifyToken);
 // #84: the client-facing report — a client sees only their OWN services/payments.
 // Declared before the admin/manager gate so clients can reach it.
 router.get('/my-services', requireRole('client', 'admin', 'manager'), getMyServices);
+
+// The full-firm export is admin-only — every matter, client, document record
+// and payment — so it is guarded ABOVE the manager-level reports below.
+router.get('/workbook', requireRole('admin'), getFirmWorkbook);
 
 // All other report endpoints are internal — admin and manager only.
 router.use(requireRole('admin', 'manager'));

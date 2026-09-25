@@ -36,6 +36,12 @@ export const taskCreateSchema = z.object({
   // #167: mark the matter as recurring. A due schedule auto-creates the next
   // matter via the sweep in tasks.controller.js (runRecurringSweep).
   recurrence: z.enum(['monthly', 'quarterly']).nullable().optional(),
+  // E35: the real-world date a workflow's deadlines hang off — an AGM date, a
+  // notice date. Required only when the chosen service's definition references
+  // it, which the controller checks. The schema is .strict(), so without this
+  // the field would be silently stripped and every such deadline would fall
+  // back to a duration.
+  anchorDate: z.string().trim().max(30).optional(),
 }).strict().refine(
   (b) => b.paymentStatus === 'not_paid' || typeof b.amountReceived === 'number',
   { message: 'amountReceived is required for part/full payment', path: ['amountReceived'] },

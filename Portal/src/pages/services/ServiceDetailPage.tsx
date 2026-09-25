@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Workflow, Check, Loader2, AlertTriangle, AlertCircle, Plus } from 'lucide-react';
+import { ArrowLeft, Workflow, Check, Loader2, AlertTriangle, AlertCircle, Plus, ChevronDown } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
 import { useToast } from '../../components/common/toastContext';
@@ -250,10 +250,27 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
   const setField = (n: number, patch: StepSettingPatch) =>
     setEdits((d) => ({ ...d, [n]: { ...d[n], ...patch } }));
 
-  const assigneeVal = (n: number): string => {
+  // #192: a step can have several default assignees. The list is authoritative;
+  // older steps only carry the single field, so it seeds the list.
+  const assigneeListVal = (n: number): string[] => {
     const e = edits[n];
-    if (e && 'assigneeUid' in e) return e.assigneeUid ?? '';
-    return serverSteps.find((x) => x.stepNumber === n)?.assigneeUid ?? '';
+    if (e && 'assigneeUids' in e) return e.assigneeUids ?? [];
+    const srv = serverSteps.find((x) => x.stepNumber === n);
+    if (srv?.assigneeUids?.length) return srv.assigneeUids;
+    return srv?.assigneeUid ? [srv.assigneeUid] : [];
+  };
+  // Toggling a member keeps the primary in step: the first entry is the primary,
+  // which is what existing single-assignee routing reads.
+  const toggleAssignee = (n: number, uid: string) => {
+    const cur = assigneeListVal(n);
+    // "Inherit" and "Client" are exclusive choices, not members of a list.
+    if (uid === '' ) { setField(n, { assigneeUids: [], assigneeUid: null }); return; }
+    if (uid === CLIENT_ASSIGNEE) { setField(n, { assigneeUids: [CLIENT_ASSIGNEE], assigneeUid: CLIENT_ASSIGNEE }); return; }
+    const withoutSpecials = cur.filter((u) => u !== CLIENT_ASSIGNEE);
+    const next = withoutSpecials.includes(uid)
+      ? withoutSpecials.filter((u) => u !== uid)
+      : [...withoutSpecials, uid];
+    setField(n, { assigneeUids: next, assigneeUid: next[0] ?? null });
   };
   const etaVal = (n: number): string => {
     const e = edits[n];
@@ -273,6 +290,7 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
       for (const [num, patch] of Object.entries(edits)) {
         const clean: StepSettingPatch = {};
         if ('assigneeUid' in patch) clean.assigneeUid = patch.assigneeUid || null;
+        if ('assigneeUids' in patch) clean.assigneeUids = patch.assigneeUids ?? [];
         if ('etaDays' in patch) clean.etaDays = patch.etaDays;
         if ('clientVisible' in patch) clean.clientVisible = patch.clientVisible;
         settings[num] = clean;
@@ -340,17 +358,18 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
                       (deleted steps) — never surface it to the user. */}
                   <span className="text-ink-faint mr-1.5">{i + 1}.</span>{s.title}
                 </span>
-                <select
-                  className="input-field py-1.5 text-sm sm:w-[200px] shrink-0"
-                  value={assigneeVal(s.stepNumber)}
+                {/* #192: several team members can own one step. A native
+                    <select multiple> is unusable at this size (no labels, shift-
+                    click required), so this is a details/summary popover of
+                    checkboxes. "Inherit from phase" and "Client" stay EXCLUSIVE
+                    choices — they aren't members of a team list. */}
+                <StepAssigneePicker
+                  stepNumber={s.stepNumber}
+                  selected={assigneeListVal(s.stepNumber)}
+                  staff={staff}
                   disabled={!canEdit || save.isPending}
-                  onChange={(e) => setField(s.stepNumber, { assigneeUid: e.target.value || null })}
-                  aria-label={`Step ${s.stepNumber} assignee`}
-                >
-                  <option value="">Inherit from phase</option>
-                  <option value={CLIENT_ASSIGNEE}>Client (this matter&apos;s client)</option>
-                  {staff.map((u) => <option key={u.uid} value={u.uid}>{displayName(u)}</option>)}
-                </select>
+                  onToggle={(uid) => toggleAssignee(s.stepNumber, uid)}
+                />
                 <input
                   type="number"
                   min={0}
@@ -408,6 +427,79 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
  * below (step default wins over phase default; neither set → shared pool). Applies
  * to new matters only (definitions are version-pinned per matter).
  */
+/**
+ * #192 — pick one or SEVERAL default assignees for a step.
+ *
+ * A native <select multiple> needs shift-clicking and shows no state at a glance,
+ * so this is a details/summary popover of checkboxes with a summary label ("2
+ * members", "Priya + 2"). "Inherit from phase" and "Client" remain exclusive
+ * radio-like choices: they describe where the assignee comes from, so they can't
+ * be combined with a hand-picked team list.
+ */
+function StepAssigneePicker({ stepNumber, selected, staff, disabled, onToggle }: {
+  stepNumber: number;
+  selected: string[];
+  staff: PortalUser[];
+  disabled?: boolean;
+  onToggle: (uid: string) => void;
+}) {
+  const isClient = selected.includes(CLIENT_ASSIGNEE);
+  const members = selected.filter((u) => u !== CLIENT_ASSIGNEE);
+  const nameOf = (uid: string) => {
+    const u = staff.find((x) => x.uid === uid);
+    return u ? displayName(u) : uid;
+  };
+  const label = isClient
+    ? "Client (this matter's client)"
+    : members.length === 0
+      ? 'Inherit from phase'
+      : members.length === 1
+        ? nameOf(members[0])
+        : `${nameOf(members[0])} + ${members.length - 1}`;
+
+  return (
+    <details className="relative sm:w-[200px] shrink-0">
+      <summary
+        className={`input-field py-1.5 text-sm cursor-pointer list-none flex items-center justify-between gap-1 ${disabled ? 'opacity-60 pointer-events-none' : ''}`}
+        aria-label={`Step ${stepNumber} assignees`}
+        title={members.length > 1 ? members.map(nameOf).join(', ') : label}
+      >
+        <span className="truncate">{label}</span>
+        <ChevronDown className="w-3.5 h-3.5 shrink-0 text-ink-faint" />
+      </summary>
+      <div className="absolute z-20 mt-1 w-[240px] max-h-64 overflow-y-auto rounded-lg border border-hairline bg-white shadow-card p-1">
+        <button
+          type="button"
+          onClick={() => onToggle('')}
+          className={`w-full text-left text-xs px-2 py-1.5 rounded hover:bg-surface-soft ${!isClient && members.length === 0 ? 'text-brand-700 font-medium' : 'text-ink-muted'}`}
+        >
+          Inherit from phase
+        </button>
+        <button
+          type="button"
+          onClick={() => onToggle(CLIENT_ASSIGNEE)}
+          className={`w-full text-left text-xs px-2 py-1.5 rounded hover:bg-surface-soft ${isClient ? 'text-brand-700 font-medium' : 'text-ink-muted'}`}
+        >
+          Client (this matter&apos;s client)
+        </button>
+        <div className="my-1 h-px bg-hairline" />
+        {staff.map((u) => (
+          <label key={u.uid} className="flex items-center gap-2 text-xs px-2 py-1.5 rounded hover:bg-surface-soft cursor-pointer">
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5"
+              checked={members.includes(u.uid)}
+              onChange={() => onToggle(u.uid)}
+              aria-label={displayName(u)}
+            />
+            <span className="truncate text-ink-soft">{displayName(u)}</span>
+          </label>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 function AssignmentsEditor({
   definitionId, definition,
 }: {

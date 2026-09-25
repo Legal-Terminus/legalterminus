@@ -48,6 +48,28 @@ export interface WorkflowStepDef {
   /** When true, the step renders a per-step document upload control (#61). */
   allowDocUpload?: boolean;
   /** #81: independent internal vs client status + notes (fully separate). */
+  /** E34 — who this step applies to. A step whose condition does not match is
+   *  reported as not-applicable; a person still confirms every skip. */
+  condition?: { field: string; op: string; value?: string | string[] };
+  /** E34 — structured questions the client answers in the portal. */
+  form?: import('./tasks').StepForm;
+  /** E32 — declarative actions this step runs. The EDITOR understands these
+   *  (they are authored here); the runtime that executes them is not ported. */
+  actions?: Array<{
+    id?: string;
+    type: string;
+    on?: 'entry' | 'exit';
+    to?: string;
+    templateKey?: string;
+    [k: string]: unknown;
+  }>;
+  /** E35 — a date-anchored deadline. A negative `offsetDays` schedules
+   *  BACKWARD ("five days before filing"). Absent = the duration ETA. */
+  dueRule?: {
+    anchor: 'matter_start' | 'step_start' | 'anchor_date' | 'statutory';
+    offsetDays?: number;
+    statutoryKey?: string;
+  };
   internalStatus?: string;
   internalNotes?: string;
   clientStatus?: string;
@@ -259,6 +281,9 @@ export interface StepSettingRow {
   type: string;
   phaseId: string | null;
   assigneeUid: string | null;
+  /** #192: all default assignees for the step. `assigneeUid` is the first entry,
+   *  kept so single-assignee consumers keep working. */
+  assigneeUids?: string[];
   etaDays: number | null;
   clientVisible: boolean;
 }
@@ -272,6 +297,9 @@ export interface StepSettings {
 /** Partial per-step update: omitted sub-fields stay unchanged; null clears. */
 export type StepSettingPatch = Partial<{
   assigneeUid: string | null;
+  /** #192: all default assignees for the step. `assigneeUid` is the first entry,
+   *  kept so single-assignee consumers keep working. */
+  assigneeUids?: string[];
   etaDays: number | null;
   clientVisible: boolean;
 }>;
@@ -284,3 +312,9 @@ export const putStepSettings = (id: string, settings: Record<string, StepSetting
     method: 'PUT',
     body: JSON.stringify({ settings }),
   });
+
+export const OWNER_STYLE: Record<OwnerType, { dot: string; chip: string; label: string }> = {
+  team:   { dot: 'bg-teal-500',   chip: 'bg-teal-50 text-teal-800',     label: 'Our team' },
+  client: { dot: 'bg-amber-500',  chip: 'bg-amber-50 text-amber-800',   label: 'Client' },
+  govt:   { dot: 'bg-violet-500', chip: 'bg-violet-50 text-violet-800', label: 'Registrar' },
+};

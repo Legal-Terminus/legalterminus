@@ -1,15 +1,20 @@
 import { createActor } from 'xstate';
 import { db, getBucket } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
+import { emitWebhook } from "../services/webhookEmit.service.js";
 import { getCompiledForServiceKey, getCompiledById } from '../services/workflowDefinitions.service.js';
 import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { createNotification, resolveNotificationsForTask } from './notifications.controller.js';
 import { finalizeMatterDocuments } from './documents.controller.js';
 import { publicSiteUrl, sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
-import { sanitizeRichText, richTextToPlain } from '../services/richText.service.js';
+import { sanitizeRichText, richTextToPlain, checkWordLimit } from '../services/richText.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
 import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE, materialisableSteps, isTerminalStep } from '../../../shared/workflows/definitionSchema.js';
+import { resolveDueDate, definitionNeedsAnchorDate } from '../../../shared/workflows/dueRules.js';
+import { evaluateCondition, describeSkipReason } from '../../../shared/workflows/conditions.js';
+import { deriveProfile } from '../services/clientProfile.service.js';
+import { getOverrides, makeStatutoryResolver } from '../services/statutoryCalendar.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
 // Add `days` (may be fractional) to an ISO instant, returning an ISO string.
@@ -28,6 +33,31 @@ function etaDaysOf(stepDef) {
   return typeof stepDef?.typicalDurationDays === 'number'
     ? stepDef.typicalDurationDays
     : DEFAULT_STEP_ETA_DAYS;
+}
+
+/**
+ * The ONE place a step's due date is decided (ported from Ambyflow, E01-S35-1).
+ *
+ * A `dueRule` (date-anchored, possibly BACKWARD — "5 days before filing") wins
+ * where it resolves; otherwise the duration ETA applies exactly as before.
+ * Falling back rather than failing is deliberate: a matter created without an
+ * anchor date still gets a sensible deadline instead of none, so no existing
+ * workflow changes behaviour.
+ *
+ * Returns an ISO instant, because that is what `dueAt` has always held and the
+ * SLA report and the reminder sweep both parse it.
+ */
+function resolveStepDueAt(stepDef, { nowIso, matterStart, anchorDate, resolveStatutory }) {
+  const ruled = resolveDueDate(stepDef?.dueRule, {
+    matterStart: matterStart ?? nowIso,
+    stepStart: nowIso,
+    anchorDate,
+    resolveStatutory,
+  });
+  // End of the due DAY: a deadline of "the 11th" is not missed at 00:00 on the
+  // 11th, which is what a bare date would mean once parsed as an instant.
+  if (ruled) return `${ruled}T23:59:59.999Z`;
+  return addDaysIso(nowIso, etaDaysOf(stepDef));
 }
 
 // Projected whole-matter completion: `from` + the sum of ETAs of the steps that
@@ -77,7 +107,7 @@ function dedupeCcEmails(list, primaryEmail) {
   return out;
 }
 
-async function resolveUserNames(uids) {
+export async function resolveUserNames(uids) {
   const unique = [...new Set(uids.filter(Boolean))];
   const byUid = {};
   await Promise.all(unique.map(async (uid) => {
@@ -173,6 +203,68 @@ export function clientCanSeeMatter(user, task) {
   const email = String(user?.email ?? '').trim().toLowerCase();
   if (!email) return false;
   return (task.ccEmails ?? []).some((e) => String(e).trim().toLowerCase() === email);
+}
+
+/**
+ * #191 — resolve each matter's CURRENT STEP NAME for the list view.
+ *
+ * The list stores only `currentStepNumber`; the human name lives in the matter's
+ * pinned workflow definition. Definitions are cached in memory and shared across
+ * matters (a page is typically 1-2 distinct workflows), so this adds no
+ * meaningful cost — and doing it server-side keeps the client from having to
+ * fetch a definition per row.
+ *
+ * Staff see the internal step title. Never throws: a matter whose definition is
+ * missing simply carries no name rather than failing the whole list.
+ */
+async function attachCurrentStepNames(rows) {
+  const ids = [...new Set(rows.map((t) => t.workflowDefinitionId).filter(Boolean))];
+  const titlesByDef = new Map();
+  await Promise.all(ids.map(async (id) => {
+    try {
+      const compiled = await getCompiledById(id);
+      const steps = compiled?.definition?.steps;
+      if (Array.isArray(steps)) {
+        titlesByDef.set(id, new Map(steps.map((x) => [x.stepNumber, x.title])));
+      }
+    } catch { /* leave this definition unresolved */ }
+  }));
+  for (const t of rows) {
+    const byNum = titlesByDef.get(t.workflowDefinitionId);
+    t.currentStepTitle = byNum?.get(t.currentStepNumber) ?? null;
+  }
+  return rows;
+}
+
+/**
+ * #189 — the matters list showed progress as `min(currentStepNumber, totalSteps)`,
+ * i.e. it treated the step's IDENTITY NUMBER as a position. Since step numbers are
+ * identity only and not flow-ordered (see #117/#55), a matter sitting on step 32 of
+ * a 20-step workflow clamped to 20 and reported "20/20 complete" with 9 steps done;
+ * others under-reported for the same reason.
+ *
+ * Progress is now the COUNT of finished steps. The list endpoint can't afford a
+ * steps-subcollection read per row, so the count is denormalised onto the task doc
+ * and refreshed after any step-status change via this helper. Recomputing (rather
+ * than incrementing at each of the ~8 write sites) means the number cannot drift
+ * out of sync, and it self-heals for matters created before the field existed.
+ *
+ * Returns the count, or null if it could not be read (never throws — progress is
+ * display data and must not fail a transition).
+ */
+export async function refreshCompletedStepCount(taskRef) {
+  try {
+    const steps = await taskRef.collection('steps').get();
+    const completedStepCount = steps.docs.filter((d) => {
+      const st = d.data().status;
+      return st === 'completed' || st === 'skipped';
+    }).length;
+    await taskRef.set({ completedStepCount, totalSteps: steps.size }, { merge: true });
+    return completedStepCount;
+  } catch (err) {
+    logger.warn({ err: err?.message }, 'refreshCompletedStepCount failed (non-fatal)');
+    return null;
+  }
 }
 
 export function clientScopeUid(user) {
@@ -382,11 +474,26 @@ const CLIENT_EVENT_WHITELIST = new Set([
 async function taskIdsWithStepAssignedTo(uid) {
   const ids = new Set();
   try {
-    const snap = await db.collectionGroup('steps').where('assignedTo', '==', uid).get();
-    snap.forEach((d) => {
-      const parent = d.ref.parent.parent; // tasks/{taskId}/steps/{n} → tasks/{taskId}
-      if (parent) ids.add(parent.id);
-    });
+    // #192: a step can have several assignees. `assignedTo` is the primary and
+    // `assignedToUids` holds everyone, so BOTH are queried — otherwise a
+    // secondary assignee would see the step in My Tasks but not the matter in
+    // their Matters list. Each needs its own collection-group field override
+    // (see firestore.indexes.json); they are unioned into the same id set.
+    // Settled, not all: one missing index must not wipe out the other query's hits.
+    const results = await Promise.allSettled([
+      db.collectionGroup('steps').where('assignedTo', '==', uid).get(),
+      db.collectionGroup('steps').where('assignedToUids', 'array-contains', uid).get(),
+    ]);
+    for (const r of results) {
+      if (r.status !== 'fulfilled') {
+        logger.warn({ err: r.reason?.message }, 'taskIdsWithStepAssignedTo: one query failed (index missing?)');
+        continue;
+      }
+      r.value.forEach((d) => {
+        const parent = d.ref.parent.parent; // tasks/{taskId}/steps/{n} → tasks/{taskId}
+        if (parent) ids.add(parent.id);
+      });
+    }
   } catch (err) {
     // Most likely the steps/assignedTo collection-group index isn't deployed yet
     // (FAILED_PRECONDITION). Degrade gracefully: team members still see matters
@@ -415,13 +522,24 @@ export async function createTask(req, res) {
     // Body validated by taskCreateSchema (incl. #51 payment fields).
     const { clientUid, serviceKey, serviceName, organisation, ccEmails,
             paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
-            professionalUid, additionalProfessionalEmails, recurrence } = req.body;
+            professionalUid, additionalProfessionalEmails, recurrence, anchorDate } = req.body;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
     if (!compiled) {
       return res.status(400).json({ message: `No workflow configured for service '${serviceKey}'` });
     }
     const { definition } = compiled;
+
+    // E35: a service whose deadlines hang off a real-world date (an AGM, a
+    // notice) cannot compute them without it. Refuse with a message that says
+    // WHAT is missing, rather than letting every such step fall back to a
+    // duration and quietly miss its real deadline.
+    if (definitionNeedsAnchorDate(definition) && !anchorDate) {
+      return res.status(400).json({
+        message: 'This service schedules its deadlines from a key date (for example the AGM or notice date). Please provide one.',
+        code: 'ANCHOR_DATE_REQUIRED',
+      });
+    }
 
     // Config sync guard (E10-S02): never instantiate a structurally-broken
     // definition (dangling transitions/gates, bad phaseIds) — it would create a
@@ -477,6 +595,17 @@ export async function createTask(req, res) {
       if (configured) return configured;
       if (deriveOwnerType(s) === 'client') return clientUid; // auto-assign client steps
       return null;
+    };
+    // #192: a step can have SEVERAL default assignees. `assignedTo` stays the
+    // primary (so My Tasks routing, the matters filter and the steps/assignedTo
+    // collection-group index are untouched) and `assignedToUids` carries everyone.
+    // The sentinel resolves per-entry, so a mixed client+staff list still works.
+    const assigneesForStep = (s) => {
+      const list = Array.isArray(s.defaultAssigneeUids) ? s.defaultAssigneeUids.filter(Boolean) : [];
+      const resolved = [...new Set(list.map((u) => (u === CLIENT_ASSIGNEE ? clientUid : u)))];
+      if (resolved.length) return resolved;
+      const single = assigneeForStep(s);
+      return single ? [single] : [];
     };
 
     // Approval gate: matter creation does NOT require admin approval in general
@@ -543,13 +672,25 @@ export async function createTask(req, res) {
     // from the RESOLVED step (#94) — a payment gate that auto-passes on creation
     // leaves the matter on a later step.
     const firstStepDef = stepDefs.find((s) => s.stepNumber === resolvedFirstStep);
-    const firstStepEta = etaDaysOf(firstStepDef);
+    // E35: the statutory table is read ONCE per matter creation, not per step —
+    // it is cached anyway, but a step loop should not re-enter the service.
+    const statutoryResolver = makeStatutoryResolver(await getOverrides(db));
+    const firstStepDueAt = resolveStepDueAt(firstStepDef, {
+      nowIso: now,
+      matterStart: now,
+      anchorDate: anchorDate ?? null,
+      resolveStatutory: (key) => statutoryResolver(key, { anchorDate: anchorDate ?? null }),
+    });
     const matterDueAt = needsApproval ? null : projectMatterDueAt(stepDefs, resolvedFirstStep, now);
 
     const task = {
       // Workflow identity: definition + pinned version (NOT the service key).
       workflowDefinitionId: definition.id,
       workflowVersion: definition.version ?? 1,
+      // E35: the real-world date this matter's deadlines hang off (AGM, notice
+      // date). Stored date-only — a deadline is a calendar fact, and carrying a
+      // time through the arithmetic lands it a day early or late by timezone.
+      anchorDate: anchorDate ? String(anchorDate).slice(0, 10) : null,
       workflowType: definition.id, // back-compat for reports/list display
       serviceKey,
       serviceName: serviceName || definition.name || serviceKey,
@@ -596,13 +737,28 @@ export async function createTask(req, res) {
     batch.set(ref, task);
     // Step statuses at creation:
     //  - pending approval → every step stays `pending` (no work starts);
-    //  - #94: any step the creation-time gate AUTO-PASSED (< resolvedFirstStep) is
-    //    marked `completed` (e.g. the step-1 payment gate on a part/fully-paid
-    //    matter), so the matter opens cleanly on the resolved step;
+    //  - #94: any step the creation-time gate AUTO-PASSED (authored BEFORE the
+    //    resolved step) is marked `completed` (e.g. the step-1 payment gate on a
+    //    part/fully-paid matter), so the matter opens cleanly on the resolved step;
     //  - the resolved step is `active`; later steps `pending`.
+    //
+    // #195: "before the resolved step" means EARLIER IN AUTHORED ORDER, not a
+    // lower step NUMBER. Step numbers are identity — a step added later keeps a
+    // high id, and a re-ordered workflow can start at step 45 with steps 6, 8
+    // and 23 still ahead of it. Comparing numbers marked all of those completed
+    // the instant the matter was created (11 of them on the Trademark
+    // workflow, Payment and TM-A Prepared among them). Same defect family as
+    // #117 / #55 / #189.
+    const authoredPos = new Map(stepDefs.map((s, i) => [s.stepNumber, i]));
+    const firstPos = authoredPos.get(resolvedFirstStep) ?? 0;
+    /** Is this step genuinely behind the resolved start, in FLOW order? */
+    const isAutoPassed = (n) => {
+      const pos = authoredPos.get(n);
+      return pos != null && pos < firstPos;
+    };
     const statusForStep = (n) => {
       if (needsApproval) return 'pending';
-      if (n < resolvedFirstStep) return 'completed';
+      if (isAutoPassed(n)) return 'completed';
       if (n === resolvedFirstStep) return 'active';
       return 'pending';
     };
@@ -615,14 +771,18 @@ export async function createTask(req, res) {
         // when unset). Stamped at creation so the client's matter shows it.
         clientTitle: s.clientTitle ?? null,
         assignedRole: s.assignedRole ?? null,
-        assignedTo: assigneeForStep(s),
+        // #192: primary + full list. Keeping `assignedTo` as list[0] means every
+        // existing query keeps working while any listed member can act.
+        assignedTo: assigneesForStep(s)[0] ?? null,
+        assignedToUids: assigneesForStep(s),
         status: statusForStep(s.stepNumber),
-        ...(s.stepNumber < resolvedFirstStep && !needsApproval ? { completedAt: now } : {}),
+        ...(isAutoPassed(s.stepNumber) && !needsApproval ? { completedAt: now } : {}),
         // ETA clock (E13-S02): only the active resolved step gets a running due date.
-        ...(isActive ? { startedAt: now, dueAt: addDaysIso(now, firstStepEta) } : {}),
+        ...(isActive ? { startedAt: now, dueAt: firstStepDueAt } : {}),
       });
     }
     await batch.commit();
+    await refreshCompletedStepCount(ref); // #189
 
     // Notifications (E07-S01). A manager-created matter pings admins to approve;
     // an active matter pings the first step's pre-assigned owner that work is theirs.
@@ -692,6 +852,8 @@ export async function createTask(req, res) {
       title: s.title,
       status: statusForStep(s.stepNumber),
     }));
+    // E21-S04: post-commit, fire-and-forget (see webhookEmit.service.js).
+    emitWebhook(db, 'matter.created', { matterId: ref.id, clientId: task.clientUid ?? null });
     res.status(201).json({ id: ref.id, ...task, steps });
   } catch (err) {
     logger.error({ err }, 'createTask error:');
@@ -1060,6 +1222,7 @@ export async function reopenStep(req, res) {
     });
 
     await batch.commit();
+    await refreshCompletedStepCount(taskRef); // #189
 
     res.json({ success: true, status: 'active', currentStepNumber: target });
   } catch (err) {
@@ -1083,6 +1246,15 @@ export async function postStepNote(req, res) {
     if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
     const task = snap.data();
 
+    // #194: check the cap on the UNTRUNCATED text — the 8000-char cap below would
+    // otherwise cut an over-long note under the word limit and save it silently.
+    const noteWl = checkWordLimit(sanitizeRichText((req.body?.note ?? '').toString(), { maxLength: 200000 }));
+    if (!noteWl.ok) {
+      return res.status(400).json({
+        message: `A note may be at most ${noteWl.limit} words (this one has ${noteWl.words}).`,
+        code: 'WORD_LIMIT_EXCEEDED',
+      });
+    }
     const clean = sanitizeRichText((req.body?.note ?? '').toString(), { maxLength: 8000 });
     if (!richTextToPlain(clean)) {
       return res.status(400).json({ message: 'The note is empty.' });
@@ -1127,6 +1299,42 @@ export async function postStepNote(req, res) {
 // Paginated + role-scoped. Filters (status/assignedTo/isUrgent) combined with
 // orderBy(updatedAt) require composite indexes — see firestore.indexes.json.
 // Returns { data, nextCursor }.
+
+/**
+ * E20-S01 — annotate rows with `awaitingClient`, resolving each matter's pinned
+ * definition once per definition (not once per row).
+ *
+ * A missing or unreadable definition means "unknown", never a wrong "needs you":
+ * telling a client to act when they need not is worse than telling them nothing.
+ */
+async function annotateAwaitingClient(rows) {
+  const defIds = [...new Set(rows.map((t) => t.workflowDefinitionId).filter(Boolean))];
+  const defs = new Map();
+  await Promise.all(defIds.map(async (id) => {
+    try {
+      const compiled = await getCompiledById(id);
+      if (compiled?.definition) defs.set(id, compiled.definition);
+    } catch {
+      // A missing definition means "unknown", never a wrong "needs you".
+    }
+  }));
+  return rows.map((t) => markAwaitingClient(t, t.workflowDefinitionId ? defs.get(t.workflowDefinitionId) : null));
+}
+
+/**
+ * Pure half of the above, so the rule is testable without Firestore.
+ *
+ * A matter awaits the CLIENT when it is active and its current step is
+ * client-owned. `currentStepFallback` (#139) means the real current step is
+ * hidden from the client, so the number points at the last VISIBLE step — the
+ * matter is not genuinely waiting on them, and must not be flagged as such.
+ */
+export function markAwaitingClient(task, definition) {
+  if (task.status !== 'active' || task.currentStepFallback) return { ...task, awaitingClient: false };
+  const step = definition?.steps?.find((s) => s.stepNumber === task.currentStepNumber);
+  return { ...task, awaitingClient: !!step && deriveOwnerType(step) === 'client' };
+}
+
 export async function listTasks(req, res) {
   try {
     const { isUrgent, status, assignedTo, limit = 25, cursor } = req.query;
@@ -1153,6 +1361,7 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((t) => t.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows); // #164
+      await attachCurrentStepNames(rows); // #191
       return res.json({ data: rows, nextCursor: null });
     }
 
@@ -1176,7 +1385,9 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((t) => t.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows); // #164
-      return res.json({ data: rows.map(projectTaskForClient), nextCursor: null });
+      // E20-S01: the client cockpit needs to know which matters await THEM.
+      const projected = await annotateAwaitingClient(rows.map(projectTaskForClient));
+      return res.json({ data: projected, nextCursor: null });
     }
     // #168: a professional sees ONLY the matters they are assigned to as the
     // matter's professional (#85) — never the rest of that client's book.
@@ -1198,7 +1409,9 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((r) => r.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows);
-      return res.json({ data: rows.map(projectTaskForClient), nextCursor: null });
+      // E20-S01: same annotation for the client's own list.
+      const projected = await annotateAwaitingClient(rows.map(projectTaskForClient));
+      return res.json({ data: projected, nextCursor: null });
     }
 
     if (status)           query = query.where('status', '==', status);
@@ -1219,6 +1432,7 @@ export async function listTasks(req, res) {
     // #168: a professional gets the same external-facing projection — they are
     // an outside party, so internal assignment/urgency must not leak either.
     if (role === 'client' || role === 'professional') data = data.map(projectTaskForClient);
+    await attachCurrentStepNames(data); // #191
     res.json({ data, nextCursor });
   } catch (err) {
     logger.error({ err: err }, 'listTasks error:');
@@ -1299,11 +1513,17 @@ export async function listMySteps(req, res) {
         }
         if (!stepTitle) stepTitle = hasStepNumber ? `Step ${stepNumber}` : 'Untitled step';
         const assignedTo = step.assignedTo ?? null;
+        // #192: with several assignees, the step belongs in the basket of EVERY
+        // one of them — not just the primary. Falls back to the single field for
+        // steps created before the list existed.
+        const assignedList = Array.isArray(step.assignedToUids) && step.assignedToUids.length
+          ? step.assignedToUids
+          : (assignedTo ? [assignedTo] : []);
         // #50: "My Tasks" shows only steps that are MINE or UNASSIGNED (the shared
         // pickup pool) — for EVERY staff role, incl. admin/manager. Steps assigned
         // to someone ELSE never belong in my basket (admins still see all work via
         // Matters / Reports). This drops the old "Elsewhere" bucket.
-        if (assignedTo && assignedTo !== uid) return;
+        if (assignedList.length && !assignedList.includes(uid)) return;
         rows.push({
           taskId,
           clientName: t.clientName ?? '', // #164: backfilled below when empty
@@ -1320,7 +1540,9 @@ export async function listMySteps(req, res) {
           // Due date of the active step (E13-S03) — drives the lateness column.
           dueAt: step.dueAt ?? null,
           // After the #50 filter only 'assigned' (mine) or 'unassigned' (pool) remain.
-          bucket: assignedTo === uid ? 'assigned' : 'unassigned',
+          // #192: a secondary assignee owns the step just as much as the primary,
+          // so it belongs in their own queue — not the shared pickup pool.
+          bucket: assignedList.includes(uid) ? 'assigned' : 'unassigned',
         });
       })
     );
@@ -1378,6 +1600,38 @@ export async function listMySteps(req, res) {
 }
 
 // ─── GET /api/tasks/:taskId ────────────────────────────────────────────────
+/**
+ * E34 — does the CURRENT step apply to this client?
+ *
+ * A RECOMMENDATION, never an action: a person confirms every skip. Evaluated
+ * here rather than in the Portal so it matches the engine exactly.
+ *
+ * Fails OPEN — an evaluation problem must never hide a step or break the page.
+ *
+ * Ported from Ambyflow (Story 34.2); `getCompiledById` takes only the
+ * definition id here, and `db` is the module handle.
+ */
+async function evaluateCurrentStepCondition(task) {
+  try {
+    const stepDef = (await getCompiledById(task.workflowDefinitionId))
+      ?.definition?.steps?.find((s) => s.stepNumber === task.currentStepNumber);
+    if (!stepDef?.condition) return null;
+
+    const clientSnap = task.clientUid ? await db.collection('users').doc(task.clientUid).get() : null;
+    const profile = clientSnap?.exists ? deriveProfile(clientSnap.data()) : null;
+    if (evaluateCondition(stepDef.condition, profile)) return null;
+
+    return {
+      stepNumber: task.currentStepNumber,
+      applies: false,
+      reason: describeSkipReason(stepDef.condition),
+    };
+  } catch (err) {
+    logger.warn({ err: err?.message, taskId: task.id }, 'step condition evaluation failed');
+    return null;
+  }
+}
+
 export async function getTask(req, res) {
   try {
     const doc = await db.collection('tasks').doc(req.params.taskId).get();
@@ -1413,9 +1667,30 @@ export async function getTask(req, res) {
     // Staff view (#48): resolve assignee UIDs → names server-side so EVERY staff
     // role (incl. team members, who don't fetch the user list) sees the real
     // assignee instead of a false "Unassigned".
-    const names = await resolveUserNames([data.assignedTo, ...steps.map((s) => s.assignedTo)]);
+    // #192: resolve names for EVERY assignee, not just the primary, so the step
+    // can show "A, B and C" rather than one name plus a silent remainder.
+    const names = await resolveUserNames([
+      data.assignedTo,
+      ...steps.flatMap((s) => [s.assignedTo, ...(s.assignedToUids ?? [])]),
+    ]);
     full.assignedToName = data.assignedTo ? (names[data.assignedTo] ?? null) : null;
-    full.steps = steps.map((s) => ({ ...s, assigneeName: s.assignedTo ? (names[s.assignedTo] ?? null) : null }));
+    full.steps = steps.map((s) => {
+      const list = Array.isArray(s.assignedToUids) && s.assignedToUids.length
+        ? s.assignedToUids
+        : (s.assignedTo ? [s.assignedTo] : []);
+      return {
+        ...s,
+        assigneeName: s.assignedTo ? (names[s.assignedTo] ?? null) : null,
+        assigneeNames: list.map((u) => names[u] ?? null).filter(Boolean),
+      };
+    });
+
+    // E34: does the current step apply to this client? Staff only, and a
+    // recommendation rather than an action — a person confirms every skip.
+    if (req.user.role !== 'client') {
+      full.stepCondition = await evaluateCurrentStepCondition(full);
+    }
+
     res.json(full);
   } catch (err) {
     logger.error({ err: err }, 'getTask error:');
@@ -1631,7 +1906,13 @@ export async function patchTask(req, res) {
         const stepData = activeSnap.docs[0].data();
         const stepOwnedByOther = stepData.assignedTo && stepData.assignedTo !== task.assignedTo;
         if (!stepOwnedByOther) {
-          batch.set(stepRef, { assignedTo: newAssignee, updatedAt: update.updatedAt }, { merge: true });
+          // #192: move the multi-assignee list with the primary, or the previous
+          // assignees would linger in `assignedToUids` and keep access.
+          batch.set(stepRef, {
+            assignedTo: newAssignee,
+            assignedToUids: newAssignee ? [newAssignee] : [],
+            updatedAt: update.updatedAt,
+          }, { merge: true });
         }
       }
     }
@@ -1820,6 +2101,12 @@ export async function createPayment(req, res) {
       at: now,
     });
     await batch.commit();
+
+    // E21-S04: the amounts are the firm's OWN figures coming back, not client
+    // PII — everything else is an id to re-fetch.
+    emitWebhook(db, 'payment.recorded', {
+      matterId: req.params.taskId, paymentId: paymentRef.id, amount, paymentStatus: newStatus,
+    });
 
     res.status(201).json({
       id: paymentRef.id,
@@ -2047,7 +2334,15 @@ export async function patchStep(req, res) {
       // Assign/unassign this step to a specific staff user. `null`/'' clears it
       // (back to the shared/unassigned pool). Surfaced in the My Tasks worklist.
       const reassigning = assignedTo !== undefined && (assignedTo || null) !== (prev.assignedTo ?? null);
-      if (assignedTo !== undefined) update.assignedTo = assignedTo || null;
+      if (assignedTo !== undefined) {
+        update.assignedTo = assignedTo || null;
+        // #192: keep the multi-assignee list in step with a reassignment. Without
+        // this, reassigning a step would leave the PREVIOUS assignees in
+        // `assignedToUids` — they would keep seeing it in My Tasks and could still
+        // complete it. A per-step reassignment is a deliberate "this is now
+        // theirs", so the list collapses to exactly that person (or empties).
+        update.assignedToUids = assignedTo ? [assignedTo] : [];
+      }
 
       const batch = db.batch();
       batch.set(stepRef, update, { merge: true });
@@ -2157,8 +2452,13 @@ export async function transitionTask(req, res) {
     if (role === 'team_member' && !isAssignedTeam) {
       const activeSnap = await taskRef.collection('steps')
         .where('status', '==', 'active').limit(1).get();
-      if (!activeSnap.empty && activeSnap.docs[0].data().assignedTo === uid) {
-        isAssignedTeam = true; // owns the active step → may advance it
+      if (!activeSnap.empty) {
+        // #192: a step may carry several assignees; any of them owns it.
+        const sd = activeSnap.docs[0].data();
+        const owners = Array.isArray(sd.assignedToUids) && sd.assignedToUids.length
+          ? sd.assignedToUids
+          : (sd.assignedTo ? [sd.assignedTo] : []);
+        if (owners.includes(uid)) isAssignedTeam = true; // owns the active step → may advance it
       }
     }
     // #166: an additional client login approves/rejects exactly as the primary.
@@ -2222,8 +2522,16 @@ export async function transitionTask(req, res) {
     if (COMPLETION_EVENTS.has(event?.type)) {
       const activeSnap = await taskRef.collection('steps')
         .where('status', '==', 'active').limit(1).get();
-      const stepAssignee = activeSnap.empty ? null : (activeSnap.docs[0].data().assignedTo ?? null);
-      const isAssignee = stepAssignee != null && stepAssignee === uid;
+      const activeStep = activeSnap.empty ? null : activeSnap.docs[0].data();
+      const stepAssignee = activeStep?.assignedTo ?? null;
+      // #192: a step may be assigned to SEVERAL people, and any one of them may
+      // complete it (first to finish moves the workflow on — the model chosen for
+      // this feature). The list falls back to the single field for steps created
+      // before it existed, so the rule is unchanged for them.
+      const stepAssignees = Array.isArray(activeStep?.assignedToUids) && activeStep.assignedToUids.length
+        ? activeStep.assignedToUids
+        : (stepAssignee != null ? [stepAssignee] : []);
+      const isAssignee = stepAssignees.includes(uid);
       if (!isAssignee) {
         if (role === 'admin') {
           isAdminCompletionOverride = true; // allowed, but flagged + audited below
@@ -2283,6 +2591,14 @@ export async function transitionTask(req, res) {
     // on the server — never trust HTML from a browser — so every render site can
     // display it safely without re-sanitising.
     const rawComment = (event?.remark || event?.reason || '').toString();
+    // #194: as above — cap checked before truncation so nothing is silently cut.
+    const commentWl = checkWordLimit(sanitizeRichText(rawComment, { maxLength: 200000 }));
+    if (!commentWl.ok) {
+      return res.status(400).json({
+        message: `A comment may be at most ${commentWl.limit} words (this one has ${commentWl.words}).`,
+        code: 'WORD_LIMIT_EXCEEDED',
+      });
+    }
     const cleanComment = sanitizeRichText(rawComment, { maxLength: 8000 });
     // Empty once stripped (e.g. a lone <script>) counts as no comment.
     const comment = richTextToPlain(cleanComment) ? cleanComment : null;
@@ -2291,6 +2607,8 @@ export async function transitionTask(req, res) {
     // ETAs come from the pinned definition (already loaded as `compiled`).
     const etaStepDefs = materialisableSteps(compiled.definition.steps);
     const etaByNum = new Map(etaStepDefs.map((s) => [s.stepNumber, etaDaysOf(s)]));
+    // E35: same resolver as creation, so ONE place decides every step's dueAt.
+    const transitionStatutory = makeStatutoryResolver(await getOverrides(db));
     // Re-project the matter's completion from the step we're landing on.
     const matterDueAt = isComplete ? null : projectMatterDueAt(etaStepDefs, newStep, now);
 
@@ -2354,7 +2672,21 @@ export async function transitionTask(req, res) {
       // Start the new active step's clock (only on an actual step change, so a
       // payment/override that stays on the same step doesn't reset its due date).
       const startedNew = newStep !== task.currentStepNumber
-        ? { startedAt: now, dueAt: addDaysIso(now, etaByNum.get(newStep) ?? null) }
+        ? {
+          startedAt: now,
+          // Resolved from `etaStepDefs`, which is in scope above — a dueRule
+          // wins where it resolves, otherwise the duration ETA as before.
+          dueAt: resolveStepDueAt(
+            etaStepDefs.find((st) => st.stepNumber === newStep)
+              ?? { typicalDurationDays: etaByNum.get(newStep) ?? null },
+            {
+              nowIso: now,
+              matterStart: task.createdAt ?? now,
+              anchorDate: task.anchorDate ?? null,
+              resolveStatutory: (key) => transitionStatutory(key, { anchorDate: task.anchorDate ?? null }),
+            },
+          ),
+        }
         : {};
       batch.set(nextRef, { status: 'active', ...startedNew }, { merge: true });
     } else if (newStep === task.currentStepNumber) {
@@ -2449,6 +2781,7 @@ export async function transitionTask(req, res) {
     });
 
     await batch.commit();
+    await refreshCompletedStepCount(taskRef); // #189
 
     // Resolve stale notifications (#100). Notifications are keyed to the step the
     // ball ARRIVES at (the step the recipient must act on). On any FORWARD move we
@@ -2464,6 +2797,16 @@ export async function transitionTask(req, res) {
     if (isComplete) {
       try { await finalizeMatterDocuments(taskId); }
       catch (e) { logger.warn({ err: e?.message }, 'transitionTask: document finalisation failed'); }
+    }
+
+    // E21-S04: fire-and-forget, AFTER the transition has committed. A firm's
+    // slow endpoint must never delay the person who clicked the button, and a
+    // webhook failure must never fail their action.
+    if (newStep !== task.currentStepNumber) {
+      emitWebhook(db, 'matter.step_entered', { matterId: taskId, stepNumber: newStep });
+    }
+    if (isComplete && task.status !== 'completed') {
+      emitWebhook(db, 'matter.completed', { matterId: taskId });
     }
 
     try {

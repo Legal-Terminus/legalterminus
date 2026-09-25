@@ -4,73 +4,127 @@
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "role",          "order": "ASCENDING" },
-        { "fieldPath": "createdAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "role",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "clientUid",     "order": "ASCENDING" },
-        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "clientUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
-      "_comment": "#168 — a professional's matter list: their assigned matters (#85 professionalUid), ordered like every other list query.",
+      "_comment": "#168 \u2014 a professional's matter list: their assigned matters (#85 professionalUid), ordered like every other list query.",
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "professionalUid", "order": "ASCENDING" },
-        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "tasks",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "assignedTo",    "order": "ASCENDING" },
-        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "tasks",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "status",        "order": "ASCENDING" },
-        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "professionalUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status",        "order": "ASCENDING" },
-        { "fieldPath": "createdAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "assignedTo",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "paymentStatus", "order": "ASCENDING" },
-        { "fieldPath": "createdAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "workflowType",  "order": "ASCENDING" },
-        { "fieldPath": "createdAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "isUrgent",      "order": "ASCENDING" },
-        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "paymentStatus",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "workflowType",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isUrgent",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
@@ -78,9 +132,18 @@
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "clientUid",     "order": "ASCENDING" },
-        { "fieldPath": "status",        "order": "ASCENDING" },
-        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "clientUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
@@ -88,9 +151,18 @@
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "assignedTo",    "order": "ASCENDING" },
-        { "fieldPath": "status",        "order": "ASCENDING" },
-        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "assignedTo",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
@@ -98,9 +170,18 @@
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "assignedTo",    "order": "ASCENDING" },
-        { "fieldPath": "isUrgent",      "order": "ASCENDING" },
-        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "assignedTo",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "isUrgent",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
@@ -108,29 +189,65 @@
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "clientUid",     "order": "ASCENDING" },
-        { "fieldPath": "isUrgent",      "order": "ASCENDING" },
-        { "fieldPath": "updatedAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "clientUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "isUrgent",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "tasks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status",        "arrayConfig": "CONTAINS" },
-        { "fieldPath": "createdAt",     "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
       ]
     }
   ],
-  "_comment_steps_assignedTo": "Team-member routing queries collectionGroup('steps').where('assignedTo','==',uid). A single-field COLLECTION query is auto-indexed, but the COLLECTION_GROUP scope needs an explicit field override (below) — it is NOT a composite index (Firestore rejects that as redundant).",
+  "_comment_steps_assignedTo": "Team-member routing queries collectionGroup('steps').where('assignedTo','==',uid). A single-field COLLECTION query is auto-indexed, but the COLLECTION_GROUP scope needs an explicit field override (below) \u2014 it is NOT a composite index (Firestore rejects that as redundant).",
   "fieldOverrides": [
     {
       "collectionGroup": "steps",
       "fieldPath": "assignedTo",
       "indexes": [
-        { "queryScope": "COLLECTION", "order": "ASCENDING" },
-        { "queryScope": "COLLECTION_GROUP", "order": "ASCENDING" }
+        {
+          "queryScope": "COLLECTION",
+          "order": "ASCENDING"
+        },
+        {
+          "queryScope": "COLLECTION_GROUP",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "steps",
+      "fieldPath": "assignedToUids",
+      "indexes": [
+        {
+          "queryScope": "COLLECTION",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "queryScope": "COLLECTION_GROUP",
+          "arrayConfig": "CONTAINS"
+        }
       ]
     }
-  ]
+  ],
+  "_comment_steps_assignedToUids": "#192: a step may have several assignees. Team-member routing also queries collectionGroup('steps').where('assignedToUids','array-contains',uid), which needs an ARRAY_CONFIG CONTAINS override at COLLECTION_GROUP scope (an array-contains query cannot use the ASCENDING order index above)."
 }

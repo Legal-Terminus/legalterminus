@@ -39,7 +39,7 @@ export const stepAssigneesSchema = z.object({
 /**
  * Combined per-step settings (one block per step): default assignee + ETA +
  * client visibility, saved together in a single version bump. Map of stepNumber
- * (string key) → { assigneeUid?: string|null, etaDays?: number|null,
+ * (string key) → { assigneeUid?: string|null, assigneeUids?: string[], etaDays?: number|null,
  * clientVisible?: boolean }. Omitted sub-fields are left unchanged; null clears
  * an assignee/ETA. Step existence + assignee validity are checked in the
  * controller against the live definition/users.
@@ -49,6 +49,11 @@ export const stepSettingsSchema = z.object({
     z.string().trim().regex(/^\d+$/, 'step key must be a step number'),
     z.object({
       assigneeUid: z.string().trim().max(200).nullable().optional(),
+      // #192: a step may have several default assignees. The list is the source of
+      // truth when sent; the controller keeps `assigneeUid` as its first entry so
+      // existing single-assignee consumers keep working. Capped to keep a step's
+      // routing comprehensible (and the notification fan-out bounded).
+      assigneeUids: z.array(z.string().trim().min(1).max(200)).max(20).optional(),
       etaDays: z.number().min(0).max(3650).nullable().optional(),
       clientVisible: z.boolean().optional(),
     }).strict(),

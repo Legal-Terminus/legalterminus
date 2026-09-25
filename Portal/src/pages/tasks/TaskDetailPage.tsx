@@ -29,6 +29,7 @@ import { PAYMENT_MODES } from '../../lib/paymentModes';
 import { getPayments, recordPayment, deletePaymentEntry } from '../../api/payments';
 import { parseCcEmails, validateCcEmails, formatCcEmails } from '../../lib/ccEmails';
 import { usePageTitle } from '../../hooks/useDocumentTitle';
+import FormStepPanel from '../../components/tasks/FormStepPanel';
 
 type TabKey = 'steps' | 'documents' | 'payments' | 'discussion';
 
@@ -1058,7 +1059,14 @@ function StepsTab({
   const currentAssignee = currentStepInstance?.assignedTo ?? null;
   // Server-resolved name (#48) — used so team members (who don't fetch the staff
   // list) still see the real assignee instead of a false "Unassigned".
-  const currentAssigneeName = currentStepInstance?.assigneeName ?? null;
+  // #192: a step can be assigned to several people — show them all, so the panel
+  // doesn't name one person and silently omit the rest. Falls back to the single
+  // name for steps created before the list existed.
+  const currentAssigneeName = (() => {
+    const names = currentStepInstance?.assigneeNames ?? [];
+    if (names.length > 1) return names.join(', ');
+    return names[0] ?? currentStepInstance?.assigneeName ?? null;
+  })();
   // #81/#82: the step's audience-appropriate description text. Staff see internal
   // descriptions/notes; clients see client ones. Falls back to the legacy single
   // `description`. (The backend already strips internal fields for clients.)
@@ -1176,6 +1184,20 @@ function StepsTab({
   // (cancelled), rejected or archived matter must NOT show the step-action panel,
   // or a non-admin could complete a step and silently re-activate the workflow.
   const isAdvanceable = task.status === 'active' || task.status === 'pending';
+
+  // E34: the current step asks the client questions. Rendered ABOVE the action
+  // panel because filling it in is what the step is FOR — the advance button
+  // below is what staff press afterwards. Submitting never advances the matter.
+  const formPanel = !completed && isAdvanceable && currentDef?.form ? (
+    <FormStepPanel
+      taskId={task.id}
+      stepNumber={task.currentStepNumber}
+      // The client fills it; staff can correct an answer on their behalf, the
+      // same override every other client-owned step allows.
+      canFill={role.isClient || !!role.canOverrideClient}
+    />
+  ) : null;
+
   const hero = !completed && isAdvanceable && currentDef ? (
     <StepHeroPanel
       taskId={task.id} step={currentDef} role={role} pending={pending} turn={currentTurn}
@@ -1353,6 +1375,7 @@ function StepsTab({
           <div className="space-y-7 min-w-0 mr-4">
             {partPaymentAlert}
             {pendingBar}
+            {formPanel}
             {hero}
             {stepsSection}
           </div>
@@ -1364,6 +1387,7 @@ function StepsTab({
         <div className="xl:hidden space-y-7">
           {partPaymentAlert}
           {pendingBar}
+          {formPanel}
           {hero}
           {activitySection}
           {stepsSection}

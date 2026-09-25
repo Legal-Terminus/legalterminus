@@ -3,7 +3,7 @@ import { logger } from '../config/logger.js';
 import { createNotification } from './notifications.controller.js';
 import { sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
-import { sanitizeRichText, richTextToPlain } from '../services/richText.service.js';
+import { sanitizeRichText, richTextToPlain, checkWordLimit } from '../services/richText.service.js';
 import { clientCanSeeMatter } from './tasks.controller.js';
 
 /**
@@ -126,6 +126,17 @@ export async function createMessage(req, res) {
     // browser — a client could POST here directly), so everything stored is safe
     // and every render site can display it without re-sanitising.
     const raw = String(req.body?.body ?? '');
+    // #194: check the word cap on the RAW input, BEFORE the character truncation
+    // below. MAX_BODY (4000 chars) cuts a 1,001-word message down to ~800 words,
+    // so checking afterwards would never fire — and the user would silently lose
+    // the tail of their message instead of being told it was too long.
+    const wl = checkWordLimit(sanitizeRichText(raw, { maxLength: 200000 }));
+    if (!wl.ok) {
+      return res.status(400).json({
+        message: `A message may be at most ${wl.limit} words (this one has ${wl.words}).`,
+        code: 'WORD_LIMIT_EXCEEDED',
+      });
+    }
     const body = sanitizeRichText(raw, { maxLength: MAX_BODY });
     // Reject content that is empty once stripped (e.g. a lone <script>).
     if (!richTextToPlain(body)) return res.status(400).json({ message: 'Message cannot be empty.' });

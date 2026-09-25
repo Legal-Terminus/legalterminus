@@ -12,6 +12,10 @@ export interface TaskStep {
   /** Resolved assignee display name (#48) — server-provided so every staff role
    *  sees the real assignee without fetching the user list. */
   assigneeName?: string | null;
+  /** #192: every assignee's uid, and their resolved names. `assignedTo` /
+   *  `assigneeName` remain the primary, so single-assignee code keeps working. */
+  assignedToUids?: string[];
+  assigneeNames?: string[];
   completedBy?: string;
   completedAt?: string;
   deadline?: string;
@@ -60,6 +64,17 @@ export interface Task {
   currentStepFallback?: boolean;
   totalSteps?: number;
   steps?: TaskStep[];
+  /** #189: denormalised count of finished (completed|skipped) steps, kept in sync
+   *  server-side. Progress must come from this, never from currentStepNumber —
+   *  step numbers are identity only and are not flow-ordered. */
+  completedStepCount?: number;
+  /** #191: the current step's name, resolved server-side from the matter's pinned
+   *  workflow definition (staff list only — the list itself stores only a number). */
+  currentStepTitle?: string | null;
+  /** E20-S01: does this matter await the CLIENT's action? Server-derived from the
+   *  current step's owner; absent (not false) when the definition is unavailable,
+   *  because a wrong "needs you" is worse than no badge at all. */
+  awaitingClient?: boolean;
   isUrgent?: boolean;
   // Projected matter completion (E13-S02); null while pending approval/untracked.
   matterDueAt?: string | null;

@@ -254,3 +254,82 @@ export const getRecurringDue = () =>
  */
 export const duplicateTask = (taskId: string) =>
   apiFetch<{ id: string }>(`/api/tasks/${taskId}/duplicate`, { method: 'POST' });
+
+/** Who owns a board card's current step. Same union as `OwnerType` in
+ *  workflowDefinitions — named separately because the board's read model is
+ *  server-shaped and must not drift with the editor's type. */
+export type BoardOwner = 'team' | 'client' | 'govt';
+
+export interface BoardCard {
+  /** Story 31.2 + board fix: progress by step POSITION, not stepNumber. */
+  stepPosition?: number | null;
+  stepTotal?: number | null;
+  progressPct?: number | null;
+  id: string;
+  clientName: string;
+  organisation: string;
+  serviceName: string;
+  stepTitle: string;
+  stepNumber: number | null;
+  owner: BoardOwner;
+  phaseId: string;
+  isUrgent: boolean;
+  assignedTo: string | null;
+  assignedToName: string | null;
+  daysInStep: number | null;
+}
+
+export interface BoardLane {
+  defId: string;
+  name: string;
+  total: number;
+  columns: { id: string; name: string; cards: BoardCard[] }[];
+}
+
+/**
+ * The board's read model: phases and step ownership joined server-side, because
+ * neither lives on the task document and the definitions list returns summaries
+ * only. Read-only — the board never moves a matter.
+ */
+export const getMattersBoard = () => apiFetch<{ lanes: BoardLane[] }>('/api/matters/board');
+
+/** Form steps (ported from Ambyflow, Story 34.3). */
+export interface FormField {
+  key: string;
+  label: string;
+  type: 'text' | 'longtext' | 'number' | 'date' | 'select' | 'yesno';
+  required?: boolean;
+  help?: string | null;
+  options?: string[];
+  /** Staff-only; the server omits these from the client view. */
+  internalNote?: string;
+  mapsTo?: string;
+}
+
+export interface StepForm {
+  title?: string | null;
+  description?: string | null;
+  fields: FormField[];
+}
+
+export interface FormStepState {
+  form: StepForm;
+  answers: Record<string, unknown>;
+  status: 'empty' | 'draft' | 'submitted';
+  submittedAt: string | null;
+}
+
+export const getFormStep = (taskId: string, stepNumber: number) =>
+  apiFetch<FormStepState>(`/api/tasks/${taskId}/form/${stepNumber}`);
+
+/** `submit: false` saves a partial draft; `true` enforces required fields. */
+export const saveFormStep = (
+  taskId: string,
+  stepNumber: number,
+  answers: Record<string, unknown>,
+  submit: boolean,
+) =>
+  apiFetch<{ status: string; answers: Record<string, unknown>; profileUpdated?: string[] }>(
+    `/api/tasks/${taskId}/form/${stepNumber}`,
+    { method: 'PUT', body: JSON.stringify({ answers, submit }) },
+  );

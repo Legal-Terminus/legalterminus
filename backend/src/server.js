@@ -10,6 +10,7 @@ import pinoHttp from "pino-http";
 
 import { FirestoreStore } from "./middleware/firestoreRateLimitStore.js";
 import { logger } from "./config/logger.js";
+import { versionInfo } from "./config/version.js";
 
 import blogRoutes from "./routes/blog.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
@@ -30,6 +31,12 @@ import notificationsRoutes from "./routes/notifications.routes.js";
 import workflowDefinitionsRoutes from "./routes/workflowDefinitions.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
+import searchRoutes from "./routes/search.routes.js";
+import clientsRoutes from "./routes/clients.routes.js";
+import mattersBoardRoutes from "./routes/mattersBoard.routes.js";
+import publicApiRoutes from "./routes/publicApi.routes.js";
+import apiTokensRoutes from "./routes/apiTokens.routes.js";
+import webhooksRoutes from "./routes/webhooks.routes.js";
 import initializeFirebase from "./config/firebase.js";
 
 // Load environment variables
@@ -124,6 +131,20 @@ app.use("/api/admin/category", categoryRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/video-testimonials", videoTestimonialRoutes);
 app.use("/api/testimonials", testimonialRoutes);
+// E21-S02/S03: the PUBLIC API. Mounted before the session routes and guarded by
+// its own credential type — /api/v1 accepts ONLY API keys, never an ID token.
+// Note it is deliberately NOT under the global /api session limiter chain.
+app.use("/api/v1", publicApiRoutes);
+// E21-S04: outbound webhook subscriptions (admin only).
+app.use("/api/settings/webhooks", webhooksRoutes);
+// E21-S01: API key management (admin only, session-authenticated).
+app.use("/api/settings/api-tokens", apiTokensRoutes);
+// E22-S01: the matters board (pipeline view), staff only.
+app.use("/api/matters", mattersBoardRoutes);
+// E-19: Client 360 — per-client monitoring (admin/manager only).
+app.use("/api/clients", clientsRoutes);
+// E22-S02: global search. Every role searches; the controller scopes results.
+app.use("/api/search", searchRoutes);
 app.use("/api/auth", sensitiveLimiter, authRoutes);
 app.use("/api/payment", sensitiveLimiter, paymentRoutes);
 app.use("/api/contact", sensitiveLimiter, contactRoutes);
@@ -167,7 +188,10 @@ app.use("/api/health", healthRoutes);
 app.use("/api/settings", settingsRoutes);
 
 /* ================= HEALTH CHECK ================= */
-app.get("/health", (req, res) => res.json({ status: "ok" }));
+// Also reports WHICH BUILD this is. "Is the fix deployed?" was unanswerable
+// without it: a reported bug turned out to be already fixed on main, with no
+// way to tell whether the running deploy carried it. No secrets here.
+app.get("/health", (req, res) => res.json({ status: "ok", ...versionInfo() }));
 
 /* ================= 404 HANDLER ================= */
 app.use((req, res) => {

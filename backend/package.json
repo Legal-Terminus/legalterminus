@@ -15,7 +15,9 @@
     "db:setup:seeds-only": "node src/scripts/setupDatabase.js --seeds-only",
     "db:seed:services": "node src/scripts/seedServiceConfig.js",
     "db:seed:workflows": "node src/scripts/seedWorkflowDefinitions.js",
-    "db:deploy-indexes": "cd .. && firebase deploy --only firestore:indexes"
+    "db:deploy-indexes": "cd .. && firebase deploy --only firestore:indexes",
+    "test": "node --test \"src/__tests__/**/*.test.js\"",
+    "test:watch": "node --test --watch \"src/__tests__/**/*.test.js\""
   },
   "keywords": [],
   "author": "",
@@ -37,6 +39,7 @@
     "sanitize-html": "^2.17.6",
     "sharp": "^0.34.5",
     "slugify": "^1.6.6",
+    "xlsx": "^0.18.5",
     "xstate": "^5.32.1",
     "zod": "^4.4.3"
   },

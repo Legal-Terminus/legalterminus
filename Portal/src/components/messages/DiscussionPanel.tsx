@@ -118,19 +118,25 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
 
 function MessageBubble({ m, isStaff }: { m: MatterMessage; isStaff: boolean }) {
   const mine = m.isMine;
+  // #193: own messages were white-on-brand-blue, which made the text hard to
+  // read. They now use a WhatsApp-style LIGHT GREEN bubble with dark ink. Because
+  // the bubble went from a dark to a light background, every dependent colour has
+  // to change with it — the author line, the shared/internal hint, the timestamp
+  // and the rich-text link/table overrides were all tuned for white-on-dark and
+  // would be invisible on light green if left behind.
   return (
     <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${
-        mine ? 'bg-brand-600 text-white' : 'bg-surface-soft text-ink'
+        mine ? 'bg-emerald-50 text-ink border border-emerald-100' : 'bg-surface-soft text-ink'
       }`}>
         <div className="flex items-center gap-2 mb-0.5">
-          <span className={`text-[11px] font-semibold ${mine ? 'text-white/80' : 'text-ink-muted'}`}>
+          <span className={`text-[11px] font-semibold ${mine ? 'text-emerald-800' : 'text-ink-muted'}`}>
             {m.authorName}
           </span>
           {/* Staff can see at a glance whether the client can read this. */}
           {isStaff && (
             <span className={`text-[10px] inline-flex items-center gap-0.5 ${
-              mine ? 'text-white/70' : 'text-ink-faint'
+              mine ? 'text-emerald-700/80' : 'text-ink-faint'
             }`}>
               {m.clientVisible
                 ? <><Eye className="w-3 h-3" /> shared</>
@@ -138,9 +144,9 @@ function MessageBubble({ m, isStaff }: { m: MatterMessage; isStaff: boolean }) {
             </span>
           )}
         </div>
-        <RichText html={m.body} className={mine ? "text-sm [&_a]:text-white [&_th]:bg-white/10" : "text-sm"} />
+        <RichText html={m.body} className="text-sm" />
         {m.createdAt && (
-          <p className={`text-[10px] mt-1 ${mine ? 'text-white/60' : 'text-ink-faint'}`}>
+          <p className={`text-[10px] mt-1 ${mine ? 'text-emerald-700/70' : 'text-ink-faint'}`}>
             {new Date(m.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
           </p>
         )}

@@ -6,6 +6,7 @@ import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments,
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument, setDocumentVisibility } from '../controllers/documents.controller.js';
 import { listMessages, createMessage } from '../controllers/messages.controller.js';
 import { listReminders, sendReminder } from '../controllers/reminders.controller.js';
+import { getFormStep, saveFormStep } from '../controllers/forms.controller.js';
 
 const router = Router();
 
@@ -75,5 +76,11 @@ router.patch('/:taskId/documents/:docId/visibility',   requireRole('admin', 'man
 router.delete('/:taskId/documents/:docId',             deleteDocument);
 
 router.delete('/:taskId',                    requireRole('admin'), deleteTask);
+
+// E34: form steps. The CLIENT fills these in, so there is no requireRole here
+// — ownership is checked inside the controller via clientScopeUid (#166), the
+// same rule every other client-facing read applies.
+router.get('/:taskId/form/:stepNumber', getFormStep);
+router.put('/:taskId/form/:stepNumber', saveFormStep);
 
 export default router;

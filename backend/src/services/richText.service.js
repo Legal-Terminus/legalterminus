@@ -16,7 +16,7 @@ import sanitizeHtml from 'sanitize-html';
  */
 
 const ALLOWED_TAGS = [
-  'p', 'br', 'span', 'div',
+  'p', 'br', 'span', 'div', 'mark',
   'b', 'strong', 'i', 'em', 'u', 's', 'strike', 'code', 'pre', 'blockquote',
   'ul', 'ol', 'li',
   'h1', 'h2', 'h3', 'h4',
@@ -32,6 +32,10 @@ export const RICH_TEXT_OPTIONS = {
     th: ['colspan', 'rowspan'],
     // TipTap marks cells/rows with these; harmless and needed for table layout.
     col: ['span'],
+    // #194: the colour/highlight/size marks ride on inline styles; the values are
+    // constrained by allowedStyles below, so only known-safe declarations survive.
+    span: ['style'],
+    mark: ['style', 'data-color'],
   },
   // Only real, safe link schemes — blocks javascript:, data:, vbscript: etc.
   allowedSchemes: ['http', 'https', 'mailto'],
@@ -44,10 +48,50 @@ export const RICH_TEXT_OPTIONS = {
     // Normalise legacy/verbose tags Word tends to emit.
     strike: 's',
   },
-  // No inline styles at all — the biggest vector for layout/─clickjacking abuse
-  // and the main source of Word's paste noise.
-  allowedStyles: {},
+  // #194: text colour, highlight and size are now offered in the editor, so the
+  // marks they produce must survive sanitising — previously `allowedStyles: {}`
+  // stripped them and the formatting silently vanished on save.
+  //
+  // This stays deliberately narrow: only `color`, `background-color` and
+  // `font-size`, each matched against a value pattern, on `span`/`mark` only.
+  // Everything that made blanket inline styles dangerous — position, display,
+  // z-index, url(), expression() — remains impossible, as does Word's paste noise.
+  allowedStyles: {
+    span: {
+      color: [/^#[0-9a-f]{3,8}$/i, /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/i],
+      'background-color': [/^#[0-9a-f]{3,8}$/i, /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/i],
+      // Cap the unit values so a comment can't blow up the layout with 500rem.
+      'font-size': [/^(0?\.\d+|[0-3](\.\d+)?)rem$/, /^([8-9]|[1-3]\d|4[0-8])px$/, /^(smaller|larger|normal)$/],
+    },
+    mark: {
+      'background-color': [/^#[0-9a-f]{3,8}$/i, /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/i],
+      color: [/^#[0-9a-f]{3,8}$/i],
+    },
+  },
 };
+
+/**
+ * #194 — maximum words in a comment / message. The editor shows a counter and
+ * stops typing at this number, but that is a convenience: this module is the
+ * actual control, since anyone can post straight to the API.
+ */
+export const COMMENT_WORD_LIMIT = 1000;
+
+/** Words in rich text, counted on the PLAIN text — markup is not content. */
+export function countWords(html) {
+  const text = richTextToPlain(html);
+  const t = String(text).replace(/\s+/g, ' ').trim();
+  return t ? t.split(' ').length : 0;
+}
+
+/**
+ * Is this rich text within the word limit? Returns { ok, words } so the caller
+ * can put the real number in the error message rather than a generic refusal.
+ */
+export function checkWordLimit(html, limit = COMMENT_WORD_LIMIT) {
+  const words = countWords(html);
+  return { ok: words <= limit, words, limit };
+}
 
 /** Sanitise user-authored HTML. Returns '' for empty/invalid input. */
 export function sanitizeRichText(html, { maxLength = 20000 } = {}) {

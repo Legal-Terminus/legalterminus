@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
 import { ArrowRight, Flame, Trash2, Plus } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
+import MatterViewToggle from '../../components/tasks/MatterViewToggle';
 import DataGrid from '../../components/common/DataGrid';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useToast } from '../../components/common/toastContext';
@@ -118,11 +119,20 @@ export default function TasksPage() {
     <PageShell
       title={c.title}
       subtitle={c.body}
-      action={canCreate ? (
-        <button onClick={() => setShowCreate(true)} className="btn-primary inline-flex items-center gap-1.5">
-          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Create Matter</span><span className="sm:hidden">Create</span>
-        </button>
-      ) : undefined}
+      // E22-S01: the Board/List switch lives here, beside Create. Without it the
+      // board is reachable only by typing its URL — the list had no way across,
+      // which is the one-way door MatterViewToggle exists to close. Staff only:
+      // a client has no pipeline and the board shows internal step ownership.
+      action={(
+        <div className="inline-flex items-center gap-2">
+          {!isClientView && <MatterViewToggle current="list" />}
+          {canCreate && (
+            <button onClick={() => setShowCreate(true)} className="btn-primary inline-flex items-center gap-1.5">
+              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Create Matter</span><span className="sm:hidden">Create</span>
+            </button>
+          )}
+        </div>
+      )}
     >
       {showCreate && <CreateMatterModal onClose={() => setShowCreate(false)} />}
       {/* #167: recurring renewals that have fallen due — renders nothing when
@@ -186,7 +196,11 @@ export default function TasksPage() {
             (t.clientName ?? '').toLowerCase().includes(s) ||
             (t.serviceName ?? t.workflowType ?? '').toLowerCase().includes(s) ||
             (t.professionalName ?? '').toLowerCase().includes(s) || // #85
-            (t.status ?? '').toLowerCase().includes(s)
+            (t.status ?? '').toLowerCase().includes(s) ||
+            // #191: the two new columns are searchable too — the search matches an
+            // explicit field list, so adding a column alone would not cover it.
+            (t.currentStepTitle ?? '').toLowerCase().includes(s) ||
+            (t.organisation ?? '').toLowerCase().includes(s)
           );
         }}
         isLoading={isLoading}
@@ -197,6 +211,28 @@ export default function TasksPage() {
       />
     </PageShell>
   );
+}
+
+/**
+ * #189 — matter progress. Counts FINISHED steps; never derives progress from
+ * `currentStepNumber`, which is an identity number and not a flow position
+ * (see #117/#55): a matter on step 32 of a 20-step workflow used to clamp to 20
+ * and report "20/20 complete" with 9 steps actually done.
+ *
+ * Prefers the server-maintained `completedStepCount`, falls back to counting any
+ * embedded steps (matters that predate the field), and shows no fraction at all
+ * when neither is available rather than inventing one.
+ */
+function matterProgress(t: Task) {
+  const total = t.totalSteps ?? t.steps?.length ?? 0;
+  const isDone = t.status === 'completed';
+  const counted = t.completedStepCount
+    ?? (t.steps
+      ? t.steps.filter((s) => s.status === 'completed' || s.status === 'skipped').length
+      : undefined);
+  const done = isDone ? total : Math.min(counted ?? 0, total);
+  const known = total > 0 && (isDone || counted != null);
+  return { total, done, known, pct: total ? Math.round((done / total) * 100) : 0, label: !known ? '—' : `${done}/${total}` };
 }
 
 const col = createColumnHelper<Task>();
@@ -231,6 +267,35 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
         );
       },
     }),
+    // #191: the team could not tell from the list WHERE a matter had got to, or
+    // which organisation it belonged to. Both are text columns so the existing
+    // search, sort and pagination pick them up with no extra wiring.
+    ...(isClientView ? [] : [
+      col.accessor((t) => t.currentStepTitle ?? '', {
+        id: 'currentStep',
+        header: 'Current Step',
+        size: 200,
+        cell: (ctx) => {
+          const v = ctx.getValue();
+          const done = ctx.row.original.status === 'completed';
+          if (done) return <span className="text-xs text-emerald-700">Completed</span>;
+          return v
+            ? <span className="text-xs text-ink-soft line-clamp-2">{v}</span>
+            : <span className="text-xs text-ink-faint">—</span>;
+        },
+      }),
+      col.accessor((t) => t.organisation ?? '', {
+        id: 'organisation',
+        header: 'Organisation',
+        size: 170,
+        cell: (ctx) => {
+          const v = ctx.getValue();
+          return v
+            ? <span className="text-xs text-ink-soft truncate">{v}</span>
+            : <span className="text-xs text-ink-faint">—</span>;
+        },
+      }),
+    ]),
     col.accessor('status', {
       header: 'Status',
       size: 150,
@@ -266,22 +331,15 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
       size: 180,
       cell: (ctx) => {
         const t = ctx.row.original;
-        // #164: with no known total, the old code fell back to currentStepNumber
-        // as the numerator over a zero denominator — rendering nonsense like
-        // "13/0" (and treating an internal step NUMBER as a position). When the
-        // total is unknown we show no fraction at all.
-        const total = t.totalSteps ?? t.steps?.length ?? 0;
-        const isDone = t.status === 'completed';
-        const displayStep = total ? Math.min(t.currentStepNumber, total) : 0;
-        const pct = isDone ? 100 : (total ? Math.round(((displayStep - 1) / total) * 100) : 0);
+        // #189/#164: progress counts FINISHED steps (see matterProgress) — not
+        // currentStepNumber, and never a fraction over a zero denominator.
+        const { pct, label } = matterProgress(t);
         return (
           <div className="flex items-center gap-2">
             <div className="h-1.5 w-24 rounded-full bg-surface-card overflow-hidden">
               <div className="h-full bg-ink/70 rounded-full" style={{ width: `${pct}%` }} />
             </div>
-            <span className="text-[11px] text-ink-faint shrink-0">
-              {!total ? '—' : isDone ? `${total}/${total}` : `${displayStep}/${total}`}
-            </span>
+            <span className="text-[11px] text-ink-faint shrink-0">{label}</span>
           </div>
         );
       },
@@ -339,11 +397,8 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
 function MatterCard({ task, isClientView, canDelete, deleting, onDelete }: {
   task: Task; isClientView: boolean; canDelete: boolean; deleting: boolean; onDelete: (t: Task) => void;
 }) {
-  // #164: see the table cell above — never render "n/0".
-  const total = task.totalSteps ?? task.steps?.length ?? 0;
-  const isDone = task.status === 'completed';
-  const displayStep = total ? Math.min(task.currentStepNumber, total) : 0;
-  const pct = isDone ? 100 : (total ? Math.round(((displayStep - 1) / total) * 100) : 0);
+  // #189/#164: same rule as the table cell — count finished steps.
+  const { pct, label: progressLabel } = matterProgress(task);
   const payment = PAYMENT[task.paymentStatus] ?? PAYMENT.not_paid;
   const primary = isClientView ? (task.serviceName || task.workflowType) : (task.clientName || 'Client unavailable');
   const secondary = isClientView ? '' : (task.serviceName || task.workflowType);
@@ -380,7 +435,7 @@ function MatterCard({ task, isClientView, canDelete, deleting, onDelete }: {
         <div className="h-1.5 flex-1 rounded-full bg-surface-card overflow-hidden">
           <div className="h-full bg-ink/70 rounded-full" style={{ width: `${pct}%` }} />
         </div>
-        <span className="text-[11px] text-ink-faint shrink-0">{!total ? '—' : isDone ? `${total}/${total}` : `${displayStep}/${total}`}</span>
+        <span className="text-[11px] text-ink-faint shrink-0">{progressLabel}</span>
       </div>
     </div>
   );

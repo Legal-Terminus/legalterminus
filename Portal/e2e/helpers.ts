@@ -54,7 +54,14 @@ export async function login(page: Page, role: RoleKey) {
 }
 
 /** Open a matter detail page and switch to a tab (Steps/Documents/Payments). */
-export async function openMatter(page: Page, taskId: string, tab?: 'Steps' | 'Documents' | 'Payments') {
+export type MatterTab = 'Steps' | 'Documents' | 'Payments' | 'Discussion';
+
+/** The tab control for a matter detail tab (E23-S03). */
+export function matterTab(page: Page, tab: MatterTab) {
+  return page.getByRole('tab', { name: tab, exact: true });
+}
+
+export async function openMatter(page: Page, taskId: string, tab?: MatterTab) {
   await page.goto(`tasks/${taskId}`);
   if (tab) {
     await page.getByRole('button', { name: tab, exact: true }).click();

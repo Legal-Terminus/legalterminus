@@ -1,5 +1,7 @@
 import PageShell from '../../components/common/PageShell';
 import DashboardTile from '../../components/dashboard/DashboardTile';
+import ClientCockpit from '../../components/dashboard/ClientCockpit';
+import PracticeCockpit from '../../components/dashboard/PracticeCockpit';
 import MyWorkWidget from '../../components/dashboard/MyWorkWidget';
 import { useAuthStore } from '../../store/authStore';
 import { tilesForRole, dashboardTitle } from './dashboardConfig';
@@ -16,6 +18,13 @@ export default function DashboardPage() {
 
   return (
     <PageShell title={dashboardTitle(role)} subtitle="Quick actions and overview.">
+      {/* E-20: the cockpits state the POSITION before the navigation tiles.
+          A client's dashboard answers "where has my work got to, and does it
+          need me?"; staff get "what needs the firm" and "what are we waiting
+          on". Every figure links to the rows it was counted from. */}
+      {role === 'client' && <ClientCockpit />}
+      {isStaff && <PracticeCockpit />}
+
       {/* What's waiting on you — urgent assigned steps + approvals (staff only). */}
       {isStaff && <MyWorkWidget />}
       {tiles.length === 0 ? (

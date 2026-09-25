@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 import { ALL_ROLE_KEYS } from '../lib/roles';
@@ -12,6 +12,11 @@ import TasksPage from '../pages/tasks/TasksPage';
 import MyTasksPage from '../pages/tasks/MyTasksPage';
 import TaskDetail from '../pages/tasks/TaskDetailPage';
 import UsersPage from '../pages/users/UsersPage';
+import ClientsPage from '../pages/clients/ClientsPage';
+import ClientDetailPage from '../pages/clients/ClientDetailPage';
+import MattersBoardPage from '../pages/tasks/MattersBoardPage';
+import ApiKeysPage from '../pages/settings/ApiKeysPage';
+import WebhooksPage from '../pages/settings/WebhooksPage';
 import UserFormPage from '../pages/users/UserFormPage';
 import Services from '../pages/services/ServicesPage';
 import ServiceDetail from '../pages/services/ServiceDetailPage';
@@ -19,6 +24,7 @@ import WorkflowEditorPage from '../pages/workflow/WorkflowEditorPage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import OrdersPage from '../pages/orders/OrdersPage';
 import EmailTemplatesPage from '../pages/settings/EmailTemplatesPage';
+import StatutoryCalendarPage from '../pages/settings/StatutoryCalendarPage';
 import NotificationsPage from '../pages/notifications/NotificationsPage';
 
 // Reports
@@ -83,6 +89,21 @@ export const APP_ROUTES: AppRoute[] = [
 
   // ── Admin + Manager (per BMAD E08-S01 reports, E09-S02 user/client mgmt) ──
   { path: '/users',             element: <UsersPage />,     roles: ['admin', 'manager'], nav: { label: 'Users', icon: Users, mobile: true } },
+  // E-21: integrations. ADMIN ONLY — a key or a webhook target moves firm data
+  // out of the product without a human present.
+  { path: '/settings/api-keys', element: <ApiKeysPage />, roles: ['admin'], nav: { label: 'API Keys', icon: KeyRound, order: 10 } },
+  { path: '/settings/webhooks', element: <WebhooksPage />, roles: ['admin'], nav: { label: 'Webhooks', icon: Webhook, order: 11 } },
+  // E35: reading the compliance calendar is open to any staff member — it is a
+  // view of the firm's year. EDITING is admin-only, enforced on the route in
+  // settings.routes.js, because one edit moves every deadline on that key.
+  { path: '/settings/statutory-calendar', element: <StatutoryCalendarPage />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Statutory Calendar', icon: CalendarDays, order: 12 } },
+  // E22-S01: the matters board (pipeline view). Staff only — a client has no
+  // pipeline, and the board shows internal step ownership.
+  { path: '/matters/board',     element: <MattersBoardPage />, roles: ['admin', 'manager', 'team_member'] },
+  // E-19: Client 360 — monitoring the client book. Distinct from /users, which
+  // manages accounts and roles; this answers "what is going on with this client?"
+  { path: '/clients',           element: <ClientsPage />,   roles: ['admin', 'manager'], nav: { label: 'Clients', icon: Contact, mobile: true } },
+  { path: '/clients/:uid',      element: <ClientDetailPage />, roles: ['admin', 'manager'] },
   { path: '/reports',           element: <ReportsPage />,   roles: ['admin', 'manager'], nav: { label: 'Reports', icon: BarChart2, mobile: true } },
   { path: '/reports/all-tasks',    element: <AllTasksReport />,       roles: ['admin', 'manager'] },
   { path: '/reports/completed',    element: <CompletedTasksReport />, roles: ['admin', 'manager'] },
