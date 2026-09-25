@@ -1,4 +1,5 @@
 import { createActor } from 'xstate';
+import { FieldPath } from 'firebase-admin/firestore';
 import { db, getBucket } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
 import { emitWebhook } from "../services/webhookEmit.service.js";
@@ -14,6 +15,7 @@ import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE, materialisableSte
 import { resolveDueDate, definitionNeedsAnchorDate } from '../../../shared/workflows/dueRules.js';
 import { evaluateCondition, describeSkipReason } from '../../../shared/workflows/conditions.js';
 import { deriveProfile } from '../services/clientProfile.service.js';
+import { deriveRollup, sumLedger, openingBalanceRow, creationPaymentRow } from '../services/paymentLedger.service.js';
 import { getOverrides, makeStatutoryResolver } from '../services/statutoryCalendar.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
@@ -136,6 +138,32 @@ async function backfillClientNames(rows) {
   return rows;
 }
 
+// #201: the client's phone and email on each matter row, for staff. Looked up
+// live from the client profile rather than copied onto the matter: a profile is
+// edited from several places, and a copy on the matter document would go stale
+// and be readable by a professional granted that matter. Batched `in` lookups
+// (≤30 ids each), so the cost follows the page, not the client book.
+async function attachClientContacts(rows) {
+  const uids = [...new Set(rows.map((t) => t.clientUid).filter(Boolean))];
+  if (uids.length === 0) return rows;
+  const chunks = [];
+  for (let i = 0; i < uids.length; i += 30) chunks.push(uids.slice(i, i + 30));
+  const byUid = new Map();
+  const snaps = await Promise.all(chunks.map((chunk) =>
+    db.collection('users').where(FieldPath.documentId(), 'in', chunk).get()
+      .catch((err) => {
+        logger.warn({ err }, 'attachClientContacts: chunk lookup failed');
+        return { docs: [] };
+      })));
+  for (const snap of snaps) for (const d of snap.docs) byUid.set(d.id, d.data());
+  for (const t of rows) {
+    const u = byUid.get(t.clientUid);
+    t.clientEmail = u ? (u.email || (Array.isArray(u.emailIds) ? u.emailIds[0] : null) || null) : null;
+    t.clientPhone = u ? (u.phone || u.mobile || null) : null;
+  }
+  return rows;
+}
+
 // ─── Notifications (E07-S01) ────────────────────────────────────────────────
 // Fire-and-forget in-app notification. NEVER let a notification failure break the
 // workflow action that triggered it — we log and move on. Skips self-notification
@@ -171,7 +199,7 @@ async function adminUids() {
 // masks comments that aren't client-visible (fail closed), but the raw remark on
 // the step record bypassed that — so it must never reach the client either. The
 // client sees a comment only via the (filtered) event feed.
-const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedRole', 'completedBy', 'isUrgent', 'remark'];
+const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark'];
 
 /**
  * #166 — the client identity a request acts as.
@@ -369,7 +397,9 @@ function projectTaskForClient(task, view = null) {
   // #149: ccEmails is staff configuration (who gets copied on this matter's mail)
   // — not the client's to enumerate, so it is stripped alongside the other
   // internal fields.
-  const { assignedTo, createdBy, isUrgent, adminOverride, ccEmails, ...safe } = task;
+  // #201: client contact details are a staff aid — stripped here too, so a
+  // professional (an outside party) never receives them even if a row has them.
+  const { assignedTo, createdBy, isUrgent, adminOverride, ccEmails, clientEmail, clientPhone, ...safe } = task;
   if (Array.isArray(safe.steps)) {
     safe.steps = safe.steps
       .filter((s) => !visibleStepNumbers || visibleStepNumbers.has(s.stepNumber))
@@ -378,6 +408,11 @@ function projectTaskForClient(task, view = null) {
       .filter((s) => s.assignedRole !== 'admin')
       .map((s) => {
         const copy = { ...s };
+        // #204: the assignee is stripped below, but the client must still know
+        // a step is THEIRS to complete — a boolean, never the uid.
+        const owners = Array.isArray(s.assignedToUids) && s.assignedToUids.length
+          ? s.assignedToUids : (s.assignedTo ? [s.assignedTo] : []);
+        if (task.clientUid && owners.includes(task.clientUid)) copy.assignedToClient = true;
         // #103: the client sees the client-facing step name when one is set,
         // falling back to the internal title. clientTitle itself is then dropped.
         if (copy.clientTitle) copy.title = copy.clientTitle;
@@ -735,6 +770,14 @@ export async function createTask(req, res) {
     const ref = db.collection('tasks').doc();
     const batch = db.batch();
     batch.set(ref, task);
+    // #202: a payment taken at creation is the first entry in the payment
+    // history — the team must not record the same money a second time, and the
+    // matter's paid figure must be the sum of its history from day one.
+    const creationPayment = creationPaymentRow({
+      amount: received, mode: paymentMode, description: paymentDescription,
+      actorUid: req.user.uid, actorName: await actorDisplayName(db, req.user.uid), now,
+    });
+    if (creationPayment) batch.set(ref.collection('payments').doc(), creationPayment);
     // Step statuses at creation:
     //  - pending approval → every step stays `pending` (no work starts);
     //  - #94: any step the creation-time gate AUTO-PASSED (authored BEFORE the
@@ -1362,6 +1405,7 @@ export async function listTasks(req, res) {
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows); // #164
       await attachCurrentStepNames(rows); // #191
+      await attachClientContacts(rows); // #201
       return res.json({ data: rows, nextCursor: null });
     }
 
@@ -1432,6 +1476,7 @@ export async function listTasks(req, res) {
     // #168: a professional gets the same external-facing projection — they are
     // an outside party, so internal assignment/urgency must not leak either.
     if (role === 'client' || role === 'professional') data = data.map(projectTaskForClient);
+    else await attachClientContacts(data); // #201: staff only
     await attachCurrentStepNames(data); // #191
     res.json({ data, nextCursor });
   } catch (err) {
@@ -1715,7 +1760,18 @@ export async function listTaskEvents(req, res) {
     }
 
     const snap = await taskRef.collection('events').orderBy('at', 'asc').get();
-    let events = snap.docs.map((d) => d.data());
+    // #199: some writers use their own field names — a reminder records
+    // `stepNumber`, a document deletion `stepNumber` + `actorUid`. Read through
+    // them here so the feed places those events on their step and names the
+    // person, for events already stored as well as new ones.
+    let events = snap.docs.map((d) => {
+      const e = d.data();
+      return {
+        ...e,
+        fromStep: e.fromStep ?? e.stepNumber ?? null,
+        byUid: e.byUid ?? e.actorUid ?? null,
+      };
+    });
 
     const isClient = req.user.role === 'client';
 
@@ -1915,6 +1971,22 @@ export async function patchTask(req, res) {
           }, { merge: true });
         }
       }
+      // #199: a matter reassignment wrote no activity at all, so the history
+      // could not show it. Recorded on the current step, like the other
+      // matter-level events. Internal: not on the client's event whitelist.
+      if ((newAssignee ?? null) !== (task.assignedTo ?? null)) {
+        batch.set(taskRef.collection('events').doc(), {
+          type: 'MATTER_REASSIGNED',
+          fromStep: task.currentStepNumber ?? null,
+          toStep: task.currentStepNumber ?? null,
+          comment: null,
+          previousAssignee: task.assignedTo ?? null,
+          newAssignee: newAssignee ?? null,
+          byUid: req.user.uid ?? null,
+          byRole: req.user.role ?? null,
+          at: update.updatedAt,
+        });
+      }
     }
 
     await batch.commit();
@@ -1944,20 +2016,87 @@ export async function patchTask(req, res) {
 // makes concurrent instalment entry safe — two admins recording at once can't
 // clobber each other. Admin/manager only; Team never sees payments at all.
 
-/** Recompute the task's payment rollups from its ledger, inside a batch. */
-async function rollUpPayments(taskRef, task, batch, now) {
-  const snap = await taskRef.collection('payments').get();
-  const amountPaid = snap.docs.reduce((sum, d) => sum + (d.data().amount ?? 0), 0);
-  const totalCost = task.totalCost ?? 0;
-  const amountDue = Math.max(0, totalCost - amountPaid);
-  // Derive status from the amounts — the ledger is now the source of truth. With
-  // no agreed cost, money received is a part payment, never "fully paid": calling
-  // it full would open a payment gate on a matter nobody has priced.
-  const paymentStatus = amountPaid <= 0
-    ? 'not_paid'
-    : (amountDue > 0 || totalCost <= 0) ? 'part_paid' : 'fully_paid';
-  batch.set(taskRef, { amountPaid, amountDue, paymentStatus, updatedAt: now }, { merge: true });
-  return { amountPaid, amountDue, paymentStatus, totalCost };
+/** Thrown inside a ledger transaction to answer with a 4xx instead of a 500. */
+class LedgerError extends Error {
+  constructor(status, message, code) { super(message); this.status = status; this.code = code; }
+}
+const ledgerErrorBody = (e) => ({ message: e.message, ...(e.code ? { code: e.code } : {}) });
+
+/**
+ * #202: the ONE path for anything that moves a matter's money — recording,
+ * correcting or deleting a payment, and editing the total cost. Inside a
+ * transaction it re-reads the matter and its whole ledger, applies `change`,
+ * refuses an overpayment, then writes the rollups derived from the ledger (never
+ * from a figure someone typed) together with one activity event. The previous
+ * writers each did their own arithmetic, and two of them were not atomic: the
+ * row changed in one write and the rollup in another.
+ *
+ * `change({ task, rows, now })` mutates `rows` (a Map id → row) in memory and
+ * returns `{ writes(tx), totalCost?, taskFields?, event(rolled), exceeds(available) }`.
+ * It must not read — Firestore requires every read before the first write.
+ */
+async function commitLedgerChange(db, taskRef, { uid, role }, change) {
+  return db.runTransaction(async (tx) => {
+    const taskSnap = await tx.get(taskRef);
+    if (!taskSnap.exists) throw new LedgerError(404, 'Matter not found');
+    const task = taskSnap.data();
+    const ledger = await tx.get(taskRef.collection('payments'));
+    const now = new Date().toISOString();
+
+    const rows = new Map(ledger.docs.map((d) => [d.id, d.data()]));
+    // A matter from before the ledger: its paid figure becomes a visible row
+    // first, so this change is applied on top of it instead of wiping it.
+    let opening = null;
+    if (rows.size === 0) {
+      const row = openingBalanceRow(task, now);
+      if (row) {
+        opening = { ref: taskRef.collection('payments').doc(), row };
+        rows.set(opening.ref.id, row);
+      }
+    }
+
+    const plan = change({ task, rows, now });
+    const totalCost = plan.totalCost ?? task.totalCost ?? 0;
+    const paid = sumLedger([...rows.values()]);
+    if (totalCost > 0 && paid > totalCost) {
+      throw new LedgerError(400, plan.exceeds(totalCost - (paid - (plan.delta ?? 0))), 'PAYMENT_EXCEEDS_TOTAL');
+    }
+    const rolled = { ...deriveRollup(totalCost, paid), totalCost };
+
+    if (opening) tx.set(opening.ref, opening.row);
+    plan.writes?.(tx);
+    tx.set(taskRef, { ...rolled, ...(plan.taskFields ?? {}), updatedAt: now }, { merge: true });
+    tx.set(taskRef.collection('events').doc(), {
+      ...plan.event(rolled),
+      fromStep: task.currentStepNumber ?? null,
+      toStep: task.currentStepNumber ?? null,
+      byUid: uid ?? null,
+      byRole: role ?? null,
+      at: now,
+    });
+    return { ...rolled, ...(plan.result ?? {}) };
+  });
+}
+
+/**
+ * #202: seed the opening-balance row for a pre-ledger matter when its history
+ * is first read, so the history matches the figures before anyone edits them.
+ * Idempotent — the transaction re-checks that the ledger is still empty.
+ */
+async function ensureOpeningBalance(db, taskRef) {
+  await db.runTransaction(async (tx) => {
+    const taskSnap = await tx.get(taskRef);
+    if (!taskSnap.exists) return;
+    const ledger = await tx.get(taskRef.collection('payments').limit(1));
+    if (!ledger.empty) return;
+    const row = openingBalanceRow(taskSnap.data(), new Date().toISOString());
+    if (row) tx.set(taskRef.collection('payments').doc(), row);
+  });
+}
+
+async function actorDisplayName(db, uid) {
+  const actor = uid ? await db.collection('users').doc(uid).get().catch(() => null) : null;
+  return actor?.exists ? (actor.data().name || actor.data().fullName || actor.data().email || null) : null;
 }
 
 /** Shape one ledger doc for the API. The running `dueAfter` is added by the
@@ -1996,11 +2135,16 @@ export async function listPayments(req, res) {
     if (role === 'professional' && !professionalCanSee(task, req.user.uid)) {
       return res.status(403).json({ message: 'Forbidden' });
     }
-    if (role === 'client' && !clientCanSeeMatter(req.user, task)) { // #188
+    if (role === 'client' && !clientCanSeeMatter(req.user, task)) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
-    const ledger = await taskRef.collection('payments').get();
+    let ledger = await taskRef.collection('payments').get();
+    // #202: a pre-ledger matter shows its paid figure as an opening balance.
+    if (ledger.empty && task.amountPaid > 0) {
+      await ensureOpeningBalance(db, taskRef);
+      ledger = await taskRef.collection('payments').get();
+    }
     const rows = ledger.docs
       .map(paymentRow)
       .sort((a, b) => String(a.paidAt ?? '').localeCompare(String(b.paidAt ?? '')));
@@ -2039,80 +2183,41 @@ export async function createPayment(req, res) {
       return res.status(403).json({ message: 'Forbidden: admin or manager required' });
     }
     const taskRef = db.collection('tasks').doc(req.params.taskId);
-    const snap = await taskRef.get();
-    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
-    const task = snap.data();
-
-    const now = new Date().toISOString();
     const { amount, mode, paidAt, reference, notes } = req.body;
-
-    // Overpayment guard, mirroring the single-figure editor: the ledger total
-    // may not exceed the agreed cost.
-    const existing = await taskRef.collection('payments').get();
-    const already = existing.docs.reduce((sum, d) => sum + (d.data().amount ?? 0), 0);
-    const totalCost = task.totalCost ?? 0;
-    // totalCost 0 means "no fee agreed yet" — don't block recording against it.
-    if (totalCost > 0 && already + amount > totalCost) {
-      return res.status(400).json({
-        message: `This payment would exceed the total cost. ₹${Math.max(0, totalCost - already)} remains due.`,
-        code: 'PAYMENT_EXCEEDS_TOTAL',
-      });
-    }
-
-    const actor = await db.collection('users').doc(uid).get().catch(() => null);
-    const actorName = actor?.exists
-      ? (actor.data().name || actor.data().fullName || actor.data().email || null)
-      : null;
-
+    const actorName = await actorDisplayName(db, uid);
     const paymentRef = taskRef.collection('payments').doc();
-    const batch = db.batch();
-    batch.set(paymentRef, {
-      amount,
-      mode,
-      paidAt: paidAt || now,
-      reference: reference ?? null,
-      notes: notes ?? null,
-      recordedBy: uid ?? null,
-      recordedByName: actorName,
-      recordedAt: now,
+
+    const rolled = await commitLedgerChange(db, taskRef, { uid, role }, ({ rows, now }) => {
+      const row = {
+        amount, mode, paidAt: paidAt || now,
+        reference: reference ?? null, notes: notes ?? null,
+        recordedBy: uid ?? null, recordedByName: actorName, recordedAt: now,
+      };
+      rows.set(paymentRef.id, row);
+      return {
+        delta: amount,
+        writes: (tx) => tx.set(paymentRef, row),
+        // Keep the single-figure field meaningful: the latest mode is the one
+        // shown in the matter header and reports.
+        taskFields: { paymentMode: mode },
+        exceeds: (left) => `This payment would exceed the total cost. ₹${Math.max(0, left)} remains due.`,
+        event: (r) => ({
+          type: 'PAYMENT_RECORDED',
+          comment: `Payment received: ₹${amount} via ${mode}. ₹${r.amountDue} remaining of ₹${r.totalCost}.`,
+        }),
+        result: { id: paymentRef.id },
+      };
     });
-    // The rollup must count the payment we're about to write, which the ledger
-    // read above cannot see yet — fold it in explicitly.
-    const newPaid = already + amount;
-    const newDue = Math.max(0, totalCost - newPaid);
-    // Same rule as rollUpPayments: unpriced matters can't reach "fully paid".
-    const newStatus = newPaid <= 0
-      ? 'not_paid'
-      : (newDue > 0 || totalCost <= 0) ? 'part_paid' : 'fully_paid';
-    batch.set(taskRef, {
-      amountPaid: newPaid, amountDue: newDue, paymentStatus: newStatus,
-      // Keep the single-figure fields meaningful: the latest mode is the one shown
-      // in the matter header and reports.
-      paymentMode: mode,
-      updatedAt: now,
-    }, { merge: true });
-    batch.set(taskRef.collection('events').doc(), {
-      type: 'PAYMENT_RECORDED',
-      fromStep: task.currentStepNumber,
-      toStep: task.currentStepNumber,
-      comment: `Payment received: ₹${amount} via ${mode}. ₹${newDue} remaining of ₹${totalCost}.`,
-      byUid: uid ?? null,
-      byRole: role ?? null,
-      at: now,
-    });
-    await batch.commit();
 
     // E21-S04: the amounts are the firm's OWN figures coming back, not client
     // PII — everything else is an id to re-fetch.
     emitWebhook(db, 'payment.recorded', {
-      matterId: req.params.taskId, paymentId: paymentRef.id, amount, paymentStatus: newStatus,
+      matterId: req.params.taskId, paymentId: paymentRef.id, amount, paymentStatus: rolled.paymentStatus,
     });
 
-    res.status(201).json({
-      id: paymentRef.id,
-      amountPaid: newPaid, amountDue: newDue, paymentStatus: newStatus, totalCost,
-    });
+    res.status(201).json(rolled);
   } catch (err) {
+    if (err instanceof LedgerError) return res.status(err.status).json(ledgerErrorBody(err));
     logger.error({ err }, 'createPayment error:');
     res.status(500).json({ message: 'Failed to record payment' });
   }
@@ -2126,15 +2231,7 @@ export async function patchPayment(req, res) {
       return res.status(403).json({ message: 'Forbidden: admin or manager required' });
     }
     const taskRef = db.collection('tasks').doc(req.params.taskId);
-    const snap = await taskRef.get();
-    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
-    const task = snap.data();
-
     const paymentRef = taskRef.collection('payments').doc(req.params.paymentId);
-    const paymentSnap = await paymentRef.get();
-    if (!paymentSnap.exists) return res.status(404).json({ message: 'Payment not found' });
-
-    const now = new Date().toISOString();
     const patch = {};
     for (const k of ['amount', 'mode', 'paidAt']) {
       if (k in req.body) patch[k] = req.body[k];
@@ -2143,38 +2240,24 @@ export async function patchPayment(req, res) {
       if (k in req.body) patch[k] = req.body[k] || null;
     }
 
-    // Overpayment guard against the ledger MINUS this row's old amount.
-    if ('amount' in patch) {
-      const all = await taskRef.collection('payments').get();
-      const others = all.docs
-        .filter((d) => d.id !== paymentRef.id)
-        .reduce((sum, d) => sum + (d.data().amount ?? 0), 0);
-      const totalCost = task.totalCost ?? 0;
-      if (totalCost > 0 && others + patch.amount > totalCost) {
-        return res.status(400).json({
-          message: `This amount would exceed the total cost. ₹${Math.max(0, totalCost - others)} is available.`,
-          code: 'PAYMENT_EXCEEDS_TOTAL',
-        });
-      }
-    }
-
-    await paymentRef.set(patch, { merge: true });
-
-    const batch = db.batch();
-    const rolled = await rollUpPayments(taskRef, task, batch, now);
-    batch.set(taskRef.collection('events').doc(), {
-      type: 'PAYMENT_UPDATED',
-      fromStep: task.currentStepNumber,
-      toStep: task.currentStepNumber,
-      comment: `Payment corrected: ₹${rolled.amountPaid} paid of ₹${rolled.totalCost} (${rolled.paymentStatus.replace('_', ' ')}).`,
-      byUid: uid ?? null,
-      byRole: role ?? null,
-      at: now,
+    const rolled = await commitLedgerChange(db, taskRef, { uid, role }, ({ rows }) => {
+      const before = rows.get(paymentRef.id);
+      if (!before) throw new LedgerError(404, 'Payment not found');
+      rows.set(paymentRef.id, { ...before, ...patch });
+      return {
+        delta: 'amount' in patch ? patch.amount : 0,
+        writes: (tx) => tx.set(paymentRef, patch, { merge: true }),
+        exceeds: (left) => `This amount would exceed the total cost. ₹${Math.max(0, left)} is available.`,
+        event: (r) => ({
+          type: 'PAYMENT_UPDATED',
+          comment: `Payment corrected: ₹${r.amountPaid} paid of ₹${r.totalCost} (${r.paymentStatus.replace('_', ' ')}).`,
+        }),
+      };
     });
-    await batch.commit();
 
     res.json({ success: true, ...rolled });
   } catch (err) {
+    if (err instanceof LedgerError) return res.status(err.status).json(ledgerErrorBody(err));
     logger.error({ err }, 'patchPayment error:');
     res.status(500).json({ message: 'Failed to update payment' });
   }
@@ -2188,46 +2271,36 @@ export async function deletePayment(req, res) {
       return res.status(403).json({ message: 'Forbidden: admin or manager required' });
     }
     const taskRef = db.collection('tasks').doc(req.params.taskId);
-    const snap = await taskRef.get();
-    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
-    const task = snap.data();
-
     const paymentRef = taskRef.collection('payments').doc(req.params.paymentId);
-    const paymentSnap = await paymentRef.get();
-    if (!paymentSnap.exists) return res.status(404).json({ message: 'Payment not found' });
-    const removed = paymentSnap.data().amount ?? 0;
 
-    await paymentRef.delete();
-
-    const now = new Date().toISOString();
-    const batch = db.batch();
-    const rolled = await rollUpPayments(taskRef, task, batch, now);
-    batch.set(taskRef.collection('events').doc(), {
-      type: 'PAYMENT_DELETED',
-      fromStep: task.currentStepNumber,
-      toStep: task.currentStepNumber,
-      comment: `Payment of ₹${removed} removed. ₹${rolled.amountDue} remaining of ₹${rolled.totalCost}.`,
-      byUid: uid ?? null,
-      byRole: role ?? null,
-      at: now,
+    const rolled = await commitLedgerChange(db, taskRef, { uid, role }, ({ rows }) => {
+      const before = rows.get(paymentRef.id);
+      if (!before) throw new LedgerError(404, 'Payment not found');
+      rows.delete(paymentRef.id);
+      const removed = before.amount ?? 0;
+      return {
+        writes: (tx) => tx.delete(paymentRef),
+        exceeds: () => 'Removing this payment would leave the ledger above the total cost.',
+        event: (r) => ({
+          type: 'PAYMENT_DELETED',
+          comment: `Payment of ₹${removed} removed. ₹${r.amountDue} remaining of ₹${r.totalCost}.`,
+        }),
+      };
     });
-    await batch.commit();
 
     res.json({ success: true, ...rolled });
   } catch (err) {
+    if (err instanceof LedgerError) return res.status(err.status).json(ledgerErrorBody(err));
     logger.error({ err }, 'deletePayment error:');
     res.status(500).json({ message: 'Failed to delete payment' });
   }
 }
 
 // ─── PATCH /api/tasks/:taskId/payment ──────────────────────────────────────
-// Edit a matter's payment details after creation (#78). Admin/manager only.
-// Accepts any subset of { totalCost, amountPaid, paymentMode, paymentStatus }.
-// amountDue is always recomputed (max(0, totalCost − amountPaid)); paymentStatus
-// is derived from the amounts when not given explicitly. When the balance is now
-// fully received, the workflow's paymentStatus context is set to `fully_paid` so
-// a payment gate can pass — this is the "update workflow payment status after the
-// remaining amount is received" from the issue. Every edit is audited.
+// Edit a matter's payment details after creation (#78): the total cost, the mode
+// and the description. #202: the amount paid is NOT editable here — it is the
+// sum of the payment history, and the status and amount due follow from it. The
+// schema rejects `amountPaid` / `paymentStatus` outright. Every edit is audited.
 export async function updatePayment(req, res) {
   try {
     const { role, uid } = req.user;
@@ -2235,75 +2308,30 @@ export async function updatePayment(req, res) {
       return res.status(403).json({ message: 'Forbidden: admin or manager required' });
     }
     const taskRef = db.collection('tasks').doc(req.params.taskId);
-    const snap = await taskRef.get();
-    if (!snap.exists) return res.status(404).json({ message: 'Matter not found' });
-    const task = snap.data();
 
-    // #148: once a payment LEDGER exists it is the source of truth for how much
-    // has been received — this endpoint must not set a conflicting figure behind
-    // its back. Editing the total cost, mode or description stays allowed; the
-    // paid amount is then only movable by adding/correcting a ledger entry.
-    const ledger = await taskRef.collection('payments').get();
-    const hasLedger = !ledger.empty;
-    if (hasLedger && 'amountPaid' in req.body) {
-      const ledgerTotal = ledger.docs.reduce((sum, d) => sum + (d.data().amount ?? 0), 0);
-      if (req.body.amountPaid !== ledgerTotal) {
-        return res.status(400).json({
-          message: 'This matter has a payment history, so the amount paid is the sum of its payments. '
-            + 'Record, edit or remove a payment instead of setting the total directly.',
-          code: 'PAYMENT_LEDGER_AUTHORITATIVE',
-        });
-      }
-    }
-
-    // Start from current values, overlay the provided fields.
-    const totalCost = 'totalCost' in req.body ? req.body.totalCost : (task.totalCost ?? 0);
-    const amountPaid = hasLedger
-      ? ledger.docs.reduce((sum, d) => sum + (d.data().amount ?? 0), 0)
-      : ('amountPaid' in req.body ? req.body.amountPaid : (task.amountPaid ?? 0));
-    const paymentMode = 'paymentMode' in req.body ? (req.body.paymentMode || null) : (task.paymentMode ?? null);
-    // #147: preserved unless explicitly provided.
-    const paymentDescription = 'paymentDescription' in req.body
-      ? (req.body.paymentDescription || null)
-      : (task.paymentDescription ?? null);
-    if (amountPaid > totalCost) {
-      return res.status(400).json({ message: 'Amount paid cannot exceed the total cost.' });
-    }
-    const amountDue = Math.max(0, totalCost - amountPaid);
-
-    // paymentStatus: explicit wins; otherwise derive from the amounts.
-    const derived = amountPaid <= 0 ? 'not_paid' : amountDue > 0 ? 'part_paid' : 'fully_paid';
-    const paymentStatus = req.body.paymentStatus ?? derived;
-
-    // #117: "Full payment" must actually BE full. An explicit fully_paid while a
-    // balance remains would otherwise persist a wrong payment record. (The same
-    // rule is enforced at creation by taskCreateSchema.)
-    if (paymentStatus === 'fully_paid' && amountDue > 0) {
-      return res.status(400).json({
-        message: 'Payment Status cannot be set to "Full Payment" because an outstanding balance exists. '
-          + 'Please either receive the full amount or change the Payment Status to "Part Payment".',
-        code: 'PAYMENT_BALANCE_DUE',
-      });
-    }
-
-    const now = new Date().toISOString();
-    const update = { totalCost, amountPaid, amountDue, paymentMode, paymentDescription, paymentStatus, updatedAt: now };
-
-    const batch = db.batch();
-    batch.set(taskRef, update, { merge: true });
-    batch.set(taskRef.collection('events').doc(), {
-      type: 'PAYMENT_UPDATED',
-      fromStep: task.currentStepNumber,
-      toStep: task.currentStepNumber,
-      comment: `Payment updated: ₹${amountPaid} paid / ₹${totalCost} total (${paymentStatus.replace('_', ' ')})${paymentMode ? ` · ${paymentMode}` : ''}`,
-      byUid: uid ?? null,
-      byRole: role ?? null,
-      at: now,
+    const rolled = await commitLedgerChange(db, taskRef, { uid, role }, ({ task }) => {
+      const totalCost = 'totalCost' in req.body ? req.body.totalCost : (task.totalCost ?? 0);
+      const paymentMode = 'paymentMode' in req.body ? (req.body.paymentMode || null) : (task.paymentMode ?? null);
+      // #147: preserved unless explicitly provided.
+      const paymentDescription = 'paymentDescription' in req.body
+        ? (req.body.paymentDescription || null)
+        : (task.paymentDescription ?? null);
+      return {
+        totalCost,
+        taskFields: { paymentMode, paymentDescription },
+        exceeds: () => 'The total cost cannot be less than the amount already paid. '
+          + 'Correct or remove a payment in the payment history first.',
+        event: (r) => ({
+          type: 'PAYMENT_UPDATED',
+          comment: `Payment updated: ₹${r.amountPaid} paid / ₹${r.totalCost} total (${r.paymentStatus.replace('_', ' ')})${paymentMode ? ` · ${paymentMode}` : ''}`,
+        }),
+        result: { paymentMode, paymentDescription },
+      };
     });
-    await batch.commit();
 
-    res.json({ success: true, paymentStatus, amountPaid, amountDue, totalCost, paymentMode, paymentDescription });
+    res.json({ success: true, ...rolled });
   } catch (err) {
+    if (err instanceof LedgerError) return res.status(err.status).json(ledgerErrorBody(err));
     logger.error({ err }, 'updatePayment error:');
     res.status(500).json({ message: 'Failed to update payment' });
   }
@@ -2461,10 +2489,39 @@ export async function transitionTask(req, res) {
         if (owners.includes(uid)) isAssignedTeam = true; // owns the active step → may advance it
       }
     }
+    // Loaded before authorization: whether the CLIENT may act depends on how the
+    // current step was authored (#204). Pinned per task and cached per version.
+    const compiled = await getCompiledById(task.workflowDefinitionId);
+    if (!compiled) return res.status(409).json({ message: 'Workflow definition unavailable' });
+
+    const activeStepSnap = await taskRef.collection('steps')
+      .where('status', '==', 'active').limit(1).get();
+    const activeStepData = activeStepSnap.empty ? null : activeStepSnap.docs[0].data();
+
+    // #204: "Who does this? → The client" on a plain or "Split into options"
+    // step. The client used to see the step with no way to act, and the team got
+    // the button instead. The live assignment wins (staff may have reassigned the
+    // step away from the client); an unmaterialised step falls back to the
+    // authored owner. Hidden, admin-approval and payment steps are never the
+    // client's to complete, whoever they are assigned to.
+    const currentDef = compiled.definition.steps.find((s) => s.stepNumber === task.currentStepNumber) ?? null;
+    const activeOwners = Array.isArray(activeStepData?.assignedToUids) && activeStepData.assignedToUids.length
+      ? activeStepData.assignedToUids
+      : (activeStepData?.assignedTo ? [activeStepData.assignedTo] : []);
+    const clientOwnsStep = Boolean(currentDef)
+      && currentDef.type !== 'payment_gate'
+      && currentDef.clientVisible !== false
+      && activeStepData?.assignedRole !== 'admin'
+      && (activeStepData ? activeOwners.includes(task.clientUid) : deriveOwnerType(currentDef) === 'client');
+    // REWORK is excluded: it is a reviewer rejecting the step, not the owner doing it.
+    const CLIENT_STEP_EVENTS = new Set(['COMPLETE_STEP', 'BRANCH_DECISION']);
+    const isClientStepEvent = clientOwnsStep && CLIENT_STEP_EVENTS.has(event?.type);
+
     // #166: an additional client login approves/rejects exactly as the primary.
     const isOwnerClient = role === 'client' && task.clientUid === clientScopeUid(req.user);
     const clientEvents = new Set(['CLIENT_APPROVE', 'CLIENT_REJECT']);
-    if (!isStaff && !isAssignedTeam && !(isOwnerClient && clientEvents.has(event?.type))) {
+    const clientMayAct = isOwnerClient && (clientEvents.has(event?.type) || isClientStepEvent);
+    if (!isStaff && !isAssignedTeam && !clientMayAct) {
       return res.status(403).json({ message: 'Not allowed to advance this task' });
     }
 
@@ -2474,9 +2531,6 @@ export async function transitionTask(req, res) {
     // complete it. Managers may view but not act; a client cannot act even via the
     // client-approve path. This gate covers ALL step-advancing events (client +
     // completion) before any other allowance below.
-    const activeStepSnap = await taskRef.collection('steps')
-      .where('status', '==', 'active').limit(1).get();
-    const activeStepData = activeStepSnap.empty ? null : activeStepSnap.docs[0].data();
     const isAdminApprovalStep = activeStepData?.assignedRole === 'admin';
     const ADVANCING_EVENTS = new Set([
       'CLIENT_APPROVE', 'CLIENT_REJECT', 'COMPLETE_STEP', 'GOVT_APPROVE', 'GOVT_REJECT',
@@ -2494,9 +2548,10 @@ export async function transitionTask(req, res) {
     // approved over the phone/email). Only admin & manager — a team member cannot
     // act on the client's behalf. Flagged so the audit log records it as an
     // override (who did it, on behalf of the client), not as the client acting.
-    const isClientOverride =
-      clientEvents.has(event?.type) && (role === 'admin' || role === 'manager');
-    if (clientEvents.has(event?.type) && role === 'team_member') {
+    // #204: completing a client-assigned step is the same kind of override.
+    const actsForClient = clientEvents.has(event?.type) || isClientStepEvent;
+    const isClientOverride = actsForClient && (role === 'admin' || role === 'manager');
+    if (actsForClient && role === 'team_member') {
       return res.status(403).json({ message: 'A team member cannot act on the client’s behalf — ask an admin or manager to override.' });
     }
 
@@ -2519,10 +2574,11 @@ export async function transitionTask(req, res) {
       'REWORK', // #56: the form-check owner decides approve vs. reject
     ]);
     let isAdminCompletionOverride = false;
-    if (COMPLETION_EVENTS.has(event?.type)) {
-      const activeSnap = await taskRef.collection('steps')
-        .where('status', '==', 'active').limit(1).get();
-      const activeStep = activeSnap.empty ? null : activeSnap.docs[0].data();
+    // A client-assigned step's own rules were applied above: the client acts as
+    // itself (an additional login has a different uid from the assignee), and
+    // admin/manager act as an on-behalf-of-client override.
+    if (COMPLETION_EVENTS.has(event?.type) && !isClientStepEvent) {
+      const activeStep = activeStepData;
       const stepAssignee = activeStep?.assignedTo ?? null;
       // #192: a step may be assigned to SEVERAL people, and any one of them may
       // complete it (first to finish moves the workflow on — the model chosen for
@@ -2547,10 +2603,8 @@ export async function transitionTask(req, res) {
       }
     }
 
-    // Load the task's PINNED definition (immutable per task), compile it, then
-    // recompile with initial = current step so we resume exactly where we are.
-    const compiled = await getCompiledById(task.workflowDefinitionId);
-    if (!compiled) return res.status(409).json({ message: 'Workflow definition unavailable' });
+    // Recompile the PINNED definition (loaded above) with initial = current step
+    // so we resume exactly where we are.
     const resumed = compileDefinition({ ...compiled.definition, initialStep: task.currentStepNumber });
 
     const context = {

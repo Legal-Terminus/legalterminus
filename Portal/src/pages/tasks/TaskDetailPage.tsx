@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, CheckCircle2, CircleSlash, Loader2, PlayCircle,
-  CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch,
+  CreditCard, ShieldCheck, ThumbsUp, ThumbsDown, Landmark, GitBranch, Send,
   ListChecks, FileText, IndianRupee, Paperclip, MessageSquare, Briefcase, Eye, EyeOff,
   ChevronRight, ChevronDown, Flame, Ban, Archive, RotateCcw, Check,
   ChevronsLeft, ChevronsRight, MoreVertical, Users,
@@ -14,6 +14,7 @@ import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import DiscussionPanel from '../../components/messages/DiscussionPanel';
 import SendReminderButton from '../../components/tasks/SendReminderButton';
+import SendInternalReminderButton from '../../components/tasks/SendInternalReminderButton';
 import RichTextEditor from '../../components/common/RichTextEditor';
 import RichText from '../../components/common/RichText';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
@@ -1057,6 +1058,18 @@ function StepsTab({
   const displayNumberOf = (stepNumber: number) => orderedStepNumbers.indexOf(stepNumber) + 1;
   const currentStepInstance = steps.find((s) => s.stepNumber === task.currentStepNumber);
   const currentAssignee = currentStepInstance?.assignedTo ?? null;
+  // #204: the client completes a step assigned to them ("Who does this? → The
+  // client"), not only approval steps. Mirrors the backend gate in transitionTask:
+  // the live assignment wins; with no materialised steps, the authored owner.
+  const currentOwners = currentStepInstance?.assignedToUids?.length
+    ? currentStepInstance.assignedToUids
+    : (currentAssignee ? [currentAssignee] : []);
+  const clientOwnsCurrent = !!currentDef
+    && currentDef.type !== 'payment_gate'
+    && currentDef.clientVisible !== false
+    && (task.steps && task.steps.length > 0
+      ? (currentStepInstance?.assignedToClient === true || currentOwners.includes(task.clientUid))
+      : deriveOwnerType(currentDef) === 'client');
   // Server-resolved name (#48) — used so team members (who don't fetch the staff
   // list) still see the real assignee instead of a false "Unassigned".
   // #192: a step can be assigned to several people — show them all, so the panel
@@ -1201,6 +1214,8 @@ function StepsTab({
   const hero = !completed && isAdvanceable && currentDef ? (
     <StepHeroPanel
       taskId={task.id} step={currentDef} role={role} pending={pending} turn={currentTurn}
+      clientOwned={clientOwnsCurrent} currentAssignees={currentOwners}
+      currentAssigneeNames={currentStepInstance?.assigneeNames ?? []}
       onEvent={onEvent} assignment={assignment} currentAssignee={currentAssignee}
       currentAssigneeName={currentAssigneeName}
       displayNumber={displayNumberOf(task.currentStepNumber)}
@@ -1647,6 +1662,9 @@ const EVENT_VERB: Record<string, string> = {
   GOVT_REJECT: 'marked Govt rejected',
   REWORK: 'sent back for correction',
   STEP_REASSIGNED: 'reassigned the step',
+  MATTER_REASSIGNED: 'reassigned the matter', // #199
+  REMINDER_SENT: 'sent a reminder',
+  INTERNAL_REMINDER_SENT: 'sent an internal reminder', // #198
   TASK_APPROVED: 'approved the matter',
   TASK_REJECTED: 'rejected the matter',
   TASK_STOPPED: 'stopped the matter',
@@ -1680,41 +1698,36 @@ function ActivityThreadCard({ events, flush, definition, currentStep }: { events
   // #66: stepNumber → continuous display position (1,2,3…), so the activity
   // header matches the gap-free numbering shown everywhere else. Ordered by the
   // definition's step sequence; raw stepNumber stays the internal identity.
-  // #73/#55: the definition's AUTHORED array order IS the flow sequence. Sorting
-  // numerically broke "immediately previous" once steps were rearranged in the
-  // editor (they keep their original identity numbers), so the Activity panel
-  // defaulted to the wrong step's activity.
+  // #55: the definition's AUTHORED array order IS the flow sequence.
   const orderedDefNums = (definition?.steps ?? []).map((s) => s.stepNumber);
   const displayNumOf = (n: number) => { const i = orderedDefNums.indexOf(n); return i >= 0 ? i + 1 : n; };
   // The step acted upon is where the action was taken (fromStep); fall back to toStep.
   const stepOf = (e: TaskEvent) => e.fromStep ?? e.toStep ?? null;
 
-  // Group events by their reference step; within a group keep chronological order
-  // (#73: multiple comments on the same step show oldest→newest).
+  // #199: everything is ordered by TIME, newest first — within a step group
+  // and between groups. It used to run oldest→newest inside a group and order
+  // groups by step number, and "previous" meant the prior step in the
+  // definition, so a rework, a reopen, a branch jump or a reassignment of
+  // another step landed behind "Show previous steps" — the latest action hidden.
+  const byNewest = [...events].sort((a, b) => String(b.at ?? '').localeCompare(String(a.at ?? '')));
   const groups = new Map<number | null, TaskEvent[]>();
-  for (const e of events) {
+  for (const e of byNewest) {
     const n = stepOf(e);
     if (!groups.has(n)) groups.set(n, []);
     groups.get(n)!.push(e);
   }
-  // Step groups ordered most-recent step first; the current step leads.
-  const stepNums = [...groups.keys()].filter((n): n is number => n != null);
-  stepNums.sort((a, b) => b - a);
-  const orderedStepNums = currentStep != null && groups.has(currentStep)
-    ? [currentStep, ...stepNums.filter((n) => n !== currentStep)]
-    : stepNums;
+  // Map insertion order follows the newest event of each group, so the keys are
+  // already "most recently active first".
+  const recentStepNums = [...groups.keys()].filter((n): n is number => n != null);
 
-  // #73: default view = current step's activity PLUS the immediately-PREVIOUS
-  // step's activity (per the clarified requirement — only step N-2 and earlier
-  // hide behind "Show previous steps"). "Previous" is the prior step in the
-  // ordered DEFINITION sequence (orderedDefNums), not stepNumber-1 — stepNumber
-  // can gap (#66) when steps are deleted or hidden from this audience.
-  const currentIdx = currentStep != null ? orderedDefNums.indexOf(currentStep) : -1;
-  const immediatelyPreviousStep = currentIdx > 0 ? orderedDefNums[currentIdx - 1] : null;
-
-  const defaultGroups = orderedStepNums.filter((n) => n === currentStep || n === immediatelyPreviousStep);
-  const olderGroups = orderedStepNums.filter((n) => n !== currentStep && n !== immediatelyPreviousStep);
-  // Events with no step reference (task-level) always show at the top.
+  // #73: default view = the current step PLUS the one other step with the most
+  // recent activity. Everything else sits behind "Show previous steps", which
+  // only ever appends OLDER groups below — it never hides or reorders these.
+  const latestOther = recentStepNums.find((n) => n !== currentStep) ?? null;
+  const isDefault = (n: number) => n === currentStep || n === latestOther;
+  const defaultGroups = recentStepNums.filter(isDefault);
+  const olderGroups = recentStepNums.filter((n) => !isDefault(n));
+  // Events with no step reference (matter-level) always show at the top.
   const unattached = groups.get(null) ?? [];
 
   const renderGroup = (n: number) => {
@@ -1767,7 +1780,7 @@ function ActivityThreadCard({ events, flush, definition, currentStep }: { events
 /** One activity entry. Comments wrap fully and preserve line breaks (#73). */
 function ActivityRow({ e }: { e: TaskEvent }) {
   return (
-    <div className="flex items-start gap-2.5">
+    <div className="flex items-start gap-2.5" data-testid="activity-row">
       <div className="w-7 h-7 rounded-full bg-ink/10 flex items-center justify-center shrink-0 mt-0.5">
         <span className="text-[10px] font-bold text-ink-muted">{initialsOf(e.byName)}</span>
       </div>
@@ -1793,7 +1806,7 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, fallbackView = false,
+  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, fallbackView = false, clientOwned = false, currentAssignees = [], currentAssigneeNames = [],
 }: {
   taskId: string;
   step: WorkflowStepDef;
@@ -1815,6 +1828,12 @@ function StepHeroPanel({
   approvalNote?: { text: string; by: string; at: string | null };
   /** #139: client fallback view — the shown step is the last visible one, not actionable. */
   fallbackView?: boolean;
+  /** #204: the step is assigned to the client ("Who does this? → The client"). */
+  clientOwned?: boolean;
+  /** #192: every assignee of the current step (`currentAssignee` is only the primary). */
+  currentAssignees?: string[];
+  /** #198: display names parallel to `currentAssignees` (server-resolved). */
+  currentAssigneeNames?: string[];
 }) {
   // #144: an AUTHORED final step (real internal work, e.g. "Final Incorporation
   // Master Sheet update") carries NO transitions in the stored definition — the
@@ -1838,7 +1857,10 @@ function StepHeroPanel({
   // member can only reassign (admins/managers via the owner dropdown). ADMIN keeps
   // an explicit override-complete (mirrors the backend gate). An UNASSIGNED step
   // stays completable by any permitted staff (nobody to gate against yet).
-  const isAssignee = !!role.uid && currentAssignee === role.uid;
+  // #192 (reopened): ANY assignee may complete — the backend already allows it,
+  // but comparing against the primary alone left secondary assignees with only
+  // an "Assigned to …" note and no button.
+  const isAssignee = !!role.uid && (currentAssignee === role.uid || currentAssignees.includes(role.uid));
   // #90: on an admin-approval step, only an admin may complete — a manager/team
   // member is view-only regardless of assignment.
   const canComplete = role.isClient ? false
@@ -1917,6 +1939,35 @@ function StepHeroPanel({
         ? <WaitNote text="Our team will confirm your payment once it's received — nothing is needed from you on this step." />
         : <WaitNote text="Waiting for payment to be recorded." />;
     }
+  } else if (clientOwned && !isAdminApprovalStep && !isClientStep && (step.type === 'branch' || events.has('COMPLETE_STEP'))) {
+    // #204: a plain or "Split into options" step assigned to the client. The
+    // client does it — comment + Submit (or one button per option) — and the
+    // workflow moves on. Before this, only approval steps had client buttons, so
+    // the client saw the step with nothing to press and the team got the button.
+    const options = step.type === 'branch'
+      ? [...new Set((step.transitions ?? []).filter((t) => t.branch).map((t) => t.branch!))]
+      : [];
+    const buttons = (forClient: boolean) => (step.type === 'branch' ? options.map((b) => (
+      <button key={b} disabled={pending} onClick={() => fire('BRANCH_DECISION', { extra: { branch: b } })} className="btn-secondary disabled:opacity-50">
+        <GitBranch className="w-4 h-4" /> {b.replace(/_/g, ' ')}{forClient ? ' for client' : ''}
+      </button>
+    )) : (
+      <button disabled={pending} onClick={() => fire('COMPLETE_STEP')} className={forClient ? 'btn-secondary disabled:opacity-50' : 'btn-primary disabled:opacity-50'}>
+        {pending ? spin : (forClient ? <ShieldCheck className="w-4 h-4" /> : <Send className="w-4 h-4" />)} {forClient ? 'Submit for client' : 'Submit'}
+      </button>
+    ));
+    if (role.isClient) {
+      actions = <div className="flex flex-wrap gap-2">{buttons(false)}</div>;
+    } else if (role.canOverrideClient) {
+      // Same override as client approvals: staff act on the client's behalf (e.g.
+      // the client sent the details by email). Recorded as an override.
+      actions = (
+        <div className="space-y-2">
+          <WaitNote text="Waiting for the client — or submit on their behalf below." />
+          <div className="flex flex-wrap gap-2">{buttons(true)}</div>
+        </div>
+      );
+    } else wait = <WaitNote text="Waiting for the client." />;
   } else if (step.type === 'branch') {
     const branches = [...new Set((step.transitions ?? []).filter((t) => t.branch).map((t) => t.branch!))];
     if (role.isStaff && canComplete) {
@@ -2111,6 +2162,20 @@ function StepHeroPanel({
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-1.5">Client reminder</p>
           <SendReminderButton taskId={taskId} stepNumber={step.stepNumber} />
+        </div>
+      )}
+      {/* #198: nudge the team member(s) who own this step. Not on a client's
+          step (there is no internal assignee), nor when the only assignee is you. */}
+      {role.isStaff && !clientOwned && currentAssignees.some((u) => u !== role.uid) && (
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted mb-1.5">Internal reminder</p>
+          <SendInternalReminderButton
+            taskId={taskId}
+            stepNumber={step.stepNumber}
+            assigneeNames={currentAssignees
+              .map((u, i) => (u === role.uid ? null : currentAssigneeNames[i] ?? null))
+              .filter((n): n is string => !!n)}
+          />
         </div>
       )}
     </div>
@@ -2537,13 +2602,11 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
 
   const [editing, setEditing] = useState(false);
   const [totalCost, setTotalCost] = useState(String(task.totalCost ?? task.amountPaid ?? 0));
-  const [amountPaid, setAmountPaid] = useState(String(task.amountPaid ?? 0));
   const [paymentMode, setPaymentMode] = useState(task.paymentMode ?? '');
   const [paymentDescription, setPaymentDescription] = useState(task.paymentDescription ?? ''); // #147
 
   const startEdit = () => {
     setTotalCost(String(task.totalCost ?? task.amountPaid ?? 0));
-    setAmountPaid(String(task.amountPaid ?? 0));
     setPaymentMode(task.paymentMode ?? '');
     setPaymentDescription(task.paymentDescription ?? '');
     setEditing(true);
@@ -2552,7 +2615,6 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
   const save = useMutation({
     mutationFn: () => updatePayment(task.id, {
       totalCost: Number(totalCost) || 0,
-      amountPaid: Number(amountPaid) || 0,
       paymentMode: paymentMode.trim() || null,
       paymentDescription: paymentDescription.trim() || null, // #147
     }),
@@ -2566,8 +2628,10 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
     onError: (err: Error) => toast.error(err.message || 'Could not update the payment.'),
   });
 
+  // #202: the amount paid is the sum of the payment history — shown, never
+  // typed. Only the total cost is edited here; the amount due follows from it.
   const totalNum = Number(totalCost) || 0;
-  const paidNum = Number(amountPaid) || 0;
+  const paidNum = task.amountPaid ?? 0;
   const dueNum = Math.max(0, totalNum - paidNum);
   const overpaid = paidNum > totalNum;
 
@@ -2612,22 +2676,23 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
             </div>
           )}
           <p className="text-xs text-ink-faint mt-4">
-            Payments are recorded by our team as they are received.
+            {canEdit
+              ? 'Amount paid is the total of the payment history below. To change it, record, correct or remove a payment.'
+              : 'Payments are recorded by our team as they are received.'}
           </p>
         </>
       ) : (
         <div className="mt-4 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <label className="block">
               <span className="text-xs text-ink-muted">Total cost (₹)</span>
               <input type="number" min="0" value={totalCost} onChange={(e) => setTotalCost(e.target.value)}
                 className="input-field mt-1" />
             </label>
-            <label className="block">
-              <span className="text-xs text-ink-muted">Amount paid (₹)</span>
-              <input type="number" min="0" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)}
-                className="input-field mt-1" />
-            </label>
+            <div>
+              <span className="text-xs text-ink-muted">Amount paid (from payment history)</span>
+              <p className="mt-1 px-3 py-2 text-sm font-semibold text-ink" aria-label="Amount paid">₹{paidNum.toLocaleString('en-IN')}</p>
+            </div>
           </div>
           <label className="block">
             <span className="text-xs text-ink-muted">Payment mode</span>
@@ -2653,7 +2718,7 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
           </label>
           <div className="flex items-center justify-between text-xs">
             <span className="text-ink-muted">Amount due: <span className="font-semibold text-ink">₹{dueNum.toLocaleString('en-IN')}</span></span>
-            {overpaid && <span className="text-red-600">Paid exceeds total cost</span>}
+            {overpaid && <span className="text-red-600">Total cost is below the amount already paid</span>}
           </div>
           <div className="flex items-center gap-2">
             <button disabled={save.isPending || overpaid} onClick={() => save.mutate()}
@@ -2743,7 +2808,8 @@ function PaymentHistory({ task, canEdit }: { task: Task; canEdit: boolean }) {
   const payments = data?.payments ?? [];
   const amountNum = Number(amount) || 0;
   const remaining = data?.amountDue ?? 0;
-  const exceeds = amountNum > remaining;
+  // Mirrors the backend: with no total cost agreed yet, recording is not capped.
+  const exceeds = (data?.totalCost ?? 0) > 0 && amountNum > remaining;
 
   return (
     <div className="card p-5">

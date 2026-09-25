@@ -105,6 +105,27 @@ test('#192: a SECONDARY assignee sees the step in My Tasks and may complete it',
   } finally { await deleteMatter(taskId); }
 });
 
+// Reopened #192: the API accepted a secondary assignee, but the matter screen
+// compared the viewer with the PRIMARY assignee only — so the secondary saw
+// "Assigned to …" and no button. Asserted through the UI, as that person.
+test('#192: a SECONDARY assignee gets the Complete Step button on the matter screen', async ({ teamPage }) => {
+  const admin = await apiAs('admin');
+  await admin.put(`/api/workflow-definitions/${defId}/step-settings`, {
+    data: { settings: { 1: { assigneeUids: [MANAGER, TEAM] } } }, // manager primary
+  });
+  await admin.dispose();
+
+  const taskId = await createMatter({ serviceKey });
+  try {
+    await teamPage.goto(`tasks/${taskId}`);
+    await teamPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    const button = teamPage.getByRole('button', { name: /complete step/i });
+    await expect(button).toBeVisible();
+    await button.click();
+    await expect.poll(async () => (await getMatter(taskId)).currentStepNumber).not.toBe(1);
+  } finally { await deleteMatter(taskId); }
+});
+
 test('#192: someone NOT on the list still cannot complete the step', async () => {
   const admin = await apiAs('admin');
   await admin.put(`/api/workflow-definitions/${defId}/step-settings`, {

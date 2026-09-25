@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
 import { apiAs, createMatter, deleteMatter, advanceUntil, advanceSteps, getMatter } from './api';
+import { env } from './helpers';
 
 /**
  * #191 — the Matters list gains Current Step and Organisation columns so the team
@@ -64,5 +65,56 @@ test('#191: both columns render and are searchable', async ({ adminPage }) => {
       await adminPage.waitForTimeout(1200);
       await expect(adminPage.getByText(ORG).first()).toBeVisible();
     }
+  } finally { await deleteMatter(taskId); }
+});
+
+/* ── #201: the client's phone and email in the matters list ── */
+
+const CLIENT_PHONE = '9990001201'; // seeded on the e2e client (seed-e2e.js)
+
+test('#201: staff get the client\'s phone and email on each matter row', async () => {
+  const taskId = await createMatter();
+  try {
+    for (const role of ['admin', 'team'] as const) {
+      const api = await apiAs(role);
+      const res = await api.get('/api/tasks?limit=100');
+      const rows = res.ok() ? ((await res.json()).data as Array<Record<string, unknown>>) : [];
+      await api.dispose();
+      const row = rows.find((r) => r.id === taskId);
+      if (!row) continue; // a team member sees only matters they are on
+      expect(row.clientPhone, `${role}: phone from the client profile`).toBe(CLIENT_PHONE);
+      expect(row.clientEmail, `${role}: email from the client profile`).toBe(env('E2E_CLIENT_EMAIL'));
+    }
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#201: clients and professionals never receive client contact fields', async () => {
+  const taskId = await createMatter();
+  try {
+    for (const role of ['client', 'pro'] as const) {
+      const api = await apiAs(role);
+      const res = await api.get('/api/tasks?limit=100');
+      const rows = res.ok() ? ((await res.json()).data as Array<Record<string, unknown>>) : [];
+      await api.dispose();
+      for (const r of rows) {
+        expect(r.clientPhone, `${role}: no clientPhone`).toBeUndefined();
+        expect(r.clientEmail, `${role}: no clientEmail`).toBeUndefined();
+      }
+    }
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#201: the list shows the contact column and finds a matter by phone', async ({ adminPage }) => {
+  const org = `Contact${Date.now()}`;
+  const taskId = await createMatter({ organisation: org });
+  try {
+    await adminPage.goto('tasks');
+    await expect(adminPage.getByText('Client Contact', { exact: true }).first()).toBeVisible({ timeout: 20_000 });
+    const search = adminPage.getByPlaceholder(/Search by client/i);
+    await search.fill(CLIENT_PHONE);
+    await expect(adminPage.getByText(org).first(), 'found by the client phone').toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByRole('link', { name: CLIENT_PHONE }).first()).toHaveAttribute('href', `tel:${CLIENT_PHONE}`);
+    await search.fill('0000000000');
+    await expect(adminPage.getByText(org)).toHaveCount(0);
   } finally { await deleteMatter(taskId); }
 });

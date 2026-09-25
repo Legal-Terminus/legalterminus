@@ -4,6 +4,7 @@ import { createNotification } from './notifications.controller.js';
 import { sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
 import { sanitizeRichText, richTextToPlain, checkWordLimit } from '../services/richText.service.js';
+import { extractMentionEmails, resolveStaffByEmails } from '../services/mentions.service.js';
 import { clientCanSeeMatter } from './tasks.controller.js';
 
 /**
@@ -145,6 +146,12 @@ export async function createMessage(req, res) {
     // Fail closed: staff must opt IN to share a message with the client.
     const clientVisible = isClient ? true : req.body?.clientVisible === true;
 
+    // #200: a STAFF author may @mention colleagues by email. A client's "@…"
+    // stays plain text — their message already reaches the matter owner, and
+    // letting a client page any staff address would be a spam channel.
+    const mentioned = isClient ? [] : (await resolveStaffByEmails(db, extractMentionEmails(richTextToPlain(body))))
+      .filter((u) => u.uid !== req.user.uid);
+
     const now = new Date();
     const doc = {
       body,
@@ -153,7 +160,8 @@ export async function createMessage(req, res) {
       authorRole: req.user.role ?? null,
       createdAt: now,
     };
-    const ref = await msgsCol(taskId).add(doc);
+    const ref = await msgsCol(taskId).add(mentioned.length
+      ? { ...doc, mentionedUids: mentioned.map((u) => u.uid) } : doc);
 
     // Notify the other side. A client's message pings the matter owner; a
     // client-visible staff message pings the client. Internal-only staff messages
@@ -197,6 +205,41 @@ export async function createMessage(req, res) {
       }
     } catch (e) {
       logger.warn({ err: e?.message }, 'createMessage: notification/email failed (non-fatal)');
+    }
+
+    // #200: each mentioned colleague gets one notification and one email.
+    // Skips whoever the message already notified above, so nobody gets two.
+    // The response below is the same whether or not any address resolved.
+    const alreadyNotified = isClient ? task.assignedTo : (clientVisible ? task.clientUid : null);
+    const authorSnap = mentioned.length ? await db.collection('users').doc(req.user.uid).get() : null;
+    const authorName = authorSnap?.exists
+      ? (authorSnap.data().name || authorSnap.data().fullName || authorSnap.data().email || 'A colleague')
+      : 'A colleague';
+    const plain = richTextToPlain(body);
+    for (const u of mentioned.filter((m) => m.uid !== alreadyNotified)) {
+      try {
+        await createNotification({
+          recipientUid: u.uid, type: 'info',
+          title: `${authorName} mentioned you`,
+          message: plain.length > 140 ? `${plain.slice(0, 140)}…` : plain,
+          taskId, email: false,
+        });
+        const to = u.email || (Array.isArray(u.emailIds) ? u.emailIds[0] : null);
+        const rendered = to ? await renderTemplate('matter_mention', {
+          recipientName: u.name || u.fullName || '', senderName: authorName,
+          clientName: task.clientName ?? '', organisation: task.organisation ?? '',
+          serviceName: task.serviceName ?? '', message: plain,
+        }) : null;
+        // No cc: the matter's ccEmails are the client's, and a mention is internal.
+        if (rendered) {
+          await sendTemplatedEmail({
+            to, subject: rendered.subject, body: rendered.body,
+            taskId, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
+          });
+        }
+      } catch (e) {
+        logger.warn({ err: e?.message }, 'createMessage: mention notify failed (non-fatal)');
+      }
     }
 
     res.status(201).json({ id: ref.id, ...doc, createdAt: now.toISOString(), isMine: true });

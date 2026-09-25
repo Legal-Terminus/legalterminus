@@ -115,14 +115,27 @@ export const CLIENT_ASSIGNEE = '__CLIENT__';
 export const OWNER_TYPES = ['client', 'team', 'govt'];
 
 /**
+ * True when the author set "Who does this? → The client" on the step (#204).
+ * Stored as the CLIENT_ASSIGNEE sentinel, not as `ownerType`, so every reader
+ * that asks "is this the client's step?" must go through here.
+ */
+export function isClientAssignedStep(step) {
+  if (!step) return false;
+  if (step.defaultAssigneeUid === CLIENT_ASSIGNEE) return true;
+  return Array.isArray(step.defaultAssigneeUids) && step.defaultAssigneeUids.includes(CLIENT_ASSIGNEE);
+}
+
+/**
  * Derive who is responsible for advancing a step — no extra per-step config needed.
  * Payment gates and client-approval steps are on the client; government-response
  * steps are on the registrar; everything else is the firm's team. An explicit
- * `step.ownerType` (if ever set) wins over the derivation.
+ * `step.ownerType` (if ever set) wins over the derivation, and so does a step
+ * the author assigned to the client.
  */
 export function deriveOwnerType(step) {
   if (!step) return 'team';
   if (OWNER_TYPES.includes(step.ownerType)) return step.ownerType;
+  if (isClientAssignedStep(step)) return 'client';
   const events = new Set((step.transitions ?? []).map((t) => t.event));
   if (step.type === 'payment_gate' || events.has('CLIENT_APPROVE')) return 'client';
   if (events.has('GOVT_APPROVE')) return 'govt';

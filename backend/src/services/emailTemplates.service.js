@@ -119,6 +119,30 @@ export const TEMPLATE_DEFS = {
     subject: 'New step assigned to you',
     body: '{{clientName}} · {{serviceName}}: {{stepName}}',
   },
+  internal_step_reminder: {
+    label: 'Internal — Step reminder (to the assignees)',
+    audience: 'internal',
+    description: 'Sent to everyone assigned to a step when a colleague presses "Send internal reminder" (#198).',
+    placeholders: ['recipientName', 'senderName', 'clientName', 'organisation', 'serviceName', 'stepName', 'note'],
+    subject: 'Reminder: {{stepName}} — {{clientName}}',
+    body: 'Hi {{recipientName}},\n\n' +
+      '{{senderName}} has sent you a reminder about a step assigned to you.\n\n' +
+      'Matter: {{clientName}} · {{serviceName}}\n' +
+      'Step: {{stepName}}\n\n' +
+      '{{note}}\n\n' +
+      'Open the matter in the portal to pick it up.',
+  },
+  matter_mention: {
+    label: 'Internal — You were mentioned in a discussion',
+    audience: 'internal',
+    description: 'Sent to a team member @mentioned by email address in a matter discussion (#200).',
+    placeholders: ['recipientName', 'senderName', 'clientName', 'organisation', 'serviceName', 'message'],
+    subject: '{{senderName}} mentioned you on {{clientName}} · {{serviceName}}',
+    body: 'Hi {{recipientName}},\n\n' +
+      '{{senderName}} mentioned you in the discussion on {{clientName}} · {{serviceName}}:\n\n' +
+      '{{message}}\n\n' +
+      'Open the matter in the portal to reply.',
+  },
 };
 
 let _cache = null;

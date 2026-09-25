@@ -87,13 +87,12 @@ export const taskUpdateSchema = z.object({
 });
 
 // PATCH /api/tasks/:taskId/payment — edit payment details after creation (#78).
-// Admin/manager. Any subset of fields; the controller recomputes amountDue and,
-// if paymentStatus isn't given explicitly, derives it from the amounts.
+// Admin/manager.
+// #202: the amount paid and the status are NOT accepted — both follow from the
+// payment history — so `.strict()` rejects them.
 export const taskPaymentUpdateSchema = z.object({
   totalCost: z.number().min(0).max(1e9).optional(),
-  amountPaid: z.number().min(0).max(1e9).optional(),
   paymentMode: z.string().trim().max(60).nullable().optional(),
-  paymentStatus: z.enum(['not_paid', 'part_paid', 'fully_paid']).optional(),
   // #147: editable after creation alongside the other payment details.
   paymentDescription: z.string().trim().max(1000).nullable().optional(),
 }).strict().refine((b) => Object.keys(b).length > 0, {
@@ -199,4 +198,18 @@ export const taskListQuerySchema = z.object({
 // #105: staff "Note to client" on a step — comment-only, no transition.
 export const stepNoteSchema = z.object({
   note: z.string().trim().min(1).max(8000),
+}).strict();
+
+// POST /api/tasks/:taskId/internal-reminders — #198. Recipients are resolved
+// server-side from the step's assignees; the caller names only the step.
+export const internalReminderSchema = z.object({
+  stepNumber: z.number().int().positive(),
+  note: z.string().trim().max(1000).optional(),
+}).strict();
+
+// POST /api/tasks/:taskId/messages — the discussion thread (#123). Mentions
+// (#200) are parsed from the body server-side, never sent as a list.
+export const messageCreateSchema = z.object({
+  body: z.string().max(200000),
+  clientVisible: z.boolean().optional(),
 }).strict();

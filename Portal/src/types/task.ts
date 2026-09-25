@@ -16,6 +16,9 @@ export interface TaskStep {
    *  `assigneeName` remain the primary, so single-assignee code keeps working. */
   assignedToUids?: string[];
   assigneeNames?: string[];
+  /** #204: client view only — the step is assigned to this client. The
+   *  assignee uids themselves are stripped from what a client receives. */
+  assignedToClient?: boolean;
   completedBy?: string;
   completedAt?: string;
   deadline?: string;
@@ -33,6 +36,10 @@ export interface Task {
   serviceName?: string;
   clientUid: string;
   clientName?: string;
+  /** #201: staff list only — the client's profile phone and email, looked up
+   *  live. Never sent to clients or professionals. */
+  clientEmail?: string | null;
+  clientPhone?: string | null;
   /** #104: per-matter organisation (entered at creation; used in headers + email subjects). */
   organisation?: string;
   /** #149: extra recipients CC'd on every automated email for this matter. */

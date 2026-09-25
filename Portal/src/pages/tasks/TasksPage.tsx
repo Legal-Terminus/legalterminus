@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
-import { ArrowRight, Flame, Trash2, Plus } from 'lucide-react';
+import { ArrowRight, Flame, Trash2, Plus, Phone, Mail } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import MatterViewToggle from '../../components/tasks/MatterViewToggle';
 import DataGrid from '../../components/common/DataGrid';
@@ -188,7 +188,7 @@ export default function TasksPage() {
             </button>
           </div>
         }
-        searchPlaceholder={isClientView ? 'Search by service or status…' : 'Search by client, service, professional, or status…'}
+        searchPlaceholder={isClientView ? 'Search by service or status…' : 'Search by client, phone, email, service, professional, or status…'}
         globalFilterFn={(row, _id, q) => {
           const t = row.original;
           const s = q.toLowerCase();
@@ -200,7 +200,10 @@ export default function TasksPage() {
             // #191: the two new columns are searchable too — the search matches an
             // explicit field list, so adding a column alone would not cover it.
             (t.currentStepTitle ?? '').toLowerCase().includes(s) ||
-            (t.organisation ?? '').toLowerCase().includes(s)
+            (t.organisation ?? '').toLowerCase().includes(s) ||
+            // #201: find a matter from the number or address a client calls from.
+            (t.clientPhone ?? '').toLowerCase().includes(s) ||
+            (t.clientEmail ?? '').toLowerCase().includes(s)
           );
         }}
         isLoading={isLoading}
@@ -283,6 +286,15 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
             ? <span className="text-xs text-ink-soft line-clamp-2">{v}</span>
             : <span className="text-xs text-ink-faint">—</span>;
         },
+      }),
+      // #201: reach the client straight from the list. tel:/mailto: links so a
+      // tap on a phone dials; stopPropagation keeps the row from opening.
+      col.accessor((t) => [t.clientPhone, t.clientEmail].filter(Boolean).join(' '), {
+        id: 'clientContact',
+        header: 'Client Contact',
+        size: 210,
+        enableSorting: false,
+        cell: (ctx) => <ClientContact task={ctx.row.original} />,
       }),
       col.accessor((t) => t.organisation ?? '', {
         id: 'organisation',
@@ -394,6 +406,26 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
   ] as ReturnType<typeof col.accessor>[];
 }
 
+/** #201: the client's phone and email, each a tappable link. Staff views only. */
+function ClientContact({ task }: { task: Task }) {
+  if (!task.clientPhone && !task.clientEmail) return <span className="text-xs text-ink-muted">—</span>;
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
+  return (
+    <span className="flex flex-col min-w-0 text-xs">
+      {task.clientPhone && (
+        <a href={`tel:${task.clientPhone}`} onClick={stop} className="inline-flex items-center gap-1 text-ink-soft hover:text-brand-700 truncate py-0.5">
+          <Phone className="w-3 h-3 shrink-0" aria-hidden="true" /> {task.clientPhone}
+        </a>
+      )}
+      {task.clientEmail && (
+        <a href={`mailto:${task.clientEmail}`} onClick={stop} className="inline-flex items-center gap-1 text-ink-soft hover:text-brand-700 truncate py-0.5">
+          <Mail className="w-3 h-3 shrink-0" aria-hidden="true" /> <span className="truncate">{task.clientEmail}</span>
+        </a>
+      )}
+    </span>
+  );
+}
+
 function MatterCard({ task, isClientView, canDelete, deleting, onDelete }: {
   task: Task; isClientView: boolean; canDelete: boolean; deleting: boolean; onDelete: (t: Task) => void;
 }) {
@@ -412,6 +444,7 @@ function MatterCard({ task, isClientView, canDelete, deleting, onDelete }: {
             {task.isUrgent && <span className="badge bg-red-50 text-red-600 inline-flex items-center gap-1"><Flame className="w-3 h-3" fill="currentColor" /> Urgent</span>}
           </div>
           {secondary && <p className="text-xs text-ink-muted mt-0.5 truncate">{secondary}</p>}
+          {!isClientView && <div className="mt-1"><ClientContact task={task} /></div>}
         </div>
         {canDelete && (
           /* #163: was a ~28px lone icon at the card corner — easy to hit by

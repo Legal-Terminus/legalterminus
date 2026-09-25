@@ -6,6 +6,8 @@ import { env } from './helpers';
  * API-level coverage for the additive matter features:
  *   #77 — Excel (.xlsx/.xls) content types are accepted by the upload allow-list.
  *   #78 — payment details are editable (admin/manager); amounts + status recompute.
+ *         #202: only the total cost, mode and description — the amount paid
+ *         is the payment history's total.
  *   #79 — an uploaded document carries a `docType` (PAN, TAN, …), returned on read.
  *
  * Fresh matter per test; deleted after.
@@ -48,27 +50,29 @@ test('#79: a document carries its docType and it is returned on list', async () 
 
 test('#78: admin edits payment; amounts + status recompute; manager allowed, client forbidden', async () => {
   const api = await apiAs('admin');
-  // Set part payment: total 10000, paid 4000 → due 6000, part_paid.
+  // createMatter() took ₹10,000 of ₹10,000. Raising the total re-opens a balance:
+  // paid 10000 of 14000 → due 4000, part_paid.
   const patch = await api.patch(`/api/tasks/${taskId}/payment`, {
-    data: { totalCost: 10000, amountPaid: 4000, paymentMode: 'UPI' },
+    data: { totalCost: 14000, paymentMode: 'UPI' },
   });
   expect(patch.ok()).toBeTruthy();
   const body = await patch.json();
-  expect(body.amountDue).toBe(6000);
+  expect(body.amountPaid).toBe(10000);
+  expect(body.amountDue).toBe(4000);
   expect(body.paymentStatus).toBe('part_paid');
   expect(body.paymentMode).toBe('UPI');
 
   const m = await getMatter(taskId);
-  expect(m.amountDue).toBe(6000);
+  expect(m.amountDue).toBe(4000);
   expect(m.paymentMode).toBe('UPI');
 
-  // Receiving the balance → fully_paid.
-  const paid = await api.patch(`/api/tasks/${taskId}/payment`, { data: { amountPaid: 10000 } });
+  // Receiving the balance — recorded in the history — → fully_paid.
+  const paid = await api.post(`/api/tasks/${taskId}/payments`, { data: { amount: 4000, mode: 'UPI' } });
   expect((await paid.json()).paymentStatus).toBe('fully_paid');
 
-  // Overpay is rejected.
-  const over = await api.patch(`/api/tasks/${taskId}/payment`, { data: { amountPaid: 99999 } });
-  expect(over.status()).toBe(400);
+  // The total can't drop below what was paid, and paid can't be typed at all.
+  expect((await api.patch(`/api/tasks/${taskId}/payment`, { data: { totalCost: 9000 } })).status()).toBe(400);
+  expect((await api.patch(`/api/tasks/${taskId}/payment`, { data: { amountPaid: 99999 } })).status()).toBe(400);
   await api.dispose();
 
   // A manager may edit; a client may not.
@@ -100,6 +104,12 @@ test('#147: payment description is saved at creation, editable, and clearable', 
   try {
     expect((await getMatter(newId)).paymentDescription)
       .toBe('Received ₹1,000 via UPI and ₹500 in Cash.');
+    // #202: the creation payment is the first history row, carrying the note.
+    const hist = await (await api.get(`/api/tasks/${newId}/payments`)).json();
+    expect(hist.payments).toHaveLength(1);
+    expect(hist.payments[0].amount).toBe(1500);
+    expect(hist.payments[0].mode).toBe('UPI');
+    expect(hist.payments[0].notes).toBe('Received ₹1,000 via UPI and ₹500 in Cash.');
 
     // Editable after creation.
     const patch = await api.patch(`/api/tasks/${newId}/payment`, {
@@ -109,7 +119,7 @@ test('#147: payment description is saved at creation, editable, and clearable', 
     expect((await patch.json()).paymentDescription).toBe('Balance ₹8,500 pending — cheque promised.');
 
     // Untouched by an unrelated payment edit (preserved, not wiped).
-    await api.patch(`/api/tasks/${newId}/payment`, { data: { amountPaid: 2000 } });
+    await api.patch(`/api/tasks/${newId}/payment`, { data: { totalCost: 12000 } });
     expect((await getMatter(newId)).paymentDescription).toBe('Balance ₹8,500 pending — cheque promised.');
 
     // Explicitly clearable.

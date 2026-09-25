@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
-import { apiAs, createMatter, deleteMatter, assignMatter } from './api';
+import { apiAs, createMatter, deleteMatter, assignMatter, getNotifications, waitForNotification } from './api';
+import { env } from './helpers';
 
 /**
  * #123 — per-matter discussion thread (client ⇄ internal team).
@@ -93,5 +94,71 @@ test('#123: the Discussion tab renders and can post a message', async ({ adminPa
     await expect(adminPage.getByText(msg)).toBeVisible();
     // Staff default is internal-only — the bubble says so.
     await expect(adminPage.getByText('internal').first()).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});
+
+/* ── #200: @mention a colleague by email ─────────────────────── */
+
+/** Mention notifications only — creating a matter may notify people for other reasons. */
+const mentionCount = async (role: 'team' | 'manager' | 'client', taskId: string) =>
+  (await getNotifications(role)).filter((n) => n.taskId === taskId && /mentioned you/i.test(n.title)).length;
+
+test('#200: each @mentioned colleague is notified once', async () => {
+  const taskId = await createMatter();
+  try {
+    const admin = await apiAs('admin');
+    const body = `<p>@${env('E2E_TEAM_EMAIL')} and @${env('E2E_MANAGER_EMAIL')} please review. @${env('E2E_TEAM_EMAIL')}</p>`;
+    expect((await admin.post(`/api/tasks/${taskId}/messages`, { data: { body } })).status()).toBe(201);
+    await admin.dispose();
+
+    expect(await waitForNotification('team', /mentioned you/i, 20_000, taskId)).toBe(true);
+    expect(await waitForNotification('manager', /mentioned you/i, 20_000, taskId)).toBe(true);
+    // Mentioned twice in one message — still one notification.
+    expect(await mentionCount('team', taskId)).toBe(1);
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#200: mentioning a client or an unknown address sends nothing and reveals nothing', async () => {
+  const taskId = await createMatter();
+  try {
+    const admin = await apiAs('admin');
+    const shape = async (addr: string) => {
+      const res = await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: `<p>@${addr} hello</p>` } });
+      const b = await res.json();
+      return { status: res.status(), keys: Object.keys(b).sort().join(',') };
+    };
+    const known = await shape(env('E2E_CLIENT_EMAIL'));
+    const unknown = await shape(`nobody-${Date.now()}@example.test`);
+    expect(known).toEqual(unknown); // no way to tell who exists
+    await admin.dispose();
+
+    // The client is never notified by an INTERNAL message that names them.
+    await new Promise((r) => setTimeout(r, 3000));
+    expect(await mentionCount('client', taskId)).toBe(0);
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#200: a client\'s @mention does not page staff, and mention data never reaches the client', async () => {
+  const taskId = await createMatter();
+  try {
+    const client = await apiAs('client');
+    expect((await client.post(`/api/tasks/${taskId}/messages`, {
+      data: { body: `<p>@${env('E2E_MANAGER_EMAIL')} hi</p>` },
+    })).status()).toBe(201);
+
+    const admin = await apiAs('admin');
+    await admin.post(`/api/tasks/${taskId}/messages`, {
+      data: { body: `<p>@${env('E2E_TEAM_EMAIL')} shared</p>`, clientVisible: true },
+    });
+    await admin.dispose();
+
+    const list = await (await client.get(`/api/tasks/${taskId}/messages`)).json();
+    for (const m of (list.data ?? []) as Array<Record<string, unknown>>) {
+      expect(m.mentionedUids, 'no mention data for the client').toBeUndefined();
+    }
+    await client.dispose();
+
+    await new Promise((r) => setTimeout(r, 3000));
+    expect(await mentionCount('manager', taskId)).toBe(0);
   } finally { await deleteMatter(taskId); }
 });

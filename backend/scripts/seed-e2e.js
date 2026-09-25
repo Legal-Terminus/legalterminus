@@ -23,6 +23,7 @@ import { admin, getDb } from '../src/config/firebase.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TAG = 'e2e'; // marks fixtures we create so we can clean them up safely
+const E2E_CLIENT_PHONE = '9990001201';
 
 const USERS = {
   admin:       { email: 'e2e-admin@legalterminus.test',   password: 'E2eAdmin!2026',   name: 'E2E Admin',   role: 'admin' },
@@ -50,7 +51,9 @@ async function ensureAuthUser({ email, password, name, role }) {
   await db.collection('users').doc(rec.uid).set({
     name, email, role, e2e: true,
     createdAt: now, updatedAt: now,
-    ...(role === 'client' ? { emailIds: [email] } : { designation: 'E2E' }),
+    // #201: the client carries a phone so the matter list's contact column
+    // has something to show.
+    ...(role === 'client' ? { emailIds: [email], phone: E2E_CLIENT_PHONE } : { designation: 'E2E' }),
   }, { merge: true });
   return rec.uid;
 }

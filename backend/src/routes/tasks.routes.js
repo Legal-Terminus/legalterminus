@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { verifyToken, requireRole, denyReadOnlyRoles } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema } from '../schemas/task.schema.js';
+import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema, internalReminderSchema, messageCreateSchema } from '../schemas/task.schema.js';
 import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments, createPayment, patchPayment, deletePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep, postStepNote, listRecurringDue, duplicateTask } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument, setDocumentVisibility } from '../controllers/documents.controller.js';
 import { listMessages, createMessage } from '../controllers/messages.controller.js';
-import { listReminders, sendReminder } from '../controllers/reminders.controller.js';
+import { listReminders, sendReminder, listInternalReminders, sendInternalReminder } from '../controllers/reminders.controller.js';
 import { getFormStep, saveFormStep } from '../controllers/forms.controller.js';
 
 const router = Router();
@@ -32,8 +32,14 @@ router.get('/:taskId/events',                listTaskEvents);
 // and each send is audited.
 router.get('/:taskId/reminders',             requireRole('admin', 'manager', 'team_member'), listReminders);
 router.post('/:taskId/reminders',            requireRole('admin', 'manager', 'team_member'), sendReminder);
-router.get('/:taskId/messages',              listMessages);
-router.post('/:taskId/messages',             createMessage);
+// #198: internal reminders to the step's assignee(s) — staff only, separate
+// history, recipients resolved server-side from the step.
+router.get('/:taskId/internal-reminders',    requireRole('admin', 'manager', 'team_member'), listInternalReminders);
+router.post('/:taskId/internal-reminders',   requireRole('admin', 'manager', 'team_member'), validate(internalReminderSchema), sendInternalReminder);
+// #200: explicit guards (were implicit) — the controller still enforces
+// matter ownership; a professional may read but never post.
+router.get('/:taskId/messages',              requireRole('admin', 'manager', 'team_member', 'client', 'professional'), listMessages);
+router.post('/:taskId/messages',             requireRole('admin', 'manager', 'team_member', 'client'), validate(messageCreateSchema), createMessage);
 router.patch('/:taskId',                     validate(taskUpdateSchema), patchTask);
 // Edit payment details after creation (#78) — admin/manager.
 router.patch('/:taskId/payment',             requireRole('admin', 'manager'), validate(taskPaymentUpdateSchema), updatePayment);

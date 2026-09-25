@@ -47,11 +47,14 @@ test('#117: editing payment to fully_paid while a balance remains is rejected', 
   try {
     const api = await apiAs('admin');
     // Raise the total so a balance exists, and try to force fully_paid.
+    // #202: the status is never accepted from the caller at all now.
     const res = await api.patch(`/api/tasks/${taskId}/payment`, {
-      data: { totalCost: 20000, amountPaid: 5000, paymentStatus: 'fully_paid' },
+      data: { totalCost: 20000, paymentStatus: 'fully_paid' },
     });
     expect(res.status()).toBe(400);
-    expect(JSON.stringify(await res.json())).toMatch(/outstanding balance/i);
+    // Raising the total alone derives the honest status.
+    const ok = await api.patch(`/api/tasks/${taskId}/payment`, { data: { totalCost: 20000 } });
+    expect((await ok.json()).paymentStatus).toBe('part_paid');
     await api.dispose();
   } finally { await deleteMatter(taskId); }
 });

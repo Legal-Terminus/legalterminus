@@ -660,6 +660,47 @@ export async function createClientTitleMatter(): Promise<{ taskId: string; defId
   return { taskId, defId };
 }
 
+/**
+ * #204: steps whose "Who does this?" is "The client" — stored as
+ * the `__CLIENT__` sentinel. Mirrors the reported flow: a "Split into options"
+ * step the client submits (one option, "Submit"), a team step, then a plain
+ * client-assigned step, then the end.
+ */
+export async function createClientAssignedMatter(): Promise<{ taskId: string; defId: string }> {
+  const api = await apiAs('admin');
+  const stamp = Date.now();
+  const defId = `e2e-clientassigned-${stamp}`;
+  const serviceKey = `e2e-svc-clientassigned-${stamp}`;
+  const def = {
+    id: defId,
+    name: `E2E Client Assigned ${defId}`,
+    initialStep: 1,
+    serviceKeys: [serviceKey],
+    steps: [
+      { stepNumber: 1, title: 'Awaiting Name & Objects from the client', clientTitle: 'Name & Objects Pending',
+        type: 'branch', clientVisible: true, defaultAssigneeUid: '__CLIENT__',
+        transitions: [{ event: 'BRANCH_DECISION', to: 2, branch: 'Submit' }] },
+      { stepNumber: 2, title: 'Name search (team)', type: 'step', clientVisible: true,
+        transitions: [{ event: 'COMPLETE_STEP', to: 3 }] },
+      { stepNumber: 3, title: 'Share your documents', type: 'step', clientVisible: true,
+        defaultAssigneeUid: '__CLIENT__', transitions: [{ event: 'COMPLETE_STEP', to: 4 }] },
+      { stepNumber: 4, title: 'Done', type: 'final' },
+    ],
+  };
+  const dres = await api.post('/api/workflow-definitions', { data: def });
+  if (!dres.ok()) throw new Error(`createClientAssignedMatter def failed: ${dres.status()} ${await dres.text()}`);
+  const tres = await api.post('/api/tasks', {
+    data: {
+      clientUid: env('E2E_CLIENT_UID'), serviceKey,
+      paymentStatus: 'fully_paid', totalCost: 10000, amountReceived: 10000, paymentMode: 'E2E',
+    },
+  });
+  if (!tres.ok()) throw new Error(`createClientAssignedMatter task failed: ${tres.status()} ${await tres.text()}`);
+  const taskId = (await tres.json()).id as string;
+  await api.dispose();
+  return { taskId, defId };
+}
+
 /** Delete a workflow definition by id (admin). Best-effort teardown. */
 export async function deleteDefinition(id: string): Promise<void> {
   if (!id) return;

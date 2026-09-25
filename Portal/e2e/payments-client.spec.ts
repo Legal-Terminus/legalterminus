@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { apiAs, createMatter, deleteMatter } from './api';
+import { apiAs, createMatter, createPartPaidMatter, deleteMatter } from './api';
 
 /**
  * #165 — a client could not load the payment history for their OWN matter: the
@@ -8,7 +8,10 @@ import { apiAs, createMatter, deleteMatter } from './api';
  * write it), with staff identities masked; team members stay excluded (#148).
  */
 test('#165: a client can read their own matter payment history', async () => {
-  const taskId = await createMatter();
+  // Part-paid (₹4,000 of ₹10,000) so there is room to record another payment —
+  // #202 puts the creation payment in the ledger, so a fully-paid matter
+  // correctly refuses any more.
+  const taskId = await createPartPaidMatter();
   try {
     const admin = await apiAs('admin');
     // Record a payment so the ledger is non-empty.
@@ -22,11 +25,13 @@ test('#165: a client can read their own matter payment history', async () => {
     const res = await client.get(`/api/tasks/${taskId}/payments`);
     expect(res.status(), 'client may read their own ledger').toBe(200);
     const body = await res.json();
-    expect(body.payments.length).toBeGreaterThan(0);
-    expect(body.payments[0].amount).toBe(2500);
-    // Staff identity must NOT leak to the client.
-    expect(body.payments[0].recordedBy).toBeUndefined();
-    expect(body.payments[0].recordedByName).toBeUndefined();
+    // The creation payment, then the one just recorded.
+    expect(body.payments.map((p: { amount: number }) => p.amount)).toEqual([4000, 2500]);
+    // Staff identity must NOT leak to the client — on any row.
+    for (const p of body.payments) {
+      expect(p.recordedBy).toBeUndefined();
+      expect(p.recordedByName).toBeUndefined();
+    }
     // Writing stays staff-only.
     const w = await client.post(`/api/tasks/${taskId}/payments`, { data: { amount: 1, mode: 'UPI' } });
     expect(w.status(), 'client cannot record payments').toBe(403);

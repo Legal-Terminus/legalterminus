@@ -86,16 +86,15 @@ export const deleteTask = (id: string) =>
   apiFetch<void>(`/api/tasks/${id}`, { method: 'DELETE' });
 
 /** Edit a matter's payment details after creation (GitHub #78). Admin/manager.
- *  Any subset of fields; the backend recomputes amountDue and derives status. */
+ *  #202: the amount paid and the status are not sent — both follow from the
+ *  payment history, and the backend rejects them. */
 export interface PaymentUpdate {
   totalCost?: number;
-  amountPaid?: number;
   paymentMode?: string | null;
   paymentDescription?: string | null; // #147
-  paymentStatus?: PaymentStatus;
 }
 export const updatePayment = (id: string, body: PaymentUpdate) =>
-  apiFetch<{ success: boolean; status: string } & Required<Omit<PaymentUpdate, 'paymentStatus'>> & { paymentStatus: PaymentStatus; amountDue: number }>(
+  apiFetch<{ success: boolean } & Required<PaymentUpdate> & { amountPaid: number; paymentStatus: PaymentStatus; amountDue: number }>(
     `/api/tasks/${id}/payment`,
     { method: 'PATCH', body: JSON.stringify(body) },
   );

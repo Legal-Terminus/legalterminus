@@ -88,6 +88,12 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
           ariaLabel="Message"
           rows={2}
         />
+        {/* #200: staff can notify a colleague by typing @ and their email. */}
+        {isStaff && (
+          <p className="text-[11px] text-ink-muted">
+            Type @ followed by a colleague’s email (e.g. @name@yourfirm.com) to notify them.
+          </p>
+        )}
         <div className="flex items-center justify-between gap-3">
           {isStaff ? (
             <label className="inline-flex items-center gap-2 text-xs text-ink-muted cursor-pointer">

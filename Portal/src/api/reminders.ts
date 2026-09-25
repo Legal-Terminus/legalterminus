@@ -28,3 +28,22 @@ export const sendReminder = (taskId: string, template: ReminderTemplate, stepNum
     `/api/tasks/${taskId}/reminders`,
     { method: 'POST', body: JSON.stringify({ template, stepNumber }) },
   );
+
+/* ── #198: internal reminders to a step's assignee(s) ─────────────────── */
+
+export interface InternalReminderSend {
+  at: string | null;
+  stepNumber: number | null;
+  recipients: string[];
+  note: string | null;
+  byName: string | null;
+}
+
+export const getInternalReminders = (taskId: string) =>
+  apiFetch<{ data: InternalReminderSend[] }>(`/api/tasks/${taskId}/internal-reminders`).then((r) => r.data);
+
+export const sendInternalReminder = (taskId: string, stepNumber: number, note?: string) =>
+  apiFetch<{ success: boolean; emailed: number; at: string; recipients: string[] }>(
+    `/api/tasks/${taskId}/internal-reminders`,
+    { method: 'POST', body: JSON.stringify({ stepNumber, ...(note ? { note } : {}) }) },
+  );

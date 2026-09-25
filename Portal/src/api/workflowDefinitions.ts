@@ -37,6 +37,7 @@ export interface WorkflowStepDef {
   type: 'step' | 'payment_gate' | 'branch' | 'final';
   assignedRole?: string;
   defaultAssigneeUid?: string;
+  defaultAssigneeUids?: string[];
   effects?: string[];
   phaseId?: string;
   typicalDurationDays?: number;
@@ -95,8 +96,15 @@ export interface WorkflowDefinition {
  * Derive who advances a step (mirrors shared/workflows/definitionSchema.js
  * `deriveOwnerType`) so the tracker's ownership cues need no per-step config.
  */
+/** Mirrors shared `isClientAssignedStep`: "Who does this? → The client" (#204). */
+export function isClientAssignedStep(step: WorkflowStepDef): boolean {
+  if (step.defaultAssigneeUid === CLIENT_ASSIGNEE) return true;
+  return Array.isArray(step.defaultAssigneeUids) && step.defaultAssigneeUids.includes(CLIENT_ASSIGNEE);
+}
+
 export function deriveOwnerType(step: WorkflowStepDef): OwnerType {
   if (step.ownerType) return step.ownerType;
+  if (isClientAssignedStep(step)) return 'client';
   const events = new Set((step.transitions ?? []).map((t) => t.event));
   if (step.type === 'payment_gate' || events.has('CLIENT_APPROVE')) return 'client';
   if (events.has('GOVT_APPROVE')) return 'govt';

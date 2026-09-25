@@ -111,10 +111,20 @@ Both apps share the **same Cloud Run backend** and the same **Firebase project**
   with each step carrying an optional `phaseId` (plus optional `typicalDurationDays`, `clientActionLabel`,
   `ownerType`). `validateDefinition` rejects dangling `phaseId`s and malformed phases. These fields are
   **presentation-only** — the compiler ignores them, so workflow topology/behaviour is unaffected.
-  Helper exports `deriveOwnerType` (payment_gate/`CLIENT_APPROVE`→client, `GOVT_APPROVE`→govt, else team),
+  Helper exports `deriveOwnerType` (explicit `ownerType` → a step assigned to the client via the
+  `__CLIENT__` sentinel (`isClientAssignedStep`, #204) → payment_gate/`CLIENT_APPROVE`→client,
+  `GOVT_APPROVE`→govt, else team),
   `stepPhaseMap`, and `phaseProgress(def, currentStep, stepStatuses?)` — phase done/now/upcoming computed
   from **real per-step statuses** so the final phase resolves to done on completion (cursor-only would
   not). Mirrored in `Portal/src/api/workflowDefinitions.ts` for the client.
+  **Who may fire a step event (#204).** Ownership for *authorization* is the LIVE
+  assignment, not the authored field: a step whose active instance lists `task.clientUid` among its
+  assignees is the client's (unmaterialised → `deriveOwnerType`), except payment gates, client-hidden
+  and admin-approval steps. On such a step the owning client may fire `COMPLETE_STEP` /
+  `BRANCH_DECISION`; admin/manager doing so is an `onBehalfOfClient` override; a team member is
+  refused — the same rule as `CLIENT_APPROVE`. `transitionTask` therefore loads the pinned definition
+  before its authorization checks. The client's step rows carry a boolean `assignedToClient`
+  (the uids themselves are stripped).
 - `compileDefinition.js` — **compiles a definition → XState v5 machine** (gates → `always`
   guard + paired waiting state; branches → guarded `BRANCH_DECISION`; tracks `currentStepNumber`).
   Verified behaviourally **equivalent** to the legacy hand-written machine.
@@ -141,9 +151,15 @@ Both apps share the **same Cloud Run backend** and the same **Firebase project**
   `steps`: two people recording payments concurrently would clobber an array field. The task doc
   keeps **`amountPaid` / `amountDue` / `paymentStatus` as rollups** recomputed from the ledger on
   every add, edit and delete, so the summary card, matter list, reports and payment gate read
-  unchanged fields. Once a ledger exists it is authoritative: the older single-figure
-  `PATCH /api/tasks/:id/payment` refuses a conflicting `amountPaid` (400
-  `PAYMENT_LEDGER_AUTHORITATIVE`) rather than letting the two silently drift. **Admin/manager only** —
+  unchanged fields. **The ledger is the only source of the paid figure (#202):**
+  every money-moving write — record / correct / delete a payment, and `PATCH /payment` (which now
+  accepts only `totalCost`, mode, description) — goes through ONE transaction, `commitLedgerChange`,
+  which re-reads matter + ledger, applies the change, refuses overpayment (`PAYMENT_EXCEEDS_TOTAL`,
+  also when the total is cut below what was paid) and writes rollups from the pure
+  `paymentLedger.service.js` rules. `createTask` writes the creation payment as the first ledger
+  row in its batch. A pre-ledger matter (`amountPaid > 0`, no rows) gets an explicit **opening
+  balance** row on its first history read or ledger write — before, the first instalment
+  recomputed from the empty ledger and silently wiped the figure. **Admin/manager only** —
   team members are refused all four endpoints and the Payments tab is removed from their UI;
   `firestore.rules` mirrors this (read admin/manager, writes denied).
 - `ccEmails` (#149) on the task doc: additional recipients CC'd on every automated email for that
