@@ -1579,6 +1579,44 @@ The following decisions are documented as TODOs. They should be resolved before 
 
 ---
 
+## Reporting module — Leads, DM Cost / Income, Cold Calling, Reporting (#196, #197)
+
+**LT only** (not an Ambyflow feature). Replaces the firm's lead sheet and its DM
+Cost / DM Income / Cold Calling / Reporting workbooks.
+
+**Access is per section, granted by an admin.** `settings/reportingAccess`
+holds `{ sections: { leads|dm_cost|dm_income|cold_calling|reporting: { uid:
+'view'|'edit' } } }`, read through `reportingAccess.service.js` (cached 30s,
+cleared on write). Admins always have `edit`; any other staff member has only
+what is listed. Clients and professionals can never be granted, and
+`reporting` (computed) is never editable. Every route checks the grant with
+`requireSection(section, need)`; the Portal asks `/api/marketing/access/me`
+only to shape its UI. **Behaviour change:** the lead routes used to be open to
+every staff role. Managers and team members now need a grant.
+
+**Leads (#196).** The lead-sheet fields live on the existing `contactLeads`
+docs: `leadDate`, `leadSource`, `organisationObjects`, `serviceRequired`,
+`proposalSentOn`, `lastFollowUp`, `outcome`
+(converted/not_converted/wrong_enquiry) and `outcomeRemarks`. Remarks are kept
+only for a lead that did not convert; the server clears them otherwise.
+"General Remarks" is the existing `notes`. Option lists live in
+`config/leadFields.js` (mirrored in `Portal/src/lib/leadFields.ts`). The Ref No.
+is sequential (`LD-0001…`) from `counters/leads`, allocated in a transaction for
+both staff-added and website leads. Older leads keep their id-derived ref.
+
+**Sheets (#197).** `marketingSheets/{sheet}` holds the firm's column edits;
+`marketingSheets/{sheet}/days/{YYYY-MM-DD}` holds one day's
+`{ group: { column: number } }`. Groups are fixed per sheet (Google / FB-Insta;
+Cold Calling), so Reporting maps channel to channel. Columns are editable
+(rename, add, hide, never delete). A hidden column leaves the view and totals
+but keeps its figures. `count` columns ("Convert" = clients won) are never added
+to money. All arithmetic is in the pure `marketingSheets.service.js`: group,
+combined, month and financial-year cumulative (1 April → month end). Reporting
+is monthly: spend, income and clients per channel, CAC = spend ÷ clients from
+ads, revenue-to-cost = ad income ÷ ad spend, plus cold-calling income and
+converted leads (by `leadDate`). Reads are bounded by document-id date ranges,
+so no composite index is needed.
+
 ## Revocation — deleted users (NFR3)
 
 A token that carries a `role` claim belongs to a provisioned account. If that
@@ -1589,6 +1627,7 @@ first-time sign-in has no role claim and no record yet (`/register` creates it),
 so it is unaffected. Deleting a user or changing their role also clears the
 60-second identity cache (`invalidateIdentity`), so the change applies on the
 next request.
+
 
 ---
 

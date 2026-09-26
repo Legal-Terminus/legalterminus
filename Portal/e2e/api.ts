@@ -782,3 +782,35 @@ export async function createGappedDefinition(serviceKey?: string): Promise<strin
   await api.dispose();
   return id;
 }
+
+/* ── #196/#197: Reporting-module access ──────────────────────────────────────
+ * The grant table is the FIRM's real configuration (this suite runs against the
+ * live project), so a spec must snapshot it and put it back — never leave a
+ * test grant behind. */
+export type SectionGrants = Record<string, Record<string, 'view' | 'edit'>>;
+
+export async function getReportingGrants(): Promise<SectionGrants> {
+  const api = await apiAs('admin');
+  const res = await api.get('/api/marketing/access');
+  if (!res.ok()) throw new Error(`getReportingGrants failed: ${res.status()}`);
+  const body = await res.json();
+  await api.dispose();
+  return body.grants as SectionGrants;
+}
+
+export async function setReportingGrants(grants: SectionGrants): Promise<void> {
+  const api = await apiAs('admin');
+  const res = await api.put('/api/marketing/access', { data: { sections: grants } });
+  if (!res.ok()) throw new Error(`setReportingGrants failed: ${res.status()} ${await res.text()}`);
+  await api.dispose();
+}
+
+/** Grant one uid a level on some sections, on top of a snapshot. */
+export function withGrant(base: SectionGrants, uid: string, levels: Record<string, 'view' | 'edit' | null>): SectionGrants {
+  const next: SectionGrants = JSON.parse(JSON.stringify(base));
+  for (const [section, level] of Object.entries(levels)) {
+    next[section] = { ...(next[section] ?? {}) };
+    if (level) next[section][uid] = level; else delete next[section][uid];
+  }
+  return next;
+}

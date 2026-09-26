@@ -1,5 +1,5 @@
 import {
-  CheckSquare, Users, BarChart2, Inbox, Layers, type LucideIcon,
+  CheckSquare, Users, BarChart2, Inbox, Layers, Megaphone, type LucideIcon,
 } from 'lucide-react';
 import type { Role } from '../../store/authStore';
 
@@ -22,7 +22,8 @@ export const DASHBOARD_TILES: DashboardTileDef[] = [
   // A "Matter" is a client's running workflow instance; clients see theirs as "Services".
   { title: 'Matters',     desc: 'Client matters and their progress through each workflow.', to: '/tasks', icon: CheckSquare, roles: ['admin', 'manager', 'team_member'] },
   { title: 'My Services', desc: 'Track the progress of your purchased services.',            to: '/tasks', icon: CheckSquare, roles: ['client'] },
-  { title: 'Contact Leads', desc: 'Website enquiries — see which are already clients.', to: '/reports/leads', icon: Inbox,       roles: ['admin', 'manager', 'team_member'] },
+  { title: 'Lead Dashboard', desc: 'Leads — source, service, follow-ups and outcome.', to: '/reports/leads', icon: Inbox,       roles: ['admin', 'manager', 'team_member'] },
+  { title: 'Marketing Reports', desc: 'DM cost, DM income, cold calling and the monthly report.', to: '/reports/marketing', icon: Megaphone, roles: ['admin', 'manager', 'team_member'] },
 
   // Admin + Manager
   { title: 'Users',             desc: 'Manage clients, team members, and roles.', to: '/users',             icon: Users,    roles: ['admin', 'manager'] },

@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 import { ALL_ROLE_KEYS } from '../lib/roles';
@@ -42,6 +42,8 @@ import TeamPerformanceReport from '../pages/reports/TeamPerformanceReport';
 import StorageReportPage from '../pages/reports/StorageReport';
 import MyServicesReport from '../pages/reports/MyServicesReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
+import MarketingReportsPage from '../pages/reports/MarketingReportsPage';
+import ReportingAccessPage from '../pages/settings/ReportingAccessPage';
 
 /**
  * SINGLE SOURCE OF TRUTH for every authenticated route, who can access it, and
@@ -144,4 +146,9 @@ export const APP_ROUTES: AppRoute[] = [
 
   // ── Shared (multi-role) — reached via Reports tile / dashboard tile; no sidebar entry ──
   { path: '/reports/leads', element: <ContactLeadsReport />, roles: ['admin', 'manager', 'team_member'] },
+  // #197: DM Cost / DM Income / Cold Calling / Reporting. Open to all staff at
+  // the route; each section is then limited to whom the admin granted it.
+  { path: '/reports/marketing', element: <MarketingReportsPage />, roles: ['admin', 'manager', 'team_member'] },
+  // #196/#197: the admin's per-section grant table.
+  { path: '/settings/reporting-access', element: <ReportingAccessPage />, roles: ['admin'], nav: { label: 'Reporting Access', icon: ShieldCheck, order: 13 } },
 ];

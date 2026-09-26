@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { LEAD_SOURCES, LEAD_SERVICES, LEAD_OUTCOMES } from '../config/leadFields.js';
 
 // Shared primitives.
 const shortText = z.string().trim().min(1).max(200);
@@ -135,7 +136,21 @@ export const contactStatusSchema = z.object({
 }).strict();
 
 /* ── Lead (manual create/update by staff) ─────────────────────────────── */
+// #196: the lead-sheet fields. Dates are calendar dates (YYYY-MM-DD); an empty
+// string clears an optional date or remark.
+const leadDate = z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date'), z.literal('')]);
+const leadSheetFields = {
+  leadDate: leadDate.optional(),
+  leadSource: z.union([z.enum(LEAD_SOURCES), z.literal('')]).optional(),
+  organisationObjects: z.string().trim().max(1000).optional(),
+  serviceRequired: z.union([z.enum(LEAD_SERVICES), z.literal('')]).optional(),
+  proposalSentOn: leadDate.optional(),
+  lastFollowUp: leadDate.optional(),
+  outcome: z.union([z.enum(LEAD_OUTCOMES), z.literal('')]).optional(),
+  outcomeRemarks: z.string().trim().max(2000).optional(),
+};
 export const leadCreateSchema = z.object({
+  ...leadSheetFields,
   fullName: z.string().trim().min(1).max(100),
   company: z.string().trim().max(100).optional(),
   email: z.string().trim().toLowerCase().email().max(254).optional(),
@@ -149,6 +164,7 @@ export const leadCreateSchema = z.object({
 }).strip().refine((v) => v.email || v.phone, { message: "email or phone is required" });
 
 export const leadUpdateSchema = z.object({
+  ...leadSheetFields,
   fullName: z.string().trim().max(100).optional(),
   company: z.string().trim().max(100).optional(),
   email: z.string().trim().toLowerCase().email().max(254).optional(),

@@ -1,10 +1,16 @@
 import { test, expect } from './fixtures';
-import { createLead, deleteLead, deleteUserByEmail } from './api';
+import { createLead, deleteLead, deleteUserByEmail, getReportingGrants, setReportingGrants, withGrant, type SectionGrants } from './api';
+import { env } from './helpers';
 
 /**
- * E08-S06 — Contact Leads: inline status change + convert-to-client, on a FRESH
- * lead created per run (deleted after). Convert is admin/manager only.
+ * E08-S06 — Leads: inline outcome change + convert-to-client, on a FRESH lead
+ * created per run (deleted after). Convert is admin/manager only.
+ * #196: the page is the Lead Dashboard, and a team member reaches it only with
+ * an admin's grant — the firm's grant table is snapshotted and restored.
  */
+let originalGrants: SectionGrants;
+test.beforeAll(async () => { originalGrants = await getReportingGrants(); });
+test.afterAll(async () => { if (originalGrants) await setReportingGrants(originalGrants); });
 let leadId: string;
 let leadName: string;
 let leadEmail: string;
@@ -22,20 +28,20 @@ test.afterEach(async () => {
   if (convertedClientEmail) await deleteUserByEmail(convertedClientEmail);
 });
 
-test('admin can change a lead status inline', async ({ adminPage }) => {
+test('admin can change a lead outcome inline', async ({ adminPage }) => {
   await adminPage.goto('reports/leads');
-  await expect(adminPage.getByRole('heading', { name: 'Contact Leads' })).toBeVisible();
+  await expect(adminPage.getByRole('heading', { name: 'Lead Dashboard' })).toBeVisible();
   await adminPage.getByPlaceholder(/search by name/i).fill(leadName);
-  const statusSelect = adminPage.locator('select').first();
-  await statusSelect.selectOption('contacted');
-  await expect(statusSelect).toHaveValue('contacted');
+  const outcomeSelect = adminPage.getByLabel(`Outcome for ${leadName}`);
+  await outcomeSelect.selectOption('converted');
+  await expect(outcomeSelect).toHaveValue('converted');
 });
 
 test('admin can convert an unregistered lead to a client', async ({ adminPage }) => {
   await adminPage.goto('reports/leads');
   await adminPage.getByPlaceholder(/search by name/i).fill(leadName);
 
-  const convert = adminPage.getByRole('button', { name: /convert to client/i }).first();
+  const convert = adminPage.getByRole('button', { name: /create client account/i }).first();
   await expect(convert).toBeVisible();
   await convert.click();
   await adminPage.getByRole('button', { name: 'Convert', exact: true }).click();
@@ -44,9 +50,11 @@ test('admin can convert an unregistered lead to a client', async ({ adminPage })
   convertedClientEmail = leadEmail;
 });
 
-test('team member can view leads but has NO convert action', async ({ teamPage }) => {
+test('team member with EDIT access still has NO convert action', async ({ teamPage }) => {
+  await setReportingGrants(withGrant(originalGrants, env('E2E_TEAM_UID'), { leads: 'edit' }));
   await teamPage.goto('reports/leads');
-  await expect(teamPage.getByRole('heading', { name: 'Contact Leads' })).toBeVisible();
+  await expect(teamPage.getByRole('heading', { name: 'Lead Dashboard' })).toBeVisible();
   await teamPage.getByPlaceholder(/search by name/i).fill(leadName);
-  await expect(teamPage.getByRole('button', { name: /convert to client/i })).toHaveCount(0);
+  await expect(teamPage.getByText(leadName).first()).toBeVisible();
+  await expect(teamPage.getByRole('button', { name: /create client account/i })).toHaveCount(0);
 });

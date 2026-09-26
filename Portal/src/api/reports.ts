@@ -1,3 +1,4 @@
+import type { LeadOutcome } from '../lib/leadFields';
 import { apiFetch } from './client';
 import type { Task, PaymentStatus } from '../types/task';
 
@@ -239,6 +240,15 @@ export interface ContactLead {
   whatsapp: boolean;
   status: LeadStatus;
   notes: string;
+  // #196: the lead-sheet fields. Dates are YYYY-MM-DD; '' when unset.
+  leadDate: string;
+  leadSource: string;
+  organisationObjects: string;
+  serviceRequired: string;
+  proposalSentOn: string;
+  lastFollowUp: string;
+  outcome: LeadOutcome;
+  outcomeRemarks: string;
   createdAt: string | null;
   updatedAt: string | null;
   contactedAt: string | null;
@@ -258,6 +268,14 @@ export interface LeadInput {
   message?: string;
   notes?: string;
   status?: LeadStatus;
+  leadDate?: string;
+  leadSource?: string;
+  organisationObjects?: string;
+  serviceRequired?: string;
+  proposalSentOn?: string;
+  lastFollowUp?: string;
+  outcome?: LeadOutcome;
+  outcomeRemarks?: string;
 }
 
 export const getContactLeadsReport = () =>

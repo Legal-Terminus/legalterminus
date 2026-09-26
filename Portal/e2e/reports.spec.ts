@@ -15,7 +15,9 @@ test('admin reaches the Reports hub and each report page', async ({ adminPage })
     ['reports/pending', 'Pending Matters'],
     ['reports/unassigned', 'Unassigned Tasks'],
     ['reports/master-sheet', 'Master Sheet'],
-    ['reports/leads', 'Contact Leads'],
+    ['reports/leads', 'Lead Dashboard'],       // #196
+    ['reports/marketing', 'Marketing Reports'], // #197
+    ['settings/reporting-access', 'Reporting access'],
   ];
   for (const [route, heading] of pages) {
     await adminPage.goto(route);

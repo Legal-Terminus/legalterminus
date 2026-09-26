@@ -1,3 +1,5 @@
+import { getDb } from '../config/firebase.js';
+import { nextLeadRefNo } from './leads.controller.js';
 import {
   createDoc,
   getAllDocs,
@@ -63,7 +65,17 @@ export const createContactLead = async (req, res) => {
       return res.status(400).json({ message: "Invalid phone number." });
     }
 
+    // #196: website enquiries join the lead sheet with a Ref No., the day they
+    // arrived and their source, like a lead the team adds by hand. A failed
+    // counter must never lose the enquiry itself, so it falls back to none.
+    const refNo = await nextLeadRefNo(getDb()).catch((e) => {
+      logger.warn({ err: e?.message }, '[CONTACT] lead ref number failed');
+      return null;
+    });
     const lead = await createDoc(COLLECTION, null, {
+      ...(refNo ? { refNo } : {}),
+      leadDate: new Date().toISOString().slice(0, 10),
+      leadSource: 'Website Inquiry',
       fullName,
       company,
       phone,

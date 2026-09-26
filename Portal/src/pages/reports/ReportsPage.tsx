@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 import {
-  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX, IndianRupee, Gauge, HardDrive,
+  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX, IndianRupee, Gauge, HardDrive, Megaphone, ShieldCheck,
 } from 'lucide-react';
 
 const REPORTS = [
@@ -15,17 +16,20 @@ const REPORTS = [
   { to: '/reports/payment-overrides', title: 'Payment Overrides', desc: 'Matters progressing ahead of payment (no-payment or gate override).', icon: CreditCard },
   { to: '/reports/professional-mapping', title: 'Professional / Group', desc: 'Client counts per handling professional and parent/group company.', icon: Users },
   { to: '/reports/storage',      title: 'Storage Usage',     desc: 'Total & per-client document storage with alert levels.', icon: HardDrive },
-  { to: '/reports/leads',        title: 'Contact Leads',   desc: 'Website enquiries — flags leads already registered as clients.', icon: Inbox },
+  { to: '/reports/leads',        title: 'Lead Dashboard',  desc: 'Every lead on the lead sheet — source, service, follow-ups and outcome.', icon: Inbox },
+  { to: '/reports/marketing',    title: 'Marketing Reports', desc: 'DM cost, DM income, cold calling and the monthly CAC / revenue-to-cost report.', icon: Megaphone },
+  { to: '/settings/reporting-access', title: 'Reporting Access', desc: 'Admin: who can view or edit leads and each marketing report.', icon: ShieldCheck, adminOnly: true },
 ];
 
 export default function ReportsPage() {
+  const role = useAuthStore((s) => s.role);
   return (
     <div className="page-content">
       <h1 className="text-base font-semibold text-ink mb-1">Reports</h1>
       <p className="text-sm text-ink-muted mb-6">Operational and lead insights.</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {REPORTS.map((r) => {
+        {REPORTS.filter((r) => !('adminOnly' in r && r.adminOnly) || role === 'admin').map((r) => {
           const Icon = r.icon;
           return (
             <Link

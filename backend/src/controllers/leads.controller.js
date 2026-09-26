@@ -1,6 +1,7 @@
 import { getDb } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
 import { upsertUser } from '../services/userService.js';
+import { LEAD_SOURCES, LEAD_SERVICES, LEAD_OUTCOMES, outcomeNeedsRemarks } from '../config/leadFields.js';
 
 const LEADS_COLLECTION = 'contactLeads';
 const USERS_COLLECTION = 'users';
@@ -15,9 +16,27 @@ const toISO = (ts) => {
 
 const LEAD_STATUSES = ['new', 'contacted', 'closed'];
 
-// Short, human-readable reference derived from the Firestore doc id.
-// Stable (same id → same ref) and display-only — no schema change needed.
+// Short, human-readable reference derived from the Firestore doc id — the
+// fallback for leads created before #196 gave every lead a sequential Ref No.
 const refIdFor = (docId) => `LD-${String(docId).slice(0, 6).toUpperCase()}`;
+
+/**
+ * #196: the next sequential lead Ref No. (LD-0001, LD-0002, …), allocated in a
+ * transaction so two leads saved at once can never share a number. Shared by
+ * staff-added leads and the website's contact form.
+ */
+export async function nextLeadRefNo(db) {
+  const ref = db.collection('counters').doc('leads');
+  const n = await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const next = (snap.exists ? Number(snap.data().value) || 0 : 0) + 1;
+    tx.set(ref, { value: next, updatedAt: new Date().toISOString() });
+    return next;
+  });
+  return `LD-${String(n).padStart(4, '0')}`;
+}
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
 
 /**
  * GET /api/leads
@@ -85,7 +104,17 @@ export const getContactLeadsReport = async (req, res) => {
 
       return {
         id: doc.id,
-        refId: refIdFor(doc.id),
+        refId: data.refNo || refIdFor(doc.id),
+        // #196: the lead-sheet fields. A lead from before them reads its date
+        // from when it arrived.
+        leadDate: data.leadDate || (toISO(data.createdAt) ?? '').slice(0, 10),
+        leadSource: data.leadSource ?? '',
+        organisationObjects: data.organisationObjects ?? '',
+        serviceRequired: data.serviceRequired ?? '',
+        proposalSentOn: data.proposalSentOn ?? '',
+        lastFollowUp: data.lastFollowUp ?? '',
+        outcome: data.outcome ?? '',
+        outcomeRemarks: data.outcomeRemarks ?? '',
         fullName: data.fullName ?? '',
         company: data.company ?? '',
         email: data.email ?? '',
@@ -132,7 +161,30 @@ const buildEditableFields = (body) => {
   if (body.state !== undefined)             out.state = stripTags(body.state).slice(0, 60);
   if (body.preferredCallTime !== undefined) out.preferredCallTime = stripTags(body.preferredCallTime).slice(0, 50);
   if (body.sourceLabel !== undefined)       out.sourceLabel = stripTags(body.sourceLabel).slice(0, 200);
+  // #196: lead-sheet fields. Option lists are enforced by the schema; checked
+  // again here so a direct caller can never store an off-list value.
+  for (const k of ['leadDate', 'proposalSentOn', 'lastFollowUp']) {
+    if (body[k] !== undefined) out[k] = /^\d{4}-\d{2}-\d{2}$/.test(body[k]) ? body[k] : '';
+  }
+  if (body.leadSource !== undefined) out.leadSource = LEAD_SOURCES.includes(body.leadSource) ? body.leadSource : '';
+  if (body.serviceRequired !== undefined) out.serviceRequired = LEAD_SERVICES.includes(body.serviceRequired) ? body.serviceRequired : '';
+  if (body.organisationObjects !== undefined) out.organisationObjects = stripTags(body.organisationObjects).slice(0, 1000);
+  if (body.outcome !== undefined) out.outcome = LEAD_OUTCOMES.includes(body.outcome) ? body.outcome : '';
+  if (body.outcomeRemarks !== undefined) out.outcomeRemarks = stripTags(body.outcomeRemarks).slice(0, 2000);
   return out;
+};
+
+/**
+ * #196: remarks belong to a lead that did NOT convert. When the outcome is (or
+ * becomes) Converted or blank, any remark is cleared rather than left behind,
+ * so the sheet never shows a reason next to a converted lead.
+ */
+const applyOutcomeRule = (fields, currentOutcome) => {
+  const outcome = fields.outcome !== undefined ? fields.outcome : currentOutcome;
+  if (!outcomeNeedsRemarks(outcome) && (fields.outcome !== undefined || fields.outcomeRemarks !== undefined)) {
+    fields.outcomeRemarks = '';
+  }
+  return fields;
 };
 
 /**
@@ -142,7 +194,7 @@ const buildEditableFields = (body) => {
 export const createLead = async (req, res) => {
   try {
     const db = getDb();
-    const fields = buildEditableFields(req.body);
+    const fields = applyOutcomeRule(buildEditableFields(req.body), '');
 
     if (!fields.fullName || (!fields.email && !fields.phone)) {
       return res.status(400).json({ message: 'Name and at least one of email or phone are required.' });
@@ -150,7 +202,9 @@ export const createLead = async (req, res) => {
 
     const now = new Date();
     const doc = {
+      leadDate: todayISO(),
       ...fields,
+      refNo: await nextLeadRefNo(db),
       source: 'manual',
       sourceLabel: fields.sourceLabel || 'Added manually',
       status: 'new',
@@ -161,7 +215,7 @@ export const createLead = async (req, res) => {
     };
 
     const ref = await db.collection(LEADS_COLLECTION).add(doc);
-    res.status(201).json({ id: ref.id, refId: refIdFor(ref.id), ...doc, createdAt: toISO(now), updatedAt: toISO(now) });
+    res.status(201).json({ id: ref.id, refId: doc.refNo, ...doc, createdAt: toISO(now), updatedAt: toISO(now) });
   } catch (error) {
     logger.error({ err: error }, 'Error creating lead:');
     res.status(500).json({ message: "Internal server error" });
@@ -183,7 +237,7 @@ export const updateLead = async (req, res) => {
     const snap = await ref.get();
     if (!snap.exists) return res.status(404).json({ message: 'Lead not found' });
 
-    const updates = { ...buildEditableFields(req.body), updatedAt: new Date() };
+    const updates = { ...applyOutcomeRule(buildEditableFields(req.body), snap.data()?.outcome ?? ''), updatedAt: new Date() };
 
     if (status !== undefined) {
       if (!LEAD_STATUSES.includes(status)) {
@@ -206,7 +260,9 @@ export const updateLead = async (req, res) => {
     const d = updated.data();
     res.status(200).json({
       id,
-      refId: refIdFor(id),
+      refId: d.refNo || refIdFor(id),
+      outcome: d.outcome ?? '',
+      outcomeRemarks: d.outcomeRemarks ?? '',
       status: d.status ?? 'new',
       notes: d.notes ?? '',
       contactedAt: toISO(d.contactedAt),
