@@ -4,7 +4,8 @@ import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 
 import { auth } from '../../lib/firebase';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiFetch } from '../../api/client';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Mail } from 'lucide-react';
+import { requestSignInLink, EMAIL_FOR_SIGN_IN_KEY } from '../../api/account';
 import { LTMark, LTLockup } from '../../components/common/LTLogo';
 
 export default function LoginPage() {
@@ -12,7 +13,35 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [linkSentTo, setLinkSentTo] = useState('');
   const navigate = useNavigate();
+
+  /**
+   * #203 — passwordless: email a one-time link that signs the person in. For
+   * clients who do not use Google and do not want (or keep losing) a password.
+   * The server answers the same for any address, so the confirmation says "if".
+   */
+  const handleEmailLink = async () => {
+    setError('');
+    setLinkSentTo('');
+    const address = email.trim().toLowerCase();
+    if (!/.+@.+\..+/.test(address)) {
+      setError('Enter your email address above, then ask for a sign-in link.');
+      document.getElementById('login-email')?.focus();
+      return;
+    }
+    setLoading(true);
+    try {
+      await requestSignInLink(address);
+      // Lets the link, opened on this device, finish without asking again.
+      try { window.localStorage.setItem(EMAIL_FOR_SIGN_IN_KEY, address); } catch { /* private mode */ }
+      setLinkSentTo(address);
+    } catch {
+      setError('Could not send the sign-in link. Check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEmailSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -115,8 +144,15 @@ export default function LoginPage() {
           <h1 className="text-2xl font-semibold text-ink">Sign in</h1>
           <p className="mt-1 text-sm text-ink-muted">Welcome back — enter your details below.</p>
 
+          {linkSentTo && (
+            <div role="status" className="mt-5 rounded-lg border border-blue-100 bg-blue-50 p-3.5 text-sm text-blue-800">
+              If <span className="font-medium">{linkSentTo}</span> has an account, a sign-in link is on
+              its way. Open it on this device — it works once and expires after a few hours.
+            </div>
+          )}
+
           {error && (
-            <div className="mt-5 flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-lg">
+            <div role="alert" className="mt-5 flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-lg">
               <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-600">{error}</p>
             </div>
@@ -124,8 +160,9 @@ export default function LoginPage() {
 
           <form onSubmit={handleEmailSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="input-label">Email</label>
+              <label htmlFor="login-email" className="input-label">Email</label>
               <input
+                id="login-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -173,6 +210,16 @@ export default function LoginPage() {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
             Continue with Google
+          </button>
+
+          <button
+            type="button"
+            onClick={handleEmailLink}
+            disabled={loading}
+            className="btn-secondary w-full py-2.5 mt-3"
+          >
+            <Mail className="w-4 h-4 shrink-0" />
+            Email me a sign-in link
           </button>
 
           <p className="mt-6 text-center text-sm text-ink-muted">

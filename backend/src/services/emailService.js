@@ -134,12 +134,18 @@ export function publicSiteUrl() {
   return (process.env.FRONTEND_URL || PUBLIC_SITE_URL).replace(/\/$/, '');
 }
 
-function renderEmail({ title, message, taskId }) {
+/**
+ * `action` ({ label, url }) replaces the default "View in Portal" button — the
+ * account emails (#203) need the button to BE the link, not a link beside it.
+ */
+function renderEmail({ title, message, taskId, action }) {
   const base = publicSiteUrl();
-  const link = taskId && base ? `${base}/portal/tasks/${taskId}` : (base ? `${base}/portal/` : null);
+  const link = action?.url
+    || (taskId && base ? `${base}/portal/tasks/${taskId}` : (base ? `${base}/portal/` : null));
+  const ctaLabel = action?.label || 'View in Portal →';
   const cta = link
     ? `<tr><td style="padding:24px 0 4px">
-         <a href="${link}" style="background:${BRAND.primary};color:#ffffff;text-decoration:none;padding:11px 20px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block">View in Portal →</a>
+         <a href="${escapeHtml(link)}" style="background:${BRAND.primary};color:#ffffff;text-decoration:none;padding:11px 20px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block">${escapeHtml(ctaLabel)}</a>
        </td></tr>`
     : '';
   // #110: the real logo when we can build an absolute URL, else the text lockup.
@@ -168,7 +174,7 @@ function renderEmail({ title, message, taskId }) {
       </table>
     </td></tr>
   </table></body></html>`;
-  const text = `Legal Terminus\n\n${title}\n\n${message}${link ? `\n\nView in Portal: ${link}` : ''}\n\n— Legal Terminus`;
+  const text = `Legal Terminus\n\n${title}\n\n${message}${link ? `\n\n${action?.label || 'View in Portal'}: ${link}` : ''}\n\n— Legal Terminus`;
   return { html, text };
 }
 
@@ -309,7 +315,7 @@ export async function sendTemplatedEmail({ to, cc, subject, body, taskId, servic
   }
 }
 
-export async function sendNotificationEmail({ to, cc, title, message, taskId, serviceName, organisation }) {
+export async function sendNotificationEmail({ to, cc, title, message, taskId, serviceName, organisation, action }) {
   try {
     if (!to || !title) return false;
     const ccList = normaliseCc(cc, to);
@@ -318,7 +324,7 @@ export async function sendNotificationEmail({ to, cc, title, message, taskId, se
       logger.info({ to, cc: ccList, title }, '[email] (no-op) would send notification email');
       return false;
     }
-    const { html, text } = renderEmail({ title, message, taskId });
+    const { html, text } = renderEmail({ title, message, taskId, action });
     const from = process.env.EMAIL_FROM || process.env.GMAIL_USER;
     const subject = matterSubject({ serviceName, taskId, title, organisation });
     // Threading headers (#98): a stable Message-ID root per matter. Setting the

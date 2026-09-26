@@ -4,6 +4,7 @@ import { KeyRound, Plus, Loader2, Trash2 } from 'lucide-react';
 import { useToast } from '../common/toastContext';
 import { useAuthStore } from '../../store/authStore';
 import { getClientLogins, addClientLogin, removeClientLogin } from '../../api/users';
+import SendSignInLinkButton from './SendSignInLinkButton';
 
 /**
  * #166 — additional people who can SIGN IN on a client's account.
@@ -119,6 +120,8 @@ export default function ClientLoginsPanel({ clientUid }: { clientUid: string }) 
                 <span className="text-gray-700 truncate">{l.email}</span>
                 {l.name && <span className="text-ink-faint ml-2 text-xs">{l.name}</span>}
               </div>
+              <div className="flex items-center ml-3 shrink-0">
+              <SendSignInLinkButton uid={l.uid} email={l.email} compact />
               {canRevoke && (
                 <button
                   type="button"
@@ -130,6 +133,7 @@ export default function ClientLoginsPanel({ clientUid }: { clientUid: string }) 
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               )}
+              </div>
             </div>
           ))}
         </div>

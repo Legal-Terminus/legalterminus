@@ -15,6 +15,7 @@ import {
   addClientLogin,
   removeClientLogin,
 } from '../controllers/portalUsers.controller.js';
+import { sendUserSignInLink } from '../controllers/accountLinks.controller.js';
 
 const router = Router();
 
@@ -34,6 +35,11 @@ router.post('/:uid/reassign', requireRole('admin'), validate(reassignWorkSchema)
 
 // Delete: admin only (manager cannot delete — BMAD E09-S01/S02).
 router.delete('/:uid', requireRole('admin'), removeUser);
+
+// #203: email someone a one-time sign-in link — staff help a stuck client
+// without ever handling a password. Target-role check is in the handler
+// (canAssignRole), as with edits.
+router.post('/:uid/sign-in-link', requireRole('admin', 'manager'), sendUserSignInLink);
 
 // #166 — additional LOGINS for a client organisation. Each is a real Auth account
 // with its own password and audit trail, linked to the primary client so it sees

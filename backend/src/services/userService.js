@@ -4,6 +4,7 @@ import { logger } from "../config/logger.js";
 import { invalidateIdentity } from '../middleware/auth.middleware.js';
 import { publicSiteUrl, sendNotificationEmail, sendTemplatedEmail } from './emailService.js';
 import { renderTemplate } from './emailTemplates.service.js';
+import { passwordLinkFor, describeInviter, setupEmail } from './accountLinks.service.js';
 
 const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 
@@ -165,13 +166,13 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
         !existingAuthProviders.includes('email')
       ) {
         try {
-          const link = await admin.auth().generatePasswordResetLink(email);
-          // E07-S02: deliver the set-password link via the Gmail transport (no-op
-          // if email isn't configured — link is still generated/logged).
+          // #203: a portal-domain link and an email that says who set the
+          // account up — see accountLinks.service.js for why.
+          const link = await passwordLinkFor(email, { intent: 'setup' });
+          const inviter = await describeInviter(db, createdBy);
           await sendNotificationEmail({
             to: email,
-            title: 'Set up your Legal Terminus account',
-            message: `An account has been created for you. Set your password to sign in: ${link}`,
+            ...setupEmail({ name: profileData?.name, role, link, inviter }),
           });
           logger.info(`[EMAIL] Password setup link sent to ${email}`);
         } catch (e) {
@@ -236,11 +237,12 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
     let resetEmailSent = false;
     if (sendEmail && authProvider === 'email') {
       try {
-        const link = await admin.auth().generatePasswordResetLink(email);
+        // #203: portal-domain link, and an email that says who and why.
+        const link = await passwordLinkFor(email, { intent: 'setup' });
+        const inviter = await describeInviter(db, createdBy);
         resetEmailSent = await sendNotificationEmail({
           to: email,
-          title: 'Set up your Legal Terminus account',
-          message: `An account has been created for you. Set your password to sign in: ${link}`,
+          ...setupEmail({ name: profileData?.name, role, link, inviter }),
         });
         logger.info(`[EMAIL] Password setup link for ${email} (emailed: ${resetEmailSent})`);
       } catch (e) {

@@ -7,6 +7,7 @@ import {
 import PageShell from '../../components/common/PageShell';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
 import ClientLoginsPanel from '../../components/users/ClientLoginsPanel';
+import SendSignInLinkButton from '../../components/users/SendSignInLinkButton';
 import CreateMatterModal from '../../components/tasks/CreateMatterModal';
 import { SkeletonRows } from '../../components/common/Skeleton';
 import { usePageTitle } from '../../hooks/useDocumentTitle';
@@ -101,6 +102,8 @@ export default function ClientDetailPage() {
       action={(
         <div className="flex items-center gap-2">
           {/* CM-FR10: the only actions with no matter to live in. */}
+          {/* #203: a stuck client gets in without anyone handling a password. */}
+          <SendSignInLinkButton uid={uid} email={client.email} />
           <button
             onClick={() => navigate(`/users/edit/client/${uid}`)}
             className="btn-secondary inline-flex items-center gap-1.5"

@@ -151,3 +151,16 @@ export const addClientLogin = (uid: string, body: { email: string; name?: string
 
 export const removeClientLogin = (uid: string, loginUid: string) =>
   apiFetch<{ message: string }>(`${BASE}/${uid}/logins/${loginUid}`, { method: 'DELETE' });
+
+/* ── #203: staff email someone a one-time sign-in link ────────────────────── */
+
+export interface SignInLinkResult {
+  /** False when the workspace has no working email — nothing reached them. */
+  sent: boolean;
+  /** `password` when passwordless links are off: the email lets them choose one. */
+  method: 'link' | 'password';
+  email: string;
+}
+
+export const sendSignInLink = (uid: string) =>
+  apiFetch<SignInLinkResult>(`${BASE}/${uid}/sign-in-link`, { method: 'POST' });

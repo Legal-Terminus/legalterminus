@@ -4,6 +4,7 @@ import AppLayout from '../components/layout/AppLayout';
 import LoginPage from '../pages/auth/LoginPage';
 import SignupPage from '../pages/auth/SignupPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
+import AccountActionPage from '../pages/auth/AccountActionPage';
 import NotFoundPage from '../pages/shared/NotFoundPage';
 import RootRedirect from '../pages/shared/RootRedirect';
 import UnauthorizedPage from '../pages/shared/UnauthorizedPage';
@@ -50,6 +51,9 @@ export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage />, errorElement: <RouteErrorPage /> },
   { path: '/signup', element: <SignupPage />, errorElement: <RouteErrorPage /> },
   { path: '/forgot-password', element: <ForgotPasswordPage />, errorElement: <RouteErrorPage /> },
+  // #203: where every emailed password / sign-in link lands. Public — the
+  // person is by definition not signed in yet.
+  { path: '/account/action', element: <AccountActionPage />, errorElement: <RouteErrorPage /> },
   { path: '/unauthorized', element: <UnauthorizedPage /> },
   ...guardedBlocks,
   { path: '*', element: <NotFoundPage /> },

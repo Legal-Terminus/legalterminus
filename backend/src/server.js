@@ -18,6 +18,7 @@ import employeeRoutes from "./routes/employee.routes.js";
 import videoTestimonialRoutes from "./routes/videotestimonial.routes.js";
 import testimonialRoutes from "./routes/testimonialRoute.js";
 import authRoutes from "./routes/auth.routes.js";
+import publicAccountRoutes from "./routes/publicAccount.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import tasksRoutes from "./routes/tasks.routes.js";
@@ -147,6 +148,9 @@ app.use("/api/clients", clientsRoutes);
 // E22-S02: global search. Every role searches; the controller scopes results.
 app.use("/api/search", searchRoutes);
 app.use("/api/auth", sensitiveLimiter, authRoutes);
+// #203: forgot-password and sign-in-link requests — unauthenticated by
+// necessity, uniform 202 answers; see routes/publicAccount.routes.js.
+app.use("/api/public/account", publicAccountRoutes);
 app.use("/api/payment", sensitiveLimiter, paymentRoutes);
 app.use("/api/contact", sensitiveLimiter, contactRoutes);
 // #167: any API traffic may trigger the recurring-matter sweep in the

@@ -1,10 +1,17 @@
 import { useState, type FormEvent } from 'react';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../../lib/firebase';
+import { requestPasswordReset } from '../../api/account';
 import { Link } from 'react-router-dom';
 import { AlertCircle, Mail } from 'lucide-react';
 import { LTMark } from '../../components/common/LTLogo';
 
+/**
+ * #203: the request goes to our backend, not to Firebase's client SDK, so the
+ * email is ours (branded, with a button) and its link opens the portal's
+ * /account/action page instead of Firebase's hosted one.
+ *
+ * The answer is identical whether or not the address has an account, so the
+ * confirmation must say "if" — it cannot know, and must not pretend to.
+ */
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -16,10 +23,13 @@ export default function ForgotPasswordPage() {
     setError('');
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, email);
+      await requestPasswordReset(email.trim().toLowerCase());
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send reset email');
+      const status = (err as { status?: number })?.status;
+      setError(status === 400
+        ? 'That email address does not look right.'
+        : 'Could not send the reset email. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -43,8 +53,9 @@ export default function ForgotPasswordPage() {
             </div>
             <h1 className="text-xl font-semibold text-ink">Check your email</h1>
             <p className="mt-2 text-sm text-ink-muted">
-              We sent a reset link to <span className="font-medium text-ink">{email}</span>.
-              The link expires in 1 hour.
+              If <span className="font-medium text-ink">{email}</span> has an account, a link to
+              choose a new password is on its way. It works once and expires after an hour.
+              Nothing arrived? Check spam, or ask us to send you a sign-in link.
             </p>
             <button
               onClick={() => { setSent(false); setEmail(''); }}
@@ -62,7 +73,7 @@ export default function ForgotPasswordPage() {
             </p>
 
             {error && (
-              <div className="mt-5 flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-lg">
+              <div role="alert" className="mt-5 flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-lg">
                 <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
                 <p className="text-sm text-red-600">{error}</p>
               </div>
@@ -70,8 +81,9 @@ export default function ForgotPasswordPage() {
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div>
-                <label className="input-label">Email</label>
+                <label htmlFor="reset-email" className="input-label">Email</label>
                 <input
+                  id="reset-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
