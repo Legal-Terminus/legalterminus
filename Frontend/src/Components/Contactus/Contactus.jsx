@@ -1,6 +1,12 @@
 //// ContactUs.jsx (updated class names to match the CSS prefixes)
 import React, { useState, useEffect } from 'react';
 import './Contactus.css';
+import {
+  validators,
+  validateFields,
+  normalizeIndianMobile,
+  sanitizePhoneInput,
+} from '../../utils/leadValidation.js';
 
 // react-icons (ensure package is installed)
 import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaYoutube } from 'react-icons/fa';
@@ -15,6 +21,16 @@ const SOCIALS = [
   { name: 'YouTube',   href: 'https://www.youtube.com/@LegalTerminus',            icon: <FaYoutube size={20} /> },
 ];
 
+// Every field on this form is mandatory.
+const RULES = {
+  fullName: validators.fullName,
+  company: validators.required('your company name'),
+  phone: validators.phone,
+  email: validators.email,
+  subject: validators.required('a subject'),
+  message: validators.required('your message'),
+};
+
 const ContactUs = () => {
   const [form, setForm] = useState({
     fullName: '',
@@ -27,31 +43,54 @@ const ContactUs = () => {
   const [animated, setAnimated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState(null); // { type: 'success'|'error', text }
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     const timer = setTimeout(() => setAnimated(true), 80);
     return () => clearTimeout(timer);
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+  const checkField = (name, value) => {
+    if (!RULES[name]) return;
+    setFieldErrors(prev => ({ ...prev, [name]: RULES[name](value) }));
   };
+
+  const handleChange = (e) => {
+    const { name } = e.target;
+    const value = name === 'phone' ? sanitizePhoneInput(e.target.value) : e.target.value;
+    setForm(prev => ({ ...prev, [name]: value }));
+    // Once a field is flagged, re-check as the visitor corrects it.
+    if (fieldErrors[name]) checkField(name, value);
+  };
+
+  const handleBlur = (e) => checkField(e.target.name, e.target.value);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFeedback(null);
+
+    const errors = validateFields(form, RULES);
+    setFieldErrors(errors);
+    const firstInvalid = Object.keys(RULES).find(name => errors[name]);
+    if (firstInvalid) {
+      const el = e.currentTarget.elements[firstInvalid];
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, source: 'home' }),
+        body: JSON.stringify({ ...form, phone: normalizeIndianMobile(form.phone), source: 'home' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Submission failed.');
       setFeedback({ type: 'success', text: "Thanks for reaching out! We'll get back to you soon." });
       setForm({ fullName: '', company: '', phone: '', email: '', subject: '', message: '' });
+      setFieldErrors({});
     } catch (err) {
       setFeedback({ type: 'error', text: err.message || 'Something went wrong. Please try again.' });
     } finally {
@@ -136,14 +175,14 @@ const ContactUs = () => {
             <h3 id="form-heading" className="zen-form-title">Got Questions? I'm Here to Help!</h3>
             <hr className="zen-sep" />
 
-            <form onSubmit={handleSubmit} className="zen-form">
+            <form onSubmit={handleSubmit} className="zen-form" noValidate>
               <div className="zen-grid">
                 {[
-                  { label: 'Full Name', name: 'fullName', type: 'text', placeholder: 'Your full name', delay: '0.1s' },
-                  { label: 'Company / Organization *', name: 'company', type: 'text', placeholder: 'Company name', required: true, delay: '0.15s' },
-                  { label: 'Phone *', name: 'phone', type: 'tel', placeholder: '+1 (555) 555-5555', required: true, delay: '0.2s' },
-                  { label: 'Company email *', name: 'email', type: 'email', placeholder: 'you@company.com', required: true, delay: '0.25s' },
-                  { label: 'Your Subject *', name: 'subject', type: 'text', placeholder: 'Short subject', required: true, full: true, delay: '0.3s' }
+                  { label: 'Full Name *', name: 'fullName', type: 'text', placeholder: 'Your full name', delay: '0.1s', autoComplete: 'name' },
+                  { label: 'Company / Organization *', name: 'company', type: 'text', placeholder: 'Company name', delay: '0.15s', autoComplete: 'organization' },
+                  { label: 'Phone *', name: 'phone', type: 'tel', placeholder: '10-digit mobile number', delay: '0.2s', autoComplete: 'tel-national', inputMode: 'numeric' },
+                  { label: 'Company email *', name: 'email', type: 'email', placeholder: 'you@company.com', delay: '0.25s', autoComplete: 'email' },
+                  { label: 'Your Subject *', name: 'subject', type: 'text', placeholder: 'Short subject', full: true, delay: '0.3s' }
                 ].map((field, index) => (
                   <label key={index} className={`zen-field ${field.full ? 'full' : ''} zen-fade-in`} style={{ '--zen-delay': field.delay }}>
                     <span className="zen-label">{field.label}</span>
@@ -152,9 +191,18 @@ const ContactUs = () => {
                       name={field.name}
                       value={form[field.name]}
                       onChange={handleChange}
+                      onBlur={handleBlur}
                       placeholder={field.placeholder}
-                      required={field.required}
+                      required
+                      autoComplete={field.autoComplete}
+                      inputMode={field.inputMode}
+                      maxLength={field.maxLength}
+                      className={fieldErrors[field.name] ? 'zen-invalid' : undefined}
+                      aria-invalid={fieldErrors[field.name] ? true : undefined}
                     />
+                    {fieldErrors[field.name] && (
+                      <span className="zen-field-error">{fieldErrors[field.name]}</span>
+                    )}
                   </label>
                 ))}
 
@@ -164,10 +212,16 @@ const ContactUs = () => {
                     name="message"
                     value={form.message}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder="Tell us about your project..."
                     rows="6"
                     required
+                    className={fieldErrors.message ? 'zen-invalid' : undefined}
+                    aria-invalid={fieldErrors.message ? true : undefined}
                   />
+                  {fieldErrors.message && (
+                    <span className="zen-field-error">{fieldErrors.message}</span>
+                  )}
                 </label>
               </div>
 
