@@ -4,7 +4,7 @@ import { validate } from '../middleware/validate.middleware.js';
 import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema, internalReminderSchema, messageCreateSchema } from '../schemas/task.schema.js';
 import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments, createPayment, patchPayment, deletePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep, postStepNote, listRecurringDue, duplicateTask } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument, setDocumentVisibility } from '../controllers/documents.controller.js';
-import { listMessages, createMessage } from '../controllers/messages.controller.js';
+import { listMessages, createMessage, listMentionable } from '../controllers/messages.controller.js';
 import { listReminders, sendReminder, listInternalReminders, sendInternalReminder } from '../controllers/reminders.controller.js';
 import { getFormStep, saveFormStep } from '../controllers/forms.controller.js';
 
@@ -40,6 +40,8 @@ router.post('/:taskId/internal-reminders',   requireRole('admin', 'manager', 'te
 // matter ownership; a professional may read but never post.
 router.get('/:taskId/messages',              requireRole('admin', 'manager', 'team_member', 'client', 'professional'), listMessages);
 router.post('/:taskId/messages',             requireRole('admin', 'manager', 'team_member', 'client'), validate(messageCreateSchema), createMessage);
+// #200: the @mention suggestion list — staff only (a client never sees the directory).
+router.get('/:taskId/mentionable',           requireRole('admin', 'manager', 'team_member'), listMentionable);
 router.patch('/:taskId',                     validate(taskUpdateSchema), patchTask);
 // Edit payment details after creation (#78) — admin/manager.
 router.patch('/:taskId/payment',             requireRole('admin', 'manager'), validate(taskPaymentUpdateSchema), updatePayment);

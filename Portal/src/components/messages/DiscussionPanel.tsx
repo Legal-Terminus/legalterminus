@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, Loader2, MessageSquare, Eye, EyeOff } from 'lucide-react';
-import { getMessages, postMessage, type MatterMessage } from '../../api/messages';
+import { getMessages, postMessage, getMentionable, type MatterMessage } from '../../api/messages';
 import { useToast } from '../common/toastContext';
 import RichTextEditor from '../common/RichTextEditor';
 import RichText from '../common/RichText';
@@ -21,6 +21,14 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
   const [body, setBody] = useState('');
   const [visible, setVisible] = useState(false); // staff: share with client? default OFF
   const endRef = useRef<HTMLDivElement>(null);
+
+  // #200: staff get suggestions when they type "@". Never fetched for a client.
+  const { data: mentionable = [] } = useQuery({
+    queryKey: ['mentionable', taskId],
+    queryFn: () => getMentionable(taskId),
+    enabled: isStaff,
+    staleTime: 5 * 60_000,
+  });
 
   const { data: messages = [], isLoading, error } = useQuery({
     queryKey: ['messages', taskId],
@@ -87,11 +95,12 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
           placeholder="Write a message…"
           ariaLabel="Message"
           rows={2}
+          mentions={isStaff ? mentionable : undefined}
         />
         {/* #200: staff can notify a colleague by typing @ and their email. */}
         {isStaff && (
           <p className="text-[11px] text-ink-muted">
-            Type @ followed by a colleague’s email (e.g. @name@yourfirm.com) to notify them.
+            Type @ and pick a colleague to notify them by email.
           </p>
         )}
         <div className="flex items-center justify-between gap-3">

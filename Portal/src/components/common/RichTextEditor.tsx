@@ -5,7 +5,7 @@ import { Link } from '@tiptap/extension-link';
 import { TextStyle, FontSize } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import { Highlight } from '@tiptap/extension-highlight';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Bold, Italic, Strikethrough, List, ListOrdered, Table as TableIcon, Undo2, Redo2,
   Baseline, Highlighter, Type,
@@ -40,7 +40,10 @@ export function countWords(text: string) {
   const t = text.replace(/\s+/g, ' ').trim();
   return t ? t.split(' ').length : 0;
 }
-export default function RichTextEditor({ value, onChange, placeholder, disabled, ariaLabel, rows = 3 }: {
+/** #200: someone the author can @mention. */
+export interface MentionCandidate { name: string; email: string }
+
+export default function RichTextEditor({ value, onChange, placeholder, disabled, ariaLabel, rows = 3, mentions }: {
   value: string;
   onChange: (html: string) => void;
   placeholder?: string;
@@ -48,10 +51,37 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
   ariaLabel?: string;
   /** Approximate minimum height, in text rows. */
   rows?: number;
+  /** #200: when given, typing "@" suggests these people; picking one inserts "@email". */
+  mentions?: MentionCandidate[];
 }) {
   // #194: handleKeyDown needs the editor instance, which doesn't exist yet inside
   // its own config — a ref breaks that cycle.
   const editorRef = useRef<Editor | null>(null);
+
+  // #200: the "@query" being typed right before the caret, if any. Refs mirror
+  // the state for handleKeyDown, which is bound once at editor creation.
+  const [mention, setMention] = useState<{ query: string; from: number } | null>(null);
+  const [active, setActive] = useState(0);
+  const mentionRef = useRef<typeof mention>(null);
+  const matchesRef = useRef<MentionCandidate[]>([]);
+  const activeRef = useRef(0);
+  const pickRef = useRef<(c: MentionCandidate) => void>(() => {});
+  // The editor binds its callbacks ONCE, and the list usually arrives after it
+  // mounts — so the callbacks read the list through a ref, never the prop.
+  const mentionsRef = useRef<MentionCandidate[] | undefined>(mentions);
+  mentionsRef.current = mentions;
+  const detectMention = (ed: Editor) => {
+    if (!mentionsRef.current?.length) return setMention(null);
+    const { $from, from, to } = ed.state.selection;
+    if (from !== to) return setMention(null);
+    const before = $from.parent.textBetween(Math.max(0, $from.parentOffset - 60), $from.parentOffset, undefined, ' ');
+    // Names have spaces ("Asha Rao"), so the query may too — up to 30 chars.
+    // When nothing matches the list simply hides, so "@asha please" is safe.
+    const m = before.match(/(?:^|\s)@([^\s@][^@\n]{0,29}|)$/);
+    if (!m) return setMention(null);
+    setMention({ query: m[1], from: from - m[1].length - 1 });
+    setActive(0);
+  };
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] } }),
@@ -67,7 +97,9 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
     ],
     content: value || '',
     editable: !disabled,
+    onSelectionUpdate: ({ editor: e }) => detectMention(e),
     onUpdate: ({ editor: e }) => {
+      detectMention(e);
       const html = e.getHTML();
       // TipTap represents "empty" as <p></p>; normalise so callers can test truthiness.
       onChange(e.getText().trim() ? html : '');
@@ -77,6 +109,14 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
       // shortcuts still work — only a keystroke that would insert a character is
       // blocked, so the editor never traps someone in an over-long comment.
       handleKeyDown: (_view, event) => {
+        // #200: the suggestion list owns ↑/↓/Enter/Tab/Escape while it is open.
+        const list = matchesRef.current;
+        if (mentionRef.current && list.length) {
+          if (event.key === 'ArrowDown') { setActive((activeRef.current + 1) % list.length); return true; }
+          if (event.key === 'ArrowUp') { setActive((activeRef.current - 1 + list.length) % list.length); return true; }
+          if (event.key === 'Enter' || event.key === 'Tab') { pickRef.current(list[activeRef.current] ?? list[0]); return true; }
+          if (event.key === 'Escape') { setMention(null); return true; }
+        }
         if (event.ctrlKey || event.metaKey || event.altKey) return false;
         if (event.key.length !== 1) return false; // Backspace, arrows, Tab, Enter…
         const ed = editorRef.current;
@@ -110,12 +150,42 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
   useEffect(() => { editor?.setEditable(!disabled); }, [disabled, editor]);
   useEffect(() => { editorRef.current = editor ?? null; }, [editor]);
 
+  const q = mention?.query.toLowerCase() ?? '';
+  const matches = mention && mentions
+    ? mentions.filter((c) => c.name.toLowerCase().includes(q) || c.email.includes(q)).slice(0, 6)
+    : [];
+  const pick = (c: MentionCandidate) => {
+    const ed = editorRef.current;
+    if (!ed || !mention) return;
+    ed.chain().focus().deleteRange({ from: mention.from, to: ed.state.selection.from }).insertContent(`@${c.email} `).run();
+    setMention(null);
+  };
+  mentionRef.current = mention;
+  matchesRef.current = matches;
+  activeRef.current = Math.min(active, Math.max(0, matches.length - 1));
+  pickRef.current = pick;
+
   if (!editor) return null;
 
   return (
     <div className={`rounded-lg border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-brand-400 ${disabled ? 'opacity-60' : ''}`}>
       <Toolbar editor={editor} disabled={disabled} />
       <EditorContent editor={editor} />
+      {/* #200: @mention suggestions, under the box (tap or ↑/↓ + Enter). */}
+      {matches.length > 0 && (
+        <ul role="listbox" aria-label="Mention a colleague" className="mx-2 mb-2 rounded-lg border border-hairline bg-white shadow-card overflow-hidden">
+          {matches.map((c, i) => (
+            <li key={c.email} role="option" aria-selected={i === activeRef.current}>
+              <button type="button"
+                onMouseDown={(e) => { e.preventDefault(); pick(c); }}
+                className={`w-full text-left px-3 py-2.5 text-sm flex flex-col ${i === activeRef.current ? 'bg-surface-soft' : 'hover:bg-surface-soft'}`}>
+                <span className="font-medium text-ink">{c.name}</span>
+                <span className="text-xs text-ink-muted">{c.email}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
       {/* Placeholder — TipTap has an extension for this, but a CSS-free fallback
           keeps the dependency surface small. */}
       {placeholder && !editor.getText().trim() && (

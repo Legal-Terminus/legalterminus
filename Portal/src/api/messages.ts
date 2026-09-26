@@ -23,3 +23,7 @@ export const postMessage = (taskId: string, body: string, clientVisible: boolean
     method: 'POST',
     body: JSON.stringify({ body, clientVisible }),
   });
+
+/** #200: colleagues a staff member can @mention here (staff only). */
+export const getMentionable = (taskId: string) =>
+  apiFetch<{ data: { uid: string; name: string; email: string }[] }>(`/api/tasks/${taskId}/mentionable`).then((r) => r.data);

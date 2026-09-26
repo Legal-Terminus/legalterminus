@@ -4,7 +4,7 @@ import { createNotification } from './notifications.controller.js';
 import { sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
 import { sanitizeRichText, richTextToPlain, checkWordLimit } from '../services/richText.service.js';
-import { extractMentionEmails, resolveStaffByEmails } from '../services/mentions.service.js';
+import { extractMentionEmails, resolveStaffByEmails, listMentionableStaff } from '../services/mentions.service.js';
 import { clientCanSeeMatter } from './tasks.controller.js';
 
 /**
@@ -246,6 +246,23 @@ export async function createMessage(req, res) {
   } catch (err) {
     logger.error({ err }, 'createMessage error:');
     res.status(500).json({ message: 'Failed to post the message' });
+  }
+}
+
+/**
+ * GET /api/tasks/:taskId/mentionable — #200: the colleagues a staff member
+ * can @mention in this matter's discussion (the composer's suggestion list).
+ * Staff only at the route: a client never sees the firm's staff directory.
+ */
+export async function listMentionable(req, res) {
+  try {
+    const task = await loadAuthorizedTask(req, res, req.params.taskId);
+    if (!task) return;
+    const staff = await listMentionableStaff(db);
+    res.json({ data: staff.filter((u) => u.uid !== req.user.uid) });
+  } catch (err) {
+    logger.error({ err }, 'listMentionable error:');
+    res.status(500).json({ message: 'Failed to load colleagues' });
   }
 }
 

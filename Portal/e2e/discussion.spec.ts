@@ -162,3 +162,37 @@ test('#200: a client\'s @mention does not page staff, and mention data never rea
     expect(await mentionCount('manager', taskId)).toBe(0);
   } finally { await deleteMatter(taskId); }
 });
+
+test('#200: typing "@" suggests colleagues; picking one inserts their address and notifies them', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    const box = adminPage.getByLabel('Message');
+    await box.click();
+    await box.pressSequentially('Please check @E2E Te');
+    const list = adminPage.getByRole('listbox', { name: 'Mention a colleague' });
+    await expect(list).toBeVisible();
+    await list.getByRole('option').filter({ hasText: env('E2E_TEAM_EMAIL') }).click();
+    await expect(box).toContainText(`@${env('E2E_TEAM_EMAIL')}`);
+    await adminPage.getByRole('button', { name: /send/i }).click();
+    expect(await waitForNotification('team', /mentioned you/i, 20_000, taskId)).toBe(true);
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#200: the colleague list is staff-only', async () => {
+  const taskId = await createMatter();
+  try {
+    const admin = await apiAs('admin');
+    const res = await admin.get(`/api/tasks/${taskId}/mentionable`);
+    expect(res.status()).toBe(200);
+    const emails = ((await res.json()).data as Array<{ email: string }>).map((u) => u.email);
+    expect(emails).toContain(env('E2E_TEAM_EMAIL'));
+    expect(emails, 'a client is never offered').not.toContain(env('E2E_CLIENT_EMAIL'));
+    await admin.dispose();
+
+    const client = await apiAs('client');
+    expect((await client.get(`/api/tasks/${taskId}/mentionable`)).status()).toBe(403);
+    await client.dispose();
+  } finally { await deleteMatter(taskId); }
+});

@@ -33,6 +33,25 @@ export function extractMentionEmails(plain) {
  * someone typed their address. Unknown addresses resolve to nothing, silently —
  * the caller answers identically either way, so nobody can probe who exists.
  */
+/**
+ * The colleagues a staff author can @mention: active staff of this workspace,
+ * as `{ uid, name, email }`. One query on the workspace database, bounded by
+ * the size of the team. Feeds the composer's suggestion list; the server still
+ * resolves every mention itself, so the list is a convenience, not a control.
+ */
+export async function listMentionableStaff(db) {
+  const snap = await db.collection('users').where('role', 'in', STAFF_ROLES).get();
+  return snap.docs
+    .map((d) => ({ uid: d.id, ...d.data() }))
+    .filter((u) => u.status !== 'deactivated' && (u.email || (Array.isArray(u.emailIds) && u.emailIds[0])))
+    .map((u) => ({
+      uid: u.uid,
+      name: u.displayName || u.name || u.fullName || u.email,
+      email: String(u.email || u.emailIds[0]).toLowerCase(),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export async function resolveStaffByEmails(db, emails) {
   if (!emails.length) return [];
   const chunks = [];
