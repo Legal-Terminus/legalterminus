@@ -173,3 +173,18 @@
     padding: 20px 16px 16px;
   }
 }
+
+/* Per-field validation */
+.cf-input.cf-input--invalid,
+.cf-input.cf-input--invalid:focus {
+  border-color: #dc2626;
+  background: #fff;
+}
+
+.cf-field-error {
+  display: block;
+  font-size: 0.78rem;
+  color: #b91c1c;
+  margin-top: -4px;
+  line-height: 1.3;
+}

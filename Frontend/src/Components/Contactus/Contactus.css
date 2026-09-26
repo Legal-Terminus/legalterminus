@@ -205,3 +205,7 @@
   .zen-animated .zen-left-inner > *, .zen-animated .zen-right .zen-form-card, .zen-fade-in, .zen-slide-up, .zen-fade-in-scale { animation: none; opacity: 1; transform: none; }
   .zen-social-btn::before, .zen-submit::before { display: none; }
 }
+
+/* Per-field validation */
+.zen-field input.zen-invalid, .zen-field textarea.zen-invalid, .zen-field input.zen-invalid:focus, .zen-field textarea.zen-invalid:focus { border-color: #dc2626; }
+.zen-field-error { font-size: 13px; color: #b91c1c; margin-top: -2px; line-height: 1.3; }
