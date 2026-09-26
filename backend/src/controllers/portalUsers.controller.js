@@ -1,6 +1,7 @@
 import { db } from '../config/firebase.js';
 import { VALID_ROLES, isValidRole, canAssignRole } from '../config/roles.js';
 import { logger } from "../config/logger.js";
+import { invalidateIdentity } from '../middleware/auth.middleware.js';
 import {
   upsertUser,
   getUserByUid,
@@ -250,6 +251,9 @@ export const updateUser = async (req, res) => {
     });
 
     await db.collection(COLLECTION).doc(uid).set(updates, { merge: true });
+    // A changed role must apply on this user's next request, not after the
+    // 60s identity cache expires.
+    invalidateIdentity(uid);
 
     // Sync the Firebase custom claim only when a role was actually (and
     // legitimately) written. `role` itself is already persisted in `updates`.

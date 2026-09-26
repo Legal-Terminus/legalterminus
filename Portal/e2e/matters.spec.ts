@@ -74,6 +74,9 @@ test('#91: Matters grid supports multi-criteria filtering (Status + Payment, AND
     // and an inner div, so counting `.cursor-pointer` counted elements, not rows.
     // `.border-b` isolates the outer row wrapper.
     const rows = adminPage.locator('.cursor-pointer.border-b');
+    // Wait for the list to load: count() does not wait, so counting while the
+    // query was in flight read 0 rows and failed intermittently.
+    await expect(rows.first()).toBeVisible({ timeout: 20_000 });
     const totalBefore = await rows.count();
     expect(totalBefore).toBeGreaterThan(0);
 

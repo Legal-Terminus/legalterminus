@@ -28,6 +28,17 @@ const setCachedIdentity = (uid, identity) => {
 };
 
 /**
+ * Drop the cached identity for `uid`. Call after any membership write that
+ * changes what verifyToken would read (delete, role change) — otherwise the
+ * cache keeps serving the old identity for up to ROLE_CACHE_TTL_MS, and a
+ * deleted user stays signed in for that minute. Per-instance: another Cloud Run
+ * replica can still serve its own cached entry until the TTL expires.
+ */
+export const invalidateIdentity = (uid) => {
+  if (uid) roleCache.delete(uid);
+};
+
+/**
  * Middleware: verify Firebase ID token from Authorization: Bearer <token> header.
  * Attaches decoded token claims to req.user (includes uid, email, role).
  *
@@ -65,6 +76,19 @@ export const verifyToken = async (req, res, next) => {
       } else {
         try {
           const doc = await getDb().collection("users").doc(decoded.uid).get();
+          // NFR3: a token that carries a ROLE claim was issued to a provisioned
+          // account. If that account's record is gone, the user was deleted —
+          // refuse the token instead of falling back to the claim, which let a
+          // deleted admin keep admin access until the token expired (~1h).
+          // A brand-new sign-in has no role claim and no record yet (/register
+          // creates it), so it still passes. A failed READ still falls back.
+          if (!doc.exists && decoded.role) {
+            return res.status(401).json({
+              success: false,
+              error: 'Your session has ended. Please sign in again.',
+              code: 'TOKEN_REVOKED',
+            });
+          }
           const data = doc.exists ? doc.data() : undefined;
           const role = data?.role;
           // #166: an additional client login points at the account that owns the

@@ -1184,7 +1184,17 @@ export async function reopenStep(req, res) {
       });
     }
     // Can't reopen the current or a future step — there's nothing to rewind to.
-    if (task.status !== 'completed' && target >= task.currentStepNumber) {
+    // "Before" is the definition's AUTHORED order, like #143 below: identity
+    // numbers are not flow-ordered (a step inserted later gets max+1 yet sits
+    // early in the flow), so comparing numbers refused to reopen completed
+    // steps such as 45/46 that come before step 6. Numbers are only the
+    // fallback for a step the definition no longer lists.
+    const authoredOrder = (await getCompiledById(task.workflowDefinitionId).catch(() => null))
+      ?.definition?.steps?.map((s) => s.stepNumber) ?? [];
+    const tPos = authoredOrder.indexOf(target);
+    const cPos = authoredOrder.indexOf(task.currentStepNumber);
+    const notBeforeCurrent = tPos !== -1 && cPos !== -1 ? tPos >= cPos : target >= task.currentStepNumber;
+    if (task.status !== 'completed' && notBeforeCurrent) {
       return res.status(409).json({
         message: 'Only a step BEFORE the current one can be reopened.',
         code: 'STEP_NOT_BEFORE_CURRENT',

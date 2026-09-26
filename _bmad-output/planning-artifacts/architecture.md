@@ -1579,6 +1579,19 @@ The following decisions are documented as TODOs. They should be resolved before 
 
 ---
 
+## Revocation — deleted users (NFR3)
+
+A token that carries a `role` claim belongs to a provisioned account. If that
+account's `users` record is gone, the user was deleted, and `verifyToken`
+answers 401 `TOKEN_REVOKED` instead of falling back to the claim, which used to
+leave a deleted admin with admin access until the token expired (~1h). A
+first-time sign-in has no role claim and no record yet (`/register` creates it),
+so it is unaffected. Deleting a user or changing their role also clears the
+60-second identity cache (`invalidateIdentity`), so the change applies on the
+next request.
+
+---
+
 *End of Architecture Document*
 
 ---

@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { db, admin } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
+import { invalidateIdentity } from '../middleware/auth.middleware.js';
 import { publicSiteUrl, sendNotificationEmail, sendTemplatedEmail } from './emailService.js';
 import { renderTemplate } from './emailTemplates.service.js';
 
@@ -375,6 +376,7 @@ export const updateUserRole = async (uid, newRole) => {
 
     // Update custom claims
     await admin.auth().setCustomUserClaims(uid, { role: newRole });
+    invalidateIdentity(uid); // the new role applies on the next request, not in 60s
 
     logger.info(`[updateUserRole] ${uid} → ${newRole}`);
 
@@ -412,6 +414,7 @@ export const deleteUser = async (uid) => {
 
     await db.collection('users').doc(uid).delete();
     firestoreDeleted = true;
+    invalidateIdentity(uid); // NFR3: the deleted user's cached identity must not outlive them
   } catch (error) {
     logger.error({ err: error }, `[deleteUser] Firestore delete failed for ${uid}:`);
     throw error; // nothing destructive happened in Auth yet — safe to surface
