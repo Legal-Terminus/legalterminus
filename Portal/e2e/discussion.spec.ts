@@ -180,6 +180,31 @@ test('#200: typing "@" suggests colleagues; picking one inserts their address an
   } finally { await deleteMatter(taskId); }
 });
 
+test('#200: typing "@" alone lists the WHOLE team, not the first six', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    const admin = await apiAs('admin');
+    const team = (await (await admin.get(`/api/tasks/${taskId}/mentionable`)).json()).data as Array<{ email: string }>;
+    await admin.dispose();
+
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    const box = adminPage.getByLabel('Message');
+    await box.click();
+    await box.pressSequentially('@');
+    const list = adminPage.getByRole('listbox', { name: 'Mention a colleague' });
+    await expect(list).toBeVisible();
+    // Reported from production: the list stopped at six names, so colleagues
+    // later in the alphabet were missing until you typed part of their name.
+    await expect(list.getByRole('option')).toHaveCount(team.length);
+    // The last colleague is reachable by scrolling and can be picked.
+    const last = list.getByRole('option').last();
+    await last.scrollIntoViewIfNeeded();
+    await last.click();
+    await expect(box).toContainText(`@${team[team.length - 1].email}`);
+  } finally { await deleteMatter(taskId); }
+});
+
 test('#200: the colleague list is staff-only', async () => {
   const taskId = await createMatter();
   try {

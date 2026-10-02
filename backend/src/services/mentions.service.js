@@ -39,11 +39,18 @@ export function extractMentionEmails(plain) {
  * the size of the team. Feeds the composer's suggestion list; the server still
  * resolves every mention itself, so the list is a convenience, not a control.
  */
-export async function listMentionableStaff(db) {
+/** Test runs sign in AS the seeded accounts, so they must be able to see each other. */
+const isTestRun = () => String(process.env.EMAIL_DISABLED ?? '').toLowerCase() === 'true'
+  || process.env.NODE_ENV === 'test';
+
+export async function listMentionableStaff(db, { includeTestAccounts = isTestRun() } = {}) {
   const snap = await db.collection('users').where('role', 'in', STAFF_ROLES).get();
   return snap.docs
     .map((d) => ({ uid: d.id, ...d.data() }))
     .filter((u) => u.status !== 'deactivated' && (u.email || (Array.isArray(u.emailIds) && u.emailIds[0])))
+    // Seeded test accounts (`e2e: true`) are not colleagues. They showed up in a
+    // firm's picker and, with the old six-row cap, pushed real people off it.
+    .filter((u) => includeTestAccounts || u.e2e !== true)
     .map((u) => ({
       uid: u.uid,
       name: u.displayName || u.name || u.fullName || u.email,

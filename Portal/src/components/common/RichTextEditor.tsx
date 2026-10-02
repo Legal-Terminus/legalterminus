@@ -149,10 +149,16 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
 
   useEffect(() => { editor?.setEditable(!disabled); }, [disabled, editor]);
   useEffect(() => { editorRef.current = editor ?? null; }, [editor]);
+  // The colleague list loads after the editor mounts. Someone who types "@"
+  // before it arrives saw nothing, and nothing re-checked once it did.
+  useEffect(() => {
+    if (editor && mentions?.length) detectMention(editor);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mentions, editor]);
 
   const q = mention?.query.toLowerCase() ?? '';
   const matches = mention && mentions
-    ? mentions.filter((c) => c.name.toLowerCase().includes(q) || c.email.includes(q)).slice(0, 6)
+    ? mentions.filter((c) => c.name.toLowerCase().includes(q) || c.email.includes(q))
     : [];
   const pick = (c: MentionCandidate) => {
     const ed = editorRef.current;
@@ -163,6 +169,14 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
   mentionRef.current = mention;
   matchesRef.current = matches;
   activeRef.current = Math.min(active, Math.max(0, matches.length - 1));
+  // The list shows the WHOLE team and scrolls (it used to stop at six names, so
+  // anyone later in the alphabet could not be found without typing). Keep the
+  // keyboard-highlighted row in view as ↑/↓ moves through it.
+  const listRef = useRef<HTMLUListElement | null>(null);
+  const activeIndex = activeRef.current;
+  useEffect(() => {
+    listRef.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+  }, [activeIndex, matches.length]);
   pickRef.current = pick;
 
   if (!editor) return null;
@@ -173,7 +187,7 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
       <EditorContent editor={editor} />
       {/* #200: @mention suggestions, under the box (tap or ↑/↓ + Enter). */}
       {matches.length > 0 && (
-        <ul role="listbox" aria-label="Mention a colleague" className="mx-2 mb-2 rounded-lg border border-hairline bg-white shadow-card overflow-hidden">
+        <ul ref={listRef} role="listbox" aria-label="Mention a colleague" className="mx-2 mb-2 max-h-60 overflow-y-auto rounded-lg border border-hairline bg-white shadow-card">
           {matches.map((c, i) => (
             <li key={c.email} role="option" aria-selected={i === activeRef.current}>
               <button type="button"
