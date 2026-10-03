@@ -3066,7 +3066,7 @@
     "site": "legal-terminus-qa"
   },
   "firestore": {
-    "database": "qa",
+    "database": "qa-data",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   }

@@ -3241,12 +3241,15 @@ if the customer's browser returns, and creates nothing in the portal.
 > role overwritten. `TEST_ACCOUNT_EMAIL_DOMAINS=legalterminus.test` makes the QA API refuse
 > every other account (`backend/src/config/testEnvironment.js`). Do not unset it.
 >
-> **Waiting on a project Owner** (Editor cannot do these): create the `qa` Firestore database;
-> make the two QA services publicly invocable; add `legal-terminus-qa.web.app` to the Auth
-> authorised domains. Then: deploy rules and indexes, seed the catalog, workflows and test
-> users, and run the e2e suite against QA.
-
-**Priority**: P1 | **Complexity**: L | **Dependencies**: none — blocks every other story here
+> **Owner steps done 2026-10-03** (as `sales23@legalterminus.com`): the Firestore database
+> `qa-data` (a database id needs 4+ characters, so not `qa`), public invoker on both QA
+> services, and `legal-terminus-qa.web.app` in the Auth authorised domains.
+>
+> **Verified:** rules and indexes released to `qa-data` only (the production release is
+> untouched); catalog, workflow and the five test users seeded; signing in as the test admin and
+> calling the QA API returns QA data (5 users, 0 matters).
+>
+> **Still to do:** run the e2e suite against QA; sign in through the browser on the QA site.
 
 **Rationale**: The only environment is production. The workflow is called "Deploy to QA" but
 targets `legal-terminus-web` (legalterminus.com), and the e2e suite runs against live data. A
