@@ -138,31 +138,81 @@ test('#196: the form shows Remarks only for Not Converted / Wrong Enquiry', asyn
 
 /* ── #197 sheets and reporting ────────────────────────────────────────── */
 
+/**
+ * The columns of each sheet are the FIRM'S to rename, add and hide, and this
+ * suite runs against their live project. On 28 Sep 2026 they hid GST and FSSAI
+ * on DM Cost; the tests wrote to those columns and expected them in the totals,
+ * so they failed while the product was doing exactly what it should (a hidden
+ * column leaves the totals). Columns are therefore DISCOVERED from the live
+ * sheet, never named here.
+ */
+type Col = { key: string; label: string; kind: 'money' | 'count'; hidden: boolean };
+type Group = { key: string; label: string; columns: Col[] };
+type Api = Awaited<ReturnType<typeof apiAs>>;
+
+async function groupOf(admin: Api, sheet: string, group: string): Promise<Group> {
+  const v = await (await admin.get(`/api/marketing/sheets/${sheet}?month=${MONTH}`)).json();
+  const g = (v.sheet.groups as Group[]).find((x) => x.key === group);
+  if (!g) throw new Error(`sheet ${sheet} has no group ${group}`);
+  return g;
+}
+const shown = (g: Group, kind: Col['kind']) => g.columns.filter((c) => !c.hidden && c.kind === kind);
+/** The first visible money column of a group — every sheet must keep at least one. */
+async function moneyCol(admin: Api, sheet: string, group: string): Promise<Col> {
+  const [c] = shown(await groupOf(admin, sheet, group), 'money');
+  if (!c) throw new Error(`${sheet}/${group} has no visible money column`);
+  return c;
+}
+async function countCol(admin: Api, sheet: string, group: string): Promise<Col> {
+  const [c] = shown(await groupOf(admin, sheet, group), 'count');
+  if (!c) throw new Error(`${sheet}/${group} has no visible count column`);
+  return c;
+}
+
 test('#197: totals, month total and FY cumulative are calculated', async () => {
   const admin = await apiAs('admin');
   try {
-    await admin.put('/api/marketing/sheets/dm_cost/days/2001-04-02', { data: { values: { google: { trademark: 100 } } } });
-    await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[0]}`, { data: { values: { google: { trademark: 1000, gst: 500 }, fb: { fssai: 300 } } } });
-    const saved = await (await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[1]}`, { data: { values: { fb: { gst: 200 } } } })).json();
+    const google = await groupOf(admin, 'dm_cost', 'google');
+    const [g1, g2] = shown(google, 'money');
+    const f1 = await moneyCol(admin, 'dm_cost', 'fb');
+    // Two google columns when the firm shows two; one otherwise.
+    const googleValues = { [g1.key]: 1000, ...(g2 ? { [g2.key]: 500 } : {}) };
+    const googleTotal = g2 ? 1500 : 1000;
+
+    await admin.put('/api/marketing/sheets/dm_cost/days/2001-04-02', { data: { values: { google: { [g1.key]: 100 } } } });
+    await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[0]}`, { data: { values: { google: googleValues, fb: { [f1.key]: 300 } } } });
+    const saved = await (await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[1]}`, { data: { values: { fb: { [f1.key]: 200 } } } })).json();
     expect(saved.total).toBe(200);
 
     const v = await (await admin.get(`/api/marketing/sheets/dm_cost?month=${MONTH}`)).json();
     const day = v.rows.find((r: { date: string }) => r.date === DAYS[0]);
-    expect(day.groupTotals).toEqual({ google: 1500, fb: 300 });
-    expect(day.total).toBe(1800);
-    expect(v.monthTotal.total).toBe(2000);
+    expect(day.groupTotals).toEqual({ google: googleTotal, fb: 300 });
+    expect(day.total).toBe(googleTotal + 300);
+    expect(v.monthTotal.total).toBe(googleTotal + 500);
     expect(v.cumulative.from).toBe('2001-04-01');
-    expect(v.cumulative.total).toBe(2100); // includes 2 April
+    expect(v.cumulative.total).toBe(googleTotal + 600); // includes 2 April
     // A save of one group keeps the other group's figures.
-    await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[0]}`, { data: { values: { fb: { fssai: 400 } } } });
+    await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[0]}`, { data: { values: { fb: { [f1.key]: 400 } } } });
     const again = await (await admin.get(`/api/marketing/sheets/dm_cost?month=${MONTH}`)).json();
-    expect(again.rows.find((r: { date: string }) => r.date === DAYS[0]).total).toBe(1900);
+    expect(again.rows.find((r: { date: string }) => r.date === DAYS[0]).total).toBe(googleTotal + 400);
+
+    // A HIDDEN column keeps its value but leaves the totals — the rule that made
+    // this test fail when it assumed every column was shown.
+    const hidden = google.columns.find((c) => c.hidden && c.kind === 'money');
+    if (hidden) {
+      await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[0]}`, { data: { values: { google: { [hidden.key]: 999 } } } });
+      const h = await (await admin.get(`/api/marketing/sheets/dm_cost?month=${MONTH}`)).json();
+      const hd = h.rows.find((r: { date: string }) => r.date === DAYS[0]);
+      expect(hd.values.google[hidden.key], 'the value is stored').toBe(999);
+      expect(hd.groupTotals.google, 'but not totalled').toBe(googleTotal);
+    }
 
     // Unknown columns, negative amounts, fractional client counts and future dates are refused.
+    const convert = await countCol(admin, 'dm_income', 'google');
     expect((await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[0]}`, { data: { values: { google: { nope: 1 } } } })).status()).toBe(400);
-    expect((await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[0]}`, { data: { values: { google: { gst: -5 } } } })).status()).toBe(400);
-    expect((await admin.put(`/api/marketing/sheets/dm_income/days/${DAYS[0]}`, { data: { values: { google: { convert: 1.5 } } } })).status()).toBe(400);
-    expect((await admin.put('/api/marketing/sheets/dm_cost/days/2099-01-01', { data: { values: { google: { gst: 1 } } } })).status()).toBe(400);
+    expect((await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[0]}`, { data: { values: { google: { [g1.key]: -5 } } } })).status()).toBe(400);
+    expect((await admin.put(`/api/marketing/sheets/dm_income/days/${DAYS[0]}`, { data: { values: { google: { [convert.key]: 1.5 } } } })).status()).toBe(400);
+    expect((await admin.put('/api/marketing/sheets/dm_cost/days/2099-01-01', { data: { values: { google: { [g1.key]: 1 } } } })).status()).toBe(400);
   } finally { await admin.dispose(); }
 });
 
@@ -174,9 +224,18 @@ test('#197: Reporting rolls up spend, income, clients, CAC and revenue-to-cost',
     for (const sheet of ['dm_cost', 'dm_income', 'cold_calling']) {
       for (const d of [...DAYS, '2001-04-02']) await admin.delete(`/api/marketing/sheets/${sheet}/days/${d}`);
     }
-    await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[0]}`, { data: { values: { google: { trademark: 3000 }, fb: { gst: 1000 } } } });
-    await admin.put(`/api/marketing/sheets/dm_income/days/${DAYS[0]}`, { data: { values: { google: { trademark: 9000, convert: 3 }, fb: { gst: 1000, convert: 1 } } } });
-    await admin.put(`/api/marketing/sheets/cold_calling/days/${DAYS[0]}`, { data: { values: { cold: { itr: 2500, convert: 1 } } } });
+    const m = async (sheet: string, group: string) => (await moneyCol(admin, sheet, group)).key;
+    const n = async (sheet: string, group: string) => (await countCol(admin, sheet, group)).key;
+    await admin.put(`/api/marketing/sheets/dm_cost/days/${DAYS[0]}`, { data: { values: {
+      google: { [await m('dm_cost', 'google')]: 3000 }, fb: { [await m('dm_cost', 'fb')]: 1000 },
+    } } });
+    await admin.put(`/api/marketing/sheets/dm_income/days/${DAYS[0]}`, { data: { values: {
+      google: { [await m('dm_income', 'google')]: 9000, [await n('dm_income', 'google')]: 3 },
+      fb: { [await m('dm_income', 'fb')]: 1000, [await n('dm_income', 'fb')]: 1 },
+    } } });
+    await admin.put(`/api/marketing/sheets/cold_calling/days/${DAYS[0]}`, { data: { values: {
+      cold: { [await m('cold_calling', 'cold')]: 2500, [await n('cold_calling', 'cold')]: 1 },
+    } } });
 
     const r = await (await admin.get(`/api/marketing/reporting?from=${MONTH}&to=${MONTH}`)).json();
     const row = r.rows[0];
@@ -191,19 +250,24 @@ test('#197: Reporting rolls up spend, income, clients, CAC and revenue-to-cost',
 });
 
 test('#197: the page offers the sections, and an admin can enter a figure', async ({ adminPage }) => {
+  const setup = await apiAs('admin');
+  const google = await groupOf(setup, 'dm_cost', 'google');
+  await setup.dispose();
+  const [col] = shown(google, 'money');
+
   await adminPage.goto('reports/marketing');
   const report = adminPage.getByLabel('Report', { exact: true });
   await expect(report).toBeVisible();
   await expect(report.locator('option')).toHaveText(['DM Cost', 'DM Income', 'Cold Calling Income', 'Reporting']);
   await adminPage.getByLabel('Month', { exact: true }).fill(MONTH);
-  const cell = adminPage.getByLabel(`GST (DM Google Ads) on ${DAYS[1]}`);
+  const cell = adminPage.getByLabel(`${col.label} (${google.label}) on ${DAYS[1]}`);
   await cell.fill('750');
   await cell.press('Enter');
   await expect.poll(async () => {
     const admin = await apiAs('admin');
     const v = await (await admin.get(`/api/marketing/sheets/dm_cost?month=${MONTH}`)).json();
     await admin.dispose();
-    return v.rows.find((r: { date: string }) => r.date === DAYS[1]).values?.google?.gst;
+    return v.rows.find((r: { date: string }) => r.date === DAYS[1]).values?.google?.[col.key];
   }).toBe(750);
 
   await report.selectOption('reporting');
