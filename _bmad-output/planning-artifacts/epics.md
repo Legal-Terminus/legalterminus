@@ -3271,7 +3271,27 @@ payment integration cannot be developed against live customers.
 
 ---
 
-### E24-S01 — Prices come from the server [Phase 2] ⏳ Not Started
+### E24-S01 — Prices come from the server [Phase 2] 🔄 In Progress
+
+> **Built on the `qa` branch (2026-10-03), deployed to QA only.**
+> - `shared/pricing/catalog.json` — 61 products, 195 plans — generated from the 62 pricing
+>   components that are reachable from the app's routes by `scripts/build-pricing-catalog.py`
+>   (21 components are dead code, including the one pricing a plan at ₹1).
+> - Firestore `pricingCatalog/{productKey}`, seeded by `npm run db:seed:pricing`; the seed never
+>   overwrites a price already stored. `pricing.service.js` holds the rules.
+> - `GET /api/public/pricing` (public read), `GET /api/pricing` (admin, manager),
+>   `PUT /api/pricing/:productKey` (admin). `resolvePlan()` is what a payment will charge from.
+> - The website's 62 live components keep their plans as `DEFAULT_PLANS` (the fallback and the
+>   prerendered price) and read live prices through `usePlans()` (`Frontend/src/utils/pricing.js`).
+> - 46 of the 61 products are linked to a portal service; 15 have none yet.
+>
+> **Found while building, for the firm to confirm:** `CompanyRegPlans` and `PRFlandpricing`
+> were charging under another product's name (now `company-registration` and
+> `partnership-registration`); the two trademark-application pages show different strikethrough
+> prices for Supreme (₹15,499 and ₹22,499).
+>
+> **Not built:** a screen in the portal for editing prices (the API exists); the firm's
+> confirmation of every price; the checkout still sends its own amount until E24-S02.
 
 **Priority**: P1 | **Complexity**: M | **Dependencies**: E24-S00
 

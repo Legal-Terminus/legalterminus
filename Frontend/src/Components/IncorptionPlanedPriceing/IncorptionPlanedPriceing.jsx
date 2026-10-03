@@ -3,8 +3,9 @@ import "../PvtltdPlanandPricing/PvtltdPlanandPricing.css";
 import "./IncorporationPlanAndPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import { usePlans } from "../../utils/pricing";
 
-const TRACK_A_PLANS = [
+const DEFAULT_TRACK_A_PLANS = [
   {
     id: "wos-a-elemental",
     name: "Elemental",
@@ -65,7 +66,7 @@ const TRACK_A_PLANS = [
   },
 ];
 
-const TRACK_B_PLANS = [
+const DEFAULT_TRACK_B_PLANS = [
   {
     id: "wos-b-elemental",
     name: "Elemental",
@@ -174,6 +175,9 @@ const PlanCard = ({ plan, onBuy }) => {
 };
 
 const IncorporationPlanAndPricing = () => {
+  // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
+  const TRACK_A_PLANS = usePlans("incorporation", DEFAULT_TRACK_A_PLANS);
+  const TRACK_B_PLANS = usePlans("incorporation", DEFAULT_TRACK_B_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
   // Consultation" button below opens the consultation popup instead.

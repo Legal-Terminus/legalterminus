@@ -19,6 +19,7 @@ import videoTestimonialRoutes from "./routes/videotestimonial.routes.js";
 import testimonialRoutes from "./routes/testimonialRoute.js";
 import authRoutes from "./routes/auth.routes.js";
 import publicAccountRoutes from "./routes/publicAccount.routes.js";
+import pricingRoutes, { publicPricingRouter } from "./routes/pricing.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import tasksRoutes from "./routes/tasks.routes.js";
@@ -151,6 +152,10 @@ app.use("/api/auth", sensitiveLimiter, authRoutes);
 // #203: forgot-password and sign-in-link requests — unauthenticated by
 // necessity, uniform 202 answers; see routes/publicAccount.routes.js.
 app.use("/api/public/account", publicAccountRoutes);
+// E24-S01: the price catalogue. The public route is a read of prices already
+// printed on the website; changing them is admin-only.
+app.use("/api/public/pricing", publicPricingRouter);
+app.use("/api/pricing", pricingRoutes);
 app.use("/api/payment", sensitiveLimiter, paymentRoutes);
 app.use("/api/contact", sensitiveLimiter, contactRoutes);
 // #167: any API traffic may trigger the recurring-matter sweep in the

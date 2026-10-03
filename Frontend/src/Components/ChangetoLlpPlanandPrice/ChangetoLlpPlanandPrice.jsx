@@ -2,15 +2,18 @@ import React, { useState } from "react";
 import "./ChangetoLlpPlanandPrice.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import { usePlans } from "../../utils/pricing";
 
 
-const PLANS = [
+const DEFAULT_PLANS = [
   { id: "elemental", name: "Elemental", price: 7999, services: ["Name Search for LLP Incorporation", "1 RUN Name Approval Application", "DPIN for 2 Individuals", "Certificate of Incorporation", "LLP Agreement", "LLP Government Fees", "DSC of 2 Designated Partners", "Filing of PAN Application", "Documents for Bank Account opening"] },
   { id: "enriched", name: "Enriched", price: 9999, services: ["Elemental Plan Plus", "UDYAM Registration", "GST Registration"] },
   { id: "supreme", name: "Supreme", price: 13999, services: ["Enriched Plan Plus", "Filing of LLP 11", "Filing of LLP 8", "ITR Filing of LLP"] }
 ];
 
 const PricingSection = () => {
+  // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
+  const PLANS = usePlans("company-to-llp", DEFAULT_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
   // Consultation" button below opens the consultation popup instead.

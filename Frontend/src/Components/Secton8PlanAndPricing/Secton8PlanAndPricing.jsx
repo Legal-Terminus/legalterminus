@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import "./Section8PlanAndPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import { usePlans } from "../../utils/pricing";
 
-const PLANS = [
+const DEFAULT_PLANS = [
   {
     id: "elemental",
     name: "Elemental",
@@ -71,6 +72,8 @@ const PLANS = [
 ];
 
 const Section8PlanAndPricing = () => {
+  // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
+  const PLANS = usePlans("section8-company", DEFAULT_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
   // Consultation" button below opens the consultation popup instead.

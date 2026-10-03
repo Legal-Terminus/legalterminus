@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./EsiRetPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import { usePlans } from "../../utils/pricing";
 
 const ESI_SERVICES = [
   "Employee addition in ESI portal (new IP creation)",
@@ -16,7 +17,7 @@ const ESI_SERVICES = [
   "Govt interest (Sec 39 12% pa) + damages (85B 5-25% pa) at actuals",
 ];
 
-const PLANS = [
+const DEFAULT_PLANS = [
   {
     id: "elemental",
     name: "Elemental",
@@ -48,6 +49,8 @@ const PLANS = [
 ];
 
 const EsiRetPlans = () => {
+  // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
+  const PLANS = usePlans("esi-return", DEFAULT_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
   // Consultation" button below opens the consultation popup instead.

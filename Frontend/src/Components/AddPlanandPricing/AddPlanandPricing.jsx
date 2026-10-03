@@ -2,15 +2,18 @@ import React, { useState } from "react";
 import "./AddPlanandPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import { usePlans } from "../../utils/pricing";
 
 
-const PLANS = [
+const DEFAULT_PLANS = [
   { id: "elemental", name: "Elemental", price: 1499, services: ["Filing of DIR 12 (Addition/ Cessation)", "Preparation of Board Resolution"] },
   { id: "enriched", name: "Enriched", price: 3499, services: ["Filing of DIR 12 (Addition/ Cessation)", "DSC of 1 Proposed Director", "DIN of 1 Proposed Director", "Preparation of Board Resolution"] },
   { id: "supreme", name: "Supreme", price: 4999, services: ["Filing of DIR 12 (Addition)", "DSC of 1 Proposed Director", "DIN of 1 Proposed Director", "Filing of DIR 12 (Cessation)", "Preparation of Board Resolution"] }
 ];
 
 const AddPlanandPricing = () => {
+  // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
+  const PLANS = usePlans("add-director", DEFAULT_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
   // Consultation" button below opens the consultation popup instead.

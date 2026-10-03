@@ -1,0 +1,1724 @@
+{
+  "products": {
+    "add-director": {
+      "label": "Add Director",
+      "serviceKey": "add-director",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 1499,
+          "oldPrice": null
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 3499,
+          "oldPrice": null
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 4999,
+          "oldPrice": null
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/AddPlanandPricing/AddPlanandPricing.jsx"
+      ]
+    },
+    "annual-filing-company": {
+      "label": "Annual Filing Company",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "ELEMENTAL",
+          "price": 6999,
+          "oldPrice": 10499
+        },
+        {
+          "id": "enriched",
+          "name": "ENRICHED",
+          "price": 14999,
+          "oldPrice": 22499
+        },
+        {
+          "id": "supreme",
+          "name": "SUPREME",
+          "price": 26999,
+          "oldPrice": 39999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/AfcPlans/AfcPlans.jsx"
+      ]
+    },
+    "annual-filing-llp": {
+      "label": "Annual Filing LLP",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "ELEMENTAL",
+          "price": 4999,
+          "oldPrice": 7499
+        },
+        {
+          "id": "enriched",
+          "name": "ENRICHED",
+          "price": 14999,
+          "oldPrice": 22499
+        },
+        {
+          "id": "supreme",
+          "name": "SUPREME",
+          "price": 24999,
+          "oldPrice": 37499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/AflPlans/AflPlans.jsx"
+      ]
+    },
+    "bc-registration": {
+      "label": "BC Registration",
+      "serviceKey": "bc-registration",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 9999,
+          "oldPrice": 11999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 11999,
+          "oldPrice": 15999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 13999,
+          "oldPrice": 17999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/BCplanandpricing/BCplanandpricing.jsx"
+      ]
+    },
+    "cic-registration": {
+      "label": "CIC Registration",
+      "serviceKey": "cic-registration",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 5999,
+          "oldPrice": null
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/CICplan/CICplan.jsx"
+      ]
+    },
+    "cio-registration": {
+      "label": "CIO Registration",
+      "serviceKey": "cio-registration",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 3999,
+          "oldPrice": null
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 5999,
+          "oldPrice": null
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 24999,
+          "oldPrice": null
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/CIOplans/CIOplans.jsx"
+      ]
+    },
+    "cir-registration": {
+      "label": "CIR Registration",
+      "serviceKey": "cir-registration",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 3999,
+          "oldPrice": null
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 5999,
+          "oldPrice": null
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 24999,
+          "oldPrice": null
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/CIRplans/CIRplans.jsx"
+      ]
+    },
+    "change-address-company": {
+      "label": "Change Address Company",
+      "serviceKey": "change-company-address",
+      "plans": [
+        {
+          "id": "local",
+          "name": "Within City / Local Limits",
+          "price": 2999,
+          "oldPrice": 5999
+        },
+        {
+          "id": "instate",
+          "name": "Within State (Different City / ROC)",
+          "price": 6499,
+          "oldPrice": 11999
+        },
+        {
+          "id": "interstate",
+          "name": "State-to-State (MOA Change)",
+          "price": 17999,
+          "oldPrice": 29999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/CacomPlans/CacomPlans.jsx"
+      ]
+    },
+    "change-to-company": {
+      "label": "Change To Company",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 3999,
+          "oldPrice": null
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 5999,
+          "oldPrice": null
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 24999,
+          "oldPrice": null
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/ChangetoCompanyPlanandPrice/ChangetoCompanyPlanandPrice.jsx"
+      ]
+    },
+    "company-to-llp": {
+      "label": "Company To LLP",
+      "serviceKey": "company-to-llp",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 7999,
+          "oldPrice": null
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 9999,
+          "oldPrice": null
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 13999,
+          "oldPrice": null
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/ChangetoLlpPlanandPrice/ChangetoLlpPlanandPrice.jsx"
+      ]
+    },
+    "change-name-llp": {
+      "label": "Change Name LLP",
+      "serviceKey": "change-llp-name",
+      "plans": [
+        {
+          "id": "namechange",
+          "name": "LLP Name Change",
+          "price": 3999,
+          "oldPrice": 7999
+        },
+        {
+          "id": "rebrand",
+          "name": "Name Change + Update Pack",
+          "price": 7999,
+          "oldPrice": 14999
+        },
+        {
+          "id": "full",
+          "name": "Full Rebrand Advisory",
+          "price": 13999,
+          "oldPrice": 24999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/CnllpPlans/CnllpPlans.jsx"
+      ]
+    },
+    "change-object-company": {
+      "label": "Change Object Company",
+      "serviceKey": "change-company-object",
+      "plans": [
+        {
+          "id": "objectchange",
+          "name": "Object Clause Change",
+          "price": 4999,
+          "oldPrice": 9999
+        },
+        {
+          "id": "expansion",
+          "name": "Object Change + Compliance",
+          "price": 9999,
+          "oldPrice": 17999
+        },
+        {
+          "id": "full",
+          "name": "Full Diversification Advisory",
+          "price": 16999,
+          "oldPrice": 29999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/CocomPlans/CocomPlans.jsx"
+      ]
+    },
+    "company-registration": {
+      "label": "Company Registration",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 3999,
+          "oldPrice": 5999
+        },
+        {
+          "id": "elemental-plus",
+          "name": "Elemental Plus",
+          "price": 5999,
+          "oldPrice": 7999
+        },
+        {
+          "id": "enriched-plus",
+          "name": "Enriched Plus",
+          "price": 24999,
+          "oldPrice": 29999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/CompanyRegPlans/CompanyRegPlans.jsx"
+      ]
+    },
+    "company-registration-odisha": {
+      "label": "Company Registration Odisha",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 4999,
+          "oldPrice": 7999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 7999,
+          "oldPrice": 13999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 24999,
+          "oldPrice": 29999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/CroPlans/CroPlans.jsx"
+      ]
+    },
+    "dissolve-llp": {
+      "label": "Dissolve LLP",
+      "serviceKey": "dissolve-llp",
+      "plans": [
+        {
+          "id": "strikeoff",
+          "name": "LLP Strike-Off (Form 24)",
+          "price": 7999,
+          "oldPrice": 14999
+        },
+        {
+          "id": "cleanup",
+          "name": "Closure + Compliance Clean-Up",
+          "price": 15999,
+          "oldPrice": 27999
+        },
+        {
+          "id": "fullexit",
+          "name": "Full Exit Advisory",
+          "price": 27999,
+          "oldPrice": 49999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/DllpPlans/DllpPlans.jsx"
+      ]
+    },
+    "dissolve-partnership": {
+      "label": "Dissolve Partnership",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "deed",
+          "name": "Dissolution Deed",
+          "price": 4999,
+          "oldPrice": 9999
+        },
+        {
+          "id": "full",
+          "name": "Full Dissolution + Filings",
+          "price": 10999,
+          "oldPrice": 19999
+        },
+        {
+          "id": "advisory",
+          "name": "Full Exit + Settlement Advisory",
+          "price": 21999,
+          "oldPrice": 39999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/DpartPlans/DpartPlans.jsx"
+      ]
+    },
+    "dissolve-private": {
+      "label": "Dissolve Private",
+      "serviceKey": "dissolve-private-limited",
+      "plans": [
+        {
+          "id": "strikeoff",
+          "name": "Strike-Off (STK-2)",
+          "price": 9999,
+          "oldPrice": 17999
+        },
+        {
+          "id": "cleanup",
+          "name": "Closure + Compliance Clean-Up",
+          "price": 19999,
+          "oldPrice": 34999
+        },
+        {
+          "id": "fullexit",
+          "name": "Full Exit Advisory",
+          "price": 34999,
+          "oldPrice": 59999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/DpvtPlans/DpvtPlans.jsx"
+      ]
+    },
+    "epf-registration": {
+      "label": "EPF Registration",
+      "serviceKey": "epf-registration",
+      "plans": [
+        {
+          "id": "epf-elemental",
+          "name": "Elemental",
+          "price": 2999,
+          "oldPrice": 3999
+        },
+        {
+          "id": "epf-enriched",
+          "name": "Enriched",
+          "price": 5999,
+          "oldPrice": 7999
+        },
+        {
+          "id": "epf-supreme",
+          "name": "Supreme",
+          "price": 8999,
+          "oldPrice": 10999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/EPFRegPricing/EPFRegPricing.jsx"
+      ]
+    },
+    "esic-registration": {
+      "label": "ESIC Registration",
+      "serviceKey": "esic-registration",
+      "plans": [
+        {
+          "id": "esic-elemental",
+          "name": "Elemental",
+          "price": 2999,
+          "oldPrice": 3999
+        },
+        {
+          "id": "esic-enriched",
+          "name": "Enriched",
+          "price": 5499,
+          "oldPrice": 6999
+        },
+        {
+          "id": "esic-supreme",
+          "name": "Supreme",
+          "price": 8999,
+          "oldPrice": 10999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/ESICRegPricing/ESICRegPricing.jsx"
+      ]
+    },
+    "epf-return": {
+      "label": "EPF Return",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "ELEMENTAL",
+          "price": 999,
+          "oldPrice": 1499
+        },
+        {
+          "id": "enriched",
+          "name": "ENRICHED",
+          "price": 1999,
+          "oldPrice": 2199
+        },
+        {
+          "id": "supreme",
+          "name": "SUPREME",
+          "price": 2999,
+          "oldPrice": 2999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/EpfRetPlans/EpfRetPlans.jsx"
+      ]
+    },
+    "esi-return": {
+      "label": "ESI Return",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 999,
+          "oldPrice": 1499
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 1999,
+          "oldPrice": 2199
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 2999,
+          "oldPrice": 3499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/EsiRetPlans/EsiRetPlans.jsx"
+      ]
+    },
+    "food-license-fssai": {
+      "label": "Food License FSSAI",
+      "serviceKey": "food-license-fssai",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 999,
+          "oldPrice": 1499
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 2999,
+          "oldPrice": 4999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 3999,
+          "oldPrice": 5999
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 7999,
+          "oldPrice": 11999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/FoodLicensePlans/FoodLicensePlans.jsx"
+      ]
+    },
+    "gst-registration": {
+      "label": "GST Registration",
+      "serviceKey": "gst-registration",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 1499,
+          "oldPrice": 1999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 2999,
+          "oldPrice": 3999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 7999,
+          "oldPrice": 9999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/GSTRegPlans/GSTRegPlans.jsx"
+      ]
+    },
+    "gst-return-filing": {
+      "label": "GST Return Filing",
+      "serviceKey": "gst-returns",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 499,
+          "oldPrice": 799
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 999,
+          "oldPrice": 1499
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 1999,
+          "oldPrice": 2999
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme+",
+          "price": 2999,
+          "oldPrice": 4499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/GstFilingPlans/GstFilingPlans.jsx"
+      ]
+    },
+    "iec-registration": {
+      "label": "IEC Registration",
+      "serviceKey": "iec-registration",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 1499,
+          "oldPrice": 1999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 2999,
+          "oldPrice": 3999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 4999,
+          "oldPrice": 5499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/IECPlans/IECPlans.jsx"
+      ]
+    },
+    "iso-certification": {
+      "label": "ISO Certification",
+      "serviceKey": "iso-certification",
+      "plans": [
+        {
+          "id": "iso-elemental",
+          "name": "Elemental",
+          "price": 12999,
+          "oldPrice": 17999
+        },
+        {
+          "id": "iso-enriched",
+          "name": "Enriched",
+          "price": 22999,
+          "oldPrice": 32999
+        },
+        {
+          "id": "iso-supreme",
+          "name": "Supreme",
+          "price": 34999,
+          "oldPrice": 49999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/ISOplan/ISOplan.jsx"
+      ]
+    },
+    "increase-authorised-capital": {
+      "label": "Increase Authorised Capital",
+      "serviceKey": "increase-capital",
+      "plans": [
+        {
+          "id": "increase",
+          "name": "Increase Authorised Capital",
+          "price": 3999,
+          "oldPrice": 7999
+        },
+        {
+          "id": "aoa",
+          "name": "Increase + AOA Amendment",
+          "price": 7499,
+          "oldPrice": 13999
+        },
+        {
+          "id": "allotment",
+          "name": "Increase + Share Allotment",
+          "price": 12999,
+          "oldPrice": 22999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/IacapPlans/IacapPlans.jsx"
+      ]
+    },
+    "incorporation": {
+      "label": "Incorporation",
+      "serviceKey": "incorporation",
+      "plans": [
+        {
+          "id": "wos-a-elemental",
+          "name": "Elemental",
+          "price": 7999,
+          "oldPrice": 10999
+        },
+        {
+          "id": "wos-a-enriched",
+          "name": "Enriched",
+          "price": 14999,
+          "oldPrice": 17999
+        },
+        {
+          "id": "wos-a-supreme",
+          "name": "Supreme",
+          "price": 26999,
+          "oldPrice": 29999
+        },
+        {
+          "id": "wos-b-elemental",
+          "name": "Elemental",
+          "price": 19999,
+          "oldPrice": 26999
+        },
+        {
+          "id": "wos-b-enriched",
+          "name": "Enriched",
+          "price": 34999,
+          "oldPrice": 47999
+        },
+        {
+          "id": "wos-b-supreme",
+          "name": "Supreme",
+          "price": 54999,
+          "oldPrice": 74999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/IncorptionPlanedPriceing/IncorptionPlanedPriceing.jsx"
+      ]
+    },
+    "itr-business": {
+      "label": "ITR Business",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "ITR Filing Only",
+          "price": 2499,
+          "oldPrice": 3749
+        },
+        {
+          "id": "enriched",
+          "name": "+ Balance Sheet Preparation",
+          "price": 4999,
+          "oldPrice": 7499
+        },
+        {
+          "id": "supreme",
+          "name": "+ Accounting in Tally",
+          "price": 14999,
+          "oldPrice": 22499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/ItrBizPlans/ItrBizPlans.jsx"
+      ]
+    },
+    "itr-individual": {
+      "label": "ITR Individual",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "base-elemental",
+          "name": "ITR-1 — Income up to ₹5 Lakh",
+          "price": 799,
+          "oldPrice": 1199
+        },
+        {
+          "id": "base-enriched",
+          "name": "ITR-1 — Income up to ₹10 Lakh",
+          "price": 1499,
+          "oldPrice": 2249
+        },
+        {
+          "id": "base-supreme",
+          "name": "ITR-1 — Income more than ₹10 Lakh",
+          "price": 1999,
+          "oldPrice": 2999
+        },
+        {
+          "id": "plus-elemental",
+          "name": "ITR-2 + Capital Gains",
+          "price": 4499,
+          "oldPrice": 6749
+        },
+        {
+          "id": "plus-enriched",
+          "name": "ITR-2 + Capital Gains + Foreign Income",
+          "price": 5999,
+          "oldPrice": 8999
+        },
+        {
+          "id": "plus-supreme",
+          "name": "ITR-2 + NRI / NRO + DTAA",
+          "price": 7999,
+          "oldPrice": 11999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/ItrIndPlans/ItrIndPlans.jsx"
+      ]
+    },
+    "llp-registration": {
+      "label": "LLP Registration",
+      "serviceKey": "llp-registration",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 3499,
+          "oldPrice": 4999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 6499,
+          "oldPrice": 7999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 19999,
+          "oldPrice": 17999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/LLPPlanandPrice/LLPPlanandPrice.jsx"
+      ]
+    },
+    "labour-license-clra": {
+      "label": "Labour License CLRA",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "single",
+          "name": "Single Plan",
+          "price": 11999,
+          "oldPrice": 17999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/LabourLicensePlans/LabourLicensePlans.jsx"
+      ]
+    },
+    "llp-to-private": {
+      "label": "LLP To Private",
+      "serviceKey": "llp-to-private",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 14999,
+          "oldPrice": 22499
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 21999,
+          "oldPrice": 32999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 31999,
+          "oldPrice": 47999
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 44999,
+          "oldPrice": 67499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/LtopvtPlans/LtopvtPlans.jsx"
+      ]
+    },
+    "olwf-registration": {
+      "label": "OLWF Registration",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 2999,
+          "oldPrice": 4999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 4499,
+          "oldPrice": 6499
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 6999,
+          "oldPrice": 9999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/OLWFPlans/OLWFPlans.jsx"
+      ]
+    },
+    "opc-registration": {
+      "label": "OPC Registration",
+      "serviceKey": "opc-registration",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 4999,
+          "oldPrice": 6499
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 8999,
+          "oldPrice": 11999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 24999,
+          "oldPrice": 26999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/OPCPlans/OPCPlans.jsx"
+      ]
+    },
+    "partnership-registration": {
+      "label": "Partnership Registration",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 2499,
+          "oldPrice": null
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 5499,
+          "oldPrice": null
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 8999,
+          "oldPrice": null
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/PRFlandpricing/PRFlandpricing.jsx"
+      ]
+    },
+    "proprietorship": {
+      "label": "Proprietorship",
+      "serviceKey": "proprietorship",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 999,
+          "oldPrice": 1499
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 2999,
+          "oldPrice": 3999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 7499,
+          "oldPrice": 9999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/ProPlanandPricing/ProPlanandPricing.jsx"
+      ]
+    },
+    "professional-tax": {
+      "label": "Professional Tax",
+      "serviceKey": "professional-tax",
+      "plans": [
+        {
+          "id": "basic",
+          "name": "Basic",
+          "price": 999,
+          "oldPrice": 1999
+        },
+        {
+          "id": "standard",
+          "name": "Standard",
+          "price": 1999,
+          "oldPrice": 3999
+        },
+        {
+          "id": "comprehensive",
+          "name": "Comprehensive",
+          "price": 4999,
+          "oldPrice": 7999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/ProfTaxPlans/ProfTaxPlans.jsx"
+      ]
+    },
+    "partnership-to-llp": {
+      "label": "Partnership To LLP",
+      "serviceKey": "partnership-to-llp",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 9999,
+          "oldPrice": 14999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 14999,
+          "oldPrice": 22999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 17999,
+          "oldPrice": 26499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/PtollpPlans/PtollpPlans.jsx"
+      ]
+    },
+    "proprietorship-to-opc": {
+      "label": "Proprietorship To OPC",
+      "serviceKey": "proprietorship-to-opc",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "ELEMENTAL",
+          "price": 13999,
+          "oldPrice": 18999
+        },
+        {
+          "id": "enriched",
+          "name": "ENRICHED",
+          "price": 19999,
+          "oldPrice": 24499
+        },
+        {
+          "id": "supreme",
+          "name": "SUPREME",
+          "price": 24999,
+          "oldPrice": 34499
+        },
+        {
+          "id": "supremeplus",
+          "name": "SUPREME PLUS",
+          "price": 34999,
+          "oldPrice": 52499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/PtoopcPlans/PtoopcPlans.jsx"
+      ]
+    },
+    "proprietorship-to-private": {
+      "label": "Proprietorship To Private",
+      "serviceKey": "proprietorship-to-company",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 14999,
+          "oldPrice": 22499
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 21999,
+          "oldPrice": 32999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 29999,
+          "oldPrice": 45999
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 44999,
+          "oldPrice": 67499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/PtopvtPlans/PtopvtPlans.jsx"
+      ]
+    },
+    "private-to-public": {
+      "label": "Private To Public",
+      "serviceKey": "private-to-public",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 19999,
+          "oldPrice": 29999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 29999,
+          "oldPrice": 44999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 44999,
+          "oldPrice": 66999
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 64999,
+          "oldPrice": 96999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/PtpubRightPlan/PtpubRightPlan.jsx"
+      ]
+    },
+    "partnership-to-private": {
+      "label": "Partnership To Private",
+      "serviceKey": "partnership-to-private",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 14999,
+          "oldPrice": 22499
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 21999,
+          "oldPrice": 32999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 29999,
+          "oldPrice": 45999
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 44999,
+          "oldPrice": 67499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/PtpvtPlans/PtpvtPlans.jsx"
+      ]
+    },
+    "public-limited-company": {
+      "label": "Public Limited Company",
+      "serviceKey": "public-limited-company",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 19999,
+          "oldPrice": 29999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 29999,
+          "oldPrice": 44999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 44999,
+          "oldPrice": 66999
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 64999,
+          "oldPrice": 96999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/PublicltdRightPlan/PublicltdRightPlan.jsx"
+      ]
+    },
+    "public-to-private": {
+      "label": "Public To Private",
+      "serviceKey": "public-to-private",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 14999,
+          "oldPrice": 22999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 21999,
+          "oldPrice": 33999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 31999,
+          "oldPrice": 49999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/PubpvtPlans/PubpvtPlans.jsx"
+      ]
+    },
+    "private-to-llp": {
+      "label": "Private To LLP",
+      "serviceKey": "private-to-llp",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 9999,
+          "oldPrice": 14999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 14999,
+          "oldPrice": 22499
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 22999,
+          "oldPrice": 34499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/PvtllpPlans/PvtllpPlans.jsx"
+      ]
+    },
+    "private-limited": {
+      "label": "Private Limited",
+      "serviceKey": "private-limited",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 5999,
+          "oldPrice": null
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 8999,
+          "oldPrice": null
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 13999,
+          "oldPrice": null
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 24999,
+          "oldPrice": null
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/PvtltdPlanandPricing/PvtltdPlanandPricing.jsx"
+      ]
+    },
+    "society-registration": {
+      "label": "Society Registration",
+      "serviceKey": "society-registration",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 6999,
+          "oldPrice": 8499
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 7999,
+          "oldPrice": 12499
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 9999,
+          "oldPrice": 18999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/SccietyPlanAndPricing/SccietyPlanAndPricing.jsx"
+      ]
+    },
+    "section8-company": {
+      "label": "Section8 Company",
+      "serviceKey": "section8-company",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 7999,
+          "oldPrice": 13499
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 12999,
+          "oldPrice": 18999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 19999,
+          "oldPrice": 24999
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 29999,
+          "oldPrice": 34999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/Secton8PlanAndPricing/Secton8PlanAndPricing.jsx"
+      ]
+    },
+    "shop-establishment": {
+      "label": "Shop Establishment",
+      "serviceKey": "shop-establishment",
+      "plans": [
+        {
+          "id": "shop-elemental",
+          "name": "Elemental",
+          "price": 5999,
+          "oldPrice": 6999
+        },
+        {
+          "id": "shop-enriched",
+          "name": "Enriched",
+          "price": 7999,
+          "oldPrice": 9999
+        },
+        {
+          "id": "shop-supreme",
+          "name": "Supreme",
+          "price": 8999,
+          "oldPrice": 12999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/ShopRegPlanandPricing/ShopRegPlanandPricing.jsx"
+      ]
+    },
+    "startup-india": {
+      "label": "Startup India",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 2999,
+          "oldPrice": 4999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 5999,
+          "oldPrice": 8999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 7499,
+          "oldPrice": 10999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/StartupIndiaPricing/StartupIndiaPricing.jsx"
+      ]
+    },
+    "startup-odisha": {
+      "label": "Startup Odisha",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 2499,
+          "oldPrice": 3999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 5999,
+          "oldPrice": 7999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 7999,
+          "oldPrice": 10999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/StartupOdishaPricing/StartupOdishaPricing.jsx"
+      ]
+    },
+    "trademark-application": {
+      "label": "Trademark Application",
+      "serviceKey": "trademark-application",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 1499,
+          "oldPrice": 2249
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 6499,
+          "oldPrice": 9749
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 12499,
+          "oldPrice": 15499
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/TmarkPlans/TmarkPlans.jsx",
+        "Frontend/src/Components/TrademarkPlans/TrademarkPlans.jsx"
+      ]
+    },
+    "trademark-exam-reply": {
+      "label": "Trademark Exam Reply",
+      "serviceKey": "trademark-examination-reply",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 2999,
+          "oldPrice": 4499
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 3999,
+          "oldPrice": 5999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 9999,
+          "oldPrice": 14999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/TmexrPlans/TmexrPlans.jsx"
+      ]
+    },
+    "trademark-hearing": {
+      "label": "Trademark Hearing",
+      "serviceKey": "trademark-hearing",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "ELEMENTAL",
+          "price": 4999,
+          "oldPrice": 7459
+        },
+        {
+          "id": "enriched",
+          "name": "ENRICHED",
+          "price": 6999,
+          "oldPrice": 10499
+        },
+        {
+          "id": "supreme",
+          "name": "SUPREME",
+          "price": 9999,
+          "oldPrice": 14999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/TmhearPlans/TmhearPlans.jsx"
+      ]
+    },
+    "trademark-opposition": {
+      "label": "Trademark Opposition",
+      "serviceKey": "trademark-opposition",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "ELEMENTAL",
+          "price": 5999,
+          "oldPrice": 8999
+        },
+        {
+          "id": "enriched",
+          "name": "ENRICHED",
+          "price": 9999,
+          "oldPrice": 14999
+        },
+        {
+          "id": "supreme",
+          "name": "SUPREME",
+          "price": 19999,
+          "oldPrice": 29999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/TmoppPlans/TmoppPlans.jsx"
+      ]
+    },
+    "trademark-renewal": {
+      "label": "Trademark Renewal",
+      "serviceKey": "trademark-renewal",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 1999,
+          "oldPrice": 2999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 3499,
+          "oldPrice": 5249
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 9999,
+          "oldPrice": 14999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/TmrnwPlans/TmrnwPlans.jsx"
+      ]
+    },
+    "trade-license": {
+      "label": "Trade License",
+      "serviceKey": "trade-license",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 2999,
+          "oldPrice": 3999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 3999,
+          "oldPrice": 5499
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 5999,
+          "oldPrice": 7999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/TradeLicensePlans/TradeLicensePlans.jsx"
+      ]
+    },
+    "trust-registration": {
+      "label": "Trust Registration",
+      "serviceKey": "trust-registration",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 9999,
+          "oldPrice": 11999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 14999,
+          "oldPrice": 18999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 16999,
+          "oldPrice": 23999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/TrustPlanAndPricing/TrustPlanAndPricing.jsx"
+      ]
+    },
+    "udyam-registration": {
+      "label": "Udyam Registration",
+      "serviceKey": "udyam-registration",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 999,
+          "oldPrice": 1499
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 2999,
+          "oldPrice": 3999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 5999,
+          "oldPrice": 9999
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/UdyamRegPlanAndPricing/UdyamRegPlanAndPricing.jsx"
+      ]
+    },
+    "windup-plc": {
+      "label": "Windup PLC",
+      "serviceKey": "windup-plc",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 3999,
+          "oldPrice": null
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 5999,
+          "oldPrice": null
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 24999,
+          "oldPrice": null
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/WindupPLCPP/WindupPLCPP.jsx"
+      ]
+    }
+  }
+}

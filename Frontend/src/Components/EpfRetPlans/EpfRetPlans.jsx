@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./EpfRetPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import { usePlans } from "../../utils/pricing";
 
 // Every tier ships the same end-to-end monthly EPF compliance scope —
 // only the covered headcount and price change between plans.
@@ -18,7 +19,7 @@ const SERVICES = [
   "Late-fee ZERO promise (we file on time)",
 ];
 
-const PLANS = [
+const DEFAULT_PLANS = [
   {
     id: "elemental",
     name: "ELEMENTAL",
@@ -52,6 +53,8 @@ const PLANS = [
 ];
 
 const EpfRetPlans = () => {
+  // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
+  const PLANS = usePlans("epf-return", DEFAULT_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
   // Consultation" button below opens the consultation popup instead.

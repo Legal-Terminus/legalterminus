@@ -2,8 +2,9 @@ import { useState } from "react";
 import "./ItrIndPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import { usePlans } from "../../utils/pricing";
 
-const BASE_PLANS = [
+const DEFAULT_BASE_PLANS = [
   {
     id: "base-elemental",
     tier: "ELEMENTAL",
@@ -61,7 +62,7 @@ const BASE_PLANS = [
   },
 ];
 
-const PLUS_PLANS = [
+const DEFAULT_PLUS_PLANS = [
   {
     id: "plus-elemental",
     tier: "ELEMENTAL",
@@ -159,6 +160,9 @@ const PlanCard = ({ plan, onSelect }) => (
 );
 
 const ItrIndPlans = () => {
+  // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
+  const BASE_PLANS = usePlans("itr-individual", DEFAULT_BASE_PLANS);
+  const PLUS_PLANS = usePlans("itr-individual", DEFAULT_PLUS_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
   // Consultation" button below opens the consultation popup instead.

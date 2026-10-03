@@ -1688,6 +1688,24 @@ A temporary second deployment in the SAME project: Hosting site
 - **Why not a separate project:** decided by the product owner — temporary, no
   custom domain, no CI. The cost is the shared accounts above.
 
+## The price catalogue (E24-S01)
+
+What each website plan costs is owned by the server. `pricingCatalog/{productKey}`
+holds `{ label, serviceKey, plans: [{ id, name, price, oldPrice, active }] }`; a
+product is keyed by the `source` its component passes to the checkout, and
+`serviceKey` links it to a portal service (null when there is none).
+
+- **A payment must take its amount from `resolvePlan(productKey, planId)`**
+  (`pricing.service.js`), never from the request.
+- The website reads `GET /api/public/pricing` through `usePlans()`. Each
+  component's `DEFAULT_PLANS` is the fallback and the prerendered price; the live
+  price replaces it on load. A failed request leaves the defaults on screen.
+- `shared/pricing/catalog.json` is the SEED, generated from the components by
+  `scripts/build-pricing-catalog.py` (`--check` fails when it is stale). After
+  seeding, Firestore is the source of truth and the seed never overwrites it.
+- Only an admin may change a price (`PUT /api/pricing/:productKey`); plans are
+  matched by id, so an edit cannot invent a plan the website has no card for.
+
 ---
 
 *End of Architecture Document*

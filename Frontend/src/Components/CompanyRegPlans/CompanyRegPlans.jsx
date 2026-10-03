@@ -3,8 +3,9 @@ import "../PubpvtPlans/PubpvtPlans.css";
 import "./CompanyRegPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import { usePlans } from "../../utils/pricing";
 
-const PLANS = [
+const DEFAULT_PLANS = [
   {
     id: "elemental",
     name: "Elemental",
@@ -74,6 +75,8 @@ const PLANS = [
 ];
 
 const CompanyRegPlans = () => {
+  // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
+  const PLANS = usePlans("company-registration", DEFAULT_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
   // Consultation" button below opens the consultation popup instead.
@@ -153,14 +156,14 @@ const CompanyRegPlans = () => {
         <CheckoutModal
           plan={activePlan}
           onClose={() => setActivePlan(null)}
-          source="company-registration-odisha"
+          source="company-registration"
         />
       )}
 
       <ConsultationModal
         open={showConsult}
         onClose={() => setShowConsult(false)}
-        source="company-registration-odisha"
+        source="company-registration"
       />
     </>
   );
