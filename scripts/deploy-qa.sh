@@ -96,6 +96,6 @@ if want rules; then
 fi
 
 echo "▶ checks"
-for path in "" "portal/" "api/health"; do
+for path in "" "portal/" "api/public/pricing"; do
   printf "  %s  %s/%s\n" "$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$SITE_URL/$path")" "$SITE_URL" "$path"
 done
