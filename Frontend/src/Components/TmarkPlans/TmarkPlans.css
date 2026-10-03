@@ -10,5 +10,17 @@
 }
 
 .opcpricing-cards.tmark-cards-center > .opcplan-card {
-    flex: 0 1 270px;
+    flex: 0 1 320px;
+}
+
+/* Same-height badge row so names and prices line up across all cards */
+.tmark-cards-center .opcplan-badge {
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+}
+
+/* Keep every bullet dot round and aligned, even on long wrapping lines */
+.tmark-cards-center .opcplan-list-item::before {
+    flex-shrink: 0;
 }
