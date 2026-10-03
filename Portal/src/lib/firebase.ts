@@ -14,6 +14,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+// E24-S00: a deployment may read a NAMED database (the QA environment).
+const databaseId = import.meta.env.VITE_FIRESTORE_DATABASE_ID as string | undefined;
+export const db = databaseId ? getFirestore(app, databaseId) : getFirestore(app);
 export const storage = getStorage(app);
 export default app;

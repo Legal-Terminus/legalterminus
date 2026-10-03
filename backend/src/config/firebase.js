@@ -1,4 +1,5 @@
 import admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -54,7 +55,12 @@ let _firestore;
 export const getDb = () => {
   if (!_firestore) {
     initializeFirebase();
-    _firestore = admin.firestore();
+    // E24-S00: a deployment may use a NAMED database (the QA environment lives in
+    // the production project with its own database). `admin.firestore()` always
+    // returns the default one, so a named database must go through getFirestore.
+    const databaseId = (process.env.FIRESTORE_DATABASE_ID || "").trim();
+    _firestore = databaseId ? getFirestore(admin.app(), databaseId) : admin.firestore();
+    if (databaseId) logger.info({ databaseId }, "Using a named Firestore database");
   }
   return _firestore;
 };

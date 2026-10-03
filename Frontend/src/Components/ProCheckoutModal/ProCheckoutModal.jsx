@@ -7,7 +7,8 @@ import {
   GoogleAuthProvider,
   updateProfile,
 } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { getFirebaseDb } from "../../utils/firebase";
 import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
 import { registerUser } from "../../utils/registerUser.js";
 import { getServiceDisplayName } from "../../utils/serviceConfig.js";
@@ -168,7 +169,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
 
     // Overlay with Firestore data
     try {
-      const db = getFirestore();
+      const db = getFirebaseDb();
       const snap = await getDoc(doc(db, "users", currentUser.uid));
       if (snap.exists()) {
         const d = snap.data();
@@ -203,7 +204,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
         const auth = getAuth();
         const cu = auth.currentUser;
         if (cu) {
-          const db = getFirestore();
+          const db = getFirebaseDb();
           setDoc(doc(db, 'users', cu.uid), {
             fullName:     updated.fullName,
             businessName: updated.businessName,
@@ -339,7 +340,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
 
     // Do a final save before redirecting (in case debounce hadn't fired yet)
     saveUserProfile(form);
-    const db = getFirestore();
+    const db = getFirebaseDb();
     setDoc(doc(db, 'users', currentUser.uid), {
       fullName:     form.fullName,
       businessName: form.businessName,

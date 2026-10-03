@@ -1,0 +1,15 @@
+# What `gcloud builds submit` uploads. The images need only backend/, Portal/
+# and shared/ — never dependencies, build output, secrets or the website.
+.git
+**/node_modules
+**/dist
+**/.env*
+**/test-results
+**/playwright-report
+**/e2e/.auth
+Frontend
+_bmad
+_bmad-output
+docs
+*.log
+test-output.txt

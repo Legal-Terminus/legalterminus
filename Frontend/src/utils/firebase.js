@@ -21,5 +21,7 @@ export function getFirebaseAuth() {
 }
 
 export function getFirebaseDb() {
-  return getFirestore(getFirebaseApp());
+  // E24-S00: a deployment may read a NAMED database (the QA environment).
+  const databaseId = import.meta.env.VITE_FIRESTORE_DATABASE_ID;
+  return databaseId ? getFirestore(getFirebaseApp(), databaseId) : getFirestore(getFirebaseApp());
 }

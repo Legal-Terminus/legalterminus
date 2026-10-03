@@ -4,6 +4,7 @@ import { logger } from "../config/logger.js";
 import { invalidateIdentity } from '../middleware/auth.middleware.js';
 import { publicSiteUrl, sendNotificationEmail, sendTemplatedEmail } from './emailService.js';
 import { renderTemplate } from './emailTemplates.service.js';
+import { assertAllowedAccountEmail, isTestEnvironment } from '../config/testEnvironment.js';
 import { passwordLinkFor, describeInviter, setupEmail } from './accountLinks.service.js';
 
 const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
@@ -54,6 +55,8 @@ export const normalizeUserProfile = (profile = {}) => {
 };
 
 export const upsertUser = async (email, role, profileData, options = {}) => {
+  // E24-S00: never create or change a real account from a test environment.
+  assertAllowedAccountEmail(email);
   const {
     sendEmail = true,
     authProvider = 'email',
@@ -402,6 +405,13 @@ export const deleteUser = async (uid) => {
   let firestoreDeleted = false;
   let authDeleted = false;
   let paymentsDeleted = 0;
+
+  // E24-S00: deleting here also deletes the Auth account, which a test
+  // environment shares with production. Only test accounts may go.
+  if (isTestEnvironment()) {
+    const existing = await db.collection('users').doc(uid).get();
+    assertAllowedAccountEmail(existing.exists ? existing.data().email : null);
+  }
 
   try {
     // Delete the `payments` subcollection first (Firestore does NOT cascade

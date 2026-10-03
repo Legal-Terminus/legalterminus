@@ -2,6 +2,7 @@ import admin from "firebase-admin";
 import { getDb } from "../config/firebase.js";
 import { logger } from "../config/logger.js";
 import { isReadOnlyRole } from '../config/roles.js';
+import { isAllowedAccountEmail, TEST_ENVIRONMENT_MESSAGE } from '../config/testEnvironment.js';
 
 /**
  * Short-lived cache for the Firestore role fallback (uid → { role, expires }).
@@ -61,6 +62,13 @@ export const verifyToken = async (req, res, next) => {
   try {
     const decoded = await admin.auth().verifyIdToken(token);
     req.user = decoded; // { uid, email, role?, ... }
+
+    // E24-S00: in a test environment sharing production's sign-in accounts, a
+    // real account must not get past here — the handlers below would register
+    // it against the test database and overwrite its live role claim.
+    if (!isAllowedAccountEmail(decoded.email)) {
+      return res.status(403).json({ success: false, error: TEST_ENVIRONMENT_MESSAGE, code: 'TEST_ENVIRONMENT' });
+    }
 
     // Firestore is the AUTHORITATIVE role source — NOT the token claim. A cached
     // ID token carries the role from when it was minted (valid up to ~1h), so a

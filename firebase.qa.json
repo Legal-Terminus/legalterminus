@@ -1,0 +1,3073 @@
+{
+  "hosting": {
+    "public": "Frontend/dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/assets/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, nofollow"
+          }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": {
+          "serviceId": "legal-terminus-api-qa",
+          "region": "asia-south2"
+        }
+      },
+      {
+        "source": "/portal/**",
+        "run": {
+          "serviceId": "legal-terminus-portal-qa",
+          "region": "asia-south2"
+        }
+      },
+      {
+        "source": "/forgot-password",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/forgot-password/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/login",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/login/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/my-profile",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/my-profile/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/payment/result",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/payment/result/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/signup",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/signup/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/blog/**",
+        "destination": "/index.html"
+      }
+    ],
+    "redirects": [
+      {
+        "source": "/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-to-public-limited-compan",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-to-public-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-to-public-limited-compan/",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-to-public-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/about-us",
+        "destination": "/about",
+        "type": 301
+      },
+      {
+        "source": "/about-us/",
+        "destination": "/about",
+        "type": 301
+      },
+      {
+        "source": "/contact-us",
+        "destination": "/contact/us",
+        "type": 301
+      },
+      {
+        "source": "/contact-us/",
+        "destination": "/contact/us",
+        "type": 301
+      },
+      {
+        "source": "/get-trademark-registration-in-odisha",
+        "destination": "/trademark-registration-in-odisha",
+        "type": 301
+      },
+      {
+        "source": "/get-trademark-registration-in-odisha/",
+        "destination": "/trademark-registration-in-odisha",
+        "type": 301
+      },
+      {
+        "source": "/setting-up-a-business/profit-making-structures",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/setting-up-a-business/profit-making-structures/",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/setting-up-a-business/non-profit-making-structures",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/setting-up-a-business/non-profit-making-structures/",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/setting-up-a-business",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/setting-up-a-business/",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/registrations-returns/registrations",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/registrations-returns/registrations/",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/registrations-returns/license-certifications",
+        "destination": "/registrations-returns/license-certifications/importer-exporter-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/registrations-returns/license-certifications/",
+        "destination": "/registrations-returns/license-certifications/importer-exporter-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/registrations-returns/return-filing",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/registrations-returns/return-filing/",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/registrations-returns",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/registrations-returns/",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/event-based-compliances/conversion-in-form-of-business",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/event-based-compliances/conversion-in-form-of-business/",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/event-based-compliances/windup-services",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/event-based-compliances/windup-services/",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/event-based-compliances",
+        "destination": "/event-based-compliances/change-company-name",
+        "type": 301
+      },
+      {
+        "source": "/event-based-compliances/",
+        "destination": "/event-based-compliances/change-company-name",
+        "type": 301
+      },
+      {
+        "source": "/trademark/registration-and-compliance-services",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trademark/registration-and-compliance-services/",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-bhubaneswar",
+        "destination": "/company-registration-consultancy-in-odisha",
+        "type": 301
+      },
+      {
+        "source": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-bhubaneswar/",
+        "destination": "/company-registration-consultancy-in-odisha",
+        "type": 301
+      },
+      {
+        "source": "/trademark/registration-and-compliance-services/trademark-registration-in-bhubaneswar",
+        "destination": "/trademark-registration-in-odisha",
+        "type": 301
+      },
+      {
+        "source": "/trademark/registration-and-compliance-services/trademark-registration-in-bhubaneswar/",
+        "destination": "/trademark-registration-in-odisha",
+        "type": 301
+      },
+      {
+        "source": "/documents-required-for-opc-registration-in-india",
+        "destination": "/blog/documents-required-for-opc-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/documents-required-for-opc-registration-in-india/",
+        "destination": "/blog/documents-required-for-opc-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/essential-post-incorporation-compliances-for-companies",
+        "destination": "/blog/essential-post-incorporation-compliances-for-companies",
+        "type": 301
+      },
+      {
+        "source": "/essential-post-incorporation-compliances-for-companies/",
+        "destination": "/blog/essential-post-incorporation-compliances-for-companies",
+        "type": 301
+      },
+      {
+        "source": "/understanding-the-types-of-trademarks",
+        "destination": "/blog/understanding-the-types-of-trademarks",
+        "type": 301
+      },
+      {
+        "source": "/understanding-the-types-of-trademarks/",
+        "destination": "/blog/understanding-the-types-of-trademarks",
+        "type": 301
+      },
+      {
+        "source": "/types-of-directors-under-the-companies-act-2013",
+        "destination": "/blog/types-of-directors-under-the-companies-act-2013",
+        "type": 301
+      },
+      {
+        "source": "/types-of-directors-under-the-companies-act-2013/",
+        "destination": "/blog/types-of-directors-under-the-companies-act-2013",
+        "type": 301
+      },
+      {
+        "source": "/form-msme-1-purpose-filing-reporting-and-due-date",
+        "destination": "/blog/form-msme-1-purpose-filing-reporting-and-due-date",
+        "type": 301
+      },
+      {
+        "source": "/form-msme-1-purpose-filing-reporting-and-due-date/",
+        "destination": "/blog/form-msme-1-purpose-filing-reporting-and-due-date",
+        "type": 301
+      },
+      {
+        "source": "/director-kyc-compliance-all-about-dir-3-kyc-dir-kyc-web",
+        "destination": "/blog/director-kyc-compliance-all-about-dir-3-kyc-dir-kyc-web",
+        "type": 301
+      },
+      {
+        "source": "/director-kyc-compliance-all-about-dir-3-kyc-dir-kyc-web/",
+        "destination": "/blog/director-kyc-compliance-all-about-dir-3-kyc-dir-kyc-web",
+        "type": 301
+      },
+      {
+        "source": "/decoding-slogans-phrases-can-they-be-trademarks-in-india",
+        "destination": "/blog/decoding-slogans-phrases-can-they-be-trademarks-in-india",
+        "type": 301
+      },
+      {
+        "source": "/decoding-slogans-phrases-can-they-be-trademarks-in-india/",
+        "destination": "/blog/decoding-slogans-phrases-can-they-be-trademarks-in-india",
+        "type": 301
+      },
+      {
+        "source": "/unlock-the-potential-of-color-trademarks-in-india-business-world",
+        "destination": "/blog/unlock-the-potential-of-color-trademarks-in-india-business-world",
+        "type": 301
+      },
+      {
+        "source": "/unlock-the-potential-of-color-trademarks-in-india-business-world/",
+        "destination": "/blog/unlock-the-potential-of-color-trademarks-in-india-business-world",
+        "type": 301
+      },
+      {
+        "source": "/your-brand-your-power-understanding-trademark-rights-in-india",
+        "destination": "/blog/your-brand-your-power-understanding-trademark-rights-in-india",
+        "type": 301
+      },
+      {
+        "source": "/your-brand-your-power-understanding-trademark-rights-in-india/",
+        "destination": "/blog/your-brand-your-power-understanding-trademark-rights-in-india",
+        "type": 301
+      },
+      {
+        "source": "/essential-principles-for-comparison-of-trademark-a-simple-guide",
+        "destination": "/blog/essential-principles-for-comparison-of-trademark-a-simple-guide",
+        "type": 301
+      },
+      {
+        "source": "/essential-principles-for-comparison-of-trademark-a-simple-guide/",
+        "destination": "/blog/essential-principles-for-comparison-of-trademark-a-simple-guide",
+        "type": 301
+      },
+      {
+        "source": "/annual-general-meeting-agm-as-per-the-companies-act-2013",
+        "destination": "/blog/annual-general-meeting-agm-as-per-the-companies-act-2013",
+        "type": 301
+      },
+      {
+        "source": "/annual-general-meeting-agm-as-per-the-companies-act-2013/",
+        "destination": "/blog/annual-general-meeting-agm-as-per-the-companies-act-2013",
+        "type": 301
+      },
+      {
+        "source": "/key-documents-required-for-company-registration-in-india",
+        "destination": "/blog/key-documents-required-for-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/key-documents-required-for-company-registration-in-india/",
+        "destination": "/blog/key-documents-required-for-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/annual-roc-compliances-for-private-companies-in-india",
+        "destination": "/blog/annual-roc-compliances-for-private-companies-in-india",
+        "type": 301
+      },
+      {
+        "source": "/annual-roc-compliances-for-private-companies-in-india/",
+        "destination": "/blog/annual-roc-compliances-for-private-companies-in-india",
+        "type": 301
+      },
+      {
+        "source": "/company-registration-in-india-made-simple",
+        "destination": "/blog/company-registration-in-india-made-simple",
+        "type": 301
+      },
+      {
+        "source": "/company-registration-in-india-made-simple/",
+        "destination": "/blog/company-registration-in-india-made-simple",
+        "type": 301
+      },
+      {
+        "source": "/tan-registration-and-process-a-comprehensive-guide",
+        "destination": "/blog/tan-registration-and-process-a-comprehensive-guide",
+        "type": 301
+      },
+      {
+        "source": "/tan-registration-and-process-a-comprehensive-guide/",
+        "destination": "/blog/tan-registration-and-process-a-comprehensive-guide",
+        "type": 301
+      },
+      {
+        "source": "/why-small-companies-have-become-popular-in-india",
+        "destination": "/blog/why-small-companies-have-become-popular-in-india",
+        "type": 301
+      },
+      {
+        "source": "/why-small-companies-have-become-popular-in-india/",
+        "destination": "/blog/why-small-companies-have-become-popular-in-india",
+        "type": 301
+      },
+      {
+        "source": "/unlocking-benefits-a-complete-guide-to-esi-registration-in-odisha",
+        "destination": "/blog/unlocking-benefits-a-complete-guide-to-esi-registration-in-odisha",
+        "type": 301
+      },
+      {
+        "source": "/unlocking-benefits-a-complete-guide-to-esi-registration-in-odisha/",
+        "destination": "/blog/unlocking-benefits-a-complete-guide-to-esi-registration-in-odisha",
+        "type": 301
+      },
+      {
+        "source": "/demystifying-e-form-dpt-3-your-guide-to-online-filing-for-return-of-deposits",
+        "destination": "/blog/demystifying-e-form-dpt-3-your-guide-to-online-filing-for-return-of-deposits",
+        "type": 301
+      },
+      {
+        "source": "/demystifying-e-form-dpt-3-your-guide-to-online-filing-for-return-of-deposits/",
+        "destination": "/blog/demystifying-e-form-dpt-3-your-guide-to-online-filing-for-return-of-deposits",
+        "type": 301
+      },
+      {
+        "source": "/how-to-register-a-one-person-company-in-india",
+        "destination": "/blog/how-to-register-a-one-person-company-in-india",
+        "type": 301
+      },
+      {
+        "source": "/how-to-register-a-one-person-company-in-india/",
+        "destination": "/blog/how-to-register-a-one-person-company-in-india",
+        "type": 301
+      },
+      {
+        "source": "/comprehensive-guide-to-opc-registration-in-india",
+        "destination": "/blog/comprehensive-guide-to-opc-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/comprehensive-guide-to-opc-registration-in-india/",
+        "destination": "/blog/comprehensive-guide-to-opc-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/new-tds-provisions-introduced-in-finance-act-2021",
+        "destination": "/blog/new-tds-provisions-introduced-in-finance-act-2021",
+        "type": 301
+      },
+      {
+        "source": "/new-tds-provisions-introduced-in-finance-act-2021/",
+        "destination": "/blog/new-tds-provisions-introduced-in-finance-act-2021",
+        "type": 301
+      },
+      {
+        "source": "/the-earlier-registered-trademark-mark-by-the-proprietor-is-irrelevant",
+        "destination": "/blog/the-earlier-registered-trademark-mark-by-the-proprietor-is-irrelevant",
+        "type": 301
+      },
+      {
+        "source": "/the-earlier-registered-trademark-mark-by-the-proprietor-is-irrelevant/",
+        "destination": "/blog/the-earlier-registered-trademark-mark-by-the-proprietor-is-irrelevant",
+        "type": 301
+      },
+      {
+        "source": "/special-considerations-for-registering-foreign-words-as-trademark",
+        "destination": "/blog/special-considerations-for-registering-foreign-words-as-trademark",
+        "type": 301
+      },
+      {
+        "source": "/special-considerations-for-registering-foreign-words-as-trademark/",
+        "destination": "/blog/special-considerations-for-registering-foreign-words-as-trademark",
+        "type": 301
+      },
+      {
+        "source": "/the-law-of-passing-off-protecting-honest-businesses-from-unfair-competition",
+        "destination": "/blog/the-law-of-passing-off-protecting-honest-businesses-from-unfair-competition",
+        "type": 301
+      },
+      {
+        "source": "/the-law-of-passing-off-protecting-honest-businesses-from-unfair-competition/",
+        "destination": "/blog/the-law-of-passing-off-protecting-honest-businesses-from-unfair-competition",
+        "type": 301
+      },
+      {
+        "source": "/house-mark-vs-product-mark-understanding-the-key-concepts-in-branding",
+        "destination": "/blog/house-mark-vs-product-mark-understanding-the-key-concepts-in-branding",
+        "type": 301
+      },
+      {
+        "source": "/house-mark-vs-product-mark-understanding-the-key-concepts-in-branding/",
+        "destination": "/blog/house-mark-vs-product-mark-understanding-the-key-concepts-in-branding",
+        "type": 301
+      },
+      {
+        "source": "/brands-that-feel-like-home-but-are-they-really",
+        "destination": "/blog/brands-that-feel-like-home-but-are-they-really",
+        "type": 301
+      },
+      {
+        "source": "/brands-that-feel-like-home-but-are-they-really/",
+        "destination": "/blog/brands-that-feel-like-home-but-are-they-really",
+        "type": 301
+      },
+      {
+        "source": "/guidelines-for-managing-food-recalls-food-recall-procedures",
+        "destination": "/blog/guidelines-for-managing-food-recalls-food-recall-procedures",
+        "type": 301
+      },
+      {
+        "source": "/guidelines-for-managing-food-recalls-food-recall-procedures/",
+        "destination": "/blog/guidelines-for-managing-food-recalls-food-recall-procedures",
+        "type": 301
+      },
+      {
+        "source": "/key-roles-of-regulating-e-commerce-food-business-operators",
+        "destination": "/blog/key-roles-of-regulating-e-commerce-food-business-operators",
+        "type": 301
+      },
+      {
+        "source": "/key-roles-of-regulating-e-commerce-food-business-operators/",
+        "destination": "/blog/key-roles-of-regulating-e-commerce-food-business-operators",
+        "type": 301
+      },
+      {
+        "source": "/understanding-trademark-classification-in-india",
+        "destination": "/blog/understanding-trademark-classification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/understanding-trademark-classification-in-india/",
+        "destination": "/blog/understanding-trademark-classification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/food-recall-management",
+        "destination": "/blog/food-recall-management",
+        "type": 301
+      },
+      {
+        "source": "/food-recall-management/",
+        "destination": "/blog/food-recall-management",
+        "type": 301
+      },
+      {
+        "source": "/brands-with-international-flair-truly-indian-at-heart",
+        "destination": "/blog/brands-with-international-flair-truly-indian-at-heart",
+        "type": 301
+      },
+      {
+        "source": "/brands-with-international-flair-truly-indian-at-heart/",
+        "destination": "/blog/brands-with-international-flair-truly-indian-at-heart",
+        "type": 301
+      },
+      {
+        "source": "/trademark-assignment-in-india",
+        "destination": "/blog/trademark-assignment-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trademark-assignment-in-india/",
+        "destination": "/blog/trademark-assignment-in-india",
+        "type": 301
+      },
+      {
+        "source": "/section-181-donation-by-loss-making-company",
+        "destination": "/blog/section-181-donation-by-loss-making-company",
+        "type": 301
+      },
+      {
+        "source": "/section-181-donation-by-loss-making-company/",
+        "destination": "/blog/section-181-donation-by-loss-making-company",
+        "type": 301
+      },
+      {
+        "source": "/simplifying-business-operations-the-gst-registration-process-in-india",
+        "destination": "/blog/simplifying-business-operations-the-gst-registration-process-in-india",
+        "type": 301
+      },
+      {
+        "source": "/simplifying-business-operations-the-gst-registration-process-in-india/",
+        "destination": "/blog/simplifying-business-operations-the-gst-registration-process-in-india",
+        "type": 301
+      },
+      {
+        "source": "/naming-guidelines-approval-of-the-central-government-rule-8b",
+        "destination": "/blog/naming-guidelines-approval-of-the-central-government-rule-8b",
+        "type": 301
+      },
+      {
+        "source": "/naming-guidelines-approval-of-the-central-government-rule-8b/",
+        "destination": "/blog/naming-guidelines-approval-of-the-central-government-rule-8b",
+        "type": 301
+      },
+      {
+        "source": "/naming-guidelines-undesirable-names-rule-8a",
+        "destination": "/blog/naming-guidelines-undesirable-names-rule-8a",
+        "type": 301
+      },
+      {
+        "source": "/naming-guidelines-undesirable-names-rule-8a/",
+        "destination": "/blog/naming-guidelines-undesirable-names-rule-8a",
+        "type": 301
+      },
+      {
+        "source": "/names-too-similar-to-existing-companies-rule-8",
+        "destination": "/blog/names-too-similar-to-existing-companies-rule-8",
+        "type": 301
+      },
+      {
+        "source": "/names-too-similar-to-existing-companies-rule-8/",
+        "destination": "/blog/names-too-similar-to-existing-companies-rule-8",
+        "type": 301
+      },
+      {
+        "source": "/renewal-of-a-trademark",
+        "destination": "/blog/renewal-of-a-trademark",
+        "type": 301
+      },
+      {
+        "source": "/renewal-of-a-trademark/",
+        "destination": "/blog/renewal-of-a-trademark",
+        "type": 301
+      },
+      {
+        "source": "/correction-and-amendment-in-trademark",
+        "destination": "/blog/correction-and-amendment-in-trademark",
+        "type": 301
+      },
+      {
+        "source": "/correction-and-amendment-in-trademark/",
+        "destination": "/blog/correction-and-amendment-in-trademark",
+        "type": 301
+      },
+      {
+        "source": "/understanding-the-nice-classification-in-trademark-law",
+        "destination": "/blog/understanding-the-nice-classification-in-trademark-law",
+        "type": 301
+      },
+      {
+        "source": "/understanding-the-nice-classification-in-trademark-law/",
+        "destination": "/blog/understanding-the-nice-classification-in-trademark-law",
+        "type": 301
+      },
+      {
+        "source": "/registration-on-the-ground-of-honest-concurrent-use",
+        "destination": "/blog/registration-on-the-ground-of-honest-concurrent-use",
+        "type": 301
+      },
+      {
+        "source": "/registration-on-the-ground-of-honest-concurrent-use/",
+        "destination": "/blog/registration-on-the-ground-of-honest-concurrent-use",
+        "type": 301
+      },
+      {
+        "source": "/streamline-trademark-registration-with-advice-from-the-registry",
+        "destination": "/blog/streamline-trademark-registration-with-advice-from-the-registry",
+        "type": 301
+      },
+      {
+        "source": "/streamline-trademark-registration-with-advice-from-the-registry/",
+        "destination": "/blog/streamline-trademark-registration-with-advice-from-the-registry",
+        "type": 301
+      },
+      {
+        "source": "/board-mettings-under-the-companies-act-2013",
+        "destination": "/blog/board-mettings-under-the-companies-act-2013",
+        "type": 301
+      },
+      {
+        "source": "/board-mettings-under-the-companies-act-2013/",
+        "destination": "/blog/board-mettings-under-the-companies-act-2013",
+        "type": 301
+      },
+      {
+        "source": "/form-pas-6-reconciliation-of-share-capital-audit-report",
+        "destination": "/blog/form-pas-6-reconciliation-of-share-capital-audit-report",
+        "type": 301
+      },
+      {
+        "source": "/form-pas-6-reconciliation-of-share-capital-audit-report/",
+        "destination": "/blog/form-pas-6-reconciliation-of-share-capital-audit-report",
+        "type": 301
+      },
+      {
+        "source": "/rights-of-a-registered-trademark-user",
+        "destination": "/blog/rights-of-a-registered-trademark-user",
+        "type": 301
+      },
+      {
+        "source": "/rights-of-a-registered-trademark-user/",
+        "destination": "/blog/rights-of-a-registered-trademark-user",
+        "type": 301
+      },
+      {
+        "source": "/multiclass-trademark-registration-pros-andcons",
+        "destination": "/blog/multiclass-trademark-registration-pros-andcons",
+        "type": 301
+      },
+      {
+        "source": "/multiclass-trademark-registration-pros-andcons/",
+        "destination": "/blog/multiclass-trademark-registration-pros-andcons",
+        "type": 301
+      },
+      {
+        "source": "/why-people-often-confuse-among-patents-copyrights-tm",
+        "destination": "/blog/why-people-often-confuse-among-patents-copyrights-tm",
+        "type": 301
+      },
+      {
+        "source": "/why-people-often-confuse-among-patents-copyrights-tm/",
+        "destination": "/blog/why-people-often-confuse-among-patents-copyrights-tm",
+        "type": 301
+      },
+      {
+        "source": "/refusal-withdrawal-and-abandonment-trademark-differences",
+        "destination": "/blog/refusal-withdrawal-and-abandonment-trademark-differences",
+        "type": 301
+      },
+      {
+        "source": "/refusal-withdrawal-and-abandonment-trademark-differences/",
+        "destination": "/blog/refusal-withdrawal-and-abandonment-trademark-differences",
+        "type": 301
+      },
+      {
+        "source": "/what-is-joint-application-for-trademark-registration",
+        "destination": "/blog/what-is-joint-application-for-trademark-registration",
+        "type": 301
+      },
+      {
+        "source": "/what-is-joint-application-for-trademark-registration/",
+        "destination": "/blog/what-is-joint-application-for-trademark-registration",
+        "type": 301
+      },
+      {
+        "source": "/how-bookkeeping-saves-time-and-money-for-small-businesses",
+        "destination": "/blog/how-bookkeeping-saves-time-and-money-for-small-businesses",
+        "type": 301
+      },
+      {
+        "source": "/how-bookkeeping-saves-time-and-money-for-small-businesses/",
+        "destination": "/blog/how-bookkeeping-saves-time-and-money-for-small-businesses",
+        "type": 301
+      },
+      {
+        "source": "/board-meetings-with-abroad-directors-rules-for-indian-companies",
+        "destination": "/blog/board-meetings-with-abroad-directors-rules-for-indian-companies",
+        "type": 301
+      },
+      {
+        "source": "/board-meetings-with-abroad-directors-rules-for-indian-companies/",
+        "destination": "/blog/board-meetings-with-abroad-directors-rules-for-indian-companies",
+        "type": 301
+      },
+      {
+        "source": "/agm-of-wholly-owned-subsidiary-in-india-can-it-be-held-virtually",
+        "destination": "/blog/agm-of-wholly-owned-subsidiary-in-india-can-it-be-held-virtually",
+        "type": 301
+      },
+      {
+        "source": "/agm-of-wholly-owned-subsidiary-in-india-can-it-be-held-virtually/",
+        "destination": "/blog/agm-of-wholly-owned-subsidiary-in-india-can-it-be-held-virtually",
+        "type": 301
+      },
+      {
+        "source": "/who-must-file-an-income-tax-return-in-india",
+        "destination": "/blog/who-must-file-an-income-tax-return-in-india",
+        "type": 301
+      },
+      {
+        "source": "/who-must-file-an-income-tax-return-in-india/",
+        "destination": "/blog/who-must-file-an-income-tax-return-in-india",
+        "type": 301
+      },
+      {
+        "source": "/understanding-provident-fund-compliance-a-complete-guide",
+        "destination": "/blog/understanding-provident-fund-compliance-a-complete-guide",
+        "type": 301
+      },
+      {
+        "source": "/understanding-provident-fund-compliance-a-complete-guide/",
+        "destination": "/blog/understanding-provident-fund-compliance-a-complete-guide",
+        "type": 301
+      },
+      {
+        "source": "/selling-property-know-your-income-tax-rules-first",
+        "destination": "/blog/selling-property-know-your-income-tax-rules-first",
+        "type": 301
+      },
+      {
+        "source": "/selling-property-know-your-income-tax-rules-first/",
+        "destination": "/blog/selling-property-know-your-income-tax-rules-first",
+        "type": 301
+      },
+      {
+        "source": "/delhi-high-courts-aws-it-ruling-key-points-for-indian-businesse",
+        "destination": "/blog/delhi-high-courts-aws-it-ruling-key-points-for-indian-businesse",
+        "type": 301
+      },
+      {
+        "source": "/delhi-high-courts-aws-it-ruling-key-points-for-indian-businesse/",
+        "destination": "/blog/delhi-high-courts-aws-it-ruling-key-points-for-indian-businesse",
+        "type": 301
+      },
+      {
+        "source": "/vijay-krishnaswami-vs-dd-of-income-tax-supreme-court-case",
+        "destination": "/blog/vijay-krishnaswami-vs-dd-of-income-tax-supreme-court-case",
+        "type": 301
+      },
+      {
+        "source": "/vijay-krishnaswami-vs-dd-of-income-tax-supreme-court-case/",
+        "destination": "/blog/vijay-krishnaswami-vs-dd-of-income-tax-supreme-court-case",
+        "type": 301
+      },
+      {
+        "source": "/income-tax-officer-vs-thanjavur-district-central-co-operative-bank-ltd-madras-hight-cour",
+        "destination": "/blog/income-tax-officer-vs-thanjavur-district-central-co-operative-bank-ltd-madras-hight-cour",
+        "type": 301
+      },
+      {
+        "source": "/income-tax-officer-vs-thanjavur-district-central-co-operative-bank-ltd-madras-hight-cour/",
+        "destination": "/blog/income-tax-officer-vs-thanjavur-district-central-co-operative-bank-ltd-madras-hight-cour",
+        "type": 301
+      },
+      {
+        "source": "/can-a-simple-slogan-like-one-for-all-become-a-trademark",
+        "destination": "/blog/can-a-simple-slogan-like-one-for-all-become-a-trademark",
+        "type": 301
+      },
+      {
+        "source": "/can-a-simple-slogan-like-one-for-all-become-a-trademark/",
+        "destination": "/blog/can-a-simple-slogan-like-one-for-all-become-a-trademark",
+        "type": 301
+      },
+      {
+        "source": "/can-a-common-indian-name-be-your-trademark",
+        "destination": "/blog/can-a-common-indian-name-be-your-trademark",
+        "type": 301
+      },
+      {
+        "source": "/can-a-common-indian-name-be-your-trademark/",
+        "destination": "/blog/can-a-common-indian-name-be-your-trademark",
+        "type": 301
+      },
+      {
+        "source": "/can-numerals-like-2929-get-trademark-protection",
+        "destination": "/blog/can-numerals-like-2929-get-trademark-protection",
+        "type": 301
+      },
+      {
+        "source": "/can-numerals-like-2929-get-trademark-protection/",
+        "destination": "/blog/can-numerals-like-2929-get-trademark-protection",
+        "type": 301
+      },
+      {
+        "source": "/can-you-use-your-name-for-a-business-if-the-brand-already-own-it",
+        "destination": "/blog/can-you-use-your-name-for-a-business-if-the-brand-already-own-it",
+        "type": 301
+      },
+      {
+        "source": "/can-you-use-your-name-for-a-business-if-the-brand-already-own-it/",
+        "destination": "/blog/can-you-use-your-name-for-a-business-if-the-brand-already-own-it",
+        "type": 301
+      },
+      {
+        "source": "/can-using-blue-jay-get-you-in-trouble-with-a-global-brand",
+        "destination": "/blog/can-using-blue-jay-get-you-in-trouble-with-a-global-brand",
+        "type": 301
+      },
+      {
+        "source": "/can-using-blue-jay-get-you-in-trouble-with-a-global-brand/",
+        "destination": "/blog/can-using-blue-jay-get-you-in-trouble-with-a-global-brand",
+        "type": 301
+      },
+      {
+        "source": "/recommended-registrations-after-incorporation",
+        "destination": "/blog/recommended-registrations-after-incorporation",
+        "type": 301
+      },
+      {
+        "source": "/recommended-registrations-after-incorporation/",
+        "destination": "/blog/recommended-registrations-after-incorporation",
+        "type": 301
+      },
+      {
+        "source": "/event-based-compliances-for-a-private-limited-company",
+        "destination": "/blog/event-based-compliances-for-a-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/event-based-compliances-for-a-private-limited-company/",
+        "destination": "/blog/event-based-compliances-for-a-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/annual-compliance-calendar-private-limited-company",
+        "destination": "/blog/annual-compliance-calendar-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/annual-compliance-calendar-private-limited-company/",
+        "destination": "/blog/annual-compliance-calendar-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/stationery-to-be-prepared-after-incorporation",
+        "destination": "/blog/stationery-to-be-prepared-after-incorporation",
+        "type": 301
+      },
+      {
+        "source": "/stationery-to-be-prepared-after-incorporation/",
+        "destination": "/blog/stationery-to-be-prepared-after-incorporation",
+        "type": 301
+      },
+      {
+        "source": "/post-incorporation-compliances",
+        "destination": "/blog/post-incorporation-compliances",
+        "type": 301
+      },
+      {
+        "source": "/post-incorporation-compliances/",
+        "destination": "/blog/post-incorporation-compliances",
+        "type": 301
+      },
+      {
+        "source": "/restaurants-facing-income-tax-checks-latest-update",
+        "destination": "/blog/restaurants-facing-income-tax-checks-latest-update",
+        "type": 301
+      },
+      {
+        "source": "/restaurants-facing-income-tax-checks-latest-update/",
+        "destination": "/blog/restaurants-facing-income-tax-checks-latest-update",
+        "type": 301
+      },
+      {
+        "source": "/privacy-policy-2-2",
+        "destination": "/privacy-policy",
+        "type": 301
+      },
+      {
+        "source": "/privacy-policy-2-2/",
+        "destination": "/privacy-policy",
+        "type": 301
+      },
+      {
+        "source": "/our-blog",
+        "destination": "/blog",
+        "type": 301
+      },
+      {
+        "source": "/our-blog/",
+        "destination": "/blog",
+        "type": 301
+      },
+      {
+        "source": "/sitemap",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/sitemap/",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/trademark",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trademark/",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/file-your-trademark-in-india",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/file-your-trademark-in-india/",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/get-pf-esi-registration-in-india",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/get-pf-esi-registration-in-india/",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/get-pf-esi-registration-in-odisha",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/get-pf-esi-registration-in-odisha/",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/get-pf-esi-return-filing-in-india",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/get-pf-esi-return-filing-in-india/",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/get-pf-esi-return-filing-in-odisha",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/get-pf-esi-return-filing-in-odisha/",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/income-tax-returnfiling-in-odisha",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/income-tax-returnfiling-in-odisha/",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/it-return-filing-in-odisha",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/it-return-filing-in-odisha/",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/shop",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/shop/",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/cart",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/cart/",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/checkout",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/checkout/",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/my-account",
+        "destination": "/my-profile",
+        "type": 301
+      },
+      {
+        "source": "/my-account/",
+        "destination": "/my-profile",
+        "type": 301
+      },
+      {
+        "source": "/user-reg",
+        "destination": "/signup",
+        "type": 301
+      },
+      {
+        "source": "/user-reg/",
+        "destination": "/signup",
+        "type": 301
+      },
+      {
+        "source": "/user-registration-log-in",
+        "destination": "/login",
+        "type": 301
+      },
+      {
+        "source": "/user-registration-log-in/",
+        "destination": "/login",
+        "type": 301
+      },
+      {
+        "source": "/post-a-blog",
+        "destination": "/blog",
+        "type": 301
+      },
+      {
+        "source": "/post-a-blog/",
+        "destination": "/blog",
+        "type": 301
+      },
+      {
+        "source": "/category/*",
+        "destination": "/blog",
+        "type": 301
+      },
+      {
+        "source": "/tag/*",
+        "destination": "/blog",
+        "type": 301
+      },
+      {
+        "source": "/author/*",
+        "destination": "/blog",
+        "type": 301
+      },
+      {
+        "source": "/elementor-hf/*",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/product-category/add-or-remove-a-director-company",
+        "destination": "/event-based-compliances/add-or-remove-a-director-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/add-or-remove-a-director-company/",
+        "destination": "/event-based-compliances/add-or-remove-a-director-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/annual-filing-company",
+        "destination": "/registrations-returns/return-filing/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/annual-filing-company/",
+        "destination": "/registrations-returns/return-filing/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/annual-filing-llp",
+        "destination": "/registrations-returns/return-filing/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/annual-filing-llp/",
+        "destination": "/registrations-returns/return-filing/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/bar-code-registration",
+        "destination": "/registrations-returns/license-certifications/bar-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/product-category/bar-code-registration/",
+        "destination": "/registrations-returns/license-certifications/bar-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-name-company",
+        "destination": "/event-based-compliances/change-company-name",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-name-company/",
+        "destination": "/event-based-compliances/change-company-name",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-name-llp",
+        "destination": "/event-based-compliances/name-change-process-in-india-for-llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-name-llp/",
+        "destination": "/event-based-compliances/name-change-process-in-india-for-llp",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-object-company",
+        "destination": "/event-based-compliances/change-in-object-clause-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-object-company/",
+        "destination": "/event-based-compliances/change-in-object-clause-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-registered-office-address-company",
+        "destination": "/event-based-compliances/change-in-registered-office-address",
+        "type": 301
+      },
+      {
+        "source": "/product-category/change-in-registered-office-address-company/",
+        "destination": "/event-based-compliances/change-in-registered-office-address",
+        "type": 301
+      },
+      {
+        "source": "/product-category/dissolve-a-limited-liability-partnership",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/product-category/dissolve-a-limited-liability-partnership/",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/product-category/dissolve-a-private-limited-company",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/dissolve-a-private-limited-company/",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/epf-return-filing",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product-category/epf-return-filing/",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product-category/esi-return-filing",
+        "destination": "/registrations-returns/return-filing/esi-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product-category/esi-return-filing/",
+        "destination": "/registrations-returns/return-filing/esi-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product-category/esic-registration",
+        "destination": "/registrations-returns/registrations/esic-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/esic-registration/",
+        "destination": "/registrations-returns/registrations/esic-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/food-license-fssai",
+        "destination": "/registrations-returns/license-certifications/food-license-and-registration",
+        "type": 301
+      },
+      {
+        "source": "/product-category/food-license-fssai/",
+        "destination": "/registrations-returns/license-certifications/food-license-and-registration",
+        "type": 301
+      },
+      {
+        "source": "/product-category/gst-registration",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/gst-registration/",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/gst-returns-filing",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product-category/gst-returns-filing/",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product-category/importer-exporter-code",
+        "destination": "/registrations-returns/license-certifications/importer-exporter-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/product-category/importer-exporter-code/",
+        "destination": "/registrations-returns/license-certifications/importer-exporter-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/product-category/increase-in-authorised-capital-company",
+        "destination": "/event-based-compliances/increase-authorized-share-capital-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/increase-in-authorised-capital-company/",
+        "destination": "/event-based-compliances/increase-authorized-share-capital-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/iso-certification",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/iso-certification/",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/itr-filing-business",
+        "destination": "/registrations-returns/return-filing/itr-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/itr-filing-business/",
+        "destination": "/registrations-returns/return-filing/itr-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product-category/itr-filing-individual",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product-category/itr-filing-individual/",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product-category/limited-liability-partnership",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/limited-liability-partnership/",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/non-profit-company-sec-8-company",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/non-profit-company-sec-8-company/",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/one-person-company",
+        "destination": "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/one-person-company/",
+        "destination": "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/partnership-firm",
+        "destination": "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/partnership-firm/",
+        "destination": "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/pf-registration",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/pf-registration/",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/private-limited-company",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/private-limited-company/",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/professional-tax-return-filing",
+        "destination": "/registrations-returns/return-filing/professional-tax-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product-category/professional-tax-return-filing/",
+        "destination": "/registrations-returns/return-filing/professional-tax-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product-category/proprietorship-firm",
+        "destination": "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/proprietorship-firm/",
+        "destination": "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/public-limited-company",
+        "destination": "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/public-limited-company/",
+        "destination": "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/reply-of-examination-report",
+        "destination": "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
+        "type": 301
+      },
+      {
+        "source": "/product-category/reply-of-examination-report/",
+        "destination": "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
+        "type": 301
+      },
+      {
+        "source": "/product-category/trade-mark-application",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/trade-mark-application/",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/udyam-registration",
+        "destination": "/registrations-returns/registrations/udyam-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/udyam-registration/",
+        "destination": "/registrations-returns/registrations/udyam-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/add-or-remove-a-partner-or-designated-partner-llp",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product-category/add-or-remove-a-partner-or-designated-partner-llp/",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-elemental",
+        "destination": "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-elemental/",
+        "destination": "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-supreme",
+        "destination": "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-supreme/",
+        "destination": "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-enriched-2",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-enriched-2/",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-enriched",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-enriched/",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-elemental-2",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-elemental-2/",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-elemental",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-elemental/",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-supreme",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-supreme/",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-supreme-2",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-returns-filing-supreme-2/",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-enriched-2",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-enriched-2/",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-supreme-2",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-supreme-2/",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-elemental",
+        "destination": "/registrations-returns/return-filing/itr-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-elemental/",
+        "destination": "/registrations-returns/return-filing/itr-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-elemental-2",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-elemental-2/",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-elemental",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-elemental/",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-supreme",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-supreme/",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-enriched",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-individual-enriched/",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-supreme",
+        "destination": "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-supreme/",
+        "destination": "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-enriched",
+        "destination": "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-enriched/",
+        "destination": "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-elemental",
+        "destination": "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
+        "type": 301
+      },
+      {
+        "source": "/product/reply-of-examination-report-elemental/",
+        "destination": "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-enriched",
+        "destination": "/registrations-returns/return-filing/itr-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-enriched/",
+        "destination": "/registrations-returns/return-filing/itr-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-supreme",
+        "destination": "/registrations-returns/return-filing/itr-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/itr-filing-business-supreme/",
+        "destination": "/registrations-returns/return-filing/itr-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-supreme",
+        "destination": "/registrations-returns/return-filing/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-supreme/",
+        "destination": "/registrations-returns/return-filing/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-elemental",
+        "destination": "/registrations-returns/return-filing/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-elemental/",
+        "destination": "/registrations-returns/return-filing/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-enriched",
+        "destination": "/registrations-returns/return-filing/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-company-enriched/",
+        "destination": "/registrations-returns/return-filing/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-elemental",
+        "destination": "/registrations-returns/return-filing/esi-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-elemental/",
+        "destination": "/registrations-returns/return-filing/esi-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-elemental",
+        "destination": "/registrations-returns/return-filing/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-elemental/",
+        "destination": "/registrations-returns/return-filing/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-enriched",
+        "destination": "/registrations-returns/return-filing/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-enriched/",
+        "destination": "/registrations-returns/return-filing/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-supreme",
+        "destination": "/registrations-returns/return-filing/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/annual-filing-llp-supreme/",
+        "destination": "/registrations-returns/return-filing/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-elemental",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-elemental/",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-name-company-elemental",
+        "destination": "/event-based-compliances/change-company-name",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-name-company-elemental/",
+        "destination": "/event-based-compliances/change-company-name",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-elemental",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-elemental/",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-supreme",
+        "destination": "/event-based-compliances/add-or-remove-a-director-company",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-supreme/",
+        "destination": "/event-based-compliances/add-or-remove-a-director-company",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-enriched",
+        "destination": "/event-based-compliances/add-or-remove-a-director-company",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-enriched/",
+        "destination": "/event-based-compliances/add-or-remove-a-director-company",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-elemental",
+        "destination": "/event-based-compliances/add-or-remove-a-director-company",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-director-company-elemental/",
+        "destination": "/event-based-compliances/add-or-remove-a-director-company",
+        "type": 301
+      },
+      {
+        "source": "/product/increase-in-authorised-capital-company-elemental",
+        "destination": "/event-based-compliances/increase-authorized-share-capital-company",
+        "type": 301
+      },
+      {
+        "source": "/product/increase-in-authorised-capital-company-elemental/",
+        "destination": "/event-based-compliances/increase-authorized-share-capital-company",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-object-company-elemental",
+        "destination": "/event-based-compliances/change-in-object-clause-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-object-company-elemental/",
+        "destination": "/event-based-compliances/change-in-object-clause-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-supreme",
+        "destination": "/event-based-compliances/change-in-registered-office-address",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-supreme/",
+        "destination": "/event-based-compliances/change-in-registered-office-address",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-enriched",
+        "destination": "/event-based-compliances/change-in-registered-office-address",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-enriched/",
+        "destination": "/event-based-compliances/change-in-registered-office-address",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-elemental",
+        "destination": "/event-based-compliances/change-in-registered-office-address",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-registered-office-address-company-elemental/",
+        "destination": "/event-based-compliances/change-in-registered-office-address",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-elemental",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-elemental/",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-supreme",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-supreme/",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-elemental",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-elemental/",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-supreme",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-supreme/",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-enriched",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/add-or-remove-a-partner-or-designated-partner-llp-enriched/",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-enriched",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-private-limited-company-enriched/",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-enriched",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-enriched/",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-enriched",
+        "destination": "/registrations-returns/return-filing/professional-tax-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-enriched/",
+        "destination": "/registrations-returns/return-filing/professional-tax-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-elemental",
+        "destination": "/registrations-returns/return-filing/professional-tax-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-elemental/",
+        "destination": "/registrations-returns/return-filing/professional-tax-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-supreme",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/dissolve-a-limited-liability-partnership-supreme/",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-elemental-2",
+        "destination": "/registrations-returns/return-filing/professional-tax-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/professional-tax-return-filing-elemental-2/",
+        "destination": "/registrations-returns/return-filing/professional-tax-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-enriched-2",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-enriched-2/",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-supreme",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/epf-return-filing-supreme/",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-elemental",
+        "destination": "/registrations-returns/registrations/esic-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-elemental/",
+        "destination": "/registrations-returns/registrations/esic-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-enriched",
+        "destination": "/registrations-returns/registrations/esic-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-enriched/",
+        "destination": "/registrations-returns/registrations/esic-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-supreme",
+        "destination": "/registrations-returns/registrations/esic-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/esic-registration-supreme/",
+        "destination": "/registrations-returns/registrations/esic-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-elemental",
+        "destination": "/registrations-returns/license-certifications/food-license-and-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-elemental/",
+        "destination": "/registrations-returns/license-certifications/food-license-and-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-supreme",
+        "destination": "/registrations-returns/license-certifications/food-license-and-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-supreme/",
+        "destination": "/registrations-returns/license-certifications/food-license-and-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-elemental",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-elemental/",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-enriched",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-enriched/",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-supreme",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/pf-registration-supreme/",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-elemental",
+        "destination": "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-elemental/",
+        "destination": "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-enriched",
+        "destination": "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-enriched/",
+        "destination": "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-supreme",
+        "destination": "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/public-limited-company-supreme/",
+        "destination": "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-enriched",
+        "destination": "/registrations-returns/registrations/udyam-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-enriched/",
+        "destination": "/registrations-returns/registrations/udyam-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-supreme",
+        "destination": "/registrations-returns/registrations/udyam-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-supreme/",
+        "destination": "/registrations-returns/registrations/udyam-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-elemental-2",
+        "destination": "/registrations-returns/return-filing/esi-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-elemental-2/",
+        "destination": "/registrations-returns/return-filing/esi-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-enriched",
+        "destination": "/registrations-returns/return-filing/esi-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/esi-return-filing-enriched/",
+        "destination": "/registrations-returns/return-filing/esi-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-14001-elemental",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-14001-elemental/",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-9001-elemental",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-9001-elemental/",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-22000-elemental",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-22000-elemental/",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-27001-elemental",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-27001-elemental/",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-9001-iaf-elemental",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-9001-iaf-elemental/",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-18001-elemental",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/iso-certification-18001-elemental/",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-name-llp-elemental",
+        "destination": "/event-based-compliances/name-change-process-in-india-for-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/change-in-name-llp-elemental/",
+        "destination": "/event-based-compliances/name-change-process-in-india-for-llp",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-elemental",
+        "destination": "/registrations-returns/registrations/udyam-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/udyam-registration-elemental/",
+        "destination": "/registrations-returns/registrations/udyam-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/importer-exporter-code-elemental",
+        "destination": "/registrations-returns/license-certifications/importer-exporter-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/importer-exporter-code-elemental/",
+        "destination": "/registrations-returns/license-certifications/importer-exporter-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-elemental",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-elemental/",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-elemental",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-elemental/",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-enriched",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-enriched/",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-supreme",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/gst-registration-supreme/",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-enriched",
+        "destination": "/registrations-returns/license-certifications/food-license-and-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/food-license-fssai-enriched/",
+        "destination": "/registrations-returns/license-certifications/food-license-and-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-elemental",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-elemental/",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-enriched",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-enriched/",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-supreme",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-supreme/",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-supreme",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/trade-mark-application-supreme/",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-enriched",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/private-limited-company-enriched/",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-supreme",
+        "destination": "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-supreme/",
+        "destination": "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-enriched",
+        "destination": "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-enriched/",
+        "destination": "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-elemental",
+        "destination": "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/one-person-company-elemental/",
+        "destination": "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-enriched",
+        "destination": "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/proprietorship-firm-enriched/",
+        "destination": "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-elemental",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-elemental/",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-enriched",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-enriched/",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-supreme",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/non-profit-company-sec-8-company-supreme/",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-supreme",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-supreme/",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-enriched",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-enriched/",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-elemental",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/limited-liability-partnership-elemental/",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/bar-code-registration-elemental",
+        "destination": "/registrations-returns/license-certifications/bar-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/bar-code-registration-elemental/",
+        "destination": "/registrations-returns/license-certifications/bar-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-elemental",
+        "destination": "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-elemental/",
+        "destination": "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-enriched",
+        "destination": "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-enriched/",
+        "destination": "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-supreme",
+        "destination": "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/partnership-firm-supreme/",
+        "destination": "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/product/*",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/annual-filing-company",
+        "destination": "/registrations-returns/return-filing/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/annual-filing-company/",
+        "destination": "/registrations-returns/return-filing/annual-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/annual-filing-llp",
+        "destination": "/registrations-returns/return-filing/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/annual-filing-llp/",
+        "destination": "/registrations-returns/return-filing/annual-filing-llp",
+        "type": 301
+      },
+      {
+        "source": "/bar-code",
+        "destination": "/registrations-returns/license-certifications/bar-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/bar-code/",
+        "destination": "/registrations-returns/license-certifications/bar-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/conversion/llp-to-private",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-llp-into-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/conversion/llp-to-private/",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-llp-into-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/conversion/partnership-to-llp",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-partnership-into-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/conversion/partnership-to-llp/",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-partnership-into-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/conversion/partnership-to-private",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/partnership-firm-to-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/conversion/partnership-to-private/",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/partnership-firm-to-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/conversion/private-to-llp",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-into-llp",
+        "type": 301
+      },
+      {
+        "source": "/conversion/private-to-llp/",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-into-llp",
+        "type": 301
+      },
+      {
+        "source": "/conversion/private-to-public",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-to-public-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/conversion/private-to-public/",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-to-public-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/conversion/proprietorship-to-opc",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-opc-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/conversion/proprietorship-to-opc/",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-opc-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/conversion/proprietorship-to-private",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/conversion/proprietorship-to-private/",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/conversion/public-to-private",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-public-limited-company-to-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/conversion/public-to-private/",
+        "destination": "/event-based-compliances/conversion-in-form-of-business/conversion-of-public-limited-company-to-private-limited-company",
+        "type": 301
+      },
+      {
+        "source": "/epf",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/epf/",
+        "destination": "/registrations-returns/registrations/epf-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/epf-return",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/epf-return/",
+        "destination": "/registrations-returns/return-filing/epf-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/esi-return",
+        "destination": "/registrations-returns/return-filing/esi-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/esi-return/",
+        "destination": "/registrations-returns/return-filing/esi-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/esic",
+        "destination": "/registrations-returns/registrations/esic-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/esic/",
+        "destination": "/registrations-returns/registrations/esic-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/food-license",
+        "destination": "/registrations-returns/license-certifications/food-license-and-registration",
+        "type": 301
+      },
+      {
+        "source": "/food-license/",
+        "destination": "/registrations-returns/license-certifications/food-license-and-registration",
+        "type": 301
+      },
+      {
+        "source": "/gst-registration",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/gst-registration/",
+        "destination": "/registrations-returns/registrations/gst-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/gst-return-filing",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/gst-return-filing/",
+        "destination": "/registrations-returns/return-filing/gst-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/iec",
+        "destination": "/registrations-returns/license-certifications/importer-exporter-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/iec/",
+        "destination": "/registrations-returns/license-certifications/importer-exporter-code-registration",
+        "type": 301
+      },
+      {
+        "source": "/incorption-registration-in-india",
+        "destination": "/setting-up-a-business/profit-making-structures/incorporation-of-wholly-owned-subsidiary-in-india",
+        "type": 301
+      },
+      {
+        "source": "/incorption-registration-in-india/",
+        "destination": "/setting-up-a-business/profit-making-structures/incorporation-of-wholly-owned-subsidiary-in-india",
+        "type": 301
+      },
+      {
+        "source": "/iso",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/iso/",
+        "destination": "/registrations-returns/license-certifications/iso-certification-in-india",
+        "type": 301
+      },
+      {
+        "source": "/itr-business",
+        "destination": "/registrations-returns/return-filing/itr-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/itr-business/",
+        "destination": "/registrations-returns/return-filing/itr-filing-company",
+        "type": 301
+      },
+      {
+        "source": "/itr-individual",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/itr-individual/",
+        "destination": "/registrations-returns/return-filing/itr-filing-individual",
+        "type": 301
+      },
+      {
+        "source": "/labour-license",
+        "destination": "/registrations-returns/license-certifications/labour-license-registration",
+        "type": 301
+      },
+      {
+        "source": "/labour-license/",
+        "destination": "/registrations-returns/license-certifications/labour-license-registration",
+        "type": 301
+      },
+      {
+        "source": "/llp",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/llp/",
+        "destination": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/olwf",
+        "destination": "/registrations-returns/license-certifications/odisha-labour-welfare-fund-olwf-registration",
+        "type": 301
+      },
+      {
+        "source": "/olwf/",
+        "destination": "/registrations-returns/license-certifications/odisha-labour-welfare-fund-olwf-registration",
+        "type": 301
+      },
+      {
+        "source": "/one-person-company",
+        "destination": "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/one-person-company/",
+        "destination": "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/partnership",
+        "destination": "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/partnership/",
+        "destination": "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/private-limited-company-registration-in-india",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/private-limited-company-registration-in-india/",
+        "destination": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/professional-tax",
+        "destination": "/registrations-returns/registrations/professional-tax-registration",
+        "type": 301
+      },
+      {
+        "source": "/professional-tax/",
+        "destination": "/registrations-returns/registrations/professional-tax-registration",
+        "type": 301
+      },
+      {
+        "source": "/professional-tax-return",
+        "destination": "/registrations-returns/return-filing/professional-tax-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/professional-tax-return/",
+        "destination": "/registrations-returns/return-filing/professional-tax-return-filing",
+        "type": 301
+      },
+      {
+        "source": "/proprietorship",
+        "destination": "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/proprietorship/",
+        "destination": "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/public-limited-company-registration-in-india",
+        "destination": "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/public-limited-company-registration-in-india/",
+        "destination": "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/section-8",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/section-8/",
+        "destination": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/shop-establishment",
+        "destination": "/registrations-returns/registrations/shop-commercial-establishments-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/shop-establishment/",
+        "destination": "/registrations-returns/registrations/shop-commercial-establishments-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/society",
+        "destination": "/setting-up-a-business/non-profit-making-structures/society-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/society/",
+        "destination": "/setting-up-a-business/non-profit-making-structures/society-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/startup-india",
+        "destination": "/registrations-returns/registrations/startup-india-registration",
+        "type": 301
+      },
+      {
+        "source": "/startup-india/",
+        "destination": "/registrations-returns/registrations/startup-india-registration",
+        "type": 301
+      },
+      {
+        "source": "/startup-odisha",
+        "destination": "/registrations-returns/registrations/startup-odisha-registration",
+        "type": 301
+      },
+      {
+        "source": "/startup-odisha/",
+        "destination": "/registrations-returns/registrations/startup-odisha-registration",
+        "type": 301
+      },
+      {
+        "source": "/trade-license",
+        "destination": "/registrations-returns/license-certifications/trade-license-registration",
+        "type": 301
+      },
+      {
+        "source": "/trade-license/",
+        "destination": "/registrations-returns/license-certifications/trade-license-registration",
+        "type": 301
+      },
+      {
+        "source": "/trademark/application",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trademark/application/",
+        "destination": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trademark/exam-reply",
+        "destination": "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
+        "type": 301
+      },
+      {
+        "source": "/trademark/exam-reply/",
+        "destination": "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
+        "type": 301
+      },
+      {
+        "source": "/trademark/hearing",
+        "destination": "/trademark/registration-and-compliance-services/trademark-hearing-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trademark/hearing/",
+        "destination": "/trademark/registration-and-compliance-services/trademark-hearing-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trademark/opposition",
+        "destination": "/trademark/registration-and-compliance-services/trademark-opposition-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trademark/opposition/",
+        "destination": "/trademark/registration-and-compliance-services/trademark-opposition-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trademark/renewal",
+        "destination": "/trademark/registration-and-compliance-services/trademark-renewal-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trademark/renewal/",
+        "destination": "/trademark/registration-and-compliance-services/trademark-renewal-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trust",
+        "destination": "/setting-up-a-business/non-profit-making-structures/trust-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/trust/",
+        "destination": "/setting-up-a-business/non-profit-making-structures/trust-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/udyam",
+        "destination": "/registrations-returns/registrations/udyam-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/udyam/",
+        "destination": "/registrations-returns/registrations/udyam-registration-in-india",
+        "type": 301
+      },
+      {
+        "source": "/updation/add-remove-director",
+        "destination": "/event-based-compliances/add-or-remove-a-director-company",
+        "type": 301
+      },
+      {
+        "source": "/updation/add-remove-director/",
+        "destination": "/event-based-compliances/add-or-remove-a-director-company",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-address-company",
+        "destination": "/event-based-compliances/change-in-registered-office-address",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-address-company/",
+        "destination": "/event-based-compliances/change-in-registered-office-address",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-address-llp",
+        "destination": "/event-based-compliances/change-in-registered-office-address-for-llp",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-address-llp/",
+        "destination": "/event-based-compliances/change-in-registered-office-address-for-llp",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-name-company",
+        "destination": "/event-based-compliances/change-company-name",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-name-company/",
+        "destination": "/event-based-compliances/change-company-name",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-name-llp",
+        "destination": "/event-based-compliances/name-change-process-in-india-for-llp",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-name-llp/",
+        "destination": "/event-based-compliances/name-change-process-in-india-for-llp",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-object-company",
+        "destination": "/event-based-compliances/change-in-object-clause-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-object-company/",
+        "destination": "/event-based-compliances/change-in-object-clause-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-object-llp",
+        "destination": "/event-based-compliances/changing-the-objects-of-llp",
+        "type": 301
+      },
+      {
+        "source": "/updation/change-object-llp/",
+        "destination": "/event-based-compliances/changing-the-objects-of-llp",
+        "type": 301
+      },
+      {
+        "source": "/updation/increase-authorised-capital",
+        "destination": "/event-based-compliances/increase-authorized-share-capital-company",
+        "type": 301
+      },
+      {
+        "source": "/updation/increase-authorised-capital/",
+        "destination": "/event-based-compliances/increase-authorized-share-capital-company",
+        "type": 301
+      },
+      {
+        "source": "/windup/dissolve-llp",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/windup/dissolve-llp/",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership",
+        "type": 301
+      },
+      {
+        "source": "/windup/dissolve-partnership",
+        "destination": "/event-based-compliances/windup-services/dissolution-of-partnership-firm",
+        "type": 301
+      },
+      {
+        "source": "/windup/dissolve-partnership/",
+        "destination": "/event-based-compliances/windup-services/dissolution-of-partnership-firm",
+        "type": 301
+      },
+      {
+        "source": "/windup/dissolve-private",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      },
+      {
+        "source": "/windup/dissolve-private/",
+        "destination": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+        "type": 301
+      }
+    ],
+    "trailingSlash": false,
+    "site": "legal-terminus-qa"
+  },
+  "firestore": {
+    "database": "qa",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

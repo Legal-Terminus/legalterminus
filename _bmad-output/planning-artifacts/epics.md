@@ -3224,7 +3224,27 @@ if the customer's browser returns, and creates nothing in the portal.
 
 ---
 
-### E24-S00 — A parallel QA deployment [Phase 2] ⏳ Not Started
+### E24-S00 — A parallel QA deployment [Phase 2] 🔄 In Progress
+
+> **Decided 2026-10-03 (product owner): a TEMPORARY environment in the SAME project**, no
+> custom domain, no CI — deployed by hand with `scripts/deploy-qa.sh` from the `qa` branch.
+> This supersedes the "separate project" criterion below.
+>
+> **Built:** Hosting site `legal-terminus-qa` (https://legal-terminus-qa.web.app, `noindex`),
+> Cloud Run `legal-terminus-api-qa` and `legal-terminus-portal-qa`, bucket
+> `legal-terminus-web-qa`, `firebase.qa.json`, `cloudbuild.qa.yaml`. The API, Portal and
+> website select a named Firestore database (`FIRESTORE_DATABASE_ID` /
+> `VITE_FIRESTORE_DATABASE_ID`); email is disabled on QA.
+>
+> **The trade-off of sharing the project:** data is separate, sign-in accounts are NOT. A role
+> is a claim on the one shared account, so a real person signing in to QA would have their LIVE
+> role overwritten. `TEST_ACCOUNT_EMAIL_DOMAINS=legalterminus.test` makes the QA API refuse
+> every other account (`backend/src/config/testEnvironment.js`). Do not unset it.
+>
+> **Waiting on a project Owner** (Editor cannot do these): create the `qa` Firestore database;
+> make the two QA services publicly invocable; add `legal-terminus-qa.web.app` to the Auth
+> authorised domains. Then: deploy rules and indexes, seed the catalog, workflows and test
+> users, and run the e2e suite against QA.
 
 **Priority**: P1 | **Complexity**: L | **Dependencies**: none — blocks every other story here
 
