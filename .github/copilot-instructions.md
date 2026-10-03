@@ -39,6 +39,10 @@
   paperwork (its manual, story files, `sprint-status.yaml`) does not count here:
   add the dated entry to the change log in `epics.md`, update `architecture.md`
   and `spec.md` in this repo, and add the row to `docs/releases/SYNC.md`.
+- [ ] **Work that must not touch the live site is built on the `qa` branch** and
+  deployed with `scripts/deploy-qa.sh` to https://legal-terminus-qa.web.app. Read
+  `docs/qa-environment.md` first: QA shares production's sign-in accounts, and a
+  seed script run without `FIRESTORE_DATABASE_ID=qa-data` writes to the LIVE database.
 - [ ] **A push to `main` deploys to PRODUCTION.** The workflow is named "Deploy to
   QA" but targets the live project (`legal-terminus-web`, legalterminus.com). Run
   the full Playwright suite before pushing a product change.

@@ -1669,6 +1669,25 @@ the client notifies the client only (`matter_message`); internal staff messages
 notify only @mentioned colleagues (`matter_mention`), and the mention picker
 (`listMentionableStaff`) lists the whole team minus seeded test accounts.
 
+## The QA environment (E24-S00)
+
+A temporary second deployment in the SAME project: Hosting site
+`legal-terminus-qa`, Cloud Run `legal-terminus-api-qa` and
+`legal-terminus-portal-qa`, Firestore database `qa-data`, bucket
+`legal-terminus-web-qa`. Deployed by hand from the `qa` branch with
+`scripts/deploy-qa.sh`; runbook in `docs/qa-environment.md`.
+
+- **Database selection.** `FIRESTORE_DATABASE_ID` (backend) and
+  `VITE_FIRESTORE_DATABASE_ID` (Portal, website) select a named database. Unset —
+  as in production — the default database is used. `admin.firestore()` cannot
+  select a named database; `getFirestore(app, id)` does.
+- **Accounts are shared with production**, and a role is a claim on the account.
+  `TEST_ACCOUNT_EMAIL_DOMAINS` makes `verifyToken`, `upsertUser` and `deleteUser`
+  refuse every account outside the listed domains
+  (`config/testEnvironment.js`). Unset in production, where it does nothing.
+- **Why not a separate project:** decided by the product owner — temporary, no
+  custom domain, no CI. The cost is the shared accounts above.
+
 ---
 
 *End of Architecture Document*
