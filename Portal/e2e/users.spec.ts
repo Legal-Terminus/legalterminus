@@ -107,7 +107,12 @@ test('#150: the client form labels the reference field "Reference", not "Profess
   // #183 appended a required marker to this label, so match the label element
   // rather than an exact text node — the point of #150 is the WORD, not the glyph.
   await expect(adminPage.locator('label', { hasText: /^Reference\s*\*?$/ })).toBeVisible();
-  await expect(adminPage.getByText('Professional', { exact: true })).toHaveCount(0);
+  // #205 later asked for a SEPARATE Professional field beside Reference. The
+  // rule from #150 still holds for the free-text field: "Professional" must
+  // label the staff picker, never the reference input.
+  const professional = adminPage.getByLabel('Professional', { exact: true });
+  await expect(professional).toHaveAttribute('name', 'professionalUid');
+  await expect(adminPage.locator('label', { hasText: /^Professional$/ })).toHaveCount(1);
   // Group / Parent Company is untouched by the rename.
   await expect(adminPage.locator('input[name="groupCompany"]')).toBeVisible();
 });

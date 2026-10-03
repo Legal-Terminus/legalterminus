@@ -157,6 +157,7 @@ export const createUser = async (req, res) => {
       name, email, phone, role,
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, professionalUid, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
+      altPhone, contactDesignation, // #205
     } = req.body;
 
     // Privilege guard: a manager cannot create admin/manager accounts (escalation).
@@ -172,6 +173,7 @@ export const createUser = async (req, res) => {
       name, email, phone,
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state,
+      altPhone, contactDesignation,
       ...professional,
       emailIds: role === 'client'
         ? (emailIds && emailIds.length > 0 ? emailIds : [email])
@@ -216,6 +218,7 @@ export const updateUser = async (req, res) => {
       name, phone, role,
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, professionalUid, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
+      altPhone, contactDesignation, // #205
     } = req.body;
 
     // #151: validate + snapshot the assigned professional before any write.
@@ -243,6 +246,7 @@ export const updateUser = async (req, res) => {
       role: writableRole,
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state,
+      altPhone, contactDesignation,
       // #151: {} when absent (leave as-is), explicit nulls when cleared to "None".
       ...professional,
       emailIds: emailIds && emailIds.length > 0 ? emailIds : undefined,

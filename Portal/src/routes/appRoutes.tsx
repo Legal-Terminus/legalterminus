@@ -40,6 +40,7 @@ import MasterSheetReport from '../pages/reports/MasterSheetReport';
 import RevenueReportPage from '../pages/reports/RevenueReport';
 import TeamPerformanceReport from '../pages/reports/TeamPerformanceReport';
 import StorageReportPage from '../pages/reports/StorageReport';
+import ClientGroupFeeReport from '../pages/reports/ClientGroupFeeReport';
 import MyServicesReport from '../pages/reports/MyServicesReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 import MarketingReportsPage from '../pages/reports/MarketingReportsPage';
@@ -118,6 +119,8 @@ export const APP_ROUTES: AppRoute[] = [
   { path: '/reports/revenue',      element: <RevenueReportPage />,    roles: ['admin', 'manager'] },
   { path: '/reports/team-performance', element: <TeamPerformanceReport />, roles: ['admin', 'manager'] },
   { path: '/reports/storage',      element: <StorageReportPage />,    roles: ['admin', 'manager'] },
+  // #206: the firm's income by client and group — admin only, as is its API.
+  { path: '/reports/client-group-fees', element: <ClientGroupFeeReport />, roles: ['admin'] },
   // #84 client-facing report — clients see only their own services/payments.
   { path: '/reports/my-services',  element: <MyServicesReport />,     roles: ['client'], nav: { label: 'Reports', icon: BarChart2, mobile: true } },
   { path: '/users/new/:type',      element: <UserFormPage />,         roles: ['admin', 'manager'] },

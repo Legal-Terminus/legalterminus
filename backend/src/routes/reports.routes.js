@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { clientGroupFeesQuerySchema } from '../schemas/report.schema.js';
 import {
   getAllTasks,
   getCompletedTasks,
@@ -14,6 +16,7 @@ import {
   getStorageReport,
   getMyServices,
   getFirmWorkbook,
+  getClientGroupFees,
 } from '../controllers/reports.controller.js';
 
 const router = Router();
@@ -29,6 +32,10 @@ router.get('/my-services', requireRole('client', 'admin', 'manager'), getMyServi
 router.get('/workbook', requireRole('admin'), getFirmWorkbook);
 
 // All other report endpoints are internal — admin and manager only.
+// #206: works and fees per group / client — the firm's income by client, so
+// admin-only like the workbook, and declared above the manager gate.
+router.get('/client-group-fees', requireRole('admin'), validate(clientGroupFeesQuerySchema, 'query'), getClientGroupFees);
+
 router.use(requireRole('admin', 'manager'));
 
 router.get('/all-tasks',    getAllTasks);

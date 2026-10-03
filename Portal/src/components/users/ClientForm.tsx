@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createUser, updateUser, type PortalUser } from '../../api/users';
+import { createUser, updateUser, getAllUsers, displayName, type PortalUser } from '../../api/users';
+import { CONTACT_DESIGNATIONS, getClientGroups } from '../../api/clients';
 import { getServiceCatalog } from '../../api/services';
 import { assignServiceToClient } from '../../api/tasks';
 import { getWorkflowDefinitions } from '../../api/workflowDefinitions';
@@ -25,6 +26,9 @@ interface Client {
   businessName?: string;
   professionalName?: string;
   groupCompany?: string;
+  altPhone?: string;
+  contactDesignation?: string;
+  professionalUid?: string;
   gstNumber?: string;
   panNumber?: string;
   aadharNumber?: string;
@@ -62,6 +66,9 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
     businessName: client?.businessName,
     professionalName: client?.professionalName,
     groupCompany: client?.groupCompany,
+    altPhone: client?.altPhone ?? '',
+    contactDesignation: client?.contactDesignation ?? '',
+    professionalUid: client?.professionalUid ?? '',
     gstNumber: client?.gstNumber,
     panNumber: client?.panNumber,
     aadharNumber: client?.aadhaarNumber,
@@ -73,6 +80,18 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
   const [error, setError] = useState('');
 
   const promotingToStaff = isStaffRole(formData.role);
+
+  // LT #205: groups already in use, so people pick an existing spelling rather
+  // than create "ABC Group" beside "abc group" — which split every group report.
+  const { data: groups = [] } = useQuery({ queryKey: ['clients', 'groups'], queryFn: getClientGroups, staleTime: 60_000 });
+  // LT #205: who handles this client. Same picker staff records use (#151).
+  const { data: professionals = [] } = useQuery({
+    queryKey: ['portalUsers', 'staff'],
+    queryFn: getAllUsers,
+    select: (users: PortalUser[]) => users.filter((u) => u.role !== 'client'),
+    staleTime: 60_000,
+  });
+
 
   const mutation = useMutation({
     mutationFn: async (data: Client) => {
@@ -104,7 +123,7 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
     onError: (err: Error) => setError(err.message),
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -225,6 +244,36 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
                     required
                   />
                 </div>
+              </div>
+              {/* LT #205: a second number for the contact person, and what they
+                  are at the client. Both optional. */}
+              <div>
+                <label htmlFor="client-altPhone" className="input-label">Alternative contact number</label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    id="client-altPhone"
+                    type="tel"
+                    name="altPhone"
+                    value={formData.altPhone ?? ''}
+                    onChange={handleChange}
+                    placeholder="+91 98765 43210"
+                    className="input-field pl-10"
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="client-contactDesignation" className="input-label">Contact person&rsquo;s designation</label>
+                <select
+                  id="client-contactDesignation"
+                  name="contactDesignation"
+                  value={formData.contactDesignation ?? ''}
+                  onChange={handleChange}
+                  className="input-field"
+                >
+                  <option value="">Not set</option>
+                  {CONTACT_DESIGNATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
               </div>
               <div className="sm:col-span-2">
                 <label className="input-label">Address <span className="text-red-400">*</span></label>
@@ -412,16 +461,40 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
                 />
               </div>
               <div>
-                <label className="input-label">Group / Parent Company</label>
+                <label htmlFor="client-groupCompany" className="input-label">Group / Parent Company</label>
                 <input
+                  id="client-groupCompany"
                   type="text"
                   name="groupCompany"
                   value={formData.groupCompany ?? ''}
                   onChange={handleChange}
                   placeholder="Parent / group entity"
                   className="input-field"
+                  list="client-group-options"
+                  autoComplete="off"
                 />
+                <datalist id="client-group-options">
+                  {groups.map((g) => <option key={g} value={g} />)}
+                </datalist>
+                <p className="text-xs text-gray-400 mt-1">
+                  Pick an existing group so its clients are reported together, or type a new one.
+                </p>
               </div>
+              <div>
+                <label htmlFor="client-professionalUid" className="input-label">Professional</label>
+                <select
+                  id="client-professionalUid"
+                  name="professionalUid"
+                  value={formData.professionalUid ?? ''}
+                  onChange={handleChange}
+                  className="input-field"
+                >
+                  <option value="">None</option>
+                  {professionals.map((u) => <option key={u.uid} value={u.uid}>{displayName(u)}</option>)}
+                </select>
+                <p className="text-xs text-gray-400 mt-1">Who at your firm handles this client. Optional.</p>
+              </div>
+
               <div>
                 <label className="input-label">GST Number</label>
                 <div className="relative">

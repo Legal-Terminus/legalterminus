@@ -2,9 +2,12 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { createColumnHelper } from '@tanstack/react-table';
-import { AlertTriangle, ChevronRight, Clock, FileText, Moon, UserPlus } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Clock, Download, FileText, Moon, UserPlus } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import DataGrid from '../../components/common/DataGrid';
+import { useToast } from '../../components/common/toastContext';
+import { exportToXlsx, type ExportColumn } from '../../lib/exportXlsx';
+import { getClientContacts, type ClientContact } from '../../api/clients';
 import {
   getClients, needsAttention, CLIENTS_QUERY_KEY,
   type ClientRollup,
@@ -104,6 +107,7 @@ const col = createColumnHelper<ClientRollup>();
 
 export default function ClientsPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [attentionOnly, setAttentionOnly] = useState(false);
   // E01-S34-1 (AC1): filter the roster by tag.
   const [tagFilter, setTagFilter] = useState('');
@@ -134,6 +138,34 @@ export default function ClientsPage() {
     [data],
   );
 
+  // LT #205: the contact list as a spreadsheet. Fetched on demand — it is every
+  // client at once, which the paginated roster deliberately never loads.
+  const [exporting, setExporting] = useState(false);
+  const downloadContacts = async () => {
+    setExporting(true);
+    try {
+      const contacts = await getClientContacts();
+      const cols: ExportColumn<ClientContact>[] = [
+        { header: 'Client Name', value: (c) => c.clientName },
+        { header: 'Contact Person', value: (c) => c.contactPerson },
+        { header: 'Designation', value: (c) => c.contactDesignation },
+        { header: 'Contact Number', value: (c) => c.phone },
+        { header: 'Alternative Contact Number', value: (c) => c.altPhone },
+        { header: 'Email ID', value: (c) => c.email },
+        { header: 'Alternative Email ID', value: (c) => c.altEmails.join(', ') },
+        { header: 'Business Address', value: (c) => [c.address, c.state].filter(Boolean).join(', ') },
+        { header: 'Group', value: (c) => c.groupCompany },
+        { header: 'Reference', value: (c) => c.reference },
+        { header: 'Professional', value: (c) => c.professional },
+      ];
+      await exportToXlsx(contacts, cols, 'client-database', 'Clients');
+    } catch {
+      toast.error('Could not prepare the download. Please try again.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const columns = useMemo(() => [
     col.accessor('name', {
       header: 'Client',
@@ -150,6 +182,25 @@ export default function ClientsPage() {
           </div>
         );
       },
+    }),
+    // LT #205: who to call, without opening the client.
+    col.accessor('phone', {
+      header: 'Contact',
+      size: 200,
+      cell: (ctx) => {
+        const c = ctx.row.original;
+        return (
+          <div className="min-w-0">
+            <p className="text-sm text-ink truncate">{c.phone || '—'}</p>
+            {c.email && <p className="text-xs text-ink-muted truncate">{c.email}</p>}
+          </div>
+        );
+      },
+    }),
+    col.accessor('groupCompany', {
+      header: 'Group',
+      size: 150,
+      cell: (ctx) => <span className="text-sm text-ink-muted truncate">{ctx.getValue() || '—'}</span>,
     }),
     col.accessor('attentionScore', {
       header: 'Attention',
@@ -200,9 +251,21 @@ export default function ClientsPage() {
       title="Clients"
       subtitle="Every client relationship, and what needs you today."
       action={(
-        <button onClick={() => navigate('/users/new/client')} className="btn-primary inline-flex items-center gap-1.5">
-          <UserPlus className="w-4 h-4" /> <span className="hidden sm:inline">Add Client</span><span className="sm:hidden">Add</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* LT #205: the whole contact list as a spreadsheet. */}
+          <button
+            type="button"
+            onClick={downloadContacts}
+            disabled={exporting}
+            aria-label="Download contacts as Excel"
+            className="btn-secondary inline-flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <Download className="w-4 h-4" /> <span className="hidden sm:inline">{exporting ? 'Preparing…' : 'Download Excel'}</span>
+          </button>
+          <button onClick={() => navigate('/users/new/client')} className="btn-primary inline-flex items-center gap-1.5">
+            <UserPlus className="w-4 h-4" /> <span className="hidden sm:inline">Add Client</span><span className="sm:hidden">Add</span>
+          </button>
+        </div>
       )}
     >
       <DataGrid<ClientRollup>
@@ -214,14 +277,16 @@ export default function ClientsPage() {
         isLoading={isLoading}
         error={error as Error | null}
         loadingLabel="Loading clients…"
-        searchPlaceholder="Search by name, email or organisation…"
+        searchPlaceholder="Search by name, email, phone, organisation or group…"
         globalFilterFn={(row, _id, q) => {
           const c = row.original;
           const s = q.toLowerCase();
           return c.name.toLowerCase().includes(s)
             || c.email.toLowerCase().includes(s)
             || c.organisation.toLowerCase().includes(s)
-            || c.businessName.toLowerCase().includes(s);
+            || c.businessName.toLowerCase().includes(s)
+            || c.groupCompany.toLowerCase().includes(s)
+            || c.phone.includes(q.trim());
         }}
         toolbar={(
           <div className="flex flex-wrap items-center gap-2 mb-3">

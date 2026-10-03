@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
-  ArrowLeft, Building2, KeyRound, Mail, Pencil, Phone, Plus, UserCheck,
+  ArrowLeft, KeyRound, Pencil, Plus,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
@@ -120,35 +120,30 @@ export default function ClientDetailPage() {
 
       <ClientKpiStrip client={client} />
 
-      {/* Identity — the relationship facts a manager needs before a call. */}
-      <section className="card p-4 mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-          {client.email && (
-            <p className="flex items-center gap-2 min-w-0">
-              <Mail className="w-3.5 h-3.5 text-ink-muted shrink-0" aria-hidden="true" />
-              <span className="truncate">{client.email}</span>
-            </p>
-          )}
-          {client.phone && (
-            <p className="flex items-center gap-2 min-w-0">
-              <Phone className="w-3.5 h-3.5 text-ink-muted shrink-0" aria-hidden="true" />
-              <span className="truncate">{client.phone}</span>
-            </p>
-          )}
-          {client.groupCompany && (
-            <p className="flex items-center gap-2 min-w-0">
-              <Building2 className="w-3.5 h-3.5 text-ink-muted shrink-0" aria-hidden="true" />
-              <span className="truncate">{client.groupCompany}</span>
-            </p>
-          )}
-          {client.professionalName && (
-            <p className="flex items-center gap-2 min-w-0">
-              <UserCheck className="w-3.5 h-3.5 text-ink-muted shrink-0" aria-hidden="true" />
-              <span className="truncate">Referred by {client.professionalName}</span>
-            </p>
-          )}
-          <p className="text-ink-muted">Client since {relDate(client.createdAt)}</p>
-        </div>
+      {/* Contact record (LT #205) — everything we hold on who to reach and how,
+          labelled, in one place. Empty details are left out rather than shown
+          as a row of dashes; "Edit profile" is where they are filled in. */}
+      <section className="card p-4 mb-6" aria-label="Contact details">
+        <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+          {([
+            ['Client', org || client.name],
+            ['Contact person', [client.name, client.contactDesignation].filter(Boolean).join(' · ')],
+            ['Contact number', client.phone],
+            ['Alternative number', client.altPhone],
+            ['Email', client.email],
+            ['Alternative email', client.emailIds.join(', ')],
+            ['Business address', [client.address, client.state].filter(Boolean).join(', ')],
+            ['Group', client.groupCompany],
+            ['Reference', client.professionalName],
+            ['Professional', client.professionalTitle],
+            ['Client since', relDate(client.createdAt)],
+          ] as [string, string][]).filter(([, v]) => v).map(([label, value]) => (
+            <div key={label} className="min-w-0">
+              <dt className="text-xs text-ink-muted">{label}</dt>
+              <dd className="text-ink break-words">{value}</dd>
+            </div>
+          ))}
+        </dl>
 
         {/* CM-FR12: a quiet checklist, never a wall of warnings. */}
         {client.missingProfileFields.length > 0 && (

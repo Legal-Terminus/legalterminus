@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
-import { listClients, getClient } from '../controllers/clients.controller.js';
+import { listClients, getClient, listClientGroups, listClientContacts } from '../controllers/clients.controller.js';
 import { listClientTags, addClientTag, renameClientTag, deleteClientTag } from '../controllers/clientTags.controller.js';
 
 /**
@@ -23,6 +23,10 @@ router.get('/tags', manage, listClientTags);
 router.post('/tags', manage, addClientTag);
 router.patch('/tags/:tag', manage, renameClientTag);
 router.delete('/tags/:tag', manage, deleteClientTag);
+
+// #205: registered before /:uid so they are not captured as a client id.
+router.get('/groups', manage, listClientGroups);
+router.get('/contacts', manage, listClientContacts);
 
 router.get('/', manage, listClients);
 router.get('/:uid', manage, getClient);

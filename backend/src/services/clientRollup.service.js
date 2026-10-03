@@ -213,6 +213,15 @@ export function clientIdentity(doc) {
     businessName: d.businessName ?? '',
     groupCompany: d.groupCompany ?? '',
     professionalName: d.professionalName ?? '',
+    // LT #205: the rest of the contact record, so the client page and the
+    // contact export show everything staff hold on this client.
+    altPhone: d.altPhone ?? '',
+    contactDesignation: d.contactDesignation ?? '',
+    address: d.address ?? '',
+    state: d.state ?? '',
+    emailIds: Array.isArray(d.emailIds) ? d.emailIds.filter((e) => e && e !== d.email) : [],
+    professionalUid: d.professionalUid ?? null,
+    professionalTitle: d.professionalTitle ?? '',
     createdAt: d.createdAt ?? null,
     // Profile completeness for filings (CM-FR12) — reported, never enforced here.
     missingProfileFields: ['panNumber', 'gstNumber', 'address', 'state']

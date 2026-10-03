@@ -9,6 +9,9 @@ const optShort = z.string().trim().max(100).optional();
 const optLong = z.string().trim().max(200).optional();
 const role = z.enum(VALID_ROLES);
 
+/** What a client's contact person can be at the client (#205). */
+export const CONTACT_DESIGNATIONS = ['Owner', 'Director', 'Accountant', 'Manager'];
+
 // Profile fields shared/optional across roles. `.partial()`-friendly.
 const profileFields = {
   designation: optShort,
@@ -26,6 +29,12 @@ const profileFields = {
   // from the staff directory in the Role & Access section. Empty string clears it.
   professionalUid: z.string().trim().max(128).optional(),
   groupCompany: optLong,
+  // #205: the client's contact person. `altPhone` is a second number for them;
+  // `contactDesignation` is what they are at the client, from a fixed list so it
+  // can be filtered and reported on. Distinct from `designation`, which is a
+  // STAFF member's job title. An empty string clears either.
+  altPhone: z.union([phone, z.literal('')]).optional(),
+  contactDesignation: z.union([z.enum(CONTACT_DESIGNATIONS), z.literal('')]).optional(),
   gstNumber: z.string().trim().max(30).optional(),
   panNumber: z.string().trim().max(20).optional(),
   aadhaarNumber: z.string().trim().max(20).optional(),

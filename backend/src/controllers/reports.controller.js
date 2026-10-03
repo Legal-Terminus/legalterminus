@@ -3,6 +3,9 @@ import { db } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
 import { buildFirmWorkbook } from '../services/workbookExport.service.js';
 import { getCompiledById } from '../services/workflowDefinitions.service.js';
+import {
+  buildClientGroupReport, clientLabel, distinctGroups, financialYearRange, recentFinancialYears,
+} from '../services/clientGroupFees.service.js';
 
 // ─── Helper: map Firestore doc → plain object ──────────────────────────────
 function docToTask(doc) {
@@ -511,6 +514,50 @@ export async function getRevenueAnalytics(req, res) {
   } catch (err) {
     logger.error({ err }, 'getRevenueAnalytics error:');
     res.status(500).json({ message: 'Failed to fetch revenue analytics' });
+  }
+}
+
+// ─── GET /api/reports/client-group-fees ────────────────────────────────────
+// LT #206 — works and fees per group / client for one financial year. ADMIN
+// ONLY (guarded on the route, above the manager gate): it is the firm's income
+// by client. The fold and its trade-offs live in clientGroupFees.service.js.
+//
+// Cost: matters are read by `createdAt` range, so the read is bounded by one
+// year's matters, not the whole collection. Clients are read once — the same
+// read the roster makes — because the filters must offer every group and
+// client, including those with no matter in the chosen year.
+export async function getClientGroupFees(req, res) {
+  try {
+    const years = recentFinancialYears();
+    const fy = req.query.fy || years[0];
+    const range = financialYearRange(fy);
+    if (!range) return res.status(400).json({ message: 'Financial year must look like 2026-27.' });
+
+    const [taskSnap, clientSnap] = await Promise.all([
+      db.collection('tasks').where('createdAt', '>=', range.from).where('createdAt', '<', range.to).get(),
+      db.collection('users').where('role', '==', 'client').get(),
+    ]);
+    const tasks = taskSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const clients = clientSnap.docs.map((d) => ({ uid: d.id, ...d.data() }));
+
+    const report = buildClientGroupReport(tasks, clients, {
+      group: req.query.group,
+      clientUid: req.query.clientUid,
+      serviceKey: req.query.serviceKey,
+    });
+
+    res.json({
+      financialYear: fy,
+      financialYears: years.includes(fy) ? years : [fy, ...years],
+      groups: distinctGroups(clients),
+      clients: clients
+        .map((c) => ({ uid: c.uid, name: clientLabel(c), group: String(c.groupCompany ?? '').trim() }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+      ...report,
+    });
+  } catch (err) {
+    logger.error({ err }, 'getClientGroupFees report error:');
+    res.status(500).json({ message: 'Failed to fetch the client / group report' });
   }
 }
 

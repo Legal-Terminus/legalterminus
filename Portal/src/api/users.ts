@@ -30,6 +30,9 @@ export interface PortalUser {
   /** #151: snapshot of that professional's display name, for lists/exports. */
   professionalTitle?: string | null;
   groupCompany?: string;
+  /** #205: the contact person's second number and what they are at the client. */
+  altPhone?: string;
+  contactDesignation?: string;
   gstNumber?: string;
   panNumber?: string;
   aadhaarNumber?: string;

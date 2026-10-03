@@ -18,6 +18,15 @@ export interface ClientRollup {
   businessName: string;
   groupCompany: string;
   professionalName: string;
+  // LT #205: the rest of the contact record.
+  altPhone: string;
+  contactDesignation: string;
+  address: string;
+  state: string;
+  /** Additional email addresses (the primary is `email`). */
+  emailIds: string[];
+  professionalUid: string | null;
+  professionalTitle: string;
   createdAt: string | null;
   /** Filing fields the profile is missing (CM-FR12) — reported, never enforced. */
   missingProfileFields: string[];
@@ -134,3 +143,33 @@ export const needsAttention = (c: ClientRollup) =>
 /** E-19 — the managed client-tag list, merged with tags in use. */
 export const getClientTags = () =>
   apiFetch<{ managed: string[]; all: string[] }>('/api/clients/tags');
+
+/* ── LT #205: the client contact record ───────────────────────────────────── */
+
+/** What a client's contact person can be at the client. Mirrors the API's list. */
+export const CONTACT_DESIGNATIONS = ['Owner', 'Director', 'Accountant', 'Manager'] as const;
+
+/** One client's contact details — a row of the Clients page's Excel download. */
+export interface ClientContact {
+  uid: string;
+  clientName: string;
+  contactPerson: string;
+  contactDesignation: string;
+  phone: string;
+  altPhone: string;
+  email: string;
+  altEmails: string[];
+  address: string;
+  state: string;
+  groupCompany: string;
+  reference: string;
+  professional: string;
+}
+
+/** Every client's contact record at once — for the download, never the roster. */
+export const getClientContacts = () =>
+  apiFetch<{ data: ClientContact[] }>('/api/clients/contacts').then((r) => r.data);
+
+/** Groups already in use, one spelling each — the client form offers these. */
+export const getClientGroups = () =>
+  apiFetch<{ data: string[] }>('/api/clients/groups').then((r) => r.data);

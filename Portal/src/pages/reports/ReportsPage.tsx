@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import {
-  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX, IndianRupee, Gauge, HardDrive, Megaphone, ShieldCheck,
+  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX, IndianRupee, Gauge, HardDrive, Megaphone, ShieldCheck, Contact, Layers,
 } from 'lucide-react';
 
 const REPORTS = [
@@ -16,6 +16,10 @@ const REPORTS = [
   { to: '/reports/payment-overrides', title: 'Payment Overrides', desc: 'Matters progressing ahead of payment (no-payment or gate override).', icon: CreditCard },
   { to: '/reports/professional-mapping', title: 'Professional / Group', desc: 'Client counts per handling professional and parent/group company.', icon: Users },
   { to: '/reports/storage',      title: 'Storage Usage',     desc: 'Total & per-client document storage with alert levels.', icon: HardDrive },
+  // #205: the contact list IS the Clients page — one place to look up and edit
+  // a client, linked from here because this is where people look for it.
+  { to: '/clients',              title: 'Client Database',   desc: 'Every client\'s contact person, numbers, emails, address, group and reference. Search, edit & Excel export.', icon: Contact },
+  { to: '/reports/client-group-fees', title: 'Client / Group Work & Fee', desc: 'Works and fees per group or client, by financial year.', icon: Layers, adminOnly: true },
   { to: '/reports/leads',        title: 'Lead Dashboard',  desc: 'Every lead on the lead sheet — source, service, follow-ups and outcome.', icon: Inbox },
   { to: '/reports/marketing',    title: 'Marketing Reports', desc: 'DM cost, DM income, cold calling and the monthly CAC / revenue-to-cost report.', icon: Megaphone },
   { to: '/settings/reporting-access', title: 'Reporting Access', desc: 'Admin: who can view or edit leads and each marketing report.', icon: ShieldCheck, adminOnly: true },

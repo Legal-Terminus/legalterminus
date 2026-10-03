@@ -10,6 +10,7 @@ import {
   attentionScore,
   isClientStep,
 } from '../services/clientRollup.service.js';
+import { distinctGroups, clientLabel } from '../services/clientGroupFees.service.js';
 
 /**
  * Epic 30 (Story 30.1) — the client-relationship read API.
@@ -74,6 +75,59 @@ export async function listClients(req, res) {
     });
   } catch (error) {
     logger.error({ err: error }, 'Failed to list client rollups');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/**
+ * GET /api/clients/groups — the groups already in use (LT #205/#206).
+ *
+ * Group is free text on the client, so "ABC Group" and "abc group" used to be
+ * two groups in every report. The client form offers this list so people pick
+ * an existing spelling instead of inventing a new one.
+ */
+export async function listClientGroups(req, res) {
+  try {
+    const snap = await db.collection('users').where('role', '==', 'client').get();
+    res.json({ data: distinctGroups(snap.docs.map((d) => d.data())) });
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to list client groups');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/**
+ * GET /api/clients/contacts — every client's contact record, for the Clients
+ * page's Excel download (LT #205, "client database").
+ *
+ * Deliberately NOT the roster: no rollups, no matter reads — one query on the
+ * clients, whatever their number. The roster stays paginated; a download is the
+ * one place the whole list is wanted at once.
+ */
+export async function listClientContacts(req, res) {
+  try {
+    const snap = await db.collection('users').where('role', '==', 'client').get();
+    const data = snap.docs.map((doc) => {
+      const c = clientIdentity(doc);
+      return {
+        uid: c.uid,
+        clientName: clientLabel(c),
+        contactPerson: c.name,
+        contactDesignation: c.contactDesignation,
+        phone: c.phone,
+        altPhone: c.altPhone,
+        email: c.email,
+        altEmails: c.emailIds,
+        address: c.address,
+        state: c.state,
+        groupCompany: c.groupCompany,
+        reference: c.professionalName,
+        professional: c.professionalTitle,
+      };
+    }).sort((a, b) => a.clientName.localeCompare(b.clientName));
+    res.json({ data });
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to list client contacts');
     res.status(500).json({ message: 'Internal server error' });
   }
 }

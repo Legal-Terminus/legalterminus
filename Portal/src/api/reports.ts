@@ -309,3 +309,48 @@ export const downloadMasterSheetCSV = (filters: ReportFilters = {}) => {
   Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
   window.open(`${base}/api/reports/master-sheet?${params.toString()}`, '_blank');
 };
+
+/* ── LT #206: works and fees per group / client, by financial year ────────── */
+
+export interface ClientGroupFeeRow {
+  taskId: string;
+  clientUid: string | null;
+  clientName: string;
+  /** '' for an individual client (no group). */
+  group: string;
+  serviceKey: string;
+  serviceName: string;
+  createdAt: string | null;
+  financialYear: string | null;
+  status: string;
+  /** False when the matter carries no fee — shown as a dash, never ₹0. */
+  priced: boolean;
+  charged: number;
+  received: number;
+  balance: number;
+}
+
+export interface FeeTotals { works: number; charged: number; received: number; balance: number }
+
+export interface ClientGroupFeeReport {
+  financialYear: string;
+  financialYears: string[];
+  groups: string[];
+  clients: { uid: string; name: string; group: string }[];
+  services: { key: string; name: string }[];
+  rows: ClientGroupFeeRow[];
+  totals: FeeTotals;
+  byGroup: (FeeTotals & { group: string; clients: number })[];
+}
+
+export interface ClientGroupFeeFilters { fy?: string; group?: string; clientUid?: string; serviceKey?: string }
+
+/** The filter value that means "clients with no group". Mirrors the API. */
+export const INDIVIDUAL_CLIENTS = 'individual';
+
+export const getClientGroupFees = (filters: ClientGroupFeeFilters = {}) => {
+  const q = new URLSearchParams();
+  for (const [k, v] of Object.entries(filters)) if (v) q.set(k, v);
+  const qs = q.toString();
+  return apiFetch<ClientGroupFeeReport>(`/api/reports/client-group-fees${qs ? `?${qs}` : ''}`);
+};
