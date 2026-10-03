@@ -3203,6 +3203,168 @@ account that may hold access for unrelated reasons.
 
 ---
 
+## E-24 — Online Payments on the Website (#28) [Phase 2]
+
+**Goal**: A visitor pays for a service on the website by UPI, card or net banking, sees a clear
+result, and — where that service has a workflow — a matter is opened for them automatically.
+Raised as GitHub #28 (2026-05-25). Requirements below logged 2026-10-03; **nothing is built yet**.
+
+**Why this is an epic and not a fix.** A payment flow already exists and cannot be finished as it
+stands: the backend is written for PayU, production holds PhonePe keys only, the checkout modal
+carries an empty Razorpay stub, and "Buy Now" has been hidden on all 83 pricing components since
+#133 ("payment is paused"). Three gateways were started; none is live. The existing code also
+charges an amount sent by the browser (one plan is priced ₹1 in the page), learns the outcome only
+if the customer's browser returns, and creates nothing in the portal.
+
+**Constraints**
+- `main` deploys straight to the live site, and the live site must not be touched while this is
+  built. The work is done and tested on a separate QA deployment first (E24-S00).
+- Gateway: Razorpay (test mode on QA). PayU and PhonePe are removed once it is live.
+- The amount is never taken from the browser (Security Standard §2).
+
+---
+
+### E24-S00 — A parallel QA deployment [Phase 2] ⏳ Not Started
+
+**Priority**: P1 | **Complexity**: L | **Dependencies**: none — blocks every other story here
+
+**Rationale**: The only environment is production. The workflow is called "Deploy to QA" but
+targets `legal-terminus-web` (legalterminus.com), and the e2e suite runs against live data. A
+payment integration cannot be developed against live customers.
+
+**Acceptance Criteria**:
+- A separate Firebase/GCP project hosts the website, the portal and the API. It shares **no**
+  Auth users, Firestore data, Storage bucket or secrets with production.
+- It is reachable at its own URL, which is not indexed by search engines.
+- QA never emails or messages a real client: outbound email is disabled or routed to a test
+  mailbox, and only gateway **test** keys are configured there.
+- QA is seeded with the service catalog, workflow definitions and the e2e role users.
+- A push deploys to QA; a production deploy is a separate, deliberate step. Nothing in this epic
+  reaches production until the firm approves it on QA.
+- The e2e suite can target QA instead of production.
+
+**Open**: who creates the project and under which billing account; the QA URL; the branch model
+(a `qa` branch, or `main` → QA with production promoted by hand).
+
+---
+
+### E24-S01 — Prices come from the server [Phase 2] ⏳ Not Started
+
+**Priority**: P1 | **Complexity**: M | **Dependencies**: E24-S00
+
+**Acceptance Criteria**:
+- One catalogue of sellable plans: id, name, amount, and — where one exists — the portal service
+  (`serviceKey`) it corresponds to.
+- The website sends a plan id, never an amount. The server looks the amount up; an unknown or
+  inactive plan is refused.
+- The pricing components read their displayed price from the same catalogue, so the page and the
+  charge cannot disagree.
+- The firm confirms every plan's price before launch. The ₹1 trademark plan is corrected or removed.
+
+---
+
+### E24-S02 — Pay with Razorpay [Phase 2] ⏳ Not Started
+
+**Priority**: P1 | **Complexity**: L | **Dependencies**: E24-S01
+
+**Acceptance Criteria**:
+- UPI, cards and net banking are offered through Razorpay Checkout.
+- The server creates the gateway order and stores an order record (`created`) **before** the
+  customer is shown the payment screen.
+- On return, the server verifies the gateway signature. An unverified return never marks an order
+  paid.
+- A signed webhook from the gateway confirms the outcome independently of the customer's browser,
+  so a customer who closes the tab after paying is still recorded as paid.
+- The browser return and the webhook may arrive in either order, or twice. The order is marked
+  paid, and its consequences run, **exactly once**.
+- The order record keeps: plan, amount, status (`created` / `paid` / `failed` / `refunded`), gateway
+  order and payment ids, method, timestamps, and the failure reason when there is one.
+- "Buy Now" returns on the pricing pages for the plans in the catalogue.
+
+---
+
+### E24-S03 — A paid order opens a matter [Phase 2] ⏳ Not Started
+
+**Priority**: P1 | **Complexity**: L | **Dependencies**: E24-S02
+
+**Rationale**: Decided by the product owner (2026-10-03): for a service whose workflow is
+configured, payment creates the matter. Today a website payment creates nothing in the portal, so
+staff do not know someone has paid.
+
+**Acceptance Criteria**:
+- When an order is paid and its plan maps to a service **with a configured workflow**, a matter is
+  created for that client on that service, with the payment recorded in the matter's payment
+  history (amount, gateway, payment id).
+- The matter is created once per order, however many times the confirmation arrives.
+- The paying account becomes a client the firm can see; the matter appears in their portal.
+- When the plan has **no** configured workflow, no matter is created. The order is still recorded
+  as paid, and staff are told so they can open the matter by hand.
+- Staff are notified of every paid order, and can see the order and the matter it produced.
+
+**Open**: whether the new matter goes live immediately or waits for admin approval, as a matter
+created by a manager does today; who it is assigned to.
+
+---
+
+### E24-S04 — Failures are handled, not lost [Phase 2] ⏳ Not Started
+
+**Priority**: P1 | **Complexity**: M | **Dependencies**: E24-S02, E24-S03
+
+Every failure below must leave a record the firm can act on, and a truthful screen for the customer.
+
+| What goes wrong | What must happen |
+|---|---|
+| Payment declined or cancelled by the customer | Order marked `failed` with the reason; the customer sees why and can try again; nothing is charged or created. |
+| Customer closes the tab after paying | The webhook marks the order paid; the matter is created; the customer is emailed the confirmation. |
+| The webhook arrives before, or without, the browser return | Same result as above, once. |
+| The same confirmation arrives twice | Second arrival changes nothing: one payment, one matter. |
+| Signature does not verify | Treated as not paid. Logged as a security event. Never creates a matter. |
+| Amount paid differs from the catalogue amount | Order flagged for review; no matter is created automatically; staff are alerted. |
+| Payment succeeded but the matter could not be created | The order stays `paid` and is flagged "matter not created"; staff are alerted; it can be retried without charging the customer again. The customer is told the payment was received. |
+| Payment succeeded but the database write failed | The gateway is the source of truth: a reconciliation pass finds paid gateway orders with no paid record and repairs them. |
+| The gateway is unreachable when the order is created | The customer sees a clear "try again shortly"; no order is left half-made. |
+| An order is never completed | It expires after a set time and is marked abandoned; it is not shown as owed. |
+| A refund is issued at the gateway | The order is marked `refunded` and staff are told. The matter is **not** deleted automatically. |
+
+**Acceptance Criteria**: each row above has an automated test.
+
+---
+
+### E24-S05 — Confirmation the customer can keep [Phase 2] ⏳ Not Started
+
+**Priority**: P2 | **Complexity**: S | **Dependencies**: E24-S02
+
+**Acceptance Criteria**:
+- The result page shows success or failure, the plan, the amount, a reference number, and — on
+  success — what happens next and a link to the portal.
+- A confirmation email is sent on success.
+- The customer's past orders are listed in their profile.
+
+**Open**: whether a GST tax invoice must be generated per payment, or the gateway receipt suffices.
+
+---
+
+### E24-S06 — One gateway, the others removed [Phase 2] ⏳ Not Started
+
+**Priority**: P2 | **Complexity**: S | **Dependencies**: E24-S02 live in production
+
+**Acceptance Criteria**:
+- The PayU route and its request/response hashing are deleted; the PhonePe secrets and workflow
+  variables are removed; the unused Razorpay stub in the checkout modal is replaced by the real flow.
+- The rules file's list of public endpoints names the Razorpay webhook and nothing that no longer
+  exists.
+
+---
+
+**Not in this epic**: paying a matter's outstanding balance from inside the portal; refunds issued
+from the portal; guest checkout (the customer signs in before paying, as the modal requires today).
+
+**Inputs needed from the firm**: Razorpay key id, key secret and webhook secret (test, then live),
+and confirmation that their Razorpay KYC is complete; the price of every plan; the answers to the
+items marked **Open** above.
+
+---
+
 ## APPENDIX A — Infrastructure & Build System (Updated 2026-06-01)
 
 ### NPM Run Commands Standardization
