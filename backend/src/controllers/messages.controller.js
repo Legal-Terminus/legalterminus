@@ -1,6 +1,7 @@
 import { db } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { createNotification } from './notifications.controller.js';
+import { resolveClientMessageRecipients } from '../services/discussionRecipients.service.js';
 import { sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
 import { sanitizeRichText, richTextToPlain, checkWordLimit } from '../services/richText.service.js';
@@ -163,20 +164,57 @@ export async function createMessage(req, res) {
     const ref = await msgsCol(taskId).add(mentioned.length
       ? { ...doc, mentionedUids: mentioned.map((u) => u.uid) } : doc);
 
-    // Notify the other side. A client's message pings the matter owner; a
-    // client-visible staff message pings the client. Internal-only staff messages
-    // notify nobody (they're internal chatter).
-    try {
-      const recipient = isClient ? (task.assignedTo ?? null) : (clientVisible ? task.clientUid : null);
-      if (recipient && recipient !== req.user.uid) {
-        // Notification/email previews use the PLAIN projection — HTML would be
-        // noise in a bell popup and unsafe to inject into an email template.
-        const plain = richTextToPlain(body);
-        const preview = plain.length > 140 ? `${plain.slice(0, 140)}…` : plain;
+    // Notification/email previews use the PLAIN projection — HTML would be noise
+    // in a bell popup and unsafe to inject into an email template.
+    const plain = richTextToPlain(body);
+    const preview = plain.length > 140 ? `${plain.slice(0, 140)}…` : plain;
+
+    if (isClient) {
+      // #200: a client's message reaches the people working the matter — its
+      // owner and everyone on its current step, or the admins if there are none.
+      // It used to reach the owner alone, and nobody when there was no owner.
+      // One notification and ONE email each: `email: false` stops the generic
+      // mirror, and the email is the internal template — the old path sent staff
+      // the client-facing "reply from the Client Portal" wording.
+      try {
+        const { recipients, fallback } = await resolveClientMessageRecipients(db, { id: taskId, ...task }, req.user.uid);
+        const clientName = task.clientName || 'Your client';
+        for (const r of recipients) {
+          try {
+            await createNotification({
+              recipientUid: r.uid, type: 'info',
+              title: 'New message from your client',
+              message: preview,
+              taskId, email: false,
+            });
+            const rendered = r.email ? await renderTemplate('matter_message_team', {
+              recipientName: r.name, clientName,
+              organisation: task.organisation ?? '', serviceName: task.serviceName ?? '', message: plain,
+            }) : null;
+            // No cc: the matter's ccEmails are the client's, and this is internal.
+            if (rendered) {
+              await sendTemplatedEmail({
+                to: r.email, subject: rendered.subject, body: rendered.body,
+                taskId, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
+              });
+            }
+          } catch (e) {
+            logger.warn({ err: e?.message, recipientUid: r.uid }, 'createMessage: team notify failed (non-fatal)');
+          }
+        }
+        logger.info({ taskId, notified: recipients.length, fallback }, 'client message: team notified');
+      } catch (e) {
+        logger.warn({ err: e?.message }, 'createMessage: team notification failed (non-fatal)');
+      }
+    } else if (clientVisible && task.clientUid && task.clientUid !== req.user.uid) {
+      // A client-visible staff message pings the client. Internal-only staff
+      // messages notify nobody but those @mentioned (below).
+      try {
+        const recipient = task.clientUid;
         await createNotification({
           recipientUid: recipient,
           type: 'info',
-          title: isClient ? 'New message from your client' : 'New message about your service',
+          title: 'New message about your service',
           message: preview,
           taskId,
         });
@@ -188,34 +226,33 @@ export async function createMessage(req, res) {
             clientName: task.clientName ?? '',
             organisation: task.organisation ?? '',
             serviceName: task.serviceName ?? '',
-            message: richTextToPlain(body),
-            senderName: isClient ? (task.clientName || 'Your client') : CLIENT_FACING_SENDER,
+            message: plain,
+            senderName: CLIENT_FACING_SENDER,
           });
           if (rendered) {
             await sendTemplatedEmail({
               to,
-              // #149: CC the matter's additional recipients on the CLIENT's copy
-              // only — staff copies are internal and must not be broadcast.
-              cc: recipient === task.clientUid ? task.ccEmails : undefined,
+              // #149: CC the matter's additional recipients on the client's copy.
+              cc: task.ccEmails,
               subject: rendered.subject, body: rendered.body,
               taskId, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
             });
           }
         }
+      } catch (e) {
+        logger.warn({ err: e?.message }, 'createMessage: notification/email failed (non-fatal)');
       }
-    } catch (e) {
-      logger.warn({ err: e?.message }, 'createMessage: notification/email failed (non-fatal)');
     }
 
     // #200: each mentioned colleague gets one notification and one email.
     // Skips whoever the message already notified above, so nobody gets two.
     // The response below is the same whether or not any address resolved.
-    const alreadyNotified = isClient ? task.assignedTo : (clientVisible ? task.clientUid : null);
+    // (Mentions are staff-only, so the client is the only possible overlap.)
+    const alreadyNotified = clientVisible ? task.clientUid : null;
     const authorSnap = mentioned.length ? await db.collection('users').doc(req.user.uid).get() : null;
     const authorName = authorSnap?.exists
       ? (authorSnap.data().name || authorSnap.data().fullName || authorSnap.data().email || 'A colleague')
       : 'A colleague';
-    const plain = richTextToPlain(body);
     for (const u of mentioned.filter((m) => m.uid !== alreadyNotified)) {
       try {
         await createNotification({

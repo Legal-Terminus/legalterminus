@@ -3607,6 +3607,53 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Production feedback — #200, #203, #205, #206 (2026-09-26 → 2026-10-03) ✅ Completed
+
+Each built in Ambyflow first and ported here by content (`docs/releases/SYNC.md`,
+tags `v1.3.0-lt.1` and `v1.4.0-lt.1`). Entries for #203, #205, #206 and the
+first #200 fix were written retroactively on 2026-10-03: those ports shipped
+without this log being updated.
+
+- **#203 — Account links land in the portal; passwordless sign-in.** The request
+  was an admin-set default password; declined (staff would know it). The real
+  problem was the invite: a raw `firebaseapp.com` action link with the API key in
+  it, landing on an unbranded "Reset your password" page. Now every emailed link
+  is `<site>/portal/account/action` (`accountLinks.service.js`), the setup email
+  says who created the account and why, the sign-in page offers **Email me a
+  sign-in link**, Forgot password goes through the backend, and admins/managers
+  can **Send sign-in link** from the client page. Public endpoints
+  `POST /api/public/account/{password-reset,sign-in-link}` answer a uniform 202.
+  e2e: `account-links.spec.ts`. (`7da26901`)
+- **#200 (follow-up 1) — The @ list shows the whole team.** It was cut to six
+  matches with no scroll. Now uncapped and scrollable; seeded test accounts
+  (`e2e: true`) are left out except in a test run. e2e: `discussion.spec.ts`.
+  (`1740a515`)
+- **#200 (follow-up 2) — A client's message reaches the working team (firm chose
+  "option A").** It used to notify the matter owner only — nobody when the matter
+  had no owner. Now: the owner plus every assignee of the CURRENT step; the
+  admins if that is nobody or nobody still active. One notification and one email
+  each, from the new internal template `matter_message_team`
+  (`discussionRecipients.service.js`). A staff message shared with the client
+  still notifies the client only. e2e: `discussion.spec.ts`; unit:
+  `discussionRecipients.test.js`.
+- **#205 — The client contact record.** Asked for as a "Client Database Report";
+  built on the Clients page, which already is the master record. New fields
+  `altPhone` and `contactDesignation` (Owner / Director / Accountant / Manager),
+  a Professional picker and group suggestions on the client form, a contact card
+  on the client page, Contact and Group columns plus **Download Excel** on the
+  roster, and **Reports → Client Database** linking to `/clients`. One contact
+  person per client (confirmed by the firm). e2e: `client-database.spec.ts`.
+  (`d87ae2b2`)
+- **#206 — Client / Group Work & Fee report, admin only.**
+  `GET /api/reports/client-group-fees` and `/reports/client-group-fees`: works,
+  fee charged, fee received and balance by group / client / service for one
+  financial year. A matter counts in the April–March year (India time) it was
+  created in; its group is its client's current group. e2e:
+  `client-database.spec.ts`; unit: `clientGroupFees.test.js`. (`d87ae2b2`)
+- **#197 (test only) — `reporting-module.spec.ts` discovers the live sheet's
+  visible columns.** The firm hid GST/FSSAI on DM Cost on 2026-09-28; the tests
+  named those columns and failed although the product was right. (`94797f66`)
+
 ### Client-view clarity, workflow-machine & email batch (2026-07-11 — #92–#102, #20)
 
 **Workflow machine / notifications (backend)**

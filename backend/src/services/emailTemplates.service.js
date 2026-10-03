@@ -143,6 +143,17 @@ export const TEMPLATE_DEFS = {
       '{{message}}\n\n' +
       'Open the matter in the portal to reply.',
   },
+  matter_message_team: {
+    label: 'Internal — A client sent a message',
+    audience: 'internal',
+    description: 'Sent to the matter\'s owner and the people on its current step (or the admins, if there are none) when a client posts in the discussion (#200).',
+    placeholders: ['recipientName', 'clientName', 'organisation', 'serviceName', 'message'],
+    subject: 'New message from {{clientName}} · {{serviceName}}',
+    body: 'Hi {{recipientName}},\n\n' +
+      '{{clientName}} sent a message on {{serviceName}}:\n\n' +
+      '{{message}}\n\n' +
+      'Open the matter in the portal to reply.',
+  },
 };
 
 let _cache = null;

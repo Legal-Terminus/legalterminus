@@ -197,6 +197,8 @@ The admin has access to a comprehensive reporting dashboard covering 13 distinct
 11. **Master Sheet** — **Given** admin or manager opens Master Sheet, **Then** they see a table of all tasks with columns: client name, service, current step, assigned team member, payment status, amount paid, amount due, last updated. Exportable as CSV/Excel.
 12. **Pending Task Categorisation** — Same as scenario 3 but with the ability to filter by any single reason to isolate blockers.
 13. **Escalation Report** — **Given** admin opens Escalation, **Then** it shows steps that have exceeded their `deadlineDays` threshold grouped by team member, with escalation age and audit trail.
+14. **Client / Group Work & Fee Report (#206, admin only)** — **Given** an admin opens the report and picks a financial year, group, client or service, **Then** it shows total works, fees charged, fees received and balance, with one row per work (client, service, date, fee, status). A work counts in the April–March year it was created in. Managers and other roles cannot see or open it.
+15. **Client Database (#205)** — **Given** an admin or manager opens Reports → Client Database, **Then** the Clients page opens: one record per client with contact person, designation (Owner / Director / Accountant / Manager), contact and alternative numbers, emails, address, group, reference and professional; editing updates that record, and the list downloads as Excel.
 
 ---
 
@@ -235,6 +237,7 @@ Every meaningful workflow event triggers an in-app notification and an email to 
 3. **Given** an email fails to deliver (invalid address, full mailbox), **Then** admin and manager receive an in-app alert identifying the client, the email address, and the failure reason.
 4. **Given** admin configures an email template for a step, **Then** all future notifications for that step use the custom template with branding, content, and tone settings.
 5. **Given** a notification pop-up (news/offer/update) is created by admin, **Then** it is shown in-app on next open and optionally sent as email to selected client groups.
+6. **Given** a client sends a message in a matter's Discussion (#200), **Then** the matter's owner and everyone assigned to its current step each receive one notification and one email; if the matter has neither, the admins do.
 
 ---
 
@@ -497,7 +500,10 @@ designation?, dateOfJoining?,
 // client extras:
 organisationName?, gstNumber?, panNumber?, aadhaarNumber?,
 emailIds[] (all emails incl. primary), primaryEmail,
-state?, businessName?, referenceGroup?
+state?, businessName?, referenceGroup?,
+// client contact person (#205):
+altPhone?, contactDesignation? (Owner|Director|Accountant|Manager),
+groupCompany?, professionalUid?
 ```
 
 ### `workflowTemplates/{workflowId}` — admin-editable config layer
@@ -590,7 +596,7 @@ action, performedBy, performedAt, previousValue?, newValue?, note?
 - Frontend uses `useMachine` (or `useSelector` on a service actor) to render the current step reactively.
 
 ### Security & Auth
-- **Authentication**: Email/password + Google Sign-In via Firebase Auth; email OTP for first login on mobile (Phase 2)
+- **Authentication**: Email/password + Google Sign-In + one-time email sign-in link (#203) via Firebase Auth; account emails link to the portal's own `/account/action` page, never to Firebase's hosted page; email OTP for first login on mobile (Phase 2)
 - **Authorisation**: Firebase custom claims (`role`) verified on every protected backend route via `verifyToken` middleware; `requireRole()` enforces per-route permissions
 - **Security**: Signed URLs for document access (TTL: 15 min); no PAN/Aadhaar in list endpoints; input sanitisation on all backend routes (OWASP Top 10)
 

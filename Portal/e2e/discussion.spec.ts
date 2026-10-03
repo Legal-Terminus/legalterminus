@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { apiAs, createMatter, deleteMatter, assignMatter, getNotifications, waitForNotification } from './api';
+import { apiAs, createMatter, deleteMatter, assignMatter, getNotifications, waitForNotification, assignStep, currentStep } from './api';
 import { env } from './helpers';
 
 /**
@@ -219,5 +219,65 @@ test('#200: the colleague list is staff-only', async () => {
     const client = await apiAs('client');
     expect((await client.get(`/api/tasks/${taskId}/mentionable`)).status()).toBe(403);
     await client.dispose();
+  } finally { await deleteMatter(taskId); }
+});
+
+/* ── LT #200 (option A): who hears about a CLIENT's message ────────────────── */
+
+/** How many "your client wrote" notifications a role holds for one matter. */
+const clientMessageCount = async (role: 'admin' | 'manager' | 'team', taskId: string) =>
+  (await getNotifications(role)).filter((n) => n.taskId === taskId && /New message from your client/i.test(n.title)).length;
+
+async function clientPosts(taskId: string, text: string) {
+  const client = await apiAs('client');
+  const res = await client.post(`/api/tasks/${taskId}/messages`, { data: { body: text } });
+  await client.dispose();
+  expect(res.status()).toBe(201);
+}
+
+test('#200: a client message notifies the matter owner AND the current step\'s assignee, once each', async () => {
+  const taskId = await createMatter();
+  try {
+    await assignMatter(taskId, env('E2E_MANAGER_UID'));
+    await assignStep(taskId, await currentStep(taskId), env('E2E_TEAM_UID'));
+    const adminBefore = await clientMessageCount('admin', taskId);
+
+    await clientPosts(taskId, `CLIENT-WRITES-${Date.now()}`);
+
+    // Reported from production: only the owner was told, so the person doing
+    // the step never knew the client had written.
+    await expect.poll(() => clientMessageCount('team', taskId), { timeout: 20_000 }).toBe(1);
+    await expect.poll(() => clientMessageCount('manager', taskId), { timeout: 20_000 }).toBe(1);
+    // Someone owns the work, so the admins are NOT paged.
+    expect(await clientMessageCount('admin', taskId)).toBe(adminBefore);
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#200: with no matter owner, the current step\'s assignee is still told', async () => {
+  const taskId = await createMatter();
+  try {
+    const admin = await apiAs('admin');
+    expect((await admin.patch(`/api/tasks/${taskId}`, { data: { assignedTo: null } })).ok()).toBeTruthy();
+    await admin.dispose();
+    await assignStep(taskId, await currentStep(taskId), env('E2E_TEAM_UID'));
+
+    await clientPosts(taskId, `NO-OWNER-${Date.now()}`);
+
+    // Before this change a matter without an owner notified NOBODY.
+    await expect.poll(() => clientMessageCount('team', taskId), { timeout: 20_000 }).toBe(1);
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#200: a staff reply shared with the client does not page the team', async () => {
+  const taskId = await createMatter();
+  try {
+    await assignMatter(taskId, env('E2E_MANAGER_UID'));
+    await assignStep(taskId, await currentStep(taskId), env('E2E_TEAM_UID'));
+    const admin = await apiAs('admin');
+    expect((await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: `STAFF-REPLY-${Date.now()}`, clientVisible: true } })).status()).toBe(201);
+    await admin.dispose();
+    await new Promise((r) => setTimeout(r, 3000));
+    expect(await clientMessageCount('team', taskId)).toBe(0);
+    expect(await clientMessageCount('manager', taskId)).toBe(0);
   } finally { await deleteMatter(taskId); }
 });

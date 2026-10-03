@@ -1,4 +1,22 @@
-# Legal Terminus - Copilot & BMad Instructions
+# Legal Terminus — Agent & BMad Instructions
+
+> **Every coding agent reads this file.** It is the single copy; the filenames
+> each tool looks for are symlinks to it, so there is nothing to keep in sync:
+>
+> | Symlink | Read by |
+> |---|---|
+> | `AGENTS.md` | Cursor, Codex, Gemini CLI, Jules, Devin — the cross-vendor standard |
+> | `CLAUDE.md` | Claude Code |
+> | `.cursorrules` | older Cursor versions |
+> | `.windsurfrules` | Windsurf |
+> | `.github/copilot-instructions.md` | GitHub Copilot — **the real file** |
+>
+> Edit only `.github/copilot-instructions.md`. **On Windows**, clone with
+> `git config core.symlinks true`.
+>
+> The symlinks were added on 2026-10-03 because an agent working from the
+> Ambyflow repo ported four issues here without opening this file, and so
+> without updating `epics.md`, `architecture.md` or `spec.md`.
 
 > **Ownership** — this file holds **rules and workflows** only. Story/sprint **status** lives in `_bmad-output/planning-artifacts/epics.md`, **design** in `_bmad-output/planning-artifacts/architecture.md`, **requirements** in `spec.md`. Never copy their content into this file — copies rot; link instead. Copilot chats and BMad agents read this file for all project rules.
 
@@ -17,6 +35,13 @@
 - [ ] Build passes clean — run `npm run build` (Portal uses `tsc -b && vite build`). ⚠️ `tsc --noEmit` is NOT sufficient: `tsc -b` is stricter (unused vars, project refs) and is what CI runs. Always verify with the real build command before declaring done.
 - [ ] **Playwright suite updated for the feature** — added/updated the matching spec in `Portal/e2e/` (+ `seed-e2e.js` fixtures if new state is needed) and it passes. See "🧪 TESTING WITH PLAYWRIGHT". Tests are part of "done", not a follow-up.
 - [ ] Backend/Frontend/Portal are all in sync if applicable
+- [ ] **A change ported from Ambyflow follows THIS checklist too.** Ambyflow's own
+  paperwork (its manual, story files, `sprint-status.yaml`) does not count here:
+  add the dated entry to the change log in `epics.md`, update `architecture.md`
+  and `spec.md` in this repo, and add the row to `docs/releases/SYNC.md`.
+- [ ] **A push to `main` deploys to PRODUCTION.** The workflow is named "Deploy to
+  QA" but targets the live project (`legal-terminus-web`, legalterminus.com). Run
+  the full Playwright suite before pushing a product change.
 
 **Key Rule:** Commits use Conventional Commits format — `type(scope): description (#issue)` (e.g., `feat(reports): multiple-criteria filtering in the report bar (#91)`). Reference the GitHub issue number in the subject; put the epic/story ID (e.g., `E01-S02`) in the body when the work is story-related.
 
@@ -267,7 +292,7 @@ Architecture snapshots (e.g., the consolidated user-management pages at `Portal/
 ### 1. Every route must declare its authorization
 - **Default to locked.** A new route gets `verifyToken` + `requireRole(...)` UNLESS it is *intentionally* public.
 - **Mutations are never public.** Any `POST` / `PUT` / `PATCH` / `DELETE` that writes data, and any `GET` that returns PII or internal data, MUST require `verifyToken` and an explicit `requireRole(...)`.
-- **Only these are public:** the marketing-site contact-form `POST /api/contact`, payment gateway callbacks (`/api/payment/redirect`), public content **reads** (`GET` blogs/categories/employees/testimonials), and `GET /api/auth/firebase-config`. Anything else is authenticated.
+- **Only these are public:** the marketing-site contact-form `POST /api/contact`, `POST /api/public/account/{password-reset,sign-in-link}` (the sign-in page's "can't get in" requests — per-IP limit, `.strip()` schema, uniform 202; see `routes/publicAccount.routes.js`, #203), payment gateway callbacks (`/api/payment/redirect`), public content **reads** (`GET` blogs/categories/employees/testimonials), and `GET /api/auth/firebase-config`. Anything else is authenticated.
 - Pattern for content management routes:
   ```js
   router.get("/all", getAll);                          // public read

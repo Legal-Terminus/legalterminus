@@ -1629,6 +1629,46 @@ so it is unaffected. Deleting a user or changing their role also clears the
 next request.
 
 
+## Account links and passwordless sign-in (#203)
+
+Every emailed account link — first password, reset, one-time sign-in — is built
+by `backend/src/services/accountLinks.service.js`. Firebase issues and verifies
+the one-time code; only the code leaves the service, and the link is always
+`<publicSiteUrl>/portal/account/action?mode=resetPassword|signIn&oobCode=…`.
+**Never email a raw Firebase action link.** `Portal/src/pages/auth/AccountActionPage.tsx`
+completes the action and signs the person in. Signed-out requests go through
+`POST /api/public/account/{password-reset,sign-in-link}` — per-IP limit,
+`.strip()` schema, uniform 202 sent before any work, so nothing reveals whether
+an account exists. Staff use `POST /api/portal/users/:uid/sign-in-link`
+(admin/manager, `canAssignRole` on the target). Email-link sign-in must be
+enabled on the Firebase project; if it is off the backend falls back to a
+password link.
+
+## Client contact record and the group fee report (#205, #206)
+
+The Clients page is the client master record; there is no separate "client
+database" report, and Reports links to `/clients`. Contact fields live on the
+client's `users` document. `contactDesignation` is an enum and is NOT
+`designation`, which is a staff job title. Group is free text (`groupCompany`),
+matched case-insensitively; `GET /api/clients/groups` feeds the form's
+suggestions and `GET /api/clients/contacts` the Excel download.
+
+`GET /api/reports/client-group-fees` is **admin-only** (declared above the
+admin+manager gate). It reads matters by `createdAt` range for one April–March
+financial year in India time; a matter's group is its client's current group,
+resolved at read time and never stored on the matter. The fold and its
+trade-offs are in `services/clientGroupFees.service.js`.
+
+## Who is told about a client's discussion message (#200)
+
+`discussionRecipients.service.js`: the matter's owner (`task.assignedTo`) plus
+every assignee of the CURRENT step (`assignedToUids`); if that is nobody — or
+nobody still active — the admins. One in-app notification and one email each,
+from the internal template `matter_message_team`. A staff message shared with
+the client notifies the client only (`matter_message`); internal staff messages
+notify only @mentioned colleagues (`matter_mention`), and the mention picker
+(`listMentionableStaff`) lists the whole team minus seeded test accounts.
+
 ---
 
 *End of Architecture Document*
