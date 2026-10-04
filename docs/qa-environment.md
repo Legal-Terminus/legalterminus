@@ -41,19 +41,37 @@ that is not on that domain. The code is `backend/src/config/testEnvironment.js`.
 
 ## Signing in to QA
 
-Use the test accounts only. Your own account is refused, by design.
+Use the QA test accounts only. Your own account is refused, by design.
 
 | Role | Email |
 |---|---|
-| Admin | `e2e-admin@legalterminus.test` |
-| Manager | `e2e-manager@legalterminus.test` |
-| Team member | `e2e-team@legalterminus.test` |
-| Client | `e2e-client@legalterminus.test` |
-| Professional | `e2e-pro@legalterminus.test` |
+| Admin | `qa-admin@legalterminus.test` |
+| Manager | `qa-manager@legalterminus.test` |
+| Team member | `qa-team@legalterminus.test` |
+| Client | `qa-client@legalterminus.test` |
+| Professional | `qa-pro@legalterminus.test` |
 
-Passwords are in `Portal/e2e/.env.e2e` on a developer's machine (the file is not
-committed). These are the same accounts the automated tests use on the live
-project.
+**The passwords are not in the repository.** They are generated the first time
+the accounts are seeded and written to `Portal/e2e/.env.e2e`, which is not
+committed. Ask whoever seeded QA, or re-seed (below) — a re-seed keeps the
+passwords already in that file, so nobody is locked out.
+
+These accounts have no record in the live database, so the live portal and its
+API refuse them.
+
+> **They are still not harmless.** Sign-in accounts are shared with the live
+> project, and the live database's access rules trust the role stored on the
+> account. A QA *admin* account is therefore an admin as far as the live
+> database's rules are concerned, for anyone who talks to the database directly
+> instead of through the portal. Treat the QA admin and manager passwords like
+> real staff passwords: give them only to people you would trust with the live
+> data. Closing this properly means refusing test-domain accounts in the live
+> API and the live rules — not yet done.
+
+The older `e2e-*@legalterminus.test` accounts were retired on 2026-10-04: their
+passwords had been committed to the repository while they held real roles on the
+live portal. They can no longer sign in anywhere
+(`backend/scripts/retire-legacy-test-accounts.js`).
 
 ## Deploying to QA
 
@@ -88,12 +106,25 @@ cd backend
 export FIRESTORE_DATABASE_ID=qa-data FIREBASE_STORAGE_BUCKET=legal-terminus-web-qa EMAIL_DISABLED=true
 node src/scripts/seedServiceConfig.js
 node src/scripts/seedWorkflowDefinitions.js
-node scripts/seed-e2e.js
+node scripts/seed-e2e.js      # the test accounts; writes Portal/e2e/.env.e2e
 ```
 
-Those three variables are what point a script at QA. **Without them the same
-command writes to the live database.** Check the first log line says
-`Using a named Firestore database` before trusting a run.
+Those three variables are what point a script at QA. **Without them the first
+two commands write to the live database.** Check the first log line says
+`Using a named Firestore database` before trusting a run. `seed-e2e.js` refuses
+to run at all without `FIRESTORE_DATABASE_ID`.
+
+## Running the automated tests
+
+The Playwright suite runs against QA's data, never the live database:
+`npm run dev:e2e` — which the suite starts for itself — points the local API and
+portal at the `qa-data` database and the QA bucket. From `Portal/`:
+
+```bash
+npm run test:e2e
+```
+
+It needs `Portal/e2e/.env.e2e` (written by the seed above).
 
 ## One-time setup (already done — recorded for next time)
 
@@ -139,8 +170,8 @@ gcloud firestore databases delete --database=qa-data --project legal-terminus-we
 gcloud storage rm -r gs://legal-terminus-web-qa
 ```
 
-and removes `legal-terminus-qa.web.app` from the authorised domains. The test
-accounts stay: the automated tests use them on the live project too.
+and removes `legal-terminus-qa.web.app` from the authorised domains, and deletes
+the five `qa-*@legalterminus.test` sign-in accounts.
 
 ## Known limits
 
@@ -148,6 +179,6 @@ accounts stay: the automated tests use them on the live project too.
   the live site.
 - **No email.** Anything that depends on receiving an email cannot be tested
   end to end on QA.
-- **The automated tests do not run in the pipeline yet,** and from a developer's
-  machine they still target the live project unless pointed at QA.
+- **The automated tests do not run in the pipeline yet.** They run from a
+  developer's machine, against QA's data.
 - **Nobody is alerted if QA is down.** It is not monitored.

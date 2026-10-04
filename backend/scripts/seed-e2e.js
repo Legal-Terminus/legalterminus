@@ -1,22 +1,26 @@
 /**
- * Seed E2E test fixtures for the Playwright suite.
+ * Seed the test accounts the Playwright suite — and people testing on QA — sign
+ * in with.
  *
- *   node scripts/seed-e2e.js [--write-env]
+ *   FIRESTORE_DATABASE_ID=qa-data node scripts/seed-e2e.js
  *
- * Creates/updates one user PER ROLE (admin, manager, team_member, client) with
- * KNOWN passwords, their Firestore user docs + roles + custom claims, plus the
- * fixtures the suite needs:
- *   • ACTIVE matter      — client-owned, assigned to team_member (docs/steps/ETA/reassign)
- *   • PENDING matter     — manager-created, status pending_admin_approval (approval flow)
- *   • a CONTACT LEAD     — unregistered (E08-S06 convert/inline-status)
+ * Creates/updates one account PER ROLE (admin, manager, team member, client,
+ * professional) in the QA database and writes their sign-in details to
+ * Portal/e2e/.env.e2e, which is NOT committed.
  *
- * With --write-env it writes Portal/e2e/.env.e2e directly. Without it, prints the
- * values. Idempotent for users (reused by email); matters/leads are recreated
- * fresh each run and the prior run's e2e fixtures are cleaned up first.
+ * THE PASSWORDS ARE NOT IN THIS FILE, on purpose. They used to be: five
+ * accounts with passwords committed to the repo, seeded into the LIVE project
+ * with real roles — so anyone who could read the repo could sign in to the live
+ * portal as an admin. Now a password is generated the first time an account is
+ * seeded, kept in the uncommitted env file, and reused on later runs so people
+ * testing on QA are not locked out by a re-seed.
  *
- * THROWAWAY accounts — safe only on dev/QA projects.
+ * IT REFUSES TO RUN AGAINST THE LIVE DATABASE. It deletes every matter of the
+ * test client and rewrites accounts; that belongs on QA only. See
+ * docs/qa-environment.md.
  */
-import { writeFileSync } from 'fs';
+import crypto from 'crypto';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { admin, getDb } from '../src/config/firebase.js';
@@ -24,15 +28,51 @@ import { admin, getDb } from '../src/config/firebase.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TAG = 'e2e'; // marks fixtures we create so we can clean them up safely
 const E2E_CLIENT_PHONE = '9990001201';
+const ENV_PATH = path.join(__dirname, '../../Portal/e2e/.env.e2e');
 
+if (!(process.env.FIRESTORE_DATABASE_ID || '').trim()) {
+  console.error([
+    '❌ Refusing to seed test accounts into the LIVE database.',
+    '   Set FIRESTORE_DATABASE_ID to the QA database:',
+    '     FIRESTORE_DATABASE_ID=qa-data node scripts/seed-e2e.js',
+    '   See docs/qa-environment.md.',
+  ].join('\n'));
+  process.exit(2);
+}
+
+/** What the last run wrote, so its passwords can be reused. */
+function previousEnv() {
+  if (!existsSync(ENV_PATH)) return {};
+  return Object.fromEntries(readFileSync(ENV_PATH, 'utf8').split('\n')
+    .map((l) => l.match(/^([A-Z0-9_]+)=(.*)$/)).filter(Boolean).map((m) => [m[1], m[2]]));
+}
+const PREVIOUS = previousEnv();
+
+/**
+ * A password for `email`: the one already in the env file if it belongs to this
+ * same address, else an explicit E2E_<KEY>_PASSWORD from the environment (for a
+ * pipeline), else a new random one.
+ */
+function passwordFor(envKey, email) {
+  if (PREVIOUS[`E2E_${envKey}_EMAIL`] === email && PREVIOUS[`E2E_${envKey}_PASSWORD`]) {
+    return PREVIOUS[`E2E_${envKey}_PASSWORD`];
+  }
+  return process.env[`E2E_${envKey}_PASSWORD`] || `Qa-${crypto.randomBytes(15).toString('base64url')}-7a`;
+}
+
+// Display names stay "E2E …": specs find these people by name on screen.
+const account = (envKey, local, name, role) => {
+  const email = `${local}@legalterminus.test`;
+  return { email, password: passwordFor(envKey, email), name, role };
+};
 const USERS = {
-  admin:       { email: 'e2e-admin@legalterminus.test',   password: 'E2eAdmin!2026',   name: 'E2E Admin',   role: 'admin' },
-  manager:     { email: 'e2e-manager@legalterminus.test', password: 'E2eManager!2026', name: 'E2E Manager', role: 'manager' },
-  team_member: { email: 'e2e-team@legalterminus.test',    password: 'E2eTeam!2026',    name: 'E2E Team',    role: 'team_member' },
-  client:      { email: 'e2e-client@legalterminus.test',  password: 'E2eClient!2026',  name: 'E2E Client',  role: 'client' },
+  admin:       account('ADMIN', 'qa-admin', 'E2E Admin', 'admin'),
+  manager:     account('MANAGER', 'qa-manager', 'E2E Manager', 'manager'),
+  team_member: account('TEAM', 'qa-team', 'E2E Team', 'team_member'),
+  client:      account('CLIENT', 'qa-client', 'E2E Client', 'client'),
   // #168: an external referring professional — view-only, and only on the
   // matters they are explicitly named on.
-  professional: { email: 'e2e-pro@legalterminus.test',    password: 'E2ePro!2026',     name: 'E2E Professional', role: 'professional' },
+  professional: account('PRO', 'qa-pro', 'E2E Professional', 'professional'),
 };
 
 async function ensureAuthUser({ email, password, name, role }) {
@@ -144,14 +184,11 @@ async function cleanupPriorFixtures() {
       '',
     ].join('\n');
 
-    if (process.argv.includes('--write-env')) {
-      const envPath = path.join(__dirname, '../../Portal/e2e/.env.e2e');
-      writeFileSync(envPath, env);
-      console.log(`✅ Wrote ${envPath}`);
-    } else {
-      console.log('\n✅ E2E fixtures ready. Portal/e2e/.env.e2e:\n');
-      console.log(env);
-    }
+    // Always written, never printed: the file is the only place the passwords live.
+    writeFileSync(ENV_PATH, env, { mode: 0o600 });
+    console.log(`✅ Test accounts ready in database "${process.env.FIRESTORE_DATABASE_ID}".`);
+    console.log(`   Sign-in details written to ${path.relative(process.cwd(), ENV_PATH)} (not committed).`);
+    for (const u of Object.values(USERS)) console.log(`   ${u.role.padEnd(12)} ${u.email}`);
     console.log(`uids: ${JSON.stringify(uid)}`);
     process.exit(0);
   } catch (e) {

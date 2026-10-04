@@ -45,6 +45,10 @@
   release tag unless the user asked for a release.
 - [ ] **Everything merged to `main` must be safe to release.** Unfinished work goes
   in switched off; the next tag ships whatever `main` contains.
+- [ ] **The Playwright suite runs against QA's data** (`npm run dev:e2e` selects the
+  `qa-data` database). Test accounts are `qa-*@legalterminus.test`; their passwords
+  are generated into `Portal/e2e/.env.e2e` and are NEVER committed. Do not put a
+  credential in a script, a spec or a doc.
 - [ ] **QA shares production's sign-in accounts** and a seed script run without
   `FIRESTORE_DATABASE_ID=qa-data` writes to the LIVE database. Read
   `docs/qa-environment.md` before seeding or changing the QA deploy.
@@ -391,15 +395,14 @@ implemented epic across all four roles (admin / manager / team_member / client).
 - `e2e/fixtures.ts` — exposes `adminPage` / `managerPage` / `teamPage` / `clientPage`
   fixtures (pre-authenticated contexts). Specs do `test('…', async ({ adminPage }) => …)`.
 - `e2e/helpers.ts` — `login`, `openMatter`, `openDocumentsTab`, `pdfFile`, `creds`, `env`.
-- `backend/scripts/seed-e2e.js --write-env` — creates the throwaway `e2e-*` users
-  (one per role) + fixtures (active matter, pending-approval matter, a lead) and
-  writes `Portal/e2e/.env.e2e`. Fixtures are tagged `e2e:true` and cleaned up on
-  each re-seed. **Run this before the suite** (and after schema/flow changes).
+- `backend/scripts/seed-e2e.js` — creates the `qa-*` test accounts (one per role) in the
+  QA database and writes `Portal/e2e/.env.e2e`, including their generated passwords.
+  It refuses to run without `FIRESTORE_DATABASE_ID`. **Run this before the suite** (and after schema/flow changes).
 
 **Run commands (from `Portal/`):**
 ```bash
 # one-time per run / after flow changes: seed users + fixtures
-cd ../backend && node scripts/seed-e2e.js --write-env && cd ../Portal
+cd ../backend && FIRESTORE_DATABASE_ID=qa-data node scripts/seed-e2e.js && cd ../Portal
 npm run test:e2e            # headless (boots backend + portal via dev:e2e)
 npm run test:e2e:headed     # watch the browser
 npm run test:e2e:ui         # interactive debugger
