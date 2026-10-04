@@ -2,7 +2,7 @@ import admin from "firebase-admin";
 import { getDb } from "../config/firebase.js";
 import { logger } from "../config/logger.js";
 import { isReadOnlyRole } from '../config/roles.js';
-import { isAllowedAccountEmail, TEST_ENVIRONMENT_MESSAGE } from '../config/testEnvironment.js';
+import { accountRefusedMessage, isAllowedAccountEmail, isTestEnvironment } from '../config/testEnvironment.js';
 
 /**
  * Short-lived cache for the Firestore role fallback (uid → { role, expires }).
@@ -63,11 +63,15 @@ export const verifyToken = async (req, res, next) => {
     const decoded = await admin.auth().verifyIdToken(token);
     req.user = decoded; // { uid, email, role?, ... }
 
-    // E24-S00: in a test environment sharing production's sign-in accounts, a
-    // real account must not get past here — the handlers below would register
-    // it against the test database and overwrite its live role claim.
+    // E24-S00: QA and production share sign-in accounts. On QA a real account
+    // must not get past here (it would be registered against the test database
+    // and its live role overwritten); in production a test account must not
+    // (it may carry an admin claim). See config/testEnvironment.js.
     if (!isAllowedAccountEmail(decoded.email)) {
-      return res.status(403).json({ success: false, error: TEST_ENVIRONMENT_MESSAGE, code: 'TEST_ENVIRONMENT' });
+      return res.status(403).json({
+        success: false, error: accountRefusedMessage(),
+        code: isTestEnvironment() ? 'TEST_ENVIRONMENT' : 'TEST_ACCOUNT',
+      });
     }
 
     // Firestore is the AUTHORITATIVE role source — NOT the token claim. A cached

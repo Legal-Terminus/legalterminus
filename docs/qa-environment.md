@@ -56,17 +56,22 @@ the accounts are seeded and written to `Portal/e2e/.env.e2e`, which is not
 committed. Ask whoever seeded QA, or re-seed (below) — a re-seed keeps the
 passwords already in that file, so nobody is locked out.
 
-These accounts have no record in the live database, so the live portal and its
-API refuse them.
+**These accounts cannot be used on the live site.** Sign-in accounts are shared
+with the live project, and a role is stored on the account, so a QA admin would
+otherwise count as an admin there. Two things stop that:
 
-> **They are still not harmless.** Sign-in accounts are shared with the live
-> project, and the live database's access rules trust the role stored on the
-> account. A QA *admin* account is therefore an admin as far as the live
-> database's rules are concerned, for anyone who talks to the database directly
-> instead of through the portal. Treat the QA admin and manager passwords like
-> real staff passwords: give them only to people you would trust with the live
-> data. Closing this properly means refusing test-domain accounts in the live
-> API and the live rules — not yet done.
+- **The live database's rules** (`firestore.rules`) refuse every account on a
+  `.test` address, and the QA database's rules accept only those. Deployed to
+  the live database on 2026-10-04 and checked: the QA admin is refused, a real
+  account is not.
+- **The live API** refuses them the same way (`config/testEnvironment.js`). This
+  part reaches production with the next release; until then the API still
+  refuses them for a different reason — they have no record in the live
+  database.
+
+`.test` is a reserved domain that no real person can have an address on, so
+nothing legitimate is refused. **Never create a test account on any other
+domain,** and never give a real person a `.test` address.
 
 The older `e2e-*@legalterminus.test` accounts were retired on 2026-10-04: their
 passwords had been committed to the repository while they held real roles on the

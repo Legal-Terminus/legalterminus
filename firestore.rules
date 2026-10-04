@@ -4,8 +4,27 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ── Helper functions ───────────────────────────────────────────────────
+    // QA and production share ONE set of sign-in accounts (docs/qa-environment.md),
+    // and a role is a claim on the account. Without the check below, a QA admin
+    // account — whose password is handed to testers — would pass isAdmin() on
+    // the LIVE database.
+    //
+    // So every rule goes through isSignedIn(), and isSignedIn() looks at which
+    // database is being asked:
+    //   - the QA database ("qa-data") admits ONLY test accounts;
+    //   - every other database, i.e. production, admits everyone EXCEPT them.
+    // A test account is one on a `.test` address. `.test` is a reserved domain:
+    // no real person can have one, so nothing legitimate is refused.
+    //
+    // The API enforces the same split in backend/src/config/testEnvironment.js.
+    function isTestAccount() {
+      return 'email' in request.auth.token
+        && request.auth.token.email.matches('.*[.]test$');
+    }
+
     function isSignedIn() {
-      return request.auth != null;
+      return request.auth != null
+        && (database == 'qa-data' ? isTestAccount() : !isTestAccount());
     }
 
     function role() {

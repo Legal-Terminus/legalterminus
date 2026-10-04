@@ -3820,6 +3820,23 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Security — test credentials and the QA / production boundary (2026-10-04) ✅ Completed
+
+- **Test passwords were in the repository, on accounts with live roles.**
+  `seed-e2e.js` committed the passwords of five `e2e-*@legalterminus.test` accounts
+  and seeded them into the live project; `e2e-admin` was a working live admin. The
+  accounts are retired (sign-in disabled, passwords replaced, sessions revoked, live
+  records deactivated — `scripts/retire-legacy-test-accounts.js`). Test accounts are
+  now `qa-*`, with generated passwords kept in the uncommitted `Portal/e2e/.env.e2e`.
+- **The tests ran against live data.** `npm run dev:e2e` now selects the `qa-data`
+  database and the QA bucket; `seed-e2e.js` refuses to run without a database id.
+- **A QA admin account was an admin to the live database.** Sign-in accounts are
+  shared and `firestore.rules` trusted the role claim. `isSignedIn()` now refuses
+  `.test` accounts on every database except `qa-data`, where it admits only them;
+  the API does the same (`config/testEnvironment.js`). Rules deployed to the live
+  database 2026-10-04 and probed: QA admin refused, a real account allowed. The API
+  half ships with the next release.
+
 ### Production feedback — #200, #203, #205, #206 (2026-09-26 → 2026-10-03) ✅ Completed
 
 Each built in Ambyflow first and ported here by content (`docs/releases/SYNC.md`,
