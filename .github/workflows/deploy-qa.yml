@@ -14,8 +14,6 @@ on:
   push:
     branches:
       - main
-      # TEMPORARY, while the pipeline is proven before the first merge to main.
-      - qa
   workflow_dispatch:
     inputs:
       branch:
