@@ -1705,6 +1705,9 @@ product is keyed by the `source` its component passes to the checkout, and
   seeding, Firestore is the source of truth and the seed never overwrites it.
 - Only an admin may change a price (`PUT /api/pricing/:productKey`); plans are
   matched by id, so an edit cannot invent a plan the website has no card for.
+  The portal screen is Settings → Website Prices (`/settings/pricing`).
+- At least one plan per product must stay on sale: a product with none drops out
+  of the public catalogue and the website falls back to `DEFAULT_PLANS`.
 
 ---
 

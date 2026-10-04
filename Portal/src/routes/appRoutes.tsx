@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck, IndianRupee,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 import { ALL_ROLE_KEYS } from '../lib/roles';
@@ -45,6 +45,7 @@ import MyServicesReport from '../pages/reports/MyServicesReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 import MarketingReportsPage from '../pages/reports/MarketingReportsPage';
 import ReportingAccessPage from '../pages/settings/ReportingAccessPage';
+import WebsitePricesPage from '../pages/settings/WebsitePricesPage';
 
 /**
  * SINGLE SOURCE OF TRUTH for every authenticated route, who can access it, and
@@ -154,4 +155,7 @@ export const APP_ROUTES: AppRoute[] = [
   { path: '/reports/marketing', element: <MarketingReportsPage />, roles: ['admin', 'manager', 'team_member'] },
   // #196/#197: the admin's per-section grant table.
   { path: '/settings/reporting-access', element: <ReportingAccessPage />, roles: ['admin'], nav: { label: 'Reporting Access', icon: ShieldCheck, order: 13 } },
+  // E24-S01: what each plan costs on the website. Managers can look; the API
+  // lets only an admin change a price.
+  { path: '/settings/pricing', element: <WebsitePricesPage />, roles: ['admin', 'manager'], nav: { label: 'Website Prices', icon: IndianRupee, order: 14 } },
 ];

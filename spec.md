@@ -200,6 +200,8 @@ The admin has access to a comprehensive reporting dashboard covering 13 distinct
 14. **Client / Group Work & Fee Report (#206, admin only)** — **Given** an admin opens the report and picks a financial year, group, client or service, **Then** it shows total works, fees charged, fees received and balance, with one row per work (client, service, date, fee, status). A work counts in the April–March year it was created in. Managers and other roles cannot see or open it.
 15. **Client Database (#205)** — **Given** an admin or manager opens Reports → Client Database, **Then** the Clients page opens: one record per client with contact person, designation (Owner / Director / Accountant / Manager), contact and alternative numbers, emails, address, group, reference and professional; editing updates that record, and the list downloads as Excel.
 
+**Website prices (E24-S01)** — **Given** an admin opens Settings → Website Prices and changes a plan's price, **Then** the website shows the new price within a couple of minutes and a payment for that plan is charged that amount. A manager can view prices but not change them. At least one plan of a service stays on sale.
+
 ---
 
 ### User Story 8 — Role-Based User and Client Management (Priority: P2)

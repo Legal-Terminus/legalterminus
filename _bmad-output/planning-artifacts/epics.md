@@ -3290,8 +3290,16 @@ payment integration cannot be developed against live customers.
 > `partnership-registration`); the two trademark-application pages show different strikethrough
 > prices for Supreme (₹15,499 and ₹22,499).
 >
-> **Not built:** a screen in the portal for editing prices (the API exists); the firm's
-> confirmation of every price; the checkout still sends its own amount until E24-S02.
+> **Portal screen (2026-10-04):** Settings → **Website Prices** (`/settings/pricing`,
+> `WebsitePricesPage.tsx`). Admins change a plan's price, crossed-out price and whether it is on
+> sale, and link the product to a portal service; managers can look. Each product shows whether a
+> paid order would open a matter (its service has a workflow) or not. Plans cannot be added or
+> removed there — each is a card on a website page. The API refuses switching off the last plan
+> on sale (the website would fall back to its built-in prices) and a crossed-out price that is
+> not higher than the price.
+>
+> **Not built:** the firm's confirmation of every price; the checkout still sends its own amount
+> until E24-S02.
 
 **Priority**: P1 | **Complexity**: M | **Dependencies**: E24-S00
 

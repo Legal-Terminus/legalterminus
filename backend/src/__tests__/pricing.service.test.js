@@ -90,3 +90,11 @@ test('the seed file: every plan has a real price, ids are unique, nothing is und
     for (const plan of p.plans) assert.ok(plan.price >= 100, `${key}/${plan.id} is priced ${plan.price}`);
   }
 });
+
+test('applyUpdate keeps at least one plan on sale and a strikethrough above the price', () => {
+  const allOff = { plans: [{ id: 'elemental', active: false }, { id: 'enriched', active: false }] };
+  assert.throws(() => applyUpdate(product(), allOff), (e) => e.status === 400 && /at least one plan/.test(e.message));
+  assert.throws(() => applyUpdate(product(), { plans: [{ id: 'elemental', price: 3000 }] }),
+    (e) => e.status === 400 && /strikethrough/.test(e.message), 'raising the price above its strikethrough');
+  assert.equal(applyUpdate(product(), { plans: [{ id: 'elemental', price: 3000, oldPrice: null }] }).plans[0].oldPrice, null);
+});

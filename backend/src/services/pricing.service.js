@@ -99,6 +99,21 @@ export function applyUpdate(existing, patch = {}) {
     if (edit.name !== undefined) plan.name = edit.name;
     if (edit.active !== undefined) plan.active = edit.active;
   }
+  // A product with no plan on sale drops out of the public catalogue, and the
+  // website then falls back to the prices built into its pages — the opposite
+  // of what switching everything off was meant to do. Refuse it instead.
+  if (!next.plans.some((p) => p.active !== false)) {
+    const err = new Error('Keep at least one plan on sale. To stop selling this service, ask for its page to be taken down.');
+    err.status = 400;
+    throw err;
+  }
+  for (const plan of next.plans) {
+    if (plan.oldPrice != null && plan.oldPrice <= plan.price) {
+      const err = new Error(`${plan.name}: the strikethrough price must be higher than the price.`);
+      err.status = 400;
+      throw err;
+    }
+  }
   return normaliseProduct(existing.key, next);
 }
 

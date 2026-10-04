@@ -59,7 +59,8 @@ test.describe.serial('E24-S01 price catalogue', () => {
   test('an admin changes a price and the website sees it; it is then put back', async () => {
     const admin = await apiAs('admin');
     const anon = await request.newContext({ baseURL: API() });
-    const raised = plan.price + 1000;
+    // +1 keeps the price below any crossed-out price, which must stay higher.
+    const raised = plan.price + 1;
     try {
       const put = await admin.put(`/api/pricing/${product.key}`, { data: { plans: [{ id: plan.id, price: raised }] } });
       expect(put.status()).toBe(200);
@@ -115,5 +116,75 @@ test.describe.serial('E24-S01 price catalogue', () => {
       expect((await api.put(`/api/pricing/${product.key}`, { data: { plans: [{ id: plan.id, price: 1 }] } })).status(), `${role} write`).toBe(403);
       await api.dispose();
     }
+  });
+});
+
+test.describe.serial('E24-S01 Website prices screen', () => {
+  let product: Product;
+  let plan: Plan;
+
+  test.beforeAll(async () => {
+    const products = await catalogue();
+    test.skip(products.length === 0, 'the price catalogue is not seeded in this database');
+    product = products.find((p) => p.plans.length > 1) ?? products[0];
+    [plan] = product.plans;
+  });
+
+  test('an admin finds a service, changes a price and saves it', async ({ adminPage: page }) => {
+    const raised = plan.price + 1;
+    try {
+      await page.goto('settings/pricing');
+      await expect(page.getByRole('heading', { name: 'Website prices' })).toBeVisible();
+      await page.getByLabel('Search services').fill(product.label);
+      const card = page.getByRole('region', { name: product.label, exact: true });
+      await card.getByRole('button', { expanded: false }).click();
+
+      const group = card.getByRole('group', { name: plan.name }).first();
+      const price = group.getByLabel('Price (₹)', { exact: true });
+      await expect(price).toHaveValue(String(plan.price));
+      const save = card.getByRole('button', { name: 'Save prices' });
+      await expect(save).toBeDisabled();
+
+      // A crossed-out price that is not higher than the price is refused before saving.
+      await price.fill(String(plan.price + 5));
+      await group.getByLabel('Crossed-out price (₹)').fill(String(plan.price));
+      await expect(card.getByRole('alert')).toContainText('must be higher than the price');
+      await expect(save).toBeDisabled();
+      await card.getByRole('button', { name: 'Undo changes' }).click();
+      await expect(price).toHaveValue(String(plan.price));
+
+      await price.fill(String(raised));
+      await save.click();
+      await expect(page.getByText(/prices saved/)).toBeVisible();
+      const after = (await catalogue()).find((p) => p.key === product.key)!;
+      expect(after.plans.find((p) => p.id === plan.id)?.price).toBe(raised);
+    } finally {
+      const admin = await apiAs('admin');
+      await admin.put(`/api/pricing/${product.key}`, { data: { plans: [{ id: plan.id, price: plan.price }] } });
+      await admin.dispose();
+    }
+  });
+
+  test('the last plan on sale cannot be switched off', async ({ adminPage: page }) => {
+    await page.goto('settings/pricing');
+    await page.getByLabel('Search services').fill(product.label);
+    const card = page.getByRole('region', { name: product.label, exact: true });
+    await card.getByRole('button', { expanded: false }).click();
+    for (const box of await card.getByLabel('On sale').all()) await box.uncheck();
+    await expect(card.getByRole('alert')).toContainText('Keep at least one plan on sale');
+    await expect(card.getByRole('button', { name: 'Save prices' })).toBeDisabled();
+  });
+
+  test('a manager can look but not change; a team member cannot open the screen', async ({ managerPage, teamPage }) => {
+    await managerPage.goto('settings/pricing');
+    await expect(managerPage.getByText('Only an admin can change them.')).toBeVisible();
+    await managerPage.getByLabel('Search services').fill(product.label);
+    const card = managerPage.getByRole('region', { name: product.label, exact: true });
+    await card.getByRole('button', { expanded: false }).click();
+    await expect(card.getByLabel('Price (₹)', { exact: true }).first()).toBeDisabled();
+    await expect(card.getByRole('button', { name: 'Save prices' })).toHaveCount(0);
+
+    await teamPage.goto('settings/pricing');
+    await expect(teamPage).toHaveURL(/\/unauthorized/);
   });
 });
