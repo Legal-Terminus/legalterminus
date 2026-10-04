@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck, IndianRupee,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck, IndianRupee, ShoppingBag,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 import { ALL_ROLE_KEYS } from '../lib/roles';
@@ -46,6 +46,7 @@ import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 import MarketingReportsPage from '../pages/reports/MarketingReportsPage';
 import ReportingAccessPage from '../pages/settings/ReportingAccessPage';
 import WebsitePricesPage from '../pages/settings/WebsitePricesPage';
+import WebsiteOrdersPage from '../pages/website-orders/WebsiteOrdersPage';
 
 /**
  * SINGLE SOURCE OF TRUTH for every authenticated route, who can access it, and
@@ -158,4 +159,6 @@ export const APP_ROUTES: AppRoute[] = [
   // E24-S01: what each plan costs on the website. Managers can look; the API
   // lets only an admin change a price.
   { path: '/settings/pricing', element: <WebsitePricesPage />, roles: ['admin', 'manager'], nav: { label: 'Website Prices', icon: IndianRupee, order: 14 } },
+  // E24: orders paid for on the website, and whether each became a matter.
+  { path: '/website-orders', element: <WebsiteOrdersPage />, roles: ['admin', 'manager'], nav: { label: 'Website Orders', icon: ShoppingBag, order: 15 } },
 ];

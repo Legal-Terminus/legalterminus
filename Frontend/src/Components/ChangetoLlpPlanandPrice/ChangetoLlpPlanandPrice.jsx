@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./ChangetoLlpPlanandPrice.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
-import { usePlans } from "../../utils/pricing";
+import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 
 const DEFAULT_PLANS = [
@@ -62,7 +62,7 @@ const PricingSection = () => {
 
             {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
                 place (not deleted) so it can be re-enabled later. */}
-            {false && (
+            {PAYMENTS_ENABLED && (
             <div className="llpprice-plan-footer">
               <button className="llpprice-plan-button" onClick={() => setActivePlan(PLANS[0])}>Buy Now</button>
             </div>
@@ -91,7 +91,7 @@ const PricingSection = () => {
 
             {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
                 place (not deleted) so it can be re-enabled later. */}
-            {false && (
+            {PAYMENTS_ENABLED && (
             <div className="llpprice-plan-footer">
               <button className="llpprice-plan-button" onClick={() => setActivePlan(PLANS[1])}>Buy Now</button>
             </div>
@@ -119,7 +119,7 @@ const PricingSection = () => {
 
             {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
                 place (not deleted) so it can be re-enabled later. */}
-            {false && (
+            {PAYMENTS_ENABLED && (
             <div className="llpprice-plan-footer">
               <button className="llpprice-plan-button" onClick={() => setActivePlan(PLANS[2])}>Buy Now</button>
             </div>

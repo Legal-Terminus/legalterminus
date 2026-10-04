@@ -9,6 +9,9 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { getFirebaseDb } from "../../utils/firebase";
+import {
+  startOrder, confirmPayment, reportFailure, simulatePayment, payWithRazorpay, resultUrl,
+} from "../../utils/checkout";
 import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
 import { registerUser } from "../../utils/registerUser.js";
 import { getServiceDisplayName } from "../../utils/serviceConfig.js";
@@ -100,14 +103,19 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
 const STEPS = ["order-summary", "login", "checkout", "redirecting", "failed"];
 
-function loadRazorpayScript() {
-  // No longer used — kept as stub in case of future rollback
-  return Promise.resolve();
+/** Which of the failure screens above fits an error from the checkout. */
+function failureKeyFor(err) {
+  if (err?.code === "DECLINED") return "bank_declined";
+  return "network_error";
 }
 
 const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
   const [step, setStep] = useState("order-summary");
   const [failureReason, setFailureReason] = useState(null);
+  // E24-S02: the order the server created for this attempt.
+  const [order, setOrderState] = useState(null);
+  const orderRef = useRef(null);
+  const setOrder = (o) => { orderRef.current = o?.orderId ?? null; setOrderState(o); };
   const [loggedInUser, setLoggedInUser] = useState(null);
   // Inline auth state
   const [authMode, setAuthMode] = useState("login"); // "login" | "signup"
@@ -332,7 +340,9 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
     // Should never reach here without a user (Proceed to Checkout already guards this),
     // but keep as a safety net.
     if (!currentUser) {
-      setShowLoginPrompt(true);
+      // (This called setShowLoginPrompt, which was never defined — reaching it
+      // would have thrown. Send them to sign in instead.)
+      setStep("login");
       return;
     }
 
@@ -349,52 +359,61 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
       updatedAt:    new Date().toISOString(),
     }, { merge: true }).catch(() => {});
 
+    // E24-S02: the page names the product and the plan — never an amount. The
+    // server prices the order and says which gateway to open.
     try {
-      // /api/payment/initiate now requires authentication; the backend derives
-      // the userId from this token, so we no longer send userId in the body.
-      const idToken = await currentUser.getIdToken();
-      const res = await fetch(`${API_BASE}/api/payment/initiate`, {
-        method:  'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          Authorization:   `Bearer ${idToken}`,
-        },
-        body:    JSON.stringify({
-          amount:      plan.price,
-          planName:    plan.name,
-          form,
-          source,
-          sourceLabel: getServiceDisplayName(source),
-        }),
-      });
+      const customer = { name: form.fullName, phone: form.mobile, businessName: form.businessName, state: form.state };
+      const created = await startOrder(source, plan.id, customer);
+      setOrder(created);
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Failed to initiate payment');
+      if (created.checkout?.gateway === 'simulated') {
+        // Test environments: a panel stands in for the gateway's own screen.
+        setIsProcessing(false);
+        setStep('simulate');
+        return;
       }
 
-      const { payuUrl, params } = await res.json();
-
-      // Build and auto-submit a hidden form to PayU's payment page
       setStep('redirecting');
-      setTimeout(() => {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = payuUrl;
-        Object.entries(params).forEach(([k, v]) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = k;
-          input.value = v ?? '';
-          form.appendChild(input);
-        });
-        document.body.appendChild(form);
-        form.submit();
-      }, 800);
+      const result = await payWithRazorpay(created, { name: form.fullName, email: form.email, phone: form.mobile });
+      await confirmPayment(created.orderId, result);
+      window.location.assign(resultUrl(created.orderId));
     } catch (err) {
-      console.error('Payment initiation error:', err);
+      console.error('Payment error:', err);
       setIsProcessing(false);
-      setFailureReason('network_error');
+      // Tell the server the attempt ended, so the order does not sit "in progress".
+      if (orderRef.current) reportFailure(orderRef.current, err?.message);
+      setFailureReason(failureKeyFor(err));
+      setStep('failed');
+    }
+  };
+
+  // The simulated gateway's panel: what "the customer did" at the payment screen.
+  const handleSimulate = async (outcome) => {
+    if (!order) return;
+    setIsProcessing(true);
+    try {
+      if (outcome === 'success') {
+        const result = await simulatePayment(order.orderId, 'success');
+        await confirmPayment(order.orderId, result);
+        window.location.assign(resultUrl(order.orderId));
+        return;
+      }
+      if (outcome === 'close_tab') {
+        // Paid, but the browser never comes back: only the gateway's own message
+        // (the webhook) tells the server. The result page shows what it learned.
+        await simulatePayment(order.orderId, 'success_webhook');
+        window.location.assign(resultUrl(order.orderId));
+        return;
+      }
+      const declined = await simulatePayment(order.orderId, 'failure');
+      await reportFailure(order.orderId, declined?.error?.reason);
+      setIsProcessing(false);
+      setFailureReason('bank_declined');
+      setStep('failed');
+    } catch (err) {
+      console.error('Simulated payment error:', err);
+      setIsProcessing(false);
+      setFailureReason(failureKeyFor(err));
       setStep('failed');
     }
   };
@@ -719,10 +738,32 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
         {step === "redirecting" && (
           <div className="pco-step" style={{ textAlign: 'center', padding: '48px 24px' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
-            <h2 className="pco-step-heading">Redirecting to PayU…</h2>
+            <h2 className="pco-step-heading">Opening secure payment…</h2>
             <p style={{ color: '#666', marginTop: 8 }}>
-              You are being securely redirected to PayU to complete your payment.
+              Complete your payment in the secure window. Do not close this page.
             </p>
+          </div>
+        )}
+
+        {/* ── TEST PAYMENT (simulated gateway — test environments only) ── */}
+        {step === "simulate" && order && (
+          <div className="pco-step" style={{ padding: '32px 24px' }}>
+            <div role="note" style={{ background: '#fff7e6', border: '1px solid #ffd591', borderRadius: 8, padding: '10px 12px', fontSize: 13, marginBottom: 16 }}>
+              <strong>Test payment.</strong> This is a test site: no money moves. Choose what the payment should do.
+            </div>
+            <h2 className="pco-step-heading">Pay ₹{order.amount.toLocaleString("en-IN")}</h2>
+            <p style={{ color: '#666', margin: '6px 0 18px' }}>
+              {order.label} — {order.planName} · Order {order.orderId}
+            </p>
+            <button className="pco-btn-primary" disabled={isProcessing} onClick={() => handleSimulate('success')}>
+              Pay successfully
+            </button>
+            <button className="pco-btn-outline pco-btn-mt" disabled={isProcessing} onClick={() => handleSimulate('failure')}>
+              Payment is declined
+            </button>
+            <button className="pco-btn-outline pco-btn-mt" disabled={isProcessing} onClick={() => handleSimulate('close_tab')}>
+              Pay, then close the window before returning
+            </button>
           </div>
         )}
 

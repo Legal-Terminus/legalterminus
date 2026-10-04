@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./AfcPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
-import { usePlans } from "../../utils/pricing";
+import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 const DEFAULT_PLANS = [
   {
@@ -112,7 +112,7 @@ const AfcPlans = () => {
 
                 {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
                     place (not deleted) so it can be re-enabled later. */}
-                {false && (
+                {PAYMENTS_ENABLED && (
                 <div className="opcplan-footer">
                   <button
                     className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}

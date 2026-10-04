@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./Section8PlanAndPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
-import { usePlans } from "../../utils/pricing";
+import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 const DEFAULT_PLANS = [
   {
@@ -121,7 +121,7 @@ const Section8PlanAndPricing = () => {
 
                 {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
                     place (not deleted) so it can be re-enabled later. */}
-                {false && (
+                {PAYMENTS_ENABLED && (
                 <div className="s8-plan-footer">
                   <button
                     className={`s8-plan-button${plan.popular ? " s8-plan-button--popular" : ""}`}

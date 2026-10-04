@@ -1728,6 +1728,30 @@ product is keyed by the `source` its component passes to the checkout, and
 - At least one plan per product must stay on sale: a product with none drops out
   of the public catalogue and the website falls back to `DEFAULT_PLANS`.
 
+## Website orders and payments (E24-S02 … S05)
+
+- **Gateway behind an interface** (`paymentGateway.service.js`): `razorpay`
+  when its keys are set; `simulated` only when `PAYMENT_GATEWAY=simulated` AND
+  the deployment is a guarded test environment; otherwise payments are off and
+  `POST /api/orders` answers 503. The simulator uses Razorpay's signature
+  scheme and webhook payload, so everything on our side of the gateway runs the
+  same code either way.
+- **Order** = `paymentOrders/{orderId}`; statuses `created → paid → refunded`,
+  plus `review`, `failed`, `abandoned`. Rules, in `orders.service.js`:
+  the amount comes from `resolvePlan()`; an order is paid only on a verified
+  signal (signed return, signed webhook, or the gateway's own record);
+  `settlePaid()` is a transaction, so the return and the webhook settle once;
+  `fulfil()` claims the follow-up work, so one matter is opened.
+- **Matter**: opened by calling `createTask` with a system admin actor — the
+  same code as the portal's Create Matter — and stamped `websiteOrderId`.
+- **Public routes**: `GET /api/orders/config` and `POST /api/orders/webhook`.
+  The webhook is authenticated by an HMAC over the RAW request body
+  (`req.rawBody`, kept for that route only in `server.js`).
+- **Feature switch**: "Buy Now" renders only when the website build sets
+  `VITE_PAYMENTS_ENABLED=true`. QA does; production does not.
+- The legacy PayU routes under `/api/payment` are still present and unused;
+  E24-S06 removes them.
+
 ---
 
 *End of Architecture Document*

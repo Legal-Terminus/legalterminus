@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./LLPPlanandPrice.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
-import { usePlans } from "../../utils/pricing";
+import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 const DEFAULT_PLANS = [
   {
@@ -104,7 +104,7 @@ const LLPPlanandPrice = () => {
 
                 {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
                     place (not deleted) so it can be re-enabled later. */}
-                {false && (
+                {PAYMENTS_ENABLED && (
                 <div className="LLP-Plan--footer">
                   <button
                     className={`LLP-Plan--button${plan.popular ? " LLP-Plan--button-popular" : ""}`}

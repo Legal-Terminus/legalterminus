@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./EpfRetPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
-import { usePlans } from "../../utils/pricing";
+import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 // Every tier ships the same end-to-end monthly EPF compliance scope —
 // only the covered headcount and price change between plans.
@@ -105,7 +105,7 @@ const EpfRetPlans = () => {
 
                 {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
                     place (not deleted) so it can be re-enabled later. */}
-                {false && (
+                {PAYMENTS_ENABLED && (
                 <div className="opcplan-footer">
                   <button
                     className="opcplan-button"

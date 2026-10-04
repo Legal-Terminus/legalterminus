@@ -3314,7 +3314,17 @@ payment integration cannot be developed against live customers.
 
 ---
 
-### E24-S02 — Pay with Razorpay [Phase 2] ⏳ Not Started
+### E24-S02 — Pay with Razorpay [Phase 2] 🔄 In Progress — built against a SIMULATED gateway
+
+> **Built 2026-10-04, on QA only.** Razorpay keys are not available, so the gateway is simulated
+> (`paymentGateway.service.js`): it signs and verifies as Razorpay does and speaks its webhook
+> payload, and it is refused outside a test environment. Orders are `paymentOrders/{orderId}`
+> (`orders.service.js`), under `/api/orders`. The website checkout creates the order from a
+> product and plan — no amount — and the result page asks the server what happened. "Buy Now" is
+> shown only when the build sets `VITE_PAYMENTS_ENABLED=true` (QA).
+>
+> **Not done:** the Razorpay adapter and the checkout-script call are written to Razorpay's
+> documented interface but have NEVER RUN against Razorpay. They need test keys, then a pass on QA.
 
 **Priority**: P1 | **Complexity**: L | **Dependencies**: E24-S01
 
@@ -3334,7 +3344,14 @@ payment integration cannot be developed against live customers.
 
 ---
 
-### E24-S03 — A paid order opens a matter [Phase 2] ⏳ Not Started
+### E24-S03 — A paid order opens a matter [Phase 2] ✅ Built (on QA, simulated gateway)
+
+> A paid order whose product is linked to a portal service WITH a workflow opens a matter
+> through the same `createTask` an admin uses: fully paid, live at once (not waiting for
+> approval), the payment in its history, assignment by the workflow's own defaults. Opened once
+> per order (`websiteOrderId` on the matter). Otherwise nothing is opened and the admins are
+> told to open one by hand. Staff screen: **Website Orders** (`/website-orders`).
+> **Decided by default, to confirm with the firm:** live at once, and default assignment.
 
 **Priority**: P1 | **Complexity**: L | **Dependencies**: E24-S02
 
@@ -3357,7 +3374,13 @@ created by a manager does today; who it is assigned to.
 
 ---
 
-### E24-S04 — Failures are handled, not lost [Phase 2] ⏳ Not Started
+### E24-S04 — Failures are handled, not lost [Phase 2] ✅ Built (on QA, simulated gateway)
+
+> Every row below has a test in `orders.spec.ts` except two: "matter could not be created"
+> (the order stays paid, is flagged, staff are told and can **Try again** — written, not
+> exercised end to end) and "the database write failed" (covered by **Check payment**, which
+> asks the gateway; there is no scheduled reconciliation pass yet). Abandoned orders are swept
+> when the staff list is opened, after 30 minutes.
 
 **Priority**: P1 | **Complexity**: M | **Dependencies**: E24-S02, E24-S03
 
@@ -3381,7 +3404,12 @@ Every failure below must leave a record the firm can act on, and a truthful scre
 
 ---
 
-### E24-S05 — Confirmation the customer can keep [Phase 2] ⏳ Not Started
+### E24-S05 — Confirmation the customer can keep [Phase 2] ✅ Built (on QA)
+
+> The result page takes an order reference and reads its status from the server (it used to
+> draw a receipt from whatever its address said). It waits briefly for a payment still being
+> confirmed. A confirmation email is sent on payment, and the order appears in **My Orders**.
+> GST invoice: still an open question.
 
 **Priority**: P2 | **Complexity**: S | **Dependencies**: E24-S02
 

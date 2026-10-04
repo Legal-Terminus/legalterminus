@@ -16,6 +16,15 @@ import { useEffect, useMemo, useState } from "react";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
+/**
+ * Whether "Buy Now" is shown (E24-S02). OFF unless the build sets
+ * VITE_PAYMENTS_ENABLED=true — which only the QA build does, until the payment
+ * flow has been approved there and the gateway's live keys are in place.
+ * Trunk delivery means this code is on `main` before it is ready; the switch is
+ * what keeps it out of sight on the live site.
+ */
+export const PAYMENTS_ENABLED = import.meta.env.VITE_PAYMENTS_ENABLED === "true";
+
 let cached = null;      // { [productKey]: { label, plans: [{ id, name, price, oldPrice }] } }
 let pending = null;     // one request for the whole site, however many cards ask
 

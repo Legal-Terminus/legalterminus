@@ -63,6 +63,8 @@ vals.update({
     'TEST_ACCOUNT_EMAIL_DOMAINS': domains,
     # QA never emails anyone. (This also lifts the API rate limit, as in e2e.)
     'EMAIL_DISABLED': 'true',
+    # A stand-in for the payment gateway. Only works in a test environment.
+    'PAYMENT_GATEWAY': 'simulated',
     'FRONTEND_URL': site, 'BASE_URL': site,
 })
 with open(out, 'w') as f:
@@ -84,7 +86,7 @@ fi
 
 if want site; then
   echo "▶ building and deploying the website to $SITE_URL"
-  (cd Frontend && VITE_API_BASE_URL=$SITE_URL VITE_FIRESTORE_DATABASE_ID=$DATABASE_ID \
+  (cd Frontend && VITE_API_BASE_URL=$SITE_URL VITE_FIRESTORE_DATABASE_ID=$DATABASE_ID VITE_PAYMENTS_ENABLED=true \
      VITE_FIREBASE_STORAGE_BUCKET=$BUCKET npm run build >/dev/null)
   # firebase.qa.json names the QA site explicitly, so this cannot release to the live one.
   firebase deploy --only hosting --config firebase.qa.json --project $PROJECT | grep -E "✔|Error"

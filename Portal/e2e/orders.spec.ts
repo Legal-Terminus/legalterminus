@@ -274,4 +274,33 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       expect(own).not.toHaveProperty('matter');
     } finally { await buyer.dispose(); await team.dispose(); await manager.dispose(); }
   });
+  test('staff see website orders: a paid order links to its matter, and a missing payment can be checked', async ({ adminPage: page, teamPage }) => {
+    const buyer = await apiAs('client');
+    try {
+      const opened = await (await start(buyer, withWorkflow)).json() as Pub;
+      await simulate(buyer, opened.orderId, 'success_webhook');
+      track(await full(opened.orderId));
+      const silent = await (await start(buyer, withoutWorkflow)).json() as Pub;
+      await simulate(buyer, silent.orderId, 'paid_silently');
+
+      await page.goto('website-orders');
+      await expect(page.getByRole('heading', { name: 'Website orders' })).toBeVisible();
+      const row = (id: string) => page.getByRole('row').filter({ hasText: id });
+      await expect(row(opened.orderId).getByText('Paid', { exact: true })).toBeVisible();
+      await expect(row(opened.orderId).getByText('Matter opened')).toBeVisible();
+      await expect(row(opened.orderId).getByRole('link', { name: 'Open matter' })).toHaveAttribute('href', new RegExp(`/tasks/${(await full(opened.orderId)).matter.taskId}$`));
+
+      // Paid at the gateway, never reported to us: "Check payment" finds it.
+      await expect(row(silent.orderId).getByText('In progress')).toBeVisible();
+      await page.getByRole('button', { name: `Check order ${silent.orderId} with the payment gateway` }).click();
+      await expect(page.getByText('A payment was found and the order is now paid.')).toBeVisible();
+      await expect(row(silent.orderId).getByText('Paid', { exact: true })).toBeVisible();
+      // No workflow for that service: it says so, and offers to try again.
+      await expect(row(silent.orderId).getByText(/No matter opened\./)).toBeVisible();
+      await expect(page.getByRole('button', { name: `Try to open the matter for order ${silent.orderId}` })).toBeVisible();
+
+      await teamPage.goto('website-orders');
+      await expect(teamPage).toHaveURL(/\/unauthorized/);
+    } finally { await buyer.dispose(); }
+  });
 });
