@@ -753,7 +753,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
             </div>
             <h2 className="pco-step-heading">Pay ₹{order.amount.toLocaleString("en-IN")}</h2>
             <p style={{ color: '#666', margin: '6px 0 18px' }}>
-              {order.label} — {order.planName}{order.productCode ? ` (${order.productCode})` : ''} · Order {order.orderId}
+              {order.label} — {order.planName} · Order {order.orderId}
             </p>
             <button className="pco-btn-primary" disabled={isProcessing} onClick={() => handleSimulate('success')}>
               Pay successfully

@@ -73,7 +73,7 @@ export function matterOutcome(order, hasWorkflow) {
 /** What the customer may see of their own order. */
 export function publicOrder(o) {
   return {
-    orderId: o.orderId, status: o.status, productCode: o.productCode ?? '', label: o.label, planName: o.planName,
+    orderId: o.orderId, status: o.status, label: o.label, planName: o.planName,
     amount: o.amount, currency: o.currency, createdAt: o.createdAt, paidAt: o.paidAt ?? null,
     paymentReference: o.gatewayPaymentId ?? null, failureReason: o.failureReason ?? null,
     // Whether there is a matter to go and look at — not its internal state.

@@ -37,7 +37,7 @@ test('publicView shows active plans and prices only — no service link, no inac
   assert.deepEqual(Object.keys(view), ['trademark-application']);
   assert.deepEqual(view['trademark-application'].plans.map((p) => p.id), ['elemental', 'enriched']);
   assert.equal('serviceKey' in view['trademark-application'], false);
-  assert.equal(view['trademark-application'].code, 'SVC-051', 'the code is public — customers quote it');
+  assert.equal('code' in view['trademark-application'], false, 'the product code is for staff only');
   assert.equal('pages' in view['trademark-application'], false);
   assert.equal('active' in view['trademark-application'].plans[0], false);
 });

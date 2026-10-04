@@ -1715,8 +1715,8 @@ a product is keyed by the `source` its component passes to the checkout, and
 `serviceKey` links it to a portal service (null when there is none).
 
 - **`code`** (`SVC-014`) is the product's permanent, human reference: issued once
-  by the generator, never changed or reused, shown on the price screen, on
-  orders, at checkout and on the result page. **`label`** is the title of the
+  by the generator, never changed or reused. It is shown to STAFF only (Website
+  Prices, Website Orders) and is not sent to the website. **`label`** is the title of the
   product's website page and **`pages`** the routes it is sold on. All three
   describe the WEBSITE, so the seed always refreshes them; prices, on-sale flags
   and the service link belong to the firm and are never overwritten.

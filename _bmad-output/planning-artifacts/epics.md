@@ -3302,7 +3302,8 @@ payment integration cannot be developed against live customers.
 > their internal key ("CIO Registration"), which told staff nothing about the page. Each product
 > now has a permanent code (`SVC-001` … `SVC-061`, issued by the generator and never reused), is
 > named after its website page's title, and lists the page addresses it is sold on, with a link.
-> The code also appears on orders, at checkout and on the result page.
+> The code is for staff: it appears under Website Prices and Website Orders, and is NOT shown on
+> the website, at checkout or on the result page (product owner, 2026-10-04).
 >
 > **Naming them by page exposed five WRONG service links.** Products had been linked to portal
 > services by matching keys, and the same key means different things on each side: e.g. the

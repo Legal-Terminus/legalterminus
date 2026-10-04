@@ -67,7 +67,8 @@ export function publicView(products) {
   for (const p of products) {
     const plans = p.plans.filter((pl) => pl.active)
       .map(({ id, name, price, oldPrice }) => ({ id, name, price, oldPrice }));
-    if (plans.length) out[p.key] = { code: p.code, label: p.label, plans };
+    // The product code is for staff; it is not part of what the website is given.
+    if (plans.length) out[p.key] = { label: p.label, plans };
   }
   return out;
 }
