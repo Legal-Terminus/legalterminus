@@ -23,8 +23,10 @@ test('#81/#82: internal fields + internal descriptions are hidden from clients',
   const original = await (await api.get(`/api/workflow-definitions/${definitionId}`)).json();
   // Work on a deep copy; set fields on the first non-final step.
   const def = JSON.parse(JSON.stringify(original));
-  const target = def.steps.find((s: { type: string }) => s.type !== 'final');
-  test.skip(!target, 'No non-final step.');
+  // A step the CLIENT can see: the client projection leaves out steps marked
+  // not client-visible altogether, so there would be nothing to compare.
+  const target = def.steps.find((s: { type: string; clientVisible?: boolean }) => s.type !== 'final' && s.clientVisible !== false);
+  test.skip(!target, 'No client-visible non-final step.');
   target.internalStatus = 'INTERNAL_ONLY_STATUS';
   target.internalNotes = 'INTERNAL_ONLY_NOTE';
   target.clientStatus = 'CLIENT_STATUS';

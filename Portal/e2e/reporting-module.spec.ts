@@ -172,6 +172,9 @@ async function countCol(admin: Api, sheet: string, group: string): Promise<Col> 
 test('#197: totals, month total and FY cumulative are calculated', async () => {
   const admin = await apiAs('admin');
   try {
+    // Start from empty days: saves MERGE per column, and the access tests above
+    // leave a figure in a column that is hidden on one sheet and shown on another.
+    for (const d of [...DAYS, '2001-04-02']) await admin.delete(`/api/marketing/sheets/dm_cost/days/${d}`);
     const google = await groupOf(admin, 'dm_cost', 'google');
     const [g1, g2] = shown(google, 'money');
     const f1 = await moneyCol(admin, 'dm_cost', 'fb');

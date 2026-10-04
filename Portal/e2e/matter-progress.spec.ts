@@ -14,7 +14,12 @@ test('#189: completedStepCount tracks actual finished steps, not the step number
     const before = await getMatter(taskId);
     const total = (before.totalSteps ?? 0) as number;
     expect(total, 'matter has steps').toBeGreaterThan(0);
-    expect(before.completedStepCount, 'starts at zero completed').toBe(0);
+    // Not necessarily zero: a workflow that OPENS on a payment gate passes it at
+    // creation for a paid matter (#94). What must hold is that the counter
+    // already equals the steps really finished — whatever the workflow's shape.
+    const doneAtStart = ((before.steps ?? []) as Array<{ status: string }>)
+      .filter((s) => s.status === 'completed' || s.status === 'skipped').length;
+    expect(before.completedStepCount, 'counter matches the finished steps at creation').toBe(doneAtStart);
 
     // Advance a few steps, then compare the counter with the real statuses.
     await advanceSteps(taskId, 5);

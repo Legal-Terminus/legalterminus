@@ -716,7 +716,9 @@ export async function deleteDefinition(id: string): Promise<void> {
 export async function createLead(): Promise<{ id: string; fullName: string; email: string }> {
   const api = await apiAs('admin');
   const fullName = `E2E Lead ${Date.now().toString().slice(-6)}`;
-  const email = `e2e-lead-${Date.now()}@example.test`;
+  // On the test-accounts domain: converting a lead creates a sign-in account,
+  // and the QA environment refuses to create one on any other domain.
+  const email = `e2e-lead-${Date.now()}@legalterminus.test`;
   const res = await api.post('/api/leads', {
     data: { fullName, email, phone: '9990001112', sourceLabel: 'E2E' },
   });

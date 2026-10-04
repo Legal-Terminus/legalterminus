@@ -27,7 +27,9 @@ test('E19-S03: a client detail screen renders with its KPIs', async ({ adminPage
     // getByRole('row') finds nothing. Click the client by name instead — that
     // works whichever layout is active.
     await expect(adminPage.getByText(/Every client relationship/i)).toBeVisible({ timeout: 20_000 });
-    const firstClient = adminPage.getByText('AKASH SAHOO').first();
+    // The seeded test client — this used to click a REAL client of the firm by
+    // name, which only worked while the suite ran against live data.
+    const firstClient = adminPage.getByText('E2E Client', { exact: true }).first();
     await expect(firstClient).toBeVisible({ timeout: 15_000 });
     await firstClient.click();
 

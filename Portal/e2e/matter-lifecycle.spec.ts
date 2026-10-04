@@ -29,7 +29,9 @@ test('E05-S05: deleting a matter purges its documents and notifications', async 
     await openDocumentsTab(clientPage, taskId);
     await clientPage.locator('input[type="file"]').first().setInputFiles(pdfFile('cleanup'));
     await expect(clientPage.getByText(/awaiting review|uploaded/i)).toBeVisible();
-    expect(await countDocuments(taskId)).toBeGreaterThan(0);
+    // Polled: the page can say "uploaded" a moment before the record is saved,
+    // and reading the count straight away failed about one run in three.
+    await expect.poll(() => countDocuments(taskId), { timeout: 20_000 }).toBeGreaterThan(0);
 
     // Admin deletes via the Matters grid (styled confirm dialog).
     await adminPage.goto(`tasks/${taskId}`);
