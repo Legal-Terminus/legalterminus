@@ -8,8 +8,7 @@ building and testing changes that must not touch the live site. Set up on
 |---|---|---|
 | Address | https://legalterminus.com | https://legal-terminus-qa.web.app |
 | Portal | `/portal/` | `/portal/` |
-| Git branch | `main` | `qa` |
-| How it deploys | automatically, on every push to `main` | by hand: `scripts/deploy-qa.sh` |
+| Deploys from | a release tag `vX.Y.Z-lt.N`, after approval | every merge to `main`, automatically |
 | Hosting site | `legal-terminus-web` | `legal-terminus-qa` |
 | API container | `legal-terminus-api` | `legal-terminus-api-qa` |
 | Portal container | `legal-terminal-portal` | `legal-terminus-portal-qa` |
@@ -58,7 +57,13 @@ project.
 
 ## Deploying to QA
 
-From the repo root, on the `qa` branch, signed in to `gcloud` and `firebase`:
+QA deploys itself: every merge to `main` runs `.github/workflows/deploy-qa.yml`,
+which rebuilds and deploys whichever of the API, portal and website changed. See
+`docs/delivery.md` for the whole flow.
+
+To deploy by hand — a branch you want to see on QA before merging, or the
+database rules, which the pipeline does not deploy — from the repo root, signed
+in to `gcloud` and `firebase`:
 
 ```bash
 scripts/deploy-qa.sh            # everything
@@ -68,16 +73,11 @@ scripts/deploy-qa.sh site       # only the website
 scripts/deploy-qa.sh rules      # only database rules and indexes
 ```
 
-The script builds the two container images with Cloud Build, deploys them,
-builds the website and releases it to the QA hosting site, then checks that the
-site, the portal and the API answer. It needs `backend/.env` and
-`Portal/.env.local` on the machine it runs from.
+It needs `backend/.env` and `Portal/.env.local` on the machine it runs from. A
+hand deploy is overwritten by the next merge to `main`.
 
-It cannot release to the live site: `firebase.qa.json` names the QA hosting site
-and the QA database explicitly, and the container names end in `-qa`.
-
-An **Editor** on the project can run it. Editor is not enough for the one-time
-setup below.
+Neither route can release to the live site: `firebase.qa.json` names the QA
+hosting site and the QA database explicitly, and the container names end in `-qa`.
 
 ## Putting data into QA
 
@@ -120,15 +120,12 @@ the QA address), the hosting site `legal-terminus-qa`, and the two containers.
 
 ## Moving finished work to the live site
 
-Work is built and approved on `qa`, then merged to `main`, which deploys it
-live. Before merging:
+Push a release tag — see `docs/delivery.md`. Two things to remember:
 
-- The `qa` branch carries QA-only files (`scripts/deploy-qa.sh`,
-  `cloudbuild.qa.yaml`, `firebase.qa.json`, `.gcloudignore`). They are harmless
-  on `main` — nothing there runs them.
-- The code that selects a named database and the test-account guard are both
-  inert unless their settings are present, and production sets neither.
-- Run the full Playwright suite first; a push to `main` is a production deploy.
+- The code that selects a named database and the test-account guard are inert
+  unless their settings are present, and production sets neither.
+- QA's database is not production's. Anything a release needs there (the price
+  catalogue, a new index) has to be set up in the live database too.
 
 ## Taking QA down
 
@@ -151,6 +148,6 @@ accounts stay: the automated tests use them on the live project too.
   the live site.
 - **No email.** Anything that depends on receiving an email cannot be tested
   end to end on QA.
-- **The automated tests do not run against QA yet.** They still target the live
-  project from a developer's machine.
+- **The automated tests do not run in the pipeline yet,** and from a developer's
+  machine they still target the live project unless pointed at QA.
 - **Nobody is alerted if QA is down.** It is not monitored.

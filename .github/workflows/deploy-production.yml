@@ -1,0 +1,338 @@
+# TRUNK-BASED DELIVERY (2026-10-04).
+#
+#   push to main            → deploy-qa.yml          → https://legal-terminus-qa.web.app
+#   push a tag vX.Y.Z-lt.N  → THIS workflow, after approval → https://legalterminus.com
+#
+# Production is released by TAGGING a commit that is already on main and has
+# been seen on QA. The job runs in the `production` GitHub Environment, whose
+# required reviewers must approve before any step starts.
+#
+# This file used to be called "Deploy to QA" and ran on every push to main while
+# deploying to the live project — so every push went live. It now does what its
+# name says.
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - 'v*-lt.*'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: false
+        default: 'main'
+        type: string
+      deploy_backend:
+        description: 'Deploy backend to Cloud Run'
+        required: false
+        default: true
+        type: boolean
+      deploy_portal:
+        description: 'Deploy Portal to Firebase Hosting'
+        required: false
+        default: true
+        type: boolean
+      deploy_frontend:
+        description: 'Deploy frontend to Firebase Hosting'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  REGION: asia-south2
+  SERVICE_NAME: legal-terminus-api
+  PORTAL_SERVICE_NAME: legal-terminal-portal
+  GAR_REPO: legal-terminus-qa
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    # Required reviewers on this Environment are the approval gate. Without them
+    # configured in GitHub (Settings → Environments → production) a tag deploys
+    # immediately.
+    environment: production
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          # Fetch full history so we can diff the ENTIRE pushed range
+          # (before..after), not just the tip commit — a multi-commit push must
+          # not skip deploying an app changed in a non-tip commit.
+          fetch-depth: 0
+
+      # Detect which app(s) THIS push actually changed, so we only build+deploy
+      # those. Deploying an unchanged app is wasteful (full Docker build + Cloud
+      # Run deploy) and, for Frontend, produces a byte-identical dist that Firebase
+      # rejects with 400 "supplied version … is the current active version".
+      #
+      # `shared/` is compiled into BOTH backend and Portal, so a change there
+      # triggers both. Root build files (Dockerfiles, package.json) likewise. On
+      # workflow_dispatch we honor the explicit deploy_* inputs instead of diffing.
+      - name: 🔎 Detect changed apps
+        id: changes
+        run: |
+          # A release tag deploys the WHOLE tagged commit. Diffing against the
+          # previous push makes no sense for a tag, and a release must not skip
+          # an app because the tag's own commit did not touch it.
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "backend=true"  >> "$GITHUB_OUTPUT"
+            echo "portal=true"   >> "$GITHUB_OUTPUT"
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "backend=${{ github.event.inputs.deploy_backend }}"   >> "$GITHUB_OUTPUT"
+            echo "portal=${{ github.event.inputs.deploy_portal }}"     >> "$GITHUB_OUTPUT"
+            echo "frontend=${{ github.event.inputs.deploy_frontend }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Diff the WHOLE pushed range so a multi-commit push considers every
+          # commit, not just the tip. `before` is all-zeros on a branch's first
+          # push, and can be unreachable after a force-push — fall back to the
+          # tip's parent (HEAD^) in those cases.
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            BASE="HEAD^"
+          else
+            BASE="$BEFORE"
+          fi
+          echo "ℹ️ diffing $BASE..HEAD"
+          changed () { ! git diff --quiet "$BASE" HEAD -- "$@"; }
+          if changed backend/ shared/ Dockerfile package.json; then be=true; else be=false; fi
+          if changed Portal/ shared/ Portal.Dockerfile firebase.json package.json; then po=true; else po=false; fi
+          if changed Frontend/ firebase.json; then fe=true; else fe=false; fi
+          echo "backend=$be"  >> "$GITHUB_OUTPUT"
+          echo "portal=$po"   >> "$GITHUB_OUTPUT"
+          echo "frontend=$fe" >> "$GITHUB_OUTPUT"
+          echo "ℹ️ changed → backend=$be portal=$po frontend=$fe"
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # ── Authenticate ────────────────────────────────────────────────────────
+      - name: 🔐 Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.QA_WIF_PROVIDER }}
+          service_account: ${{ secrets.QA_WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # ── Build & Deploy Backend → Cloud Run ─────────────────────────────────
+      - name: Set up Docker Buildx
+        if: steps.changes.outputs.backend == 'true' || steps.changes.outputs.portal == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure Docker for Google Artifact Registry
+        if: steps.changes.outputs.backend == 'true' || steps.changes.outputs.portal == 'true'
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Build and push Docker image
+        if: steps.changes.outputs.backend == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/backend:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/backend:buildcache
+          cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/backend:buildcache,mode=max
+
+      - name: 🚀 Deploy to Cloud Run
+        id: deploy-backend
+        if: steps.changes.outputs.backend == 'true'
+        run: |
+          # Build identity for /health. The image does not carry .git (the
+          # Dockerfile deliberately does not COPY it), so there is nothing to
+          # interrogate at runtime — without these, /health reports 'unknown'
+          # and "is the fix deployed?" has no answer.
+          VERSION=$(node -p "require('./package.json').version")
+          BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "Deploying v$VERSION (${{ github.sha }})"
+
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/backend:${{ github.sha }} \
+            --set-env-vars="APP_VERSION=$VERSION" \
+            --set-env-vars="GIT_SHA=${{ github.sha }}" \
+            --set-env-vars="BUILT_AT=$BUILT_AT" \
+            --set-env-vars="DEPLOYMENT_MODE=production" \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --port=8080 \
+            --min-instances=0 \
+            --max-instances=5 \
+            --memory=512Mi \
+            --cpu=1 \
+            --set-env-vars="NODE_ENV=production" \
+            --set-env-vars="FIREBASE_PROJECT_ID=${{ secrets.BACKEND_FIREBASE_PROJECT_ID }}" \
+            --set-env-vars="FIREBASE_PRIVATE_KEY_ID=${{ secrets.BACKEND_FIREBASE_PRIVATE_KEY_ID }}" \
+            --set-env-vars="FIREBASE_CLIENT_EMAIL=${{ secrets.BACKEND_FIREBASE_CLIENT_EMAIL }}" \
+            --set-env-vars="FIREBASE_CLIENT_ID=${{ secrets.BACKEND_FIREBASE_CLIENT_ID }}" \
+            --set-env-vars="FIREBASE_CLIENT_CERT_URL=${{ secrets.BACKEND_FIREBASE_CLIENT_CERT_URL }}" \
+            --set-env-vars="^||^FIREBASE_PRIVATE_KEY=${{ secrets.BACKEND_FIREBASE_PRIVATE_KEY }}" \
+            --set-env-vars="PHONEPE_CLIENT_ID=${{ secrets.BACKEND_PHONEPE_CLIENT_ID }}" \
+            --set-env-vars="PHONEPE_CLIENT_SECRET=${{ secrets.BACKEND_PHONEPE_CLIENT_SECRET }}" \
+            --set-env-vars="PHONEPE_API_BASE=${{ secrets.BACKEND_PHONEPE_API_BASE }}" \
+            --set-env-vars="PHONEPE_CLIENT_VERSION=1" \
+            --set-env-vars="FRONTEND_URL=${{ secrets.BACKEND_FRONTEND_URL }}" \
+            --set-env-vars="GMAIL_USER=${{ secrets.BACKEND_GMAIL_USER }}" \
+            --set-env-vars="^||^GMAIL_APP_PASSWORD=${{ secrets.BACKEND_GMAIL_APP_PASSWORD }}" \
+            --set-env-vars="EMAIL_FROM=${{ secrets.BACKEND_EMAIL_FROM }}" \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
+
+          # Get Backend service URL for payment redirects
+          BACKEND_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --region=${{ env.REGION }} \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
+            --format='value(status.url)')
+          
+          # Update Backend with its own BASE_URL for PhonePe redirects
+          gcloud run services update ${{ env.SERVICE_NAME }} \
+            --region=${{ env.REGION }} \
+            --update-env-vars="BASE_URL=${BACKEND_URL}" \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
+
+          # Prove the service actually SERVES this build before calling it live.
+          # A deploy can succeed while the container crashes on boot (a bad
+          # import, a missing env var) — #184 shipped a fix that never reached
+          # production and the run still went green. Retried, because a fresh
+          # revision can take a few seconds to accept traffic.
+          for i in 1 2 3 4 5 6; do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$BACKEND_URL/health" || echo 000)
+            [ "$CODE" = "200" ] && break
+            echo "   health check $i/6 → $CODE, retrying in 5s"
+            sleep 5
+          done
+          if [ "$CODE" != "200" ]; then
+            echo "::error::Backend deployed but /health returned $CODE — the revision is not serving."
+            exit 1
+          fi
+
+          echo "✅ Backend live at: $BACKEND_URL (health 200)"
+          echo "BACKEND_URL=${BACKEND_URL}" >> $GITHUB_OUTPUT
+
+      # ── Build & Deploy Portal → Cloud Run ──────────────────────────────────
+      - name: Build and push Portal Docker image
+        if: steps.changes.outputs.portal == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Portal.Dockerfile
+          push: true
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:buildcache
+          cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:buildcache,mode=max
+          build-args: |
+            VITE_FIREBASE_API_KEY=${{ secrets.FIREBASE_QA_API_KEY }}
+            VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_QA_AUTH_DOMAIN }}
+            VITE_FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_QA_PROJECT_ID }}
+            VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_QA_STORAGE_BUCKET }}
+            VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}
+            VITE_FIREBASE_APP_ID=${{ secrets.FIREBASE_QA_APP_ID }}
+            VITE_API_BASE_URL=${{ steps.deploy-backend.outputs.BACKEND_URL || secrets.BACKEND_QA_URL }}
+
+      - name: 🚀 Deploy Portal to Cloud Run
+        id: deploy-portal
+        if: steps.changes.outputs.portal == 'true'
+        run: |
+          gcloud run deploy ${{ env.PORTAL_SERVICE_NAME }} \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --port=8080 \
+            --min-instances=0 \
+            --max-instances=5 \
+            --memory=512Mi \
+            --cpu=1 \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
+
+          PORTAL_URL=$(gcloud run services describe ${{ env.PORTAL_SERVICE_NAME }} \
+            --region=${{ env.REGION }} \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
+            --format='value(status.url)')
+          # Same check for the Portal: it must actually serve its index, not
+          # merely have been deployed.
+          for i in 1 2 3 4 5 6; do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$PORTAL_URL/portal/" || echo 000)
+            case "$CODE" in 200|304) break ;; esac
+            echo "   portal check $i/6 → $CODE, retrying in 5s"
+            sleep 5
+          done
+          case "$CODE" in
+            200|304) echo "✅ Portal live at: $PORTAL_URL (HTTP $CODE)" ;;
+            *) echo "::error::Portal deployed but returned $CODE — the revision is not serving."; exit 1 ;;
+          esac
+
+          echo "PORTAL_URL=${PORTAL_URL}" >> $GITHUB_OUTPUT
+
+      # ── Build & Deploy Frontend → Firebase Hosting ─────────────────────────
+      - name: Install Frontend dependencies
+        if: steps.changes.outputs.frontend == 'true'
+        run: npm ci
+        working-directory: Frontend
+
+      # #175: prerendering (postbuild) drives a headless Chromium to snapshot every
+      # marketing route. Playwright is a devDependency, but its BROWSER BINARY is
+      # not — `npm ci` alone leaves the runner without it and the build fails with
+      # "Executable doesn't exist". Install just Chromium, with deps for CI.
+      - name: Install Playwright Chromium (for prerendering)
+        if: steps.changes.outputs.frontend == 'true'
+        run: npx playwright install --with-deps chromium
+        working-directory: Frontend
+
+      - name: Build Frontend
+        if: steps.changes.outputs.frontend == 'true'
+        run: npm run build
+        working-directory: Frontend
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_QA_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_QA_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_QA_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_QA_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_QA_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_QA_MEASUREMENT_ID }}
+          VITE_API_BASE_URL: https://${{ secrets.FIREBASE_QA_PROJECT_ID }}.web.app
+
+      - name: 🔥 Install Firebase CLI
+        if: steps.changes.outputs.frontend == 'true'
+        run: npm install -g firebase-tools
+
+      - name: 🌐 Deploy Frontend to Firebase Hosting
+        if: steps.changes.outputs.frontend == 'true'
+        # Auth: mint a short-lived OAuth token from the WIF auth that already
+        # authorizes gcloud (last known-good deploy path; restored 2026-06-26).
+        #
+        # No-op tolerance: when the freshly-built dist is byte-identical to what's
+        # already live, the Hosting release API returns 400 "supplied version … is
+        # the current active version". That's not a failure — there's simply
+        # nothing new to release — so we detect that specific message and exit 0.
+        run: |
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          set +e
+          OUT=$(firebase deploy --only hosting \
+            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
+            --token="$ACCESS_TOKEN" 2>&1)
+          CODE=$?
+          echo "$OUT"
+          if [ $CODE -ne 0 ]; then
+            if echo "$OUT" | grep -q "is the current active version"; then
+              echo "ℹ️ Hosting content unchanged — nothing new to release. Treating as success."
+              exit 0
+            fi
+            exit $CODE
+          fi
+

@@ -39,13 +39,15 @@
   paperwork (its manual, story files, `sprint-status.yaml`) does not count here:
   add the dated entry to the change log in `epics.md`, update `architecture.md`
   and `spec.md` in this repo, and add the row to `docs/releases/SYNC.md`.
-- [ ] **Work that must not touch the live site is built on the `qa` branch** and
-  deployed with `scripts/deploy-qa.sh` to https://legal-terminus-qa.web.app. Read
-  `docs/qa-environment.md` first: QA shares production's sign-in accounts, and a
-  seed script run without `FIRESTORE_DATABASE_ID=qa-data` writes to the LIVE database.
-- [ ] **A push to `main` deploys to PRODUCTION.** The workflow is named "Deploy to
-  QA" but targets the live project (`legal-terminus-web`, legalterminus.com). Run
-  the full Playwright suite before pushing a product change.
+- [ ] **Delivery is trunk-based — read `docs/delivery.md`.** A merge to `main`
+  deploys to **QA** (https://legal-terminus-qa.web.app). Production is released by
+  pushing a tag `vX.Y.Z-lt.N`, which waits for an approval in GitHub. Never push a
+  release tag unless the user asked for a release.
+- [ ] **Everything merged to `main` must be safe to release.** Unfinished work goes
+  in switched off; the next tag ships whatever `main` contains.
+- [ ] **QA shares production's sign-in accounts** and a seed script run without
+  `FIRESTORE_DATABASE_ID=qa-data` writes to the LIVE database. Read
+  `docs/qa-environment.md` before seeding or changing the QA deploy.
 
 **Key Rule:** Commits use Conventional Commits format — `type(scope): description (#issue)` (e.g., `feat(reports): multiple-criteria filtering in the report bar (#91)`). Reference the GitHub issue number in the subject; put the epic/story ID (e.g., `E01-S02`) in the body when the work is story-related.
 

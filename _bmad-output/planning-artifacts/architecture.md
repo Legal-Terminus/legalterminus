@@ -1686,7 +1686,16 @@ A temporary second deployment in the SAME project: Hosting site
   refuse every account outside the listed domains
   (`config/testEnvironment.js`). Unset in production, where it does nothing.
 - **Why not a separate project:** decided by the product owner — temporary, no
-  custom domain, no CI. The cost is the shared accounts above.
+  custom domain. The cost is the shared accounts above.
+
+## Delivery: trunk-based (2026-10-04)
+
+`main` is the only long-lived branch. A merge to `main` deploys to QA
+(`deploy-qa.yml`); production is released by pushing a tag `vX.Y.Z-lt.N`
+(`deploy-production.yml`), which runs in the GitHub Environment `production`
+and waits for its required reviewers. Before this, every push to `main` deployed
+to production from a workflow named "Deploy to QA". Unfinished work is merged
+switched off. The full procedure is `docs/delivery.md`.
 
 ## The price catalogue (E24-S01)
 

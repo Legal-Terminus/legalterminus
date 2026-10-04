@@ -1,9 +1,21 @@
+# TRUNK-BASED DELIVERY (2026-10-04).
+#
+#   push to main            → THIS workflow          → https://legal-terminus-qa.web.app
+#   push a tag vX.Y.Z-lt.N  → deploy-production.yml, after approval
+#
+# QA lives in the PRODUCTION project (legal-terminus-web) with its own Cloud Run
+# services, Firestore database and bucket, and shares the project's sign-in
+# accounts. Read docs/qa-environment.md before changing anything here —
+# especially TEST_ACCOUNT_EMAIL_DOMAINS and FIRESTORE_DATABASE_ID: without them
+# the QA services would read and write the LIVE database.
 name: Deploy to QA
 
 on:
   push:
     branches:
       - main
+      # TEMPORARY, while the pipeline is proven before the first merge to main.
+      - qa
   workflow_dispatch:
     inputs:
       branch:
@@ -33,14 +45,23 @@ permissions:
 
 env:
   REGION: asia-south2
-  SERVICE_NAME: legal-terminus-api
-  PORTAL_SERVICE_NAME: legal-terminal-portal
+  SERVICE_NAME: legal-terminus-api-qa
+  PORTAL_SERVICE_NAME: legal-terminus-portal-qa
+  QA_SITE_URL: https://legal-terminus-qa.web.app
+  QA_DATABASE_ID: qa-data
+  QA_BUCKET: legal-terminus-web-qa
+  QA_TEST_DOMAINS: legalterminus.test
   GAR_REPO: legal-terminus-qa
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: qa
+    # One QA deploy at a time; a newer push supersedes one still waiting.
+    concurrency:
+      group: deploy-qa
+      cancel-in-progress: false
 
     steps:
       - name: 📥 Checkout code
@@ -81,9 +102,9 @@ jobs:
           fi
           echo "ℹ️ diffing $BASE..HEAD"
           changed () { ! git diff --quiet "$BASE" HEAD -- "$@"; }
-          if changed backend/ shared/ Dockerfile package.json; then be=true; else be=false; fi
-          if changed Portal/ shared/ Portal.Dockerfile firebase.json package.json; then po=true; else po=false; fi
-          if changed Frontend/ firebase.json; then fe=true; else fe=false; fi
+          if changed backend/ shared/ Dockerfile package.json .github/workflows/deploy-qa.yml; then be=true; else be=false; fi
+          if changed Portal/ shared/ Portal.Dockerfile firebase.qa.json package.json .github/workflows/deploy-qa.yml; then po=true; else po=false; fi
+          if changed Frontend/ firebase.qa.json .github/workflows/deploy-qa.yml; then fe=true; else fe=false; fi
           echo "backend=$be"  >> "$GITHUB_OUTPUT"
           echo "portal=$po"   >> "$GITHUB_OUTPUT"
           echo "frontend=$fe" >> "$GITHUB_OUTPUT"
@@ -144,27 +165,24 @@ jobs:
             --set-env-vars="DEPLOYMENT_MODE=qa" \
             --region=${{ env.REGION }} \
             --platform=managed \
-            --allow-unauthenticated \
             --port=8080 \
             --min-instances=0 \
-            --max-instances=5 \
+            --max-instances=2 \
             --memory=512Mi \
             --cpu=1 \
             --set-env-vars="NODE_ENV=production" \
+            --set-env-vars="FIRESTORE_DATABASE_ID=${{ env.QA_DATABASE_ID }}" \
+            --set-env-vars="FIREBASE_STORAGE_BUCKET=${{ env.QA_BUCKET }}" \
+            --set-env-vars="TEST_ACCOUNT_EMAIL_DOMAINS=${{ env.QA_TEST_DOMAINS }}" \
+            --set-env-vars="EMAIL_DISABLED=true" \
             --set-env-vars="FIREBASE_PROJECT_ID=${{ secrets.BACKEND_FIREBASE_PROJECT_ID }}" \
             --set-env-vars="FIREBASE_PRIVATE_KEY_ID=${{ secrets.BACKEND_FIREBASE_PRIVATE_KEY_ID }}" \
             --set-env-vars="FIREBASE_CLIENT_EMAIL=${{ secrets.BACKEND_FIREBASE_CLIENT_EMAIL }}" \
             --set-env-vars="FIREBASE_CLIENT_ID=${{ secrets.BACKEND_FIREBASE_CLIENT_ID }}" \
             --set-env-vars="FIREBASE_CLIENT_CERT_URL=${{ secrets.BACKEND_FIREBASE_CLIENT_CERT_URL }}" \
             --set-env-vars="^||^FIREBASE_PRIVATE_KEY=${{ secrets.BACKEND_FIREBASE_PRIVATE_KEY }}" \
-            --set-env-vars="PHONEPE_CLIENT_ID=${{ secrets.BACKEND_PHONEPE_CLIENT_ID }}" \
-            --set-env-vars="PHONEPE_CLIENT_SECRET=${{ secrets.BACKEND_PHONEPE_CLIENT_SECRET }}" \
-            --set-env-vars="PHONEPE_API_BASE=${{ secrets.BACKEND_PHONEPE_API_BASE }}" \
-            --set-env-vars="PHONEPE_CLIENT_VERSION=1" \
-            --set-env-vars="FRONTEND_URL=${{ secrets.BACKEND_FRONTEND_URL }}" \
-            --set-env-vars="GMAIL_USER=${{ secrets.BACKEND_GMAIL_USER }}" \
-            --set-env-vars="^||^GMAIL_APP_PASSWORD=${{ secrets.BACKEND_GMAIL_APP_PASSWORD }}" \
-            --set-env-vars="EMAIL_FROM=${{ secrets.BACKEND_EMAIL_FROM }}" \
+            --set-env-vars="FRONTEND_URL=${{ env.QA_SITE_URL }}" \
+            --set-env-vars="BASE_URL=${{ env.QA_SITE_URL }}" \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
 
           # Get Backend service URL for payment redirects
@@ -173,11 +191,6 @@ jobs:
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
             --format='value(status.url)')
           
-          # Update Backend with its own BASE_URL for PhonePe redirects
-          gcloud run services update ${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --update-env-vars="BASE_URL=${BACKEND_URL}" \
-            --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
 
           # Prove the service actually SERVES this build before calling it live.
           # A deploy can succeed while the container crashes on boot (a bad
@@ -206,30 +219,30 @@ jobs:
           context: .
           file: ./Portal.Dockerfile
           push: true
-          tags: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:${{ github.sha }}
-          cache-from: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:buildcache
-          cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:buildcache,mode=max
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal-qa:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal-qa:buildcache
+          cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal-qa:buildcache,mode=max
           build-args: |
             VITE_FIREBASE_API_KEY=${{ secrets.FIREBASE_QA_API_KEY }}
             VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_QA_AUTH_DOMAIN }}
             VITE_FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_QA_PROJECT_ID }}
-            VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_QA_STORAGE_BUCKET }}
+            VITE_FIREBASE_STORAGE_BUCKET=${{ env.QA_BUCKET }}
             VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}
             VITE_FIREBASE_APP_ID=${{ secrets.FIREBASE_QA_APP_ID }}
-            VITE_API_BASE_URL=${{ steps.deploy-backend.outputs.BACKEND_URL || secrets.BACKEND_QA_URL }}
+            VITE_API_BASE_URL=${{ env.QA_SITE_URL }}
+            VITE_FIRESTORE_DATABASE_ID=${{ env.QA_DATABASE_ID }}
 
       - name: 🚀 Deploy Portal to Cloud Run
         id: deploy-portal
         if: steps.changes.outputs.portal == 'true'
         run: |
           gcloud run deploy ${{ env.PORTAL_SERVICE_NAME }} \
-            --image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal:${{ github.sha }} \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal-qa:${{ github.sha }} \
             --region=${{ env.REGION }} \
             --platform=managed \
-            --allow-unauthenticated \
             --port=8080 \
             --min-instances=0 \
-            --max-instances=5 \
+            --max-instances=2 \
             --memory=512Mi \
             --cpu=1 \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
@@ -276,11 +289,12 @@ jobs:
           VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_QA_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_QA_AUTH_DOMAIN }}
           VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_QA_PROJECT_ID }}
-          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_QA_STORAGE_BUCKET }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ env.QA_BUCKET }}
+          VITE_FIRESTORE_DATABASE_ID: ${{ env.QA_DATABASE_ID }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_QA_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_QA_MEASUREMENT_ID }}
-          VITE_API_BASE_URL: https://${{ secrets.FIREBASE_QA_PROJECT_ID }}.web.app
+          VITE_API_BASE_URL: ${{ env.QA_SITE_URL }}
 
       - name: 🔥 Install Firebase CLI
         if: steps.changes.outputs.frontend == 'true'
@@ -298,7 +312,8 @@ jobs:
         run: |
           ACCESS_TOKEN=$(gcloud auth print-access-token)
           set +e
-          OUT=$(firebase deploy --only hosting \
+          # firebase.qa.json names the QA hosting site, so this cannot release to the live one.
+          OUT=$(firebase deploy --only hosting --config firebase.qa.json \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }} \
             --token="$ACCESS_TOKEN" 2>&1)
           CODE=$?
