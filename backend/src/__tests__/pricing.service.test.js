@@ -11,7 +11,8 @@ import {
 import { updatePricingSchema } from '../schemas/pricing.schema.js';
 
 const RAW = {
-  label: 'Trademark Application', serviceKey: 'trademark-application',
+  code: 'SVC-051', label: 'Trademark Application', serviceKey: 'trademark-application',
+  pages: [{ path: '/trademark/registration', title: 'Trademark Registration in India' }],
   plans: [
     { id: 'elemental', name: 'Elemental', price: 1499, oldPrice: 2249 },
     { id: 'enriched', name: 'Enriched', price: 6499, oldPrice: 9749 },
@@ -36,13 +37,15 @@ test('publicView shows active plans and prices only — no service link, no inac
   assert.deepEqual(Object.keys(view), ['trademark-application']);
   assert.deepEqual(view['trademark-application'].plans.map((p) => p.id), ['elemental', 'enriched']);
   assert.equal('serviceKey' in view['trademark-application'], false);
+  assert.equal(view['trademark-application'].code, 'SVC-051', 'the code is public — customers quote it');
+  assert.equal('pages' in view['trademark-application'], false);
   assert.equal('active' in view['trademark-application'].plans[0], false);
 });
 
 test('findPlan is the amount a payment must use; unknown and inactive plans are not for sale', () => {
   const products = [product()];
   assert.deepEqual(findPlan(products, 'trademark-application', 'enriched'), {
-    productKey: 'trademark-application', planId: 'enriched', label: 'Trademark Application',
+    productKey: 'trademark-application', productCode: 'SVC-051', planId: 'enriched', label: 'Trademark Application',
     planName: 'Enriched', amount: 6499, serviceKey: 'trademark-application',
   });
   assert.equal(findPlan(products, 'trademark-application', 'supreme'), null, 'inactive');
@@ -59,14 +62,26 @@ test('applyUpdate changes prices by plan id and refuses a plan that does not exi
   assert.throws(() => applyUpdate(product(), { plans: [{ id: 'platinum', price: 1 }] }), (e) => e.status === 400);
 });
 
-test('mergeSeed never overwrites a price the firm changed, but adds what is missing', () => {
-  const stored = { ...RAW, plans: [{ id: 'elemental', name: 'Elemental', price: 2999 }] };
+test('mergeSeed never overwrites what the firm owns, and always refreshes what the website owns', () => {
+  const stored = {
+    code: 'OLD', label: 'Old Name', pages: [], serviceKey: 'something-the-firm-chose',
+    plans: [{ id: 'elemental', name: 'Elemental', price: 2999 }],
+  };
   const { product: merged, changed } = mergeSeed('trademark-application', stored, RAW);
   assert.equal(changed, true);
   assert.equal(merged.plans.find((p) => p.id === 'elemental').price, 2999, 'the firm’s price survives');
-  assert.deepEqual(merged.plans.map((p) => p.id), ['elemental', 'enriched', 'supreme']);
-  assert.equal(mergeSeed('trademark-application', RAW, RAW).changed, false);
+  assert.deepEqual(merged.plans.map((p) => p.id), ['elemental', 'enriched', 'supreme'], 'missing plans are added');
+  assert.equal(merged.serviceKey, 'something-the-firm-chose', 'the firm’s service link survives');
+  assert.equal(merged.code, 'SVC-051');
+  assert.equal(merged.label, 'Trademark Application');
+  assert.equal(merged.pages[0].path, '/trademark/registration');
+  // Seeding again changes nothing.
+  assert.equal(mergeSeed('trademark-application', merged, RAW).changed, false);
   assert.equal(mergeSeed('trademark-application', null, RAW).changed, true);
+  // --relink resets ONLY the service link; --force resets prices too.
+  const relinked = mergeSeed('trademark-application', stored, RAW, { relink: true }).product;
+  assert.equal(relinked.serviceKey, 'trademark-application');
+  assert.equal(relinked.plans[0].price, 2999);
   assert.equal(mergeSeed('trademark-application', stored, RAW, { force: true }).product.plans[0].price, 1499);
 });
 
@@ -83,7 +98,11 @@ test('the seed file: every plan has a real price, ids are unique, nothing is und
   const { products } = JSON.parse(fs.readFileSync(new URL('../../../shared/pricing/catalog.json', import.meta.url), 'utf8'));
   const keys = Object.keys(products);
   assert.ok(keys.length >= 50, 'the catalogue covers the website');
+  const codes = keys.map((k) => products[k].code);
+  assert.equal(new Set(codes).size, keys.length, 'every product has its own code');
   for (const key of keys) {
+    assert.match(products[key].code, /^SVC-\d{3}$/, `${key} has a product code`);
+    assert.ok(products[key].pages.length > 0, `${key} is sold on at least one page`);
     const p = normaliseProduct(key, products[key]);
     assert.equal(p.plans.length, products[key].plans.length, `${key}: a plan was dropped as unusable`);
     assert.equal(new Set(p.plans.map((x) => x.id)).size, p.plans.length, `${key}: duplicate plan ids`);

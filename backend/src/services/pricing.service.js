@@ -8,7 +8,11 @@
  * the server decides the AMOUNT.
  *
  * Stored in `pricingCatalog/{productKey}`:
- *   { label, serviceKey, plans: [{ id, name, price, oldPrice, active }] }
+ *   { code, label, pages, serviceKey, plans: [{ id, name, price, oldPrice, active }] }
+ * `code` (SVC-014) is the product's permanent reference — what staff and
+ * customers quote, shown on the price screen, on orders and at checkout.
+ * `label` is the title of its website page and `pages` are the addresses it is
+ * sold on: staff know a service by its page, not by the key the code uses.
  * `serviceKey` is the portal service the product corresponds to (or null) — it
  * is what will let a paid order open a matter (E24-S03).
  *
@@ -41,9 +45,14 @@ export function normaliseProduct(key, raw = {}) {
       oldPrice: isAmount(p.oldPrice) && p.oldPrice > p.price ? p.oldPrice : null,
       active: p.active !== false,
     }));
+  const pages = (Array.isArray(raw.pages) ? raw.pages : [])
+    .filter((p) => p && typeof p.path === 'string' && p.path.startsWith('/'))
+    .map((p) => ({ path: p.path, title: typeof p.title === 'string' ? p.title : '' }));
   return {
     key,
+    code: typeof raw.code === 'string' ? raw.code : '',
     label: typeof raw.label === 'string' && raw.label ? raw.label : key,
+    pages,
     serviceKey: typeof raw.serviceKey === 'string' && raw.serviceKey ? raw.serviceKey : null,
     plans,
   };
@@ -58,7 +67,7 @@ export function publicView(products) {
   for (const p of products) {
     const plans = p.plans.filter((pl) => pl.active)
       .map(({ id, name, price, oldPrice }) => ({ id, name, price, oldPrice }));
-    if (plans.length) out[p.key] = { label: p.label, plans };
+    if (plans.length) out[p.key] = { code: p.code, label: p.label, plans };
   }
   return out;
 }
@@ -73,7 +82,7 @@ export function findPlan(products, productKey, planId) {
   const plan = product?.plans.find((pl) => pl.id === planId && pl.active);
   if (!plan) return null;
   return {
-    productKey, planId: plan.id, label: product.label, planName: plan.name,
+    productKey, productCode: product.code, planId: plan.id, label: product.label, planName: plan.name,
     amount: plan.price, serviceKey: product.serviceKey,
   };
 }
@@ -85,7 +94,6 @@ export function findPlan(products, productKey, planId) {
  */
 export function applyUpdate(existing, patch = {}) {
   const next = { ...existing, plans: existing.plans.map((p) => ({ ...p })) };
-  if (patch.label !== undefined) next.label = patch.label;
   if (patch.serviceKey !== undefined) next.serviceKey = patch.serviceKey || null;
   for (const edit of patch.plans ?? []) {
     const plan = next.plans.find((p) => p.id === edit.id);
@@ -118,18 +126,32 @@ export function applyUpdate(existing, patch = {}) {
 }
 
 /**
- * Merge the seed into what is stored, WITHOUT touching anything already there:
- * a missing product is added, and a missing plan is added to an existing
- * product. Existing prices are left alone — the firm may have changed them.
- * Returns { product, changed } — `changed` false means nothing to write.
+ * Merge the seed into what is stored.
+ *
+ * What the FIRM owns is never overwritten: prices, crossed-out prices, whether
+ * a plan is on sale, and the link to a portal service. A missing product is
+ * added, and a missing plan is added to an existing product.
+ *
+ * What the WEBSITE owns is always refreshed: the product code, the page title
+ * used as its name, and the pages it is sold on. Those describe the site; a
+ * stale copy would send staff to the wrong page.
+ *
+ * `relink` also resets the portal-service link to the seed's — for correcting
+ * links that were seeded wrongly. `force` resets everything.
+ * Returns { product, changed }.
  */
-export function mergeSeed(key, stored, seed, { force = false } = {}) {
+export function mergeSeed(key, stored, seed, { force = false, relink = false } = {}) {
   const fresh = normaliseProduct(key, seed);
   if (!stored || force) return { product: fresh, changed: true };
   const current = normaliseProduct(key, stored);
   const missing = fresh.plans.filter((p) => !current.plans.some((c) => c.id === p.id));
-  if (!missing.length) return { product: current, changed: false };
-  return { product: { ...current, plans: [...current.plans, ...missing] }, changed: true };
+  const product = {
+    ...current,
+    code: fresh.code, label: fresh.label, pages: fresh.pages,
+    serviceKey: relink ? fresh.serviceKey : current.serviceKey,
+    plans: [...current.plans, ...missing],
+  };
+  return { product, changed: JSON.stringify(product) !== JSON.stringify(current) };
 }
 
 /* ───────────────────────────── I/O below ───────────────────────────── */
@@ -167,14 +189,14 @@ export async function updateProduct(productKey, patch, actorUid) {
 }
 
 /** Load shared/pricing/catalog.json into Firestore. Safe to re-run. */
-export async function seedCatalog({ force = false, dryRun = false } = {}) {
+export async function seedCatalog({ force = false, relink = false, dryRun = false } = {}) {
   const seed = JSON.parse(fs.readFileSync(SEED_FILE, 'utf8')).products;
   const db = getDb();
   const created = []; const updated = []; const unchanged = [];
   for (const [key, raw] of Object.entries(seed)) {
     const ref = db.collection(COLLECTION).doc(key);
     const snap = await ref.get();
-    const { product, changed } = mergeSeed(key, snap.exists ? snap.data() : null, raw, { force });
+    const { product, changed } = mergeSeed(key, snap.exists ? snap.data() : null, raw, { force, relink });
     if (!changed) { unchanged.push(key); continue; }
     (snap.exists ? updated : created).push(key);
     if (dryRun) continue;

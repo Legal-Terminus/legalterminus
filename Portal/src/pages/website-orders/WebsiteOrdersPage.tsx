@@ -141,7 +141,7 @@ export default function WebsiteOrdersPage() {
                       </td>
                       <td className="p-3">
                         <p className="text-ink">{o.label}</p>
-                        <p className="text-xs text-ink-muted">{o.planName}</p>
+                        <p className="text-xs text-ink-muted">{[o.productCode, o.planName].filter(Boolean).join(' · ')}</p>
                       </td>
                       <td className="p-3 text-right whitespace-nowrap">{inr(o.amount)}</td>
                       <td className="p-3"><span className={STATUS[o.status].cls}>{STATUS[o.status].label}</span></td>
@@ -162,7 +162,7 @@ export default function WebsiteOrdersPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-ink">{o.label} — {o.planName}</p>
-                      <p className="text-xs text-ink-muted">{o.customer?.name || o.customer?.email || '—'}</p>
+                      <p className="text-xs text-ink-muted">{[o.productCode, o.customer?.name || o.customer?.email || '—'].filter(Boolean).join(' · ')}</p>
                     </div>
                     <span className={`${STATUS[o.status].cls} shrink-0`}>{STATUS[o.status].label}</span>
                   </div>

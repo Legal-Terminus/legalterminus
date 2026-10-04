@@ -70,6 +70,7 @@ const PaymentResult = () => {
   const rows = order ? [
     { label: "Order reference", value: order.orderId },
     { label: "Service", value: `${order.label} — ${order.planName}` },
+    ...(order.productCode ? [{ label: "Service code", value: order.productCode }] : []),
     { label: "Amount", value: inr(order.amount) },
     ...(order.paymentReference ? [{ label: "Payment reference", value: order.paymentReference }] : []),
     { label: "Date", value: when(order.paidAt || order.createdAt) },

@@ -3298,8 +3298,22 @@ payment integration cannot be developed against live customers.
 > on sale (the website would fall back to its built-in prices) and a crossed-out price that is
 > not higher than the price.
 >
-> **Not built:** the firm's confirmation of every price; the checkout still sends its own amount
-> until E24-S02.
+> **Product codes and page names (2026-10-04, from review on QA):** the screen named services by
+> their internal key ("CIO Registration"), which told staff nothing about the page. Each product
+> now has a permanent code (`SVC-001` … `SVC-061`, issued by the generator and never reused), is
+> named after its website page's title, and lists the page addresses it is sold on, with a link.
+> The code also appears on orders, at checkout and on the result page.
+>
+> **Naming them by page exposed five WRONG service links.** Products had been linked to portal
+> services by matching keys, and the same key means different things on each side: e.g. the
+> website's `cic-registration` is the "Change of Company Name" page, the portal's is "Community
+> Interest Company Registration". A payment for one would have opened a matter for the other.
+> Those five (`bc-`, `cic-`, `cio-`, `cir-registration`, `company-to-llp`) are no longer linked
+> automatically; 41 of 61 products are linked. **The firm should review every link** under
+> Website Prices — in particular "Wholly Owned Subsidiary Registration" → "Company
+> Incorporation", the only one that opens a matter today.
+>
+> **Not built:** the firm's confirmation of every price and every service link.
 
 **Priority**: P1 | **Complexity**: M | **Dependencies**: E24-S00
 

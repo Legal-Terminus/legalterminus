@@ -14,7 +14,7 @@ import { apiAs } from './api';
 
 const API = () => process.env.E2E_API_BASE ?? 'http://localhost:5001';
 type Plan = { id: string; name: string; price: number; oldPrice: number | null; active?: boolean };
-type Product = { key: string; label: string; serviceKey: string | null; plans: Plan[] };
+type Product = { key: string; code: string; label: string; serviceKey: string | null; pages: { path: string; title: string }[]; plans: Plan[] };
 
 async function catalogue(): Promise<Product[]> {
   const admin = await apiAs('admin');
@@ -135,11 +135,15 @@ test.describe.serial('E24-S01 Website prices screen', () => {
     try {
       await page.goto('settings/pricing');
       await expect(page.getByRole('heading', { name: 'Website prices' })).toBeVisible();
-      await page.getByLabel('Search services').fill(product.label);
-      const card = page.getByRole('region', { name: product.label, exact: true });
+      await page.getByLabel('Search services').fill(product.code);
+      const card = page.getByRole('region', { name: `${product.code} ${product.label}`, exact: true });
       await card.getByRole('button', { expanded: false }).click();
 
       const group = card.getByRole('group', { name: plan.name }).first();
+      // Each service says which page of the website it is, and links to it.
+      await expect(card.getByText(product.code, { exact: true })).toBeVisible();
+      await expect(card.locator(`a[href$="${product.pages[0].path}"]`)).toBeVisible();
+
       const price = group.getByLabel('Price (₹)', { exact: true });
       await expect(price).toHaveValue(String(plan.price));
       const save = card.getByRole('button', { name: 'Save prices' });
@@ -167,8 +171,8 @@ test.describe.serial('E24-S01 Website prices screen', () => {
 
   test('the last plan on sale cannot be switched off', async ({ adminPage: page }) => {
     await page.goto('settings/pricing');
-    await page.getByLabel('Search services').fill(product.label);
-    const card = page.getByRole('region', { name: product.label, exact: true });
+    await page.getByLabel('Search services').fill(product.code);
+    const card = page.getByRole('region', { name: `${product.code} ${product.label}`, exact: true });
     await card.getByRole('button', { expanded: false }).click();
     for (const box of await card.getByLabel('On sale').all()) await box.uncheck();
     await expect(card.getByRole('alert')).toContainText('Keep at least one plan on sale');
@@ -178,8 +182,8 @@ test.describe.serial('E24-S01 Website prices screen', () => {
   test('a manager can look but not change; a team member cannot open the screen', async ({ managerPage, teamPage }) => {
     await managerPage.goto('settings/pricing');
     await expect(managerPage.getByText('Only an admin can change them.')).toBeVisible();
-    await managerPage.getByLabel('Search services').fill(product.label);
-    const card = managerPage.getByRole('region', { name: product.label, exact: true });
+    await managerPage.getByLabel('Search services').fill(product.code);
+    const card = managerPage.getByRole('region', { name: `${product.code} ${product.label}`, exact: true });
     await card.getByRole('button', { expanded: false }).click();
     await expect(card.getByLabel('Price (₹)', { exact: true }).first()).toBeDisabled();
     await expect(card.getByRole('button', { name: 'Save prices' })).toHaveCount(0);

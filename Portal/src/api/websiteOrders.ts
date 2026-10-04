@@ -11,6 +11,8 @@ export interface WebsiteOrder {
   status: OrderStatus;
   uid: string;
   customer: { name?: string; email?: string; phone?: string };
+  /** e.g. SVC-014 — the same code shown under Website Prices. */
+  productCode?: string;
   label: string;
   planName: string;
   serviceKey: string | null;

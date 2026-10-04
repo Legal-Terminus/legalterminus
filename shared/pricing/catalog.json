@@ -1,7 +1,8 @@
 {
   "products": {
     "add-director": {
-      "label": "Add Director",
+      "code": "SVC-001",
+      "label": "Add or Remove a Director",
       "serviceKey": "add-director",
       "plans": [
         {
@@ -23,12 +24,19 @@
           "oldPrice": null
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/add-or-remove-a-director-company",
+          "title": "Add or Remove a Director"
+        }
+      ],
       "components": [
         "Frontend/src/Components/AddPlanandPricing/AddPlanandPricing.jsx"
       ]
     },
     "annual-filing-company": {
-      "label": "Annual Filing Company",
+      "code": "SVC-002",
+      "label": "Annual Filing for Companies",
       "serviceKey": null,
       "plans": [
         {
@@ -50,12 +58,19 @@
           "oldPrice": 39999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/return-filing/annual-filing-company",
+          "title": "Annual Filing for Companies"
+        }
+      ],
       "components": [
         "Frontend/src/Components/AfcPlans/AfcPlans.jsx"
       ]
     },
     "annual-filing-llp": {
-      "label": "Annual Filing LLP",
+      "code": "SVC-003",
+      "label": "Annual Filing for LLPs",
       "serviceKey": null,
       "plans": [
         {
@@ -77,13 +92,20 @@
           "oldPrice": 37499
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/return-filing/annual-filing-llp",
+          "title": "Annual Filing for LLPs"
+        }
+      ],
       "components": [
         "Frontend/src/Components/AflPlans/AflPlans.jsx"
       ]
     },
     "bc-registration": {
-      "label": "BC Registration",
-      "serviceKey": "bc-registration",
+      "code": "SVC-004",
+      "label": "Bar Code Registration",
+      "serviceKey": null,
       "plans": [
         {
           "id": "elemental",
@@ -104,19 +126,32 @@
           "oldPrice": 17999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/license-certifications/bar-code-registration",
+          "title": "Bar Code Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/BCplanandpricing/BCplanandpricing.jsx"
       ]
     },
     "cic-registration": {
-      "label": "CIC Registration",
-      "serviceKey": "cic-registration",
+      "code": "SVC-009",
+      "label": "Change of Company Name",
+      "serviceKey": null,
       "plans": [
         {
           "id": "elemental",
           "name": "Elemental",
           "price": 5999,
           "oldPrice": null
+        }
+      ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/change-company-name",
+          "title": "Change of Company Name"
         }
       ],
       "components": [
@@ -124,8 +159,9 @@
       ]
     },
     "cio-registration": {
-      "label": "CIO Registration",
-      "serviceKey": "cio-registration",
+      "code": "SVC-010",
+      "label": "Change in Objects of an LLP",
+      "serviceKey": null,
       "plans": [
         {
           "id": "elemental",
@@ -144,6 +180,12 @@
           "name": "Supreme",
           "price": 24999,
           "oldPrice": null
+        }
+      ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/changing-the-objects-of-llp",
+          "title": "Change in Objects of an LLP"
         }
       ],
       "components": [
@@ -151,8 +193,9 @@
       ]
     },
     "cir-registration": {
-      "label": "CIR Registration",
-      "serviceKey": "cir-registration",
+      "code": "SVC-011",
+      "label": "Change of Registered Office Address (LLP)",
+      "serviceKey": null,
       "plans": [
         {
           "id": "elemental",
@@ -173,12 +216,19 @@
           "oldPrice": null
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/change-in-registered-office-address-for-llp",
+          "title": "Change of Registered Office Address (LLP)"
+        }
+      ],
       "components": [
         "Frontend/src/Components/CIRplans/CIRplans.jsx"
       ]
     },
     "change-address-company": {
-      "label": "Change Address Company",
+      "code": "SVC-005",
+      "label": "Change Registered Office Address",
       "serviceKey": "change-company-address",
       "plans": [
         {
@@ -200,12 +250,19 @@
           "oldPrice": 29999
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/change-in-registered-office-address",
+          "title": "Change Registered Office Address"
+        }
+      ],
       "components": [
         "Frontend/src/Components/CacomPlans/CacomPlans.jsx"
       ]
     },
     "change-to-company": {
-      "label": "Change To Company",
+      "code": "SVC-008",
+      "label": "Change of Company Name",
       "serviceKey": null,
       "plans": [
         {
@@ -227,13 +284,20 @@
           "oldPrice": null
         }
       ],
+      "pages": [
+        {
+          "path": "/updation/change-name-company-to-company",
+          "title": "Change of Company Name"
+        }
+      ],
       "components": [
         "Frontend/src/Components/ChangetoCompanyPlanandPrice/ChangetoCompanyPlanandPrice.jsx"
       ]
     },
     "company-to-llp": {
-      "label": "Company To LLP",
-      "serviceKey": "company-to-llp",
+      "code": "SVC-014",
+      "label": "Change of LLP Name",
+      "serviceKey": null,
       "plans": [
         {
           "id": "elemental",
@@ -254,12 +318,19 @@
           "oldPrice": null
         }
       ],
+      "pages": [
+        {
+          "path": "/updation/change-name-llp-to-llp",
+          "title": "Change of LLP Name"
+        }
+      ],
       "components": [
         "Frontend/src/Components/ChangetoLlpPlanandPrice/ChangetoLlpPlanandPrice.jsx"
       ]
     },
     "change-name-llp": {
-      "label": "Change Name LLP",
+      "code": "SVC-006",
+      "label": "Change of LLP Name",
       "serviceKey": "change-llp-name",
       "plans": [
         {
@@ -281,12 +352,19 @@
           "oldPrice": 24999
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/name-change-process-in-india-for-llp",
+          "title": "Change of LLP Name"
+        }
+      ],
       "components": [
         "Frontend/src/Components/CnllpPlans/CnllpPlans.jsx"
       ]
     },
     "change-object-company": {
-      "label": "Change Object Company",
+      "code": "SVC-007",
+      "label": "Change in Object Clause of a Company",
       "serviceKey": "change-company-object",
       "plans": [
         {
@@ -308,12 +386,19 @@
           "oldPrice": 29999
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/change-in-object-clause-of-a-company",
+          "title": "Change in Object Clause of a Company"
+        }
+      ],
       "components": [
         "Frontend/src/Components/CocomPlans/CocomPlans.jsx"
       ]
     },
     "company-registration": {
-      "label": "Company Registration",
+      "code": "SVC-012",
+      "label": "Company Registration in Odisha",
       "serviceKey": null,
       "plans": [
         {
@@ -335,12 +420,19 @@
           "oldPrice": 29999
         }
       ],
+      "pages": [
+        {
+          "path": "/companyregistration-in-odisha",
+          "title": "Company Registration in Odisha"
+        }
+      ],
       "components": [
         "Frontend/src/Components/CompanyRegPlans/CompanyRegPlans.jsx"
       ]
     },
     "company-registration-odisha": {
-      "label": "Company Registration Odisha",
+      "code": "SVC-013",
+      "label": "Company Registration in Odisha",
       "serviceKey": null,
       "plans": [
         {
@@ -362,12 +454,23 @@
           "oldPrice": 29999
         }
       ],
+      "pages": [
+        {
+          "path": "/company-registration-odisha",
+          "title": "Company Registration in Odisha"
+        },
+        {
+          "path": "/company-registration-consultancy-in-odisha",
+          "title": "Company Registration in Odisha"
+        }
+      ],
       "components": [
         "Frontend/src/Components/CroPlans/CroPlans.jsx"
       ]
     },
     "dissolve-llp": {
-      "label": "Dissolve LLP",
+      "code": "SVC-015",
+      "label": "Winding Up an LLP",
       "serviceKey": "dissolve-llp",
       "plans": [
         {
@@ -389,12 +492,19 @@
           "oldPrice": 49999
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/windup-services/process-of-winding-up-limited-liability-partnership",
+          "title": "Winding Up an LLP"
+        }
+      ],
       "components": [
         "Frontend/src/Components/DllpPlans/DllpPlans.jsx"
       ]
     },
     "dissolve-partnership": {
-      "label": "Dissolve Partnership",
+      "code": "SVC-016",
+      "label": "Dissolving a Partnership Firm",
       "serviceKey": null,
       "plans": [
         {
@@ -416,12 +526,19 @@
           "oldPrice": 39999
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/windup-services/dissolution-of-partnership-firm",
+          "title": "Dissolving a Partnership Firm"
+        }
+      ],
       "components": [
         "Frontend/src/Components/DpartPlans/DpartPlans.jsx"
       ]
     },
     "dissolve-private": {
-      "label": "Dissolve Private",
+      "code": "SVC-017",
+      "label": "Winding Up a Private Limited Company",
       "serviceKey": "dissolve-private-limited",
       "plans": [
         {
@@ -443,11 +560,18 @@
           "oldPrice": 59999
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/windup-services/process-of-winding-up-of-a-company",
+          "title": "Winding Up a Private Limited Company"
+        }
+      ],
       "components": [
         "Frontend/src/Components/DpvtPlans/DpvtPlans.jsx"
       ]
     },
     "epf-registration": {
+      "code": "SVC-018",
       "label": "EPF Registration",
       "serviceKey": "epf-registration",
       "plans": [
@@ -470,11 +594,18 @@
           "oldPrice": 10999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/registrations/epf-registration-in-india",
+          "title": "EPF Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/EPFRegPricing/EPFRegPricing.jsx"
       ]
     },
     "esic-registration": {
+      "code": "SVC-021",
       "label": "ESIC Registration",
       "serviceKey": "esic-registration",
       "plans": [
@@ -497,12 +628,19 @@
           "oldPrice": 10999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/registrations/esic-registration-in-india",
+          "title": "ESIC Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/ESICRegPricing/ESICRegPricing.jsx"
       ]
     },
     "epf-return": {
-      "label": "EPF Return",
+      "code": "SVC-019",
+      "label": "EPF Return Filing",
       "serviceKey": null,
       "plans": [
         {
@@ -524,12 +662,19 @@
           "oldPrice": 2999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/return-filing/epf-return-filing",
+          "title": "EPF Return Filing"
+        }
+      ],
       "components": [
         "Frontend/src/Components/EpfRetPlans/EpfRetPlans.jsx"
       ]
     },
     "esi-return": {
-      "label": "ESI Return",
+      "code": "SVC-020",
+      "label": "ESI Return Filing",
       "serviceKey": null,
       "plans": [
         {
@@ -551,12 +696,19 @@
           "oldPrice": 3499
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/return-filing/esi-return-filing",
+          "title": "ESI Return Filing"
+        }
+      ],
       "components": [
         "Frontend/src/Components/EsiRetPlans/EsiRetPlans.jsx"
       ]
     },
     "food-license-fssai": {
-      "label": "Food License FSSAI",
+      "code": "SVC-022",
+      "label": "FSSAI Food License & Registration",
       "serviceKey": "food-license-fssai",
       "plans": [
         {
@@ -584,12 +736,19 @@
           "oldPrice": 11999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/license-certifications/food-license-and-registration",
+          "title": "FSSAI Food License & Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/FoodLicensePlans/FoodLicensePlans.jsx"
       ]
     },
     "gst-registration": {
-      "label": "GST Registration",
+      "code": "SVC-023",
+      "label": "GST Registration in India",
       "serviceKey": "gst-registration",
       "plans": [
         {
@@ -611,11 +770,18 @@
           "oldPrice": 9999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/registrations/gst-registration-in-india",
+          "title": "GST Registration in India"
+        }
+      ],
       "components": [
         "Frontend/src/Components/GSTRegPlans/GSTRegPlans.jsx"
       ]
     },
     "gst-return-filing": {
+      "code": "SVC-024",
       "label": "GST Return Filing",
       "serviceKey": "gst-returns",
       "plans": [
@@ -644,12 +810,19 @@
           "oldPrice": 4499
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/return-filing/gst-return-filing",
+          "title": "GST Return Filing"
+        }
+      ],
       "components": [
         "Frontend/src/Components/GstFilingPlans/GstFilingPlans.jsx"
       ]
     },
     "iec-registration": {
-      "label": "IEC Registration",
+      "code": "SVC-025",
+      "label": "IEC Registration in India",
       "serviceKey": "iec-registration",
       "plans": [
         {
@@ -671,12 +844,19 @@
           "oldPrice": 5499
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/license-certifications/importer-exporter-code-registration",
+          "title": "IEC Registration in India"
+        }
+      ],
       "components": [
         "Frontend/src/Components/IECPlans/IECPlans.jsx"
       ]
     },
     "iso-certification": {
-      "label": "ISO Certification",
+      "code": "SVC-028",
+      "label": "ISO Certification in India",
       "serviceKey": "iso-certification",
       "plans": [
         {
@@ -698,12 +878,19 @@
           "oldPrice": 49999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/license-certifications/iso-certification-in-india",
+          "title": "ISO Certification in India"
+        }
+      ],
       "components": [
         "Frontend/src/Components/ISOplan/ISOplan.jsx"
       ]
     },
     "increase-authorised-capital": {
-      "label": "Increase Authorised Capital",
+      "code": "SVC-027",
+      "label": "Increase Authorised Share Capital",
       "serviceKey": "increase-capital",
       "plans": [
         {
@@ -725,12 +912,19 @@
           "oldPrice": 22999
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/increase-authorized-share-capital-company",
+          "title": "Increase Authorised Share Capital"
+        }
+      ],
       "components": [
         "Frontend/src/Components/IacapPlans/IacapPlans.jsx"
       ]
     },
     "incorporation": {
-      "label": "Incorporation",
+      "code": "SVC-026",
+      "label": "Wholly Owned Subsidiary Registration",
       "serviceKey": "incorporation",
       "plans": [
         {
@@ -770,12 +964,19 @@
           "oldPrice": 74999
         }
       ],
+      "pages": [
+        {
+          "path": "/setting-up-a-business/profit-making-structures/incorporation-of-wholly-owned-subsidiary-in-india",
+          "title": "Wholly Owned Subsidiary Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/IncorptionPlanedPriceing/IncorptionPlanedPriceing.jsx"
       ]
     },
     "itr-business": {
-      "label": "ITR Business",
+      "code": "SVC-029",
+      "label": "ITR Filing for Businesses",
       "serviceKey": null,
       "plans": [
         {
@@ -797,12 +998,19 @@
           "oldPrice": 22499
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/return-filing/itr-filing-company",
+          "title": "ITR Filing for Businesses"
+        }
+      ],
       "components": [
         "Frontend/src/Components/ItrBizPlans/ItrBizPlans.jsx"
       ]
     },
     "itr-individual": {
-      "label": "ITR Individual",
+      "code": "SVC-030",
+      "label": "ITR Filing for Individuals",
       "serviceKey": null,
       "plans": [
         {
@@ -842,12 +1050,19 @@
           "oldPrice": 11999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/return-filing/itr-filing-individual",
+          "title": "ITR Filing for Individuals"
+        }
+      ],
       "components": [
         "Frontend/src/Components/ItrIndPlans/ItrIndPlans.jsx"
       ]
     },
     "llp-registration": {
-      "label": "LLP Registration",
+      "code": "SVC-032",
+      "label": "LLP Registration in India",
       "serviceKey": "llp-registration",
       "plans": [
         {
@@ -869,12 +1084,19 @@
           "oldPrice": 17999
         }
       ],
+      "pages": [
+        {
+          "path": "/setting-up-a-business/profit-making-structures/limited-liability-partnership-registration-in-india",
+          "title": "LLP Registration in India"
+        }
+      ],
       "components": [
         "Frontend/src/Components/LLPPlanandPrice/LLPPlanandPrice.jsx"
       ]
     },
     "labour-license-clra": {
-      "label": "Labour License CLRA",
+      "code": "SVC-031",
+      "label": "Labour Licence Registration",
       "serviceKey": null,
       "plans": [
         {
@@ -884,12 +1106,19 @@
           "oldPrice": 17999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/license-certifications/labour-license-registration",
+          "title": "Labour Licence Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/LabourLicensePlans/LabourLicensePlans.jsx"
       ]
     },
     "llp-to-private": {
-      "label": "LLP To Private",
+      "code": "SVC-033",
+      "label": "Convert LLP to Private Limited Company",
       "serviceKey": "llp-to-private",
       "plans": [
         {
@@ -917,12 +1146,19 @@
           "oldPrice": 67499
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/conversion-in-form-of-business/conversion-of-llp-into-private-limited-company",
+          "title": "Convert LLP to Private Limited Company"
+        }
+      ],
       "components": [
         "Frontend/src/Components/LtopvtPlans/LtopvtPlans.jsx"
       ]
     },
     "olwf-registration": {
-      "label": "OLWF Registration",
+      "code": "SVC-034",
+      "label": "OLWF Registration in Odisha",
       "serviceKey": null,
       "plans": [
         {
@@ -944,12 +1180,19 @@
           "oldPrice": 9999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/license-certifications/odisha-labour-welfare-fund-olwf-registration",
+          "title": "OLWF Registration in Odisha"
+        }
+      ],
       "components": [
         "Frontend/src/Components/OLWFPlans/OLWFPlans.jsx"
       ]
     },
     "opc-registration": {
-      "label": "OPC Registration",
+      "code": "SVC-035",
+      "label": "One Person Company (OPC) Registration",
       "serviceKey": "opc-registration",
       "plans": [
         {
@@ -971,12 +1214,19 @@
           "oldPrice": 26999
         }
       ],
+      "pages": [
+        {
+          "path": "/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india",
+          "title": "One Person Company (OPC) Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/OPCPlans/OPCPlans.jsx"
       ]
     },
     "partnership-registration": {
-      "label": "Partnership Registration",
+      "code": "SVC-036",
+      "label": "Partnership Firm Registration",
       "serviceKey": null,
       "plans": [
         {
@@ -998,12 +1248,19 @@
           "oldPrice": null
         }
       ],
+      "pages": [
+        {
+          "path": "/setting-up-a-business/profit-making-structures/partnership-firm-registration-in-india",
+          "title": "Partnership Firm Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/PRFlandpricing/PRFlandpricing.jsx"
       ]
     },
     "proprietorship": {
-      "label": "Proprietorship",
+      "code": "SVC-043",
+      "label": "Proprietorship Firm Registration",
       "serviceKey": "proprietorship",
       "plans": [
         {
@@ -1025,12 +1282,19 @@
           "oldPrice": 9999
         }
       ],
+      "pages": [
+        {
+          "path": "/setting-up-a-business/profit-making-structures/proprietorship-firm-registration-in-india",
+          "title": "Proprietorship Firm Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/ProPlanandPricing/ProPlanandPricing.jsx"
       ]
     },
     "professional-tax": {
-      "label": "Professional Tax",
+      "code": "SVC-042",
+      "label": "Professional Tax Registration",
       "serviceKey": "professional-tax",
       "plans": [
         {
@@ -1052,12 +1316,23 @@
           "oldPrice": 7999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/registrations/professional-tax-registration",
+          "title": "Professional Tax Registration"
+        },
+        {
+          "path": "/registrations-returns/return-filing/professional-tax-return-filing",
+          "title": "Professional Tax Return Filing"
+        }
+      ],
       "components": [
         "Frontend/src/Components/ProfTaxPlans/ProfTaxPlans.jsx"
       ]
     },
     "partnership-to-llp": {
-      "label": "Partnership To LLP",
+      "code": "SVC-037",
+      "label": "Convert Partnership Firm to LLP",
       "serviceKey": "partnership-to-llp",
       "plans": [
         {
@@ -1079,12 +1354,19 @@
           "oldPrice": 26499
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/conversion-in-form-of-business/conversion-of-partnership-into-limited-liability-partnership",
+          "title": "Convert Partnership Firm to LLP"
+        }
+      ],
       "components": [
         "Frontend/src/Components/PtollpPlans/PtollpPlans.jsx"
       ]
     },
     "proprietorship-to-opc": {
-      "label": "Proprietorship To OPC",
+      "code": "SVC-044",
+      "label": "Convert Proprietorship to OPC Private Limited",
       "serviceKey": "proprietorship-to-opc",
       "plans": [
         {
@@ -1112,12 +1394,19 @@
           "oldPrice": 52499
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-opc-private-limited-company",
+          "title": "Convert Proprietorship to OPC Private Limited"
+        }
+      ],
       "components": [
         "Frontend/src/Components/PtoopcPlans/PtoopcPlans.jsx"
       ]
     },
     "proprietorship-to-private": {
-      "label": "Proprietorship To Private",
+      "code": "SVC-045",
+      "label": "Proprietorship to Private Limited",
       "serviceKey": "proprietorship-to-company",
       "plans": [
         {
@@ -1145,12 +1434,19 @@
           "oldPrice": 67499
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/conversion-in-form-of-business/conversion-of-proprietorship-into-private-limited-company",
+          "title": "Proprietorship to Private Limited"
+        }
+      ],
       "components": [
         "Frontend/src/Components/PtopvtPlans/PtopvtPlans.jsx"
       ]
     },
     "private-to-public": {
-      "label": "Private To Public",
+      "code": "SVC-041",
+      "label": "Private Limited to Public Limited",
       "serviceKey": "private-to-public",
       "plans": [
         {
@@ -1178,12 +1474,19 @@
           "oldPrice": 96999
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-to-public-limited-company",
+          "title": "Private Limited to Public Limited"
+        }
+      ],
       "components": [
         "Frontend/src/Components/PtpubRightPlan/PtpubRightPlan.jsx"
       ]
     },
     "partnership-to-private": {
-      "label": "Partnership To Private",
+      "code": "SVC-038",
+      "label": "Partnership to Private Limited",
       "serviceKey": "partnership-to-private",
       "plans": [
         {
@@ -1211,12 +1514,19 @@
           "oldPrice": 67499
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/conversion-in-form-of-business/partnership-firm-to-private-limited-company",
+          "title": "Partnership to Private Limited"
+        }
+      ],
       "components": [
         "Frontend/src/Components/PtpvtPlans/PtpvtPlans.jsx"
       ]
     },
     "public-limited-company": {
-      "label": "Public Limited Company",
+      "code": "SVC-046",
+      "label": "Public Limited Company Registration in India",
       "serviceKey": "public-limited-company",
       "plans": [
         {
@@ -1244,12 +1554,19 @@
           "oldPrice": 96999
         }
       ],
+      "pages": [
+        {
+          "path": "/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india",
+          "title": "Public Limited Company Registration in India"
+        }
+      ],
       "components": [
         "Frontend/src/Components/PublicltdRightPlan/PublicltdRightPlan.jsx"
       ]
     },
     "public-to-private": {
-      "label": "Public To Private",
+      "code": "SVC-047",
+      "label": "Public Limited to Private Limited",
       "serviceKey": "public-to-private",
       "plans": [
         {
@@ -1271,12 +1588,19 @@
           "oldPrice": 49999
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/conversion-in-form-of-business/conversion-of-public-limited-company-to-private-limited-company",
+          "title": "Public Limited to Private Limited"
+        }
+      ],
       "components": [
         "Frontend/src/Components/PubpvtPlans/PubpvtPlans.jsx"
       ]
     },
     "private-to-llp": {
-      "label": "Private To LLP",
+      "code": "SVC-040",
+      "label": "Private Limited Company to LLP",
       "serviceKey": "private-to-llp",
       "plans": [
         {
@@ -1298,12 +1622,19 @@
           "oldPrice": 34499
         }
       ],
+      "pages": [
+        {
+          "path": "/event-based-compliances/conversion-in-form-of-business/conversion-of-private-limited-company-into-llp",
+          "title": "Private Limited Company to LLP"
+        }
+      ],
       "components": [
         "Frontend/src/Components/PvtllpPlans/PvtllpPlans.jsx"
       ]
     },
     "private-limited": {
-      "label": "Private Limited",
+      "code": "SVC-039",
+      "label": "Private Limited Company Registration in India",
       "serviceKey": "private-limited",
       "plans": [
         {
@@ -1331,11 +1662,18 @@
           "oldPrice": null
         }
       ],
+      "pages": [
+        {
+          "path": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
+          "title": "Private Limited Company Registration in India"
+        }
+      ],
       "components": [
         "Frontend/src/Components/PvtltdPlanandPricing/PvtltdPlanandPricing.jsx"
       ]
     },
     "society-registration": {
+      "code": "SVC-050",
       "label": "Society Registration",
       "serviceKey": "society-registration",
       "plans": [
@@ -1358,12 +1696,19 @@
           "oldPrice": 18999
         }
       ],
+      "pages": [
+        {
+          "path": "/setting-up-a-business/non-profit-making-structures/society-registration-in-india",
+          "title": "Society Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/SccietyPlanAndPricing/SccietyPlanAndPricing.jsx"
       ]
     },
     "section8-company": {
-      "label": "Section8 Company",
+      "code": "SVC-048",
+      "label": "Section-8 Company Registration",
       "serviceKey": "section8-company",
       "plans": [
         {
@@ -1391,12 +1736,19 @@
           "oldPrice": 34999
         }
       ],
+      "pages": [
+        {
+          "path": "/setting-up-a-business/non-profit-making-structures/non-profit-company-sec-8-company-registration-in-india",
+          "title": "Section-8 Company Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/Secton8PlanAndPricing/Secton8PlanAndPricing.jsx"
       ]
     },
     "shop-establishment": {
-      "label": "Shop Establishment",
+      "code": "SVC-049",
+      "label": "Shop & Establishment Registration",
       "serviceKey": "shop-establishment",
       "plans": [
         {
@@ -1418,12 +1770,19 @@
           "oldPrice": 12999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/registrations/shop-commercial-establishments-registration-in-india",
+          "title": "Shop & Establishment Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/ShopRegPlanandPricing/ShopRegPlanandPricing.jsx"
       ]
     },
     "startup-india": {
-      "label": "Startup India",
+      "code": "SVC-051",
+      "label": "Startup India Registration",
       "serviceKey": null,
       "plans": [
         {
@@ -1445,12 +1804,19 @@
           "oldPrice": 10999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/registrations/startup-india-registration",
+          "title": "Startup India Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/StartupIndiaPricing/StartupIndiaPricing.jsx"
       ]
     },
     "startup-odisha": {
-      "label": "Startup Odisha",
+      "code": "SVC-052",
+      "label": "Startup Odisha Registration",
       "serviceKey": null,
       "plans": [
         {
@@ -1472,12 +1838,19 @@
           "oldPrice": 10999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/registrations/startup-odisha-registration",
+          "title": "Startup Odisha Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/StartupOdishaPricing/StartupOdishaPricing.jsx"
       ]
     },
     "trademark-application": {
-      "label": "Trademark Application",
+      "code": "SVC-054",
+      "label": "Trademark Registration in India",
       "serviceKey": "trademark-application",
       "plans": [
         {
@@ -1499,13 +1872,24 @@
           "oldPrice": 15499
         }
       ],
+      "pages": [
+        {
+          "path": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
+          "title": "Trademark Registration in India"
+        },
+        {
+          "path": "/trademark-registration-in-odisha",
+          "title": "Trademark Registration in Odisha"
+        }
+      ],
       "components": [
         "Frontend/src/Components/TmarkPlans/TmarkPlans.jsx",
         "Frontend/src/Components/TrademarkPlans/TrademarkPlans.jsx"
       ]
     },
     "trademark-exam-reply": {
-      "label": "Trademark Exam Reply",
+      "code": "SVC-055",
+      "label": "Reply to Trademark Examination Report",
       "serviceKey": "trademark-examination-reply",
       "plans": [
         {
@@ -1527,12 +1911,19 @@
           "oldPrice": 14999
         }
       ],
+      "pages": [
+        {
+          "path": "/trademark/registration-and-compliance-services/reply-to-examination-report-trademark",
+          "title": "Reply to Trademark Examination Report"
+        }
+      ],
       "components": [
         "Frontend/src/Components/TmexrPlans/TmexrPlans.jsx"
       ]
     },
     "trademark-hearing": {
-      "label": "Trademark Hearing",
+      "code": "SVC-056",
+      "label": "Trademark Hearing in India",
       "serviceKey": "trademark-hearing",
       "plans": [
         {
@@ -1554,12 +1945,19 @@
           "oldPrice": 14999
         }
       ],
+      "pages": [
+        {
+          "path": "/trademark/registration-and-compliance-services/trademark-hearing-in-india",
+          "title": "Trademark Hearing in India"
+        }
+      ],
       "components": [
         "Frontend/src/Components/TmhearPlans/TmhearPlans.jsx"
       ]
     },
     "trademark-opposition": {
-      "label": "Trademark Opposition",
+      "code": "SVC-057",
+      "label": "Trademark Opposition in India",
       "serviceKey": "trademark-opposition",
       "plans": [
         {
@@ -1581,12 +1979,19 @@
           "oldPrice": 29999
         }
       ],
+      "pages": [
+        {
+          "path": "/trademark/registration-and-compliance-services/trademark-opposition-in-india",
+          "title": "Trademark Opposition in India"
+        }
+      ],
       "components": [
         "Frontend/src/Components/TmoppPlans/TmoppPlans.jsx"
       ]
     },
     "trademark-renewal": {
-      "label": "Trademark Renewal",
+      "code": "SVC-058",
+      "label": "Trademark Renewal in India",
       "serviceKey": "trademark-renewal",
       "plans": [
         {
@@ -1608,12 +2013,19 @@
           "oldPrice": 14999
         }
       ],
+      "pages": [
+        {
+          "path": "/trademark/registration-and-compliance-services/trademark-renewal-in-india",
+          "title": "Trademark Renewal in India"
+        }
+      ],
       "components": [
         "Frontend/src/Components/TmrnwPlans/TmrnwPlans.jsx"
       ]
     },
     "trade-license": {
-      "label": "Trade License",
+      "code": "SVC-053",
+      "label": "Trade License Registration",
       "serviceKey": "trade-license",
       "plans": [
         {
@@ -1635,12 +2047,19 @@
           "oldPrice": 7999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/license-certifications/trade-license-registration",
+          "title": "Trade License Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/TradeLicensePlans/TradeLicensePlans.jsx"
       ]
     },
     "trust-registration": {
-      "label": "Trust Registration",
+      "code": "SVC-059",
+      "label": "Trust Registration Online",
       "serviceKey": "trust-registration",
       "plans": [
         {
@@ -1662,12 +2081,19 @@
           "oldPrice": 23999
         }
       ],
+      "pages": [
+        {
+          "path": "/setting-up-a-business/non-profit-making-structures/trust-registration-in-india",
+          "title": "Trust Registration Online"
+        }
+      ],
       "components": [
         "Frontend/src/Components/TrustPlanAndPricing/TrustPlanAndPricing.jsx"
       ]
     },
     "udyam-registration": {
-      "label": "Udyam Registration",
+      "code": "SVC-060",
+      "label": "Udyam (MSME) Registration",
       "serviceKey": "udyam-registration",
       "plans": [
         {
@@ -1689,12 +2115,19 @@
           "oldPrice": 9999
         }
       ],
+      "pages": [
+        {
+          "path": "/registrations-returns/registrations/udyam-registration-in-india",
+          "title": "Udyam (MSME) Registration"
+        }
+      ],
       "components": [
         "Frontend/src/Components/UdyamRegPlanAndPricing/UdyamRegPlanAndPricing.jsx"
       ]
     },
     "windup-plc": {
-      "label": "Windup PLC",
+      "code": "SVC-061",
+      "label": "Winding Up a Public Limited Company",
       "serviceKey": "windup-plc",
       "plans": [
         {
@@ -1714,6 +2147,12 @@
           "name": "Supreme",
           "price": 24999,
           "oldPrice": null
+        }
+      ],
+      "pages": [
+        {
+          "path": "/windup/wind-up-plc",
+          "title": "Winding Up a Public Limited Company"
         }
       ],
       "components": [

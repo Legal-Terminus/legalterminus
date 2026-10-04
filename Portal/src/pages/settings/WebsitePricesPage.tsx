@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronRight, Loader2, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, ExternalLink, Loader2, Search } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { SkeletonCards } from '../../components/common/Skeleton';
 import { useToast } from '../../components/common/toastContext';
@@ -88,7 +88,11 @@ export default function WebsitePricesPage() {
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return (products ?? []).filter((p) => !q || p.label.toLowerCase().includes(q) || p.key.includes(q));
+    // By name, by product code ("svc-014" or just "14"), or by any part of the page address.
+    return (products ?? []).filter((p) => !q
+      || p.label.toLowerCase().includes(q)
+      || p.code.toLowerCase().includes(q)
+      || p.pages.some((pg) => pg.path.toLowerCase().includes(q) || pg.title.toLowerCase().includes(q)));
   }, [products, query]);
 
   return (
@@ -114,7 +118,7 @@ export default function WebsitePricesPage() {
               aria-label="Search services"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search services…"
+              placeholder="Search by service, product code or page address…"
               className="input-field pl-10"
             />
           </div>
@@ -176,7 +180,7 @@ function ProductCard({ product, isOpen, onToggle, canEdit, services, opensMatter
   const panelId = `prices-${product.key}`;
 
   return (
-    <section className="card overflow-hidden" aria-label={product.label}>
+    <section className="card overflow-hidden" aria-label={`${product.code} ${product.label}`}>
       <button
         type="button"
         onClick={onToggle}
@@ -186,7 +190,14 @@ function ProductCard({ product, isOpen, onToggle, canEdit, services, opensMatter
       >
         {isOpen ? <ChevronDown className="w-4 h-4 text-ink-muted shrink-0" /> : <ChevronRight className="w-4 h-4 text-ink-muted shrink-0" />}
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold text-ink truncate">{product.label}</span>
+          <span className="block text-sm font-semibold text-ink truncate">
+            <span className="font-mono text-xs font-medium text-ink-muted mr-2">{product.code}</span>
+            {product.label}
+          </span>
+          {/* The page address tells two services with the same title apart. */}
+          {product.pages[0] && (
+            <span className="block text-xs text-ink-muted truncate">{product.pages[0].path}</span>
+          )}
           <span className="block text-xs text-ink-muted">
             {product.plans.length} {product.plans.length === 1 ? 'plan' : 'plans'}
             {range && ` · ${range[0] === range[1] ? inr(range[0]) : `${inr(range[0])} – ${inr(range[1])}`}`}
@@ -201,6 +212,28 @@ function ProductCard({ product, isOpen, onToggle, canEdit, services, opensMatter
 
       {isOpen && (
         <div id={panelId} className="border-t border-hairline p-4 space-y-4">
+          {/* Which page of the website this is — the question the product key never answered. */}
+          <div>
+            <p className="input-label">Sold on</p>
+            <ul className="space-y-1">
+              {product.pages.map((pg) => (
+                <li key={pg.path}>
+                  <a
+                    href={`${window.location.origin}${pg.path}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 min-h-11 text-sm text-brand-600 hover:underline break-all"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                    {pg.title || pg.path}
+                    <span className="sr-only"> (opens the website page in a new tab)</span>
+                  </a>
+                  <p className="text-xs text-ink-muted break-all">{pg.path}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           <div className="space-y-3">
             {product.plans.map((p) => {
               const d = drafts[p.id];

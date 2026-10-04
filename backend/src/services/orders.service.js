@@ -73,7 +73,7 @@ export function matterOutcome(order, hasWorkflow) {
 /** What the customer may see of their own order. */
 export function publicOrder(o) {
   return {
-    orderId: o.orderId, status: o.status, label: o.label, planName: o.planName,
+    orderId: o.orderId, status: o.status, productCode: o.productCode ?? '', label: o.label, planName: o.planName,
     amount: o.amount, currency: o.currency, createdAt: o.createdAt, paidAt: o.paidAt ?? null,
     paymentReference: o.gatewayPaymentId ?? null, failureReason: o.failureReason ?? null,
     // Whether there is a matter to go and look at — not its internal state.
@@ -124,7 +124,7 @@ export async function createOrder({ uid, customer, productKey, planId, simulate 
 
   const order = {
     uid, customer: customer ?? {},
-    productKey, planId, label: plan.label, planName: plan.planName, serviceKey: plan.serviceKey,
+    productKey, productCode: plan.productCode ?? '', planId, label: plan.label, planName: plan.planName, serviceKey: plan.serviceKey,
     amount: plan.amount, currency: 'INR',
     status: 'created', gateway: gw.name, gatewayOrderId,
     matter: { state: 'none' },

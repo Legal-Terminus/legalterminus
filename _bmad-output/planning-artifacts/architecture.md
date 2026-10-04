@@ -1710,9 +1710,20 @@ switched off. The full procedure is `docs/delivery.md`.
 ## The price catalogue (E24-S01)
 
 What each website plan costs is owned by the server. `pricingCatalog/{productKey}`
-holds `{ label, serviceKey, plans: [{ id, name, price, oldPrice, active }] }`; a
-product is keyed by the `source` its component passes to the checkout, and
+holds `{ code, label, pages, serviceKey, plans: [{ id, name, price, oldPrice, active }] }`;
+a product is keyed by the `source` its component passes to the checkout, and
 `serviceKey` links it to a portal service (null when there is none).
+
+- **`code`** (`SVC-014`) is the product's permanent, human reference: issued once
+  by the generator, never changed or reused, shown on the price screen, on
+  orders, at checkout and on the result page. **`label`** is the title of the
+  product's website page and **`pages`** the routes it is sold on. All three
+  describe the WEBSITE, so the seed always refreshes them; prices, on-sale flags
+  and the service link belong to the firm and are never overwritten.
+- **Never link a product to a portal service by matching keys.** The website's
+  and the portal's keys were named independently and collide (`cic-registration`
+  is "Change of Company Name" on one and "Community Interest Company" on the
+  other). The generator's `NOT_THE_SAME` list records the known collisions.
 
 - **A payment must take its amount from `resolvePlan(productKey, planId)`**
   (`pricing.service.js`), never from the request.

@@ -17,7 +17,12 @@ export interface PricePlan {
 
 export interface PriceProduct {
   key: string;
+  /** Permanent reference, e.g. SVC-014 — what staff and customers quote. */
+  code: string;
+  /** The title of the website page it is sold on. */
   label: string;
+  /** Where on the website it is sold. */
+  pages: { path: string; title: string }[];
   /** The portal service a paid order opens a matter on; null when there is none. */
   serviceKey: string | null;
   plans: PricePlan[];
