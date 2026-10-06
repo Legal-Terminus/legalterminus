@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../PubpvtPlans/PubpvtPlans.css";
+import "../TmarkPlans/TmarkPlans.css";
 import "../CompanyRegPlans/CompanyRegPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
@@ -9,7 +9,7 @@ const DEFAULT_PLANS = [
   {
     id: "elemental",
     name: "Elemental",
-    badge: "BASIC",
+    badge: "★ BASIC",
     oldPrice: 2249,
     price: 1499,
     services: [
@@ -35,14 +35,14 @@ const DEFAULT_PLANS = [
       "Drafting of Power of Attorney",
       "Trademark Application Filing",
       "Lifetime updates and reminders",
-      "Reply of Departmental Objections (unlimited)",
+      "Reply of Departmental Objections",
     ],
   },
   {
     id: "supreme",
     name: "Supreme",
     badge: "✦ FULL HEARING COVERAGE",
-    oldPrice: 22499,
+    oldPrice: 15499,
     price: 12499,
     services: [
       "On-Call consultation with expert",
@@ -51,7 +51,8 @@ const DEFAULT_PLANS = [
       "Drafting of Power of Attorney",
       "Trademark Application Filing",
       "Lifetime updates and reminders",
-      "Reply of Departmental Objections (unlimited)",
+      "Reply of Departmental Objections",
+      "Udyam Certificate Update (or fresh Udyam application)",
       "Trademark Hearing (Unlimited)",
     ],
   },
@@ -77,7 +78,7 @@ const TrademarkPlans = () => {
             </p>
           </header>
 
-          <div className="opcpricing-cards pubpvt-cards-center">
+          <div className="opcpricing-cards tmark-cards-center">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
