@@ -15,6 +15,15 @@ export const CATEGORIES = [
 
 export const posts = [
   {
+    id: 21522,
+    slug: "private-limited-company-registration-in-india-complete-guide-moa-aoa",
+    title: "Private Limited Company Registration in India: A Complete Guide to the Process and the Paperwork Behind It",
+    excerpt: "Incorporating a company is more than filing SPICe+ on the MCA portal. Here's how the process works — and why the Memorandum and Articles of Association deserve careful thought before the first form is filed.",
+    date: "October 6, 2026",
+    category: "Company Law",
+    image: "/blog-images/company-registration-in-India-1.webp",
+  },
+  {
     id: 21521,
     slug: "why-your-logo-needs-legal-protection-and-how-to-get-it-registered-in-india",
     title: "Why Your Logo Needs Legal Protection — And How to Get It Registered in India",
