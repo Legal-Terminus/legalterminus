@@ -8,7 +8,7 @@ const DEFAULT_PLANS = [
   {
     id: "elemental",
     name: "Elemental",
-    badge: "PROPOSED-TO-BE-USED",
+    badge: "★ BASIC",
     oldPrice: 2249,
     price: 1499,
     services: [
@@ -23,7 +23,7 @@ const DEFAULT_PLANS = [
   {
     id: "enriched",
     name: "Enriched",
-    badge: "★ WITH OBJECTION REPLY",
+    badge: "★ MOST POPULAR",
     popular: true,
     oldPrice: 9749,
     price: 6499,
@@ -40,7 +40,7 @@ const DEFAULT_PLANS = [
   {
     id: "supreme",
     name: "Supreme",
-    badge: "✦ WITH UNLIMITED HEARINGS",
+    badge: "✦ FULL HEARING COVERAGE",
     oldPrice: 15499,
     price: 12499,
     services: [
