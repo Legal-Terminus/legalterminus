@@ -13,6 +13,9 @@ export const blogContent = {
     <p>👉 To register your company, <a href="https://legalterminus.com/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india" target="_blank" rel="noopener noreferrer">contact us today!</a></p>
 
     <h2>Why Do Founders Choose a Private Limited Company?</h2>
+
+    <img src="/blog-images/why-choose-private-limited-company.webp" alt="Why Do Founders Choose a Private Limited Company - Legal Terminus" loading="lazy" />
+
     <p>A company incorporated under the Companies Act, 2013 has a legal identity separate from its shareholders.<br/>
     This gives the structure some important advantages.</p>
     <ul>

@@ -21,7 +21,7 @@ export const posts = [
     excerpt: "Incorporating a company is more than filing SPICe+ on the MCA portal. Here's how the process works — and why the Memorandum and Articles of Association deserve careful thought before the first form is filed.",
     date: "October 6, 2026",
     category: "Company Law",
-    image: "/blog-images/company-registration-in-India-1.webp",
+    image: "/blog-images/private-limited-company-registration-in-india.webp",
   },
   {
     id: 21521,
