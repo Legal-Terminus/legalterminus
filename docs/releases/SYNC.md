@@ -66,6 +66,7 @@ went with each one.
 | `v1.5.0` | `v1.6.0-lt.2` | 2026-10-06 | **LT-only patch — no Ambyflow code.** Trademark application plan badges renamed: ★ BASIC, ★ MOST POPULAR, ✦ FULL HEARING COVERAGE (`4d00f9bb`). Carries everything in `v1.6.0-lt.1`. |
 | `v1.5.0` | `v1.6.0-lt.3` | 2026-10-06 | **LT-only patch — no Ambyflow code.** Odisha trademark page plans match the main trademark page — same badges, prices, features and card layout (`189d1290`). |
 | `v1.5.0` | `v1.6.0-lt.4` | 2026-10-06 | **LT-only patch — no Ambyflow code.** New blog post: "Private Limited Company Registration in India: A Complete Guide to the Process and the Paperwork Behind It" (`e80d694d`). |
+| `v1.5.0` | `v1.6.0-lt.5` | 2026-10-06 | **LT-only patch — no Ambyflow code.** Featured and inline images for the Private Limited Company registration guide post (`cde07824`). |
 
 *Add a row when an Ambyflow release reaches LT. An Ambyflow release that is not
 applicable still gets a row, marked "no-op — nothing applicable".*
