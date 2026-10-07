@@ -67,6 +67,7 @@ went with each one.
 | `v1.5.0` | `v1.6.0-lt.3` | 2026-10-06 | **LT-only patch — no Ambyflow code.** Odisha trademark page plans match the main trademark page — same badges, prices, features and card layout (`189d1290`). |
 | `v1.5.0` | `v1.6.0-lt.4` | 2026-10-06 | **LT-only patch — no Ambyflow code.** New blog post: "Private Limited Company Registration in India: A Complete Guide to the Process and the Paperwork Behind It" (`e80d694d`). |
 | `v1.5.0` | `v1.6.0-lt.5` | 2026-10-06 | **LT-only patch — no Ambyflow code.** Featured and inline images for the Private Limited Company registration guide post (`cde07824`). |
+| `v1.5.0` | `v1.6.0-lt.6` | 2026-10-07 | **LT-only patch — no Ambyflow code.** WhatsApp button and links use +91 8280093456 (`6bf19e3b`). |
 
 *Add a row when an Ambyflow release reaches LT. An Ambyflow release that is not
 applicable still gets a row, marked "no-op — nothing applicable".*
