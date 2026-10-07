@@ -95,7 +95,7 @@ export default function RefundPolicy() {
             <p>
               <strong>Email:</strong> <a href="mailto:admin@legalterminus.com">admin@legalterminus.com</a><br/>
               <strong>Phone:</strong> <a href="tel:+918280045432">+91 8280 045 432</a><br/>
-              <strong>WhatsApp:</strong> <a href="https://wa.me/918280008183" target="_blank" rel="noopener noreferrer">+91 8280 008 183</a>
+              <strong>WhatsApp:</strong> <a href="https://wa.me/918280093456" target="_blank" rel="noopener noreferrer">+91 8280 093 456</a>
             </p>
           </div>
         </section>

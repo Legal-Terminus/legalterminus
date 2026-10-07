@@ -80,7 +80,7 @@ const CroContact = () => {
                 </a>
                 <a
                   className="croct-btn croct-btn--wa"
-                  href="https://wa.me/918280008183"
+                  href="https://wa.me/918280093456"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

@@ -108,7 +108,7 @@ const Footer = () => {
                 <FaInstagram className="social-icon" />
                 <span className="social-tooltip">Instagram</span>
               </a>
-              <a href="https://wa.me/918280008183" aria-label="whatsapp" className="social-btn" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/918280093456" aria-label="whatsapp" className="social-btn" target="_blank" rel="noopener noreferrer">
                 <FaWhatsapp className="social-icon" />
                 <span className="social-tooltip">WhatsApp</span>
               </a>
