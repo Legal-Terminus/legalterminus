@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAllTasksReport } from '../../api/reports';
@@ -7,10 +7,13 @@ import type { Task } from '../../types/task';
 import ReportFiltersBar from '../../components/reports/ReportFiltersBar';
 import DataGrid from '../../components/common/DataGrid';
 import { taskReportColumns, taskReportGlobalFilter } from './reportColumns';
+import { useUrlFilters } from '../../hooks/useUrlFilters';
+import { REPORT_FILTER_KEYS } from '../../api/reports';
 
 export default function AllTasksReport() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<ReportFilters>({});
+  // #208: filters live in the URL so Back from a matter restores them.
+  const [filters, setFilters] = useUrlFilters<ReportFilters>(REPORT_FILTER_KEYS);
   const { data = [], isLoading, error } = useQuery({
     queryKey: ['report-all-tasks', filters],
     queryFn: () => getAllTasksReport(filters),

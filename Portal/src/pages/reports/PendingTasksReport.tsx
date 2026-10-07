@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { getPendingTasksReport } from '../../api/reports';
@@ -8,6 +8,8 @@ import type { ColumnDef } from '@tanstack/react-table';
 import DataGrid from '../../components/common/DataGrid';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { taskReportColumns, taskReportGlobalFilter } from './reportColumns';
+import { useUrlFilters } from '../../hooks/useUrlFilters';
+import { REPORT_FILTER_KEYS } from '../../api/reports';
 
 const REASON_LABELS: Record<PendingTask['pendingReason'], string> = {
   approval: 'Awaiting Approval',
@@ -29,7 +31,8 @@ const REASON_ORDER = ['approval', 'payment', 'document', 'client_action', 'gover
 
 export default function PendingTasksReport() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<ReportFilters>({});
+  // #208: filters live in the URL so Back from a matter restores them.
+  const [filters, setFilters] = useUrlFilters<ReportFilters>(REPORT_FILTER_KEYS);
   const { data, isLoading, isError } = useQuery({
     queryKey: ['report-pending', filters],
     queryFn: () => getPendingTasksReport(filters),

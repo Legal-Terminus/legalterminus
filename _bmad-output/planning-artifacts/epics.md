@@ -3863,6 +3863,43 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Production feedback — #194 (reopened), #207, #208 (2026-10-08) ✅ Completed
+
+Built in Ambyflow first (Story 42.13) and ported here by content. On `main`, so
+on QA; not in production until the next release tag.
+
+- **#194 (reopened) — 1,000 words are saved as 1,000 words.** The word limit was
+  right, but each write path also cut the sanitised HTML to a character cap sized
+  for a few paragraphs. Reproduced with the real server code on 1,000 ordinary
+  words (~9,700 characters): a note to the client was refused by its schema
+  (8,000) as "Validation failed"; a Discussion message was cut to 4,000
+  characters, keeping 405 words; a step comment to 8,000, keeping 818. "The full
+  content is not visible" was that cut, not a display fault. The first fix's
+  tests used two-character "words" and never reached a cap. Now
+  `prepareRichText` (`richText.service.js`) is the one gate: 1,000 words, then
+  60,000 characters of sanitised markup as a guard, stored whole or refused —
+  never truncated. `RichText` folds anything taller than 240px behind **Read
+  more**, and the editor says how many words to remove after an over-long paste.
+  Tests: `richTextWordLimit.test.js` (realistic words on purpose), four tests
+  added to `comment-editor.spec.ts`.
+- **#207 — one email per event (partly explained).** `createNotification` mirrors
+  to email unless told otherwise. Two handlers sent a templated email AND created
+  a notification without `email: false`: the client reminder (second copy with
+  the identical subject) and a client-visible Discussion message. Both fixed;
+  `singleEmailPerEvent.test.js` is the tripwire. Every email handed to the mail
+  server is now logged once as `[email] sent` (matter, path, recipient count,
+  message id; no addresses or subject). **Not explained:** the firm reported all
+  emails doubling. Production records for 3–7 October show one request and one
+  notification per event for step and internal emails. An example was requested
+  on the issue; the new log line will settle any send after this ships.
+- **#208 — Back returns to where the matter was opened from.** The matter page's
+  Back button was `navigate('/tasks')`. Now `useGoBack` goes to the previous
+  in-app page, falling back to the matters list on a cold load. Report filters
+  moved from component state to the URL (`useUrlFilters`, written with
+  `replace`), so they are still applied on return and a filtered report can be
+  bookmarked: All matters, Completed, Pending, Master sheet, SLA, Client / group
+  work and fee. Test: `report-back-navigation.spec.ts`.
+
 ### Security — test credentials and the QA / production boundary (2026-10-04) ✅ Completed
 
 - **Test passwords were in the repository, on accounts with live roles.**

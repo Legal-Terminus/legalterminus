@@ -93,6 +93,54 @@ export function checkWordLimit(html, limit = COMMENT_WORD_LIMIT) {
   return { ok: words <= limit, words, limit };
 }
 
+/**
+ * The most markup a single comment / note / message may carry once sanitised.
+ *
+ * LT #194 (reopened): the word limit is 1,000, but each write path also cut the
+ * sanitised HTML to a CHARACTER cap sized for a few paragraphs — 4,000 for a
+ * Discussion message, 8,000 for a comment or note. A thousand ordinary words are
+ * about 6,500 characters before any markup and close to 10,000 with it. So a
+ * message inside the word limit was silently cut to roughly 400 words (mid-word,
+ * possibly mid-tag), a comment to roughly 800, and a note was refused outright
+ * by its schema as "Validation failed". The firm saw exactly that.
+ *
+ * Words are the limit people are told about, so words are the limit. This cap
+ * exists only to stop a pathological payload (a thousand 500-character "words",
+ * or markup that survives sanitising in bulk), and it sits far above anything a
+ * thousand real words can produce. Exceeding it is REFUSED, never truncated —
+ * cutting HTML at a byte offset loses content without telling anyone.
+ */
+export const RICH_TEXT_MAX_CHARS = 60000;
+/** Raw input cap. Matches the Zod schemas; pasted Word markup is bulky before sanitising. */
+export const RICH_TEXT_MAX_INPUT_CHARS = 200000;
+
+/**
+ * Validate and sanitise one piece of user-authored rich text for storage.
+ *
+ * Returns `{ ok: true, html }` — the full sanitised content, never truncated —
+ * or `{ ok: false, status, code, message }` with a message a person can act on.
+ * `what` names the thing in that message ("comment", "note", "message").
+ */
+export function prepareRichText(raw, { what = 'comment' } = {}) {
+  const input = typeof raw === 'string' ? raw : String(raw ?? '');
+  const html = sanitizeRichText(input, { maxLength: RICH_TEXT_MAX_INPUT_CHARS });
+  const wl = checkWordLimit(html);
+  const a = /^[aeiou]/i.test(what) ? 'An' : 'A';
+  if (!wl.ok) {
+    return {
+      ok: false, status: 400, code: 'WORD_LIMIT_EXCEEDED',
+      message: `${a} ${what} may be at most ${wl.limit} words (this one has ${wl.words}).`,
+    };
+  }
+  if (html.length > RICH_TEXT_MAX_CHARS) {
+    return {
+      ok: false, status: 400, code: 'RICH_TEXT_TOO_LARGE',
+      message: `This ${what} carries too much formatting to save. Remove some of it — pasted tables, colours or very long links — and try again.`,
+    };
+  }
+  return { ok: true, html, words: wl.words };
+}
+
 /** Sanitise user-authored HTML. Returns '' for empty/invalid input. */
 export function sanitizeRichText(html, { maxLength = 20000 } = {}) {
   if (typeof html !== 'string' || !html.trim()) return '';

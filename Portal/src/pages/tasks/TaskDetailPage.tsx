@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, CheckCircle2, CircleSlash, Loader2, PlayCircle,
@@ -31,6 +31,7 @@ import { getPayments, recordPayment, deletePaymentEntry } from '../../api/paymen
 import { parseCcEmails, validateCcEmails, formatCcEmails } from '../../lib/ccEmails';
 import { usePageTitle } from '../../hooks/useDocumentTitle';
 import FormStepPanel from '../../components/tasks/FormStepPanel';
+import { useGoBack } from '../../hooks/useGoBack';
 
 type TabKey = 'steps' | 'documents' | 'payments' | 'discussion';
 
@@ -42,7 +43,7 @@ type TabKey = 'steps' | 'documents' | 'payments' | 'discussion';
  */
 export default function TaskDetailPage() {
   const { taskId } = useParams<{ taskId: string }>();
-  const navigate = useNavigate();
+  const goBack = useGoBack('/tasks');
   const queryClient = useQueryClient();
   const toast = useToast();
   const confirm = useConfirm();
@@ -410,9 +411,12 @@ export default function TaskDetailPage() {
       ].filter(Boolean).join(' · ')}
       back={
         <button
-          onClick={() => navigate('/tasks')}
+          // #208: back to wherever the matter was opened from (a report, the
+          // dashboard, a client, search…), not always All Matters.
+          onClick={goBack}
           className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-soft transition-colors"
           title="Back"
+          aria-label="Back"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>

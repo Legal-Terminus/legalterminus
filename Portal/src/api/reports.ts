@@ -12,6 +12,9 @@ export interface ReportFilters {
   endDate?: string;
 }
 
+/** The names in ReportFilters — the query-string keys a report page reads (#208). */
+export const REPORT_FILTER_KEYS = ['status', 'serviceType', 'teamMember', 'paymentStatus', 'startDate', 'endDate'] as const;
+
 function buildQuery(filters: ReportFilters): string {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
@@ -80,6 +83,7 @@ export interface SlaFilters {
   assignee?: string;
   atRiskDays?: number;
 }
+export const SLA_FILTER_KEYS = ['serviceType', 'assignee', 'atRiskDays'] as const;
 
 export const getSlaReport = (filters: SlaFilters = {}) => {
   const params = new URLSearchParams();
@@ -344,6 +348,7 @@ export interface ClientGroupFeeReport {
 }
 
 export interface ClientGroupFeeFilters { fy?: string; group?: string; clientUid?: string; serviceKey?: string }
+export const CLIENT_GROUP_FEE_FILTER_KEYS = ['fy', 'group', 'clientUid', 'serviceKey'] as const;
 
 /** The filter value that means "clients with no group". Mirrors the API. */
 export const INDIVIDUAL_CLIENTS = 'individual';

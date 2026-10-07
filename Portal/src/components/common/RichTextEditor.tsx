@@ -211,9 +211,16 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
         const words = countWords(editor.getText());
         if (words < COMMENT_WORD_LIMIT * 0.8) return null;
         const atLimit = words >= COMMENT_WORD_LIMIT;
+        // #194: exactly at the limit is fine to send; a paste can go OVER it (typing
+        // cannot), and then the server will refuse — so say how many to remove
+        // rather than leaving the person to find out from an error.
+        const over = words - COMMENT_WORD_LIMIT;
         return (
           <p className={`px-3 pb-1.5 text-[11px] text-right ${atLimit ? 'text-red-600 font-medium' : 'text-ink-faint'}`}>
-            {words} / {COMMENT_WORD_LIMIT} words{atLimit ? ' — limit reached' : ''}
+            {words} / {COMMENT_WORD_LIMIT} words
+            {over > 0
+              ? ` — ${over} over the limit; shorten it before sending`
+              : atLimit ? ' — limit reached' : ''}
           </p>
         );
       })()}

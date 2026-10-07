@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createColumnHelper, type ColumnDef } from '@tanstack/react-table';
@@ -8,6 +8,8 @@ import type { SlaBreach, SlaFilters, OnTimeRate } from '../../api/reports';
 import DataGrid from '../../components/common/DataGrid';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import UrgentBadge from '../../components/tasks/UrgentBadge';
+import { useUrlFilters } from '../../hooks/useUrlFilters';
+import { SLA_FILTER_KEYS } from '../../api/reports';
 
 /**
  * SLA / Delay report (E13-S04). The reporting counterpart to "running late"
@@ -127,7 +129,8 @@ function RateBar({ rows, title }: { rows: OnTimeRate[]; title: string }) {
 
 export default function SlaReport() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<SlaFilters>({ atRiskDays: 2 });
+  // #208: filters live in the URL so Back from a matter restores them.
+  const [filters, setFilters] = useUrlFilters<SlaFilters>(SLA_FILTER_KEYS, { numeric: ['atRiskDays'], defaults: { atRiskDays: 2 } });
   const { data, isLoading, isError } = useQuery({
     queryKey: ['report-sla', filters],
     queryFn: () => getSlaReport(filters),

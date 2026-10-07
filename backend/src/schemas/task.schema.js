@@ -136,7 +136,7 @@ export const taskTransitionSchema = z.object({
     branch: z.string().trim().max(40).optional(),
     // #122: comments may be rich text (HTML), so the cap is generous — the
     // controller sanitises and re-caps to 8000 chars of CLEAN markup.
-    remark: z.string().trim().max(20000).optional(),
+    remark: z.string().trim().max(200000).optional(),
     amount: z.number().optional(),
     mode: z.string().trim().max(40).optional(),
     reason: z.string().trim().max(500).optional(),
@@ -197,7 +197,10 @@ export const taskListQuerySchema = z.object({
 
 // #105: staff "Note to client" on a step — comment-only, no transition.
 export const stepNoteSchema = z.object({
-  note: z.string().trim().min(1).max(8000),
+  // #194: sized for the RAW rich text of a 1,000-word note. It was 8,000, which
+  // refused a note well inside the word limit with a bare "Validation failed".
+  // The real limits (words, then sanitised size) are enforced by prepareRichText.
+  note: z.string().trim().min(1).max(200000),
 }).strict();
 
 // POST /api/tasks/:taskId/internal-reminders — #198. Recipients are resolved

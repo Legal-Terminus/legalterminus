@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
 import { apiAs, createMatter, deleteMatter, getMatter } from './api';
+import { openMatter } from './helpers';
 
 /**
  * #193 — own Discussion messages use a light-green bubble with dark text (the old
@@ -108,3 +109,108 @@ test('#193: the editor exposes colour, highlight and size controls', async ({ ad
     expect(opts).toEqual(['Small', 'Normal', 'Large']);
   } finally { await deleteMatter(taskId); }
 });
+
+// ── #194 reopened: the limit must be REACHABLE with real words ──────────────
+//
+// `words()` above makes two-character "words", so 1,000 of them is ~5,000
+// characters and never met the character caps. Real prose did: a Discussion
+// message was cut to 4,000 characters (about 400 words kept), a comment to
+// 8,000, and a note was refused by its schema. These use ordinary words.
+
+const VOCAB = ('the registration application requires supporting documents including incorporation '
+  + 'certificate director identification and registered office address proof before submission').split(' ');
+const realWords = (n: number, offset = 0) =>
+  Array.from({ length: n }, (_, i) => VOCAB[(i + offset) % VOCAB.length]).join(' ');
+/** n words as ten paragraphs, one coloured — what the editor actually sends. */
+const realisticHtml = (n: number) => Array.from({ length: 10 }, (_, p) => {
+  const text = realWords(p === 9 ? n - Math.floor(n / 10) * 9 : Math.floor(n / 10), p);
+  return p === 3 ? `<p><span style="color: #dc2626">${text}</span></p>` : `<p>${text}</p>`;
+}).join('');
+const countWords = (html: string) =>
+  html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean).length;
+
+test('#194: a realistic 1,000-word Discussion message is stored whole, not cut', async () => {
+  const taskId = await createMatter();
+  try {
+    const admin = await apiAs('admin');
+    const html = realisticHtml(1000);
+    expect(html.length, 'long enough to have hit the old 4,000-char cap').toBeGreaterThan(8000);
+    const res = await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: html } });
+    expect(res.status()).toBe(201);
+    const { id } = await res.json();
+
+    const list = await (await admin.get(`/api/tasks/${taskId}/messages`)).json();
+    const stored = (list.data ?? list).find((m: { id: string }) => m.id === id);
+    await admin.dispose();
+    expect(stored, 'the message can be read back').toBeTruthy();
+    expect(countWords(stored.body), 'every one of the 1,000 words was saved').toBe(1000);
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#194: a realistic 1,000-word step note is accepted, and 1,001 is refused with the count', async () => {
+  const taskId = await createMatter();
+  try {
+    const admin = await apiAs('admin');
+    const step = (await getMatter(taskId)).currentStepNumber as number;
+
+    const ok = await admin.post(`/api/tasks/${taskId}/steps/${step}/note`, { data: { note: realisticHtml(1000) } });
+    expect(ok.status(), 'used to be 400 "Validation failed" — the schema capped a note at 8,000 characters').toBeLessThan(300);
+
+    const over = await admin.post(`/api/tasks/${taskId}/steps/${step}/note`, { data: { note: realisticHtml(1001) } });
+    expect(over.status()).toBe(400);
+    const body = await over.json();
+    expect(body.code).toBe('WORD_LIMIT_EXCEEDED');
+    expect(body.message).toContain('1001');
+    await admin.dispose();
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#194: a realistic 1,000-word step comment advances the matter and is kept whole', async () => {
+  const taskId = await createMatter();
+  try {
+    const admin = await apiAs('admin');
+    const res = await admin.post(`/api/tasks/${taskId}/transition`, {
+      data: { event: { type: 'COMPLETE_STEP', remark: realisticHtml(1000) } },
+    });
+    // The first step may not accept COMPLETE_STEP in every workflow; the point is
+    // that a 1,000-word comment is never the reason for a refusal.
+    if (res.status() === 400) {
+      const body = await res.json();
+      expect(body.code, JSON.stringify(body)).not.toBe('WORD_LIMIT_EXCEEDED');
+      expect(body.code).not.toBe('RICH_TEXT_TOO_LARGE');
+      expect(body.message).not.toBe('Validation failed');
+    } else {
+      expect(res.status()).toBe(200);
+      const events = await (await admin.get(`/api/tasks/${taskId}/events`)).json();
+      // Nothing else on a brand-new matter carries a comment this long.
+      const withComment = (events.data ?? events).find((e: { comment?: string }) =>
+        (e.comment ?? '').length > 1000);
+      expect(withComment, 'the step comment is on the activity').toBeTruthy();
+      expect(countWords(withComment.comment)).toBe(1000);
+    }
+    await admin.dispose();
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#194: a long message is folded behind "Read more" and opens in full', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    const admin = await apiAs('admin');
+    // A recognisable last word proves the END of the message is on the page.
+    const html = `${realisticHtml(990)}<p>and finally the closing marker zzlastwordzz</p>`;
+    expect((await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: html } })).status()).toBe(201);
+    // A short one must NOT get a toggle.
+    expect((await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: '<p>short reply</p>' } })).status()).toBe(201);
+    await admin.dispose();
+
+    await openMatter(adminPage, taskId, 'Discussion');
+    const more = adminPage.getByRole('button', { name: 'Read more' });
+    await expect(more, 'exactly one message is long enough to fold').toHaveCount(1, { timeout: 20_000 });
+    await expect(adminPage.getByText('short reply')).toBeVisible();
+
+    await more.click();
+    await expect(adminPage.getByText('zzlastwordzz'), 'the whole message is readable').toBeVisible();
+    await expect(adminPage.getByRole('button', { name: 'Show less' })).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});
+

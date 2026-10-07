@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Download } from 'lucide-react';
@@ -7,6 +6,8 @@ import {
   type ClientGroupFeeFilters, type ClientGroupFeeRow,
 } from '../../api/reports';
 import { exportToXlsx, type ExportColumn } from '../../lib/exportXlsx';
+import { useUrlFilters } from '../../hooks/useUrlFilters';
+import { CLIENT_GROUP_FEE_FILTER_KEYS } from '../../api/reports';
 
 /**
  * LT #206 — works and fees per group / client, one financial year at a time.
@@ -31,7 +32,8 @@ const statusLabel = (s: string) => {
 const fyLabel = (fy: string) => `FY ${fy}`;
 
 export default function ClientGroupFeeReport() {
-  const [filters, setFilters] = useState<ClientGroupFeeFilters>({});
+  // #208: filters live in the URL so Back from a matter restores them.
+  const [filters, setFilters] = useUrlFilters<ClientGroupFeeFilters>(CLIENT_GROUP_FEE_FILTER_KEYS);
   const set = (patch: ClientGroupFeeFilters) => setFilters((f) => ({ ...f, ...patch }));
 
   const { data, isLoading, error, isFetching } = useQuery({

@@ -242,6 +242,9 @@ Every meaningful workflow event triggers an in-app notification and an email to 
 4. **Given** admin configures an email template for a step, **Then** all future notifications for that step use the custom template with branding, content, and tone settings.
 5. **Given** a notification pop-up (news/offer/update) is created by admin, **Then** it is shown in-app on next open and optionally sent as email to selected client groups.
 6. **Given** a client sends a message in a matter's Discussion (#200), **Then** the matter's owner and everyone assigned to its current step each receive one notification and one email; if the matter has neither, the admins do.
+7. **Given** staff send a client a reminder, or post a Discussion message visible to the client (#207), **Then** the client receives exactly one email for it, alongside the in-app notification.
+8. **Given** a user writes a step comment, a note to the client or a Discussion message of up to 1,000 words (#194), **Then** it is saved in full and shown folded behind "Read more" when long; **Given** it exceeds 1,000 words, **Then** it is refused with the actual word count and nothing is saved.
+9. **Given** a user opens a matter from a report, the dashboard, a client's page or search and presses Back (#208), **Then** they return to that page; a report's filters are part of its address and are still applied.
 
 ---
 

@@ -1669,6 +1669,30 @@ the client notifies the client only (`matter_message`); internal staff messages
 notify only @mentioned colleagues (`matter_mention`), and the mention picker
 (`listMentionableStaff`) lists the whole team minus seeded test accounts.
 
+## Rich text limits, one email per event, report filters and Back (#194, #207, #208)
+
+**One gate for user-authored rich text.** `prepareRichText(raw, { what })` in
+`richText.service.js` is the only path by which a step comment, a note to the
+client or a Discussion message reaches storage. It sanitises, then applies
+1,000 words (`WORD_LIMIT_EXCEEDED`) and 60,000 characters of sanitised markup
+(`RICH_TEXT_TOO_LARGE`, a guard set at about four times what 1,000 real words
+produce). It returns the content whole or refuses it; **nothing is truncated**.
+The Zod schemas in front cap only the raw input (200,000) and must stay above
+what the word limit allows. `RichText` folds content taller than 240px behind
+"Read more", by rendered height.
+
+**One email per event.** `createNotification` mirrors to email by default. A
+handler that sends its own templated email for the same event must pass
+`email: false`. Each email handed to the mail server is logged once as
+`[email] sent` — matter, path (`template` / `notification`), recipient count,
+message id; never an address or a subject.
+
+**Report filters live in the URL.** `useUrlFilters(keys, { numeric, defaults })`
+replaces `useState` for a report's filters: Back restores a filtered report and
+a filtered report is a link. Writes use `replace`; a default value stays out of
+the URL. **Back** on a detail page is `useGoBack(fallback)`: the previous in-app
+history entry, or the fallback when the session opened on that page.
+
 ## The QA environment (E24-S00)
 
 A temporary second deployment in the SAME project: Hosting site

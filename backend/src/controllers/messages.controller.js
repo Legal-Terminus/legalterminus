@@ -4,7 +4,7 @@ import { createNotification } from './notifications.controller.js';
 import { resolveClientMessageRecipients } from '../services/discussionRecipients.service.js';
 import { sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
-import { sanitizeRichText, richTextToPlain, checkWordLimit } from '../services/richText.service.js';
+import { prepareRichText, richTextToPlain } from '../services/richText.service.js';
 import { extractMentionEmails, resolveStaffByEmails, listMentionableStaff } from '../services/mentions.service.js';
 import { clientCanSeeMatter } from './tasks.controller.js';
 
@@ -23,7 +23,6 @@ import { clientCanSeeMatter } from './tasks.controller.js';
  */
 
 const MESSAGES_SUB = 'messages';
-const MAX_BODY = 4000;
 // #123: how a staff sender is shown to the CLIENT in the discussion thread.
 const CLIENT_FACING_SENDER = 'Legal Terminus';
 
@@ -128,18 +127,14 @@ export async function createMessage(req, res) {
     // browser — a client could POST here directly), so everything stored is safe
     // and every render site can display it without re-sanitising.
     const raw = String(req.body?.body ?? '');
-    // #194: check the word cap on the RAW input, BEFORE the character truncation
-    // below. MAX_BODY (4000 chars) cuts a 1,001-word message down to ~800 words,
-    // so checking afterwards would never fire — and the user would silently lose
-    // the tail of their message instead of being told it was too long.
-    const wl = checkWordLimit(sanitizeRichText(raw, { maxLength: 200000 }));
-    if (!wl.ok) {
-      return res.status(400).json({
-        message: `A message may be at most ${wl.limit} words (this one has ${wl.words}).`,
-        code: 'WORD_LIMIT_EXCEEDED',
-      });
+    // #194 (reopened): the word limit is the limit. The message is stored WHOLE
+    // or refused with a reason — it used to be cut to 4,000 characters here,
+    // which kept about 400 of a 1,000-word message and told nobody.
+    const prepared = prepareRichText(raw, { what: 'message' });
+    if (!prepared.ok) {
+      return res.status(prepared.status).json({ message: prepared.message, code: prepared.code });
     }
-    const body = sanitizeRichText(raw, { maxLength: MAX_BODY });
+    const body = prepared.html;
     // Reject content that is empty once stripped (e.g. a lone <script>).
     if (!richTextToPlain(body)) return res.status(400).json({ message: 'Message cannot be empty.' });
 
@@ -211,12 +206,16 @@ export async function createMessage(req, res) {
       // messages notify nobody but those @mentioned (below).
       try {
         const recipient = task.clientUid;
+        // #207: `email: false` — the templated message email just below is the
+        // client's email. Left to mirror itself, this notification sent a second
+        // one ("New message about your service") for every client-visible reply.
         await createNotification({
           recipientUid: recipient,
           type: 'info',
           title: 'New message about your service',
           message: preview,
           taskId,
+          email: false,
         });
 
         // Email via the editable template (falls back to a sensible default).

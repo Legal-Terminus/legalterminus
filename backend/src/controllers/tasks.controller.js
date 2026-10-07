@@ -9,7 +9,7 @@ import { createNotification, resolveNotificationsForTask } from './notifications
 import { finalizeMatterDocuments } from './documents.controller.js';
 import { publicSiteUrl, sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
-import { sanitizeRichText, richTextToPlain, checkWordLimit } from '../services/richText.service.js';
+import { prepareRichText, richTextToPlain } from '../services/richText.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
 import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE, materialisableSteps, isTerminalStep } from '../../../shared/workflows/definitionSchema.js';
 import { resolveDueDate, definitionNeedsAnchorDate } from '../../../shared/workflows/dueRules.js';
@@ -1301,14 +1301,13 @@ export async function postStepNote(req, res) {
 
     // #194: check the cap on the UNTRUNCATED text — the 8000-char cap below would
     // otherwise cut an over-long note under the word limit and save it silently.
-    const noteWl = checkWordLimit(sanitizeRichText((req.body?.note ?? '').toString(), { maxLength: 200000 }));
-    if (!noteWl.ok) {
-      return res.status(400).json({
-        message: `A note may be at most ${noteWl.limit} words (this one has ${noteWl.words}).`,
-        code: 'WORD_LIMIT_EXCEEDED',
-      });
+    // #194 (reopened): stored whole or refused with a reason — never cut. The old
+    // 8,000-char truncation kept about 800 of a 1,000-word note.
+    const preparedNote = prepareRichText((req.body?.note ?? '').toString(), { what: 'note' });
+    if (!preparedNote.ok) {
+      return res.status(preparedNote.status).json({ message: preparedNote.message, code: preparedNote.code });
     }
-    const clean = sanitizeRichText((req.body?.note ?? '').toString(), { maxLength: 8000 });
+    const clean = preparedNote.html;
     if (!richTextToPlain(clean)) {
       return res.status(400).json({ message: 'The note is empty.' });
     }
@@ -2656,14 +2655,12 @@ export async function transitionTask(req, res) {
     // display it safely without re-sanitising.
     const rawComment = (event?.remark || event?.reason || '').toString();
     // #194: as above — cap checked before truncation so nothing is silently cut.
-    const commentWl = checkWordLimit(sanitizeRichText(rawComment, { maxLength: 200000 }));
-    if (!commentWl.ok) {
-      return res.status(400).json({
-        message: `A comment may be at most ${commentWl.limit} words (this one has ${commentWl.words}).`,
-        code: 'WORD_LIMIT_EXCEEDED',
-      });
+    // #194 (reopened): stored whole or refused with a reason — never cut.
+    const preparedComment = prepareRichText(rawComment, { what: 'comment' });
+    if (!preparedComment.ok) {
+      return res.status(preparedComment.status).json({ message: preparedComment.message, code: preparedComment.code });
     }
-    const cleanComment = sanitizeRichText(rawComment, { maxLength: 8000 });
+    const cleanComment = preparedComment.html;
     // Empty once stripped (e.g. a lone <script>) counts as no comment.
     const comment = richTextToPlain(cleanComment) ? cleanComment : null;
 
