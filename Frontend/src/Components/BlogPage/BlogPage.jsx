@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { posts, CATEGORIES } from "../../data/blogData";
 import "./BlogPage.css";
 
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 6;
 const VISIBLE_PAGES = 5;
 
 const BlogPage = () => {
@@ -92,7 +92,7 @@ const BlogPage = () => {
         </div>
       </div>
 
-      {/* Blog Grid — 4 cards, centered */}
+      {/* Blog Grid — 6 cards (two rows of 3), centered */}
       <div className="blogpage-grid-wrap">
         <div className="blogpage-grid">
           {paginated.map((post) => (
