@@ -5,6 +5,7 @@
  *   verifyPaymentSignature({ gatewayOrderId, gatewayPaymentId, signature })
  *   verifyWebhookSignature(rawBody, signature)
  *   fetchOrder(gatewayOrderId)            → { paid, gatewayPaymentId, amount, method } | null
+ *   fetchPayment(gatewayOrderId, id)      → { ok, amount, method } | null   (one specific payment)
  *   checkout(...)                         → what the browser needs to open the payment screen
  *
  * TWO IMPLEMENTATIONS.
@@ -104,6 +105,12 @@ const simulated = {
     const d = snap.data();
     return { paid: d.paid === true, gatewayPaymentId: d.paymentId ?? null, amount: d.paidAmount ?? d.amount, method: d.method ?? null };
   },
+  async fetchPayment(gatewayOrderId, gatewayPaymentId) {
+    const snap = await getDb().collection(SIM_COLLECTION).doc(gatewayOrderId).get();
+    const d = snap.exists ? snap.data() : null;
+    if (!d || d.paymentId !== gatewayPaymentId) return null;
+    return { ok: d.paid === true, amount: d.paidAmount ?? d.amount, method: d.method ?? null };
+  },
   checkout: ({ gatewayOrderId }) => ({ gateway: 'simulated', gatewayOrderId }),
 
   /* The simulator's own controls — what "the customer did at the gateway". */
@@ -160,6 +167,17 @@ const razorpay = {
       amount: captured ? captured.amount / 100 : order.amount_paid / 100,
       method: captured?.method ?? null,
     };
+  },
+  /**
+   * One payment, by id. A payment the customer has just completed is first
+   * `authorized` and becomes `captured` a moment later (orders are created with
+   * auto-capture). Both mean the customer has paid; asking the ORDER instead
+   * would say "not paid" during that moment — learned from the live test API.
+   */
+  async fetchPayment(gatewayOrderId, gatewayPaymentId) {
+    const p = await (await this.client()).payments.fetch(gatewayPaymentId);
+    if (!p || p.order_id !== gatewayOrderId) return null;
+    return { ok: p.status === 'captured' || p.status === 'authorized', amount: p.amount / 100, method: p.method ?? null };
   },
   // The key id is public — it is what Razorpay's checkout script is opened with.
   checkout: ({ gatewayOrderId }) => ({ gateway: 'razorpay', gatewayOrderId, keyId: process.env.RAZORPAY_KEY_ID }),

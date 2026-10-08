@@ -15,7 +15,7 @@ building and testing changes that must not touch the live site. Set up on
 | Database | `(default)` | `qa-data` |
 | File storage | `legal-terminus-web.firebasestorage.app` | `legal-terminus-web-qa` |
 | Email | sent | **switched off** |
-| Payments | off ("Buy Now" hidden) until released with live keys | **a simulated gateway — no money moves** |
+| Payments | off ("Buy Now" hidden) until released with live keys | **Razorpay in TEST mode — no money moves** (the automated tests use a simulated gateway) |
 | Sign-in accounts | **shared — see below** | **shared — see below** |
 
 Both live in the same Google Cloud / Firebase project, `legal-terminus-web`,

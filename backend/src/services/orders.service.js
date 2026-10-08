@@ -297,10 +297,15 @@ export async function confirmReturn(orderId, uid, { gatewayPaymentId, signature 
     logger.warn({ orderId, uid, security: true }, 'orders: payment signature did not verify');
     throw httpError(400, 'We could not confirm this payment. If money was taken, it will be matched automatically.', 'BAD_SIGNATURE');
   }
-  // The signature proves the ids; the gateway's own record gives the amount.
-  const at = await gw.fetchOrder(order.gatewayOrderId).catch(() => null);
-  if (at && at.paid === false) throw httpError(409, 'The payment is not complete yet.', 'NOT_PAID');
-  return settlePaid(orderId, { gatewayPaymentId, amount: at?.amount ?? null, method: at?.method ?? null }, 'return');
+  // The signature proves the ids belong together; the gateway's own record of
+  // THIS payment gives the amount and confirms the customer completed it.
+  const payment = await gw.fetchPayment(order.gatewayOrderId, gatewayPaymentId).catch((err) => {
+    logger.warn({ err, orderId }, 'orders: could not read the payment back from the gateway');
+    return undefined; // unreachable: the signature alone still settles, the webhook confirms the amount
+  });
+  if (payment === null) throw httpError(400, 'We could not confirm this payment.', 'BAD_SIGNATURE');
+  if (payment && !payment.ok) throw httpError(409, 'The payment is not complete yet.', 'NOT_PAID');
+  return settlePaid(orderId, { gatewayPaymentId, amount: payment?.amount ?? null, method: payment?.method ?? null }, 'return');
 }
 
 /** The customer cancelled, or the payment was declined. Only a `created` order changes. */

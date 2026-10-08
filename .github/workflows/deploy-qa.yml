@@ -8,6 +8,10 @@
 # accounts. Read docs/qa-environment.md before changing anything here —
 # especially TEST_ACCOUNT_EMAIL_DOMAINS and FIRESTORE_DATABASE_ID: without them
 # the QA services would read and write the LIVE database.
+#
+# Payments on QA use Razorpay's TEST keys (secrets QA_RAZORPAY_*): no money
+# moves. If those secrets are empty the API falls back to the simulated gateway
+# (PAYMENT_GATEWAY=simulated). Never put LIVE Razorpay keys in the QA secrets.
 name: Deploy to QA
 
 on:
@@ -174,6 +178,9 @@ jobs:
             --set-env-vars="TEST_ACCOUNT_EMAIL_DOMAINS=${{ env.QA_TEST_DOMAINS }}" \
             --set-env-vars="EMAIL_DISABLED=true" \
             --set-env-vars="PAYMENT_GATEWAY=simulated" \
+            --set-env-vars="RAZORPAY_KEY_ID=${{ secrets.QA_RAZORPAY_KEY_ID }}" \
+            --set-env-vars="RAZORPAY_KEY_SECRET=${{ secrets.QA_RAZORPAY_KEY_SECRET }}" \
+            --set-env-vars="RAZORPAY_WEBHOOK_SECRET=${{ secrets.QA_RAZORPAY_WEBHOOK_SECRET }}" \
             --set-env-vars="FIREBASE_PROJECT_ID=${{ secrets.BACKEND_FIREBASE_PROJECT_ID }}" \
             --set-env-vars="FIREBASE_PRIVATE_KEY_ID=${{ secrets.BACKEND_FIREBASE_PRIVATE_KEY_ID }}" \
             --set-env-vars="FIREBASE_CLIENT_EMAIL=${{ secrets.BACKEND_FIREBASE_CLIENT_EMAIL }}" \

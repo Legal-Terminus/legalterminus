@@ -3338,8 +3338,12 @@ payment integration cannot be developed against live customers.
 > product and plan — no amount — and the result page asks the server what happened. "Buy Now" is
 > shown only when the build sets `VITE_PAYMENTS_ENABLED=true` (QA).
 >
-> **Not done:** the Razorpay adapter and the checkout-script call are written to Razorpay's
-> documented interface but have NEVER RUN against Razorpay. They need test keys, then a pass on QA.
+> **Razorpay test keys arrived 2026-10-08.** QA now uses Razorpay in TEST mode (secrets
+> `QA_RAZORPAY_KEY_ID`, `QA_RAZORPAY_KEY_SECRET`, `QA_RAZORPAY_WEBHOOK_SECRET`); the simulator
+> remains for the automated tests and as the fallback when those are empty. The adapter was
+> run against Razorpay's test API: creating and reading an order work. One correction came out
+> of it — a payment just completed is `authorized` before it is `captured`, so a return is now
+> confirmed by reading THAT payment (`fetchPayment`), not the order's paid flag.
 
 **Priority**: P1 | **Complexity**: L | **Dependencies**: E24-S01
 
