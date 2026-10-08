@@ -1794,3 +1794,9 @@ a product is keyed by the `source` its component passes to the checkout, and
 ---
 
 > **Document Maintenance**: This document should be updated whenever a TODO above is resolved, a new workflow is added (Phase 2 services), or the deployment topology changes. The `machineConfigVersion` field in `workflowTemplates/{workflowId}` provides a sync-check mechanism if the XState machine topology is modified.
+
+- **Staff see the whole order, not a summary.** `GET /api/orders` (staff)
+  already returns the stored document; the Website Orders screen expands a row
+  to show `gatewayPaymentId`, `gatewayOrderId`, `method`, `paidAt`,
+  `settledBy` and `amountPaid` against `amount`. No new endpoint and nothing
+  new stored. The customer's own view (`publicOrder`) is unchanged.
