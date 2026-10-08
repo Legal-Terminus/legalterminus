@@ -22,7 +22,7 @@ setup.describe.configure({ mode: 'serial', retries: 2 });
 // login redirect needs for role resolution) may still be starting. Gate on it.
 setup('backend is ready', async ({ request }) => {
   await expect(async () => {
-    const res = await request.get('http://localhost:5001/health');
+    const res = await request.get(`${process.env.E2E_API_BASE ?? 'http://localhost:5001'}/health`);
     expect(res.ok()).toBeTruthy();
   }).toPass({ timeout: 90_000, intervals: [1000] });
 });

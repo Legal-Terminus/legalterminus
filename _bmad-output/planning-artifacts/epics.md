@@ -3352,6 +3352,15 @@ payment integration cannot be developed against live customers.
 > decline Razorpay keeps its window open for another attempt, so the checkout now waits for the
 > customer to pay or close it instead of showing its own "declined" screen on top.
 >
+> **Order details for staff (2026-10-08, from review on QA):** a card payment was made on QA and
+> the Website Orders screen showed only a one-line summary. Each order now opens to its full
+> record: the Razorpay payment and order references (what the firm quotes to Razorpay or matches
+> against a settlement), how it was paid, when, the customer's phone, how we learned of the
+> payment, and a plain statement that the amount received matches the plan's price — or does not.
+> The amount was already checked on the server at three points (set from the price catalogue when
+> the order is made; compared with Razorpay's own payment record on return; compared again on the
+> webhook); this only makes the result visible.
+>
 > **Still to do:** register the webhook in the Razorpay dashboard (until then a customer who
 > closes the window after paying is only found by **Check payment**); try UPI and a card;
 > a refund from the dashboard; live keys and the firm's go-ahead for production.

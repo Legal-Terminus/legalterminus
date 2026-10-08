@@ -299,6 +299,14 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       await expect(row(silent.orderId).getByText(/No matter opened\./)).toBeVisible();
       await expect(page.getByRole('button', { name: `Try to open the matter for order ${silent.orderId}` })).toBeVisible();
 
+      // Details: the references to quote, how it was paid, and that the money matched.
+      await page.getByRole('button', { name: `Show details of order ${opened.orderId}` }).click();
+      const details = page.getByRole('row').filter({ hasText: 'Payment reference' });
+      await expect(details.getByText('The amount received matches the price of this plan')).toBeVisible();
+      await expect(details.getByText((await full(opened.orderId)).gatewayPaymentId!)).toBeVisible();
+      await expect(details.getByText('The payment gateway told us directly')).toBeVisible();
+      await expect(details.getByText('Test payment (no money moved)')).toBeVisible();
+
       await teamPage.goto('website-orders');
       await expect(teamPage).toHaveURL(/\/unauthorized/);
     } finally { await buyer.dispose(); }

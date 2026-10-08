@@ -19,13 +19,21 @@ export interface WebsiteOrder {
   amount: number;
   amountPaid?: number;
   gateway: string;
+  gatewayOrderId?: string;
   gatewayPaymentId?: string | null;
+  /** card, upi, netbanking, wallet… as the gateway reported it. */
+  method?: string | null;
+  /** How we learned it was paid: the customer's return, the gateway's own message, or a staff check. */
+  settledBy?: 'return' | 'webhook' | 'reconcile';
+  productKey?: string;
+  planId?: string;
   failureReason?: string | null;
   reviewReason?: string;
   /** none → nothing attempted; created → `taskId`; failed → `error`; not_applicable → `reason`. */
   matter: { state: 'none' | 'pending' | 'created' | 'failed' | 'not_applicable'; taskId?: string; error?: string; reason?: string };
   createdAt: string;
   paidAt?: string;
+  refundedAt?: string;
 }
 
 export const WEBSITE_ORDERS_KEY = ['website-orders'] as const;
