@@ -3887,6 +3887,32 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Dependency and pipeline updates (2026-10-08) ✅ Completed
+
+The same set tested and merged in Ambyflow that day (its Dependabot PRs), applied
+here by hand because this repo has separate lockfiles per app and no Dependabot.
+On `main`, so on QA; not in production until the next release tag.
+
+- **backend and Portal: every dependency to its latest minor/patch** — 15 packages
+  in `backend`, 36 in `Portal` (React 19.3, React Query 5.104, TipTap 3.31,
+  Vite 8.3, Playwright 1.64, firebase 12.19, axios 1.20, sanitize-html 2.18 …).
+- **Two majors that passed:** `dotenv` 17 → 18 (both apps) and `@types/node`
+  24 → 26 (Portal, types only).
+- **GitHub Actions bumped and pinned to commit SHAs:** `actions/checkout` v7.0.1,
+  `docker/setup-buildx-action` v4.4.1, `docker/build-push-action` v5 → v7.4.0,
+  `google-github-actions/auth` v3.0.0, `google-github-actions/setup-gcloud`
+  v3.0.1, `actions/setup-node` v4.4.0. A tag such as `@v4` can be moved by
+  whoever controls the action; a SHA cannot.
+- **Not taken, deliberately:** Tailwind 4 (a migration — it fails the build as a
+  drop-in), Node 26 as the runtime (CI tests on 22), and the majors of
+  `firebase-admin` 14, `nodemailer` 10, `firebase` 13, `typescript` 7 and
+  `@tanstack/react-table` 9. `Frontend/` was not touched.
+- Lockfiles were regenerated in a clean directory with no `node_modules`, so they
+  keep every platform's native packages (npm on macOS otherwise records only its
+  own, and `npm ci` then fails on Linux — it did in Ambyflow's first deploy).
+- Production `npm audit` after: backend 0 critical / 5 high (was 1 / 19),
+  Portal 0 / 5.
+
 ### Production feedback — #194 (reopened), #207, #208 (2026-10-08) ✅ Completed
 
 Built in Ambyflow first (Story 42.13) and ported here by content. On `main`, so
