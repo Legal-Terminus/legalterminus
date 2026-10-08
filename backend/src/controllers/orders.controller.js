@@ -8,7 +8,7 @@ import {
   activeGateway, gateway, parseWebhookEvent, simulator,
 } from '../services/paymentGateway.service.js';
 import {
-  applyGatewayEvent, confirmReturn, createOrder, getOrder, listOrders, markFailed,
+  applyGatewayEvent, confirmReturn, createOrder, discardOrder, getOrder, listOrders, markFailed,
   publicOrder, reconcile, retryMatter,
 } from '../services/orders.service.js';
 
@@ -169,6 +169,12 @@ export async function postSimulate(req, res) {
         return res.json({ delivered: await deliver('payment.failed', { gatewayPaymentId: null, amount: order.amount, reason: 'Your bank declined the payment.' }) });
       case 'refund':
         return res.json({ delivered: await deliver('refund.processed', { gatewayPaymentId: order.gatewayPaymentId, amount: order.amount }) });
+      case 'discard':
+        // Only an order the simulator itself took: a real gateway's order is a
+        // record of money and is never removed, even in a test environment.
+        if (order.gateway !== 'simulated') return res.status(409).json({ message: 'Only a simulated order can be discarded.' });
+        await discardOrder(order.orderId);
+        return res.json({ discarded: true });
       default:
         return res.status(400).json({ message: 'Unknown outcome.' });
     }

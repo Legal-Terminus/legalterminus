@@ -40,7 +40,7 @@ function matterLine(o: WebsiteOrder): { text: string; warn: boolean } {
   if (o.status === 'review') return { text: o.reviewReason ?? 'The amount paid does not match. Check before opening a matter.', warn: true };
   if (o.status !== 'paid') return { text: '—', warn: false };
   switch (o.matter.state) {
-    case 'created': return { text: 'Matter opened', warn: false };
+    case 'created': return { text: o.matter.deleted ? 'Matter opened, then deleted' : 'Matter opened', warn: false };
     case 'failed': return { text: `Could not open the matter: ${o.matter.error ?? 'unknown reason'}`, warn: true };
     case 'not_applicable': return { text: `No matter opened. ${o.matter.reason ?? ''} Open one by hand.`, warn: true };
     default: return { text: 'Opening the matter…', warn: false };
@@ -146,7 +146,7 @@ export default function WebsiteOrdersPage() {
         onClick={() => setOpen(open === o.orderId ? null : o.orderId)}>
         {open === o.orderId ? 'Hide details' : 'Details'}
       </button>
-      {o.matter.state === 'created' && o.matter.taskId && (
+      {o.matter.state === 'created' && o.matter.taskId && !o.matter.deleted && (
         <Link to={`/tasks/${o.matter.taskId}`} className="btn-secondary min-h-11">Open matter</Link>
       )}
       {o.status === 'paid' && (o.matter.state === 'failed' || o.matter.state === 'not_applicable') && (

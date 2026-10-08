@@ -30,7 +30,9 @@ export interface WebsiteOrder {
   failureReason?: string | null;
   reviewReason?: string;
   /** none → nothing attempted; created → `taskId`; failed → `error`; not_applicable → `reason`. */
-  matter: { state: 'none' | 'pending' | 'created' | 'failed' | 'not_applicable'; taskId?: string; error?: string; reason?: string };
+  matter: { state: 'none' | 'pending' | 'created' | 'failed' | 'not_applicable'; taskId?: string; error?: string; reason?: string;
+    /** The matter this order opened has since been deleted. */
+    deleted?: boolean };
   createdAt: string;
   paidAt?: string;
   refundedAt?: string;

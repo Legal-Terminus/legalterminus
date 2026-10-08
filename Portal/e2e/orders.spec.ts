@@ -25,8 +25,14 @@ let withWorkflow: { productKey: string; planId: string; price: number };
 let withoutWorkflow: { productKey: string; planId: string; price: number };
 const matters: string[] = [];
 
-const start = async (buyer: APIRequestContext, p: { productKey: string; planId: string }, extra: Record<string, unknown> = {}) =>
-  buyer.post('/api/orders', { data: { productKey: p.productKey, planId: p.planId, ...extra } });
+const started: string[] = [];
+const start = async (buyer: APIRequestContext, p: { productKey: string; planId: string }, extra: Record<string, unknown> = {}) => {
+  const res = await buyer.post('/api/orders', { data: { productKey: p.productKey, planId: p.planId, ...extra } });
+  // Remembered so the run can remove it: an order left behind shows on the
+  // Website Orders screen linking to a matter this spec has already deleted.
+  if (res.status() === 201) started.push((await res.json()).orderId);
+  return res;
+};
 const simulate = async (buyer: APIRequestContext, orderId: string, outcome: string) =>
   (await buyer.post(`/api/orders/${orderId}/simulate`, { data: { outcome } })).json();
 const mine = async (buyer: APIRequestContext, orderId: string): Promise<Pub> =>
@@ -60,7 +66,11 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
     } finally { await admin.dispose(); await anon.dispose(); }
   });
 
-  test.afterAll(async () => { for (const id of matters) await deleteMatter(id); });
+  test.afterAll(async () => {
+    for (const id of matters) await deleteMatter(id);
+    const buyer = await apiAs('client');
+    try { for (const id of started) await simulate(buyer, id, 'discard'); } finally { await buyer.dispose(); }
+  });
 
   test('the amount is the server’s: a price from the browser is refused, an unknown plan is not for sale', async () => {
     const buyer = await apiAs('client');
@@ -306,6 +316,12 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       await expect(details.getByText((await full(opened.orderId)).gatewayPaymentId!)).toBeVisible();
       await expect(details.getByText('The payment gateway told us directly')).toBeVisible();
       await expect(details.getByText('Test payment (no money moved)')).toBeVisible();
+
+      // The matter is deleted afterwards: the order says so and offers no dead link.
+      await deleteMatter((await full(opened.orderId)).matter.taskId!);
+      await page.reload();
+      await expect(row(opened.orderId).getByText('Matter opened, then deleted')).toBeVisible();
+      await expect(row(opened.orderId).getByRole('link', { name: 'Open matter' })).toHaveCount(0);
 
       await teamPage.goto('website-orders');
       await expect(teamPage).toHaveURL(/\/unauthorized/);

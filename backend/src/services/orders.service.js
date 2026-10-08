@@ -390,7 +390,20 @@ export async function listOrders({ limit = 25, cursor } = {}) {
   }
   const snap = await q.get();
   const rows = snap.docs.map((d) => ({ orderId: d.id, ...d.data() }));
-  return { data: rows.slice(0, limit), nextCursor: rows.length > limit ? rows[limit - 1].orderId : null };
+  const data = rows.slice(0, limit);
+  // A matter can be deleted after its order opened it. Say so, rather than
+  // offer a link that leads nowhere — one read for the page, not one per row.
+  const linked = data.filter((o) => o.matter?.state === 'created' && o.matter.taskId);
+  if (linked.length) {
+    const found = await getDb().getAll(...linked.map((o) => getDb().collection('tasks').doc(o.matter.taskId)));
+    found.forEach((t, i) => { if (!t.exists) linked[i].matter = { ...linked[i].matter, deleted: true }; });
+  }
+  return { data, nextCursor: rows.length > limit ? rows[limit - 1].orderId : null };
+}
+
+/** TEST ENVIRONMENTS ONLY (reached through the simulator): remove a simulated order. */
+export async function discardOrder(orderId) {
+  await col().doc(orderId).delete();
 }
 
 /** Staff: try again to open the matter of a paid order that has none. */

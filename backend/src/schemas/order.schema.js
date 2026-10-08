@@ -42,6 +42,7 @@ export const simulateSchema = z.object({
     'bad_signature',      // returns a result whose signature does not verify
     'paid_silently',      // pays at the gateway; nothing reaches us (for reconcile)
     'failed_webhook',     // declined; told by webhook
+    'discard',            // removes the test order itself, so a test run leaves nothing behind
     'refund',             // refunds a paid order; told by webhook
   ]),
 }).strict();
