@@ -71,12 +71,18 @@ function loadRazorpay() {
 /**
  * Open Razorpay's checkout for an order. Resolves with the signed result to
  * send to confirmPayment(), or rejects with code CANCELLED / DECLINED.
- * NOT YET EXERCISED against a live Razorpay account — written to its documented
- * interface, to be verified when the keys arrive.
+ * Exercised against Razorpay TEST mode on QA (2026-10-08): a net-banking
+ * payment, and a declined one.
  */
 export async function payWithRazorpay(order, customer) {
   await loadRazorpay();
   return new Promise((resolve, reject) => {
+    // A declined attempt does NOT end the checkout: Razorpay keeps its window
+    // open and lets the customer try another card or method. Rejecting here (as
+    // this first did) put our "declined" screen on top of Razorpay's still-open
+    // window. So a decline is only remembered, and the checkout ends when the
+    // customer pays or closes Razorpay's window.
+    let lastDecline = null;
     const rz = new window.Razorpay({
       key: order.checkout.keyId,
       order_id: order.checkout.gatewayOrderId,
@@ -86,9 +92,13 @@ export async function payWithRazorpay(order, customer) {
       description: `${order.label} — ${order.planName}`,
       prefill: { name: customer?.name || "", email: customer?.email || "", contact: customer?.phone || "" },
       handler: (r) => resolve({ gatewayPaymentId: r.razorpay_payment_id, signature: r.razorpay_signature }),
-      modal: { ondismiss: () => reject(new CheckoutError("Payment was cancelled.", "CANCELLED")) },
+      modal: {
+        ondismiss: () => reject(lastDecline
+          ? new CheckoutError(lastDecline, "DECLINED")
+          : new CheckoutError("Payment was cancelled.", "CANCELLED")),
+      },
     });
-    rz.on("payment.failed", (r) => reject(new CheckoutError(r?.error?.description || "The payment was declined.", "DECLINED")));
+    rz.on("payment.failed", (r) => { lastDecline = r?.error?.description || "The payment was declined."; });
     rz.open();
   });
 }

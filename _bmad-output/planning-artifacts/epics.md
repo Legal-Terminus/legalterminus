@@ -3344,6 +3344,17 @@ payment integration cannot be developed against live customers.
 > run against Razorpay's test API: creating and reading an order work. One correction came out
 > of it — a payment just completed is `authorized` before it is `captured`, so a return is now
 > confirmed by reading THAT payment (`fetchPayment`), not the order's paid flag.
+>
+> **Verified on QA against Razorpay TEST mode (2026-10-08):** a net-banking payment through
+> Razorpay's own checkout — signed return verified, order paid, matter opened fully paid with
+> mode "Online (Razorpay)"; a declined payment; and the deployed webhook route with a correctly
+> signed message (settles), a wrongly signed one (refused) and a repeat (no change). After a
+> decline Razorpay keeps its window open for another attempt, so the checkout now waits for the
+> customer to pay or close it instead of showing its own "declined" screen on top.
+>
+> **Still to do:** register the webhook in the Razorpay dashboard (until then a customer who
+> closes the window after paying is only found by **Check payment**); try UPI and a card;
+> a refund from the dashboard; live keys and the firm's go-ahead for production.
 
 **Priority**: P1 | **Complexity**: L | **Dependencies**: E24-S01
 

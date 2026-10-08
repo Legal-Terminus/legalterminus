@@ -106,6 +106,7 @@ const STEPS = ["order-summary", "login", "checkout", "redirecting", "failed"];
 /** Which of the failure screens above fits an error from the checkout. */
 function failureKeyFor(err) {
   if (err?.code === "DECLINED") return "bank_declined";
+  if (err?.code === "CANCELLED") return "cancelled";
   return "network_error";
 }
 
