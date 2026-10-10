@@ -30,3 +30,25 @@ export function applyTheme(doc = document) {
     doc.head.appendChild(link);
   }
 }
+
+/**
+ * Keeps `--lt-header-h` on <html> equal to the real height of the fixed header.
+ *
+ * Theme C's section tabs are a sticky strip that sits directly under the fixed
+ * header. The header's height is not one number — its top bar wraps at some
+ * widths (87 / 109 / 135 / 144px measured) — and CSS cannot read another
+ * element's height, so a sticky `top` written as a constant leaves the strip
+ * either hidden behind the header or floating below it. Call from an effect
+ * and return the result as its cleanup. Does nothing when the switch is off.
+ */
+export function trackHeaderHeight(doc = document) {
+  if (!THEME_C || typeof ResizeObserver === "undefined") return undefined;
+  const header = doc.querySelector("header");
+  if (!header) return undefined;
+  const root = doc.documentElement;
+  const set = () => root.style.setProperty("--lt-header-h", `${Math.round(header.getBoundingClientRect().height)}px`);
+  set();
+  const observer = new ResizeObserver(set);
+  observer.observe(header);
+  return () => { observer.disconnect(); root.style.removeProperty("--lt-header-h"); };
+}

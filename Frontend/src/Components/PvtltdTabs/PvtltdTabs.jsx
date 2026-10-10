@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./PvtltdTabs.css";
+import { trackHeaderHeight } from "../../utils/theme";
 
 const tabs = [
   { label: "Why Choose Pvt Ltd", id: "company" },
@@ -51,6 +52,10 @@ const PvtltdTabs = () => {
     wrapper.classList.toggle("pvtltd-sections-shifted", sidebarOpen);
     return () => wrapper.classList.remove("pvtltd-sections-shifted");
   }, [sidebarOpen]);
+
+  // Theme C (E25-S03): the strip is sticky under the fixed header, whose height
+  // varies with width — keep --lt-header-h in step. No-op with the switch off.
+  useEffect(() => trackHeaderHeight(), []);
 
   // Keep horizontal active tab centred
   useEffect(() => {

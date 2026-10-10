@@ -26,9 +26,11 @@ async function read(browser, url) {
   await page.waitForTimeout(5000);
   const out = await page.evaluate(() => {
     const skip = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "SVG", "TEMPLATE"]);
+    // The floating call button swaps its glyph on a timer; it is not page content.
+    const noise = (t) => /^[\u260e\u2715\u00d7\u2706]$/.test(t);
     const texts = [];
     const walk = (n) => {
-      if (n.nodeType === 3) { const t = n.nodeValue.replace(/\s+/g, " ").trim(); if (t) texts.push(t); return; }
+      if (n.nodeType === 3) { const t = n.nodeValue.replace(/\s+/g, " ").trim(); if (t && !noise(t)) texts.push(t); return; }
       if (n.nodeType !== 1 || skip.has(n.tagName.toUpperCase())) return;
       for (const c of n.childNodes) walk(c);
     };

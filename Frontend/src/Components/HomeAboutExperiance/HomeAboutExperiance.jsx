@@ -1,6 +1,12 @@
 import React, { useEffect, useRef } from "react";
 import "./HomeAboutExperiance.css";
 import Leftimg from "../../assets/about-5.webp";
+import { THEME_C } from "../../utils/theme";
+import CountUp from "../../theme/CountUp";
+
+// Theme C (E-25, #209): the ring figures count up once on scroll-in and land on
+// the exact same string. Switch off: the plain text, as before.
+const figure = (to, final) => (THEME_C ? <CountUp to={to} suffix="%" final={final} /> : final);
 
 const HomeAboutExperiance = () => {
   const sectionRef = useRef(null);
@@ -47,17 +53,17 @@ The best part of <strong>Legal Terminus</strong> is it takes care of all your fi
 
           <div className="hae-stats">
             <div className="hae-stat">
-              <div className="hae-circle hae-circle--green">98%</div>
+              <div className="hae-circle hae-circle--green">{figure(98, "98%")}</div>
               <span>Client Satisfaction</span>
             </div>
 
             <div className="hae-stat">
-              <div className="hae-circle hae-circle--blue">100%</div>
+              <div className="hae-circle hae-circle--blue">{figure(100, "100%")}</div>
               <span>Compliance Accuracy</span>
             </div>
 
             <div className="hae-stat">
-              <div className="hae-circle hae-circle--orange">100%</div>
+              <div className="hae-circle hae-circle--orange">{figure(100, "100%")}</div>
               <span>Online Registration</span>
             </div>
           </div>

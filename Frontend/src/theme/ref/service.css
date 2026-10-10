@@ -1,0 +1,805 @@
+/*
+ * Theme C — the service-page family (E-25 S04–S09, #209 "Private Limited page" 1–10).
+ *
+ * SOURCE for scripts/theme/fanout.py. Each block below is written ONCE against
+ * a reference component's class names (the banner names its stylesheet) and
+ * the generator rewrites every class to an :is() list of its counterparts in
+ * all the copies, into src/theme/families.css. Edit here, never there, then
+ * run `python3 scripts/theme/fanout.py`.
+ *
+ * Reference page: "Add or Remove a Director"
+ *   /event-based-compliances/add-or-remove-a-director-company  (src/Pages/Add)
+ * Two families on these pages have a second reference because the Add copy is
+ * not in the big cluster: pricing (CICplan, 15 copies) and FAQ (CICfaq, 16).
+ *
+ * The look follows src/theme/pvtltd.css (the Private Limited page) value for
+ * value, so a family reads the same whichever page it is on. Several copies
+ * reuse that page's class names literally (`.plan-card`, `.pricing-cards`,
+ * `.faq-section`…), so a rule here could land on that page's own components
+ * too. Each block that shares names is therefore guarded on its root section
+ * with something only the Private Limited component has (`.plan-popular-badge`,
+ * `.pvtltd-tc-card`, `.zp-top-row`, `.pvtltd-day-tag`, the comparison table):
+ * `:not(:has(…))`. pvtltd.css stays the only author of that page.
+ *
+ * Rules only use classes that exist in the reference stylesheet — a class that
+ * is only in the JSX has no counterpart list and would not fan out.
+ */
+
+/* @ref src/Components/AddBreadcrum/AddBreadcrum.css */
+/* ══ hero ═══════════════════════════════════════════════════════════════
+   #209 Pvt Ltd 1 — smaller headline balanced against the form, statistics in
+   green. The consultation form itself is the shared ConsultationForm (`cf-*`),
+   styled in pvtltd.css. */
+html.theme-c {
+  --lt-svc-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  --lt-svc-check-green: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316a34a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  --lt-svc-sticky-top: 109px;         /* height of the fixed header (top bar + nav), measured */
+}
+@media (max-width: 767px) { html.theme-c { --lt-svc-sticky-top: 135px; } }   /* the contact strip wraps */
+@media (max-width: 480px) { html.theme-c { --lt-svc-sticky-top: 87px; } }
+html.theme-c .Add-public-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 40px 0 64px;
+  background: var(--lt-canvas);
+  color: var(--lt-body);
+}
+/* the Theme C green mesh, skewed across the upper part and faded out to white */
+html.theme-c .Add-public-hero::before {
+  content: "";
+  position: absolute; inset: -200px 0 auto 0; height: calc(100% + 120px);
+  transform: skewY(-9deg); transform-origin: 0 0;
+  opacity: 0.75; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(60% 80% at 15% 20%, rgba(22, 163, 74, 0.55), transparent 60%),
+    radial-gradient(50% 70% at 80% 10%, rgba(34, 197, 94, 0.45), transparent 60%),
+    radial-gradient(45% 60% at 55% 85%, rgba(11, 95, 58, 0.35), transparent 60%),
+    radial-gradient(40% 60% at 95% 70%, rgba(187, 247, 208, 0.9), transparent 60%),
+    linear-gradient(120deg, #f4faf7 0%, #ddf2e8 100%);
+}
+html.theme-c .Add-public-hero::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 0;
+  background: linear-gradient(rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.72) 45%, #ffffff 88%);
+}
+html.theme-c .Add-public-container {
+  position: relative; z-index: 1;
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 56px;
+  align-items: center;
+}
+html.theme-c .Add-public-container > * { min-width: 0; max-width: none; }
+html.theme-c .Add-public-content { color: var(--lt-body); min-width: 0; text-align: left; }
+html.theme-c .Add-public-tag {
+  display: inline-block; padding: 0; margin-bottom: 14px;
+  background: none; border-radius: 0;
+  color: var(--lt-accent-text);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+}
+html.theme-c .Add-public-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track);
+  line-height: 1.05;
+  color: var(--lt-ink);
+  margin-bottom: 18px;
+  text-wrap: balance;
+}
+html.theme-c .Add-public-title span { color: var(--lt-accent-text); font-weight: 400; }
+html.theme-c .Add-public-description {
+  font-size: 1.05rem; line-height: 1.6;
+  color: var(--lt-body);
+  max-width: var(--lt-measure);
+  margin-bottom: 22px;
+  text-align: left;
+}
+/* the feature lines become chips */
+html.theme-c .Add-public-features { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+html.theme-c .Add-public-features .Add-feature-item {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; border: 0; border-radius: 999px;
+  background: var(--lt-surface); box-shadow: var(--lt-shadow-md);
+  color: var(--lt-ink); font-size: 13px; font-weight: 600; line-height: 1.3;
+}
+html.theme-c .Add-public-features .Add-feature-item::before {
+  content: ""; width: 16px; height: 16px; flex: none;
+  background: var(--lt-accent);
+  -webkit-mask: var(--lt-svc-check) center / contain no-repeat; mask: var(--lt-svc-check) center / contain no-repeat;
+}
+/* the statistics, in green */
+html.theme-c .Add-public-highlights {
+  display: flex; flex-wrap: wrap; gap: 20px 40px;
+  padding-top: 8px; border-top: 0; text-align: left;
+}
+html.theme-c .Add-public-highlights h3 {
+  font-family: var(--lt-f-display) !important;
+  font-size: 2rem; font-weight: 500; letter-spacing: var(--lt-d-track); line-height: 1.1;
+  color: var(--lt-accent-text);
+  margin-bottom: 4px; font-variant-numeric: tabular-nums;
+}
+html.theme-c .Add-public-highlights p { font-size: 14px; color: var(--lt-muted); letter-spacing: 0; text-align: left; }
+@media (max-width: 1024px) {
+  html.theme-c .Add-public-container { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+}
+@media (max-width: 767px) {
+  html.theme-c .Add-public-hero { padding: 28px 0 44px; }
+  html.theme-c .Add-public-highlights h3 { font-size: 1.75rem; }
+}
+
+/* @ref src/Components/AddPlanandPricing/AddPlanandPricing.css */
+/* ══ pricing (the Add copy; the 15-copy cluster follows) ════════════════
+   #209 Pvt Ltd 2 — border and the shared hover on every card; the popular
+   plan keeps a green border and its "(Popular)" label becomes the badge.
+   Prices, <CutPrice /> and Buy Now are the component's own. */
+html.theme-c .Add-pp-Add-pp-section { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .Add-pp-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; padding: 0; }
+html.theme-c .Add-pp-container > .Add-pp-header { text-align: left; margin-bottom: 40px; display: grid; gap: 12px; }
+html.theme-c .Add-pp-Add-pp-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink); margin: 0;
+}
+html.theme-c .Add-pp-header .Add-pp-subtitle { font-size: 1.05rem; font-weight: 400; color: var(--lt-muted); text-align: left; margin: 0; }
+html.theme-c .Add-pp-cards { display: grid; gap: 18px; align-items: stretch; padding-top: 12px; }
+html.theme-c .Add-pp-cards:has(> :nth-child(1):last-child) { grid-template-columns: minmax(0, 420px); }
+html.theme-c .Add-pp-cards:has(> :nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html.theme-c .Add-pp-cards:has(> :nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html.theme-c .Add-pp-card {
+  position: relative;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transform: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .Add-pp-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .Add-pp-card:has(.Add-pp-meta .popular),
+html.theme-c .Add-pp-card:has(.Add-pp-meta .popular):hover {
+  border-color: var(--lt-accent);
+  box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow);
+}
+html.theme-c .Add-pp-meta .popular {
+  position: absolute; top: -12px; left: 20px; margin: 0;
+  display: inline-flex; align-items: center;
+  padding: 4px 10px; border-radius: 999px;
+  background: var(--lt-accent); color: var(--lt-on-accent);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; line-height: 1.4; text-transform: uppercase;
+}
+html.theme-c .Add-pp-card .Add-pp-header { margin-bottom: 0; display: grid; gap: 4px; justify-items: start; text-align: left; }
+html.theme-c .Add-pp-name { font-size: 1.1rem; font-weight: 500; color: var(--lt-ink); text-align: left; margin-bottom: 8px; }
+html.theme-c .Add-pp-old-price { font-size: 15px; font-weight: 400; color: var(--lt-danger); text-align: left; margin: 0; }
+html.theme-c .Add-pp-price {
+  font-family: var(--lt-f-display) !important;
+  font-size: 2.4rem; font-weight: 400; letter-spacing: var(--lt-d-track); line-height: 1.05;
+  color: var(--lt-ink); text-align: left; font-variant-numeric: tabular-nums;
+}
+html.theme-c .Add-pp-meta { font-size: 13px; color: var(--lt-muted); text-align: left; }
+html.theme-c .Add-pp-body { margin-top: 18px; }
+html.theme-c .Add-pp-list { display: grid; gap: 8px; }
+html.theme-c .Add-pp-list-item {
+  display: flex; align-items: flex-start; gap: 8px; margin: 0;
+  font-size: 14px; line-height: 1.5; color: var(--lt-body); text-align: left;
+}
+html.theme-c .Add-pp-list-item::before {
+  content: ""; width: 16px; height: 16px; flex: none; margin: 3px 0 0; border-radius: 0;
+  background: var(--lt-accent-text);
+  -webkit-mask: var(--lt-svc-check) center / contain no-repeat; mask: var(--lt-svc-check) center / contain no-repeat;
+}
+html.theme-c .Add-pp-footer { margin-top: auto; padding-top: 22px; text-align: left; }
+html.theme-c .Add-pp-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 44px; padding: 10px 20px;
+  background: transparent; color: var(--lt-ink);
+  border: 1px solid var(--lt-hairline-strong); border-radius: var(--lt-r-btn);
+  font-size: 15px; font-weight: 500;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+html.theme-c .Add-pp-button:hover { background: transparent; border-color: var(--lt-accent); color: var(--lt-accent-text); transform: translateY(-1px); box-shadow: none; }
+/* solid on the popular card, outline on the others */
+html.theme-c .Add-pp-card:has(.Add-pp-meta .popular) .Add-pp-button { background: var(--lt-btn); color: var(--lt-on-btn); border-color: transparent; }
+html.theme-c .Add-pp-card:has(.Add-pp-meta .popular) .Add-pp-button:hover { background: var(--lt-btn-hover); color: var(--lt-on-btn); border-color: transparent; }
+@media (max-width: 900px) {
+  html.theme-c .Add-pp-cards:has(> :nth-child(2):last-child),
+  html.theme-c .Add-pp-cards:has(> :nth-child(3):last-child) { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+  html.theme-c .Add-pp-card { max-width: none; margin: 0; }
+}
+
+/* @ref src/Components/CICplan/CICplan.css */
+/* ══ pricing (15 copies) ════════════════════════════════════════════════
+   Same rules as the block above. Four of these copies kept the Private
+   Limited page's wrapper names, so the wrapper rules repeat pvtltd.css and
+   the column count is set only for the 1/2/3-card grids these pages have. */
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .pricing-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; padding: 0; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .pricing-header { text-align: left; margin-bottom: 40px; display: grid; gap: 12px; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .PvtLtd-pricing-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink); margin: 0;
+}
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .pricing-header .pricing-subtitle { font-size: 1.05rem; font-weight: 400; color: var(--lt-muted); text-align: left; margin: 0; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .pricing-cards { display: grid; gap: 18px; align-items: stretch; padding-top: 12px; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .pricing-cards:has(> :nth-child(1):last-child) { grid-template-columns: minmax(0, 420px); }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .pricing-cards:has(> :nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .pricing-cards:has(> :nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-card {
+  position: relative;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transform: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-card:has(.cic-meta .popular),
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-card:has(.cic-meta .popular):hover {
+  border-color: var(--lt-accent);
+  box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow);
+}
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-meta .popular {
+  position: absolute; top: -12px; left: 20px; margin: 0;
+  display: inline-flex; align-items: center;
+  padding: 4px 10px; border-radius: 999px;
+  background: var(--lt-accent); color: var(--lt-on-accent);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; line-height: 1.4; text-transform: uppercase;
+}
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-header { margin-bottom: 0; display: grid; gap: 4px; justify-items: start; text-align: left; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-name { font-size: 1.1rem; font-weight: 500; color: var(--lt-ink); text-align: left; margin-bottom: 8px; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-old-price { font-size: 15px; font-weight: 400; color: var(--lt-danger); text-align: left; margin: 0; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-price {
+  font-family: var(--lt-f-display) !important;
+  font-size: 2.4rem; font-weight: 400; letter-spacing: var(--lt-d-track); line-height: 1.05;
+  color: var(--lt-ink); text-align: left; font-variant-numeric: tabular-nums;
+}
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-meta { font-size: 13px; color: var(--lt-muted); text-align: left; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-body { margin-top: 18px; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-list { display: grid; gap: 8px; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-list-item {
+  display: flex; align-items: flex-start; gap: 8px; margin: 0;
+  font-size: 14px; line-height: 1.5; color: var(--lt-body); text-align: left;
+}
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-list-item::before {
+  content: ""; width: 16px; height: 16px; flex: none; margin: 3px 0 0; border-radius: 0;
+  background: var(--lt-accent-text);
+  -webkit-mask: var(--lt-svc-check) center / contain no-repeat; mask: var(--lt-svc-check) center / contain no-repeat;
+}
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-footer { margin-top: auto; padding-top: 22px; text-align: left; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 44px; padding: 10px 20px;
+  background: transparent; color: var(--lt-ink);
+  border: 1px solid var(--lt-hairline-strong); border-radius: var(--lt-r-btn);
+  font-size: 15px; font-weight: 500;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-button:hover { background: transparent; border-color: var(--lt-accent); color: var(--lt-accent-text); transform: translateY(-1px); box-shadow: none; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-card:has(.cic-meta .popular) .cic-button { background: var(--lt-btn); color: var(--lt-on-btn); border-color: transparent; }
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-card:has(.cic-meta .popular) .cic-button:hover { background: var(--lt-btn-hover); color: var(--lt-on-btn); border-color: transparent; }
+@media (max-width: 900px) {
+  html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .pricing-cards:has(> :nth-child(2):last-child),
+html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .pricing-cards:has(> :nth-child(3):last-child) { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+  html.theme-c .pvtltd-pricing-section:not(:has(.plan-popular-badge)) .cic-card { max-width: none; margin: 0; }
+}
+
+/* @ref src/Components/AddTermsCondition/AddTermsCondition.css */
+/* ══ terms ══════════════════════════════════════════════════════════════
+   Follows the plans on these pages (no Government Costs table between them),
+   so it has no top padding of its own. */
+html.theme-c .Add-tc-section:not(:has(.pvtltd-tc-card)) { background: var(--lt-canvas); padding: 0 0 var(--lt-section); }
+html.theme-c .Add-tc-section:not(:has(.pvtltd-tc-card)) .Add-tc-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .Add-tc-section:not(:has(.pvtltd-tc-card)) .Add-tc-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink);
+  text-align: left; margin: 0 0 14px;
+}
+html.theme-c .Add-tc-section:not(:has(.pvtltd-tc-card)) .Add-tc-container .Add-tc-subtitle {
+  font-size: 1.05rem; font-weight: 400; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); text-align: left; margin: 0 0 24px;
+}
+html.theme-c .Add-tc-section:not(:has(.pvtltd-tc-card)) .Add-tc-list { max-width: 72ch; margin: 18px 0 0; padding-left: 22px; display: grid; gap: 12px; list-style: decimal; }
+html.theme-c .Add-tc-section:not(:has(.pvtltd-tc-card)) .Add-tc-list .Add-tc-item { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+
+/* @ref src/Components/AddZolvitPremium/AddZolvitPremium.css */
+/* ══ premium — the "Legal Terminus Priority" panel ══════════════════════ */
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-card {
+  background: var(--lt-surface); border: 1px solid var(--lt-hairline);
+  border-radius: var(--lt-r-xl); box-shadow: var(--lt-shadow-sm);
+  padding: 40px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 48px; align-items: center;
+}
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-illustration-wrapper,
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-content { min-width: 0; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink); margin: 0 0 14px;
+}
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-title-highlight { color: var(--lt-accent-text); font-weight: 400; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-title-icon { font-size: 0.7em; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-content .Add-zp-subtitle { font-size: 1.05rem; line-height: 1.6; color: var(--lt-muted); max-width: var(--lt-measure); text-align: left; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--lt-accent-text); margin: 0 0 12px;
+}
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-list { display: grid; gap: 10px; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-list .Add-zp-list-item { font-size: 15px; line-height: 1.55; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-note-box { background: var(--lt-canvas-soft); border: 0; border-radius: var(--lt-r-md); padding: 20px 24px; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-note-list { display: grid; gap: 10px; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-note-list .Add-zp-note-item { font-size: 14px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-note-item::before { color: var(--lt-accent); top: 2px; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-cta-row { margin: 28px 0 0; }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-cta-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 12px 32px;
+  background: var(--lt-btn); color: var(--lt-on-btn); border-radius: var(--lt-r-btn);
+  font-size: 17px; font-weight: 500;
+}
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-cta-btn:hover { background: var(--lt-btn-hover); box-shadow: none; transform: translateY(-1px); }
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-content .Add-zp-pricing { margin: 18px 0 0; font-size: 14px; line-height: 1.6; color: var(--lt-muted); max-width: var(--lt-measure); text-align: left; }
+/* the label reused inline in the closing line reads as plain emphasis */
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-pricing .Add-zp-label,
+html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-price-strong { font-size: inherit; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--lt-ink); margin: 0; }
+@media (max-width: 768px) {
+  html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-card { grid-template-columns: minmax(0, 1fr); padding: 24px 18px; gap: 24px; }
+  html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-illustration { max-height: 260px; margin-inline: auto; }
+  html.theme-c .Add-zp-section:not(:has(.zp-top-row)) .Add-zp-cta-btn { width: 100%; }
+}
+
+/* @ref src/Components/AddTabs/AddTabs.css */
+/* ══ section tabs ═══════════════════════════════════════════════════════
+   #209 Pvt Ltd 4 — centred, one row on desktop, hover and a clear active
+   state; on a phone the strip scrolls sideways inside itself. Sticky under
+   the fixed header, so the page's scroll offset grows by the strip's height. */
+html.theme-c:has(.Add-tab-tabs-section) { scroll-padding-top: calc(var(--lt-svc-sticky-top) + 64px); }
+html.theme-c .Add-tab-tabs-section {
+  position: sticky; top: var(--lt-svc-sticky-top); z-index: 30;
+  padding: 0;
+  background: var(--lt-nav-bg);
+  backdrop-filter: saturate(1.4) blur(10px); -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  border-block: 1px solid var(--lt-hairline);
+}
+html.theme-c .Add-tab-tabs-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .Add-tab-tabs-section .Add-tab-tabs-card {
+  position: static; background: none; border-radius: 0; box-shadow: none; padding: 0; overflow: visible;
+}
+/* auto margins on the end tabs centre the row when it fits and let it scroll
+   from its first tab when it does not (justify-content: center would clip it) */
+html.theme-c .Add-tab-tabs-list {
+  display: flex; flex-wrap: nowrap; gap: 4px;
+  justify-content: flex-start !important;
+  overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+}
+html.theme-c .Add-tab-tab:first-child { margin-left: auto; }
+html.theme-c .Add-tab-tab:last-child { margin-right: auto; }
+html.theme-c .Add-tab-tab {
+  min-height: 50px; padding: 14px 14px;
+  background: none; box-shadow: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px; font-weight: 600; letter-spacing: 0; white-space: nowrap;
+  color: var(--lt-muted);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+html.theme-c .Add-tab-tab:not(.active):hover { background: none; color: var(--lt-accent-text); border-bottom-color: var(--lt-hairline-strong); }
+html.theme-c .Add-tab-tab.active { background: none; box-shadow: none; color: var(--lt-accent-text); border-bottom-color: var(--lt-accent); }
+html.theme-c .Add-tab-tab:focus-visible { outline-offset: -3px; }
+
+/* @ref src/Components/AddCompanyTab/AddCompanyTab.css */
+/* ══ intro — "Why choose…" ══════════════════════════════════════════════
+   #209 Pvt Ltd 4: left-aligned text at a reading width, picture beside it. */
+html.theme-c .Add-com-tabintro-section:not(:has(~ .pvt-compare-section)) { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .Add-com-tabintro-section:not(:has(~ .pvt-compare-section)) .Add-com-tabintro-container {
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); column-gap: 48px; align-items: center;
+}
+html.theme-c .Add-com-tabintro-section:not(:has(~ .pvt-compare-section)) .Add-com-tabintro-content { order: 1; max-width: none; min-width: 0; }
+html.theme-c .Add-com-tabintro-section:not(:has(~ .pvt-compare-section)) .Add-com-tabintro-illustration-wrap { order: 2; min-width: 0; }
+html.theme-c .Add-com-tabintro-section:not(:has(~ .pvt-compare-section)) .Add-com-tabintro-illustration { width: 100%; max-height: 380px; object-fit: contain; }
+html.theme-c .Add-com-tabintro-section:not(:has(~ .pvt-compare-section)) .Add-com-tabintro-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 22ch; margin: 0 0 18px;
+}
+html.theme-c .Add-com-tabintro-section:not(:has(~ .pvt-compare-section)) .Add-com-tabintro-content .Add-com-tabintro-text {
+  font-size: 1rem; line-height: 1.6; color: var(--lt-body);
+  max-width: var(--lt-measure); text-align: left; margin: 0 0 14px;
+}
+/* the optional overview and "Companies Act" blocks some copies render */
+html.theme-c .Add-com-tabwrapper { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; padding: var(--lt-section) 0 0; }
+html.theme-c .Add-com-tabtitle {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink); text-align: left; margin: 0 0 18px;
+}
+html.theme-c .Add-com-tabwrapper .Add-com-tabtext { font-size: 1rem; line-height: 1.6; color: var(--lt-body); max-width: var(--lt-measure); text-align: left; margin: 0 0 14px; }
+html.theme-c .companies-act-section { background: var(--lt-canvas); padding: 0 0 var(--lt-section); }
+html.theme-c .companies-act-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .companies-act-card {
+  background: var(--lt-canvas-soft); border: 1px solid var(--lt-hairline);
+  border-radius: var(--lt-r-lg); box-shadow: none; padding: 24px;
+}
+html.theme-c .companies-act-title { font-size: 1.125rem; font-weight: 500; color: var(--lt-ink); margin: 0 0 12px; }
+html.theme-c .companies-act-card .companies-act-text,
+html.theme-c .companies-act-card .companies-act-point { font-size: 15px; line-height: 1.6; color: var(--lt-body); max-width: var(--lt-measure); text-align: left; }
+html.theme-c .companies-act-point-label { color: var(--lt-accent-text); }
+@media (max-width: 768px) {
+  html.theme-c .Add-com-tabintro-section:not(:has(~ .pvt-compare-section)) .Add-com-tabintro-container { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+  html.theme-c .Add-com-tabintro-section:not(:has(~ .pvt-compare-section)) .Add-com-tabintro-illustration { max-height: 260px; }
+}
+
+/* @ref src/Components/AddTypes/AddTypes.css */
+/* ══ types ══════════════════════════════════════════════════════════════
+   #209 Pvt Ltd 6 — alignment, border, the shared hover, equal heights. The
+   old scroll box is opened out: every type is a card beside the picture. */
+html.theme-c .Add-typestypes-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .Add-typestypes-container {
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr); column-gap: 48px; align-items: start;
+}
+html.theme-c .Add-typestypes-illustration-wrap { min-width: 0; padding-top: 0; position: sticky; top: calc(var(--lt-svc-sticky-top) + 72px); }
+html.theme-c .Add-typestypes-illustration { width: 100%; max-width: 100%; border-radius: var(--lt-r-lg); }
+html.theme-c .Add-typestypes-content {
+  min-width: 0; max-width: none; max-height: none; overflow: visible; padding-right: 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: stretch;
+}
+html.theme-c .Add-typestypes-content > * { grid-column: 1 / -1; }
+html.theme-c .Add-typestypes-content > .Add-typestypes-block { grid-column: auto; }
+/* an odd card left alone on the last row takes the whole row */
+html.theme-c .Add-typestypes-content > .Add-typestypes-block:nth-child(even):last-child { grid-column: 1 / -1; }
+html.theme-c .Add-typestypes-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0 0 14px;
+}
+html.theme-c .Add-typestypes-content .Add-typestypes-intro {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); text-align: left; margin: 0 0 14px;
+}
+html.theme-c .Add-typestypes-block {
+  display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px; margin: 0;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .Add-typestypes-block:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .Add-typestypes-subtitle { font-size: 1.125rem; font-weight: 500; line-height: 1.3; color: var(--lt-ink); margin: 0; text-align: left; }
+html.theme-c .Add-typestypes-block .Add-typestypes-text { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+@media (max-width: 900px) {
+  html.theme-c .Add-typestypes-container { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+  html.theme-c .Add-typestypes-illustration-wrap { position: static; order: 2; }
+  html.theme-c .Add-typestypes-content { order: 1; }
+  html.theme-c .Add-typestypes-illustration { max-height: 320px; object-fit: contain; }
+}
+@media (max-width: 640px) {
+  html.theme-c .Add-typestypes-content { grid-template-columns: minmax(0, 1fr); }
+  html.theme-c .Add-typestypes-content > .Add-typestypes-block { grid-column: 1 / -1; }
+}
+
+/* @ref src/Components/AddRequirementsTab/AddRequirementsTab.css */
+/* ══ benefits / requirements ════════════════════════════════════════════
+   #209 Pvt Ltd 7 — border, the shared hover, equal heights. */
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqcontainer { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqheader { text-align: left; margin-bottom: 40px; display: grid; gap: 14px; }
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqtitle {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 24ch; margin: 0;
+}
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqheader .Add-reqsubtitle {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); margin: 0; text-align: left;
+}
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; max-width: none; margin: 0; align-items: stretch; }
+/* two or four cards sit two to a row (four across would be too narrow to read) */
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqgrid:has(> :nth-child(2):last-child),
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqgrid:has(> :nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqcard {
+  display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqcard:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+/* the icon tile above each card */
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqcard::before {
+  content: ""; width: 44px; height: 44px; flex: none; border-radius: var(--lt-r-md);
+  background: var(--lt-surface-strong) var(--lt-svc-check-green) center / 22px no-repeat;
+}
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqcard-title { font-size: 1.125rem; font-weight: 500; line-height: 1.3; color: var(--lt-ink); margin: 0; text-align: left; }
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqcard-underline { display: none; }
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqcard .Add-reqcard-text { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+@media (max-width: 1024px) { html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqgrid,
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqgrid:has(> :nth-child(2):last-child),
+html.theme-c .Add-reqsection:not(:has(.pvt-compare-section) *) .Add-reqgrid:has(> :nth-child(4):last-child) { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* @ref src/Components/AddProcess/AddProcess.css */
+/* ══ steps ══════════════════════════════════════════════════════════════
+   #209 Pvt Ltd 8 — the layout is the current site's, kept exactly: central
+   vertical line, alternating cards, numbered markers, dashed connectors with
+   arrowheads. Only colour, type and the card style change. */
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) {
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap);
+  margin-inline: auto; padding: var(--lt-section) 0;
+  background: var(--lt-canvas-soft);
+  /* the section is its own container: paint the band edge to edge */
+  box-shadow: 0 0 0 100vmax var(--lt-canvas-soft);
+  clip-path: inset(0 -100vmax);
+}
+/* `> h2` / `> p`: a few copies (WindupPLCProcess) put a class on the heading
+   that their own stylesheet does not define, so it has no counterpart here */
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) > h2,
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-heading {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 24ch; margin: 0 0 14px;
+}
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) > p,
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-subheading {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); text-align: left; margin: 0 0 44px;
+}
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline { gap: 18px; }
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-line { width: 3px; border-radius: 3px; background: #8fd3a8; }
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-dot {
+  background: var(--lt-accent); color: var(--lt-on-accent);
+  font-weight: 700; font-size: 15px;
+  box-shadow: 0 0 0 6px var(--lt-canvas-soft);
+}
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-card {
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  padding: 16px 20px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-card h4 { font-size: 15px; font-weight: 500; color: var(--lt-ink); line-height: 1.3; margin-bottom: 6px; text-align: left; }
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-card p { font-size: 14px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-item.left::after,
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-item.right::after {
+  background: repeating-linear-gradient(to right, var(--lt-hairline-strong), var(--lt-hairline-strong) 5px, transparent 5px, transparent 10px);
+}
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-item.left::before { border-left-color: var(--lt-hairline-strong); }
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-item.right::before { border-right-color: var(--lt-hairline-strong); }
+@media (max-width: 900px) {
+  html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) { padding: var(--lt-section) 0; }
+  html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-card { background: var(--lt-surface); box-shadow: var(--lt-shadow-sm); }
+  html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-item.left::before,
+html.theme-c .Add-Process-gst-wrapper:not(:has(.pvtltd-day-tag)) .Add-Process-timeline-item.right::before { border-left-color: var(--lt-hairline-strong); border-right-color: transparent; }
+}
+
+/* @ref src/Components/AddFAQ/AddFAQ.css */
+/* ══ FAQ (staggered-card copy, 6 copies incl. the Private Limited page's) ═
+   #209 Pvt Ltd 10 — the same accordion (buttons, keyboard operable), in one
+   straight column. Repeats pvtltd.css's FAQ rules. */
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-container { width: min(820px, 100% - 32px); max-width: 820px; margin-inline: auto; }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-header { text-align: left; margin-bottom: 36px; display: grid; gap: 14px; }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0;
+}
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-header p.Add-intro { font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted); max-width: var(--lt-measure); margin: 0; text-align: left; }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-list { max-width: none; gap: 10px; }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-item,
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-item:nth-child(n) {
+  width: 100%; align-self: stretch;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-md);
+  box-shadow: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-item:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-item.active { background: var(--lt-surface); border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-question {
+  min-height: 52px; padding: 14px 20px; gap: 16px;
+  font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--lt-ink); text-align: left;
+}
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-item:hover .Add-question,
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-item.active .Add-question { color: var(--lt-ink); }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-question:focus-visible { outline: 2px solid var(--lt-focus); outline-offset: -2px; border-radius: var(--lt-r-md); }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-icon { font-size: 18px; color: var(--lt-muted); }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-item.active .Add-icon { color: var(--lt-accent-text); }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-answer.open { max-height: 4000px; }
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-answer-content {
+  padding: 0 20px 18px; border-top: 0;
+  font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left;
+}
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-answer-content p,
+html.theme-c .Add-section:not(:has(.pvt-compare-section) *) .Add-answer-content li { font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+
+/* @ref src/Components/CICfaq/CICfaq.css */
+/* ══ FAQ (two-column copy, 16 copies) ═══════════════════════════════════
+   Title and introduction on the left, the accordion on the right — as cards,
+   and no longer inside a 540px scroll box. Two copies name their section
+   `.faq-section` like the Private Limited page, whose FAQ is built
+   differently: every rule here needs the left/right columns to be present. */
+html.theme-c .faqq-section:has(.faqq-left) { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .faqq-container:has(> .faqq-left) {
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto;
+  display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); column-gap: 56px; align-items: start;
+}
+html.theme-c .faqq-left { min-width: 0; color: var(--lt-body); position: sticky; top: calc(var(--lt-svc-sticky-top) + 72px); }
+html.theme-c .faqq-left .faqq-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0 0 18px;
+}
+html.theme-c .faqq-left p.faqq-intro { font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted); max-width: var(--lt-measure); margin: 0 0 12px; text-align: left; }
+html.theme-c .faqq-right { min-width: 0; max-height: none; }
+html.theme-c .faqq-right .faqq-list { overflow: visible; padding-right: 0; display: grid; gap: 10px; max-width: none; }
+html.theme-c .faqq-right .faqq-item,
+html.theme-c .faqq-right .faqq-item:nth-child(n) {
+  width: 100%;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-md);
+  box-shadow: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+html.theme-c .faqq-right .faqq-item:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .faqq-right .faqq-item.active { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .faqq-right .faqq-question {
+  min-height: 52px; padding: 14px 20px; gap: 16px;
+  font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--lt-ink); text-align: left;
+}
+html.theme-c .faqq-right .faqq-item:hover .faqq-question,
+html.theme-c .faqq-right .faqq-item.active .faqq-question { color: var(--lt-ink); }
+html.theme-c .faqq-right .faqq-question:focus-visible { outline: 2px solid var(--lt-focus); outline-offset: -2px; border-radius: var(--lt-r-md); }
+html.theme-c .faqq-right .faqq-icon { font-size: 18px; color: var(--lt-muted); }
+html.theme-c .faqq-right .faqq-item.active .faqq-icon { color: var(--lt-accent-text); }
+html.theme-c .faqq-right .faqq-answer { padding: 0 20px; }
+html.theme-c .faqq-right .faqq-answer.open { max-height: 4000px; padding-bottom: 18px; }
+html.theme-c .faqq-right .faqq-answer,
+html.theme-c .faqq-right .faqq-answer p,
+html.theme-c .faqq-right .faqq-answer li { font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+html.theme-c .faqq-right .faqq-answer ul,
+html.theme-c .faqq-right .faqq-answer ol { padding-left: 20px; margin: 6px 0; }
+@media (max-width: 900px) {
+  html.theme-c .faqq-container:has(> .faqq-left) { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+  html.theme-c .faqq-left { position: static; }
+}
+
+/* @ref src/Components/AddTestimonial/AddTestimonial.css */
+/* ══ Google reviews slider ══════════════════════════════════════════════
+   The same slider and arrows; cards take the shared card and hover. */
+html.theme-c .Add-Process-gt-section { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .Add-Process-gt-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .Add-Process-gt-heading {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: center; text-wrap: balance; margin: 0 0 40px;
+}
+html.theme-c .Add-Process-gt-slider-wrapper { padding: 0 56px; }
+html.theme-c .Add-Process-gt-slider { gap: 18px; padding: 6px 2px 14px; align-items: stretch; }
+html.theme-c .Add-Process-gt-card {
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  padding: 32px 24px 28px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .Add-Process-gt-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); transform: translateY(-3px); }
+html.theme-c .Add-Process-gt-quote { color: var(--lt-accent); opacity: 0.35; }
+html.theme-c .Add-Process-gt-avatar {
+  width: 56px; height: 56px; border: 0;
+  background: var(--lt-canvas-tint); color: var(--lt-accent-text);
+  font-size: 22px; font-weight: 600;
+}
+html.theme-c .Add-Process-gt-card .Add-Process-gt-text { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0 0 18px; }
+html.theme-c .Add-Process-gt-name { font-size: 1rem; font-weight: 600; color: var(--lt-ink); margin: 0 0 4px; }
+html.theme-c .Add-Process-gt-card .Add-Process-gt-role { font-size: 13px; color: var(--lt-muted); margin: 0 0 10px; }
+html.theme-c .Add-Process-gt-stars { font-size: 16px; color: var(--lt-accent); }
+html.theme-c .Add-Process-gt-side-arrow {
+  width: 44px; height: 44px;
+  background: var(--lt-surface); color: var(--lt-ink);
+  border: 1px solid var(--lt-hairline-strong); box-shadow: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+html.theme-c .Add-Process-gt-side-arrow:hover { background: var(--lt-surface); border-color: var(--lt-accent); color: var(--lt-accent-text); transform: translateY(-50%); }
+html.theme-c .Add-Process-gt-left { left: 0; }
+html.theme-c .Add-Process-gt-right { right: 0; }
+@media (max-width: 520px) {
+  html.theme-c .Add-Process-gt-slider-wrapper { padding: 0 50px; }
+  html.theme-c .Add-Process-gt-card { min-width: min(240px, 100%); max-width: min(240px, 100%); padding: 28px 18px 24px; }
+}
+
+/* @ref src/Components/AddVideoTestimonial/AddVideoTestimonial.css */
+/* ══ video slider ("Video Testimonials" / "Why Choose …") ═══════════════ */
+html.theme-c .Add-Process-vt-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .Add-Process-vt-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .Add-Process-vt-heading {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: center; text-wrap: balance; margin: 0 0 14px;
+}
+html.theme-c .Add-Process-vt-container .Add-Process-vt-subtitle {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); margin: 0 auto 40px; text-align: center;
+}
+html.theme-c .Add-Process-vt-slider-wrapper { padding: 0 56px; }
+html.theme-c .Add-Process-vt-slider { gap: 18px; padding: 6px 2px 14px; }
+html.theme-c .Add-Process-vt-card {
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  padding: 14px 14px 20px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .Add-Process-vt-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); transform: translateY(-3px); }
+html.theme-c .Add-Process-vt-video-wrap { border-radius: var(--lt-r-md); box-shadow: none; margin-bottom: 14px; }
+html.theme-c .Add-Process-vt-name { font-size: 1rem; font-weight: 600; color: var(--lt-ink); margin: 0 0 4px; }
+html.theme-c .Add-Process-vt-card .Add-Process-vt-role { font-size: 13px; color: var(--lt-muted); margin: 0; }
+html.theme-c .Add-Process-vt-side-arrow {
+  width: 44px; height: 44px;
+  background: var(--lt-surface); color: var(--lt-ink);
+  border: 1px solid var(--lt-hairline-strong); box-shadow: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+html.theme-c .Add-Process-vt-side-arrow:hover { background: var(--lt-surface); border-color: var(--lt-accent); color: var(--lt-accent-text); transform: translateY(-50%); }
+html.theme-c .Add-Process-vt-left { left: 0; }
+html.theme-c .Add-Process-vt-right { right: 0; }
+@media (max-width: 520px) {
+  html.theme-c .Add-Process-vt-slider-wrapper { padding: 0 50px; }
+  html.theme-c .Add-Process-vt-card { min-width: min(250px, 100%); max-width: min(250px, 100%); }
+}
+
+/* @ref src/Components/AddOurclints/AddOurclints.css */
+/* ══ client logos ═══════════════════════════════════════════════════════ */
+html.theme-c .Add-Process-clients-root { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .Add-Process-clients-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; padding: 0; }
+html.theme-c .Add-Process-clients-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink);
+  text-align: center; margin: 0 0 36px;
+}
+html.theme-c .Add-Process-clients-carousel { padding: 0 56px; }
+html.theme-c .Add-Process-clients-track { gap: 18px; padding: 6px 2px 10px; }
+html.theme-c .Add-Process-clients-card:hover { transform: translateY(-3px); }
+html.theme-c .Add-Process-clients-logo {
+  margin: 0;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-md);
+  box-shadow: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+html.theme-c .Add-Process-clients-card:hover .Add-Process-clients-logo { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .Add-Process-clients-arrow {
+  width: 44px; height: 44px; border-radius: 999px;
+  background: var(--lt-ink); color: var(--lt-on-ink);
+  border: 0; box-shadow: none;
+  transition: background 0.15s ease;
+}
+html.theme-c .Add-Process-clients-arrow:hover { background: var(--lt-accent-text); transform: translateY(-50%); }
+html.theme-c .Add-Process-clients-arrow:focus-visible { border-radius: 999px; box-shadow: none; }
+html.theme-c .Add-Process-clients-arrow-left { left: 0; }
+html.theme-c .Add-Process-clients-arrow-right { right: 0; }
+@media (max-width: 480px) {
+  html.theme-c .Add-Process-clients-carousel { padding: 0 50px; }
+}
