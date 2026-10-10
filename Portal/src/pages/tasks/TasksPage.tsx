@@ -151,7 +151,7 @@ export default function TasksPage() {
             <div className="flex flex-col gap-0.5">
               <label className="text-xs text-gray-500">Status</label>
               <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-400"
                 aria-label="Filter by status">
                 <option value="">All statuses</option>
                 {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -161,7 +161,7 @@ export default function TasksPage() {
               <div className="flex flex-col gap-0.5">
                 <label className="text-xs text-gray-500">Service</label>
                 <select value={serviceFilter} onChange={(e) => setServiceFilter(e.target.value)}
-                  className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-400"
                   aria-label="Filter by service">
                   <option value="">All services</option>
                   {serviceNames.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -172,7 +172,7 @@ export default function TasksPage() {
               <div className="flex flex-col gap-0.5">
                 <label className="text-xs text-gray-500">Payment</label>
                 <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value)}
-                  className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-400"
                   aria-label="Filter by payment">
                   <option value="">Any payment</option>
                   {PAYMENT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}

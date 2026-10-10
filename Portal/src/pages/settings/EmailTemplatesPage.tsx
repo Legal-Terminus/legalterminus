@@ -134,7 +134,7 @@ export default function EmailTemplatesPage() {
           <p className="text-[11px] text-ink-faint mt-2">
             Placeholders you can use:{' '}
             {def.placeholders.map((p) => (
-              <code key={p} className="mx-0.5 px-1 py-0.5 rounded bg-surface-soft text-ink-muted">{`{{${p}}}`}</code>
+              <code key={p} className="mx-0.5 px-1 py-0.5 rounded-sm bg-surface-soft text-ink-muted">{`{{${p}}}`}</code>
             ))}
           </p>
         )}

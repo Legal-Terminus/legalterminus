@@ -43,7 +43,7 @@ export default function ReportsPage() {
             >
               <div className="flex items-start justify-between">
                 <div className="w-9 h-9 rounded-lg bg-surface-card flex items-center justify-center">
-                  <Icon className="w-4.5 h-4.5 text-ink" />
+                  <Icon className="w-6 h-6 text-ink" />
                 </div>
                 <ArrowRight className="w-4 h-4 text-ink-faint opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
               </div>

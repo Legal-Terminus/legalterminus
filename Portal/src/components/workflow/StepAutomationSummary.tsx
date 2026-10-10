@@ -176,7 +176,7 @@ export default function StepAutomationSummary({ step, stepTitleFor, onEdit, clas
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onEdit(r.field); }}
-                className="w-full inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink text-left rounded px-1 -mx-1 py-0.5 hover:bg-surface-soft"
+                className="w-full inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink text-left rounded-sm px-1 -mx-1 py-0.5 hover:bg-surface-soft"
               >
                 {body}
               </button>

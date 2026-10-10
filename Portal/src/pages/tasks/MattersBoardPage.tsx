@@ -173,7 +173,7 @@ export default function MattersBoardPage() {
             aria-label="Filter by service"
             value={serviceFilter}
             onChange={(e) => setServiceFilter(e.target.value)}
-            className="input-field py-1.5 text-sm w-auto min-w-[12rem]"
+            className="input-field py-1.5 text-sm w-auto min-w-48"
           >
             <option value="">All services</option>
             {services.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
@@ -236,7 +236,7 @@ export default function MattersBoardPage() {
                             {col.cards.length}
                           </span>
                         </div>
-                        <div className="flex flex-col gap-2 p-2 min-h-[4.5rem] flex-1">
+                        <div className="flex flex-col gap-2 p-2 min-h-18 flex-1">
                           {col.cards.length === 0 ? (
                             /* An empty stage says so quietly. Nothing here IS
                                the information — but it must not shout. */

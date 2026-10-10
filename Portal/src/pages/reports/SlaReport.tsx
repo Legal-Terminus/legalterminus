@@ -165,7 +165,7 @@ export default function SlaReport() {
               max={30}
               value={filters.atRiskDays ?? 2}
               onChange={(e) => setFilters((f) => ({ ...f, atRiskDays: Number(e.target.value) }))}
-              className="w-24 rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-24 rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-400"
               aria-label="At-risk window in days"
             />
           </div>

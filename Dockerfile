@@ -1,4 +1,7 @@
-FROM node:22-alpine
+# Node 26, pinned by digest so a re-tagged upstream image cannot change what
+# ships. Keep in step with `node-version` in .github/workflows — CI must build
+# and test on the version the containers run.
+FROM node:26-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a
 
 WORKDIR /app
 

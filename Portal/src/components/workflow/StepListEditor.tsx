@@ -123,7 +123,7 @@ export default function StepListEditor({
             />
           </div>
           {expandedStep !== null && (
-            <button type="button" onClick={() => setExpandedStep(null)} className="btn-secondary !px-3 !py-1.5 text-xs shrink-0">
+            <button type="button" onClick={() => setExpandedStep(null)} className="btn-secondary px-3! py-1.5! text-xs shrink-0">
               Collapse all
             </button>
           )}

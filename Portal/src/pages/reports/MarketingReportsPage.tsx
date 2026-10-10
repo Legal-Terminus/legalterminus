@@ -182,7 +182,7 @@ function SheetPanel({ sheetKey, month, isAdmin }: { sheetKey: SheetKey; month: s
                                 key={`${r.date}-${g.key}-${c.key}-${v}`}
                                 onBlur={(e) => commit(r.date, g.key, c.key, e.target.value, v)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                                className="w-24 text-right px-2 py-1 rounded border border-transparent hover:border-hairline focus:border-brand-400 focus:outline-none bg-transparent"
+                                className="w-24 text-right px-2 py-1 rounded-sm border border-transparent hover:border-hairline focus:border-brand-400 focus:outline-hidden bg-transparent"
                               />
                             ) : <span className="px-2 text-ink-soft">{v ? fmt(v) : ''}</span>}
                           </td>

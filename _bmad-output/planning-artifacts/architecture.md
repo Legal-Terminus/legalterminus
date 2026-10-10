@@ -1821,3 +1821,38 @@ a product is keyed by the `source` its component passes to the checkout, and
 - **Content fidelity is a test, not a promise.** Each page story records that
   `document.body.innerText` (whitespace-collapsed) is identical with the switch off and
   on. The website Playwright suite asserts text and a visible `nav`, never class names.
+
+## Portal styling: Tailwind CSS 4 with v3 defaults pinned (2026-10-10)
+
+The Portal moved from Tailwind CSS 3.4 to 4.3 as a library upgrade, with the rule that
+nothing a user sees may change. Tailwind 4 changed a number of defaults; each one is
+pinned back in CSS rather than chased through 150 components.
+
+- **Configuration is CSS.** There is no `tailwind.config.js`. Colours, fonts, shadows,
+  radii and the `xs` breakpoint are `@theme` variables at the top of
+  `Portal/src/index.css`. Component classes are `@utility` blocks in the same file.
+  A new design token is a new `--color-*` / `--shadow-*` line there.
+- **`Portal/src/tailwind3-palette.css`** holds Tailwind 3's default colours. v4
+  redefined every default colour in OKLCH; the names match and the values do not.
+  Deleting a line from that file is a design change.
+- **Pinned in `@theme`:** text line heights as fixed lengths (v4 uses ratios, which
+  nested smaller text inherits differently — rows that mix sizes lost a pixel), and the
+  default ring colour and width.
+- **Pinned in `@layer base`:** default border colour; `cursor: pointer` on buttons;
+  gray-400 placeholders; and the parts of v4's wider reset that v3 never applied —
+  background, corners and opacity on form controls, inner padding on date and time
+  inputs, the native box of the file-chooser button, and 1px padding on table cells.
+  Cell padding is written as `1px`, not `revert`: Chromium supplies it as a
+  presentational hint, which `revert` throws away.
+- **`space-x-*` / `space-y-*` are redefined** with v3's behaviour. v3's selector was
+  strong enough to override a child's own margin and the Portal's forms rely on it; v4
+  puts the gap on the other side with zero specificity.
+- **Removing a pin is allowed** — as a deliberate, reviewed visual change, one pin at a
+  time. Each carries a comment stating what it holds in place.
+- **How to check a styling change is neutral.** Screenshot the affected screens before
+  and after with Playwright `toHaveScreenshot` at `maxDiffPixels: 0`, masking relative
+  times. The upgrade itself was accepted on 66 screens at zero tolerance plus a
+  computed-style comparison of every class in the built stylesheet.
+- **Runtime:** Node 26 (`Dockerfile`, `Portal.Dockerfile`, both deploy workflows). The
+  `FROM node:20-alpine` in section 9 above is the original design sketch, not the
+  current image.

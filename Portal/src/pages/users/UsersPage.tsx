@@ -308,7 +308,7 @@ export default function UsersPage() {
           ))}
         </div>
       </div>
-        <span aria-hidden="true" className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent sm:hidden" />
+        <span aria-hidden="true" className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l/srgb from-white to-transparent sm:hidden" />
       </div>
 
       {/* Search */}
@@ -510,7 +510,7 @@ function ReassignWorkModal({ user, candidates, onClose, onDone }: {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"

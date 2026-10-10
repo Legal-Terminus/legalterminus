@@ -37,17 +37,17 @@ function WorkflowNode({ data }: NodeProps) {
   const { label, kind, highlight } = data as WorkflowNodeData;
   const s = KIND_STYLE[kind];
   return (
-    <div className={`rounded-lg border px-3 py-2 shadow-sm w-[200px] transition-all ${s.box} ${
+    <div className={`rounded-lg border px-3 py-2 shadow-xs w-[200px] transition-all ${s.box} ${
       highlight ? 'ring-2 ring-brand-500 border-brand-500 shadow-md scale-[1.03]' : ''
     }`}>
-      <Handle type="target" position={Position.Top} className="!bg-ink-faint" />
+      <Handle type="target" position={Position.Top} className="bg-ink-faint!" />
       <p className="text-xs font-semibold text-ink leading-snug">{label}</p>
       {s.badgeText && (
-        <span className={`mt-1 inline-block text-[9px] font-medium px-1.5 py-0.5 rounded ${s.badge}`}>
+        <span className={`mt-1 inline-block text-[9px] font-medium px-1.5 py-0.5 rounded-sm ${s.badge}`}>
           {s.badgeText}
         </span>
       )}
-      <Handle type="source" position={Position.Bottom} className="!bg-ink-faint" />
+      <Handle type="source" position={Position.Bottom} className="bg-ink-faint!" />
     </div>
   );
 }

@@ -11,7 +11,7 @@
  * The pulse honours `prefers-reduced-motion` via the global rule in index.css.
  */
 export function Skeleton({ className = '' }: { className?: string }) {
-  return <div aria-hidden="true" className={`animate-pulse rounded bg-surface-strong/70 ${className}`} />;
+  return <div aria-hidden="true" className={`animate-pulse rounded-sm bg-surface-strong/70 ${className}`} />;
 }
 
 /** Placeholder rows for a table body — matches the row rhythm of our tables. */

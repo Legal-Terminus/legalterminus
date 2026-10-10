@@ -148,7 +148,7 @@ export default function PracticeCockpit() {
         <CockpitSection title="Most overdue" to="/reports/sla">
           <div className="card p-4" data-testid="cockpit-overdue-list">
             {sla === undefined ? (
-              <div className="h-5 w-40 rounded bg-surface-strong/70 animate-pulse" />
+              <div className="h-5 w-40 rounded-sm bg-surface-strong/70 animate-pulse" />
             ) : worstOverdue.length === 0 ? (
               <p className="text-sm text-ink-muted">Nothing is overdue. Good.</p>
             ) : (

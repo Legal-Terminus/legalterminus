@@ -29,7 +29,7 @@ export default function FieldLabel({
             type="button"
             aria-label="More info"
             aria-describedby={open ? id : undefined}
-            className="text-ink-faint hover:text-ink focus:text-ink focus:outline-none"
+            className="text-ink-faint hover:text-ink focus:text-ink focus:outline-hidden"
             onMouseEnter={() => setOpen(true)}
             onMouseLeave={() => setOpen(false)}
             onFocus={() => setOpen(true)}

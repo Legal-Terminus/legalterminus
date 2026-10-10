@@ -77,7 +77,7 @@ export default function AttentionFeed({ items }: { items: AttentionItem[] }) {
               )}
               <Link
                 to={`/tasks/${item.taskId}`}
-                className="btn-secondary !px-3 !py-1.5 text-xs"
+                className="btn-secondary px-3! py-1.5! text-xs"
               >
                 Open
               </Link>

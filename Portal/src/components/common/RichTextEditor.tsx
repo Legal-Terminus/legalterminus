@@ -126,7 +126,7 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
         return countWords(ed.getText()) >= COMMENT_WORD_LIMIT;
       },
       attributes: {
-        class: 'prose-sm max-w-none focus:outline-none px-3 py-2',
+        class: 'prose-sm max-w-none focus:outline-hidden px-3 py-2',
         style: `min-height:${Math.max(2, rows) * 1.5}rem`,
         ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
         role: 'textbox',
@@ -271,7 +271,7 @@ function Btn({ on, active, title, disabled, children }: {
       title={title}
       aria-label={title}
       aria-pressed={!!active}
-      className={`p-1.5 rounded hover:bg-surface-soft disabled:opacity-40 ${active ? 'bg-surface-soft text-brand-700' : 'text-ink-muted'}`}
+      className={`p-1.5 rounded-sm hover:bg-surface-soft disabled:opacity-40 ${active ? 'bg-surface-soft text-brand-700' : 'text-ink-muted'}`}
     >
       {children}
     </button>
@@ -337,7 +337,7 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
         <select
           disabled={disabled}
           aria-label="Text size"
-          className="text-[11px] rounded border border-hairline bg-white py-0.5 px-1 text-ink-muted disabled:opacity-40"
+          className="text-[11px] rounded-sm border border-hairline bg-white py-0.5 px-1 text-ink-muted disabled:opacity-40"
           value={currentSize(editor)}
           onChange={(e) => {
             const v = e.target.value;

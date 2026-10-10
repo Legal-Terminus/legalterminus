@@ -1,6 +1,9 @@
 # syntax=docker/dockerfile:1
 # Build stage
-FROM node:22-alpine AS builder
+# Node 26, pinned by digest so a re-tagged upstream image cannot change what
+# ships. Keep in step with `node-version` in .github/workflows — CI must build
+# and test on the version the containers run.
+FROM node:26-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a AS builder
 
 # Build under /app/Portal (NOT /app) and place the repo-root `shared/` dir as a
 # sibling at /app/shared. The Portal imports the framework-agnostic workflow
@@ -28,7 +31,6 @@ COPY Portal/tsconfig.json ./
 COPY Portal/tsconfig.app.json ./
 COPY Portal/tsconfig.node.json ./
 COPY Portal/postcss.config.js ./
-COPY Portal/tailwind.config.js ./
 
 # Build Portal with build args
 ARG VITE_FIREBASE_API_KEY
@@ -55,7 +57,7 @@ ENV NODE_ENV=production
 RUN echo "Building Portal with Vite..." && echo "VITE_PORTAL_STANDALONE=$VITE_PORTAL_STANDALONE" && npm run build && echo "✅ Build completed" && ls -la dist/
 
 # Runtime stage
-FROM node:22-alpine
+FROM node:26-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a
 
 WORKDIR /app
 

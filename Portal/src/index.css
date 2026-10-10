@@ -1,8 +1,338 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap')
+layer(base);
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@import './tailwind3-palette.css';
+
+@theme {
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+
+  --color-ink: #111111;
+  --color-ink-soft: #374151;
+  --color-ink-muted: #6b7280;
+  --color-ink-faint: #9ca3af;
+
+  --color-surface: #ffffff;
+  --color-surface-soft: #f8f9fa;
+  --color-surface-card: #f5f5f5;
+  --color-surface-strong: #e5e7eb;
+  --color-surface-dark: #101010;
+
+  --color-hairline: #e5e7eb;
+  --color-hairline-soft: #f3f4f6;
+
+  --font-sans: Inter, system-ui, sans-serif;
+
+  --shadow-card:
+    0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-sidebar: 1px 0 0 0 #e5e7eb;
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+
+  --breakpoint-xs: 375px;
+
+  /*
+    Text line heights as Tailwind CSS v3 defined them: fixed lengths, not
+    ratios. v4 ships `calc(1.25 / 0.875)` for text-sm and so on. A ratio is
+    inherited as a ratio, so smaller text nested in a line (a 10px count
+    inside a text-sm tab) gets a shorter line box than it had, and every row
+    that mixes sizes ends up a pixel shorter.
+  */
+  --text-xs--line-height: 1rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+
+  /* A `ring-*` with no colour class was blue-500 at 50% in v3, and a bare
+     `ring` was 3px wide; v4 uses the text colour and 1px. Nothing in the
+     Portal relies on either today — pinned so the next bare `ring-2` looks
+     the way the existing ones were designed. */
+  --default-ring-color: rgb(59 130 246 / 0.5);
+  --default-ring-width: 3px;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+/*
+  Two more Tailwind CSS v4 default changes that no screenshot would catch,
+  restored to the v3 behaviour the Portal was built against:
+
+  - Buttons no longer get `cursor: pointer`. The Portal has ~270 buttons and
+    only a couple of dozen set the cursor themselves, so without this nearly
+    every button would show the arrow cursor on hover.
+  - Placeholder text used to be gray-400; v4 uses the field's text colour at
+    50% opacity, which is darker and reads like entered text.
+*/
+@layer base {
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
+}
+
+/*
+  Tailwind CSS v4's base reset is wider than v3's. Each rule below hands a
+  property back to the browser's own default — which is what v3 left it at —
+  so a control with no utility class on it renders as it always has. A utility
+  class still wins: these sit in the base layer.
+
+  - Form controls: v4 forces a transparent background, square corners and
+    full opacity. An unstyled input on a grey panel went from white to grey.
+  - Date and time inputs: v4 strips the inner padding, which makes every date
+    field 2px shorter and moved the whole report filter bar up with it.
+  - Table cells: v4's universal `padding: 0` reaches `td`/`th`; v3's reset
+    never did, so cells kept the browser's 1px.
+*/
+@layer base {
+  button,
+  input,
+  select,
+  optgroup,
+  textarea,
+  ::file-selector-button {
+    border-radius: revert;
+    opacity: revert;
+  }
+  /* Not the button-type inputs: v3 made those transparent, as v4 does. */
+  input:where(:not([type='button'], [type='reset'], [type='submit'])),
+  select,
+  optgroup,
+  textarea {
+    background-color: revert;
+  }
+  /* v3's universal reset did not reach pseudo-elements, so the "Choose file"
+     button kept the browser's own box. */
+  ::file-selector-button {
+    box-sizing: revert;
+    margin: revert;
+    padding: revert;
+    border: revert;
+    color: revert;
+    background-color: revert;
+  }
+  ::-webkit-date-and-time-value {
+    min-height: revert;
+    text-align: revert;
+  }
+  ::-webkit-datetime-edit {
+    display: revert;
+  }
+  ::-webkit-datetime-edit-fields-wrapper {
+    padding: revert;
+  }
+  ::-webkit-datetime-edit,
+  ::-webkit-datetime-edit-year-field,
+  ::-webkit-datetime-edit-month-field,
+  ::-webkit-datetime-edit-day-field,
+  ::-webkit-datetime-edit-hour-field,
+  ::-webkit-datetime-edit-minute-field,
+  ::-webkit-datetime-edit-second-field,
+  ::-webkit-datetime-edit-millisecond-field,
+  ::-webkit-datetime-edit-meridiem-field {
+    padding-block: revert;
+  }
+  ::-webkit-calendar-picker-indicator {
+    line-height: revert;
+  }
+  /* 1px is every browser's default. `revert` cannot be used here: Chromium
+     supplies cell padding as a presentational hint, which `revert` discards. */
+  td,
+  th {
+    padding: 1px;
+  }
+}
+
+/*
+  `space-x-*` / `space-y-*` with their Tailwind CSS v3 behaviour.
+
+  v3 put the gap on every child after the first, with a selector strong enough
+  to OVERRIDE that child's own margin: a button written `mt-1` inside a
+  `space-y-4` form sat 16px below the field above it, and the `mt-1` did
+  nothing. v4 puts the gap on the element BEFORE instead, at zero specificity,
+  so the two margins add up and the same button sits 20px below. Every spaced
+  stack in the Portal with a child that also carries a margin would shift by a
+  few pixels — the sign-in form, the user form, the report filter bars.
+
+  These definitions keep the v3 rule so nothing moves. To drop them later, find
+  the children of spaced stacks that carry `mt-*` / `ml-*` and remove those
+  now-meaningful margins first.
+*/
+@utility space-y-* {
+  /* v3: every child after the first gets the gap above it, and nothing below. */
+  & > :not([hidden]) ~ :not([hidden]) {
+    margin-block-start: calc(var(--spacing) * --value(number));
+    margin-block-end: 0;
+  }
+  /* v4's own rule still puts the gap BELOW the first child. In a flex column
+     margins do not collapse, so that would double the first gap — cancel it,
+     unless the first child sets a bottom margin of its own, which v3 honoured. */
+  & > :first-child:not(:last-child):not([class*='mb-']):not([class*='my-']) {
+    margin-block-end: 0;
+  }
+}
+@utility space-x-* {
+  & > :not([hidden]) ~ :not([hidden]) {
+    margin-inline-start: calc(var(--spacing) * --value(number));
+    margin-inline-end: 0;
+  }
+  & > :first-child:not(:last-child):not([class*='mr-']):not([class*='mx-']):not([class*='me-']) {
+    margin-inline-end: 0;
+  }
+}
+
+@utility input-field {
+  /* ── Inputs ── */
+  @apply w-full px-3.5 py-2.5 border border-hairline rounded-lg text-sm text-ink
+           bg-white placeholder-ink-faint
+           focus:outline-hidden focus:ring-0 focus:border-ink
+           transition-colors duration-150;
+}
+
+@utility input-label {
+  @apply block text-xs font-medium text-ink-muted mb-1.5;
+}
+
+@utility btn-primary {
+  /* ── Buttons ── */
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
+           bg-ink text-white text-sm font-semibold rounded-lg
+           hover:bg-ink-soft active:bg-gray-900
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-colors duration-150;
+}
+
+@utility btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
+           bg-white text-ink text-sm font-semibold rounded-lg
+           border border-hairline
+           hover:bg-surface-soft active:bg-surface-card
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-colors duration-150;
+}
+
+@utility btn-danger {
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
+           bg-white text-red-600 text-sm font-semibold rounded-lg
+           border border-red-200
+           hover:bg-red-50 active:bg-red-100
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-colors duration-150;
+}
+
+@utility btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2
+           text-ink-muted text-sm font-medium rounded-lg
+           hover:bg-surface-soft hover:text-ink
+           transition-colors duration-150;
+}
+
+@utility card {
+  /* ── Cards ── */
+  @apply bg-white rounded-xl border border-hairline shadow-card;
+}
+
+@utility card-flat {
+  @apply bg-surface-card rounded-xl;
+}
+
+@utility badge {
+  /* ── Badges ── */
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+@utility badge-gray {
+  @apply badge bg-surface-card text-ink-muted;
+}
+
+@utility badge-blue {
+  @apply badge bg-blue-50 text-blue-700;
+}
+
+@utility badge-green {
+  @apply badge bg-emerald-50 text-emerald-700;
+}
+
+@utility badge-amber {
+  @apply badge bg-amber-50 text-amber-700;
+}
+
+@utility badge-red {
+  @apply badge bg-red-50 text-red-700;
+}
+
+@utility page-header {
+  /* ── Page shell ── */
+  /* #157/#163: on a phone the action cluster (assignment dropdowns, Add buttons)
+     used to share one non-wrapping row with the title, crushing the title column
+     to ~40px so it wrapped one word per line. Stack below md: title block first,
+     actions on their own full-width row underneath. */
+  @apply bg-white border-b border-hairline px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3;
+}
+
+@utility scrollbar-none {
+  /* #159/#161: horizontally scrollable tab/filter rows on mobile — hide the
+     scrollbar chrome; the edge fade provides the affordance instead. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility page-content {
+  @apply p-4 md:p-6;
+}
+
+@utility nav-pill-container {
+  /* ── Nav pill (active segment) ── */
+  @apply flex bg-surface-soft rounded-full p-1 gap-0.5;
+}
+
+@utility nav-pill {
+  @apply px-4 py-1.5 rounded-full text-sm font-medium text-ink-muted
+           hover:text-ink transition-colors duration-150 cursor-pointer;
+}
+
+@utility nav-pill-active {
+  @apply nav-pill bg-white text-ink shadow-card;
+}
 
 @layer base {
   html {
@@ -18,127 +348,33 @@
   }
 }
 
-@layer components {
-  /* ── Inputs ── */
-  .input-field {
-    @apply w-full px-3.5 py-2.5 border border-hairline rounded-lg text-sm text-ink
-           bg-white placeholder-ink-faint
-           focus:outline-none focus:ring-0 focus:border-ink
-           transition-colors duration-150;
-  }
-  .input-label {
-    @apply block text-xs font-medium text-ink-muted mb-1.5;
-  }
-
-  /* ── Buttons ── */
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
-           bg-ink text-white text-sm font-semibold rounded-lg
-           hover:bg-ink-soft active:bg-gray-900
-           disabled:opacity-40 disabled:cursor-not-allowed
-           transition-colors duration-150;
-  }
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
-           bg-white text-ink text-sm font-semibold rounded-lg
-           border border-hairline
-           hover:bg-surface-soft active:bg-surface-card
-           disabled:opacity-40 disabled:cursor-not-allowed
-           transition-colors duration-150;
-  }
-  .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
-           bg-white text-red-600 text-sm font-semibold rounded-lg
-           border border-red-200
-           hover:bg-red-50 active:bg-red-100
-           disabled:opacity-40 disabled:cursor-not-allowed
-           transition-colors duration-150;
-  }
-  .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2
-           text-ink-muted text-sm font-medium rounded-lg
-           hover:bg-surface-soft hover:text-ink
-           transition-colors duration-150;
-  }
-
-  /* ── Cards ── */
-  .card {
-    @apply bg-white rounded-xl border border-hairline shadow-card;
-  }
-  .card-flat {
-    @apply bg-surface-card rounded-xl;
-  }
-
-  /* ── Badges ── */
-  .badge {
-    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
-  }
-  .badge-gray  { @apply badge bg-surface-card text-ink-muted; }
-  .badge-blue  { @apply badge bg-blue-50 text-blue-700; }
-  .badge-green { @apply badge bg-emerald-50 text-emerald-700; }
-  .badge-amber { @apply badge bg-amber-50 text-amber-700; }
-  .badge-red   { @apply badge bg-red-50 text-red-700; }
-
-  /* ── Page shell ── */
-  /* #157/#163: on a phone the action cluster (assignment dropdowns, Add buttons)
-     used to share one non-wrapping row with the title, crushing the title column
-     to ~40px so it wrapped one word per line. Stack below md: title block first,
-     actions on their own full-width row underneath. */
-  .page-header {
-    @apply bg-white border-b border-hairline px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3;
-  }
-  /* #159/#161: horizontally scrollable tab/filter rows on mobile — hide the
-     scrollbar chrome; the edge fade provides the affordance instead. */
-  .scrollbar-none {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-  }
-  .page-content {
-    @apply p-4 md:p-6;
-  }
-
-  /* ── Nav pill (active segment) ── */
-  .nav-pill-container {
-    @apply flex bg-surface-soft rounded-full p-1 gap-0.5;
-  }
-  .nav-pill {
-    @apply px-4 py-1.5 rounded-full text-sm font-medium text-ink-muted
-           hover:text-ink transition-colors duration-150 cursor-pointer;
-  }
-  .nav-pill-active {
-    @apply nav-pill bg-white text-ink shadow-card;
-  }
-}
-
 /* #122 — rendering for user-authored rich text (comments / discussion messages).
    Scoped to .rich-text and the editor so it can't leak into app chrome. */
 @layer components {
-  .rich-text, .ProseMirror {
-    @apply text-sm text-ink;
-  }
-  .rich-text p, .ProseMirror p { @apply my-1; }
-  .rich-text ul, .ProseMirror ul { @apply list-disc pl-5 my-1; }
-  .rich-text ol, .ProseMirror ol { @apply list-decimal pl-5 my-1; }
-  .rich-text h2, .ProseMirror h2 { @apply text-base font-semibold mt-2 mb-1; }
-  .rich-text h3, .ProseMirror h3 { @apply text-sm font-semibold mt-2 mb-1; }
-  .rich-text a, .ProseMirror a { @apply text-brand-700 underline; }
-  .rich-text blockquote, .ProseMirror blockquote {
-    @apply border-l-2 border-hairline pl-3 text-ink-muted my-1;
-  }
-  .rich-text code, .ProseMirror code {
-    @apply bg-surface-soft rounded px-1 py-0.5 text-[0.85em];
-  }
-  /* Tables — the main reason this feature exists (pasted from Excel/Word). */
-  .rich-text table, .ProseMirror table {
-    @apply w-full my-2 border-collapse text-xs;
-  }
-  .rich-text td, .rich-text th, .ProseMirror td, .ProseMirror th {
-    @apply border border-hairline px-2 py-1 align-top;
-  }
-  .rich-text th, .ProseMirror th { @apply bg-surface-soft font-semibold text-left; }
-  /* A wide pasted table must scroll inside the bubble, not blow out the layout. */
-  .rich-text { @apply overflow-x-auto; }
+    .rich-text, .ProseMirror {
+      @apply text-sm text-ink;
+    }
+    .rich-text p, .ProseMirror p { @apply my-1; }
+    .rich-text ul, .ProseMirror ul { @apply list-disc pl-5 my-1; }
+    .rich-text ol, .ProseMirror ol { @apply list-decimal pl-5 my-1; }
+    .rich-text h2, .ProseMirror h2 { @apply text-base font-semibold mt-2 mb-1; }
+    .rich-text h3, .ProseMirror h3 { @apply text-sm font-semibold mt-2 mb-1; }
+    .rich-text a, .ProseMirror a { @apply text-brand-700 underline; }
+    .rich-text blockquote, .ProseMirror blockquote {
+      @apply border-l-2 border-hairline pl-3 text-ink-muted my-1;
+    }
+    .rich-text code, .ProseMirror code {
+      @apply bg-surface-soft rounded-sm px-1 py-0.5 text-[0.85em];
+    }
+    /* Tables — the main reason this feature exists (pasted from Excel/Word). */
+    .rich-text table, .ProseMirror table {
+      @apply w-full my-2 border-collapse text-xs;
+    }
+    .rich-text td, .rich-text th, .ProseMirror td, .ProseMirror th {
+      @apply border border-hairline px-2 py-1 align-top;
+    }
+    .rich-text th, .ProseMirror th { @apply bg-surface-soft font-semibold text-left; }
+    /* A wide pasted table must scroll inside the bubble, not blow out the layout. */
+    .rich-text { @apply overflow-x-auto; }
 }
+

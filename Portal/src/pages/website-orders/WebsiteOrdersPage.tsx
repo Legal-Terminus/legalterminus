@@ -96,7 +96,7 @@ function OrderDetails({ o }: { o: WebsiteOrder }) {
         {rows.filter(([, v]) => v).map(([label, value]) => (
           <div key={label} className="min-w-0">
             <dt className="text-xs text-ink-muted">{label}</dt>
-            <dd className="text-ink break-words">{value}</dd>
+            <dd className="text-ink wrap-break-word">{value}</dd>
           </div>
         ))}
       </dl>

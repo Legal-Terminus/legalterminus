@@ -282,7 +282,7 @@ function ServiceCard({
       <div className={`flex items-start justify-between ${inactive ? 'opacity-50' : ''}`}>
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg bg-surface-card flex items-center justify-center">
-            <Layers className="w-4.5 h-4.5 text-ink" />
+            <Layers className="w-6 h-6 text-ink" />
           </div>
           {inactive && (
             <span className="badge bg-surface-card text-ink-muted">Inactive</span>
@@ -378,7 +378,7 @@ function ServiceCard({
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
               service.active ? 'translate-x-4' : 'translate-x-0.5'
             }`}
           />

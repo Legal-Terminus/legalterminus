@@ -52,7 +52,7 @@ export default function StatutoryDeadlines() {
     <CockpitSection title={`Statutory deadlines · ${label}`} to="/settings/statutory-calendar" linkLabel="Calendar">
       <div className="card p-4" data-testid="cockpit-deadlines">
         {rows === undefined ? (
-          <div className="h-5 w-40 rounded bg-surface-strong/70 animate-pulse" />
+          <div className="h-5 w-40 rounded-sm bg-surface-strong/70 animate-pulse" />
         ) : rows.length === 0 ? (
           <p className="text-sm text-ink-muted">No dated filings this month.</p>
         ) : (

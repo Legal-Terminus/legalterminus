@@ -1513,7 +1513,7 @@ function StagesRail({ stages, selected, onSelect, countsFor, rail }: {
           <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Stages</p>
           <button
             onClick={rail.toggle}
-            className="inline-flex items-center gap-1 text-[11px] text-ink-faint hover:text-ink px-1.5 py-0.5 rounded hover:bg-white/60"
+            className="inline-flex items-center gap-1 text-[11px] text-ink-faint hover:text-ink px-1.5 py-0.5 rounded-sm hover:bg-white/60"
             title="Show all steps in one continuous list"
             aria-label="Show all steps"
           >
@@ -1562,7 +1562,7 @@ function ActivityRail({ rail, children }: { rail: RailState; children: React.Rea
           <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Activity</p>
           <button
             onClick={rail.toggle}
-            className="inline-flex items-center gap-1 text-[11px] text-ink-faint hover:text-ink px-1.5 py-0.5 rounded hover:bg-white/60"
+            className="inline-flex items-center gap-1 text-[11px] text-ink-faint hover:text-ink px-1.5 py-0.5 rounded-sm hover:bg-white/60"
             title="Collapse activity" aria-label="Collapse activity"
           >
             Hide <ChevronsRight className="w-3.5 h-3.5" />
@@ -2114,7 +2114,7 @@ function StepHeroPanel({
             </div>
             <div className="min-w-0">
               <select
-                className="bg-transparent text-sm font-medium text-ink focus:outline-none cursor-pointer max-w-[150px]"
+                className="bg-transparent text-sm font-medium text-ink focus:outline-hidden cursor-pointer max-w-[150px]"
                 value={currentAssignee ?? ''}
                 disabled={assignment.assigning}
                 onChange={(e) => assignment.onAssign(step.stepNumber, e.target.value || null)}
@@ -2222,7 +2222,7 @@ function StepHeroPanel({
           {/* #81/#82: audience-tagged description (Step Settings' multiple
               descriptions + notes), falling back to the legacy single field. */}
           {(description ?? step.description) && (
-            <p className="text-sm text-ink-muted mt-1 whitespace-pre-wrap break-words">{description ?? step.description}</p>
+            <p className="text-sm text-ink-muted mt-1 whitespace-pre-wrap wrap-break-word">{description ?? step.description}</p>
           )}
 
           {/* #142 (generalises #105): the previous step's latest comment carried
@@ -2531,7 +2531,7 @@ function ExpandableStepRow({ step, displayNumber, stageName, description, status
       </button>
       {open && expandable && (
         <div className="px-5 pb-4 pl-12 space-y-2">
-          {description && <p className="text-xs text-ink-muted whitespace-pre-wrap break-words">{description}</p>}
+          {description && <p className="text-xs text-ink-muted whitespace-pre-wrap wrap-break-word">{description}</p>}
           {step.completedAt && <p className="text-xs text-ink-faint">Completed {relTime(step.completedAt)}</p>}
           {/* #137: step.remark is NOT rendered here — the completing transition
               stores the same text as its event comment, so the remark box showed

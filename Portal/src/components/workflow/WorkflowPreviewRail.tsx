@@ -77,7 +77,7 @@ export default function WorkflowPreviewRail({
         aria-label="Resize live preview"
         title="Drag to resize"
       >
-        <div className="h-full w-0.5 rounded bg-hairline group-hover:bg-brand-400 group-active:bg-brand-500 transition-colors relative">
+        <div className="h-full w-0.5 rounded-sm bg-hairline group-hover:bg-brand-400 group-active:bg-brand-500 transition-colors relative">
           <span
             aria-hidden
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-1.5 rounded-full bg-brand-400 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -87,7 +87,7 @@ export default function WorkflowPreviewRail({
       {/* Fixed width applies at xl+ only; below that the CSS var is ignored
           and the section is full-width via w-full. */}
       <section
-        className="card p-4 w-full xl:w-[var(--rail-w)]"
+        className="card p-4 w-full xl:w-(--rail-w)"
         style={{ ['--rail-w' as string]: `${preview.width}px` }}
       >
         <div className="flex items-center justify-between">
@@ -146,14 +146,14 @@ export default function WorkflowPreviewRail({
           role="dialog"
           aria-modal="true"
           aria-label="Workflow diagram, full screen"
-          className="fixed inset-0 z-[100] bg-white flex flex-col"
+          className="fixed inset-0 z-100 bg-white flex flex-col"
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-hairline shrink-0">
             <span className="text-sm font-semibold text-ink">Workflow diagram</span>
             <button
               onClick={() => setExpanded(false)}
               aria-label="Close full screen"
-              className="inline-flex items-center gap-1.5 btn-secondary !px-3 !py-1.5 text-xs"
+              className="inline-flex items-center gap-1.5 btn-secondary px-3! py-1.5! text-xs"
             >
               <X className="w-4 h-4" /> Close
             </button>

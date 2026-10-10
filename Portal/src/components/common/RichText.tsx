@@ -53,7 +53,7 @@ export default function RichText({ html, className = '', collapsible = true }: {
     <p
       ref={ref as React.RefObject<HTMLParagraphElement>}
       style={foldStyle}
-      className={`whitespace-pre-wrap break-words ${className}`}
+      className={`whitespace-pre-wrap wrap-break-word ${className}`}
     >
       {html}
     </p>
@@ -61,7 +61,7 @@ export default function RichText({ html, className = '', collapsible = true }: {
     <div
       ref={ref as React.RefObject<HTMLDivElement>}
       style={foldStyle}
-      className={`rich-text break-words ${className}`}
+      className={`rich-text wrap-break-word ${className}`}
       // Safe: server-sanitised on write with a strict allow-list.
       dangerouslySetInnerHTML={{ __html: html }}
     />

@@ -64,7 +64,7 @@ export default function ClientCockpit() {
 
       <CockpitSection title="Your services" to="/tasks" linkLabel="All services">
         {rest === undefined ? (
-          <div className="card p-4"><div className="h-5 w-40 rounded bg-surface-strong/70 animate-pulse" /></div>
+          <div className="card p-4"><div className="h-5 w-40 rounded-sm bg-surface-strong/70 animate-pulse" /></div>
         ) : rest.length === 0 && (needsYou?.length ?? 0) === 0 ? (
           <div className="card p-6 text-center text-sm text-ink-muted">Nothing in progress right now.</div>
         ) : (

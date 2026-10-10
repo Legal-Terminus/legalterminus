@@ -31,7 +31,7 @@ const PAYMENT_OPTIONS: { value: string; label: string }[] = [
 ];
 
 const inputCls =
-  'rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400';
+  'rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-400';
 
 /**
  * #91: multiple-criteria report filtering. Status, Service Type, Payment and the

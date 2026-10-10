@@ -4172,8 +4172,8 @@ On `main`, so on QA; not in production until the next release tag.
   `google-github-actions/auth` v3.0.0, `google-github-actions/setup-gcloud`
   v3.0.1, `actions/setup-node` v4.4.0. A tag such as `@v4` can be moved by
   whoever controls the action; a SHA cannot.
-- **Not taken, deliberately:** Tailwind 4 (a migration — it fails the build as a
-  drop-in), Node 26 as the runtime (CI tests on 22), and the majors of
+- **Not taken that day:** Tailwind 4 (a migration — it fails the build as a
+  drop-in) and Node 26 as the runtime — both done on 2026-10-10, next entry — and the majors of
   `firebase-admin` 14, `nodemailer` 10, `firebase` 13, `typescript` 7 and
   `@tanstack/react-table` 9. `Frontend/` was not touched.
 - Lockfiles were regenerated in a clean directory with no `node_modules`, so they
@@ -4181,6 +4181,48 @@ On `main`, so on QA; not in production until the next release tag.
   own, and `npm ci` then fails on Linux — it did in Ambyflow's first deploy).
 - Production `npm audit` after: backend 0 critical / 5 high (was 1 / 19),
   Portal 0 / 5.
+
+### Portal on Tailwind CSS 4, runtime on Node 26 (2026-10-10) ✅ Completed
+
+The two upgrades held back on 2026-10-08. Library work only: **the Portal is meant to
+look exactly as it did**, and that was measured, not assumed. `Frontend/` was not
+touched. On `main`, so on QA; not in production until the next release tag.
+
+- **Tailwind CSS 3.4 → 4.3 (Portal).** `tailwind.config.js` is gone; the theme now
+  lives in `Portal/src/index.css` under `@theme`, PostCSS uses `@tailwindcss/postcss`,
+  and `autoprefixer` is removed (v4 does it). The official upgrade tool renamed the
+  utilities whose meaning moved (`shadow-sm` → `shadow-xs`, `shadow` → `shadow-sm`,
+  `rounded` → `rounded-sm`, `outline-none` → `outline-hidden`, `!x` → `x!`) across 31
+  files; component classes (`.btn-*`, `.card`, `.badge-*`, `.input-field` …) became
+  `@utility` blocks.
+- **Every v4 default that would have changed a pixel is pinned back to v3**, each with
+  a comment saying what it does and what breaks without it — see `architecture.md`,
+  "Portal styling: Tailwind CSS 4 with v3 defaults pinned". In short: the colour
+  palette (`Portal/src/tailwind3-palette.css`), text line heights, border and ring
+  defaults, button cursor, placeholder colour, the wider base reset on form controls,
+  date inputs, the file button and table cells, and `space-x/y`.
+- **One class was dead in v3 and is live in v4:** `w-4.5 h-4.5` on four icons. v3 had
+  no such size, so the icons rendered at their own 24px; v4 would have shrunk them to
+  18px. They now say `w-6 h-6`, which is what users have always seen.
+- **How "no visible change" was checked.** (1) 66 full-page screenshots — every
+  admin screen, the matter tabs, the client, team and manager views, and seven mobile
+  screens — taken on Tailwind 3 and compared on Tailwind 4 at zero pixel tolerance:
+  64 identical, and the other two differ only in a live "5m ago" label. (2) Every one of the
+  818 classes in the built stylesheet, and every unstyled HTML element, rendered under
+  both stylesheets in a browser and compared property by property: no difference that
+  is not a proven-equivalent notation (`transform` → `translate`, `rgba()` →
+  `color-mix`, `9999px` → `infinity`).
+- **Node 22 → 26** in `Dockerfile`, `Portal.Dockerfile` (image pinned by digest) and
+  both deploy workflows. Backend unit tests, the Portal build and the Playwright suite
+  were all run on Node 26.
+- `Portal.Dockerfile` no longer copies `tailwind.config.js` — the build would have
+  failed on the missing file.
+- `Portal/package-lock.json` regenerated in a clean directory and proven with
+  `npm ci --os=linux --cpu=x64 --libc=musl`, so Tailwind 4's native packages for the
+  Alpine build image are locked.
+- **Not user-visible** — no manual or UI copy change.
+- **Still not taken:** the Portal's 28 pre-existing ESLint errors, and the majors of
+  `firebase-admin`, `nodemailer`, `firebase`, `typescript` and `@tanstack/react-table`.
 
 ### A created matter opens — #211 (2026-10-10) ✅ Completed
 

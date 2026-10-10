@@ -471,20 +471,20 @@ function StepAssigneePicker({ stepNumber, selected, staff, disabled, onToggle }:
         <button
           type="button"
           onClick={() => onToggle('')}
-          className={`w-full text-left text-xs px-2 py-1.5 rounded hover:bg-surface-soft ${!isClient && members.length === 0 ? 'text-brand-700 font-medium' : 'text-ink-muted'}`}
+          className={`w-full text-left text-xs px-2 py-1.5 rounded-sm hover:bg-surface-soft ${!isClient && members.length === 0 ? 'text-brand-700 font-medium' : 'text-ink-muted'}`}
         >
           Inherit from phase
         </button>
         <button
           type="button"
           onClick={() => onToggle(CLIENT_ASSIGNEE)}
-          className={`w-full text-left text-xs px-2 py-1.5 rounded hover:bg-surface-soft ${isClient ? 'text-brand-700 font-medium' : 'text-ink-muted'}`}
+          className={`w-full text-left text-xs px-2 py-1.5 rounded-sm hover:bg-surface-soft ${isClient ? 'text-brand-700 font-medium' : 'text-ink-muted'}`}
         >
           Client (this matter&apos;s client)
         </button>
         <div className="my-1 h-px bg-hairline" />
         {staff.map((u) => (
-          <label key={u.uid} className="flex items-center gap-2 text-xs px-2 py-1.5 rounded hover:bg-surface-soft cursor-pointer">
+          <label key={u.uid} className="flex items-center gap-2 text-xs px-2 py-1.5 rounded-sm hover:bg-surface-soft cursor-pointer">
             <input
               type="checkbox"
               className="h-3.5 w-3.5"

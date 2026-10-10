@@ -67,4 +67,4 @@ export const OUTCOME_TYPES: { event: string; label: string; needsName?: boolean 
  * app whose accent is the tenant's. Now on the hairline/ink tokens like every
  * other input, so focus reads the same everywhere.
  */
-export const inputCls = 'w-full rounded-md border border-hairline px-2 py-1 text-sm text-ink bg-white placeholder-ink-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent';
+export const inputCls = 'w-full rounded-md border border-hairline px-2 py-1 text-sm text-ink bg-white placeholder-ink-muted focus:outline-hidden focus:ring-2 focus:ring-accent focus:border-accent';

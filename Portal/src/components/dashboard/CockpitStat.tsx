@@ -45,7 +45,7 @@ export default function CockpitStat({ label, value, to, hint, tone, testId }: Pr
       </div>
       <div className="mt-2">
         {value === undefined ? (
-          <span aria-hidden="true" className="inline-block h-7 w-12 rounded bg-surface-strong/70 animate-pulse" />
+          <span aria-hidden="true" className="inline-block h-7 w-12 rounded-sm bg-surface-strong/70 animate-pulse" />
         ) : (
           <span className={`text-2xl font-semibold tabular-nums leading-none ${cls}`}>{value}</span>
         )}

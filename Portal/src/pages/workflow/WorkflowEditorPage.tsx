@@ -286,7 +286,7 @@ export default function WorkflowEditorPage() {
       subtitle={isCreate ? 'Build a workflow your team and clients will follow.' : `${draft.name} · v${draft.version}`}
       action={
         <div className="flex items-center gap-2">
-          <button onClick={goBack} className="btn-secondary !px-3 !py-1.5 text-sm">Cancel</button>
+          <button onClick={goBack} className="btn-secondary px-3! py-1.5! text-sm">Cancel</button>
           <button
             // Clickable while incomplete on purpose: a disabled button cannot
             // tell you WHY it is disabled. Pressing it reveals the checklist.
@@ -297,7 +297,7 @@ export default function WorkflowEditorPage() {
             // Disabled while invalid: the old editor blocked the click rather
             // than accepting it and failing server-side.
             disabled={save.isPending || !isValid}
-            className="btn-primary inline-flex items-center gap-1.5 !px-3 !py-1.5 text-sm disabled:opacity-50"
+            className="btn-primary inline-flex items-center gap-1.5 px-3! py-1.5! text-sm disabled:opacity-50"
           >
             {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {isCreate ? 'Create workflow' : 'Save & publish'}

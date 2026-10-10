@@ -35,7 +35,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
       {children}
       {opts && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 p-4"
           onClick={() => close(false)}
           role="dialog"
           aria-modal="true"
@@ -44,7 +44,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             <div className="flex items-start gap-3 p-5">
               {tone === 'danger' && (
                 <span className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
-                  <AlertTriangle className="w-4.5 h-4.5 text-red-600" />
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
                 </span>
               )}
               <div className="min-w-0 flex-1">

@@ -117,7 +117,7 @@ function Field({ icon, label, value }: { icon?: React.ReactNode; label: string; 
       {icon && <span className="text-ink-faint mt-0.5 shrink-0">{icon}</span>}
       <div className="min-w-0">
         <p className="text-[11px] text-ink-faint">{label}</p>
-        <p className="text-sm text-ink break-words">{value}</p>
+        <p className="text-sm text-ink wrap-break-word">{value}</p>
       </div>
     </div>
   );

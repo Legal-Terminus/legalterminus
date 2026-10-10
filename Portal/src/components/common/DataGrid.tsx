@@ -214,7 +214,7 @@ export default function DataGrid<T>({
                         >
                           <span
                             onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
-                            className={`inline-flex items-start gap-1.5 max-w-full break-words ${
+                            className={`inline-flex items-start gap-1.5 max-w-full wrap-break-word ${
                               canSort ? 'cursor-pointer select-none hover:text-ink' : ''
                             }`}
                           >
@@ -270,7 +270,7 @@ export default function DataGrid<T>({
                         <div
                           key={cell.id}
                           style={{ width: cell.column.getSize() }}
-                          className="px-5 py-4 shrink-0 min-w-0 break-words [&_.truncate]:whitespace-normal [&_.truncate]:overflow-visible"
+                          className="px-5 py-4 shrink-0 min-w-0 wrap-break-word [&_.truncate]:whitespace-normal [&_.truncate]:overflow-visible"
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </div>
@@ -398,7 +398,7 @@ function ColumnFilterMenu<T>({ column, table }: { column: Column<T, unknown>; ta
     <div ref={ref} className="relative inline-block align-middle ml-1">
       <button
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-        className={`p-0.5 rounded align-middle ${isActive ? 'text-brand-600 bg-brand-50' : 'text-ink-faint hover:text-ink'}`}
+        className={`p-0.5 rounded-sm align-middle ${isActive ? 'text-brand-600 bg-brand-50' : 'text-ink-faint hover:text-ink'}`}
         title="Filter column"
         aria-label={`Filter ${String(column.id)}`}
       >
@@ -420,7 +420,7 @@ function ColumnFilterMenu<T>({ column, table }: { column: Column<T, unknown>; ta
                   onChange={(e) => setRange({ min: e.target.value === '' ? undefined : Number(e.target.value) })}
                   placeholder="Min"
                   aria-label="Minimum"
-                  className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-brand-400"
+                  className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs focus:outline-hidden focus:ring-1 focus:ring-brand-400"
                 />
                 <span className="text-ink-faint text-xs">–</span>
                 <input
@@ -429,7 +429,7 @@ function ColumnFilterMenu<T>({ column, table }: { column: Column<T, unknown>; ta
                   onChange={(e) => setRange({ max: e.target.value === '' ? undefined : Number(e.target.value) })}
                   placeholder="Max"
                   aria-label="Maximum"
-                  className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-brand-400"
+                  className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs focus:outline-hidden focus:ring-1 focus:ring-brand-400"
                 />
               </div>
               <div className="flex justify-end px-1 text-[11px]">
@@ -449,7 +449,7 @@ function ColumnFilterMenu<T>({ column, table }: { column: Column<T, unknown>; ta
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search values…"
-                className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs mb-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
+                className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs mb-1.5 focus:outline-hidden focus:ring-1 focus:ring-brand-400"
               />
               <div className="flex items-center justify-between px-1 pb-1.5 text-[11px]">
                 <button onClick={() => column.setFilterValue(shown.length ? [...shown] : undefined)} className="text-brand-700 hover:underline">Select all</button>
@@ -463,7 +463,7 @@ function ColumnFilterMenu<T>({ column, table }: { column: Column<T, unknown>; ta
               <div className="max-h-56 overflow-y-auto space-y-0.5">
                 {shown.length === 0 && <p className="px-1 py-2 text-xs text-ink-faint">No values</p>}
                 {shown.map((v) => (
-                  <label key={v} className="flex items-center gap-2 px-1 py-1 rounded hover:bg-surface-soft cursor-pointer text-xs text-ink">
+                  <label key={v} className="flex items-center gap-2 px-1 py-1 rounded-sm hover:bg-surface-soft cursor-pointer text-xs text-ink">
                     <input
                       type="checkbox"
                       className="h-3.5 w-3.5"
