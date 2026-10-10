@@ -3489,6 +3489,252 @@ items marked **Open** above.
 
 ---
 
+## E-25 — Website Redesign in Theme C, on a Shared Stylesheet (#209) [Phase 2]
+
+**Goal**: The website looks like the approved Theme C concept — on every page — without a
+single word of content changing. Raised as GitHub #209 (2026-10-09); Theme C chosen by the
+firm; the revised concept (all of #209's points applied) is what we build from.
+
+**Why this is an epic and not a restyle of two pages.** The website has 115 pages built from
+1,194 components, each with its own CSS file (1,118 of them) and its own class-name prefix, on
+53 lines of global CSS. There is no design system: restyling Home changes nothing on any other
+page. Measured 2026-10-10: the components are copies of about eight families — 85 pricing cards,
+78 FAQs, 68 document sections, 53 process/steps, 82 benefits/types, 131 tab sections — and the
+copies are literal (`CIRplans.css` and `CIOplans.css` differ by **zero lines** once the class
+prefix is ignored). So the redesign is done once, as a **shared stylesheet**, and the copies are
+pointed at it. After that, a change to the shared card or pricing style applies everywhere.
+
+**Decisions (product owner, 2026-10-10)**
+- **Content is untouched.** Every heading, paragraph, list item, label, link, image and video
+  stays exactly as in the source. Known content faults stay too until the firm answers the three
+  questions on #209: the Private Limited FAQ answers describe a *Public* Limited company; the
+  footer reads "Registration Srvices"; two price sets exist for the Private Limited plans.
+- **Palette stays the site's greens** (`#16a34a` / `#15803d` / `#166534` / `#22c55e`, ink
+  `#0f172a`, canvas `#f8f9fa`). Theme C contributes structure, type (Figtree), shapes, spacing
+  and hover behaviour — not colour.
+- **Behind a build switch.** `VITE_THEME_C=true` is set only in the QA website build
+  (`deploy-qa.yml`, beside `VITE_PAYMENTS_ENABLED`). The live build leaves it unset and renders
+  exactly as today, so a production release for other work (#207, #208) can go at any time.
+  The switch is removed in the last story, when the firm signs off.
+- **Styles become shared; components do not merge.** The 85 pricing components stay 85
+  components with their own `DEFAULT_PLANS` text — merging them means moving text into data,
+  which is the content risk the firm will not take. Only the CSS is shared.
+- **Home and Private Limited first**, deployed to QA for the firm to see; then the families.
+
+**Source of truth for the design**: the revised Theme C concept at
+https://legal-terminus-redesign.web.app/c/home and `/c/service`, generated into
+`../redesign-concepts/c/home.html` and `service.html` (sibling folder of this repo, **not
+committed**; the generator `build.py` / `content.py` sits beside it). Its `<style>` block
+(~380 lines, tokens at `:root`) is the starting point for `theme.css`. Where the concept and
+#209 disagree, #209 and lokesh-infynia's 2026-10-10 reply on it win (two items were changed
+deliberately: left-aligned text at ~68 characters instead of justified; the Steps timeline keeps
+its exact layout in Theme C colours).
+
+**Constraints every story inherits**
+- Pricing cards keep `usePlans()`, `PAYMENTS_ENABLED`, Buy Now and `<CutPrice />` (E24-S01).
+  A restyle wraps them; it never copies the concept's static prices in.
+- `npm run build` in `Frontend/` must pass, including the prerender (`scripts/prerender.mjs`).
+  Fonts: load Figtree from Google Fonts in `index.html` with `preconnect`, or self-host it
+  under `public/fonts/` — never block render on it.
+- `Frontend/tests/e2e` (`all-pages.spec.js` and the chunks) must stay green; they assert text
+  and a visible `nav`, not class names. Do not weaken them.
+- Mobile first: no horizontal scroll at 360px; tap targets ≥ 44px; the header collapses to the
+  menu button before anything wraps.
+- Accessibility: visible focus state on links and buttons (token `--focus`); the FAQ accordion
+  and tabs keep keyboard operation; hover effects are decorative only, never the sole cue.
+- Commits: `feat(website): …` or `style(website): …` with `(#209)` and the story id in the body.
+  One story per agent; a story is done only when its acceptance criteria are met, the QA deploy
+  succeeded and the page was looked at (screenshot at 1280 and 390 wide in the commit body or
+  the story note).
+
+**How the switch works** (set in E25-S00, used by every story): `Frontend/src/utils/theme.js`
+exports `THEME_C = import.meta.env.VITE_THEME_C === "true"`. `App.jsx` adds the class `theme-c`
+to the app root when it is on. `theme.css` is imported unconditionally but every rule is scoped
+under `.theme-c`, so with the switch off nothing in it applies. A component that needs different
+markup for Theme C (rare; most need only classes) branches on `THEME_C` with the same text in
+both branches. Shared class names carry the `lt-` prefix (`lt-card`, `lt-plans`, `lt-faq`,
+`lt-steps`, `lt-tabs`, `lt-docs`, `lt-btn`, `lt-section`).
+
+---
+
+### E25-S00 — The switch and the shared stylesheet [Phase 2] ⏳ Not Started
+
+> Everything else stands on this. It must be small, reviewed, and merged before any page work.
+
+**Scope**
+- `VITE_THEME_C` in `Frontend/.env.example` (documented, empty), set `'true'` in
+  `deploy-qa.yml`'s *Build Frontend* step only. `utils/theme.js`; the `theme-c` root class.
+- `Frontend/src/theme.css`: the Theme C tokens from the concept's `:root` (colours already the
+  site's greens), typography scale, `.lt-section` spacing, `.lt-container` width, `.lt-btn`
+  (primary / secondary / ghost), `.lt-card` with the one shared hover (green hairline border,
+  2px lift, soft shadow — used by *every* "add border and hover" item in #209), `.lt-badge`,
+  `.lt-grid` helpers, focus ring, reduced-motion rule. All under `.theme-c`.
+- Figtree loaded as above; `body` font switches to it only under `.theme-c`.
+
+**Acceptance Criteria**
+- With the switch off, the built site is byte-for-byte the same HTML and the same visual as
+  before (prerender output diff is empty apart from the stylesheet link).
+- With it on, body text is Figtree, the canvas and ink tokens apply, and nothing else changes
+  yet.
+- `npm run build` and `tests/e2e` pass both ways.
+
+**Priority**: P1 | **Complexity**: S | **Dependencies**: none
+
+---
+
+### E25-S01 — Header and footer [Phase 2] ⏳ Not Started
+
+> Shared by all 115 pages, so this is the first thing the firm sees everywhere on QA.
+
+**Scope**: `Components/Navbar` (1,209 lines of JSX with mega-menus; keep every item and link)
+and `Components/Footer`, restyled to the concept's header and footer under `.theme-c`.
+
+**Acceptance Criteria** (#209 Home 1)
+- The menu never wraps to a second line at any width; below the width where it would, it is
+  the menu button. Mega-menus open as today with the same entries.
+- Sticky, translucent header (`--nav-bg`), brand mark at the left, sign-in and the consultation
+  button at the right as in the concept.
+- Footer: the concept's column layout; same links, same text (including "Registration
+  Srvices"); copyright line unchanged.
+- Checked on QA at 1440, 1280, 1024, 768 and 390 wide.
+
+**Priority**: P1 | **Complexity**: M | **Dependencies**: E25-S00
+
+---
+
+### E25-S02 — Home page [Phase 2] ⏳ Not Started
+
+**Scope**: the 12 components of `Pages/Home/Home.jsx`, mapped to the concept's sections:
+
+| Component | Concept section | #209 item |
+|---|---|---|
+| `Herosection` | `hero` | 2 (fits one screen), 3 (six tabs link to their service pages) |
+| `Premiumbusiness` | `premium` | 4 (card hover) |
+| `HomePdfToolsCta` | `pdf` | — |
+| `WorkingProcessPro` | `process` | 5 (border + hover) |
+| `Legalhelp` | `services` | 6 (alignment; category tabs with a solid-green selected state) |
+| `HomeCertisfiedClient` | `band` | 7 (count-up from 0 to the exact figure on scroll-in; pale green background) |
+| `HomeAboutExperiance` | `about` | 8 (alignment; hover on the three rings) |
+| `Whoweare` | `who` | 9 (existing video with poster + play, steps as a numbered list beside it) |
+| `Featureslegalservice` | `features` | 10 (border + hover) |
+| `Testimonials` | `testimonials` | 10 (one featured review + small cards; auto-rotate with arrows) |
+| `Contactus` | `contact` | — |
+| `HomeLatestBlog` | `blog` | — |
+
+**Acceptance Criteria**
+- Every #209 Home item (1–10) is visibly met on QA; item 3's six links go to the same routes
+  the current site's tabs go to (take them from the existing component; if the current tabs
+  have no links, use the matching `App.jsx` routes and list them in the commit body).
+- Count-up lands exactly on the source figures ("1K+", "120+"…), runs once, and is skipped
+  under `prefers-reduced-motion`.
+- Text content of the page (`document.body.innerText` with whitespace collapsed) is identical
+  before and after the switch — this is the content check, and the story note records it.
+- Hero fits within 800px of viewport height at 1280 wide with the six quick links visible.
+
+**Priority**: P1 | **Complexity**: L | **Dependencies**: E25-S01
+
+---
+
+### E25-S03 — Private Limited page [Phase 2] ⏳ Not Started
+
+> The route `/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india`
+> renders **`Pages/PrivateLimitedCopy2`** — not `PrivateLimited` or `PrivateLimitedCopy`, which
+> are unrouted copies. Restyle the routed one; leave the copies alone.
+
+**Scope**: `Breadcrum` (the hero with the consultation form), `PvtltdPlanandPricing`,
+`PvtltdGovtCosts`, `PvtltdTermsCondition`, `PvtltdZolvitPremium`, `PvtltdTabs` (the section
+navigation), `PvtltdCompanyTab`, `CopyPvtTypes`, `PvtltdRequirementsTab`, `PvtltdProcess`,
+`CopyPvtDocument`, `PvtltdFAQ`.
+
+**Acceptance Criteria** (#209 Private Limited 1–10)
+- Hero: smaller headline, balanced two-column layout with the form, the three statistics in
+  green, fits the first viewport as far as the form allows.
+- Plans: all cards `lt-card` hover; Enriched keeps the green border and "Most Popular";
+  Supreme Plus is a white card with a dark navy header strip and "Full-Service". Prices still
+  come from `usePlans`; Buy Now still works on QA (place a simulated-gateway or Razorpay test
+  order after the restyle and record the order id).
+- Order: Plans → Government Costs (full width) → Terms & Conditions, as now.
+- Section tabs centred, single row on desktop, hover, smooth scroll to the ids already on the
+  page (`#company`, `#types`, `#requirements`, `#process`, `#documents`, `#faq`).
+- Paragraphs left-aligned at a comfortable reading width (`max-width: 68ch`), not justified.
+- The Pvt Ltd vs LLP vs OPC comparison table (#209 item 5) is the one already in
+  `PvtltdCompanyTab`, restyled — if it is not there, stop and ask; do not author a table.
+- Types, Benefits, Documents cards: `lt-card` hover, equal heights, green document icons.
+- Steps: the existing central timeline with alternating cards, numbered markers, connecting
+  lines and day-range badges, in Theme C colour and type only.
+- FAQ: the existing accordion, restyled; keyboard operable.
+- Same `innerText` check as E25-S02.
+
+**Priority**: P1 | **Complexity**: L | **Dependencies**: E25-S01
+
+---
+
+### E25-S04 — Family codemod: pricing cards (85) [Phase 2] ⏳ Not Started
+
+> First of the family stories, and the template for the rest. Each family story has the same
+> shape: (1) write the shared classes while restyling the page instance in S02/S03 — so they
+> already exist; (2) a script under `Frontend/scripts/theme/` rewrites each copy's class names
+> to the shared ones and deletes the copy's now-unused CSS rules; (3) a screenshot of every
+> page the family appears on, before and after, at 1280 and 390; (4) hand-fix the copies that
+> were not identical (the script reports any file whose normalised CSS differs from the family
+> reference).
+
+**Acceptance Criteria**
+- All 62 routed pricing components render through `.lt-plans`; the 21 unrouted copies are
+  deleted (they are dead code — see E24-S01 — and would otherwise rot).
+- `usePlans`, `PAYMENTS_ENABLED`, `<CutPrice />` intact in every one; the catalogue's
+  `components` field in `shared/pricing/catalog.json` still points at existing files
+  (`scripts/build-pricing-catalog.py --check`, or a dry run, passes).
+- Per-component CSS files shrink to only what is specific to that card (usually nothing).
+
+**Priority**: P2 | **Complexity**: M | **Dependencies**: E25-S03
+
+---
+
+### E25-S05 — Family codemod: FAQ (78) [Phase 2] ⏳ Not Started
+### E25-S06 — Family codemod: documents (68) [Phase 2] ⏳ Not Started
+### E25-S07 — Family codemod: process / steps (53) [Phase 2] ⏳ Not Started
+### E25-S08 — Family codemod: benefits & types (82) [Phase 2] ⏳ Not Started
+### E25-S09 — Family codemod: section tabs (131) [Phase 2] ⏳ Not Started
+
+Same shape, acceptance and verification as E25-S04. Each depends on E25-S03 and is
+independent of the other family stories, so they can run in parallel — one agent per family,
+each on its own branch merged to `main` in turn (a page may contain several families; merge
+conflicts are confined to its page file and are expected to be trivial).
+
+**Priority**: P2 | **Complexity**: M each
+
+---
+
+### E25-S10 — Service hero and the remaining one-offs [Phase 2] ⏳ Not Started
+
+**Scope**: the three hero components (`Breadcrum` is done in S03; `CompanyRegHero`,
+`TrademarkHero`), the landing pages (`CompanyRegistrationLanding`, Odisha pages), About,
+Contact, Blog list and post, Login / Sign-up / Forgot-password, and any component the family
+scripts reported as unmatched.
+
+**Acceptance Criteria**: every route in `tests/e2e/all-pages.spec.js` looks Theme C at 1280
+and 390 with no leftover old-style section; a list of routes and screenshots in the story note.
+
+**Priority**: P2 | **Complexity**: L | **Dependencies**: E25-S04 … S09
+
+---
+
+### E25-S11 — Sign-off, switch removal, release [Phase 2] ⏳ Not Started
+
+**Scope**: the firm approves QA on #209; then remove `VITE_THEME_C`, the `.theme-c` scope
+and the old CSS the switch was protecting; close #209; release by tag per `docs/delivery.md`.
+
+**Acceptance Criteria**
+- No `THEME_C` reference remains; `theme.css` rules are unscoped; `npm run build` passes;
+  prerendered HTML of every route contains the same text as before the epic.
+- The three content questions on #209 are either answered and applied (as separate
+  `content(website):` commits) or explicitly carried to a new issue.
+
+**Priority**: P2 | **Complexity**: S | **Dependencies**: E25-S10, firm sign-off
+
+---
+
 ## APPENDIX A — Infrastructure & Build System (Updated 2026-06-01)
 
 ### NPM Run Commands Standardization

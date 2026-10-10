@@ -1800,3 +1800,24 @@ a product is keyed by the `source` its component passes to the checkout, and
   to show `gatewayPaymentId`, `gatewayOrderId`, `method`, `paidAt`,
   `settledBy` and `amountPaid` against `amount`. No new endpoint and nothing
   new stored. The customer's own view (`publicOrder`) is unchanged.
+
+## Website theme: one shared stylesheet behind a build switch (E-25, #209)
+
+- **`Frontend/src/theme.css` is the website's design system.** Tokens at `:root`
+  (the site's greens, ink, canvas, Figtree, radii, section spacing, one shadow) and
+  shared `lt-*` classes (`lt-section`, `lt-container`, `lt-btn`, `lt-card` with the
+  single hover used site-wide, `lt-plans`, `lt-faq`, `lt-steps`, `lt-tabs`, `lt-docs`).
+  Per-component CSS keeps only what is specific to that component.
+- **Why shared, why now.** 1,118 per-component CSS files were copies of ~8 families
+  with renamed class prefixes (measured 2026-10-10: two pricing cards differ by zero
+  normalised lines). A restyle of one page changed nothing elsewhere. The redesign is
+  written once in `theme.css`; the copies are rewritten to the shared classes by
+  scripts under `Frontend/scripts/theme/`. Components are **not** merged — their text
+  stays in each file; only styling is shared.
+- **The switch.** `VITE_THEME_C=true` (QA build only) adds `.theme-c` to the app root;
+  every `theme.css` rule is scoped under it, so the live build renders unchanged until
+  the firm signs off (E25-S11 removes the switch and the scope). Same pattern as
+  `VITE_PAYMENTS_ENABLED`.
+- **Content fidelity is a test, not a promise.** Each page story records that
+  `document.body.innerText` (whitespace-collapsed) is identical with the switch off and
+  on. The website Playwright suite asserts text and a visible `nav`, never class names.

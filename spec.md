@@ -627,3 +627,13 @@ action, performedBy, performedAt, previousValue?, newValue?, note?
 - `backend/` → Cloud Run (`asia-south2`, service `legal-terminus-qa`, 0–5 instances, 512Mi)
 - CI/CD via `.github/workflows/firebase-preview-qa.yml`
 - **CORS** (Phase 2 prep): Backend already allows `capacitor://localhost` (iOS) and `http://localhost` (Android)
+
+## Website redesign in Theme C (#209, E-25)
+
+The website is restyled to the approved Theme C concept with **no change to content**
+(text, links, images, video) and the site's existing green palette. The design is a
+shared stylesheet applied to every page, so later changes apply site-wide. It is built
+on the QA website behind a build switch and reaches the live site only after the firm
+signs off on #209. Three content faults carried over from the current site (Private
+Limited FAQ answers describe a Public Limited company; "Registration Srvices"; two
+price sets for the Private Limited plans) are left as they are until the firm answers.
