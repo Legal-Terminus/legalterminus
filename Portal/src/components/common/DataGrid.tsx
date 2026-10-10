@@ -86,6 +86,9 @@ export interface DataGridProps<T> {
   columnFilters?: boolean;
 }
 
+/** Every empty grid shares this array, so an empty list has a stable identity. */
+const NO_ROWS: unknown[] = [];
+
 export default function DataGrid<T>({
   data,
   columns,
@@ -129,8 +132,16 @@ export default function DataGrid<T>({
     }
   }, [sizingKey, columnSizing]);
 
+  // Callers commonly write `const { data = [] } = useQuery(…)`, which is a new
+  // empty array on every render while the request is in flight. The table reads
+  // a new array as "the data changed" and re-renders, which produces another
+  // one; on the Users page that loop froze the tab (see UsersPage). Every empty
+  // list is therefore swapped for one shared array, so this grid cannot be put
+  // in that state by a caller.
+  const tableData = data.length === 0 ? (NO_ROWS as T[]) : data;
+
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     state: { sorting, globalFilter: search, columnSizing, columnFilters: colFilters },
     onSortingChange: setSorting,

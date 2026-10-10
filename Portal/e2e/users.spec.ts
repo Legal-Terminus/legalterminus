@@ -15,6 +15,34 @@ test('admin sees the Users grid with role filter tabs', async ({ adminPage }) =>
   }
 });
 
+// Typing in the search box while the list was still loading froze the tab for
+// good: the page handed the table a new empty array on every render, the table
+// re-rendered on each one, and the loop never yielded for the response to land.
+// The response is held back here so the typing is GUARANTEED to arrive first —
+// left to chance it happened about one run in four, and looked like a slow test.
+test('typing in the Users search box before the list has loaded does not freeze the page', async ({ adminPage }) => {
+  let release: () => void = () => {};
+  const held = new Promise<void>((resolve) => { release = resolve; });
+  await adminPage.route('**/api/portal/users*', async (route) => { await held; await route.continue(); });
+
+  await adminPage.goto('users');
+  const search = adminPage.getByPlaceholder(/search users/i);
+  await search.fill('e2e');
+  await expect(adminPage.getByText('Loading users…')).toBeVisible();
+
+  // A frozen tab cannot answer this at all; a healthy one answers at once.
+  const answered = await Promise.race([
+    adminPage.evaluate(() => 'alive'),
+    new Promise<string>((resolve) => setTimeout(() => resolve('frozen'), 5_000)),
+  ]);
+  expect(answered).toBe('alive');
+
+  release();
+  await expect(adminPage.getByText('Loading users…')).toBeHidden({ timeout: 20_000 });
+  await expect(search).toHaveValue('e2e');
+  await expect(adminPage.getByText(process.env.E2E_ADMIN_EMAIL!).first()).toBeVisible();
+});
+
 test('E09-S06: clicking a user row opens a read-only detail view with an Edit action', async ({ adminPage }) => {
   await adminPage.goto('users');
   await expect(adminPage.getByRole('heading', { name: 'Users' })).toBeVisible();

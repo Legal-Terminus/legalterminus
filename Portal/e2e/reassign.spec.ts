@@ -8,9 +8,11 @@ import { createMatter, assignMatter, deleteMatter, createThrowawayStaff, deleteU
  * Cleans up the matter + user afterwards. Never touches shared seed users.
  */
 // Heaviest spec: beforeAll creates a real user (welcome-email path) + matter +
-// assignment, all via token-authed API calls. Give it headroom and one retry so an
-// occasional slow Firebase round-trip doesn't fail the run.
-test.describe.configure({ timeout: 180_000, retries: 1 });
+// assignment, all via token-authed API calls, so it gets headroom. It no longer
+// gets a retry: the retry was hiding a real freeze on the Users page (typing in
+// the search box before the list loaded), which looked like a slow round-trip
+// and is now fixed and pinned in users.spec.ts.
+test.describe.configure({ timeout: 180_000 });
 
 let tempUid: string;
 let tempName: string;

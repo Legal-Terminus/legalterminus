@@ -68,6 +68,9 @@ function formatDate(value: unknown): string {
 
 const columnHelper = createColumnHelper<PortalUser>();
 
+/** The list before it has loaded. A constant, so its identity never changes. */
+const NO_USERS: PortalUser[] = [];
+
 export default function UsersPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -83,7 +86,12 @@ export default function UsersPage() {
   const [detailUser, setDetailUser] = useState<PortalUser | null>(null);
 
   // Load all users once; the grid does sorting/filtering/search client-side.
-  const { data: users = [], isLoading, error } = useQuery({
+  // The fallback is ONE shared array, never `= []`: a fresh array on every render
+  // tells the table its data changed, the table re-renders, and that makes
+  // another fresh array. While the request is in flight that loop never yields,
+  // so the response is never processed and the tab is frozen for good. It only
+  // needs one state change during loading to start — typing in the search box.
+  const { data: users = NO_USERS, isLoading, error } = useQuery({
     queryKey: ['portalUsers'],
     queryFn: getAllUsers,
     retry: 1,            // fail fast & visibly instead of hammering on a bad token

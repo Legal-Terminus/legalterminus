@@ -4231,6 +4231,34 @@ On `main`, so on QA; not in production until the next release tag.
 - Production `npm audit` after: backend 0 critical / 5 high (was 1 / 19),
   Portal 0 / 5.
 
+### The Users page froze if you typed before it loaded (2026-10-11) ✅ Completed
+
+Found by chasing a test that needed its retry. It was a product bug, and anyone could
+hit it: open Users, start typing in the search box before the list appears, and the
+browser tab stops responding for good — no error, no recovery but closing it.
+
+- **Cause.** The page gave the table `users = []` as the "not loaded yet" value. That
+  is a brand-new array on every render. The table reads a new array as "the data
+  changed" and re-renders, which makes another new array. Idle, nothing starts the
+  loop. One state change during loading — a keystroke in the search box — does, and
+  the loop then never yields, so the response that would end it is never processed.
+- **Fix.** One shared empty array (`NO_USERS`) as the fallback. The shared report grid
+  (`DataGrid`) now swaps every empty list for a single shared array as well, so no
+  caller can put it in that state.
+- **Why it hid.** It needs typing inside a window of a few hundred milliseconds, so a
+  person rarely hits it and a test hits it about one run in four. `reassign.spec.ts`
+  carried `retries: 1` with a comment blaming "an occasional slow Firebase
+  round-trip". The retry is removed.
+- **Pinned** by a test in `users.spec.ts` that holds the users response back, types,
+  and checks the page still answers. Without the fix it freezes every time.
+- Measured before the fix: 6 of 20 runs froze. After: 0 of 20.
+- **Not in the manual** — nothing to learn; the page simply no longer freezes.
+- Verified: `npm run build` clean; lint clean; full Playwright suite in two shards —
+  481 passed, none failed, none retried, 4 skipped.
+- The freeze and its cure were measured. The loop mechanism described under *Cause* is
+  inferred from them and from the table library's documented behaviour, not observed
+  in a profiler.
+
 ### Portal lint: 28 errors to none (2026-10-10) ✅ Completed
 
 `npm run lint` in `Portal/` reported 28 errors, and no workflow runs it, so a new one
@@ -4261,7 +4289,7 @@ behaviours improved as a side effect and are listed first.
 - **Not user-visible** beyond the three points above — no manual change.
 - Verified: `npm run build` clean; full Playwright suite in two shards — 480 passed,
   none failed, 3 skipped. `reassign.spec.ts` passed on its built-in retry.
-- **Open, and not caused by this work:** that retry. On its first attempt the test's
+- **Open at the time, since fixed (see the entry above):** that retry. On its first attempt the test's
   `fill()` on the Users search box sometimes never returns (180s timeout). Repeating
   the spec 8 times on the commit *before* the Tailwind upgrade hung 3 times; on `main`
   without these lint changes, 1 in 4. Visiting the page and typing a moment later never
