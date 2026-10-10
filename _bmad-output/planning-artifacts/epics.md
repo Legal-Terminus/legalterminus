@@ -3557,9 +3557,18 @@ both branches. Shared class names carry the `lt-` prefix (`lt-card`, `lt-plans`,
 
 ---
 
-### E25-S00 — The switch and the shared stylesheet [Phase 2] ⏳ Not Started
+### E25-S00 — The switch and the shared stylesheet [Phase 2] ✅ Built (2026-10-10)
 
 > Everything else stands on this. It must be small, reviewed, and merged before any page work.
+>
+> **Built.** `Frontend/src/utils/theme.js` (`THEME_C`, `applyTheme()` — puts `theme-c` on
+> `<html>` and loads Figtree, only when the switch is on, so the live `index.html` is untouched);
+> `Frontend/src/theme/` — `index.css` imports `theme.css` (tokens + `lt-*` classes), `shell.css`,
+> `home.css`, `pvtltd.css`, `families.css`. **Tokens are `--lt-*`**, not the bare names in the
+> concept: `Footer.css` and others declare `:root { --accent … --muted … }` and would clobber
+> them. One rule moves the site to Figtree (components set Poppins/Inter on ~800 selectors).
+> Tools: `Frontend/scripts/theme/shot.mjs` (screenshots) and `content-check.mjs` (compares the
+> text nodes, link targets and media sources of two URLs — the content-fidelity test).
 
 **Scope**
 - `VITE_THEME_C` in `Frontend/.env.example` (documented, empty), set `'true'` in
@@ -3582,9 +3591,17 @@ both branches. Shared class names carry the `lt-` prefix (`lt-card`, `lt-plans`,
 
 ---
 
-### E25-S01 — Header and footer [Phase 2] ⏳ Not Started
+### E25-S01 — Header and footer [Phase 2] ✅ Built (on QA, 2026-10-10)
 
 > Shared by all 115 pages, so this is the first thing the firm sees everywhere on QA.
+>
+> **Built** in `theme/shell.css`, CSS only — the Navbar and Footer markup, links, logo images
+> and social links are untouched (product owner, 2026-10-10: keep the real logos, social links
+> and videos). Menu on one line; below 1120px it gives way to the existing menu button. The
+> contact strip is kept (it is content) and made a slim dark bar. Footer is the concept's light
+> footer with the brand column first; the white-lettered logo sits on a dark chip.
+> **Not done from the story as written:** the concept's "Free Consultation" button in the
+> header — the site's header has no such button and adding one is a content change.
 
 **Scope**: `Components/Navbar` (1,209 lines of JSX with mega-menus; keep every item and link)
 and `Components/Footer`, restyled to the concept's header and footer under `.theme-c`.
