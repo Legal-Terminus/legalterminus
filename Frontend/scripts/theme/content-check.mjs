@@ -9,6 +9,11 @@
  * Compares, in document order, the visible text nodes of <body> (textContent,
  * so CSS text-transform cannot hide a change), plus every link target and
  * every image / video / iframe source. Exits 1 on any difference.
+ * Compare like with like: two dev servers, or two built sites. A build names an
+ * asset after its content, so two source files with identical bytes
+ * (lt-company.svg / lt-companys.svg, whypvt-imp.svg / whypvt-imp1.svg) appear
+ * under ONE name in a build and under their own names on a dev server, which
+ * reads as a media difference when a built site is compared with a dev server.
  * Rotating carousels (reviews, video testimonials, client logos) are left out:
  * they differ between two loads of the same page. Their content lives in the
  * components' own data, which the redesign does not edit.
