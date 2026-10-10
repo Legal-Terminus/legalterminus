@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { X, Search, Plus, AlertCircle, Loader2 } from 'lucide-react';
 import { assignServiceToClient } from '../../api/tasks';
 import { getAllUsers, displayName } from '../../api/users';
@@ -20,6 +21,7 @@ export default function CreateMatterModal({ onClose, initialClientUid }: {
   initialClientUid?: string;
 }) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [clientSearch, setClientSearch] = useState('');
   const [clientUid, setClientUid] = useState(initialClientUid ?? '');
   const [serviceKey, setServiceKey] = useState('');
@@ -108,9 +110,14 @@ export default function CreateMatterModal({ onClose, initialClientUid }: {
         } : {}),
       });
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       onClose();
+      // #211: open what was just created. The dialog used to close and leave the
+      // user on the list, hunting for the new row — when the very next thing
+      // anyone does is work on it (approve it, record the fee, assign it). A
+      // push, so Back returns to the page the dialog was opened from.
+      if (created?.id) navigate(`/tasks/${created.id}`);
     },
     onError: (err: Error) => setError(err.message || 'Failed to create matter.'),
   });

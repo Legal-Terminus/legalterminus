@@ -3913,6 +3913,24 @@ On `main`, so on QA; not in production until the next release tag.
 - Production `npm audit` after: backend 0 critical / 5 high (was 1 / 19),
   Portal 0 / 5.
 
+### A created matter opens — #211 (2026-10-10) ✅ Completed
+
+Ported from Ambyflow (lokesh-infynia/cometflow#18, commit `1844143`), where it was
+found during a demo rehearsal. The same behaviour was here.
+
+- **#211 — Create Matter opens the matter it created.** The dialog closed on success
+  and left the user on the Matters list, or on the client's page, to find the new row.
+  `CreateMatterModal` now navigates to `/tasks/{id}` using the id the create endpoint
+  already returns. It is a history push, so Back (#208) returns to the page the dialog
+  was opened from. A refused create keeps the dialog open as before.
+- **Not ported from the same Ambyflow commit:** the "matter is in another workspace"
+  screen and the demo-seed membership fix. Both are multi-tenancy machinery, which
+  never syncs (`docs/releases/SYNC.md`).
+- **Tests:** `Portal/e2e/matters.spec.ts` — the modal test asserts the matter opens;
+  "#211: a matter created from a client page opens, and Back returns to that client".
+- **Ledger:** on `main` (QA) only. The `SYNC.md` row is added when a release tag
+  carries it to production.
+
 ### Production feedback — #194 (reopened), #207, #208 (2026-10-08) ✅ Completed
 
 Built in Ambyflow first (Story 42.13) and ported here by content. On `main`, so

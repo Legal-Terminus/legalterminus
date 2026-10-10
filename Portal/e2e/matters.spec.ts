@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
-import { createMatter, deleteMatter, deleteNewestClientMatter } from './api';
+import { createMatter, deleteMatter } from './api';
+import { env } from './helpers';
 
 /**
  * E11 — Matters grid + Create Matter, on fresh matters (cleaned up after).
@@ -48,8 +49,42 @@ test('admin creates a matter via the modal, then it can be deleted', async ({ ad
   await expect(submit).toBeEnabled();
   await submit.click();
   await expect(adminPage.getByRole('heading', { name: 'Create Matter' })).toBeHidden();
-  // Clean up the matter we just created through the UI (newest for the client).
-  await deleteNewestClientMatter();
+  // #211: the new matter OPENS. The dialog used to close and leave the user on
+  // the list, looking for the row they had just made.
+  await expect(adminPage).toHaveURL(/\/tasks\/[A-Za-z0-9]{10,}$/, { timeout: 20_000 });
+  await expect(adminPage.getByRole('button', { name: 'Steps', exact: true })).toBeVisible();
+  const createdId = new URL(adminPage.url()).pathname.split('/').pop()!;
+  await deleteMatter(createdId);
+});
+
+test('#211: a matter created from a client page opens, and Back returns to that client', async ({ adminPage }) => {
+  const clientUid = env('E2E_CLIENT_UID');
+  await adminPage.goto(`clients/${clientUid}`);
+  await adminPage.getByRole('button', { name: /Create Matter|Matter/ }).first().click();
+  await expect(adminPage.getByRole('heading', { name: 'Create Matter' })).toBeVisible();
+  // The client is pre-selected from the page it was opened on.
+  await adminPage.getByLabel('Organisation name').fill('E2E Client Page Org');
+  // Pick the Service select by its placeholder option, and only once the catalog
+  // has loaded. `select` first() is not safe here: with the client pre-selected
+  // the dialog renders before the services arrive, and the first select on the
+  // page is then Professional — the test chose a professional and no service.
+  const service = adminPage.locator('select', { has: adminPage.locator('option', { hasText: 'Select a service' }) });
+  await expect.poll(() => service.locator('option').count(), { timeout: 30_000 }).toBeGreaterThan(1);
+  await service.selectOption({ index: 1 });
+  await adminPage.getByLabel('Payment status').selectOption('fully_paid');
+  await adminPage.getByRole('spinbutton').first().fill('10000');
+  await adminPage.getByRole('spinbutton').nth(1).fill('10000');
+  await adminPage.getByRole('button', { name: 'Create Matter' }).last().click();
+
+  await expect(adminPage).toHaveURL(/\/tasks\/[A-Za-z0-9]{10,}$/, { timeout: 20_000 });
+  const createdId = new URL(adminPage.url()).pathname.split('/').pop()!;
+  try {
+    await expect(adminPage.getByRole('button', { name: 'Steps', exact: true })).toBeVisible();
+    await adminPage.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(adminPage).toHaveURL(new RegExp(`/clients/${clientUid}$`));
+  } finally {
+    await deleteMatter(createdId);
+  }
 });
 
 test('matter detail opens with Steps/Documents/Payments tabs', async ({ adminPage }) => {
