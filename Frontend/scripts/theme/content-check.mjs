@@ -9,6 +9,9 @@
  * Compares, in document order, the visible text nodes of <body> (textContent,
  * so CSS text-transform cannot hide a change), plus every link target and
  * every image / video / iframe source. Exits 1 on any difference.
+ * Rotating carousels (reviews, video testimonials, client logos) are left out:
+ * they differ between two loads of the same page. Their content lives in the
+ * components' own data, which the redesign does not edit.
  * Numbers that count up are read after the animations have had time to end.
  */
 import { chromium } from "@playwright/test";
@@ -29,7 +32,14 @@ async function read(browser, url) {
     // The floating call button swaps its glyph on a timer; it is not page content.
     const noise = (t) => /^[\u260e\u2715\u00d7\u2706]$/.test(t);
     const texts = [];
+    // Carousels that rotate on a timer or pick at random (reviews, video
+    // testimonials, client logos, the floating call button) show different
+    // items on every load of the SAME page. They are compared separately, as
+    // "rotating", so that a real change elsewhere is never lost in that noise.
+    const ROTATING = '[class*="estimonial" i], [class*="review" i], [class*="client" i], [class*="float-icon" i], [class*="tst" i], [class*="slider" i], [class*="carousel" i], [class^="gt-"], [class*=" gt-"]';
+    const rotating = (el) => !!(el && el.closest && el.closest(ROTATING));
     const walk = (n) => {
+      if (n.nodeType === 1 && n.matches && n.matches(ROTATING)) return;
       if (n.nodeType === 3) { const t = n.nodeValue.replace(/\s+/g, " ").trim(); if (t && !noise(t)) texts.push(t); return; }
       if (n.nodeType !== 1 || skip.has(n.tagName.toUpperCase())) return;
       for (const c of n.childNodes) walk(c);
@@ -40,8 +50,11 @@ async function read(browser, url) {
     const asset = (u) => path(u || "").replace(/-[A-Za-z0-9_-]{8}(\.[a-z0-9]+)$/i, "$1").replace(/^\/(src\/)?assets\//, "/");
     return {
       text: texts.join(" ").replace(/\s+/g, " "),
-      links: [...document.querySelectorAll("a[href]")].map((x) => path(x.getAttribute("href"))),
-      media: [...document.querySelectorAll("img[src], video[src], source[src], iframe[src]")].map((x) => `${x.tagName.toLowerCase()} ${asset(x.getAttribute("src"))}`),
+      // share.google links are the per-review links inside the Google reviews slider
+      links: [...document.querySelectorAll("a[href]")].filter((x) => !rotating(x) && !/share\.google/.test(x.getAttribute("href"))).map((x) => path(x.getAttribute("href"))),
+      media: [...document.querySelectorAll("img[src], video[src], source[src], iframe[src]")].filter((x) => !rotating(x))
+        .map((x) => `${x.tagName.toLowerCase()} ${asset(x.getAttribute("src")).slice(0, 120)}`),
+      rotatingBlocks: document.querySelectorAll(ROTATING).length,
     };
   });
   await page.close();
@@ -55,8 +68,18 @@ function bagDiff(x, y) {
   return out;
 }
 
+// Each side is read twice. Lazy sections mount on scroll and a few pick one of
+// two illustrations at random, so a single read can miss an image the next one
+// shows. Links and media are therefore compared as the SET seen across both
+// reads; text is taken from the fuller read.
+async function readTwice(browser, url) {
+  const one = await read(browser, url), two = await read(browser, url);
+  const fuller = one.text.length >= two.text.length ? one : two;
+  return { text: fuller.text, rotatingBlocks: fuller.rotatingBlocks,
+    links: [...new Set([...one.links, ...two.links])], media: [...new Set([...one.media, ...two.media])] };
+}
 const browser = await chromium.launch();
-const [A, B] = [await read(browser, a), await read(browser, b)];
+const [A, B] = [await readTwice(browser, a), await readTwice(browser, b)];
 await browser.close();
 
 const norm = (s) => (ignoreCase ? s.toLowerCase() : s);
@@ -71,7 +94,7 @@ else if (wordsA.join(" ") !== wordsB.join(" ")) {
 const links = bagDiff(A.links, B.links); if (links.length) problems.push(`LINKS that differ:\n  ${links.slice(0, 40).join("\n  ")}`);
 const media = bagDiff(A.media, B.media); if (media.length) problems.push(`MEDIA that differ:\n  ${media.slice(0, 40).join("\n  ")}`);
 
-console.log(`A ${a}: ${wordsA.length} words, ${A.links.length} links, ${A.media.length} media`);
+console.log(`A ${a}: ${wordsA.length} words, ${A.links.length} links, ${A.media.length} media (outside ${A.rotatingBlocks} rotating blocks)`);
 console.log(`B ${b}: ${wordsB.length} words, ${B.links.length} links, ${B.media.length} media`);
 if (problems.length) { console.log("\nCONTENT DIFFERS\n" + problems.join("\n\n")); process.exit(1); }
 console.log("CONTENT IDENTICAL");

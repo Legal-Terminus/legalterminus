@@ -1,10 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import './theme/index.css'
 import App from './App.jsx'
 import { getFirebaseApp } from './utils/firebase.js'
-import { applyTheme } from './utils/theme.js'
+import { applyTheme, THEME_C } from './utils/theme.js'
 
 // E-25: Theme C is on only where the build sets VITE_THEME_C (QA). No-op otherwise.
 applyTheme()
@@ -14,8 +13,15 @@ applyTheme()
 // landing pages that hide the navbar (which used to be what triggered init).
 getFirebaseApp()
 
-createRoot(document.getElementById('root')).render(
+const start = () => createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
   </StrictMode>,
 )
+
+// E-25: the Theme C stylesheet is large (it restyles every page) and is loaded
+// ONLY where the switch is on. The live build never requests it — the branch
+// below is removed at build time when VITE_THEME_C is not "true". Where it is
+// on, the app waits for it so the old design never flashes first.
+if (THEME_C) import('./theme/index.css').then(start, start)
+else start()

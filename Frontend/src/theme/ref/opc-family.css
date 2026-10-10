@@ -1,0 +1,1344 @@
+/*
+ * Theme C — the One Person Company generation of service pages (E-25, #209).
+ *
+ * SOURCE for scripts/theme/fanout.py (see ref/service.css for how it works).
+ * Reference page: "One Person Company Registration"
+ *   /setting-up-a-business/profit-making-structures/one-person-company-registration-in-india
+ *   (src/Pages/OPC). About 35 pages reuse these components' class names
+ *   literally (their stylesheets @import the OPC ones), and the structural
+ *   copies with their own prefixes (LLP, Public Limited, Section 8, Partnership
+ *   firm, trade licence, incorporation…) are reached through the fan-out.
+ *
+ * The declarations follow src/theme/pvtltd.css value for value. That matters
+ * twice: the page must read as the same design, and several clusters contain
+ * a copy that kept the Private Limited page's own class names (`.cpvt-*`,
+ * `.req-*`, `.faq-*`, `.pvtltd-timeline-*`), so a fanned-out rule lands on that
+ * page too — with identical values it changes nothing there.
+ *
+ * The OPC components that are in no cluster (tabs, overview, terms) and the
+ * one-off components of this generation are styled in src/theme/opc.css.
+ *
+ * Rules only use classes that exist in the reference stylesheet — a class that
+ * is only in the JSX has no counterpart list and would not fan out.
+ */
+
+/* @ref src/Components/OPCPlans/OPCPlans.css */
+/* ══ pricing (OPC, trade licence) ══
+   #209 Pvt Ltd 2 — border and the shared hover on every card; the popular plan
+   keeps its green border and badge. Prices and Buy Now are the component's own.
+   The column count follows the number of plans. */
+html.theme-c .opc-pricing-section { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .opcpricing-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; padding: 0; }
+html.theme-c .opcpricing-header { text-align: left; margin-bottom: 40px; display: grid; gap: 12px; }
+html.theme-c .opcpricing-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink); margin: 0;
+}
+html.theme-c .opcpricing-header .opcpricing-subtitle { font-size: 1.05rem; font-weight: 400; color: var(--lt-muted); text-align: left; margin: 0; }
+html.theme-c .opcpricing-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: stretch; padding-top: 12px; }
+
+html.theme-c .opcplan-card {
+  position: relative;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transform: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .opcplan-card.opcplan-card:hover {
+  border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px);
+}
+/* Enriched — "Most Popular" */
+html.theme-c .opcplan-card.opcplan-card--popular,
+html.theme-c .opcplan-card.opcplan-card--popular:nth-child(n) {
+  border: 1px solid var(--lt-accent);
+  box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow);
+}
+html.theme-c .opcplan-card.opcplan-card--popular:nth-child(n):hover {
+  border-color: var(--lt-accent); box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow); transform: translateY(-3px);
+}
+html.theme-c .opcplan-badge--popular,
+html.theme-c .opcplan-badge {
+  display: inline-flex; align-items: center; width: fit-content; margin: 0;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; line-height: 1.4; text-align: left;
+}
+html.theme-c .opcplan-badge { position: absolute; top: -12px; left: 20px; background: var(--lt-ink); color: var(--lt-on-ink); }
+html.theme-c .opcplan-badge.opcplan-badge--popular,
+html.theme-c .opcplan-card--popular .opcplan-badge { background: var(--lt-accent); color: var(--lt-on-accent); }
+
+html.theme-c .opcplan-header { margin-bottom: 0; display: grid; gap: 4px; justify-items: start; }
+html.theme-c .opcplan-name { font-size: 1.1rem; font-weight: 500; color: var(--lt-ink); text-align: left; margin-bottom: 8px; }
+html.theme-c .opcplan-old-price { font-size: 15px; font-weight: 400; color: var(--lt-danger); text-align: left; margin: 0; }
+html.theme-c .opcplan-price {
+  font-family: var(--lt-f-display) !important;
+  font-size: 2.4rem; font-weight: 400; letter-spacing: var(--lt-d-track); line-height: 1.05;
+  color: var(--lt-ink); text-align: left; font-variant-numeric: tabular-nums;
+}
+html.theme-c .opcplan-meta { font-size: 13px; color: var(--lt-muted); text-align: left; }
+html.theme-c .opcplan-body { margin-top: 18px; }
+html.theme-c .opcplan-list { display: grid; gap: 8px; }
+html.theme-c .opcplan-list-item {
+  display: flex; align-items: flex-start; gap: 8px; margin: 0;
+  font-size: 14px; line-height: 1.5; color: var(--lt-body); text-align: left;
+}
+html.theme-c .opcplan-list-item::before {
+  content: ""; width: 16px; height: 16px; flex: none; margin: 3px 0 0; border-radius: 0;
+  background: var(--lt-accent-text);
+  -webkit-mask: var(--lt-ic-check) center / contain no-repeat; mask: var(--lt-ic-check) center / contain no-repeat;
+}
+html.theme-c .opcplan-footer { margin-top: auto; padding-top: 22px; text-align: left; }
+html.theme-c .opcplan-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 44px; padding: 10px 20px;
+  background: var(--lt-btn); color: var(--lt-on-btn);
+  border: 1px solid transparent; border-radius: var(--lt-r-btn);
+  font-size: 15px; font-weight: 500;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+html.theme-c .opcplan-button:hover { background: var(--lt-btn-hover); transform: translateY(-1px); box-shadow: none; }
+/* outline button on the plain cards, solid on the highlighted one */
+html.theme-c .opcplan-card:not(.opcplan-card--popular) .opcplan-button {
+  background: transparent; color: var(--lt-ink); border-color: var(--lt-hairline-strong);
+}
+html.theme-c .opcplan-card:not(.opcplan-card--popular) .opcplan-button:hover {
+  background: transparent; border-color: var(--lt-accent); color: var(--lt-accent-text);
+}
+/* the shared "Book Free Consultation" button under the plans */
+html.theme-c .consult-cta-row { display: flex; justify-content: center; margin-top: 32px; }
+html.theme-c .consult-cta-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 52px; padding: 12px 32px;
+  background: var(--lt-btn); color: var(--lt-on-btn);
+  border: 0; border-radius: var(--lt-r-btn); box-shadow: none;
+  font-size: 17px; font-weight: 500; letter-spacing: 0; cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+html.theme-c .consult-cta-button:hover { background: var(--lt-btn-hover); transform: translateY(-1px); box-shadow: none; }
+
+html.theme-c .opcpricing-cards:has(> :nth-child(1):last-child) { grid-template-columns: minmax(0, 420px); }
+html.theme-c .opcpricing-cards:has(> :nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html.theme-c .opcpricing-cards:has(> :nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) {
+  html.theme-c .opcpricing-cards:has(> :nth-child(2):last-child),
+  html.theme-c .opcpricing-cards:has(> :nth-child(3):last-child) { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+}
+@media (max-width: 1100px) {
+  html.theme-c .opcpricing-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; }
+}
+@media (max-width: 680px) {
+  html.theme-c .opcpricing-cards { grid-template-columns: minmax(0, 1fr); }
+  html.theme-c .opcplan-card { max-width: none; margin: 0; }
+}
+
+/* @ref src/Components/SccietyPlanAndPricing/SccietyPlanAndPricing.css */
+/* ══ pricing (Society, Trust) ══
+   Same rules as the block above. */
+html.theme-c .Society-pricing-section { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .Society-pricing-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; padding: 0; }
+html.theme-c .Society-pricing-header { text-align: left; margin-bottom: 40px; display: grid; gap: 12px; }
+html.theme-c .Society-pricing-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink); margin: 0;
+}
+html.theme-c .Society-pricing-header .Society-pricing-subtitle { font-size: 1.05rem; font-weight: 400; color: var(--lt-muted); text-align: left; margin: 0; }
+html.theme-c .Society-pricing-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: stretch; padding-top: 12px; }
+
+html.theme-c .Society-plan-card {
+  position: relative;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transform: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .Society-plan-card.Society-plan-card:hover {
+  border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px);
+}
+/* Enriched — "Most Popular" */
+html.theme-c .Society-plan-card.Society-plan-card--popular,
+html.theme-c .Society-plan-card.Society-plan-card--popular:nth-child(n) {
+  border: 1px solid var(--lt-accent);
+  box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow);
+}
+html.theme-c .Society-plan-card.Society-plan-card--popular:nth-child(n):hover {
+  border-color: var(--lt-accent); box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow); transform: translateY(-3px);
+}
+html.theme-c .Society-plan-badge--popular,
+html.theme-c .Society-plan-badge {
+  display: inline-flex; align-items: center; width: fit-content; margin: 0;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; line-height: 1.4; text-align: left;
+}
+html.theme-c .Society-plan-badge { position: absolute; top: -12px; left: 20px; background: var(--lt-ink); color: var(--lt-on-ink); }
+html.theme-c .Society-plan-badge.Society-plan-badge--popular,
+html.theme-c .Society-plan-card--popular .Society-plan-badge { background: var(--lt-accent); color: var(--lt-on-accent); }
+
+html.theme-c .Society-plan-header { margin-bottom: 0; display: grid; gap: 4px; justify-items: start; }
+html.theme-c .Society-plan-name { font-size: 1.1rem; font-weight: 500; color: var(--lt-ink); text-align: left; margin-bottom: 8px; }
+html.theme-c .Society-plan-old-price { font-size: 15px; font-weight: 400; color: var(--lt-danger); text-align: left; margin: 0; }
+html.theme-c .Society-plan-price {
+  font-family: var(--lt-f-display) !important;
+  font-size: 2.4rem; font-weight: 400; letter-spacing: var(--lt-d-track); line-height: 1.05;
+  color: var(--lt-ink); text-align: left; font-variant-numeric: tabular-nums;
+}
+html.theme-c .Society-plan-meta { font-size: 13px; color: var(--lt-muted); text-align: left; }
+html.theme-c .Society-plan-body { margin-top: 18px; }
+html.theme-c .Society-plan-list { display: grid; gap: 8px; }
+html.theme-c .Society-plan-list-item {
+  display: flex; align-items: flex-start; gap: 8px; margin: 0;
+  font-size: 14px; line-height: 1.5; color: var(--lt-body); text-align: left;
+}
+html.theme-c .Society-plan-list-item::before {
+  content: ""; width: 16px; height: 16px; flex: none; margin: 3px 0 0; border-radius: 0;
+  background: var(--lt-accent-text);
+  -webkit-mask: var(--lt-ic-check) center / contain no-repeat; mask: var(--lt-ic-check) center / contain no-repeat;
+}
+html.theme-c .Society-plan-footer { margin-top: auto; padding-top: 22px; text-align: left; }
+html.theme-c .Society-plan-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 44px; padding: 10px 20px;
+  background: var(--lt-btn); color: var(--lt-on-btn);
+  border: 1px solid transparent; border-radius: var(--lt-r-btn);
+  font-size: 15px; font-weight: 500;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+html.theme-c .Society-plan-button:hover { background: var(--lt-btn-hover); transform: translateY(-1px); box-shadow: none; }
+/* outline button on the plain cards, solid on the highlighted one */
+html.theme-c .Society-plan-card:not(.Society-plan-card--popular) .Society-plan-button {
+  background: transparent; color: var(--lt-ink); border-color: var(--lt-hairline-strong);
+}
+html.theme-c .Society-plan-card:not(.Society-plan-card--popular) .Society-plan-button:hover {
+  background: transparent; border-color: var(--lt-accent); color: var(--lt-accent-text);
+}
+/* the shared "Book Free Consultation" button under the plans */
+html.theme-c .consult-cta-row { display: flex; justify-content: center; margin-top: 32px; }
+html.theme-c .consult-cta-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 52px; padding: 12px 32px;
+  background: var(--lt-btn); color: var(--lt-on-btn);
+  border: 0; border-radius: var(--lt-r-btn); box-shadow: none;
+  font-size: 17px; font-weight: 500; letter-spacing: 0; cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+html.theme-c .consult-cta-button:hover { background: var(--lt-btn-hover); transform: translateY(-1px); box-shadow: none; }
+
+html.theme-c .Society-pricing-cards:has(> :nth-child(1):last-child) { grid-template-columns: minmax(0, 420px); }
+html.theme-c .Society-pricing-cards:has(> :nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html.theme-c .Society-pricing-cards:has(> :nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) {
+  html.theme-c .Society-pricing-cards:has(> :nth-child(2):last-child),
+  html.theme-c .Society-pricing-cards:has(> :nth-child(3):last-child) { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+}
+@media (max-width: 1100px) {
+  html.theme-c .Society-pricing-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; }
+}
+@media (max-width: 680px) {
+  html.theme-c .Society-pricing-cards { grid-template-columns: minmax(0, 1fr); }
+  html.theme-c .Society-plan-card { max-width: none; margin: 0; }
+}
+
+/* @ref src/Components/PRFlandpricing/PRFlandpricing.css */
+/* ══ pricing (Partnership firm) ══
+   The Partnership firm copy of the Private Limited plans; the cluster includes
+   that page's own component, so these repeat pvtltd.css value for value. */
+html.theme-c .prf-pricingsection { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .prf-pricingcontainer { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; padding: 0; }
+html.theme-c .prf-pricingheader { text-align: left; margin-bottom: 40px; display: grid; gap: 12px; }
+html.theme-c .prf-pricingtitle {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink); margin: 0;
+}
+html.theme-c .prf-pricingheader .prf-pricingsubtitle { font-size: 1.05rem; font-weight: 400; color: var(--lt-muted); text-align: left; margin: 0; }
+html.theme-c .prf-pricingcards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: stretch; padding-top: 12px; }
+
+html.theme-c .prf-pricingcard {
+  position: relative;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transform: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .prf-pricingcard.prf-pricingcard:hover {
+  border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px);
+}
+/* Enriched — "Most Popular" */
+html.theme-c .prf-pricingcard.prf-card--popular,
+html.theme-c .prf-pricingcard.prf-card--popular:nth-child(n) {
+  border: 1px solid var(--lt-accent);
+  box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow);
+}
+html.theme-c .prf-pricingcard.prf-card--popular:nth-child(n):hover {
+  border-color: var(--lt-accent); box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow); transform: translateY(-3px);
+}
+html.theme-c .prf-popular-badge,
+html.theme-c .prf-fullservice-badge {
+  display: inline-flex; align-items: center; width: fit-content; margin: 0;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; line-height: 1.4; text-align: left;
+}
+html.theme-c .prf-popular-badge {
+  position: absolute; top: -12px; left: 20px;
+  background: var(--lt-accent); color: var(--lt-on-accent);
+}
+/* Supreme Plus — "Full-Service": white card, dark navy strip, navy badge */
+html.theme-c .prf-pricingcard.prf-card--fullservice {
+  border: 1px solid var(--lt-hairline);
+  box-shadow: var(--lt-shadow-sm);
+  padding-top: 0; overflow: hidden;
+}
+html.theme-c .prf-pricingcard.prf-card--fullservice:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); }
+html.theme-c .prf-card--fullservice::before {
+  content: ""; display: block; flex: none;
+  height: 10px; margin: 0 -24px 14px;
+  background: var(--lt-dark-grad);
+}
+html.theme-c .prf-fullservice-badge { background: var(--lt-ink); color: var(--lt-on-ink); margin-bottom: 14px; }
+
+html.theme-c .prf-planheader { margin-bottom: 0; display: grid; gap: 4px; justify-items: start; }
+html.theme-c .prf-pricingname { font-size: 1.1rem; font-weight: 500; color: var(--lt-ink); text-align: left; margin-bottom: 8px; }
+html.theme-c .prf-pricingold-price { font-size: 15px; font-weight: 400; color: var(--lt-danger); text-align: left; margin: 0; }
+html.theme-c .prf-pricingprice {
+  font-family: var(--lt-f-display) !important;
+  font-size: 2.4rem; font-weight: 400; letter-spacing: var(--lt-d-track); line-height: 1.05;
+  color: var(--lt-ink); text-align: left; font-variant-numeric: tabular-nums;
+}
+html.theme-c .prf-pricingmeta { font-size: 13px; color: var(--lt-muted); text-align: left; }
+html.theme-c .prf-pricingbody { margin-top: 18px; }
+html.theme-c .prf-pricinglist { display: grid; gap: 8px; }
+html.theme-c .prf-pricinglist-item {
+  display: flex; align-items: flex-start; gap: 8px; margin: 0;
+  font-size: 14px; line-height: 1.5; color: var(--lt-body); text-align: left;
+}
+html.theme-c .prf-pricinglist-item::before {
+  content: ""; width: 16px; height: 16px; flex: none; margin: 3px 0 0; border-radius: 0;
+  background: var(--lt-accent-text);
+  -webkit-mask: var(--lt-ic-check) center / contain no-repeat; mask: var(--lt-ic-check) center / contain no-repeat;
+}
+html.theme-c .prf-pricingfooter { margin-top: auto; padding-top: 22px; text-align: left; }
+html.theme-c .prf-pricingbutton {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 44px; padding: 10px 20px;
+  background: var(--lt-btn); color: var(--lt-on-btn);
+  border: 1px solid transparent; border-radius: var(--lt-r-btn);
+  font-size: 15px; font-weight: 500;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+html.theme-c .prf-pricingbutton:hover { background: var(--lt-btn-hover); transform: translateY(-1px); box-shadow: none; }
+/* outline button on the plain cards, solid on the highlighted one */
+html.theme-c .prf-pricingcard:not(.prf-card--popular) .prf-pricingbutton {
+  background: transparent; color: var(--lt-ink); border-color: var(--lt-hairline-strong);
+}
+html.theme-c .prf-pricingcard:not(.prf-card--popular) .prf-pricingbutton:hover {
+  background: transparent; border-color: var(--lt-accent); color: var(--lt-accent-text);
+}
+/* the shared "Book Free Consultation" button under the plans */
+html.theme-c .consult-cta-row { display: flex; justify-content: center; margin-top: 32px; }
+html.theme-c .consult-cta-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 52px; padding: 12px 32px;
+  background: var(--lt-btn); color: var(--lt-on-btn);
+  border: 0; border-radius: var(--lt-r-btn); box-shadow: none;
+  font-size: 17px; font-weight: 500; letter-spacing: 0; cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+html.theme-c .consult-cta-button:hover { background: var(--lt-btn-hover); transform: translateY(-1px); box-shadow: none; }
+
+html.theme-c .prf-pricingcards:has(> :nth-child(1):last-child) { grid-template-columns: minmax(0, 420px); }
+html.theme-c .prf-pricingcards:has(> :nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html.theme-c .prf-pricingcards:has(> :nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) {
+  html.theme-c .prf-pricingcards:has(> :nth-child(2):last-child),
+  html.theme-c .prf-pricingcards:has(> :nth-child(3):last-child) { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+}
+@media (max-width: 1100px) {
+  html.theme-c .prf-pricingcards { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; }
+}
+@media (max-width: 680px) {
+  html.theme-c .prf-pricingcards { grid-template-columns: minmax(0, 1fr); }
+  html.theme-c .prf-pricingcard { max-width: none; margin: 0; }
+}
+
+/* @ref src/Components/OPCGovtCosts/OPCGovtCosts.css */
+/* ══ government costs table (OPC, LLP, Public Limited) ══
+   #209 Pvt Ltd 3 — full width, in a rounded frame that scrolls inside itself
+   on a phone. */
+html.theme-c .opc-govtcosts-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .opc-govtcosts-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .opc-govtcosts-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  justify-content: flex-start; text-align: left; gap: 12px 16px; margin-bottom: 14px;
+}
+html.theme-c .opc-govtcosts-badge {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4;
+  padding: 5px 10px; border-radius: 999px;
+  background: var(--lt-accent); color: var(--lt-on-accent);
+}
+html.theme-c .opc-govtcosts-container .opc-govtcosts-subtitle {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); text-align: left; margin: 0 0 32px;
+}
+html.theme-c .opc-govtcosts-table-wrapper {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+}
+html.theme-c .opc-govtcosts-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+html.theme-c .opc-govtcosts-table { min-width: 560px; }
+html.theme-c .opc-govtcosts-table thead tr { background: var(--lt-canvas-soft); }
+html.theme-c .opc-govtcosts-table thead th {
+  padding: 12px 16px; border-radius: 0; border-bottom: 1px solid var(--lt-hairline);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; text-align: left;
+  color: var(--lt-muted); background: var(--lt-canvas-soft);
+}
+html.theme-c .opc-govtcosts-table tbody tr { background: var(--lt-surface); border-bottom: 1px solid var(--lt-hairline); }
+html.theme-c .opc-govtcosts-table tbody tr:last-child { border-bottom: 0; }
+html.theme-c .opc-govtcosts-table tbody tr:hover { background: var(--lt-canvas-tint); }
+html.theme-c .opc-govtcosts-table tbody td {
+  padding: 12px 16px; border-radius: 0; vertical-align: top; line-height: 1.5; text-align: left;
+  color: var(--lt-body);
+}
+html.theme-c .opc-govtcosts-table tbody td:first-child { font-weight: 600; color: var(--lt-ink); }
+html.theme-c .opc-govtcosts-table td.opc-govtcosts-range { font-weight: 400; color: var(--lt-ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+html.theme-c .opc-govtcosts-table tr.opc-govtcosts-total-row { background: var(--lt-surface-strong) !important; border-top: 0 !important; }
+html.theme-c .opc-govtcosts-table tr.opc-govtcosts-total-row td,
+html.theme-c .opc-govtcosts-table tr.opc-govtcosts-total-row td.opc-govtcosts-range { font-weight: 700; color: var(--lt-ink); }
+
+/* @ref src/Components/PFRGovtCosts/PFRGovtCosts.css */
+/* ══ government costs table (Partnership firm, Section 8, Udyam, Proprietorship) ══
+   Same rules as the block above. */
+html.theme-c .pfrgc-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .pfrgc-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .pfrgc-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  justify-content: flex-start; text-align: left; gap: 12px 16px; margin-bottom: 14px;
+}
+html.theme-c .pfrgc-badge {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4;
+  padding: 5px 10px; border-radius: 999px;
+  background: var(--lt-accent); color: var(--lt-on-accent);
+}
+html.theme-c .pfrgc-container .pfrgc-subtitle {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); text-align: left; margin: 0 0 32px;
+}
+html.theme-c .pfrgc-table-wrapper {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+}
+html.theme-c .pfrgc-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+html.theme-c .pfrgc-table { min-width: 560px; }
+html.theme-c .pfrgc-table thead tr { background: var(--lt-canvas-soft); }
+html.theme-c .pfrgc-table thead th {
+  padding: 12px 16px; border-radius: 0; border-bottom: 1px solid var(--lt-hairline);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; text-align: left;
+  color: var(--lt-muted); background: var(--lt-canvas-soft);
+}
+html.theme-c .pfrgc-table tbody tr { background: var(--lt-surface); border-bottom: 1px solid var(--lt-hairline); }
+html.theme-c .pfrgc-table tbody tr:last-child { border-bottom: 0; }
+html.theme-c .pfrgc-table tbody tr:hover { background: var(--lt-canvas-tint); }
+html.theme-c .pfrgc-table tbody td {
+  padding: 12px 16px; border-radius: 0; vertical-align: top; line-height: 1.5; text-align: left;
+  color: var(--lt-body);
+}
+html.theme-c .pfrgc-table tbody td:first-child { font-weight: 600; color: var(--lt-ink); }
+html.theme-c .pfrgc-table td.pfrgc-range { font-weight: 400; color: var(--lt-ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+html.theme-c .pfrgc-table tr.pfrgc-total-row { background: var(--lt-surface-strong) !important; border-top: 0 !important; }
+html.theme-c .pfrgc-table tr.pfrgc-total-row td,
+html.theme-c .pfrgc-table tr.pfrgc-total-row td.pfrgc-range { font-weight: 700; color: var(--lt-ink); }
+
+/* @ref src/Components/GSTRegTerms/GSTRegTerms.css */
+/* ══ terms (13 copies) ══
+   All 13 copies kept the Private Limited class names; repeats pvtltd.css. */
+html.theme-c .pvtltd-tc-section { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .pvtltd-tc-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .pvtltd-tc-card { background: none; border-radius: 0; box-shadow: none; padding: 0; }
+html.theme-c .pvtltd-tc-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink);
+  text-align: left; margin: 0 0 14px;
+}
+html.theme-c .pvtltd-tc-card .pvtltd-tc-subtitle {
+  font-size: 1.05rem; font-weight: 400; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); text-align: left; margin: 0 0 32px;
+}
+html.theme-c .pvtltd-tc-list { max-width: 72ch; margin: 0; padding-left: 22px; display: grid; gap: 12px; list-style: decimal; }
+html.theme-c .pvtltd-tc-list .pvtltd-tc-item { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+
+/* @ref src/Components/OpcZolvitPremium/OpcZolvitPremium.css */
+/* ══ premium — the "Legal Terminus Priority" panel (OPC, trade licence) ══ */
+html.theme-c .opczp-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .opczp-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .opczp-card {
+  background: var(--lt-surface); border: 1px solid var(--lt-hairline);
+  border-radius: var(--lt-r-xl); box-shadow: var(--lt-shadow-sm);
+  padding: 40px; gap: 28px;
+}
+html.theme-c .opczp-top-row { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 48px; align-items: center; }
+html.theme-c .opczp-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink); margin: 0 0 14px;
+}
+html.theme-c .opczp-title-highlight { color: var(--lt-accent-text); font-weight: 400; }
+html.theme-c .opczp-title-icon { font-size: 0.7em; }
+html.theme-c .opczp-content .opczp-subtitle { font-size: 1.05rem; line-height: 1.6; color: var(--lt-muted); max-width: var(--lt-measure); text-align: left; }
+html.theme-c .opczp-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--lt-accent-text); margin: 0 0 12px;
+}
+html.theme-c .opczp-list { display: grid; gap: 10px; }
+html.theme-c .opczp-list .opczp-list-item { font-size: 15px; line-height: 1.55; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .opczp-note-box { background: var(--lt-canvas-soft); border: 0; border-radius: var(--lt-r-md); padding: 20px 24px; }
+html.theme-c .opczp-note-list { display: grid; gap: 10px; }
+html.theme-c .opczp-note-list .opczp-note-item { font-size: 14px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .opczp-note-item strong { color: var(--lt-ink); font-weight: 600; }
+html.theme-c .opczp-note-item::before { color: var(--lt-accent); top: 2px; }
+html.theme-c .opczp-cta-row { margin: 28px 0 0; }
+html.theme-c .opczp-cta-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 12px 32px;
+  background: var(--lt-btn); color: var(--lt-on-btn); border-radius: var(--lt-r-btn);
+  font-size: 17px; font-weight: 500;
+}
+html.theme-c .opczp-cta-btn:hover { background: var(--lt-btn-hover); box-shadow: none; transform: translateY(-1px); }
+@media (max-width: 768px) {
+  html.theme-c .opczp-card { padding: 24px 18px; }
+  html.theme-c .opczp-top-row { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  html.theme-c .opczp-illustration { max-height: 260px; margin-inline: auto; }
+}
+
+/* @ref src/Components/GSTRegPriority/GSTRegPriority.css */
+/* ══ premium (8 copies under the Private Limited names) ══
+   Repeats pvtltd.css. */
+html.theme-c .zp-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .zp-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .zp-card {
+  background: var(--lt-surface); border: 1px solid var(--lt-hairline);
+  border-radius: var(--lt-r-xl); box-shadow: var(--lt-shadow-sm);
+  padding: 40px; gap: 28px;
+}
+html.theme-c .zp-top-row { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 48px; align-items: center; }
+html.theme-c .zp-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink); margin: 0 0 14px;
+}
+html.theme-c .zp-title-highlight { color: var(--lt-accent-text); font-weight: 400; }
+html.theme-c .zp-title-icon { font-size: 0.7em; }
+html.theme-c .zp-content .zp-subtitle { font-size: 1.05rem; line-height: 1.6; color: var(--lt-muted); max-width: var(--lt-measure); text-align: left; }
+html.theme-c .zp-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--lt-accent-text); margin: 0 0 12px;
+}
+html.theme-c .zp-list { display: grid; gap: 10px; }
+html.theme-c .zp-list .zp-list-item { font-size: 15px; line-height: 1.55; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .zp-note-box { background: var(--lt-canvas-soft); border: 0; border-radius: var(--lt-r-md); padding: 20px 24px; }
+html.theme-c .zp-note-list { display: grid; gap: 10px; }
+html.theme-c .zp-note-list .zp-note-item { font-size: 14px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .zp-note-item strong { color: var(--lt-ink); font-weight: 600; }
+html.theme-c .zp-note-item::before { color: var(--lt-accent); top: 2px; }
+html.theme-c .zp-cta-row { margin: 28px 0 0; }
+html.theme-c .zp-cta-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 12px 32px;
+  background: var(--lt-btn); color: var(--lt-on-btn); border-radius: var(--lt-r-btn);
+  font-size: 17px; font-weight: 500;
+}
+html.theme-c .zp-cta-btn:hover { background: var(--lt-btn-hover); box-shadow: none; transform: translateY(-1px); }
+@media (max-width: 768px) {
+  html.theme-c .zp-card { padding: 24px 18px; }
+  html.theme-c .zp-top-row { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  html.theme-c .zp-illustration { max-height: 260px; margin-inline: auto; }
+}
+
+/* @ref src/Components/LLPZolvitPremium/LLPZolvitPremium.css */
+/* ══ premium (LLP, Public Limited) ══ */
+html.theme-c .llp-zp-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .llp-zp-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .llp-zp-card {
+  background: var(--lt-surface); border: 1px solid var(--lt-hairline);
+  border-radius: var(--lt-r-xl); box-shadow: var(--lt-shadow-sm);
+  padding: 40px; gap: 28px;
+}
+html.theme-c .llp-zp-top-row { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 48px; align-items: center; }
+html.theme-c .llp-zp-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink); margin: 0 0 14px;
+}
+html.theme-c .llp-zp-title-highlight { color: var(--lt-accent-text); font-weight: 400; }
+html.theme-c .llp-zp-title-icon { font-size: 0.7em; }
+html.theme-c .llp-zp-content .llp-zp-subtitle { font-size: 1.05rem; line-height: 1.6; color: var(--lt-muted); max-width: var(--lt-measure); text-align: left; }
+html.theme-c .llp-zp-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--lt-accent-text); margin: 0 0 12px;
+}
+html.theme-c .llp-zp-list { display: grid; gap: 10px; }
+html.theme-c .llp-zp-list .llp-zp-list-item { font-size: 15px; line-height: 1.55; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .llp-zp-note-box { background: var(--lt-canvas-soft); border: 0; border-radius: var(--lt-r-md); padding: 20px 24px; }
+html.theme-c .llp-zp-note-list { display: grid; gap: 10px; }
+html.theme-c .llp-zp-note-list .llp-zp-note-item { font-size: 14px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .llp-zp-note-item strong { color: var(--lt-ink); font-weight: 600; }
+html.theme-c .llp-zp-note-item::before { color: var(--lt-accent); top: 2px; }
+html.theme-c .llp-zp-cta-row { margin: 28px 0 0; }
+html.theme-c .llp-zp-cta-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 12px 32px;
+  background: var(--lt-btn); color: var(--lt-on-btn); border-radius: var(--lt-r-btn);
+  font-size: 17px; font-weight: 500;
+}
+html.theme-c .llp-zp-cta-btn:hover { background: var(--lt-btn-hover); box-shadow: none; transform: translateY(-1px); }
+@media (max-width: 768px) {
+  html.theme-c .llp-zp-card { padding: 24px 18px; }
+  html.theme-c .llp-zp-top-row { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  html.theme-c .llp-zp-illustration { max-height: 260px; margin-inline: auto; }
+}
+
+/* @ref src/Components/DPPremium/DPPremium.css */
+/* ══ premium (Section 8, incorporation — the one-grid copy) ══
+   Follows the Add-zp block of ref/service.css. */
+html.theme-c .DP-premium-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .DP-premium-section .DP-premium-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .DP-premium-section .DP-premium-card {
+  background: var(--lt-surface); border: 1px solid var(--lt-hairline);
+  border-radius: var(--lt-r-xl); box-shadow: var(--lt-shadow-sm);
+  padding: 40px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 48px; align-items: center;
+}
+html.theme-c .DP-premium-section .DP-premium-illustration-wrapper,
+html.theme-c .DP-premium-section .DP-premium-content { min-width: 0; }
+html.theme-c .DP-premium-section .DP-premium-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink); margin: 0 0 14px;
+}
+html.theme-c .DP-premium-section .DP-premium-title-highlight { color: var(--lt-accent-text); font-weight: 400; }
+html.theme-c .DP-premium-section .DP-premium-title-icon { font-size: 0.7em; }
+html.theme-c .DP-premium-section .DP-premium-content .DP-premium-subtitle { font-size: 1.05rem; line-height: 1.6; color: var(--lt-muted); max-width: var(--lt-measure); text-align: left; }
+html.theme-c .DP-premium-section .DP-premium-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--lt-accent-text); margin: 0 0 12px;
+}
+html.theme-c .DP-premium-section .DP-premium-list { display: grid; gap: 10px; }
+html.theme-c .DP-premium-section .DP-premium-list .DP-premium-list-item { font-size: 15px; line-height: 1.55; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .DP-premium-section .DP-premium-note-box { background: var(--lt-canvas-soft); border: 0; border-radius: var(--lt-r-md); padding: 20px 24px; }
+html.theme-c .DP-premium-section .DP-premium-note-list { display: grid; gap: 10px; }
+html.theme-c .DP-premium-section .DP-premium-note-list .DP-premium-note-item { font-size: 14px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .DP-premium-section .DP-premium-note-item::before { color: var(--lt-accent); top: 2px; }
+html.theme-c .DP-premium-section .DP-premium-cta-row { margin: 28px 0 0; }
+html.theme-c .DP-premium-section .DP-premium-cta-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 12px 32px;
+  background: var(--lt-btn); color: var(--lt-on-btn); border-radius: var(--lt-r-btn);
+  font-size: 17px; font-weight: 500;
+}
+html.theme-c .DP-premium-section .DP-premium-cta-btn:hover { background: var(--lt-btn-hover); box-shadow: none; transform: translateY(-1px); }
+@media (max-width: 768px) {
+  html.theme-c .DP-premium-section .DP-premium-card { grid-template-columns: minmax(0, 1fr); padding: 24px 18px; gap: 24px; }
+  html.theme-c .DP-premium-section .DP-premium-illustration { max-height: 260px; margin-inline: auto; }
+  html.theme-c .DP-premium-section .DP-premium-cta-btn { width: 100%; }
+}
+
+/* @ref src/Components/ChangetoLlpZolvitPremium/ChangetoLlpZolvitPremium.css */
+/* ══ premium (change of LLP name and 4 more) ══ */
+html.theme-c .llpzp-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .llpzp-section .llpzp-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .llpzp-section .llpzp-card {
+  background: var(--lt-surface); border: 1px solid var(--lt-hairline);
+  border-radius: var(--lt-r-xl); box-shadow: var(--lt-shadow-sm);
+  padding: 40px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 48px; align-items: center;
+}
+html.theme-c .llpzp-section .llpzp-illustration-wrapper,
+html.theme-c .llpzp-section .llpzp-content { min-width: 0; }
+html.theme-c .llpzp-section .llpzp-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink); margin: 0 0 14px;
+}
+html.theme-c .llpzp-section .llpzp-title-highlight { color: var(--lt-accent-text); font-weight: 400; }
+html.theme-c .llpzp-section .llpzp-title-icon { font-size: 0.7em; }
+html.theme-c .llpzp-section .llpzp-content .llpzp-subtitle { font-size: 1.05rem; line-height: 1.6; color: var(--lt-muted); max-width: var(--lt-measure); text-align: left; }
+html.theme-c .llpzp-section .llpzp-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--lt-accent-text); margin: 0 0 12px;
+}
+html.theme-c .llpzp-section .llpzp-list { display: grid; gap: 10px; }
+html.theme-c .llpzp-section .llpzp-list .llpzp-list-item { font-size: 15px; line-height: 1.55; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .llpzp-section .llpzp-note-box { background: var(--lt-canvas-soft); border: 0; border-radius: var(--lt-r-md); padding: 20px 24px; }
+html.theme-c .llpzp-section .llpzp-note-list { display: grid; gap: 10px; }
+html.theme-c .llpzp-section .llpzp-note-list .llpzp-note-item { font-size: 14px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .llpzp-section .llpzp-note-item::before { color: var(--lt-accent); top: 2px; }
+html.theme-c .llpzp-section .llpzp-cta-row { margin: 28px 0 0; }
+html.theme-c .llpzp-section .llpzp-cta-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 12px 32px;
+  background: var(--lt-btn); color: var(--lt-on-btn); border-radius: var(--lt-r-btn);
+  font-size: 17px; font-weight: 500;
+}
+html.theme-c .llpzp-section .llpzp-cta-btn:hover { background: var(--lt-btn-hover); box-shadow: none; transform: translateY(-1px); }
+@media (max-width: 768px) {
+  html.theme-c .llpzp-section .llpzp-card { grid-template-columns: minmax(0, 1fr); padding: 24px 18px; gap: 24px; }
+  html.theme-c .llpzp-section .llpzp-illustration { max-height: 260px; margin-inline: auto; }
+  html.theme-c .llpzp-section .llpzp-cta-btn { width: 100%; }
+}
+
+/* @ref src/Components/ChangetoCompanyZolvitPremium/ChangetoCompanyZolvitPremium.css */
+/* ══ premium (change of company name and 3 more) ══ */
+html.theme-c .czp-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .czp-section .czp-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .czp-section .czp-card {
+  background: var(--lt-surface); border: 1px solid var(--lt-hairline);
+  border-radius: var(--lt-r-xl); box-shadow: var(--lt-shadow-sm);
+  padding: 40px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 48px; align-items: center;
+}
+html.theme-c .czp-section .czp-illustration-wrapper,
+html.theme-c .czp-section .czp-content { min-width: 0; }
+html.theme-c .czp-section .czp-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink); margin: 0 0 14px;
+}
+html.theme-c .czp-section .czp-title-highlight { color: var(--lt-accent-text); font-weight: 400; }
+html.theme-c .czp-section .czp-title-icon { font-size: 0.7em; }
+html.theme-c .czp-section .czp-content .czp-subtitle { font-size: 1.05rem; line-height: 1.6; color: var(--lt-muted); max-width: var(--lt-measure); text-align: left; }
+html.theme-c .czp-section .czp-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--lt-accent-text); margin: 0 0 12px;
+}
+html.theme-c .czp-section .czp-list { display: grid; gap: 10px; }
+html.theme-c .czp-section .czp-list .czp-list-item { font-size: 15px; line-height: 1.55; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .czp-section .czp-note-box { background: var(--lt-canvas-soft); border: 0; border-radius: var(--lt-r-md); padding: 20px 24px; }
+html.theme-c .czp-section .czp-note-list { display: grid; gap: 10px; }
+html.theme-c .czp-section .czp-note-list .czp-note-item { font-size: 14px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+html.theme-c .czp-section .czp-note-item::before { color: var(--lt-accent); top: 2px; }
+html.theme-c .czp-section .czp-cta-row { margin: 28px 0 0; }
+html.theme-c .czp-section .czp-cta-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 12px 32px;
+  background: var(--lt-btn); color: var(--lt-on-btn); border-radius: var(--lt-r-btn);
+  font-size: 17px; font-weight: 500;
+}
+html.theme-c .czp-section .czp-cta-btn:hover { background: var(--lt-btn-hover); box-shadow: none; transform: translateY(-1px); }
+@media (max-width: 768px) {
+  html.theme-c .czp-section .czp-card { grid-template-columns: minmax(0, 1fr); padding: 24px 18px; gap: 24px; }
+  html.theme-c .czp-section .czp-illustration { max-height: 260px; margin-inline: auto; }
+  html.theme-c .czp-section .czp-cta-btn { width: 100%; }
+}
+
+/* @ref src/Components/LLPCompanyTab/LLPCompanyTab.css */
+/* ══ intro + comparison table (LLP, Partnership firm, Public Limited) ══
+   #209 Pvt Ltd 4 and 5. */
+html.theme-c .llp-com-intro-section { background: var(--lt-canvas); padding: var(--lt-section) 0 64px; }
+html.theme-c .llp-com-intro-container {
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 48px; align-items: start;
+}
+html.theme-c .llp-com-intro-content { order: 1; max-width: none; min-width: 0; display: grid; gap: 18px; }
+html.theme-c .llp-com-intro-illustration-wrap { order: 2; min-width: 0; }
+html.theme-c .llp-com-intro-illustration { width: 100%; max-height: 420px; object-fit: contain; }
+html.theme-c .llp-com-intro-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 20ch; margin: 0;
+}
+html.theme-c .llp-com-intro-content .llp-com-intro-text {
+  font-size: 1rem; line-height: 1.6; color: var(--lt-body);
+  max-width: var(--lt-measure); text-align: left; margin: 0;
+}
+@media (max-width: 768px) {
+  html.theme-c .llp-com-intro-container { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+  html.theme-c .llp-com-intro-illustration { max-height: 280px; }
+}
+html.theme-c .llp-com-compare-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .llp-com-compare-table-wrapper {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+}
+html.theme-c .llp-com-compare-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+html.theme-c .llp-com-compare-table { min-width: 640px; }
+html.theme-c .llp-com-compare-table tbody tr { background: var(--lt-surface); border-bottom: 1px solid var(--lt-hairline); }
+html.theme-c .llp-com-compare-table tbody tr:last-child { border-bottom: 0; }
+html.theme-c .llp-com-compare-table tbody tr:hover { background: var(--lt-canvas-tint); }
+html.theme-c .llp-com-compare-table tbody td {
+  padding: 12px 16px; border-radius: 0; vertical-align: top; line-height: 1.5; text-align: left;
+  color: var(--lt-body);
+}
+html.theme-c .llp-com-compare-table tbody td:first-child { font-weight: 600; color: var(--lt-ink); }
+/* the comparison table: centred head, ink header row, lifted frame */
+html.theme-c .llp-com-compare-section { background: var(--lt-canvas); padding: 0 0 var(--lt-section); }
+html.theme-c .llp-com-compare-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: center; text-wrap: balance; margin-bottom: 14px;
+}
+html.theme-c .llp-com-compare-container .llp-com-compare-subtitle {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); margin: 0 auto 36px; text-align: center;
+}
+html.theme-c .llp-com-compare-table-wrapper { border: 0; box-shadow: var(--lt-shadow); }
+html.theme-c .llp-com-compare-table thead tr { background: var(--lt-ink); }
+html.theme-c .llp-com-compare-table thead th {
+  padding: 13px 16px; border-radius: 0;
+  font-size: 14px; font-weight: 600; letter-spacing: 0; text-align: left;
+  color: var(--lt-on-ink); background: var(--lt-ink);
+}
+html.theme-c .llp-com-compare-table tbody td:first-child { white-space: nowrap; }
+
+/* @ref src/Components/DPCompanyTabs/DPCompanyTabs.css */
+/* ══ intro (Trust, Society) ══ */
+html.theme-c .DP-intro-section { background: var(--lt-canvas); padding: var(--lt-section) 0 64px; }
+html.theme-c .DP-intro-container {
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 48px; align-items: start;
+}
+html.theme-c .DP-intro-content { order: 1; max-width: none; min-width: 0; display: grid; gap: 18px; }
+html.theme-c .DP-intro-illustration-wrap { order: 2; min-width: 0; }
+html.theme-c .DP-intro-illustration { width: 100%; max-height: 420px; object-fit: contain; }
+html.theme-c .DP-intro-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 20ch; margin: 0;
+}
+html.theme-c .DP-intro-content .DP-intro-text {
+  font-size: 1rem; line-height: 1.6; color: var(--lt-body);
+  max-width: var(--lt-measure); text-align: left; margin: 0;
+}
+@media (max-width: 768px) {
+  html.theme-c .DP-intro-container { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+  html.theme-c .DP-intro-illustration { max-height: 280px; }
+}
+
+/* @ref src/Components/OPCFeatures/OPCFeatures.css */
+/* ══ types (OPC and 5 more) ══
+   #209 Pvt Ltd 6 — alignment, border, the shared hover, equal heights. */
+html.theme-c .opc-features-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .opc-features-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .opc-features-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0 0 40px;
+}
+html.theme-c .opc-features-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-bottom: 0; align-items: stretch; }
+html.theme-c .opc-features-card {
+  display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .opc-features-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .opc-features-number {
+  font-family: var(--lt-f-display) !important;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.08em; line-height: 1;
+  color: var(--lt-accent-text); margin: 0; font-variant-numeric: tabular-nums;
+}
+html.theme-c .opc-features-card-title { font-size: 1.125rem; font-weight: 500; line-height: 1.3; color: var(--lt-ink); margin: 0; text-align: left; }
+html.theme-c .opc-features-card .opc-features-card-text { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+/* two or four cards sit two to a row */
+html.theme-c .opc-features-cards:has(> :nth-child(2):last-child),
+html.theme-c .opc-features-cards:has(> :nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1024px) { html.theme-c .opc-features-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  html.theme-c .opc-features-cards,
+  html.theme-c .opc-features-cards:has(> :nth-child(2):last-child),
+  html.theme-c .opc-features-cards:has(> :nth-child(4):last-child) { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* @ref src/Components/ProPvtTypes/ProPvtTypes.css */
+/* ══ types (Trust, Society, Shop, Proprietorship — the copy without a note) ══
+   Same rules as the block above. */
+html.theme-c .opc-features-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .opc-features-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .opc-features-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0 0 40px;
+}
+html.theme-c .opc-features-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-bottom: 0; align-items: stretch; }
+html.theme-c .opc-features-card {
+  display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .opc-features-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .opc-features-number {
+  font-family: var(--lt-f-display) !important;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.08em; line-height: 1;
+  color: var(--lt-accent-text); margin: 0; font-variant-numeric: tabular-nums;
+}
+html.theme-c .opc-features-card-title { font-size: 1.125rem; font-weight: 500; line-height: 1.3; color: var(--lt-ink); margin: 0; text-align: left; }
+html.theme-c .opc-features-card .opc-features-card-text { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+/* two or four cards sit two to a row */
+html.theme-c .opc-features-cards:has(> :nth-child(2):last-child),
+html.theme-c .opc-features-cards:has(> :nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1024px) { html.theme-c .opc-features-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  html.theme-c .opc-features-cards,
+  html.theme-c .opc-features-cards:has(> :nth-child(2):last-child),
+  html.theme-c .opc-features-cards:has(> :nth-child(4):last-child) { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* @ref src/Components/OPCBenefits/OPCBenefits.css */
+/* ══ benefits (OPC, trade licence, GST) ══
+   #209 Pvt Ltd 7 — border, the shared hover, equal heights. */
+html.theme-c .opcben-section { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .opcben-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .opcben-header { text-align: left; margin-bottom: 40px; display: grid; gap: 14px; }
+html.theme-c .opcben-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 22ch; margin: 0;
+}
+html.theme-c .opcben-header .opcben-subtitle {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); margin: 0; text-align: left;
+}
+html.theme-c .opcben-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; max-width: none; margin: 0; align-items: stretch; }
+html.theme-c .opcben-card {
+  display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .opcben-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+/* the icon tile above each benefit */
+html.theme-c .opcben-card::before {
+  content: ""; width: 44px; height: 44px; flex: none; border-radius: var(--lt-r-md);
+  background: var(--lt-ic-check-accent) center / 22px no-repeat var(--lt-surface-strong);
+}
+html.theme-c .opcben-card-title { font-size: 1.125rem; font-weight: 500; line-height: 1.3; color: var(--lt-ink); margin: 0; text-align: left; }
+html.theme-c .opcben-card-underline { display: none; }
+html.theme-c .opcben-card .opcben-card-text { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+@media (max-width: 1024px) { html.theme-c .opcben-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { html.theme-c .opcben-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* @ref src/Components/IECBenefits/IECBenefits.css */
+/* ══ benefits (9 copies) ══
+   Same rules as the block above. */
+html.theme-c .iecben-section { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .iecben-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .iecben-header { text-align: left; margin-bottom: 40px; display: grid; gap: 14px; }
+html.theme-c .iecben-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 22ch; margin: 0;
+}
+html.theme-c .iecben-header .iecben-subtitle {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); margin: 0; text-align: left;
+}
+html.theme-c .iecben-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; max-width: none; margin: 0; align-items: stretch; }
+html.theme-c .iecben-card {
+  display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .iecben-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+/* the icon tile above each benefit */
+html.theme-c .iecben-card::before {
+  content: ""; width: 44px; height: 44px; flex: none; border-radius: var(--lt-r-md);
+  background: var(--lt-ic-check-accent) center / 22px no-repeat var(--lt-surface-strong);
+}
+html.theme-c .iecben-card-title { font-size: 1.125rem; font-weight: 500; line-height: 1.3; color: var(--lt-ink); margin: 0; text-align: left; }
+html.theme-c .iecben-card-underline { display: none; }
+html.theme-c .iecben-card .iecben-card-text { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+@media (max-width: 1024px) { html.theme-c .iecben-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { html.theme-c .iecben-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* @ref src/Components/OPCElegibility/OPCElegibility.css */
+/* ══ steps (9 copies) ══
+   #209 Pvt Ltd 8 — the timeline layout is kept exactly; only colour, type and
+   the card style change. */
+html.theme-c .opcelg-wrapper {
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap);
+  margin-inline: auto; padding: var(--lt-section) 0;
+  background: var(--lt-canvas-soft);
+  /* the section is its own container: paint the band edge to edge */
+  box-shadow: 0 0 0 100vmax var(--lt-canvas-soft);
+  clip-path: inset(0 -100vmax);
+}
+html.theme-c .opcelg-wrapper .opcelg-heading {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 22ch; margin: 0 0 14px;
+}
+html.theme-c .opcelg-wrapper .opcelg-subheading {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); text-align: left; margin: 0 0 44px;
+}
+html.theme-c .opcelg-timeline { gap: 18px; }
+html.theme-c .opcelg-timeline-line { width: 3px; border-radius: 3px; background: #8fd3a8; }
+html.theme-c .opcelg-timeline-dot {
+  background: var(--lt-accent); color: var(--lt-on-accent);
+  font-weight: 700; font-size: 15px;
+  box-shadow: 0 0 0 6px var(--lt-canvas-soft);
+}
+html.theme-c .opcelg-timeline-card {
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  padding: 16px 20px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .opcelg-timeline-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .opcelg-timeline-card h4 { font-size: 15px; font-weight: 500; color: var(--lt-ink); line-height: 1.3; margin-bottom: 6px; text-align: left; }
+html.theme-c .opcelg-day-tag {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.3px; line-height: 1.5;
+  padding: 2px 10px; border-radius: 20px;
+  background: var(--lt-accent); color: var(--lt-on-accent);
+}
+html.theme-c .opcelg-timeline-card p { font-size: 14px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+html.theme-c .opcelg-timeline-item.left::after,
+html.theme-c .opcelg-timeline-item.right::after {
+  background: repeating-linear-gradient(to right, var(--lt-hairline-strong), var(--lt-hairline-strong) 5px, transparent 5px, transparent 10px);
+}
+html.theme-c .opcelg-timeline-item.left::before { border-right-color: var(--lt-hairline-strong); }
+html.theme-c .opcelg-timeline-item.right::before { border-left-color: var(--lt-hairline-strong); }
+@media (max-width: 900px) {
+  html.theme-c .opcelg-wrapper { padding: var(--lt-section) 0; }
+  html.theme-c .opcelg-timeline-card { background: var(--lt-surface); box-shadow: var(--lt-shadow-sm); }
+  html.theme-c .opcelg-timeline-item.left::before,
+  html.theme-c .opcelg-timeline-item.right::before { border-left-color: var(--lt-hairline-strong); border-right-color: transparent; }
+}
+
+/* @ref src/Components/SocietyProcess/SocietyProcess.css */
+/* ══ steps (Society, Trust) ══
+   Same rules as the block above. */
+html.theme-c .society-process-wrapper {
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap);
+  margin-inline: auto; padding: var(--lt-section) 0;
+  background: var(--lt-canvas-soft);
+  /* the section is its own container: paint the band edge to edge */
+  box-shadow: 0 0 0 100vmax var(--lt-canvas-soft);
+  clip-path: inset(0 -100vmax);
+}
+html.theme-c .society-process-wrapper .society-process-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 22ch; margin: 0 0 14px;
+}
+html.theme-c .society-process-wrapper .society-process-subtitle {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); text-align: left; margin: 0 0 44px;
+}
+html.theme-c .society-timeline { gap: 18px; }
+html.theme-c .society-timeline-line { width: 3px; border-radius: 3px; background: #8fd3a8; }
+html.theme-c .society-timeline-dot {
+  background: var(--lt-accent); color: var(--lt-on-accent);
+  font-weight: 700; font-size: 15px;
+  box-shadow: 0 0 0 6px var(--lt-canvas-soft);
+}
+html.theme-c .society-timeline-card {
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  padding: 16px 20px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .society-timeline-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .society-timeline-card h4 { font-size: 15px; font-weight: 500; color: var(--lt-ink); line-height: 1.3; margin-bottom: 6px; text-align: left; }
+html.theme-c .society-day-tag {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.3px; line-height: 1.5;
+  padding: 2px 10px; border-radius: 20px;
+  background: var(--lt-accent); color: var(--lt-on-accent);
+}
+html.theme-c .society-timeline-card p { font-size: 14px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+html.theme-c .society-timeline-item.left::after,
+html.theme-c .society-timeline-item.right::after {
+  background: repeating-linear-gradient(to right, var(--lt-hairline-strong), var(--lt-hairline-strong) 5px, transparent 5px, transparent 10px);
+}
+html.theme-c .society-timeline-item.left::before { border-right-color: var(--lt-hairline-strong); }
+html.theme-c .society-timeline-item.right::before { border-left-color: var(--lt-hairline-strong); }
+@media (max-width: 900px) {
+  html.theme-c .society-process-wrapper { padding: var(--lt-section) 0; }
+  html.theme-c .society-timeline-card { background: var(--lt-surface); box-shadow: var(--lt-shadow-sm); }
+  html.theme-c .society-timeline-item.left::before,
+  html.theme-c .society-timeline-item.right::before { border-left-color: var(--lt-hairline-strong); border-right-color: transparent; }
+}
+
+/* @ref src/Components/GSTRegDocument/GSTRegDocument.css */
+/* ══ documents (7 copies; the OPC page uses the same names) ══
+   #209 Pvt Ltd 9 — border, the shared hover, equal heights, green icons. */
+html.theme-c .opcd-section { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .opcd-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .opcd-header { text-align: left; margin-bottom: 40px; display: grid; gap: 14px; }
+html.theme-c .opcd-main-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 26ch; margin: 0;
+}
+html.theme-c .opcd-header .opcd-main-subtitle { font-size: 1.05rem; color: var(--lt-muted); text-align: left; margin: 0; }
+html.theme-c .opcd-columns { grid-template-columns: minmax(0, 1fr); gap: 40px; margin-bottom: 0; }
+html.theme-c .opcd-column { background: none; border: 0; border-radius: 0; box-shadow: none; overflow: visible; min-width: 0; }
+html.theme-c .opcd-col-header,
+html.theme-c .opcd-col-header--office { background: none; padding: 0 0 16px; gap: 14px; align-items: center; }
+html.theme-c .opcd-col-header-icon {
+  width: 44px; height: 44px; min-width: 44px; border-radius: var(--lt-r-md);
+  background: var(--lt-accent); color: var(--lt-on-accent); font-size: 18px;
+}
+html.theme-c .opcd-col-title { font-size: 1.25rem; font-weight: 500; color: var(--lt-ink); line-height: 1.25; margin: 0 0 2px; }
+html.theme-c .opcd-col-header .opcd-col-subtitle { font-size: 14px; color: var(--lt-muted); margin: 0; text-align: left; }
+html.theme-c .opcd-col-body { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 0; align-items: stretch; }
+html.theme-c .opcd-doc-item,
+html.theme-c .opcd-doc-item:last-child {
+  min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .opcd-doc-item:hover { background: var(--lt-surface); border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .opcd-doc-item-top { display: grid; gap: 14px; margin-bottom: 14px; }
+html.theme-c .opcd-doc-icon {
+  width: 44px; height: 44px; min-width: 44px; border: 0; border-radius: var(--lt-r-md);
+  background: var(--lt-canvas-tint); color: var(--lt-accent); font-size: 20px;
+}
+html.theme-c .opcd-doc-title { font-size: 1.125rem; font-weight: 500; line-height: 1.3; color: var(--lt-ink); margin: 0 0 4px; }
+html.theme-c .opcd-doc-note { font-size: 13px; font-style: normal; color: var(--lt-muted); display: block; line-height: 1.45; }
+html.theme-c .opcd-doc-list { padding: 0; gap: 10px; }
+html.theme-c .opcd-doc-list .opcd-doc-list-item { font-size: 14px; line-height: 1.5; color: var(--lt-body); gap: 8px; text-align: left; }
+html.theme-c .opcd-doc-list-item::before {
+  content: ""; width: 16px; height: 16px; min-width: 16px; margin-top: 3px; border-radius: 0;
+  background: var(--lt-accent);
+  -webkit-mask: var(--lt-ic-doc) center / contain no-repeat; mask: var(--lt-ic-doc) center / contain no-repeat;
+}
+@media (max-width: 1024px) { html.theme-c .opcd-col-body { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  html.theme-c .opcd-col-body { grid-template-columns: minmax(0, 1fr); }
+  html.theme-c .opcd-doc-item, html.theme-c .opcd-doc-item:last-child { padding: 20px; }
+}
+
+/* @ref src/Components/IncorporationDocuments/IncorporationDocuments.css */
+/* ══ documents (5 copies) ══
+   Same rules as the block above. */
+html.theme-c .incd-section { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .incd-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c .incd-header { text-align: left; margin-bottom: 40px; display: grid; gap: 14px; }
+html.theme-c .incd-main-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 26ch; margin: 0;
+}
+html.theme-c .incd-header .incd-main-subtitle { font-size: 1.05rem; color: var(--lt-muted); text-align: left; margin: 0; }
+html.theme-c .incd-columns { grid-template-columns: minmax(0, 1fr); gap: 40px; margin-bottom: 0; }
+html.theme-c .incd-column { background: none; border: 0; border-radius: 0; box-shadow: none; overflow: visible; min-width: 0; }
+html.theme-c .incd-col-header,
+html.theme-c .incd-col-header--office { background: none; padding: 0 0 16px; gap: 14px; align-items: center; }
+html.theme-c .incd-col-header-icon {
+  width: 44px; height: 44px; min-width: 44px; border-radius: var(--lt-r-md);
+  background: var(--lt-accent); color: var(--lt-on-accent); font-size: 18px;
+}
+html.theme-c .incd-col-title { font-size: 1.25rem; font-weight: 500; color: var(--lt-ink); line-height: 1.25; margin: 0 0 2px; }
+html.theme-c .incd-col-header .incd-col-subtitle { font-size: 14px; color: var(--lt-muted); margin: 0; text-align: left; }
+html.theme-c .incd-col-body { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 0; align-items: stretch; }
+html.theme-c .incd-doc-item,
+html.theme-c .incd-doc-item:last-child {
+  min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .incd-doc-item:hover { background: var(--lt-surface); border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .incd-doc-item-top { display: grid; gap: 14px; margin-bottom: 14px; }
+html.theme-c .incd-doc-icon {
+  width: 44px; height: 44px; min-width: 44px; border: 0; border-radius: var(--lt-r-md);
+  background: var(--lt-canvas-tint); color: var(--lt-accent); font-size: 20px;
+}
+html.theme-c .incd-doc-title { font-size: 1.125rem; font-weight: 500; line-height: 1.3; color: var(--lt-ink); margin: 0 0 4px; }
+html.theme-c .incd-doc-note { font-size: 13px; font-style: normal; color: var(--lt-muted); display: block; line-height: 1.45; }
+html.theme-c .incd-doc-list { padding: 0; gap: 10px; }
+html.theme-c .incd-doc-list .incd-doc-list-item { font-size: 14px; line-height: 1.5; color: var(--lt-body); gap: 8px; text-align: left; }
+html.theme-c .incd-doc-list-item::before {
+  content: ""; width: 16px; height: 16px; min-width: 16px; margin-top: 3px; border-radius: 0;
+  background: var(--lt-accent);
+  -webkit-mask: var(--lt-ic-doc) center / contain no-repeat; mask: var(--lt-ic-doc) center / contain no-repeat;
+}
+@media (max-width: 1024px) { html.theme-c .incd-col-body { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  html.theme-c .incd-col-body { grid-template-columns: minmax(0, 1fr); }
+  html.theme-c .incd-doc-item, html.theme-c .incd-doc-item:last-child { padding: 20px; }
+}
+
+/* @ref src/Components/OPCFAQ/OPCFAQ.css */
+/* ══ FAQ (5 copies) ══
+   #209 Pvt Ltd 10 — the same accordion (buttons, keyboard operable), in one
+   straight column. */
+html.theme-c .opcfaq-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .opcfaq-container { width: min(820px, 100% - 32px); max-width: 820px; margin-inline: auto; }
+html.theme-c .opcfaq-header { text-align: left; margin-bottom: 36px; display: grid; gap: 14px; }
+html.theme-c .opcfaq-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0;
+}
+html.theme-c .opcfaq-header p.opcfaq-intro { font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted); max-width: var(--lt-measure); margin: 0; text-align: left; }
+html.theme-c .opcfaq-list { max-width: none; gap: 10px; }
+html.theme-c .opcfaq-item,
+html.theme-c .opcfaq-item:nth-child(n) {
+  width: 100%; align-self: stretch;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-md);
+  box-shadow: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+html.theme-c .opcfaq-item:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .opcfaq-item.active { background: var(--lt-surface); border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .opcfaq-question {
+  min-height: 52px; padding: 14px 20px; gap: 16px;
+  font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--lt-ink); text-align: left;
+}
+html.theme-c .opcfaq-item:hover .opcfaq-question,
+html.theme-c .opcfaq-item.active .opcfaq-question { color: var(--lt-ink); }
+html.theme-c .opcfaq-question:focus-visible { outline: 2px solid var(--lt-focus); outline-offset: -2px; border-radius: var(--lt-r-md); }
+html.theme-c .opcfaq-icon { font-size: 22px; line-height: 1; color: var(--lt-muted); }
+html.theme-c .opcfaq-item.active .opcfaq-icon { color: var(--lt-accent-text); }
+html.theme-c .opcfaq-answer-content {
+  padding: 0 20px 18px; border-top: 0;
+  font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left;
+}
+html.theme-c .opcfaq-answer-content p,
+html.theme-c .opcfaq-answer-content li { font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+
+/* @ref src/Components/SocietyFAQ/SocietyFAQ.css */
+/* ══ FAQ (Society, Trust) ══
+   Same rules as the block above. */
+html.theme-c .socfaq-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .socfaq-container { width: min(820px, 100% - 32px); max-width: 820px; margin-inline: auto; }
+html.theme-c .socfaq-header { text-align: left; margin-bottom: 36px; display: grid; gap: 14px; }
+html.theme-c .socfaq-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0;
+}
+html.theme-c .socfaq-header p.socfaq-intro { font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted); max-width: var(--lt-measure); margin: 0; text-align: left; }
+html.theme-c .socfaq-list { max-width: none; gap: 10px; }
+html.theme-c .socfaq-item,
+html.theme-c .socfaq-item:nth-child(n) {
+  width: 100%; align-self: stretch;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-md);
+  box-shadow: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+html.theme-c .socfaq-item:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .socfaq-item.active { background: var(--lt-surface); border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .socfaq-question {
+  min-height: 52px; padding: 14px 20px; gap: 16px;
+  font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--lt-ink); text-align: left;
+}
+html.theme-c .socfaq-item:hover .socfaq-question,
+html.theme-c .socfaq-item.active .socfaq-question { color: var(--lt-ink); }
+html.theme-c .socfaq-question:focus-visible { outline: 2px solid var(--lt-focus); outline-offset: -2px; border-radius: var(--lt-r-md); }
+html.theme-c .socfaq-icon { font-size: 22px; line-height: 1; color: var(--lt-muted); }
+html.theme-c .socfaq-item.active .socfaq-icon { color: var(--lt-accent-text); }
+html.theme-c .socfaq-answer-content {
+  padding: 0 20px 18px; border-top: 0;
+  font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left;
+}
+html.theme-c .socfaq-answer-content p,
+html.theme-c .socfaq-answer-content li { font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+
+/* @ref src/Components/IECFAQ/IECFAQ.css */
+/* ══ FAQ (IEC, ISO, Partnership firm) ══
+   Same rules as the block above. */
+html.theme-c .iecfaq-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .iecfaq-container { width: min(820px, 100% - 32px); max-width: 820px; margin-inline: auto; }
+html.theme-c .iecfaq-header { text-align: left; margin-bottom: 36px; display: grid; gap: 14px; }
+html.theme-c .iecfaq-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0;
+}
+html.theme-c .iecfaq-header p.iecfaq-intro { font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted); max-width: var(--lt-measure); margin: 0; text-align: left; }
+html.theme-c .iecfaq-list { max-width: none; gap: 10px; }
+html.theme-c .iecfaq-item,
+html.theme-c .iecfaq-item:nth-child(n) {
+  width: 100%; align-self: stretch;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-md);
+  box-shadow: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+html.theme-c .iecfaq-item:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .iecfaq-item.active { background: var(--lt-surface); border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .iecfaq-question {
+  min-height: 52px; padding: 14px 20px; gap: 16px;
+  font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--lt-ink); text-align: left;
+}
+html.theme-c .iecfaq-item:hover .iecfaq-question,
+html.theme-c .iecfaq-item.active .iecfaq-question { color: var(--lt-ink); }
+html.theme-c .iecfaq-question:focus-visible { outline: 2px solid var(--lt-focus); outline-offset: -2px; border-radius: var(--lt-r-md); }
+html.theme-c .iecfaq-icon { font-size: 22px; line-height: 1; color: var(--lt-muted); }
+html.theme-c .iecfaq-item.active .iecfaq-icon { color: var(--lt-accent-text); }
+html.theme-c .iecfaq-answer-content {
+  padding: 0 20px 18px; border-top: 0;
+  font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left;
+}
+html.theme-c .iecfaq-answer-content p,
+html.theme-c .iecfaq-answer-content li { font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+
+/* @ref src/Components/ChangetoCompanyDocInfographic/ChangetoCompanyDocInfographic.css */
+/* ══ documents infographic (the two change-of-name pages) ══
+   The layout is kept — two columns of numbered cards around the centre disc.
+   Cards take the shared card and hover; the six edge colours become the accent. */
+html.theme-c .prp-doc-section { background: var(--lt-canvas); padding: var(--lt-section) 16px; }
+html.theme-c .prp-doc-heading {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: center; text-wrap: balance; margin: 0 0 48px;
+}
+html.theme-c .prp-doc-card.prp-doc-card {
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-left: 3px solid var(--lt-accent);
+  border-radius: var(--lt-r-lg); box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .prp-doc-card.prp-doc-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .prp-doc-card h4 { font-size: 15px; font-weight: 500; line-height: 1.3; color: var(--lt-ink); text-align: left; }
+html.theme-c .prp-doc-card p { font-size: 14px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+html.theme-c .prp-doc-number { background: var(--lt-accent); color: var(--lt-on-accent); font-weight: 700; font-size: 15px; }
+html.theme-c .prp-doc-circle { background: var(--lt-surface); box-shadow: var(--lt-shadow); color: var(--lt-ink); font-weight: 500; }

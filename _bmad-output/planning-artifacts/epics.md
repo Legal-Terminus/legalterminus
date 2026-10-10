@@ -3619,7 +3619,7 @@ and `Components/Footer`, restyled to the concept's header and footer under `.the
 
 ---
 
-### E25-S02 — Home page [Phase 2] ⏳ Not Started
+### E25-S02 — Home page [Phase 2] ✅ Built (on QA, 2026-10-10) — item 7 open
 
 **Scope**: the 12 components of `Pages/Home/Home.jsx`, mapped to the concept's sections:
 
@@ -3652,7 +3652,7 @@ and `Components/Footer`, restyled to the concept's header and footer under `.the
 
 ---
 
-### E25-S03 — Private Limited page [Phase 2] ⏳ Not Started
+### E25-S03 — Private Limited page [Phase 2] ✅ Built (on QA, 2026-10-10)
 
 > The route `/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india`
 > renders **`Pages/PrivateLimitedCopy2`** — not `PrivateLimited` or `PrivateLimitedCopy`, which
@@ -3686,7 +3686,7 @@ navigation), `PvtltdCompanyTab`, `CopyPvtTypes`, `PvtltdRequirementsTab`, `Pvtlt
 
 ---
 
-### E25-S04 — Family codemod: pricing cards (85) [Phase 2] ⏳ Not Started
+### E25-S04 … S09 — Service-page families [Phase 2] ✅ Built (on QA, 2026-10-10) — done differently, see note
 
 > First of the family stories, and the template for the rest. Each family story has the same
 > shape: (1) write the shared classes while restyling the page instance in S02/S03 — so they
@@ -3708,11 +3708,6 @@ navigation), `PvtltdCompanyTab`, `CopyPvtTypes`, `PvtltdRequirementsTab`, `Pvtlt
 
 ---
 
-### E25-S05 — Family codemod: FAQ (78) [Phase 2] ⏳ Not Started
-### E25-S06 — Family codemod: documents (68) [Phase 2] ⏳ Not Started
-### E25-S07 — Family codemod: process / steps (53) [Phase 2] ⏳ Not Started
-### E25-S08 — Family codemod: benefits & types (82) [Phase 2] ⏳ Not Started
-### E25-S09 — Family codemod: section tabs (131) [Phase 2] ⏳ Not Started
 
 Same shape, acceptance and verification as E25-S04. Each depends on E25-S03 and is
 independent of the other family stories, so they can run in parallel — one agent per family,
@@ -3723,7 +3718,7 @@ conflicts are confined to its page file and are expected to be trivial).
 
 ---
 
-### E25-S10 — Service hero and the remaining one-offs [Phase 2] ⏳ Not Started
+### E25-S10 — Service hero and the remaining one-offs [Phase 2] ✅ Built (on QA, 2026-10-10)
 
 **Scope**: the three hero components (`Breadcrum` is done in S03; `CompanyRegHero`,
 `TrademarkHero`), the landing pages (`CompanyRegistrationLanding`, Odisha pages), About,
@@ -3734,6 +3729,60 @@ scripts reported as unmatched.
 and 390 with no leftover old-style section; a list of routes and screenshots in the story note.
 
 **Priority**: P2 | **Complexity**: L | **Dependencies**: E25-S04 … S09
+
+---
+
+### E-25 — What was actually built (2026-10-10), and how it differs from the plan above
+
+**The families were not what the plan assumed.** Measured with `Frontend/scripts/theme/clusters.py`
+(two stylesheets are copies when they are identical after each class name is replaced by its
+order of first appearance): 825 component stylesheets, 553 of them in 74 clusters of structural
+copies, 272 unique. The Private Limited page turned out to be nearly one of a kind (its components
+have 1–6 copies). The routed service pages belong mostly to two other generations: the
+"Add or Remove a Director" generation (clusters of 16–34) and the "One Person Company" generation,
+whose ~35 pages reuse the OPC class names **literally** (their stylesheets `@import` OPC's).
+
+**So no class was renamed and no component merged.** Instead:
+- A restyle is written once against a reference component in `Frontend/src/theme/ref/*.css` under
+  a `/* @ref <stylesheet> */` banner. `scripts/theme/fanout.py` rewrites each class into an
+  `:is(…)` list of its counterparts in every structural copy and writes the GENERATED
+  `src/theme/families.css` (`fanout.py --check` fails when it is stale). 41 references.
+- Literal reuse is styled directly: `pvtltd.css` (Private Limited and the pages reusing its class
+  names), `opc.css` (the OPC generation, plus hand-kept `:is()` lists for one-off copies — a new
+  page copy with a new prefix must be added to those lists by hand).
+- `home.css`, `pages.css` (about, contact, media, blog, sign-in pages, policies, PDF tools,
+  not-found, the Odisha landing pages), `shell.css`.
+- **Zero JSX edits outside five files**, each branching on `THEME_C` with identical text: the
+  About rings count-up, Who We Are and Testimonials layouts on Home, header-height tracking for
+  the sticky section tabs, and `main.jsx`.
+- **The stylesheet is loaded only where the switch is on** (`main.jsx` imports it dynamically
+  and waits for it). It is ~510 KB (≈55 KB gzipped) because of the `:is()` lists; the live build
+  contains none of it. Shrinking it is part of E25-S11 (shared classes in the markup, once the
+  firm has signed off and content risk no longer forbids touching the components).
+
+**Tools** (`Frontend/scripts/theme/`): `coverage.mjs` — per route, the full-width bands no
+Theme C rule touches (the work list; 82 routes, all reached); `content-check.mjs` /
+`content-check-all.mjs` — text, link targets and media sources of two URLs must match (rotating
+carousels are left out: they differ between two loads of the same page); `shot.mjs`,
+`slices.mjs` — screenshots. `tests/e2e/all-routes.spec.js` reads the routes from `App.jsx`:
+the older `all-pages`/`chunk-NN` specs list 73 short paths, most of which now render the
+not-found page and pass anyway.
+
+**Open — needs the firm or the product owner**
+- **#209 Home 7 (count-up on 1K+ / 120+):** `HomeCertisfiedClient` has its figures commented out
+  (`f0633e5d`), so the band is empty on the live site too. `theme/CountUp.jsx` and the band's CSS
+  are ready; switching the figures back on is a content decision.
+- **Private Limited section tabs:** the slide-in sidebar that opened on a tab click is hidden
+  under Theme C (the sticky tab strip replaces it) — a removed behaviour.
+- **Private Limited hero** does not fit one screen at 1280×800: the description is long and the
+  form has five fields; shortening either is a content change.
+- **Testimonials (Home):** the small cards are photo-only; printing names on them adds text.
+- **Contact banner:** the decorative stock photo behind the banner is replaced by the gradient.
+- **Contact form:** placeholders only, as today; visible labels need markup.
+- **Public Limited "popular" plan** cannot be marked in CSS while Buy Now is hidden (the only
+  hook is on that button).
+- **`/tools/*` PDF tool pages** are static HTML outside the app; not restyled.
+- The three content questions on #209 (FAQ answers, footer typo, price sets) are unchanged.
 
 ---
 

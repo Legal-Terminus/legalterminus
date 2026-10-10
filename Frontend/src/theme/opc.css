@@ -1,0 +1,773 @@
+/*
+ * Theme C — the One Person Company generation of service pages (E-25, #209).
+ * Route: /setting-up-a-business/profit-making-structures/one-person-company-registration-in-india
+ * Page:  src/Pages/OPC — markup and text untouched; this is CSS only.
+ *
+ * About 35 service pages reuse the OPC components' class names literally, so
+ * they are restyled with that page. The OPC components that have structural
+ * copies in a cluster (plans, government costs, premium, types, benefits,
+ * steps, documents, FAQ) are written in ref/opc-family.css and fanned out into
+ * families.css. This file holds what the fan-out cannot reach:
+ *
+ *   1. the OPC components that are in no cluster — section tabs, overview and
+ *      comparison table, terms — together with their one-off copies;
+ *   2. one-off copies of the clustered families: the same markup under another
+ *      prefix whose stylesheet has drifted, so clusters.py does not group it.
+ *      They get the same declarations through hand-kept `:is()` lists;
+ *   3. sections that exist on one page only, each under a banner naming it.
+ *
+ * The look follows pvtltd.css value for value. Scoped under html.theme-c.
+ */
+
+/* ── PAGE glue (all pages of the generation) ───────────────────────────── */
+html.theme-c [id$="-nav-sections"] > [id] { scroll-margin-top: calc(var(--lt-sticky-top) - 110px + 51px); }
+
+/* ══ hero — one-off copies (Public Limited, trade licence, the two change-of-name pages) ══
+   #209 Pvt Ltd 1 — light hero, smaller headline balanced against the form,
+   statistics in green. Same rules as the hero of pvtltd.css; the form inside is
+   the shared ConsultationForm, styled there. */
+html.theme-c :is(.pub-ltd-hero,.lt-trade-hero,.prp-bc-hero,.llpbr-public-hero) {
+  position: relative;
+  overflow: hidden;
+  padding: 40px 0 64px;
+  background: var(--lt-canvas);
+  color: var(--lt-body);
+}
+/* the Theme C green mesh, skewed across the upper part and faded out to white */
+html.theme-c :is(.pub-ltd-hero,.lt-trade-hero,.prp-bc-hero,.llpbr-public-hero)::before {
+  content: "";
+  position: absolute; inset: -200px 0 auto 0; height: calc(100% + 120px);
+  width: auto; border: 0; border-radius: 0; box-shadow: none;
+  transform: skewY(-9deg); transform-origin: 0 0;
+  opacity: 0.75; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(60% 80% at 15% 20%, rgba(22, 163, 74, 0.55), transparent 60%),
+    radial-gradient(50% 70% at 80% 10%, rgba(34, 197, 94, 0.45), transparent 60%),
+    radial-gradient(45% 60% at 55% 85%, rgba(11, 95, 58, 0.35), transparent 60%),
+    radial-gradient(40% 60% at 95% 70%, rgba(187, 247, 208, 0.9), transparent 60%),
+    linear-gradient(120deg, #f4faf7 0%, #ddf2e8 100%);
+}
+html.theme-c :is(.pub-ltd-hero,.lt-trade-hero,.prp-bc-hero,.llpbr-public-hero)::after {
+  content: "";
+  position: absolute; inset: 0; top: 0; left: 0; width: auto; height: auto;
+  border: 0; border-radius: 0; box-shadow: none;
+  pointer-events: none; z-index: 0;
+  background: linear-gradient(rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.72) 45%, #ffffff 88%);
+}
+html.theme-c :is(.pub-ltd-container,.lt-trade-container,.prp-bc-container,.llpbr-public-container) {
+  position: relative; z-index: 1;
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 56px;
+  align-items: start;
+}
+html.theme-c :is(.pub-ltd-content,.lt-trade-content,.prp-bc-content,.llpbr-public-content) { color: var(--lt-body); min-width: 0; text-align: left; }
+html.theme-c :is(.pub-ltd-tag,.lt-trade-tag,.prp-bc-tag,.llpbr-public-tag) {
+  display: inline-block; padding: 0; margin-bottom: 14px;
+  background: none; border-radius: 0;
+  color: var(--lt-accent-text);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+}
+html.theme-c :is(.pub-ltd-title,.lt-trade-title,.prp-bc-title,.llpbr-public-title) {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track);
+  line-height: 1.05;
+  color: var(--lt-ink);
+  margin-bottom: 18px;
+  text-wrap: balance;
+}
+html.theme-c :is(.pub-ltd-title,.lt-trade-title,.prp-bc-title,.llpbr-public-title) span { color: var(--lt-accent-text); font-weight: 400; }
+html.theme-c :is(.pub-ltd-description,.lt-trade-description,.prp-bc-description,.llpbr-public-description) {
+  font-size: 1.05rem; line-height: 1.6;
+  color: var(--lt-body);
+  max-width: var(--lt-measure);
+  margin-bottom: 22px;
+  text-align: left; hyphens: manual; -webkit-hyphens: manual; word-spacing: normal;
+}
+/* the four feature lines become chips */
+html.theme-c :is(.pub-ltd-features,.lt-trade-features,.prp-bc-features,.llpbr-public-features) { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+html.theme-c :is(.pub-ltd-feature-item,.lt-feature-item,.prp-bc-feature-item,.llpbr-feature-item) {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; border: 0; border-radius: 999px;
+  background: var(--lt-surface); box-shadow: var(--lt-shadow-md);
+  color: var(--lt-ink); font-size: 13px; font-weight: 600; line-height: 1.3;
+}
+html.theme-c :is(.pub-ltd-feature-item,.lt-feature-item,.prp-bc-feature-item,.llpbr-feature-item)::before {
+  content: ""; width: 16px; height: 16px; flex: none;
+  background: var(--lt-accent);
+  -webkit-mask: var(--lt-ic-check) center / contain no-repeat; mask: var(--lt-ic-check) center / contain no-repeat;
+}
+/* the statistics, in green */
+html.theme-c :is(.pub-ltd-highlights,.lt-trade-highlights,.prp-bc-highlights,.llpbr-public-highlights) {
+  display: flex; flex-wrap: wrap; gap: 20px 40px;
+  padding-top: 8px; border-top: 0; text-align: left;
+}
+html.theme-c :is(.pub-ltd-highlights,.lt-trade-highlights,.prp-bc-highlights,.llpbr-public-highlights) h3 {
+  font-family: var(--lt-f-display) !important;
+  font-size: 2rem; font-weight: 500; letter-spacing: var(--lt-d-track); line-height: 1.1;
+  color: var(--lt-accent-text);
+  margin-bottom: 4px; font-variant-numeric: tabular-nums;
+}
+html.theme-c :is(.pub-ltd-highlights,.lt-trade-highlights,.prp-bc-highlights,.llpbr-public-highlights) p { font-size: 14px; color: var(--lt-muted); letter-spacing: 0; text-align: left; }
+
+
+@media (max-width: 1024px) {
+  html.theme-c :is(.pub-ltd-container,.lt-trade-container,.prp-bc-container,.llpbr-public-container) { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+}
+@media (max-width: 767px) {
+  html.theme-c :is(.pub-ltd-hero,.lt-trade-hero,.prp-bc-hero,.llpbr-public-hero) { padding: 28px 0 44px; }
+  html.theme-c :is(.pub-ltd-highlights,.lt-trade-highlights,.prp-bc-highlights,.llpbr-public-highlights) h3 { font-size: 1.75rem; }
+}
+
+/* ══ section tabs (OPCTabs and 51 copies — every page of this generation has its own) ══
+   #209 Pvt Ltd 4 — centred, one row, hover and a clear active state, sticky under
+   the header; on a phone the strip scrolls sideways inside itself. The slide-in
+   sidebar the old design opened on a tab click is not part of Theme C. */
+html.theme-c :is(.opc-tabs-section,.afc-tabs-section,.afl-tabs-section,.bc-tabs-section,.cacom-tabs-section,.cnllp-tabs-section,.cocom-tabs-section,.pubpvt-tabs-section,.dllp-tabs-section,.dpart-tabs-section,.dpvt-tabs-section,.epf-tabs-section,.esic-tabs-section,.epfret-tabs-section,.esiret-tabs-section,.food-tabs-section,.gst-tabs-section,.gstf-tabs-section,.iec-tabs-section,.iso-tabs-section,.iacap-tabs-section,.incorp-tabs-section,.itrbiz-tabs-section,.itrind-tabs-section,.llp-tabs-section,.labour-tabs-section,.ltopvt-tabs-section,.olwf-tabs-section,.pfr-tabs-section,.proftax-tabs-section,.pro-tabs-section,.ptollp-tabs-section,.ptoopc-tabs-section,.ptopvt-tabs-section,.ptpub-tabs-section,.ptpvt-tabs-section,.publicltd-tabs-section,.pvtllp-tabs-section,.section8-tabs-section,.shopreg-tabs-section,.society-tabs-section,.sti-tabs-section,.sto-tabs-section,.tmark-tabs-section,.tmexr-tabs-section,.tmhear-tabs-section,.tmopp-tabs-section,.tmrnw-tabs-section,.trade-tabs-section,.new-trusted-tabs-section,.udyam-tabs-section) {
+  position: sticky; top: var(--lt-sticky-top); z-index: 30;
+  padding: 0;
+  background: var(--lt-nav-bg);
+  backdrop-filter: saturate(1.4) blur(10px); -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  border-block: 1px solid var(--lt-hairline);
+}
+html.theme-c :is(.opc-tabs-container,.afc-tabs-container,.afl-tabs-container,.bc-tabs-container,.cacom-tabs-container,.cnllp-tabs-container,.cocom-tabs-container,.pubpvt-tabs-container,.dllp-tabs-container,.dpart-tabs-container,.dpvt-tabs-container,.epf-tabs-container,.esic-tabs-container,.epfret-tabs-container,.esiret-tabs-container,.food-tabs-container,.gst-tabs-container,.gstf-tabs-container,.iec-tabs-container,.iso-tabs-container,.iacap-tabs-container,.incorp-tabs-container,.itrbiz-tabs-container,.itrind-tabs-container,.llp-tabs-container,.labour-tabs-container,.ltopvt-tabs-container,.olwf-tabs-container,.pfr-tabs-container,.proftax-tabs-container,.pro-tabs-container,.ptollp-tabs-container,.ptoopc-tabs-container,.ptopvt-tabs-container,.ptpub-tabs-container,.ptpvt-tabs-container,.publicltd-tabs-container,.pvtllp-tabs-container,.section8-tabs-container,.shopreg-tabs-container,.society-tabs-container,.sti-tabs-container,.sto-tabs-container,.tmark-tabs-container,.tmexr-tabs-container,.tmhear-tabs-container,.tmopp-tabs-container,.tmrnw-tabs-container,.trade-tabs-container,.new-trusted-tabs-container,.udyam-tabs-container) { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c :is(.opc-tabs-section,.afc-tabs-section,.afl-tabs-section,.bc-tabs-section,.cacom-tabs-section,.cnllp-tabs-section,.cocom-tabs-section,.pubpvt-tabs-section,.dllp-tabs-section,.dpart-tabs-section,.dpvt-tabs-section,.epf-tabs-section,.esic-tabs-section,.epfret-tabs-section,.esiret-tabs-section,.food-tabs-section,.gst-tabs-section,.gstf-tabs-section,.iec-tabs-section,.iso-tabs-section,.iacap-tabs-section,.incorp-tabs-section,.itrbiz-tabs-section,.itrind-tabs-section,.llp-tabs-section,.labour-tabs-section,.ltopvt-tabs-section,.olwf-tabs-section,.pfr-tabs-section,.proftax-tabs-section,.pro-tabs-section,.ptollp-tabs-section,.ptoopc-tabs-section,.ptopvt-tabs-section,.ptpub-tabs-section,.ptpvt-tabs-section,.publicltd-tabs-section,.pvtllp-tabs-section,.section8-tabs-section,.shopreg-tabs-section,.society-tabs-section,.sti-tabs-section,.sto-tabs-section,.tmark-tabs-section,.tmexr-tabs-section,.tmhear-tabs-section,.tmopp-tabs-section,.tmrnw-tabs-section,.trade-tabs-section,.new-trusted-tabs-section,.udyam-tabs-section) :is(.opc-tabs-card,.afc-tabs-card,.afl-tabs-card,.bc-tabs-card,.cacom-tabs-card,.cnllp-tabs-card,.cocom-tabs-card,.pubpvt-tabs-card,.dllp-tabs-card,.dpart-tabs-card,.dpvt-tabs-card,.epf-tabs-card,.esic-tabs-card,.epfret-tabs-card,.esiret-tabs-card,.food-tabs-card,.gst-tabs-card,.gstf-tabs-card,.iec-tabs-card,.iso-tabs-card,.iacap-tabs-card,.incorp-tabs-card,.itrbiz-tabs-card,.itrind-tabs-card,.llp-tabs-card,.labour-tabs-card,.ltopvt-tabs-card,.olwf-tabs-card,.pfr-tabs-card,.proftax-tabs-card,.pro-tabs-card,.ptollp-tabs-card,.ptoopc-tabs-card,.ptopvt-tabs-card,.ptpub-tabs-card,.ptpvt-tabs-card,.publicltd-tabs-card,.pvtllp-tabs-card,.section8-tabs-card,.shopreg-tabs-card,.society-tabs-card,.sti-tabs-card,.sto-tabs-card,.tmark-tabs-card,.tmexr-tabs-card,.tmhear-tabs-card,.tmopp-tabs-card,.tmrnw-tabs-card,.trade-tabs-card,.new-trusted-tabs-card,.udyam-tabs-card),
+html.theme-c :is(.opc-tabs-section,.afc-tabs-section,.afl-tabs-section,.bc-tabs-section,.cacom-tabs-section,.cnllp-tabs-section,.cocom-tabs-section,.pubpvt-tabs-section,.dllp-tabs-section,.dpart-tabs-section,.dpvt-tabs-section,.epf-tabs-section,.esic-tabs-section,.epfret-tabs-section,.esiret-tabs-section,.food-tabs-section,.gst-tabs-section,.gstf-tabs-section,.iec-tabs-section,.iso-tabs-section,.iacap-tabs-section,.incorp-tabs-section,.itrbiz-tabs-section,.itrind-tabs-section,.llp-tabs-section,.labour-tabs-section,.ltopvt-tabs-section,.olwf-tabs-section,.pfr-tabs-section,.proftax-tabs-section,.pro-tabs-section,.ptollp-tabs-section,.ptoopc-tabs-section,.ptopvt-tabs-section,.ptpub-tabs-section,.ptpvt-tabs-section,.publicltd-tabs-section,.pvtllp-tabs-section,.section8-tabs-section,.shopreg-tabs-section,.society-tabs-section,.sti-tabs-section,.sto-tabs-section,.tmark-tabs-section,.tmexr-tabs-section,.tmhear-tabs-section,.tmopp-tabs-section,.tmrnw-tabs-section,.trade-tabs-section,.new-trusted-tabs-section,.udyam-tabs-section).sidebar-open-mode :is(.opc-tabs-card,.afc-tabs-card,.afl-tabs-card,.bc-tabs-card,.cacom-tabs-card,.cnllp-tabs-card,.cocom-tabs-card,.pubpvt-tabs-card,.dllp-tabs-card,.dpart-tabs-card,.dpvt-tabs-card,.epf-tabs-card,.esic-tabs-card,.epfret-tabs-card,.esiret-tabs-card,.food-tabs-card,.gst-tabs-card,.gstf-tabs-card,.iec-tabs-card,.iso-tabs-card,.iacap-tabs-card,.incorp-tabs-card,.itrbiz-tabs-card,.itrind-tabs-card,.llp-tabs-card,.labour-tabs-card,.ltopvt-tabs-card,.olwf-tabs-card,.pfr-tabs-card,.proftax-tabs-card,.pro-tabs-card,.ptollp-tabs-card,.ptoopc-tabs-card,.ptopvt-tabs-card,.ptpub-tabs-card,.ptpvt-tabs-card,.publicltd-tabs-card,.pvtllp-tabs-card,.section8-tabs-card,.shopreg-tabs-card,.society-tabs-card,.sti-tabs-card,.sto-tabs-card,.tmark-tabs-card,.tmexr-tabs-card,.tmhear-tabs-card,.tmopp-tabs-card,.tmrnw-tabs-card,.trade-tabs-card,.new-trusted-tabs-card,.udyam-tabs-card) {
+  position: static; background: none; border-radius: 0; box-shadow: none; padding: 0; overflow: visible;
+}
+/* `justify-content: center` is set inline on the list, which would clip the
+   first tabs out of reach when the strip overflows; auto margins on the end
+   tabs centre the row when it fits and let it scroll when it does not. */
+html.theme-c :is(.opc-tabs-list,.afc-tabs-list,.afl-tabs-list,.bc-tabs-list,.cacom-tabs-list,.cnllp-tabs-list,.cocom-tabs-list,.pubpvt-tabs-list,.dllp-tabs-list,.dpart-tabs-list,.dpvt-tabs-list,.epf-tabs-list,.esic-tabs-list,.epfret-tabs-list,.esiret-tabs-list,.food-tabs-list,.gst-tabs-list,.gstf-tabs-list,.iec-tabs-list,.iso-tabs-list,.iacap-tabs-list,.incorp-tabs-list,.itrbiz-tabs-list,.itrind-tabs-list,.llp-tabs-list,.labour-tabs-list,.ltopvt-tabs-list,.olwf-tabs-list,.pfr-tabs-list,.proftax-tabs-list,.pro-tabs-list,.ptollp-tabs-list,.ptoopc-tabs-list,.ptopvt-tabs-list,.ptpub-tabs-list,.ptpvt-tabs-list,.publicltd-tabs-list,.pvtllp-tabs-list,.section8-tabs-list,.shopreg-tabs-list,.society-tabs-list,.sti-tabs-list,.sto-tabs-list,.tmark-tabs-list,.tmexr-tabs-list,.tmhear-tabs-list,.tmopp-tabs-list,.tmrnw-tabs-list,.trade-tabs-list,.new-trusted-tabs-list,.udyam-tabs-list) {
+  display: flex; flex-wrap: nowrap; gap: 4px;
+  justify-content: flex-start !important;
+  overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+}
+html.theme-c :is(.opc-tab,.afc-tab,.afl-tab,.bc-tab,.cacom-tab,.cnllp-tab,.cocom-tab,.pubpvt-tab,.dllp-tab,.dpart-tab,.dpvt-tab,.epf-tab,.esic-tab,.epfret-tab,.esiret-tab,.food-tab,.gst-tab,.gstf-tab,.iec-tab,.iso-tab,.iacap-tab,.incorp-tab,.itrbiz-tab,.itrind-tab,.llp-tab,.labour-tab,.ltopvt-tab,.olwf-tab,.pfr-tab,.proftax-tab,.pro-tab,.ptollp-tab,.ptoopc-tab,.ptopvt-tab,.ptpub-tab,.ptpvt-tab,.publicltd-tab,.pvtllp-tab,.section8-tab,.shopreg-tab,.society-tab,.sti-tab,.sto-tab,.tmark-tab,.tmexr-tab,.tmhear-tab,.tmopp-tab,.tmrnw-tab,.trade-tab,.new-trusted-tab,.udyam-tab):first-child { margin-left: auto; }
+html.theme-c :is(.opc-tab,.afc-tab,.afl-tab,.bc-tab,.cacom-tab,.cnllp-tab,.cocom-tab,.pubpvt-tab,.dllp-tab,.dpart-tab,.dpvt-tab,.epf-tab,.esic-tab,.epfret-tab,.esiret-tab,.food-tab,.gst-tab,.gstf-tab,.iec-tab,.iso-tab,.iacap-tab,.incorp-tab,.itrbiz-tab,.itrind-tab,.llp-tab,.labour-tab,.ltopvt-tab,.olwf-tab,.pfr-tab,.proftax-tab,.pro-tab,.ptollp-tab,.ptoopc-tab,.ptopvt-tab,.ptpub-tab,.ptpvt-tab,.publicltd-tab,.pvtllp-tab,.section8-tab,.shopreg-tab,.society-tab,.sti-tab,.sto-tab,.tmark-tab,.tmexr-tab,.tmhear-tab,.tmopp-tab,.tmrnw-tab,.trade-tab,.new-trusted-tab,.udyam-tab):last-child { margin-right: auto; }
+html.theme-c :is(.opc-tab,.afc-tab,.afl-tab,.bc-tab,.cacom-tab,.cnllp-tab,.cocom-tab,.pubpvt-tab,.dllp-tab,.dpart-tab,.dpvt-tab,.epf-tab,.esic-tab,.epfret-tab,.esiret-tab,.food-tab,.gst-tab,.gstf-tab,.iec-tab,.iso-tab,.iacap-tab,.incorp-tab,.itrbiz-tab,.itrind-tab,.llp-tab,.labour-tab,.ltopvt-tab,.olwf-tab,.pfr-tab,.proftax-tab,.pro-tab,.ptollp-tab,.ptoopc-tab,.ptopvt-tab,.ptpub-tab,.ptpvt-tab,.publicltd-tab,.pvtllp-tab,.section8-tab,.shopreg-tab,.society-tab,.sti-tab,.sto-tab,.tmark-tab,.tmexr-tab,.tmhear-tab,.tmopp-tab,.tmrnw-tab,.trade-tab,.new-trusted-tab,.udyam-tab) {
+  min-height: 50px; padding: 14px 14px;
+  background: none; box-shadow: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px; font-weight: 600; letter-spacing: 0; white-space: nowrap;
+  color: var(--lt-muted);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+html.theme-c :is(.opc-tab,.afc-tab,.afl-tab,.bc-tab,.cacom-tab,.cnllp-tab,.cocom-tab,.pubpvt-tab,.dllp-tab,.dpart-tab,.dpvt-tab,.epf-tab,.esic-tab,.epfret-tab,.esiret-tab,.food-tab,.gst-tab,.gstf-tab,.iec-tab,.iso-tab,.iacap-tab,.incorp-tab,.itrbiz-tab,.itrind-tab,.llp-tab,.labour-tab,.ltopvt-tab,.olwf-tab,.pfr-tab,.proftax-tab,.pro-tab,.ptollp-tab,.ptoopc-tab,.ptopvt-tab,.ptpub-tab,.ptpvt-tab,.publicltd-tab,.pvtllp-tab,.section8-tab,.shopreg-tab,.society-tab,.sti-tab,.sto-tab,.tmark-tab,.tmexr-tab,.tmhear-tab,.tmopp-tab,.tmrnw-tab,.trade-tab,.new-trusted-tab,.udyam-tab):not(.active):hover { background: none; color: var(--lt-accent-text); border-bottom-color: var(--lt-hairline-strong); }
+html.theme-c :is(.opc-tab,.afc-tab,.afl-tab,.bc-tab,.cacom-tab,.cnllp-tab,.cocom-tab,.pubpvt-tab,.dllp-tab,.dpart-tab,.dpvt-tab,.epf-tab,.esic-tab,.epfret-tab,.esiret-tab,.food-tab,.gst-tab,.gstf-tab,.iec-tab,.iso-tab,.iacap-tab,.incorp-tab,.itrbiz-tab,.itrind-tab,.llp-tab,.labour-tab,.ltopvt-tab,.olwf-tab,.pfr-tab,.proftax-tab,.pro-tab,.ptollp-tab,.ptoopc-tab,.ptopvt-tab,.ptpub-tab,.ptpvt-tab,.publicltd-tab,.pvtllp-tab,.section8-tab,.shopreg-tab,.society-tab,.sti-tab,.sto-tab,.tmark-tab,.tmexr-tab,.tmhear-tab,.tmopp-tab,.tmrnw-tab,.trade-tab,.new-trusted-tab,.udyam-tab).active { background: none; box-shadow: none; color: var(--lt-accent-text); border-bottom-color: var(--lt-accent); }
+html.theme-c :is(.opc-tab,.afc-tab,.afl-tab,.bc-tab,.cacom-tab,.cnllp-tab,.cocom-tab,.pubpvt-tab,.dllp-tab,.dpart-tab,.dpvt-tab,.epf-tab,.esic-tab,.epfret-tab,.esiret-tab,.food-tab,.gst-tab,.gstf-tab,.iec-tab,.iso-tab,.iacap-tab,.incorp-tab,.itrbiz-tab,.itrind-tab,.llp-tab,.labour-tab,.ltopvt-tab,.olwf-tab,.pfr-tab,.proftax-tab,.pro-tab,.ptollp-tab,.ptoopc-tab,.ptopvt-tab,.ptpub-tab,.ptpvt-tab,.publicltd-tab,.pvtllp-tab,.section8-tab,.shopreg-tab,.society-tab,.sti-tab,.sto-tab,.tmark-tab,.tmexr-tab,.tmhear-tab,.tmopp-tab,.tmrnw-tab,.trade-tab,.new-trusted-tab,.udyam-tab):focus-visible { outline-offset: -3px; }
+html.theme-c :is(.opc-slim-sidebar,.afc-slim-sidebar,.afl-slim-sidebar,.bc-slim-sidebar,.cacom-slim-sidebar,.cnllp-slim-sidebar,.cocom-slim-sidebar,.pubpvt-slim-sidebar,.dllp-slim-sidebar,.dpart-slim-sidebar,.dpvt-slim-sidebar,.epf-slim-sidebar,.esic-slim-sidebar,.epfret-slim-sidebar,.esiret-slim-sidebar,.food-slim-sidebar,.gst-slim-sidebar,.gstf-slim-sidebar,.iec-slim-sidebar,.iso-slim-sidebar,.iacap-slim-sidebar,.incorp-slim-sidebar,.itrbiz-slim-sidebar,.itrind-slim-sidebar,.llp-slim-sidebar,.labour-slim-sidebar,.ltopvt-slim-sidebar,.olwf-slim-sidebar,.pfr-slim-sidebar,.proftax-slim-sidebar,.pro-slim-sidebar,.ptollp-slim-sidebar,.ptoopc-slim-sidebar,.ptopvt-slim-sidebar,.ptpub-slim-sidebar,.ptpvt-slim-sidebar,.publicltd-slim-sidebar,.pvtllp-slim-sidebar,.section8-slim-sidebar,.shopreg-slim-sidebar,.society-slim-sidebar,.sti-slim-sidebar,.sto-slim-sidebar,.tmark-slim-sidebar,.tmexr-slim-sidebar,.tmhear-slim-sidebar,.tmopp-slim-sidebar,.tmrnw-slim-sidebar,.trade-slim-sidebar,.trust-slim-sidebar,.udyam-slim-sidebar) { display: none; }
+html.theme-c [id$="-nav-sections"]:is(.opc-sections-shifted,.afc-sections-shifted,.afl-sections-shifted,.bc-sections-shifted,.cacom-sections-shifted,.cnllp-sections-shifted,.cocom-sections-shifted,.pubpvt-sections-shifted,.dllp-sections-shifted,.dpart-sections-shifted,.dpvt-sections-shifted,.epf-sections-shifted,.esic-sections-shifted,.epfret-sections-shifted,.esiret-sections-shifted,.food-sections-shifted,.gst-sections-shifted,.gstf-sections-shifted,.iec-sections-shifted,.iso-sections-shifted,.iacap-sections-shifted,.incorp-sections-shifted,.itrbiz-sections-shifted,.itrind-sections-shifted,.llp-sections-shifted,.labour-sections-shifted,.ltopvt-sections-shifted,.olwf-sections-shifted,.pfr-sections-shifted,.proftax-sections-shifted,.pro-sections-shifted,.ptollp-sections-shifted,.ptoopc-sections-shifted,.ptopvt-sections-shifted,.ptpub-sections-shifted,.ptpvt-sections-shifted,.publicltd-sections-shifted,.pvtllp-sections-shifted,.section8-sections-shifted,.shopreg-sections-shifted,.society-sections-shifted,.sti-sections-shifted,.sto-sections-shifted,.tmark-sections-shifted,.tmexr-sections-shifted,.tmhear-sections-shifted,.tmopp-sections-shifted,.tmrnw-sections-shifted,.trade-sections-shifted,.trust-sections-shifted,.udyam-sections-shifted) { margin-left: 0 !important; }
+
+/* ══ overview: "Why choose…" (OPCOverview and 7 one-off copies) ══
+   #209 Pvt Ltd 4 — left-aligned text at a reading width, picture beside it.
+   Copies: incorporation, Section 8, Udyam, IEC, trade licence, the two change-of-name pages. */
+html.theme-c :is(.opc-intro-section,.incorp-intro-section,.s8-intro-section,.udyam-intro-section,.iec-intro-section,.trade-intro-section,.prp-pt-intro-section,.llpfull-intro-section) { background: var(--lt-canvas); padding: var(--lt-section) 0 64px; }
+html.theme-c :is(.opc-intro-container,.incorp-intro-container,.s8-intro-container,.udyam-intro-container,.iec-intro-container,.trade-intro-container,.prp-pt-intro-container,.llpfull-intro-container) {
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 48px; align-items: start;
+}
+html.theme-c :is(.opc-intro-content,.incorp-intro-content,.s8-intro-content,.udyam-intro-content,.iec-intro-content,.trade-intro-content,.prp-pt-intro-content,.llpfull-intro-content) { order: 1; max-width: none; min-width: 0; display: grid; gap: 18px; }
+html.theme-c :is(.opc-intro-illustration-wrap,.incorp-intro-illustration-wrap,.s8-intro-illustration-wrap,.udyam-intro-illustration-wrap,.iec-intro-illustration-wrap,.trade-intro-illustration-wrap,.prp-pt-intro-illustration-wrap,.llpfull-intro-illustration-wrap) { order: 2; min-width: 0; }
+html.theme-c :is(.opc-intro-illustration,.incorp-intro-illustration,.s8-intro-illustration,.udyam-intro-illustration,.iec-intro-illustration,.trade-intro-illustration,.prp-pt-intro-illustration,.llpfull-intro-illustration) { width: 100%; max-height: 420px; object-fit: contain; }
+html.theme-c :is(.opc-intro-title,.incorp-intro-title,.s8-intro-title,.udyam-intro-title,.iec-intro-title,.trade-intro-title,.prp-pt-intro-title,.llpfull-intro-title) {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 20ch; margin: 0;
+}
+html.theme-c :is(.opc-intro-content,.incorp-intro-content,.s8-intro-content,.udyam-intro-content,.iec-intro-content,.trade-intro-content,.prp-pt-intro-content,.llpfull-intro-content) :is(.opc-intro-text,.incorp-intro-text,.s8-intro-text,.udyam-intro-text,.iec-intro-text,.trade-intro-text,.prp-pt-intro-text,.llpfull-intro-text) {
+  font-size: 1rem; line-height: 1.6; color: var(--lt-body);
+  max-width: var(--lt-measure); text-align: left; margin: 0;
+}
+@media (max-width: 768px) {
+  html.theme-c :is(.opc-intro-container,.incorp-intro-container,.s8-intro-container,.udyam-intro-container,.iec-intro-container,.trade-intro-container,.prp-pt-intro-container,.llpfull-intro-container) { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+  html.theme-c :is(.opc-intro-illustration,.incorp-intro-illustration,.s8-intro-illustration,.udyam-intro-illustration,.iec-intro-illustration,.trade-intro-illustration,.prp-pt-intro-illustration,.llpfull-intro-illustration) { max-height: 280px; }
+}
+
+/* ══ comparison table (OPCOverview and its "forms" table, Section 8, Udyam; IEC "adjacent registrations", trade licence "architecture") ══
+   #209 Pvt Ltd 5 — full width, ink header row, scrolls inside its frame on a phone. */
+html.theme-c :is(.opc-compare-container,.s8-compare-container,.udyam-compare-container,.opc-urc-forms-container,.iec-adjregs-container,.trade-arch-container) { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c :is(.opc-compare-table-wrapper,.s8-compare-table-wrapper,.udyam-compare-table-wrapper,.opc-urc-forms-table-wrapper,.iec-adjregs-table-wrapper,.trade-arch-table-wrapper) {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+}
+html.theme-c :is(.opc-compare-table,.s8-compare-table,.udyam-compare-table,.opc-urc-forms-table,.iec-adjregs-table,.trade-arch-table) { width: 100%; border-collapse: collapse; font-size: 14px; }
+html.theme-c :is(.opc-compare-table,.s8-compare-table,.udyam-compare-table,.opc-urc-forms-table,.iec-adjregs-table,.trade-arch-table) { min-width: 640px; }
+html.theme-c :is(.opc-compare-table,.s8-compare-table,.udyam-compare-table,.opc-urc-forms-table,.iec-adjregs-table,.trade-arch-table) tbody tr { background: var(--lt-surface); border-bottom: 1px solid var(--lt-hairline); }
+html.theme-c :is(.opc-compare-table,.s8-compare-table,.udyam-compare-table,.opc-urc-forms-table,.iec-adjregs-table,.trade-arch-table) tbody tr:last-child { border-bottom: 0; }
+html.theme-c :is(.opc-compare-table,.s8-compare-table,.udyam-compare-table,.opc-urc-forms-table,.iec-adjregs-table,.trade-arch-table) tbody tr:hover { background: var(--lt-canvas-tint); }
+html.theme-c :is(.opc-compare-table,.s8-compare-table,.udyam-compare-table,.opc-urc-forms-table,.iec-adjregs-table,.trade-arch-table) tbody td {
+  padding: 12px 16px; border-radius: 0; vertical-align: top; line-height: 1.5; text-align: left;
+  color: var(--lt-body);
+}
+html.theme-c :is(.opc-compare-table,.s8-compare-table,.udyam-compare-table,.opc-urc-forms-table,.iec-adjregs-table,.trade-arch-table) tbody td:first-child { font-weight: 600; color: var(--lt-ink); }
+/* the comparison table: centred head, ink header row, lifted frame */
+html.theme-c :is(.opc-compare-section,.s8-compare-section,.udyam-compare-section,.opc-urc-forms-section,.iec-adjregs-section,.trade-arch-section) { background: var(--lt-canvas); padding: 0 0 var(--lt-section); }
+html.theme-c :is(.opc-compare-title,.s8-compare-title,.udyam-compare-title,.opc-urc-forms-title,.iec-adjregs-title,.trade-arch-title) {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: center; text-wrap: balance; margin-bottom: 14px;
+}
+html.theme-c :is(.opc-compare-container,.s8-compare-container,.udyam-compare-container,.opc-urc-forms-container,.iec-adjregs-container,.trade-arch-container) :is(.opc-compare-subtitle,.s8-compare-subtitle,.udyam-compare-subtitle,.opc-urc-forms-subtitle,.iec-adjregs-subtitle,.trade-arch-subtitle) {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); margin: 0 auto 36px; text-align: center;
+}
+html.theme-c :is(.opc-compare-table-wrapper,.s8-compare-table-wrapper,.udyam-compare-table-wrapper,.opc-urc-forms-table-wrapper,.iec-adjregs-table-wrapper,.trade-arch-table-wrapper) { border: 0; box-shadow: var(--lt-shadow); }
+html.theme-c :is(.opc-compare-table,.s8-compare-table,.udyam-compare-table,.opc-urc-forms-table,.iec-adjregs-table,.trade-arch-table) thead tr { background: var(--lt-ink); }
+html.theme-c :is(.opc-compare-table,.s8-compare-table,.udyam-compare-table,.opc-urc-forms-table,.iec-adjregs-table,.trade-arch-table) thead th {
+  padding: 13px 16px; border-radius: 0;
+  font-size: 14px; font-weight: 600; letter-spacing: 0; text-align: left;
+  color: var(--lt-on-ink); background: var(--lt-ink);
+}
+html.theme-c :is(.opc-compare-table,.s8-compare-table,.udyam-compare-table,.opc-urc-forms-table,.iec-adjregs-table,.trade-arch-table) tbody td:first-child { white-space: nowrap; }
+
+/* ══ terms (OPCTermCondition, Partnership firm) ══
+    */
+html.theme-c :is(.opctc-section,.pfr-tc-section) { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c :is(.opctc-container,.pfr-tc-container) { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c :is(.opctc-card,.pfr-tc-card) { background: none; border-radius: 0; box-shadow: none; padding: 0; }
+html.theme-c :is(.opctc-title,.pfr-tc-title) {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink);
+  text-align: left; margin: 0 0 14px;
+}
+html.theme-c :is(.opctc-card,.pfr-tc-card) :is(.opctc-subtitle,.pfr-tc-subtitle) {
+  font-size: 1.05rem; font-weight: 400; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); text-align: left; margin: 0 0 32px;
+}
+html.theme-c :is(.opctc-list,.pfr-tc-list) { max-width: 72ch; margin: 0; padding-left: 22px; display: grid; gap: 12px; list-style: decimal; }
+html.theme-c :is(.opctc-list,.pfr-tc-list) :is(.opctc-item,.pfr-tc-item) { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+
+/* ══ pricing — one-off copies (LLP, Udyam, Public Limited, Section 8, IEC) ══
+   Same rules as the pricing block of ref/opc-family.css. */
+html.theme-c :is(.LLP-Plan-Price-section,.udyam-pricing-section,.pub-plan-section,.s8-pricing-section,.iec-pricing-section) { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c :is(.LLP-Plan-pricing-container,.udyam-pricing-container,.pub-plan-container,.s8-pricing-container,.iecpricing-container) { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; padding: 0; }
+html.theme-c :is(.LLP-Plan-pricing-header,.udyam-pricing-header,.pub-plan-header,.s8-pricing-header,.iecpricing-header) { text-align: left; margin-bottom: 40px; display: grid; gap: 12px; }
+html.theme-c :is(.LLP-Plan-Price-title,.udyam-pricing-title,.pub-plan-title,.s8-pricing-title,.iecpricing-title) {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink); margin: 0;
+}
+html.theme-c :is(.LLP-Plan-pricing-header,.udyam-pricing-header,.pub-plan-header,.s8-pricing-header,.iecpricing-header) :is(.LLP-Plan-pricing-subtitle,.udyam-pricing-subtitle,.pub-plan-subtitle,.s8-pricing-subtitle,.iecpricing-subtitle) { font-size: 1.05rem; font-weight: 400; color: var(--lt-muted); text-align: left; margin: 0; }
+html.theme-c :is(.LLP-Plan-pricing-cards,.udyam-pricing-cards,.pub-plan-cards,.s8-pricing-cards,.iecpricing-cards) { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: stretch; padding-top: 12px; }
+
+html.theme-c :is(.LLP-Plan--card,.udyam-plan-card,.pub-plan-card,.s8-plan-card,.iecplan-card) {
+  position: relative;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transform: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c :is(.LLP-Plan--card,.udyam-plan-card,.pub-plan-card,.s8-plan-card,.iecplan-card):is(.LLP-Plan--card,.udyam-plan-card,.pub-plan-card,.s8-plan-card,.iecplan-card):hover {
+  border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px);
+}
+/* Enriched — "Most Popular" */
+html.theme-c :is(.LLP-Plan--card,.udyam-plan-card,.pub-plan-card,.s8-plan-card,.iecplan-card):is(.LLP-Plan--card-popular,.udyam-plan-card--popular,.pub-plan-card--popular,.s8-plan-card--popular,.iecplan-card--popular),
+html.theme-c :is(.LLP-Plan--card,.udyam-plan-card,.pub-plan-card,.s8-plan-card,.iecplan-card):is(.LLP-Plan--card-popular,.udyam-plan-card--popular,.pub-plan-card--popular,.s8-plan-card--popular,.iecplan-card--popular):nth-child(n) {
+  border: 1px solid var(--lt-accent);
+  box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow);
+}
+html.theme-c :is(.LLP-Plan--card,.udyam-plan-card,.pub-plan-card,.s8-plan-card,.iecplan-card):is(.LLP-Plan--card-popular,.udyam-plan-card--popular,.pub-plan-card--popular,.s8-plan-card--popular,.iecplan-card--popular):nth-child(n):hover {
+  border-color: var(--lt-accent); box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow); transform: translateY(-3px);
+}
+html.theme-c :is(.LLP-Plan--badge-popular,.udyam-plan-badge--popular),
+html.theme-c :is(.LLP-Plan--badge,.udyam-plan-badge,.pub-plan-banner-badge,.s8-plan-badge,.iecplan-badge) {
+  display: inline-flex; align-items: center; width: fit-content; margin: 0;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; line-height: 1.4; text-align: left;
+}
+html.theme-c :is(.LLP-Plan--badge,.udyam-plan-badge,.pub-plan-banner-badge,.s8-plan-badge,.iecplan-badge) { position: absolute; top: -12px; left: 20px; background: var(--lt-ink); color: var(--lt-on-ink); }
+html.theme-c :is(.LLP-Plan--badge,.udyam-plan-badge,.pub-plan-banner-badge,.s8-plan-badge,.iecplan-badge):is(.LLP-Plan--badge-popular,.udyam-plan-badge--popular),
+html.theme-c :is(.LLP-Plan--card-popular,.udyam-plan-card--popular,.pub-plan-card--popular,.s8-plan-card--popular,.iecplan-card--popular) :is(.LLP-Plan--badge,.udyam-plan-badge,.pub-plan-banner-badge,.s8-plan-badge,.iecplan-badge) { background: var(--lt-accent); color: var(--lt-on-accent); }
+
+html.theme-c :is(.LLP-Plan--header,.udyam-plan-header,.pub-plan-card-header,.s8-plan-header,.iecplan-header) { margin-bottom: 0; display: grid; gap: 4px; justify-items: start; }
+html.theme-c :is(.LLP-Plan--name,.udyam-plan-name,.pub-plan-name,.s8-plan-name,.iecplan-name) { font-size: 1.1rem; font-weight: 500; color: var(--lt-ink); text-align: left; margin-bottom: 8px; }
+html.theme-c :is(.LLP-Plan--old-price,.udyam-plan-old-price,.pub-plan-old-price,.s8-plan-old-price,.iecplan-old-price) { font-size: 15px; font-weight: 400; color: var(--lt-danger); text-align: left; margin: 0; }
+html.theme-c :is(.LLP-Plan--price,.udyam-plan-price,.pub-plan-price,.s8-plan-price,.iecplan-price) {
+  font-family: var(--lt-f-display) !important;
+  font-size: 2.4rem; font-weight: 400; letter-spacing: var(--lt-d-track); line-height: 1.05;
+  color: var(--lt-ink); text-align: left; font-variant-numeric: tabular-nums;
+}
+html.theme-c :is(.LLP-Plan--meta,.udyam-plan-meta,.pub-plan-meta,.s8-plan-meta,.iecplan-meta) { font-size: 13px; color: var(--lt-muted); text-align: left; }
+html.theme-c :is(.LLP-Plan--body,.udyam-plan-body,.pub-plan-body,.s8-plan-body,.iecplan-body) { margin-top: 18px; }
+html.theme-c :is(.LLP-Plan--list,.udyam-plan-list,.pub-plan-list,.s8-plan-list,.iecplan-list) { display: grid; gap: 8px; }
+html.theme-c :is(.LLP-Plan--list-item,.udyam-plan-list-item,.pub-plan-list-item,.s8-plan-list-item,.iecplan-list-item) {
+  display: flex; align-items: flex-start; gap: 8px; margin: 0;
+  font-size: 14px; line-height: 1.5; color: var(--lt-body); text-align: left;
+}
+html.theme-c :is(.LLP-Plan--list-item,.udyam-plan-list-item,.pub-plan-list-item,.s8-plan-list-item,.iecplan-list-item)::before {
+  content: ""; width: 16px; height: 16px; flex: none; margin: 3px 0 0; border-radius: 0;
+  background: var(--lt-accent-text);
+  -webkit-mask: var(--lt-ic-check) center / contain no-repeat; mask: var(--lt-ic-check) center / contain no-repeat;
+}
+html.theme-c :is(.LLP-Plan--footer,.udyam-plan-footer,.pub-plan-footer,.s8-plan-footer,.iecplan-footer) { margin-top: auto; padding-top: 22px; text-align: left; }
+html.theme-c :is(.LLP-Plan--button,.udyam-plan-button,.pub-plan-button,.s8-plan-button,.iecplan-button) {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 44px; padding: 10px 20px;
+  background: var(--lt-btn); color: var(--lt-on-btn);
+  border: 1px solid transparent; border-radius: var(--lt-r-btn);
+  font-size: 15px; font-weight: 500;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+html.theme-c :is(.LLP-Plan--button,.udyam-plan-button,.pub-plan-button,.s8-plan-button,.iecplan-button):hover { background: var(--lt-btn-hover); transform: translateY(-1px); box-shadow: none; }
+/* outline button on the plain cards, solid on the highlighted one */
+html.theme-c :is(.LLP-Plan--card,.udyam-plan-card,.pub-plan-card,.s8-plan-card,.iecplan-card):not(:is(.LLP-Plan--card-popular,.udyam-plan-card--popular,.pub-plan-card--popular,.s8-plan-card--popular,.iecplan-card--popular)) :is(.LLP-Plan--button,.udyam-plan-button,.pub-plan-button,.s8-plan-button,.iecplan-button) {
+  background: transparent; color: var(--lt-ink); border-color: var(--lt-hairline-strong);
+}
+html.theme-c :is(.LLP-Plan--card,.udyam-plan-card,.pub-plan-card,.s8-plan-card,.iecplan-card):not(:is(.LLP-Plan--card-popular,.udyam-plan-card--popular,.pub-plan-card--popular,.s8-plan-card--popular,.iecplan-card--popular)) :is(.LLP-Plan--button,.udyam-plan-button,.pub-plan-button,.s8-plan-button,.iecplan-button):hover {
+  background: transparent; border-color: var(--lt-accent); color: var(--lt-accent-text);
+}
+/* the shared "Book Free Consultation" button under the plans */
+html.theme-c .consult-cta-row { display: flex; justify-content: center; margin-top: 32px; }
+html.theme-c .consult-cta-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 52px; padding: 12px 32px;
+  background: var(--lt-btn); color: var(--lt-on-btn);
+  border: 0; border-radius: var(--lt-r-btn); box-shadow: none;
+  font-size: 17px; font-weight: 500; letter-spacing: 0; cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+html.theme-c .consult-cta-button:hover { background: var(--lt-btn-hover); transform: translateY(-1px); box-shadow: none; }
+
+html.theme-c :is(.LLP-Plan-pricing-cards,.udyam-pricing-cards,.pub-plan-cards,.s8-pricing-cards,.iecpricing-cards):has(> :nth-child(1):last-child) { grid-template-columns: minmax(0, 420px); }
+html.theme-c :is(.LLP-Plan-pricing-cards,.udyam-pricing-cards,.pub-plan-cards,.s8-pricing-cards,.iecpricing-cards):has(> :nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html.theme-c :is(.LLP-Plan-pricing-cards,.udyam-pricing-cards,.pub-plan-cards,.s8-pricing-cards,.iecpricing-cards):has(> :nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) {
+  html.theme-c :is(.LLP-Plan-pricing-cards,.udyam-pricing-cards,.pub-plan-cards,.s8-pricing-cards,.iecpricing-cards):has(> :nth-child(2):last-child),
+html.theme-c :is(.LLP-Plan-pricing-cards,.udyam-pricing-cards,.pub-plan-cards,.s8-pricing-cards,.iecpricing-cards):has(> :nth-child(3):last-child) { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+}
+@media (max-width: 1100px) {
+  html.theme-c :is(.LLP-Plan-pricing-cards,.udyam-pricing-cards,.pub-plan-cards,.s8-pricing-cards,.iecpricing-cards) { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; }
+}
+@media (max-width: 680px) {
+  html.theme-c :is(.LLP-Plan-pricing-cards,.udyam-pricing-cards,.pub-plan-cards,.s8-pricing-cards,.iecpricing-cards) { grid-template-columns: minmax(0, 1fr); }
+  html.theme-c :is(.LLP-Plan--card,.udyam-plan-card,.pub-plan-card,.s8-plan-card,.iecplan-card) { max-width: none; margin: 0; }
+}
+
+/* ══ pricing — the two change-of-name pages (ChangetoCompanyPlanandPrice, ChangetoLlpPlanandPrice) ══
+   Same rules as the Add-pp block of ref/service.css: the popular plan is marked
+   by a "(Popular)" label in its meta line, which becomes the badge. <CutPrice />
+   draws its own struck-through price inline and is left as it is. */
+html.theme-c :is(.prp-price-section,.llpprice-section) { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c :is(.prp-price-container,.llpprice-container) { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; padding: 0; }
+html.theme-c :is(.prp-price-container,.llpprice-container) > :is(.prp-price-header,.llpprice-header) { text-align: left; margin-bottom: 40px; display: grid; gap: 12px; }
+html.theme-c :is(.prp-price-title,.llpprice-title) {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink); margin: 0;
+}
+html.theme-c :is(.prp-price-header,.llpprice-header) :is(.prp-price-subtitle,.llpprice-subtitle) { font-size: 1.05rem; font-weight: 400; color: var(--lt-muted); text-align: left; margin: 0; }
+html.theme-c :is(.prp-price-cards,.llpprice-cards) { display: grid; gap: 18px; align-items: stretch; padding-top: 12px; }
+html.theme-c :is(.prp-price-cards,.llpprice-cards):has(> :nth-child(1):last-child) { grid-template-columns: minmax(0, 420px); }
+html.theme-c :is(.prp-price-cards,.llpprice-cards):has(> :nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html.theme-c :is(.prp-price-cards,.llpprice-cards):has(> :nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html.theme-c :is(.prp-price-card,.llpprice-card) {
+  position: relative;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transform: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c :is(.prp-price-card,.llpprice-card):hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c :is(.prp-price-card,.llpprice-card):has(:is(.prp-price-meta,.llpprice-plan-meta) :is(.prp-price-popular,.llpprice-popular)),
+html.theme-c :is(.prp-price-card,.llpprice-card):has(:is(.prp-price-meta,.llpprice-plan-meta) :is(.prp-price-popular,.llpprice-popular)):hover {
+  border-color: var(--lt-accent);
+  box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow);
+}
+html.theme-c :is(.prp-price-meta,.llpprice-plan-meta) :is(.prp-price-popular,.llpprice-popular) {
+  position: absolute; top: -12px; left: 20px; margin: 0;
+  display: inline-flex; align-items: center;
+  padding: 4px 10px; border-radius: 999px;
+  background: var(--lt-accent); color: var(--lt-on-accent);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; line-height: 1.4; text-transform: uppercase;
+}
+html.theme-c :is(.prp-price-card,.llpprice-card) :is(.prp-price-plan-header,.llpprice-plan-header) { margin-bottom: 0; display: grid; gap: 4px; justify-items: start; text-align: left; }
+html.theme-c :is(.prp-price-plan-name,.llpprice-plan-name) { font-size: 1.1rem; font-weight: 500; color: var(--lt-ink); text-align: left; margin-bottom: 8px; }
+html.theme-c .prp-price-old { font-size: 15px; font-weight: 400; color: var(--lt-danger); text-align: left; margin: 0; }
+html.theme-c :is(.prp-price-current,.llpprice-plan-price) {
+  font-family: var(--lt-f-display) !important;
+  font-size: 2.4rem; font-weight: 400; letter-spacing: var(--lt-d-track); line-height: 1.05;
+  color: var(--lt-ink); text-align: left; font-variant-numeric: tabular-nums;
+}
+html.theme-c :is(.prp-price-meta,.llpprice-plan-meta) { font-size: 13px; color: var(--lt-muted); text-align: left; }
+html.theme-c :is(.prp-price-body,.llpprice-plan-body) { margin-top: 18px; }
+html.theme-c :is(.prp-price-list,.llpprice-plan-list) { display: grid; gap: 8px; }
+html.theme-c :is(.prp-price-item,.llpprice-plan-list-item) {
+  display: flex; align-items: flex-start; gap: 8px; margin: 0;
+  font-size: 14px; line-height: 1.5; color: var(--lt-body); text-align: left;
+}
+html.theme-c :is(.prp-price-item,.llpprice-plan-list-item)::before {
+  content: ""; width: 16px; height: 16px; flex: none; margin: 3px 0 0; border-radius: 0;
+  background: var(--lt-accent-text);
+  -webkit-mask: var(--lt-svc-check) center / contain no-repeat; mask: var(--lt-svc-check) center / contain no-repeat;
+}
+html.theme-c :is(.prp-price-footer,.llpprice-plan-footer) { margin-top: auto; padding-top: 22px; text-align: left; }
+html.theme-c :is(.prp-price-btn,.llpprice-plan-button) {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 44px; padding: 10px 20px;
+  background: transparent; color: var(--lt-ink);
+  border: 1px solid var(--lt-hairline-strong); border-radius: var(--lt-r-btn);
+  font-size: 15px; font-weight: 500;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+html.theme-c :is(.prp-price-btn,.llpprice-plan-button):hover { background: transparent; border-color: var(--lt-accent); color: var(--lt-accent-text); transform: translateY(-1px); box-shadow: none; }
+/* solid on the popular card, outline on the others */
+html.theme-c :is(.prp-price-card,.llpprice-card):has(:is(.prp-price-meta,.llpprice-plan-meta) :is(.prp-price-popular,.llpprice-popular)) :is(.prp-price-btn,.llpprice-plan-button) { background: var(--lt-btn); color: var(--lt-on-btn); border-color: transparent; }
+html.theme-c :is(.prp-price-card,.llpprice-card):has(:is(.prp-price-meta,.llpprice-plan-meta) :is(.prp-price-popular,.llpprice-popular)) :is(.prp-price-btn,.llpprice-plan-button):hover { background: var(--lt-btn-hover); color: var(--lt-on-btn); border-color: transparent; }
+@media (max-width: 900px) {
+  html.theme-c :is(.prp-price-cards,.llpprice-cards):has(> :nth-child(2):last-child),
+html.theme-c :is(.prp-price-cards,.llpprice-cards):has(> :nth-child(3):last-child) { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+  html.theme-c :is(.prp-price-card,.llpprice-card) { max-width: none; margin: 0; }
+}
+
+/* ══ government costs — one-off copies (IEC, trade licence municipal fees) ══
+   The IEC table is also used on the Trust, Society and Startup pages. */
+html.theme-c :is(.iec-govtcosts-section,.trade-munifees-section) { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c :is(.iec-govtcosts-container,.trade-munifees-container) { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c :is(.iec-govtcosts-title,.trade-munifees-title) {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  justify-content: flex-start; text-align: left; gap: 12px 16px; margin-bottom: 14px;
+}
+html.theme-c :is(.iec-govtcosts-badge,.trade-munifees-badge) {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4;
+  padding: 5px 10px; border-radius: 999px;
+  background: var(--lt-accent); color: var(--lt-on-accent);
+}
+html.theme-c :is(.iec-govtcosts-container,.trade-munifees-container) :is(.iec-govtcosts-subtitle,.trade-munifees-subtitle) {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); text-align: left; margin: 0 0 32px;
+}
+html.theme-c :is(.iec-govtcosts-table-wrapper,.trade-munifees-table-wrapper) {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+}
+html.theme-c :is(.iec-govtcosts-table,.trade-munifees-table) { width: 100%; border-collapse: collapse; font-size: 14px; }
+html.theme-c :is(.iec-govtcosts-table,.trade-munifees-table) { min-width: 560px; }
+html.theme-c :is(.iec-govtcosts-table,.trade-munifees-table) thead tr { background: var(--lt-canvas-soft); }
+html.theme-c :is(.iec-govtcosts-table,.trade-munifees-table) thead th {
+  padding: 12px 16px; border-radius: 0; border-bottom: 1px solid var(--lt-hairline);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; text-align: left;
+  color: var(--lt-muted); background: var(--lt-canvas-soft);
+}
+html.theme-c :is(.iec-govtcosts-table,.trade-munifees-table) tbody tr { background: var(--lt-surface); border-bottom: 1px solid var(--lt-hairline); }
+html.theme-c :is(.iec-govtcosts-table,.trade-munifees-table) tbody tr:last-child { border-bottom: 0; }
+html.theme-c :is(.iec-govtcosts-table,.trade-munifees-table) tbody tr:hover { background: var(--lt-canvas-tint); }
+html.theme-c :is(.iec-govtcosts-table,.trade-munifees-table) tbody td {
+  padding: 12px 16px; border-radius: 0; vertical-align: top; line-height: 1.5; text-align: left;
+  color: var(--lt-body);
+}
+html.theme-c :is(.iec-govtcosts-table,.trade-munifees-table) tbody td:first-child { font-weight: 600; color: var(--lt-ink); }
+html.theme-c :is(.iec-govtcosts-table,.trade-munifees-table) td:is(.iec-govtcosts-range,.trade-munifees-range) { font-weight: 400; color: var(--lt-ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* ══ types — one-off copies (LLP, Section 8) ══
+    */
+html.theme-c :is(.llp-types-section,.s8-types-section) { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c :is(.llp-types-container,.s8-types-container) { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c :is(.llp-types-title,.s8-types-title) {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0 0 40px;
+}
+html.theme-c :is(.llp-types-cards,.s8-types-grid) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-bottom: 0; align-items: stretch; }
+html.theme-c :is(.llp-types-card,.s8-types-card) {
+  display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c :is(.llp-types-card,.s8-types-card):hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c :is(.llp-types-number,.s8-types-num) {
+  font-family: var(--lt-f-display) !important;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.08em; line-height: 1;
+  color: var(--lt-accent-text); margin: 0; font-variant-numeric: tabular-nums;
+}
+html.theme-c :is(.llp-types-card-title,.s8-types-subtitle) { font-size: 1.125rem; font-weight: 500; line-height: 1.3; color: var(--lt-ink); margin: 0; text-align: left; }
+html.theme-c :is(.llp-types-card,.s8-types-card) :is(.llp-types-card-text,.s8-types-text) { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+/* two or four cards sit two to a row */
+html.theme-c :is(.llp-types-cards,.s8-types-grid):has(> :nth-child(2):last-child),
+html.theme-c :is(.llp-types-cards,.s8-types-grid):has(> :nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1024px) { html.theme-c :is(.llp-types-cards,.s8-types-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  html.theme-c :is(.llp-types-cards,.s8-types-grid),
+html.theme-c :is(.llp-types-cards,.s8-types-grid):has(> :nth-child(2):last-child),
+html.theme-c :is(.llp-types-cards,.s8-types-grid):has(> :nth-child(4):last-child) { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ══ benefits — one-off copies (LLP, Trust) ══
+    */
+html.theme-c :is(.llp-req-section,.trust-req-section) { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c :is(.llp-req-container,.trust-req-container) { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c :is(.llp-req-header,.trust-req-header) { text-align: left; margin-bottom: 40px; display: grid; gap: 14px; }
+html.theme-c :is(.llp-req-title,.trust-req-title) {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; max-width: 22ch; margin: 0;
+}
+html.theme-c :is(.llp-req-header,.trust-req-header) :is(.llp-req-subtitle,.trust-req-subtitle) {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); margin: 0; text-align: left;
+}
+html.theme-c :is(.llp-req-grid,.trust-req-grid) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; max-width: none; margin: 0; align-items: stretch; }
+html.theme-c :is(.llp-req-card,.trust-req-card) {
+  display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c :is(.llp-req-card,.trust-req-card):hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+/* the icon tile above each benefit */
+html.theme-c :is(.llp-req-card,.trust-req-card)::before {
+  content: ""; width: 44px; height: 44px; flex: none; border-radius: var(--lt-r-md);
+  background: var(--lt-ic-check-accent) center / 22px no-repeat var(--lt-surface-strong);
+}
+html.theme-c :is(.llp-req-card-title,.trust-req-card-title) { font-size: 1.125rem; font-weight: 500; line-height: 1.3; color: var(--lt-ink); margin: 0; text-align: left; }
+html.theme-c :is(.llp-req-card-underline,.trust-req-card-underline) { display: none; }
+html.theme-c :is(.llp-req-card,.trust-req-card) :is(.llp-req-card-text,.trust-req-card-text) { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+@media (max-width: 1024px) { html.theme-c :is(.llp-req-grid,.trust-req-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { html.theme-c :is(.llp-req-grid,.trust-req-grid) { grid-template-columns: minmax(0, 1fr); } }
+
+/* ══ FAQ — one-off copy (LLP) ══
+    */
+html.theme-c .llpfaq-section { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c .llpfaq-container { width: min(820px, 100% - 32px); max-width: 820px; margin-inline: auto; }
+html.theme-c .llpfaq-header { text-align: left; margin-bottom: 36px; display: grid; gap: 14px; }
+html.theme-c .llpfaq-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0;
+}
+html.theme-c .llpfaq-header p.llpfaq-intro { font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted); max-width: var(--lt-measure); margin: 0; text-align: left; }
+html.theme-c .llpfaq-list { max-width: none; gap: 10px; }
+html.theme-c .llpfaq-item,
+html.theme-c .llpfaq-item:nth-child(n) {
+  width: 100%; align-self: stretch;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-md);
+  box-shadow: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+html.theme-c .llpfaq-item:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .llpfaq-item.active { background: var(--lt-surface); border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c .llpfaq-question {
+  min-height: 52px; padding: 14px 20px; gap: 16px;
+  font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--lt-ink); text-align: left;
+}
+html.theme-c .llpfaq-item:hover .llpfaq-question,
+html.theme-c .llpfaq-item.active .llpfaq-question { color: var(--lt-ink); }
+html.theme-c .llpfaq-question:focus-visible { outline: 2px solid var(--lt-focus); outline-offset: -2px; border-radius: var(--lt-r-md); }
+html.theme-c .llpfaq-icon { font-size: 22px; line-height: 1; color: var(--lt-muted); }
+html.theme-c .llpfaq-item.active .llpfaq-icon { color: var(--lt-accent-text); }
+html.theme-c .llpfaq-answer-content {
+  padding: 0 20px 18px; border-top: 0;
+  font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left;
+}
+html.theme-c .llpfaq-answer-content p,
+html.theme-c .llpfaq-answer-content li { font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+
+/* ══ FAQ, two-column — the two change-of-name pages (ChangetoCompanyFAQ, ChangetoLlpFAQ) ══
+   Same rules as the CICfaq block of ref/service.css. ChangetoLlpFAQ shares the
+   `llpfaq-*` names with the LLP page's one-column FAQ above; the left/right
+   columns tell them apart. */
+html.theme-c :is(.prp-faq-section,.llpfaq-section):has(:is(.prp-faq-left,.llpfaq-left)) { background: var(--lt-canvas-soft); padding: var(--lt-section) 0; }
+html.theme-c :is(.prp-faq-container,.llpfaq-container):has(> :is(.prp-faq-left,.llpfaq-left)) {
+  width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto;
+  display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); column-gap: 56px; align-items: start;
+}
+html.theme-c :is(.prp-faq-left,.llpfaq-left) { min-width: 0; color: var(--lt-body); position: sticky; top: calc(var(--lt-svc-sticky-top) + 72px); }
+html.theme-c :is(.prp-faq-left,.llpfaq-left) :is(.prp-faq-title,.llpfaq-title) {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0 0 18px;
+}
+html.theme-c :is(.prp-faq-left,.llpfaq-left) p:is(.prp-faq-intro,.llpfaq-intro) { font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted); max-width: var(--lt-measure); margin: 0 0 12px; text-align: left; }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) { min-width: 0; max-height: none; }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-list,.llpfaq-list) { overflow: visible; padding-right: 0; display: grid; gap: 10px; max-width: none; }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-item,.llpfaq-item),
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-item,.llpfaq-item):nth-child(n) {
+  width: 100%;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-md);
+  box-shadow: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-item,.llpfaq-item):hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-item,.llpfaq-item):is(.active,.llpfaq-active) { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-question,.llpfaq-question) {
+  min-height: 52px; padding: 14px 20px; gap: 16px;
+  font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--lt-ink); text-align: left;
+}
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-item,.llpfaq-item):hover :is(.prp-faq-question,.llpfaq-question),
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-item,.llpfaq-item):is(.active,.llpfaq-active) :is(.prp-faq-question,.llpfaq-question) { color: var(--lt-ink); }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-question,.llpfaq-question):focus-visible { outline: 2px solid var(--lt-focus); outline-offset: -2px; border-radius: var(--lt-r-md); }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-icon,.llpfaq-icon) { font-size: 18px; color: var(--lt-muted); }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-item,.llpfaq-item):is(.active,.llpfaq-active) :is(.prp-faq-icon,.llpfaq-icon) { color: var(--lt-accent-text); }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-answer,.llpfaq-answer) { padding: 0 20px; }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-answer,.llpfaq-answer):is(.open,.llpfaq-open) { max-height: 4000px; padding-bottom: 18px; }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-answer,.llpfaq-answer),
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-answer,.llpfaq-answer) p,
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-answer,.llpfaq-answer) li { font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-answer,.llpfaq-answer) ul,
+html.theme-c :is(.prp-faq-right,.llpfaq-right) :is(.prp-faq-answer,.llpfaq-answer) ol { padding-left: 20px; margin: 6px 0; }
+@media (max-width: 900px) {
+  html.theme-c :is(.prp-faq-container,.llpfaq-container):has(> :is(.prp-faq-left,.llpfaq-left)) { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
+  html.theme-c :is(.prp-faq-left,.llpfaq-left) { position: static; }
+}
+
+/* ══ client logos — the two change-of-name pages ══
+   Same rules as the AddOurclints block of ref/service.css. */
+html.theme-c :is(.prp-clients-root,.llpoc-root) { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c :is(.prp-clients-container,.llpoc-container) { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; padding: 0; }
+html.theme-c :is(.prp-clients-title,.llpoc-title) {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: 0.01em; line-height: 1.1; color: var(--lt-ink);
+  text-align: center; margin: 0 0 36px;
+}
+html.theme-c :is(.prp-clients-carousel,.llpoc-carousel) { padding: 0 56px; }
+html.theme-c :is(.prp-clients-track,.llpoc-track) { gap: 18px; padding: 6px 2px 10px; }
+html.theme-c :is(.prp-clients-card,.llpoc-card):hover { transform: translateY(-3px); }
+html.theme-c :is(.prp-clients-logo,.llpoc-logo) {
+  margin: 0;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-md);
+  box-shadow: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+html.theme-c :is(.prp-clients-card,.llpoc-card):hover :is(.prp-clients-logo,.llpoc-logo) { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); }
+html.theme-c :is(.prp-clients-arrow,.llpoc-arrow) {
+  width: 44px; height: 44px; border-radius: 999px;
+  background: var(--lt-ink); color: var(--lt-on-ink);
+  border: 0; box-shadow: none;
+  transition: background 0.15s ease;
+}
+html.theme-c :is(.prp-clients-arrow,.llpoc-arrow):hover { background: var(--lt-accent-text); transform: translateY(-50%); }
+html.theme-c :is(.prp-clients-arrow,.llpoc-arrow):focus-visible { border-radius: 999px; box-shadow: none; }
+html.theme-c :is(.prp-clients-arrow-left,.llpoc-arrow-left) { left: 0; }
+html.theme-c :is(.prp-clients-arrow-right,.llpoc-arrow-right) { right: 0; }
+@media (max-width: 480px) {
+  html.theme-c :is(.prp-clients-carousel,.llpoc-carousel) { padding: 0 50px; }
+}
+
+/* ══ PAGES: the two change-of-name pages — the "Companies Act" note under the intro ══
+   (ChangetoCompanyCompanyTab, ChangetoLlpCompanyTab). Same rules as the
+   companies-act block of ref/service.css. */
+html.theme-c :is(.prp-pt-companies-act-section,.llpfull-companiesact-section) { background: var(--lt-canvas); padding: 0 0 var(--lt-section); }
+html.theme-c :is(.prp-pt-companies-act-container,.llpfull-companiesact-container) { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; }
+html.theme-c :is(.prp-pt-companies-act-card,.llpfull-companiesact-card) {
+  background: var(--lt-canvas-soft); border: 1px solid var(--lt-hairline);
+  border-radius: var(--lt-r-lg); box-shadow: none; padding: 24px;
+}
+html.theme-c :is(.prp-pt-companies-act-title,.llpfull-companiesact-title) { font-size: 1.125rem; font-weight: 500; color: var(--lt-ink); margin: 0 0 12px; }
+html.theme-c :is(.prp-pt-companies-act-card,.llpfull-companiesact-card) :is(.prp-pt-companies-act-text,.prp-pt-companies-act-point,.llpfull-companiesact-text,.llpfull-companiesact-point) {
+  font-size: 15px; line-height: 1.6; color: var(--lt-body); max-width: var(--lt-measure); text-align: left;
+}
+html.theme-c :is(.prp-pt-companies-act-point-label,.llpfull-companiesact-point-label) { color: var(--lt-accent-text); }
+
+/* ══ PAGE: Section 8 — the types section has a centred header of its own (Section8PvtTypes) ══ */
+html.theme-c .s8-types-header { text-align: left; margin: 0 0 40px; display: grid; gap: 14px; }
+html.theme-c .s8-types-header .s8-types-title { margin: 0; }
+html.theme-c .s8-types-header .s8-types-intro {
+  font-size: 1.05rem; line-height: 1.5; color: var(--lt-muted);
+  max-width: var(--lt-measure); margin: 0; text-align: left;
+}
+
+/* ══ PAGE: Public Limited — the popular plan (PublicltdRightPlan) ══
+   This copy marks no card as popular: all three badged cards carry the same
+   class, and only the Buy Now button of the popular one has a modifier. So the
+   green border and badge appear when that button is rendered (payments on). */
+html.theme-c .pub-plan-card:has(.pub-plan-button--popular),
+html.theme-c .pub-plan-card:has(.pub-plan-button--popular):hover {
+  border-color: var(--lt-accent); box-shadow: 0 0 0 1px var(--lt-accent), var(--lt-shadow);
+}
+html.theme-c .pub-plan-card:has(.pub-plan-button--popular) .pub-plan-banner-badge { background: var(--lt-accent); color: var(--lt-on-accent); }
+html.theme-c .pub-plan-card:has(.pub-plan-button--popular) .pub-plan-button { background: var(--lt-btn); color: var(--lt-on-btn); border-color: transparent; }
+html.theme-c .pub-plan-card:has(.pub-plan-button--popular) .pub-plan-button:hover { background: var(--lt-btn-hover); color: var(--lt-on-btn); border-color: transparent; }
+
+/* ══ PAGE: Trademark opposition — "the basics" pair of cards (TmoppZolvitPremium) ══ */
+html.theme-c .tmopp-basics-section { background: var(--lt-canvas); padding: var(--lt-section) 0; }
+html.theme-c .tmopp-basics-container { width: min(var(--lt-wrap), 100% - 32px); max-width: var(--lt-wrap); margin-inline: auto; padding: 0; }
+html.theme-c .tmopp-basics-title {
+  font-family: var(--lt-f-display) !important;
+  font-size: clamp(1.75rem, 3.4vw, 2.6rem); font-weight: var(--lt-d-weight);
+  letter-spacing: var(--lt-d-track); line-height: 1.1; color: var(--lt-ink);
+  text-align: left; text-wrap: balance; margin: 0 0 40px;
+}
+html.theme-c .tmopp-basics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
+html.theme-c .tmopp-basics-card {
+  display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px;
+  background: var(--lt-surface);
+  border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .tmopp-basics-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); }
+html.theme-c .tmopp-basics-label {
+  width: fit-content; padding: 0; background: none; border-radius: 0;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--lt-accent-text);
+}
+html.theme-c .tmopp-basics-heading { font-size: 1.125rem; font-weight: 500; line-height: 1.3; color: var(--lt-ink); margin: 0; text-align: left; }
+html.theme-c .tmopp-basics-card .tmopp-basics-text { font-size: 15px; line-height: 1.6; color: var(--lt-body); margin: 0; text-align: left; }
+@media (max-width: 640px) { html.theme-c .tmopp-basics-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ══ PAGE: Wind up a public limited company — the documents orbit (WindupPLCDocument) ══
+   The layout is kept (five discs around a centre); the rainbow fills become
+   white discs with the green hairline, the centre takes the dark gradient. The
+   class names are generic (`.doc-section`, `.line`), so every rule hangs on
+   the section that contains the orbit's centre. */
+html.theme-c .doc-section:has(.doc-center) { background: var(--lt-canvas); padding: var(--lt-section) 16px; }
+html.theme-c .doc-section:has(.doc-center) .doc-wrapper::before { background: var(--lt-accent); opacity: 0.3; }
+html.theme-c .doc-section:has(.doc-center) .line { background: linear-gradient(to bottom, rgba(22, 163, 74, 0.45), transparent); }
+html.theme-c .doc-section:has(.doc-center) .doc-center { background: var(--lt-dark-grad); color: var(--lt-on-ink); box-shadow: var(--lt-shadow); }
+html.theme-c .doc-section:has(.doc-center) .doc-center h2 { font-size: 20px; font-weight: 500; letter-spacing: 0.06em; color: var(--lt-on-ink); }
+html.theme-c .doc-section:has(.doc-center) .doc-card {
+  background: var(--lt-surface); color: var(--lt-body);
+  border: 1px solid var(--lt-hairline); box-shadow: var(--lt-shadow-md);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+html.theme-c .doc-section:has(.doc-center) .doc-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); }
+html.theme-c .doc-section:has(.doc-center) .doc-card h4 { font-size: 16px; font-weight: 500; line-height: 1.3; color: var(--lt-ink); }
+html.theme-c .doc-section:has(.doc-center) .doc-card p { font-size: 13px; line-height: 1.5; color: var(--lt-body); text-align: center; }
+
+/* ══ PAGE: Change of LLP name — the steps (ChangetoLlpProcess) ══
+   It shares the LLP page's `llpproc-*` names, so the timeline is already
+   restyled; only its connectors differ (`.llpproc-left` / `.llpproc-right`). */
+html.theme-c .llpproc-timeline-item.llpproc-left::after,
+html.theme-c .llpproc-timeline-item.llpproc-right::after {
+  background: repeating-linear-gradient(to right, var(--lt-hairline-strong), var(--lt-hairline-strong) 5px, transparent 5px, transparent 10px);
+}
+html.theme-c .llpproc-timeline-item.llpproc-left::before { border-left-color: var(--lt-hairline-strong); }
+html.theme-c .llpproc-timeline-item.llpproc-right::before { border-right-color: var(--lt-hairline-strong); }
+/* below the orbit's breakpoint the component stacks the discs as cards but
+   leaves their orbit offsets on, so they overlap and run off the screen (the
+   old design has this fault too): clear the offsets */
+@media (max-width: 992px) {
+  html.theme-c .doc-section:has(.doc-center) .doc-card {
+    top: auto; right: auto; bottom: auto; left: auto; transform: none;
+    width: 100%; max-width: 420px; border-radius: var(--lt-r-lg);
+  }
+}
