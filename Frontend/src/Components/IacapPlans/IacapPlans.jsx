@@ -89,7 +89,7 @@ const IacapPlans = () => {
                       </div>
                     )}
                     <div className="opcplan-name">{plan.name}</div>
-                    <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    {plan.oldPrice ? <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div> : null}
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
                     <div className="opcplan-meta">+ Govt fee, stamp duty &amp; GST extra</div>
                   </div>

@@ -113,7 +113,7 @@ const PricingSection = () => {
                 <div>
                   <div className="pub-plan-card-header">
                       <div className="pub-plan-name">{plan.name}</div>
-                    <div className="pub-plan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    {plan.oldPrice ? <div className="pub-plan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div> : null}
                     <div className="pub-plan-price">₹{plan.price.toLocaleString("en-IN")}</div>
                     <div className="pub-plan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>

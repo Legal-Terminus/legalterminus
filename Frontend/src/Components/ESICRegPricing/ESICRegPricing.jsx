@@ -91,7 +91,7 @@ const ESICRegPricing = () => {
                   <div>
                     <div className="plan-header">
                       <div className="plan-name">{plan.name}</div>
-                      <div className="plan-old-price">{plan.oldPrice}</div>
+                      {plan.oldPrice ? <div className="plan-old-price">{plan.oldPrice}</div> : null}
                       <div className="plan-price">
                         ₹{plan.price.toLocaleString("en-IN")}
                       </div>

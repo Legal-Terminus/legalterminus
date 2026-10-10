@@ -88,7 +88,7 @@ const LLPPlanandPrice = () => {
                       </div>
                     )}
                     <div className="LLP-Plan--name">{plan.name}</div>
-                    <div className="LLP-Plan--old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    {plan.oldPrice ? <div className="LLP-Plan--old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div> : null}
                     <div className="LLP-Plan--price">₹{plan.price.toLocaleString("en-IN")}</div>
                     <div className="LLP-Plan--meta">+ Govt. fees &amp; GST extra</div>
                   </div>

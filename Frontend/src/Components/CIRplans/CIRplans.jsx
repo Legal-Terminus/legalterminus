@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./CIRplans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import CutPrice from "../CutPrice/CutPrice";
 import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 
@@ -42,6 +43,7 @@ const PricingSection = () => {
               <div className="pl-header">
                 <div className="pl-name">Elemental</div>
                 <div className="pl-old-price">₹5,999</div>
+                <CutPrice plan={PLANS[0]} />
                 <div className="pl-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="pl-meta">Excluding gov fee</div>
               </div>
@@ -79,6 +81,7 @@ const PricingSection = () => {
               <div className="pl-header">
                 <div className="pl-name">Enriched</div>
                 <div className="pl-old-price">₹7,999</div>
+                <CutPrice plan={PLANS[1]} />
                 <div className="pl-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="pl-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
@@ -110,6 +113,7 @@ const PricingSection = () => {
               <div className="pl-header">
                 <div className="pl-name">Supreme</div>
                 <div className="pl-old-price">₹29,999</div>
+                <CutPrice plan={PLANS[2]} />
                 <div className="pl-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="pl-meta">Excluding gov fee</div>
               </div>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./CICplan.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import CutPrice from "../CutPrice/CutPrice";
 import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 
@@ -39,6 +40,7 @@ const PricingSection = () => {
             <div>
               <div className="cic-header">
                 <div className="cic-name">Elemental</div>
+                <CutPrice plan={PLANS[0]} />
                 <div className="cic-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="cic-meta">Including gov fee</div>
               </div>

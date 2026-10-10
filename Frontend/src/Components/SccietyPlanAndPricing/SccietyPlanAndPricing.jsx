@@ -89,7 +89,7 @@ const SocietyPlanAndPricing = () => {
                       </div>
                     )}
                     <div className="Society-plan-name">{plan.name}</div>
-                    <div className="Society-plan-old-price">{plan.oldPrice}</div>
+                    {plan.oldPrice ? <div className="Society-plan-old-price">{plan.oldPrice}</div> : null}
                     <div className="Society-plan-price">{plan.price}</div>
                     <div className="Society-plan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>

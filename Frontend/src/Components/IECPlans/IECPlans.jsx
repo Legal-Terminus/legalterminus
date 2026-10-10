@@ -86,7 +86,7 @@ const IECPlans = () => {
                       <div className="iecplan-badge">{plan.badge}</div>
                     )}
                     <div className="iecplan-name">{plan.name}</div>
-                    <div className="iecplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    {plan.oldPrice ? <div className="iecplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div> : null}
                     <div className="iecplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
                     <div className="iecplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>

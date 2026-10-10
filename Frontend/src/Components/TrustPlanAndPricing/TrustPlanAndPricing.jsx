@@ -91,7 +91,7 @@ const TrustPlanAndPricing = () => {
                       </div>
                     )}
                     <div className="trust-plan-name">{plan.name}</div>
-                    <div className="trust-plan-old-price">{plan.oldPrice}</div>
+                    {plan.oldPrice ? <div className="trust-plan-old-price">{plan.oldPrice}</div> : null}
                     <div className="trust-plan-price">{plan.price}</div>
                     <div className="trust-plan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>

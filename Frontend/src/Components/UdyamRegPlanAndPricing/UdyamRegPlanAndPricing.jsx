@@ -85,7 +85,7 @@ const UdyamRegPlanAndPricing = () => {
                       </div>
                     )}
                     <div className="udyam-plan-name">{plan.name}</div>
-                    <div className="udyam-plan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    {plan.oldPrice ? <div className="udyam-plan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div> : null}
                     <div className="udyam-plan-price">₹{plan.price.toLocaleString("en-IN")}</div>
                     <div className="udyam-plan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>

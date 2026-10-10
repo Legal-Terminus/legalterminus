@@ -94,7 +94,7 @@ const TradeLicensePlans = () => {
                       </div>
                     )}
                     <div className="tradeplan-name">{plan.name}</div>
-                    <div className="tradeplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div>
+                    {plan.oldPrice ? <div className="tradeplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div> : null}
                     <div className="tradeplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
                     <div className="tradeplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>

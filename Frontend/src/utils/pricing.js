@@ -54,6 +54,7 @@ function like(defaultValue, amount) {
  * Put the catalogue's prices onto a component's default plans.
  *
  * - No catalogue, or the product is not in it: the defaults, unchanged.
+ * - Price AND cut price both come from the catalogue.
  * - A plan the catalogue does not list is not on sale and is left out — unless
  *   that would leave no plan at all, in which case the defaults stand.
  */
@@ -64,9 +65,13 @@ export function withLivePrices(defaults, product) {
     .filter((d) => byId.has(d.id))
     .map((d) => {
       const live = byId.get(d.id);
-      const next = { ...d, price: like(d.price, live.price) };
-      if (live.oldPrice && d.oldPrice !== undefined) next.oldPrice = like(d.oldPrice, live.oldPrice);
-      return next;
+      // The cut price follows the catalogue too — added where the card's
+      // default had none, and removed when the firm clears it. (It used to be
+      // applied only where the default already carried one, so a cut price
+      // set in the portal never reached most cards.) Only a higher figure is
+      // a cut price; anything else is not shown.
+      const cut = live.oldPrice > live.price ? live.oldPrice : null;
+      return { ...d, price: like(d.price, live.price), oldPrice: cut ? like(d.oldPrice ?? d.price, cut) : null };
     });
   return plans.length ? plans : defaults;
 }

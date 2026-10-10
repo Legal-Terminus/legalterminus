@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./ChangetoLlpPlanandPrice.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import CutPrice from "../CutPrice/CutPrice";
 import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 
@@ -41,6 +42,7 @@ const PricingSection = () => {
             <div>
               <div className="llpprice-plan-header">
                 <div className="llpprice-plan-name">Elemental</div>
+                <CutPrice plan={PLANS[0]} />
                 <div className="llpprice-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="llpprice-plan-meta">Including gov fee</div>
               </div>
@@ -74,6 +76,7 @@ const PricingSection = () => {
             <div>
               <div className="llpprice-plan-header">
                 <div className="llpprice-plan-name">Enriched</div>
+                <CutPrice plan={PLANS[1]} />
                 <div className="llpprice-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="llpprice-plan-meta">
                   Including gov fee <span className="llpprice-popular">(Popular)</span>
@@ -103,6 +106,7 @@ const PricingSection = () => {
             <div>
               <div className="llpprice-plan-header">
                 <div className="llpprice-plan-name">Supreme</div>
+                <CutPrice plan={PLANS[2]} />
                 <div className="llpprice-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="llpprice-plan-meta">Including gov fee</div>
               </div>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./CIOplans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import CutPrice from "../CutPrice/CutPrice";
 import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 
@@ -42,6 +43,7 @@ const PricingSection = () => {
               <div className="po-header">
                 <div className="po-name">Elemental</div>
                 <div className="po-old-price">₹5,999</div>
+                <CutPrice plan={PLANS[0]} />
                 <div className="po-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="po-meta">Excluding gov fee</div>
               </div>
@@ -79,6 +81,7 @@ const PricingSection = () => {
               <div className="po-header">
                 <div className="po-name">Enriched</div>
                 <div className="po-old-price">₹7,999</div>
+                <CutPrice plan={PLANS[1]} />
                 <div className="po-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="po-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
@@ -110,6 +113,7 @@ const PricingSection = () => {
               <div className="po-header">
                 <div className="po-name">Supreme</div>
                 <div className="po-old-price">₹29,999</div>
+                <CutPrice plan={PLANS[2]} />
                 <div className="po-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="po-meta">Excluding gov fee</div>
               </div>

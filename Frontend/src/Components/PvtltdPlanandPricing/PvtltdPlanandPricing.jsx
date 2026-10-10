@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./PvtltdPlanandPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import CutPrice from "../CutPrice/CutPrice";
 import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 
@@ -94,6 +95,7 @@ const PricingSection = () => {
                 <div className="plan-header">
                   <div className="plan-name">Elemental</div>
                   <div className="plan-old-price">₹7,999</div>
+                  <CutPrice plan={PLANS[0]} />
                   <div className="plan-price">₹{PLANS[0].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
@@ -130,6 +132,7 @@ const PricingSection = () => {
                 <div className="plan-header">
                   <div className="plan-name">Enriched</div>
                   <div className="plan-old-price">₹13,999</div>
+                  <CutPrice plan={PLANS[1]} />
                   <div className="plan-price">₹{PLANS[1].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
@@ -161,6 +164,7 @@ const PricingSection = () => {
                 <div className="plan-header">
                   <div className="plan-name">Supreme</div>
                   <div className="plan-old-price">₹20,999</div>
+                  <CutPrice plan={PLANS[2]} />
                   <div className="plan-price">₹{PLANS[2].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
@@ -193,6 +197,7 @@ const PricingSection = () => {
                 <div className="plan-header">
                   <div className="plan-name">Supreme Plus</div>
                   <div className="plan-old-price">₹37,499</div>
+                  <CutPrice plan={PLANS[3]} />
                   <div className="plan-price">₹{PLANS[3].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>

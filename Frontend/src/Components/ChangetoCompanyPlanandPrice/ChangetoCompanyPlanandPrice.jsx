@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./ChangetoCompanyPlanandPrice.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import CutPrice from "../CutPrice/CutPrice";
 import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 
@@ -42,6 +43,7 @@ const PricingSection = () => {
               <div className="prp-price-plan-header">
                 <div className="prp-price-plan-name">Elemental</div>
                 <div className="prp-price-old">₹5,999</div>
+                <CutPrice plan={PLANS[0]} />
                 <div className="prp-price-current">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="prp-price-meta">Excluding gov fee</div>
               </div>
@@ -79,6 +81,7 @@ const PricingSection = () => {
               <div className="prp-price-plan-header">
                 <div className="prp-price-plan-name">Enriched</div>
                 <div className="prp-price-old">₹7,999</div>
+                <CutPrice plan={PLANS[1]} />
                 <div className="prp-price-current">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="prp-price-meta">
                   Excluding gov fee <span className="prp-price-popular">(Popular)</span>
@@ -110,6 +113,7 @@ const PricingSection = () => {
               <div className="prp-price-plan-header">
                 <div className="prp-price-plan-name">Supreme</div>
                 <div className="prp-price-old">₹29,999</div>
+                <CutPrice plan={PLANS[2]} />
                 <div className="prp-price-current">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="prp-price-meta">Excluding gov fee</div>
               </div>

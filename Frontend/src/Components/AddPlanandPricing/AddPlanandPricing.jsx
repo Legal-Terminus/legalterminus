@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./AddPlanandPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import CutPrice from "../CutPrice/CutPrice";
 import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 
@@ -41,6 +42,7 @@ const AddPlanandPricing = () => {
             <div>
               <div className="Add-pp-header">
                 <div className="Add-pp-name">Elemental</div>
+                <CutPrice plan={PLANS[0]} />
                 <div className="Add-pp-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="Add-pp-meta">Including gov fee</div>
               </div>
@@ -67,6 +69,7 @@ const AddPlanandPricing = () => {
             <div>
               <div className="Add-pp-header">
                 <div className="Add-pp-name">Enriched</div>
+                <CutPrice plan={PLANS[1]} />
                 <div className="Add-pp-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="Add-pp-meta">
                   Including gov fee <span className="popular">(Popular)</span>
@@ -97,6 +100,7 @@ const AddPlanandPricing = () => {
             <div>
               <div className="Add-pp-header">
                 <div className="Add-pp-name">Supreme</div>
+                <CutPrice plan={PLANS[2]} />
                 <div className="Add-pp-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="Add-pp-meta">Including gov fee</div>
               </div>

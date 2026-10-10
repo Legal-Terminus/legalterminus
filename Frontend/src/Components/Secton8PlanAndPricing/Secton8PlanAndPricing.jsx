@@ -103,7 +103,7 @@ const Section8PlanAndPricing = () => {
                 <div>
                   <div className="s8-plan-header">
                     <div className="s8-plan-name">{plan.name}</div>
-                    <div className="s8-plan-old-price">{plan.oldPrice}</div>
+                    {plan.oldPrice ? <div className="s8-plan-old-price">{plan.oldPrice}</div> : null}
                     <div className="s8-plan-price">
                       Rs.{plan.price.toLocaleString("en-IN")}
                     </div>

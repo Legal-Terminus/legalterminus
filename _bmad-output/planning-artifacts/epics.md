@@ -3352,6 +3352,12 @@ payment integration cannot be developed against live customers.
 > decline Razorpay keeps its window open for another attempt, so the checkout now waits for the
 > customer to pay or close it instead of showing its own "declined" screen on top.
 >
+> **Cut prices now reach every card (2026-10-10, from review on QA):** a cut price set in the
+> portal for "Add or Remove a Director" never appeared on the website. Two causes: the website
+> applied a catalogue cut price only where the card already had one built in, and nine cards had
+> no place to show one at all. The cut price now follows the catalogue on every card — shown when
+> it is higher than the price, absent when the firm clears it — and the nine cards draw it.
+>
 > **Order details for staff (2026-10-08, from review on QA):** a card payment was made on QA and
 > the Website Orders screen showed only a one-line summary. Each order now opens to its full
 > record: the Razorpay payment and order references (what the firm quotes to Razorpay or matches
