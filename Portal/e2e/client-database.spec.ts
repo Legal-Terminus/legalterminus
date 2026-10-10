@@ -159,6 +159,19 @@ test.describe.serial('LT #205 / #206 — client database and group fee report', 
     await expect(page.locator(`a[href$="/tasks/${taskId}"]`)).toHaveCount(0);
   });
 
+  // #208 — the report the firm named: open a matter from it, press Back, and
+  // land on the same report with the group still chosen (not on All Matters).
+  test('#208: fee report → matter → Back returns to the report with its filter', async ({ adminPage: page }) => {
+    await page.goto('reports/client-group-fees');
+    await page.getByLabel('Group').selectOption(GROUP);
+    await page.locator(`a[href$="/tasks/${taskId}"]:visible`).click();
+    await expect(page).toHaveURL(new RegExp(`/tasks/${taskId}`));
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(page).toHaveURL(/\/reports\/client-group-fees\?.*group=/);
+    await expect(page.getByLabel('Group')).toHaveValue(GROUP);
+    await expect(page.locator(`a[href$="/tasks/${taskId}"]:visible`)).toBeVisible();
+  });
+
   test('#206: a manager neither sees the report on Reports nor can open it', async ({ managerPage: page }) => {
     await page.goto('reports');
     await expect(page.getByRole('link', { name: /Client Database/ })).toBeVisible();
