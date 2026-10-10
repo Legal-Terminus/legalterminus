@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronsRight, Maximize2, X } from 'lucide-react';
 import type { AnyStateMachine } from 'xstate';
-import { clientTouchpointCount } from './StepAutomationSummary';
+import { clientTouchpointCount } from './automationRows';
 import type { WorkflowStepDef } from '../../api/workflowDefinitions';
 import FieldLabel from '../common/FieldLabel';
 import WorkflowDiagram from './WorkflowDiagram';

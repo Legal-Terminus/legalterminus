@@ -80,17 +80,18 @@ export interface AppRoute {
   nav?: RouteNav;     // omit for routes that aren't nav links (edit forms, detail pages)
 }
 
-// Derived from the role registry (not hardcoded) so adding a role — e.g. #168's
-// `professional` — reaches the shared pages without editing every route.
-const ALL_ROLES: Role[] = ALL_ROLE_KEYS;
+// `ALL_ROLE_KEYS` comes from the role registry (not hardcoded) so adding a role —
+// e.g. #168's `professional` — reaches the shared pages without editing every
+// route. It is used directly: a local upper-case alias in this file is read by
+// the fast-refresh lint rule as a component.
 
 export const APP_ROUTES: AppRoute[] = [
   // ── Shared across roles — one path, view adapts to role ──
-  { path: '/dashboard', element: <DashboardPage />, roles: ALL_ROLES, nav: { label: 'Dashboard', mobileLabel: 'Home', icon: LayoutDashboard, mobile: true, order: -2 } },
-  { path: '/tasks',     element: <TasksPage />,     roles: ALL_ROLES, nav: { label: 'Matters', icon: CheckSquare, mobile: true, order: -1 } },
+  { path: '/dashboard', element: <DashboardPage />, roles: ALL_ROLE_KEYS, nav: { label: 'Dashboard', mobileLabel: 'Home', icon: LayoutDashboard, mobile: true, order: -2 } },
+  { path: '/tasks',     element: <TasksPage />,     roles: ALL_ROLE_KEYS, nav: { label: 'Matters', icon: CheckSquare, mobile: true, order: -1 } },
   // Cross-matter step worklist for staff (clients don't perform steps).
   { path: '/my-tasks',  element: <MyTasksPage />,   roles: ['admin', 'manager', 'team_member'], nav: { label: 'My Tasks', icon: Inbox, mobile: true, order: 0 } },
-  { path: '/tasks/:taskId', element: <TaskDetail />, roles: ALL_ROLES },
+  { path: '/tasks/:taskId', element: <TaskDetail />, roles: ALL_ROLE_KEYS },
 
   // ── Admin + Manager (per BMAD E08-S01 reports, E09-S02 user/client mgmt) ──
   { path: '/users',             element: <UsersPage />,     roles: ['admin', 'manager'], nav: { label: 'Users', icon: Users, mobile: true } },
@@ -142,12 +143,12 @@ export const APP_ROUTES: AppRoute[] = [
   //    marketing site's /my-profile, which is now a redirect into the portal) ──
   // #107/#108/#109: admin-only Settings — Email Templates.
   { path: '/settings/email-templates', element: <EmailTemplatesPage />, roles: ['admin'], nav: { label: 'Settings', icon: Settings, order: 9 } },
-  { path: '/profile', element: <ProfilePage />, roles: ALL_ROLES, nav: { label: 'My Profile', icon: User, order: 10 } },
+  { path: '/profile', element: <ProfilePage />, roles: ALL_ROLE_KEYS, nav: { label: 'My Profile', icon: User, order: 10 } },
   // "My Orders" removed from the sidebar for now (all roles) — the route stays
   // reachable by URL so nothing 404s, but it no longer shows as a nav item.
-  { path: '/orders',  element: <OrdersPage />,  roles: ALL_ROLES },
+  { path: '/orders',  element: <OrdersPage />,  roles: ALL_ROLE_KEYS },
   // Full notifications list (E07-S01) — reached from the topbar bell; no sidebar entry.
-  { path: '/notifications', element: <NotificationsPage />, roles: ALL_ROLES },
+  { path: '/notifications', element: <NotificationsPage />, roles: ALL_ROLE_KEYS },
 
   // ── Shared (multi-role) — reached via Reports tile / dashboard tile; no sidebar entry ──
   { path: '/reports/leads', element: <ContactLeadsReport />, roles: ['admin', 'manager', 'team_member'] },

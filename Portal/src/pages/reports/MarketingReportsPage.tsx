@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Lock, Eye, Settings2, Plus, Loader2 } from 'lucide-react';
@@ -36,8 +36,11 @@ export default function MarketingReportsPage() {
     () => ORDER.filter((k) => access?.levels[k]).map((k) => ({ key: k, label: access!.sections.find((s) => s.key === k)!.label })),
     [access],
   );
-  const [section, setSection] = useState<SectionKey | ''>('');
-  useEffect(() => { if (!section && available.length) setSection(available[0].key); }, [available, section]);
+  // The report shown is the one picked, or — until someone picks — the first
+  // one this person may see. Derived, so there is no default to copy into state
+  // once the access list loads.
+  const [picked, setSection] = useState<SectionKey | ''>('');
+  const section: SectionKey | '' = picked || available[0]?.key || '';
   const [month, setMonth] = useState(thisMonth());
 
   return (
@@ -260,7 +263,15 @@ function MobileDayForm({ view, groups, onSave, saving }: {
   const [date, setDate] = useState(editableDays[editableDays.length - 1]?.date ?? view.rows[0].date);
   const row = view.rows.find((r) => r.date === date) ?? view.rows[0];
   const [draft, setDraft] = useState<DayValues>(row.values ?? {});
-  useEffect(() => { setDraft(row.values ?? {}); }, [row]);
+  // Picking another day, or a save that refreshes this one, hands us a new row:
+  // start the draft again from it. Done while rendering (React re-renders at
+  // once, before anything is painted) rather than in an effect, which would
+  // show the previous day's figures for a frame first.
+  const [draftRow, setDraftRow] = useState(row);
+  if (draftRow !== row) {
+    setDraftRow(row);
+    setDraft(row.values ?? {});
+  }
 
   return (
     <div className="md:hidden card p-4 space-y-3">

@@ -48,6 +48,11 @@ async function registerSession(name: string) {
   }
 }
 
+/** The address a sign-in link was requested for, if this is the same browser. */
+function savedSignInEmail(): string | null {
+  try { return window.localStorage.getItem(EMAIL_FOR_SIGN_IN_KEY); } catch { return null; /* private mode */ }
+}
+
 type Phase =
   | { kind: 'checking' }
   | { kind: 'password'; email: string }
@@ -80,7 +85,6 @@ export default function AccountActionPage() {
   const oobCode = params.get('oobCode') ?? '';
   const isSetup = params.get('intent') === 'setup';
 
-  const [phase, setPhase] = useState<Phase>({ kind: 'checking' });
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [show, setShow] = useState(false);
@@ -105,22 +109,47 @@ export default function AccountActionPage() {
     return url.toString();
   }, [oobCode]);
 
-  const finishEmailLink = async (address: string) => {
-    setPhase({ kind: 'working' });
+  // Everything that can be told from the link alone is decided here, before the
+  // first render — so a broken link shows its message at once instead of
+  // flashing "Checking your link…" first. Only the network calls are left for
+  // the effect below.
+  const [phase, setPhase] = useState<Phase>(() => {
+    if (!oobCode) return { kind: 'failed', message: 'This link is incomplete. Copy the whole link from the email, or ask for a new one.' };
+    if (mode === 'resetPassword') return { kind: 'checking' };
+    if (mode === 'signIn') {
+      if (!isSignInWithEmailLink(auth, signInUrl)) return { kind: 'failed', message: friendly({ code: 'auth/invalid-action-code' }, mode) };
+      return savedSignInEmail() ? { kind: 'working' } : { kind: 'confirm-email' };
+    }
+    return { kind: 'failed', message: 'This link is not one we recognise. Ask for a new one from the sign-in page.' };
+  });
+
+  /**
+   * Exchange the emailed link for a session and report what the page should
+   * show next. It sets no state itself, so it can be started from the mount
+   * effect as well as from the "confirm your email" form.
+   */
+  const exchangeEmailLink = async (address: string): Promise<{ phase: Phase; formError?: string }> => {
     try {
       await signInWithEmailLink(auth, address.trim().toLowerCase(), signInUrl);
       await registerSession(address);
       try { window.localStorage.removeItem(EMAIL_FOR_SIGN_IN_KEY); } catch { /* private mode */ }
-      setPhase({ kind: 'done' });
+      return { phase: { kind: 'done' } };
     } catch (err) {
       const code = (err as { code?: string })?.code;
       if (code === 'auth/invalid-email') {
-        setFormError(friendly(err, 'signIn'));
-        setPhase({ kind: 'confirm-email' });
-        return;
+        return { phase: { kind: 'confirm-email' }, formError: friendly(err, 'signIn') };
       }
-      setPhase({ kind: 'failed', message: friendly(err, 'signIn') });
+      return { phase: { kind: 'failed', message: friendly(err, 'signIn') } };
     }
+  };
+  const showOutcome = (outcome: { phase: Phase; formError?: string }) => {
+    if (outcome.formError) setFormError(outcome.formError);
+    setPhase(outcome.phase);
+  };
+
+  const finishEmailLink = async (address: string) => {
+    setPhase({ kind: 'working' });
+    showOutcome(await exchangeEmailLink(address));
   };
 
   useEffect(() => {
@@ -128,28 +157,20 @@ export default function AccountActionPage() {
     if (started.current) return;
     started.current = true;
 
-    if (!oobCode) {
-      setPhase({ kind: 'failed', message: 'This link is incomplete. Copy the whole link from the email, or ask for a new one.' });
-      return;
-    }
+    if (!oobCode) return;
     if (mode === 'resetPassword') {
       verifyPasswordResetCode(auth, oobCode)
         .then((address) => setPhase({ kind: 'password', email: address }))
         .catch((err) => setPhase({ kind: 'failed', message: friendly(err, mode) }));
       return;
     }
-    if (mode === 'signIn') {
-      if (!isSignInWithEmailLink(auth, signInUrl)) {
-        setPhase({ kind: 'failed', message: friendly({ code: 'auth/invalid-action-code' }, mode) });
-        return;
-      }
-      let saved: string | null = null;
-      try { saved = window.localStorage.getItem(EMAIL_FOR_SIGN_IN_KEY); } catch { /* private mode */ }
-      if (saved) void finishEmailLink(saved);
-      else setPhase({ kind: 'confirm-email' });
-      return;
+    // Same device the link was requested on: the address was remembered, so
+    // sign in without asking for it again. (Otherwise the page is already
+    // showing the "confirm your email" form.)
+    if (mode === 'signIn' && isSignInWithEmailLink(auth, signInUrl)) {
+      const saved = savedSignInEmail();
+      if (saved) void exchangeEmailLink(saved).then(showOutcome);
     }
-    setPhase({ kind: 'failed', message: 'This link is not one we recognise. Ask for a new one from the sign-in page.' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

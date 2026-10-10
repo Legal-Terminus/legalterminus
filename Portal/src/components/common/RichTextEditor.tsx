@@ -5,7 +5,7 @@ import { Link } from '@tiptap/extension-link';
 import { TextStyle, FontSize } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import { Highlight } from '@tiptap/extension-highlight';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import {
   Bold, Italic, Strikethrough, List, ListOrdered, Table as TableIcon, Undo2, Redo2,
   Baseline, Highlighter, Type,
@@ -36,7 +36,7 @@ import {
 export const COMMENT_WORD_LIMIT = 1000;
 
 /** Words in a rich-text value, counted on the PLAIN text (markup isn't content). */
-export function countWords(text: string) {
+function countWords(text: string) {
   const t = text.replace(/\s+/g, ' ').trim();
   return t ? t.split(' ').length : 0;
 }
@@ -66,12 +66,11 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
   const matchesRef = useRef<MentionCandidate[]>([]);
   const activeRef = useRef(0);
   const pickRef = useRef<(c: MentionCandidate) => void>(() => {});
-  // The editor binds its callbacks ONCE, and the list usually arrives after it
-  // mounts — so the callbacks read the list through a ref, never the prop.
-  const mentionsRef = useRef<MentionCandidate[] | undefined>(mentions);
-  mentionsRef.current = mentions;
+  // Records the "@query" under the caret whether or not there is anyone to
+  // suggest yet. The colleague list usually arrives AFTER the editor mounts;
+  // because the query is already in state, the suggestions appear the moment
+  // the list does (`matches` below is derived from both) with nothing to re-run.
   const detectMention = (ed: Editor) => {
-    if (!mentionsRef.current?.length) return setMention(null);
     const { $from, from, to } = ed.state.selection;
     if (from !== to) return setMention(null);
     const before = $from.parent.textBetween(Math.max(0, $from.parentOffset - 60), $from.parentOffset, undefined, ' ');
@@ -149,13 +148,6 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
 
   useEffect(() => { editor?.setEditable(!disabled); }, [disabled, editor]);
   useEffect(() => { editorRef.current = editor ?? null; }, [editor]);
-  // The colleague list loads after the editor mounts. Someone who types "@"
-  // before it arrives saw nothing, and nothing re-checked once it did.
-  useEffect(() => {
-    if (editor && mentions?.length) detectMention(editor);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mentions, editor]);
-
   const q = mention?.query.toLowerCase() ?? '';
   const matches = mention && mentions
     ? mentions.filter((c) => c.name.toLowerCase().includes(q) || c.email.includes(q))
@@ -166,18 +158,23 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
     ed.chain().focus().deleteRange({ from: mention.from, to: ed.state.selection.from }).insertContent(`@${c.email} `).run();
     setMention(null);
   };
-  mentionRef.current = mention;
-  matchesRef.current = matches;
-  activeRef.current = Math.min(active, Math.max(0, matches.length - 1));
+  const activeIndex = Math.min(active, Math.max(0, matches.length - 1));
+  // The editor binds handleKeyDown ONCE, so it reads the live values through
+  // refs. They are written after each render commits — a key press can only
+  // arrive after that — never during the render itself.
+  useLayoutEffect(() => {
+    mentionRef.current = mention;
+    matchesRef.current = matches;
+    activeRef.current = activeIndex;
+    pickRef.current = pick;
+  });
   // The list shows the WHOLE team and scrolls (it used to stop at six names, so
   // anyone later in the alphabet could not be found without typing). Keep the
   // keyboard-highlighted row in view as ↑/↓ moves through it.
   const listRef = useRef<HTMLUListElement | null>(null);
-  const activeIndex = activeRef.current;
   useEffect(() => {
     listRef.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
   }, [activeIndex, matches.length]);
-  pickRef.current = pick;
 
   if (!editor) return null;
 
@@ -189,10 +186,10 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
       {matches.length > 0 && (
         <ul ref={listRef} role="listbox" aria-label="Mention a colleague" className="mx-2 mb-2 max-h-60 overflow-y-auto rounded-lg border border-hairline bg-white shadow-card">
           {matches.map((c, i) => (
-            <li key={c.email} role="option" aria-selected={i === activeRef.current}>
+            <li key={c.email} role="option" aria-selected={i === activeIndex}>
               <button type="button"
                 onMouseDown={(e) => { e.preventDefault(); pick(c); }}
-                className={`w-full text-left px-3 py-2.5 text-sm flex flex-col ${i === activeRef.current ? 'bg-surface-soft' : 'hover:bg-surface-soft'}`}>
+                className={`w-full text-left px-3 py-2.5 text-sm flex flex-col ${i === activeIndex ? 'bg-surface-soft' : 'hover:bg-surface-soft'}`}>
                 <span className="font-medium text-ink">{c.name}</span>
                 <span className="text-xs text-ink-muted">{c.email}</span>
               </button>

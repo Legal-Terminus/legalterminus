@@ -1,7 +1,7 @@
 import { Plus, Trash2 } from 'lucide-react';
 import CollapsibleSection from '../common/CollapsibleSection';
 import { outcomeColor } from '../../workflows/machineToGraph';
-import { stepOptionLabel } from './stepEditorShared';
+import { stepOptionLabel } from './stepEditorVocab';
 import { inputCls, OUTCOME_TYPES } from './stepEditorVocab';
 import type { PhaseDef, StepDescription, WorkflowStepDef } from '../../api/workflowDefinitions';
 

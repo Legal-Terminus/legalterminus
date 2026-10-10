@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { X, Search, Plus, AlertCircle, Loader2 } from 'lucide-react';
@@ -33,7 +33,11 @@ export default function CreateMatterModal({ onClose, initialClientUid }: {
   const [paymentDescription, setPaymentDescription] = useState(''); // #147
   const [professionalUid, setProfessionalUid] = useState(''); // #85
   const [recurrence, setRecurrence] = useState<'' | 'monthly' | 'quarterly'>(''); // #167
-  const [organisation, setOrganisation] = useState(''); // #104
+  // #104: the matter's organisation follows the chosen client's profile until
+  // staff type in the box (a client may have several orgs); from then on it is
+  // whatever they typed. `organisation` (below) is that derived value — there
+  // is no second copy to keep in step.
+  const [typedOrganisation, setOrganisation] = useState('');
   const [orgEdited, setOrgEdited] = useState(false);
   const [ccEmails, setCcEmails] = useState(''); // #149
   const [error, setError] = useState('');
@@ -59,6 +63,8 @@ export default function CreateMatterModal({ onClose, initialClientUid }: {
         : a.role === 'client' ? -1 : 1)),
     [users],
   );
+  const selectedClient = clients.find((c) => c.uid === clientUid);
+  const organisation = orgEdited ? typedOrganisation : (selectedClient?.organisation ?? '');
   // #85/#168: the matter's Professional — a staff member OR a `professional`
   // account. Picking a `professional` account also grants that person view-only
   // portal access to THIS matter (and no other). Never a client.
@@ -143,16 +149,7 @@ export default function CreateMatterModal({ onClose, initialClientUid }: {
     create.mutate();
   }
 
-  const selectedClient = clients.find((c) => c.uid === clientUid);
-  const selectedClientOrg = selectedClient?.organisation ?? '';
 
-  // #104: prefill the matter's organisation from the chosen client's profile —
-  // but let staff override it (a client may have several orgs). Don't clobber a
-  // value the user has already typed. Depend on the ORG STRING (stable), not the
-  // client object (a new reference each render → would loop).
-  useEffect(() => {
-    if (!orgEdited) setOrganisation(selectedClientOrg);
-  }, [selectedClientOrg, orgEdited]);
 
   return (
     <div

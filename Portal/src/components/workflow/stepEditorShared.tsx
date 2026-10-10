@@ -1,6 +1,6 @@
 import { cloneElement, isValidElement, useId } from 'react';
 import FieldLabel from '../common/FieldLabel';
-import { inputCls } from './stepEditorVocab';
+import { inputCls, stepOptionLabel } from './stepEditorVocab';
 import type { WorkflowStepDef } from '../../api/workflowDefinitions';
 
 /**
@@ -39,16 +39,6 @@ export function StepNumberSelect({ value, steps, onChange, label, hint }: {
       </select>
     </LabeledField>
   );
-}
-
-/**
- * Story 28.2 (S28b): step pickers show the ENGINE step number alongside the
- * title. Titles alone cannot disambiguate the near-duplicates real workflows
- * carry ("Resubmission — Approval" vs "Resubmission — Preparation of document"),
- * and the number shown here is the one transitions actually route to.
- */
-export function stepOptionLabel(s: WorkflowStepDef) {
-  return `${s.stepNumber} · ${s.title || 'Untitled step'}`;
 }
 
 export function WhatHappensNext({ children }: { children: React.ReactNode }) {

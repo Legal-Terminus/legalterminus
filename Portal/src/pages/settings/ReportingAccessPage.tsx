@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ShieldCheck } from 'lucide-react';
 import { getReportingAccess, putReportingAccess, type AccessTable, type SectionKey } from '../../api/marketing';
@@ -15,7 +15,14 @@ export default function ReportingAccessPage() {
   const qc = useQueryClient();
   const { data, isLoading, isError } = useQuery({ queryKey: ['reporting-access'], queryFn: getReportingAccess });
   const [grants, setGrants] = useState<AccessTable['grants'] | null>(null);
-  useEffect(() => { if (data) setGrants(data.grants); }, [data]);
+  // Start the editable copy from the server's table when it loads, and again
+  // after a save refetches it. Done while rendering rather than in an effect,
+  // so the page never paints once with the previous copy.
+  const [seededFrom, setSeededFrom] = useState<typeof data>(undefined);
+  if (data && data !== seededFrom) {
+    setSeededFrom(data);
+    setGrants(data.grants);
+  }
 
   const save = useMutation({
     mutationFn: () => putReportingAccess(grants!),

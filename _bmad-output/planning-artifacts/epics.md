@@ -4231,6 +4231,43 @@ On `main`, so on QA; not in production until the next release tag.
 - Production `npm audit` after: backend 0 critical / 5 high (was 1 / 19),
   Portal 0 / 5.
 
+### Portal lint: 28 errors to none (2026-10-10) ✅ Completed
+
+`npm run lint` in `Portal/` reported 28 errors, and no workflow runs it, so a new one
+would have gone unnoticed among them. It now passes with no errors (two warnings remain — the table and virtual-list libraries opt
+out of the React compiler, which is theirs to fix). No screen was redesigned; three
+behaviours improved as a side effect and are listed first.
+
+- **Forms no longer paint empty and then fill in.** Profile, Email templates,
+  Reporting access, the marketing day form and a matter's comment box each copied
+  server data into form state from an effect — one render late. They now take it
+  while rendering, so the first paint is the right one.
+- **A broken account link says so at once.** The sign-in / reset link page decided
+  what to show in an effect, so an incomplete link flashed "Checking your link…"
+  first. The first state is now worked out from the link itself; only the network
+  calls remain in the effect.
+- **@mention suggestions appear when the colleague list arrives**, with nothing
+  re-checking. The editor records the "@query" being typed whether or not there is
+  anyone to suggest yet; the list is derived from both.
+- **Create Matter's organisation is derived, not copied.** It follows the chosen
+  client until someone types in the box. Same behaviour, one copy of the value.
+- The rich text editor's key handler read live values through refs written during
+  render; they are now written after each render commits.
+- Pure helpers moved out of component files (`automationRows.ts`,
+  `deadlinesThisMonth.ts`, `stepOptionLabel` into `stepEditorVocab.ts`), so editing a
+  component hot-reloads it instead of reloading the page.
+- "Days overdue" on the recurring banner reads the clock once when the banner mounts
+  rather than on every render.
+- **Not user-visible** beyond the three points above — no manual change.
+- Verified: `npm run build` clean; full Playwright suite in two shards — 480 passed,
+  none failed, 3 skipped. `reassign.spec.ts` passed on its built-in retry.
+- **Open, and not caused by this work:** that retry. On its first attempt the test's
+  `fill()` on the Users search box sometimes never returns (180s timeout). Repeating
+  the spec 8 times on the commit *before* the Tailwind upgrade hung 3 times; on `main`
+  without these lint changes, 1 in 4. Visiting the page and typing a moment later never
+  hung in 24 tries, so it looks like the test acting while the page is still settling,
+  but that is not proven. The spec's own `retries: 1` has been hiding it.
+
 ### Portal on Tailwind CSS 4, runtime on Node 26 (2026-10-10) ✅ Completed
 
 The two upgrades held back on 2026-10-08. Library work only: **the Portal is meant to
@@ -4270,7 +4307,8 @@ touched. On `main`, so on QA; not in production until the next release tag.
   `npm ci --os=linux --cpu=x64 --libc=musl`, so Tailwind 4's native packages for the
   Alpine build image are locked.
 - **Not user-visible** — no manual or UI copy change.
-- **Still not taken:** the Portal's 28 pre-existing ESLint errors, and the majors of
+- **Still not taken:** the Portal's 28 pre-existing ESLint errors (fixed the same day —
+  see the entry above), and the majors of
   `firebase-admin`, `nodemailer`, `firebase`, `typescript` and `@tanstack/react-table`.
 
 ### A created matter opens — #211 (2026-10-10) ✅ Completed

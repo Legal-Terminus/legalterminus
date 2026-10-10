@@ -16,6 +16,19 @@ function keyFor(taskId: string, stepNumber: number | string, uid: string | null)
   return `commentDraft:${taskId}:${stepNumber}:${uid}`;
 }
 
+/** The stored draft for a key; empty when there is none or storage is unavailable. */
+function readDraft(storageKey: string | null): { value: string; at: string | null } {
+  if (!storageKey) return { value: '', at: null };
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { value: string; at: string };
+      return { value: parsed.value ?? '', at: parsed.at ?? null };
+    }
+  } catch { /* unreadable or disabled storage — treat as no draft */ }
+  return { value: '', at: null };
+}
+
 export interface CommentDraft {
   /** The restored draft value (empty string if none). */
   initial: string;
@@ -33,29 +46,20 @@ export function useCommentDraft(
   uid: string | null,
 ): CommentDraft {
   const storageKey = keyFor(taskId, stepNumber, uid);
-  const [initial, setInitial] = useState('');
-  const [savedAt, setSavedAt] = useState<string | null>(null);
+  // Restore on mount, and again when the key changes (another step or user).
+  // Read while rendering rather than in an effect: the caller gets the saved
+  // draft on its FIRST render instead of an empty box that fills in a moment
+  // later, and a key change is picked up before anything is painted.
+  const [loadedKey, setLoadedKey] = useState(storageKey);
+  const [initial, setInitial] = useState(() => readDraft(storageKey).value);
+  const [savedAt, setSavedAt] = useState<string | null>(() => readDraft(storageKey).at);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Restore on mount / when the key changes.
-  useEffect(() => {
-    if (!storageKey) { setInitial(''); setSavedAt(null); return; }
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw) as { value: string; at: string };
-        setInitial(parsed.value ?? '');
-        setSavedAt(parsed.at ?? null);
-      } else {
-        setInitial('');
-        setSavedAt(null);
-      }
-    } catch {
-      setInitial('');
-      setSavedAt(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storageKey]);
+  if (loadedKey !== storageKey) {
+    const stored = readDraft(storageKey);
+    setLoadedKey(storageKey);
+    setInitial(stored.value);
+    setSavedAt(stored.at);
+  }
 
   const clear = useCallback(() => {
     if (timer.current) { clearTimeout(timer.current); timer.current = null; }

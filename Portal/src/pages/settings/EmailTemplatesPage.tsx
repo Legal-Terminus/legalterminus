@@ -26,8 +26,14 @@ export default function EmailTemplatesPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Seed local edit state once the server templates load.
-  useEffect(() => { if (data) setEdits(data.templates); }, [data]);
+  // Seed local edit state when the server templates load, and again whenever a
+  // refetch brings a new copy. Done while rendering, not in an effect: React
+  // re-renders straight away, so the form never paints once with stale values.
+  const [seededFrom, setSeededFrom] = useState<typeof data>(undefined);
+  if (data && data !== seededFrom) {
+    setSeededFrom(data);
+    setEdits(data.templates);
+  }
 
   const save = useMutation({
     mutationFn: (templates: Record<string, EmailTemplate>) => putEmailTemplates(templates),

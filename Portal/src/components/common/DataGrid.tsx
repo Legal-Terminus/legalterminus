@@ -357,6 +357,10 @@ function ColumnFilterMenu<T>({ column, table }: { column: Column<T, unknown>; ta
   // filter (faceting) — mirrors Excel. "(Blank)" stands in for null/empty.
   // A column whose (non-blank) values are ALL numeric gets a RANGE (Min–Max)
   // filter instead of a value picker — checkboxes over amounts are useless.
+  // The table's filter state and data are read into plain values so the memo
+  // can list them as dependencies; the facets are recomputed when any changes.
+  const { columnFilters, globalFilter } = table.getState();
+  const tableData = table.options.data;
   const { uniqueValues, isNumeric } = useMemo(() => {
     if (!open) return { uniqueValues: [] as string[], isNumeric: false };
     const map = column.getFacetedUniqueValues();
@@ -372,7 +376,7 @@ function ColumnFilterMenu<T>({ column, table }: { column: Column<T, unknown>; ta
       isNumeric: numeric,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, column, table.getState().columnFilters, table.getState().globalFilter, table.options.data]);
+  }, [open, column, columnFilters, globalFilter, tableData]);
 
   const filterValue = column.getFilterValue();
   const selected = Array.isArray(filterValue) ? (filterValue as string[]) : [];

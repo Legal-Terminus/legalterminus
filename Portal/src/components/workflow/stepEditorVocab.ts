@@ -68,3 +68,13 @@ export const OUTCOME_TYPES: { event: string; label: string; needsName?: boolean 
  * other input, so focus reads the same everywhere.
  */
 export const inputCls = 'w-full rounded-md border border-hairline px-2 py-1 text-sm text-ink bg-white placeholder-ink-muted focus:outline-hidden focus:ring-2 focus:ring-accent focus:border-accent';
+
+/**
+ * Story 28.2 (S28b): step pickers show the ENGINE step number alongside the
+ * title. Titles alone cannot disambiguate the near-duplicates real workflows
+ * carry ("Resubmission — Approval" vs "Resubmission — Preparation of document"),
+ * and the number shown here is the one transitions actually route to.
+ */
+export function stepOptionLabel(s: WorkflowStepDef) {
+  return `${s.stepNumber} · ${s.title || 'Untitled step'}`;
+}

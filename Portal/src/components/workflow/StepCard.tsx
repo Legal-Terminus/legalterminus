@@ -9,7 +9,8 @@ import {
   inputCls, KIND_HINT, KIND_LABEL, KNOWN_EFFECTS, stepKindOf, type StepKind,
 } from './stepEditorVocab';
 import { OutcomeRows, StepChecklistEditor, StepDescriptionsEditor } from './StepSubEditors';
-import StepAutomationSummary, { automationRows } from './StepAutomationSummary';
+import StepAutomationSummary from './StepAutomationSummary';
+import { automationRows } from './automationRows';
 import { ROLES } from '../../lib/roles';
 import type { PhaseDef, WorkflowStepDef } from '../../api/workflowDefinitions';
 

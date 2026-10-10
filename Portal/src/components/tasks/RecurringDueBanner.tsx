@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Loader2, Copy } from 'lucide-react';
@@ -37,10 +38,14 @@ export default function RecurringDueBanner() {
     onError: (err: Error) => toast.error(err.message || 'Could not create the next matter.'),
   });
 
+  // Read the clock once, when the banner mounts: a render must give the same
+  // answer every time it runs, and "days overdue" does not need to tick.
+  const [now] = useState(() => Date.now());
+
   if (due.length === 0) return null;
 
   const overdueLabel = (row: RecurringDueRow) => {
-    const days = Math.floor((Date.now() - new Date(row.recurrenceNextDueAt).getTime()) / 86_400_000);
+    const days = Math.floor((now - new Date(row.recurrenceNextDueAt).getTime()) / 86_400_000);
     if (days <= 0) return 'due today';
     return `${days} day${days === 1 ? '' : 's'} overdue`;
   };

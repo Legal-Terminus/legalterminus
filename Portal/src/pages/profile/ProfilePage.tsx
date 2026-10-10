@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '../../components/common/PageShell';
 import { getMe, updateMe, type ProfileUpdate } from '../../api/profile';
@@ -21,19 +21,21 @@ export default function ProfilePage() {
   const [form, setForm] = useState<ProfileUpdate>({});
   const [formError, setFormError] = useState('');
 
-  // Seed the edit form whenever the profile loads / changes.
-  useEffect(() => {
-    if (user) {
-      setForm({
-        name: user.name ?? user.fullName ?? '',
-        phone: user.phone ?? '',
-        address: user.address ?? '',
-        businessName: user.businessName ?? '',
-        state: user.state ?? '',
-        organisation: user.organisation ?? '',
-      });
-    }
-  }, [user]);
+  // Seed the edit form whenever the profile loads / changes. Done while
+  // rendering rather than in an effect — React re-renders at once, so the form
+  // never paints empty and then fills in.
+  const [seededFrom, setSeededFrom] = useState<typeof user>(undefined);
+  if (user && user !== seededFrom) {
+    setSeededFrom(user);
+    setForm({
+      name: user.name ?? user.fullName ?? '',
+      phone: user.phone ?? '',
+      address: user.address ?? '',
+      businessName: user.businessName ?? '',
+      state: user.state ?? '',
+      organisation: user.organisation ?? '',
+    });
+  }
 
   const mutation = useMutation({
     mutationFn: (body: ProfileUpdate) => updateMe(body),

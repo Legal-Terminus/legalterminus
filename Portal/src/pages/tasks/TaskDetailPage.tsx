@@ -1877,7 +1877,7 @@ function StepHeroPanel({
   // positive actions, required on rejections. The value rides along as event.remark.
   // #83: the draft autosaves per matter/step/user and restores on reopen.
   const draft = useCommentDraft(taskId, step.stepNumber, role.uid ?? null);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState(draft.initial);
   const [needComment, setNeedComment] = useState(false);
   // #115: staff opt-in to share THIS comment with the client. Default OFF so an
   // internal note is never exposed by accident — EXCEPT on a client-approval step,
@@ -1887,8 +1887,14 @@ function StepHeroPanel({
   const isClientApprovalStep = new Set((step.transitions ?? []).map((t) => t.event)).has('CLIENT_APPROVE');
   const [shareComment, setShareComment] = useState(isClientApprovalStep);
 
-  // Restore the saved draft when it loads (or the step/user changes).
-  useEffect(() => { setComment(draft.initial); }, [draft.initial]);
+  // Restore the saved draft when the step or user changes and brings a different
+  // one. (The first render already starts from it.) Done while rendering, so
+  // the box never shows the previous step's text for a frame.
+  const [restoredDraft, setRestoredDraft] = useState(draft.initial);
+  if (restoredDraft !== draft.initial) {
+    setRestoredDraft(draft.initial);
+    setComment(draft.initial);
+  }
 
   const onCommentChange = (v: string) => {
     setComment(v);

@@ -59,7 +59,9 @@ export default function DocumentsPanel({ taskId, isStaff, workflowType }: { task
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [zipping, setZipping] = useState(false);
   const toggleSel = (id: string) => setSelected((prev) => {
-    const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next;
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
   });
   const queryClient = useQueryClient();
   const { data: docs = [], isLoading, error } = useQuery({
