@@ -141,3 +141,61 @@ html.theme-c .pco-selected-plan-box { padding-top: 10px; padding-bottom: 10px; m
 html.theme-c .pco-includes { margin-bottom: 12px; }
 html.theme-c .pco-summary-box { padding-top: 10px; padding-bottom: 10px; margin-bottom: 12px; }
 html.theme-c .pco-step > .pco-btn-primary:last-child { position: sticky; bottom: 10px; z-index: 5; }
+
+/* ── Compact top (review round 3, 2026-10-11) ─────────────────────────────
+   Builds on the round-2 spacing above; where the two set the same property,
+   this later block wins.
+   The popup spent two rows on its header (Back / close) and its step indicator
+   before any content, which pushed the button below the fold on a laptop. They
+   now share ONE slim row — the steps sit between Back and close, small, with
+   the label beside the number — and the content is tightened, so each step fits
+   without scrolling on an ordinary laptop or phone screen. */
+html.theme-c .pco-modal { max-height: 96vh; max-height: 96dvh; }
+html.theme-c .pco-modal-head {
+  padding: 6px 10px; min-height: 44px;
+  background: transparent; border-bottom: 0;
+  pointer-events: none;                      /* the steps sit underneath it */
+}
+html.theme-c .pco-modal-head > * { pointer-events: auto; }
+html.theme-c .pco-progress {
+  margin-top: -44px; height: 44px;
+  padding: 0 84px;                           /* clear of Back and close */
+  border-bottom: 1px solid var(--lt-hairline);
+  gap: 0;
+}
+html.theme-c .pco-modal-head:not(:has(+ .pco-progress)) { border-bottom: 1px solid var(--lt-hairline); }
+html.theme-c .pco-progress-item { flex-direction: row; gap: 6px; }
+html.theme-c .pco-progress-circle { width: 22px; height: 22px; font-size: 11px; border-width: 1px; }
+html.theme-c .pco-progress-label { font-size: 12px; font-weight: 500; }
+html.theme-c .pco-progress-line { margin: 0 10px; height: 1px; max-width: 56px; }
+
+html.theme-c .pco-step { padding: 14px 20px 18px; }
+html.theme-c .pco-plan-header-row { margin-bottom: 10px; gap: 10px; }
+html.theme-c .pco-plan-avatar { width: 34px; height: 34px; font-size: 16px; }
+html.theme-c .pco-section-title, html.theme-c .pco-step-heading { font-size: 18px; }
+html.theme-c .pco-selected-plan-box { padding: 10px 14px; margin-bottom: 10px; }
+html.theme-c .pco-plan-gift-icon { font-size: 22px; }
+html.theme-c .pco-includes { margin-bottom: 10px; }
+html.theme-c .pco-includes-label { margin-bottom: 4px; }
+html.theme-c .pco-include-row { padding: 2px 0; font-size: 13.5px; }
+/* a long plan lists many inclusions: the list takes the room the screen has,
+   and only on a short screen scrolls in its own frame — so the total and the
+   button are always in view */
+html.theme-c .pco-includes { max-height: max(120px, calc(96dvh - 370px)); overflow-y: auto; scrollbar-width: thin; }
+html.theme-c .pco-summary-box { padding: 10px 14px; margin-bottom: 12px; }
+html.theme-c .pco-summary-row { padding: 3px 0; }
+html.theme-c .pco-btn-primary, html.theme-c .pco-btn-outline { min-height: 44px; }
+html.theme-c .pco-field { margin-bottom: 10px; }
+html.theme-c .pco-form-group { margin-bottom: 10px; }
+html.theme-c .pco-input, html.theme-c .pco-select { min-height: 44px; }
+/* the sign-in step's emoji and spacing are inline-styled */
+html.theme-c .pco-step > div[style*="text-align: center"]:first-child { margin-bottom: 14px !important; }
+html.theme-c .pco-step > div[style*="text-align: center"]:first-child > div:first-child { font-size: 26px !important; margin-bottom: 2px !important; }
+html.theme-c .pco-step > button[style] { margin-bottom: 12px !important; }
+html.theme-c .pco-step > div[style*="align-items: center"][style*="gap"] { margin-bottom: 12px !important; }
+
+@media (max-width: 420px) {
+  html.theme-c .pco-progress { padding: 0 64px; }
+  html.theme-c .pco-progress-line { max-width: 28px; margin: 0 6px; }
+  html.theme-c .pco-progress-label { font-size: 11px; }
+}
