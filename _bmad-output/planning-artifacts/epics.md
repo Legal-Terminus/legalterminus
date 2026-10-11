@@ -3780,6 +3780,24 @@ not-found page and pass anyway.
 - **Public Limited popular plan** is marked on the card itself under Theme C
   (`PublicltdRightPlan.jsx`), so the highlight no longer needs the Buy Now button.
 
+**Review round 2 (product owner, 2026-10-11)**
+- **Home testimonials are Home's own five again.** Round 1 swapped them for the shared
+  Google-reviews slider, which changed which reviews Home shows — a divergence from the live
+  site, and the opposite of what the content check exists to guarantee. `Home.jsx`,
+  `Testimonials.jsx` and the `tst-c` rules in `theme/home.css` are back to their state before
+  round 1: the same five reviews and words as the live Home, in the Theme C layout.
+- **The Buy Now popup no longer scrolls inside itself on a laptop.** On a 768px-high window the
+  order summary was about 30px taller than the popup may be: a scrollbar down the rounded edge
+  and "Proceed to Checkout" cut in half. `theme/checkout.css` tightens the vertical spacing
+  (about 80px), removes the scrollbar strip (a longer plan still scrolls), and keeps the main
+  button in view at the bottom.
+- **Video testimonials are placeholders — NOT changed, needs the firm.** 43 components embed
+  the same four YouTube videos under real clients' names. None is a client: two are the "Rick
+  Astley" video, one is YouTube's first-ever upload, one is a stock sample. They date from the
+  original build (January 2026), not from Theme C, and are on the live site wherever those
+  sections render. Options for the firm: supply the real links, or hide the sections until
+  they exist.
+
 **Open — needs the firm or the product owner**
 - **#209 Home 7 (count-up on 1K+ / 120+):** `HomeCertisfiedClient` has its figures commented out
   (`f0633e5d`), so the band is empty on the live site too. `theme/CountUp.jsx` and the band's CSS

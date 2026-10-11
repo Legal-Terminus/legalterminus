@@ -120,3 +120,24 @@ html.theme-c .pco-contact-card-value { color: var(--lt-ink); }
 /* The floating call / chat buttons sit above everything (z-index 9999) and
    covered the popup's buttons on a phone. They step aside while it is open. */
 html.theme-c body:has(.pco-overlay) .float-icons { display: none; }
+
+/* ── The popup fits a laptop screen (review round 2, 2026-10-11) ──
+   On a 768px-high window the order summary was ~30px taller than the popup may
+   be, so it scrolled inside itself: a scrollbar down the rounded edge and the
+   "Proceed to Checkout" button cut in half. Three changes, all spacing:
+   1. Tighter vertical rhythm — about 80px back, so a nine-line plan fits a
+      720px-high window with room to spare.
+   2. No scrollbar strip. A longer plan still scrolls (wheel, touch, keyboard);
+      the strip inside a rounded card is what read as broken.
+   3. The main button stays in view at the bottom while the list scrolls under
+      it, so "what do I press" never depends on having scrolled. */
+html.theme-c .pco-modal { max-height: 94vh; scrollbar-width: none; -ms-overflow-style: none; }
+html.theme-c .pco-modal::-webkit-scrollbar { display: none; }
+html.theme-c .pco-modal-head { padding: 8px 14px 6px; }
+html.theme-c .pco-progress { padding-top: 10px; padding-bottom: 6px; }
+html.theme-c .pco-step { padding-top: 14px; padding-bottom: 18px; }
+html.theme-c .pco-plan-header-row { margin-bottom: 10px; }
+html.theme-c .pco-selected-plan-box { padding-top: 10px; padding-bottom: 10px; margin-bottom: 12px; }
+html.theme-c .pco-includes { margin-bottom: 12px; }
+html.theme-c .pco-summary-box { padding-top: 10px; padding-bottom: 10px; margin-bottom: 12px; }
+html.theme-c .pco-step > .pco-btn-primary:last-child { position: sticky; bottom: 10px; z-index: 5; }

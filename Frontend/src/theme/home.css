@@ -401,9 +401,53 @@ html.theme-c .feature-badge {
 }
 html.theme-c .feature-title { margin-bottom: 8px; }
 
-/* Testimonials: Home renders the shared Google-reviews slider under Theme C
-   (see Home.jsx); its styles live with the service pages. A few `.tst-`
-   selectors remain in shared lists elsewhere in this file; they match nothing. */
+/* ── Testimonials (#209 Home 10) — Theme C markup in Testimonials.jsx ─── */
+
+html.theme-c .Testimonials-container.tst-c { padding: var(--lt-section) 0; background: var(--lt-canvas-soft); overflow: visible; }
+html.theme-c .tst-c .Testimonials-header { text-align: left; margin-bottom: 40px; display: grid; gap: 14px; justify-items: start; }
+html.theme-c .tst-c .Testimonials-badge { overflow: visible; }
+html.theme-c .tst-c .Testimonials-badge::after { display: none; }
+html.theme-c .tst-c__main {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); overflow: hidden;
+  background: var(--lt-surface); border-radius: var(--lt-r-lg); box-shadow: var(--lt-shadow);
+}
+html.theme-c .tst-c__media { order: 2; min-height: 0; }
+html.theme-c .tst-c__media img { display: block; width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+html.theme-c .tst-c__media { position: relative; }
+html.theme-c .tst-c__body { position: relative; display: grid; gap: 20px; align-content: start; padding: 28px; min-width: 0; }
+html.theme-c .tst-c__top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+html.theme-c .tst-c__stars { color: var(--lt-accent); font-size: 18px; letter-spacing: 2px; line-height: 1; }
+html.theme-c .tst-c__ctl { display: flex; gap: 8px; }
+html.theme-c .tst-c__ctl button {
+  width: 44px; height: 44px; display: grid; place-items: center; padding: 0; cursor: pointer;
+  border: 1px solid var(--lt-hairline-strong); border-radius: 50%; background: var(--lt-surface); color: var(--lt-ink);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+html.theme-c .tst-c__ctl button:hover { border-color: var(--lt-accent); color: var(--lt-accent-text); }
+/* tall enough for the longest review, so the page does not jump on each rotation */
+html.theme-c .tst-c__text {
+  margin: 0; max-width: 60ch; min-height: 12.4em;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem); line-height: 1.55; color: var(--lt-ink);
+}
+html.theme-c .tst-c__user { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+html.theme-c .tst-c__user img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex: none; }
+html.theme-c .tst-c__who { display: grid; min-width: 0; text-align: left; }
+html.theme-c .tst-c__user h4 { margin: 0; font-size: 16px; font-weight: 600; color: var(--lt-ink); }
+html.theme-c .tst-c__user span { font-size: 12px; letter-spacing: 0.04em; color: var(--lt-muted); }
+html.theme-c .tst-c__quote {
+  position: absolute; right: 28px; bottom: -44px; font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 140px; line-height: 1; color: var(--lt-surface-strong); pointer-events: none; user-select: none;
+}
+html.theme-c .tst-c__thumbs { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+html.theme-c .tst-c__thumb {
+  width: 64px; height: 64px; padding: 5px; cursor: pointer;
+  background: var(--lt-surface); border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm); opacity: 0.75;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+html.theme-c .tst-c__thumb:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow); transform: translateY(-3px); opacity: 1; }
+html.theme-c .tst-c__thumb[aria-pressed="true"] { border-color: var(--lt-accent); box-shadow: 0 0 0 1px var(--lt-accent); opacity: 1; }
+html.theme-c .tst-c__thumb img { display: block; width: 100%; height: 100%; border-radius: var(--lt-r-md); object-fit: cover; }
 
 /* ── Contact ──────────────────────────────────────────────────────────── */
 
