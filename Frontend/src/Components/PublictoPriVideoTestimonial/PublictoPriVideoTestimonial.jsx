@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import "../ProFOPCVideoTestimonial/ProFOPCVideoTestimonial.css";
+import { REAL_VIDEOS_READY } from "../../utils/videoTestimonials";
 
 const videoTestimonials = [
   {
@@ -44,6 +45,9 @@ const VideoTestimonials = () => {
       behavior: "smooth",
     });
   };
+
+  // Placeholder videos only — hidden until real ones exist (see utils/videoTestimonials).
+  if (!REAL_VIDEOS_READY) return null;
 
   return (
     <section className="profopc-video-testimonial-section">

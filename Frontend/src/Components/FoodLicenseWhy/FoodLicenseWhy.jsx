@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import "./FoodLicenseWhy.css";
+import { REAL_VIDEOS_READY } from "../../utils/videoTestimonials";
 
 const videoTestimonials = [
   {
@@ -42,6 +43,9 @@ const FoodLicenseWhy = () => {
       behavior: "smooth",
     });
   };
+
+  // Placeholder videos only — hidden until real ones exist (see utils/videoTestimonials).
+  if (!REAL_VIDEOS_READY) return null;
 
   return (
     <section className="foodwhy-section">

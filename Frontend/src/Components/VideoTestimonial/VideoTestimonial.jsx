@@ -1,5 +1,6 @@
 import React from "react";
 import "./VideoTestimonial.css";
+import { REAL_VIDEOS_READY } from "../../utils/videoTestimonials";
 
 const VideoTestimonial = () => {
   // Replace the src IDs below with the actual YouTube video ids you want to show.
@@ -7,6 +8,9 @@ const VideoTestimonial = () => {
     "dQw4w9WgXcQ",
     "3JZ_D3ELwOQ"
   ];
+
+  // Placeholder videos only — hidden until real ones exist (see utils/videoTestimonials).
+  if (!REAL_VIDEOS_READY) return null;
 
   return (
     <section className="vt-root" aria-labelledby="vt-title">

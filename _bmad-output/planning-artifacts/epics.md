@@ -3791,12 +3791,18 @@ not-found page and pass anyway.
   and "Proceed to Checkout" cut in half. `theme/checkout.css` tightens the vertical spacing
   (about 80px), removes the scrollbar strip (a longer plan still scrolls), and keeps the main
   button in view at the bottom.
-- **Video testimonials are placeholders — NOT changed, needs the firm.** 43 components embed
-  the same four YouTube videos under real clients' names. None is a client: two are the "Rick
-  Astley" video, one is YouTube's first-ever upload, one is a stock sample. They date from the
-  original build (January 2026), not from Theme C, and are on the live site wherever those
-  sections render. Options for the firm: supply the real links, or hide the sections until
-  they exist.
+- **Video testimonials are hidden until the firm supplies real videos** (product owner,
+  2026-10-11). 43 components embedded the same four placeholder YouTube videos under clients'
+  names — two are a well-known joke video, one is YouTube's first upload, one a stock sample.
+  They date from the original build (January 2026), not from Theme C, and showed on 62 of the
+  78 prerendered pages. Each of those components now renders nothing while
+  `REAL_VIDEOS_READY` (`Frontend/src/utils/videoTestimonials.js`) is false. This applies with
+  Theme C on or off, so it reaches the live site at the next release. To restore one section:
+  put the real links in its list and delete its guard line.
+- **Still showing placeholders, deliberately left for a decision:** the Media page's "Media
+  Coverage" grid (six videos under TV channel names — none is that channel's coverage), and
+  the About Us "process" play button (opens the same joke video). Neither is a testimonial, so
+  neither was in the instruction to hide.
 
 **Open — needs the firm or the product owner**
 - **#209 Home 7 (count-up on 1K+ / 120+):** `HomeCertisfiedClient` has its figures commented out

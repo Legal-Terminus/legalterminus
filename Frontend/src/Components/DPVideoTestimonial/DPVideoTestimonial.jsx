@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import "./DPVideoTestimonial.css";
+import { REAL_VIDEOS_READY } from "../../utils/videoTestimonials";
 
 const videoTestimonials = [
   {
@@ -44,6 +45,9 @@ const DPVideoTestimonial = () => {
       behavior: "smooth",
     });
   };
+
+  // Placeholder videos only — hidden until real ones exist (see utils/videoTestimonials).
+  if (!REAL_VIDEOS_READY) return null;
 
   return (
     <section className="DP-video-testimonial-section">

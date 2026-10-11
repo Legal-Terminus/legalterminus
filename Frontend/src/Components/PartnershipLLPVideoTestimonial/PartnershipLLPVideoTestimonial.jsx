@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import "./PartnershipLLPVideoTestimonial.css";
+import { REAL_VIDEOS_READY } from "../../utils/videoTestimonials";
 
 const videoTestimonials = [
   {
@@ -44,6 +45,9 @@ const PartnershipLLPVideoTestimonial = () => {
       behavior: "smooth",
     });
   };
+
+  // Placeholder videos only — hidden until real ones exist (see utils/videoTestimonials).
+  if (!REAL_VIDEOS_READY) return null;
 
   return (
     <section className="partnership-llp-video-testimonial-section">

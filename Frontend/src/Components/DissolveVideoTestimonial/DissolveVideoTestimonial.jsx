@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./DissolveVideoTestimonial.css";
+import { REAL_VIDEOS_READY } from "../../utils/videoTestimonials";
 
 const videoTestimonials = [
   {
@@ -91,6 +92,9 @@ const DissolveVideoTestimonial = () => {
       behavior: "smooth",
     });
   };
+
+  // Placeholder videos only — hidden until real ones exist (see utils/videoTestimonials).
+  if (!REAL_VIDEOS_READY) return null;
 
   return (
     <section className="Dissolve-video-testimonial-section">
