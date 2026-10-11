@@ -3768,6 +3768,18 @@ carousels are left out: they differ between two loads of the same page); `shot.m
 the older `all-pages`/`chunk-NN` specs list 73 short paths, most of which now render the
 not-found page and pass anyway.
 
+**Review round 1 (product owner, 2026-10-11)**
+- **Buy Now popup** was not styled (the agents could not open it locally with payments off).
+  Now `theme/checkout.css`: the site's pill buttons, fields, thin headings and green; the
+  floating call/chat buttons step aside while it is open (they covered its buttons on a phone).
+- **Home testimonials are the same as on every other page**: under Theme C, `Home.jsx` renders
+  the shared Google-reviews slider (`PvtltdTestimonial`) instead of Home's own block of five.
+  This DOES change which reviews Home shows (15 Google reviews, heading "Testimonials", a
+  "Write a Review on Google" link; four of Home's five reviewers are among them) — decided by
+  the product owner. With the switch off Home is unchanged.
+- **Public Limited popular plan** is marked on the card itself under Theme C
+  (`PublicltdRightPlan.jsx`), so the highlight no longer needs the Buy Now button.
+
 **Open — needs the firm or the product owner**
 - **#209 Home 7 (count-up on 1K+ / 120+):** `HomeCertisfiedClient` has its figures commented out
   (`f0633e5d`), so the band is empty on the live site too. `theme/CountUp.jsx` and the band's CSS
@@ -3776,11 +3788,8 @@ not-found page and pass anyway.
   under Theme C (the sticky tab strip replaces it) — a removed behaviour.
 - **Private Limited hero** does not fit one screen at 1280×800: the description is long and the
   form has five fields; shortening either is a content change.
-- **Testimonials (Home):** the small cards are photo-only; printing names on them adds text.
 - **Contact banner:** the decorative stock photo behind the banner is replaced by the gradient.
 - **Contact form:** placeholders only, as today; visible labels need markup.
-- **Public Limited "popular" plan** cannot be marked in CSS while Buy Now is hidden (the only
-  hook is on that button).
 - **`/tools/*` PDF tool pages** are static HTML outside the app; not restyled.
 - The three content questions on #209 (FAQ answers, footer typo, price sets) are unchanged.
 

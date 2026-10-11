@@ -1,0 +1,122 @@
+/* Theme C — the Buy Now popup (ProCheckoutModal): order summary, sign-in,
+   details, simulated-payment panel, success / failed / thank-you screens.
+   Shared by every pricing card on the site. Scoped under html.theme-c.
+   CSS only: the popup's steps, text and behaviour are untouched. */
+
+html.theme-c .pco-overlay { background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+html.theme-c .pco-modal {
+  border-radius: var(--lt-r-xl);
+  border: 1px solid var(--lt-hairline);
+  box-shadow: var(--lt-shadow);
+  color: var(--lt-body);
+}
+html.theme-c .pco-modal-head { border-bottom: 1px solid var(--lt-hairline); }
+html.theme-c .pco-back-btn { color: var(--lt-accent-text); font-weight: 500; border-radius: var(--lt-r-btn); min-height: 36px; }
+html.theme-c .pco-back-btn:hover { background: var(--lt-canvas-tint); }
+html.theme-c .pco-close-btn { color: var(--lt-muted); border-radius: 999px; min-width: 36px; min-height: 36px; }
+html.theme-c .pco-close-btn:hover { background: var(--lt-canvas-soft); color: var(--lt-ink); }
+
+/* progress */
+html.theme-c .pco-progress-circle { border-color: var(--lt-hairline-strong); color: var(--lt-muted); font-weight: 600; }
+html.theme-c .pco-progress-item.active .pco-progress-circle,
+html.theme-c .pco-progress-item.done .pco-progress-circle { background: var(--lt-accent); border-color: var(--lt-accent); color: var(--lt-on-accent); }
+html.theme-c .pco-progress-label { color: var(--lt-muted); }
+html.theme-c .pco-progress-item.active .pco-progress-label,
+html.theme-c .pco-progress-item.done .pco-progress-label { color: var(--lt-accent-text); }
+html.theme-c .pco-progress-line { background: var(--lt-hairline); }
+html.theme-c .pco-progress-line.done { background: var(--lt-accent); }
+
+/* headings: the site's thin ink display type */
+html.theme-c .pco-step-heading,
+html.theme-c .pco-section-title,
+html.theme-c .pco-success-title,
+html.theme-c .pco-failed-title,
+html.theme-c .pco-thankyou-title {
+  color: var(--lt-ink); font-weight: 400; letter-spacing: -0.015em;
+}
+html.theme-c .pco-plan-avatar { background: var(--lt-canvas-tint); }
+
+/* the selected plan and the totals */
+html.theme-c .pco-selected-plan-box {
+  background: var(--lt-canvas-tint); border: 1px solid var(--lt-accent); border-radius: var(--lt-r-lg);
+}
+html.theme-c .pco-plan-name-tag { color: var(--lt-ink); font-weight: 500; }
+html.theme-c .pco-plan-price-tag,
+html.theme-c .pco-total-amount { color: var(--lt-accent-text); font-weight: 500; font-variant-numeric: tabular-nums; }
+html.theme-c .pco-includes-label,
+html.theme-c .pco-services-title,
+html.theme-c .pco-form-group-title { color: var(--lt-muted); font-weight: 600; letter-spacing: 0.08em; }
+html.theme-c .pco-include-row, html.theme-c .pco-service-row { color: var(--lt-body); }
+html.theme-c .pco-green-check { color: var(--lt-accent); }
+html.theme-c .pco-summary-box,
+html.theme-c .pco-services-box,
+html.theme-c .pco-order-detail-box,
+html.theme-c .pco-next-box {
+  background: var(--lt-canvas-soft); border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+}
+html.theme-c .pco-summary-row, html.theme-c .pco-detail-label { color: var(--lt-muted); }
+html.theme-c .pco-summary-total-row, html.theme-c .pco-detail-value { color: var(--lt-ink); font-weight: 600; }
+html.theme-c .pco-summary-divider { background: var(--lt-hairline); }
+
+/* buttons: the site's pill */
+html.theme-c .pco-btn-primary {
+  background: var(--lt-btn); color: var(--lt-on-btn);
+  border-radius: var(--lt-r-btn); min-height: 48px; font-weight: 500; box-shadow: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+html.theme-c .pco-btn-primary:hover:not(:disabled) { background: var(--lt-btn-hover); transform: translateY(-1px); box-shadow: none; }
+html.theme-c .pco-btn-primary:disabled { opacity: 0.6; }
+html.theme-c .pco-btn-outline {
+  background: var(--lt-surface); color: var(--lt-ink);
+  border: 1px solid var(--lt-hairline-strong); border-radius: var(--lt-r-btn); min-height: 48px; font-weight: 500;
+}
+html.theme-c .pco-btn-outline:hover { border-color: var(--lt-accent); color: var(--lt-accent-text); background: var(--lt-surface); }
+/* "Continue with Google" and the sign-in / sign-up switch carry inline styles */
+html.theme-c .pco-modal .pco-step > button[style] {
+  border-radius: var(--lt-r-btn) !important; border-color: var(--lt-hairline-strong) !important;
+  min-height: 48px; font-weight: 500 !important; color: var(--lt-ink) !important;
+}
+html.theme-c .pco-modal .pco-step > button[style]:hover { border-color: var(--lt-accent) !important; }
+html.theme-c .pco-modal .pco-step p button[style] { color: var(--lt-accent-text) !important; min-height: 32px; }
+
+/* fields */
+html.theme-c .pco-field-label { color: var(--lt-ink); font-weight: 600; letter-spacing: 0.04em; }
+html.theme-c .pco-field-optional { color: var(--lt-muted); }
+html.theme-c .pco-input,
+html.theme-c .pco-select,
+html.theme-c .pco-modal textarea {
+  min-height: 46px; border: 1px solid var(--lt-hairline-strong); border-radius: var(--lt-r-sm);
+  background: var(--lt-surface); color: var(--lt-ink); box-shadow: none;
+}
+html.theme-c .pco-input:focus,
+html.theme-c .pco-select:focus,
+html.theme-c .pco-modal textarea:focus { outline: 2px solid var(--lt-focus); outline-offset: 0; border-color: transparent; box-shadow: none; }
+html.theme-c .pco-input-error { border-color: var(--lt-danger) !important; }
+html.theme-c .pco-error-msg { color: var(--lt-danger); }
+html.theme-c .pco-autofill-banner {
+  background: var(--lt-canvas-tint); border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-md); color: var(--lt-body);
+}
+html.theme-c .pco-secured-text { color: var(--lt-muted); }
+html.theme-c .pco-badge { border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-sm); background: var(--lt-surface); }
+
+/* result screens */
+html.theme-c .pco-success-circle { background: var(--lt-canvas-tint); }
+html.theme-c .pco-success-tick { color: var(--lt-accent); }
+html.theme-c .pco-success-sub, html.theme-c .pco-failed-sub, html.theme-c .pco-thankyou-sub { color: var(--lt-muted); }
+html.theme-c .pco-next-title { color: var(--lt-ink); font-weight: 600; }
+html.theme-c .pco-failed-tip-box { border-radius: var(--lt-r-lg); }
+html.theme-c .pco-contact-card {
+  background: var(--lt-surface); border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .pco-contact-card:hover { border-color: var(--lt-accent); box-shadow: var(--lt-shadow-md); transform: translateY(-2px); }
+html.theme-c .pco-contact-card-label { color: var(--lt-muted); }
+html.theme-c .pco-contact-card-value { color: var(--lt-ink); }
+
+@media (max-width: 520px) {
+  html.theme-c .pco-modal { border-radius: var(--lt-r-lg); }
+}
+
+/* The floating call / chat buttons sit above everything (z-index 9999) and
+   covered the popup's buttons on a phone. They step aside while it is open. */
+html.theme-c body:has(.pco-overlay) .float-icons { display: none; }

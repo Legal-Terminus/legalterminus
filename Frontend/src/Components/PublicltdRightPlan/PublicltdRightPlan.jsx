@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./PublicltdRightPlan.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import { THEME_C } from "../../utils/theme";
 import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 
@@ -107,7 +108,10 @@ const PricingSection = () => {
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
-                className={`pub-plan-card${plan.badgeClass ? ` ${plan.badgeClass}` : ""}`}
+                // E-25: under Theme C the popular plan is marked on the card itself, so its
+                // highlight no longer depends on the Buy Now button being shown. Only
+                // under Theme C: the old stylesheet gives this class a red border.
+                className={`pub-plan-card${plan.badgeClass ? ` ${plan.badgeClass}` : ""}${THEME_C && plan.popular ? " pub-plan-card--popular" : ""}`}
               >
                 {plan.badge && <div className="pub-plan-banner-badge">{plan.badge}</div>}
                 <div>

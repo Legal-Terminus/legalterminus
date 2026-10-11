@@ -3,6 +3,7 @@ import './Home.css'
 import Herosection from '../../Components/Herosection/Herosection'
 import Premiumbusiness from '../../Components/Premiumbusiness/Premiumbusiness'
 import HomePdfToolsCta from '../../Components/HomePdfToolsCta/HomePdfToolsCta'
+import { THEME_C } from '../../utils/theme'
 
 // Lazy load below-fold components
 const Workingprocess = React.lazy(() => import('../../Components/WorkingProcessPro/WorkingProcessPro'))
@@ -11,7 +12,11 @@ const Featureslegalservice = React.lazy(() => import('../../Components/Featuresl
 const Legalhelp = React.lazy(() => import('../../Components/Legalhelp/Legalhelp'))
 const HomeCertisfiedClient = React.lazy(() => import('../../Components/HomeCertisfiedClient/HomeCertisfiedClient'))
 const HomeAboutExperiance = React.lazy(() => import('../../Components/HomeAboutExperiance/HomeAboutExperiance'))
-const Testimonials = React.lazy(() => import('../../Components/Testimonials/Testimonials'))
+// E-25: under Theme C, Home shows the same Google-reviews slider as every other
+// page (product owner, 2026-10-11) instead of its own separate block of five.
+const Testimonials = React.lazy(() => (THEME_C
+  ? import('../../Components/PvtltdTestimonial/PvtltdTestimonial')
+  : import('../../Components/Testimonials/Testimonials')))
 const ContactUs = React.lazy(() => import('../../Components/Contactus/Contactus'))
 const HomeLatestBlog = React.lazy(() => import('../../Components/HomeLatestBlog/HomeLatestBlog'))
 
