@@ -3,6 +3,7 @@ import "./ProcessSection.css";
 import processBg from "../../assets/bg-banner.webp"; // update to your image
 
 import { FaPlay, FaCheck, FaTimes } from "react-icons/fa";
+import { REAL_PROCESS_VIDEO_READY } from "../../utils/videoTestimonials";
 
 const steps = [
   "We Do Our Research.",
@@ -74,36 +75,41 @@ const ProcessSection = ({ videoSrc = "https://www.youtube.com/embed/dQw4w9WgXcQ"
               ))}
             </ul>
 
-            <div className="ProcessSection-cardActions">
-              <button
-                className="ProcessSection-cta"
-                onClick={() => setOpen(true)}
-                aria-haspopup="dialog"
-                aria-expanded={open}
-              >
-                <FaPlay className="ProcessSection-ctaIcon" />
-                <span className="ProcessSection-ctaText">Watch Video</span>
-              </button>
-            </div>
+            {/* No real video yet — the play buttons are hidden (utils/videoTestimonials). */}
+            {REAL_PROCESS_VIDEO_READY && (
+              <div className="ProcessSection-cardActions">
+                <button
+                  className="ProcessSection-cta"
+                  onClick={() => setOpen(true)}
+                  aria-haspopup="dialog"
+                  aria-expanded={open}
+                >
+                  <FaPlay className="ProcessSection-ctaIcon" />
+                  <span className="ProcessSection-ctaText">Watch Video</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* RIGHT: centered play button */}
-          <div className="ProcessSection-rightArea" aria-hidden="true">
-            <button
-              className="ProcessSection-play"
-              aria-label="Play process video"
-              onClick={() => setOpen(true)}
-            >
-              <span className="ProcessSection-playInner">
-                <FaPlay />
-              </span>
-            </button>
-          </div>
+          {REAL_PROCESS_VIDEO_READY && (
+            <div className="ProcessSection-rightArea" aria-hidden="true">
+              <button
+                className="ProcessSection-play"
+                aria-label="Play process video"
+                onClick={() => setOpen(true)}
+              >
+                <span className="ProcessSection-playInner">
+                  <FaPlay />
+                </span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Modal (lazy iframe mount) */}
-      {open && (
+      {REAL_PROCESS_VIDEO_READY && open && (
         <div className="ProcessSection-modal" role="dialog" aria-modal="true" aria-label="Process video dialog">
           <div className="ProcessSection-modalBackdrop" onClick={() => setOpen(false)} />
           <div className="ProcessSection-modalInner" role="document">

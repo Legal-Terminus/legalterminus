@@ -3799,10 +3799,14 @@ not-found page and pass anyway.
   `REAL_VIDEOS_READY` (`Frontend/src/utils/videoTestimonials.js`) is false. This applies with
   Theme C on or off, so it reaches the live site at the next release. To restore one section:
   put the real links in its list and delete its guard line.
-- **Still showing placeholders, deliberately left for a decision:** the Media page's "Media
-  Coverage" grid (six videos under TV channel names — none is that channel's coverage), and
-  the About Us "process" play button (opens the same joke video). Neither is a testimonial, so
-  neither was in the instruction to hide.
+- **Media Coverage and the process video are hidden too** (product owner, 2026-10-11): the
+  Media page's six videos under TV channel names, and the "Watch Video" buttons in
+  `ProcessSection` (which is not on any live page). Print Media stays. Each has its own switch
+  beside `REAL_VIDEOS_READY`.
+- **`docs/website-hidden-content.md`** lists everything hidden, why, what the firm must send
+  to bring each back, and what else was found. Measured by opening all 79 pages in a browser
+  and scrolling: the video section was on 63 pages before and is on none now. (The "62 of 78"
+  in the line above came from the prerendered snapshots, which miss lower sections.)
 
 **Open — needs the firm or the product owner**
 - **#209 Home 7 (count-up on 1K+ / 120+):** `HomeCertisfiedClient` has its figures commented out

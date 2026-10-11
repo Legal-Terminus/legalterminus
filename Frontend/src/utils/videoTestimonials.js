@@ -12,3 +12,20 @@
  * REAL_VIDEOS_READY itself when EVERY such component has real links.
  */
 export const REAL_VIDEOS_READY = false;
+
+/**
+ * The Media page's "Media Coverage" grid: six videos under TV channel names,
+ * none of which is that channel's coverage of the firm (same placeholders, plus
+ * two music videos). Hidden until the real coverage links are supplied — put
+ * them in `mediaCoverage` in Pages/Media/Media.jsx, then set this to true.
+ */
+export const REAL_MEDIA_COVERAGE_READY = false;
+
+/**
+ * The "Watch our process" video (ProcessSection). Its default link is the same
+ * placeholder. With this false the two play buttons are not shown and the video
+ * cannot be opened; the section's text and steps stay. Pass a real `videoSrc`
+ * (or change the default) and set this to true.
+ */
+export const REAL_PROCESS_VIDEO_READY = false;
+

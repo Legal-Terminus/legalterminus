@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import './Media.css'
+import { REAL_MEDIA_COVERAGE_READY } from '../../utils/videoTestimonials'
 import news1 from '../../assets/NewsPaper.webp'
 import news2 from '../../assets/NewsPaper2.webp'
 import news3 from '../../assets/NewsPaper3.webp'
@@ -76,20 +77,24 @@ export default function Media() {
       </section>
 
       <div className="media-container">
-        <section className="media-coverage">
-          <h2>Media Coverage</h2>
-          <p className="media-coverage-sub">
-            Watch Legal Terminus featured across leading news channels.
-          </p>
-          <div className="mc-grid">
-            {mediaCoverage.map((item) => (
-              <article className="mc-card" key={item.channel}>
-                <LazyVideo videoId={item.videoId} title={item.channel} />
-                <h3 className="mc-channel">{item.channel}</h3>
-              </article>
-            ))}
-          </div>
-        </section>
+        {/* Placeholder videos only — hidden until the real coverage links exist
+            (see utils/videoTestimonials). Print Media below is real and stays. */}
+        {REAL_MEDIA_COVERAGE_READY && (
+          <section className="media-coverage">
+            <h2>Media Coverage</h2>
+            <p className="media-coverage-sub">
+              Watch Legal Terminus featured across leading news channels.
+            </p>
+            <div className="mc-grid">
+              {mediaCoverage.map((item) => (
+                <article className="mc-card" key={item.channel}>
+                  <LazyVideo videoId={item.videoId} title={item.channel} />
+                  <h3 className="mc-channel">{item.channel}</h3>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Print Media — auto-scrolling newspaper clippings */}
         <section className="media-print">
