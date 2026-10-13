@@ -190,7 +190,16 @@ jobs:
             --set-env-vars="GMAIL_USER=${{ secrets.BACKEND_GMAIL_USER }}" \
             --set-env-vars="^||^GMAIL_APP_PASSWORD=${{ secrets.BACKEND_GMAIL_APP_PASSWORD }}" \
             --set-env-vars="EMAIL_FROM=${{ secrets.BACKEND_EMAIL_FROM }}" \
+            --set-env-vars="CONTACT_LEADS_EMAIL=${{ vars.CONTACT_LEADS_EMAIL || 'noreply@legalterminus.com' }}" \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
+
+          # #20: CONTACT_LEADS_EMAIL above is where website enquiries are emailed.
+          # The firm set it by hand in the Cloud Run console and it "kept
+          # disappearing": --set-env-vars REPLACES the service's whole
+          # environment, so every deploy removed it. A variable this service
+          # needs must be listed in this command — one added in the console
+          # lasts only until the next deploy. The address is the firm's choice
+          # (issue #20); the repository variable of the same name overrides it.
 
           # Get Backend service URL for payment redirects
           BACKEND_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
