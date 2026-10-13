@@ -4274,8 +4274,17 @@ change is on `main`; #207 was already there (`6f7be021`).
   and auth domain, the messages, the in-app-browser hint, and the return from Google
   with no result. The Google round trip itself cannot be automated (Google refuses
   automated sign-ins) and is checked on a real phone.
-- **Not covered:** the website's Signup page and Buy Now popup also sign in with
-  Google by pop-up only.
+- **The website, same day (on `main` / QA only — NOT in production).** Its Login and
+  Signup pages and the Buy Now popup signed in the same pop-up-only way. They now
+  share `Frontend/src/utils/googleSignIn.js`, the same rules as the Portal's helper
+  (two apps, no shared package: change one, change the other). The return from
+  Google is finished at start-up (`main.jsx`), not in a page, because the Buy Now
+  popup can be open on any page; after a redirect the customer comes back signed in
+  with the popup closed, and Buy Now then goes straight to checkout. Both workflows
+  build the website with its own host as the auth domain. The Login page no longer
+  shows raw Firebase codes or the developer note about authorised domains.
+  Tests: `Frontend/tests/e2e/google-sign-in.spec.js` (needs the site on port 5174).
+  The website reaches production with the next release that carries the website.
 - **Ledger:** no release tag was cut for this deploy. Production is `v1.6.0-lt.7`
   plus this one commit until the next tag.
 

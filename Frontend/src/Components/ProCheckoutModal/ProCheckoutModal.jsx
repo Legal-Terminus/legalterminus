@@ -3,8 +3,6 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
   updateProfile,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -14,6 +12,9 @@ import {
 } from "../../utils/checkout";
 import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
 import { registerUser } from "../../utils/registerUser.js";
+import {
+  startGoogleSignIn, googleSignInMessage, UNSUPPORTED_BROWSER_MESSAGE,
+} from "../../utils/googleSignIn.js";
 import { getServiceDisplayName } from "../../utils/serviceConfig.js";
 import "./ProCheckoutModal.css";
 
@@ -300,13 +301,21 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
     setAuthLoading(true);
     const auth = getAuth();
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      // #213: redirect on a phone, pop-up on a desktop — see utils/googleSignIn.js.
+      // After a redirect the page reloads signed in with this popup closed;
+      // Buy Now then goes straight to checkout.
+      const result = await startGoogleSignIn(auth);
+      if (result === "redirecting") return;
+      if (result === "unsupported") {
+        setAuthError(UNSUPPORTED_BROWSER_MESSAGE);
+        return;
+      }
       await afterAuth(result.user, "google");
     } catch (err) {
-      if (err.code !== "auth/popup-closed-by-user" && err.code !== "auth/cancelled-popup-request") {
-        setAuthError("Google sign-in failed. Please try again.");
-      }
+      console.error("[google-sign-in]", err?.code, err);
+      // null = the user closed the Google window themselves — say nothing.
+      const message = googleSignInMessage(err?.code);
+      if (message) setAuthError(message);
     } finally {
       setAuthLoading(false);
     }

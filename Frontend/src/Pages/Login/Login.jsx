@@ -2,14 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
   onAuthStateChanged,
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { getFirebaseAuth, getFirebaseDb } from "../../utils/firebase";
 import { saveUserProfile } from "../../utils/userProfile";
 import { registerUser } from "../../utils/registerUser";
+import {
+  startGoogleSignIn, finishGoogleRedirect, takeGoogleRedirectError,
+  googleSignInMessage, UNSUPPORTED_BROWSER_MESSAGE,
+} from "../../utils/googleSignIn";
 import "./Login.css";
 import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
 
@@ -27,6 +29,21 @@ const Login = () => {
     });
     return () => unsubscribe();
   }, [navigate]);
+
+  // #213: a phone signs in with Google by leaving the site and coming back. If
+  // that return failed, say so here (a success is already signed in, and the
+  // effect above moves on to the profile).
+  useEffect(() => {
+    let active = true;
+    finishGoogleRedirect().then(() => {
+      // Checked BEFORE taking the message: it can be read only once, and a
+      // mount that has already gone must not use it up.
+      if (!active) return;
+      const message = takeGoogleRedirectError();
+      if (message) setErrors((prev) => ({ ...prev, email: message }));
+    });
+    return () => { active = false; };
+  }, []);
 
   const clearFieldErr = (field) => {
     setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -108,8 +125,13 @@ const Login = () => {
     setLoading(true);
     const auth = getFirebaseAuth();
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      // #213: redirect on a phone, pop-up on a desktop — see utils/googleSignIn.js.
+      const result = await startGoogleSignIn(auth);
+      if (result === "redirecting") return;
+      if (result === "unsupported") {
+        setErrors((prev) => ({ ...prev, email: UNSUPPORTED_BROWSER_MESSAGE }));
+        return;
+      }
       // Ensure the Firestore user doc exists/synced via the backend chokepoint
       // (ISO createdAt, normalized fields, role logic) instead of a direct write.
       await registerUser(result.user, { provider: "google" });
@@ -126,13 +148,9 @@ const Login = () => {
       navigate("/my-profile");
     } catch (error) {
       console.error("Google login error:", error.code, error.message);
-      if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
-        // user closed popup — do nothing
-      } else if (error.code === "auth/unauthorized-domain") {
-        setErrors((prev) => ({ ...prev, email: "This domain is not authorized in Firebase. Add localhost to Firebase Console → Authentication → Settings → Authorized domains." }));
-      } else {
-        setErrors((prev) => ({ ...prev, email: `Sign-in failed: ${error.code || error.message}` }));
-      }
+      // null = the user closed the Google window themselves — say nothing.
+      const message = googleSignInMessage(error.code);
+      if (message) setErrors((prev) => ({ ...prev, email: message }));
     } finally {
       setLoading(false);
     }

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   createUserWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
   onAuthStateChanged,
 } from "firebase/auth";
 import { getFirebaseAuth } from "../../utils/firebase";
 import { registerUser } from "../../utils/registerUser";
+import {
+  startGoogleSignIn, finishGoogleRedirect, takeGoogleRedirectError,
+  googleSignInMessage, UNSUPPORTED_BROWSER_MESSAGE,
+} from "../../utils/googleSignIn";
 import "./Signup.css";
 import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
 
@@ -28,6 +30,21 @@ const Signup = () => {
     });
     return () => unsubscribe();
   }, [navigate]);
+
+  // #213: a phone signs in with Google by leaving the site and coming back. If
+  // that return failed, say so here (a success is already signed in, and the
+  // effect above moves on to the profile).
+  useEffect(() => {
+    let active = true;
+    finishGoogleRedirect().then(() => {
+      // Checked BEFORE taking the message: it can be read only once, and a
+      // mount that has already gone must not use it up.
+      if (!active) return;
+      const message = takeGoogleRedirectError();
+      if (message) setErrors((prev) => ({ ...prev, email: message }));
+    });
+    return () => { active = false; };
+  }, []);
 
   const clearFieldErr = (field) => {
     setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -119,15 +136,20 @@ const Signup = () => {
     setLoading(true);
     const auth = getFirebaseAuth();
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      // #213: redirect on a phone, pop-up on a desktop — see utils/googleSignIn.js.
+      const result = await startGoogleSignIn(auth);
+      if (result === "redirecting") return;
+      if (result === "unsupported") {
+        setErrors((prev) => ({ ...prev, email: UNSUPPORTED_BROWSER_MESSAGE }));
+        return;
+      }
       await createUserProfile(result.user, "google");
       navigate("/my-profile");
     } catch (error) {
-      console.error("Google signup error:", error);
-      if (error.code !== "auth/popup-closed-by-user") {
-        setErrors((prev) => ({ ...prev, email: "Google signup failed" }));
-      }
+      console.error("Google signup error:", error.code, error);
+      // null = the user closed the Google window themselves — say nothing.
+      const message = googleSignInMessage(error.code);
+      if (message) setErrors((prev) => ({ ...prev, email: message }));
     } finally {
       setLoading(false);
     }

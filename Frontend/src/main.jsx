@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { getFirebaseApp } from './utils/firebase.js'
+import { finishGoogleRedirect } from './utils/googleSignIn.js'
 import { applyTheme, THEME_C } from './utils/theme.js'
 
 // E-25: Theme C is on only where the build sets VITE_THEME_C (QA). No-op otherwise.
@@ -12,6 +13,10 @@ applyTheme()
 // it (e.g. the checkout/payment modal) work on every page — including standalone
 // landing pages that hide the navbar (which used to be what triggered init).
 getFirebaseApp()
+
+// #213: on a phone, Google sign-in leaves the site and comes back. Finish it
+// here, on whatever page that was — the Buy Now popup can be opened anywhere.
+finishGoogleRedirect()
 
 const start = () => createRoot(document.getElementById('root')).render(
   <StrictMode>
