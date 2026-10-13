@@ -5,8 +5,9 @@ import { Loader2 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { SkeletonCards } from '../../components/common/Skeleton';
 import { useToast } from '../../components/common/toastContext';
+import { useAuthStore } from '../../store/authStore';
 import {
-  getWebsiteOrders, reconcileOrder, retryOrderMatter, WEBSITE_ORDERS_KEY,
+  approveOrder, getWebsiteOrders, reconcileOrder, retryOrderMatter, WEBSITE_ORDERS_KEY,
   type OrderStatus, type WebsiteOrder,
 } from '../../api/websiteOrders';
 
@@ -19,7 +20,7 @@ import {
  * to do — because a payment with no matter is a customer waiting for nothing.
  */
 
-const inr = (n: number) => `₹${(n ?? 0).toLocaleString('en-IN')}`;
+const inr = (n: number) => `₹${(n ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 const when = (iso?: string) => (iso
   ? new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
   : '—');
@@ -40,6 +41,8 @@ function matterLine(o: WebsiteOrder): { text: string; warn: boolean } {
   if (o.status === 'review') return { text: o.reviewReason ?? 'The amount paid does not match. Check before opening a matter.', warn: true };
   if (o.status !== 'paid') return { text: '—', warn: false };
   switch (o.matter.state) {
+    // #212: payment alone opens nothing — someone approves the order first.
+    case 'awaiting_approval': return { text: 'Waiting for approval. Approve the order to open its matter.', warn: true };
     case 'created': return { text: o.matter.deleted ? 'Matter opened, then deleted' : 'Matter opened', warn: false };
     case 'failed': return { text: `Could not open the matter: ${o.matter.error ?? 'unknown reason'}`, warn: true };
     case 'not_applicable': return { text: `No matter opened. ${o.matter.reason ?? ''} Open one by hand.`, warn: true };
@@ -70,7 +73,15 @@ function OrderDetails({ o }: { o: WebsiteOrder }) {
     ['Product code', o.productCode],
     ['Customer', [o.customer?.name, o.customer?.email, o.customer?.phone].filter(Boolean).join(' · ')],
     ['Ordered', when(o.createdAt)],
-    ['Price charged', inr(o.amount)],
+    // #212: prices are exclusive of GST. An order made before that has no GST.
+    ...(o.gst ? ([
+      ['Price', inr(o.price ?? o.amount)],
+      [`GST (${o.gstPercent}%)`, inr(o.gst)],
+      ['Total charged', inr(o.amount)],
+    ] as [string, string][]) : ([['Price charged', inr(o.amount)]] as [string, string][])),
+    ...(o.matter.approvedAt ? ([
+      ['Approved', `${o.matter.approvedByName || 'A member of staff'} · ${when(o.matter.approvedAt)}`],
+    ] as [string, string][]) : []),
     ...(paidSomething ? ([
       ['Amount received', o.amountPaid != null ? inr(o.amountPaid) : '—'],
       ['Paid', when(o.paidAt)],
@@ -88,8 +99,8 @@ function OrderDetails({ o }: { o: WebsiteOrder }) {
       {paidSomething && o.amountPaid != null && (
         <p className={`text-sm ${matches ? 'text-ink-muted' : 'text-amber-800'}`}>
           {matches
-            ? `The amount received matches the price of this plan (${inr(o.amount)}).`
-            : `The amount received (${inr(o.amountPaid)}) does not match the price of this plan (${inr(o.amount)}).`}
+            ? `The amount received matches what was charged for this plan (${inr(o.amount)}${o.gst ? ', including GST' : ''}).`
+            : `The amount received (${inr(o.amountPaid)}) does not match what was charged for this plan (${inr(o.amount)}${o.gst ? ', including GST' : ''}).`}
         </p>
       )}
       <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-sm">
@@ -106,6 +117,10 @@ function OrderDetails({ o }: { o: WebsiteOrder }) {
 
 export default function WebsiteOrdersPage() {
   const [open, setOpen] = useState<string | null>(null);
+  // Team members approve orders (#212); retrying a matter and checking a
+  // payment with the gateway stay with admins and managers.
+  const role = useAuthStore((s) => s.role);
+  const canManage = role === 'admin' || role === 'manager';
   const qc = useQueryClient();
   const toast = useToast();
   const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery({
@@ -123,6 +138,8 @@ export default function WebsiteOrdersPage() {
     onSuccess: (o) => {
       refresh();
       if (o.matter.state === 'created') toast.success('Matter opened.');
+      // Its service has a workflow now: the order joins the ones waiting for approval.
+      else if (o.matter.state === 'awaiting_approval') toast.info('A matter can now be opened for this order. Approve it to open the matter.');
       else toast.error(o.matter.error || o.matter.reason || 'The matter could not be opened.');
     },
     onError: (e: Error) => toast.error(e.message || 'Could not open the matter.'),
@@ -137,10 +154,26 @@ export default function WebsiteOrdersPage() {
     },
     onError: (e: Error) => toast.error(e.message || 'Could not check with the payment gateway.'),
   });
-  const busy = retry.isPending || check.isPending;
+  const approve = useMutation({
+    mutationFn: approveOrder,
+    onSuccess: (o) => {
+      refresh();
+      if (o.matter.state === 'created') toast.success('Order approved. The matter is open.');
+      else toast.error(o.matter.error || 'The order is approved, but the matter could not be opened.');
+    },
+    // Someone else may have approved it a moment ago; show what is true now.
+    onError: (e: Error) => { refresh(); toast.error(e.message || 'Could not approve the order.'); },
+  });
+  const busy = retry.isPending || check.isPending || approve.isPending;
 
   const Actions = ({ o }: { o: WebsiteOrder }) => (
     <div className="flex flex-wrap gap-2">
+      {o.status === 'paid' && o.matter.state === 'awaiting_approval' && (
+        <button type="button" className="btn-primary min-h-11 disabled:opacity-50" disabled={busy}
+          aria-label={`Approve order ${o.orderId} and open its matter`} onClick={() => approve.mutate(o.orderId)}>
+          Approve and open matter
+        </button>
+      )}
       <button type="button" className="btn-secondary min-h-11" aria-expanded={open === o.orderId}
         aria-label={`${open === o.orderId ? 'Hide' : 'Show'} details of order ${o.orderId}`}
         onClick={() => setOpen(open === o.orderId ? null : o.orderId)}>
@@ -149,13 +182,13 @@ export default function WebsiteOrdersPage() {
       {o.matter.state === 'created' && o.matter.taskId && !o.matter.deleted && (
         <Link to={`/tasks/${o.matter.taskId}`} className="btn-secondary min-h-11">Open matter</Link>
       )}
-      {o.status === 'paid' && (o.matter.state === 'failed' || o.matter.state === 'not_applicable') && (
+      {canManage && o.status === 'paid' && (o.matter.state === 'failed' || o.matter.state === 'not_applicable') && (
         <button type="button" className="btn-secondary min-h-11 disabled:opacity-50" disabled={busy}
           aria-label={`Try to open the matter for order ${o.orderId}`} onClick={() => retry.mutate(o.orderId)}>
           Try again
         </button>
       )}
-      {(o.status === 'created' || o.status === 'failed' || o.status === 'abandoned') && (
+      {canManage && (o.status === 'created' || o.status === 'failed' || o.status === 'abandoned') && (
         <button type="button" className="btn-secondary min-h-11 disabled:opacity-50" disabled={busy}
           aria-label={`Check order ${o.orderId} with the payment gateway`} onClick={() => check.mutate(o.orderId)}>
           Check payment
@@ -167,7 +200,7 @@ export default function WebsiteOrdersPage() {
   return (
     <PageShell
       title="Website orders"
-      subtitle="What was paid for on the website, and whether a matter was opened for it."
+      subtitle="What was paid for on the website. Approve a paid order to open its matter."
     >
       {isLoading ? <SkeletonCards count={4} /> : isError ? (
         <div role="alert" className="rounded-lg border border-red-100 bg-red-50 p-3.5 text-sm text-red-700">The orders could not be loaded.</div>

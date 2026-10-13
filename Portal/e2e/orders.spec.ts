@@ -12,18 +12,34 @@ import { env } from './helpers';
  * the E24-S04 table. What is NOT covered here is Razorpay's own API and
  * checkout script.
  *
- * The buyer is the test client. Incorporation has a workflow, so paying for it
- * opens a matter; a service without one does not.
+ * The buyer is the test client. Incorporation has a workflow, so a paid order
+ * for it WAITS FOR APPROVAL and opens a matter once staff approve it (#212);
+ * a service without one never does.
+ *
+ * #212 also made prices exclusive of GST: what is charged is price + GST.
  */
 
 const API = () => process.env.E2E_API_BASE ?? 'http://localhost:5001';
-type Pub = { orderId: string; status: string; amount: number; matterId: string | null; failureReason: string | null; checkout?: { gateway: string } };
-type Full = Pub & { matter: { state: string; taskId?: string; reason?: string }; uid: string; gatewayPaymentId?: string; reviewReason?: string };
+type Pub = { orderId: string; status: string; price: number; gst: number; gstPercent: number; amount: number; matterId: string | null; failureReason: string | null; checkout?: { gateway: string } };
+type Full = Pub & { matter: { state: string; taskId?: string; reason?: string; approvedBy?: string; approvedByName?: string }; uid: string; gatewayPaymentId?: string; reviewReason?: string };
 type Product = { key: string; serviceKey: string | null; plans: { id: string; price: number; active: boolean }[] };
 
 let withWorkflow: { productKey: string; planId: string; price: number };
 let withoutWorkflow: { productKey: string; planId: string; price: number };
+/** The GST rate, read from the server — never assumed here. */
+let gstPercent = 0;
+/** What a plan costs the customer: its price plus GST, to the paisa. */
+const charged = (price: number) => Math.round(price * (100 + gstPercent)) / 100;
 const matters: string[] = [];
+
+/** A member of staff approves a paid order. Returns the response. */
+const approve = async (orderId: string, role: 'admin' | 'manager' | 'team' | 'client' = 'admin') => {
+  const who = await apiAs(role);
+  try {
+    const res = await who.post(`/api/orders/${orderId}/approve`);
+    return { status: res.status(), body: await res.json() };
+  } finally { await who.dispose(); }
+};
 
 const started: string[] = [];
 const start = async (buyer: APIRequestContext, p: { productKey: string; planId: string }, extra: Record<string, unknown> = {}) => {
@@ -63,6 +79,8 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       const b = products.find((p) => !p.serviceKey || !covered.has(p.serviceKey));
       test.skip(!a || !b, 'need one product with a workflow and one without');
       withWorkflow = pick(a!); withoutWorkflow = pick(b!);
+      gstPercent = (await (await anon.get('/api/public/pricing')).json()).gstPercent;
+      expect(gstPercent, 'the website is told the GST rate').toBeGreaterThan(0);
     } finally { await admin.dispose(); await anon.dispose(); }
   });
 
@@ -82,13 +100,18 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       const res = await start(buyer, withWorkflow);
       expect(res.status()).toBe(201);
       const order = await res.json() as Pub;
-      expect(order.amount).toBe(withWorkflow.price);
+      // #212: the price is exclusive of GST; the customer is charged price + GST.
+      expect(order.price).toBe(withWorkflow.price);
+      expect(order.gstPercent).toBe(gstPercent);
+      expect(order.gst).toBe(Math.round(withWorkflow.price * gstPercent) / 100);
+      expect(order.amount).toBe(charged(withWorkflow.price));
+      expect(order.amount).toBeGreaterThan(order.price);
       expect(order.status).toBe('created');
       expect(order.checkout?.gateway).toBe('simulated');
     } finally { await buyer.dispose(); await anon.dispose(); }
   });
 
-  test('paying for a service with a workflow opens a matter, records the payment, and tells staff', async () => {
+  test('a paid order waits for approval; a team member approves it and the matter opens, once', async () => {
     const buyer = await apiAs('client');
     const admin = await apiAs('admin');
     try {
@@ -97,27 +120,45 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       const verify = await buyer.post(`/api/orders/${order.orderId}/verify`, { data: paid });
       expect(verify.status()).toBe(200);
       const after = await verify.json() as Pub;
-      track(after);
       expect(after.status).toBe('paid');
-      expect(after.matterId, 'a matter was opened').toBeTruthy();
+      // #212: payment alone opens nothing.
+      expect(after.matterId, 'no matter until staff approve').toBeNull();
+      expect((await full(order.orderId)).matter.state).toBe('awaiting_approval');
 
-      const matter = await (await admin.get(`/api/tasks/${after.matterId}`)).json();
-      expect(matter.clientUid).toBe(env('E2E_CLIENT_UID'));
-      expect(matter.paymentStatus).toBe('fully_paid');
-      expect(matter.totalCost).toBe(withWorkflow.price);
-      expect(matter.amountPaid).toBe(withWorkflow.price);
-      expect(matter.status, 'paid in full, so it is live — not waiting for approval').not.toBe('pending_admin_approval');
-
-      // The customer sees it in their own order history, and staff were told.
+      // The customer sees it in their own order history, and staff were asked to approve.
       const history = await (await buyer.get('/api/auth/me/orders')).json();
       expect(history.orders.some((o: { orderId: string; status: string }) => o.orderId === order.orderId && o.status === 'success')).toBe(true);
-      await expect.poll(() => staffTold(/Website order paid — matter opened/), { timeout: 20_000 }).toBe(true);
+      await expect.poll(() => staffTold(/approve it to open the matter/), { timeout: 20_000 }).toBe(true);
 
-      // The same confirmation again — by return AND by webhook — changes nothing.
+      // The same confirmation again — by return AND by webhook — changes nothing,
+      // and does not open a matter either.
       expect((await buyer.post(`/api/orders/${order.orderId}/verify`, { data: paid })).status()).toBe(200);
-      const again = await simulate(buyer, order.orderId, 'success_webhook');
-      expect(again.delivered.outcome).toBe('noop');
-      expect((await full(order.orderId)).matter.taskId, 'still the one matter').toBe(after.matterId);
+      expect((await simulate(buyer, order.orderId, 'success_webhook')).delivered.outcome).toBe('noop');
+      expect((await full(order.orderId)).matter.state).toBe('awaiting_approval');
+
+      // The customer cannot approve their own order; a team member can.
+      expect((await approve(order.orderId, 'client')).status).toBe(403);
+      const approved = await approve(order.orderId, 'team');
+      expect(approved.status).toBe(200);
+      const done = approved.body as Full;
+      track(done);
+      expect(done.matter.state).toBe('created');
+      expect(done.matter.approvedBy, 'who approved is recorded').toBe(env('E2E_TEAM_UID'));
+
+      const matter = await (await admin.get(`/api/tasks/${done.matter.taskId}`)).json();
+      expect(matter.clientUid).toBe(env('E2E_CLIENT_UID'));
+      expect(matter.paymentStatus).toBe('fully_paid');
+      // What the customer paid, GST included.
+      expect(matter.totalCost).toBe(charged(withWorkflow.price));
+      expect(matter.amountPaid).toBe(charged(withWorkflow.price));
+      expect(matter.status, 'approved on the order, so it is live — no second approval').not.toBe('pending_admin_approval');
+      expect((await mine(buyer, order.orderId)).matterId, 'the customer can now follow it').toBe(done.matter.taskId);
+
+      // Approving again is refused, and there is still the one matter.
+      const again = await approve(order.orderId, 'admin');
+      expect(again.status).toBe(409);
+      expect(again.body.message).toMatch(/already been opened/);
+      expect((await full(order.orderId)).matter.taskId).toBe(done.matter.taskId);
     } finally { await buyer.dispose(); await admin.dispose(); }
   });
 
@@ -127,19 +168,21 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       const order = await (await start(buyer, withWorkflow)).json() as Pub;
       const sim = await simulate(buyer, order.orderId, 'success_webhook');
       expect(sim.delivered.outcome).toBe('paid');
-      const after = await mine(buyer, order.orderId);
-      track(after);
-      expect(after.status).toBe('paid');
-      expect(after.matterId).toBeTruthy();
+      expect((await mine(buyer, order.orderId)).status).toBe('paid');
+      expect((await full(order.orderId)).matter.state).toBe('awaiting_approval');
     } finally { await buyer.dispose(); }
   });
 
-  test('the webhook arrives twice: one payment, one matter', async () => {
+  test('the webhook arrives twice, and two people approve at once: one payment, one matter', async () => {
     const buyer = await apiAs('client');
     try {
       const order = await (await start(buyer, withWorkflow)).json() as Pub;
       const sim = await simulate(buyer, order.orderId, 'duplicate_webhook');
       expect(sim.delivered.map((d: { outcome: string }) => d.outcome)).toEqual(['paid', 'noop']);
+      expect((await full(order.orderId)).matter.state).toBe('awaiting_approval');
+
+      const both = await Promise.all([approve(order.orderId, 'admin'), approve(order.orderId, 'manager')]);
+      expect(both.map((r) => r.status).sort(), 'exactly one approval goes through').toEqual([200, 409]);
       const after = await full(order.orderId);
       track(after);
       expect(after.status).toBe('paid');
@@ -179,7 +222,10 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       const after = await full(order.orderId);
       expect(after.status).toBe('review');
       expect(after.matter.state).toBe('none');
-      expect(after.reviewReason).toContain(String(withWorkflow.price));
+      // Compared with what was CHARGED — the price plus GST.
+      expect(after.reviewReason).toContain(String(charged(withWorkflow.price)));
+      // An order held for review cannot be approved into a matter.
+      expect((await approve(order.orderId)).status).toBe(409);
       await expect.poll(() => staffTold(/Website payment needs review/), { timeout: 20_000 }).toBe(true);
     } finally { await buyer.dispose(); }
   });
@@ -196,7 +242,6 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
 
       const paid = await simulate(buyer, order.orderId, 'success');
       const after = await (await buyer.post(`/api/orders/${order.orderId}/verify`, { data: paid })).json() as Pub;
-      track(after);
       expect(after.status).toBe('paid');
       expect(after.failureReason).toBeNull();
       // And a paid order is never turned back into a failed one.
@@ -214,6 +259,10 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       expect(after.matterId).toBeNull();
       expect((await full(order.orderId)).matter.state).toBe('not_applicable');
       await expect.poll(() => staffTold(/open the matter by hand/), { timeout: 20_000 }).toBe(true);
+      // There is nothing to approve: no matter can be opened for it.
+      const res = await approve(order.orderId);
+      expect(res.status).toBe(409);
+      expect(res.body.message).toMatch(/not waiting for approval/);
     } finally { await buyer.dispose(); }
   });
 
@@ -251,27 +300,46 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
     try {
       const order = await (await start(buyer, withWorkflow)).json() as Pub;
       await simulate(buyer, order.orderId, 'success_webhook');
-      const paid = await full(order.orderId);
+      const paid = (await approve(order.orderId)).body as Full;
       track(paid);
+      expect(paid.matter.state).toBe('created');
       const sim = await simulate(buyer, order.orderId, 'refund');
       expect(sim.delivered.outcome).toBe('refunded');
       expect((await mine(buyer, order.orderId)).status).toBe('refunded');
       expect((await admin.get(`/api/tasks/${paid.matter.taskId}`)).status(), 'the matter is still there').toBe(200);
       await expect.poll(() => staffTold(/Website order refunded/), { timeout: 20_000 }).toBe(true);
+
+      // Refunded BEFORE anyone approved: it can no longer be approved into a matter.
+      const early = await (await start(buyer, withWorkflow)).json() as Pub;
+      await simulate(buyer, early.orderId, 'success_webhook');
+      expect((await simulate(buyer, early.orderId, 'refund')).delivered.outcome).toBe('refunded');
+      const refused = await approve(early.orderId);
+      expect(refused.status).toBe(409);
+      expect(refused.body.message).toMatch(/refunded/);
+      expect((await full(early.orderId)).matter.state).toBe('awaiting_approval');
     } finally { await buyer.dispose(); await admin.dispose(); }
   });
 
-  test('an order is its owner’s: others cannot read it, and only staff can list, retry or reconcile', async () => {
+  test('an order is its owner’s: only staff can list and approve, only admins and managers retry or reconcile', async () => {
     const buyer = await apiAs('client');
     const team = await apiAs('team');
     const manager = await apiAs('manager');
+    const pro = await apiAs('pro');
     try {
       const order = await (await start(buyer, withoutWorkflow)).json() as Pub;
-      expect((await team.get(`/api/orders/${order.orderId}`)).status()).toBe(404);
+      // Paying and confirming are the owner's alone — a member of staff cannot do them.
       expect((await team.post(`/api/orders/${order.orderId}/simulate`, { data: { outcome: 'success' } })).status()).toBe(404);
       expect((await team.post(`/api/orders/${order.orderId}/verify`, { data: { gatewayPaymentId: 'x', signature: 'y' } })).status()).toBe(404);
-      for (const who of [buyer, team]) {
+      // Someone who is neither the owner nor staff cannot see it at all.
+      expect((await pro.get(`/api/orders/${order.orderId}`)).status()).toBe(404);
+      for (const who of [buyer, pro]) {
         expect((await who.get('/api/orders')).status()).toBe(403);
+        expect((await who.post(`/api/orders/${order.orderId}/approve`)).status()).toBe(403);
+      }
+      // #212: a team member approves orders, so they can see them — and no more.
+      expect((await team.get('/api/orders?limit=5')).status()).toBe(200);
+      expect((await team.get(`/api/orders/${order.orderId}`)).status()).toBe(200);
+      for (const who of [buyer, team, pro]) {
         expect((await who.post(`/api/orders/${order.orderId}/retry-matter`)).status()).toBe(403);
         expect((await who.post(`/api/orders/${order.orderId}/reconcile`)).status()).toBe(403);
       }
@@ -282,14 +350,13 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       const own = await mine(buyer, order.orderId);
       expect(own).not.toHaveProperty('uid');
       expect(own).not.toHaveProperty('matter');
-    } finally { await buyer.dispose(); await team.dispose(); await manager.dispose(); }
+    } finally { await buyer.dispose(); await team.dispose(); await manager.dispose(); await pro.dispose(); }
   });
-  test('staff see website orders: a paid order links to its matter, and a missing payment can be checked', async ({ adminPage: page, teamPage }) => {
+  test('staff see website orders: a team member approves one, it links to its matter, and a missing payment can be checked', async ({ adminPage: page, teamPage, clientPage }) => {
     const buyer = await apiAs('client');
     try {
       const opened = await (await start(buyer, withWorkflow)).json() as Pub;
       await simulate(buyer, opened.orderId, 'success_webhook');
-      track(await full(opened.orderId));
       const silent = await (await start(buyer, withoutWorkflow)).json() as Pub;
       await simulate(buyer, silent.orderId, 'paid_silently');
 
@@ -297,6 +364,23 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       await expect(page.getByRole('heading', { name: 'Website orders' })).toBeVisible();
       const row = (id: string) => page.getByRole('row').filter({ hasText: id });
       await expect(row(opened.orderId).getByText('Paid', { exact: true })).toBeVisible();
+      // #212: paid, and waiting for someone to approve it.
+      await expect(row(opened.orderId).getByText(/Waiting for approval/)).toBeVisible();
+      await expect(row(opened.orderId).getByRole('link', { name: 'Open matter' })).toHaveCount(0);
+
+      // A team member sees the screen and approves the order — and is offered
+      // nothing to do with the payment itself.
+      await teamPage.goto('website-orders');
+      const teamRow = teamPage.getByRole('row').filter({ hasText: opened.orderId });
+      await expect(teamRow.getByText(/Waiting for approval/)).toBeVisible();
+      await expect(teamPage.getByRole('button', { name: /with the payment gateway/ })).toHaveCount(0);
+      await teamPage.getByRole('button', { name: `Approve order ${opened.orderId} and open its matter` }).click();
+      await expect(teamPage.getByText('Order approved. The matter is open.')).toBeVisible();
+      await expect(teamRow.getByText('Matter opened')).toBeVisible();
+      await expect(teamPage.getByRole('button', { name: `Approve order ${opened.orderId} and open its matter` })).toHaveCount(0);
+      track(await full(opened.orderId));
+
+      await page.reload();
       await expect(row(opened.orderId).getByText('Matter opened')).toBeVisible();
       await expect(row(opened.orderId).getByRole('link', { name: 'Open matter' })).toHaveAttribute('href', new RegExp(`/tasks/${(await full(opened.orderId)).matter.taskId}$`));
 
@@ -312,7 +396,11 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       // Details: the references to quote, how it was paid, and that the money matched.
       await page.getByRole('button', { name: `Show details of order ${opened.orderId}` }).click();
       const details = page.getByRole('row').filter({ hasText: 'Payment reference' });
-      await expect(details.getByText('The amount received matches the price of this plan')).toBeVisible();
+      await expect(details.getByText('The amount received matches what was charged for this plan')).toBeVisible();
+      // The price, the GST added to it, and who approved the order.
+      await expect(details.getByText(`GST (${gstPercent}%)`)).toBeVisible();
+      await expect(details.getByText('Total charged')).toBeVisible();
+      await expect(details.getByText('Approved', { exact: true })).toBeVisible();
       await expect(details.getByText((await full(opened.orderId)).gatewayPaymentId!)).toBeVisible();
       await expect(details.getByText('The payment gateway told us directly')).toBeVisible();
       await expect(details.getByText('Test payment (no money moved)')).toBeVisible();
@@ -323,8 +411,9 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       await expect(row(opened.orderId).getByText('Matter opened, then deleted')).toBeVisible();
       await expect(row(opened.orderId).getByRole('link', { name: 'Open matter' })).toHaveCount(0);
 
-      await teamPage.goto('website-orders');
-      await expect(teamPage).toHaveURL(/\/unauthorized/);
+      // A client has no business on this screen.
+      await clientPage.goto('website-orders');
+      await expect(clientPage).toHaveURL(/\/unauthorized/);
     } finally { await buyer.dispose(); }
   });
 });

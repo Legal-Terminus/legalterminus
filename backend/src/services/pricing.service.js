@@ -33,6 +33,22 @@ const SEED_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..
 
 const isAmount = (n) => Number.isInteger(n) && n > 0;
 
+/**
+ * GST added at payment (#212, decided by the firm 2026-10-12): the prices in
+ * the catalogue — and on the website's cards — are EXCLUSIVE of GST.
+ */
+export const GST_PERCENT = 18;
+
+/**
+ * A catalogue price with its GST, to the paisa. Pure.
+ * `total` is what the customer is charged. Prices are whole rupees, so
+ * price × percent ÷ 100 is exact to two places — no rounding is being hidden.
+ */
+export function withGst(price, percent = GST_PERCENT) {
+  const gst = Math.round(price * percent) / 100;
+  return { price, gstPercent: percent, gst, total: Math.round((price + gst) * 100) / 100 };
+}
+
 /** One stored product in a known shape. Bad plans are dropped, not guessed at. */
 export function normaliseProduct(key, raw = {}) {
   const plans = (Array.isArray(raw.plans) ? raw.plans : [])
@@ -84,7 +100,9 @@ export function findPlan(products, productKey, planId) {
   if (!plan) return null;
   return {
     productKey, productCode: product.code, planId: plan.id, label: product.label, planName: plan.name,
-    amount: plan.price, serviceKey: product.serviceKey,
+    // `amount` is what is CHARGED: the price plus GST (#212).
+    price: plan.price, gstPercent: GST_PERCENT, gst: withGst(plan.price).gst, amount: withGst(plan.price).total,
+    serviceKey: product.serviceKey,
   };
 }
 

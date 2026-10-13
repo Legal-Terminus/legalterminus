@@ -21,8 +21,19 @@
  *    matter is opened once.
  * 4. A payment is never lost to a later failure. If opening the matter fails,
  *    the order stays paid and says so, and staff can retry.
+ * 5. A matter is opened only after a member of staff APPROVES the paid order
+ *    (#212, decided by the firm 2026-10-12). Payment alone opens nothing.
  *
- * `decideSettlement` and `matterOutcome` are pure and unit-tested.
+ * The order's `matter.state`:
+ *
+ *   none ─▶ awaiting_approval ─▶ pending ─▶ created
+ *      │                            └─────▶ failed      (staff retry)
+ *      └──▶ not_applicable    (no linked service, or it has no workflow)
+ *
+ * AMOUNTS (#212): `price` is the catalogue price, `gst` the GST added to it,
+ * and `amount` the total charged — the figure every payment check compares.
+ *
+ * `decideSettlement`, `matterOutcome` and `canApprove` are pure and unit-tested.
  */
 import crypto from 'crypto';
 import { getDb } from '../config/firebase.js';
@@ -70,10 +81,29 @@ export function matterOutcome(order, hasWorkflow) {
   return { open: true };
 }
 
+/**
+ * Whether a paid order can be approved now. Pure. Returns null when it can,
+ * or the reason it cannot.
+ */
+export function canApprove(order) {
+  if (order.status === 'refunded') return 'This order was refunded. A matter cannot be opened for it.';
+  if (order.status !== 'paid') return 'Only a paid order can be approved.';
+  const state = order.matter?.state ?? 'none';
+  if (state === 'created') return 'A matter has already been opened for this order.';
+  if (state === 'pending') return 'This order is already being approved.';
+  if (state !== 'awaiting_approval') return 'This order is not waiting for approval.';
+  return null;
+}
+
+/** The price before GST. An order made before GST was added has only `amount`. */
+const priceOf = (o) => o.price ?? o.amount;
+const rupees = (n) => `₹${Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+
 /** What the customer may see of their own order. */
 export function publicOrder(o) {
   return {
     orderId: o.orderId, status: o.status, label: o.label, planName: o.planName,
+    price: priceOf(o), gst: o.gst ?? 0, gstPercent: o.gstPercent ?? 0,
     amount: o.amount, currency: o.currency, createdAt: o.createdAt, paidAt: o.paidAt ?? null,
     paymentReference: o.gatewayPaymentId ?? null, failureReason: o.failureReason ?? null,
     // Whether there is a matter to go and look at — not its internal state.
@@ -88,14 +118,15 @@ export async function getOrder(orderId) {
   return snap.exists ? { orderId: snap.id, ...snap.data() } : null;
 }
 
-async function activeAdmins() {
-  const snap = await getDb().collection('users').where('role', '==', 'admin').get();
+async function activeStaff(roles) {
+  const snap = await getDb().collection('users').where('role', 'in', roles).get();
   return snap.docs.filter((d) => d.data().status !== 'deactivated').map((d) => d.id);
 }
 
-async function tellStaff(title, message, taskId) {
+/** Admins by default. A request to APPROVE also goes to managers, who can act on it. */
+async function tellStaff(title, message, taskId, roles = ['admin']) {
   try {
-    for (const uid of await activeAdmins()) {
+    for (const uid of await activeStaff(roles)) {
       await createNotification({ recipientUid: uid, type: 'info', title, message, taskId: taskId ?? undefined });
     }
   } catch (err) {
@@ -125,7 +156,8 @@ export async function createOrder({ uid, customer, productKey, planId, simulate 
   const order = {
     uid, customer: customer ?? {},
     productKey, productCode: plan.productCode ?? '', planId, label: plan.label, planName: plan.planName, serviceKey: plan.serviceKey,
-    amount: plan.amount, currency: 'INR',
+    // Charged: price + GST. All three are the server's, from the catalogue.
+    price: plan.price, gst: plan.gst, gstPercent: plan.gstPercent, amount: plan.amount, currency: 'INR',
     status: 'created', gateway: gw.name, gatewayOrderId,
     matter: { state: 'none' },
     createdAt: nowIso(), updatedAt: nowIso(),
@@ -172,10 +204,12 @@ export async function settlePaid(orderId, payment, source) {
 }
 
 /**
- * Everything that follows a payment: the customer's order history, the matter,
- * the staff alert, the confirmation email. Claimed in a transaction so two
- * simultaneous confirmations cannot both open a matter. Never throws — a
- * failure here must not undo a payment.
+ * Everything that follows a payment: the customer's order history, the staff
+ * alert, the confirmation email — and whether the order now WAITS FOR APPROVAL
+ * (its service has a workflow) or needs a matter opened by hand. It opens no
+ * matter itself: that is `approveMatter`. Claimed in a transaction so two
+ * simultaneous confirmations do this once. Never throws — a failure here must
+ * not undo a payment.
  */
 export async function fulfil(orderId, { retry = false } = {}) {
   const ref = col().doc(orderId);
@@ -184,8 +218,10 @@ export async function fulfil(orderId, { retry = false } = {}) {
     const o = snap.data();
     if (!snap.exists || o.status !== 'paid') return null;
     const state = o.matter?.state ?? 'none';
-    if (state === 'created' || state === 'not_applicable') return null;
-    if (state === 'pending' && !retry) return null;
+    if (state === 'created' || state === 'awaiting_approval' || state === 'pending') return null;
+    // A second look — at an order that could have no matter (its service has a
+    // workflow now, perhaps), or one that failed — is only ever asked for by staff.
+    if ((state === 'not_applicable' || state === 'failed') && !retry) return null;
     // update(), not a merge: `matter` is replaced whole, so an old error or
     // reason cannot linger beside a new state.
     tx.update(ref, { matter: { state: 'pending' }, updatedAt: nowIso() });
@@ -205,32 +241,24 @@ export async function fulfil(orderId, { retry = false } = {}) {
     logger.warn({ err, orderId }, 'orders: could not write the customer order history');
   }
 
-  let matter;
   let hasWorkflow = false;
   try {
     hasWorkflow = !!(o.serviceKey && await getCompiledForServiceKey(o.serviceKey));
   } catch { /* treated as no workflow */ }
   const plan = matterOutcome(o, hasWorkflow);
-  if (!plan.open) {
-    matter = { state: 'not_applicable', reason: plan.why };
-  } else {
-    try {
-      matter = { state: 'created', taskId: await openMatter(o) };
-    } catch (err) {
-      logger.error({ err, orderId }, 'orders: paid, but the matter could not be opened');
-      matter = { state: 'failed', error: err?.message || 'The matter could not be opened.' };
-    }
-  }
+  const matter = plan.open ? { state: 'awaiting_approval' } : { state: 'not_applicable', reason: plan.why };
   await ref.update({ matter, updatedAt: nowIso() });
+  // A staff "look again" that changes nothing has already been announced.
+  if (retry && matter.state === 'not_applicable') return getOrder(orderId);
 
   const who = o.customer?.name || o.customer?.email || 'A customer';
-  const paid = `₹${o.amount.toLocaleString('en-IN')}`;
-  if (matter.state === 'created') {
-    await tellStaff('Website order paid — matter opened',
-      `${who} paid ${paid} for ${o.label} — ${o.planName} (order ${orderId}). A matter has been opened.`, matter.taskId);
-  } else if (matter.state === 'failed') {
-    await tellStaff('Website order paid — the matter could NOT be opened',
-      `${who} paid ${paid} for ${o.label} — ${o.planName} (order ${orderId}), but the matter could not be opened: ${matter.error} Open it by hand or retry from the order.`);
+  const paid = rupees(o.amount);
+  if (matter.state === 'awaiting_approval') {
+    await tellStaff('Website order paid — approve it to open the matter',
+      `${who} paid ${paid} for ${o.label} — ${o.planName} (order ${orderId}). Approve the order under Website Orders and its matter will be opened.`,
+      undefined, ['admin', 'manager']);
+    // Told once: the customer's email below went out when the payment arrived.
+    if (retry) return getOrder(orderId);
   } else {
     await tellStaff('Website order paid — open the matter by hand',
       `${who} paid ${paid} for ${o.label} — ${o.planName} (order ${orderId}). ${matter.reason} Please open the matter.`);
@@ -242,6 +270,7 @@ export async function fulfil(orderId, { retry = false } = {}) {
       title: 'Payment received',
       message: [
         `Thank you. We have received your payment of ${paid} for ${o.label} — ${o.planName}.`,
+        ...(o.gst ? [`That is ${rupees(priceOf(o))} plus ${rupees(o.gst)} GST (${o.gstPercent}%).`] : []),
         '', `Order reference: ${orderId}`,
         '', 'Our team will be in touch shortly. You can follow progress in your portal.',
       ].join('\n'),
@@ -252,12 +281,51 @@ export async function fulfil(orderId, { retry = false } = {}) {
 }
 
 /**
+ * Staff approve a paid order, and its matter is opened (#212). Claimed in a
+ * transaction, so two people approving at once open one matter. The payment is
+ * never at risk: if the matter cannot be opened the order stays paid and
+ * approved, says why, and `retryMatter` tries again.
+ */
+export async function approveMatter(orderId, actor) {
+  const ref = col().doc(orderId);
+  const approval = { approvedBy: actor.uid, approvedByName: actor.name ?? '', approvedAt: nowIso() };
+  const claimed = await getDb().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) throw httpError(404, 'Order not found.');
+    const why = canApprove(snap.data());
+    if (why) throw httpError(409, why, 'NOT_APPROVABLE');
+    tx.update(ref, { matter: { state: 'pending', ...approval }, updatedAt: nowIso() });
+    return { orderId, ...snap.data() };
+  });
+  logger.info({ orderId, actorUid: actor.uid }, 'orders: approved');
+  return openApprovedMatter(claimed, approval);
+}
+
+/** Open the matter of an order that has been approved, and record how it went. */
+async function openApprovedMatter(o, approval) {
+  let matter;
+  try {
+    matter = { state: 'created', taskId: await openMatter(o, approval), ...approval };
+  } catch (err) {
+    logger.error({ err, orderId: o.orderId }, 'orders: approved, but the matter could not be opened');
+    matter = { state: 'failed', error: err?.message || 'The matter could not be opened.', ...approval };
+  }
+  await col().doc(o.orderId).update({ matter, updatedAt: nowIso() });
+  if (matter.state === 'failed') {
+    const who = o.customer?.name || o.customer?.email || 'A customer';
+    await tellStaff('Website order approved — the matter could NOT be opened',
+      `${who}'s order ${o.orderId} (${o.label} — ${o.planName}) was approved, but the matter could not be opened: ${matter.error} Retry from the order, or open it by hand.`);
+  }
+  return getOrder(o.orderId);
+}
+
+/**
  * Open the matter for a paid order, through the same code an admin's "Create
  * Matter" uses — so the workflow, the steps, the payment history and the
  * assignment rules are identical. A matter already opened for this order is
  * reused instead of being opened twice.
  */
-async function openMatter(o) {
+async function openMatter(o, approval = {}) {
   const db = getDb();
   const existing = await db.collection('tasks').where('websiteOrderId', '==', o.orderId).limit(1).get();
   if (!existing.empty) return existing.docs[0].id;
@@ -269,20 +337,23 @@ async function openMatter(o) {
     json(body) { result.body = body; return this; },
   };
   await createTask({
-    // Paid in full by the customer, so it is opened as an admin's fully-paid
-    // matter is: live, not waiting for approval.
+    // Paid in full by the customer and approved by staff on the order, so it
+    // is opened as an admin's fully-paid matter is: live, with no second
+    // approval. The total includes GST — it is what the customer paid.
     user: { uid: 'system:website-order', role: 'admin' },
     body: {
       clientUid: o.uid, serviceKey: o.serviceKey,
       paymentStatus: 'fully_paid', totalCost: o.amount, amountReceived: o.amount,
       paymentMode: o.gateway === 'simulated' ? 'Online (test payment)' : 'Online (Razorpay)',
-      paymentDescription: `Website order ${o.orderId}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}`,
+      paymentDescription: `Website order ${o.orderId}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}${o.gst ? ` (${rupees(priceOf(o))} + ${rupees(o.gst)} GST)` : ''}`,
     },
   }, res);
   if (result.code !== 201 || !result.body?.id) {
     throw new Error(result.body?.message || `The matter could not be opened (${result.code ?? 'no response'}).`);
   }
-  await db.collection('tasks').doc(result.body.id).set({ websiteOrderId: o.orderId }, { merge: true });
+  await db.collection('tasks').doc(result.body.id).set({
+    websiteOrderId: o.orderId, websiteOrderApprovedBy: approval.approvedBy ?? null,
+  }, { merge: true });
   return result.body.id;
 }
 
@@ -406,12 +477,24 @@ export async function discardOrder(orderId) {
   await col().doc(orderId).delete();
 }
 
-/** Staff: try again to open the matter of a paid order that has none. */
+/**
+ * Staff: try again for a paid order that has no matter.
+ *  - Approved, but the matter failed to open: open it now. The approval stands.
+ *  - No matter was possible (its service had no workflow): look again — if it
+ *    has one now, the order starts waiting for approval.
+ * An order still waiting for approval is not retried; it is approved.
+ */
 export async function retryMatter(orderId) {
   const order = await getOrder(orderId);
   if (!order) throw httpError(404, 'Order not found.');
   if (order.status !== 'paid') throw httpError(409, 'Only a paid order can have a matter opened.');
-  if (order.matter?.state === 'created') return order;
-  await col().doc(orderId).update({ matter: { state: 'none' } });
+  const m = order.matter ?? {};
+  if (m.state === 'created') return order;
+  if (m.state === 'awaiting_approval') throw httpError(409, 'Approve this order to open its matter.', 'NEEDS_APPROVAL');
+  if (m.state === 'failed' && m.approvedBy) {
+    const approval = { approvedBy: m.approvedBy, approvedByName: m.approvedByName ?? '', approvedAt: m.approvedAt ?? nowIso() };
+    await col().doc(orderId).update({ matter: { state: 'pending', ...approval }, updatedAt: nowIso() });
+    return openApprovedMatter(order, approval);
+  }
   return fulfil(orderId, { retry: true });
 }

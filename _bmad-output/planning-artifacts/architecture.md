@@ -1786,6 +1786,31 @@ a product is keyed by the `source` its component passes to the checkout, and
   `VITE_PAYMENTS_ENABLED=true`. QA does; production does not.
 - The legacy PayU routes under `/api/payment` are still present and unused;
   E24-S06 removes them.
+- **Prices are exclusive of GST (#212, decided by the firm 2026-10-12).**
+  `GST_PERCENT` (18) and `withGst()` live in `pricing.service.js`. `findPlan`
+  returns `price`, `gst`, `gstPercent` and `amount` = price + GST; an order
+  stores all four, and **`amount` is the total charged** — the figure sent to
+  the gateway and the one every payment check (`decideSettlement`) compares.
+  GST is whole-rupee price × percent ÷ 100, so it is exact to the paisa.
+  `GET /api/public/pricing` carries `gstPercent` so the checkout can show the
+  break-up before the order exists; what is charged is always the server's
+  figure. The rate is a constant, not a setting. No GST invoice is generated —
+  the firm issues invoices itself for now.
+- **A paid order is approved before its matter opens (#212).** `fulfil` no
+  longer opens a matter: where the service has a workflow it leaves the order
+  at `matter.state: 'awaiting_approval'` and tells admins and managers.
+  `POST /api/orders/:orderId/approve` (`approveMatter`) claims the order in a
+  transaction (`awaiting_approval` → `pending`), so two people approving at
+  once open one matter, then opens it through `createTask` as before and
+  records `approvedBy`, `approvedByName`, `approvedAt` on the order (and
+  `websiteOrderApprovedBy` on the matter). The matter is live at once — the
+  approval already happened on the order. A refunded order cannot be approved.
+  `retryMatter` re-opens a matter that failed AFTER approval (the approval
+  stands) and re-checks an order that could have none; it never approves.
+- **Team members see Website Orders.** The firm asked that a team member can
+  approve, so `GET /api/orders`, `GET /api/orders/:id` and the approve route
+  admit `team_member`, and the screen is in their navigation. Retrying a matter
+  and reconciling a payment with the gateway stay with admin and manager.
 
 ---
 

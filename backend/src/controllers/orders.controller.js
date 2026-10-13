@@ -8,7 +8,7 @@ import {
   activeGateway, gateway, parseWebhookEvent, simulator,
 } from '../services/paymentGateway.service.js';
 import {
-  applyGatewayEvent, confirmReturn, createOrder, discardOrder, getOrder, listOrders, markFailed,
+  applyGatewayEvent, approveMatter, confirmReturn, createOrder, discardOrder, getOrder, listOrders, markFailed,
   publicOrder, reconcile, retryMatter,
 } from '../services/orders.service.js';
 
@@ -19,7 +19,8 @@ const fail = (res, err, context) => {
   return res.status(500).json({ message: 'Something went wrong. Please try again.' });
 };
 
-const isStaff = (req) => ['admin', 'manager'].includes(req.user?.role);
+// Team members see website orders too: they are among those who approve them (#212).
+const isStaff = (req) => ['admin', 'manager', 'team_member'].includes(req.user?.role);
 
 /** GET /api/orders/config — is online payment on, and through which gateway. Public. */
 export function getPaymentConfig(_req, res) {
@@ -107,6 +108,20 @@ export async function getOrders(req, res) {
 /** POST /api/orders/:orderId/retry-matter — staff: open the matter a paid order lacks. */
 export async function postRetryMatter(req, res) {
   try { res.json(await retryMatter(req.params.orderId)); } catch (err) { fail(res, err, 'postRetryMatter error'); }
+}
+
+/**
+ * POST /api/orders/:orderId/approve — staff: approve a paid order, which opens
+ * its matter (#212). Who approved comes from the token, never the request.
+ */
+export async function postApprove(req, res) {
+  try {
+    const profile = await getDb().collection('users').doc(req.user.uid).get();
+    const p = profile.exists ? profile.data() : {};
+    res.json(await approveMatter(req.params.orderId, {
+      uid: req.user.uid, name: p.name || p.fullName || req.user.name || req.user.email || '',
+    }));
+  } catch (err) { fail(res, err, 'postApprove error'); }
 }
 
 /** POST /api/orders/:orderId/reconcile — staff: ask the gateway what really happened. */

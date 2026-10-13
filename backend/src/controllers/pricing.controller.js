@@ -1,5 +1,5 @@
 import { logger } from '../config/logger.js';
-import { loadCatalog, publicView, updateProduct } from '../services/pricing.service.js';
+import { GST_PERCENT, loadCatalog, publicView, updateProduct } from '../services/pricing.service.js';
 
 /**
  * GET /api/public/pricing — what the website shows (E24-S01). Public and
@@ -10,7 +10,8 @@ export async function getPublicPricing(_req, res) {
   try {
     // Browsers and the CDN may keep it briefly; a price change shows within minutes.
     res.set('Cache-Control', 'public, max-age=60');
-    res.json({ products: publicView(await loadCatalog()) });
+    // gstPercent: prices are exclusive of GST; the checkout shows what is added (#212).
+    res.json({ products: publicView(await loadCatalog()), gstPercent: GST_PERCENT });
   } catch (err) {
     logger.error({ err }, 'getPublicPricing error');
     res.status(500).json({ message: 'Could not load prices.' });

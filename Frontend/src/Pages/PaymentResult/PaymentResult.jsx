@@ -20,7 +20,7 @@ import "./PaymentResult.css";
  */
 
 const PORTAL_URL = "/portal/";
-const inr = (n) => `₹${Number(n ?? 0).toLocaleString("en-IN")}`;
+const inr = (n) => `₹${Number(n ?? 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 const when = (iso) => (iso ? new Date(iso).toLocaleString("en-IN", {
   day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
 }) : "—");
@@ -70,7 +70,12 @@ const PaymentResult = () => {
   const rows = order ? [
     { label: "Order reference", value: order.orderId },
     { label: "Service", value: `${order.label} — ${order.planName}` },
-    { label: "Amount", value: inr(order.amount) },
+    // #212: prices are exclusive of GST. An order made before that has no GST.
+    ...(order.gst ? [
+      { label: "Price", value: inr(order.price) },
+      { label: `GST (${order.gstPercent}%)`, value: inr(order.gst) },
+      { label: "Total paid", value: inr(order.amount) },
+    ] : [{ label: "Amount", value: inr(order.amount) }]),
     ...(order.paymentReference ? [{ label: "Payment reference", value: order.paymentReference }] : []),
     { label: "Date", value: when(order.paidAt || order.createdAt) },
   ] : [];

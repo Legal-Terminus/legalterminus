@@ -3397,6 +3397,10 @@ payment integration cannot be developed against live customers.
 > per order (`websiteOrderId` on the matter). Otherwise nothing is opened and the admins are
 > told to open one by hand. Staff screen: **Website Orders** (`/website-orders`).
 > **Decided by default, to confirm with the firm:** live at once, and default assignment.
+>
+> **Changed 2026-10-13 (#212, the firm's answer):** payment alone no longer opens the matter.
+> A paid order waits for a member of staff to approve it under Website Orders; the matter opens
+> on approval. See the 2026-10-13 change-log entry.
 
 **Priority**: P1 | **Complexity**: L | **Dependencies**: E24-S02
 
@@ -4267,6 +4271,41 @@ On `main` (QA) only. Part of E-24; nothing here is in production.
   crossed-out prices.
 - **Tests:** `pricing.service.test.js` — "#212: cut prices that were typed into a
   page are filled once, and never again".
+- **GST is added at payment (the firm: "website prices are exclusive of GST").**
+  18% on the plan's price, to the paisa; the checkout and the result page show
+  price, GST and total, and Website Orders shows the same three. The order's
+  `amount` is the total charged. **Assumed, to confirm with the firm:** GST applies
+  to the WHOLE plan price. Some cards say "Including gov fee"; if part of a price
+  is a government fee that should not carry GST, the catalogue needs a taxable
+  amount per plan, which it does not have. **Not built:** a GST invoice (the firm:
+  Razorpay receipts are enough for now) and a place to change the rate.
+- **Approval before a matter opens (the firm: "at least one approval from a team
+  member before the matter gets created").** A paid order for a service with a
+  workflow shows "Waiting for approval" under Website Orders; **Approve and open
+  matter** opens it and records who approved and when. Admins, managers and team
+  members can approve — so team members now see Website Orders (they did not).
+  Admins and managers are notified when an order is waiting. Team members cannot
+  retry a matter or check a payment with the gateway. There is no "reject": a
+  payment that should not become work is refunded from the Razorpay dashboard,
+  after which the order can no longer be approved.
+- **Orders already paid on QA** before this change keep the matter they opened.
+- **Tests:** `orders.spec.ts` rewritten for both (GST on the order and the matter;
+  waiting, approving, approving twice and at once, refunded and review orders, who
+  may approve; the screen as admin, team member and client); `orders.test.js`,
+  `pricing.service.test.js`.
+- **Still with the firm:** the product-to-service links, and the prices themselves.
+
+### Website enquiries go to their own inbox — #20 (2026-10-13) 🔄 On `main`, not in production
+
+The firm added `CONTACT_LEADS_EMAIL` in the Cloud Run console and it "kept getting
+removed". The production deploy passes `--set-env-vars`, which REPLACES the
+service's whole environment, so every deploy removed it (today's hotfix deploy
+included) and enquiries fell back to the sending address, `operations@`.
+`deploy-production.yml` now sets it — `noreply@legalterminus.com`, the firm's
+choice, overridable by a repository variable of the same name. **A setting the
+backend needs must be in the deploy command; one added in the console lasts until
+the next deploy.** No code change; takes effect at the next production backend
+deploy. Enquiries were never lost: each is stored and was emailed to the fallback.
 
 ### Hotfix — Google sign-in on phones (#213), one email per event (#207) (2026-10-13) ✅ Completed
 

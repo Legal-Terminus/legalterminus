@@ -16,6 +16,11 @@ export interface WebsiteOrder {
   label: string;
   planName: string;
   serviceKey: string | null;
+  /** #212: the plan's price before GST, and the GST added. Absent on orders made before GST was added. */
+  price?: number;
+  gst?: number;
+  gstPercent?: number;
+  /** The total charged: price + GST. */
   amount: number;
   amountPaid?: number;
   gateway: string;
@@ -29,8 +34,14 @@ export interface WebsiteOrder {
   planId?: string;
   failureReason?: string | null;
   reviewReason?: string;
-  /** none → nothing attempted; created → `taskId`; failed → `error`; not_applicable → `reason`. */
-  matter: { state: 'none' | 'pending' | 'created' | 'failed' | 'not_applicable'; taskId?: string; error?: string; reason?: string;
+  /**
+   * none → nothing attempted; awaiting_approval → paid, waiting for staff to
+   * approve (#212); pending → being opened; created → `taskId`; failed →
+   * `error`; not_applicable → `reason`.
+   */
+  matter: { state: 'none' | 'awaiting_approval' | 'pending' | 'created' | 'failed' | 'not_applicable'; taskId?: string; error?: string; reason?: string;
+    /** Who approved the order, and when. */
+    approvedBy?: string; approvedByName?: string; approvedAt?: string;
     /** The matter this order opened has since been deleted. */
     deleted?: boolean };
   createdAt: string;
@@ -42,6 +53,10 @@ export const WEBSITE_ORDERS_KEY = ['website-orders'] as const;
 
 export const getWebsiteOrders = (cursor?: string) =>
   apiFetch<{ data: WebsiteOrder[]; nextCursor: string | null }>(`/api/orders?limit=25${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`);
+
+/** Approve a paid order: its matter is opened (#212). */
+export const approveOrder = (orderId: string) =>
+  apiFetch<WebsiteOrder>(`/api/orders/${orderId}/approve`, { method: 'POST' });
 
 /** Try again to open the matter of a paid order that has none. */
 export const retryOrderMatter = (orderId: string) =>

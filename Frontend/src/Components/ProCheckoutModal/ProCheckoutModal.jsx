@@ -11,6 +11,7 @@ import {
   startOrder, confirmPayment, reportFailure, simulatePayment, payWithRazorpay, resultUrl,
 } from "../../utils/checkout";
 import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
+import { withGst, inr } from "../../utils/pricing.js";
 import { registerUser } from "../../utils/registerUser.js";
 import {
   startGoogleSignIn, googleSignInMessage, UNSUPPORTED_BROWSER_MESSAGE,
@@ -198,7 +199,10 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
     if (modalRef.current) modalRef.current.scrollTop = 0;
   }, [step]);
 
-  const total = plan.price;
+  // #212: the plan's price is exclusive of GST, which is added here. This is
+  // only what is SHOWN before the order exists; the amount charged is the
+  // server's (`order.amount`), worked out from the same price and rate.
+  const { gst, gstPercent, total } = withGst(plan.price);
 
   const stepIndex = STEPS.indexOf(step);
   const showProgress = step === "order-summary" || step === "checkout";
@@ -507,10 +511,14 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
                 <span>{plan.name} Plan</span>
                 <span>₹{plan.price.toLocaleString("en-IN")}</span>
               </div>
+              <div className="pco-summary-row">
+                <span>GST ({gstPercent}%)</span>
+                <span>{inr(gst)}</span>
+              </div>
               <div className="pco-summary-divider" />
               <div className="pco-summary-total-row">
                 <span>Total</span>
-                <span className="pco-total-amount">₹{total.toLocaleString("en-IN")}</span>
+                <span className="pco-total-amount">{inr(total)}</span>
               </div>
             </div>
 
@@ -717,10 +725,14 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
                 <span>{plan.name} Plan</span>
                 <span>₹{plan.price.toLocaleString("en-IN")}</span>
               </div>
+              <div className="pco-summary-row">
+                <span>GST ({gstPercent}%)</span>
+                <span>{inr(gst)}</span>
+              </div>
               <div className="pco-summary-divider" />
               <div className="pco-summary-total-row">
                 <span>Total Amount</span>
-                <span className="pco-total-amount">₹{total.toLocaleString("en-IN")}</span>
+                <span className="pco-total-amount">{inr(total)}</span>
               </div>
             </div>
 
@@ -761,7 +773,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
             <div role="note" style={{ background: '#fff7e6', border: '1px solid #ffd591', borderRadius: 8, padding: '10px 12px', fontSize: 13, marginBottom: 16 }}>
               <strong>Test payment.</strong> This is a test site: no money moves. Choose what the payment should do.
             </div>
-            <h2 className="pco-step-heading">Pay ₹{order.amount.toLocaleString("en-IN")}</h2>
+            <h2 className="pco-step-heading">Pay {inr(order.amount)}</h2>
             <p style={{ color: '#666', margin: '6px 0 18px' }}>
               {order.label} — {order.planName} · Order {order.orderId}
             </p>
@@ -789,7 +801,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
             <div className="pco-order-detail-box">
               {[
                 { label: "Order ID", value: orderId },
-                { label: "Amount Paid", value: `₹${total.toLocaleString("en-IN")}` },
+                { label: "Amount Paid", value: inr(order?.amount ?? total) },
                 { label: "Date", value: paymentDate },
               ].map(({ label, value }) => (
                 <div key={label} className="pco-detail-row">

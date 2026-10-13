@@ -9,7 +9,7 @@ import {
   activeGateway, parseWebhookEvent, paymentSignature,
 } from '../services/paymentGateway.service.js';
 import {
-  decideSettlement, matterOutcome, newOrderId, publicOrder,
+  canApprove, decideSettlement, matterOutcome, newOrderId, publicOrder,
 } from '../services/orders.service.js';
 import { createOrderSchema, simulateSchema, verifyOrderSchema } from '../schemas/order.schema.js';
 
@@ -88,6 +88,31 @@ test('the customer’s view of an order hides internals', () => {
   assert.equal(view.matterId, null, 'a matter that failed to open is not shown as one');
   for (const hidden of ['uid', 'gatewayOrderId', 'serviceKey', 'customer', 'matter', 'settledBy']) assert.equal(hidden in view, false, hidden);
   assert.equal(publicOrder({ matter: { state: 'created', taskId: 't1' } }).matterId, 't1');
+});
+
+test('#212: the customer sees the price, the GST and the total; an older order has no GST', () => {
+  const view = publicOrder({ orderId: 'LT-2', price: 5999, gst: 1079.82, gstPercent: 18, amount: 7078.82 });
+  assert.deepEqual([view.price, view.gst, view.gstPercent, view.amount], [5999, 1079.82, 18, 7078.82]);
+  const old = publicOrder({ orderId: 'LT-1', amount: 7999 });
+  assert.deepEqual([old.price, old.gst, old.amount], [7999, 0, 7999]);
+});
+
+test('#212: the charged total — price plus GST — is what a payment is checked against', () => {
+  const order = { status: 'created', price: 5999, gst: 1079.82, amount: 7078.82 };
+  assert.equal(decideSettlement(order, { amount: 7078.82 }).action, 'paid');
+  assert.equal(decideSettlement(order, { amount: 5999 }).action, 'review', 'the price without GST is not enough');
+});
+
+test('#212: only a paid order that is waiting can be approved', () => {
+  const waiting = { status: 'paid', matter: { state: 'awaiting_approval' } };
+  assert.equal(canApprove(waiting), null);
+  assert.match(canApprove({ ...waiting, status: 'refunded' }), /refunded/);
+  assert.match(canApprove({ ...waiting, status: 'created' }), /Only a paid order/);
+  assert.match(canApprove({ ...waiting, status: 'review' }), /Only a paid order/);
+  assert.match(canApprove({ status: 'paid', matter: { state: 'created', taskId: 't' } }), /already been opened/);
+  assert.match(canApprove({ status: 'paid', matter: { state: 'pending' } }), /already being approved/);
+  assert.match(canApprove({ status: 'paid', matter: { state: 'not_applicable' } }), /not waiting/);
+  assert.match(canApprove({ status: 'paid' }), /not waiting/);
 });
 
 test('order references are readable and unique', () => {

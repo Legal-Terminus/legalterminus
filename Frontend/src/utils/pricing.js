@@ -28,6 +28,22 @@ export const PAYMENTS_ENABLED = import.meta.env.VITE_PAYMENTS_ENABLED === "true"
 let cached = null;      // { [productKey]: { label, plans: [{ id, name, price, oldPrice }] } }
 let pending = null;     // one request for the whole site, however many cards ask
 
+/**
+ * #212: prices are EXCLUSIVE of GST, which is added at payment. The rate comes
+ * with the catalogue; this is only what the checkout shows until it arrives.
+ * What is CHARGED is always the server's figure, never one worked out here.
+ */
+let gstPercent = 18;
+
+/** A price with its GST, to the paisa — the same sum the server does. */
+export function withGst(price, percent = gstPercent) {
+  const gst = Math.round(price * percent) / 100;
+  return { price, gstPercent: percent, gst, total: Math.round((price + gst) * 100) / 100 };
+}
+
+/** "₹7,078.82" — two decimals only when there are paise to show. */
+export const inr = (n) => `₹${Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+
 export function loadPricing() {
   if (cached) return Promise.resolve(cached);
   if (!pending) {
@@ -35,6 +51,7 @@ export function loadPricing() {
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`pricing ${res.status}`))))
       .then((body) => {
         cached = body?.products ?? {};
+        if (Number.isFinite(body?.gstPercent) && body.gstPercent >= 0) gstPercent = body.gstPercent;
         return cached;
       })
       .catch(() => {

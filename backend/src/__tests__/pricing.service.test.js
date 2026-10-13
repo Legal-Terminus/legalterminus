@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {
-  applyUpdate, findPlan, mergeSeed, normaliseProduct, publicView,
+  applyUpdate, findPlan, mergeSeed, normaliseProduct, publicView, withGst,
 } from '../services/pricing.service.js';
 import { updatePricingSchema } from '../schemas/pricing.schema.js';
 
@@ -46,8 +46,18 @@ test('findPlan is the amount a payment must use; unknown and inactive plans are 
   const products = [product()];
   assert.deepEqual(findPlan(products, 'trademark-application', 'enriched'), {
     productKey: 'trademark-application', productCode: 'SVC-051', planId: 'enriched', label: 'Trademark Application',
-    planName: 'Enriched', amount: 6499, serviceKey: 'trademark-application',
+    // #212: prices are exclusive of GST; `amount` is what is charged.
+    planName: 'Enriched', price: 6499, gstPercent: 18, gst: 1169.82, amount: 7668.82, serviceKey: 'trademark-application',
   });
+  assert.deepEqual(withGst(5999), { price: 5999, gstPercent: 18, gst: 1079.82, total: 7078.82 });
+  assert.deepEqual(withGst(10000), { price: 10000, gstPercent: 18, gst: 1800, total: 11800 });
+  // Whole rupees in, never more than two decimal places out.
+  for (const p of [1, 1499, 3999, 24999, 37499]) {
+    const { gst, total } = withGst(p);
+    assert.equal(Number(gst.toFixed(2)), gst);
+    assert.equal(Number(total.toFixed(2)), total);
+    assert.equal(Math.round(total * 100), Math.round(p * 118));
+  }
   assert.equal(findPlan(products, 'trademark-application', 'supreme'), null, 'inactive');
   assert.equal(findPlan(products, 'trademark-application', 'nope'), null);
   assert.equal(findPlan(products, 'nope', 'elemental'), null);

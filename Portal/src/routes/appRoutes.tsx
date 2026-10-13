@@ -161,5 +161,7 @@ export const APP_ROUTES: AppRoute[] = [
   // lets only an admin change a price.
   { path: '/settings/pricing', element: <WebsitePricesPage />, roles: ['admin', 'manager'], nav: { label: 'Website Prices', icon: IndianRupee, order: 14 } },
   // E24: orders paid for on the website, and whether each became a matter.
-  { path: '/website-orders', element: <WebsiteOrdersPage />, roles: ['admin', 'manager'], nav: { label: 'Website Orders', icon: ShoppingBag, order: 15 } },
+  // #212: a paid order is approved before its matter opens, and the firm asked
+  // that a team member can approve — so team members see this screen too.
+  { path: '/website-orders', element: <WebsiteOrdersPage />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Website Orders', icon: ShoppingBag, order: 15 } },
 ];
