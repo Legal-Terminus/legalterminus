@@ -138,6 +138,11 @@ export async function sendReminder(req, res) {
     });
 
     // Also raise the client's in-app alert so it's visible in the portal, not just email.
+    //
+    // #207: `email: false`. A notification mirrors itself to email by default,
+    // and the templated reminder above has ALREADY been emailed — so without this
+    // the client received every reminder twice, the second copy carrying the very
+    // same subject. The in-app alert is all this call is for.
     try {
       await createNotification({
         recipientUid: task.clientUid,
@@ -145,6 +150,7 @@ export async function sendReminder(req, res) {
         title: rendered.subject,
         message: currentStep ? `Pending: ${currentStep}` : 'Your service needs your attention.',
         taskId,
+        email: false,
       });
     } catch (e) {
       logger.warn({ err: e?.message }, 'sendReminder: in-app notification failed');

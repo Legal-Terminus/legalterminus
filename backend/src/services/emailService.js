@@ -303,11 +303,16 @@ export async function sendTemplatedEmail({ to, cc, subject, body, taskId, servic
       ? matterSubject({ serviceName, taskId, title: subject, organisation })
       : `[Legal Terminus] ${subject}`;
     const threadRef = taskId ? `<matter-${taskId}@legalterminus>` : undefined;
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from, to, subject: finalSubject, text, html,
       ...(ccList.length ? { cc: ccList } : {}),
       ...(threadRef ? { references: threadRef, inReplyTo: threadRef } : {}),
     });
+    // #207: one line per email actually handed to the mail server. Until this
+    // existed, "are emails going out twice?" could not be answered from the logs
+    // — only failures were recorded. No addresses and no subject (an editable
+    // template can put a client's name in it).
+    logger.info({ taskId: taskId ?? null, via: 'template', recipients: 1 + ccList.length, messageId: info?.messageId ?? null }, '[email] sent');
     return true;
   } catch (err) {
     logger.warn({ err: err?.message, to }, '[email] templated send failed (non-fatal)');
@@ -330,11 +335,16 @@ export async function sendNotificationEmail({ to, cc, title, message, taskId, se
     // Threading headers (#98): a stable Message-ID root per matter. Setting the
     // SAME references value on every email of a matter makes Gmail group them.
     const threadRef = taskId ? `<matter-${taskId}@legalterminus>` : undefined;
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from, to, subject, text, html,
       ...(ccList.length ? { cc: ccList } : {}),
       ...(threadRef ? { references: threadRef, inReplyTo: threadRef } : {}),
     });
+    // #207: one line per email actually handed to the mail server. Until this
+    // existed, "are emails going out twice?" could not be answered from the logs
+    // — only failures were recorded. No addresses and no subject (an editable
+    // template can put a client's name in it).
+    logger.info({ taskId: taskId ?? null, via: 'notification', recipients: 1 + ccList.length, messageId: info?.messageId ?? null }, '[email] sent');
     return true;
   } catch (err) {
     logger.warn({ err: err?.message, to }, '[email] send failed (non-fatal)');

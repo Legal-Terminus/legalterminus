@@ -211,12 +211,16 @@ export async function createMessage(req, res) {
       // messages notify nobody but those @mentioned (below).
       try {
         const recipient = task.clientUid;
+        // #207: `email: false` — the templated message email just below is the
+        // client's email. Left to mirror itself, this notification sent a second
+        // one ("New message about your service") for every client-visible reply.
         await createNotification({
           recipientUid: recipient,
           type: 'info',
           title: 'New message about your service',
           message: preview,
           taskId,
+          email: false,
         });
 
         // Email via the editable template (falls back to a sensible default).
