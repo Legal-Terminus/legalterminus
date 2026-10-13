@@ -1,18 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword, type User } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
+import {
+  startGoogleSignIn, finishGoogleRedirect, authErrorCode, googleSignInMessage, UNSUPPORTED_BROWSER_MESSAGE,
+} from '../../lib/googleSignIn';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiFetch } from '../../api/client';
 import { AlertCircle, Mail } from 'lucide-react';
 import { requestSignInLink, EMAIL_FOR_SIGN_IN_KEY } from '../../api/account';
 import { LTMark, LTLockup } from '../../components/common/LTLogo';
 
+/** Set just before leaving for Google, so the return is recognised (#213). */
+const GOOGLE_RETURN_KEY = 'lt.googleSignInReturning';
+
+/** True when this page load is the return leg of a Google redirect sign-in. */
+const isReturningFromGoogle = () => {
+  try { return window.sessionStorage.getItem(GOOGLE_RETURN_KEY) === '1'; } catch { return false; }
+};
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  // #213: coming back from Google, the form starts as "Signing in…" rather than
+  // looking, for a moment, as if nothing had happened.
+  const [loading, setLoading] = useState(isReturningFromGoogle);
   const [linkSentTo, setLinkSentTo] = useState('');
   const navigate = useNavigate();
 
@@ -75,37 +88,69 @@ export default function LoginPage() {
     }
   };
 
+  /** Make sure the Google account has a portal profile, then go in. */
+  const completeGoogleSignIn = async (user: User) => {
+    const idToken = await user.getIdToken();
+    try {
+      await apiFetch('/api/auth/register', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ fullName: user.displayName || user.email, provider: 'google' }),
+      });
+    } catch (err) {
+      console.error('Registration error:', err);
+    }
+    navigate('/');
+  };
+
+  /** #213: say what happened, and keep the real code for whoever investigates. */
+  const reportGoogleError = (err: unknown) => {
+    const code = authErrorCode(err);
+    console.error('[google-sign-in]', code, err);
+    const msg = googleSignInMessage(code);
+    if (msg) setError(msg);
+  };
+
+  // #213: on a phone Google sign-in leaves this page and comes back. Finish it
+  // here. `GOOGLE_RETURN_KEY` is set just before leaving, so the form shows
+  // "Signing in…" on the way back instead of looking as if nothing happened.
+  useEffect(() => {
+    const returning = isReturningFromGoogle();
+    let cancelled = false;
+    finishGoogleRedirect(auth)
+      .then(async (result) => {
+        if (cancelled) return;
+        if (result?.user) await completeGoogleSignIn(result.user);
+        else if (returning) setError('Google sign-in did not complete. Please try again, or use "Email me a sign-in link".');
+      })
+      .catch((err) => { if (!cancelled) reportGoogleError(err); })
+      .finally(() => {
+        try { window.sessionStorage.removeItem(GOOGLE_RETURN_KEY); } catch { /* private mode */ }
+        if (!cancelled && returning) setLoading(false);
+      });
+    return () => { cancelled = true; };
+    // Runs once: it reads the result of a sign-in that started before this page loaded.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleGoogleSignIn = async () => {
     setError('');
     setLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      const idToken = await userCredential.user.getIdToken();
-      try {
-        await apiFetch('/api/auth/register', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${idToken}` },
-          body: JSON.stringify({
-            fullName: userCredential.user.displayName || userCredential.user.email,
-            provider: 'google',
-          }),
-        });
-      } catch (err) {
-        console.error('Registration error:', err);
+      try { window.sessionStorage.setItem(GOOGLE_RETURN_KEY, '1'); } catch { /* private mode */ }
+      const result = await startGoogleSignIn(auth);
+      if (result === 'redirecting') return; // leaving for Google — stay "loading"
+      try { window.sessionStorage.removeItem(GOOGLE_RETURN_KEY); } catch { /* private mode */ }
+      if (result === 'unsupported') {
+        setError(UNSUPPORTED_BROWSER_MESSAGE);
+        setLoading(false);
+        return;
       }
-      navigate('/');
+      await completeGoogleSignIn(result.user);
+      setLoading(false);
     } catch (err) {
-      let msg = 'Google sign-in failed.';
-      if (err instanceof Error) {
-        if (err.message.includes('popup-closed') || err.message.includes('cancelled'))
-          msg = 'Sign-in cancelled.';
-        else if (err.message.includes('popup-blocked'))
-          msg = 'Popup blocked — please allow popups and try again.';
-        else msg = err.message;
-      }
-      setError(msg);
-    } finally {
+      try { window.sessionStorage.removeItem(GOOGLE_RETURN_KEY); } catch { /* private mode */ }
+      reportGoogleError(err);
       setLoading(false);
     }
   };

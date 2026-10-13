@@ -4242,6 +4242,43 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Hotfix — Google sign-in on phones (#213), one email per event (#207) (2026-10-13) ✅ Completed
+
+**In production.** Deployed from the branch `hotfix/213-207-sign-in-and-duplicate-emails`
+(cut from `v1.6.0-lt.7`) by a manual "Deploy to Production" run, backend and Portal
+only — `main` was 23 commits ahead of production and could not ship. The same #213
+change is on `main`; #207 was already there (`6f7be021`).
+
+- **#213 — "Sign-in cancelled" on a phone.** The login page signed in with Google
+  by POP-UP only. In the in-app browser a link opens in from WhatsApp or Gmail a
+  pop-up cannot hand its result back; Firebase reports `auth/popup-closed-by-user`
+  and the page said the user had cancelled. Now (`Portal/src/lib/googleSignIn.ts`):
+  phones sign in by redirect; desktops keep the pop-up and fall back to a redirect
+  when it is blocked; an embedded webview, where Google refuses to sign in at all,
+  is told to open the page in Chrome or Safari. Messages say what happened and the
+  Firebase code is logged to the console.
+- **The auth domain is the Portal's own host.** A redirect only comes back signed in
+  when the handler (`/__/auth/handler`) is on the same site as the page. Both deploy
+  workflows read one repository secret that held the `firebaseapp.com` domain; the
+  Portal build now gets `legalterminus.com` (production) and
+  `legal-terminus-qa.web.app` (QA), written in the workflow — the value is public.
+  **A new host needs:** its `/__/auth/handler` URL as a redirect URI on the Google
+  OAuth web client, and the host under Firebase → Authentication → Authorised domains.
+  Where the auth domain is another site (local development) sign-in stays on the pop-up.
+- **#207** — see the 2026-10-08 entry below; this hotfix carried those two
+  `email: false` changes, the `[email] sent` log line and the tripwire test to
+  production. The claim that EVERY email arrives twice is still unexplained for the
+  other email types; the new log line (one per email, with `via` and `messageId`)
+  is what will show whether the backend sends twice.
+- **Tests:** `Portal/e2e/google-sign-in.spec.ts` (new) — the route chosen per device
+  and auth domain, the messages, the in-app-browser hint, and the return from Google
+  with no result. The Google round trip itself cannot be automated (Google refuses
+  automated sign-ins) and is checked on a real phone.
+- **Not covered:** the website's Signup page and Buy Now popup also sign in with
+  Google by pop-up only.
+- **Ledger:** no release tag was cut for this deploy. Production is `v1.6.0-lt.7`
+  plus this one commit until the next tag.
+
 ### Dependency and pipeline updates (2026-10-08) ✅ Completed
 
 The same set tested and merged in Ambyflow that day (its Dependabot PRs), applied

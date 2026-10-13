@@ -228,9 +228,11 @@ jobs:
           tags: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal-qa:${{ github.sha }}
           cache-from: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal-qa:buildcache
           cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.FIREBASE_QA_PROJECT_ID }}/${{ env.GAR_REPO }}/portal-qa:buildcache,mode=max
+          # #213: VITE_FIREBASE_AUTH_DOMAIN is QA's own host, so the sign-in
+          # handler is same-site, as in production. See deploy-production.yml.
           build-args: |
             VITE_FIREBASE_API_KEY=${{ secrets.FIREBASE_QA_API_KEY }}
-            VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_QA_AUTH_DOMAIN }}
+            VITE_FIREBASE_AUTH_DOMAIN=legal-terminus-qa.web.app
             VITE_FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_QA_PROJECT_ID }}
             VITE_FIREBASE_STORAGE_BUCKET=${{ env.QA_BUCKET }}
             VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}
