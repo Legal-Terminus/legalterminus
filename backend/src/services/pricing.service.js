@@ -127,6 +127,18 @@ export function applyUpdate(existing, patch = {}) {
 }
 
 /**
+ * #212 — five website cards had their crossed-out price typed into the page, so
+ * the catalogue never knew it: the portal showed "None" while the website showed
+ * a figure. Those figures are in the seed file now. For these products the seed
+ * fills a still-empty cut price ONCE (marked `cutPricesFromPage` on the stored
+ * product), so the portal shows what the website was showing and the firm can
+ * change or clear it from there.
+ */
+export const CUT_PRICES_FROM_PAGES = new Set([
+  'cio-registration', 'cir-registration', 'partnership-registration', 'private-limited', 'windup-plc',
+]);
+
+/**
  * Merge the seed into what is stored.
  *
  * What the FIRM owns is never overwritten: prices, crossed-out prices, whether
@@ -146,13 +158,24 @@ export function mergeSeed(key, stored, seed, { force = false, relink = false } =
   if (!stored || force) return { product: fresh, changed: true };
   const current = normaliseProduct(key, stored);
   const missing = fresh.plans.filter((p) => !current.plans.some((c) => c.id === p.id));
+  // #212: the one exception to "never overwrite", made ONCE per product. See
+  // CUT_PRICES_FROM_PAGES. Only an empty cut price is filled, so a figure the
+  // firm entered stands; and the marker means one it clears later stays cleared.
+  const restore = CUT_PRICES_FROM_PAGES.has(key) && stored.cutPricesFromPage !== true;
+  const plans = !restore ? current.plans : current.plans.map((p) => {
+    const was = fresh.plans.find((f) => f.id === p.id)?.oldPrice;
+    return p.oldPrice == null && was > p.price ? { ...p, oldPrice: was } : p;
+  });
   const product = {
     ...current,
     code: fresh.code, label: fresh.label, pages: fresh.pages,
     serviceKey: relink ? fresh.serviceKey : current.serviceKey,
-    plans: [...current.plans, ...missing],
+    plans: [...plans, ...missing],
   };
-  return { product, changed: JSON.stringify(product) !== JSON.stringify(current) };
+  // The marker is not part of a normalised product, so it is compared apart.
+  const changed = restore || JSON.stringify(product) !== JSON.stringify(current);
+  if (restore || stored.cutPricesFromPage === true) product.cutPricesFromPage = true;
+  return { product, changed };
 }
 
 /* ───────────────────────────── I/O below ───────────────────────────── */

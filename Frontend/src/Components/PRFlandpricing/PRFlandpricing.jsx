@@ -10,7 +10,7 @@ const DEFAULT_PLANS = [
   {
     id: "elemental",
     name: "Elemental",
-    price: 2499,
+    price: 2499, oldPrice: 3499,
     services: [
       "Partnership Deed drafting (standard template)",
       "Notarisation coordination",
@@ -23,7 +23,7 @@ const DEFAULT_PLANS = [
   {
     id: "enriched",
     name: "Enriched",
-    price: 5499,
+    price: 5499, oldPrice: 6499,
     services: [
       "Everything in Elemental",
       "Custom Partnership Deed (profit share, exit, IP, dispute)",
@@ -34,7 +34,7 @@ const DEFAULT_PLANS = [
   {
     id: "supreme",
     name: "Supreme",
-    price: 8999,
+    price: 8999, oldPrice: 11999,
     services: [
       "Everything in Enriched",
       "Form 1 (RoF Application in IGR) preparation & filing",
@@ -74,8 +74,7 @@ const PricingSection = () => {
               <div>
                 <div className="prf-planheader">
                   <div className="prf-pricingname">Elemental</div>
-                  <div className="prf-pricingold-price">₹3,499</div>
-                  <CutPrice plan={PLANS[0]} />
+                  <CutPrice plan={PLANS[0]} className="prf-pricingold-price" />
                   <div className="prf-pricingprice">₹{PLANS[0].price.toLocaleString("en-IN")}</div>
                   <div className="prf-pricingmeta">+ Govt. fees &amp; GST extra</div>
                 </div>
@@ -107,8 +106,7 @@ const PricingSection = () => {
               <div>
                 <div className="prf-planheader">
                   <div className="prf-pricingname">Enriched</div>
-                  <div className="prf-pricingold-price">₹6,499</div>
-                  <CutPrice plan={PLANS[1]} />
+                  <CutPrice plan={PLANS[1]} className="prf-pricingold-price" />
                   <div className="prf-pricingprice">₹{PLANS[1].price.toLocaleString("en-IN")}</div>
                   <div className="prf-pricingmeta">+ Govt. fees &amp; GST extra</div>
                 </div>
@@ -138,8 +136,7 @@ const PricingSection = () => {
               <div>
                 <div className="prf-planheader">
                   <div className="prf-pricingname">Supreme</div>
-                  <div className="prf-pricingold-price">₹11,999</div>
-                  <CutPrice plan={PLANS[2]} />
+                  <CutPrice plan={PLANS[2]} className="prf-pricingold-price" />
                   <div className="prf-pricingprice">₹{PLANS[2].price.toLocaleString("en-IN")}</div>
                   <div className="prf-pricingmeta">+ Govt. fees &amp; GST extra</div>
                 </div>

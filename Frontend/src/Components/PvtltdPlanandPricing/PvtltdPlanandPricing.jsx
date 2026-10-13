@@ -10,7 +10,7 @@ const DEFAULT_PLANS = [
   {
     id: "elemental",
     name: "Elemental",
-    price: 5999,
+    price: 5999, oldPrice: 7999,
     services: [
       "Name Search & Availability Report",
       "RUN Name Approval (up to 4 name choices)",
@@ -27,7 +27,7 @@ const DEFAULT_PLANS = [
   {
     id: "enriched",
     name: "Enriched",
-    price: 8999,
+    price: 8999, oldPrice: 13999,
     services: [
       "Everything in Elemental",
       "Bank Account Opening Documents",
@@ -40,7 +40,7 @@ const DEFAULT_PLANS = [
   {
     id: "supreme",
     name: "Supreme",
-    price: 13999,
+    price: 13999, oldPrice: 20999,
     services: [
       "Everything in Enriched",
       "The 1st Board Resolution documentation",
@@ -53,7 +53,7 @@ const DEFAULT_PLANS = [
   {
     id: "supreme-plus",
     name: "Supreme Plus",
-    price: 24999,
+    price: 24999, oldPrice: 37499,
     services: [
       "Everything in Supreme",
       "Directors' Report Preparation",
@@ -94,8 +94,7 @@ const PricingSection = () => {
               <div>
                 <div className="plan-header">
                   <div className="plan-name">Elemental</div>
-                  <div className="plan-old-price">₹7,999</div>
-                  <CutPrice plan={PLANS[0]} />
+                  <CutPrice plan={PLANS[0]} className="plan-old-price" />
                   <div className="plan-price">₹{PLANS[0].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
@@ -131,8 +130,7 @@ const PricingSection = () => {
               <div>
                 <div className="plan-header">
                   <div className="plan-name">Enriched</div>
-                  <div className="plan-old-price">₹13,999</div>
-                  <CutPrice plan={PLANS[1]} />
+                  <CutPrice plan={PLANS[1]} className="plan-old-price" />
                   <div className="plan-price">₹{PLANS[1].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
@@ -163,8 +161,7 @@ const PricingSection = () => {
               <div>
                 <div className="plan-header">
                   <div className="plan-name">Supreme</div>
-                  <div className="plan-old-price">₹20,999</div>
-                  <CutPrice plan={PLANS[2]} />
+                  <CutPrice plan={PLANS[2]} className="plan-old-price" />
                   <div className="plan-price">₹{PLANS[2].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>
@@ -196,8 +193,7 @@ const PricingSection = () => {
               <div>
                 <div className="plan-header">
                   <div className="plan-name">Supreme Plus</div>
-                  <div className="plan-old-price">₹37,499</div>
-                  <CutPrice plan={PLANS[3]} />
+                  <CutPrice plan={PLANS[3]} className="plan-old-price" />
                   <div className="plan-price">₹{PLANS[3].price.toLocaleString("en-IN")}</div>
                   <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                 </div>

@@ -4242,6 +4242,32 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Website payments — feedback from the firm's test (#212) (2026-10-13) 🔄 In Progress
+
+On `main` (QA) only. Part of E-24; nothing here is in production.
+
+- **Crossed-out prices the portal did not have.** Reported on the Private Limited
+  page: the website showed a crossed-out price while Website Prices showed "None",
+  and showed TWO once the firm entered one. Five live cards (`PvtltdPlanandPricing`,
+  `PRFlandpricing`, `CIOplans`, `CIRplans`, `WindupPLCPP` — 16 plans) had the figure
+  typed into the page's markup. The catalogue generator reads `oldPrice` from
+  `DEFAULT_PLANS` only, so it never saw them; and the 2026-10-10 fix added the
+  portal's `<CutPrice>` beside the typed one. Now: the figure is in `DEFAULT_PLANS`
+  (so the fallback and the prerendered page are unchanged and `catalog.json` carries
+  it), and the card draws `<CutPrice className=…>` only. **A cut price is never
+  written into a card.**
+- **The stored prices were filled once.** The seed never overwrites what the firm
+  owns, so the 16 figures would have stayed "None" in the portal and vanished from
+  the website. `mergeSeed` makes one exception, once per product, for the five
+  products in `CUT_PRICES_FROM_PAGES`: a still-empty cut price takes the page's
+  figure, and the stored product is marked `cutPricesFromPage` so a figure the firm
+  later clears stays cleared. Run on `qa-data` 2026-10-13 (5 updated; the ₹8,999
+  the firm had entered for Elemental was kept). **`npm run db:seed:pricing` must be
+  run on the live database when E-24 is released**, or those five pages lose their
+  crossed-out prices.
+- **Tests:** `pricing.service.test.js` — "#212: cut prices that were typed into a
+  page are filled once, and never again".
+
 ### Hotfix — Google sign-in on phones (#213), one email per event (#207) (2026-10-13) ✅ Completed
 
 **In production.** Deployed from the branch `hotfix/213-207-sign-in-and-duplicate-emails`

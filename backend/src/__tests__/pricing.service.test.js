@@ -117,3 +117,37 @@ test('applyUpdate keeps at least one plan on sale and a strikethrough above the 
     (e) => e.status === 400 && /strikethrough/.test(e.message), 'raising the price above its strikethrough');
   assert.equal(applyUpdate(product(), { plans: [{ id: 'elemental', price: 3000, oldPrice: null }] }).plans[0].oldPrice, null);
 });
+
+test('#212: cut prices that were typed into a page are filled once, and never again', () => {
+  const seed = { code: 'SVC-050', label: 'Private Limited', plans: [
+    { id: 'elemental', name: 'Elemental', price: 5999, oldPrice: 7999 },
+    { id: 'enriched', name: 'Enriched', price: 8999, oldPrice: 13999 },
+    { id: 'supreme', name: 'Supreme', price: 13999, oldPrice: 20999 },
+  ] };
+  // Stored before the fix: no cut prices, except one the firm has since entered,
+  // and a price the firm raised above the page's old figure.
+  const stored = { code: 'SVC-050', label: 'Private Limited', plans: [
+    { id: 'elemental', name: 'Elemental', price: 5999, oldPrice: 8999 },
+    { id: 'enriched', name: 'Enriched', price: 8999, oldPrice: null },
+    { id: 'supreme', name: 'Supreme', price: 21999, oldPrice: null },
+  ] };
+  const first = mergeSeed('private-limited', stored, seed);
+  assert.equal(first.changed, true);
+  const byId = (product, id) => product.plans.find((p) => p.id === id);
+  assert.equal(byId(first.product, 'elemental').oldPrice, 8999, "the firm's own figure stands");
+  assert.equal(byId(first.product, 'enriched').oldPrice, 13999, 'an empty one is filled from the page');
+  assert.equal(byId(first.product, 'supreme').oldPrice, null, 'never a cut price below the price');
+  assert.equal(byId(first.product, 'supreme').price, 21999, 'prices are still never overwritten');
+  assert.equal(first.product.cutPricesFromPage, true);
+
+  // The firm then clears it in the portal. A later seed leaves it cleared.
+  const cleared = { ...first.product, plans: first.product.plans.map((p) => ({ ...p, oldPrice: null })) };
+  const second = mergeSeed('private-limited', cleared, seed);
+  assert.equal(second.changed, false);
+  assert.ok(second.product.plans.every((p) => p.oldPrice === null));
+
+  // Any other product: a cleared cut price is never brought back.
+  const other = mergeSeed('trademark-application', { ...stored, plans: stored.plans.map((p) => ({ ...p, oldPrice: null })) }, seed);
+  assert.ok(other.product.plans.every((p) => p.oldPrice === null));
+  assert.equal(other.product.cutPricesFromPage, undefined);
+});

@@ -167,19 +167,19 @@
           "id": "elemental",
           "name": "Elemental",
           "price": 3999,
-          "oldPrice": null
+          "oldPrice": 5999
         },
         {
           "id": "enriched",
           "name": "Enriched",
           "price": 5999,
-          "oldPrice": null
+          "oldPrice": 7999
         },
         {
           "id": "supreme",
           "name": "Supreme",
           "price": 24999,
-          "oldPrice": null
+          "oldPrice": 29999
         }
       ],
       "pages": [
@@ -201,19 +201,19 @@
           "id": "elemental",
           "name": "Elemental",
           "price": 3999,
-          "oldPrice": null
+          "oldPrice": 5999
         },
         {
           "id": "enriched",
           "name": "Enriched",
           "price": 5999,
-          "oldPrice": null
+          "oldPrice": 7999
         },
         {
           "id": "supreme",
           "name": "Supreme",
           "price": 24999,
-          "oldPrice": null
+          "oldPrice": 29999
         }
       ],
       "pages": [
@@ -1233,19 +1233,19 @@
           "id": "elemental",
           "name": "Elemental",
           "price": 2499,
-          "oldPrice": null
+          "oldPrice": 3499
         },
         {
           "id": "enriched",
           "name": "Enriched",
           "price": 5499,
-          "oldPrice": null
+          "oldPrice": 6499
         },
         {
           "id": "supreme",
           "name": "Supreme",
           "price": 8999,
-          "oldPrice": null
+          "oldPrice": 11999
         }
       ],
       "pages": [
@@ -1641,25 +1641,25 @@
           "id": "elemental",
           "name": "Elemental",
           "price": 5999,
-          "oldPrice": null
+          "oldPrice": 7999
         },
         {
           "id": "enriched",
           "name": "Enriched",
           "price": 8999,
-          "oldPrice": null
+          "oldPrice": 13999
         },
         {
           "id": "supreme",
           "name": "Supreme",
           "price": 13999,
-          "oldPrice": null
+          "oldPrice": 20999
         },
         {
           "id": "supreme-plus",
           "name": "Supreme Plus",
           "price": 24999,
-          "oldPrice": null
+          "oldPrice": 37499
         }
       ],
       "pages": [
@@ -2134,19 +2134,19 @@
           "id": "elemental",
           "name": "Elemental",
           "price": 3999,
-          "oldPrice": null
+          "oldPrice": 5999
         },
         {
           "id": "enriched",
           "name": "Enriched",
           "price": 5999,
-          "oldPrice": null
+          "oldPrice": 7999
         },
         {
           "id": "supreme",
           "name": "Supreme",
           "price": 24999,
-          "oldPrice": null
+          "oldPrice": 29999
         }
       ],
       "pages": [

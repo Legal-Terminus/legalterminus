@@ -7,9 +7,9 @@ import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
 
 const DEFAULT_PLANS = [
-  { id: "elemental", name: "Elemental", price: 3999, services: ["Search Report of Name Availability", "1 RUN Name Approval Certificate", "Director Identification Number for 2 Individuals", "Certificate of Incorporation", "E-PAN", "E-TAN", "E-MOA", "E-AOA", "Documents for Bank Account Opening", "Documents for 1st Auditor Appointment", "EPF Registrations", "ESI Registrations"] },
-  { id: "enriched", name: "Enriched", price: 5999, services: ["Elemental Plan Plus", "Share Certificate", "Commencement of Business", "Udyam/MSME Registration"] },
-  { id: "supreme", name: "Supreme", price: 24999, services: ["Enriched Plan Plus", "Income tax filing of Company", "Preparation of Directors Report", "Preparation of Annual Return", "Preparation of Auditor Appointment Paperwork", "Preparation of List of Share Holders", "Preparation of Notice of AGM", "Preparation of Notice of BM", "Preparation of Extracts of AGM", "Filing of AOC - 4 (Financial Statements)", "Filing of MGT - 7 (Annual Return)", "Filing of ADT - 1 (Auditor Appointment)", "Minutes of Board Meeting for 1st FY", "Minutes of General Meeting for 1st FY", "Maintenance of Statutory E- Registers", "Filing of DPT - 3 Annual (If Applicable)", "Filing of MSME - 1 (If Applicable) for 1st FY", "DIR KYC (2 Directors)", "Income Tax Filing of 2 Directors", "Audit fees are excluded and to be paid directly to Auditor"] }
+  { id: "elemental", name: "Elemental", price: 3999, oldPrice: 5999, services: ["Search Report of Name Availability", "1 RUN Name Approval Certificate", "Director Identification Number for 2 Individuals", "Certificate of Incorporation", "E-PAN", "E-TAN", "E-MOA", "E-AOA", "Documents for Bank Account Opening", "Documents for 1st Auditor Appointment", "EPF Registrations", "ESI Registrations"] },
+  { id: "enriched", name: "Enriched", price: 5999, oldPrice: 7999, services: ["Elemental Plan Plus", "Share Certificate", "Commencement of Business", "Udyam/MSME Registration"] },
+  { id: "supreme", name: "Supreme", price: 24999, oldPrice: 29999, services: ["Enriched Plan Plus", "Income tax filing of Company", "Preparation of Directors Report", "Preparation of Annual Return", "Preparation of Auditor Appointment Paperwork", "Preparation of List of Share Holders", "Preparation of Notice of AGM", "Preparation of Notice of BM", "Preparation of Extracts of AGM", "Filing of AOC - 4 (Financial Statements)", "Filing of MGT - 7 (Annual Return)", "Filing of ADT - 1 (Auditor Appointment)", "Minutes of Board Meeting for 1st FY", "Minutes of General Meeting for 1st FY", "Maintenance of Statutory E- Registers", "Filing of DPT - 3 Annual (If Applicable)", "Filing of MSME - 1 (If Applicable) for 1st FY", "DIR KYC (2 Directors)", "Income Tax Filing of 2 Directors", "Audit fees are excluded and to be paid directly to Auditor"] }
 ];
 
 const WindupPLCPP = () => {
@@ -42,8 +42,7 @@ const WindupPLCPP = () => {
             <div>
               <div className="Windup-PLC-plan-header">
                 <div className="Windup-PLC-plan-name">Elemental</div>
-                <div className="Windup-PLC-plan-old-price">₹5,999</div>
-                <CutPrice plan={PLANS[0]} />
+                <CutPrice plan={PLANS[0]} className="Windup-PLC-plan-old-price" />
                 <div className="Windup-PLC-plan-price">{PLANS[0].price.toLocaleString("en-IN")}</div>
                 <div className="Windup-PLC-plan-meta">Excluding gov fee</div>
               </div>
@@ -80,8 +79,7 @@ const WindupPLCPP = () => {
             <div>
               <div className="Windup-PLC-plan-header">
                 <div className="Windup-PLC-plan-name">Enriched</div>
-                <div className="Windup-PLC-plan-old-price">₹7,999</div>
-                <CutPrice plan={PLANS[1]} />
+                <CutPrice plan={PLANS[1]} className="Windup-PLC-plan-old-price" />
                 <div className="Windup-PLC-plan-price">{PLANS[1].price.toLocaleString("en-IN")}</div>
                 <div className="Windup-PLC-plan-meta">
                   Excluding gov fee <span className="popular">(Popular)</span>
@@ -112,8 +110,7 @@ const WindupPLCPP = () => {
             <div>
               <div className="Windup-PLC-plan-header">
                 <div className="Windup-PLC-plan-name">Supreme</div>
-                <div className="Windup-PLC-plan-old-price">₹29,999</div>
-                <CutPrice plan={PLANS[2]} />
+                <CutPrice plan={PLANS[2]} className="Windup-PLC-plan-old-price" />
                 <div className="Windup-PLC-plan-price">{PLANS[2].price.toLocaleString("en-IN")}</div>
                 <div className="Windup-PLC-plan-meta">Excluding gov fee</div>
               </div>
