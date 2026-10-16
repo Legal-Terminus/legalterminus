@@ -11,7 +11,7 @@ import { publicSiteUrl, sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
 import { sanitizeRichText, richTextToPlain, checkWordLimit } from '../services/richText.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
-import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE, materialisableSteps, isTerminalStep } from '../../../shared/workflows/definitionSchema.js';
+import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE, materialisableSteps, isTerminalStep, removedStepNumbers, isDeclaredStay } from '../../../shared/workflows/definitionSchema.js';
 import { resolveDueDate, definitionNeedsAnchorDate } from '../../../shared/workflows/dueRules.js';
 import { evaluateCondition, describeSkipReason } from '../../../shared/workflows/conditions.js';
 import { deriveProfile } from '../services/clientProfile.service.js';
@@ -280,14 +280,29 @@ async function attachCurrentStepNames(rows) {
  * Returns the count, or null if it could not be read (never throws — progress is
  * display data and must not fail a transition).
  */
-export async function refreshCompletedStepCount(taskRef) {
+//
+// #215: given the service's steps as they are now, records of steps deleted from
+// it — and never started on this matter — are DELETED rather than counted. They
+// could never be reached, so they would hold the matter short of 100% and list
+// "pending" work that does not exist. Records with history stay.
+export async function refreshCompletedStepCount(taskRef, serviceSteps = null) {
   try {
-    const steps = await taskRef.collection('steps').get();
-    const completedStepCount = steps.docs.filter((d) => {
+    const snap = await taskRef.collection('steps').get();
+    let docs = snap.docs;
+    if (serviceSteps) {
+      const removed = new Set(removedStepNumbers(docs.map((d) => d.data()), serviceSteps));
+      if (removed.size) {
+        const batch = db.batch();
+        docs.filter((d) => removed.has(d.data().stepNumber)).forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+        docs = docs.filter((d) => !removed.has(d.data().stepNumber));
+      }
+    }
+    const completedStepCount = docs.filter((d) => {
       const st = d.data().status;
       return st === 'completed' || st === 'skipped';
     }).length;
-    await taskRef.set({ completedStepCount, totalSteps: steps.size }, { merge: true });
+    await taskRef.set({ completedStepCount, totalSteps: docs.length }, { merge: true });
     return completedStepCount;
   } catch (err) {
     logger.warn({ err: err?.message }, 'refreshCompletedStepCount failed (non-fatal)');
@@ -1707,9 +1722,23 @@ export async function getTask(req, res) {
 
     // Steps live in a subcollection; attach them ordered by stepNumber.
     const stepsSnap = await doc.ref.collection('steps').orderBy('stepNumber').get();
-    const steps = stepsSnap.empty
+    let steps = stepsSnap.empty
       ? (data.steps ?? []) // back-compat: legacy tasks stored steps inline
       : stepsSnap.docs.map((s) => s.data());
+    // #215: a step deleted from the service after this matter began, and never
+    // started on it, is not part of the matter any more — it can never be
+    // reached. Hidden here so a matter nobody touches again (a completed one)
+    // shows the same list as one the engine has since tidied. Best effort:
+    // without the service to compare, the list is shown as stored.
+    try {
+      const compiledForView = await getCompiledById(data.workflowDefinitionId);
+      if (compiledForView) {
+        const removed = new Set(removedStepNumbers(steps, compiledForView.definition.steps));
+        if (removed.size) steps = steps.filter((s) => !removed.has(s.stepNumber));
+      }
+    } catch (e) {
+      logger.warn({ err: e?.message, taskId: doc.id }, 'getTask: could not compare steps with the service');
+    }
 
     const full = { id: doc.id, ...data, steps };
     // E12-S01: clients get a projection with internal ownership/assignment removed,
@@ -2643,7 +2672,12 @@ export async function transitionTask(req, res) {
       snap.context.currentStepNumber !== task.currentStepNumber ||
       snap.context.paymentStatus !== context.paymentStatus ||
       snap.context.adminOverride !== context.adminOverride;
-    if (before === after && !ctxChanged) {
+    // #214: a move the service itself sends BACK TO THIS STEP ("Request changes"
+    // looping to the same approval step) changes nothing in the machine either,
+    // but it is a deliberate move, not an invalid one. It is recorded like any
+    // other: the comment on the step, the event in the activity.
+    const declaredStay = isDeclaredStay(compiled.definition.steps, task.currentStepNumber, event?.type);
+    if (before === after && !ctxChanged && !declaredStay) {
       return res.status(400).json({ message: `Event '${event?.type}' is not valid in step ${task.currentStepNumber}` });
     }
 
@@ -2845,7 +2879,9 @@ export async function transitionTask(req, res) {
     });
 
     await batch.commit();
-    await refreshCompletedStepCount(taskRef); // #189
+    // #189; #215: with the service as it is now, so records of steps deleted from
+    // it since this matter began are dropped, not counted.
+    await refreshCompletedStepCount(taskRef, compiled.definition.steps);
 
     // Resolve stale notifications (#100). Notifications are keyed to the step the
     // ball ARRIVES at (the step the recipient must act on). On any FORWARD move we
