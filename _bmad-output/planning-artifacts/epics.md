@@ -4246,6 +4246,32 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Steps deleted from a service, and "Request changes" to the same step — #215, #214 (2026-10-16) ✅ Completed
+
+On `main` (QA). Built here and in Ambyflow (Story 42.15) together; both faults were
+found on this repo's production data.
+
+- **#215 — two steps after the final step on a completed matter.** All six Company
+  Incorporation matters carry step records 49 (*Documents received from Client*) and
+  50 (*Incorporation Documents Shared to client*); the service, now v383, no longer has
+  them. A matter records its workflow version but **runs on the current workflow**
+  (old versions are not stored). The matters reached the new final step and completed;
+  the two records, never reached and invisible to the skip sweep (which works in the
+  current workflow's order), stayed *Pending*. Now a record that is not in the service
+  and was never started is hidden by `getTask` and deleted on the matter's next move
+  (`refreshCompletedStepCount(taskRef, serviceSteps)`), so counts follow too. Records
+  with history stay. **No production data was changed by hand**: completed matters are
+  corrected on read, running ones on their next step.
+- **#214 — "Event 'CLIENT_REJECT' is not valid in step 49".** Trademark Application
+  step 49 sends *Request changes* back to itself (`CLIENT_REJECT → 49`). The transition
+  handler refused any event that left the matter on the same step. It now allows one
+  the step declares (`isDeclaredStay`); the comment is kept on the step and the event
+  in the activity, for the client and for an admin/manager on their behalf. An
+  undeclared event is still refused.
+- **Tests:** `removedStepsAndStays.test.js`; `Portal/e2e/removed-steps.spec.ts` (5).
+- **Not changed:** removing the step a matter is ON still leaves it there; a request
+  for changes does not reset the step's due date.
+
 ### Website payments — feedback from the firm's test (#212) (2026-10-13) 🔄 In Progress
 
 On `main` (QA) only. Part of E-24; nothing here is in production.

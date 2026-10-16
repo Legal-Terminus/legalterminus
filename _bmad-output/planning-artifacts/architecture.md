@@ -143,6 +143,17 @@ Both apps share the **same Cloud Run backend** and the same **Firebase project**
 - Pins **`workflowDefinitionId` + `workflowVersion`** (immutable per task) — NOT the service key —
   so editing/versioning a flow never alters in-flight tasks. (`workflowType` kept as a back-compat
   mirror for reports.)
+  > **Correction (#215, 2026-10-16): the version is RECORDED, not enforced.** Old
+  > versions are not stored; `getCompiledById` returns the current definition, and
+  > every transition, ETA and sweep runs on it. Step-level assignee/ETA settings are
+  > copied into the step records at creation, which is why *those* edits reach only
+  > new matters. The structure does not stay pinned: a step deleted from the service
+  > is never reached by running matters. Its record — written at creation — is
+  > therefore treated as gone when it was never started (`removedStepNumbers`):
+  > hidden by `getTask`, deleted by `refreshCompletedStepCount(taskRef, serviceSteps)`
+  > on the matter's next move. A record with history is kept. A transition that
+  > returns to the same step is valid only when the step declares it
+  > (`isDeclaredStay`, #214).
 - Per-step **instance state** lives in a **subcollection** `tasks/{id}/steps/{stepNumber}`
   (status/assignee/title/assignedRole) — not an array on the task doc (avoids whole-array write
   races). A denormalized `totalSteps` is kept on the task for cheap list/report display.

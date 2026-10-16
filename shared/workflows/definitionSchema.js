@@ -100,6 +100,37 @@ export function materialisableSteps(steps) {
   return (steps ?? []).filter((s) => !isSyntheticFinalStep(s));
 }
 
+/**
+ * #215 — step records a matter no longer has.
+ *
+ * A matter writes a record for every step its service has when it is created,
+ * but it RUNS on the service as it is now. A step deleted from the service
+ * afterwards is never reached, so its record sat at `pending` for ever — after
+ * the final step, on a completed matter. Returns the numbers of records that are
+ * NOT in `steps` (the service now) and were never started. A record with history
+ * (done, active, skipped, cancelled) is never in this list: that work happened.
+ */
+export function removedStepNumbers(rows, steps) {
+  const live = new Set(materialisableSteps(steps).map((s) => s.stepNumber));
+  return (rows ?? [])
+    .filter((r) => r && typeof r.stepNumber === 'number' && !live.has(r.stepNumber)
+      && (r.status ?? 'pending') === 'pending')
+    .map((r) => r.stepNumber);
+}
+
+/**
+ * #214 — does the service send this event BACK TO THE SAME STEP?
+ *
+ * "Request changes" on a client approval is often authored as a loop to the step
+ * itself: the client asks for changes, the step stays where it is. The engine
+ * treated any event that left the matter on the same step as invalid, so the
+ * firm's own, deliberate loop answered "Event 'CLIENT_REJECT' is not valid".
+ */
+export function isDeclaredStay(steps, stepNumber, eventType) {
+  const step = (steps ?? []).find((s) => s.stepNumber === stepNumber);
+  return Boolean(eventType) && (step?.transitions ?? []).some((t) => t.event === eventType && t.to === stepNumber);
+}
+
 /** True when the matter has no further work after this step completes (#144). */
 export function isTerminalStep(step) {
   return Boolean(step) && step.type === 'final';
