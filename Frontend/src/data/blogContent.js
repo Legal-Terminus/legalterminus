@@ -2,6 +2,176 @@
 // BlogPost.jsx uses this first; posts not listed here fall back to the
 // legacy WordPress fetch (see BlogPost.jsx).
 export const blogContent = {
+  "passing-off-trademark-in-india-what-it-means-and-why-it-matters-even-without-registration": `
+    <p>Imagine spending years building a snack brand. Customers recognise your name, remember your distinctive orange packet and begin asking for the product by brand name.</p>
+    <p>Then another business enters the market with a similar-sounding name, a comparable orange packet and an overall presentation that feels strangely familiar.</p>
+    <p>A customer standing at a crowded shop counter may not carefully compare the two packets. They may simply pick up the competing product believing it is yours, or assuming that the two businesses are somehow connected.</p>
+    <p>What happens if your trademark is not registered? You may still have a legal remedy.</p>
+    <p>This is where the law of passing off becomes important.<br/>
+    Passing off is based on a straightforward principle: one business should not be permitted to represent its goods or services as those of another business and take advantage of the goodwill that the other business has built.</p>
+    <p>And unlike trademark infringement, passing off can protect even an unregistered trademark.</p>
+
+    <p>👉 <a href="https://www.legalterminus.com" target="_blank" rel="noopener noreferrer"><strong>Book a free consultation today</strong></a></p>
+
+    <h2>Registration Is Important, But Passing Off Does Not Begin With Registration</h2>
+
+    <img src="/blog-images/passing-off-registration-is-important.webp" alt="Registration Is Important, But Passing Off Does Not Begin With Registration - Legal Terminus" loading="lazy" />
+
+    <p>The distinction comes directly from the Trade Marks Act, 1999.</p>
+    <p>Section 27(1) makes it clear that an action for infringement cannot be brought in respect of an unregistered trademark. But Section 27(2) specifically preserves the right to take action against a person for passing off goods or services as those of another.</p>
+    <p>So, an unregistered trademark cannot ordinarily support an infringement action, but it may still support a passing-off action.</p>
+    <p>This distinction is extremely important in practice.</p>
+    <p>Suppose Business A has used the mark &ldquo;FreshNest&rdquo; continuously for ten years but never registered it. Business B subsequently enters the same market using branding that is likely to make customers believe its products come from Business A.</p>
+    <p>Business A does not suddenly lose all protection merely because it neglected registration.</p>
+    <p>But there is a catch.</p>
+    <p>Without registration, Business A will generally have to establish the reputation and goodwill associated with its mark and show why Business B's conduct is likely to cause deception and damage.</p>
+    <p>That can involve considerably more evidence than producing a trademark registration certificate.</p>
+
+    <h3>What Exactly Does Passing Off Protect?</h3>
+    <p>Passing off protects goodwill.</p>
+    <p>Goodwill is more than simply having a business name. It is the commercial reputation that causes customers to associate a particular name, mark, packaging, get-up or business identity with a particular source.</p>
+    <p>The Supreme Court has recognised that even a business or trading name may acquire goodwill capable of protection where another trader's conduct is likely to create confusion between the businesses.</p>
+    <p>That is why passing off is not necessarily confined to somebody copying the exact words appearing in your trademark.</p>
+    <p>Depending upon the facts, the dispute may involve:</p>
+    <ol>
+      <li>a similar brand name;</li>
+      <li>deceptively similar packaging;</li>
+      <li>a similar label or get-up;</li>
+      <li>copying distinctive trade dress;</li>
+      <li>a confusingly similar trading or business name; or</li>
+      <li>an overall presentation suggesting a commercial connection that does not actually exist.</li>
+    </ol>
+    <p>The central question is not simply:<br/>
+    <strong>&ldquo;Did the defendant copy something?&rdquo;</strong></p>
+    <p>The more important question is:<br/>
+    <strong>&ldquo;Is the defendant's representation likely to make customers believe that its goods, services or business are those of, or connected with, the claimant?&rdquo;</strong></p>
+    <p>That difference lies at the heart of passing-off law.</p>
+
+    <h3>The Three Things a Claimant Generally Has to Establish</h3>
+    <p>Passing off is commonly explained through what is known as the classical trinity:</p>
+
+    <p><strong>1. Goodwill or reputation</strong></p>
+    <p>The claimant must establish goodwill associated with the mark, name or get-up relied upon.<br/>
+    A newly invented name sitting unused in a notebook does not automatically have the same position as a brand that has been commercially used, advertised and recognised by customers.</p>
+    <p>Evidence may therefore include invoices, turnover figures, advertising expenditure, promotional material, website and social-media presence, distribution records, customer recognition and the period and geographical extent of use.</p>
+
+    <p><strong>2. Misrepresentation</strong></p>
+    <p>There must be a misrepresentation by the defendant that is likely to lead customers to believe that its goods, services or business have some connection with the claimant when no such connection exists.</p>
+    <p>Importantly, fraudulent intention is not always essential.</p>
+    <p>A trader may therefore face a passing-off claim even if it says, &ldquo;We never intended to copy them&rdquo;, if the commercial representation is nevertheless likely to deceive or confuse customers.</p>
+
+    <p><strong>3. Damage or likelihood of damage</strong></p>
+    <p>The misrepresentation must cause, or be likely to cause, damage to the claimant's goodwill.</p>
+    <p>That damage could arise through diverted sales, loss of control over reputation, dilution of distinctiveness or customers associating an inferior product with the claimant.</p>
+    <p>Indian courts have repeatedly applied these essential ingredients of goodwill, misrepresentation and damage in passing-off disputes.</p>
+
+    <h4>Courts Do Not Compare Trademarks Like an Eye Test</h4>
+    <p>One mistake businesses frequently make is putting two logos next to each other and saying:<br/>
+    &ldquo;Look, the fonts are different.&rdquo;</p>
+    <p>Trademark law does not normally operate through a microscopic, side-by-side search for differences.</p>
+    <p>In <em>Cadila Health Care Ltd. v. Cadila Pharmaceuticals Ltd.</em>, the Supreme Court emphasised that the real enquiry in a passing-off dispute is whether the competing marks are likely to cause deception or confusion.</p>
+    <p>Among the relevant considerations are the nature of the marks, their degree of visual and phonetic resemblance, the nature of the goods, the class of purchasers, the level of care ordinarily exercised by them, the manner in which the goods are purchased and other surrounding circumstances.</p>
+    <p>The marks must therefore be considered in their commercial setting and, importantly, as a whole.</p>
+    <p>This makes practical sense.</p>
+    <p>A customer ordering a product verbally at a busy pharmacy, grocery store or marketplace is unlikely to have both brands placed neatly beside each other for a legal comparison.</p>
+    <p>The law therefore makes allowance for something every consumer experiences: imperfect recollection.</p>
+
+    <h3>RACIRAFT v. ESIRAFT: Why Context Can Change the Result</h3>
+    <p>A recent Bombay High Court dispute involving pharmaceutical trademarks provides an excellent example.</p>
+    <p>Sun Pharmaceutical Industries Ltd. owned the registered mark RACIRAFT for an oral suspension used in relation to heartburn and indigestion. Meghmani Lifesciences used ESIRAFT for a pharmaceutical product in the same field.</p>
+    <p>Sun Pharma alleged infringement and passing off.</p>
+    <p>One important issue was the suffix &ldquo;RAFT&rdquo;. The defendant argued that &ldquo;raft&rdquo; had significance in relation to the foam-like formation associated with sodium alginate products and therefore could not simply be monopolised by one trader.</p>
+    <p>The litigation produced an interesting procedural development.</p>
+    <p>On 23 December 2025, a Single Judge of the Bombay High Court declined interim relief, holding at that stage that sufficient deceptive similarity had not been demonstrated.</p>
+    <p>But that was not the end of the matter.</p>
+    <p>On 8 April 2026, the Division Bench reversed the decision. It emphasised that the rival marks had to be considered as a whole and found sufficient phonetic similarity between RACIRAFT and ESIRAFT to create a likelihood of confusion. The Court also stressed the stricter approach applicable to medicinal products, where confusion may have consequences extending beyond an ordinary mistaken purchase.</p>
+    <p>The Division Bench accordingly allowed Sun Pharma's appeal and set aside the Single Judge's order.</p>
+    <p>The case offers two useful lessons.</p>
+    <p>First, a common or descriptive component of a mark cannot automatically be examined in isolation. The overall commercial impression remains important.</p>
+    <p>Second, context matters. Courts may approach confusion between medicinal products more cautiously because the consequences of an incorrect purchase can be significantly more serious.</p>
+    <p>It is also important to remember that these were interim proceedings. An interim finding on deceptive similarity should not be described as a final determination of every issue in the underlying suit.</p>
+
+    <h3>Passing Off and Trademark Infringement Are Not the Same Thing</h3>
+    <p>The terms are often used together, but legally they are distinct.</p>
+    <table>
+      <thead>
+        <tr><th>Aspect</th><th>Passing Off</th><th>Trademark Infringement</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Source of right</td><td>Common law, expressly preserved by the Trade Marks Act</td><td>Statutory right under the Trade Marks Act</td></tr>
+        <tr><td>Registration required?</td><td>No</td><td>Yes</td></tr>
+        <tr><td>Core interest protected</td><td>Goodwill and reputation</td><td>Exclusive statutory rights arising from registration</td></tr>
+        <tr><td>Important questions</td><td>Goodwill, misrepresentation and damage</td><td>Whether the defendant's use violates the statutory rights in the registered mark</td></tr>
+        <tr><td>Can a registered owner also claim it?</td><td>Yes</td><td>Yes, if statutory requirements are satisfied</td></tr>
+      </tbody>
+    </table>
+    <p>The Supreme Court has explained that infringement is a statutory remedy available to the registered proprietor, whereas passing off is essentially concerned with preventing one person's goods or business from being represented as those of another.</p>
+    <p>A registered trademark owner may therefore plead both infringement and passing off where the facts justify both causes of action.</p>
+    <p>For an unregistered mark, however, passing off assumes much greater significance.</p>
+
+    <h4>Passing Off Can Be About More Than the Brand Name</h4>
+    <p>Consider two packets:</p>
+    <p><strong>Packet A:</strong> &ldquo;TASTY BITE&rdquo; in yellow lettering, red background, a distinctive green corner device and a particular arrangement of graphics.</p>
+    <p><strong>Packet B:</strong> &ldquo;TASTEE BYTE&rdquo; with an overall presentation deliberately or otherwise creating a very similar market impression.</p>
+    <p>A defendant may argue:<br/>
+    &ldquo;Our words aren't identical.&rdquo;</p>
+    <p>That does not necessarily end the enquiry.<br/>
+    Where the claim concerns trade dress or get-up, courts may examine the overall visible appearance through which customers encounter the goods. Indian decisions have recognised that imitation of trade dress or get-up can support a passing-off claim where the overall presentation is deceptively similar.</p>
+    <p>Equally, merely adopting the same popular colour used throughout an industry may not, by itself, give another trader a monopoly.</p>
+    <p>Passing off is highly fact-sensitive.</p>
+    <p>The law protects identifiable goodwill. It does not generally convert common, descriptive or customary features of a trade into private property merely because one trader has also used them.</p>
+
+    <h4>What Can the Court Do?</h4>
+    <p>Passing off is not merely a theoretical right.</p>
+    <p>Section 135 of the Trade Marks Act recognises substantial remedies in suits for infringement or passing off, including an injunction and, depending upon the circumstances, damages or an account of profits. Courts may also order delivery-up of infringing labels and marks for destruction or erasure.</p>
+    <p>Interlocutory and even ex parte injunctions may also be available in appropriate cases, together with orders concerning preservation of evidence and related matters.</p>
+    <p>For a business facing active market confusion, the ability to seek an injunction can be particularly important because compensation years later may not fully repair lost goodwill.</p>
+
+    <h4>If Your Trademark Is Unregistered, Evidence Becomes Your Best Friend</h4>
+    <p>A business relying on passing off should be able to answer a simple question:</p>
+    <p><strong>How will you prove that customers associated this brand with you before the dispute arose?</strong></p>
+    <p>Useful records may include:</p>
+    <ol>
+      <li>earliest invoices showing use of the mark;</li>
+      <li>GST invoices and sales records;</li>
+      <li>advertisements and promotional campaigns;</li>
+      <li>packaging used over different periods;</li>
+      <li>website archives and social-media posts;</li>
+      <li>dealership or distribution agreements;</li>
+      <li>turnover attributable to the brand;</li>
+      <li>advertising expenditure;</li>
+      <li>marketplace listings;</li>
+      <li>press coverage and awards; and</li>
+      <li>correspondence demonstrating customer recognition.</li>
+    </ol>
+    <p>Businesses often begin collecting this material only after receiving a legal notice.</p>
+    <p>That is usually much harder.</p>
+    <p>Maintaining organised evidence of trademark use from the beginning can become extremely valuable if priority or goodwill is later disputed.</p>
+
+    <h3>So, If Passing Off Protects an Unregistered Mark, Why Register at All?</h3>
+    <p>Because passing off and registration should not be treated as substitutes.</p>
+    <p>A registration creates statutory rights in the trademark and ordinarily gives the proprietor a much clearer starting point for enforcement. Under Section 28 of the Trade Marks Act, valid registration confers an exclusive right to use the trademark in relation to the goods or services covered by the registration, subject to the provisions of the Act.</p>
+    <p>Passing off remains enormously valuable, particularly where earlier rights arise through use or where the dispute concerns broader brand presentation.</p>
+    <p>But proving years of goodwill, market reputation and likely deception can be far more complicated than establishing the existence of a valid registration and then examining infringement.</p>
+    <p>The sensible business strategy is therefore:<br/>
+    <strong>Build goodwill, preserve evidence of use and register important trademarks early.</strong></p>
+
+    <h3>The Bottom Line</h3>
+    <p>A trademark does not become commercially valuable merely because the Registry issues a certificate.</p>
+    <p>Its real value develops when customers begin associating that trademark with a particular business.</p>
+    <p>Passing-off law recognises that reality.</p>
+    <p>It prevents a trader from taking unfair advantage of another trader's goodwill by creating a misleading impression about the origin or connection of goods, services or businesses.</p>
+    <p>But an unregistered trademark is not automatically protected merely because somebody else adopts something similar. The claimant must still establish the ingredients required for passing off, particularly goodwill, misrepresentation and damage or likelihood of damage.</p>
+    <p>That makes one distinction worth remembering:<br/>
+    <strong>Registration gives you statutory trademark rights. Passing off protects the goodwill you have actually built.</strong></p>
+    <p>A strong trademark strategy should ideally have both.</p>
+
+    <p>👉 <a href="https://www.legalterminus.com" target="_blank" rel="noopener noreferrer"><strong>Want to Register Your Trademark? Contact Us Today</strong></a></p>
+
+    <h4>Disclaimer:</h4>
+    <p>This article is intended solely for general awareness and informational purposes and does not constitute legal advice. Passing-off and trademark disputes are fact-specific. Professional advice should be obtained after examining the relevant marks, use history, registrations, market circumstances and supporting evidence.</p>
+  `,
+
   "private-limited-company-registration-in-india-complete-guide-moa-aoa": `
     <p>Every business begins with an idea, but sooner or later the founders have to decide what legal structure will carry that idea forward.</p>
     <p>Should the business continue as a proprietorship? Should it become an LLP? Or does it need a structure that allows ownership through shares, induction of investors and continuity independent of the founders?</p>

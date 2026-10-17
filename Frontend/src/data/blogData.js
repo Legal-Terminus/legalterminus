@@ -15,6 +15,15 @@ export const CATEGORIES = [
 
 export const posts = [
   {
+    id: 21523,
+    slug: "passing-off-trademark-in-india-what-it-means-and-why-it-matters-even-without-registration",
+    title: "Passing Off Trademark in India: What It Means and Why It Matters Even Without Registration",
+    excerpt: "An unregistered trademark cannot support an infringement action — but it may still be protected through passing off. Here's what passing off protects, what a claimant must prove and why registration still matters.",
+    date: "October 17, 2026",
+    category: "Trademark",
+    image: "/blog-images/passing-off-trademark-in-india.webp",
+  },
+  {
     id: 21522,
     slug: "private-limited-company-registration-in-india-complete-guide-moa-aoa",
     title: "Private Limited Company Registration in India: A Complete Guide to the Process and the Paperwork Behind It",
