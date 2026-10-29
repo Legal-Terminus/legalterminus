@@ -198,7 +198,7 @@ The admin has access to a comprehensive reporting dashboard covering 13 distinct
 12. **Pending Task Categorisation** — Same as scenario 3 but with the ability to filter by any single reason to isolate blockers.
 13. **Escalation Report** — **Given** admin opens Escalation, **Then** it shows steps that have exceeded their `deadlineDays` threshold grouped by team member, with escalation age and audit trail.
 14. **Client / Group Work & Fee Report (#206, admin only)** — **Given** an admin opens the report and picks a financial year, group, client or service, **Then** it shows total works, fees charged, fees received and balance, with one row per work (client, service, date, fee, status). A work counts in the April–March year it was created in. Managers and other roles cannot see or open it.
-15. **Client Database (#205)** — **Given** an admin or manager opens Reports → Client Database, **Then** the Clients page opens: one record per client with contact person, designation (Owner / Director / Accountant / Manager), contact and alternative numbers, emails, address, group, reference and professional; editing updates that record, and the list downloads as Excel.
+15. **Client Database (#205, revised 2026-10-29)** — **Given** an admin or manager opens Reports → Client Database, **Then** a separate screen shows nine fields per client — Client Name, Contact Person Name, Contact Person Designation (Owner / Director / Accountant / Manager), Contact Number, Alternative Number, Email ID, Alternative Email, Business Address, Client Since — starting from the client's creation data. Choosing a client in **Client Name** shows that client's record; with none chosen, every client is listed. **Edit** makes the record editable on the same screen and **Save** updates that one record; the client form, profile and login email are never changed by it. The nine columns download as Excel. Team members and clients have no access.
 
 **Website payments (E24-S02 … S05)** — **Given** a signed-in customer chooses a plan on the website and pays, **Then** the amount charged is the plan's price in the catalogue plus GST at 18% (prices are exclusive of GST; the checkout shows the price, the GST and the total); the order is marked paid only on a verified confirmation from the gateway; the customer sees a confirmation with an order reference; and, where the service has a workflow, the order waits for a member of staff — an admin, a manager or a team member — to approve it under **Website Orders**, and on approval a matter is opened for the customer, fully paid and live. Payment alone opens no matter. Where the service has no workflow, the firm's admins are told to open one. A payment confirmed twice, or an order approved by two people at once, opens one matter. A refunded order cannot be approved. A payment for the wrong amount is held for review. Staff see every order under **Website Orders**.
 
@@ -512,6 +512,15 @@ state?, businessName?, referenceGroup?,
 // client contact person (#205):
 altPhone?, contactDesignation? (Owner|Director|Accountant|Manager),
 groupCompany?, professionalUid?
+```
+
+### `clientDatabase/{clientUid}` — the Client Database's own values (#205)
+```
+// Backend-only. One doc per client, id = the client's uid. A field absent here
+// shows the value derived from users/{uid}; a field present (even '') wins.
+clientName?, contactPerson?, contactDesignation? (Owner|Director|Accountant|Manager|''),
+phone?, altPhone?, email?, altEmail? (comma-separated), address?,
+clientSince? (YYYY-MM-DD), updatedAt, updatedBy
 ```
 
 ### `workflowTemplates/{workflowId}` — admin-editable config layer

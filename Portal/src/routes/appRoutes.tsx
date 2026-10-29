@@ -41,6 +41,7 @@ import RevenueReportPage from '../pages/reports/RevenueReport';
 import TeamPerformanceReport from '../pages/reports/TeamPerformanceReport';
 import StorageReportPage from '../pages/reports/StorageReport';
 import ClientGroupFeeReport from '../pages/reports/ClientGroupFeeReport';
+import ClientDatabasePage from '../pages/reports/ClientDatabasePage';
 import MyServicesReport from '../pages/reports/MyServicesReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 import MarketingReportsPage from '../pages/reports/MarketingReportsPage';
@@ -122,6 +123,8 @@ export const APP_ROUTES: AppRoute[] = [
   { path: '/reports/revenue',      element: <RevenueReportPage />,    roles: ['admin', 'manager'] },
   { path: '/reports/team-performance', element: <TeamPerformanceReport />, roles: ['admin', 'manager'] },
   { path: '/reports/storage',      element: <StorageReportPage />,    roles: ['admin', 'manager'] },
+  // LT #205: the Client Database — its own screen, separate from the client form.
+  { path: '/reports/client-database', element: <ClientDatabasePage />, roles: ['admin', 'manager'] },
   // #206: the firm's income by client and group — admin only, as is its API.
   { path: '/reports/client-group-fees', element: <ClientGroupFeeReport />, roles: ['admin'] },
   // #84 client-facing report — clients see only their own services/payments.

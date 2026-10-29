@@ -4246,6 +4246,41 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Client Database as its own screen — #205 (2026-10-29) ✅ Built (branch `feat/205-client-database`)
+
+The firm rejected the first delivery (`d87ae2b2`, the contact record on the Clients
+page) on 6 Oct: the Client Database is a **separate screen**, the client form stays
+exactly as it is, and editing happens only in the database. Supersedes the
+"Reports → Client Database links to `/clients`" part of the earlier #205 entry; the
+client-form fields and the Clients page download from `d87ae2b2` are untouched.
+
+- **Reports → Client Database** opens `/reports/client-database` (admin, manager).
+  Nine fields: Client Name, Contact Person Name, Contact Person Designation, Contact
+  Number, Alternative Number, Email ID, Alternative Email, Business Address, Client
+  Since. **Client Name** is the primary filter — picking a client shows that client's
+  record as a labelled card; with none picked, every client is listed (searchable by
+  name, organisation, phone or email; 50 per page). A card per client on phones, a
+  grid row on wide screens. **Download Excel** saves the nine columns.
+- **Edit in place.** Edit turns the row (or the card) into a form on the same
+  screen; Save updates the one record. Designation is the fixed list Owner /
+  Director / Accountant / Manager.
+- **Its own values.** Saved in `clientDatabase/{clientUid}` (with `updatedAt`,
+  `updatedBy`), never on the `users` doc, so the database cannot change a client's
+  profile or login email. Each field shows the saved value when there is one, else
+  the profile's: organisation (else business name, else the person) → Client Name;
+  Full Name → Contact Person; `contactDesignation`, `phone`, `altPhone`, primary
+  `email`; the other `emailIds` → Alternative Email; address + state → Business
+  Address; `createdAt` (India date) → Client Since. A saved empty field stays empty.
+- **Who has a row:** every primary, active client — an additional login (#166,
+  `primaryClientUid`) and a deactivated client do not. Deleting a client deletes
+  its record.
+- **API:** `GET /api/client-database` (`search`, `limit` ≤100, `cursor`),
+  `GET /api/client-database/names`, `GET` / `PUT /api/client-database/:clientUid`
+  (Zod `.strict()`); all `verifyToken` + `requireRole('admin','manager')`.
+- **Tests:** unit `clientDatabase.test.js` (11); e2e `Portal/e2e/client-database.spec.ts`
+  (7). The old #205/#206 spec moved to `client-group-fees.spec.ts`, its Reports-link
+  test now checks the Clients page download directly.
+
 ### Steps deleted from a service, and "Request changes" to the same step — #215, #214 (2026-10-16) ✅ Completed
 
 On `main` (QA). Built here and in Ambyflow (Story 42.15) together; both faults were

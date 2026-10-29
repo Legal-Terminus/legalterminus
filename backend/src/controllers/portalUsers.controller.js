@@ -395,6 +395,13 @@ export const removeUser = async (req, res) => {
     // No tasks → safe to delete the user, their Auth account, and the
     // payments subcollection (handled inside deleteUser).
     const result = await deleteUser(uid);
+    // LT #205: a deleted client takes its Client Database record with it, so a
+    // re-used uid can never inherit someone else's contact details.
+    if (user.role === 'client') {
+      await db.collection('clientDatabase').doc(uid).delete().catch((err) => {
+        logger.warn({ err, uid }, 'removeUser: could not delete the client database record');
+      });
+    }
     res.status(200).json({ message: 'User deleted successfully', ...result });
   } catch (error) {
     logger.error({ err: error }, 'Error deleting user:');
