@@ -101,10 +101,13 @@ export function canUploadCommentImage({ role, clientCanSee = false }) {
  *  • Client: on a matter they can see, and only an image they uploaded or one
  *    that sits in a comment/message shared with the client (`clientVisible`).
  */
-export function canReadCommentImage({ role, uid, task, image, clientCanSee = false }) {
+export function canReadCommentImage({ role, uid, task, image, clientCanSee = false, proCanSee = null }) {
   if (!task || !image) return false;
   if (STAFF.has(role)) return true;
-  if (role === 'professional') return !!uid && task.professionalUid === uid;
+  // A professional sees the images of any matter they can see — the caller
+  // passes professionalCanSee(), which also admits the additional
+  // professionals granted access to the matter (#181), not only the named one.
+  if (role === 'professional') return proCanSee === null ? (!!uid && task.professionalUid === uid) : proCanSee === true;
   if (role === 'client') {
     if (clientCanSee !== true) return false;
     return (!!uid && image.uploadedBy === uid) || image.clientVisible === true;

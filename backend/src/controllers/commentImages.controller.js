@@ -1,6 +1,6 @@
 import { db, getBucket } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
-import { clientCanSeeMatter } from './tasks.controller.js';
+import { clientCanSeeMatter, professionalCanSee } from './tasks.controller.js';
 import {
   COMMENT_IMAGES_SUB,
   COMMENT_IMAGE_TYPES,
@@ -88,11 +88,13 @@ export async function getCommentImage(req, res) {
     const imgSnap = await imagesCol(taskId).doc(imageId).get();
     const image = imgSnap.exists ? imgSnap.data() : null;
     const clientCanSee = role === 'client' && clientCanSeeMatter(req.user, task);
-    if (!image || !canReadCommentImage({ role, uid, task, image, clientCanSee })) {
+    // The same rule as the matter itself, so additional professionals (#181) see its images too.
+    const proCanSee = role === 'professional' && professionalCanSee(task, uid);
+    if (!image || !canReadCommentImage({ role, uid, task, image, clientCanSee, proCanSee })) {
       // A caller with no access to the MATTER is told so; inside a matter they
       // can see, an image they may not view is indistinguishable from none.
       const seesMatter = role === 'client' ? clientCanSee
-        : role === 'professional' ? task.professionalUid === uid
+        : role === 'professional' ? proCanSee
           : true;
       return seesMatter
         ? res.status(404).json({ message: 'Image not found' })

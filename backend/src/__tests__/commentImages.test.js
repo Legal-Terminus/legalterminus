@@ -158,6 +158,9 @@ test('a client reads only their own uploads or shared images, on a matter they c
 test('a professional reads images only on their own matter', () => {
   assert.equal(canReadCommentImage({ role: 'professional', uid: 'p1', task, image: internal }), true);
   assert.equal(canReadCommentImage({ role: 'professional', uid: 'p2', task, image: shared }), false);
+  // An additional professional granted access to the matter (#181) sees its images too.
+  assert.equal(canReadCommentImage({ role: 'professional', uid: 'p2', task, image: internal, proCanSee: true }), true);
+  assert.equal(canReadCommentImage({ role: 'professional', uid: 'p1', task, image: internal, proCanSee: false }), false);
 });
 
 test('unknown roles and missing records are refused', () => {
