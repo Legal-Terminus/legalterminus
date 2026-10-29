@@ -181,18 +181,177 @@ export interface RevenueReport {
 }
 export const getRevenueReport = () => apiFetch<RevenueReport>('/api/reports/revenue');
 
-// ─── #84 Team Performance ───────────────────────────────────────────────────
-export interface TeamPerformanceRow {
-  uid: string;
-  name: string;
+// ─── LT #216 Employee Performance ───────────────────────────────────────────
+// One person (uid) or the whole team, over a period. Every figure is computed on
+// the server from step records and the activity log. There is NO time tracking:
+// `elapsedMs` is start → finish of a task, not hours worked.
+
+export type PerfGranularity = 'auto' | 'day' | 'week' | 'month';
+
+export interface PerfStepRef {
+  taskId: string;
+  stepNumber: number;
+  title: string;
+  clientName: string;
+  serviceName: string;
+}
+
+export interface PerfSummary {
   assigned: number;
   completed: number;
+  inProgress: number;
+  /** null in the whole-team view: future steps are not loaded there. */
+  notStarted: number | null;
   pending: number;
-  delayed: number;
-  pendingApproval: number;
-  avgCompletionDays: number | null;
+  startedInRange: number;
+  completedInRange: number;
+  carriedForward: number;
+  overdue: number;
+  completionPct: number | null;
+  awaitingApproval: number;
 }
-export const getTeamPerformance = () => apiFetch<TeamPerformanceRow[]>('/api/reports/team-performance');
+
+export interface PerfTimeItem extends PerfStepRef { startedAt: string; completedAt: string; elapsedMs: number }
+
+export interface PerfLateItem extends PerfStepRef {
+  dueAt: string | null;
+  completedAt: string;
+  delayDays: number;
+  /** The comment recorded when the late task was completed — there is no delay-reason field. */
+  completionComment: string | null;
+}
+export interface PerfOverdueItem extends PerfStepRef { dueAt: string; startedAt: string | null; daysOverdue: number }
+
+export interface PerfTrendBucket { start: string; label: string; completed: number; onTime: number; withDue: number; onTimePct: number | null }
+export interface PerfPeriodTotals { completed: number; onTime: number; withDue: number; onTimePct: number | null }
+
+export interface PerfReturnedItem extends PerfStepRef {
+  status: string;
+  returns: number;
+  totalReturns: number;
+  lastReturnAt: string | null;
+  lastReturnType: string;
+  lastComment: string | null;
+}
+export interface PerfAwaitingItem {
+  kind: 'step' | 'matter';
+  waitingOn: 'admin' | 'client';
+  taskId: string;
+  stepNumber: number | null;
+  title: string;
+  approvalTitle: string;
+  clientName: string;
+  serviceName: string;
+  since: string | null;
+}
+
+export interface PerfHistoryRow extends PerfStepRef {
+  status: 'completed' | 'in_progress' | 'waiting';
+  matterCreatedAt: string | null;
+  assignedAt: string | null;
+  assignedVia: 'reassigned' | 'matter-opened';
+  startedAt: string | null;
+  completedAt: string | null;
+  dueAt: string | null;
+  lastComment: string | null;
+}
+
+export interface PerfOverviewRow {
+  uid: string;
+  name: string;
+  role: string | null;
+  assigned: number;
+  completed: number;
+  inProgress: number;
+  overdue: number;
+  completedLate: number;
+  onTimePct: number | null;
+  avgDelayDays: number | null;
+  returned: number;
+  firstTimeRightPct: number | null;
+}
+
+export interface PerfStaff { uid: string; name: string; role: string }
+
+export interface TeamPerformanceReport {
+  range: { from: string; to: string; previousFrom: string; previousTo: string };
+  generatedAt: string;
+  staff: PerfStaff[];
+  employee: PerfStaff | null;
+  overview: PerfOverviewRow[];
+  summary: PerfSummary;
+  time: { count: number; totalElapsedMs: number; avgElapsedMs: number | null; items: PerfTimeItem[] };
+  deadlines: {
+    completedOnTime: number;
+    completedLate: number;
+    completedWithoutDueDate: number;
+    onTimePct: number | null;
+    overdueNow: number;
+    avgDelayDays: number | null;
+    lateItems: PerfLateItem[];
+    overdueItems: PerfOverdueItem[];
+  };
+  trend: {
+    granularity: 'day' | 'week' | 'month';
+    buckets: PerfTrendBucket[];
+    current: PerfPeriodTotals;
+    previous: PerfPeriodTotals | null;
+    completedChange: number | null;
+    onTimePctChange: number | null;
+  };
+  quality: {
+    completed: number;
+    firstTimeRight: number;
+    firstTimeRightPct: number | null;
+    returnedSteps: number;
+    returnCount: number;
+    returnedItems: PerfReturnedItem[];
+    awaitingApproval: number;
+    awaitingItems: PerfAwaitingItem[];
+  };
+  history: { total: number; rows: PerfHistoryRow[] };
+  /** True when a safety cap was reached and some records were not read. */
+  truncated: boolean;
+}
+
+export interface TeamPerformanceQuery {
+  from: string;
+  to: string;
+  uid?: string;
+  tz: number;
+  granularity?: PerfGranularity;
+}
+
+export const getTeamPerformance = (q: TeamPerformanceQuery) => {
+  const p = new URLSearchParams({ from: q.from, to: q.to, tz: String(q.tz) });
+  if (q.uid) p.set('uid', q.uid);
+  if (q.granularity && q.granularity !== 'auto') p.set('granularity', q.granularity);
+  return apiFetch<TeamPerformanceReport>(`/api/reports/team-performance?${p.toString()}`);
+};
+
+export interface PerfActivity {
+  id: string;
+  taskId: string;
+  type: string | null;
+  label: string;
+  at: string | null;
+  byUid: string | null;
+  byName: string;
+  fromStep: number | null;
+  fromTitle: string | null;
+  toStep: number | null;
+  toTitle: string | null;
+  comment: string | null;
+  clientName: string;
+  serviceName: string;
+}
+
+export const getTeamPerformanceActivity = (q: { from: string; to: string; uid?: string; cursor?: string | null; limit?: number }) => {
+  const p = new URLSearchParams({ from: q.from, to: q.to, limit: String(q.limit ?? 25) });
+  if (q.uid) p.set('uid', q.uid);
+  if (q.cursor) p.set('cursor', q.cursor);
+  return apiFetch<{ data: PerfActivity[]; nextCursor: string | null }>(`/api/reports/team-performance/activity?${p.toString()}`);
+};
 
 // ─── #84 Storage Usage ──────────────────────────────────────────────────────
 export interface StorageReport {
