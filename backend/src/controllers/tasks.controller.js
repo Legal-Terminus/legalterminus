@@ -10,6 +10,7 @@ import { finalizeMatterDocuments } from './documents.controller.js';
 import { publicSiteUrl, sendTemplatedEmail } from '../services/emailService.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
 import { prepareRichText, richTextToPlain } from '../services/richText.service.js';
+import { resolveCommentImages, shareCommentImages } from '../services/commentImages.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
 import { validateDefinition, deriveOwnerType, CLIENT_ASSIGNEE, materialisableSteps, isTerminalStep, removedStepNumbers, isDeclaredStay } from '../../../shared/workflows/definitionSchema.js';
 import { resolveDueDate, definitionNeedsAnchorDate } from '../../../shared/workflows/dueRules.js';
@@ -1322,7 +1323,10 @@ export async function postStepNote(req, res) {
     if (!preparedNote.ok) {
       return res.status(preparedNote.status).json({ message: preparedNote.message, code: preparedNote.code });
     }
-    const clean = preparedNote.html;
+    // #122 follow-up: keep only image references to THIS matter's images.
+    const { html: clean, ids: noteImageIds } = await resolveCommentImages(
+      db, taskId, preparedNote.html, { role: req.user.role, uid: req.user.uid },
+    );
     if (!richTextToPlain(clean)) {
       return res.status(400).json({ message: 'The note is empty.' });
     }
@@ -1338,6 +1342,8 @@ export async function postStepNote(req, res) {
       byRole: req.user.role ?? null,
       at: now,
     });
+    // The note is client-visible, so are the images in it.
+    await shareCommentImages(db, taskId, noteImageIds);
 
     // Ping the client — the note is information they should review.
     try {
@@ -2694,7 +2700,11 @@ export async function transitionTask(req, res) {
     if (!preparedComment.ok) {
       return res.status(preparedComment.status).json({ message: preparedComment.message, code: preparedComment.code });
     }
-    const cleanComment = preparedComment.html;
+    // #122 follow-up: keep only image references to THIS matter's images (and,
+    // for a client author, only images they can already see).
+    const { html: cleanComment, ids: commentImageIds } = await resolveCommentImages(
+      db, taskId, preparedComment.html, { role, uid },
+    );
     // Empty once stripped (e.g. a lone <script>) counts as no comment.
     const comment = richTextToPlain(cleanComment) ? cleanComment : null;
 
@@ -2847,6 +2857,17 @@ export async function transitionTask(req, res) {
     const arrivingDef = compiled.definition.steps.find((s) => s.stepNumber === newStep) ?? null;
 
     // Append to the task's event history (audit trail of who did what, when).
+    // #115: staff comments are INTERNAL by default — the client only sees this
+    // note if it was explicitly marked "Visible to client". Two exceptions where
+    // sharing IS the intent, so the default flips to visible:
+    //   • the client's own comment (inherently theirs), and
+    //   • a HAND-OFF comment: the move lands on a client-owned step, so the note
+    //     is what the client must read before acting (#105's info box). Staff can
+    //     still force it internal by sending commentClientVisible: false.
+    const commentClientVisible = role === 'client'
+      ? true
+      : (event?.commentClientVisible === true
+          || (event?.commentClientVisible !== false && deriveOwnerType(arrivingDef ?? {}) === 'client'));
     const eventRef = taskRef.collection('events').doc();
     batch.set(eventRef, {
       type: event?.type,
@@ -2854,17 +2875,7 @@ export async function transitionTask(req, res) {
       fromStep: task.currentStepNumber,
       toStep: newStep,
       comment,
-      // #115: staff comments are INTERNAL by default — the client only sees this
-      // note if it was explicitly marked "Visible to client". Two exceptions where
-      // sharing IS the intent, so the default flips to visible:
-      //   • the client's own comment (inherently theirs), and
-      //   • a HAND-OFF comment: the move lands on a client-owned step, so the note
-      //     is what the client must read before acting (#105's info box). Staff can
-      //     still force it internal by sending commentClientVisible: false.
-      commentClientVisible: role === 'client'
-        ? true
-        : (event?.commentClientVisible === true
-            || (event?.commentClientVisible !== false && deriveOwnerType(arrivingDef ?? {}) === 'client')),
+      commentClientVisible,
       byUid: uid ?? null,
       byRole: role ?? null,
       // Records that staff advanced a client-owned step on the client's behalf, so
@@ -2876,6 +2887,12 @@ export async function transitionTask(req, res) {
     });
 
     await batch.commit();
+    // #122 follow-up: a comment shared with the client shares its images too.
+    // (`comment` and `commentClientVisible` are both declared above.)
+    if (comment && commentClientVisible) {
+      try { await shareCommentImages(db, taskId, commentImageIds); }
+      catch (e) { logger.warn({ err: e, taskId }, 'transitionTask: sharing comment images failed'); }
+    }
     // #189; #215: with the service as it is now, so records of steps deleted from
     // it since this matter began are dropped, not counted.
     await refreshCompletedStepCount(taskRef, compiled.definition.steps);
@@ -2964,7 +2981,7 @@ export async function transitionTask(req, res) {
             message = `Client approval has been received for ${ctx}. Please proceed with the next step: ${newDef?.title ?? `Step ${newStep}`}.`;
           } else if (isRework) {
             title = 'Correction required';
-            message = `Correction required for ${ctx}: ${newDef?.title ?? `Step ${newStep}`}.${comment ? ` Note: ${comment}` : ''} Please review, rectify and resubmit for approval.`;
+            message = `Correction required for ${ctx}: ${newDef?.title ?? `Step ${newStep}`}.${comment ? ` Note: ${richTextToPlain(comment)}` : ''} Please review, rectify and resubmit for approval.`;
           }
           await notify({ recipientUid: nextAssignee || task.assignedTo, actorUid: uid, type: isRework ? 'warning' : 'info',
             title, message, taskId, stepNumber: newStep });
@@ -3062,7 +3079,8 @@ export async function deleteTask(req, res) {
     // matter's Storage objects, so deleting a matter leaves nothing orphaned.
     // NOTE: this list is explicit — a NEW subcollection must be added here too.
     const counts = {};
-    for (const sub of ['steps', 'events', 'documents', 'payments']) {
+    // #122 follow-up: + commentImages (the bytes go with the Storage prefix below).
+    for (const sub of ['steps', 'events', 'documents', 'payments', 'commentImages']) {
       const subSnap = await taskRef.collection(sub).get();
       counts[sub] = subSnap.size;
       if (subSnap.empty) continue;

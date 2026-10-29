@@ -1739,6 +1739,36 @@ a filtered report is a link. Writes use `replace`; a default value stays out of
 the URL. **Back** on a detail page is `useGoBack(fallback)`: the previous in-app
 history entry, or the fallback when the session opened on that page.
 
+## Images in comments and messages (#122 follow-up)
+
+**An image is referenced, never embedded.** Step comments, notes to the client and
+Discussion messages may carry `<img data-lt-image="{32 hex}" alt="…">` — no `src`.
+`richText.service.js` keeps exactly that form; an `<img>` with any `src`/`srcset`
+or a malformed id is removed whole. Up to 20 per comment (`TOO_MANY_IMAGES`);
+`countWords` ignores them; `richTextToPlain` renders each as `[image]`, so emails
+and notifications never carry an image or a link to one.
+
+- **Storage.** Bytes at `tasks/{taskId}/comment-images/{imageId}.{ext}` in the
+  default bucket, uploaded through the backend (`POST
+  /api/tasks/:taskId/comment-images`, multer memory storage, JPEG/PNG/WebP, 5 MB,
+  type re-checked from magic bytes). Metadata at
+  `tasks/{taskId}/commentImages/{imageId}`: `uploadedBy`, `uploadedByRole`,
+  `contentType`, `size`, `objectPath`, `createdAt`, `clientVisible` (starts false).
+- **Binding on save.** `resolveCommentImages` keeps only ids recorded under THIS
+  matter, and for a client author only their own uploads or already-shared images
+  (so quoting an internal id cannot publish it). When the comment / note / message
+  is client-visible, `shareCommentImages` sets `clientVisible: true` on its images.
+- **Access** (`canReadCommentImage`, deny by default). Staff: any. Professional:
+  the matter they are on. Client: on a matter they can see (`clientCanSeeMatter`),
+  only images they uploaded or `clientVisible` ones; anything else is 404, not 403,
+  so an internal image's existence is not disclosed. Served by
+  `GET /api/tasks/:taskId/comment-images/:imageId`, streamed with
+  `Cache-Control: private, no-store` — never a signed URL.
+- **Portal.** `RichText` and the editor's `ltImage` node fetch each reference with
+  the session token into an object URL (revoked on unmount). The matter page
+  provides its id through `CommentImageTaskContext`; outside a matter, images show
+  as "Image unavailable" and the editor offers no upload.
+
 ## The QA environment (E24-S00)
 
 A temporary second deployment in the SAME project: Hosting site

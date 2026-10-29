@@ -376,5 +376,19 @@ layer(base);
     .rich-text th, .ProseMirror th { @apply bg-surface-soft font-semibold text-left; }
     /* A wide pasted table must scroll inside the bubble, not blow out the layout. */
     .rich-text { @apply overflow-x-auto; }
+    /* #122 follow-up — comment images. Loaded through the authenticated API, so
+       the box shows a soft placeholder until the bytes arrive. Click opens the
+       full-size image. */
+    .rich-text img[data-lt-image], .ProseMirror img[data-lt-image] {
+      @apply inline-block align-middle max-w-full max-h-80 my-1 rounded-md border border-hairline bg-surface-soft;
+      min-width: 3rem; min-height: 3rem;
+    }
+    .rich-text img[data-lt-image] { @apply cursor-zoom-in; }
+    .ProseMirror .ProseMirror-selectednode img[data-lt-image] { @apply ring-2 ring-brand-400; }
+    /* A missing image or one this viewer may not see. Neutral — not an error
+       colour: nothing is wrong with the comment itself. */
+    .lt-image-unavailable {
+      @apply inline-flex items-center gap-1 my-1 px-2 py-1 rounded-md border border-dashed border-hairline bg-surface-soft text-xs text-ink-muted;
+    }
 }
 

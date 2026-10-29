@@ -7,6 +7,8 @@ import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, 
 import { listMessages, createMessage, listMentionable } from '../controllers/messages.controller.js';
 import { listReminders, sendReminder, listInternalReminders, sendInternalReminder } from '../controllers/reminders.controller.js';
 import { getFormStep, saveFormStep } from '../controllers/forms.controller.js';
+import { uploadCommentImage, getCommentImage } from '../controllers/commentImages.controller.js';
+import { commentImageUpload } from '../middleware/commentImageUpload.middleware.js';
 
 const router = Router();
 
@@ -40,6 +42,12 @@ router.post('/:taskId/internal-reminders',   requireRole('admin', 'manager', 'te
 // matter ownership; a professional may read but never post.
 router.get('/:taskId/messages',              requireRole('admin', 'manager', 'team_member', 'client', 'professional'), listMessages);
 router.post('/:taskId/messages',             requireRole('admin', 'manager', 'team_member', 'client'), validate(messageCreateSchema), createMessage);
+// #122 follow-up: images in step comments and Discussion messages. Upload is
+// staff + client (role guard BEFORE multer, so a refused caller never streams
+// 5 MB); the controller then checks the client can see THIS matter. Reading
+// streams through the backend after a per-image check (never a signed URL).
+router.post('/:taskId/comment-images',          requireRole('admin', 'manager', 'team_member', 'client'), commentImageUpload, uploadCommentImage);
+router.get('/:taskId/comment-images/:imageId',  requireRole('admin', 'manager', 'team_member', 'client', 'professional'), getCommentImage);
 // #200: the @mention suggestion list — staff only (a client never sees the directory).
 router.get('/:taskId/mentionable',           requireRole('admin', 'manager', 'team_member'), listMentionable);
 router.patch('/:taskId',                     validate(taskUpdateSchema), patchTask);

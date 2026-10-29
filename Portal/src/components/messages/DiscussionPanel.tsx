@@ -81,14 +81,15 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
             </p>
           </div>
         ) : (
-          messages.map((m) => <MessageBubble key={m.id} m={m} isStaff={isStaff} />)
+          messages.map((m) => <MessageBubble key={m.id} m={m} isStaff={isStaff} taskId={taskId} />)
         )}
         <div ref={endRef} />
       </div>
 
       {/* Composer */}
       <div className="border-t border-hairline p-3 space-y-2">
-        {/* #122: rich text — paste tables/formatting from Word, Excel or email. */}
+        {/* #122: rich text — paste tables/formatting from Word, Excel or email,
+            and (follow-up) paste or upload images. */}
         <RichTextEditor
           value={body}
           onChange={setBody}
@@ -96,6 +97,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
           ariaLabel="Message"
           rows={2}
           mentions={isStaff ? mentionable : undefined}
+          imageTaskId={taskId}
         />
         {/* #200: staff can notify a colleague by typing @ and their email. */}
         {isStaff && (
@@ -131,7 +133,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
   );
 }
 
-function MessageBubble({ m, isStaff }: { m: MatterMessage; isStaff: boolean }) {
+function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: boolean; taskId: string }) {
   const mine = m.isMine;
   // #193: own messages were white-on-brand-blue, which made the text hard to
   // read. They now use a WhatsApp-style LIGHT GREEN bubble with dark ink. Because
@@ -159,7 +161,7 @@ function MessageBubble({ m, isStaff }: { m: MatterMessage; isStaff: boolean }) {
             </span>
           )}
         </div>
-        <RichText html={m.body} className="text-sm" />
+        <RichText html={m.body} className="text-sm" taskId={taskId} />
         {m.createdAt && (
           <p className={`text-[10px] mt-1 ${mine ? 'text-emerald-700/70' : 'text-ink-faint'}`}>
             {new Date(m.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
