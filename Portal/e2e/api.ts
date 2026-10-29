@@ -101,6 +101,29 @@ export async function createThrowawayStaff(opts?: { password?: string }): Promis
   return { uid: body.uid as string, name, email };
 }
 
+/** LT #205: create a throwaway CLIENT (no sign-in) with a known profile, as
+ *  admin. Delete it with `deleteUser(uid)` when the spec is done. */
+export async function createThrowawayClient(): Promise<{
+  uid: string; name: string; email: string; phone: string; organisation: string;
+}> {
+  const api = await apiAs('admin');
+  const stamp = Date.now();
+  const client = {
+    name: `E2E Contact ${stamp.toString().slice(-5)}`,
+    email: `e2e-client-${stamp}@legalterminus.test`,
+    phone: '9990001111',
+    organisation: `E2E Client Co ${stamp}`,
+  };
+  try {
+    const res = await api.post('/api/portal/users', {
+      data: { ...client, role: 'client', professionalName: 'E2E', address: '1 Test Street', contactDesignation: 'Owner' },
+    });
+    if (!res.ok()) throw new Error(`createThrowawayClient failed: ${res.status()} ${await res.text()}`);
+    const body = await res.json();
+    return { uid: body.uid as string, ...client };
+  } finally { await api.dispose(); }
+}
+
 /** Find a user's uid by email (admin), or null. */
 export async function findUserByEmail(email: string): Promise<string | null> {
   const api = await apiAs('admin');

@@ -3,8 +3,8 @@ import { VALID_ROLES } from "../config/roles.js";
 
 // Reusable field primitives — trimmed, length-clamped, format-checked.
 const name = z.string().trim().min(1).max(200);
-const email = z.string().trim().toLowerCase().email().max(254);
-const phone = z.string().trim().min(7).max(20).regex(/^[0-9+\-() ]+$/, "Invalid phone number");
+export const email = z.string().trim().toLowerCase().email().max(254);
+export const phone = z.string().trim().min(7).max(20).regex(/^[0-9+\-() ]+$/, "Invalid phone number");
 const optShort = z.string().trim().max(100).optional();
 const optLong = z.string().trim().max(200).optional();
 const role = z.enum(VALID_ROLES);

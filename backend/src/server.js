@@ -37,6 +37,7 @@ import healthRoutes from "./routes/health.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import searchRoutes from "./routes/search.routes.js";
 import clientsRoutes from "./routes/clients.routes.js";
+import clientDatabaseRoutes from "./routes/clientDatabase.routes.js";
 import mattersBoardRoutes from "./routes/mattersBoard.routes.js";
 import publicApiRoutes from "./routes/publicApi.routes.js";
 import apiTokensRoutes from "./routes/apiTokens.routes.js";
@@ -155,6 +156,7 @@ app.use("/api/settings/api-tokens", apiTokensRoutes);
 app.use("/api/matters", mattersBoardRoutes);
 // E-19: Client 360 — per-client monitoring (admin/manager only).
 app.use("/api/clients", clientsRoutes);
+app.use("/api/client-database", clientDatabaseRoutes); // LT #205
 // E22-S02: global search. Every role searches; the controller scopes results.
 app.use("/api/search", searchRoutes);
 app.use("/api/auth", sensitiveLimiter, authRoutes);

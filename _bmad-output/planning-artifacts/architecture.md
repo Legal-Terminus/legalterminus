@@ -1657,8 +1657,12 @@ password link.
 
 ## Client contact record and the group fee report (#205, #206)
 
-The Clients page is the client master record; there is no separate "client
-database" report, and Reports links to `/clients`. Contact fields live on the
+> **Superseded in part 2026-10-29 (#205, the firm's 6 Oct decision):** the Client
+> Database is now its own screen with its own collection — see "Client Database"
+> below. The contact fields on the client form and the Clients page download
+> described here are unchanged.
+
+The Clients page is the client master record. Contact fields live on the
 client's `users` document. `contactDesignation` is an enum and is NOT
 `designation`, which is a staff job title. Group is free text (`groupCompany`),
 matched case-insensitively; `GET /api/clients/groups` feeds the form's
@@ -1669,6 +1673,37 @@ admin+manager gate). It reads matters by `createdAt` range for one April–March
 financial year in India time; a matter's group is its client's current group,
 resolved at read time and never stored on the matter. The fold and its
 trade-offs are in `services/clientGroupFees.service.js`.
+
+## Client Database (#205, 2026-10-29)
+
+A separate screen, `/reports/client-database` (admin, manager), holding nine
+contact fields per client. It keeps **its own values** in
+`clientDatabase/{clientUid}` — never on `users/{uid}` — so editing it cannot change
+a client's profile or login email; and the doc id being the client's uid is what
+makes a save an update, never a second record.
+
+- **Read = merge per field** (`services/clientDatabase.service.js`,
+  `mergeRecord`): the saved value if the field was ever saved (an empty string
+  counts — that is a deliberate clear), else the profile-derived default
+  (`profileDefaults`). So every client has a row from creation, with no backfill
+  and no sync job. Once saved, a field no longer follows later profile edits — by
+  design, the database is the firm's own copy.
+- **Rows:** `role == client`, not `status: deactivated`, and no
+  `primaryClientUid` (a #166 additional login is a sign-in for a client, not a
+  client). Deleting a client deletes its record (`removeUser`).
+- **Cost:** the list reads the clients (`where role == client`) and the
+  `clientDatabase` collection, then searches, sorts and pages in memory — the
+  search runs over merged values that exist in no single document. Same
+  firm-scale trade-off as `GET /api/clients`; both reads scale with the client
+  count, never with matters.
+- **API:** `GET /api/client-database` (`search`, `limit`, `cursor` → `{ data,
+  nextCursor }`), `GET /names` (for the Client Name picker), `GET` and `PUT
+  /:clientUid`. `PUT` is Zod `.strict()` over the nine fields (designation enum,
+  phone / email primitives shared with `user.schema.js`, comma-separated
+  alternative emails, a real `YYYY-MM-DD` date, tags stripped). Every route is
+  `verifyToken` + `requireRole('admin','manager')`.
+- **Firestore rules:** none added — the collection is backend-only and the
+  catch-all denies client SDK access.
 
 ## Who is told about a client's discussion message (#200)
 
