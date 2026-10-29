@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { THEME_C } from "../../utils/theme";
 
 // Import testimonial components lazily to avoid blocking page load
 const PvtltdTestimonial = React.lazy(() =>
@@ -10,6 +11,10 @@ const PvtltdVideoTestimonial = React.lazy(() =>
 );
 const PvtltdOurclints = React.lazy(() =>
   import("../PvtltdOurclints/PvtltdOurclints")
+);
+// Theme C (E-25, #209 review of 13 Oct): every page's testimonials are Home's.
+const HomeTestimonials = React.lazy(() =>
+  import("../Testimonials/Testimonials")
 );
 
 // Pages that are NOT service pages — testimonial/social proof sections are hidden here
@@ -67,9 +72,12 @@ function LazyServiceFooterSections() {
   const [shouldRender, setShouldRender] = useState(false);
   const containerRef = useRef(null);
 
-  // Check if this is a service page
+  // Check if this is a service page. Under Theme C, Home carries the same
+  // bottom block as the service pages (#209: "the same on every page,
+  // including Home"), so "/" counts as one there.
   const isServicePage =
-    !NON_SERVICE_PATHS.has(pathname) && !isBlogPost(pathname);
+    (THEME_C && pathname === "/") ||
+    (!NON_SERVICE_PATHS.has(pathname) && !isBlogPost(pathname));
 
   useEffect(() => {
     if (!isServicePage) return;
@@ -110,6 +118,25 @@ function LazyServiceFooterSections() {
   }, [isServicePage, shouldRender]);
 
   if (!isServicePage) return null;
+
+  // Theme C (#209, the firm's review of 13 Oct): everything from Testimonials to
+  // the bottom of the page is ONE common block, identical on every service page
+  // and on Home — Home's testimonials (auto-rotating), then the client logos,
+  // then the footer, styled as one band (theme/bottom.css). Pages that rendered
+  // their own testimonials and logos above it skip them under Theme C.
+  if (THEME_C) {
+    return (
+      <div ref={containerRef} className="lt-bottom">
+        {shouldRender && (
+          <React.Suspense fallback={null}>
+            <HomeTestimonials />
+            {!HIDE_VIDEO_TESTIMONIAL_PATHS.has(pathname) && <PvtltdVideoTestimonial />}
+            {!HIDE_CLIENT_LOGOS_PATHS.has(pathname) && <PvtltdOurclints />}
+          </React.Suspense>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef}>

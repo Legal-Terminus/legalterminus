@@ -65,7 +65,7 @@ const Footer = () => {
               <li>
                 <Link to="/registrations-returns/registrations/gst-registration-in-india">
                   <span className="link-icon">→</span>
-                  <span className="link-text">Registration Srvices</span>
+                  <span className="link-text">Registration Services</span>
                 </Link>
               </li>
               <li>

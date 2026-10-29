@@ -28,5 +28,8 @@ const start = () => createRoot(document.getElementById('root')).render(
 // ONLY where the switch is on. The live build never requests it — the branch
 // below is removed at build time when VITE_THEME_C is not "true". Where it is
 // on, the app waits for it so the old design never flashes first.
-if (THEME_C) import('./theme/index.css').then(start, start)
-else start()
+if (THEME_C) {
+  import('./theme/index.css').then(start, start)
+  // #209 (13/22 Oct): headlines fitted to one line, paragraphs justified.
+  import('./theme/typography.js').then((m) => m.startTypography(), () => {})
+} else start()

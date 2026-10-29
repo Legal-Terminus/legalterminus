@@ -1,4 +1,5 @@
 import React, { Suspense } from "react";
+import { THEME_C } from "../../utils/theme";
 import ChangetoCompanyBreadcrum from "../../Components/ChangetoComapnyBreadcrum/ChangetoComapnyBreadcrum";
 
 // Lazy load below-fold components
@@ -88,18 +89,24 @@ function LLP() {
         </Suspense>
       </div>
 
-      {/* Testimonials */}
-      <Suspense fallback={<div />}>
-        <ChangetoCompanyTestimonial />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <ChangetoCompanyVideoTestimonial />
-      </Suspense>
+      {/* E-25 (#209): under Theme C the testimonials and client logos are the
+          site-wide bottom block (LazyServiceFooterSections), the same on every page. */}
+      {!THEME_C && (
+        <>
+          {/* Testimonials */}
+          <Suspense fallback={<div />}>
+            <ChangetoCompanyTestimonial />
+          </Suspense>
+          <Suspense fallback={<div />}>
+            <ChangetoCompanyVideoTestimonial />
+          </Suspense>
 
-      {/* Our Clients */}
-      <Suspense fallback={<div />}>
-        <ChangetoCompanyOurClients/>
-      </Suspense>
+          {/* Our Clients */}
+          <Suspense fallback={<div />}>
+            <ChangetoCompanyOurClients/>
+          </Suspense>
+        </>
+      )}
     </div>
   );
 }

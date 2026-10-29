@@ -8,4 +8,7 @@
 @import "./families.css";
 @import "./opc.css";
 @import "./pages.css";
+@import "./bottom.css";
 @import "./checkout.css";
+/* last: the site-wide alignment decisions of #209's 13 Oct review */
+@import "./typography.css";

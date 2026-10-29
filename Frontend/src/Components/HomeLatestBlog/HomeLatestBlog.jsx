@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { posts } from "../../data/blogData";
 import "./HomeLatestBlog.css";
+import { THEME_C } from "../../utils/theme";
 
 const FEATURED_COUNT = 3;
 
@@ -16,7 +17,8 @@ const HomeLatestBlog = () => {
         <div className="hlb-header">
           <span className="hlb-subtitle">VISITING OUR BLOG</span>
           <h2 className="hlb-title">
-            Latest News &amp; Articles From<br />Legal Terminus
+            {/* #209 (13 Oct, Home 9): one line under Theme C — same words, no forced break */}
+            Latest News &amp; Articles From{THEME_C ? " " : <br />}Legal Terminus
           </h2>
           <p className="hlb-subdesc">
             Stay informed with the latest legal insights, compliance updates, taxation news,

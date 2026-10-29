@@ -1857,6 +1857,24 @@ a product is keyed by the `source` its component passes to the checkout, and
 - **Content fidelity is a test, not a promise.** Each page story records that
   `document.body.innerText` (whitespace-collapsed) is identical with the switch off and
   on. The website Playwright suite asserts text and a visible `nav`, never class names.
+- **Round 3 — the firm's review of 13 Oct / answers of 22 Oct (2026-10-29).**
+  - *Typeface* is Roboto (tokens in `theme/theme.css`, loaded by `utils/theme.js`),
+    display weight 500.
+  - *Site-wide alignment* lives in `theme/typography.css`, imported LAST and with
+    `!important`: it overrides the ~340 per-family `text-align: left` rules (some in the
+    generated `families.css`) once instead of per family. Section `h2`s are centred.
+  - *What CSS cannot decide* is in `theme/typography.js` (loaded only in the Theme C
+    branch of `main.jsx`): it marks the label above a headline and the short
+    description under it (`data-lt-eyebrow`, `data-lt-sub`), marks every left-aligned
+    paragraph of 2+ lines `data-lt-justify` (centred text is left alone), and fits
+    headlines to one line from 768px up (`data-lt-line` + `--lt-fit-size`; the CSS
+    applies them only inside the media query, so a narrowing window never leaves an
+    unwrappable headline). It writes attributes and one custom property, never text,
+    and reruns on DOM changes (throttled, not debounced — carousels mutate constantly).
+  - *Common bottom block*: under Theme C, `LazyServiceFooterSections` renders Home's
+    `Testimonials` + the client logos on Home and every service page (`.lt-bottom`,
+    styled with the footer in `theme/bottom.css`); Home and the seven pages that drew
+    their own testimonials/logos skip them under `THEME_C`.
 
 ## Portal styling: Tailwind CSS 4 with v3 defaults pinned (2026-10-10)
 

@@ -41,10 +41,13 @@ html.theme-c {
   --lt-nav-bg: rgba(255, 255, 255, 0.85);
   --lt-dark-grad: linear-gradient(120deg, #0f172a, #0b5f3a);
 
-  --lt-f-display: "Figtree", "SF Pro Display", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --lt-f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --lt-d-weight: 300;                 /* thin display headings are the Theme C signature */
-  --lt-d-track: -0.025em;
+  /* Roboto for headings and body — the firm's choice (#209, 22 Oct). The thin
+     300 headings of the Figtree concept read as too light in Roboto; 500 and a
+     slightly looser track are what the firm approved in the font preview. */
+  --lt-f-display: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --lt-f-body: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --lt-d-weight: 500;
+  --lt-d-track: -0.015em;
 
   --lt-r-sm: 6px;
   --lt-r-md: 8px;
@@ -79,7 +82,7 @@ html.theme-c body {
 }
 
 /* The components set Poppins / Inter on ~800 selectors. One rule moves the whole
-   site to Figtree instead of 800 edits; SVG text and code keep their own. */
+   site to Roboto instead of 800 edits; SVG text and code keep their own. */
 html.theme-c body :where(h1, h2, h3, h4, h5, h6, p, a, span, li, div, button, input, textarea,
   select, label, td, th, small, strong, b, em, blockquote, summary, figcaption, dt, dd, section,
   article, nav, header, footer, form, table) {

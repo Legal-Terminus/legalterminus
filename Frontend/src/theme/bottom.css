@@ -1,0 +1,42 @@
+/*
+ * Theme C — the common bottom block (#209, the firm's review of 13 Oct):
+ * "make the entire section from Testimonials to the bottom of the page part of
+ * the footer … the same layout on all pages, including the Home page".
+ *
+ * Markup: LazyServiceFooterSections renders, under Theme C and on Home and every
+ * service page, `.lt-bottom` = Home's Testimonials (.tst-c) + the client logos
+ * (.clients-root); the site footer (.premium-footer) follows it. Here the three
+ * read as one band: one background, one rhythm, hairlines between the parts.
+ * Scoped under html.theme-c.
+ */
+
+html.theme-c .lt-bottom {
+  background: var(--lt-canvas-soft);
+  border-top: 1px solid var(--lt-hairline);
+}
+html.theme-c .lt-bottom:empty { display: none; }
+
+/* Testimonials: Home's design, on the band's background */
+html.theme-c .lt-bottom .Testimonials-container.tst-c {
+  background: transparent;
+  padding: 72px 0 64px;
+}
+html.theme-c .lt-bottom .tst-c .Testimonials-header { margin-bottom: 32px; }
+
+/* Client logos: a white strip between hairlines, like the reference image */
+html.theme-c .lt-bottom .clients-root {
+  background: var(--lt-canvas);
+  border-block: 1px solid var(--lt-hairline);
+  padding: 56px 0;
+  margin: 0;
+}
+html.theme-c .lt-bottom .clients-title { margin-bottom: 28px; }
+
+/* the footer continues the band: no second top border, same background */
+html.theme-c .lt-bottom + .premium-footer,
+html.theme-c .lt-bottom ~ .premium-footer { border-top: 0; padding-top: 56px; }
+
+@media (max-width: 760px) {
+  html.theme-c .lt-bottom .Testimonials-container.tst-c { padding: 56px 0 48px; }
+  html.theme-c .lt-bottom .clients-root { padding: 40px 0; }
+}

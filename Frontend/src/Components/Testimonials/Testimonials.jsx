@@ -56,10 +56,14 @@ export default function Testimonials() {
 
   // Theme C only: the rotation waits while the pointer or keyboard focus is on
   // the reviews, so a review can be read to the end.
+  // #209 (13 Oct, "enable automatic sliding"): it no longer stops altogether
+  // under prefers-reduced-motion. Windows sets that whenever "Animation effects"
+  // is off, and the firm saw a testimonial that never changed. Swapping the
+  // review is not motion; the CSS transitions are already shortened by the
+  // reduced-motion rule in theme.css.
   const paused = useRef(false);
   useEffect(() => {
     if (!THEME_C) return undefined;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
     const timer = setInterval(() => {
       if (!paused.current) setActiveIndex((prev) => (prev + 1) % DATA.length);
     }, 4000);
