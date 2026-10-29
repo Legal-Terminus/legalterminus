@@ -1,4 +1,6 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCommentImageTaskId } from './commentImageContext';
+import { hydrateCommentImage, openImageFullSize } from './commentImageDom';
 
 /**
  * #122 — render user-authored rich text (comments / discussion messages).
@@ -12,6 +14,12 @@ import { useLayoutEffect, useRef, useState } from 'react';
  * plain-text "<b>" should read literally), so we only treat a value as HTML when
  * it actually looks like markup; otherwise it renders as text with line breaks
  * preserved, exactly as before.
+ *
+ * #122 follow-up — IMAGES. Stored content carries `<img data-lt-image="{id}">`
+ * with NO src (the server strips any src). After render, each reference is
+ * fetched through the authenticated API and shown from an object URL; clicking
+ * opens it full size. A missing or forbidden image becomes a small "Image
+ * unavailable" note. Object URLs are revoked when the content changes or unmounts.
  */
 const looksLikeHtml = (s: string) => /<[a-z][\s\S]*>/i.test(s);
 
@@ -25,15 +33,18 @@ const looksLikeHtml = (s: string) => /<[a-z][\s\S]*>/i.test(s);
  */
 const COLLAPSED_MAX_PX = 240;
 
-export default function RichText({ html, className = '', collapsible = true }: {
+export default function RichText({ html, className = '', collapsible = true, taskId }: {
   html: string;
   className?: string;
   /** Fold long content behind "Read more". On by default; pass false to always show everything. */
   collapsible?: boolean;
+  /** The matter the content belongs to, for its images. Defaults to the page's CommentImageTaskContext. */
+  taskId?: string | null;
 }) {
   const ref = useRef<HTMLDivElement | HTMLParagraphElement | null>(null);
   const [overflows, setOverflows] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const imageTaskId = useCommentImageTaskId(taskId);
 
   // Measure after layout: only content that is actually taller than the fold
   // gets a toggle. Re-measured when the content changes.
@@ -42,6 +53,36 @@ export default function RichText({ html, className = '', collapsible = true }: {
     if (!el || !collapsible) return;
     setOverflows(el.scrollHeight > COLLAPSED_MAX_PX + 24);
   }, [html, collapsible]);
+
+  // #122 follow-up: resolve image references once the HTML is in the DOM.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !html.includes('data-lt-image')) return;
+    const imgs = Array.from(el.querySelectorAll<HTMLImageElement>('img[data-lt-image]'));
+    const cleanups = imgs.map((img) => {
+      img.tabIndex = 0; // keyboard: Enter opens it full size, like a click
+      img.title = 'Open full size';
+      return hydrateCommentImage(img, imageTaskId);
+    });
+    // An image arriving changes the content's height — re-check the fold.
+    const remeasure = () => {
+      if (collapsible && ref.current) setOverflows(ref.current.scrollHeight > COLLAPSED_MAX_PX + 24);
+    };
+    const onClick = (e: Event) => {
+      const t = e.target as HTMLElement | null;
+      if (t instanceof HTMLImageElement && t.hasAttribute('data-lt-image')) openImageFullSize(t);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Enter') onClick(e); };
+    el.addEventListener('load', remeasure, true);
+    el.addEventListener('click', onClick);
+    el.addEventListener('keydown', onKey);
+    return () => {
+      el.removeEventListener('load', remeasure, true);
+      el.removeEventListener('click', onClick);
+      el.removeEventListener('keydown', onKey);
+      cleanups.forEach((c) => c());
+    };
+  }, [html, imageTaskId, collapsible]);
 
   if (!html) return null;
 

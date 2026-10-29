@@ -7,6 +7,7 @@ import { renderTemplate } from '../services/emailTemplates.service.js';
 import { prepareRichText, richTextToPlain } from '../services/richText.service.js';
 import { extractMentionEmails, resolveStaffByEmails, listMentionableStaff } from '../services/mentions.service.js';
 import { clientCanSeeMatter } from './tasks.controller.js';
+import { resolveCommentImages, shareCommentImages } from '../services/commentImages.service.js';
 
 /**
  * #123 — per-matter DISCUSSION THREAD (client ⇄ internal team).
@@ -134,8 +135,14 @@ export async function createMessage(req, res) {
     if (!prepared.ok) {
       return res.status(prepared.status).json({ message: prepared.message, code: prepared.code });
     }
-    const body = prepared.html;
-    // Reject content that is empty once stripped (e.g. a lone <script>).
+    // #122 follow-up: image references must point at THIS matter's images, and
+    // a client may quote only images they can already see. Anything else is
+    // dropped from the stored content.
+    const { html: body, ids: imageIds } = await resolveCommentImages(
+      db, taskId, prepared.html, { role: req.user.role, uid: req.user.uid },
+    );
+    // Reject content that is empty once stripped (e.g. a lone <script>). An
+    // image on its own counts as content ("[image]" in the plain projection).
     if (!richTextToPlain(body)) return res.status(400).json({ message: 'Message cannot be empty.' });
 
     const isClient = req.user.role === 'client';
@@ -158,6 +165,8 @@ export async function createMessage(req, res) {
     };
     const ref = await msgsCol(taskId).add(mentioned.length
       ? { ...doc, mentionedUids: mentioned.map((u) => u.uid) } : doc);
+    // A message the client can read shares its images with the client.
+    if (clientVisible) await shareCommentImages(db, taskId, imageIds);
 
     // Notification/email previews use the PLAIN projection — HTML would be noise
     // in a bell popup and unsafe to inject into an email template.

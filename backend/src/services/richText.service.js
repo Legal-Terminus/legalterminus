@@ -22,11 +22,45 @@ const ALLOWED_TAGS = [
   'h1', 'h2', 'h3', 'h4',
   'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th', 'colgroup', 'col',
   'a', 'hr',
+  // #122 follow-up: an image REFERENCE only — see the img rules below.
+  'img',
 ];
+
+/** #122 follow-up: a comment image id — 32 lowercase hex characters. */
+export const IMAGE_ID_RE = /^[0-9a-f]{32}$/;
+/** The most images one comment / message may carry. */
+export const COMMENT_IMAGE_LIMIT = 20;
+const IMAGE_ALT_MAX = 200;
+
+/**
+ * #122 follow-up — the ONLY image form that survives sanitising is a reference
+ * to an image uploaded to this matter:
+ *
+ *     <img data-lt-image="{32 hex}" alt="…">
+ *
+ * Every other attribute is stripped. An <img> that carries ANY `src`/`srcset`
+ * (http, data:, anything) or lacks a well-formed id is REMOVED entirely — an
+ * unrestricted image tag is a tracking pixel / data-leak vector, and a data: URI
+ * is the base64 bloat this design exists to avoid. The id is checked against the
+ * matter's own images when the comment is saved (commentImages.service.js).
+ */
+function transformImg(tagName, attribs) {
+  const id = attribs['data-lt-image'];
+  const hasSource = ['src', 'srcset', 'lowsrc', 'dynsrc'].some((a) => a in attribs);
+  if (hasSource || typeof id !== 'string' || !IMAGE_ID_RE.test(id)) {
+    // No id → dropped by exclusiveFilter below.
+    return { tagName: 'img', attribs: {} };
+  }
+  const alt = String(attribs.alt ?? '').slice(0, IMAGE_ALT_MAX);
+  return { tagName: 'img', attribs: { 'data-lt-image': id, ...(alt ? { alt } : {}) } };
+}
 
 export const RICH_TEXT_OPTIONS = {
   allowedTags: ALLOWED_TAGS,
+  // An image reference is all attributes; nothing else may ride on it.
+  exclusiveFilter: (frame) => frame.tag === 'img' && !frame.attribs['data-lt-image'],
   allowedAttributes: {
+    img: ['data-lt-image', 'alt'],
     a: ['href', 'title', 'target', 'rel'],
     td: ['colspan', 'rowspan'],
     th: ['colspan', 'rowspan'],
@@ -47,6 +81,7 @@ export const RICH_TEXT_OPTIONS = {
     a: sanitizeHtml.simpleTransform('a', { target: '_blank', rel: 'noopener noreferrer' }),
     // Normalise legacy/verbose tags Word tends to emit.
     strike: 's',
+    img: transformImg,
   },
   // #194: text colour, highlight and size are now offered in the editor, so the
   // marks they produce must survive sanitising — previously `allowedStyles: {}`
@@ -79,7 +114,8 @@ export const COMMENT_WORD_LIMIT = 1000;
 
 /** Words in rich text, counted on the PLAIN text — markup is not content. */
 export function countWords(html) {
-  const text = richTextToPlain(html);
+  // #122 follow-up: an image is not a word — count the text only.
+  const text = richTextToPlain(html, { image: '' });
   const t = String(text).replace(/\s+/g, ' ').trim();
   return t ? t.split(' ').length : 0;
 }
@@ -132,6 +168,13 @@ export function prepareRichText(raw, { what = 'comment' } = {}) {
       message: `${a} ${what} may be at most ${wl.limit} words (this one has ${wl.words}).`,
     };
   }
+  const images = (html.match(/<img\b/gi) ?? []).length;
+  if (images > COMMENT_IMAGE_LIMIT) {
+    return {
+      ok: false, status: 400, code: 'TOO_MANY_IMAGES',
+      message: `${a} ${what} may include at most ${COMMENT_IMAGE_LIMIT} images (this one has ${images}).`,
+    };
+  }
   if (html.length > RICH_TEXT_MAX_CHARS) {
     return {
       ok: false, status: 400, code: 'RICH_TEXT_TOO_LARGE',
@@ -151,11 +194,17 @@ export function sanitizeRichText(html, { maxLength = 20000 } = {}) {
 /**
  * Plain-text projection of rich content — used for email bodies, notification
  * previews and search, where HTML would be noise (or unsafe to inject).
+ *
+ * #122 follow-up: an image reference becomes the literal text "[image]" (or
+ * `image`, when given). Emails and notifications never embed or link an image —
+ * it lives behind the Portal's login — and an image-only comment still reads as
+ * "something was shared" rather than as empty.
  */
-export function richTextToPlain(html) {
+export function richTextToPlain(html, { image = '[image]' } = {}) {
   if (typeof html !== 'string' || !html.trim()) return '';
   // Turn block boundaries into newlines first so the text stays readable.
   const withBreaks = html
+    .replace(/<img\b[^>]*>/gi, image ? ` ${image} ` : ' ')
     .replace(/<\/(p|div|tr|h[1-4]|li|blockquote)>/gi, '\n')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/t[dh]>/gi, '\t');

@@ -17,6 +17,7 @@ import SendReminderButton from '../../components/tasks/SendReminderButton';
 import SendInternalReminderButton from '../../components/tasks/SendInternalReminderButton';
 import RichTextEditor from '../../components/common/RichTextEditor';
 import RichText from '../../components/common/RichText';
+import { CommentImageTaskContext } from '../../components/common/commentImageContext';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
@@ -398,6 +399,9 @@ export default function TaskDetailPage() {
   ];
 
   return (
+    // #122 follow-up: comments and messages on this page resolve their images
+    // (and the comment boxes upload them) against this matter.
+    <CommentImageTaskContext.Provider value={taskId ?? null}>
     <PageShell
       title={task.serviceName || task.workflowType}
       // #118: show the matter's ORGANISATION next to the client name — a client can
@@ -786,6 +790,7 @@ export default function TaskDetailPage() {
         </CollapsibleSection>
       )}
     </PageShell>
+    </CommentImageTaskContext.Provider>
   );
 }
 

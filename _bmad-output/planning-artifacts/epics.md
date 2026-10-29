@@ -4246,6 +4246,39 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Images in step comments and the Discussion — #122 follow-up (2026-10-29) 🔄 On branch `feat/122-comment-images`
+
+The firm reopened #122: screenshots must go into the step comment box and the
+Discussion, by paste or by an "Upload image" button. Inline base64 was rejected in
+July (1 MB Firestore document limit, oversized emails, no auth on a plain `<img>`),
+so an image is **uploaded to the matter and referenced**, never embedded.
+
+- **Upload** — `POST /api/tasks/:taskId/comment-images` (multipart field `image`;
+  JPEG/PNG/WebP, 5 MB; the real type is read from the bytes). Staff on any matter, a
+  client on a matter they can see; a professional is view-only. Bytes at
+  `tasks/{taskId}/comment-images/{imageId}.{ext}`, record at
+  `tasks/{taskId}/commentImages/{imageId}` (`clientVisible: false`).
+- **Reference** — the comment carries `<img data-lt-image="{id}" alt>` and nothing
+  else; the sanitiser removes any `<img>` with a `src` or a malformed id. On save,
+  references to another matter's images (or, for a client author, to images they
+  cannot see) are dropped; a comment, note or message shared with the client marks
+  its images `clientVisible`.
+- **View** — `GET /api/tasks/:taskId/comment-images/:imageId` streams the bytes
+  (`private, no-store`). A client sees their own uploads and shared images; any
+  other image is a 404. `RichText` fetches each with the session token and shows an
+  object URL; click opens it full size; failure shows "Image unavailable".
+- **Editor** — paste a screenshot, drop a file, or "Upload image" (toolbar). Copying
+  cells from Excel/Word still pastes the table (the clipboard's picture of the
+  selection is ignored when real HTML text is present). Up to 20 images per comment;
+  images are not words.
+- **Emails and notifications** show `[image]`, never the image or a link.
+- **Tests:** `backend/src/__tests__/commentImages.test.js` (sanitiser, id binding,
+  access rules); `Portal/e2e/comment-images.spec.ts` (8).
+- **Deleting a matter** removes its image records and bytes with everything else.
+- **Not done:** an image uploaded into a comment that is then abandoned stays in
+  the bucket (readable by staff and its uploader only); no thumbnails or resizing;
+  images are not part of the Documents tab or its approval cycle.
+
 ### Steps deleted from a service, and "Request changes" to the same step — #215, #214 (2026-10-16) ✅ Completed
 
 On `main` (QA). Built here and in Ambyflow (Story 42.15) together; both faults were

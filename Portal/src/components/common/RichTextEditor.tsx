@@ -8,8 +8,11 @@ import { Highlight } from '@tiptap/extension-highlight';
 import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import {
   Bold, Italic, Strikethrough, List, ListOrdered, Table as TableIcon, Undo2, Redo2,
-  Baseline, Highlighter, Type,
+  Baseline, Highlighter, Type, ImagePlus, Loader2,
 } from 'lucide-react';
+import { LtImage } from './ltImageExtension';
+import { useCommentImageTaskId } from './commentImageContext';
+import { uploadCommentImage, commentImageProblem, COMMENT_IMAGE_TYPES } from '../../api/commentImages';
 
 /**
  * #122 — rich-text editor for workflow comments and discussion messages.
@@ -22,8 +25,10 @@ import {
  * sanitised on the SERVER on write (see richText.service.js) — a client could
  * bypass this component entirely by posting to the API.
  *
- * Pasted IMAGES are deliberately not supported yet (phase 2) — that needs upload
- * + storage rather than inlining base64 blobs into a comment.
+ * #122 follow-up — IMAGES. Pasting a screenshot, dropping an image file, or the
+ * "Upload image" button uploads the file to the matter and inserts a REFERENCE
+ * (`<img data-lt-image>`, no src). Nothing is ever inlined as base64. Images are
+ * offered only when the editor knows its matter (prop or CommentImageTaskContext).
  *
  * #194 — adds text COLOUR (red for urgent, amber for important), HIGHLIGHT, three
  * text SIZES, and a 1,000-word limit. The limit is advisory here and enforced on
@@ -40,10 +45,36 @@ function countWords(text: string) {
   const t = text.replace(/\s+/g, ' ').trim();
   return t ? t.split(' ').length : 0;
 }
+/** True when the editor holds nothing worth sending — no text and no image. */
+function isBlank(ed: Editor) {
+  if (ed.getText().trim()) return false;
+  let hasImage = false;
+  ed.state.doc.descendants((n) => { if (n.type.name === 'ltImage') hasImage = true; return !hasImage; });
+  return !hasImage;
+}
+
+/**
+ * The files a paste/drop should treat as IMAGES TO UPLOAD. Copying cells from
+ * Excel or a passage from Word also puts a picture of the selection on the
+ * clipboard; when the clipboard carries real text as HTML, the paste is that
+ * content (a table, formatting) and the picture is ignored.
+ */
+function pastedImageFiles(data: DataTransfer | null): File[] {
+  if (!data) return [];
+  const files = Array.from(data.files ?? []).filter((f) => f.type.startsWith('image/'));
+  if (!files.length) return [];
+  const html = data.getData('text/html');
+  if (html) {
+    const text = html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim();
+    if (text) return [];
+  }
+  return files;
+}
+
 /** #200: someone the author can @mention. */
 export interface MentionCandidate { name: string; email: string }
 
-export default function RichTextEditor({ value, onChange, placeholder, disabled, ariaLabel, rows = 3, mentions }: {
+export default function RichTextEditor({ value, onChange, placeholder, disabled, ariaLabel, rows = 3, mentions, imageTaskId }: {
   value: string;
   onChange: (html: string) => void;
   placeholder?: string;
@@ -53,7 +84,16 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
   rows?: number;
   /** #200: when given, typing "@" suggests these people; picking one inserts "@email". */
   mentions?: MentionCandidate[];
+  /** #122 follow-up: the matter images are uploaded to. Defaults to CommentImageTaskContext; none → no images. */
+  imageTaskId?: string | null;
 }) {
+  // #122 follow-up: images need a matter to upload to. The paste/drop handlers
+  // are bound once at editor creation, so they read the live values via refs.
+  const taskIdForImages = useCommentImageTaskId(imageTaskId);
+  const taskIdRef = useRef<string | null>(taskIdForImages);
+  const [uploading, setUploading] = useState(0);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const addImagesRef = useRef<(files: File[]) => void>(() => {});
   // #194: handleKeyDown needs the editor instance, which doesn't exist yet inside
   // its own config — a ref breaks that cycle.
   const editorRef = useRef<Editor | null>(null);
@@ -93,6 +133,9 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
       FontSize,
       Color,
       Highlight.configure({ multicolor: true }),
+      // The editor is rebuilt if the matter changes (deps below), so node views
+      // always resolve images against the matter they were uploaded to.
+      LtImage.configure({ taskId: taskIdForImages }),
     ],
     content: value || '',
     editable: !disabled,
@@ -101,9 +144,26 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
       detectMention(e);
       const html = e.getHTML();
       // TipTap represents "empty" as <p></p>; normalise so callers can test truthiness.
-      onChange(e.getText().trim() ? html : '');
+      // An image on its own is content (a screenshot needs no caption).
+      onChange(isBlank(e) ? '' : html);
     },
     editorProps: {
+      // #122 follow-up: a pasted screenshot / dropped image file is uploaded.
+      handlePaste: (_view, event) => {
+        const files = pastedImageFiles(event.clipboardData);
+        if (!files.length || !taskIdRef.current) return false;
+        event.preventDefault();
+        addImagesRef.current(files);
+        return true;
+      },
+      handleDrop: (_view, event, _slice, moved) => {
+        if (moved) return false;
+        const files = pastedImageFiles((event as DragEvent).dataTransfer);
+        if (!files.length || !taskIdRef.current) return false;
+        event.preventDefault();
+        addImagesRef.current(files);
+        return true;
+      },
       // #194: stop ADDING text once the cap is hit. Deletion, arrows, copy and
       // shortcuts still work — only a keystroke that would insert a character is
       // blocked, so the editor never traps someone in an over-long comment.
@@ -132,7 +192,7 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
         'aria-multiline': 'true',
       },
     },
-  });
+  }, [taskIdForImages]);
 
   // Keep the editor in sync when the value is reset externally (e.g. after send,
   // or when a saved draft is restored).
@@ -141,13 +201,39 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
     const current = editor.getHTML();
     const next = value || '';
     // Compare rendered HTML to avoid clobbering the caret on every keystroke.
-    if (next !== current && !(next === '' && editor.getText().trim() === '')) {
+    if (next !== current && !(next === '' && isBlank(editor))) {
       editor.commands.setContent(next, { emitUpdate: false });
     }
   }, [value, editor]);
 
   useEffect(() => { editor?.setEditable(!disabled); }, [disabled, editor]);
   useEffect(() => { editorRef.current = editor ?? null; }, [editor]);
+  useEffect(() => { taskIdRef.current = taskIdForImages; }, [taskIdForImages]);
+
+  // #122 follow-up: upload each image, then insert its reference at the caret.
+  // Checked here first so a too-big or wrong-type file is refused instantly
+  // with a reason; the server enforces the same rules regardless.
+  const addImages = async (files: File[]) => {
+    const taskId = taskIdRef.current;
+    if (!taskId || disabled) return;
+    setImageError(null);
+    for (const file of files) {
+      const problem = commentImageProblem(file);
+      if (problem) { setImageError(problem); continue; }
+      setUploading((n) => n + 1);
+      try {
+        const { imageId } = await uploadCommentImage(taskId, file);
+        const alt = (file.name && !/^image\.(png|jpe?g|webp)$/i.test(file.name)) ? file.name.slice(0, 120) : 'Pasted image';
+        editorRef.current?.chain().focus().insertContent({ type: 'ltImage', attrs: { imageId, alt } }).run();
+      } catch (e) {
+        setImageError((e as Error)?.message || 'The image could not be uploaded. Please try again.');
+      } finally {
+        setUploading((n) => n - 1);
+      }
+    }
+  };
+  useLayoutEffect(() => { addImagesRef.current = (files) => { void addImages(files); }; });
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const q = mention?.query.toLowerCase() ?? '';
   const matches = mention && mentions
     ? mentions.filter((c) => c.name.toLowerCase().includes(q) || c.email.includes(q))
@@ -180,7 +266,39 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
 
   return (
     <div className={`rounded-lg border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-brand-400 ${disabled ? 'opacity-60' : ''}`}>
-      <Toolbar editor={editor} disabled={disabled} />
+      <Toolbar
+        editor={editor}
+        disabled={disabled}
+        onAddImage={taskIdForImages ? () => fileInputRef.current?.click() : undefined}
+        uploading={uploading > 0}
+      />
+      {taskIdForImages && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={COMMENT_IMAGE_TYPES.join(',')}
+          multiple
+          hidden
+          data-testid="comment-image-input"
+          aria-label="Upload image"
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []);
+            e.target.value = ''; // the same file can be chosen again
+            if (files.length) void addImages(files);
+          }}
+        />
+      )}
+      {uploading > 0 && (
+        <p className="px-3 pt-1.5 text-[11px] text-ink-muted inline-flex items-center gap-1" role="status">
+          <Loader2 className="w-3 h-3 animate-spin" /> Uploading image…
+        </p>
+      )}
+      {imageError && (
+        <p className="px-3 pt-1.5 text-[11px] text-red-600" role="alert">
+          {imageError}{' '}
+          <button type="button" className="underline" onClick={() => setImageError(null)}>Dismiss</button>
+        </p>
+      )}
       <EditorContent editor={editor} />
       {/* #200: @mention suggestions, under the box (tap or ↑/↓ + Enter). */}
       {matches.length > 0 && (
@@ -199,7 +317,7 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
       )}
       {/* Placeholder — TipTap has an extension for this, but a CSS-free fallback
           keeps the dependency surface small. */}
-      {placeholder && !editor.getText().trim() && (
+      {placeholder && isBlank(editor) && (
         <p className="px-3 pb-2 -mt-6 text-sm text-ink-faint pointer-events-none">{placeholder}</p>
       )}
       {/* #194: the word count appears only near the cap — a permanent counter on
@@ -275,7 +393,12 @@ function Btn({ on, active, title, disabled, children }: {
   );
 }
 
-function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
+function Toolbar({ editor, disabled, onAddImage, uploading }: {
+  editor: Editor; disabled?: boolean;
+  /** #122 follow-up: opens the file picker; absent when images aren't available here. */
+  onAddImage?: () => void;
+  uploading?: boolean;
+}) {
   return (
     <div className="flex flex-wrap items-center gap-0.5 border-b border-hairline px-1.5 py-1">
       <Btn disabled={disabled} on={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold">
@@ -353,6 +476,11 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
       >
         <TableIcon className="w-3.5 h-3.5" />
       </Btn>
+      {onAddImage && (
+        <Btn disabled={disabled || uploading} on={onAddImage} title="Upload image">
+          {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />}
+        </Btn>
+      )}
       <span className="ml-auto inline-flex items-center gap-0.5">
         <Btn disabled={disabled} on={() => editor.chain().focus().undo().run()} title="Undo"><Undo2 className="w-3.5 h-3.5" /></Btn>
         <Btn disabled={disabled} on={() => editor.chain().focus().redo().run()} title="Redo"><Redo2 className="w-3.5 h-3.5" /></Btn>
