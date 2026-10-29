@@ -216,6 +216,48 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "worksheetRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "sheets",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "worksheetRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "book",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "recordKey",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "serviceKey",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "_comment_steps_assignedTo": "Team-member routing queries collectionGroup('steps').where('assignedTo','==',uid). A single-field COLLECTION query is auto-indexed, but the COLLECTION_GROUP scope needs an explicit field override (below) \u2014 it is NOT a composite index (Firestore rejects that as redundant).",

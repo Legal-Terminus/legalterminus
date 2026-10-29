@@ -29,6 +29,7 @@ import { verifyToken } from "./middleware/auth.middleware.js";
 import reportsRoutes from "./routes/reports.routes.js";
 import leadsRoutes from "./routes/leads.routes.js";
 import marketingRoutes from "./routes/marketing.routes.js";
+import worksheetsRoutes from "./routes/worksheets.routes.js";
 import portalUsersRoutes from "./routes/portalUsers.routes.js";
 import serviceConfigRoutes from "./routes/serviceConfig.routes.js";
 import notificationsRoutes from "./routes/notifications.routes.js";
@@ -203,6 +204,7 @@ app.use("/api/tasks", tasksRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/leads", leadsRoutes);
 app.use("/api/marketing", marketingRoutes); // #196/#197 Reporting module
+app.use("/api/worksheets", worksheetsRoutes); // #210 Trademark Reports
 app.use("/api/portal/users", portalUsersRoutes);
 app.use("/api/service-config", serviceConfigRoutes);
 app.use("/api/notifications", notificationsRoutes);

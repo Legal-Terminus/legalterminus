@@ -1,4 +1,4 @@
-import { request, type APIRequestContext } from '@playwright/test';
+import { request, type APIRequestContext, type APIResponse } from '@playwright/test';
 import { creds, env, type RoleKey } from './helpers';
 
 /**
@@ -815,4 +815,69 @@ export function withGrant(base: SectionGrants, uid: string, levels: Record<strin
     if (level) next[section][uid] = level; else delete next[section][uid];
   }
   return next;
+}
+
+/* ── #210 / #217: worksheets ─────────────────────────────────────────────────
+ * Records and column settings live in QA's real data, so every spec tags what it
+ * creates with a per-run marker, deletes it afterwards, and puts any column
+ * change back exactly as it found it. */
+export interface WsRecordLite { id: string; sheets: string[]; values: Record<string, string | number | null> }
+export interface WsSheetLite {
+  key: string; label: string; linkedServices: string[];
+  columns: { key: string; label: string; hidden: boolean; type: string; builtIn: boolean }[];
+}
+
+/** Every record of a sheet (all pages). */
+export async function listWorksheet(role: RoleKey, sheet: string): Promise<WsRecordLite[]> {
+  const api = await apiAs(role);
+  const out: WsRecordLite[] = [];
+  let cursor: string | null = null;
+  try {
+    do {
+      const res: APIResponse = await api.get(`/api/worksheets/sheets/${sheet}/records?limit=500${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`);
+      if (!res.ok()) throw new Error(`listWorksheet ${sheet} failed: ${res.status()}`);
+      const body = (await res.json()) as { data: WsRecordLite[]; nextCursor: string | null };
+      out.push(...body.data);
+      cursor = body.nextCursor;
+    } while (cursor);
+  } finally { await api.dispose(); }
+  return out;
+}
+
+export async function createWorksheetRecord(sheet: string, values: Record<string, string | number>, sheets?: string[]): Promise<WsRecordLite> {
+  const api = await apiAs('admin');
+  const res = await api.post(`/api/worksheets/sheets/${sheet}/records`, { data: { values, ...(sheets ? { sheets } : {}) } });
+  if (!res.ok()) throw new Error(`createWorksheetRecord failed: ${res.status()} ${await res.text()}`);
+  const body = await res.json();
+  await api.dispose();
+  return body;
+}
+
+/** Delete every record of `sheet` whose `field` contains `marker`. */
+export async function deleteWorksheetRecordsMatching(sheet: string, field: string, marker: string): Promise<void> {
+  const rows = await listWorksheet('admin', sheet);
+  const api = await apiAs('admin');
+  for (const r of rows) {
+    if (String(r.values[field] ?? '').includes(marker)) await api.delete(`/api/worksheets/sheets/${sheet}/records/${r.id}`);
+  }
+  await api.dispose();
+}
+
+export async function getWorksheetSheet(module: 'trademark' | 'company', sheet: string): Promise<WsSheetLite> {
+  const api = await apiAs('admin');
+  const res = await api.get(`/api/worksheets/modules/${module}`);
+  if (!res.ok()) throw new Error(`getWorksheetSheet failed: ${res.status()}`);
+  const body = await res.json();
+  await api.dispose();
+  return body.sheets.find((s: WsSheetLite) => s.key === sheet);
+}
+
+/** Put a sheet's columns back to a snapshot taken with getWorksheetSheet. */
+export async function restoreWorksheetColumns(snapshot: WsSheetLite): Promise<void> {
+  const api = await apiAs('admin');
+  const res = await api.put(`/api/worksheets/sheets/${snapshot.key}/columns`, {
+    data: { columns: snapshot.columns.map((c) => ({ key: c.key, label: c.label, hidden: c.hidden })), linkedServices: snapshot.linkedServices },
+  });
+  if (!res.ok()) throw new Error(`restoreWorksheetColumns failed: ${res.status()} ${await res.text()}`);
+  await api.dispose();
 }

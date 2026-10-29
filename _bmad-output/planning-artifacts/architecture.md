@@ -1892,3 +1892,69 @@ pinned back in CSS rather than chased through 150 components.
 - **Runtime:** Node 26 (`Dockerfile`, `Portal.Dockerfile`, both deploy workflows). The
   `FROM node:20-alpine` in section 9 above is the original design sketch, not the
   current image.
+
+## Worksheets — Trademark Reports (#210)
+
+**LT only.** The firm's Excel registers kept inside the portal: five trademark
+reports (`/reports/trademark`). The engine is generic — nothing in it is
+trademark-specific — so other registers are new definitions, not new code.
+
+**Model.** A **book** stores records and the catalogue of fields they may hold. A
+**sheet** is one view of a book: which fields, in which order, under which
+heading. A **module** is the page and its dropdown. Definitions are data in
+`backend/src/config/worksheetDefinitions.js`. The five trademark reports share
+the `trademark` book — the firm chose *one record per trademark*, so a trademark's
+common details are stored once and each report is a filter on membership. Each
+company worksheet is its own book.
+
+- `worksheetRecords/{id}` — `{ module, book, sheets: [sheetKey], values: { field:
+  value }, recordKey, images: { field: { objectPath, contentType, updatedAt } },
+  reminderDue, remindersSent, createdAt, createdBy, updatedAt, updatedBy, source? }`.
+  A record appears in a sheet when the sheet's key is in `sheets`.
+- `worksheetConfig/{book}` — the firm's edits, merged over the definitions:
+  `{ customFields: [...], sheets: { [sheetKey]: { columns: [{ key, label, hidden }],
+  linkedServices } } }`. A built-in column added to the code later still appears.
+- Logos: Storage `worksheets/{book}/{recordId}/{field}-{ts}.webp`, re-encoded by
+  sharp (≤ 800 px) on upload, **streamed back** through
+  `GET /api/worksheets/sheets/:sheet/records/:id/images/:field` and shown from an
+  object URL. No signed URL ever reaches the browser.
+
+**Field types:** text, longtext, date, number, select, computed, image (short text
+plus an optional picture), matter (a matter id; the picker offers matters of the
+sheet's `linkedServices` only, from `tasks (serviceKey, createdAt desc)`).
+*Computed* fields are derived on read and never stored: `compute.from` lists source
+dates in priority order, `compute.add` the period. Month ends clamp (29 Feb + 9 y =
+28 Feb). Trademark renewal milestones count from *Date of Last Renewal / First
+Application*, else *Registration Date*.
+
+**Keys and upserts.** A book may name key fields (Application No.; DIN + FY for
+KYC). `recordKey` is their normalised join (upper case, no spaces) and is unique
+within the book: create and update check it inside a Firestore transaction and
+answer **409 `DUPLICATE_KEY`** with the existing record's id and reports, which the
+Portal turns into "add it to this report too".
+
+**Excel upload.** Parsed in the browser (`xlsx`), sent as cell values in batches
+of 200 rows (`POST …/import`, `apply: false` for the dry run, then `true`). The
+server never parses an Excel file. Pure planning in
+`worksheetEngine.service.js → planImport`: headings match labels and aliases
+(case/space/punctuation-insensitive, with or without a bracketed part), on this
+sheet first, then the rest of the book; then a unique prefix of ≥ 6 characters; an
+ambiguous or unknown heading is reported, never guessed. Only non-blank cells are
+written (`values.<field>` updates), so an upload never clears data; a row whose key
+exists updates that record (and adds it to this sheet); a repeated key in the file
+merges. Untidy cells (a date column holding "Awaited") are kept as text with a
+warning; a manual edit of the same is refused.
+
+**Columns (admin).** `applyColumnEdit` renames, re-orders, adds (`c_<slug>`, unique
+in the book) and hides. A built-in column left out is kept hidden; a column the
+firm added and then deleted leaves the sheet but stays registered, so its key —
+and its stored values — are never reused by another column.
+
+**Reading a sheet.** `GET …/records?limit&cursor` pages by
+`(sheets array-contains, createdAt, __name__)`; the Portal reads pages of 500 up to
+5,000 records and filters, sorts and searches in the browser, as the Master Sheet
+does. Matter labels for a page come from one `getAll`.
+
+**Access.** Router-wide `requireRole('admin','manager','team_member')`; columns and
+record delete add `requireRole('admin')`. No per-person grant (unlike Marketing
+Reports): the firm asked for all three roles to view and edit.

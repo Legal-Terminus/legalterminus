@@ -44,6 +44,7 @@ import ClientGroupFeeReport from '../pages/reports/ClientGroupFeeReport';
 import MyServicesReport from '../pages/reports/MyServicesReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 import MarketingReportsPage from '../pages/reports/MarketingReportsPage';
+import TrademarkReportsPage from '../pages/reports/TrademarkReportsPage';
 import ReportingAccessPage from '../pages/settings/ReportingAccessPage';
 import WebsitePricesPage from '../pages/settings/WebsitePricesPage';
 import WebsiteOrdersPage from '../pages/website-orders/WebsiteOrdersPage';
@@ -155,6 +156,11 @@ export const APP_ROUTES: AppRoute[] = [
   // #197: DM Cost / DM Income / Cold Calling / Reporting. Open to all staff at
   // the route; each section is then limited to whom the admin granted it.
   { path: '/reports/marketing', element: <MarketingReportsPage />, roles: ['admin', 'manager', 'team_member'] },
+  // #210: the five trademark reports. The firm asked that admins, managers and
+  // team members all view and edit (29 Oct 2026), so — unlike Marketing Reports —
+  // there is no per-person grant: the role list IS the access rule. Team members
+  // reach it from a dashboard tile (they have no Reports hub).
+  { path: '/reports/trademark', element: <TrademarkReportsPage />, roles: ['admin', 'manager', 'team_member'] },
   // #196/#197: the admin's per-section grant table.
   { path: '/settings/reporting-access', element: <ReportingAccessPage />, roles: ['admin'], nav: { label: 'Reporting Access', icon: ShieldCheck, order: 13 } },
   // E24-S01: what each plan costs on the website. Managers can look; the API
