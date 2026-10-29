@@ -3861,6 +3861,8 @@ not-found page and pass anyway.
 - **Contact form:** placeholders only, as today; visible labels need markup.
 - **`/tools/*` PDF tool pages** are static HTML outside the app; not restyled.
 - The three content questions on #209 (FAQ answers, footer typo, price sets) are unchanged.
+  *Answered 22 Oct:* prices ₹5,999 / ₹8,999 / ₹13,999 / ₹24,999; footer typo fixed
+  (round 3, 2026-10-29); new FAQ content to follow from the firm.
 
 ---
 
@@ -4502,6 +4504,49 @@ Same branch; story E18-S09. Thirteen sheets on the #210 engine, each its own boo
 - **Access, nav:** `/worksheets`, sidebar entry + dashboard tile for admin, manager,
   team member; also a tile on the Reports hub.
 - **Tests:** unit (in the 29 above); `Portal/e2e/worksheets.spec.ts` (9, not yet run).
+
+### Website Theme C, round 3 — the firm's review of 13 Oct and answers of 22 Oct (#209) (2026-10-29) 🔄 On branch `feat/209-theme-c`, not merged
+
+Part of E-25. Everything is behind `VITE_THEME_C` (QA only) except the footer typo.
+With the switch off, Home and Private Limited render as before (text and screenshots
+compared at 1280 and Pixel 7; the live build contains none of the new code).
+
+- **Site-wide:** Roboto for headings and body (the firm's choice), display weight 500.
+  Section headlines centred, with the label above and the short description under
+  them; from 768px up a headline that would wrap is set smaller (to 22px at least)
+  so it stays on one line — on phones they wrap, never overflow. Every left-aligned
+  paragraph of two lines or more is justified; centred text is untouched. Header menu
+  centred in the bar. Files: `theme/typography.css`, `theme/typography.js`.
+- **Footer typo, live too:** "Registration Srvices" → "Registration Services" (the firm
+  confirmed, 22 Oct). This changes the live site at the next release.
+- **Common bottom block:** Testimonials → Our Clients → footer is one band, the same on
+  Home and every service page. Service pages now show Home's five testimonials
+  (auto-rotating) instead of the 15-review Google slider. Seven pages that drew their
+  own testimonials and logos above the global ones (Add/Remove Director, Change
+  Company Name, LLP office address, LLP objects, Wind-up PLC, Company→Company and
+  LLP→LLP name change) skip theirs under Theme C — on the live site they show both,
+  as before. `theme/bottom.css`, `LazyServiceFooterSections.jsx`.
+- **Home:** order is … Why We Stand Out → Contact Us → Blog → Testimonials → Our
+  Clients → footer. Hero headline exactly two lines (ink / green) at one fitted size,
+  picture larger. "Latest News & Articles From Legal Terminus" on one line (the forced
+  break is dropped under Theme C). Who We Are: the five steps as a numbered path with
+  gradient discs, a connecting line, an icon per step and a hover. Our Working
+  Process: the firm's four steps, word for word.
+- **Testimonials rotate under "reduce motion" too.** Windows sets that preference when
+  animation effects are off; the rotation used to stop entirely, which is probably
+  why the firm saw no sliding.
+- **Private Limited:** hero text justified; plan name, cut price, price and fees line
+  centred (prices still from the catalogue: ₹5,999 / ₹8,999 / ₹13,999 / ₹24,999);
+  Government Costs heading centred; Terms & Conditions heading and items centred (the
+  one centred body text on the site); Types, Benefits, Steps, Documents headlines and
+  sub-text centred. FAQ unchanged (the firm will send new content).
+- **Interpretations:** the hero headlines stay left-aligned in their split layout (the
+  firm asked for the PL hero text justified, and the Home hero is text beside a
+  picture); "sub content" of Types is its headline only — the section has no
+  description; About, Contact, Blog and policy pages keep their own bottoms (the block
+  is for "service pages … including Home").
+- **Tests:** `Frontend/tests/e2e/all-routes.spec.js` 83/83 with the switch on and
+  75/75 off (incl. no sideways scroll at 390px).
 
 ### Steps deleted from a service, and "Request changes" to the same step — #215, #214 (2026-10-16) ✅ Completed
 

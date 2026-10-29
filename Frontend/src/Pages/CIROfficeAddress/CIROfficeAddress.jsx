@@ -1,4 +1,5 @@
 import React from 'react'
+import { THEME_C } from '../../utils/theme'
 import CIRbreadcrum from '../../Components/CIRbreadcrum/CIRbreadcrum'
 import CIRplans from '../../Components/CIRplans/CIRplans'
 import CIRtermconditions from '../../Components/CIRtermconditions/CIRtermconditions'
@@ -57,9 +58,15 @@ const PrivateLimited = () => {
        <CIRfaq />
       </div>
 
-      <CIRtestimonial />
-      <CIRvideo />
-      <CIRclient />
+      {/* E-25 (#209): under Theme C the testimonials and client logos are the
+          site-wide bottom block (LazyServiceFooterSections), the same on every page. */}
+      {!THEME_C && (
+        <>
+          <CIRtestimonial />
+          <CIRvideo />
+          <CIRclient />
+        </>
+      )}
     </div>
   );
 };

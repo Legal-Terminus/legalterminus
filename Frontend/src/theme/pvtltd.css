@@ -721,3 +721,33 @@ html.theme-c .faq-answer-content {
 }
 html.theme-c .faq-answer-content p,
 html.theme-c .faq-answer-content li { font-size: 15px; line-height: 1.6; color: var(--lt-body); text-align: left; }
+
+/* ── #209 — the firm's review of 13 Oct (round 3), Private Limited ────── */
+/* !important: the plan, costs and terms components are also styled by the
+   generated families.css through :is() lists of higher specificity. */
+
+/* Plans (PL 2): name, crossed-out price, price and the fees line centred in
+   each card. The feature list stays a left-aligned checklist. */
+html.theme-c .plan-header { justify-items: center !important; text-align: center !important; }
+html.theme-c :is(.plan-name, .plan-old-price, .plan-price, .plan-meta) { text-align: center !important; justify-content: center; }
+html.theme-c .plan-fullservice-badge { align-self: center; justify-self: center; margin-inline: auto !important; }
+html.theme-c .plan-popular-badge { left: 50% !important; transform: translateX(-50%); white-space: nowrap; }
+
+/* Government costs (PL 4): the heading row centred, badge beside it */
+html.theme-c .govtcosts-title { justify-content: center !important; flex-wrap: wrap; }
+
+/* Terms & Conditions (PL 3, 5): heading AND content centred — the one place on
+   the site where body text is centred rather than justified (the firm, 22 Oct).
+   Numbers are drawn inline so they centre with their line. */
+html.theme-c .pvtltd-tc-card { text-align: center !important; }
+html.theme-c .pvtltd-tc-list {
+  max-width: 80ch !important; margin-inline: auto !important; padding: 0 !important;
+  list-style: none !important; counter-reset: pvtltd-tc;
+}
+html.theme-c .pvtltd-tc-list .pvtltd-tc-item {
+  display: block !important; text-align: center !important; counter-increment: pvtltd-tc;
+}
+html.theme-c .pvtltd-tc-list .pvtltd-tc-item::before {
+  content: counter(pvtltd-tc) ". "; position: static; font-weight: 600; color: var(--lt-accent-text);
+}
+html.theme-c .pvtltd-tc-card p { text-align: center !important; }

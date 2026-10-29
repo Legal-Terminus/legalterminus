@@ -575,3 +575,66 @@ html.theme-c .hlb-view-all-btn:hover { background: transparent; border-color: va
   html.theme-c .WPI-steps { gap: 14px; }
   html.theme-c .lh-tab { white-space: normal; text-align: left; }
 }
+
+/* ── #209 — the firm's review of 13 Oct (round 3) ─────────────────────── */
+
+/* Hero (Home 2, 4): the headline in exactly two lines — "Build Your Business
+   with Passion." in ink, "Run It Smarter with Legal Terminus." in green — at one
+   size that typography.js fits to the column; the picture a little larger. */
+@media (min-width: 761px) {
+  html.theme-c .hs-hero__container { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); }
+  html.theme-c .hs-photo-wrap { max-width: 450px; }
+}
+html.theme-c .hs-title-dark, html.theme-c .hs-title-green { text-wrap: wrap; }
+html.theme-c .hs-title-green { font-weight: var(--lt-d-weight); }
+
+/* section headers that were start-aligned boxes narrower than the page: centre
+   the box too, so the centred headline sits in the middle of the page */
+html.theme-c :is(.features-header, .WPI-header, .hlb-header, .Testimonials-header) {
+  margin-inline: auto; justify-items: center; text-align: center;
+}
+
+/* Who We Are (Home 3): "make the five points more attractive". The same five
+   steps, as a numbered path — gradient number discs joined by one line, each
+   step a card with its own icon, a green wash and a nudge on hover. Numbers and
+   icons are CSS; the words are unchanged. */
+html.theme-c .wwe-c .wwe-heading { justify-self: center; text-align: center; }
+html.theme-c .wwe-c__steps { position: relative; gap: 14px; }
+html.theme-c .wwe-c__steps::before {
+  content: ""; position: absolute; z-index: 0; left: 39px; top: 36px; bottom: 36px; width: 2px;
+  background: linear-gradient(var(--lt-accent-bright), var(--lt-accent) 55%, var(--lt-hairline-strong));
+}
+html.theme-c .wwe-c__steps li {
+  position: relative; z-index: 1; min-height: 72px; padding: 14px 18px; gap: 16px;
+  background: var(--lt-surface); border: 1px solid var(--lt-hairline); border-radius: var(--lt-r-lg);
+  box-shadow: var(--lt-shadow-sm);
+}
+html.theme-c .wwe-c__steps li::before {
+  content: counter(wwe, decimal-leading-zero);
+  width: 44px; height: 44px; font-size: 14px; letter-spacing: 0.02em;
+  background: linear-gradient(140deg, var(--lt-accent-bright), var(--lt-accent-deep));
+  box-shadow: 0 0 0 5px var(--lt-canvas-soft), 0 6px 14px -6px rgba(22, 101, 52, 0.7);
+  transition: transform 0.18s ease;
+}
+html.theme-c .wwe-c__steps li::after {
+  content: ""; flex: none; margin-left: auto; width: 24px; height: 24px;
+  background: var(--lt-accent); opacity: 0.85;
+  -webkit-mask: var(--wwe-icon) center / contain no-repeat; mask: var(--wwe-icon) center / contain no-repeat;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+html.theme-c .wwe-c__steps li:hover {
+  transform: translateX(4px);
+  background: linear-gradient(90deg, var(--lt-canvas-tint), var(--lt-surface) 70%);
+}
+html.theme-c .wwe-c__steps li:hover::before { transform: scale(1.06); }
+html.theme-c .wwe-c__steps li:hover::after { opacity: 1; transform: scale(1.1); }
+html.theme-c .wwe-c .wwe-item-text { font-size: 16px; font-weight: 500; line-height: 1.35; }
+/* one icon per step: needs, consultation, planning & documents, checks, compliance */
+html.theme-c .wwe-c__steps li:nth-child(1) { --wwe-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E"); }
+html.theme-c .wwe-c__steps li:nth-child(2) { --wwe-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/%3E%3Cpath d='M8 9h8M8 13h5'/%3E%3C/svg%3E"); }
+html.theme-c .wwe-c__steps li:nth-child(3) { --wwe-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6M16 13H8M16 17H8M10 9H8'/%3E%3C/svg%3E"); }
+html.theme-c .wwe-c__steps li:nth-child(4) { --wwe-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 11l3 3L22 4'/%3E%3Cpath d='M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'/%3E%3C/svg%3E"); }
+html.theme-c .wwe-c__steps li:nth-child(5) { --wwe-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/%3E%3Cpath d='M9 12l2 2 4-4'/%3E%3C/svg%3E"); }
+@media (prefers-reduced-motion: reduce) {
+  html.theme-c .wwe-c__steps li:hover { transform: none; }
+}

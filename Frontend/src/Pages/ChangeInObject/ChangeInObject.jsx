@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react'
+import { THEME_C } from '../../utils/theme'
 import CIObreadcrum from '../../Components/CIObreadcrum/CIObreadcrum'
 
 // Lazy load below-fold components
@@ -69,15 +70,21 @@ const PrivateLimited = () => {
         </Suspense>
       </div>
 
-     <Suspense fallback={<div />}>
-       <CIOtestimonial />
-     </Suspense>
-      <Suspense fallback={<div />}>
-        <CIOvideo />
-      </Suspense>
-      <Suspense fallback={<div />}>
-        <CIOclients />
-      </Suspense>
+     {/* E-25 (#209): under Theme C the testimonials and client logos are the
+         site-wide bottom block (LazyServiceFooterSections), the same on every page. */}
+     {!THEME_C && (
+       <>
+         <Suspense fallback={<div />}>
+           <CIOtestimonial />
+         </Suspense>
+          <Suspense fallback={<div />}>
+            <CIOvideo />
+          </Suspense>
+          <Suspense fallback={<div />}>
+            <CIOclients />
+          </Suspense>
+       </>
+     )}
     </div>
   );
 };

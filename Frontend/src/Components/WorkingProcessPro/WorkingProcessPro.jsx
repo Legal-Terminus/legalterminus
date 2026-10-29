@@ -1,6 +1,7 @@
 import React from "react";
-import { FaRegFileAlt, FaCreditCard, FaHeadset, FaEnvelope } from "react-icons/fa";
+import { FaRegFileAlt, FaCreditCard, FaHeadset, FaEnvelope, FaSearch, FaLaptop, FaChartLine } from "react-icons/fa";
 import "./WorkingProcessPro.css";
+import { THEME_C } from "../../utils/theme";
 
 const steps = [
   {
@@ -29,7 +30,38 @@ const steps = [
   },
 ];
 
+// Theme C (#209, the firm's review of 13 Oct, Home 6): the four steps the firm
+// wrote, word for word. The live site keeps the four above until the redesign
+// is released.
+const STEPS_C = [
+  {
+    no: "01",
+    title: "Choose Your Service",
+    text: "Explore our services and select the legal or compliance service you need.",
+    icon: <FaSearch />,
+  },
+  {
+    no: "02",
+    title: "Complete Your Application & Payment",
+    text: "Submit the required details and complete the payment to get started.",
+    icon: <FaCreditCard />,
+  },
+  {
+    no: "03",
+    title: "Access Your Client Portal",
+    text: "Access your dedicated client portal to track work status, check pending requirements, upload documents, and stay updated on your application.",
+    icon: <FaLaptop />,
+  },
+  {
+    no: "04",
+    title: "Track Progress & Manage Your Work",
+    text: "View work history, access important documents, receive updates, and monitor the progress of your service from your portal.",
+    icon: <FaChartLine />,
+  },
+];
+
 const WorkingProcessPro = () => {
+  const list = THEME_C ? STEPS_C : steps;
   return (
     <section className="WPI-section">
       <div className="WPI-header">
@@ -39,13 +71,13 @@ const WorkingProcessPro = () => {
       </div>
 
       <div className="WPI-steps">
-        {steps.map((step, index) => (
+        {list.map((step, index) => (
           <div className="WPI-step" key={index}>
             <div className="WPI-icon-wrap">
               {step.icon}
               <span className="WPI-no">{step.no}</span>
             </div>
-            {index < steps.length - 1 && <div className="WPI-connector" />}
+            {index < list.length - 1 && <div className="WPI-connector" />}
             <h4 className="WPI-step-title">{step.title}</h4>
             <p className="WPI-step-text">{step.text}</p>
           </div>

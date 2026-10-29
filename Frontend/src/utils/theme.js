@@ -6,13 +6,14 @@
  * whole site is done, so it is OFF unless the build sets VITE_THEME_C=true —
  * which only the QA build does. The live build renders exactly as before.
  *
- * On: `theme-c` is put on <html> and the Figtree typeface is loaded. Every rule
+ * On: `theme-c` is put on <html> and the Roboto typeface is loaded (the firm's
+ * choice, #209 22 Oct; it was Figtree before). Every rule
  * in src/theme/ is scoped under `html.theme-c`, so with the switch off the
  * stylesheet is inert. Removed, with the scope, in E25-S11 once the firm signs off.
  */
 export const THEME_C = import.meta.env.VITE_THEME_C === "true";
 
-const FIGTREE = "https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap";
+const ROBOTO = "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap";
 
 export function applyTheme(doc = document) {
   if (!THEME_C) return;
@@ -21,12 +22,12 @@ export function applyTheme(doc = document) {
   for (const [rel, href, cross] of [
     ["preconnect", "https://fonts.googleapis.com"],
     ["preconnect", "https://fonts.gstatic.com", true],
-    ["stylesheet", FIGTREE],
+    ["stylesheet", ROBOTO],
   ]) {
     const link = doc.createElement("link");
     link.rel = rel; link.href = href;
     if (cross) link.crossOrigin = "anonymous";
-    if (rel === "stylesheet") link.dataset.themeFont = "figtree";
+    if (rel === "stylesheet") link.dataset.themeFont = "roboto";
     doc.head.appendChild(link);
   }
 }

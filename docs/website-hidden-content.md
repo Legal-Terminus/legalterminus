@@ -1,6 +1,6 @@
 # Website content hidden until the firm supplies the real thing
 
-**Last updated:** 2026-10-11
+**Last updated:** 2026-10-29
 **Applies to:** the marketing site (`Frontend/`), with the redesign on or off. It is on
 QA now and reaches the live site at the next release.
 
@@ -184,6 +184,26 @@ This block is **not on the live site today**: the only page that uses it
 (`Pages/AboutUs/AboutUs.jsx`) has no address. The site's About page is a different
 file. It is hidden anyway so that it cannot go live by accident.
 
+### 4. Moved, not hidden — the bottom of the page under the redesign (#209, 13 Oct)
+
+With the redesign switched on (QA only), the bottom of Home and of every service page
+is one common block: **Testimonials → Our Clients → footer**, the same everywhere.
+Nothing was deleted, but three things are no longer shown there:
+
+- **The 15 Google reviews slider** ("What our customers say about us", with "Write a
+  Review on Google") is replaced on service pages by Home's five written reviews, as the
+  firm asked ("make the testimonial section the same as the home page").
+- **Seven pages' own testimonials and client logos** — Add or Remove a Director, Change
+  Company Name, Change in Registered Office Address (LLP), Changing the Objects of LLP,
+  Wind-up PLC, Change Name Company to Company, Change Name LLP to LLP — showed a second
+  testimonials slider and a second logo strip above the common ones. Under the redesign
+  they are skipped. The live site still shows both until the redesign is released.
+- **Home's testimonials** moved from above Contact Us to the common block below the blog.
+
+To bring any of them back: the switch is `THEME_C` in
+`Frontend/src/Components/LazyServiceFooterSections/LazyServiceFooterSections.jsx`
+(the common block), `Frontend/src/Pages/Home/Home.jsx`, and each of the seven pages.
+
 ## How to bring something back (for a developer)
 
 All three switches are in `Frontend/src/utils/videoTestimonials.js`.
@@ -232,3 +252,4 @@ so nothing was hidden; each needs a decision.
 |---|---|---|
 | 2026-10-11 | Video testimonial sliders hidden | `2ecd3e17` |
 | 2026-10-11 | Media Coverage and the process video buttons hidden; this document | this commit |
+| 2026-10-29 | Section 4: the common bottom block under the redesign (#209) | `feat(website)` round 3 |

@@ -3,6 +3,7 @@ import './Home.css'
 import Herosection from '../../Components/Herosection/Herosection'
 import Premiumbusiness from '../../Components/Premiumbusiness/Premiumbusiness'
 import HomePdfToolsCta from '../../Components/HomePdfToolsCta/HomePdfToolsCta'
+import { THEME_C } from '../../utils/theme'
 
 // Lazy load below-fold components
 const Workingprocess = React.lazy(() => import('../../Components/WorkingProcessPro/WorkingProcessPro'))
@@ -39,9 +40,14 @@ const Home = () => {
         <Suspense fallback={<div />}>
           <Featureslegalservice/>
         </Suspense>
-        <Suspense fallback={<div />}>
-          <Testimonials />
-        </Suspense>
+        {/* Theme C (#209, 13 Oct): Contact Us and the blog come straight after
+            "Why We Stand Out"; Testimonials, then Our Clients, then the footer
+            follow as the site-wide bottom block (LazyServiceFooterSections). */}
+        {!THEME_C && (
+          <Suspense fallback={<div />}>
+            <Testimonials />
+          </Suspense>
+        )}
         <Suspense fallback={<div />}>
           <ContactUs />
         </Suspense>

@@ -1,0 +1,101 @@
+/*
+ * Theme C — site-wide typography and alignment from the firm's review of
+ * 13 Oct and their answers of 22 Oct (#209). Scoped under html.theme-c.
+ *
+ * Loaded after every page file on purpose: these rules are site-wide
+ * decisions that override the per-family `text-align: left` the earlier
+ * rounds wrote in ~340 places (several in the GENERATED families.css), so they
+ * carry !important instead of being repeated per family.
+ *
+ *   - Roboto everywhere: the tokens in theme.css.
+ *   - "All headlines and short descriptions centre-aligned": section headlines
+ *     here; the label above and the short sentence below are found and marked
+ *     by typography.js (data-lt-eyebrow / data-lt-sub / data-lt-deco).
+ *   - "Fit on a single line": typography.js shrinks a headline that would wrap
+ *     (768px and up). text-wrap: balance keeps the ones that must wrap even.
+ *   - "All paragraphs justified": typography.js marks every left-aligned
+ *     paragraph of two lines or more (data-lt-justify). Centred ones are left
+ *     alone, and so is Terms & Conditions on the Private Limited page (centred
+ *     in pvtltd.css).
+ *   - "Centre the header menu items".
+ */
+
+/* ── Headlines ────────────────────────────────────────────────────────── */
+
+/* not the site header, the footer or a popup; section headers that happen to be
+   <header> elements are headlines like any other */
+html.theme-c #root h2:not(:is(.header-wrapper, nav, .premium-footer, [role="dialog"]) h2) {
+  text-align: center !important;
+  justify-self: center !important;      /* headers laid out as start-aligned grids */
+  align-self: center;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  max-width: 100% !important;
+  text-wrap: balance;
+}
+
+/* one line, at the size typography.js measured (it sets --lt-fit-size only when
+   the headline had to shrink). "wide" headlines go back to wrapping below 768px
+   the moment the window narrows, before any script runs. */
+@media (min-width: 768px) {
+  html.theme-c [data-lt-line="wide"] { white-space: nowrap; }
+  html.theme-c [data-lt-line="wide"][style*="--lt-fit-size"] { font-size: var(--lt-fit-size) !important; }
+}
+html.theme-c [data-lt-line="all"] { white-space: nowrap; }
+html.theme-c [data-lt-line="all"][style*="--lt-fit-size"] { font-size: var(--lt-fit-size) !important; }
+
+/* the small label above a headline */
+html.theme-c [data-lt-eyebrow] {
+  justify-self: center !important;
+  align-self: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+  width: fit-content !important;
+  max-width: 100%;
+}
+/* auto margins do not move an inline box: make it a block of its own width */
+html.theme-c [data-lt-eyebrow="inline"],
+html.theme-c [data-lt-eyebrow="inline-block"] { display: table !important; }
+html.theme-c [data-lt-eyebrow="inline-flex"] { display: flex !important; justify-content: center; }
+html.theme-c [data-lt-eyebrow="inline-grid"] { display: grid !important; }
+
+/* the short description under a headline, and a decorative rule between them */
+html.theme-c [data-lt-sub] {
+  text-align: center !important;
+  justify-self: center !important;
+  align-self: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+html.theme-c span[data-lt-sub] { display: block !important; }
+html.theme-c [data-lt-deco] {
+  justify-self: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* ── Paragraphs ───────────────────────────────────────────────────────── */
+
+html.theme-c [data-lt-justify] {
+  text-align: justify !important;
+  text-justify: inter-word;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+/* ── Header: the menu centred in the bar ──────────────────────────────── */
+/* Three columns — logo | menu | icons — with equal outer columns, so the menu
+   sits in the middle of the header, not merely between the logo and the icons.
+   Below 1120px the menu is the menu button (shell.css) and this does not apply. */
+@media (min-width: 1121px) {
+  html.theme-c .nav-inner {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+  }
+  html.theme-c .nav-left { justify-self: start; }
+  html.theme-c .nav-center { justify-self: center; justify-content: center; }
+  html.theme-c .nav-list { justify-content: center; }
+  html.theme-c .nav-right { justify-self: end; }
+}

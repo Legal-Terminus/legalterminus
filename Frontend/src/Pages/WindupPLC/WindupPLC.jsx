@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react'
+import { THEME_C } from '../../utils/theme'
 import WindupPLCBreadcrum from '../../Components/WindupPLCBreadcrum/WindupPLCBreadcrum';
 
 // Lazy load below-fold components
@@ -79,15 +80,21 @@ const WindupPLC = () => {
             </Suspense>
         </div>
 
-        <Suspense fallback={<div />}>
-          <WindupPLCTestimonial/>
-        </Suspense>
-        <Suspense fallback={<div />}>
-          <WindupPLCVideoTestimonial/>
-        </Suspense>
-        <Suspense fallback={<div />}>
-          <WindupPLCOurclints/>
-        </Suspense>
+        {/* E-25 (#209): under Theme C the testimonials and client logos are the
+            site-wide bottom block (LazyServiceFooterSections), the same on every page. */}
+        {!THEME_C && (
+          <>
+            <Suspense fallback={<div />}>
+              <WindupPLCTestimonial/>
+            </Suspense>
+            <Suspense fallback={<div />}>
+              <WindupPLCVideoTestimonial/>
+            </Suspense>
+            <Suspense fallback={<div />}>
+              <WindupPLCOurclints/>
+            </Suspense>
+          </>
+        )}
         
       
     </div>
