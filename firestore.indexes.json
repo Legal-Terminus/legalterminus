@@ -291,9 +291,50 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "worksheetRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "sheets",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "worksheetRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "book",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "recordKey",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "serviceKey",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
-  "_comment_steps_assignedTo": "Team-member routing queries collectionGroup('steps').where('assignedTo','==',uid). A single-field COLLECTION query is auto-indexed, but the COLLECTION_GROUP scope needs an explicit field override (below) \u2014 it is NOT a composite index (Firestore rejects that as redundant).",
   "fieldOverrides": [
     {
       "collectionGroup": "steps",
@@ -381,7 +422,5 @@
         }
       ]
     }
-  ],
-  "_comment_steps_assignedToUids": "#192: a step may have several assignees. Team-member routing also queries collectionGroup('steps').where('assignedToUids','array-contains',uid), which needs an ARRAY_CONFIG CONTAINS override at COLLECTION_GROUP scope (an array-contains query cannot use the ASCENDING order index above).",
-  "_comment_216_overrides": "#216 Employee Performance (whole-team view): collectionGroup('steps') on completedAt >= x and status == active, and collectionGroup('events') on at within a period ordered by at desc. A field override REPLACES the automatic single-field indexes, so each keeps the COLLECTION ascending/descending pair existing per-matter queries rely on."
+  ]
 }

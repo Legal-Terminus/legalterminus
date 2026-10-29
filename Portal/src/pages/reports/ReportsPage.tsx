@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import {
-  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX, IndianRupee, Gauge, HardDrive, Megaphone, ShieldCheck, Contact, Layers,
+  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX, IndianRupee, Gauge, HardDrive, Megaphone, ShieldCheck, Contact, Layers, Stamp, Sheet,
 } from 'lucide-react';
 
 const REPORTS = [
@@ -22,6 +22,8 @@ const REPORTS = [
   { to: '/reports/client-group-fees', title: 'Client / Group Work & Fee', desc: 'Works and fees per group or client, by financial year.', icon: Layers, adminOnly: true },
   { to: '/reports/leads',        title: 'Lead Dashboard',  desc: 'Every lead on the lead sheet — source, service, follow-ups and outcome.', icon: Inbox },
   { to: '/reports/marketing',    title: 'Marketing Reports', desc: 'DM cost, DM income, cold calling and the monthly CAC / revenue-to-cost report.', icon: Megaphone },
+  { to: '/reports/trademark',    title: 'Trademark Reports', desc: 'TM Master, Register TM, Opposition Raised / Received and TM Assignment — one record per trademark, renewal dates calculated.', icon: Stamp },
+  { to: '/worksheets',           title: 'Worksheets',        desc: 'Incorporation, auditors, KYC, annual filing, ROC, strike off, ADT-3, startup, GST, Udyam, PT and FSSAI sheets.', icon: Sheet },
   { to: '/settings/reporting-access', title: 'Reporting Access', desc: 'Admin: who can view or edit leads and each marketing report.', icon: ShieldCheck, adminOnly: true },
 ];
 

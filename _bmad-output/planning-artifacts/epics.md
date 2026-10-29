@@ -81,7 +81,7 @@ split dashboard tiles.
 | E-15 | Document Naming & Step Configuration (Visibility, Status/Notes, Descriptions) | Phase 2 | E15-S01 – E15-S04 |
 | E-16 | Comment Draft Autosave | Phase 2 | E16-S01 |
 | E-17 | Professional Assignment on Matters | Phase 2 | E17-S01 |
-| E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S06 |
+| E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S09 |
 | E-19 | Client 360 (Per-Client Status for Staff) | Phase 2 | E19-S01 – E19-S03 |
 | E-20 | Dashboard Cockpits | Phase 2 | E20-S01 – E20-S02 |
 | E-21 | Public API v1 & Webhooks | Phase 2 | E21-S01 – E21-S04 |
@@ -2810,6 +2810,43 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 ---
 
+### E18-S08 — Trademark Reports on a shared worksheet engine (#210) [Phase 2] 🔄 In Progress
+
+**Priority**: P1 | **Complexity**: L | **Dependencies**: E18-S06
+
+**Rationale**: The firm keeps five trademark registers in Excel (TM Master, Register TM, Opposition Raised, Opposition Received, TM Assignment) and asked for them inside the portal, "like Marketing Reports": one dropdown, the firm's own columns, upload of the existing files, then work continues in the portal.
+
+**Firm decisions (29 Oct 2026, on the issue)**: upsert by **Application No.**; remove Register TM *COLUMN 1, COLUMN 2, %* and TM Assignment *COLUMN 1, COLUMN 2, NETSTAT SEI* and the empty last column; renewal milestones (9, 9.5, 10, 10.5, 11 years) **calculated**; **one record per trademark** — common details entered once and shown in every report the trademark belongs to; each record links to its trademark matter; admin, manager and team member all view and edit.
+
+**Acceptance Criteria**:
+- `/reports/trademark` — dropdown of the five reports, each with the issue's columns (minus the removed ones), in the firm's order and under each report's own heading.
+- A trademark can be in several reports; editing a common field in one shows in all of them.
+- Add / edit (in place, and as a full form) / delete (admin) records; filter on every column, sort ascending/descending, Ctrl+F-style search that highlights and narrows; Download Excel of the rows on screen.
+- Upload .xlsx: headings matched case/space/punctuation-insensitively, with the firm's label variants as aliases and a unique-prefix fallback; dry run showing *N new, M updated, unknown columns*; blank cells never clear data; unknown headings reported, not dropped; calculated columns in the file ignored.
+- Add column / hide / delete column (admin); a deleted standard column is hidden and its values kept.
+- Logo column: per-record image upload (JPEG/PNG/WebP ≤ 2 MB), streamed back through the API. Logos pasted inside an Excel file are not imported (said in the upload screen).
+- Matter column: picker limited to the sheet's linked services (default *Trademark Application*); shows a link to the matter.
+
+**e2e**: `Portal/e2e/trademark-reports.spec.ts`. **Unit**: `backend/src/__tests__/worksheetEngine.test.js`.
+
+---
+
+### E18-S09 — Company Worksheets with KYC reminders (#217) [Phase 2] 🔄 In Progress
+
+**Priority**: P1 | **Complexity**: M | **Dependencies**: E18-S08 (same engine)
+
+**Rationale**: Thirteen company registers (Incorporation, Auditor Master, KYC, Annual Filing, ROC Register, Strike Off, Auditor Registration (ADT-3), Startup Odisha, Startup India, GST, Udyam, Professional Tax, FSSAI) in one place, some linked to their matters, with automatic KYC reminders.
+
+**Acceptance Criteria**:
+- `/worksheets` (sidebar entry for admin, manager, team member) — dropdown of the thirteen sheets, same engine and features as E18-S08.
+- Columns are **proposals** (the firm gave none) — see the 2026-10-29 change-log entry; the firm adjusts them with Add / Hide column.
+- Incorporation, Auditor Master, ADT-3, Strike Off, GST, Udyam, Professional Tax and FSSAI link to matters of their services (admin can change the linked services).
+- KYC: *Next KYC Due* = filing date + 3 years (calculated). Admins and managers are notified 30 days and 7 days before, and on the day — once per milestone.
+
+**e2e**: `Portal/e2e/worksheets.spec.ts`.
+
+---
+
 ---
 
 ## E-19 — Client 360 (Per-Client Status for Staff) [Phase 2]
@@ -4362,6 +4399,109 @@ workload, exportable to Excel; a person's view exports their task list.
   delay-reason field; figures follow a task's CURRENT assignee, so a task reassigned
   away leaves the previous person's figures; elapsed time after a correction is the
   last round only; in the whole-team view "not started" is per person only.
+
+### Trademark Reports on a shared worksheet engine — #210 (2026-10-29) 🔄 In Progress
+
+On branch `feat/210-217-worksheets`, not yet on `main`. Story E18-S08.
+
+- **One engine for #210 and #217.** A *book* holds records and the catalogue of
+  their fields; a *sheet* is one view of a book (which fields, in which order,
+  under which heading); a *module* is the page with the dropdown. The five
+  trademark reports share ONE book, so a trademark is one record (`worksheetRecords`,
+  membership in `sheets[]`), as the firm chose on 29 Oct. Definitions are data
+  (`backend/src/config/worksheetDefinitions.js`); the rules are pure and unit-tested
+  (`services/worksheetEngine.service.js`, `__tests__/worksheetEngine.test.js`, 29 tests).
+- **Columns removed at the firm's request:** Register TM — COLUMN 1, COLUMN 2, %;
+  TM Assignment — COLUMN 1, COLUMN 2, NETSTAT SEI and the empty last column.
+- **Mapped as one field (our reading of the issue, to confirm with the firm):**
+  "Date of Filing / … TM / … TMA"; "Date of User Affidavit / Date of User";
+  "Application Filed By / Applicant" (Opposition Raised); "Opposition No. / Num /
+  Number"; "Before Opposition / Before Opposition Hearing"; "Examination Report /
+  Repo"; "Opposition Hearing / … Yes/No". **Kept separate**: Rule 45/46/47
+  *submitted* vs *received* (they mean opposite things in Raised and Received);
+  "CS Received On" vs "Notice of CS Issued by the".
+- **Renewal milestones** are calculated from *Date of Last Renewal / First
+  Application* when it is filled, otherwise from *Registration Date* (9y, 9y6m,
+  10y, 10y6m, 11y; a 29 Feb base falls on 28 Feb). Open question for the firm: the
+  issue's wording "registration date or the latest renewal date, as applicable" —
+  in Indian practice the term runs from the application date, which is what the
+  "/ FIRST APPLICATION" column holds; confirm this order.
+- "Date of User Affidavit" is text, not a date (it is often "Proposed to be used").
+- **Access:** admin, manager, team member view and edit; only admin changes
+  columns or deletes a record (route guards, not UI only). No per-person grant as
+  in Marketing Reports — the firm asked for all three roles, and the grant table
+  defaults to *no access*, which would have hidden it from team members.
+- **Upload is parsed in the browser** and sent in batches of 200 rows: the server
+  never parses an Excel file (the `xlsx` 0.18.5 parser has open advisories), and
+  every batch stays under the API's 1 MB body limit. Up to 5,000 rows per file.
+- **Not done / deferred:** the firm's real Excel files have not arrived — header
+  aliases are built from the issue text and will need a pass when they do; logos
+  pasted inside Excel cells are not imported; the grid loads a sheet up to 5,000
+  records (in pages of 500) and filters/sorts in the browser — beyond that a
+  server-side search is needed.
+- **Indexes:** `worksheetRecords (sheets CONTAINS, createdAt)`,
+  `worksheetRecords (book, recordKey)`, `tasks (serviceKey, createdAt desc)` — deploy
+  with the release. No Firestore rule: the collections are backend-only and fall
+  under the deny-all catch-all.
+- **Tests:** unit as above; `Portal/e2e/trademark-reports.spec.ts` (8, not yet run).
+
+### Company Worksheets with KYC reminders — #217 (2026-10-29) 🔄 In Progress
+
+Same branch; story E18-S09. Thirteen sheets on the #210 engine, each its own book.
+
+- **Columns are PROPOSALS** — the firm gave none. Every sheet has Client, a
+  company/entity name, its registration number, the relevant dates, Status (a choice
+  list), a Matter link and Remarks. Per sheet:
+  - *Incorporation* — Entity Type, Name Approved On, Date of Filing (SPICe+/FiLLiP),
+    SRN, Date of Incorporation, CIN/LLPIN, PAN, TAN, Directors/Partners, Authorised
+    and Paid-up Capital, Registered Office. Key: CIN.
+  - *Auditor Master* — CIN, Auditor Name, FRN, Membership No., Auditor Email/Mobile,
+    Date of Appointment, Appointed At, Term From/To (FY), ADT-1 Filed On, ADT-1 SRN. Key: CIN.
+  - *KYC* — Director Name, DIN, Financial Year, KYC Form, Date of Filing, SRN,
+    **Next KYC Due (filing + 3 years, calculated)**, Mobile, Email. Key: DIN + FY.
+  - *Annual Filing* — CIN, Entity Type, FY, AGM Date, AOC-4/Form 8 and MGT-7/Form 11
+    filed-on dates and SRNs, ADT-1 and DPT-3 filed on, Additional Fees. Key: CIN + FY.
+  - *ROC Register* — CIN, Form, Purpose/Event, Event Date, Due Date, Date of Filing,
+    SRN, Govt. Fees, Additional Fees. Key: SRN.
+  - *Strike Off* — CIN, Form (STK-2 / LLP Form 24), Reason, Board/Special Resolution
+    dates, Date of Filing, SRN, Public Notice Date, Struck Off On. Key: CIN.
+  - *Auditor Registration (ADT-3)* — CIN, Auditor, FRN, Date of Resignation, Reason,
+    **ADT-3 Due By (resignation + 30 days, calculated)**, ADT-3 Filed On, SRN, New
+    Auditor, ADT-1 Filed On. Key: SRN.
+  - *Startup Odisha* — CIN/LLPIN, Registration No., Application/Recognition dates,
+    Valid Till, Sector, Incentives. Key: Registration No.
+  - *Startup India* — CIN/LLPIN, Date of Incorporation, DPIIT No., Application and
+    Recognition dates, **Recognition Valid Till (incorporation + 10 years)**, 80-IAC
+    exemption. Key: DPIIT No.
+  - *GST* — Legal/Trade Name, GSTIN, PAN, State, Registration Type, ARN,
+    Application/Registration dates, Return Filing frequency, Cancellation Date,
+    Mobile, Email. Key: GSTIN. (No portal passwords — deliberately.)
+  - *Udyam* — Udyam No., PAN, Type of Organisation, Category, Major Activity,
+    Commencement/Registration/Last Updated dates, Mobile, Email. Key: Udyam No.
+  - *Professional Tax* — PAN, State, PTRC No., PTEC No., Registration Date, Return
+    Frequency, Last Return Filed, Next Due Date, Enrolment Paid Till. Key: PTRC No.
+  - *FSSAI* — FBO, Licence Type, Licence No., Kind of Business, Premises, Application/
+    Issue dates, Valid Till, **Renewal Due By (valid till − 30 days)**, Annual Return
+    (D-1) Filed On. Key: Licence No.
+- **Linked services** (matter picker), from the seeded catalogue: Incorporation →
+  incorporation, private-limited, public-limited-company, opc-registration,
+  section8-company, llp-registration; Auditor Master and ADT-3 → add-director,
+  director-partner (there is no "Director Appointment / Resignation" service key in
+  the seed — confirm the live key); Strike Off → dissolve-*, windup-plc; GST →
+  gst-registration, gst-returns; Udyam → udyam-registration; Professional Tax →
+  professional-tax; FSSAI → food-license-fssai. KYC, Annual Filing, ROC Register and
+  the two Startup sheets have none yet. An admin changes them under Edit columns.
+- **KYC reminders** run like the recurring-matter sweep (#167): due-on-read, own
+  lock (`system/worksheetReminderSweep`), at most every 6 hours, plus
+  `POST /api/worksheets/reminders/run` for an admin. Each record stores its
+  calculated due date (`reminderDue`, re-derived on every write) so the sweep reads
+  only records due within 30 days or ≤ 30 days overdue; `remindersSent` makes each
+  milestone fire once. A missed milestone is not sent late — only the current one.
+  A newer filing for the same DIN silences the older row. Notifications go to every
+  admin and manager (in-app + the usual email mirror).
+- **Access, nav:** `/worksheets`, sidebar entry + dashboard tile for admin, manager,
+  team member; also a tile on the Reports hub.
+- **Tests:** unit (in the 29 above); `Portal/e2e/worksheets.spec.ts` (9, not yet run).
 
 ### Steps deleted from a service, and "Request changes" to the same step — #215, #214 (2026-10-16) ✅ Completed
 

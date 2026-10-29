@@ -378,6 +378,22 @@ Workflows have two layers: a **code layer** (XState machine topology — step or
 
 ---
 
+### User Story 18 — Trademark Reports and Company Worksheets (Priority: P1) — #210, #217
+
+The firm's Excel registers live in the portal: five **Trademark Reports** (TM Master, Register TM, Opposition Raised, Opposition Received, TM Assignment) at `/reports/trademark`, and thirteen **Worksheets** (Incorporation, Auditor Master, KYC, Annual Filing, ROC Register, Strike Off, Auditor Registration (ADT-3), Startup Odisha, Startup India, GST, Udyam, Professional Tax, FSSAI) at `/worksheets`. Each page has a dropdown of its sheets.
+
+**Acceptance Scenarios**:
+
+1. **Given** an admin, manager or team member, **Then** they can view and edit every sheet; only an admin can add, hide or delete columns, or delete a record. Clients and professionals cannot reach either page or its API.
+2. **Given** a trademark is added to TM Master and Register TM, **When** its client is changed in one report, **Then** the other report shows the change — one record per trademark.
+3. **Given** a Registration Date or a Date of Last Renewal / First Application, **Then** the 9, 9.5, 10, 10.5 and 11-year milestones are calculated (not typed).
+4. **Given** an .xlsx file, **When** it is uploaded, **Then** a preview shows how many records will be added and updated (matched by Application No., or the sheet's own key) and which headings were not recognised; nothing is written until the user applies it, and blank cells never clear existing data. Logos inside the Excel file are not imported.
+5. **Given** any sheet, **Then** every column can be filtered and sorted both ways, a search highlights and narrows to matching rows, and Download Excel exports the rows on screen.
+6. **Given** a KYC row with a filing date, **Then** Next KYC Due is three years later, and every admin and manager is notified 30 days and 7 days before, and on the day — once each.
+7. **Given** a sheet linked to services, **Then** a record can link to a matter of one of those services and shows a link to it.
+
+---
+
 ### Edge Cases
 
 - A client with a single email linked to multiple client profiles: login resolves to the correct profile based on the primary client lookup; admin can switch context between profiles.
@@ -595,6 +611,23 @@ notes?, createdAt
 ```
 entityType (task|step|document|user|payment), entityId,
 action, performedBy, performedAt, previousValue?, newValue?, note?
+```
+
+### `worksheetRecords/{id}` — Trademark Reports and Worksheets (#210, #217)
+```
+module (trademark|company), book, sheets[] (sheet keys the record appears in),
+values { fieldKey: string|number },  // calculated fields are derived, not stored
+recordKey,            // normalised key fields (Application No.; DIN|FY …), unique per book
+images { fieldKey: { objectPath, contentType, updatedAt } },  // streamed, never signed
+reminderDue?, remindersSent { "<due>:<days>": iso },        // KYC reminders
+createdAt, createdBy, updatedAt, updatedBy, source? ("excel")
+```
+
+### `worksheetConfig/{book}` — the firm's column edits
+```
+customFields[{ key, label, type, options? }],
+sheets { sheetKey: { columns[{ key, label, hidden }], linkedServices[] } },
+updatedAt, updatedBy
 ```
 
 ---
