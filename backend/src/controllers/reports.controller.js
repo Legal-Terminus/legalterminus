@@ -561,56 +561,6 @@ export async function getClientGroupFees(req, res) {
   }
 }
 
-// ─── GET /api/reports/team-performance ─────────────────────────────────────
-// #84 report 4 — per team member: assigned / completed / pending / delayed
-// counts + average completion time + pending-approval count.
-export async function getTeamPerformance(req, res) {
-  try {
-    const now = Date.now();
-    const [usersSnap, tasksSnap] = await Promise.all([
-      db.collection('users').get(),
-      db.collection('tasks').get(),
-    ]);
-    const staff = usersSnap.docs.map((d) => ({ uid: d.id, ...d.data() })).filter((u) => u.role !== 'client');
-    const byUid = new Map(staff.map((u) => [u.uid, {
-      uid: u.uid,
-      name: u.name || u.fullName || u.email || u.uid,
-      assigned: 0, completed: 0, pending: 0, delayed: 0, pendingApproval: 0,
-      _completionMs: 0, _completionN: 0,
-    }]));
-
-    for (const doc of tasksSnap.docs) {
-      const d = doc.data();
-      const row = byUid.get(d.assignedTo);
-      if (!row) continue;
-      row.assigned += 1;
-      if (d.status === 'completed') {
-        row.completed += 1;
-        if (d.createdAt && d.updatedAt) {
-          const ms = new Date(d.updatedAt).getTime() - new Date(d.createdAt).getTime();
-          if (ms > 0) { row._completionMs += ms; row._completionN += 1; }
-        }
-      } else if (['pending', 'active', 'on_hold', 'pending_admin_approval'].includes(d.status)) {
-        row.pending += 1;
-        if (d.status === 'pending_admin_approval') row.pendingApproval += 1;
-        if (d.matterDueAt && new Date(d.matterDueAt).getTime() < now) row.delayed += 1;
-      }
-    }
-
-    const rows = [...byUid.values()].map((r) => ({
-      uid: r.uid, name: r.name,
-      assigned: r.assigned, completed: r.completed, pending: r.pending,
-      delayed: r.delayed, pendingApproval: r.pendingApproval,
-      avgCompletionDays: r._completionN ? Math.round((r._completionMs / r._completionN) / 86_400_000 * 10) / 10 : null,
-    })).sort((a, b) => b.assigned - a.assigned);
-
-    res.json(rows);
-  } catch (err) {
-    logger.error({ err }, 'getTeamPerformance error:');
-    res.status(500).json({ message: 'Failed to fetch team performance' });
-  }
-}
-
 // ─── GET /api/reports/storage ──────────────────────────────────────────────
 // #84 report 11 — storage usage: total bytes used, per-client document storage,
 // and an alert level. Reads document metadata (size where available) across all

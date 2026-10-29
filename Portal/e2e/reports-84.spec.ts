@@ -15,13 +15,18 @@ test('#84: revenue analytics returns totals + breakdowns (admin)', async () => {
   await api.dispose();
 });
 
-test('#84: team performance returns per-member rows (admin)', async () => {
+test('#84 / #216: team performance returns the overview and every section (admin)', async () => {
+  // The full arithmetic is asserted in employee-performance.spec.ts; this keeps
+  // the shape of the whole-team response honest.
   const api = await apiAs('admin');
-  const rows = await (await api.get('/api/reports/team-performance')).json();
-  expect(Array.isArray(rows)).toBeTruthy();
-  if (rows.length) {
-    for (const k of ['name', 'assigned', 'completed', 'pending', 'delayed', 'pendingApproval']) {
-      expect(rows[0]).toHaveProperty(k);
+  const r = await (await api.get('/api/reports/team-performance')).json();
+  for (const k of ['range', 'staff', 'overview', 'summary', 'time', 'deadlines', 'trend', 'quality', 'history']) {
+    expect(r).toHaveProperty(k);
+  }
+  expect(Array.isArray(r.overview)).toBeTruthy();
+  if (r.overview.length) {
+    for (const k of ['name', 'assigned', 'completed', 'inProgress', 'overdue', 'onTimePct', 'firstTimeRightPct']) {
+      expect(r.overview[0]).toHaveProperty(k);
     }
   }
   await api.dispose();

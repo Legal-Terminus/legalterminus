@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { clientGroupFeesQuerySchema } from '../schemas/report.schema.js';
+import { clientGroupFeesQuerySchema, teamPerformanceQuerySchema, teamActivityQuerySchema } from '../schemas/report.schema.js';
+import { getTeamPerformanceReport, getTeamPerformanceActivity } from '../controllers/teamPerformance.controller.js';
 import {
   getAllTasks,
   getCompletedTasks,
@@ -12,7 +13,6 @@ import {
   getUnassignedTasks,
   getMasterSheet,
   getRevenueAnalytics,
-  getTeamPerformance,
   getStorageReport,
   getMyServices,
   getFirmWorkbook,
@@ -47,7 +47,9 @@ router.get('/professional-mapping', getProfessionalMapping);
 router.get('/unassigned', getUnassignedTasks);
 router.get('/master-sheet', getMasterSheet);
 router.get('/revenue', getRevenueAnalytics);
-router.get('/team-performance', getTeamPerformance);
+// LT #216: the Employee Performance report and its activity feed.
+router.get('/team-performance', validate(teamPerformanceQuerySchema, 'query'), getTeamPerformanceReport);
+router.get('/team-performance/activity', validate(teamActivityQuerySchema, 'query'), getTeamPerformanceActivity);
 router.get('/storage', getStorageReport);
 
 export default router;

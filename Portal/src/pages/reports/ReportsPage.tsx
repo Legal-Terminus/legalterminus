@@ -11,7 +11,7 @@ const REPORTS = [
   { to: '/reports/pending',      title: 'Pending Matters',   desc: 'Pending matters grouped by blocking reason.', icon: Clock },
   { to: '/reports/unassigned',   title: 'Unassigned Tasks',  desc: 'Active steps with no owner — the shared pickup pool to triage.', icon: UserX },
   { to: '/reports/sla',          title: 'SLA / Delay',       desc: 'Overdue & at-risk steps, plus on-time rate by service and phase.', icon: AlertTriangle },
-  { to: '/reports/team-performance', title: 'Team Performance', desc: 'Per-member assigned/completed/pending/delayed + avg completion time.', icon: Gauge },
+  { to: '/reports/team-performance', title: 'Employee Performance', desc: 'Per person or whole team: daily work, deadlines and delays, trends, first-time-right and approvals.', icon: Gauge },
   { to: '/reports/revenue',      title: 'Revenue Analytics', desc: 'Collected, outstanding & pending revenue by month, service and team.', icon: IndianRupee },
   { to: '/reports/payment-overrides', title: 'Payment Overrides', desc: 'Matters progressing ahead of payment (no-payment or gate override).', icon: CreditCard },
   { to: '/reports/professional-mapping', title: 'Professional / Group', desc: 'Client counts per handling professional and parent/group company.', icon: Users },

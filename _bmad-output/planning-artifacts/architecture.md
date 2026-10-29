@@ -622,6 +622,8 @@ app.use("/api/notifications", notifRoutes);
 | `GET` | `/api/reports/storage` | admin | Per-client storage usage + system total |
 | `GET` | `/api/reports/master-sheet` | admin, manager | Full task table; accepts `?format=csv` |
 | `GET` | `/api/reports/escalations` | admin, manager | Steps past deadline by team member |
+| `GET` | `/api/reports/team-performance` | admin, manager | #216 Employee Performance: one person or the whole team over a period (see *Employee Performance report*) |
+| `GET` | `/api/reports/team-performance/activity` | admin, manager | #216 activity feed, cursor-paginated |
 | `GET` | `/api/reports/client-delays/:clientUid` | client | Client-facing delay summary (own tasks only) |
 
 ### 3.8 `/api/notifications` — Notification Routes
@@ -1669,6 +1671,57 @@ admin+manager gate). It reads matters by `createdAt` range for one April–March
 financial year in India time; a matter's group is its client's current group,
 resolved at read time and never stored on the matter. The fold and its
 trade-offs are in `services/clientGroupFees.service.js`.
+
+## Employee Performance report (#216)
+
+`GET /api/reports/team-performance` (admin, manager; `teamPerformanceQuerySchema`)
+replaces the #84 team table, which read every user and every matter. Loading is in
+`controllers/teamPerformance.controller.js`; **every number** is a pure function in
+`services/teamPerformance.service.js` (unit-tested in `teamPerformance.test.js`).
+The unit of work is the **step record**; a step belongs to its CURRENT assignees
+(`assignedToUids`, falling back to `assignedTo` for steps written before #192).
+
+**Reads, bounded by the period and live workload — never a whole collection:**
+
+| View | Query | Index |
+|---|---|---|
+| one person | `steps` group: `assignedToUids` ∋ uid, `completedAt` ≥ comparison start | CG composite (CONTAINS, ASC) |
+| one person | `steps` group: `assignedTo` == uid, `completedAt` ≥ comparison start | CG composite |
+| one person | `steps` group: `assignedToUids` ∋ uid / `assignedTo` == uid, `status` in [active, pending] | CG composites |
+| whole team | `steps` group: `completedAt` ≥ comparison start; `status` == active | CG field overrides |
+| both | `tasks` status == active (approval steps waiting now) and == pending_admin_approval | automatic |
+| both | matters of the steps found, `db.getAll` | — |
+| both | per matter in scope: `events` type in [returns, reassignments] | automatic |
+| activity feed | `events` group: (`byUid` ==,) `at` in period, `orderBy at desc`, cursor = event path | CG composite / CG override |
+
+ISO-string timestamps sort chronologically, so string bounds are time bounds. A
+field override replaces the automatic single-field indexes, so the `steps.completedAt`,
+`steps.status` and `events.at` overrides keep the COLLECTION ascending/descending
+pair the per-matter queries use. Each step query is capped (3,000) and the response
+carries `truncated` when a cap is hit.
+
+**Definitions the arithmetic commits to:**
+- Work completed = `status == completed` with a `completedAt` and a start or a
+  completer — a payment gate auto-passed by a jump is nobody's work.
+- Carried forward = started before the period, still open at its end.
+- On time = the stored `onTime` flag, else completion vs `dueAt`; no due date = no answer.
+  Average delay is over late completions only.
+- Returned: REWORK, CLIENT_REJECT and STEP_REOPENED name the step to redo as `toStep`
+  (including a request for changes that stays on the step, #214); GOVT_REJECT moves
+  forward to resubmission, so it is charged to `fromStep`. First-time right = completed
+  in the period with no return ever recorded on that step.
+- Awaiting approval = the matter's active step is an approval (`assignedRole: admin`
+  or a CLIENT_APPROVE step) and was started by completing this person's step — the
+  transition writes both timestamps from one clock reading, so the submitting step is
+  found by `completedAt == startedAt`. Plus matters in `pending_admin_approval` the
+  person created or owns.
+- Trend buckets start at the viewer's local midnight (`tz`, minutes east of UTC);
+  weeks start on Monday; the comparison period is the equal span immediately before.
+
+**What the data cannot show, and the report says so:** working hours (there is no
+time tracking; "time on tasks" is start → finish, labelled *elapsed, not hours
+worked*); a reason for delay (no such field — the comment recorded at completion is
+shown, labelled as such); figures for a step after it was reassigned away from someone.
 
 ## Who is told about a client's discussion message (#200)
 

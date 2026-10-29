@@ -216,6 +216,81 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "_comment": "#216 Employee Performance: one person's steps completed since the comparison period began.",
+      "collectionGroup": "steps",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "assignedToUids",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "completedAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_comment": "#216 Employee Performance: the same for steps written before #192 (single assignee field).",
+      "collectionGroup": "steps",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "assignedTo",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "completedAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_comment": "#216 Employee Performance: one person's open steps (status in active, pending).",
+      "collectionGroup": "steps",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "assignedToUids",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_comment": "#216 Employee Performance: the same for steps written before #192.",
+      "collectionGroup": "steps",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "assignedTo",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "_comment": "#216 Employee Performance: one person's activity feed in a period, newest first.",
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "byUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "at",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "_comment_steps_assignedTo": "Team-member routing queries collectionGroup('steps').where('assignedTo','==',uid). A single-field COLLECTION query is auto-indexed, but the COLLECTION_GROUP scope needs an explicit field override (below) \u2014 it is NOT a composite index (Firestore rejects that as redundant).",
@@ -247,7 +322,66 @@
           "arrayConfig": "CONTAINS"
         }
       ]
+    },
+    {
+      "collectionGroup": "steps",
+      "fieldPath": "completedAt",
+      "indexes": [
+        {
+          "queryScope": "COLLECTION",
+          "order": "ASCENDING"
+        },
+        {
+          "queryScope": "COLLECTION",
+          "order": "DESCENDING"
+        },
+        {
+          "queryScope": "COLLECTION_GROUP",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "steps",
+      "fieldPath": "status",
+      "indexes": [
+        {
+          "queryScope": "COLLECTION",
+          "order": "ASCENDING"
+        },
+        {
+          "queryScope": "COLLECTION",
+          "order": "DESCENDING"
+        },
+        {
+          "queryScope": "COLLECTION_GROUP",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "fieldPath": "at",
+      "indexes": [
+        {
+          "queryScope": "COLLECTION",
+          "order": "ASCENDING"
+        },
+        {
+          "queryScope": "COLLECTION",
+          "order": "DESCENDING"
+        },
+        {
+          "queryScope": "COLLECTION_GROUP",
+          "order": "ASCENDING"
+        },
+        {
+          "queryScope": "COLLECTION_GROUP",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
-  "_comment_steps_assignedToUids": "#192: a step may have several assignees. Team-member routing also queries collectionGroup('steps').where('assignedToUids','array-contains',uid), which needs an ARRAY_CONFIG CONTAINS override at COLLECTION_GROUP scope (an array-contains query cannot use the ASCENDING order index above)."
+  "_comment_steps_assignedToUids": "#192: a step may have several assignees. Team-member routing also queries collectionGroup('steps').where('assignedToUids','array-contains',uid), which needs an ARRAY_CONFIG CONTAINS override at COLLECTION_GROUP scope (an array-contains query cannot use the ASCENDING order index above).",
+  "_comment_216_overrides": "#216 Employee Performance (whole-team view): collectionGroup('steps') on completedAt >= x and status == active, and collectionGroup('events') on at within a period ordered by at desc. A field override REPLACES the automatic single-field indexes, so each keeps the COLLECTION ascending/descending pair existing per-matter queries rely on."
 }

@@ -4246,6 +4246,55 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Employee Performance report — #216 (2026-10-29) ✅ Built (branch `feat/216-performance-report`)
+
+The #84 Team Performance table (assigned / completed / pending / delayed per
+person, from matter-level fields, reading every user and every matter) is replaced
+by one **Employee Performance** page at the same route, `/reports/team-performance`
+(admin, manager). Pick a team member or *All team*, and a period: today, this week,
+this month or custom dates. Seven views, each computed on the server from the
+step records and the matter activity log:
+
+1. **Work summary** — assigned, completed, pending (in progress + not started),
+   started and completed in the period, carried forward.
+2. **Time on tasks** — elapsed time from a task starting to its completion, per
+   task, with average and total. **Not working hours**: the portal has no time
+   tracking (no start/stop, no work sessions), and the page says so. Recorded
+   working hours need a time-tracking feature; none was built.
+3. **Completion & pending** — assigned, completed, in progress, not started,
+   overdue, awaiting approval, completion %.
+4. **Activity & work history** — per task: assigned (latest reassignment, else when
+   the matter opened), started, completed, last comment; then the activity log
+   (completions, corrections, approvals, comments), newest first, paginated.
+5. **Deadlines & delay** — completed on time / late, overdue now, average delay
+   (late tasks only). There is no "reason for delay" field; the comment recorded
+   when a late task was completed is shown, labelled as that.
+6. **Productivity trend** — completions and on-time % per day / week / month, and
+   this period against the equal period before it.
+7. **Quality & approval** — first-time right (no correction, change request,
+   rejection or reopening ever recorded on the task), returned for corrections
+   (with counts), and work waiting on an admin or client approval.
+
+The whole-team view adds an overview table (assigned, completed, in progress,
+overdue, on-time %, average delay, returned, first-time right) to spot uneven
+workload, exportable to Excel; a person's view exports their task list.
+
+- **Data access:** collection-group queries on `steps` by assignee and
+  `completedAt` / `status`, and on `events` by `byUid` / `at`; seven new indexes in
+  `firestore.indexes.json` (five composite, three field overrides — deploy them
+  before using the report). Details in architecture.md, *Employee Performance report*.
+- **Files:** `backend/src/services/teamPerformance.service.js` (pure),
+  `backend/src/controllers/teamPerformance.controller.js`,
+  `backend/src/schemas/report.schema.js`, `Portal/src/pages/reports/TeamPerformanceReport.tsx`,
+  `Portal/src/lib/performancePeriod.ts`.
+- **Tests:** `backend/src/__tests__/teamPerformance.test.js` (32);
+  `Portal/e2e/employee-performance.spec.ts` (a throwaway person and workflow, known
+  numbers, role access); `reports-84.spec.ts` updated for the new shape.
+- **Not built / limits:** working hours and work sessions (needs time tracking); a
+  delay-reason field; figures follow a task's CURRENT assignee, so a task reassigned
+  away leaves the previous person's figures; elapsed time after a correction is the
+  last round only; in the whole-team view "not started" is per person only.
+
 ### Steps deleted from a service, and "Request changes" to the same step — #215, #214 (2026-10-16) ✅ Completed
 
 On `main` (QA). Built here and in Ambyflow (Story 42.15) together; both faults were
