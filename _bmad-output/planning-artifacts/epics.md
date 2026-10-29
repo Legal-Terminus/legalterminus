@@ -81,7 +81,7 @@ split dashboard tiles.
 | E-15 | Document Naming & Step Configuration (Visibility, Status/Notes, Descriptions) | Phase 2 | E15-S01 – E15-S04 |
 | E-16 | Comment Draft Autosave | Phase 2 | E16-S01 |
 | E-17 | Professional Assignment on Matters | Phase 2 | E17-S01 |
-| E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S08 |
+| E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S09 |
 | E-19 | Client 360 (Per-Client Status for Staff) | Phase 2 | E19-S01 – E19-S03 |
 | E-20 | Dashboard Cockpits | Phase 2 | E20-S01 – E20-S02 |
 | E-21 | Public API v1 & Webhooks | Phase 2 | E21-S01 – E21-S04 |
@@ -2831,6 +2831,20 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 ---
 
+### E18-S09 — Company Worksheets with KYC reminders (#217) [Phase 2] 🔄 In Progress
+
+**Priority**: P1 | **Complexity**: M | **Dependencies**: E18-S08 (same engine)
+
+**Rationale**: Thirteen company registers (Incorporation, Auditor Master, KYC, Annual Filing, ROC Register, Strike Off, Auditor Registration (ADT-3), Startup Odisha, Startup India, GST, Udyam, Professional Tax, FSSAI) in one place, some linked to their matters, with automatic KYC reminders.
+
+**Acceptance Criteria**:
+- `/worksheets` (sidebar entry for admin, manager, team member) — dropdown of the thirteen sheets, same engine and features as E18-S08.
+- Columns are **proposals** (the firm gave none) — see the 2026-10-29 change-log entry; the firm adjusts them with Add / Hide column.
+- Incorporation, Auditor Master, ADT-3, Strike Off, GST, Udyam, Professional Tax and FSSAI link to matters of their services (admin can change the linked services).
+- KYC: *Next KYC Due* = filing date + 3 years (calculated). Admins and managers are notified 30 days and 7 days before, and on the day — once per milestone.
+
+**e2e**: `Portal/e2e/worksheets.spec.ts`.
+
 ---
 
 ---
@@ -4313,6 +4327,64 @@ On branch `feat/210-217-worksheets`, not yet on `main`. Story E18-S08.
   with the release. No Firestore rule: the collections are backend-only and fall
   under the deny-all catch-all.
 - **Tests:** unit as above; `Portal/e2e/trademark-reports.spec.ts` (8, not yet run).
+
+### Company Worksheets with KYC reminders — #217 (2026-10-29) 🔄 In Progress
+
+Same branch; story E18-S09. Thirteen sheets on the #210 engine, each its own book.
+
+- **Columns are PROPOSALS** — the firm gave none. Every sheet has Client, a
+  company/entity name, its registration number, the relevant dates, Status (a choice
+  list), a Matter link and Remarks. Per sheet:
+  - *Incorporation* — Entity Type, Name Approved On, Date of Filing (SPICe+/FiLLiP),
+    SRN, Date of Incorporation, CIN/LLPIN, PAN, TAN, Directors/Partners, Authorised
+    and Paid-up Capital, Registered Office. Key: CIN.
+  - *Auditor Master* — CIN, Auditor Name, FRN, Membership No., Auditor Email/Mobile,
+    Date of Appointment, Appointed At, Term From/To (FY), ADT-1 Filed On, ADT-1 SRN. Key: CIN.
+  - *KYC* — Director Name, DIN, Financial Year, KYC Form, Date of Filing, SRN,
+    **Next KYC Due (filing + 3 years, calculated)**, Mobile, Email. Key: DIN + FY.
+  - *Annual Filing* — CIN, Entity Type, FY, AGM Date, AOC-4/Form 8 and MGT-7/Form 11
+    filed-on dates and SRNs, ADT-1 and DPT-3 filed on, Additional Fees. Key: CIN + FY.
+  - *ROC Register* — CIN, Form, Purpose/Event, Event Date, Due Date, Date of Filing,
+    SRN, Govt. Fees, Additional Fees. Key: SRN.
+  - *Strike Off* — CIN, Form (STK-2 / LLP Form 24), Reason, Board/Special Resolution
+    dates, Date of Filing, SRN, Public Notice Date, Struck Off On. Key: CIN.
+  - *Auditor Registration (ADT-3)* — CIN, Auditor, FRN, Date of Resignation, Reason,
+    **ADT-3 Due By (resignation + 30 days, calculated)**, ADT-3 Filed On, SRN, New
+    Auditor, ADT-1 Filed On. Key: SRN.
+  - *Startup Odisha* — CIN/LLPIN, Registration No., Application/Recognition dates,
+    Valid Till, Sector, Incentives. Key: Registration No.
+  - *Startup India* — CIN/LLPIN, Date of Incorporation, DPIIT No., Application and
+    Recognition dates, **Recognition Valid Till (incorporation + 10 years)**, 80-IAC
+    exemption. Key: DPIIT No.
+  - *GST* — Legal/Trade Name, GSTIN, PAN, State, Registration Type, ARN,
+    Application/Registration dates, Return Filing frequency, Cancellation Date,
+    Mobile, Email. Key: GSTIN. (No portal passwords — deliberately.)
+  - *Udyam* — Udyam No., PAN, Type of Organisation, Category, Major Activity,
+    Commencement/Registration/Last Updated dates, Mobile, Email. Key: Udyam No.
+  - *Professional Tax* — PAN, State, PTRC No., PTEC No., Registration Date, Return
+    Frequency, Last Return Filed, Next Due Date, Enrolment Paid Till. Key: PTRC No.
+  - *FSSAI* — FBO, Licence Type, Licence No., Kind of Business, Premises, Application/
+    Issue dates, Valid Till, **Renewal Due By (valid till − 30 days)**, Annual Return
+    (D-1) Filed On. Key: Licence No.
+- **Linked services** (matter picker), from the seeded catalogue: Incorporation →
+  incorporation, private-limited, public-limited-company, opc-registration,
+  section8-company, llp-registration; Auditor Master and ADT-3 → add-director,
+  director-partner (there is no "Director Appointment / Resignation" service key in
+  the seed — confirm the live key); Strike Off → dissolve-*, windup-plc; GST →
+  gst-registration, gst-returns; Udyam → udyam-registration; Professional Tax →
+  professional-tax; FSSAI → food-license-fssai. KYC, Annual Filing, ROC Register and
+  the two Startup sheets have none yet. An admin changes them under Edit columns.
+- **KYC reminders** run like the recurring-matter sweep (#167): due-on-read, own
+  lock (`system/worksheetReminderSweep`), at most every 6 hours, plus
+  `POST /api/worksheets/reminders/run` for an admin. Each record stores its
+  calculated due date (`reminderDue`, re-derived on every write) so the sweep reads
+  only records due within 30 days or ≤ 30 days overdue; `remindersSent` makes each
+  milestone fire once. A missed milestone is not sent late — only the current one.
+  A newer filing for the same DIN silences the older row. Notifications go to every
+  admin and manager (in-app + the usual email mirror).
+- **Access, nav:** `/worksheets`, sidebar entry + dashboard tile for admin, manager,
+  team member; also a tile on the Reports hub.
+- **Tests:** unit (in the 29 above); `Portal/e2e/worksheets.spec.ts` (9, not yet run).
 
 ### Steps deleted from a service, and "Request changes" to the same step — #215, #214 (2026-10-16) ✅ Completed
 

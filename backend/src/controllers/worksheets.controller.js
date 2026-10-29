@@ -7,6 +7,7 @@ import {
   resolveSheet, bookFields, computeValues, cleanRecordValues, recordKeyFor, applyColumnEdit,
   planImport, encodeCursor, decodeCursor,
 } from '../services/worksheetEngine.service.js';
+import { runWorksheetReminderSweep } from '../services/worksheetReminders.service.js';
 
 /**
  * #210 / #217 — worksheets: the trademark reports and the company worksheets,
@@ -425,4 +426,13 @@ export async function deleteImage(req, res) {
     if (img?.objectPath) await getBucket().file(img.objectPath).delete({ ignoreNotFound: true }).catch(() => {});
     res.json({ field: ctx.field.key, deleted: true });
   } catch (err) { serverError(res, err, 'deleteImage failed'); }
+}
+
+/* ── Reminders ──────────────────────────────────────────────────────────── */
+
+// POST /api/worksheets/reminders/run — admin "run now"; the sweep also runs on its own.
+export async function runReminders(req, res) {
+  try {
+    res.json(await runWorksheetReminderSweep({ force: true }));
+  } catch (err) { serverError(res, err, 'runReminders failed'); }
 }

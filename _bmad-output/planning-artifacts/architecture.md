@@ -1893,11 +1893,11 @@ pinned back in CSS rather than chased through 150 components.
   `FROM node:20-alpine` in section 9 above is the original design sketch, not the
   current image.
 
-## Worksheets — Trademark Reports (#210)
+## Worksheets — Trademark Reports and Company Worksheets (#210, #217)
 
 **LT only.** The firm's Excel registers kept inside the portal: five trademark
-reports (`/reports/trademark`). The engine is generic — nothing in it is
-trademark-specific — so other registers are new definitions, not new code.
+reports (`/reports/trademark`) and thirteen company worksheets (`/worksheets`).
+One engine serves both; nothing in it is trademark- or company-specific.
 
 **Model.** A **book** stores records and the catalogue of fields they may hold. A
 **sheet** is one view of a book: which fields, in which order, under which
@@ -1954,6 +1954,16 @@ and its stored values — are never reused by another column.
 `(sheets array-contains, createdAt, __name__)`; the Portal reads pages of 500 up to
 5,000 records and filters, sorts and searches in the browser, as the Master Sheet
 does. Matter labels for a page come from one `getAll`.
+
+**KYC reminders (#217).** `services/worksheetReminders.service.js`, the #167
+pattern: due-on-read middleware on `/api`, a Firestore lock
+(`system/worksheetReminderSweep`), at most every 6 hours; an admin may force a run.
+The book's `reminder.field` is stored on each write as `reminderDue`, so the sweep
+reads one bounded range (−30 … +30 days). `pickReminder` sends only the most urgent
+milestone reached (30, 7, 0 days) and marks it and the earlier ones in
+`remindersSent["<due>:<m>"]` **before** notifying, so each fires at most once; a
+new due date starts a fresh set. A newer filing for the same DIN silences an older
+row. Recipients: every admin and manager, via `createNotification` (in-app + email).
 
 **Access.** Router-wide `requireRole('admin','manager','team_member')`; columns and
 record delete add `requireRole('admin')`. No per-person grant (unlike Marketing

@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck, IndianRupee, ShoppingBag,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck, IndianRupee, ShoppingBag, Sheet,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
 import { ALL_ROLE_KEYS } from '../lib/roles';
@@ -45,6 +45,7 @@ import MyServicesReport from '../pages/reports/MyServicesReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 import MarketingReportsPage from '../pages/reports/MarketingReportsPage';
 import TrademarkReportsPage from '../pages/reports/TrademarkReportsPage';
+import WorksheetsPage from '../pages/worksheets/WorksheetsPage';
 import ReportingAccessPage from '../pages/settings/ReportingAccessPage';
 import WebsitePricesPage from '../pages/settings/WebsitePricesPage';
 import WebsiteOrdersPage from '../pages/website-orders/WebsiteOrdersPage';
@@ -161,6 +162,9 @@ export const APP_ROUTES: AppRoute[] = [
   // there is no per-person grant: the role list IS the access rule. Team members
   // reach it from a dashboard tile (they have no Reports hub).
   { path: '/reports/trademark', element: <TrademarkReportsPage />, roles: ['admin', 'manager', 'team_member'] },
+  // #217: the company worksheets — a day-to-day working tool, so a sidebar entry
+  // rather than a tile buried under Reports. Same access rule as #210.
+  { path: '/worksheets', element: <WorksheetsPage />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Worksheets', icon: Sheet, order: 1 } },
   // #196/#197: the admin's per-section grant table.
   { path: '/settings/reporting-access', element: <ReportingAccessPage />, roles: ['admin'], nav: { label: 'Reporting Access', icon: ShieldCheck, order: 13 } },
   // E24-S01: what each plan costs on the website. Managers can look; the API

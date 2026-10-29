@@ -7,11 +7,11 @@ import {
 } from '../schemas/worksheet.schema.js';
 import {
   getModule, listRecords, createRecord, updateRecord, deleteRecord, putColumns, importRows, matterOptions,
-  uploadImage, getImage, deleteImage,
+  uploadImage, getImage, deleteImage, runReminders,
 } from '../controllers/worksheets.controller.js';
 
 /**
- * #210 Trademark Reports — the worksheet engine's router.
+ * #210 Trademark Reports and #217 Worksheets — one engine, one router.
  *
  * Access (firm, 29 Oct 2026): admins, managers and team members all view AND
  * edit. Changing columns and deleting a record are the admin's. Clients and
@@ -51,5 +51,7 @@ router.get('/sheets/:sheet/matters', validate(matterQuerySchema, 'query'), matte
 router.post('/sheets/:sheet/records/:id/images/:field', singleImage, uploadImage);
 router.get('/sheets/:sheet/records/:id/images/:field', getImage);
 router.delete('/sheets/:sheet/records/:id/images/:field', deleteImage);
+
+router.post('/reminders/run', requireRole('admin'), runReminders);
 
 export default router;

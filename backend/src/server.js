@@ -30,6 +30,7 @@ import reportsRoutes from "./routes/reports.routes.js";
 import leadsRoutes from "./routes/leads.routes.js";
 import marketingRoutes from "./routes/marketing.routes.js";
 import worksheetsRoutes from "./routes/worksheets.routes.js";
+import { worksheetReminderTrigger } from "./services/worksheetReminders.service.js";
 import portalUsersRoutes from "./routes/portalUsers.routes.js";
 import serviceConfigRoutes from "./routes/serviceConfig.routes.js";
 import notificationsRoutes from "./routes/notifications.routes.js";
@@ -176,6 +177,8 @@ app.use("/api/contact", sensitiveLimiter, contactRoutes);
 // Cloud Run traffic is exactly what wakes the service, so the trigger and the
 // platform lifecycle line up — an in-process cron would never fire at scale-zero.
 app.use("/api", recurringSweepTrigger);
+// #217: KYC reminders run the same due-on-read way (own lock, own throttle).
+app.use("/api", worksheetReminderTrigger);
 
 // #167: explicit trigger for Cloud Scheduler (x-cron-secret) or an admin "Run
 // now". Mounted OUTSIDE the routers because a Scheduler call carries no Firebase
@@ -204,7 +207,7 @@ app.use("/api/tasks", tasksRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/leads", leadsRoutes);
 app.use("/api/marketing", marketingRoutes); // #196/#197 Reporting module
-app.use("/api/worksheets", worksheetsRoutes); // #210 Trademark Reports
+app.use("/api/worksheets", worksheetsRoutes); // #210 Trademark Reports, #217 Worksheets
 app.use("/api/portal/users", portalUsersRoutes);
 app.use("/api/service-config", serviceConfigRoutes);
 app.use("/api/notifications", notificationsRoutes);

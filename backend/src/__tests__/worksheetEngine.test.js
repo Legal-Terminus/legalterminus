@@ -16,6 +16,14 @@ const labels = (sheet) => sheet.columns.filter((c) => !c.hidden).map((c) => c.la
 
 /* ── Definitions ────────────────────────────────────────────────────────── */
 
+test('five trademark reports share one book; thirteen company worksheets each have their own', () => {
+  assert.deepEqual(MODULES.trademark.sheets, ['tm_master', 'tm_register', 'tm_opposition_raised', 'tm_opposition_received', 'tm_assignment']);
+  for (const s of MODULES.trademark.sheets) assert.equal(SHEETS[s].book, 'trademark');
+  assert.equal(MODULES.company.sheets.length, 13);
+  for (const s of MODULES.company.sheets) assert.equal(SHEETS[s].book, s);
+  assert.deepEqual(BOOKS.trademark.recordKey, ['application_no']);
+});
+
 test('every sheet column names a field of its book, and every field key is unique', () => {
   for (const [key, sheet] of Object.entries(SHEETS)) {
     const fields = BOOKS[sheet.book].fields.map((f) => f.key);
@@ -45,6 +53,15 @@ test('one field carries each report\'s own heading', () => {
   assert.ok(raised.aliases.includes('Date of Filing'));
 });
 
+test('the KYC sheet calculates the next due date and carries a reminder', () => {
+  const kyc = resolveSheet('kyc');
+  assert.equal(kyc.columns.find((c) => c.key === 'next_kyc_due').type, 'computed');
+  assert.deepEqual(kyc.reminder, { field: 'next_kyc_due', milestones: [30, 7, 0] });
+  assert.deepEqual(kyc.recordKey, ['din', 'financial_year']);
+});
+
+/* ── Column resolution with the firm's edits ────────────────────────────── */
+
 test('stored edits rename, hide and add; a built-in missing from the stored list still appears', () => {
   const config = {
     customFields: [{ key: 'c_renewal_owner', label: 'Renewal Owner', type: 'text' }],
@@ -62,6 +79,46 @@ test('stored edits rename, hide and add; a built-in missing from the stored list
   // Not in the stored list → appended, visible: a code change never hides a column.
   assert.ok(s.columns.some((c) => c.key === 'date_of_filing' && !c.hidden));
   assert.equal(new Set(s.columns.map((c) => c.key)).size, s.columns.length);
+});
+
+test('linked services default from the book and can be overridden (even to none)', () => {
+  assert.deepEqual(resolveSheet('tm_master').linkedServices, ['trademark-application']);
+  assert.deepEqual(resolveSheet('tm_master', { sheets: { tm_master: { linkedServices: [] } } }).linkedServices, []);
+  assert.deepEqual(resolveSheet('kyc').linkedServices, []);
+  assert.ok(resolveSheet('auditor_master').linkedServices.includes('add-director'));
+});
+
+test('admin column edit: rename, add, hide; a built-in left out is kept hidden; a custom one leaves', () => {
+  const s0 = resolveSheet('fssai');
+  const cols = s0.columns.map((c) => ({ key: c.key, label: c.label }));
+  cols[0].label = 'Client Name';
+  const next = applyColumnEdit('fssai', {}, {
+    columns: [...cols.filter((c) => c.key !== 'remarks'), { label: 'Inspection Date', type: 'date' }, { label: 'Zone', type: 'select', options: ['East', 'east', 'West'] }],
+  });
+  const s1 = resolveSheet('fssai', next);
+  assert.equal(s1.columns[0].label, 'Client Name');
+  assert.equal(s1.columns.find((c) => c.key === 'remarks').hidden, true, 'built-in left out → hidden, not dropped');
+  const added = s1.columns.find((c) => c.label === 'Inspection Date');
+  assert.equal(added.key, 'c_inspection_date');
+  assert.equal(added.type, 'date');
+  assert.deepEqual(s1.columns.find((c) => c.key === 'c_zone').options, ['East', 'West'], 'options de-duplicated');
+
+  // Deleting the custom column takes it off the sheet but keeps the field
+  // registered, so a new column of the same name gets a NEW key.
+  const without = applyColumnEdit('fssai', next, { columns: s1.columns.filter((c) => c.key !== 'c_inspection_date').map((c) => ({ key: c.key, label: c.label, hidden: c.hidden })) });
+  assert.ok(!resolveSheet('fssai', without).columns.some((c) => c.key === 'c_inspection_date'));
+  const again = applyColumnEdit('fssai', without, { columns: [...resolveSheet('fssai', without).columns, { label: 'Inspection Date', type: 'date' }] });
+  assert.ok(resolveSheet('fssai', again).columns.some((c) => c.key === 'c_inspection_date_2'));
+});
+
+test('admin column edit refuses nonsense', () => {
+  const cols = resolveSheet('gst').columns.map((c) => ({ key: c.key, label: c.label }));
+  assert.throws(() => applyColumnEdit('gst', {}, { columns: [] }), /between 1 and 80/);
+  assert.throws(() => applyColumnEdit('gst', {}, { columns: [...cols, { label: '' }] }), /needs a name/);
+  assert.throws(() => applyColumnEdit('gst', {}, { columns: [...cols, { key: 'nope', label: 'X' }] }), /Unknown column/);
+  assert.throws(() => applyColumnEdit('gst', {}, { columns: [...cols, { label: 'X', type: 'computed' }] }), /cannot be of type/);
+  assert.throws(() => applyColumnEdit('gst', {}, { columns: cols.map((c) => ({ ...c, hidden: true })) }), /stay visible/);
+  assert.throws(() => applyColumnEdit('nope', {}, { columns: cols }), /Unknown worksheet/);
 });
 
 test('a field shown on another trademark report can be added to this one', () => {
@@ -195,6 +252,16 @@ test('renewal milestones run from the last renewal / first application date, els
   assert.equal(computeValues(cols, { last_renewal_date: 'Awaited' }).renewal_9y, null);
 });
 
+test('KYC is due three years after filing; ADT-3 30 days after resignation; FSSAI renewal 30 days before expiry', () => {
+  assert.equal(computeValues(resolveSheet('kyc').columns, { date_of_filing: '2024-02-29' }).next_kyc_due, '2027-02-28');
+  assert.equal(computeValues(resolveSheet('kyc').columns, { date_of_filing: '2025-09-30' }).next_kyc_due, '2028-09-30');
+  assert.equal(computeValues(resolveSheet('adt3').columns, { resignation_date: '2026-01-15' }).adt3_due, '2026-02-14');
+  assert.equal(computeValues(resolveSheet('fssai').columns, { valid_till: '2027-03-31' }).renewal_due, '2027-03-01');
+  assert.equal(computeValues(resolveSheet('startup_india').columns, { date_of_incorporation: '2020-02-29' }).recognition_valid_till, '2030-02-28');
+});
+
+/* ── Upload planning ────────────────────────────────────────────────────── */
+
 test('an upload updates by key, adds new rows, reports unknown columns, and never blanks existing data', () => {
   const sheet = resolveSheet('tm_master');
   const fields = bookFields('trademark');
@@ -248,6 +315,20 @@ test('an upload recognises a field shown only on another report, and warns about
   assert.equal(plan.creates[0].values.date_of_user_affidavit, 'Proposed to be used');
   assert.deepEqual(plan.warnings, [{ row: 5, column: 'REGISTRATION DATE', message: '"Registration Date" expects a date' }]);
 });
+
+test('a company worksheet with a composite key upserts per DIN and year', () => {
+  const sheet = resolveSheet('kyc');
+  const plan = planImport({
+    sheet, fields: bookFields('kyc'), headers: ['DIN', 'Financial Year', 'Director Name', 'Date of Filing'],
+    rows: [['01234567', '2024-25', 'A Kumar', '30/09/2024'], ['01234567', '2025-26', 'A Kumar', '']],
+    existingByKey: new Map([['01234567|2024-25', { id: 'k1', values: { din: '01234567', financial_year: '2024-25' }, sheets: ['kyc'] }]]),
+  });
+  assert.equal(plan.updates[0].id, 'k1');
+  assert.equal(plan.creates.length, 1);
+  assert.equal(plan.creates[0].key, '01234567|2025-26');
+});
+
+/* ── Reminders ──────────────────────────────────────────────────────────── */
 
 test('reminders: 30 days, 7 days and on the day — the most urgent milestone reached, once', () => {
   const due = '2027-03-31';

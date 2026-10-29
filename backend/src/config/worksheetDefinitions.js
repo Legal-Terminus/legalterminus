@@ -174,6 +174,217 @@ const TM_SHEETS = [
   },
 ];
 
+/* ── #217 Company worksheets: one book per sheet ─────────────────────────
+ *
+ * The firm gave NO columns for these. Everything below is a PROPOSAL for an
+ * Indian CA/CS practice, recorded as such in epics.md — the firm adjusts it with
+ * Add column / Hide column, which never loses data.
+ */
+
+const client = () => f('client', 'Client', 'text', { aliases: ['CLIENT NAME'] });
+const company = (label = 'Company Name') => f('company_name', label, 'text', { aliases: ['COMPANY', 'NAME OF COMPANY', 'ENTITY NAME', 'COMPANY NAME', 'BUSINESS NAME'] });
+const cin = (label = 'CIN') => f('cin', label, 'text', { aliases: ['CIN', 'LLPIN', 'CIN/LLPIN', 'CIN / LLPIN'] });
+const srn = (label = 'SRN') => f('srn', label, 'text', { aliases: ['SRN NO', 'SRN NUMBER'] });
+const matter = () => f('matter', 'Matter', 'matter');
+const remarks = () => f('remarks', 'Remarks', 'longtext', { aliases: ['REMARK'] });
+const mobile = () => f('mobile_no', 'Mobile No.', 'text', { aliases: ['MOBILE', 'MOBILE NUMBER', 'PHONE'] });
+const email = () => f('email_id', 'Email ID', 'text', { aliases: ['EMAIL', 'E-MAIL'] });
+const status = (options) => select('status', 'Status', options);
+const fy = (key = 'financial_year', label = 'Financial Year') => f(key, label, 'text', { aliases: ['FY', 'F.Y.', 'YEAR'] });
+
+const ENTITY_TYPES = ['Private Limited', 'One Person Company', 'Public Limited', 'Section 8', 'LLP', 'Other'];
+const FILING_STATUS = ['Pending', 'In progress', 'Filed', 'Resubmission', 'Approved', 'Rejected'];
+const REG_STATUS = ['Applied', 'Under review', 'Registered', 'Rejected', 'Cancelled', 'Expired'];
+
+const INCORPORATION_SERVICES = ['incorporation', 'private-limited', 'public-limited-company', 'opc-registration', 'section8-company', 'llp-registration'];
+const DIRECTOR_SERVICES = ['add-director', 'director-partner'];
+
+const COMPANY_SHEETS = [
+  {
+    key: 'incorporation', label: 'Incorporation Sheet', recordKey: ['cin'], linkedServices: INCORPORATION_SERVICES,
+    fields: [
+      client(), company('Company Name (Proposed / Approved)'), select('entity_type', 'Entity Type', ENTITY_TYPES),
+      f('name_approved_on', 'Name Approved On', 'date', { aliases: ['NAME APPROVAL DATE', 'RUN APPROVAL DATE'] }),
+      f('date_of_filing', 'Date of Filing (SPICe+/FiLLiP)', 'date', { aliases: ['DATE OF FILING', 'FILING DATE'] }), srn(),
+      f('date_of_incorporation', 'Date of Incorporation', 'date', { aliases: ['INCORPORATION DATE', 'DOI'] }), cin('CIN / LLPIN'),
+      f('pan', 'PAN'), f('tan', 'TAN'), f('directors', 'Directors / Partners', 'longtext', { aliases: ['DIRECTORS', 'PARTNERS'] }),
+      f('authorised_capital', 'Authorised Capital (₹)', 'number', { aliases: ['AUTHORISED CAPITAL', 'AUTHORIZED CAPITAL'] }),
+      f('paid_up_capital', 'Paid-up Capital (₹)', 'number', { aliases: ['PAID UP CAPITAL', 'PAID-UP CAPITAL'] }),
+      f('registered_office', 'Registered Office Address', 'longtext', { aliases: ['REGISTERED OFFICE', 'ADDRESS'] }),
+      status(['Name reservation', 'Documents pending', 'Filed', 'Resubmission', 'Incorporated', 'Rejected']),
+      matter(), remarks(),
+    ],
+  },
+  {
+    key: 'auditor_master', label: 'Auditor Master Sheet', recordKey: ['cin'], linkedServices: DIRECTOR_SERVICES,
+    fields: [
+      client(), company(), cin(), f('auditor_name', 'Auditor Name', 'text', { aliases: ['AUDITOR', 'NAME OF AUDITOR'] }),
+      f('auditor_frn', 'Firm Registration No. (FRN)', 'text', { aliases: ['FRN'] }),
+      f('auditor_membership_no', 'Membership No.', 'text', { aliases: ['MEMBERSHIP NUMBER', 'M NO'] }),
+      f('auditor_email', 'Auditor Email'), f('auditor_mobile', 'Auditor Mobile'),
+      f('date_of_appointment', 'Date of Appointment', 'date', { aliases: ['APPOINTMENT DATE'] }),
+      select('appointed_at', 'Appointed At', ['First Board Meeting', 'AGM', 'EGM', 'Casual vacancy']),
+      fy('term_from', 'Term From (FY)'), fy('term_to', 'Term To (FY)'),
+      f('adt1_filed_on', 'ADT-1 Filed On', 'date', { aliases: ['ADT-1 FILING DATE', 'ADT 1 FILED ON'] }), srn('ADT-1 SRN'),
+      status(['Active', 'Resigned', 'Removed', 'Term completed']), matter(), remarks(),
+    ],
+  },
+  {
+    key: 'kyc', label: 'KYC Sheet', recordKey: ['din', 'financial_year'],
+    fields: [
+      client(), company(), f('director_name', 'Director Name', 'text', { aliases: ['DIRECTOR', 'NAME OF DIRECTOR', 'NAME'] }),
+      f('din', 'DIN', 'text', { aliases: ['DIN NO', 'DIN NUMBER'] }), fy(),
+      select('kyc_type', 'KYC Form', ['DIR-3 KYC (e-form)', 'DIR-3 KYC-WEB']),
+      f('date_of_filing', 'Date of Filing', 'date', { aliases: ['FILING DATE', 'KYC FILED ON', 'DATE OF KYC'] }), srn(),
+      // #217: the next KYC falls due three years after the filing date.
+      computed('next_kyc_due', 'Next KYC Due', ['date_of_filing'], { years: 3 }, { aliases: ['NEXT DUE', 'NEXT KYC DUE DATE'] }),
+      mobile(), email(), status(['Filed', 'Pending', 'Deactivated']), matter(), remarks(),
+    ],
+    // Admins and managers are told 30 days and 7 days before, and on the day.
+    // A newer filing for the same DIN supersedes an older row's reminder.
+    reminder: {
+      field: 'next_kyc_due', milestones: [30, 7, 0], subject: 'KYC',
+      describe: ['director_name', 'din', 'company_name'], supersededBy: { match: 'din', later: 'date_of_filing' },
+    },
+  },
+  {
+    key: 'annual_filing', label: 'Annual Filing Sheet', recordKey: ['cin', 'financial_year'],
+    fields: [
+      client(), company(), cin(), select('entity_type', 'Entity Type', ENTITY_TYPES), fy(),
+      f('agm_date', 'AGM Date', 'date', { aliases: ['DATE OF AGM'] }),
+      f('aoc4_filed_on', 'AOC-4 / Form 8 Filed On', 'date', { aliases: ['AOC-4 FILED ON', 'AOC 4', 'FORM 8 FILED ON'] }),
+      f('aoc4_srn', 'AOC-4 / Form 8 SRN', 'text', { aliases: ['AOC-4 SRN'] }),
+      f('mgt7_filed_on', 'MGT-7 / Form 11 Filed On', 'date', { aliases: ['MGT-7 FILED ON', 'MGT 7', 'FORM 11 FILED ON'] }),
+      f('mgt7_srn', 'MGT-7 / Form 11 SRN', 'text', { aliases: ['MGT-7 SRN'] }),
+      f('adt1_filed_on', 'ADT-1 Filed On', 'date'), f('dpt3_filed_on', 'DPT-3 Filed On', 'date'),
+      f('additional_fees', 'Additional Fees (₹)', 'number', { aliases: ['ADDITIONAL FEES', 'LATE FEES'] }),
+      status(FILING_STATUS), matter(), remarks(),
+    ],
+  },
+  {
+    key: 'roc_register', label: 'ROC Register', recordKey: ['srn'],
+    fields: [
+      client(), company(), cin(), f('form', 'Form', 'text', { aliases: ['E-FORM', 'FORM NO', 'FORM NAME'] }),
+      f('purpose', 'Purpose / Event', 'text', { aliases: ['PURPOSE', 'EVENT', 'PARTICULARS'] }),
+      f('event_date', 'Event Date', 'date'), f('due_date', 'Due Date', 'date'),
+      f('date_of_filing', 'Date of Filing', 'date', { aliases: ['FILING DATE', 'FILED ON'] }), srn(),
+      f('govt_fees', 'Govt. Fees (₹)', 'number', { aliases: ['GOVT FEES', 'FEES'] }),
+      f('additional_fees', 'Additional Fees (₹)', 'number', { aliases: ['ADDITIONAL FEES', 'LATE FEES'] }),
+      status(FILING_STATUS), matter(), remarks(),
+    ],
+  },
+  {
+    key: 'strike_off', label: 'Strike Off Sheet', recordKey: ['cin'],
+    linkedServices: ['dissolve-private-limited', 'dissolve-llp', 'windup-plc'],
+    fields: [
+      client(), company(), cin(), select('form', 'Form', ['STK-2', 'LLP Form 24']),
+      select('reason', 'Reason', ['Not commenced business', 'No operations for two years', 'Other']),
+      f('board_resolution_date', 'Board Resolution Date', 'date'), f('special_resolution_date', 'Special Resolution / Consent Date', 'date'),
+      f('date_of_filing', 'Date of Filing', 'date', { aliases: ['FILING DATE', 'FILED ON'] }), srn(),
+      f('notice_date', 'STK-6 / Public Notice Date', 'date', { aliases: ['NOTICE DATE', 'PUBLIC NOTICE DATE'] }),
+      f('struck_off_on', 'Struck Off On (STK-7)', 'date', { aliases: ['STRIKE OFF DATE', 'STK-7 DATE'] }),
+      status(['Preparing', 'Filed', 'Resubmission', 'Struck off', 'Rejected']), matter(), remarks(),
+    ],
+  },
+  {
+    key: 'adt3', label: 'Auditor Registration (ADT-3)', recordKey: ['srn'], linkedServices: DIRECTOR_SERVICES,
+    fields: [
+      client(), company(), cin(), f('auditor_name', 'Auditor Name', 'text', { aliases: ['AUDITOR'] }),
+      f('auditor_frn', 'Firm Registration No. (FRN)', 'text', { aliases: ['FRN'] }),
+      f('resignation_date', 'Date of Resignation', 'date', { aliases: ['RESIGNATION DATE'] }),
+      f('reason', 'Reason for Resignation', 'longtext', { aliases: ['REASON'] }),
+      // ADT-3 is due within 30 days of the resignation.
+      computed('adt3_due', 'ADT-3 Due By', ['resignation_date'], { days: 30 }, { aliases: ['ADT-3 DUE DATE', 'DUE DATE'] }),
+      f('adt3_filed_on', 'ADT-3 Filed On', 'date', { aliases: ['DATE OF FILING', 'FILED ON'] }), srn(),
+      f('new_auditor', 'New Auditor Appointed', 'text', { aliases: ['NEW AUDITOR'] }),
+      f('adt1_filed_on', 'ADT-1 (New Auditor) Filed On', 'date', { aliases: ['ADT-1 FILED ON'] }),
+      status(FILING_STATUS), matter(), remarks(),
+    ],
+  },
+  {
+    key: 'startup_odisha', label: 'Startup Odisha Sheet', recordKey: ['registration_no'],
+    fields: [
+      client(), company('Entity Name'), cin('CIN / LLPIN'),
+      f('registration_no', 'Startup Odisha Registration No.', 'text', { aliases: ['REGISTRATION NO', 'STARTUP ODISHA NO', 'CERTIFICATE NO'] }),
+      f('application_date', 'Application Date', 'date', { aliases: ['DATE OF APPLICATION'] }),
+      f('recognition_date', 'Recognition Date', 'date', { aliases: ['DATE OF RECOGNITION'] }),
+      f('valid_till', 'Certificate Valid Till', 'date', { aliases: ['VALID TILL', 'VALIDITY'] }),
+      f('sector', 'Sector'), f('incentives', 'Incentives Applied / Received', 'longtext', { aliases: ['INCENTIVES'] }),
+      status(['Applied', 'Under review', 'Recognised', 'Rejected', 'Expired']), matter(), remarks(),
+    ],
+  },
+  {
+    key: 'startup_india', label: 'Startup India Sheet', recordKey: ['dpiit_no'],
+    fields: [
+      client(), company('Entity Name'), cin('CIN / LLPIN'),
+      f('date_of_incorporation', 'Date of Incorporation', 'date', { aliases: ['INCORPORATION DATE'] }),
+      f('dpiit_no', 'DPIIT Recognition No.', 'text', { aliases: ['DPIIT NO', 'RECOGNITION NO', 'CERTIFICATE NO'] }),
+      f('application_date', 'Application Date', 'date'), f('recognition_date', 'Recognition Date', 'date'),
+      // DPIIT recognition lasts up to ten years from incorporation.
+      computed('recognition_valid_till', 'Recognition Valid Till', ['date_of_incorporation'], { years: 10 }, { aliases: ['VALID TILL'] }),
+      select('tax_exemption_80iac', '80-IAC Tax Exemption', ['Not applied', 'Applied', 'Approved', 'Rejected'], { aliases: ['80-IAC', '80 IAC'] }),
+      status(['Applied', 'Under review', 'Recognised', 'Rejected']), matter(), remarks(),
+    ],
+  },
+  {
+    key: 'gst', label: 'GST Sheet', recordKey: ['gstin'], linkedServices: ['gst-registration', 'gst-returns'],
+    fields: [
+      client(), f('legal_name', 'Legal Name', 'text', { aliases: ['NAME', 'LEGAL NAME OF BUSINESS'] }),
+      f('trade_name', 'Trade Name'), f('gstin', 'GSTIN', 'text', { aliases: ['GST NO', 'GST NUMBER', 'GSTN'] }), f('pan', 'PAN'),
+      f('state', 'State'),
+      select('registration_type', 'Registration Type', ['Regular', 'Composition', 'Casual', 'Non-resident', 'ISD', 'TDS/TCS']),
+      f('arn', 'ARN', 'text', { aliases: ['ARN NO'] }), f('application_date', 'Application Date', 'date'),
+      f('registration_date', 'Registration Date', 'date', { aliases: ['DATE OF REGISTRATION', 'EFFECTIVE DATE'] }),
+      select('return_frequency', 'Return Filing', ['Monthly', 'Quarterly (QRMP)', 'Annual (Composition)']),
+      status(['Applied', 'Active', 'Suspended', 'Cancelled', 'Rejected']),
+      f('cancellation_date', 'Cancellation Date', 'date'), mobile(), email(), matter(), remarks(),
+    ],
+  },
+  {
+    key: 'udyam', label: 'Udyam Sheet', recordKey: ['udyam_no'], linkedServices: ['udyam-registration'],
+    fields: [
+      client(), company('Enterprise Name'), f('udyam_no', 'Udyam Registration No.', 'text', { aliases: ['UDYAM NO', 'URN', 'UDYAM NUMBER'] }),
+      f('pan', 'PAN'), select('organisation_type', 'Type of Organisation', ['Proprietorship', 'Partnership', 'LLP', 'Private Limited', 'Public Limited', 'HUF', 'Society / Trust', 'Other']),
+      select('category', 'Enterprise Category', ['Micro', 'Small', 'Medium'], { aliases: ['CATEGORY', 'MSME CATEGORY'] }),
+      select('major_activity', 'Major Activity', ['Manufacturing', 'Services', 'Trading']),
+      f('commencement_date', 'Date of Commencement', 'date', { aliases: ['DATE OF INCORPORATION', 'COMMENCEMENT DATE'] }),
+      f('registration_date', 'Udyam Registration Date', 'date', { aliases: ['REGISTRATION DATE', 'DATE OF REGISTRATION'] }),
+      f('last_updated_on', 'Last Updated On', 'date'), mobile(), email(), status(['Applied', 'Registered', 'Rejected', 'Cancelled']),
+      matter(), remarks(),
+    ],
+  },
+  {
+    key: 'professional_tax', label: 'Professional Tax Sheet', recordKey: ['ptrc_no'], linkedServices: ['professional-tax'],
+    fields: [
+      client(), company('Entity Name'), f('pan', 'PAN'), f('state', 'State'),
+      f('ptrc_no', 'PT Registration (PTRC) No.', 'text', { aliases: ['PTRC NO', 'PTRC', 'REGISTRATION NO'] }),
+      f('ptec_no', 'PT Enrolment (PTEC) No.', 'text', { aliases: ['PTEC NO', 'PTEC', 'ENROLMENT NO'] }),
+      f('registration_date', 'Registration Date', 'date'),
+      select('return_frequency', 'Return Frequency', ['Monthly', 'Quarterly', 'Half-yearly', 'Annual']),
+      f('last_return_period', 'Last Return Filed (Period)', 'text', { aliases: ['LAST RETURN FILED', 'LAST RETURN'] }),
+      f('next_due_date', 'Next Due Date', 'date', { aliases: ['DUE DATE'] }),
+      fy('enrolment_paid_till', 'Enrolment Tax Paid Till (FY)'),
+      status(['Applied', 'Active', 'Cancelled']), matter(), remarks(),
+    ],
+  },
+  {
+    key: 'fssai', label: 'FSSAI Sheet', recordKey: ['licence_no'], linkedServices: ['food-license-fssai'],
+    fields: [
+      client(), company('Business Name'), f('fbo_name', 'Food Business Operator', 'text', { aliases: ['FBO NAME', 'FBO'] }),
+      select('licence_type', 'Licence Type', ['Basic Registration', 'State Licence', 'Central Licence'], { aliases: ['TYPE', 'LICENSE TYPE'] }),
+      f('licence_no', 'Licence / Registration No.', 'text', { aliases: ['LICENSE NO', 'LICENCE NO', 'FSSAI NO', 'REGISTRATION NO'] }),
+      f('kind_of_business', 'Kind of Business', 'text', { aliases: ['KIND OF BUSINESS', 'BUSINESS TYPE'] }),
+      f('premises_address', 'Premises Address', 'longtext', { aliases: ['ADDRESS'] }),
+      f('application_date', 'Application Date', 'date'), f('issue_date', 'Issue Date', 'date', { aliases: ['DATE OF ISSUE'] }),
+      f('valid_till', 'Valid Till', 'date', { aliases: ['VALIDITY', 'EXPIRY DATE', 'VALID UPTO'] }),
+      // A renewal is to be filed no later than 30 days before expiry.
+      computed('renewal_due', 'Renewal Due By', ['valid_till'], { days: -30 }, { aliases: ['RENEWAL DUE'] }),
+      f('annual_return_filed_on', 'Annual Return (D-1) Filed On', 'date', { aliases: ['ANNUAL RETURN FILED ON', 'D-1 FILED ON'] }),
+      status(['Applied', 'Active', 'Expired', 'Cancelled', 'Rejected']), matter(), remarks(),
+    ],
+  },
+];
+
 /* ── Assembly ────────────────────────────────────────────────────────────── */
 
 export const BOOKS = {
@@ -189,9 +400,17 @@ export const BOOKS = {
 
 export const SHEETS = {};
 for (const s of TM_SHEETS) SHEETS[s.key] = { ...s, module: 'trademark', book: 'trademark' };
+for (const s of COMPANY_SHEETS) {
+  BOOKS[s.key] = {
+    key: s.key, module: 'company', fields: s.fields, recordKey: s.recordKey ?? [],
+    linkedServices: s.linkedServices ?? [], reminder: s.reminder ?? null,
+  };
+  SHEETS[s.key] = { key: s.key, label: s.label, module: 'company', book: s.key, columns: s.fields.map((x) => ({ key: x.key })) };
+}
 
 export const MODULES = {
   trademark: { key: 'trademark', label: 'Trademark Reports', sheets: TM_SHEETS.map((s) => s.key) },
+  company: { key: 'company', label: 'Worksheets', sheets: COMPANY_SHEETS.map((s) => s.key) },
 };
 
 export const FIELD_TYPES = ['text', 'longtext', 'date', 'number', 'select', 'computed', 'image', 'matter'];
