@@ -4285,6 +4285,67 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
+### Node.js 26 everywhere and the critical/high npm findings — #218 (2026-10-30) 🔄 On branch `chore/218-node-and-vulnerabilities`, not merged
+
+`npm audit` on 30 Oct reported 2 critical and 28 high findings across the four
+packages, and local development ran a different Node.js from production.
+
+**`npm audit` before → after** (critical / high / moderate / low):
+
+| Area | Before | After |
+|---|---|---|
+| Repo root (dev tooling) | 1 / 0 / 0 / 0 (stale local lockfile) | 0 / 0 / 0 / 0 |
+| `backend` | 0 / 7 / 11 / 1 | 0 / 0 / 8 / 0 |
+| `Portal` | 0 / 7 / 0 / 0 | 0 / 0 / 0 / 0 |
+| `Frontend` (website) | 1 / 14 / 3 / 1 | 0 / 0 / 0 / 0 |
+
+**Versions changed**
+
+- **Node.js** — `node:26-alpine` digest in `Dockerfile` and `Portal.Dockerfile`:
+  26.11.1 (`sha256:143494b1…`) → **26.13.0** (`sha256:c6ad9e9c…`). New `.nvmrc`
+  (`26`) at the root; `"engines": { "node": ">=26" }` in all four `package.json`
+  (warning only — `engine-strict` is not set). CI already used `node-version: '26'`.
+- **backend** — `nodemailer` 9.1.1 → **10.3.1** (major; only breaking change is
+  Node ≥ 20); `sharp` 0.34.5 → **0.35.5** (major; libvips 1.3.4); `xlsx` npm 0.18.5
+  → **SheetJS CDN 0.20.3**; `npm audit fix`: `multer` 2.4.0 → 2.5.0, `zod` 4.6.5 →
+  4.6.7, `body-parser` → 2.4.0, `node-forge` → 1.4.2.
+- **Portal** — `xlsx` npm 0.18.5 → **SheetJS CDN 0.20.3**; `firebase` stays 12.19.0
+  (already the latest 12.x) with an override `@grpc/grpc-js` 1.9.16 → **1.14.7**;
+  `npm audit fix`: `re2js` → 2.9.1, `zod` → 4.6.7.
+- **Frontend** — `firebase` 12.14.0 → **12.19.0** (+ the same grpc-js override);
+  `npm audit fix` within existing ranges: `vite` 7.3.5 → 7.3.7, `react-router-dom`
+  7.12.0 → 7.18.5, `websocket-driver` (critical), `brace-expansion`, `browserslist`,
+  `js-yaml`, `nanoid`, `postcss`, `source-map-js`, `zod`. No major upgrade needed.
+- **Root** — override `shell-quote` ^1.12.0 (the root lockfile is gitignored, so a
+  fresh install was already clean; the override fixes existing checkouts).
+
+**Decisions**
+
+- npm's suggested fix for the firebase/grpc finding (`firebase@9.14.0`) is a
+  downgrade and was **not** applied. `@firebase/firestore` pins
+  `@grpc/grpc-js ~1.9.0` even in firebase 13.1.0, so the fix is an npm `overrides`
+  entry in Portal and Frontend. grpc-js is used only by Firestore's Node entry —
+  the browser bundles contain none of it.
+- SheetJS is no longer published to npm; the dependency is the CDN tarball URL, so
+  the import name `xlsx` is unchanged. Upgrades are manual (see architecture.md).
+
+**Verified:** backend `npm test` 319/319 after every step; nodemailer stream-transport
+smoke test (cc, replyTo, references/inReplyTo, messageId); sharp before/after smoke
+test with identical output (logo re-encode and blog upload paths); xlsx 0.18.5 vs
+0.20.3 side-by-side read/write; the Firestore Node entry opening a gRPC stream on
+grpc-js 1.14.7; Portal `tsc -b`, `eslint src` (0 errors), `vite build`; website
+`vite build` with and without `VITE_THEME_C=true`.
+
+**Remaining / open**
+
+- **backend: 8 moderate** — `uuid` < 11.1.1 inside `firebase-admin` 12 (via
+  `@google-cloud/firestore`, `@google-cloud/storage`, `google-gax`, `gaxios`,
+  `teeny-request`, `retry-request`). Fix is `firebase-admin` 14 (a major), out of
+  scope for this critical/high pass. Not reachable: the bug needs a caller-supplied
+  buffer to uuid v3/v5/v6; these libraries only call v4.
+- The full Playwright suite on the new image, and a QA deploy, are still to run.
+- The Docker images were not built locally (no Docker daemon); CI builds them.
+
 ### Client Database as its own screen — #205 (2026-10-29) ✅ Built (branch `feat/205-client-database`)
 
 The firm rejected the first delivery (`d87ae2b2`, the contact record on the Clients
