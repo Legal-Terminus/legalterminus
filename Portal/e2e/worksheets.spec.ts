@@ -40,7 +40,10 @@ test('the dropdown lists all thirteen worksheets and team members see Worksheets
   await teamPage.goto('dashboard');
   await expect(teamPage.getByRole('link', { name: 'Worksheets' }).first()).toBeVisible();
   await teamPage.goto('worksheets');
-  const options = await teamPage.getByLabel('Worksheet', { exact: true }).locator('option').allInnerTexts();
+  // The options come from the API: wait for them before reading.
+  const select = teamPage.getByLabel('Worksheet', { exact: true });
+  await expect(select.locator('option')).toHaveCount(13, { timeout: 20_000 });
+  const options = await select.locator('option').allInnerTexts();
   expect(options).toEqual([
     'Incorporation Sheet', 'Auditor Master Sheet', 'KYC Sheet', 'Annual Filing Sheet', 'ROC Register', 'Strike Off Sheet',
     'Auditor Registration (ADT-3)', 'Startup Odisha Sheet', 'Startup India Sheet', 'GST Sheet', 'Udyam Sheet',
@@ -67,6 +70,9 @@ test('a team member edits a cell in place', async ({ teamPage }) => {
   const editor = teamPage.getByLabel('Remarks value');
   await editor.fill('Certificate sent');
   await editor.press('Enter');
+  // The editor closes only once the save has come back. (While it is open, a
+  // textarea's own text is the typed value, so the row "contains" it already.)
+  await expect(editor).toHaveCount(0, { timeout: 15_000 });
   await expect(row(teamPage, `${RUN} Foods`)).toContainText('Certificate sent');
   const [rec] = (await listWorksheet('team', 'udyam')).filter((r) => r.values.udyam_no === UDYAM_1);
   expect(rec.values.remarks).toBe('Certificate sent');

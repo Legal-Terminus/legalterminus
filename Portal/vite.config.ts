@@ -17,6 +17,13 @@ export default defineConfig({
     // the bundle and clashing type identities. Dedupe to Portal's single copy.
     dedupe: ['xstate', '@xstate/react'],
   },
+  // `xlsx` is loaded on demand (Excel upload and download). In development Vite
+  // only discovers such a dependency when it is first imported, then optimises
+  // it and RELOADS the page — which wiped an open upload preview (#217's e2e).
+  // Pre-bundling it up front avoids that. No effect on the production build.
+  optimizeDeps: {
+    include: ['xlsx'],
+  },
   server: {
     port: 5173,
     proxy: {
