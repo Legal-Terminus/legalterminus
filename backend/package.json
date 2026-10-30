@@ -33,18 +33,21 @@
     "firebase-admin": "^12.7.0",
     "helmet": "^8.3.0",
     "multer": "^2.4.0",
-    "nodemailer": "^9.1.1",
+    "nodemailer": "^10.3.1",
     "pino": "^10.4.0",
     "pino-http": "^11.0.0",
     "razorpay": "^2.9.8",
     "sanitize-html": "^2.18.0",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "slugify": "^1.6.9",
-    "xlsx": "^0.18.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "xstate": "^5.33.2",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
+  },
+  "engines": {
+    "node": ">=26"
   }
 }

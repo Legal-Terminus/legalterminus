@@ -35,5 +35,11 @@
   "license": "ISC",
   "dependencies": {
     "xstate": "^5.32.1"
+  },
+  "engines": {
+    "node": ">=26"
+  },
+  "overrides": {
+    "shell-quote": "^1.12.0"
   }
 }
