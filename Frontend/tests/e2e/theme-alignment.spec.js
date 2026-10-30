@@ -1,6 +1,7 @@
 // @ts-check
 /* global process, document, window, getComputedStyle */
 import { test, expect } from "@playwright/test";
+import fs from "node:fs";
 
 /**
  * #209, the firm's decision of 30 Oct: Home stays as it is; elsewhere paragraphs
@@ -13,6 +14,9 @@ import { test, expect } from "@playwright/test";
 const BASE = process.env.E2E_BASE_URL || "";
 const PVT = "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india";
 const POLICIES = ["privacy", "terms", "refund", "confidentiality"];
+const app = fs.readFileSync(new URL("../../src/App.jsx", import.meta.url), "utf8");
+const ROUTES = [...app.matchAll(/<Route\s+path="([^"]+)"/g)].map((m) => m[1])
+  .filter((p, i, a) => a.indexOf(p) === i && !p.includes(":") && !p.includes("*") && !/my-profile|payment\/result/.test(p));
 const align = (loc) => loc.evaluate((e) => getComputedStyle(e).textAlign);
 
 async function open(page, path) {
@@ -76,3 +80,40 @@ for (const name of POLICIES) {
     });
   }
 }
+
+// Every service page has its own copy of this section under its own class prefix,
+// so walk the routes: the first version of this fix reached only one family.
+test("Terms & Conditions read the same on every page", async ({ page }) => {
+  test.setTimeout(600_000);
+  let seen = 0;
+  // the policy page of that name is a long-form document, covered above
+  for (const route of ROUTES.filter((r) => !/policies|-policy|terms-conditions/.test(r))) {
+    await open(page, route);
+    // sections lazy-load as the page scrolls
+    const height = await page.evaluate(() => document.documentElement.scrollHeight);
+    for (let y = 0; y < height; y += 800) {
+      await page.evaluate((v) => window.scrollTo(0, v), y);
+      await page.waitForTimeout(50);
+    }
+    await page.waitForTimeout(300);
+    const heading = page.locator("#root h2").filter({ hasText: /terms\s*(&|and)\s*conditions/i }).first();
+    if (!(await heading.count())) continue;
+    await heading.scrollIntoViewIfNeeded();
+    const r = await heading.evaluate((h) => {
+      const list = h.closest("section").querySelector('[class*="tc-list" i]');
+      if (!list) return { route: "no list" };
+      const box = list.getBoundingClientRect();
+      const items = [...list.children];
+      return {
+        heading: getComputedStyle(h).textAlign,
+        centred: Math.abs(box.left + box.width / 2 - document.documentElement.clientWidth / 2) < 2,
+        aligns: [...new Set(items.map((i) => getComputedStyle(i).textAlign))],
+        lefts: new Set(items.map((i) => Math.round(i.getBoundingClientRect().left))).size,
+        numbered: items.every((i) => getComputedStyle(i, "::before").content.includes("counter")),
+      };
+    });
+    expect(r, route).toEqual({ heading: "center", centred: true, aligns: ["left"], lefts: 1, numbered: true });
+    seen += 1;
+  }
+  expect(seen).toBeGreaterThan(50);
+});

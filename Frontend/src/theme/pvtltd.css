@@ -736,18 +736,24 @@ html.theme-c .plan-popular-badge { left: 50% !important; transform: translateX(-
 /* Government costs (PL 4): the heading row centred, badge beside it */
 html.theme-c .govtcosts-title { justify-content: center !important; flex-wrap: wrap; }
 
-/* Terms & Conditions (the firm accepted our recommendation, 30 Oct): heading
-   centred, terms left-aligned so the numbers line up. This is legal text people
-   must read carefully. Numbers hang in their own column. */
-html.theme-c .pvtltd-tc-list {
+/* Terms & Conditions on EVERY page (the firm, 30 Oct): heading centred, terms
+   left-aligned in a centred column, with the numbers in a straight column of their
+   own. Service pages each carry a copy of this section under their own prefix
+   (pvtltd-tc-*, opctc-*, tradetc-*, about 40 of them), so this matches them by
+   name rather than listing them: a list would miss the next copy, which is how
+   round 4 first reached only the Private Limited family. */
+html.theme-c [class*="tc-list" i] {
+  display: grid !important; gap: 12px;
   max-width: 80ch !important; margin-inline: auto !important; padding: 0 !important;
-  list-style: none !important; counter-reset: pvtltd-tc;
+  list-style: none !important; counter-reset: lt-tc;
 }
-html.theme-c .pvtltd-tc-list .pvtltd-tc-item {
+html.theme-c [class*="tc-list" i] > [class*="tc-item" i] {
   display: block !important; position: relative; padding-left: 2.2em !important;
-  text-align: left !important; counter-increment: pvtltd-tc;
+  text-align: left !important; counter-increment: lt-tc;
 }
-html.theme-c .pvtltd-tc-list .pvtltd-tc-item::before {
-  content: counter(pvtltd-tc) "."; position: absolute; left: 0; top: 0;
+html.theme-c [class*="tc-list" i] > [class*="tc-item" i]::before {
+  content: counter(lt-tc) "."; position: absolute; left: 0; top: 0;
   font-weight: 600; color: var(--lt-accent-text); font-variant-numeric: tabular-nums;
 }
+/* the intro shares the list's column, so both start at the same left edge */
+html.theme-c [class*="tc-subtitle" i][data-lt-sub="long"] { width: 100%; max-width: 80ch !important; }

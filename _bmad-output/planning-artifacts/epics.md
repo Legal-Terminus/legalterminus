@@ -6044,6 +6044,10 @@ for the Private Limited page and every Policies page to be fixed.
 - **Every other page:** paragraphs left-aligned, not justified; only a one-line
   description under a headline is centred, a longer one is left-aligned in a centred column.
 - **Terms & Conditions:** heading centred, terms left-aligned with the numbers in a column.
+- **Same Terms & Conditions on every service page** (the firm's follow-up, 30 Oct): the
+  first pass reached only the Private Limited family, leaving the others' lists at the
+  left under a centred heading. The rule now matches the section by class name, and the
+  spec walks every route.
 - **Policies:** the text sat in a narrow column at the left under a centred heading,
   with the right half of the page empty. Now one centred 720px column, title included.
 - Not changed: testimonials stay the same block as Home, including its justified text,
