@@ -2104,3 +2104,21 @@ row. Recipients: every admin and manager, via `createNotification` (in-app + ema
 **Access.** Router-wide `requireRole('admin','manager','team_member')`; columns and
 record delete add `requireRole('admin')`. No per-person grant (unlike Marketing
 Reports): the firm asked for all three roles to view and edit.
+
+## Dependency sources and the Node.js pin (#218, 2026-10-30)
+
+**SheetJS (`xlsx`) comes from the SheetJS CDN, not npm.** The npm `xlsx` package
+stopped at 0.18.5 and carries an unfixable prototype-pollution / ReDoS advisory;
+SheetJS publishes fixed releases only at `https://cdn.sheetjs.com`. Backend and
+Portal therefore depend on
+`"xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"` — the import name
+`xlsx` is unchanged, and the lockfiles pin the tarball's integrity hash. Uses: the
+backend workbook export (`workbookExport.service.js`, write only), the Portal's
+Excel downloads (`lib/exportXlsx.ts`) and the Worksheets upload
+(`ImportPanel.tsx`, read in the browser). To upgrade: check `cdn.sheetjs.com` for
+the newest version and `npm install` its tarball URL in both packages. `npm
+outdated` and Dependabot do not see this source, so the check is manual.
+`npm ci`/`npm install` (CI, Docker) need outbound HTTPS to `cdn.sheetjs.com`.
+0.20.3 read and wrote the same cell values as 0.18.5 in a side-by-side check; the
+one difference is that a JavaScript `Date` cell is no longer seconds off (no current
+export writes `Date` cells — they are ISO strings).
