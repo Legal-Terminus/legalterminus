@@ -1,7 +1,8 @@
-# Node 26, pinned by digest so a re-tagged upstream image cannot change what
-# ships. Keep in step with `node-version` in .github/workflows — CI must build
-# and test on the version the containers run.
-FROM node:26-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a
+# Node 26 (26.13.0 — the node:26-alpine digest on 2026-10-30), pinned by
+# digest so a re-tagged upstream image cannot change what ships. Keep in step
+# with `node-version` in .github/workflows and the repo-root .nvmrc — CI and
+# local development must build and test on the version the containers run.
+FROM node:26-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94
 
 WORKDIR /app
 

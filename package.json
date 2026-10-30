@@ -35,5 +35,8 @@
   "license": "ISC",
   "dependencies": {
     "xstate": "^5.32.1"
+  },
+  "engines": {
+    "node": ">=26"
   }
 }

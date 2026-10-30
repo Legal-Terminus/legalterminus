@@ -1476,7 +1476,7 @@ Existing: `.github/workflows/firebase-preview-qa.yml` (deploys to QA on PR). Ext
 
 ### 10.2 Local Development
 
-**Prerequisites**: Node 20, Firebase CLI, optionally Firebase Emulators.
+**Prerequisites**: Node 26 (`.nvmrc`; run `nvm use`), Firebase CLI, optionally Firebase Emulators.
 
 **Start backend** (port 5001):
 ```sh
@@ -2122,3 +2122,18 @@ outdated` and Dependabot do not see this source, so the check is manual.
 0.20.3 read and wrote the same cell values as 0.18.5 in a side-by-side check; the
 one difference is that a JavaScript `Date` cell is no longer seconds off (no current
 export writes `Date` cells — they are ISO strings).
+
+**One Node.js version everywhere: 26.** The containers (`Dockerfile`,
+`Portal.Dockerfile`) pin `node:26-alpine` by digest — 26.13.0 since 2026-10-30;
+CI sets `node-version: '26'`; the repo-root `.nvmrc` says `26` for local
+development; and every `package.json` (root, backend, Portal, Frontend) declares
+`"engines": { "node": ">=26" }`. `engine-strict` is not set, so an older local Node
+gets an `npm` warning rather than a failed install. Moving the digest is a
+deliberate change: take the current `node:26-alpine` index digest (Docker Hub API
+or `docker manifest inspect`) and update both Dockerfiles together.
+
+**Firestore's `@grpc/grpc-js` is overridden.** `@firebase/firestore` pins
+`@grpc/grpc-js ~1.9.0` (still in firebase 13), which carries GHSA-m9gg-hp2v-232j.
+Portal and Frontend set `"overrides": { "@grpc/grpc-js": "^1.14.7" }`. grpc-js is
+used only by Firestore's Node entry point; the browser bundles never contain it.
+Drop the override once a firebase release depends on a fixed grpc-js.
