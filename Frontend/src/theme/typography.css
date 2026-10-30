@@ -69,6 +69,12 @@ html.theme-c [data-lt-sub] {
   margin-right: auto !important;
 }
 html.theme-c span[data-lt-sub] { display: block !important; }
+/* Outside Home only a ONE-line description is centred; a longer intro reads
+   left-aligned, in a centred column under its headline. */
+html.theme-c:not(.lt-home) [data-lt-sub="long"] {
+  text-align: left !important;
+  max-width: var(--lt-measure);
+}
 html.theme-c [data-lt-deco] {
   justify-self: center !important;
   margin-left: auto !important;
@@ -77,7 +83,9 @@ html.theme-c [data-lt-deco] {
 
 /* ── Paragraphs ───────────────────────────────────────────────────────── */
 
-html.theme-c [data-lt-justify] {
+/* Home keeps the justified look the firm approved (30 Oct). Everywhere else they
+   accepted our recommendation: paragraphs stay left-aligned. */
+html.theme-c.lt-home [data-lt-justify] {
   text-align: justify !important;
   text-justify: inter-word;
   -webkit-hyphens: auto;

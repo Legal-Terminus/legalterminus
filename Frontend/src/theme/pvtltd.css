@@ -736,18 +736,18 @@ html.theme-c .plan-popular-badge { left: 50% !important; transform: translateX(-
 /* Government costs (PL 4): the heading row centred, badge beside it */
 html.theme-c .govtcosts-title { justify-content: center !important; flex-wrap: wrap; }
 
-/* Terms & Conditions (PL 3, 5): heading AND content centred — the one place on
-   the site where body text is centred rather than justified (the firm, 22 Oct).
-   Numbers are drawn inline so they centre with their line. */
-html.theme-c .pvtltd-tc-card { text-align: center !important; }
+/* Terms & Conditions (the firm accepted our recommendation, 30 Oct): heading
+   centred, terms left-aligned so the numbers line up. This is legal text people
+   must read carefully. Numbers hang in their own column. */
 html.theme-c .pvtltd-tc-list {
   max-width: 80ch !important; margin-inline: auto !important; padding: 0 !important;
   list-style: none !important; counter-reset: pvtltd-tc;
 }
 html.theme-c .pvtltd-tc-list .pvtltd-tc-item {
-  display: block !important; text-align: center !important; counter-increment: pvtltd-tc;
+  display: block !important; position: relative; padding-left: 2.2em !important;
+  text-align: left !important; counter-increment: pvtltd-tc;
 }
 html.theme-c .pvtltd-tc-list .pvtltd-tc-item::before {
-  content: counter(pvtltd-tc) ". "; position: static; font-weight: 600; color: var(--lt-accent-text);
+  content: counter(pvtltd-tc) "."; position: absolute; left: 0; top: 0;
+  font-weight: 600; color: var(--lt-accent-text); font-variant-numeric: tabular-nums;
 }
-html.theme-c .pvtltd-tc-card p { text-align: center !important; }

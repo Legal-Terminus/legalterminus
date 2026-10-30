@@ -13,6 +13,10 @@
  *    with Legal Terminus.") are fitted together, at every width, so they stay
  *    two lines of one size.
  *
+ * Round 4 (the firm, 30 Oct): Home keeps points 2 and 3 as below; on every other
+ * page paragraphs are left-aligned and only a one-line description is centred
+ * (`lt-home` on <html>, `data-lt-sub="short|long"`, read by typography.css).
+ *
  * 2. "All paragraphs justified" (except the Terms & Conditions on the Private
  *    Limited page, which the CSS centres). A paragraph is marked
  *    `data-lt-justify` only when it is left-aligned AND runs to two lines or
@@ -114,6 +118,12 @@ function fitHeadlines(force) {
   }
 }
 
+function lineCount(el) {
+  const cs = getComputedStyle(el);
+  const lh = parseFloat(cs.lineHeight) || 1.2 * parseFloat(cs.fontSize);
+  return el.getBoundingClientRect().height / lh;
+}
+
 function markAroundHeadlines() {
   for (const h of document.querySelectorAll(HEADLINE)) {
     if (h.closest(SKIP)) continue;
@@ -134,9 +144,13 @@ function markAroundHeadlines() {
       next.setAttribute("data-lt-deco", "");
       next = next.nextElementSibling;
     }
-    if (next && !next.hasAttribute("data-lt-sub") && /^(P|SPAN)$/.test(next.tagName) && visible(next)) {
+    if (next && /^(P|SPAN)$/.test(next.tagName) && visible(next)) {
       const n = next.textContent.trim().length;
-      if (n > 0 && n <= SUB_MAX_CHARS) next.setAttribute("data-lt-sub", "");
+      if (n > 0 && n <= SUB_MAX_CHARS) {
+        // re-read every run: the same sentence is one line on a laptop and three on a phone
+        const value = lineCount(next) < 1.8 ? "short" : "long";
+        if (next.getAttribute("data-lt-sub") !== value) next.setAttribute("data-lt-sub", value);
+      }
     }
   }
 }
@@ -146,13 +160,15 @@ function markParagraphs() {
     if (!visible(p) || p.closest(".header-wrapper, nav, [role='dialog']")) continue;
     const cs = getComputedStyle(p);
     if (cs.textAlign !== "left" && cs.textAlign !== "start") continue;
-    const lh = parseFloat(cs.lineHeight) || 1.2 * parseFloat(cs.fontSize);
-    if (p.getBoundingClientRect().height / lh < 1.8) continue;   // one line: nothing to justify
+    if (lineCount(p) < 1.8) continue;   // one line: nothing to justify
     p.setAttribute("data-lt-justify", "");
   }
 }
 
 function run(force = false) {
+  // Home is approved as it stands (the firm, 30 Oct); the CSS keys the
+  // justified text and centred intros off this class.
+  document.documentElement.classList.toggle("lt-home", window.location.pathname === "/");
   markAroundHeadlines();
   fitHeadlines(force);
   markParagraphs();

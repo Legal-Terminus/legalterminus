@@ -1975,6 +1975,10 @@ a product is keyed by the `source` its component passes to the checkout, and
 - **Content fidelity is a test, not a promise.** Each page story records that
   `document.body.innerText` (whitespace-collapsed) is identical with the switch off and
   on. The website Playwright suite asserts text and a visible `nav`, never class names.
+- **Round 4 — alignment recommendation accepted (2026-10-30).** Home is exempt:
+  `typography.js` toggles `lt-home` on `<html>` by path, and justified text and centred
+  multi-line intros apply only under it. It re-reads `data-lt-sub="short|long"` on each
+  run, because line count depends on width. Elsewhere long intros are left-aligned.
 - **Round 3 — the firm's review of 13 Oct / answers of 22 Oct (2026-10-29).**
   - *Typeface* is Roboto (tokens in `theme/theme.css`, loaded by `utils/theme.js`),
     display weight 500.
