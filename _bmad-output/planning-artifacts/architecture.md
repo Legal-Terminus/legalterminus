@@ -2141,3 +2141,12 @@ or `docker manifest inspect`) and update both Dockerfiles together.
 Portal and Frontend set `"overrides": { "@grpc/grpc-js": "^1.14.7" }`. grpc-js is
 used only by Firestore's Node entry point; the browser bundles never contain it.
 Drop the override once a firebase release depends on a fixed grpc-js.
+
+## CORS allowlist (2026-10-31)
+
+`backend/src/config/corsOrigins.js` replaces patterns that matched every `*.web.app` and
+`*.firebaseapp.com` site and lookalike domains such as `evillegalterminus.com`. Allowed:
+the firm's domains, this project's and the QA site's Firebase hosts with preview channels,
+localhost outside production, and exact origins from `CORS_ORIGINS`. In production
+`http://localhost` and `capacitor://localhost` are no longer allowed; the mobile app's
+origin is added through `CORS_ORIGINS` for each environment.

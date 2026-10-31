@@ -6054,3 +6054,9 @@ for the Private Limited page and every Policies page to be fixed.
   as the firm asked for one common bottom section. Live build untouched (Theme C only).
 - Tests: `Frontend/tests/e2e/theme-alignment.spec.js`; all-routes with the switch on.
 
+### Security: exact CORS allowlist (2026-10-31) 🔄 On QA, reaches production with the next release
+
+Any site on `web.app` or `firebaseapp.com`, and lookalike domains, could make credentialed
+calls to the API. Ported Ambyflow's anchored allowlist by content. QA also allows
+`https://localhost` and `http://localhost:5173` for the Android build. Not user-visible.
+Tests: `backend/src/__tests__/corsOrigins.test.js`.

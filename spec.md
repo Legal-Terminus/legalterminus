@@ -669,7 +669,7 @@ updatedAt, updatedBy
 - `Portal/` web build → Firebase Hosting (same project as public website)
 - `backend/` → Cloud Run (`asia-south2`, service `legal-terminus-qa`, 0–5 instances, 512Mi)
 - CI/CD via `.github/workflows/firebase-preview-qa.yml`
-- **CORS** (Phase 2 prep): Backend already allows `capacitor://localhost` (iOS) and `http://localhost` (Android)
+- **CORS** (Phase 2): the allowlist is exact, in `backend/src/config/corsOrigins.js`. A native app's origin is added per deployment through `CORS_ORIGINS`: QA has `https://localhost` (Capacitor on Android) and `http://localhost:5173`; production gets the app's origin when a release build is ready.
 
 ## Website redesign in Theme C (#209, E-25)
 

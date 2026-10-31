@@ -45,6 +45,7 @@ import publicApiRoutes from "./routes/publicApi.routes.js";
 import apiTokensRoutes from "./routes/apiTokens.routes.js";
 import webhooksRoutes from "./routes/webhooks.routes.js";
 import initializeFirebase from "./config/firebase.js";
+import { buildAllowedOrigins } from "./config/corsOrigins.js";
 
 // Load environment variables
 dotenv.config({ path: ".env" });
@@ -57,14 +58,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /* ================= CORS ================= */
-const allowedOrigins = [
-  /^http:\/\/localhost(:\d+)?$/,   // any localhost port in development
-  "capacitor://localhost",          // Capacitor iOS app
-  "http://localhost",               // Capacitor Android app
-  /\.firebaseapp\.com$/,
-  /\.web\.app$/,
-  /legalterminus\.com$/,
-];
+// config/corsOrigins.js: anchored patterns, this project's hosts only.
+const allowedOrigins = buildAllowedOrigins();
 
 /* ================= REQUEST LOGGING ================= */
 // Structured per-request logs with an auto-generated request id (req.id),
