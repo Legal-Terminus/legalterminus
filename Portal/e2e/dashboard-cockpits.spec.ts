@@ -101,3 +101,13 @@ test('E20-S01: awaitingClient tracks the step OWNER, not the matter status', asy
     test.skip(checked === 0, 'no matter currently awaits this client — nothing to assert');
   } finally { await deleteMatter(taskId); }
 });
+
+test('a team member’s dashboard asks for nothing it would be refused', async ({ teamPage }) => {
+  const refused: string[] = [];
+  teamPage.on('response', (r) => { if (r.status() === 403 && r.url().includes('/api/')) refused.push(r.url()); });
+  await teamPage.goto('dashboard');
+  await expect(teamPage.getByRole('link', { name: /my tasks/i }).first()).toBeVisible();
+  await teamPage.waitForLoadState('networkidle');
+  expect(refused, 'no refused calls').toEqual([]);
+  await expect(teamPage.getByText('Needs the firm')).toHaveCount(0);
+});

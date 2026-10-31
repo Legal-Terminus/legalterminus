@@ -14,19 +14,19 @@ import { tilesForRole, dashboardTitle } from './dashboardConfig';
 export default function DashboardPage() {
   const role = useAuthStore((s) => s.role);
   const tiles = tilesForRole(role);
-  const isStaff = role === 'admin' || role === 'manager' || role === 'team_member';
 
   return (
     <PageShell title={dashboardTitle(role)} subtitle="Quick actions and overview.">
       {/* E-20: the cockpits state the POSITION before the navigation tiles.
           A client's dashboard answers "where has my work got to, and does it
-          need me?"; staff get "what needs the firm" and "what are we waiting
-          on". Every figure links to the rows it was counted from. */}
+          need me?"; admins and managers get "what needs the firm" and "what are
+          we waiting on". Every figure links to the rows it was counted from. */}
       {role === 'client' && <ClientCockpit />}
-      {isStaff && <PracticeCockpit />}
+      {(role === 'admin' || role === 'manager') && <PracticeCockpit />}
 
-      {/* What's waiting on you — urgent assigned steps + approvals (staff only). */}
-      {isStaff && <MyWorkWidget />}
+      {/* A team member's own queue. The cockpit above reads admin/manager reports
+          they are refused, and it already includes this widget for those roles. */}
+      {role === 'team_member' && <MyWorkWidget />}
       {tiles.length === 0 ? (
         <div className="card p-12 text-center text-ink-muted text-sm">
           Nothing to show here yet.

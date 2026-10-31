@@ -611,7 +611,7 @@ export default function TaskDetailPage() {
           stepDefs={stepDefs}
           currentDef={currentDef}
           completed={completed}
-          role={{ isStaff, isClient, isExternalViewer, canOverrideClient: canAssign, isAdmin: role === 'admin', uid: currentUserUid }}
+          role={{ isStaff, isClient, isExternalViewer, canOverrideClient: canAssign, isAdmin: role === 'admin', uid: currentUserUid, isMatterOwner: !!currentUserUid && task.assignedTo === currentUserUid }}
           pending={advance.isPending}
           onEvent={(e) => advance.mutate(e)}
           assignment={canAssign ? {
@@ -1015,7 +1015,7 @@ function StepsTab({
   stepDefs: WorkflowStepDef[];
   currentDef?: WorkflowStepDef;
   completed: boolean;
-  role: { isStaff: boolean; isClient: boolean; isExternalViewer?: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null };
+  role: { isStaff: boolean; isClient: boolean; isExternalViewer?: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null; isMatterOwner?: boolean };
   pending: boolean;
   onEvent: (e: WorkflowEventInput) => void;
   assignment?: StepAssignment;
@@ -1819,7 +1819,7 @@ function StepHeroPanel({
 }: {
   taskId: string;
   step: WorkflowStepDef;
-  role: { isStaff: boolean; isClient: boolean; isExternalViewer?: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null };
+  role: { isStaff: boolean; isClient: boolean; isExternalViewer?: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null; isMatterOwner?: boolean };
   pending: boolean;
   onEvent: (e: WorkflowEventInput) => void;
   assignment?: StepAssignment;
@@ -2105,6 +2105,15 @@ function StepHeroPanel({
   // #139: the client is looking at the LAST visible step while the real current
   // step is hidden ("Show to Client" off). The step shows as in progress, but it
   // is not actually actionable — no buttons, just a calm progress note.
+  // A team member may advance a step only if they own the matter or the step; the
+  // backend refuses anyone else. Don't offer a button that can only fail.
+  if (actions && role.isStaff && !role.canOverrideClient && !role.isAdmin && !role.isMatterOwner && !isAssignee) {
+    actions = null;
+    wait = currentAssignee
+      ? <AssignedToOtherNote assignee={assigneeLabel} />
+      : <WaitNote text="This step isn't assigned to anyone yet. Ask a manager or admin to assign it to you." />;
+  }
+
   if (fallbackView) {
     actions = null;
     wait = <WaitNote text="Our team is working on your service — no action is needed from you right now." />;

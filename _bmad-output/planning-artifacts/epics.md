@@ -6067,3 +6067,17 @@ Any site on `web.app` or `firebaseapp.com`, and lookalike domains, could make cr
 calls to the API. Ported Ambyflow's anchored allowlist by content. QA also allows
 `https://localhost` and `http://localhost:5173` for the Android build. Not user-visible.
 Tests: `backend/src/__tests__/corsOrigins.test.js`.
+
+### Team members: no button they cannot use, and a dashboard they can load (2026-10-31) 🔄 On QA, reaches production with the next release
+
+From the firm's QA sanity report that team members could not close steps. The rule is
+unchanged by decision: a team member completes a step only if they own the matter or
+the step. The page offered the button anyway, and it failed with 403.
+
+- **Step page:** a team member who owns neither sees no action buttons. An unassigned
+  step says to ask a manager or admin to assign it.
+- **Dashboard:** team members no longer load the admin/manager cockpit, whose reports
+  returned 403. Admins and managers no longer see My Work twice.
+- Open: My Tasks can list an unassigned step as Available to a team member who was
+  assigned another step on that matter, and they cannot complete it.
+- Tests: `Portal/e2e/team-step-access.spec.ts`, `Portal/e2e/dashboard-cockpits.spec.ts`.
