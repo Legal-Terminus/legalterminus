@@ -2032,6 +2032,9 @@ pinned back in CSS rather than chased through 150 components.
 - **Runtime:** Node 26 (`Dockerfile`, `Portal.Dockerfile`, both deploy workflows). The
   `FROM node:20-alpine` in section 9 above is the original design sketch, not the
   current image.
+- **Image retention:** QA pushes to `backend-qa` and `portal-qa`, production to `backend`
+  and `portal`, because the Artifact Registry cleanup rule counts per image name. See
+  `docs/delivery.md`.
 
 ## Worksheets — Trademark Reports and Company Worksheets (#210, #217)
 

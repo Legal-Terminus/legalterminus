@@ -59,3 +59,20 @@ database, so data set up on QA is **not** in production.
 A second deployment inside the live project, with its own database and files but
 the same sign-in accounts. See `docs/qa-environment.md` — especially before
 running any seed script.
+
+## Build retention
+
+These are settings on the project, not in this repo. A new Hosting site starts with no
+limit and needs its own.
+
+- **Firebase Hosting:** each site keeps its last 5 versions.
+- **Artifact Registry (`legal-terminus-qa`):** the cleanup rule keeps the 20 newest
+  entries per image name, about 5 builds at 4 entries each, plus `buildcache`. Anything
+  else older than 15 days is deleted.
+
+The count is per image name, so **QA and production must not push to the same name**.
+QA uses `backend-qa` and `portal-qa`; production uses `backend` and `portal`. If they
+shared a name, QA builds could push the image production is running out of the count,
+and the rule could delete it.
+
+Rolling back further than the kept builds means rebuilding from git.

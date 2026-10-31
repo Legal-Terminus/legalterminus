@@ -4224,6 +4224,13 @@ The following stories are tagged `[Phase 2]` and are scoped for the next plannin
 
 ## APPENDIX B — Change Log: GitHub-issue fixes (2026-06-27)
 
+### Hosting and image retention (2026-10-31)
+- Firebase Hosting now keeps the last 5 versions per site, and Artifact Registry keeps
+  the last 5 builds per image and deletes anything else older than 15 days. Both are
+  console settings, recorded in `docs/delivery.md`.
+- QA backend images moved from `backend` to `backend-qa`, so QA builds no longer use up
+  production's places in the count.
+
 ### Editable email templates + per-matter org (2026-07-17, #104 #107 #108 #109)
 - **New admin Settings section.** Added a `Settings` sidebar entry (admin-only) →
   **Email Templates** page (`Portal/src/pages/settings/EmailTemplatesPage.tsx`).
