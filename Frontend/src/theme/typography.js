@@ -116,6 +116,12 @@ function fitHeadlines(force) {
     const lines = [...hero.children].filter((c) => /hs-title-(dark|green)/.test(c.className));
     if (lines.length) fit(lines, hero.parentElement, HERO_MIN_PX, "all");
   }
+  // "Discover Our Articles & News" (the firm, #209): one line at every width.
+  const blog = document.querySelector("#root .blogpage-banner-heading");
+  if (blog && visible(blog) && blog.dataset.ltFit !== key) {
+    blog.dataset.ltFit = key;
+    fit([blog], blog.parentElement, HERO_MIN_PX, "all");
+  }
 }
 
 function lineCount(el) {

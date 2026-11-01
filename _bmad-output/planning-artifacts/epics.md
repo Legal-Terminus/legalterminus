@@ -6078,6 +6078,11 @@ the step. The page offered the button anyway, and it failed with 403.
   step says to ask a manager or admin to assign it.
 - **Dashboard:** team members no longer load the admin/manager cockpit, whose reports
   returned 403. Admins and managers no longer see My Work twice.
-- Open: My Tasks can list an unassigned step as Available to a team member who was
-  assigned another step on that matter, and they cannot complete it.
+- **My Tasks:** an unassigned step is no longer Available to a team member who owns
+  neither it nor the matter. It stays with managers and admins until someone assigns it.
 - Tests: `Portal/e2e/team-step-access.spec.ts`, `Portal/e2e/dashboard-cockpits.spec.ts`.
+
+### Blog headline on one line (2026-11-01) 🔄 On QA, Theme C only
+
+#209: "Discover Our Articles & News" now fits on one line at every width, sized to fit.
+Tests: `Frontend/tests/e2e/theme-alignment.spec.js`.

@@ -117,3 +117,27 @@ test("Terms & Conditions read the same on every page", async ({ page }) => {
   }
   expect(seen).toBeGreaterThan(50);
 });
+
+for (const width of [1440, 1024, 768, 390, 360]) {
+  test(`the Blog headline stays on one line at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await open(page, "/blog");
+    const h = page.locator(".blogpage-banner-heading");
+    await expect(h).toHaveAttribute("data-lt-line", "all", { timeout: 15_000 });
+    const m = await h.evaluate((e) => {
+      const r = document.createRange();
+      r.selectNodeContents(e);
+      return {
+        lines: new Set([...r.getClientRects()].map((c) => Math.round(c.top))).size,
+        left: r.getBoundingClientRect().left,
+        right: r.getBoundingClientRect().right,
+        vw: document.documentElement.clientWidth,
+        size: parseFloat(getComputedStyle(e).fontSize),
+      };
+    });
+    expect(m.lines).toBe(1);
+    expect(m.left).toBeGreaterThanOrEqual(0);
+    expect(m.right).toBeLessThanOrEqual(m.vw);
+    expect(m.size).toBeGreaterThanOrEqual(20);
+  });
+}
