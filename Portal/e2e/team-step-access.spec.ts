@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures';
 import {
   advanceUntil, apiAs, assignMatter, assignStep, createMatter, createPartPaidMatter, deleteDefinition, deleteMatter,
-  firstPaymentGate, getDefinitionForMatter, getMatter, transitionStatusAs,
+  firstPaymentGate, getDefinitionForMatter, getMatter, transition, transitionStatusAs,
 } from './api';
 import { env } from './helpers';
 
@@ -29,7 +29,8 @@ test.beforeAll(async () => {
       serviceKeys: [serviceKey],
       steps: [
         { stepNumber: 1, title: 'Unowned work', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 2 }] },
-        { stepNumber: 2, title: 'Done', type: 'final' },
+        { stepNumber: 2, title: 'Next work', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 3 }] },
+        { stepNumber: 3, title: 'Done', type: 'final' },
       ],
     },
   });
@@ -67,6 +68,28 @@ test('the team member who owns the matter gets the button', async ({ teamPage })
   await assignMatter(taskId, TEAM);
   await open(teamPage, taskId);
   await expect(complete(teamPage)).toBeVisible();
+});
+
+const myRow = async (id: string) => {
+  const api = await apiAs('team');
+  const body = await (await api.get('/api/tasks/my-steps')).json();
+  await api.dispose();
+  return ((body.data ?? body) as { taskId: string; bucket: string }[]).find((r) => r.taskId === id);
+};
+
+test('My Tasks: an unassigned step the team member cannot complete is not listed', async () => {
+  // Assigned step 1, so the matter is in their reach; step 2 then has no owner.
+  await assignStep(taskId, 1, TEAM);
+  expect((await myRow(taskId))?.bucket).toBe('assigned');
+  await transition('admin', taskId, { type: 'COMPLETE_STEP' });
+  expect(await transitionStatusAs('team', taskId, { type: 'COMPLETE_STEP' }), 'they cannot complete it').toBe(403);
+  expect(await myRow(taskId), 'so it is not offered').toBeFalsy();
+});
+
+test('My Tasks: the step on a matter they own stays listed', async () => {
+  await assignMatter(taskId, TEAM);
+  await transition('admin', taskId, { type: 'COMPLETE_STEP' });
+  expect(await myRow(taskId)).toBeTruthy();
 });
 
 test('a payment step offers a team member who owns nothing no button', async ({ teamPage }) => {

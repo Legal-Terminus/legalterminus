@@ -1599,6 +1599,10 @@ export async function listMySteps(req, res) {
         // to someone ELSE never belong in my basket (admins still see all work via
         // Matters / Reports). This drops the old "Elsewhere" bucket.
         if (assignedList.length && !assignedList.includes(uid)) return;
+        // A team member also reaches this list through ANY step assigned to them on
+        // the matter, but may advance the active step only if they own it or the
+        // matter (transitionTask). Don't call a step Available that would be refused.
+        if (role === 'team_member' && !assignedList.includes(uid) && t.assignedTo !== uid) return;
         rows.push({
           taskId,
           clientName: t.clientName ?? '', // #164: backfilled below when empty
