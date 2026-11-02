@@ -6120,9 +6120,9 @@ the OPC and Trademark Registration pages, as Private Limited has.
 - **Not in the live catalogue yet.** The release must run `seedPricing.js` against the
   live database too, or the live site hides Supreme Plus (a plan missing from the
   catalogue is not on sale).
-- Taken as written, to confirm with the firm: OPC Supreme Plus starts "Everything in
-  Enriched" (Private Limited's starts "Everything in Supreme"); the firm's tables say
-  "Professional fee only + 18% GST" where every card on the site says "+ Govt. fees &
-  GST extra" — the site wording is kept.
+- Confirmed the same day: OPC Supreme Plus starts "Everything in Supreme" (the table
+  said Enriched), and the OPC cards say "Professional fee only • + 18% GST", the
+  wording of the firm's OPC table. The trademark table keeps "+ Govt. fees & GST
+  extra", as the firm's own trademark table does.
 - Not done: #221 (Prior User pricing on the trademark plans) is a separate issue.
 - Tests: `Frontend/tests/e2e/pricing-plans.spec.js`.

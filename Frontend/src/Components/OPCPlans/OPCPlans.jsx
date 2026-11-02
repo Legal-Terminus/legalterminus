@@ -61,7 +61,7 @@ const DEFAULT_PLANS = [
     oldPrice: 32999,
     price: 24999,
     services: [
-      "Everything in Enriched",
+      "Everything in Supreme",
       "Statutory Registers Pack (Members, Directors, Charges)",
       "Directors' Report Preparation",
       "Preparation of Documents regarding AGM/BM Notice, Minutes & Extracts",
@@ -109,7 +109,8 @@ const OPCPlan = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     {plan.oldPrice ? <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div> : null}
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
+                    {/* #209: the firm's wording for OPC (2 Nov) */}
+                    <div className="opcplan-meta">Professional fee only &bull; + 18% GST</div>
                   </div>
 
                   <div className="opcplan-body">
