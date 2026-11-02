@@ -738,16 +738,19 @@ html.theme-c .plan-popular-badge { left: 50% !important; transform: translateX(-
    family names its card header differently; everything inside the header is
    centred, the feature list below it is untouched. */
 html.theme-c :is(.opcplan-header, .tradeplan-header, .iecplan-header, .udyam-plan-header, .LLP-Plan--header,
-  .prf-planheader, .pub-plan-card-header, .prp-price-plan-header, .Windup-PLC-plan-header, .Add-pp-header) {
+  .prf-planheader, .pub-plan-card-header, .prp-price-plan-header, .Windup-PLC-plan-header, .Add-pp-header,
+  .cic-header, .llpprice-plan-header, .Society-plan-header, .trust-plan-header, .s8-plan-header) {
   justify-items: center !important; text-align: center !important;
 }
 html.theme-c :is(.opcplan-header, .tradeplan-header, .iecplan-header, .udyam-plan-header, .LLP-Plan--header,
-  .prf-planheader, .pub-plan-card-header, .prp-price-plan-header, .Windup-PLC-plan-header, .Add-pp-header) > * {
+  .prf-planheader, .pub-plan-card-header, .prp-price-plan-header, .Windup-PLC-plan-header, .Add-pp-header,
+  .cic-header, .llpprice-plan-header, .Society-plan-header, .trust-plan-header, .s8-plan-header) > * {
   text-align: center !important; justify-content: center;
 }
 /* the ribbon on the card's top edge sits over its middle, as on Private Limited */
 html.theme-c :is(.opcplan-badge, .tradeplan-badge, .iecplan-badge, .udyam-plan-badge, .LLP-Plan--badge,
-  .prp-price-popular, .Windup-PLC-plan-header .popular) {
+  .Society-plan-badge, .trust-plan-badge, .s8-plan-badge, .prp-price-popular, .llpprice-popular,
+  :is(.Windup-PLC-plan-header, .Add-pp-header) .popular) {
   left: 50% !important; transform: translateX(-50%); white-space: nowrap;
 }
 

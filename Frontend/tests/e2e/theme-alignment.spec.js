@@ -127,8 +127,11 @@ test("Pricing cards read the same on every page", async ({ page }) => {
     await open(page, route);
     await page.waitForLoadState("networkidle");
     const cards = await page.evaluate(() => {
+      // a price is "₹4,999", or a figure in an element named for one: some pages
+      // print "3,999" with no rupee sign, and those must not slip through
       const prices = [...document.querySelectorAll("body *")]
-        .filter((e) => e.children.length === 0 && /^\s*₹\s?[\d,]+/.test(e.textContent) && e.offsetWidth);
+        .filter((e) => e.children.length <= 1 && e.offsetWidth && (/^\s*₹\s?[\d,]+/.test(e.textContent)
+          || (/price/i.test(e.className) && /^\s*[\d,]{3,}/.test(e.textContent))));
       const out = new Map();
       for (const price of prices) {
         // the header is the price's ancestor whose next sibling holds the feature list

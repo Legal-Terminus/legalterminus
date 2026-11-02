@@ -6096,10 +6096,11 @@ differently and the round-3 centring named only Private Limited's.
 - Every family's header is now centred and its ribbon ("Most popular", "Up to 10
   employees") sits over the middle of the card. Feature lists stay a left checklist.
 - Checked at 1440, 768 and 360 px: no ribbon wider than its card, no sideways scroll.
-- Open: the firm asked how to have four plans on some pages. About a dozen pages
-  already show four or more (Private Limited, Public Limited, GST Return Filing, the
-  conversion pages); which other pages need a fourth plan, and its contents, are
-  theirs to give.
+- Same day, after QA: five more families (Change Company Name, Change LLP Name,
+  Society, Trust, Section 8) and the "(Popular)" ribbon of Add/Remove Director had been
+  missed, because their prices carry no ₹ sign and the first check looked for one. The
+  test now also finds a figure in an element named for a price.
+- The firm then named the pages for a fourth plan: see the next entry.
 - Tests: `Frontend/tests/e2e/theme-alignment.spec.js` ("Pricing cards read the same
   on every page").
 
