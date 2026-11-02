@@ -1210,8 +1210,14 @@
         {
           "id": "supreme",
           "name": "Supreme",
-          "price": 24999,
+          "price": 14999,
           "oldPrice": 26999
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 24999,
+          "oldPrice": 32999
         }
       ],
       "pages": [
@@ -1862,14 +1868,20 @@
         {
           "id": "enriched",
           "name": "Enriched",
-          "price": 6499,
-          "oldPrice": 9749
+          "price": 4499,
+          "oldPrice": 9999
         },
         {
           "id": "supreme",
           "name": "Supreme",
-          "price": 12499,
-          "oldPrice": 15499
+          "price": 11999,
+          "oldPrice": 22499
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 21999,
+          "oldPrice": 32499
         }
       ],
       "pages": [
