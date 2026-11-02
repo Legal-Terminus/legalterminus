@@ -6086,3 +6086,19 @@ the step. The page offered the button anyway, and it failed with 403.
 
 #209: "Discover Our Articles & News" now fits on one line at every width, sized to fit.
 Tests: `Frontend/tests/e2e/theme-alignment.spec.js`.
+
+### Pricing cards aligned like Private Limited on every page (2026-11-02) 🔄 On QA, Theme C only
+
+#209, the firm on 2 Nov: "make the text alignment consistent with the Private Limited
+pricing section". 49 of the 55 service pages with pricing cards had the plan name,
+prices and the fees line left-aligned, because each page family names its card header
+differently and the round-3 centring named only Private Limited's.
+- Every family's header is now centred and its ribbon ("Most popular", "Up to 10
+  employees") sits over the middle of the card. Feature lists stay a left checklist.
+- Checked at 1440, 768 and 360 px: no ribbon wider than its card, no sideways scroll.
+- Open: the firm asked how to have four plans on some pages. About a dozen pages
+  already show four or more (Private Limited, Public Limited, GST Return Filing, the
+  conversion pages); which other pages need a fourth plan, and its contents, are
+  theirs to give.
+- Tests: `Frontend/tests/e2e/theme-alignment.spec.js` ("Pricing cards read the same
+  on every page").

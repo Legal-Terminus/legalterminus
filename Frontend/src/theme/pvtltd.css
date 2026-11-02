@@ -733,6 +733,24 @@ html.theme-c :is(.plan-name, .plan-old-price, .plan-price, .plan-meta) { text-al
 html.theme-c .plan-fullservice-badge { align-self: center; justify-self: center; margin-inline: auto !important; }
 html.theme-c .plan-popular-badge { left: 50% !important; transform: translateX(-50%); white-space: nowrap; }
 
+/* The same on every other service page (the firm, 2 Nov: "make the text
+   alignment consistent with the Private Limited pricing section"). Each page
+   family names its card header differently; everything inside the header is
+   centred, the feature list below it is untouched. */
+html.theme-c :is(.opcplan-header, .tradeplan-header, .iecplan-header, .udyam-plan-header, .LLP-Plan--header,
+  .prf-planheader, .pub-plan-card-header, .prp-price-plan-header, .Windup-PLC-plan-header, .Add-pp-header) {
+  justify-items: center !important; text-align: center !important;
+}
+html.theme-c :is(.opcplan-header, .tradeplan-header, .iecplan-header, .udyam-plan-header, .LLP-Plan--header,
+  .prf-planheader, .pub-plan-card-header, .prp-price-plan-header, .Windup-PLC-plan-header, .Add-pp-header) > * {
+  text-align: center !important; justify-content: center;
+}
+/* the ribbon on the card's top edge sits over its middle, as on Private Limited */
+html.theme-c :is(.opcplan-badge, .tradeplan-badge, .iecplan-badge, .udyam-plan-badge, .LLP-Plan--badge,
+  .prp-price-popular, .Windup-PLC-plan-header .popular) {
+  left: 50% !important; transform: translateX(-50%); white-space: nowrap;
+}
+
 /* Government costs (PL 4): the heading row centred, badge beside it */
 html.theme-c .govtcosts-title { justify-content: center !important; flex-wrap: wrap; }
 

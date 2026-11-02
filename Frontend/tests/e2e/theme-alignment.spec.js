@@ -118,6 +118,64 @@ test("Terms & Conditions read the same on every page", async ({ page }) => {
   expect(seen).toBeGreaterThan(50);
 });
 
+// #209, the firm, 2 Nov: every pricing section aligned like Private Limited's —
+// plan name, prices and the fees line centred, the feature list a left checklist.
+test("Pricing cards read the same on every page", async ({ page }) => {
+  test.setTimeout(600_000);
+  let seen = 0;
+  for (const route of ROUTES) {
+    await open(page, route);
+    await page.waitForLoadState("networkidle");
+    const cards = await page.evaluate(() => {
+      const prices = [...document.querySelectorAll("body *")]
+        .filter((e) => e.children.length === 0 && /^\s*₹\s?[\d,]+/.test(e.textContent) && e.offsetWidth);
+      const out = new Map();
+      for (const price of prices) {
+        // the header is the price's ancestor whose next sibling holds the feature list
+        let header = price;
+        while (header.parentElement && !header.nextElementSibling?.querySelector("ul,ol")) header = header.parentElement;
+        const card = header.parentElement;
+        if (!card || out.has(card) || card.offsetWidth > 560) continue;
+        const box = card.getBoundingClientRect();
+        const mid = box.left + box.width / 2;
+        // A ribbon ("Most popular") is positioned on the card's top edge, apart
+        // from the line it is written in, so it is measured on its own.
+        const ribbon = (e) => getComputedStyle(e).position === "absolute";
+        const textBox = (e) => {
+          const r = document.createRange();
+          let left = Infinity; let right = -Infinity;
+          const walk = document.createTreeWalker(e, NodeFilter.SHOW_TEXT);
+          for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+            let inRibbon = false;
+            for (let a = n.parentElement; a && a !== e; a = a.parentElement) inRibbon ||= ribbon(a);
+            if (!n.textContent.trim() || inRibbon) continue;
+            r.selectNodeContents(n);
+            const t = r.getBoundingClientRect();
+            if (t.width) { left = Math.min(left, t.left); right = Math.max(right, t.right); }
+          }
+          return { left, right };
+        };
+        // each line of the header as a whole: "₹499 / month" is one line, centred together
+        const off = [...header.children]
+          .filter((e) => e.textContent.trim() && e.offsetWidth && !ribbon(e))
+          .map((e) => { const t = textBox(e); return Math.abs((t.left + t.right) / 2 - mid); });
+        const ribbons = [...header.querySelectorAll("*")].filter((e) => ribbon(e) && e.offsetWidth)
+          .map((e) => { const b = e.getBoundingClientRect(); const o = e.offsetParent.getBoundingClientRect(); return Math.abs(b.left + b.width / 2 - (o.left + o.width / 2)); });
+        const list = header.nextElementSibling.querySelector("li");
+        out.set(card, {
+          centred: off.every((o) => o < 4),
+          list: list ? getComputedStyle(list).textAlign : "left",
+          ribbonCentred: ribbons.every((o) => o < 4),
+        });
+      }
+      return [...out.values()];
+    });
+    for (const c of cards) expect(c, route).toEqual({ centred: true, list: expect.stringMatching(/left|start/), ribbonCentred: true });
+    if (cards.length) seen += 1;
+  }
+  expect(seen).toBeGreaterThan(45);
+});
+
 for (const width of [1440, 1024, 768, 390, 360]) {
   test(`the Blog headline stays on one line at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
