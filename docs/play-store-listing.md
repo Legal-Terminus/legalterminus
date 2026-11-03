@@ -22,9 +22,10 @@ and **India only**. It is saved; **nothing is sent**. Version code 3 is also on 
 changes and says "Submit 9 changes for review", disabled because Play's quick check finds exactly one issue: **incomplete
 content ratings declaration** (the IARC terms, which a person must accept).
 
-**Open decision: rollout size.** The first Production release shows no staged-rollout control; the overview describes it as
-"Start full rollout" (100%). If 100% is not wanted, turn on **Managed publishing** (Publishing overview) before submitting, so
-approved changes wait for a manual publish instead of going live automatically.
+**Rollout size: Managed publishing is now ON (turned on 2026-11-03 at the user's request, verified after a reload).** The first Production
+release shows no staged-rollout control and is described as "Start full rollout" (100%). With managed publishing on, an approved release
+is NOT published automatically: it waits in "Changes ready to publish" until a person publishes it. Decide the rollout size at that point.
+To undo: Publishing overview, Managed publishing dropdown, "Managed publishing off".
 
 **Gate before "Send for review":** Data safety's deletion answer and both deletion links point to the privacy policy,
 which does **not yet** mention deletion. Publish the additions in `docs/privacy-policy-app-addendum.md` (needs a release tag and
