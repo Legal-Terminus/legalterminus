@@ -6124,3 +6124,43 @@ the step. The page offered the button anyway, and it failed with 403.
 
 #209: "Discover Our Articles & News" now fits on one line at every width, sized to fit.
 Tests: `Frontend/tests/e2e/theme-alignment.spec.js`.
+
+### Pricing cards aligned like Private Limited on every page (2026-11-02) 🔄 On QA, Theme C only
+
+#209, the firm on 2 Nov: "make the text alignment consistent with the Private Limited
+pricing section". 49 of the 55 service pages with pricing cards had the plan name,
+prices and the fees line left-aligned, because each page family names its card header
+differently and the round-3 centring named only Private Limited's.
+- Every family's header is now centred and its ribbon ("Most popular", "Up to 10
+  employees") sits over the middle of the card. Feature lists stay a left checklist.
+- Checked at 1440, 768 and 360 px: no ribbon wider than its card, no sideways scroll.
+- Same day, after QA: five more families (Change Company Name, Change LLP Name,
+  Society, Trust, Section 8) and the "(Popular)" ribbon of Add/Remove Director had been
+  missed, because their prices carry no ₹ sign and the first check looked for one. The
+  test now also finds a figure in an element named for a price.
+- The firm then named the pages for a fourth plan: see the next entry.
+- Tests: `Frontend/tests/e2e/theme-alignment.spec.js` ("Pricing cards read the same
+  on every page").
+
+### Supreme Plus on OPC and Trademark Registration (2026-11-02) 🔄 On QA
+
+#209, the firm on 2 Nov, with a picture of each table: a fourth plan, "Supreme Plus", on
+the OPC and Trademark Registration pages, as Private Limited has.
+- OPC: Supreme Plus ₹24,999 (cut ₹32,999). The other three plans take the firm's new
+  feature lists; Supreme becomes ₹14,999, the price the firm had already set in the portal.
+- Trademark: Supreme Plus ₹21,999 (cut ₹32,499); the firm's new features and taglines
+  on all four. The Odisha trademark page sells the same product, so it shows the same
+  four plans (the catalogue generator refuses two pages with different plans for one
+  product).
+- Portal: `shared/pricing/catalog.json` regenerated, and the two new plans seeded into
+  the QA catalogue (`seedPricing.js`, which adds missing plans and never overwrites a
+  price the firm has set). They appear on the portal's Website Prices page on QA.
+- **Not in the live catalogue yet.** The release must run `seedPricing.js` against the
+  live database too, or the live site hides Supreme Plus (a plan missing from the
+  catalogue is not on sale).
+- Confirmed the same day: OPC Supreme Plus starts "Everything in Supreme" (the table
+  said Enriched), and the OPC cards say "Professional fee only • + 18% GST", the
+  wording of the firm's OPC table. The trademark table keeps "+ Govt. fees & GST
+  extra", as the firm's own trademark table does.
+- Not done: #221 (Prior User pricing on the trademark plans) is a separate issue.
+- Tests: `Frontend/tests/e2e/pricing-plans.spec.js`.
