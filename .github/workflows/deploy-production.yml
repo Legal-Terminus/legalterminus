@@ -191,6 +191,7 @@ jobs:
             --set-env-vars="^||^GMAIL_APP_PASSWORD=${{ secrets.BACKEND_GMAIL_APP_PASSWORD }}" \
             --set-env-vars="EMAIL_FROM=${{ secrets.BACKEND_EMAIL_FROM }}" \
             --set-env-vars="CONTACT_LEADS_EMAIL=${{ vars.CONTACT_LEADS_EMAIL || 'noreply@legalterminus.com' }}" \
+            --set-env-vars="CORS_ORIGINS=https://localhost" \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
 
           # #20: CONTACT_LEADS_EMAIL above is where website enquiries are emailed.

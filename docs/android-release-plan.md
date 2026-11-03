@@ -71,14 +71,28 @@ order, who does it, and which steps touch production.
 7a. ✅ Merged to `main` and pushed (2026-11-03); "Deploy to QA" run #60 succeeded. The two later
    commits (`c8569402`, `0815a17e`) are local and unpushed. Re-check the shared fixes on the QA website
    (sign-in, document upload and View, CSV and xlsx export) before any release tag.
-8. ⚠ PROD: add `https://localhost` to the production API's `CORS_ORIGINS` (set in
-   `deploy-production.yml`, so it ships with a release tag). `https://legalterminus.com` is the live
-   origin today and allows neither the app nor `localhost`.
-9. ⚠ PROD 👤: publish `https://legalterminus.com/.well-known/assetlinks.json` listing the app-signing
-   SHA-256, so emailed sign-in and password links open the app instead of the browser.
-10. ⚠ PROD 👤: add `https://localhost` to the **production bucket's** CORS (`storage-cors.json` shows
-    the format; apply it to the production bucket, not the QA one). This is a separate manual step,
-    not part of the tag. Uploads and every API call fail in the production app until 8 and 10 are done.
+8. ⚠ PROD **API CORS: prepared, not applied.** `deploy-production.yml` now sets
+   `CORS_ORIGINS=https://localhost` on the production API (it set none before). It takes effect when a
+   release tag deploys the backend. Checked with the API's own `corsOrigins.js` in production mode:
+   `https://localhost` is allowed; `http://localhost`, other ports, `https://evil.localhost`,
+   `capacitor://localhost` and look-alike hosts stay refused. Note: that origin is shared by every
+   Capacitor app that uses the default `https://localhost`, so it is protected only by the bearer token
+   (the API sends no cookies to it), the same as on QA.
+9. ⚠ PROD 👤 **assetlinks.json: prepared, not applied.** `Frontend/public/.well-known/assetlinks.json`
+   holds the Play **app-signing** SHA-256 (read from the APK Play signed, not retyped) for
+   `com.legalterminus.app`. It deploys with the next hosting deploy of the release tag. Checked: Vite
+   copies it to `dist/.well-known/`, and the Firebase CLI 15.34.2 (what CI installs) includes it despite
+   the `**/.*` ignore rule, so `firebase.json` is unchanged. After the release, verify (expect 200,
+   `application/json`, no redirect):
+   `curl -sI https://legalterminus.com/.well-known/assetlinks.json`. If a phone still opens links in the
+   browser, re-verify in the app's "Open by default" settings or wait; Android caches the result.
+10. ⚠ PROD 👤 **Bucket CORS: prepared, not applied.** Production's live config (read 2026-11-03) is the
+    list in `storage-cors.json` **minus** `https://localhost`, so applying the file adds exactly one origin
+    and drops nothing. Apply it **by hand**, because nothing in CI does:
+    `gcloud storage buckets update gs://legal-terminus-web.firebasestorage.app --cors-file=storage-cors.json`
+    (needs a Storage admin login). Confirm with
+    `gcloud storage buckets describe gs://legal-terminus-web.firebasestorage.app --format="default(cors_config)"`.
+    Re-read the live config right before applying: if it changed since, merge instead of overwriting.
 11. ⚠ PROD: push a release tag `vX.Y.Z-lt.N` only when the user asks for a release. It waits for an
     approval in GitHub. Whatever is on `main` ships, so everything merged must be safe to release.
 

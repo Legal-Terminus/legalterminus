@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.legalterminus.app",
+      "sha256_cert_fingerprints": [
+        "BE:E3:F3:27:C0:1B:8B:B3:3B:7B:06:A4:25:42:03:9C:AA:6B:47:C0:5B:4D:7B:8A:23:74:57:48:01:BF:20:8A"
+      ]
+    }
+  }
+]
