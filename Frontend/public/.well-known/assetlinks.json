@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "com.legalterminus.app",
       "sha256_cert_fingerprints": [
-        "BE:E3:F3:27:C0:1B:8B:B3:3B:7B:06:A4:25:42:03:9C:AA:6B:47:C0:5B:4D:7B:8A:23:74:57:48:01:BF:20:8A"
+        "BE:E3:F3:27:C0:1B:8B:B3:3B:7B:06:A4:25:42:03:9C:AA:6B:47:C0:5B:4D:7B:8A:23:74:57:48:01:BF:20:8A",
+        "46:AC:E9:CF:7A:85:BE:2D:43:D0:AF:E7:C8:8F:73:B1:3C:8D:23:E7:39:9C:82:6A:DC:53:0C:8D:E4:C0:7C:C0"
       ]
     }
   }

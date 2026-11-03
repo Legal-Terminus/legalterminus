@@ -78,14 +78,15 @@ order, who does it, and which steps touch production.
    `capacitor://localhost` and look-alike hosts stay refused. Note: that origin is shared by every
    Capacitor app that uses the default `https://localhost`, so it is protected only by the bearer token
    (the API sends no cookies to it), the same as on QA.
-9. ⚠ PROD 👤 **assetlinks.json: prepared, not applied.** `Frontend/public/.well-known/assetlinks.json`
-   holds the Play **app-signing** SHA-256 (read from the APK Play signed, not retyped) for
-   `com.legalterminus.app`. It deploys with the next hosting deploy of the release tag. Checked: Vite
-   copies it to `dist/.well-known/`, and the Firebase CLI 15.34.2 (what CI installs) includes it despite
-   the `**/.*` ignore rule, so `firebase.json` is unchanged. After the release, verify (expect 200,
-   `application/json`, no redirect):
-   `curl -sI https://legalterminus.com/.well-known/assetlinks.json`. If a phone still opens links in the
-   browser, re-verify in the app's "Open by default" settings or wait; Android caches the result.
+9. ✅ **assetlinks.json is already live on production** (found 2026-11-03; someone published it outside
+   the repo). `https://legalterminus.com/.well-known/assetlinks.json` returns 200 with no redirect, and
+   Google's Digital Asset Links service reads it without errors. It lists three SHA-256 fingerprints: the
+   Play **app-signing** key (the one phones see), the **upload** key, and a **debug** key. The repo file
+   `Frontend/public/.well-known/assetlinks.json` was aligned **on purpose** (option 2): app-signing +
+   upload, **debug key dropped**; checked to differ from the live file by exactly that one entry. It
+   replaces the live file when the release deploys the website. Whoever published the live file should
+   know the repo now owns it. Checked: Vite copies it to `dist/.well-known/`, and Firebase CLI 15.34.2
+   (what CI installs) deploys it despite the `**/.*` ignore rule, so `firebase.json` is unchanged.
 10. ⚠ PROD 👤 **Bucket CORS: prepared, not applied.** Production's live config (read 2026-11-03) is the
     list in `storage-cors.json` **minus** `https://localhost`, so applying the file adds exactly one origin
     and drops nothing. Apply it **by hand**, because nothing in CI does:
@@ -93,8 +94,76 @@ order, who does it, and which steps touch production.
     (needs a Storage admin login). Confirm with
     `gcloud storage buckets describe gs://legal-terminus-web.firebasestorage.app --format="default(cors_config)"`.
     Re-read the live config right before applying: if it changed since, merge instead of overwriting.
-11. ⚠ PROD: push a release tag `vX.Y.Z-lt.N` only when the user asks for a release. It waits for an
-    approval in GitHub. Whatever is on `main` ships, so everything merged must be safe to release.
+11. ⚠ PROD: the release tag. Only when the user asks for a release. **See the runbook below: it ships
+    much more than the app, and it needs production indexes first.**
+
+## Release runbook: v1.6.0-lt.9 (prepared, NOT run)
+
+**Name:** `v1.6.0-lt.9`. Per `docs/releases/SYNC.md` these are LT-only changes, so the sequence continues
+(`lt.8` was the last tag, 2026-10-17; releases are taken in order, nothing is skipped).
+
+**What it ships:** a tag deploys the **whole tagged commit**, not just the app: 44 commits and 215 files
+since `lt.8` (≈17,800 lines added), across the backend, Portal, website and app. From the commit subjects
+(read them before approving; this is a summary, not a review):
+- **Android app:** the shell, shared Portal fixes (sign-in, uploads, exports, refused-account message),
+  `CORS_ORIGINS=https://localhost` on the production API, `assetlinks.json` (two keys).
+- **Portal:** Client Database screen (#205), Employee Performance report (#216), trademark reports (#210),
+  thirteen company worksheets (#217), comment images (#122), team members see only the buttons and data they can use,
+  My Tasks lists only steps a team member can complete.
+- **Website:** Theme C round 3 and Supreme Plus plans on OPC and Trademark (#209), pricing and layout fixes.
+- **Security / platform:** exact CORS allowlist for the API (`938046aa`), dependency audit and **Node 26.13.0
+  image** (#218): nodemailer 10, sharp 0.35, xlsx from the SheetJS CDN build, firebase 12.19.
+
+The app does **not** need a separate deploy: it bundles its own copy of the Portal and talks to the API. But
+that Portal is `main`'s Portal, so it needs `main`'s backend, which is why this is a full release and not a
+one-line patch tagged from `lt.8` (that option exists, rule 5 in `docs/delivery.md`, but it needs an API
+compatibility check first).
+
+### Before the tag (all must be true)
+1. **The approval gate exists.** GitHub → Settings → Environments → **production** → Required reviewers must
+   list a reviewer. On 2026-11-03 the public API showed `protection_rules: []` for `production`; I cannot see
+   reviewer settings without admin access. `delivery.md`: *"If no reviewer is configured, a tag deploys
+   immediately."* Fix this first.
+2. **Production indexes are built first** (CI does **not** deploy them). `firestore.indexes.json` gained 176
+   lines since `lt.8`: `steps` (assignedTo / assignedToUids × completedAt / status), `events` (byUid × at),
+   `worksheetRecords` (sheets × createdAt, book × recordKey), `tasks` (serviceKey × createdAt), plus
+   single-field overrides. Without them the new reports, worksheets and My Tasks fail on production.
+   👤 With Firebase CLI access to `legal-terminus-web`: `firebase deploy --only firestore:indexes --project legal-terminus-web`,
+   then wait until every index shows **Enabled** in the console. (`firestore.rules` and the workflow
+   definitions are unchanged since `lt.8`; no migration scripts changed.)
+3. **Look at it on QA** (rule 3: *a tag says this commit was seen working on QA*). QA runs #60–#62 are green
+   on this commit. Still to do: a full Playwright run on the final code (the last full run was 523 passed, 2 failed,
+   1 flaky, all three also failing on the original code), and a hand check of the website and Portal on QA.
+4. **Node 26 image** (#218) is a production runtime change; confirm the QA backend has been running on it.
+5. Tag a commit that is **pushed** and is the one QA deployed (`git status` clean, `git log origin/main..HEAD` empty).
+
+### The tag (explicit "yes" from the user for this step)
+```bash
+git checkout main && git pull
+git tag -a v1.6.0-lt.9 -m "Legal Terminus v1.6.0-lt.9: Android app support, reports, worksheets, website, dependency and Node 26 update"
+git push origin v1.6.0-lt.9      # starts "Deploy to Production", pending approval
+```
+Then a reviewer approves in the Actions tab. Watch the job: backend health check (`/health`, 6 retries), Portal, website.
+`gh` is not installed on the working machine: create the GitHub Release in the web UI (or run `gh release create`).
+Then add the ledger row to `docs/releases/SYNC.md` (draft: `| v1.5.0 | v1.6.0-lt.9 | <date> | **LT-only release — no
+Ambyflow code.** Android app support (shared Portal fixes, production CORS for https://localhost, assetlinks);
+Client Database, Employee Performance and trademark reports, company worksheets, comment images; website
+Theme C and Supreme Plus plans; exact CORS allowlist; dependency audit and Node 26. |`).
+
+### After the tag: prove it, then the app
+- **CORS for the app origin.** Before release, a preflight from `Origin: https://localhost` to
+  `https://legalterminus.com/api/auth/me` returns `204` with **no** `access-control-allow-origin` (baseline taken
+  2026-11-03). After release it must return `access-control-allow-origin: https://localhost`:
+  `curl -s -D - -o /dev/null -X OPTIONS -H "Origin: https://localhost" -H "Access-Control-Request-Method: GET" https://legalterminus.com/api/auth/me | grep -i access-control`
+- 👤 **Bucket CORS** (step 10), then check an upload from the app.
+- `assetlinks.json` still returns 200 / JSON with the two keys, and the Digital Asset Links API still lists both.
+- Then Phase 3: upload vc3 to **Internal testing**, test on a phone, and only then Production.
+
+### If it goes wrong (not rehearsed)
+Cloud Run keeps earlier revisions: shift traffic back to the previous revision of `legal-terminus-api` and
+`legal-terminal-portal`; Firebase Hosting has a release history to roll the website back. Or re-run
+"Deploy to Production" by hand from `v1.6.0-lt.8`. Indexes are additive and can stay. Rolling back the
+API means the app's origin is refused again, nothing worse.
 
 ## Phase 3: Production build and internal test
 
