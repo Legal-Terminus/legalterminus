@@ -7,8 +7,10 @@ android {
         applicationId "com.legalterminus.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.0.1-qa"
+        versionCode 3
+        versionName "1.0.0"
+        // Host of the emailed account links (see AndroidManifest.xml). Production unless a QA build asks.
+        manifestPlaceholders = [linkHost: project.findProperty('linkHost') ?: 'legalterminus.com']
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
