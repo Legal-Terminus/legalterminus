@@ -1,0 +1,5 @@
+# Changes to the deploy pipelines need lokesh-infynia's review (2026-11-03).
+# QA and production share one Google Cloud project and one deploy identity, so
+# an edited QA workflow could deploy to production without the production
+# approval. Enforced by the ruleset on `main` ("Require review from Code Owners").
+/.github/ @lokesh-infynia
