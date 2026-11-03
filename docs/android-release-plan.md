@@ -6,7 +6,7 @@ Status 2026-11-03: **nothing on production has been changed.** Builds so far:
 |---|---|---|
 | 1.0.0-qa, versionCode 1 | QA | On the Play **Internal testing** track; installs and runs on a real phone |
 | 1.0.1-qa, versionCode 2 | QA | Signed, ready to upload; clear message for refused accounts; runs on an emulator |
-| **1.0.0, versionCode 3** | **Production** | Built and signed, **not uploaded and never run**. It cannot work until Phase 2 is done |
+| **1.0.0, versionCode 3** | **Production** | Built and signed, **not uploaded and never run on a phone**. The server side is live since release `v1.6.0-lt.9` (2026-11-03) |
 
 The QA website deploy of the Portal changes succeeded (run #60). This plan lists what is left, in
 order, who does it, and which steps touch production.
@@ -71,7 +71,7 @@ order, who does it, and which steps touch production.
 7a. ✅ Merged to `main` and pushed (2026-11-03); "Deploy to QA" run #60 succeeded. The two later
    commits (`c8569402`, `0815a17e`) are local and unpushed. Re-check the shared fixes on the QA website
    (sign-in, document upload and View, CSV and xlsx export) before any release tag.
-8. ⚠ PROD **API CORS: prepared, not applied.** `deploy-production.yml` now sets
+8. ✅ **API CORS: live since release `v1.6.0-lt.9` (2026-11-03, run #13).** Verified after the release: a preflight from `Origin: https://localhost` to `https://legalterminus.com/api/auth/me` now returns `access-control-allow-origin: https://localhost`; `http://localhost`, `https://localhost:8080`, `https://evil.localhost` and `https://evillegalterminus.com` are refused; the website's own origin still works. Originally: `deploy-production.yml` now sets
    `CORS_ORIGINS=https://localhost` on the production API (it set none before). It takes effect when a
    release tag deploys the backend. Checked with the API's own `corsOrigins.js` in production mode:
    `https://localhost` is allowed; `http://localhost`, other ports, `https://evil.localhost`,
@@ -118,7 +118,7 @@ one-line patch tagged from `lt.8` (that option exists, rule 5 in `docs/delivery.
 compatibility check first).
 
 ### Before the tag (all must be true)
-1. **The approval gate exists.** GitHub → Settings → Environments → **production** → Required reviewers must
+1. ❌ **The approval gate does NOT exist (found 2026-11-03).** The tag deployed with no wait. Add a required reviewer under Settings → Environments → production before the next tag. Original note: GitHub → Settings → Environments → **production** → Required reviewers must
    list a reviewer. On 2026-11-03 the public API showed `protection_rules: []` for `production`; I cannot see
    reviewer settings without admin access. `delivery.md`: *"If no reviewer is configured, a tag deploys
    immediately."* Fix this first.
@@ -260,3 +260,11 @@ errors, and do **not** promote a QA build (vc1, vc2) to Production: it talks to 
 - Report tables scroll sideways on phones instead of stacking.
 - The "Google sign-in did not complete" message covers both cancelling and a setup failure, so the two
   cannot be told apart from the screen.
+
+## Release log
+
+- **2026-11-03: `v1.6.0-lt.9` released** on `b19594a7` (QA run #63 green on that commit); Deploy to Production run #13 succeeded
+  (backend, Portal, website). Checked afterwards: app-origin CORS accepted and look-alikes refused; `assetlinks.json` 200 with two
+  keys and read by Google; the production reviewer account signs in and `GET /api/auth/me` returns 200; site, Portal and privacy
+  page return 200. **Not checked:** the app itself on a phone against production. Ledger row added to `docs/releases/SYNC.md`.
+  The GitHub Release page was not created (`gh` is not installed); create it in the web UI if the team wants one.
