@@ -1,9 +1,15 @@
 # Android app: release plan (Google Play)
 
-Status 2026-11-03: the app runs on **QA only**. An internal-testing build (1.0.0-qa, versionCode 1)
-is published to the Play **Internal testing** track and installs and runs on a real phone. Build
-1.0.1-qa (versionCode 2) is signed and ready to upload. **Nothing on production has been changed.**
-This plan lists what is left, in order, who does it, and which steps touch production.
+Status 2026-11-03: **nothing on production has been changed.** Builds so far:
+
+| Build | Values | State |
+|---|---|---|
+| 1.0.0-qa, versionCode 1 | QA | On the Play **Internal testing** track; installs and runs on a real phone |
+| 1.0.1-qa, versionCode 2 | QA | Signed, ready to upload; clear message for refused accounts; runs on an emulator |
+| **1.0.0, versionCode 3** | **Production** | Built and signed, **not uploaded and never run**. It cannot work until Phase 2 is done |
+
+The QA website deploy of the Portal changes succeeded (run #60). This plan lists what is left, in
+order, who does it, and which steps touch production.
 
 - **Play Console account:** *LEGAL TERMINUS PRIVATE LIMITED*, an **organisation** account
   (ID 5266562184256323096). Organisation accounts do **not** need the "12 testers for 14 days"
@@ -51,15 +57,20 @@ This plan lists what is left, in order, who does it, and which steps touch produ
    (`flow-order` #55, `orders` "missing payment can be checked") and the flaky one (`leads`
    team-member convert) also fail on the original code; say so in the commit rather than hide it.
    Someone should look at them.
-5. Add the manifest intent filter for `legalterminus.com` (path `/portal/account/action`); the
-   current one is QA-only. Decide whether a release keeps the QA host (build flavors are the clean way).
-6. Add a **build guard** that fails a release build if the QA database id (`qa-data`) or a `-qa` URL
-   is present. `Portal/.env.local` holds QA values, so a build on this machine bakes them in.
+5. ✅ The emailed-link host is now a build setting (`linkHost`, default `legalterminus.com`; a QA
+   build passes `-PlinkHost=legal-terminus-qa.web.app`). Committed as `c8569402`.
+6. ✅ (by hand) The production build was made in a **clean checkout** and its APK was inspected for QA
+   values. Still to do: an automated **build guard** that fails a release build if `qa-data`, a `-qa`
+   URL or a `.test` address is present. `Portal/.env.local` holds QA values, so a build from this
+   checkout bakes them in.
+7. ✅ `MobileApp/package-lock.json` is tracked (`0815a17e`), so a clean checkout can `npm ci`. It had been
+   hidden by the repo-wide `package-lock.json` ignore rule.
 
 ## Phase 2: Website side (⚠ PROD each step; explicit "yes" per step)
 
-7. Merge to `main`. This deploys the **website to QA** only and releases nothing. Let it soak and
-   re-check the shared fixes on the QA website (sign-in, document upload and View, CSV and xlsx export).
+7a. ✅ Merged to `main` and pushed (2026-11-03); "Deploy to QA" run #60 succeeded. The two later
+   commits (`c8569402`, `0815a17e`) are local and unpushed. Re-check the shared fixes on the QA website
+   (sign-in, document upload and View, CSV and xlsx export) before any release tag.
 8. ⚠ PROD: add `https://localhost` to the production API's `CORS_ORIGINS` (set in
    `deploy-production.yml`, so it ships with a release tag). `https://legalterminus.com` is the live
    origin today and allows neither the app nor `localhost`.
@@ -73,21 +84,27 @@ This plan lists what is left, in order, who does it, and which steps touch produ
 
 ## Phase 3: Production build and internal test
 
-12. Get the **production values**: production API base URL, **no** `VITE_FIRESTORE_DATABASE_ID`, the
-    production storage bucket. Confirm them with the team. Build from a clean environment (or CI),
-    not from this machine's `Portal/.env.local`.
+12. ✅ **Production values** used for build vc3 (confirm them with the team): API
+    `https://legalterminus.com` (answers 401 JSON for a missing token), bucket
+    `legal-terminus-web.firebasestorage.app`, project `legal-terminus-web`, auth domain
+    `legalterminus.com`, **no** `VITE_FIRESTORE_DATABASE_ID`. The Firebase API key, app id and sender id
+    are the same project's values as QA's (QA shares the project). Built from a clean checkout, not
+    from this machine's `Portal/.env.local`.
 13. ✅ Signing is set up: **Play App Signing** is on, an upload key exists
     (`~/lt-android-release/keys/`, 👤 **back it up in two places**; losing it means asking Google for a
     reset), and the Play app-signing and upload SHA-1 and SHA-256 are registered in Firebase
     (project `legal-terminus-web`, Android app `com.legalterminus.app`). The current
     `google-services.json` already includes them. Re-download it only if something changes.
-14. Bump `versionCode` in `MobileApp/android/app/build.gradle` (it must increase on every upload;
-    vc1 and vc2 are the QA builds, so use 3 or higher) and `versionName`.
+14. ✅ versionCode 3 / versionName 1.0.0 (it must increase on every upload; vc1 and vc2 are the QA
+    builds, so the next production build is 4 or higher).
 15. `cd Portal && npm run build:mobile` with the production env, then `cd ../MobileApp && npx cap sync android`.
 16. Build: `cd android && gradle clean bundleRelease assembleRelease` (JDK 21 and the Android SDK; the
     Gradle wrapper download times out here, so use the unpacked Gradle in `~/lt-android-release/tools/`).
     Sign the `.aab` with `jarsigner` and the APK with `zipalign` and `apksigner` using the upload key.
     Check the result by reading the APK (versionCode, signer SHA-1, and that no QA value is inside).
+    ✅ Done for vc3: `~/lt-android-release/out/legalterminus-1.0.0-prod-vc3.aab` and `.apk`; signed with
+    the upload key (SHA-1 `003b92…`); no QA host, database id or test account inside; link host
+    `legalterminus.com`. Not installed or run anywhere yet.
 17. ⚠ PROD: create a **dedicated reviewer account** in production (a limited Client with no real data).
     Its credentials go in the Play Console "App access" form.
 18. 👤 Upload the `.aab` to **Internal testing** and install from the Play link (not a side-loaded APK).
@@ -130,11 +147,14 @@ the emulator; use QA data only), category (Business), contact email, website.
 installs on an Android 16 emulator, signs in as the QA admin, stays signed in after a restart, and the
 Google button opens the native account screen and returns a friendly message on cancel. The refused-
 account message logic has a Playwright spec (mocked server response). The full suite is above.
+The production build (vc3) was only **inspected** (contents, version, signer, link host).
 
 **Not tested:** native Google sign-in end to end with a Google account, the sign-out and message after
 a refused account on a device, the other roles on the app, offline start, upload and View and exports
 on the latest build, any real phone beyond the first install, Android 8–11, push, and everything in
-Phases 2–3 (production origins, the app-link file, the production build and its first install).
+Phases 2–3 (production origins, the app-link file, and the production build's install and first
+sign-in). Do **not** upload vc3 to Internal testing before steps 8–10 are done, or testers only see
+errors, and do **not** promote a QA build (vc1, vc2) to Production: it talks to QA, which refuses real accounts.
 
 ## Open leftovers (from QA, not blockers)
 
