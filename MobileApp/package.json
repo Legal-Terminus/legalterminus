@@ -1,0 +1,28 @@
+{
+  "name": "legal-terminus-mobile",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Capacitor Android shell around the Portal (Portal/dist-mobile).",
+  "scripts": {
+    "build:web": "cd ../Portal && npm run build:mobile",
+    "sync": "npm run build:web && cap sync android",
+    "open": "cap open android",
+    "run:android": "npm run sync && cap run android"
+  },
+  "dependencies": {
+    "@capacitor-community/file-opener": "^8.0.1",
+    "@capacitor-firebase/authentication": "^8.6.0",
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.2",
+    "firebase": "^12.19.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.0",
+    "typescript": "^5.9.3"
+  }
+}
