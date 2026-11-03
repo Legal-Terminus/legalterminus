@@ -1,5 +1,6 @@
-# Changes to the deploy pipelines need lokesh-infynia's review (2026-11-03).
-# QA and production share one Google Cloud project and one deploy identity, so
-# an edited QA workflow could deploy to production without the production
+# Changes to the deploy pipelines and the agent instructions need an owner's
+# review (2026-11-03). QA and production share one Google Cloud project, so an
+# edited workflow could otherwise reach production without the production
 # approval. Enforced by the ruleset on `main` ("Require review from Code Owners").
-/.github/ @lokesh-infynia
+# Two owners, because GitHub does not count an author's own approval.
+/.github/ @lokesh-infynia @sales23legalterminus
