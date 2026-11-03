@@ -6191,7 +6191,11 @@ website, the portal or in emails point to it.
 - Checked first: no page, screen or email mentions the app. Two files did:
   `/.well-known/assetlinks.json` (made emailed account links open the app) and
   `/portal/webview-update.html` (the app's "update your WebView" page, reachable by URL).
-- `assetlinks.json` is removed. `webview-update.html` moved to `MobileApp/web/`; only the
+- `assetlinks.json` is removed from the repo, but after the release `legalterminus.com` and
+  QA still serve one: Firebase Hosting generates it from the Android app registered in the
+  Firebase project settings (its SHA-256 fingerprints). Removing that is a project setting,
+  left alone because the build in Play review signs in with the same registration.
+- `webview-update.html` moved to `MobileApp/web/`; only the
   app build (`--mode mobile`) emits it.
 - Kept, not user-visible: the app's origin on the production API and bucket, and the
   Capacitor code, which does nothing in a browser. Removing them would only break the
