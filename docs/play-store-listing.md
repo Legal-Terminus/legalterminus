@@ -10,7 +10,8 @@ the business before it is submitted**; Play compares these answers with what the
 |---|---|
 | App bundle for Play (production values, versionCode 3, 1.0.0) | `~/lt-android-release/out/legalterminus-1.0.0-prod-vc3.aab` |
 | Phone screenshots, 1080×2160 (Play allows at most 2:1), QA test data only | `~/lt-android-release/play-assets/phone-1-ADMIN.png`, `phone-2-TEAM.png`, `phone-3-CLIENT.png` |
-| Still needed from design | App icon 512×512 PNG and feature graphic 1024×500 (the launcher icon source is in `MobileApp/assets/`) |
+| App icon 512×512 PNG | `~/lt-android-release/play-assets/icon-512.png` (made from `MobileApp/assets/icon-only.png`) |
+| Feature graphic 1024×500 (JPEG, no transparency) | `~/lt-android-release/play-assets/feature-graphic-1024x500.jpg` (the logo lockup on white: plain but valid; a designer can replace it) |
 
 The client screenshot shows an empty account ("0" everywhere); a client with a few services would sell the
 app better. Take one from a QA client that has matters. Do not use production data in screenshots.
