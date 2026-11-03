@@ -124,16 +124,22 @@ compatibility check first).
    list a reviewer. On 2026-11-03 the public API showed `protection_rules: []` for `production`; I cannot see
    reviewer settings without admin access. `delivery.md`: *"If no reviewer is configured, a tag deploys
    immediately."* Fix this first.
-2. **Production indexes are built first** (CI does **not** deploy them). `firestore.indexes.json` gained 176
-   lines since `lt.8`: `steps` (assignedTo / assignedToUids × completedAt / status), `events` (byUid × at),
-   `worksheetRecords` (sheets × createdAt, book × recordKey), `tasks` (serviceKey × createdAt), plus
-   single-field overrides. Without them the new reports, worksheets and My Tasks fail on production.
-   👤 With Firebase CLI access to `legal-terminus-web`: `firebase deploy --only firestore:indexes --project legal-terminus-web`,
-   then wait until every index shows **Enabled** in the console. (`firestore.rules` and the workflow
-   definitions are unchanged since `lt.8`; no migration scripts changed.)
+2. ✅ **Production indexes are built first** (CI does **not** deploy them). **Done 2026-11-03** by the
+   user's go-ahead: `firebase deploy --only firestore:indexes --project legal-terminus-web --non-interactive`
+   (no `--force`), logged in as the user. `firestore.indexes.json` had gained 176 lines since `lt.8`; production
+   now has **23 composite indexes, all READY** (15 before + 8 new: `steps` ×4 over assignedTo / assignedToUids ×
+   completedAt / status, `events` byUid × at, `worksheetRecords` ×2, `tasks` serviceKey × createdAt) and all
+   5 field overrides match the file (3 new collection-group ones: `steps.completedAt`, `steps.status`,
+   `events.at`). Verified read-only afterwards. **Left alone on purpose:** the live index `tasks`
+   accessProfessionalUids × updatedAt and one field override that are not in the file (the CLI offers to delete
+   them with `--force`; do not). One side effect: the CLI set the three overrides exactly as written, which dropped
+   those fields' default array index (`CONTAINS`); nothing queries them with `array-contains`.
+   `firestore.rules` and the workflow definitions are unchanged since `lt.8`; no migration scripts changed.
 3. **Look at it on QA** (rule 3: *a tag says this commit was seen working on QA*). QA runs #60–#62 are green
-   on this commit. Still to do: a full Playwright run on the final code (the last full run was 523 passed, 2 failed,
-   1 flaky, all three also failing on the original code), and a hand check of the website and Portal on QA.
+   on this commit. ✅ Full Playwright run on the final code (`c551928f`, 2026-11-03): **524 passed, 2 failed,
+   1 flaky, 6 skipped, 5 did not run**; the same three tests fail as on the original code (`flow-order` #55, `orders`
+   "missing payment can be checked", flaky `leads` team-member convert) and nothing new. Still to do: a hand check
+   of the website and Portal on QA.
 4. **Node 26 image** (#218) is a production runtime change; confirm the QA backend has been running on it.
 5. Tag a commit that is **pushed** and is the one QA deployed (`git status` clean, `git log origin/main..HEAD` empty).
 
