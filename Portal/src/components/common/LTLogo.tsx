@@ -53,8 +53,8 @@ export function LTMark({ className = 'w-5 h-5' }: { className?: string }) {
 export function LTLockup({ className = 'h-8' }: { className?: string }) {
   return (
     <img
-      src="/portal/lt-logo@1x.png"
-      srcSet="/portal/lt-logo@1x.png 1x, /portal/lt-logo.png 2x"
+      src={`${import.meta.env.BASE_URL}lt-logo@1x.png`}
+      srcSet={`${import.meta.env.BASE_URL}lt-logo@1x.png 1x, ${import.meta.env.BASE_URL}lt-logo.png 2x`}
       alt="Legal Terminus"
       className={className}
       // Intrinsic ratio prevents layout shift while the image loads.

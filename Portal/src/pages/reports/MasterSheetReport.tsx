@@ -8,6 +8,7 @@ import type { ReportFilters, MasterSheetRow } from '../../api/reports';
 import ReportFiltersBar from '../../components/reports/ReportFiltersBar';
 import DataGrid from '../../components/common/DataGrid';
 import { exportToXlsx, type ExportColumn } from '../../lib/exportXlsx';
+import { useToast } from '../../components/common/toastContext';
 import { useUrlFilters } from '../../hooks/useUrlFilters';
 import { REPORT_FILTER_KEYS } from '../../api/reports';
 
@@ -23,6 +24,7 @@ const PAYMENT_CLS: Record<string, string> = {
 // filtering these columns. Auto-updates every 30s (real-time-ish).
 export default function MasterSheetReport() {
   const navigate = useNavigate();
+  const toast = useToast();
   // #208: filters live in the URL so Back from a matter restores them.
   const [filters, setFilters] = useUrlFilters<ReportFilters>(REPORT_FILTER_KEYS);
   const { data = [], isLoading, error } = useQuery({
@@ -91,7 +93,7 @@ export default function MasterSheetReport() {
           <button onClick={onExportXlsx} className="btn-primary inline-flex items-center gap-2">
             <Download className="w-4 h-4" /> Export Excel
           </button>
-          <button onClick={() => downloadMasterSheetCSV(filters)} className="btn-secondary inline-flex items-center gap-2">
+          <button onClick={() => { downloadMasterSheetCSV(filters).catch((e: Error) => toast.error(e.message || 'Could not download the CSV.')); }} className="btn-secondary inline-flex items-center gap-2">
             <Download className="w-4 h-4" /> CSV
           </button>
         </div>

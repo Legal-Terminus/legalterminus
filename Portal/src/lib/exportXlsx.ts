@@ -6,6 +6,8 @@
  * SheetJS is dynamically imported so its ~300kB only loads when a user actually
  * exports — it stays out of the initial bundle.
  */
+import { shareBlobNative } from './native';
+
 export interface ExportColumn<T> {
   header: string;
   value: (row: T) => string | number | null | undefined;
@@ -31,5 +33,11 @@ export async function exportToXlsx<T>(
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
   const stamp = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `${fileName}-${stamp}.xlsx`);
+  const file = `${fileName}-${stamp}.xlsx`;
+  // An Android WebView drops the anchor download XLSX.writeFile relies on, so inside
+  // the app the file goes to the share sheet instead. In a browser nothing changes.
+  const bytes = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+  const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  if (await shareBlobNative(blob, file)) return;
+  XLSX.writeFile(wb, file);
 }

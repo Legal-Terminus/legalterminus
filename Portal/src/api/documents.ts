@@ -1,6 +1,7 @@
 import { apiFetch } from './client';
 import { auth } from '../lib/firebase';
 import { getIdToken } from 'firebase/auth';
+import { openBlobNative, shareBlobNative } from '../lib/native';
 
 /**
  * Document Cycle API (E-05). Upload is a two-step signed-URL flow: ask the backend
@@ -140,6 +141,7 @@ async function fetchDocumentBlob(taskId: string, docId: string): Promise<Blob> {
 
 export async function openDocument(taskId: string, docId: string): Promise<void> {
   const blob = await fetchDocumentBlob(taskId, docId);
+  if (await openBlobNative(blob, `document-${docId}`)) return;
   const url = URL.createObjectURL(blob);
   window.open(url, '_blank', 'noopener,noreferrer');
   // Revoke shortly after so the tab has time to load it.
@@ -226,6 +228,7 @@ export async function downloadDocumentsZip(
 
   if (ok > 0) {
     const content = await zip.generateAsync({ type: 'blob' });
+    if (await shareBlobNative(content, zipName)) return { ok, failed };
     const url = URL.createObjectURL(content);
     const a = document.createElement('a');
     a.href = url;

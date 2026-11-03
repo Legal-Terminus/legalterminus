@@ -6,6 +6,9 @@ import { ConfirmProvider } from './components/common/ConfirmDialog';
 import { ToastProvider } from './components/common/ToastProvider';
 import App from './App';
 import './index.css';
+import { hideNativeSplash, initNative } from './lib/native';
+
+void initNative();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -18,3 +21,5 @@ createRoot(document.getElementById('root')!).render(
     </QueryClientProvider>
   </StrictMode>
 );
+
+void hideNativeSplash();

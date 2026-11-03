@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import RoleUnavailable from '../../components/common/RoleUnavailable';
 
 /**
  * Redirects the root path `/` to the unified dashboard once the role resolves,
@@ -8,10 +9,11 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
  * are filtered by role.
  */
 export default function RootRedirect() {
-  const { user, role, isLoading } = useAuthStore();
+  const { user, role, isLoading, roleUnavailable } = useAuthStore();
 
   if (isLoading) return <LoadingSpinner />;
   if (!user) return <Navigate to="/login" replace />;
+  if (roleUnavailable) return <RoleUnavailable />;
   if (!role) return <Navigate to="/unauthorized" replace />;
   return <Navigate to="/dashboard" replace />;
 }

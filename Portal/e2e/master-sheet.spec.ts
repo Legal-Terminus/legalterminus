@@ -35,6 +35,20 @@ test('#84: master-sheet CSV export includes the new headers', async () => {
   await api.dispose();
 });
 
+test('the CSV button downloads the file with the signed-in user\'s token', async ({ adminPage }) => {
+  // The button used window.open(), which cannot send the Authorization header, so the
+  // download came back 401. It now fetches with the token and downloads the result.
+  await adminPage.goto('reports/master-sheet');
+  const [download] = await Promise.all([
+    adminPage.waitForEvent('download'),
+    adminPage.getByRole('button', { name: 'CSV' }).click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/^master-sheet-\d{4}-\d{2}-\d{2}\.csv$/);
+  const path = await download.path();
+  const text = (await import('node:fs')).readFileSync(path!, 'utf8');
+  expect(text.split(/\r?\n/)[0]).toContain('Task ID');
+});
+
 test('#84: clients cannot access the master sheet', async () => {
   const client = await apiAs('client');
   const res = await client.get('/api/reports/master-sheet');

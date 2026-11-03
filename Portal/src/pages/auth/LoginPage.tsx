@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { signInWithEmailAndPassword, type User } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import {
   startGoogleSignIn, finishGoogleRedirect, authErrorCode, googleSignInMessage, UNSUPPORTED_BROWSER_MESSAGE,
 } from '../../lib/googleSignIn';
 import { useNavigate, Link } from 'react-router-dom';
-import { apiFetch } from '../../api/client';
+import { apiFetch, type ApiError } from '../../api/client';
 import { AlertCircle, Mail } from 'lucide-react';
 import { requestSignInLink, EMAIL_FOR_SIGN_IN_KEY } from '../../api/account';
 import { LTMark, LTLockup } from '../../components/common/LTLogo';
@@ -98,6 +98,15 @@ export default function LoginPage() {
         body: JSON.stringify({ fullName: user.displayName || user.email, provider: 'google' }),
       });
     } catch (err) {
+      // The server refuses accounts this deployment does not accept (QA takes only test accounts,
+      // production refuses test accounts). Do not leave that person half signed in: sign out and
+      // say why. Any other registration failure keeps the old behaviour (carry on).
+      const body = (err as ApiError).body as { code?: string } | undefined;
+      if ((err as ApiError).status === 403 && (body?.code === 'TEST_ENVIRONMENT' || body?.code === 'TEST_ACCOUNT')) {
+        await signOut(auth).catch(() => undefined);
+        setError((err as ApiError).message);
+        return;
+      }
       console.error('Registration error:', err);
     }
     navigate('/');

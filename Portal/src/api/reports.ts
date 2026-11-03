@@ -1,5 +1,8 @@
 import type { LeadOutcome } from '../lib/leadFields';
 import { apiFetch } from './client';
+import { auth } from '../lib/firebase';
+import { getIdToken } from 'firebase/auth';
+import { shareBlobNative } from '../lib/native';
 import type { Task, PaymentStatus } from '../types/task';
 
 // ─── Shared filter shape ────────────────────────────────────────────────────
@@ -465,13 +468,35 @@ export interface ConvertLeadResult {
 export const convertLeadToClient = (id: string) =>
   apiFetch<ConvertLeadResult>(`/api/leads/${id}/convert`, { method: 'POST' });
 
-/** Navigates browser to download CSV — no fetch needed (binary stream) */
-export const downloadMasterSheetCSV = (filters: ReportFilters = {}) => {
-  const base = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001';
+/**
+ * Download the master sheet as CSV. The endpoint needs the sign-in token in a
+ * header, which a plain window.open() cannot send (it came back 401), so fetch it
+ * with the token and hand the bytes over: the share sheet inside the app, a normal
+ * download in a browser.
+ */
+export async function downloadMasterSheetCSV(filters: ReportFilters = {}): Promise<void> {
+  const base = import.meta.env.VITE_API_BASE_URL ?? '';
   const params = new URLSearchParams({ format: 'csv' });
   Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
-  window.open(`${base}/api/reports/master-sheet?${params.toString()}`, '_blank');
-};
+  const headers: Record<string, string> = {};
+  if (auth.currentUser) headers.Authorization = `Bearer ${await getIdToken(auth.currentUser)}`;
+  const res = await fetch(`${base}/api/reports/master-sheet?${params.toString()}`, { headers });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as { message?: string }).message || 'Could not download the CSV.');
+  }
+  const blob = new Blob([await res.blob()], { type: 'text/csv' });
+  const fileName = `master-sheet-${new Date().toISOString().slice(0, 10)}.csv`;
+  if (await shareBlobNative(blob, fileName)) return;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
 
 /* ── LT #206: works and fees per group / client, by financial year ────────── */
 

@@ -107,3 +107,40 @@ test('coming back from Google with nothing says so, and the form is usable again
   // The flag is cleared, so a reload is an ordinary visit again.
   expect(await page.evaluate(() => window.sessionStorage.getItem('lt.googleSignInReturning'))).toBeNull();
 });
+
+test('a refused account shows the server\'s reason, not a bare "API error"', async ({ page }) => {
+  // The QA/production test-account guard answers 403 { error, code } — no `message`.
+  // The Android app showed "API error" for it, so someone signing in with a real
+  // Google account on the QA build could not tell why (E-26). Driven here with the
+  // page's own apiFetch and a mocked response: Google itself cannot be automated, and
+  // the sign-out that follows a refusal is checked on a real phone.
+  await page.goto('login');
+  const out = await page.evaluate(async () => {
+    const m = await import('/portal/src/api/client.ts');
+    const respond = (status: number, body: unknown) => {
+      window.fetch = (async () => new Response(JSON.stringify(body), {
+        status, headers: { 'Content-Type': 'application/json' },
+      })) as typeof window.fetch;
+    };
+    const attempt = async () => {
+      try { await m.apiFetch('/api/auth/register', { method: 'POST' }); return null; } catch (e) { return e as Error & { status?: number; body?: { code?: string } }; }
+    };
+    respond(403, { success: false, error: 'This is a test environment. Only test accounts can be used here.', code: 'TEST_ENVIRONMENT' });
+    const refused = await attempt();
+    respond(400, { message: 'Email required' });
+    const withMessage = await attempt();
+    respond(500, {});
+    const bare = await attempt();
+    return {
+      refused: { message: refused?.message, status: refused?.status, code: refused?.body?.code },
+      withMessage: withMessage?.message,
+      bare: bare?.message,
+    };
+  });
+  expect(out.refused).toEqual({
+    message: 'This is a test environment. Only test accounts can be used here.', status: 403, code: 'TEST_ENVIRONMENT',
+  });
+  // `message` still wins when both exist, and an empty error keeps the old fallback.
+  expect(out.withMessage).toBe('Email required');
+  expect(out.bare).toBe('API error');
+});

@@ -1,5 +1,6 @@
+import { Capacitor } from '@capacitor/core';
 import {
-  GoogleAuthProvider, getRedirectResult, signInWithPopup, signInWithRedirect,
+  GoogleAuthProvider, getRedirectResult, signInWithCredential, signInWithPopup, signInWithRedirect,
   type Auth, type UserCredential,
 } from 'firebase/auth';
 
@@ -104,6 +105,9 @@ const currentFlow = (auth: Auth): GoogleFlow => chooseGoogleFlow({
  * this browser cannot do it at all.
  */
 export async function startGoogleSignIn(auth: Auth): Promise<UserCredential | 'redirecting' | 'unsupported'> {
+  // The Android app runs in a WebView, which Google refuses. Use the native Google
+  // account picker and hand its ID token to the Firebase web SDK.
+  if (Capacitor.isNativePlatform()) return signInWithNativeGoogle(auth);
   const provider = new GoogleAuthProvider();
   const flow = currentFlow(auth);
   if (flow === 'unsupported') return 'unsupported';
@@ -125,4 +129,14 @@ export async function startGoogleSignIn(auth: Auth): Promise<UserCredential | 'r
 }
 
 /** After coming back from Google: the credential, or null if this was not a return. */
-export const finishGoogleRedirect = (auth: Auth): Promise<UserCredential | null> => getRedirectResult(auth);
+// The app never signs in by redirect, and its auth has no redirect resolver (getRedirectResult would throw).
+export const finishGoogleRedirect = (auth: Auth): Promise<UserCredential | null> =>
+  Capacitor.isNativePlatform() ? Promise.resolve(null) : getRedirectResult(auth);
+
+/** Native (Capacitor) Google sign-in. The plugin is loaded only inside the app. */
+async function signInWithNativeGoogle(auth: Auth): Promise<UserCredential> {
+  const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+  const { credential } = await FirebaseAuthentication.signInWithGoogle({ skipNativeAuth: true });
+  if (!credential?.idToken) throw Object.assign(new Error('No Google ID token'), { code: 'auth/user-cancelled' });
+  return signInWithCredential(auth, GoogleAuthProvider.credential(credential.idToken));
+}

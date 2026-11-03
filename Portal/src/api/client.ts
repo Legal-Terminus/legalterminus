@@ -31,7 +31,10 @@ export async function apiFetch<T>(
     const body = await res.json().catch(() => ({ message: res.statusText }));
     // Attach the HTTP status + parsed body so callers can branch on it (e.g. a
     // 409 conflict offering a recovery flow) without re-parsing the message.
-    const err = new Error((body as { message?: string }).message ?? 'API error') as ApiError;
+    // Some guards (e.g. the QA/production test-account guard) answer { error, code } with no
+    // `message`; read both so the person sees the real reason, not a bare "API error".
+    const b = body as { message?: string; error?: string };
+    const err = new Error(b.message ?? b.error ?? 'API error') as ApiError;
     err.status = res.status;
     err.body = body;
     throw err;

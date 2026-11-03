@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "build:mobile": "tsc -b && vite build --mode mobile --outDir dist-mobile",
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -16,6 +17,13 @@
     "dev:portal": "cd /Users/ankygoyal/Documents/git/legalterminus/Legal-Terminus/Portal && npm run dev"
   },
   "dependencies": {
+    "@capacitor-community/file-opener": "^8.0.1",
+    "@capacitor-firebase/authentication": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.2",
     "@dagrejs/dagre": "^3.1.1",
     "@tanstack/react-query": "^5.104.1",
     "@tanstack/react-table": "^8.21.3",
