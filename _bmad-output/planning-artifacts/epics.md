@@ -3881,6 +3881,44 @@ and the old CSS the switch was protecting; close #209; release by tag per `docs/
 
 ---
 
+## E-26 — Android App (Capacitor wrapper of the Portal) (#TBD) [Phase 2]
+
+**Goal**: The Portal runs as an Android app from the same code as the website, for the same
+four roles, installable from Google Play. The website must not change in any way.
+
+**Status (2026-11-02)**: built and tested on emulators against **QA only**. **Not released.**
+Nothing has been uploaded to Google Play and production is untouched.
+
+**Decisions**
+- App id `com.legalterminus.app` (registered in Play Console; cannot change after first upload).
+- The app is a thin native shell in `MobileApp/` around `Portal/` built with `--mode mobile`
+  (served from `/` instead of `/portal/`). Native behaviour lives in `Portal/src/lib/native.ts`
+  and is guarded by `Capacitor.isNativePlatform()`, so a browser never runs it.
+- Capacitor 8 (Firebase 12 only works with the 8.x sign-in plugin).
+
+| Story | What | Status |
+|---|---|---|
+| E26-S01 | Native shell, `build:mobile`, QA env, emulator tooling | ✅ Completed |
+| E26-S02 | Sign-in: native Google sign-in, IndexedDB session, role read after token (a restart demoted every role to Client); an unreadable role (offline) shows "try again" instead of the Client screens | ✅ Completed. Google: the account flow opens, a full sign-in is untested (no Google account on the emulator) |
+| E26-S03 | Files: View, zip, Excel/CSV export and image zoom hand the file to the phone (blob links do not open in a WebView); Master Sheet CSV sends the sign-in token | ✅ Completed |
+| E26-S04 | Emailed sign-in / password links open the app (QA host only) | ✅ Completed on emulator; real phones need `assetlinks.json` on the host |
+| E26-S05 | Icon and splash from the official mark; minimum WebView 111 with an "update WebView" page | ✅ Completed |
+| E26-S08 | A refused account says why: the API's `{ error, code }` answer (QA accepts only test accounts, production refuses test accounts) shows its text, not "API error", and the app signs the person out instead of leaving them half signed in. `Portal/src/api/client.ts`, `LoginPage.tsx`; Playwright `google-sign-in.spec.ts` (mocked 403). | ✅ Completed. Message logic covered by Playwright; the sign-out after a refused Google account is checked on a device only |
+| E26-S06 | Push notifications (FCM) | ⏳ Not started (needs `google-services.json`) |
+| E26-S07 | Release: production key, production origin on the API and bucket, `assetlinks.json`, store listing, internal test track | ⏳ Not started |
+
+**Tested** (emulator, Android 16; Admin / Manager / Team Member / Client / Professional):
+sign-in, restart, back button, rotation, small screen (720x1280), uploads and multi-file,
+size limit, submit / approve / reject-with-remark / re-upload, create matter and steps,
+exports, Worksheets upload and download, account links, release build. **Not tested**: native
+Google sign-in, push, a real device, Android 7 on a real WebView, signed production build.
+
+**Known open points**: minimum Android version (24) vs WebView 111 is undecided until Play
+shows which devices are excluded; the Master Sheet step number differs from the matter page
+(website too); "created by a manager" wording on an Admin-created matter.
+
+---
+
 ## APPENDIX A — Infrastructure & Build System (Updated 2026-06-01)
 
 ### NPM Run Commands Standardization

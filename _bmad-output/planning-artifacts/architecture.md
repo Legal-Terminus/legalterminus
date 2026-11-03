@@ -2153,3 +2153,49 @@ the firm's domains, this project's and the QA site's Firebase hosts with preview
 localhost outside production, and exact origins from `CORS_ORIGINS`. In production
 `http://localhost` and `capacitor://localhost` are no longer allowed; the mobile app's
 origin is added through `CORS_ORIGINS` for each environment.
+
+## Android app: Capacitor wrapper (E-26, 2026-11-02)
+
+`MobileApp/` is a Capacitor 8 project whose `webDir` is `Portal/dist-mobile`, produced by
+`npm run build:mobile` (`vite build --mode mobile`). Only that mode changes `base` to `/`; the
+web build keeps `/portal/`. App id `com.legalterminus.app`; minSdk 24, target 36.
+
+**Native code is isolated.** Everything that exists only in the app is in
+`Portal/src/lib/native.ts` (plus the sign-in branch in `lib/googleSignIn.ts` and the
+persistence choice in `lib/firebase.ts`), guarded by `Capacitor.isNativePlatform()`, with
+plugins loaded by dynamic `import()`. A browser takes the old path unchanged.
+
+- **Auth.** Native Google sign-in returns an ID token that is passed to the web SDK
+  (`skipNativeAuth`), so the app and website share one Firebase session. Persistence is
+  `indexedDBLocalPersistence`. `useAuth.ts` gets the ID token **before** the Firestore role read;
+  otherwise a cold start restored from IndexedDB sent the read unauthenticated, rules refused
+  it, and the catch defaulted every role to `client`.
+  If the role cannot be read because there is no connection (`unavailable`,
+  `deadline-exceeded`, `auth/network-request-failed`, or `navigator.onLine === false`) it is
+  **not guessed**: the store sets `roleUnavailable`, `ProtectedRoute` / `RootRedirect` show a
+  "We can't load your account / Try again" screen, and the app retries by itself on the
+  browser's `online` event. Any other read failure keeps the old `client` fallback. Before this,
+  an Admin starting the app offline was shown the Client screens for the whole session.
+- **Files.** An Android WebView cannot `window.open()` a `blob:` URL or follow an anchor
+  download. `openBlobNative` / `shareBlobNative` write the bytes to the app cache
+  (Filesystem) and open them (File Opener) or offer them (Share sheet). Used by document
+  View, zip, `exportToXlsx`, Master Sheet CSV and comment-image zoom.
+- **CSV.** `downloadMasterSheetCSV` fetches with the Bearer token; the endpoint rejects
+  unauthenticated requests, which a bare `window.open` cannot avoid.
+- **Account links.** The manifest has a QA-only `https` intent filter for
+  `/portal/account/action`; `appUrlOpen` routes it to the existing page. Real phones need
+  `/.well-known/assetlinks.json` on the host with the app's signing fingerprint (not done).
+- **Launch.** Android 12+ system splash is white; the splash is held (`launchAutoHide: false`)
+  until the first paint (`hideNativeSplash`). Icons and splash come from `lt-mark.svg` via
+  `@capacitor/assets`.
+- **WebView.** The Portal needs Chrome 111+ (Vite default target, Tailwind 4).
+  `android.minWebViewVersion: 111` with `server.errorPath: webview-update.html` shows a
+  no-JavaScript page instead of a blank screen on an older WebView.
+
+**Origins.** The app runs at `https://localhost`. QA allows it on the API (`CORS_ORIGINS`) and, as
+of 2026-11-02, on the QA storage bucket (`storage-cors.json`, applied to `legal-terminus-web-qa`
+only). **Production allows neither yet**; add both before a production build.
+
+**Secrets.** `google-services.json`, signing keystores and `local.properties` are never
+committed. A throwaway key was used only to prove the release build installs.
+

@@ -637,6 +637,12 @@ updatedAt, updatedBy
 ### Delivery Phases
 - **Phase 1**: Responsive web app only (`Portal/` — Vite + React + TypeScript). Target: Chrome/Safari/Edge on desktop, tablet, and mobile browser. No native app build yet.
 - **Phase 2**: Capacitor wrapper for Android/iOS after web app is stable and validated.
+  - **Android app requirements** (E-26): same roles, screens and permissions as the website,
+    from the same code. Android 7+ with a WebView of Chrome 111 or newer (otherwise a message
+    asks the user to update it). Google sign-in uses the phone's own account picker. Documents,
+    exports and images open in the phone's own viewer or share sheet. Emailed sign-in and
+    password links open the app. Uploads follow the website's rules (10 MB; PDF, JPG, PNG, DOCX,
+    Excel). Push notifications and iOS are not yet built.
 - **Phase 1 workflow scope**: Company Incorporation only. All other services (Trademark, GST, UDYAM) follow in Phase 2 as XState config files.
 
 ### Workflow Engine (XState v5)
