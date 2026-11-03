@@ -6155,12 +6155,31 @@ the OPC and Trademark Registration pages, as Private Limited has.
 - Portal: `shared/pricing/catalog.json` regenerated, and the two new plans seeded into
   the QA catalogue (`seedPricing.js`, which adds missing plans and never overwrites a
   price the firm has set). They appear on the portal's Website Prices page on QA.
-- **Not in the live catalogue yet.** The release must run `seedPricing.js` against the
-  live database too, or the live site hides Supreme Plus (a plan missing from the
-  catalogue is not on sale).
+- ~~Not in the live catalogue yet.~~ Done 2026-11-03: the live catalogue was empty (the
+  site showed each page's built-in plans), and QA's whole catalogue was copied to it.
+  See the next entry.
 - Confirmed the same day: OPC Supreme Plus starts "Everything in Supreme" (the table
   said Enriched), and the OPC cards say "Professional fee only • + 18% GST", the
   wording of the firm's OPC table. The trademark table keeps "+ Govt. fees & GST
   extra", as the firm's own trademark table does.
 - Not done: #221 (Prior User pricing on the trademark plans) is a separate issue.
 - Tests: `Frontend/tests/e2e/pricing-plans.spec.js`.
+
+### Theme C live; live prices taken from QA (2026-11-03) ✅ Released in v1.6.0-lt.10
+
+#209: the firm approved the test website on 3 Nov ("Approved").
+- The production build now sets `VITE_THEME_C=true`. Payments (`VITE_PAYMENTS_ENABLED`)
+  stay off in production. Checked locally with production's flags first:
+  theme-alignment and pricing-plans, 24/24.
+- **Prices.** At the user's word, the live `pricingCatalog` became an exact copy of QA's
+  (61 products). QA's held ten prices the firm had changed in the portal, which the seed
+  file does not have, so this was a copy, not `seedPricing.js`. The live
+  `/api/public/pricing` now returns the same body as QA's.
+- **Backup first.** A managed export (`gcloud firestore export`) is refused to the
+  Editor account, so the live database was dumped document by document
+  (every collection and subcollection, typed values) to
+  `gs://legal-terminus-web-backups/2026-11-03-before-lt.10/`, with the script that made it.
+  Checked against the live counts: every root collection and all 912 steps match.
+  The bucket is new, private, in asia-south2.
+- Before tagging, confirmed the three production hotfixes of October (`f59e0f34`,
+  `06211e1f`, `4c4e1c0e`) are all on `main`.
