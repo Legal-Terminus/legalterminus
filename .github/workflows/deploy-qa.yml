@@ -304,7 +304,7 @@ jobs:
           VITE_FIRESTORE_DATABASE_ID: ${{ env.QA_DATABASE_ID }}
           # Shows "Buy Now". QA only: the live build leaves payments switched off.
           VITE_PAYMENTS_ENABLED: 'true'
-          # The Theme C redesign (E-25, #209). QA only until the firm signs off.
+          # The Theme C redesign (E-25, #209). Live too since the firm approved it on 2026-11-03.
           VITE_THEME_C: 'true'
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_QA_APP_ID }}
