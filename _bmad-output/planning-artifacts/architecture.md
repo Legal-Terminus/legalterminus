@@ -2184,13 +2184,16 @@ plugins loaded by dynamic `import()`. A browser takes the old path unchanged.
   unauthenticated requests, which a bare `window.open` cannot avoid.
 - **Account links.** The manifest has a QA-only `https` intent filter for
   `/portal/account/action`; `appUrlOpen` routes it to the existing page. Real phones need
-  `/.well-known/assetlinks.json` on the host with the app's signing fingerprint (not done).
+  `/.well-known/assetlinks.json` on the host with the app's signing fingerprint. It was live
+  briefly and was removed on 2026-11-03 until the app's launch is approved.
 - **Launch.** Android 12+ system splash is white; the splash is held (`launchAutoHide: false`)
   until the first paint (`hideNativeSplash`). Icons and splash come from `lt-mark.svg` via
   `@capacitor/assets`.
 - **WebView.** The Portal needs Chrome 111+ (Vite default target, Tailwind 4).
   `android.minWebViewVersion: 111` with `server.errorPath: webview-update.html` shows a
-  no-JavaScript page instead of a blank screen on an older WebView.
+  no-JavaScript page instead of a blank screen on an older WebView. The page lives in
+  `MobileApp/web/` and only `vite build --mode mobile` emits it (`Portal/vite.config.ts`):
+  the website must not serve app pages while the app is unreleased (2026-11-03).
 
 **Origins.** The app runs at `https://localhost`. QA allows it on the API (`CORS_ORIGINS`) and, as
 of 2026-11-02, on the QA storage bucket (`storage-cors.json`, applied to `legal-terminus-web-qa`

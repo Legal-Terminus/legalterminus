@@ -1,13 +1,27 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
+
+// Pages only the Android app shows (capacitor.config.ts `server.errorPath`). They live
+// in MobileApp/web, not public/, so the website never serves them: the app is still
+// in development and the site must not mention it.
+const appOnlyPages = () => ({
+  name: 'lt-app-only-pages',
+  generateBundle(this: { emitFile: (f: { type: 'asset'; fileName: string; source: string }) => void }) {
+    const dir = path.resolve(__dirname, '../MobileApp/web');
+    for (const fileName of fs.readdirSync(dir)) {
+      this.emitFile({ type: 'asset', fileName, source: fs.readFileSync(path.join(dir, fileName), 'utf8') });
+    }
+  },
+});
 
 export default defineConfig(({ mode }) => ({
   // Firebase deployment: base should be '/portal/' so assets are at /portal/assets/...
   // Direct Cloud Run access: would need base='/' but we prioritize Firebase
   // `--mode mobile` (Capacitor app bundle) serves from the root. Web builds are unchanged.
   base: mode === 'mobile' ? '/' : '/portal/',
-  plugins: [react()],
+  plugins: mode === 'mobile' ? [react(), appOnlyPages()] : [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

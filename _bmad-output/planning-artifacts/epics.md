@@ -6183,3 +6183,20 @@ the OPC and Trademark Registration pages, as Private Limited has.
   The bucket is new, private, in asia-south2.
 - Before tagging, confirmed the three production hotfixes of October (`f59e0f34`,
   `06211e1f`, `4c4e1c0e`) are all on `main`.
+
+### App traces off the live site; comment images open on Safari (2026-11-03) ✅ Released in v1.6.0-lt.11
+
+The Android app (E-26) is still in development, so the user asked that nothing on the
+website, the portal or in emails point to it.
+- Checked first: no page, screen or email mentions the app. Two files did:
+  `/.well-known/assetlinks.json` (made emailed account links open the app) and
+  `/portal/webview-update.html` (the app's "update your WebView" page, reachable by URL).
+- `assetlinks.json` is removed. `webview-update.html` moved to `MobileApp/web/`; only the
+  app build (`--mode mobile`) emits it.
+- Kept, not user-visible: the app's origin on the production API and bucket, and the
+  Capacitor code, which does nothing in a browser. Removing them would only break the
+  build in Play review.
+- Safari risk fixed: since `c2be951d`, "open full size" on a comment image opened its tab
+  after an `await`, outside the click, which Safari blocks as a pop-up. The browser now
+  opens it in the click. `Portal/e2e/comment-images.spec.ts` checks the tab opens during
+  the click; it fails on the previous code.

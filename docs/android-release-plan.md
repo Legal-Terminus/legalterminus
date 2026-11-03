@@ -78,7 +78,10 @@ order, who does it, and which steps touch production.
    `capacitor://localhost` and look-alike hosts stay refused. Note: that origin is shared by every
    Capacitor app that uses the default `https://localhost`, so it is protected only by the bearer token
    (the API sends no cookies to it), the same as on QA.
-9. ✅ **assetlinks.json is already live on production** (found 2026-11-03; someone published it outside
+9. ❌ **REMOVED from the website 2026-11-03 (`v1.6.0-lt.11`), at the user's instruction:** the app is still in
+   development and nothing on the live site may point to it. Without this file, emailed account links open
+   the browser, not the app, on every phone. Restore it (the two keys below) only when the user approves
+   the app's launch. History: **assetlinks.json was live on production** (found 2026-11-03; someone published it outside
    the repo). `https://legalterminus.com/.well-known/assetlinks.json` returns 200 with no redirect, and
    Google's Digital Asset Links service reads it without errors. It lists three SHA-256 fingerprints: the
    Play **app-signing** key (the one phones see), the **upload** key, and a **debug** key. The repo file
@@ -87,7 +90,7 @@ order, who does it, and which steps touch production.
    replaces the live file when the release deploys the website. Whoever published the live file should
    know the repo now owns it. Checked: Vite copies it to `dist/.well-known/`, and Firebase CLI 15.34.2
    (what CI installs) deploys it despite the `**/.*` ignore rule, so `firebase.json` is unchanged.
-10. ✅ **Bucket CORS applied 2026-11-03** (with the user's explicit approval). The production bucket
+10. ✅ (Not user-visible, kept.) **Bucket CORS applied 2026-11-03** (with the user's explicit approval). The production bucket
     `legal-terminus-web.firebasestorage.app` went from 8 to 9 allowed origins: `https://localhost` was **added**
     to the existing entry, which was re-read first, and nothing else changed (methods, headers and max-age
     verified identical). Done in code with the project's service account, not `gcloud`, so it matches

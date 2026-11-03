@@ -1,4 +1,5 @@
 import { fetchCommentImageUrl } from '../../api/commentImages';
+import { Capacitor } from '@capacitor/core';
 import { openBlobNative } from '../../lib/native';
 
 /**
@@ -58,9 +59,14 @@ export function hydrateCommentImage(
 export function openImageFullSize(img: HTMLImageElement) {
   if (!img.src || !img.src.startsWith('blob:')) return;
   const src = img.src;
+  // In a browser, open the tab in the click itself. Opening it after an await (the
+  // fetch below) loses the click, and Safari then blocks it as a pop-up.
+  if (!Capacitor.isNativePlatform()) {
+    window.open(src, '_blank', 'noopener,noreferrer');
+    return;
+  }
   // An Android WebView cannot window.open() a blob: URL, so inside the app hand the
-  // image to the phone's own viewer. In a browser openBlobNative returns false and the
-  // original new-tab behaviour runs unchanged.
+  // image to the phone's own viewer.
   void (async () => {
     try {
       if (await openBlobNative(await (await fetch(src)).blob(), `image-${Date.now()}`)) return;

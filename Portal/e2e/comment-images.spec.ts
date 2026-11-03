@@ -259,7 +259,23 @@ test('UI: the client sees an image shared in the Discussion, rendered', async ({
     await clientPage.goto(`tasks/${taskId}`);
     await clientPage.getByRole('button', { name: 'Discussion', exact: true }).click();
     await expect(clientPage.getByText(msg)).toBeVisible({ timeout: 15_000 });
-    await expect(clientPage.locator('.rich-text img[data-lt-image][src^="blob:"]').first()).toBeVisible({ timeout: 15_000 });
+    const shown = clientPage.locator('.rich-text img[data-lt-image][src^="blob:"]').first();
+    await expect(shown).toBeVisible({ timeout: 15_000 });
     await expect(clientPage.getByText('Image unavailable')).toHaveCount(0);
+
+    // Clicking opens it full size in a new tab, and opens it DURING the click: a tab
+    // opened after an await has lost the click, and Safari blocks it as a pop-up.
+    await clientPage.evaluate(() => {
+      const w = window as unknown as { __inClick: boolean; __openedInClick: boolean | null };
+      w.__inClick = false; w.__openedInClick = null;
+      window.addEventListener('click', () => { w.__inClick = true; }, true);
+      window.addEventListener('click', () => { w.__inClick = false; });
+      const open = window.open.bind(window);
+      window.open = (...a: Parameters<typeof window.open>) => { w.__openedInClick = w.__inClick; return open(...a); };
+    });
+    const popup = clientPage.waitForEvent('popup');
+    await shown.click();
+    await popup;
+    expect(await clientPage.evaluate(() => (window as unknown as { __openedInClick: boolean | null }).__openedInClick)).toBe(true);
   } finally { await deleteMatter(taskId); }
 });
