@@ -1,0 +1,91 @@
+# Play Console: store listing and declarations (DRAFT for review)
+
+Prepared 2026-11-03 for the Legal Terminus Android app (`com.legalterminus.app`). Paste from here into Play
+Console. **Everything marked ❓ is a guess from the code or docs and must be confirmed by someone who knows
+the business before it is submitted**; Play compares these answers with what the app really does.
+
+## Files
+
+| What | Where |
+|---|---|
+| App bundle for Play (production values, versionCode 3, 1.0.0) | `~/lt-android-release/out/legalterminus-1.0.0-prod-vc3.aab` |
+| Phone screenshots, 1080×2160 (Play allows at most 2:1), QA test data only | `~/lt-android-release/play-assets/phone-1-ADMIN.png`, `phone-2-TEAM.png`, `phone-3-CLIENT.png` |
+| Still needed from design | App icon 512×512 PNG and feature graphic 1024×500 (the launcher icon source is in `MobileApp/assets/`) |
+
+The client screenshot shows an empty account ("0" everywhere); a client with a few services would sell the
+app better. Take one from a QA client that has matters. Do not use production data in screenshots.
+
+## Main store listing
+
+- **App name** (14/30): Legal Terminus
+- **Short description** (79/80): Follow your legal and compliance services, documents and payments in one place.
+- **Full description** (749/4000):
+
+```
+Legal Terminus brings your legal and compliance work into one app.
+
+If you are a client, you can:
+• See each of your services, such as company registration and trademark work, and exactly which step it is on
+• Upload documents and open the ones we share with you
+• Message the Legal Terminus team on a service and read their replies
+• See what has been billed and what is due
+• Get a notification when something needs you
+
+If you are part of the Legal Terminus team, you can follow matters, tasks, leads and reports from your phone.
+
+Sign in with your email and password, an email sign-in link, or your Google account. Your account is created by the firm or by signing up, and what you see depends on your role.
+
+Questions: contact@legalterminus.com
+```
+  ❓ `contact@legalterminus.com` is a placeholder: use the firm's real support address.
+- **Category:** Business. **Tags:** pick Productivity / Business tools if offered.
+- **Contact:** email ❓, website `https://legalterminus.com`, phone optional.
+- **Release notes (en-IN)** (163/500): First release of the Legal Terminus app: sign in, follow your services step by step, upload and view documents, message the team, and see payments and amounts due.
+
+## App content
+
+- **Privacy policy URL:** `https://legalterminus.com/privacy-policy` (the website has this route; ❓ open it and
+  confirm it shows the real policy and that it mentions the app, account data, documents and payments).
+- **App access:** *All or some functionality is restricted.* Provide a reviewer login. ❓ **A production reviewer
+  account does not exist yet** (limited Client role, no real client data); it has to be created on production by
+  someone who is allowed to, and its email and password typed into the Play form, never into the repo.
+  Instructions text: "Sign in with the email and password below. The account is a client account with no real data."
+- **Ads:** No ads. **Advertising ID:** not used.
+- **Target audience:** 18 and over only. **News app:** No. **Government app:** No (private firm).
+  **COVID-19 / health app:** No.
+- **Financial features:** ❓ The app shows what is billed and what is due; payment itself happens on the website
+  through a payment gateway. If that is still true, answer that the app has no financial features
+  (no loans, banking, payments or trading in the app). Check with the team before ticking.
+- **Content rating (IARC questionnaire), category "Utility / Productivity":** violence, sexual content, language,
+  controlled substances, gambling: all **No**. ❓ User interaction: **Yes**, users exchange messages with the
+  firm inside a service. Shares location: **No**. Digital purchases in the app: **No** ❓.
+
+## Data safety (what the app handles; ❓ confirm each row)
+
+| Data | Collected | Why | Shared | Optional |
+|---|---|---|---|---|
+| Name, email address, phone number, address | Yes | Account and service delivery | No ❓ | Required |
+| User IDs (sign-in account id) | Yes | Account | No | Required |
+| Government ID numbers (PAN / Aadhaar / GST) in forms and uploaded documents | Yes ❓ (Play has no separate category; likely "Other info") | Service delivery | No | Required where a service needs it |
+| Files and documents the user uploads | Yes | Service delivery | No | Optional |
+| Messages sent inside a service | Yes | Service delivery | No | Optional |
+| Payment status and amounts billed or due | Yes ("Purchase history" / "Other financial info") ❓ | Service delivery | No | Required |
+
+- **Encrypted in transit:** Yes (HTTPS only). **Data at rest:** held in Google Cloud (Firebase) by the firm.
+  "Shared" is No because Google Cloud and the sign-in provider act on the firm's behalf (service providers);
+  ❓ confirm no analytics or advertising SDK is added later.
+- **Can users ask for their data to be deleted?** ❓ **Decision D2 is still open.** Today only an Admin can delete an
+  account. Play asks apps that let people create an account to offer deletion in the app and a web page. Until that
+  exists, the honest answer is a deletion *request* process (an email address on the privacy policy page); decide this
+  before submitting, because the answer must match the privacy policy.
+- **Permissions in the app:** the build requests only `INTERNET` and `ACCESS_NETWORK_STATE` ❓ (confirm in the merged
+  manifest of the production bundle).
+
+## What this draft does not fix
+
+- A **production reviewer account** and the **deletion answer (D2)** are decisions and production changes for the firm.
+- The server side the app needs on production (API CORS for `https://localhost`, bucket CORS) is **not done**
+  and is not part of this file; see `docs/android-release-plan.md`. A build published to the Production track
+  before that is live would show real users errors on every screen that loads data.
+- The team-member Home screen shows a blank gap where other roles have a heading (seen on the emulator,
+  2026-11-03); it may be intended. Look at it before screenshots are chosen.

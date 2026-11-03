@@ -207,6 +207,8 @@ API means the app's origin is refused again, nothing worse.
 
 ## Phase 4: Play Console (👤 you; the app already exists as a draft)
 
+**Draft text, answers and screenshots for every form below: `docs/play-store-listing.md` (items marked ❓ need confirming).**
+
 **Store listing:** name (max 30), short description (max 80), full description (max 4000),
 app icon 512×512 PNG, feature graphic 1024×500, at least 2 phone screenshots (take them from
 the emulator; use QA data only), category (Business), contact email, website.
