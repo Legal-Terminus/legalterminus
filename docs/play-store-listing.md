@@ -16,6 +16,16 @@ Dashboard: **10 of 11 setup tasks complete. Nothing has been sent for review and
 | Data safety | Done, saved (imported from Play's own CSV, then read back): collected not shared, 9 data types, encrypted in transit, deletion on request |
 | **Content rating** | **NOT done: the IARC questionnaire needs a person to accept IARC's Terms of Use** (email `sales21@legalterminus.com`, category "All other app types") |
 
+**Production release (done later on 2026-11-03, in Play Console):** a draft release **1.0.0 on the Production track** exists with
+bundle **version code 3 (1.0.0)** only (the QA bundle, version code 1, was deliberately NOT added), release notes in en-IN,
+and **India only**. It is saved; **nothing is sent**. Version code 3 is also on Internal testing. The Publishing overview lists 9
+changes and says "Submit 9 changes for review", disabled because Play's quick check finds exactly one issue: **incomplete
+content ratings declaration** (the IARC terms, which a person must accept).
+
+**Open decision: rollout size.** The first Production release shows no staged-rollout control; the overview describes it as
+"Start full rollout" (100%). If 100% is not wanted, turn on **Managed publishing** (Publishing overview) before submitting, so
+approved changes wait for a manual publish instead of going live automatically.
+
 **Gate before "Send for review":** Data safety's deletion answer and both deletion links point to the privacy policy,
 which does **not yet** mention deletion. Publish the additions in `docs/privacy-policy-app-addendum.md` (needs a release tag and
 the firm's wording review) first, or Google will see a policy that contradicts the form.
