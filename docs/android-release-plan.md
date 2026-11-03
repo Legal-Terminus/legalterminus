@@ -268,3 +268,9 @@ errors, and do **not** promote a QA build (vc1, vc2) to Production: it talks to 
   keys and read by Google; the production reviewer account signs in and `GET /api/auth/me` returns 200; site, Portal and privacy
   page return 200. **Not checked:** the app itself on a phone against production. Ledger row added to `docs/releases/SYNC.md`.
   The GitHub Release page was not created (`gh` is not installed); create it in the web UI if the team wants one.
+
+- **2026-11-03 (later): Play Console set-up entered** through the user's Safari session: 10 of 11 setup tasks done and saved
+  (see the table at the top of `docs/play-store-listing.md`). Open: **Content rating** (a person must accept IARC's Terms of Use) and
+  the **privacy policy must mention deletion before "Send for review"**. No release created, nothing sent for review. The icon,
+  feature graphic and screenshots were attached by script to Play's upload dialogs; the Data safety answers were imported from a
+  CSV built from Play's own template and read back step by step.

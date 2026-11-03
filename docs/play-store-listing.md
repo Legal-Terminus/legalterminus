@@ -1,4 +1,26 @@
-# Play Console: store listing and declarations (DRAFT for review)
+# Play Console: store listing and declarations
+
+## State on 2026-11-03 (entered into Play Console through Safari, with the user's go-ahead)
+
+Dashboard: **10 of 11 setup tasks complete. Nothing has been sent for review and no release has been created.**
+
+| Item | State |
+|---|---|
+| Privacy policy URL | Done (`https://legalterminus.com/privacy-policy`) |
+| Sign-in details | Done: client reviewer login, full-access box ticked (client login only, chosen by the user) |
+| Ads / Advertising ID | Done: No / No (checked against the built APK: no ad libraries, no AD_ID permission) |
+| Government apps, Financial features, Health apps | Done: No / no financial features / no health features |
+| Target audience | Done: 18 and over |
+| App category and contact details | Done and published: Business, `sales21@legalterminus.com`, `https://legalterminus.com` |
+| Store listing (default, en-IN) | Done: name, short and full description, icon, feature graphic, 3 phone screenshots; AI-asset declaration "Don't label assets" |
+| Data safety | Done, saved (imported from Play's own CSV, then read back): collected not shared, 9 data types, encrypted in transit, deletion on request |
+| **Content rating** | **NOT done: the IARC questionnaire needs a person to accept IARC's Terms of Use** (email `sales21@legalterminus.com`, category "All other app types") |
+
+**Gate before "Send for review":** Data safety's deletion answer and both deletion links point to the privacy policy,
+which does **not yet** mention deletion. Publish the additions in `docs/privacy-policy-app-addendum.md` (needs a release tag and
+the firm's wording review) first, or Google will see a policy that contradicts the form.
+
+## Original draft for review (kept for reference)
 
 Prepared 2026-11-03 for the Legal Terminus Android app (`com.legalterminus.app`). Paste from here into Play
 Console. **Everything marked ❓ is a guess from the code or docs and must be confirmed by someone who knows
@@ -36,9 +58,9 @@ If you are part of the Legal Terminus team, you can follow matters, tasks, leads
 
 Sign in with your email and password, an email sign-in link, or your Google account. Your account is created by the firm or by signing up, and what you see depends on your role.
 
-Questions: contact@legalterminus.com
+Questions: sales21@legalterminus.com
 ```
-  ❓ `contact@legalterminus.com` is a placeholder: use the firm's real support address.
+  The contact address is `sales21@legalterminus.com` (chosen by the user 2026-11-03; it is the address on the website).
 - **Category:** Business. **Tags:** pick Productivity / Business tools if offered.
 - **Contact:** email ❓, website `https://legalterminus.com`, phone optional.
 - **Release notes (en-IN)** (163/500): First release of the Legal Terminus app: sign in, follow your services step by step, upload and view documents, message the team, and see payments and amounts due.
