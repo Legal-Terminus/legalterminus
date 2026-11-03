@@ -87,13 +87,11 @@ order, who does it, and which steps touch production.
    replaces the live file when the release deploys the website. Whoever published the live file should
    know the repo now owns it. Checked: Vite copies it to `dist/.well-known/`, and Firebase CLI 15.34.2
    (what CI installs) deploys it despite the `**/.*` ignore rule, so `firebase.json` is unchanged.
-10. ⚠ PROD 👤 **Bucket CORS: prepared, not applied.** Production's live config (read 2026-11-03) is the
-    list in `storage-cors.json` **minus** `https://localhost`, so applying the file adds exactly one origin
-    and drops nothing. Apply it **by hand**, because nothing in CI does:
-    `gcloud storage buckets update gs://legal-terminus-web.firebasestorage.app --cors-file=storage-cors.json`
-    (needs a Storage admin login). Confirm with
-    `gcloud storage buckets describe gs://legal-terminus-web.firebasestorage.app --format="default(cors_config)"`.
-    Re-read the live config right before applying: if it changed since, merge instead of overwriting.
+10. ✅ **Bucket CORS applied 2026-11-03** (with the user's explicit approval). The production bucket
+    `legal-terminus-web.firebasestorage.app` went from 8 to 9 allowed origins: `https://localhost` was **added**
+    to the existing entry, which was re-read first, and nothing else changed (methods, headers and max-age
+    verified identical). Done in code with the project's service account, not `gcloud`, so it matches
+    `storage-cors.json` in content but not by running that file. To undo, remove that one origin.
 11. ⚠ PROD: the release tag. Only when the user asks for a release. **See the runbook below: it ships
     much more than the app, and it needs production indexes first.**
 
@@ -194,8 +192,13 @@ API means the app's origin is refused again, nothing worse.
     ✅ Done for vc3: `~/lt-android-release/out/legalterminus-1.0.0-prod-vc3.aab` and `.apk`; signed with
     the upload key (SHA-1 `003b92…`); no QA host, database id or test account inside; link host
     `legalterminus.com`. Not installed or run anywhere yet.
-17. ⚠ PROD: create a **dedicated reviewer account** in production (a limited Client with no real data).
-    Its credentials go in the Play Console "App access" form.
+17. ✅ **Reviewer account created on production 2026-11-03** (with the user's explicit approval):
+    `play.reviewer@legalterminus.com`, role `client`, no matters or data, no email sent. Created through the
+    backend's own `upsertUser` against the **(default)** database (`backend/.env` points at QA, so the target was
+    set deliberately). Verified: it signs in, and production `GET /api/auth/me` returns 200 with role `client`.
+    The password is in `~/lt-android-release/keys/PLAY_REVIEWER.txt` (mode 600, outside the repo). Paste it into
+    the Play Console "App access" form and nowhere else. ❓ `legalterminus.com` mail for that address is not
+    checked (no email is ever sent to it). **Delete the account after Play review finishes.**
 18. 👤 Upload the `.aab` to **Internal testing** and install from the Play link (not a side-loaded APK).
 19. Test on at least one real phone (ideally Android 8–11 and a low-end model):
     - email sign-in for every role, and **Google sign-in** with a dedicated test Google account:

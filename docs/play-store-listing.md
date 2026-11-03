@@ -46,9 +46,9 @@ Questions: contact@legalterminus.com
 
 - **Privacy policy URL:** `https://legalterminus.com/privacy-policy` (the website has this route; ❓ open it and
   confirm it shows the real policy and that it mentions the app, account data, documents and payments).
-- **App access:** *All or some functionality is restricted.* Provide a reviewer login. ❓ **A production reviewer
-  account does not exist yet** (limited Client role, no real client data); it has to be created on production by
-  someone who is allowed to, and its email and password typed into the Play form, never into the repo.
+- **App access:** *All or some functionality is restricted.* Provide a reviewer login. The production reviewer
+  account **exists** (created 2026-11-03): `play.reviewer@legalterminus.com`, client role, no data. The password is
+  in `~/lt-android-release/keys/PLAY_REVIEWER.txt`; type it into the Play form, never into the repo.
   Instructions text: "Sign in with the email and password below. The account is a client account with no real data."
 - **Ads:** No ads. **Advertising ID:** not used.
 - **Target audience:** 18 and over only. **News app:** No. **Government app:** No (private firm).
