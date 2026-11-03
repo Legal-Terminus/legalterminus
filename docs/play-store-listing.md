@@ -24,6 +24,12 @@ download (catalogue-style) No; promotes age-restricted products No; shares preci
 rewards / NFTs No; web browser or search engine No; primarily news or education No. The "block", "report" and "moderation" answers
 are No because the app has none of those features; if the firm adds them, update the questionnaire.
 
+**SUBMITTED FOR REVIEW 2026-11-03 (at the user's explicit instruction).** 10 changes sent from the Publishing overview: the Production
+release 1.0.0 (version code 3, India), store listing, category, target audience, privacy policy URL, ads, Data safety, health, content
+rating and sign-in details. Google says reviews are typically done within seven days. **Managed publishing is ON**, so an approved
+release is not published automatically. Known risk accepted at submission: the Data safety form says users can request deletion and
+links to the privacy policy, which does not mention deletion until pull request #223 is merged and released; Google may query this.
+
 **Production release (done later on 2026-11-03, in Play Console):** a draft release **1.0.0 on the Production track** exists with
 bundle **version code 3 (1.0.0)** only (the QA bundle, version code 1, was deliberately NOT added), release notes in en-IN,
 and **India only**. It is saved; **nothing is sent**. Version code 3 is also on Internal testing. The Publishing overview lists 9
