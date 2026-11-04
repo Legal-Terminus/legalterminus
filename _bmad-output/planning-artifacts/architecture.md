@@ -1942,6 +1942,45 @@ a product is keyed by the `source` its component passes to the checkout, and
   approve, so `GET /api/orders`, `GET /api/orders/:id` and the approve route
   admit `team_member`, and the screen is in their navigation. Retrying a matter
   and reconciling a payment with the gateway stay with admin and manager.
+- **Pay Now: a client pays the amount due on an existing matter (#220,
+  2026-11-04).** Same orders collection, same gateway, same verify / webhook /
+  reconcile endpoints; a second order KIND.
+  - `POST /api/tasks/:taskId/pay-now` — client role only, rate-limited, body
+    must be `{}` (`matterPayNowSchema`). `createMatterBalanceOrder` reads the
+    matter: the client must be able to see it (`clientCanSeeMatter`), the
+    matter must be `part_paid` with `amountDue > 0`, and `onlinePaymentEnabled`
+    must not be `false` (`payNowRefusal`, pure). The amount is `amountDue` at
+    that moment, no GST added — the matter's total is already the firm's
+    figure. A `created` order for the same matter, client, gateway and amount
+    from the last half hour is reused, so a double click cannot be paid twice.
+  - The order carries `kind: 'matter_balance'`, `taskId`, and
+    `matter.state: balance → crediting → credited | credit_failed`. It never
+    waits for approval and never opens a matter.
+  - On settlement `settlePaid` calls `creditMatter` instead of `fulfil`. It
+    claims the order in a transaction, then calls `creditOnlinePayment` in
+    `tasks.controller.js`, which writes through `commitLedgerChange` like every
+    other money change. The ledger row id is `online-<orderId>`, so a repeat
+    is a no-op; the row has `source: 'online_gateway'` and the gateway payment
+    id as `reference`. If the ledger refuses it (the cost was lowered, or cash
+    was recorded meanwhile, so it would overpay), the order stays paid,
+    `credit_failed` says why, and admins/managers are told. "Try again" on
+    Website Orders re-runs `creditMatter`.
+  - A refund webhook only tells staff: the ledger row stays until a person
+    removes it.
+  - Paying does NOT move a payment checkpoint step. Staff are told the matter
+    is fully paid and press Mark as Paid, which since F-01 reads the ledger.
+  - `onlinePaymentEnabled` (absent = on) is set through
+    `PATCH /api/tasks/:id/payment` (admin/manager), audited in the payment
+    event. The Portal shows the client's button and the staff switch in the
+    Payments tab (`components/tasks/PayNowCard.tsx`); the checkout script is
+    loaded from `checkout.razorpay.com` only when the client presses Pay Now.
+- **The payment checkpoint follows the ledger (SEC F-01, ported from Ambyflow
+  2026-11-04).** `RECORD_PAYMENT` ("Mark as Paid") is admin/manager only
+  (403 `PAYMENT_ROLE_REQUIRED`), and the caller's `newStatus` is discarded:
+  `transitionTask` derives the status from `tasks/{id}/payments`
+  (`ledgerPaymentStatus`) and answers 409 `PAYMENT_NOT_RECORDED` when the
+  history does not satisfy the gate. Before this, any team member on the
+  matter could mark it fully paid with nothing recorded.
 
 ---
 

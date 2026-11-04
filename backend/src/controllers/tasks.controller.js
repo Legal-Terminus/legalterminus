@@ -2364,16 +2364,21 @@ export async function updatePayment(req, res) {
       const paymentDescription = 'paymentDescription' in req.body
         ? (req.body.paymentDescription || null)
         : (task.paymentDescription ?? null);
+      // #220: Pay Now is on for every matter unless an admin/manager switches it
+      // off here. Stored only when it changes, and audited in the same event.
+      const payNow = 'onlinePaymentEnabled' in req.body ? req.body.onlinePaymentEnabled : undefined;
+      const payNowChanged = payNow !== undefined && payNow !== (task.onlinePaymentEnabled !== false);
       return {
         totalCost,
-        taskFields: { paymentMode, paymentDescription },
+        taskFields: { paymentMode, paymentDescription, ...(payNow !== undefined ? { onlinePaymentEnabled: payNow } : {}) },
         exceeds: () => 'The total cost cannot be less than the amount already paid. '
           + 'Correct or remove a payment in the payment history first.',
         event: (r) => ({
           type: 'PAYMENT_UPDATED',
-          comment: `Payment updated: ₹${r.amountPaid} paid / ₹${r.totalCost} total (${r.paymentStatus.replace('_', ' ')})${paymentMode ? ` · ${paymentMode}` : ''}`,
+          comment: `Payment updated: ₹${r.amountPaid} paid / ₹${r.totalCost} total (${r.paymentStatus.replace('_', ' ')})${paymentMode ? ` · ${paymentMode}` : ''}`
+            + (payNowChanged ? ` · Pay Now ${payNow ? 'switched on' : 'switched off'} for the client` : ''),
         }),
-        result: { paymentMode, paymentDescription },
+        result: { paymentMode, paymentDescription, onlinePaymentEnabled: payNow ?? (task.onlinePaymentEnabled !== false) },
       };
     });
 
@@ -2382,6 +2387,54 @@ export async function updatePayment(req, res) {
     if (err instanceof LedgerError) return res.status(err.status).json(ledgerErrorBody(err));
     logger.error({ err }, 'updatePayment error:');
     res.status(500).json({ message: 'Failed to update payment' });
+  }
+}
+
+/**
+ * #220 Pay Now: add a VERIFIED online payment to a matter's payment history.
+ * Called only by services/orders.service.js once the gateway has confirmed the
+ * money (signed return, signed webhook or a staff check) — never from a request.
+ * Goes through `commitLedgerChange` like every other money change, so the
+ * rollups, the overpayment check and the activity event are the same.
+ *
+ * Idempotent: the ledger row's id is derived from the order, so a second call
+ * for the same order changes nothing and answers `{ already: true }`.
+ * Throws an Error with `code` (e.g. PAYMENT_EXCEEDS_TOTAL) when the payment
+ * cannot be added; the caller keeps the payment and tells staff.
+ */
+export async function creditOnlinePayment(taskId, { orderId, amount, mode, reference, payerUid }) {
+  const taskRef = db.collection('tasks').doc(taskId);
+  const paymentRef = taskRef.collection('payments').doc(`online-${orderId}`);
+  try {
+    const rolled = await commitLedgerChange(db, taskRef, { uid: payerUid ?? null, role: 'client' }, ({ rows, now }) => {
+      if (rows.has(paymentRef.id)) throw new LedgerError(409, 'This payment is already in the payment history.', 'ALREADY_CREDITED');
+      const row = {
+        amount, mode, paidAt: now,
+        reference: reference ?? null,
+        notes: `Paid online by the client with Pay Now (order ${orderId}).`,
+        recordedBy: null, recordedByName: 'Online payment', recordedAt: now,
+        source: 'online_gateway', orderId,
+      };
+      rows.set(paymentRef.id, row);
+      return {
+        delta: amount,
+        writes: (tx) => tx.set(paymentRef, row),
+        taskFields: { paymentMode: mode },
+        exceeds: (left) => `The online payment of ₹${amount} is more than the ₹${Math.max(0, left)} now due on the matter.`,
+        event: (r) => ({
+          type: 'PAYMENT_RECORDED',
+          comment: `Paid online: ₹${amount} with Pay Now (order ${orderId}). ₹${r.amountDue} remaining of ₹${r.totalCost}.`,
+        }),
+      };
+    });
+    emitWebhook(db, 'payment.recorded', {
+      matterId: taskId, paymentId: paymentRef.id, amount, paymentStatus: rolled.paymentStatus,
+    });
+    return { ...rolled, paymentId: paymentRef.id };
+  } catch (err) {
+    if (err instanceof LedgerError && err.code === 'ALREADY_CREDITED') return { already: true, paymentId: paymentRef.id };
+    if (err instanceof LedgerError) throw Object.assign(new Error(err.message), { code: err.code ?? 'LEDGER_REFUSED' });
+    throw err;
   }
 }
 
@@ -2491,6 +2544,21 @@ export async function patchStep(req, res) {
 // resumes it at the task's current step, applies the event under the engine's
 // guards (payment gates etc.), and persists the resulting state. Invalid moves
 // are rejected. Body: { event: { type, ... } }.
+/**
+ * SEC F-01 (ported from Ambyflow, 2026-11-04): a matter's payment status as the
+ * LEDGER has it — the sum of `tasks/{id}/payments` against the total cost, by the
+ * same rule every ledger write uses (`deriveRollup`). A matter from before the
+ * ledger has no rows; its recorded `amountPaid` is its opening balance, exactly as
+ * `openingBalanceRow` treats it. Never reads a status anyone typed.
+ */
+async function ledgerPaymentStatus(taskRef, task) {
+  const ledger = await taskRef.collection('payments').get();
+  const paid = ledger.empty
+    ? (Number(task?.amountPaid ?? 0) || 0)
+    : sumLedger(ledger.docs.map((d) => d.data()));
+  return deriveRollup(task?.totalCost ?? 0, paid).paymentStatus;
+}
+
 export async function transitionTask(req, res) {
   try {
     const { role, uid } = req.user;
@@ -2611,6 +2679,26 @@ export async function transitionTask(req, res) {
       return res.status(403).json({ message: 'Only an admin can override the payment restriction.' });
     }
 
+    // ── SEC F-01: RECORD_PAYMENT is admin/manager-only and ledger-driven ─────
+    // The payment ledger routes are admin/manager-only, but this event was open
+    // to any team member on the matter AND carried the status to store
+    // (`newStatus`), so one request could mark an unpaid matter fully paid with
+    // no ledger entry. Now only the roles that may write the ledger may fire it,
+    // and the caller's `newStatus` is discarded: the event means "re-evaluate the
+    // gate against the payment history", with the status derived from the ledger.
+    let engineEvent = event;
+    let ledgerStatus = null;
+    if (event?.type === 'RECORD_PAYMENT') {
+      if (role !== 'admin' && role !== 'manager') {
+        return res.status(403).json({
+          message: 'Only an admin or manager can confirm a payment.',
+          code: 'PAYMENT_ROLE_REQUIRED',
+        });
+      }
+      ledgerStatus = await ledgerPaymentStatus(taskRef, task);
+      engineEvent = { ...event, newStatus: ledgerStatus };
+    }
+
     // ── #49: restrict step COMPLETION to the assigned user ───────────────────
     // A step's work-advancing events may only be fired by the active step's
     // assignee. A manager's power over someone else's step is limited to REASSIGN
@@ -2659,7 +2747,7 @@ export async function transitionTask(req, res) {
       taskId,
       clientUid: task.clientUid,
       workflowType: task.workflowDefinitionId,
-      paymentStatus: task.paymentStatus ?? 'not_paid',
+      paymentStatus: ledgerStatus ?? task.paymentStatus ?? 'not_paid',
       currentStepNumber: task.currentStepNumber,
       completedSteps: [],
       activeParallelGroup: null,
@@ -2671,10 +2759,22 @@ export async function transitionTask(req, res) {
     const actor = createActor(resumed, { input: context });
     actor.start();
     const before = String(actor.getSnapshot().value);
-    actor.send(event);
+    actor.send(engineEvent); // SEC F-01: carries the ledger-derived status
     const snap = actor.getSnapshot();
     const after = String(snap.value);
     actor.stop();
+
+    // SEC F-01: the payment history does not satisfy this gate. Say so plainly
+    // and change nothing.
+    if (event?.type === 'RECORD_PAYMENT' && currentDef?.type === 'payment_gate'
+      && snap.context.currentStepNumber === task.currentStepNumber && snap.status !== 'done') {
+      return res.status(409).json({
+        message: currentDef.gate?.requires === 'part_paid'
+          ? 'No payment has been recorded for this matter yet. Record the payment under Payments, then try again.'
+          : 'This matter is not fully paid yet. Record the remaining payment under Payments, then try again.',
+        code: 'PAYMENT_NOT_RECORDED',
+      });
+    }
 
     // No state change AND not a payment event that mutated context → invalid move.
     const ctxChanged =

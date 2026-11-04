@@ -39,7 +39,17 @@ export interface WebsiteOrder {
    * approve (#212); pending → being opened; created → `taskId`; failed →
    * `error`; not_applicable → `reason`.
    */
-  matter: { state: 'none' | 'awaiting_approval' | 'pending' | 'created' | 'failed' | 'not_applicable'; taskId?: string; error?: string; reason?: string;
+  /** #220: `matter_balance` is a client's Pay Now payment towards an existing matter. */
+  kind?: 'matter_balance';
+  taskId?: string;
+  /**
+   * #220 Pay Now orders: balance → waiting for payment; crediting → being added
+   * to the matter; credited → in the matter's payment history; credit_failed →
+   * paid, but not added (`error`) — staff retry.
+   */
+  matter: { state: 'none' | 'awaiting_approval' | 'pending' | 'created' | 'failed' | 'not_applicable'
+      | 'balance' | 'crediting' | 'credited' | 'credit_failed';
+    taskId?: string; error?: string; reason?: string;
     /** Who approved the order, and when. */
     approvedBy?: string; approvedByName?: string; approvedAt?: string;
     /** The matter this order opened has since been deleted. */

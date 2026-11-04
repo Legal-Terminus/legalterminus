@@ -20,6 +20,7 @@ import RichText from '../../components/common/RichText';
 import { CommentImageTaskContext } from '../../components/common/commentImageContext';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
+import PayNowCard from '../../components/tasks/PayNowCard';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
@@ -631,7 +632,7 @@ export default function TaskDetailPage() {
       )}
       {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} workflowType={task.workflowType} />}
       {tab === 'discussion' && <DiscussionPanel taskId={taskId!} isStaff={isStaff} />}
-      {tab === 'payments' && <PaymentsTab task={task} canEdit={canAssign} />}
+      {tab === 'payments' && <PaymentsTab task={task} canEdit={canAssign} isClient={isClient} />}
       {/* Matter details (#153 organisation, #149 CC recipients) — admin/manager
           only. Deliberately placed LAST and collapsed by default: anything above
           the step content displaces it, and the #111 reminder picker needs room
@@ -1931,10 +1932,15 @@ function StepHeroPanel({
   let wait: React.ReactNode = null;        // passive "waiting" note for the other role
 
   if (step.type === 'payment_gate') {
-    if (role.isStaff) {
+    // SEC F-01 (ported from Ambyflow): confirming a payment is admin/manager-only
+    // on the server (the roles that may write the payment history), so a team
+    // member gets the waiting note instead of a button that can only answer 403.
+    // The event carries no status: the server derives it from the payment
+    // history, so this passes the checkpoint only once the payment is recorded.
+    if (role.canOverrideClient) {
       actions = (
         <div className="flex flex-wrap gap-2">
-          <button disabled={pending} onClick={() => fire('RECORD_PAYMENT', { extra: { newStatus: 'fully_paid' } })} className="btn-primary disabled:opacity-50">
+          <button disabled={pending} onClick={() => fire('RECORD_PAYMENT')} className="btn-primary disabled:opacity-50">
             {pending ? spin : <CreditCard className="w-4 h-4" />} Mark as Paid
           </button>
           {/* Payment override is admin-only (#74). */}
@@ -2619,7 +2625,7 @@ const PAYMENT: Record<PaymentStatus, { label: string; cls: string }> = {
 // Payment modes offered in the editor (#78) — shared with Create Matter (#145)
 // so the two lists cannot drift. See `lib/paymentModes.ts`.
 
-function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
+function PaymentsTab({ task, canEdit, isClient }: { task: Task; canEdit: boolean; isClient: boolean }) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const p = PAYMENT[task.paymentStatus] ?? PAYMENT.not_paid;
@@ -2754,6 +2760,9 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
         </div>
       )}
     </div>
+
+    {/* #220: the client's Pay Now button, or the staff switch for it. */}
+    <PayNowCard task={task} isClient={isClient} canEdit={canEdit} />
 
     {/* #148: the payment LEDGER — clients pay in instalments, so every payment
         received is its own record rather than one overwritten latest figure. */}

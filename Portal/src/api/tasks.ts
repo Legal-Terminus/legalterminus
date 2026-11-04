@@ -92,6 +92,8 @@ export interface PaymentUpdate {
   totalCost?: number;
   paymentMode?: string | null;
   paymentDescription?: string | null; // #147
+  /** #220: whether the client sees Pay Now for the amount due. */
+  onlinePaymentEnabled?: boolean;
 }
 export const updatePayment = (id: string, body: PaymentUpdate) =>
   apiFetch<{ success: boolean } & Required<PaymentUpdate> & { amountPaid: number; paymentStatus: PaymentStatus; amountDue: number }>(

@@ -75,6 +75,14 @@ test('payment gate: Mark as Paid sets paid status and advances', async ({ adminP
   const parkedOnGate = def.steps.find((s) => s.stepNumber === gateStep)?.type === 'payment_gate';
   test.skip(!parkedOnGate, `Part-paid matter did not park on a blocking gate (at ${gateStep}).`);
 
+  // SEC F-01: "Mark as Paid" no longer sets the status itself — it re-checks the
+  // checkpoint against the payment history. So the balance is recorded in the
+  // ledger first (createPartPaidMatter leaves 6000 of 10000 due).
+  const ledger = await apiAs('admin');
+  const paid = await ledger.post(`/api/tasks/${taskId}/payments`, { data: { amount: 6000, mode: 'E2E' } });
+  expect(paid.status(), await paid.text()).toBe(201);
+  await ledger.dispose();
+
   await adminPage.goto(`tasks/${taskId}`);
   await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
   await adminPage.getByRole('button', { name: /mark as paid/i }).click();

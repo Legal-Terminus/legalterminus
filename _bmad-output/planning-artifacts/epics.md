@@ -6254,3 +6254,23 @@ The owner asked for Technology Services to be visible from the home page, not on
 - Fix: the top menu set `fontWeight: 700` on every link without a dropdown, meant only for
   Home (May 2026). Technology Services is the second such link and turned bold. Now only Home.
 - Tests added to `Frontend/tests/e2e/technology-services.spec.js`.
+
+### Pay Now for the amount due, and the payment checkpoint follows the ledger (2026-11-04, #220)
+
+**Pay Now (#220).** On a part-paid matter the client sees "Pay Now ₹<amount due>" in the
+Payments tab. It opens the same Razorpay checkout as the website; the amount is the
+matter's amount due, computed by the server — the client cannot change it. Once the
+gateway confirms, the payment is added to the matter's payment history by itself, the
+amount due and status update, and admins/managers are notified. Admin/manager can switch
+Pay Now off (or back on) per matter in the same tab; it is on by default. Details in
+architecture.md, "Website orders and payments".
+- A matter with nothing paid yet gets no Pay Now: the issue asks for part-paid matters.
+- Paying does not advance a payment checkpoint step by itself; staff press Mark as Paid.
+- Tests: `backend/src/__tests__/payNow.test.js`, `Portal/e2e/pay-now.spec.ts`.
+
+**Security fix ported from Ambyflow (audit F-01, 2026-10-04).** "Mark as Paid" is now
+admin/manager only and checks the payment history; a typed status is ignored. Before,
+any team member on a matter could mark it fully paid without a payment recorded. Team
+members now see "Waiting for payment to be recorded." instead of the button.
+- Tests: `Portal/e2e/payment-gate-ledger.spec.ts`; `step-execution.spec.ts` records the
+  balance before Mark as Paid.

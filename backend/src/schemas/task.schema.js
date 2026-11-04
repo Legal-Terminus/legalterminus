@@ -95,6 +95,8 @@ export const taskPaymentUpdateSchema = z.object({
   paymentMode: z.string().trim().max(60).nullable().optional(),
   // #147: editable after creation alongside the other payment details.
   paymentDescription: z.string().trim().max(1000).nullable().optional(),
+  // #220: whether the client sees Pay Now for the amount due on this matter.
+  onlinePaymentEnabled: z.boolean().optional(),
 }).strict().refine((b) => Object.keys(b).length > 0, {
   message: 'No payment fields provided',
 });

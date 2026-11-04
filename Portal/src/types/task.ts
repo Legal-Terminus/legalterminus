@@ -56,6 +56,8 @@ export interface Task {
   paymentMode?: string | null;
   /** #147: free-text note on how the payment was received (e.g. split across modes). */
   paymentDescription?: string | null;
+  /** #220: Pay Now is on unless an admin/manager switched it off (`false`). */
+  onlinePaymentEnabled?: boolean;
   professionalUid?: string | null; // #85
   professionalName?: string | null; // #85 (snapshot for display)
   /** #167: recurring cadence, or null/absent when the matter is one-off. */

@@ -20,6 +20,13 @@ export const createOrderSchema = z.object({
   simulate: z.enum(['gateway_down']).optional(),
 }).strict();
 
+/**
+ * POST /api/tasks/:taskId/pay-now (#220) — pay what is due on a matter. Takes
+ * NOTHING: the matter comes from the URL and the amount from the matter, so an
+ * `amount` sent by a tampered page is refused.
+ */
+export const matterPayNowSchema = z.object({}).strict();
+
 /** POST /api/orders/:orderId/verify — the signed result from the checkout. */
 export const verifyOrderSchema = z.object({
   gatewayPaymentId: id,

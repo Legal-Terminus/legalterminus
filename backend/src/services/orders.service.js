@@ -33,7 +33,14 @@
  * AMOUNTS (#212): `price` is the catalogue price, `gst` the GST added to it,
  * and `amount` the total charged — the figure every payment check compares.
  *
- * `decideSettlement`, `matterOutcome` and `canApprove` are pure and unit-tested.
+ * PAY NOW (#220): an order of `kind: 'matter_balance'` pays what is due on an
+ * EXISTING matter (`taskId`). Its amount is the matter's `amountDue` when the
+ * order is made — never the request's. Once paid it is added to that matter's
+ * payment history (`creditMatter`) instead of waiting for approval, and its
+ * `matter.state` runs balance ─▶ crediting ─▶ credited | credit_failed.
+ *
+ * `decideSettlement`, `matterOutcome`, `canApprove` and `payNowRefusal` are pure
+ * and unit-tested.
  */
 import crypto from 'crypto';
 import { getDb } from '../config/firebase.js';
@@ -107,7 +114,8 @@ export function publicOrder(o) {
     amount: o.amount, currency: o.currency, createdAt: o.createdAt, paidAt: o.paidAt ?? null,
     paymentReference: o.gatewayPaymentId ?? null, failureReason: o.failureReason ?? null,
     // Whether there is a matter to go and look at — not its internal state.
-    matterId: o.matter?.state === 'created' ? o.matter.taskId : null,
+    matterId: o.matter?.state === 'created' || o.kind === 'matter_balance' ? (o.matter?.taskId ?? o.taskId ?? null) : null,
+    kind: o.kind ?? 'website',
   };
 }
 
@@ -194,11 +202,16 @@ export async function settlePaid(orderId, payment, source) {
   const order = await getOrder(orderId);
   if (outcome === 'paid') {
     logger.info({ orderId, source, gatewayPaymentId: payment.gatewayPaymentId }, 'orders: paid');
-    await fulfil(orderId);
+    // #220: a Pay Now order is added to its matter; a website order waits for approval.
+    if (order.kind === 'matter_balance') await creditMatter(orderId);
+    else await fulfil(orderId);
   } else if (outcome === 'review') {
     logger.warn({ orderId, source, expected: order.amount, paid: payment.amount }, 'orders: amount mismatch — held for review');
-    await tellStaff('Website payment needs review',
-      `Order ${orderId} (${order.label} — ${order.planName}): ${order.reviewReason} No matter was opened.`);
+    await tellStaff(order.kind === 'matter_balance' ? 'Online matter payment needs review' : 'Website payment needs review',
+      order.kind === 'matter_balance'
+        ? `Order ${orderId} (${order.planName}): ${order.reviewReason} It was NOT added to the matter's payment history.`
+        : `Order ${orderId} (${order.label} — ${order.planName}): ${order.reviewReason} No matter was opened.`,
+      order.taskId ?? undefined, ['admin', 'manager']);
   }
   return { order: await getOrder(orderId), outcome };
 }
@@ -417,9 +430,16 @@ export async function applyGatewayEvent(event) {
     if (changed) {
       const o = await getOrder(orderId);
       // The matter is deliberately left alone: whether work stops is a decision for a person.
-      await tellStaff('Website order refunded',
-        `Order ${orderId} (${o.label} — ${o.planName}) was refunded at the payment gateway.${o.matter?.taskId ? ' Its matter is still open — decide what to do with it.' : ''}`,
-        o.matter?.taskId);
+      if (o.kind === 'matter_balance') {
+        // #220: the ledger is the firm's record; a refund is reflected there by a person.
+        await tellStaff('Online matter payment refunded',
+          `Order ${orderId} (${o.planName}) was refunded at the payment gateway. The payment is still in the matter's payment history — remove it there if the refund stands.`,
+          o.taskId, ['admin', 'manager']);
+      } else {
+        await tellStaff('Website order refunded',
+          `Order ${orderId} (${o.label} — ${o.planName}) was refunded at the payment gateway.${o.matter?.taskId ? ' Its matter is still open — decide what to do with it.' : ''}`,
+          o.matter?.taskId);
+      }
     }
     return { handled: true, orderId, outcome: changed ? 'refunded' : 'noop' };
   }
@@ -487,6 +507,12 @@ export async function discardOrder(orderId) {
 export async function retryMatter(orderId) {
   const order = await getOrder(orderId);
   if (!order) throw httpError(404, 'Order not found.');
+  // #220: for a Pay Now order, "try again" means add it to its matter again.
+  if (order.kind === 'matter_balance') {
+    if (order.status !== 'paid') throw httpError(409, 'Only a paid order can be added to its matter.');
+    if (order.matter?.state === 'credited') return order;
+    return creditMatter(orderId, { retry: true });
+  }
   if (order.status !== 'paid') throw httpError(409, 'Only a paid order can have a matter opened.');
   const m = order.matter ?? {};
   if (m.state === 'created') return order;
@@ -497,4 +523,149 @@ export async function retryMatter(orderId) {
     return openApprovedMatter(order, approval);
   }
   return fulfil(orderId, { retry: true });
+}
+
+/* ─────────────────────────── Pay Now (#220) ─────────────────────────── */
+
+/** What is still due on a matter, from its rollups. */
+export const amountDueOf = (task) => Math.max(0, Number(
+  task?.amountDue ?? ((task?.totalCost ?? 0) - (task?.amountPaid ?? 0)),
+) || 0);
+
+/**
+ * Why this client may NOT pay this matter online now, or null when they may.
+ * Pure. `canSee` is the caller's answer to "may this client see the matter".
+ * The issue asks for Pay Now on a matter that is PART paid; a matter with
+ * nothing paid yet is settled with the firm before work starts.
+ */
+export function payNowRefusal(task, canSee) {
+  if (!task || !canSee) return { status: 404, message: 'Matter not found.', code: 'NOT_FOUND' };
+  if (task.onlinePaymentEnabled === false) {
+    return { status: 409, message: 'Online payment is switched off for this matter. Please contact us to pay.', code: 'PAY_NOW_OFF' };
+  }
+  if (task.paymentStatus !== 'part_paid' || amountDueOf(task) <= 0) {
+    return { status: 409, message: 'There is no part payment due on this matter.', code: 'NOTHING_DUE' };
+  }
+  return null;
+}
+
+/**
+ * Start paying what is due on a matter. The amount is the matter's amount due,
+ * read here, never sent by the page. A client who clicks twice, or comes back
+ * within the half hour, gets the order they already started (same amount, same
+ * gateway) instead of a second one that could be paid twice.
+ */
+export async function createMatterBalanceOrder({ user, customer, taskId }) {
+  const gw = gateway();
+  if (!gw) throw httpError(503, 'Online payment is not available right now.', 'PAYMENTS_OFF');
+  const taskSnap = await getDb().collection('tasks').doc(taskId).get();
+  const task = taskSnap.exists ? taskSnap.data() : null;
+  const { clientCanSeeMatter } = await import('../controllers/tasks.controller.js');
+  const refusal = payNowRefusal(task, task && clientCanSeeMatter(user, task));
+  if (refusal) throw httpError(refusal.status, refusal.message, refusal.code);
+  const due = amountDueOf(task);
+
+  const open = await col().where('taskId', '==', taskId).where('status', '==', 'created').get();
+  const reuse = open.docs.map((d) => ({ orderId: d.id, ...d.data() })).find((o) => o.uid === user.uid
+    && o.gateway === gw.name && Math.round(o.amount * 100) === Math.round(due * 100)
+    && Date.now() - new Date(o.createdAt).getTime() < ABANDON_AFTER_MS);
+  if (reuse) return { ...reuse, checkout: gw.checkout({ gatewayOrderId: reuse.gatewayOrderId }) };
+
+  const orderId = newOrderId();
+  let gatewayOrderId;
+  try {
+    ({ gatewayOrderId } = await gw.createOrder({ amount: due, receipt: orderId }));
+  } catch (err) {
+    logger.error({ err, taskId }, 'orders: the gateway could not create a Pay Now order');
+    throw httpError(502, 'We could not reach the payment service. Please try again in a few minutes.', 'GATEWAY_UNAVAILABLE');
+  }
+  const order = {
+    kind: 'matter_balance', taskId,
+    uid: user.uid, customer: customer ?? {},
+    productKey: null, productCode: '', planId: null,
+    label: 'Matter payment', planName: `${task.serviceName || 'Matter'} (${taskId})`, serviceKey: task.serviceKey ?? null,
+    // Nothing is added on top: the matter's total already is what the firm charges.
+    price: due, gst: 0, gstPercent: 0, amount: due, currency: 'INR',
+    status: 'created', gateway: gw.name, gatewayOrderId,
+    matter: { state: 'balance', taskId },
+    createdAt: nowIso(), updatedAt: nowIso(),
+  };
+  await col().doc(orderId).set(order);
+  logger.info({ orderId, uid: user.uid, taskId, amount: due, gateway: gw.name }, 'orders: Pay Now order created');
+  return { orderId, ...order, checkout: gw.checkout({ gatewayOrderId }) };
+}
+
+/**
+ * Add a paid Pay Now order to its matter's payment history. Claimed in a
+ * transaction so the return and the webhook add it once; the ledger row's id is
+ * the order's, so even a retry cannot add it twice. Never throws: the money is
+ * already taken, so a failure is recorded on the order and staff are told.
+ */
+export async function creditMatter(orderId, { retry = false } = {}) {
+  const ref = col().doc(orderId);
+  const claimed = await getDb().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const o = snap.data();
+    if (!snap.exists || o.kind !== 'matter_balance' || o.status !== 'paid') return null;
+    const state = o.matter?.state ?? 'balance';
+    if (state === 'credited' || state === 'crediting') return null;
+    if (state === 'credit_failed' && !retry) return null;
+    tx.update(ref, { matter: { state: 'crediting', taskId: o.taskId }, updatedAt: nowIso() });
+    return { orderId, ...o };
+  });
+  if (!claimed) return getOrder(orderId);
+  const o = claimed;
+  const paid = rupees(o.amountPaid ?? o.amount);
+  const who = o.customer?.name || o.customer?.email || 'The client';
+
+  let result;
+  try {
+    const { creditOnlinePayment } = await import('../controllers/tasks.controller.js');
+    result = await creditOnlinePayment(o.taskId, {
+      orderId, amount: o.amountPaid ?? o.amount, payerUid: o.uid, reference: o.gatewayPaymentId ?? null,
+      mode: o.gateway === 'simulated' ? 'Online (test payment)' : 'Online (Razorpay)',
+    });
+  } catch (err) {
+    logger.error({ err, orderId, taskId: o.taskId }, 'orders: paid, but could not be added to the matter');
+    const error = err?.code ? err.message : 'The payment could not be added to the matter.';
+    await ref.update({ matter: { state: 'credit_failed', taskId: o.taskId, error }, updatedAt: nowIso() });
+    await tellStaff('Online payment could NOT be added to the matter',
+      `${who} paid ${paid} with Pay Now (order ${orderId}), but it could not be added to the matter's payment history: ${error} The money was received. Try again from Website Orders, or record it by hand.`,
+      o.taskId, ['admin', 'manager']);
+    return getOrder(orderId);
+  }
+  await ref.update({ matter: { state: 'credited', taskId: o.taskId, paymentId: result.paymentId }, updatedAt: nowIso() });
+  if (result.already) return getOrder(orderId);
+
+  await tellStaff('Client paid online',
+    `${who} paid ${paid} with Pay Now (order ${orderId}). `
+      + (result.paymentStatus === 'fully_paid'
+        ? 'The matter is now fully paid. If it is waiting at a payment step, press Mark as Paid to continue it.'
+        : `${rupees(result.amountDue)} is still due.`),
+    o.taskId, ['admin', 'manager']);
+
+  // The client's own order history (what "My Orders" reads), as for website orders.
+  try {
+    await getDb().collection('users').doc(o.uid).collection('payments').doc(orderId).set({
+      orderId, paymentId: o.gatewayPaymentId ?? '', amount: o.amountPaid ?? o.amount,
+      planName: o.planName, source: 'matter-payment', sourceLabel: o.label,
+      status: 'success', failureReason: null, paymentDate: new Date(), updatedAt: new Date(),
+    });
+  } catch (err) {
+    logger.warn({ err, orderId }, 'orders: could not write the client order history');
+  }
+
+  if (o.customer?.email) {
+    sendNotificationEmail({
+      to: o.customer.email,
+      title: 'Payment received',
+      message: [
+        `Thank you. We have received your payment of ${paid} for ${o.planName}.`,
+        result.paymentStatus === 'fully_paid' ? 'Your matter is now fully paid.' : `${rupees(result.amountDue)} is still due on this matter.`,
+        '', `Order reference: ${orderId}`,
+      ].join('\n'),
+      action: { label: 'Open your portal', url: `${publicSiteUrl()}/portal/` },
+    }).catch((err) => logger.warn({ err, orderId }, 'orders: Pay Now confirmation email failed'));
+  }
+  return getOrder(orderId);
 }

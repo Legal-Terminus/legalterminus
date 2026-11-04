@@ -40,6 +40,14 @@ const STATUS: Record<OrderStatus, { label: string; cls: string }> = {
 function matterLine(o: WebsiteOrder): { text: string; warn: boolean } {
   if (o.status === 'review') return { text: o.reviewReason ?? 'The amount paid does not match. Check before opening a matter.', warn: true };
   if (o.status !== 'paid') return { text: '—', warn: false };
+  // #220: a client's Pay Now payment goes into an existing matter's payment history.
+  if (o.kind === 'matter_balance') {
+    switch (o.matter.state) {
+      case 'credited': return { text: "Added to the matter's payment history", warn: false };
+      case 'credit_failed': return { text: `Paid, but not added to the matter: ${o.matter.error ?? 'unknown reason'}`, warn: true };
+      default: return { text: 'Adding to the matter…', warn: false };
+    }
+  }
   switch (o.matter.state) {
     // #212: payment alone opens nothing — someone approves the order first.
     case 'awaiting_approval': return { text: 'Waiting for approval. Approve the order to open its matter.', warn: true };
@@ -137,7 +145,8 @@ export default function WebsiteOrdersPage() {
     mutationFn: retryOrderMatter,
     onSuccess: (o) => {
       refresh();
-      if (o.matter.state === 'created') toast.success('Matter opened.');
+      if (o.matter.state === 'credited') toast.success("Added to the matter's payment history.");
+      else if (o.matter.state === 'created') toast.success('Matter opened.');
       // Its service has a workflow now: the order joins the ones waiting for approval.
       else if (o.matter.state === 'awaiting_approval') toast.info('A matter can now be opened for this order. Approve it to open the matter.');
       else toast.error(o.matter.error || o.matter.reason || 'The matter could not be opened.');
@@ -179,12 +188,13 @@ export default function WebsiteOrdersPage() {
         onClick={() => setOpen(open === o.orderId ? null : o.orderId)}>
         {open === o.orderId ? 'Hide details' : 'Details'}
       </button>
-      {o.matter.state === 'created' && o.matter.taskId && !o.matter.deleted && (
+      {(o.matter.state === 'created' || o.kind === 'matter_balance') && o.matter.taskId && !o.matter.deleted && (
         <Link to={`/tasks/${o.matter.taskId}`} className="btn-secondary min-h-11">Open matter</Link>
       )}
-      {canManage && o.status === 'paid' && (o.matter.state === 'failed' || o.matter.state === 'not_applicable') && (
+      {canManage && o.status === 'paid' && (o.matter.state === 'failed' || o.matter.state === 'not_applicable' || o.matter.state === 'credit_failed') && (
         <button type="button" className="btn-secondary min-h-11 disabled:opacity-50" disabled={busy}
-          aria-label={`Try to open the matter for order ${o.orderId}`} onClick={() => retry.mutate(o.orderId)}>
+          aria-label={o.kind === 'matter_balance' ? `Try again to add order ${o.orderId} to its matter` : `Try to open the matter for order ${o.orderId}`}
+          onClick={() => retry.mutate(o.orderId)}>
           Try again
         </button>
       )}
