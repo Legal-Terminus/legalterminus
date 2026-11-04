@@ -1912,7 +1912,9 @@ a product is keyed by the `source` its component passes to the checkout, and
   The webhook is authenticated by an HMAC over the RAW request body
   (`req.rawBody`, kept for that route only in `server.js`).
 - **Feature switch**: "Buy Now" renders only when the website build sets
-  `VITE_PAYMENTS_ENABLED=true`. QA does; production does not.
+  `VITE_PAYMENTS_ENABLED=true`. QA does (Razorpay TEST keys) and, since
+  2026-11-04, production does (LIVE keys: `RAZORPAY_*` secrets on the
+  `production` environment; webhook `https://legalterminus.com/api/orders/webhook`).
 - The legacy PayU routes under `/api/payment` are still present and unused;
   E24-S06 removes them.
 - **Prices are exclusive of GST (#212, decided by the firm 2026-10-12).**
