@@ -574,6 +574,10 @@ export async function createTask(req, res) {
     const { clientUid, serviceKey, serviceName, organisation, ccEmails,
             paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
             professionalUid, additionalProfessionalEmails, recurrence, anchorDate } = req.body;
+    // #219: the GST period a matter opened by the GST sweep is for. Set ONLY by
+    // that sweep on the request object it builds — never read from the body, so
+    // no caller can stamp one.
+    const filingPeriod = req.gstFilingPeriod ?? null;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
     if (!compiled) {
@@ -730,11 +734,14 @@ export async function createTask(req, res) {
       nowIso: now,
       matterStart: now,
       anchorDate: anchorDate ?? null,
-      resolveStatutory: (key) => statutoryResolver(key, { anchorDate: anchorDate ?? null }),
+      // #219: a GST matter's due dates come from its PERIOD (opened on 1 Oct for
+      // September, so GSTR-1 is due 11 Oct), not from the day it was created.
+      resolveStatutory: (key) => statutoryResolver(key, { anchorDate: anchorDate ?? null, month: filingPeriod?.month }),
     });
     const matterDueAt = needsApproval ? null : projectMatterDueAt(stepDefs, resolvedFirstStep, now);
 
     const task = {
+      ...(filingPeriod ? { filingPeriod } : {}),
       // Workflow identity: definition + pinned version (NOT the service key).
       workflowDefinitionId: definition.id,
       workflowVersion: definition.version ?? 1,
@@ -886,9 +893,10 @@ export async function createTask(req, res) {
     // #108: send the CLIENT a "matter created" confirmation email (editable
     // template). Fire-and-forget; never blocks creation. Uses the matter's
     // organisation + service in the subject.
+    // #219: a GST matter sends its own GST email instead (one email, not two).
     try {
       const clientEmail = c.email || (Array.isArray(c.emailIds) ? c.emailIds[0] : null);
-      if (clientEmail) {
+      if (clientEmail && !req.suppressCreatedEmail) {
         const rendered = await renderTemplate('matter_created', {
           clientName, organisation: task.organisation ?? '', serviceName: task.serviceName,
           portalUrl: `${publicSiteUrl()}/portal/`,
@@ -950,7 +958,16 @@ export async function approveTask(req, res) {
       if (compiled) {
         const stepDefs = materialisableSteps(compiled.definition.steps);
         const firstDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber);
-        firstDueAt = addDaysIso(now, etaDaysOf(firstDef));
+        // #219: the same resolution creation uses, so a first step due on a
+        // statutory date (a GSTR filing) gets that date — for the matter's own
+        // GST period — instead of only its typical duration.
+        const approvalStatutory = makeStatutoryResolver(await getOverrides(db));
+        firstDueAt = resolveStepDueAt(firstDef, {
+          nowIso: now,
+          matterStart: now,
+          anchorDate: task.anchorDate ?? null,
+          resolveStatutory: (key) => approvalStatutory(key, { anchorDate: task.anchorDate ?? null, month: task.filingPeriod?.month }),
+        });
         matterDueAt = projectMatterDueAt(stepDefs, task.currentStepNumber, now);
       }
     } catch (e) {
@@ -2892,7 +2909,7 @@ export async function transitionTask(req, res) {
               nowIso: now,
               matterStart: task.createdAt ?? now,
               anchorDate: task.anchorDate ?? null,
-              resolveStatutory: (key) => transitionStatutory(key, { anchorDate: task.anchorDate ?? null }),
+              resolveStatutory: (key) => transitionStatutory(key, { anchorDate: task.anchorDate ?? null, month: task.filingPeriod?.month }),
             },
           ),
         }

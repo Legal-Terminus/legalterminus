@@ -154,6 +154,50 @@ export const TEMPLATE_DEFS = {
       '{{message}}\n\n' +
       'Open the matter in the portal to reply.',
   },
+  // #219: sent with the matter opened automatically for each period. The period,
+  // the due dates and the company name are filled in at send time, so they stay
+  // automatic however the wording is edited. The subject is sent exactly as
+  // written here (no "[Legal Terminus] … (#id)" wrapper), as the firm asked.
+  gst_return_monthly: {
+    label: 'Client — GST return (monthly)',
+    audience: 'client',
+    description: 'Sent on the 1st of every month to clients who file GST monthly, with the matter opened for the month just ended (#219).',
+    placeholders: ['companyName', 'clientName', 'periodTitle', 'period', 'gstr1DueDate', 'gstr3bDueDate', 'portalUrl'],
+    subject: '{{companyName}} - GST Return - {{periodTitle}}',
+    body:
+      'Dear Sir/Madam,\n\n' +
+      'In order to file GST return (GSTR 1 and GSTR 3B) for the month of {{period}}, we request you to please provide the following data at the earliest.\n\n' +
+      '- Sale Details for the month of {{period}}\n' +
+      '- Purchase details for the month of {{period}}\n' +
+      '- Bank statement for the month of {{period}}\n' +
+      '- Expenditure details for the month of {{period}}\n\n' +
+      'We would like to inform you that the last date of filing GSTR 1 is {{gstr1DueDate}} and GSTR 3B is {{gstr3bDueDate}}. ' +
+      'Accordingly, we request you to kindly provide the above details at the earliest so as to avoid last minute rush.\n\n' +
+      'Further, please note that in case there is “NIL” transaction or No Sale or Purchase transaction in any month, ' +
+      'please do check the bank statements and in case there is any credit transaction in the bank statement, ' +
+      'then do inform us about the same.\n\n' +
+      '— The Legal Terminus Team',
+  },
+  gst_return_quarterly: {
+    label: 'Client — GST return (quarterly)',
+    audience: 'client',
+    description: 'Sent on 1 July, 1 October, 1 January and 1 April to clients who file GST quarterly, with the matter opened for the quarter just ended (#219).',
+    placeholders: ['companyName', 'clientName', 'periodTitle', 'period', 'gstr1DueDate', 'gstr3bDueDate', 'portalUrl'],
+    subject: '{{companyName}} - GST Return - {{periodTitle}}',
+    body:
+      'Dear Sir/Madam,\n\n' +
+      'In order to file GST return (GSTR 1 and GSTR 3B) for the {{period}}, we request you to please provide the following data at the earliest.\n\n' +
+      '- Sale Details for the {{period}}\n' +
+      '- Purchase details for the {{period}}\n' +
+      '- Bank statement for the {{period}}\n' +
+      '- Expenditure details for the {{period}}\n\n' +
+      'We would like to inform you that the last date of filing GSTR 1 is {{gstr1DueDate}} and GSTR 3B is {{gstr3bDueDate}}. ' +
+      'Accordingly, we request you to kindly provide the above details at the earliest so as to avoid last minute rush.\n\n' +
+      'Further, please note that in case there is “NIL” transaction or No Sale or Purchase transaction in any month, ' +
+      'please do check the bank statements and in case there is any credit transaction in the bank statement, ' +
+      'then do inform us about the same.\n\n' +
+      '— The Legal Terminus Team',
+  },
 };
 
 let _cache = null;

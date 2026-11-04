@@ -286,7 +286,7 @@ function matterSubject({ serviceName, taskId, title, organisation }) {
  * wrapper; for account-level emails (e.g. welcome) omit them and the template's
  * own subject is used verbatim (prefixed with the brand tag).
  */
-export async function sendTemplatedEmail({ to, cc, subject, body, taskId, serviceName, organisation }) {
+export async function sendTemplatedEmail({ to, cc, subject, body, taskId, serviceName, organisation, keepSubject = false }) {
   try {
     if (!to || !subject) return false;
     const ccList = normaliseCc(cc, to);
@@ -299,9 +299,14 @@ export async function sendTemplatedEmail({ to, cc, subject, body, taskId, servic
     const from = process.env.EMAIL_FROM || process.env.GMAIL_USER;
     // Matter emails thread + get the org|service wrapper; account emails use the
     // template subject as-is (brand-tagged).
-    const finalSubject = taskId
-      ? matterSubject({ serviceName, taskId, title: subject, organisation })
-      : `[Legal Terminus] ${subject}`;
+    // #219: `keepSubject` sends the template's subject exactly as the firm wrote
+    // it ("ABC PVT LTD - GST Return - September 2026") while still threading the
+    // email with its matter.
+    const finalSubject = keepSubject
+      ? subject
+      : taskId
+        ? matterSubject({ serviceName, taskId, title: subject, organisation })
+        : `[Legal Terminus] ${subject}`;
     const threadRef = taskId ? `<matter-${taskId}@legalterminus>` : undefined;
     const info = await transporter.sendMail({
       from, to, subject: finalSubject, text, html,

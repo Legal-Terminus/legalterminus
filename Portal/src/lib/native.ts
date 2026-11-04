@@ -43,6 +43,8 @@ const EXTENSIONS: Record<string, string> = {
   'image/png': 'png',
   'application/zip': 'zip',
   'text/csv': 'csv',
+  'application/json': 'json', // #219
+  'text/plain': 'txt',        // #219
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
   'application/vnd.ms-excel': 'xls',

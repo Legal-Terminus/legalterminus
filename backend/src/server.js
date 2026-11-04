@@ -25,6 +25,9 @@ import paymentRoutes from "./routes/payment.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import tasksRoutes from "./routes/tasks.routes.js";
 import { recurringSweepTrigger, runRecurringSweep } from "./controllers/tasks.controller.js";
+import { gstReturnSweepTrigger, runGstReturnSweep } from "./services/gstReturns.service.js";
+import { timingSafeEqual } from "crypto";
+import { isTestEnvironment } from "./config/testEnvironment.js";
 import { verifyToken } from "./middleware/auth.middleware.js";
 import reportsRoutes from "./routes/reports.routes.js";
 import leadsRoutes from "./routes/leads.routes.js";
@@ -176,6 +179,39 @@ app.use("/api/contact", sensitiveLimiter, contactRoutes);
 app.use("/api", recurringSweepTrigger);
 // #217: KYC reminders run the same due-on-read way (own lock, own throttle).
 app.use("/api", worksheetReminderTrigger);
+// #219: GST return matters + emails, the same way (own lock, own throttle).
+app.use("/api", gstReturnSweepTrigger);
+
+/** #219: constant-time comparison for the scheduler secret. */
+const secretMatches = (given, expected) => {
+  if (!expected || typeof given !== "string") return false;
+  const a = Buffer.from(given);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+};
+
+// #219: run the GST sweep now — Cloud Scheduler (x-cron-secret) or an admin.
+app.post("/api/internal/run-gst-returns", async (req, res) => {
+  if (!secretMatches(req.headers["x-cron-secret"], process.env.CRON_SECRET)) {
+    await new Promise((resolve) => verifyToken(req, res, resolve));
+    if (res.headersSent) return;
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+  }
+  try {
+    // TEST ENVIRONMENTS ONLY (QA, the local test stack): run as if it were
+    // `asOf` (YYYY-MM-DD, India) for one client, so a test can open a period
+    // without waiting for the 1st. Ignored on the live site.
+    const testRun = isTestEnvironment() && req.body?.asOf && /^\d{4}-\d{2}-\d{2}$/.test(String(req.body.asOf));
+    res.json(await runGstReturnSweep(testRun
+      ? { force: true, now: new Date(`${req.body.asOf}T06:30:00.000Z`), onlyClientUid: String(req.body.clientUid ?? '') || null }
+      : { force: true }));
+  } catch (err) {
+    logger.error({ err }, "run-gst-returns failed:");
+    res.status(500).json({ success: false, error: "Sweep failed" });
+  }
+});
 
 // #167: explicit trigger for Cloud Scheduler (x-cron-secret) or an admin "Run
 // now". Mounted OUTSIDE the routers because a Scheduler call carries no Firebase

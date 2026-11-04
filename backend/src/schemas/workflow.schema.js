@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DUE_ANCHORS } from '../../../shared/workflows/dueRules.js';
 
 /**
  * Workflow config schemas. Per-phase default assignees (E11-S02): a map of
@@ -86,6 +87,20 @@ const gateSchema = z.object({
 // a full server definition, so legacy/server-managed fields (e.g. timestamps on a
 // step, or future additive fields) are silently STRIPPED rather than 400-ing. The
 // shared `validateDefinition` in the controller is the authoritative semantic gate.
+/**
+ * Story 35.1 date-anchored due rule ("GSTR-1 by the 11th"). The Portal's step
+ * editor has offered it since the Ambyflow port, but this schema did not list
+ * it, so a saved rule was silently STRIPPED and every step fell back to its
+ * typical duration. Found while building #219 (2026-11-05); ported from
+ * Ambyflow's schema. The statutory key is checked against the calendar when
+ * the date is resolved: an unknown key resolves to no date, i.e. the duration.
+ */
+const stepDueRuleSchema = z.object({
+  anchor: z.enum(DUE_ANCHORS),
+  offsetDays: z.number().int().min(-3650).max(3650).optional(),
+  statutoryKey: z.string().trim().max(60).optional(),
+}).strict();
+
 const stepSchema = z.object({
   stepNumber: z.number().int().min(1),
   title: z.string().trim().min(1).max(160),
@@ -99,6 +114,7 @@ const stepSchema = z.object({
   assignedRole: z.string().trim().max(60).optional(),
   defaultAssigneeUid: z.string().trim().max(200).optional(),
   effects: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
+  dueRule: stepDueRuleSchema.optional(),
   phaseId: z.string().trim().max(100).optional(),
   typicalDurationDays: z.number().min(0).max(3650).optional(),
   clientVisible: z.boolean().optional(),

@@ -158,6 +158,7 @@ export const createUser = async (req, res) => {
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, professionalUid, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
       altPhone, contactDesignation, // #205
+      gstReturnFrequency, // #219
     } = req.body;
 
     // Privilege guard: a manager cannot create admin/manager accounts (escalation).
@@ -174,6 +175,8 @@ export const createUser = async (req, res) => {
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state,
       altPhone, contactDesignation,
+      // #219: the day it was chosen decides the first period opened.
+      ...(role === 'client' && gstReturnFrequency ? { gstReturnFrequency, gstReturnFrequencySetAt: new Date().toISOString() } : {}),
       ...professional,
       emailIds: role === 'client'
         ? (emailIds && emailIds.length > 0 ? emailIds : [email])
@@ -219,6 +222,7 @@ export const updateUser = async (req, res) => {
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, professionalUid, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
       altPhone, contactDesignation, // #205
+      gstReturnFrequency, // #219
     } = req.body;
 
     // #151: validate + snapshot the assigned professional before any write.
@@ -247,6 +251,11 @@ export const updateUser = async (req, res) => {
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state,
       altPhone, contactDesignation,
+      // #219: a change of frequency restarts the clock — the first period opened
+      // is the one whose 1st falls on or after today. '' switches it off.
+      ...(gstReturnFrequency !== undefined && (gstReturnFrequency || null) !== (current.gstReturnFrequency ?? null)
+        ? { gstReturnFrequency: gstReturnFrequency || null, gstReturnFrequencySetAt: gstReturnFrequency ? new Date().toISOString() : null }
+        : {}),
       // #151: {} when absent (leave as-is), explicit nulls when cleared to "None".
       ...professional,
       emailIds: emailIds && emailIds.length > 0 ? emailIds : undefined,

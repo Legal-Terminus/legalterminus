@@ -34,6 +34,9 @@ export interface PortalUser {
   altPhone?: string;
   contactDesignation?: string;
   gstNumber?: string;
+  /** #219: how often we file this client's GST returns; '' or absent = not filed by us. */
+  gstReturnFrequency?: '' | 'monthly' | 'quarterly' | null;
+  gstReturnFrequencySetAt?: string | null;
   panNumber?: string;
   aadhaarNumber?: string;
   state?: string;
