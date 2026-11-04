@@ -23,7 +23,7 @@
     "test:headed": "npm run cleanup:ports && concurrently --kill-others-on-success \"npm run start:backend\" \"npm run dev:frontend\" \"sleep 5 && cd Frontend && npm run test:pages:headed\""
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^10.0.6"
   },
   "keywords": [
     "legal",
