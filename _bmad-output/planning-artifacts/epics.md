@@ -6232,3 +6232,14 @@ by its technology partner Infynia Labs (https://infynialabs.com).
   Buy Now buttons that fail. Needs the firm's LIVE Razorpay key id, secret and webhook
   secret as `production` environment secrets, the webhook registered in Razorpay, and
   the deploy workflow change (a `.github/` change, so it is the owner's merge).
+
+### Payments on the live site (2026-11-04)
+
+The owner switched "Buy Now" on for legalterminus.com. The firm's Razorpay LIVE Key ID,
+Key Secret and webhook secret are `production` environment secrets (`RAZORPAY_*`), the
+webhook `https://legalterminus.com/api/orders/webhook` is registered in the firm's
+Razorpay account (payment.captured, order.paid, payment.failed, refund.processed,
+refund.created), and `deploy-production.yml` now passes the keys to the API and builds the
+website with `VITE_PAYMENTS_ENABLED=true`. Every product with catalogue prices sells online
+from the release that carries this; paid orders wait for admin approval before a matter
+opens (#212). The unused PhonePe variables are left in place.
