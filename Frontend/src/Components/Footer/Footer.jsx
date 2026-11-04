@@ -86,6 +86,12 @@ const Footer = () => {
                   <span className="link-text">Licenses</span>
                 </Link>
               </li>
+              <li>
+                <Link to="/technology-services">
+                  <span className="link-icon">→</span>
+                  <span className="link-text">Technology Services</span>
+                </Link>
+              </li>
             </ul>
           </div>
 

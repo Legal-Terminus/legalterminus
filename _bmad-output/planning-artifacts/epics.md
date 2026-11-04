@@ -6243,3 +6243,14 @@ refund.created), and `deploy-production.yml` now passes the keys to the API and 
 website with `VITE_PAYMENTS_ENABLED=true`. Every product with catalogue prices sells online
 from the release that carries this; paid orders wait for admin approval before a matter
 opens (#212). The unused PhonePe variables are left in place.
+
+### Technology Services on the home page and footer (2026-11-04)
+
+The owner asked for Technology Services to be visible from the home page, not only the menu.
+- A home tile directly above the PDF tools tile (`HomeTechServicesCta`): a light twin of the
+  PDF tile (same `hpt-*` layout, `hpt-cta--tech` variant, Theme C overrides in
+  `src/theme/home.css`), linking to `/technology-services`.
+- "Technology Services" added last in the footer's Service Links column.
+- Fix: the top menu set `fontWeight: 700` on every link without a dropdown, meant only for
+  Home (May 2026). Technology Services is the second such link and turned bold. Now only Home.
+- Tests added to `Frontend/tests/e2e/technology-services.spec.js`.

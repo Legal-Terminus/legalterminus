@@ -597,7 +597,9 @@ export default function NavbarAdvanced() {
                           {it.label}
                         </button>
                       ) : (
-                        <a role="menuitem" href={it.href} className="nav-link" style={{ fontWeight: 700 }}>
+                        // Only Home is bold (decided May 2026). The style used to apply to every
+                        // link without a dropdown, which made Technology Services bold too.
+                        <a role="menuitem" href={it.href} className="nav-link" style={it.id === "home" ? { fontWeight: 700 } : undefined}>
                           {it.label}
                         </a>
                       )}
