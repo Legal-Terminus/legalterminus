@@ -8,8 +8,8 @@ import {
   activeGateway, gateway, parseWebhookEvent, simulator,
 } from '../services/paymentGateway.service.js';
 import {
-  applyGatewayEvent, approveMatter, confirmReturn, createOrder, discardOrder, getOrder, listOrders, markFailed,
-  publicOrder, reconcile, retryMatter,
+  applyGatewayEvent, approveMatter, confirmReturn, createMatterBalanceOrder, createOrder, discardOrder, getOrder,
+  listOrders, markFailed, publicOrder, reconcile, retryMatter,
 } from '../services/orders.service.js';
 
 const fail = (res, err, context) => {
@@ -45,6 +45,25 @@ export async function postOrder(req, res) {
     });
     res.status(201).json({ ...publicOrder(order), checkout: order.checkout });
   } catch (err) { fail(res, err, 'postOrder error'); }
+}
+
+/**
+ * POST /api/tasks/:taskId/pay-now (#220) — a client starts paying what is due on
+ * their matter. The matter is the URL's, who pays is the token's, and the amount
+ * is the matter's own amount due. Answers like POST /api/orders, so the Portal
+ * opens the same checkout and confirms through /api/orders/:orderId/verify.
+ */
+export async function postMatterPayNow(req, res) {
+  try {
+    const profile = await getDb().collection('users').doc(req.user.uid).get();
+    const p = profile.exists ? profile.data() : {};
+    const order = await createMatterBalanceOrder({
+      user: req.user,
+      taskId: req.params.taskId,
+      customer: { name: p.name || p.fullName || req.user.name || '', email: req.user.email || p.email || '', phone: p.phone || p.mobile || '' },
+    });
+    res.status(201).json({ ...publicOrder(order), checkout: order.checkout });
+  } catch (err) { fail(res, err, 'postMatterPayNow error'); }
 }
 
 /** GET /api/orders/:orderId — the customer's own order (staff may read any). */

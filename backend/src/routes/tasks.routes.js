@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { verifyToken, requireRole, denyReadOnlyRoles } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema, internalReminderSchema, messageCreateSchema } from '../schemas/task.schema.js';
@@ -6,6 +7,8 @@ import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments,
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument, setDocumentVisibility } from '../controllers/documents.controller.js';
 import { listMessages, createMessage, listMentionable } from '../controllers/messages.controller.js';
 import { listReminders, sendReminder, listInternalReminders, sendInternalReminder } from '../controllers/reminders.controller.js';
+import { postMatterPayNow } from '../controllers/orders.controller.js';
+import { matterPayNowSchema } from '../schemas/order.schema.js';
 import { getFormStep, saveFormStep } from '../controllers/forms.controller.js';
 import { uploadCommentImage, getCommentImage } from '../controllers/commentImages.controller.js';
 import { commentImageUpload } from '../middleware/commentImageUpload.middleware.js';
@@ -61,6 +64,17 @@ router.get('/:taskId/payments',              requireRole('admin', 'manager', 'cl
 router.post('/:taskId/payments',             requireRole('admin', 'manager'), validate(paymentCreateSchema), createPayment);
 router.patch('/:taskId/payments/:paymentId', requireRole('admin', 'manager'), validate(paymentUpdateSchema), patchPayment);
 router.delete('/:taskId/payments/:paymentId', requireRole('admin', 'manager'), deletePayment);
+// #220 Pay Now — the CLIENT pays the amount due on their matter online. Creates
+// an order at the gateway, so it is rate-limited like POST /api/orders.
+const isE2E = String(process.env.EMAIL_DISABLED ?? '').toLowerCase() === 'true' || process.env.NODE_ENV === 'test';
+const payNowLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isE2E ? 100_000 : 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many attempts. Please wait a few minutes and try again.' },
+});
+router.post('/:taskId/pay-now', requireRole('client'), payNowLimiter, validate(matterPayNowSchema), postMatterPayNow);
 router.patch('/:taskId/steps/:stepId',       patchStep);
 router.post('/:taskId/transition',           validate(taskTransitionSchema), transitionTask);
 // Approval chain (E03-S04): admin-only approve / reject of a pending matter.
