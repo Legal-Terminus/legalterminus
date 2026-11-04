@@ -121,15 +121,18 @@ function PayNowButton({ task, due }: { task: Task; due: number }) {
 function PayNowSwitch({ task, paymentsOn }: { task: Task; paymentsOn: boolean }) {
   const toast = useToast();
   const queryClient = useQueryClient();
-  const enabled = task.onlinePaymentEnabled !== false;
+  // Shown at once, then confirmed by the server: a checkbox that waits for the
+  // round trip looks broken (and the click seems not to register).
+  const [enabled, setEnabled] = useState(task.onlinePaymentEnabled !== false);
   const save = useMutation({
     mutationFn: (on: boolean) => updatePayment(task.id, { onlinePaymentEnabled: on }),
+    onMutate: (on) => setEnabled(on),
     onSuccess: (_r, on) => {
       toast.success(on ? 'Pay Now is on for this matter.' : 'Pay Now is off for this matter.');
       queryClient.invalidateQueries({ queryKey: ['task', task.id] });
       queryClient.invalidateQueries({ queryKey: ['task-events', task.id] });
     },
-    onError: (err: Error) => toast.error(err.message || 'Could not change Pay Now.'),
+    onError: (err: Error, on) => { setEnabled(!on); toast.error(err.message || 'Could not change Pay Now.'); },
   });
   return (
     <div className="card p-5">
