@@ -25,6 +25,34 @@ test("the main menu links to Technology Services", async ({ page }) => {
   await expect(page.locator("h1")).toHaveText("Technology Services For Your New Business");
 });
 
+test("the menu item is not bold; only Home is", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(BASE + "/");
+  const tech = page.locator('a.nav-link[href="/technology-services"]');
+  await expect(tech).toBeVisible({ timeout: 15_000 });
+  const weight = (l) => l.evaluate((el) => Number(getComputedStyle(el).fontWeight));
+  expect(await weight(page.locator('a.nav-link[href="/"]'))).toBe(700);
+  expect(await weight(tech)).toBeLessThan(700);
+});
+
+test("the footer's Service Links include Technology Services", async ({ page }) => {
+  await page.goto(BASE + "/");
+  const link = page.locator('footer a[href="/technology-services"]');
+  await link.scrollIntoViewIfNeeded({ timeout: 15_000 });
+  await expect(link).toHaveText(/Technology Services/);
+});
+
+test("the home page has a Technology Services tile above PDF tools", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(BASE + "/");
+  const tile = page.locator("section.hpt-cta--tech");
+  await expect(tile.locator("h2")).toHaveText("Technology Services for Your Business", { timeout: 15_000 });
+  // the tile comes straight before the PDF tools tile
+  await expect(tile.locator("xpath=following-sibling::section[1]")).toContainText("All-in-One PDF Tools");
+  await tile.getByRole("link", { name: /Explore Technology Services/ }).click();
+  await expect(page).toHaveURL(/\/technology-services$/);
+});
+
 test("three plans; Supreme is custom and asks for a quote", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(BASE + PATH);

@@ -1,0 +1,36 @@
+/* Light variant of the PDF tools tile (HomePdfToolsCta.css) for Technology Services.
+   Theme C overrides live in src/theme/home.css under "Technology Services". */
+
+.hpt-cta--tech {
+  padding-bottom: 0;
+}
+
+.hpt-cta--tech .hpt-cta-inner {
+  background: #f2faf6;
+  border: 1px solid #cfe9dc;
+  color: #0b3d27;
+  box-shadow: none;
+}
+
+.hpt-cta--tech .hpt-cta-badge {
+  background: #ffffff;
+  color: #0b5f3a;
+  border-color: #cfe9dc;
+}
+
+.hpt-cta--tech .hpt-cta-text h2 {
+  color: #0b3d27;
+}
+
+.hpt-cta--tech .hpt-cta-text p {
+  color: #2f4a3c;
+}
+
+.hpt-cta--tech .hpt-cta-btn {
+  background: #0b5f3a;
+  color: #ffffff;
+}
+
+.hpt-cta--tech .hpt-cta-btn:focus-visible {
+  outline-color: #0b5f3a;
+}

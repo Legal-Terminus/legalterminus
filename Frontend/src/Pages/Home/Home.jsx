@@ -3,6 +3,7 @@ import './Home.css'
 import Herosection from '../../Components/Herosection/Herosection'
 import Premiumbusiness from '../../Components/Premiumbusiness/Premiumbusiness'
 import HomePdfToolsCta from '../../Components/HomePdfToolsCta/HomePdfToolsCta'
+import HomeTechServicesCta from '../../Components/HomeTechServicesCta/HomeTechServicesCta'
 import { THEME_C } from '../../utils/theme'
 
 // Lazy load below-fold components
@@ -21,6 +22,7 @@ const Home = () => {
     <>
         <Herosection/>
         <Premiumbusiness/>
+        <HomeTechServicesCta/>
         <HomePdfToolsCta/>
         <Suspense fallback={<div />}>
           <Workingprocess/>
