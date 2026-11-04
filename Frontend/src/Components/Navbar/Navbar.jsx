@@ -213,6 +213,9 @@ const navData = [
       },
     ],
   },
+  // Software services sold by the firm, delivered by Infynia Labs — a plain
+  // link, not a mega menu: it is one page.
+  { id: "technology", label: "Technology Services", href: "/technology-services" },
   {
     id: "know-us",
     label: "Know Us",

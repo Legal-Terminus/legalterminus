@@ -323,6 +323,10 @@ export const SEO_META = {
     title: 'Free PDF Tools | Legal Terminus',
     description: 'Free online PDF utilities from Legal Terminus.',
   },
+  '/technology-services': {
+    title: 'Technology Services for New Businesses | Legal Terminus',
+    description: 'Website development, payment gateway integration, business email, online store, mobile apps and custom software for your new company — arranged by Legal Terminus and built by Infynia Labs.',
+  },
 
   /* ── Policies ── */
   '/policies/privacy': { title: 'Privacy Policy | Legal Terminus', description: 'How Legal Terminus collects, uses and protects your data.', canonicalPath: '/privacy-policy' },

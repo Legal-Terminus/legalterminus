@@ -98,6 +98,8 @@ const CompanyRegistrationOdisha = lazy(() => import("./Pages/CompanyRegistration
 const CompanyRegistrationLanding = lazy(() => import("./Pages/CompanyRegistrationLanding/CompanyRegistrationLanding"));
 const TrademarkLanding = lazy(() => import("./Pages/TrademarkLanding/TrademarkLanding"));
 const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
+// Software development services sold by the firm, delivered by Infynia Labs.
+const TechServices = lazy(() => import("./Pages/TechServices/TechServices"));
 
 // Store scroll positions keyed by location.key
 const scrollPositions = {};
@@ -317,6 +319,7 @@ function App() {
             <Route path="/companyregistration-in-odisha" element={<CompanyRegistrationLanding />} />
             <Route path="/trademark-registration-in-odisha" element={<TrademarkLanding />} />
             <Route path="/pdf-tools" element={<PdfTools />} />
+            <Route path="/technology-services" element={<TechServices />} />
             {/* #175: must stay LAST — matches only when no other route does. */}
             <Route path="*" element={<NotFound />} />
           </Routes>

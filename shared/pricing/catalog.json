@@ -2170,6 +2170,34 @@
       "components": [
         "Frontend/src/Components/WindupPLCPP/WindupPLCPP.jsx"
       ]
+    },
+    "technology-services": {
+      "code": "SVC-062",
+      "label": "Technology Services for New Businesses",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 14999,
+          "oldPrice": null
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 29999,
+          "oldPrice": null
+        }
+      ],
+      "pages": [
+        {
+          "path": "/technology-services",
+          "title": "Technology Services for New Businesses"
+        }
+      ],
+      "components": [
+        "Frontend/src/Pages/TechServices/TechServices.jsx"
+      ]
     }
   }
 }
