@@ -22,12 +22,46 @@
 
 ---
 
+## 🚦 Changes stop at QA — production is the owner's release
+
+**Your work reaches QA. It never reaches production unless the repository owner
+releases it.** This holds for every person and every agent. Since 2026-11-03 it
+is enforced by GitHub and Google Cloud, not only by this file:
+
+| Path | What happens |
+|---|---|
+| Branch → pull request → merge to `main` | `deploy-qa.yml` deploys to **QA**. No approval is needed unless the PR touches `.github/`. |
+| Release tag `vX.Y.Z-lt.N`, or "Deploy to Production" | Runs in the GitHub Environment `production` and **waits for the owner's approval**. Nobody approves their own. |
+| `.github/` (pipelines, this file, CODEOWNERS) | Needs a code owner's review (`.github/CODEOWNERS`). |
+| Google Cloud deploy login | Accepts only the `qa` environment from `main`, and `production` from `main` or a release tag. A workflow on any other branch or tag cannot reach Google Cloud. |
+
+**Never, unless the owner asks in so many words:**
+- push a release tag, or start "Deploy to Production";
+- run a script, `gcloud`, `firebase` or the Firebase Admin SDK against the **live**
+  database (`(default)`), the live bucket, live sign-in accounts or the live
+  Cloud Run services — QA is `qa-data`, `legal-terminus-web-qa` and the `-qa` services;
+- change IAM, buckets (CORS included), Firebase project settings (Android/iOS apps,
+  SHA fingerprints, authorized domains), indexes or rules on the live project;
+- create a service-account key, or copy a secret out of GitHub or Cloud Run;
+- edit `.github/workflows/` to deploy, or read secrets, from anywhere but its current
+  trigger.
+
+**Why:** on 2026-11-03 work meant for QA reached production three ways at once — a
+release tag with no approval step, hand changes made in the Google Cloud console, and a
+self-made admin key. Each is now closed, and an attempt fails with a permission error.
+If you hit one, stop and ask the owner. Do not look for another way round it.
+
+Working on QA needs none of this. QA logins are in `docs/qa-environment.md`, and running
+the Portal against QA is in `docs/run-portal-local-qa.md`.
+
+---
+
 ## 🎯 Task Completion Checklist
 
 **CRITICAL: Before declaring ANY task complete:**
 
 - [ ] Code implemented and tested locally
-- [ ] All files committed to `main`
+- [ ] All files merged to `main` through a pull request (direct pushes to `main` are refused)
 - [ ] **Epic story status updated:** `_bmad-output/planning-artifacts/epics.md` (mark ✅ Completed, 🔄 In Progress, or ⏳ Not Started)
 - [ ] **Requirements updated if changed:** `spec.md` (user stories, workflows, Firestore schema, roles/permissions)
 - [ ] **Technical decisions documented:** `_bmad-output/planning-artifacts/architecture.md` (service layers, components, database changes, integrations)
@@ -41,8 +75,8 @@
   and `spec.md` in this repo, and add the row to `docs/releases/SYNC.md`.
 - [ ] **Delivery is trunk-based — read `docs/delivery.md`.** A merge to `main`
   deploys to **QA** (https://legal-terminus-qa.web.app). Production is released by
-  pushing a tag `vX.Y.Z-lt.N`, which waits for an approval in GitHub. Never push a
-  release tag unless the user asked for a release.
+  pushing a tag `vX.Y.Z-lt.N`, which waits for the owner's approval in GitHub. Never push a
+  release tag unless the owner asked for a release. See "Changes stop at QA" above.
 - [ ] **Everything merged to `main` must be safe to release.** Unfinished work goes
   in switched off; the next tag ships whatever `main` contains.
 - [ ] **The Playwright suite runs against QA's data** (`npm run dev:e2e` selects the

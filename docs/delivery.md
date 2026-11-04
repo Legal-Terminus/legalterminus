@@ -37,7 +37,19 @@ reviewers** are the approval: the job waits until one of them approves it in the
 Actions tab. They are set by a repository admin under
 *Settings → Environments → production → Required reviewers*.
 
-**If no reviewer is configured, a tag deploys immediately.** Check before tagging.
+Configured on 2026-11-03, after a tag deployed with no approval step: reviewer
+`lokesh-infynia`, self-review prevented, no admin bypass. Also since then:
+
+- `main` takes changes only through a pull request (ruleset `main`). A PR needs no
+  approval unless it touches `.github/`, which needs a code owner (`.github/CODEOWNERS`).
+- The `qa` environment deploys only from `main`; `production` only from `main` or a
+  `v*-lt.*` tag.
+- The Google Cloud deploy login (workload identity provider `github-provider`)
+  accepts only those two environments from those refs. A workflow on any other
+  branch or tag cannot reach Google Cloud.
+- Nobody outside the pipeline needs a role on the Google Cloud project to work on QA.
+
+**If the reviewer is ever removed, a tag deploys immediately.** Check before tagging.
 
 ## Cutting a release
 
