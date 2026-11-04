@@ -6205,7 +6205,7 @@ website, the portal or in emails point to it.
   opens it in the click. `Portal/e2e/comment-images.spec.ts` checks the tab opens during
   the click; it fails on the previous code.
 
-### Technology Services page, with Infynia Labs (2026-11-04)
+### Technology Services page, with Infynia Labs (2026-11-04) — ✅ Released in v1.6.0-lt.12
 
 The user asked for a new product: software development for the firm's clients — website,
 payment gateway, business email, online store, apps — sold by Legal Terminus and delivered
@@ -6227,13 +6227,13 @@ by its technology partner Infynia Labs (https://infynialabs.com).
   `infynialabs.com/#work` — the site has no separate portfolio page (/portfolio, /work
   and /projects are 404).
 - Test: `Frontend/tests/e2e/technology-services.spec.js`.
-- Not done: payments on the live site. The production API has no Razorpay keys (only
+- Payments on the live site followed in v1.6.0-lt.13 (next entry). Before that, the production API has no Razorpay keys (only
   the unused PhonePe secrets), so switching `VITE_PAYMENTS_ENABLED` on there would show
   Buy Now buttons that fail. Needs the firm's LIVE Razorpay key id, secret and webhook
   secret as `production` environment secrets, the webhook registered in Razorpay, and
   the deploy workflow change (a `.github/` change, so it is the owner's merge).
 
-### Payments on the live site (2026-11-04)
+### Payments on the live site (2026-11-04) — ✅ Released in v1.6.0-lt.13
 
 The owner switched "Buy Now" on for legalterminus.com. The firm's Razorpay LIVE Key ID,
 Key Secret and webhook secret are `production` environment secrets (`RAZORPAY_*`), the
