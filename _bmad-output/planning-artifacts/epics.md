@@ -6204,3 +6204,31 @@ website, the portal or in emails point to it.
   after an `await`, outside the click, which Safari blocks as a pop-up. The browser now
   opens it in the click. `Portal/e2e/comment-images.spec.ts` checks the tab opens during
   the click; it fails on the previous code.
+
+### Technology Services page, with Infynia Labs (2026-11-04)
+
+The user asked for a new product: software development for the firm's clients — website,
+payment gateway, business email, online store, apps — sold by Legal Terminus and delivered
+by its technology partner Infynia Labs (https://infynialabs.com).
+- New page `/technology-services` (`Frontend/src/Pages/TechServices`), a top-level
+  "Technology Services" item in the main menu, SEO entry and sitemap row. It is built from
+  the service-page family's markup (the Add-a-Director reference), so Theme C styles it
+  with no new CSS — the user asked that it look like every other product page.
+- Plans: Elemental and Enriched are catalogue product **SVC-062 `technology-services`**,
+  priced from Website Prices in the portal and sold through the shared checkout (Buy Now
+  shows only where `VITE_PAYMENTS_ENABLED` is on). ₹14,999 / ₹29,999 are placeholders
+  for the firm to set. Supreme is custom, "Pricing on request", and opens the
+  consultation form instead of the checkout. `serviceKey` is null: there is no portal
+  service for technology work, so a paid order does not open a matter by itself.
+- Leads from every form on the page go to `/api/contact` → the portal's Leads, labelled
+  "Technology Services" (added to the website's service-name map).
+- Why-us copy the user asked for: end-to-end ownership by Legal Terminus, and AI-native
+  fast development and deployment. No counts are claimed. "View Portfolio" links to
+  `infynialabs.com/#work` — the site has no separate portfolio page (/portfolio, /work
+  and /projects are 404).
+- Test: `Frontend/tests/e2e/technology-services.spec.js`.
+- Not done: payments on the live site. The production API has no Razorpay keys (only
+  the unused PhonePe secrets), so switching `VITE_PAYMENTS_ENABLED` on there would show
+  Buy Now buttons that fail. Needs the firm's LIVE Razorpay key id, secret and webhook
+  secret as `production` environment secrets, the webhook registered in Razorpay, and
+  the deploy workflow change (a `.github/` change, so it is the owner's merge).
