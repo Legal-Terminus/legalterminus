@@ -6312,3 +6312,18 @@ and confirming a shared message".
   will go out and says it will be emailed and cannot be recalled.
 - Tests: `Portal/e2e/discussion.spec.ts` (three new tests); other specs use the new tab
   name.
+
+### Service editor keeps conditions, forms and actions; GST runs at 09:00 (2026-11-05)
+
+- **Service editor.** Saving a Service silently dropped each step's condition ("only
+  when the client has GST"), client form and actions (notify, send email). The editor
+  offered them and the engine runs them, but the API schema did not list them. Ported
+  from Ambyflow, with its save-time checks: a condition whose operator cannot apply,
+  or a form that could not be filled in, is refused with a message naming the step.
+  Services saved before this have none of these settings and need re-entering.
+- **GST timing.** A Cloud Scheduler job (`lt-gst-returns-daily`, asia-south1) calls
+  `/api/internal/run-gst-returns` at 09:00 India time every day. It signs in as its own
+  service account, `lt-scheduler@`, which holds no project roles; the API checks the
+  Google-signed token, so no shared secret exists. The traffic fallback now also waits
+  until 09:00 India time. Before, a period opened with the first request after midnight.
+- Tests: `serviceStepSchema.test.js`, `schedulerAuth.test.js`.

@@ -2313,3 +2313,30 @@ and stored data are untouched.
 opens a preview (the app-wide `useConfirm` dialog) before it is posted. This is a UI step
 only: the API still accepts `clientVisible: true` directly, as integrations and tests use
 it.
+
+## Scheduled calls without a shared secret (2026-11-05)
+
+`/api/internal/run-gst-returns` accepts three callers: an admin (Firebase token), a
+matching `x-cron-secret` if `CRON_SECRET` is ever set, or **Cloud Scheduler signing as
+`lt-scheduler@legal-terminus-web.iam.gserviceaccount.com`** (`schedulerAuth.service.js`).
+- The scheduler call carries a Google ID token (OIDC). The API verifies Google's
+  signature, the audience (`legal-terminus-internal-scheduler`, or `SCHEDULER_AUDIENCE`),
+  and that the token names `SCHEDULER_SA_EMAIL` with a verified email.
+- Neither setting is a secret, and `SCHEDULER_SA_EMAIL` is set in
+  `deploy-production.yml`. Unset, nothing is accepted this way.
+- The service account holds no project roles. A leaked token is useful only for this
+  call, and only until it expires (one hour).
+- Job `lt-gst-returns-daily` (asia-south1) runs at 09:00 Asia/Kolkata, retries 3 times,
+  and targets the Cloud Run URL directly. Running it more often is harmless: each
+  client period is claimed once (`gstReturnRuns`).
+- The traffic trigger (`gstReturnSweepTrigger`) stays as the fallback, but only from
+  09:00 India time (`sweepWindowOpen`). Before, the first request after midnight
+  emailed clients at 00:05.
+
+## Service step settings saved by the API (2026-11-05)
+
+`workflow.schema.js` `stepSchema` now lists `condition`, `form` and `actions`, with
+Ambyflow's shapes, and `validateDefinition` runs `validateCondition`, `validateForm`
+and `validateDueRule`. Step objects are not `.strict()`, so before this an unlisted
+field was dropped without an error. When the Portal editor gains a step field, add it
+here in the same change.
