@@ -6274,3 +6274,26 @@ any team member on a matter could mark it fully paid without a payment recorded.
 members now see "Waiting for payment to be recorded." instead of the button.
 - Tests: `Portal/e2e/payment-gate-ledger.spec.ts`; `step-execution.spec.ts` records the
   balance before Mark as Paid.
+
+### GST return reminders: a matter and an email every period (2026-11-04, #219)
+
+The firm asked for GST return filing to run itself: a client set to Monthly gets a new
+matter on the 1st of every month, for the month just ended, and an email asking for its
+sale, purchase, bank and expenditure details with the GSTR-1 and GSTR-3B due dates.
+Quarterly clients get the same on 1 July, 1 October, 1 January and 1 April for the quarter
+just ended (financial-year quarters). Design in architecture.md, "GST return reminders".
+- Set per client in the client form: "GST return filing" — Not filed by us / Monthly /
+  Quarterly. It starts from the next 1st; choosing it never opens back-dated matters.
+- Two editable templates (monthly, quarterly). The subject is "<Company> - GST Return -
+  September 2026" / "… - Q2 2026-27". Period, due dates and company stay automatic after
+  editing. Quarterly due dates (13th, 24th) were added to the Statutory Calendar.
+- The matter uses the existing "GST Return Filing (Monthly)" service (`gst-returns`), or
+  `gst-returns-quarterly` for quarterly clients once the firm creates one. It is opened
+  unpaid, so it waits for admin approval like a recurring matter; the email goes out when
+  it opens.
+- Documents now accept .csv, .json, .txt and .zip.
+- Open: there is no Cloud Scheduler job, so a period opens on the first API request on or
+  after the 1st (any portal or website traffic). A scheduler call to
+  `/api/internal/run-gst-returns` would make it run at a fixed time.
+- Tests: `backend/src/__tests__/gstReturns.test.js`, `Portal/e2e/gst-returns.spec.ts`,
+  `matter-payments-docs.spec.ts` (#77 upload types).

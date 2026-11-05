@@ -45,8 +45,9 @@ export const ALLOWED_DOC_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx (#77)
   'application/vnd.ms-excel', // .xls (#77)
+  'text/csv', 'application/json', 'text/plain', 'application/zip', // #219
 ];
-export const ALLOWED_DOC_EXT = '.pdf,.jpg,.jpeg,.png,.docx,.xlsx,.xls';
+export const ALLOWED_DOC_EXT = '.pdf,.jpg,.jpeg,.png,.docx,.xlsx,.xls,.csv,.json,.txt,.zip';
 export const MAX_DOC_BYTES = 10 * 1024 * 1024;
 
 /** MIME by extension — the fallback when the browser gives an empty/wrong
@@ -59,13 +60,22 @@ const EXT_TO_MIME: Record<string, string> = {
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   xls: 'application/vnd.ms-excel',
+  csv: 'text/csv',
+  json: 'application/json',
+  txt: 'text/plain',
+  zip: 'application/zip',
 };
+
+/** #219: browsers disagree on these (Windows reports a .csv as Excel and a .zip
+ *  as application/x-zip-compressed), so they are always typed by extension. */
+const TYPED_BY_EXTENSION = new Set(['csv', 'json', 'txt', 'zip']);
 
 /** Prefer the browser's MIME if it's on the allow-list; otherwise resolve from
  *  the file extension. Returns '' when neither is recognized. */
 export function effectiveContentType(file: File): string {
-  if (ALLOWED_DOC_TYPES.includes(file.type)) return file.type;
   const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+  if (TYPED_BY_EXTENSION.has(ext)) return EXT_TO_MIME[ext];
+  if (ALLOWED_DOC_TYPES.includes(file.type)) return file.type;
   return EXT_TO_MIME[ext] ?? file.type ?? '';
 }
 
@@ -96,7 +106,7 @@ export async function uploadDocument(
   // effective content type from the extension so those still upload (#77).
   const contentType = effectiveContentType(file);
   if (!ALLOWED_DOC_TYPES.includes(contentType)) {
-    throw new Error('Unsupported file type. Allowed: PDF, JPG, PNG, DOCX, XLSX, XLS.');
+    throw new Error('Unsupported file type. Allowed: PDF, JPG, PNG, DOCX, XLSX, XLS, CSV, JSON, TXT, ZIP.');
   }
 
   // Step 1 — signed PUT URL + a pre-created metadata doc.

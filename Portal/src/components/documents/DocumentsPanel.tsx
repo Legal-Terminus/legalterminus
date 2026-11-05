@@ -403,7 +403,7 @@ function Uploader({ onPick, busy }: { onPick: (files: File[], docType?: string) 
     <div className="card p-4 flex items-end justify-between gap-3 flex-wrap">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-ink">Upload a document</p>
-        <p className="text-xs text-ink-muted mt-0.5 mb-2">PDF, JPG, PNG, DOCX or Excel · max 10MB · select multiple files at once</p>
+        <p className="text-xs text-ink-muted mt-0.5 mb-2">PDF, JPG, PNG, DOCX, Excel, CSV, JSON, TXT or ZIP · max 10MB · select multiple files at once</p>
         <label className="block">
           <span className="text-xs text-ink-muted">Document type <span className="text-ink-faint">(e.g. PAN, TAN, Address proof)</span></span>
           <input

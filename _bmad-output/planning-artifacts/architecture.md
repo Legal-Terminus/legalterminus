@@ -1996,6 +1996,50 @@ a product is keyed by the `source` its component passes to the checkout, and
   `settledBy` and `amountPaid` against `amount`. No new endpoint and nothing
   new stored. The customer's own view (`publicOrder`) is unchanged.
 
+## GST return reminders (#219, 2026-11-04)
+
+- **Setting:** a client's `gstReturnFrequency` (`monthly` | `quarterly` | absent)
+  on `users/{uid}`, set in the client form ("GST return filing"). The server
+  stamps `gstReturnFrequencySetAt` whenever it changes; the first period opened
+  is the one whose 1st falls on or after that day — nothing is back-dated.
+- **Periods** (`shared/workflows/gstReturns.js`, pure): India's date (UTC+5:30)
+  decides "today". Monthly → the month just ended, opened on the 1st. Quarterly
+  → the financial-year quarter just ended (Q1 Apr–Jun … Q4 Jan–Mar), opened on
+  1 Jul / 1 Oct / 1 Jan / 1 Apr. Each period has a stable key (`2026-09`,
+  `2026-27-Q2`), the period's last month (for due dates) and the two labels the
+  email uses ("September 2026" / "SEPTEMBER 2026"; "Q2 2026-27" /
+  "Q2 26-27 (July–September)").
+- **Sweep** (`services/gstReturns.service.js`): due-on-read like #167 — API
+  traffic fires it at most every 30 minutes behind `system/gstReturnSweep`;
+  `POST /api/internal/run-gst-returns` (x-cron-secret, compared in constant
+  time, or an admin) runs it now. In a test environment only, the endpoint
+  takes `{ asOf, clientUid }` so a test can act as a given day for one client.
+- **Once per period:** `gstReturnRuns/{clientUid}__{periodKey}` is `create()`d
+  before the matter; a second sweep finds it and does nothing. If the matter
+  cannot be opened the claim is deleted so the next sweep retries, and admins/
+  managers are told.
+- **The matter** is opened through `createTask` (system admin actor), unpaid —
+  so it waits for admin approval like a recurring matter — on service
+  `gst-returns`, or `gst-returns-quarterly` for quarterly clients once that
+  service exists. Named "GST Return - <period>". It carries `filingPeriod`,
+  set by the sweep on the REQUEST object (never the body); creation and step
+  transitions pass `filingPeriod.month` to the statutory resolver, so a GSTR
+  step on September's matter is due 11 Oct even though the matter was opened in
+  October. The generic `matter_created` email is skipped for it.
+- **The email:** templates `gst_return_monthly` / `gst_return_quarterly`,
+  editable under Settings → Email Templates. Fill-ins: `companyName`
+  (organisation → business name → name), `periodTitle`, `period`,
+  `gstr1DueDate`, `gstr3bDueDate` (from the statutory calendar: `gstr1`/`gstr3b`
+  monthly, new `gstr1_qtr` 13th / `gstr3b_qtr` 24th quarterly — editable under
+  Statutory Calendar). Sent with `keepSubject`, so the subject is exactly
+  "<Company> - GST Return - <period>", still threaded with the matter. Extra
+  client email addresses are copied.
+- **Uploads:** the document allow-list adds `text/csv`, `application/json`,
+  `text/plain`, `application/zip` (.csv .json .txt .zip). The Portal types these
+  four by extension, because Windows reports a .csv as Excel and a .zip as
+  `application/x-zip-compressed`. No content scanning: a zip is stored and
+  served as uploaded.
+
 ## Website theme: one shared stylesheet behind a build switch (E-25, #209)
 
 - **`Frontend/src/theme.css` is the website's design system.** Tokens at `:root`
