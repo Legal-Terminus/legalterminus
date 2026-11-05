@@ -85,7 +85,7 @@ test('#123: the Discussion tab renders and can post a message', async ({ adminPa
   const taskId = await createMatter();
   try {
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
     await expect(adminPage.getByText('No messages yet')).toBeVisible();
 
     const msg = `UI-MSG-${Date.now()}`;
@@ -167,7 +167,7 @@ test('#200: typing "@" suggests colleagues; picking one inserts their address an
   const taskId = await createMatter();
   try {
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
     const box = adminPage.getByLabel('Message');
     await box.click();
     await box.pressSequentially('Please check @E2E Te');
@@ -188,7 +188,7 @@ test('#200: typing "@" alone lists the WHOLE team, not the first six', async ({ 
     await admin.dispose();
 
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
     const box = adminPage.getByLabel('Message');
     await box.click();
     await box.pressSequentially('@');
@@ -279,5 +279,118 @@ test('#200: a staff reply shared with the client does not page the team', async 
     await new Promise((r) => setTimeout(r, 3000));
     expect(await clientMessageCount('team', taskId)).toBe(0);
     expect(await clientMessageCount('manager', taskId)).toBe(0);
+  } finally { await deleteMatter(taskId); }
+});
+
+/* ── Chat: edit, delete, and confirm before sharing with the client ── */
+
+type Msg = { id: string; body: string; editedAt?: string | null; deleted?: boolean; canEdit?: boolean };
+const listAs = async (api: Awaited<ReturnType<typeof apiAs>>, taskId: string) =>
+  ((await (await api.get(`/api/tasks/${taskId}/messages`)).json()).data ?? []) as Msg[];
+const clientNotes = async (taskId: string) =>
+  (await getNotifications('client')).filter((n) => n.taskId === taskId).length;
+
+test('Chat: the author fixes a shared message; the client sees the new text and gets no new notification', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  const client = await apiAs('client');
+  try {
+    const typo = `SENT-WITH-A-TYPO-${Date.now()}`;
+    const res = await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: typo, clientVisible: true } });
+    const { id } = await res.json();
+    await new Promise((r) => setTimeout(r, 2000));
+    const before = await clientNotes(taskId);
+
+    const fixed = `FIXED-${Date.now()}`;
+    const edit = await admin.patch(`/api/tasks/${taskId}/messages/${id}`, { data: { body: fixed } });
+    expect(edit.status(), await edit.text()).toBe(200);
+
+    const seen = (await listAs(client, taskId)).find((m) => m.id === id)!;
+    expect(seen.body).toContain(fixed);
+    expect(seen.body).not.toContain(typo);
+    expect(seen.editedAt).toBeTruthy();
+    // The client cannot change the firm's message.
+    expect(seen.canEdit).toBe(false);
+    await new Promise((r) => setTimeout(r, 2000));
+    expect(await clientNotes(taskId)).toBe(before);
+
+    // The earlier text is never returned by the API.
+    expect(JSON.stringify(await listAs(admin, taskId))).not.toContain(typo);
+    // Clearing the text is refused: deleting is the way to remove it.
+    expect((await admin.patch(`/api/tasks/${taskId}/messages/${id}`, { data: { body: '   ' } })).status()).toBe(400);
+  } finally { await admin.dispose(); await client.dispose(); await deleteMatter(taskId); }
+});
+
+test('Chat: who may edit or delete — the author or an admin, nobody else', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  const manager = await apiAs('manager');
+  const client = await apiAs('client');
+  try {
+    const post = async (api: typeof admin, body: string, clientVisible?: boolean) =>
+      (await (await api.post(`/api/tasks/${taskId}/messages`, { data: { body, clientVisible } })).json()).id as string;
+    const byAdmin = await post(admin, 'admin note', true);
+    const byManager = await post(manager, 'manager note');
+    const internal = await post(admin, 'internal note');
+    const byClient = await post(client, 'client question');
+
+    // A colleague cannot change someone else's message…
+    expect((await manager.patch(`/api/tasks/${taskId}/messages/${byAdmin}`, { data: { body: 'x' } })).status()).toBe(403);
+    expect((await manager.delete(`/api/tasks/${taskId}/messages/${byAdmin}`)).status()).toBe(403);
+    // …an admin can.
+    expect((await admin.patch(`/api/tasks/${taskId}/messages/${byManager}`, { data: { body: 'tidied by admin' } })).status()).toBe(200);
+    // A client cannot touch the firm's messages, and an internal one does not exist for them.
+    expect((await client.patch(`/api/tasks/${taskId}/messages/${byAdmin}`, { data: { body: 'x' } })).status()).toBe(403);
+    expect((await client.delete(`/api/tasks/${taskId}/messages/${internal}`)).status()).toBe(404);
+    // A client can fix and delete their own.
+    expect((await client.patch(`/api/tasks/${taskId}/messages/${byClient}`, { data: { body: 'client question, fixed' } })).status()).toBe(200);
+    expect((await client.delete(`/api/tasks/${taskId}/messages/${byClient}`)).status()).toBe(200);
+
+    // A deleted message keeps its place, without its text, and cannot be changed again.
+    const gone = (await listAs(admin, taskId)).find((m) => m.id === byClient)!;
+    expect(gone).toMatchObject({ deleted: true, body: '', canEdit: false });
+    expect((await client.patch(`/api/tasks/${taskId}/messages/${byClient}`, { data: { body: 'again' } })).status()).toBe(409);
+    // Unknown fields are refused: an edit cannot change who sees the message.
+    expect((await admin.patch(`/api/tasks/${taskId}/messages/${internal}`, { data: { body: 'x', clientVisible: true } })).status()).toBe(400);
+  } finally { await admin.dispose(); await manager.dispose(); await client.dispose(); await deleteMatter(taskId); }
+});
+
+test('Chat: the tab is called Chat; sharing with the client asks first; a message can be edited and deleted', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await expect(adminPage.getByRole('button', { name: 'Discussion', exact: true })).toHaveCount(0);
+
+    const msg = `TO-CLIENT-${Date.now()}`;
+    await adminPage.getByLabel('Message').fill(msg);
+    await adminPage.getByLabel('Visible to client').check();
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+
+    // The preview shows exactly what will go out. "Keep editing" sends nothing.
+    const dialog = adminPage.getByRole('dialog');
+    await expect(dialog.getByText('Send this to the client?')).toBeVisible();
+    await expect(dialog.getByText(msg)).toBeVisible();
+    await dialog.getByRole('button', { name: 'Keep editing' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(adminPage.getByText('No messages yet')).toBeVisible();
+
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+    await adminPage.getByRole('dialog').getByRole('button', { name: 'Send to client' }).click();
+    await expect(adminPage.getByText(msg)).toBeVisible();
+
+    // Edit it.
+    const fixed = `${msg}-FIXED`;
+    await adminPage.getByRole('button', { name: 'Edit message' }).click();
+    await adminPage.getByLabel('Edit message').fill(fixed);
+    await adminPage.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(adminPage.getByText(fixed)).toBeVisible();
+    await expect(adminPage.getByText(/· edited/)).toBeVisible();
+
+    // Delete it, after confirming.
+    await adminPage.getByRole('button', { name: 'Delete message' }).click();
+    await adminPage.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(adminPage.getByText('This message was deleted')).toBeVisible();
+    await expect(adminPage.getByText(fixed)).toHaveCount(0);
   } finally { await deleteMatter(taskId); }
 });

@@ -1,3 +1,4 @@
+import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { createNotification } from './notifications.controller.js';
@@ -89,8 +90,12 @@ export async function listMessages(req, res) {
 
     const data = rows.map((m) => ({
       id: m.id,
-      body: m.body,
+      // A deleted message keeps its place in the thread but not its text.
+      body: m.deletedAt ? '' : m.body,
       createdAt: m.createdAt,
+      editedAt: m.deletedAt ? null : toISO(m.editedAt),
+      deleted: Boolean(m.deletedAt),
+      canEdit: !m.deletedAt && canModify(req.user, m),
       clientVisible: m.clientVisible === true,
       authorRole: m.authorRole ?? null,
       isMine: m.authorUid === req.user.uid,
@@ -291,6 +296,94 @@ export async function createMessage(req, res) {
   } catch (err) {
     logger.error({ err }, 'createMessage error:');
     res.status(500).json({ message: 'Failed to post the message' });
+  }
+}
+
+/** The author may change their own message; an admin may change anyone's. */
+function canModify(user, m) {
+  return Boolean(user?.uid) && (m.authorUid === user.uid || user.role === 'admin');
+}
+
+/**
+ * Load a message the caller may edit or delete, or answer the request.
+ * A client never learns that an internal message exists: it 404s for them.
+ */
+async function loadModifiableMessage(req, res) {
+  const { taskId, messageId } = req.params;
+  const task = await loadAuthorizedTask(req, res, taskId);
+  if (!task) return null;
+  const ref = msgsCol(taskId).doc(messageId);
+  const snap = await ref.get();
+  const m = snap.exists ? snap.data() : null;
+  if (!m || (req.user.role === 'client' && m.clientVisible !== true)) {
+    res.status(404).json({ message: 'Message not found' }); return null;
+  }
+  if (!canModify(req.user, m)) {
+    res.status(403).json({ message: 'Only the person who wrote this message, or an admin, can change it.' });
+    return null;
+  }
+  if (m.deletedAt) { res.status(409).json({ message: 'This message has already been deleted.' }); return null; }
+  return { ref, m };
+}
+
+/**
+ * PATCH /api/tasks/:taskId/messages/:messageId — fix a message's text.
+ * Sends nothing: an email the client already received cannot be recalled, and a
+ * second email for a typo would be noise. The earlier text is kept in
+ * `revisions` (never returned by the API) so the firm has a record of what was
+ * actually sent.
+ */
+export async function updateMessage(req, res) {
+  try {
+    const found = await loadModifiableMessage(req, res);
+    if (!found) return;
+    const { ref, m } = found;
+    const { taskId } = req.params;
+
+    const prepared = prepareRichText(String(req.body?.body ?? ''), { what: 'message' });
+    if (!prepared.ok) return res.status(prepared.status).json({ message: prepared.message, code: prepared.code });
+    const { html: body, ids: imageIds } = await resolveCommentImages(
+      db, taskId, prepared.html, { role: req.user.role, uid: req.user.uid },
+    );
+    if (!richTextToPlain(body)) {
+      return res.status(400).json({ message: 'Message cannot be empty. To remove it, delete it instead.' });
+    }
+    if (body === m.body) return res.json({ id: ref.id, body, editedAt: toISO(m.editedAt) });
+
+    const now = new Date();
+    await ref.update({
+      body, editedAt: now, editedBy: req.user.uid,
+      revisions: FieldValue.arrayUnion({ body: m.body, replacedAt: now, replacedBy: req.user.uid }),
+    });
+    if (m.clientVisible === true) await shareCommentImages(db, taskId, imageIds);
+    logger.info({ taskId, messageId: ref.id, by: req.user.uid }, 'chat message edited');
+    res.json({ id: ref.id, body, editedAt: now.toISOString() });
+  } catch (err) {
+    logger.error({ err }, 'updateMessage error:');
+    res.status(500).json({ message: 'Failed to edit the message' });
+  }
+}
+
+/**
+ * DELETE /api/tasks/:taskId/messages/:messageId — remove a message for everyone.
+ * The thread shows "This message was deleted" in its place, so replies around
+ * it still make sense. Like an edit, the text is kept in `revisions`.
+ */
+export async function deleteMessage(req, res) {
+  try {
+    const found = await loadModifiableMessage(req, res);
+    if (!found) return;
+    const { ref, m } = found;
+    const now = new Date();
+    await ref.update({
+      body: '', deletedAt: now, deletedBy: req.user.uid,
+      revisions: FieldValue.arrayUnion({ body: m.body, replacedAt: now, replacedBy: req.user.uid }),
+    });
+    logger.info({ taskId: req.params.taskId, messageId: ref.id, by: req.user.uid }, 'chat message deleted');
+    res.json({ id: ref.id, deleted: true });
+  } catch (err) {
+    logger.error({ err }, 'deleteMessage error:');
+    res.status(500).json({ message: 'Failed to delete the message' });
   }
 }
 

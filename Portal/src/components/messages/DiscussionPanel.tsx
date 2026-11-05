@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Loader2, MessageSquare, Eye, EyeOff } from 'lucide-react';
-import { getMessages, postMessage, getMentionable, type MatterMessage } from '../../api/messages';
+import { Send, Loader2, MessageSquare, Eye, EyeOff, Pencil, Trash2 } from 'lucide-react';
+import {
+  getMessages, postMessage, editMessage, deleteMessage, getMentionable, type MatterMessage,
+} from '../../api/messages';
 import { useToast } from '../common/toastContext';
+import { useConfirm } from '../common/confirmContext';
 import RichTextEditor from '../common/RichTextEditor';
 import RichText from '../common/RichText';
 
 /**
- * #123 — the matter's discussion thread. One conversation per matter; staff tick
+ * #123 — the matter's chat (the "Chat" tab; it was called Discussion). One conversation per matter; staff tick
  * "Visible to client" per message (default OFF so internal notes are never leaked
  * by accident, matching #115). Clients only ever receive client-visible messages,
  * and staff authors are masked as "Our team".
@@ -17,6 +20,7 @@ import RichText from '../common/RichText';
  */
 export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; isStaff: boolean }) {
   const toast = useToast();
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const [body, setBody] = useState('');
   const [visible, setVisible] = useState(false); // staff: share with client? default OFF
@@ -49,8 +53,27 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
   // Keep the newest message in view as the thread grows.
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [messages.length]);
 
-  const submit = () => {
+  const submit = async () => {
     if (!body.trim() || send.isPending) return;
+    // A message shared with the client is emailed to them at once and cannot be
+    // recalled. Staff see exactly what will go out before it does — a stray
+    // line pasted into a shared message once reached a client this way.
+    if (isStaff && visible) {
+      const ok = await confirm({
+        title: 'Send this to the client?',
+        message: (
+          <div className="space-y-2">
+            <div className="max-h-60 overflow-y-auto rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-ink">
+              <RichText html={body} className="text-sm" taskId={taskId} />
+            </div>
+            <p>The client will see this in the portal and get it by email, as will anyone copied on this matter. An email cannot be recalled once sent.</p>
+          </div>
+        ),
+        confirmLabel: 'Send to client',
+        cancelLabel: 'Keep editing',
+      });
+      if (!ok) return;
+    }
     send.mutate();
   };
 
@@ -58,7 +81,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
     <div className="card flex flex-col" style={{ maxHeight: '70vh' }}>
       <div className="px-5 py-3 border-b border-hairline flex items-center gap-2">
         <MessageSquare className="w-4 h-4 text-ink-muted" />
-        <p className="text-sm font-semibold text-ink">Discussion</p>
+        <p className="text-sm font-semibold text-ink">Chat</p>
         <span className="text-xs text-ink-faint ml-auto">
           {isStaff ? 'Messages are internal unless you share them' : 'Messages with our team'}
         </span>
@@ -135,6 +158,37 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
 
 function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: boolean; taskId: string }) {
   const mine = m.isMine;
+  const toast = useToast();
+  const confirm = useConfirm();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(m.body);
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['messages', taskId] });
+
+  const save = useMutation({
+    mutationFn: () => editMessage(taskId, m.id, draft.trim()),
+    onSuccess: () => { setEditing(false); refresh(); toast.success('Message updated.'); },
+    onError: (e: Error) => toast.error(e.message || 'Could not edit the message.'),
+  });
+  const remove = useMutation({
+    mutationFn: () => deleteMessage(taskId, m.id),
+    onSuccess: () => { refresh(); toast.success('Message deleted.'); },
+    onError: (e: Error) => toast.error(e.message || 'Could not delete the message.'),
+  });
+
+  const askDelete = async () => {
+    const ok = await confirm({
+      title: 'Delete this message?',
+      message: m.clientVisible
+        ? 'It will be removed for everyone, including the client. Any email already sent about it cannot be recalled.'
+        : 'It will be removed for everyone on the team.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (ok) remove.mutate();
+  };
+
+  const startEdit = () => { setDraft(m.body); setEditing(true); };
   // #193: own messages were white-on-brand-blue, which made the text hard to
   // read. They now use a WhatsApp-style LIGHT GREEN bubble with dark ink. Because
   // the bubble went from a dark to a light background, every dependent colour has
@@ -161,11 +215,45 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
             </span>
           )}
         </div>
-        <RichText html={m.body} className="text-sm" taskId={taskId} />
-        {m.createdAt && (
-          <p className={`text-[10px] mt-1 ${mine ? 'text-emerald-700/70' : 'text-ink-faint'}`}>
-            {new Date(m.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-          </p>
+        {m.deleted ? (
+          <p className="text-sm italic text-ink-faint">This message was deleted</p>
+        ) : editing ? (
+          <div className="space-y-2 min-w-[min(28rem,70vw)]">
+            <RichTextEditor value={draft} onChange={setDraft} ariaLabel="Edit message" rows={2} imageTaskId={taskId} />
+            {m.clientVisible && (
+              <p className="text-[11px] text-ink-muted">The client will see the new text in the portal. No new email is sent, and the one already sent stays as it was.</p>
+            )}
+            <div className="flex justify-end gap-2">
+              <button type="button" className="btn-ghost" onClick={() => setEditing(false)} disabled={save.isPending}>Cancel</button>
+              <button type="button" className="btn-primary inline-flex items-center gap-1.5 disabled:opacity-50"
+                onClick={() => save.mutate()} disabled={!draft.trim() || save.isPending}>
+                {save.isPending && <Loader2 className="w-4 h-4 animate-spin" />} Save
+              </button>
+            </div>
+          </div>
+        ) : (
+          <RichText html={m.body} className="text-sm" taskId={taskId} />
+        )}
+        {m.createdAt && !editing && (
+          <div className={`flex items-center gap-1 mt-1 text-[10px] ${mine ? 'text-emerald-700/70' : 'text-ink-faint'}`}>
+            <span>
+              {new Date(m.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+              {m.editedAt && ' · edited'}
+            </span>
+            {m.canEdit && (
+              <span className="ml-auto inline-flex items-center">
+                <button type="button" onClick={startEdit} aria-label="Edit message" title="Edit"
+                  className="p-2 -my-1 rounded-md hover:bg-black/5 hover:text-ink">
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onClick={askDelete} aria-label="Delete message" title="Delete"
+                  disabled={remove.isPending}
+                  className="p-2 -my-1 rounded-md hover:bg-black/5 hover:text-red-700 disabled:opacity-50">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            )}
+          </div>
         )}
       </div>
     </div>

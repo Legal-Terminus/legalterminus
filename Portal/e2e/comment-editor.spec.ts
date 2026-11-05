@@ -99,7 +99,7 @@ test('#193: the editor exposes colour, highlight and size controls', async ({ ad
   const taskId = await createMatter();
   try {
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
     await adminPage.waitForTimeout(2000);
     await expect(adminPage.getByLabel(/Text colour: Red/i).first()).toBeVisible();
     await expect(adminPage.getByLabel(/Highlight: Yellow/i).first()).toBeVisible();
@@ -203,7 +203,7 @@ test('#194: a long message is folded behind "Read more" and opens in full', asyn
     expect((await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: '<p>short reply</p>' } })).status()).toBe(201);
     await admin.dispose();
 
-    await openMatter(adminPage, taskId, 'Discussion');
+    await openMatter(adminPage, taskId, 'Chat');
     const more = adminPage.getByRole('button', { name: 'Read more' });
     await expect(more, 'exactly one message is long enough to fold').toHaveCount(1, { timeout: 20_000 });
     await expect(adminPage.getByText('short reply')).toBeVisible();

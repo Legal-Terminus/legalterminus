@@ -54,7 +54,7 @@ export async function login(page: Page, role: RoleKey) {
 }
 
 /** Open a matter detail page and switch to a tab (Steps/Documents/Payments). */
-export type MatterTab = 'Steps' | 'Documents' | 'Payments' | 'Discussion';
+export type MatterTab = 'Steps' | 'Documents' | 'Payments' | 'Chat';
 
 /** The tab control for a matter detail tab (E23-S03). */
 export function matterTab(page: Page, tab: MatterTab) {

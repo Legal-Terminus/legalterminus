@@ -6297,3 +6297,18 @@ just ended (financial-year quarters). Design in architecture.md, "GST return rem
   `/api/internal/run-gst-returns` would make it run at a fixed time.
 - Tests: `backend/src/__tests__/gstReturns.test.js`, `Portal/e2e/gst-returns.spec.ts`,
   `matter-payments-docs.spec.ts` (#77 upload types).
+
+### Chat: edit and delete messages, confirm before sharing (2026-11-05)
+
+A staff member's shared message reached a client with two stray lines pasted into it
+(writing-assistant suggestions), and there was no way to fix it: the text had to be
+changed in the database by hand. Design in architecture.md, "Chat: editing, deleting
+and confirming a shared message".
+- The matter tab "Discussion" is now **Chat** (the default email wording follows).
+- The author of a message, or an admin, can edit or delete it. An edited message shows
+  "· edited"; a deleted one leaves "This message was deleted" in its place. Neither sends
+  a notification or an email.
+- Before a staff message shared with the client is sent, a preview shows exactly what
+  will go out and says it will be emailed and cannot be recalled.
+- Tests: `Portal/e2e/discussion.spec.ts` (three new tests); other specs use the new tab
+  name.

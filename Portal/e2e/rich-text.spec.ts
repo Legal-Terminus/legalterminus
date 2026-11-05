@@ -87,7 +87,7 @@ test('#122: the discussion composer offers formatting controls', async ({ adminP
   const taskId = await createMatter();
   try {
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
     await expect(adminPage.getByRole('button', { name: 'Bold' })).toBeVisible();
     await expect(adminPage.getByRole('button', { name: 'Insert table' })).toBeVisible();
 
