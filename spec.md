@@ -207,6 +207,8 @@ The admin has access to a comprehensive reporting dashboard covering 13 distinct
 
 **Refund log (#240)** — **Given** an admin or manager opens a matter → Payments → **Refund History** (or a website order not yet approved, under Website Orders → Details), **Then** they can record a refund: reason, refund amount, initiation date, transaction id and status (Initiated, Processing, Successfully Credited, Failed). The client name, matter and the payment amount are taken from the matter or order, not typed. The refund amount, with every refund that has not failed, may not exceed the amount paid. Status is changed **by hand** — Razorpay's refund API is not connected, so the refund itself is made in Razorpay or at the bank. Successfully Credited needs the transaction id; Credited and Failed are final (a retry is a new refund). A refund never changes the payment history: amount paid stays what was received and the log shows **Net received** beside it. A refund recorded on an unapproved order stops it being approved; when refunds credited reach the amount paid the order becomes Refunded. The client sees their own matter's refunds read-only (amount, reason, initiation date, transaction reference, status — not who recorded it), and a fifth **Refund** card on the dashboard (total refunded or on its way, with the latest status and reason) only when they have a refund. Team members do not see refunds. Another client's matter answers "not found".
 
+**Website cart (#244)** — **Given** a customer adds several services to the cart (from a plan's "Add to Cart" in the checkout), **Then** a cart icon in the header shows how many services it holds; the cart page lists each service with its plan and price, lets the customer change a service's plan or remove it, and shows the price, the GST and the total; and one checkout pays for all of them in a single payment. One plan per service (another plan of a service already in the cart replaces it), no quantities, at most 10 services. The server prices every service from the catalogue — the cart sends only plans. The order waits for ONE approval under **Website Orders**, which opens one matter per service, each fully paid with what was paid for that service (GST included). A service with no workflow is listed for staff to open by hand. The confirmation page and the confirmation email list every service. The cart is kept in the browser and is emptied once paid; it is shown only where online payment is switched on.
+
 **Website prices (E24-S01)** — **Given** an admin opens Settings → Website Prices and changes a plan's price, **Then** the website shows the new price within a couple of minutes and a payment for that plan is charged that amount. A manager can change prices too (#241); no other role can view or change them. At least one plan of a service stays on sale.
 
 ---
@@ -646,6 +648,24 @@ totalCostBefore, paidAt|null, paidVia (online|recorded)|null, orderId|null,
 paymentId|null (ledger row `request-<requestId>`),
 cancelledAt?, cancelledBy?, cancelledByName?, cancelReason?
 ```
+
+### `paymentOrders/{orderId}` — website orders (E24, #212, #220, #244)
+```
+uid, customer { name, email, phone }, kind? (matter_balance — #220 Pay Now | payment_request — #222, with taskId + requestId),
+productKey, productCode, planId, label, planName, serviceKey,   // null/"N services" on a cart order
+price, gst, gstPercent, amount (= charged: price + GST), currency,
+items?[ { productKey, productCode, planId, label, planName, serviceKey,   // #244: only on a cart order
+          price, gst, gstPercent, amount,
+          matter { state (none|awaiting_approval|created|failed|not_applicable), taskId?, error?, reason? } } ],
+status (created|paid|review|failed|abandoned|refunded), gateway, gatewayOrderId,
+gatewayPaymentId?, method?, amountPaid?, settledBy?, paidAt?, refundedAt?, failureReason?, reviewReason?,
+matter { state (none|awaiting_approval|pending|created|failed|not_applicable | balance|crediting|credited|credit_failed),
+         taskId?, error?, reason?, approvedBy?, approvedByName?, approvedAt? },
+createdAt, updatedAt
+```
+A one-service order has no `items` and is stored exactly as before #244. On a cart order the
+top-level price / gst / amount are the sums of the lines, and each matter it opens carries
+`websiteOrderId` and `websiteOrderItem` (the line number).
 
 ### `auditLog/{entryId}`
 ```

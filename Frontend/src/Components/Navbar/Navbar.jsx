@@ -15,9 +15,12 @@ import {
   FaPhone,
   FaChevronRight,
   FaArrowRight,
+  FaShoppingCart,
 } from "react-icons/fa";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "../../utils/firebase";
+import { useCart } from "../../utils/cart.js";
+import { PAYMENTS_ENABLED } from "../../utils/pricing.js";
 import "./Navbar.css";
 import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
 
@@ -241,6 +244,21 @@ const navData = [
     ],
   },
 ];
+
+/** #244: the cart link in the header, with a count of the services in it. */
+function CartIcon() {
+  const count = useCart().length;
+  const label = count ? `Cart, ${count} service${count === 1 ? "" : "s"}` : "Cart, empty";
+  return (
+    <div className="user-login-wrap">
+      <a href="/cart" className="icon-btn user-login-btn nav-cart-btn" aria-label={label}>
+        <FaShoppingCart />
+        {count > 0 && <span className="nav-cart-count" aria-hidden="true">{count}</span>}
+      </a>
+      <span className="user-login-tooltip">Cart</span>
+    </div>
+  );
+}
 
 export default function NavbarAdvanced() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -896,6 +914,9 @@ export default function NavbarAdvanced() {
             </div>
 
             <div className="nav-right">
+              {/* #244: the cart, with how many services are in it. Shown only
+                  where online payment is switched on. */}
+              {PAYMENTS_ENABLED && <CartIcon />}
               <div className="user-login-wrap">
                 <a
                   href={loggedIn ? "/my-profile" : "/login"}

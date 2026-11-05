@@ -2043,6 +2043,55 @@ a product is keyed by the `source` its component passes to the checkout, and
   (`ledgerPaymentStatus`) and answers 409 `PAYMENT_NOT_RECORDED` when the
   history does not satisfy the gate. Before this, any team member on the
   matter could mark it fully paid with nothing recorded.
+- **Cart: several services, one checkout (#244, 2026-11-05).** Same
+  collection, same gateway, same endpoints.
+  - `POST /api/orders` takes EITHER `{ productKey, planId }` (unchanged) OR
+    `{ items: [{ productKey, planId }] }` — 1 to `MAX_ORDER_ITEMS` (10) lines,
+    one per service, never a price; `.strict()` on the body and on each line,
+    and a refinement refusing both shapes at once, neither, or a repeated
+    service. The service re-checks the same (`requestedItems`).
+  - Pricing reuses the catalogue, not a copy of it: one fresh `loadCatalog`
+    for the whole cart, `findPlan` per line (so each line's GST is `withGst`'s),
+    and `priceOrder` sums the lines to the paisa. A line not on sale makes the
+    whole cart 404 — nothing is charged for part of a cart. The gateway is asked
+    for the one total.
+  - Shape (pure helpers in `services/orderItems.js`, tested in
+    `__tests__/orderItems.test.js`): a ONE-line request is stored exactly as a
+    single-plan order always was — no `items`. Two or more lines add
+    `items[]` (each with its own `matter`) and top-level `price`/`gst`/`amount`
+    = the sums, `label` "N services", `planName` the lines joined,
+    `productKey`/`planId`/`serviceKey` null. So `decideSettlement`,
+    `settlePaid`, the review hold, reconcile, refunds and the webhook needed no
+    change.
+  - **One approval opens every line's matter** (chosen over per-line
+    approval: the Website Orders screen has one Approve button per order and
+    the customer paid once; per-line approval would let a paid order sit half
+    started). `fulfil` judges each line on its own service
+    (`planLineMatters`, reusing `matterOutcome`); the order waits for approval
+    if ANY line can open a matter, and staff are told which lines to open by
+    hand. `approveMatter` claims the order exactly as before; `openApprovedLines`
+    then opens each waiting line through `openMatter` → `createTask`, with the
+    LINE's service and amount (GST included), stamping `websiteOrderItem` (the
+    line index) beside `websiteOrderId` — the idempotency lookup is on both.
+    A failing line does not stop the others; the order's `matter.state` is
+    `failed` with each line's error and the approval stands, so "Try again"
+    (`retryMatter`) opens only the lines still missing (`linesToOpen`).
+  - `publicOrder` adds `items` (label, plan, price, GST, amount, matterId) and
+    `matterId` = the first opened line's. `listOrders`' "matter deleted" check
+    covers lines too. The confirmation email lists every line.
+  - Website: `Frontend/src/utils/cart.js` keeps the cart in localStorage
+    (`lt-cart-v1`; every access in try/catch; a bad value reads as empty),
+    one line per service — adding another plan of the same service swaps it —
+    and a `useCart` hook kept current across components and tabs. "Add to
+    Cart" is on the plan summary of the existing checkout (`ProCheckoutModal`),
+    so every pricing card gets it without touching ~80 card components. The
+    header shows a cart icon with a count; `/cart` (noindex, disallowed in
+    robots.txt) lists lines with a plan select, Remove and totals, refreshes
+    prices from `/api/public/pricing`, blocks checkout on a plan no longer on
+    sale, and opens the same checkout with `cartLines`. A paid cart is emptied
+    before the result page. All of it is behind `VITE_PAYMENTS_ENABLED`.
+  - Portal: Website Orders lists each line of a cart order under Service with
+    its amount, its matter state and an "Open matter" link per line.
 
 ---
 

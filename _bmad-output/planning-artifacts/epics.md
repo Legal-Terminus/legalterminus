@@ -6388,3 +6388,27 @@ Design in architecture.md, "Website orders and payments" → "Additional payment
   by cancelling and re-sending the request.
 - Tests: `backend/src/__tests__/paymentRequests.test.js`,
   `Portal/e2e/payment-requests.spec.ts`.
+
+### Website cart: several services, one payment (2026-11-05, #244) 🔄 In review
+
+The firm asked for an Add to Cart on the website: choose several services, review them, and
+pay for all of them in one checkout. Design in architecture.md, "Website orders and
+payments" → "Cart".
+- "Add to Cart" sits beside "Proceed to Checkout" on a plan's summary, on every service
+  page. A cart icon with a count is in the header; `/cart` lists each service with a plan
+  picker, Remove, and the price, GST and total, and "Checkout — pay ₹…" opens the usual
+  checkout for the whole cart.
+- One plan per service (the plans are tiers; picking another swaps it), no quantity, at
+  most 10 services. The cart is kept in the browser and emptied once paid. Shown only where
+  online payment is on.
+- The server prices every line from the catalogue; the order total is their sum and is
+  paid once through Razorpay. One approval under Website Orders opens one matter per
+  service; a service with no workflow is left for staff to open by hand. A one-service
+  order is stored and handled exactly as before.
+- The confirmation page, the confirmation email and Website Orders list every service.
+- Tests: `backend/src/__tests__/orderItems.test.js`; `Portal/e2e/orders.spec.ts` (three
+  "#244" tests: server pricing and refusals, one approval opening N matters, a line with
+  no workflow).
+- Open: no Frontend Playwright test for the cart page itself (the website suite only
+  checks that pages render); a cart order cannot be partly refunded — a refund is for the
+  whole order, as before.

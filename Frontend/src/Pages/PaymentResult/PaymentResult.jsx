@@ -69,7 +69,10 @@ const PaymentResult = () => {
 
   const rows = order ? [
     { label: "Order reference", value: order.orderId },
-    { label: "Service", value: `${order.label} — ${order.planName}` },
+    // #244: a cart order lists each service it paid for.
+    ...(order.items?.length
+      ? order.items.map((it, i) => ({ label: i === 0 ? "Services" : "", key: `item-${i}`, value: `${it.label} — ${it.planName}: ${inr(it.amount)}` }))
+      : [{ label: "Service", value: `${order.label} — ${order.planName}` }]),
     // #212: prices are exclusive of GST. An order made before that has no GST.
     ...(order.gst ? [
       { label: "Price", value: inr(order.price) },
@@ -82,8 +85,8 @@ const PaymentResult = () => {
 
   const Details = () => (
     <div className="pr-detail-box">
-      {rows.map(({ label, value }) => (
-        <div key={label} className="pr-detail-row">
+      {rows.map(({ label, value, key }) => (
+        <div key={key ?? label} className="pr-detail-row">
           <span className="pr-detail-label">{label}</span>
           <span className="pr-detail-value">{value}</span>
         </div>
@@ -140,7 +143,7 @@ const PaymentResult = () => {
               <div className="pr-next-title">What Happens Next?</div>
               <ol className="pr-next-list">
                 {order.matterId
-                  ? <li>Your service has been started. You can follow each step in your portal.</li>
+                  ? <li>{order.items?.length ? "Your services have been started." : "Your service has been started."} You can follow each step in your portal.</li>
                   : <li>Our team will contact you within 2 working hours to start your service.</li>}
                 <li>Required documents will be collected.</li>
                 <li>Updates will be shared in your portal and by email.</li>

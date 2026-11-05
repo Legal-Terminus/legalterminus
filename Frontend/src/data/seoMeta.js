@@ -344,4 +344,5 @@ export const SEO_META = {
   '/forgot-password': { title: 'Reset Password | Legal Terminus', description: 'Reset your Legal Terminus password.', noindex: true },
   '/my-profile': { title: 'My Profile | Legal Terminus', description: 'Your Legal Terminus profile.', noindex: true },
   '/payment/result': { title: 'Payment | Legal Terminus', description: 'Payment status.', noindex: true },
+  '/cart': { title: 'Your Cart | Legal Terminus', description: 'Services in your cart.', noindex: true },
 };

@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /my-profile
 Disallow: /payment/
+Disallow: /cart
 
 Sitemap: https://legalterminus.com/sitemap.xml
