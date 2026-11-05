@@ -195,8 +195,14 @@ jobs:
             --set-env-vars="EMAIL_FROM=${{ secrets.BACKEND_EMAIL_FROM }}" \
             --set-env-vars="CONTACT_LEADS_EMAIL=${{ vars.CONTACT_LEADS_EMAIL || 'noreply@legalterminus.com' }}" \
             --set-env-vars="CORS_ORIGINS=https://localhost" \
+            --set-env-vars="SCHEDULER_SA_EMAIL=lt-scheduler@legal-terminus-web.iam.gserviceaccount.com" \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
 
+          # SCHEDULER_SA_EMAIL is not a secret: it names the service account the
+          # Cloud Scheduler job "lt-gst-returns-daily" signs its calls as. The API
+          # accepts a Google-signed token for that account on
+          # /api/internal/run-gst-returns (schedulerAuth.service.js).
+          #
           # #20: CONTACT_LEADS_EMAIL above is where website enquiries are emailed.
           # The firm set it by hand in the Cloud Run console and it "kept
           # disappearing": --set-env-vars REPLACES the service's whole

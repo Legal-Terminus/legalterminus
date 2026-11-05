@@ -29,6 +29,7 @@ import { gstReturnSweepTrigger, runGstReturnSweep } from "./services/gstReturns.
 import { timingSafeEqual } from "crypto";
 import { isTestEnvironment } from "./config/testEnvironment.js";
 import { verifyToken } from "./middleware/auth.middleware.js";
+import { isSchedulerCall } from "./services/schedulerAuth.service.js";
 import reportsRoutes from "./routes/reports.routes.js";
 import leadsRoutes from "./routes/leads.routes.js";
 import marketingRoutes from "./routes/marketing.routes.js";
@@ -190,9 +191,12 @@ const secretMatches = (given, expected) => {
   return a.length === b.length && timingSafeEqual(a, b);
 };
 
-// #219: run the GST sweep now — Cloud Scheduler (x-cron-secret) or an admin.
+// #219: run the GST sweep now — Cloud Scheduler or an admin. The scheduler
+// proves itself with a Google-signed token for its own service account
+// (schedulerAuth.service.js); x-cron-secret is still honoured if one is set.
 app.post("/api/internal/run-gst-returns", async (req, res) => {
-  if (!secretMatches(req.headers["x-cron-secret"], process.env.CRON_SECRET)) {
+  const bySecret = secretMatches(req.headers["x-cron-secret"], process.env.CRON_SECRET);
+  if (!bySecret && !(await isSchedulerCall(req))) {
     await new Promise((resolve) => verifyToken(req, res, resolve));
     if (res.headersSent) return;
     if (req.user?.role !== "admin") {

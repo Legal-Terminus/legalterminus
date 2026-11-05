@@ -1,3 +1,6 @@
+import { validateCondition } from './conditions.js';
+import { validateForm } from './forms.js';
+import { validateDueRule } from './dueRules.js';
 /**
  * Workflow Definition Schema (v1) — the DATA shape of a workflow, stored in the
  * Firestore `workflowDefinitions` collection and compiled to an XState machine at
@@ -245,6 +248,21 @@ export function validateDefinition(def) {
     if (numbers.has(s.stepNumber)) errors.push(`duplicate stepNumber ${s.stepNumber}`);
     numbers.add(s.stepNumber);
     if (!STEP_TYPES.includes(s.type)) errors.push(`step ${s.stepNumber} has invalid type '${s.type}'`);
+    // E01-S34-2: a condition whose operator cannot apply to its field would
+    // silently never match. Refuse it at SAVE time, so the author finds out
+    // now rather than when a real matter reaches the step.
+    const condErr = validateCondition(s.condition);
+    if (condErr) errors.push(`step ${s.stepNumber}: ${condErr}`);
+    // E01-S34-3: a form step is an ordinary client-owned step carrying a form,
+    // NOT a new step type — so ownership, transitions and the client portal's
+    // existing "your turn" handling all apply unchanged. A form that could not
+    // be filled in is refused when the workflow is saved, rather than when a
+    // client opens the step and finds a broken page.
+    for (const e of validateForm(s.form)) errors.push(`step ${s.stepNumber}: ${e}`);
+    // E01-S35-1: a due rule that could never resolve leaves the step with no
+    // deadline at all, which nobody notices until it is late. Refuse it here.
+    const dueErr = validateDueRule(s.dueRule);
+    if (dueErr) errors.push(`step ${s.stepNumber}: ${dueErr}`);
     // ETA (E13-S01): optional, but when present must be a non-negative number.
     if (s.typicalDurationDays != null &&
         (typeof s.typicalDurationDays !== 'number' || !Number.isFinite(s.typicalDurationDays) || s.typicalDurationDays < 0)) {

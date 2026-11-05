@@ -215,9 +215,21 @@ export async function runGstReturnSweep({ force = false, now = new Date(), onlyC
 
 let _lastCheckMs = 0;
 /** Express middleware: run the sweep in the background, at most once a minute per instance. */
+/**
+ * The traffic trigger waits until 09:00 India time, the same time the Cloud
+ * Scheduler job runs. Without this, a period's matters and client emails went
+ * out with the first request after midnight — often 00:05 from a bot. The
+ * scheduler gives a fixed time; this remains as the fallback if it fails.
+ */
+export const SWEEP_FROM_MINUTES_IST = 9 * 60;
+export function sweepWindowOpen(now = new Date()) {
+  const ist = (now.getUTCHours() * 60 + now.getUTCMinutes() + 330) % 1440;
+  return ist >= SWEEP_FROM_MINUTES_IST;
+}
+
 export function gstReturnSweepTrigger(req, res, next) {
   const t = Date.now();
-  if (t - _lastCheckMs > 60_000) {
+  if (t - _lastCheckMs > 60_000 && sweepWindowOpen(new Date(t))) {
     _lastCheckMs = t;
     setImmediate(() => {
       runGstReturnSweep().catch((err) => logger.warn({ err: err?.message }, '#219 background GST sweep failed'));
