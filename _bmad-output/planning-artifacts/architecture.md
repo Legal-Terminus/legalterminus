@@ -1975,6 +1975,67 @@ a product is keyed by the `source` its component passes to the checkout, and
     event. The Portal shows the client's button and the staff switch in the
     Payments tab (`components/tasks/PayNowCard.tsx`); the checkout script is
     loaded from `checkout.razorpay.com` only when the client presses Pay Now.
+- **Additional payment requests (#222, 2026-11-05).** Staff ask the client for
+  more money — typically government fees — listed fee by fee; the client pays
+  the total through Razorpay. Rules in `services/paymentRequests.service.js`
+  (pure helpers unit-tested in `__tests__/paymentRequests.test.js`), HTTP in
+  `controllers/paymentRequests.controller.js`, schemas in
+  `schemas/paymentRequest.schema.js`.
+  - Stored at `tasks/{taskId}/paymentRequests/{requestId}`: `lines[{name,
+    description, amount}]`, `total`, `note`, `status: sent → paid | cancelled`.
+    Backend-only in `firestore.rules`.
+  - **The total is the server's.** `POST /api/tasks/:id/payment-requests` takes
+    `{ lines, note? }` (`.strict()`, so a `total` is a 400); `requestTotal`
+    adds the lines in paise. Lines: name required, amount > 0, two decimals at
+    most, ≤ ₹1 crore, ≤ 20 lines; text is stripped of tags.
+  - **A sent request is part of the matter's cost.** Sending adds the total to
+    `totalCost` (and cancelling takes it off) through `commitLedgerChange`, in
+    the same transaction that writes the request, with a `PAYMENT_REQUESTED` /
+    `PAYMENT_REQUEST_CANCELLED` event. So `amountDue`, `paymentStatus` and the
+    dues reports include open requests — a fully paid matter given a request
+    becomes part paid until it is paid, and a later payment checkpoint waits
+    for it. Chosen over "add on payment" because the firm is owed the money from
+    the moment it asks. A matter with no `totalCost` refuses a request
+    (409 `NO_TOTAL_COST`): adding to nothing would make the request its price.
+  - `commitLedgerChange` gained an optional `preRead(tx)` so the request doc is
+    read inside the ledger transaction (all reads before writes) and passed to
+    `change` as `pre`. It, `LedgerError` and `ledgerErrorBody` are now exported.
+  - **Paying.** `POST …/payment-requests/:requestId/pay` (client only, body
+    `{}`, Pay Now's rate limit) → `createPaymentRequestOrder`: a
+    `paymentOrders` doc with `kind: 'payment_request'`, `taskId`, `requestId`,
+    amount = the request's stored `total`, no GST, `matter.state: request →
+    crediting → credited | credit_failed`. A `created` order for the same
+    request, client, gateway and amount from the last half hour is reused.
+    Confirmation uses the existing verify / webhook / reconcile endpoints;
+    `settlePaid` → `creditMatter`, which for this kind calls `settleRequest`.
+  - **Paid once.** `settleRequest` writes the ledger row `request-<requestId>`
+    (id from the REQUEST, not the order) and marks the request paid in one
+    transaction. A repeat signal for the same order is a no-op; a payment from
+    a second order, or one arriving after the request was cancelled or
+    recorded by hand, is refused by the ledger, the order is `credit_failed`
+    with the reason, and admins/managers are told — the money is never
+    silently dropped.
+  - **Pay Now pays the rest.** `payNowAmount(task, outstanding)` = amount due
+    less open requests' totals, so Pay Now and a request cannot both collect
+    the same rupees. The Portal subtracts the same figure (`outstanding` from
+    `GET …/payment-requests`).
+  - Roles: send = admin, manager, team member (the issue: "any team member can
+    send"); cancel and "Record as paid" (`…/cancel`, `…/record`, mode +
+    reference only — the amount is the request's) = admin, manager; list =
+    staff + the matter's client. Team members get a "Payment requests" tab that
+    shows only the requests — never the figures or the history (#148). The
+    client never sees a cancelled request or staff names.
+  - Notifications: on send, the client gets an in-app notification mirrored to
+    email (with the matter's cc addresses) carrying the breakup; on payment,
+    admins/managers and the request's author are notified and the client gets
+    the "Payment received" email.
+  - **No GST.** Government fees are passed through at cost; lines are charged
+    exactly as entered. If the firm ever wants GST on a professional-fee line,
+    that needs a per-line flag.
+  - Not tied to `onlinePaymentEnabled`: that switch is for Pay Now; a request
+    is itself the firm's decision to ask for online payment.
+  - Portal: `components/tasks/PaymentRequestsCard.tsx` in the Payments tab;
+    `api/paymentRequests.ts`. Website Orders shows these orders like Pay Now.
 - **The payment checkpoint follows the ledger (SEC F-01, ported from Ambyflow
   2026-11-04).** `RECORD_PAYMENT` ("Mark as Paid") is admin/manager only
   (403 `PAYMENT_ROLE_REQUIRED`), and the caller's `newStatus` is discarded:

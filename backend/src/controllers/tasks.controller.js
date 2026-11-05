@@ -2082,10 +2082,10 @@ export async function patchTask(req, res) {
 // clobber each other. Admin/manager only; Team never sees payments at all.
 
 /** Thrown inside a ledger transaction to answer with a 4xx instead of a 500. */
-class LedgerError extends Error {
+export class LedgerError extends Error {
   constructor(status, message, code) { super(message); this.status = status; this.code = code; }
 }
-const ledgerErrorBody = (e) => ({ message: e.message, ...(e.code ? { code: e.code } : {}) });
+export const ledgerErrorBody = (e) => ({ message: e.message, ...(e.code ? { code: e.code } : {}) });
 
 /**
  * #202: the ONE path for anything that moves a matter's money — recording,
@@ -2096,16 +2096,20 @@ const ledgerErrorBody = (e) => ({ message: e.message, ...(e.code ? { code: e.cod
  * writers each did their own arithmetic, and two of them were not atomic: the
  * row changed in one write and the rollup in another.
  *
- * `change({ task, rows, now })` mutates `rows` (a Map id → row) in memory and
+ * `change({ task, rows, now, pre })` mutates `rows` (a Map id → row) in memory and
  * returns `{ writes(tx), totalCost?, taskFields?, event(rolled), exceeds(available) }`.
  * It must not read — Firestore requires every read before the first write.
  */
-async function commitLedgerChange(db, taskRef, { uid, role }, change) {
+export async function commitLedgerChange(db, taskRef, { uid, role }, change, { preRead } = {}) {
   return db.runTransaction(async (tx) => {
     const taskSnap = await tx.get(taskRef);
     if (!taskSnap.exists) throw new LedgerError(404, 'Matter not found');
     const task = taskSnap.data();
     const ledger = await tx.get(taskRef.collection('payments'));
+    // #222: a caller that must read one more document in the same transaction
+    // (a payment request it is about to mark paid) does it here — every read
+    // has to come before the first write.
+    const pre = preRead ? await preRead(tx) : undefined;
     const now = new Date().toISOString();
 
     const rows = new Map(ledger.docs.map((d) => [d.id, d.data()]));
@@ -2120,7 +2124,7 @@ async function commitLedgerChange(db, taskRef, { uid, role }, change) {
       }
     }
 
-    const plan = change({ task, rows, now });
+    const plan = change({ task, rows, now, pre });
     const totalCost = plan.totalCost ?? task.totalCost ?? 0;
     const paid = sumLedger([...rows.values()]);
     if (totalCost > 0 && paid > totalCost) {

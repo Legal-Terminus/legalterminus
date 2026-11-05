@@ -22,6 +22,7 @@ import { getDocuments, openDocument, type TaskDocument } from '../../api/documen
 import { useAuthStore } from '../../store/authStore';
 import PayNowCard from '../../components/tasks/PayNowCard';
 import RefundHistory from '../../components/payments/RefundHistory';
+import PaymentRequestsCard from '../../components/tasks/PaymentRequestsCard';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
@@ -389,12 +390,16 @@ export default function TaskDetailPage() {
   // #168: a professional is an outside referrer — the client's fees are not
   // theirs to see, so Payments is hidden for them too.
   const canSeePayments = role !== 'team_member' && role !== 'professional';
+  // #222: a team member may raise additional payment requests, so they get a
+  // "Payment requests" tab — showing ONLY the requests, never the matter's
+  // figures or its payment history (#148 still holds: no "Payments" tab).
+  const canSeePaymentsTab = canSeePayments || role === 'team_member';
 
   const TABS: { key: TabKey; label: string; icon: typeof ListChecks }[] = [
     { key: 'steps', label: 'Steps', icon: ListChecks },
     { key: 'documents', label: 'Documents', icon: FileText },
-    ...(canSeePayments
-      ? [{ key: 'payments' as const, label: 'Payments', icon: IndianRupee }]
+    ...(canSeePaymentsTab
+      ? [{ key: 'payments' as const, label: canSeePayments ? 'Payments' : 'Payment requests', icon: IndianRupee }]
       : []),
     // #123: per-matter discussion thread (client + internal team).
     { key: 'discussion', label: 'Chat', icon: MessageSquare },
@@ -633,7 +638,9 @@ export default function TaskDetailPage() {
       )}
       {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} workflowType={task.workflowType} />}
       {tab === 'discussion' && <DiscussionPanel taskId={taskId!} isStaff={isStaff} />}
-      {tab === 'payments' && <PaymentsTab task={task} canEdit={canAssign} isClient={isClient} />}
+      {tab === 'payments' && (role === 'team_member'
+        ? <PaymentRequestsCard task={task} canSend canManage={false} isClient={false} />
+        : <PaymentsTab task={task} canEdit={canAssign} isClient={isClient} />)}
       {/* Matter details (#153 organisation, #149 CC recipients) — admin/manager
           only. Deliberately placed LAST and collapsed by default: anything above
           the step content displaces it, and the #111 reminder picker needs room
@@ -2764,6 +2771,9 @@ function PaymentsTab({ task, canEdit, isClient }: { task: Task; canEdit: boolean
 
     {/* #220: the client's Pay Now button, or the staff switch for it. */}
     <PayNowCard task={task} isClient={isClient} canEdit={canEdit} />
+
+    {/* #222: additional payment requests (government fees) — staff raise them, the client pays them. */}
+    <PaymentRequestsCard task={task} canSend={canEdit} canManage={canEdit} isClient={isClient} />
 
     {/* #148: the payment LEDGER — clients pay in instalments, so every payment
         received is its own record rather than one overwritten latest figure. */}
