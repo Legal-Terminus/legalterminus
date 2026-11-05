@@ -203,7 +203,7 @@ The admin has access to a comprehensive reporting dashboard covering 13 distinct
 
 **Website payments (E24-S02 … S05)** — **Given** a signed-in customer chooses a plan on the website and pays, **Then** the amount charged is the plan's price in the catalogue plus GST at 18% (prices are exclusive of GST; the checkout shows the price, the GST and the total); the order is marked paid only on a verified confirmation from the gateway; the customer sees a confirmation with an order reference; and, where the service has a workflow, the order waits for a member of staff — an admin, a manager or a team member — to approve it under **Website Orders**, and on approval a matter is opened for the customer, fully paid and live. Payment alone opens no matter. Where the service has no workflow, the firm's admins are told to open one. A payment confirmed twice, or an order approved by two people at once, opens one matter. A refunded order cannot be approved. A payment for the wrong amount is held for review. Staff see every order under **Website Orders**.
 
-**Website prices (E24-S01)** — **Given** an admin opens Settings → Website Prices and changes a plan's price, **Then** the website shows the new price within a couple of minutes and a payment for that plan is charged that amount. A manager can view prices but not change them. At least one plan of a service stays on sale.
+**Website prices (E24-S01)** — **Given** an admin opens Settings → Website Prices and changes a plan's price, **Then** the website shows the new price within a couple of minutes and a payment for that plan is charged that amount. A manager can change prices too (#241); no other role can view or change them. At least one plan of a service stays on sale.
 
 ---
 

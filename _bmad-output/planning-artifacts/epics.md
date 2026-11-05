@@ -6327,3 +6327,12 @@ and confirming a shared message".
   Google-signed token, so no shared secret exists. The traffic fallback now also waits
   until 09:00 India time. Before, a period opened with the first request after midnight.
 - Tests: `serviceStepSchema.test.js`, `schedulerAuth.test.js`.
+
+### Managers can change website prices (2026-11-05, #241)
+
+- Settings → Website Prices was read-only for a manager. A manager can now change and
+  save prices exactly as an admin can, and the website picks the change up the same
+  way. Team members, clients and professionals still cannot open the screen or call
+  the API (`PUT /api/pricing/:productKey` now allows `admin, manager`).
+- Tests: `Portal/e2e/pricing.spec.ts` (a manager saves a price through the API and the
+  screen; other roles still 403).

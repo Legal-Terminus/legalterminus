@@ -68,7 +68,8 @@ function changes(product: PriceProduct, drafts: Record<string, Draft>, serviceKe
 
 export default function WebsitePricesPage() {
   const role = useAuthStore((s) => s.role);
-  const canEdit = role === 'admin';
+  // #241: managers change website prices too; the API enforces the same rule.
+  const canEdit = role === 'admin' || role === 'manager';
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState<string | null>(null);
 
@@ -109,7 +110,7 @@ export default function WebsitePricesPage() {
       ) : (
         <div className="max-w-3xl space-y-3">
           {!canEdit && (
-            <p className="text-sm text-ink-muted">You can view prices. Only an admin can change them.</p>
+            <p className="text-sm text-ink-muted">You can view prices. Only an admin or a manager can change them.</p>
           )}
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" aria-hidden="true" />
