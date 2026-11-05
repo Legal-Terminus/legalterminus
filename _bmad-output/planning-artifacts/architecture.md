@@ -2287,3 +2287,29 @@ only). **Production allows neither yet**; add both before a production build.
 **Secrets.** `google-services.json`, signing keystores and `local.properties` are never
 committed. A throwaway key was used only to prove the release build installs.
 
+
+## Chat: editing, deleting and confirming a shared message (2026-11-05)
+
+The matter's discussion thread (#123) is labelled **Chat** in the Portal. Code names are
+unchanged (`messages` subcollection, `DiscussionPanel`, tab key `discussion`), so links
+and stored data are untouched.
+
+**Edit and delete.** `PATCH` and `DELETE /api/tasks/:taskId/messages/:messageId`.
+- Allowed for the message's author or an admin (`canModify` in `messages.controller.js`).
+  Managers are not given blanket rights: a message is its author's words.
+- A client gets 404 for an internal message, so its existence is never revealed, and 403
+  for a firm message they can see.
+- The edit schema accepts `body` only (`.strict()`), so an edit can never change who sees
+  a message.
+- Delete is soft: `body` is emptied and `deletedAt` set, so replies around it still make
+  sense. A deleted message cannot be edited again (409).
+- Both keep the replaced text in `revisions` (`{ body, replacedAt, replacedBy }`), never
+  returned by the API. The firm keeps a record of what a client was actually sent.
+- Neither notifies anyone. The email for the original message cannot be recalled, and a
+  second email for a corrected typo would be noise.
+- `listMessages` returns `editedAt`, `deleted` and `canEdit` per message.
+
+**Confirm before sharing.** In the Portal, a staff message with "Visible to client" ticked
+opens a preview (the app-wide `useConfirm` dialog) before it is posted. This is a UI step
+only: the API still accepts `clientVisible: true` directly, as integrations and tests use
+it.

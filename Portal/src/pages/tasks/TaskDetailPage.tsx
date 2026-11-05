@@ -396,7 +396,7 @@ export default function TaskDetailPage() {
       ? [{ key: 'payments' as const, label: 'Payments', icon: IndianRupee }]
       : []),
     // #123: per-matter discussion thread (client + internal team).
-    { key: 'discussion', label: 'Discussion', icon: MessageSquare },
+    { key: 'discussion', label: 'Chat', icon: MessageSquare },
   ];
 
   return (

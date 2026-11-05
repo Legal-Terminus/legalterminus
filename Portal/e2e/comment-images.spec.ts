@@ -234,7 +234,7 @@ test('UI: a wrong-type file in the Discussion composer shows a friendly error', 
   const taskId = await createMatter();
   try {
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
     await adminPage.getByTestId('comment-image-input').first()
       .setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello') });
     await expect(adminPage.getByRole('alert').filter({ hasText: /JPEG, PNG or WebP/ })).toBeVisible();
@@ -246,7 +246,7 @@ test('UI: the client sees an image shared in the Discussion, rendered', async ({
   try {
     // Staff add it through the composer and share the message.
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
     const msg = `IMG-MSG-${Date.now()}`;
     await adminPage.getByLabel('Message').pressSequentially(msg);
     await adminPage.getByTestId('comment-image-input').first()
@@ -254,10 +254,12 @@ test('UI: the client sees an image shared in the Discussion, rendered', async ({
     await expect(adminPage.getByLabel('Message').locator('img[data-lt-image]')).toHaveAttribute('src', /^blob:/, { timeout: 15_000 });
     await adminPage.getByLabel('Visible to client').check();
     await adminPage.getByRole('button', { name: /^Send$/ }).click();
+    // A message shared with the client asks for confirmation first.
+    await adminPage.getByRole('button', { name: 'Send to client' }).click();
     await expect(adminPage.getByText(msg)).toBeVisible();
 
     await clientPage.goto(`tasks/${taskId}`);
-    await clientPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await clientPage.getByRole('button', { name: 'Chat', exact: true }).click();
     await expect(clientPage.getByText(msg)).toBeVisible({ timeout: 15_000 });
     const shown = clientPage.locator('.rich-text img[data-lt-image][src^="blob:"]').first();
     await expect(shown).toBeVisible({ timeout: 15_000 });

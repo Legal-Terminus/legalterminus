@@ -2,10 +2,10 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { verifyToken, requireRole, denyReadOnlyRoles } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema, internalReminderSchema, messageCreateSchema } from '../schemas/task.schema.js';
+import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema, internalReminderSchema, messageCreateSchema, messageUpdateSchema } from '../schemas/task.schema.js';
 import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments, createPayment, patchPayment, deletePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep, postStepNote, listRecurringDue, duplicateTask } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument, setDocumentVisibility } from '../controllers/documents.controller.js';
-import { listMessages, createMessage, listMentionable } from '../controllers/messages.controller.js';
+import { listMessages, createMessage, updateMessage, deleteMessage, listMentionable } from '../controllers/messages.controller.js';
 import { listReminders, sendReminder, listInternalReminders, sendInternalReminder } from '../controllers/reminders.controller.js';
 import { postMatterPayNow } from '../controllers/orders.controller.js';
 import { matterPayNowSchema } from '../schemas/order.schema.js';
@@ -45,6 +45,10 @@ router.post('/:taskId/internal-reminders',   requireRole('admin', 'manager', 'te
 // matter ownership; a professional may read but never post.
 router.get('/:taskId/messages',              requireRole('admin', 'manager', 'team_member', 'client', 'professional'), listMessages);
 router.post('/:taskId/messages',             requireRole('admin', 'manager', 'team_member', 'client'), validate(messageCreateSchema), createMessage);
+// Chat: the author (or an admin) may edit or delete a message. Neither sends
+// an email; the controller checks authorship and matter access.
+router.patch('/:taskId/messages/:messageId',  requireRole('admin', 'manager', 'team_member', 'client'), validate(messageUpdateSchema), updateMessage);
+router.delete('/:taskId/messages/:messageId', requireRole('admin', 'manager', 'team_member', 'client'), deleteMessage);
 // #122 follow-up: images in step comments and Discussion messages. Upload is
 // staff + client (role guard BEFORE multer, so a refused caller never streams
 // 5 MB); the controller then checks the client can see THIS matter. Reading

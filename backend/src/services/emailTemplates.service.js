@@ -47,16 +47,16 @@ export const TEMPLATE_DEFS = {
       '— The Legal Terminus Team',
   },
   matter_message: {
-    label: 'Client — New discussion message',
+    label: 'Client — New chat message',
     audience: 'client',
-    description: 'Sent when a message is posted in a matter\'s discussion thread (#123).',
+    description: 'Sent when a message is posted in a matter\'s Chat (#123).',
     placeholders: ['clientName', 'organisation', 'serviceName', 'senderName', 'message'],
     subject: 'New message on your service',
     body:
       'Hello {{clientName}},\n\n' +
       'You have a new message from {{senderName}} regarding {{serviceName}}:\n\n' +
       '{{message}}\n\n' +
-      'You can reply from the Discussion tab of your matter in the Client Portal.\n\n' +
+      'You can reply from the Chat tab of your matter in the Client Portal.\n\n' +
       '— The Legal Terminus Team',
   },
   // #111 — MANUAL reminders a staff member sends from a step. Several variants so
@@ -133,20 +133,20 @@ export const TEMPLATE_DEFS = {
       'Open the matter in the portal to pick it up.',
   },
   matter_mention: {
-    label: 'Internal — You were mentioned in a discussion',
+    label: 'Internal — You were mentioned in a chat',
     audience: 'internal',
-    description: 'Sent to a team member @mentioned by email address in a matter discussion (#200).',
+    description: 'Sent to a team member @mentioned by email address in a matter\'s Chat (#200).',
     placeholders: ['recipientName', 'senderName', 'clientName', 'organisation', 'serviceName', 'message'],
     subject: '{{senderName}} mentioned you on {{clientName}} · {{serviceName}}',
     body: 'Hi {{recipientName}},\n\n' +
-      '{{senderName}} mentioned you in the discussion on {{clientName}} · {{serviceName}}:\n\n' +
+      '{{senderName}} mentioned you in the chat on {{clientName}} · {{serviceName}}:\n\n' +
       '{{message}}\n\n' +
       'Open the matter in the portal to reply.',
   },
   matter_message_team: {
     label: 'Internal — A client sent a message',
     audience: 'internal',
-    description: 'Sent to the matter\'s owner and the people on its current step (or the admins, if there are none) when a client posts in the discussion (#200).',
+    description: 'Sent to the matter\'s owner and the people on its current step (or the admins, if there are none) when a client posts in the Chat (#200).',
     placeholders: ['recipientName', 'clientName', 'organisation', 'serviceName', 'message'],
     subject: 'New message from {{clientName}} · {{serviceName}}',
     body: 'Hi {{recipientName}},\n\n' +

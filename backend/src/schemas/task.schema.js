@@ -218,3 +218,8 @@ export const messageCreateSchema = z.object({
   body: z.string().max(200000),
   clientVisible: z.boolean().optional(),
 }).strict();
+
+// Editing a chat message changes its text only — never who can see it.
+export const messageUpdateSchema = z.object({
+  body: z.string().max(200000),
+}).strict();
