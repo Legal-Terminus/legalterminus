@@ -9,6 +9,8 @@ import { listMessages, createMessage, updateMessage, deleteMessage, listMentiona
 import { listReminders, sendReminder, listInternalReminders, sendInternalReminder } from '../controllers/reminders.controller.js';
 import { postMatterPayNow } from '../controllers/orders.controller.js';
 import { matterPayNowSchema } from '../schemas/order.schema.js';
+import { listMatterRefunds, createMatterRefund, patchMatterRefund } from '../controllers/refunds.controller.js';
+import { refundCreateSchema, refundUpdateSchema } from '../schemas/refund.schema.js';
 import { getFormStep, saveFormStep } from '../controllers/forms.controller.js';
 import { uploadCommentImage, getCommentImage } from '../controllers/commentImages.controller.js';
 import { commentImageUpload } from '../middleware/commentImageUpload.middleware.js';
@@ -68,6 +70,13 @@ router.get('/:taskId/payments',              requireRole('admin', 'manager', 'cl
 router.post('/:taskId/payments',             requireRole('admin', 'manager'), validate(paymentCreateSchema), createPayment);
 router.patch('/:taskId/payments/:paymentId', requireRole('admin', 'manager'), validate(paymentUpdateSchema), patchPayment);
 router.delete('/:taskId/payments/:paymentId', requireRole('admin', 'manager'), deletePayment);
+// #240 refund log — admin/manager record and move a refund on BY HAND (no
+// Razorpay refund automation). The client READS their own matter's refunds
+// (the controller answers 404 for anyone else's); team members see no payment
+// data at all (#148), so they are refused here too.
+router.get('/:taskId/refunds',               requireRole('admin', 'manager', 'client'), listMatterRefunds);
+router.post('/:taskId/refunds',              requireRole('admin', 'manager'), validate(refundCreateSchema), createMatterRefund);
+router.patch('/:taskId/refunds/:refundId',   requireRole('admin', 'manager'), validate(refundUpdateSchema), patchMatterRefund);
 // #220 Pay Now — the CLIENT pays the amount due on their matter online. Creates
 // an order at the gateway, so it is rate-limited like POST /api/orders.
 const isE2E = String(process.env.EMAIL_DISABLED ?? '').toLowerCase() === 'true' || process.env.NODE_ENV === 'test';

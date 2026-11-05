@@ -1,4 +1,5 @@
 import { apiFetch } from './client';
+import type { RefundSummary } from './refunds';
 
 /**
  * E24 — orders placed and paid for on the website. Staff view.
@@ -57,6 +58,8 @@ export interface WebsiteOrder {
   createdAt: string;
   paidAt?: string;
   refundedAt?: string;
+  /** #240: rollup of refunds recorded against this order before approval. */
+  refundSummary?: RefundSummary;
 }
 
 export const WEBSITE_ORDERS_KEY = ['website-orders'] as const;
@@ -71,6 +74,36 @@ export const approveOrder = (orderId: string) =>
 /** Try again to open the matter of a paid order that has none. */
 export const retryOrderMatter = (orderId: string) =>
   apiFetch<WebsiteOrder>(`/api/orders/${orderId}/retry-matter`, { method: 'POST' });
+
+/* ─────────────── The client's own service requests (#242) ─────────────── */
+
+/**
+ * Where a client's website order stands. Payment and approval are separate:
+ * a paid order waits for the firm to approve it before any matter is opened.
+ */
+export type ServiceRequestStage = 'awaiting_approval' | 'under_review' | 'refund_in_progress' | 'refunded' | 'approved';
+
+export interface ServiceRequest {
+  orderId: string;
+  status: OrderStatus;
+  label: string;
+  planName: string;
+  amount: number;
+  amountPaid: number;
+  createdAt: string;
+  paidAt: string | null;
+  paymentReference: string | null;
+  /** Set once the matter is open. */
+  matterId: string | null;
+  stage: ServiceRequestStage;
+  refund: RefundSummary | null;
+}
+
+export const MY_SERVICE_REQUESTS_KEY = ['my-service-requests'] as const;
+
+/** The signed-in client's own paid website orders — whose comes from the sign-in, never the page. */
+export const getMyServiceRequests = () =>
+  apiFetch<{ data: ServiceRequest[] }>('/api/orders/mine');
 
 /** Ask the payment gateway what really happened to an order. */
 export const reconcileOrder = (orderId: string) =>

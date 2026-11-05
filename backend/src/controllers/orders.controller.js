@@ -9,7 +9,7 @@ import {
 } from '../services/paymentGateway.service.js';
 import {
   applyGatewayEvent, approveMatter, confirmReturn, createMatterBalanceOrder, createOrder, discardOrder, getOrder,
-  listOrders, markFailed, publicOrder, reconcile, retryMatter,
+  listMyOrders, listOrders, markFailed, publicOrder, reconcile, retryMatter,
 } from '../services/orders.service.js';
 
 const fail = (res, err, context) => {
@@ -64,6 +64,18 @@ export async function postMatterPayNow(req, res) {
     });
     res.status(201).json({ ...publicOrder(order), checkout: order.checkout });
   } catch (err) { fail(res, err, 'postMatterPayNow error'); }
+}
+
+/**
+ * GET /api/orders/mine (#242) — the signed-in client's own service requests
+ * from the website: where each stands (awaiting approval, approved, refunded)
+ * and its refunds. Whose orders comes from the token only; nothing is read from
+ * the request.
+ */
+export async function getMyOrders(req, res) {
+  try {
+    res.json({ data: await listMyOrders(req.user.uid) });
+  } catch (err) { fail(res, err, 'getMyOrders error'); }
 }
 
 /** GET /api/orders/:orderId — the customer's own order (staff may read any). */

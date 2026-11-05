@@ -203,6 +203,10 @@ The admin has access to a comprehensive reporting dashboard covering 13 distinct
 
 **Website payments (E24-S02 … S05)** — **Given** a signed-in customer chooses a plan on the website and pays, **Then** the amount charged is the plan's price in the catalogue plus GST at 18% (prices are exclusive of GST; the checkout shows the price, the GST and the total); the order is marked paid only on a verified confirmation from the gateway; the customer sees a confirmation with an order reference; and, where the service has a workflow, the order waits for a member of staff — an admin, a manager or a team member — to approve it under **Website Orders**, and on approval a matter is opened for the customer, fully paid and live. Payment alone opens no matter. Where the service has no workflow, the firm's admins are told to open one. A payment confirmed twice, or an order approved by two people at once, opens one matter. A refunded order cannot be approved. A payment for the wrong amount is held for review. Staff see every order under **Website Orders**.
 
+**Client dashboard before approval (#242)** — **Given** a client paid for a service on the website and the firm has not yet approved it, and the client has no open matter, **Then** their dashboard keeps its layout and four cards but shows **Payment status** (Paid / Under review / Refunded), **Matter status** (Pending approval / Cancelled), **Amount paid** and **Service requests**, with a **Pending approval** notice that the payment was received and the team is reviewing the request. It never shows ₹0 amount due or workflow progress in that state. When the order is approved its matter appears and the usual cards (Needs you, In progress, Amount due, Completed) return on the next refresh. Payment and approval stay separate statuses. A client who already has matters sees the usual cards plus a **Waiting for approval** list of their unapproved requests. A request cancelled and refunded before approval shows as **Refunded** (or Refund in progress) with the amount, status and reason, and the notice reads **Service cancelled**.
+
+**Refund log (#240)** — **Given** an admin or manager opens a matter → Payments → **Refund History** (or a website order not yet approved, under Website Orders → Details), **Then** they can record a refund: reason, refund amount, initiation date, transaction id and status (Initiated, Processing, Successfully Credited, Failed). The client name, matter and the payment amount are taken from the matter or order, not typed. The refund amount, with every refund that has not failed, may not exceed the amount paid. Status is changed **by hand** — Razorpay's refund API is not connected, so the refund itself is made in Razorpay or at the bank. Successfully Credited needs the transaction id; Credited and Failed are final (a retry is a new refund). A refund never changes the payment history: amount paid stays what was received and the log shows **Net received** beside it. A refund recorded on an unapproved order stops it being approved; when refunds credited reach the amount paid the order becomes Refunded. The client sees their own matter's refunds read-only (amount, reason, initiation date, transaction reference, status — not who recorded it), and a fifth **Refund** card on the dashboard (total refunded or on its way, with the latest status and reason) only when they have a refund. Team members do not see refunds. Another client's matter answers "not found".
+
 **Website prices (E24-S01)** — **Given** an admin opens Settings → Website Prices and changes a plan's price, **Then** the website shows the new price within a couple of minutes and a payment for that plan is charged that amount. A manager can change prices too (#241); no other role can view or change them. At least one plan of a service stays on sale.
 
 ---
@@ -576,6 +580,17 @@ machineSnapshot: { value, context }   // XState persisted snapshot
 // approval tracking:
 pendingApprovalFrom?: (uid of approver),
 rejectionReason?: string
+```
+
+### `tasks/{taskId}/refunds/{refundId}` and `paymentOrders/{orderId}/refunds/{refundId}` — refund log (#240)
+```
+refundAmount, paymentAmount (server: amount paid when recorded), reason,
+initiatedAt (YYYY-MM-DD), transactionId?, status (initiated|processing|credited|failed),
+clientUid, clientName, taskId?, orderId?, serviceName,
+recordedBy, recordedByName, recordedAt, updatedAt,
+statusHistory[{ status, at, by, byName }]
+// The parent (task or order) carries refundSummary:
+//   { count, activeTotal, creditedTotal, latest{ status, refundAmount, reason, initiatedAt, transactionId } }
 ```
 
 ### `taskSteps/{taskId}/steps/{stepId}`
