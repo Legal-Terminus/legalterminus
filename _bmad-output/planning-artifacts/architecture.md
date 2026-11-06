@@ -1657,6 +1657,35 @@ an account exists. Staff use `POST /api/portal/users/:uid/sign-in-link`
 enabled on the Firebase project; if it is off the backend falls back to a
 password link.
 
+## Sign-up: password rules and terms (#35)
+
+**One rule set.** `shared/auth/passwordRules.js` holds the rules for every
+password a person chooses for themselves: 8–128 characters with an uppercase
+letter, a lowercase letter, a number and a character that is not a letter, digit
+or space. The Portal imports it (sign-up, and the create/reset page from an
+emailed link). The website has a **twin**, `Frontend/src/utils/passwordRules.js`,
+because the website is built from `Frontend/` alone and its deploy rebuilds only
+when `Frontend/` changes; `backend/src/__tests__/passwordRules.test.js` fails if
+the two disagree.
+
+**Enforced in the forms, not by Firebase.** Accounts are created by the Firebase
+client SDK in the browser, so the server never sees a password. The forms refuse
+a weak one before calling Firebase. Firebase's own minimum is 6 until a password
+policy is switched on for the project (console → Authentication → Settings →
+Password policy). That is a setting on the sign-in project QA and production
+share, so it is the owner's decision; if it is switched on with these rules, the
+forms already turn its `auth/password-does-not-meet-requirements` into the same
+sentence. "Notify" mode leaves existing users able to sign in; "Require" stops
+anyone whose old password breaks the rules until they reset it.
+
+**Terms agreement.** The email sign-up forms need the box ticked; every Google
+button carries "By continuing with Google you agree to…". Either way the form
+sends `termsAccepted: true` to `POST /api/auth/register`, and the route stores
+`users.termsAcceptedAt` (ISO string, like `createdAt`) **the first time only**
+(`services/termsAcceptance.js`, pure). The route does not refuse a body without
+it: the same endpoint runs on every sign-in, and the Android build already
+submitted sends the old body.
+
 ## Client contact record and the group fee report (#205, #206)
 
 > **Superseded in part 2026-10-29 (#205, the firm's 6 Oct decision):** the Client

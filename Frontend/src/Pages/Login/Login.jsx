@@ -12,6 +12,7 @@ import {
   startGoogleSignIn, finishGoogleRedirect, takeGoogleRedirectError,
   googleSignInMessage, UNSUPPORTED_BROWSER_MESSAGE,
 } from "../../utils/googleSignIn";
+import { GoogleTermsNote } from "../../Components/PasswordChecklist/PasswordChecklist";
 import "./Login.css";
 import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
 
@@ -134,7 +135,8 @@ const Login = () => {
       }
       // Ensure the Firestore user doc exists/synced via the backend chokepoint
       // (ISO createdAt, normalized fields, role logic) instead of a direct write.
-      await registerUser(result.user, { provider: "google" });
+      // #35: the agreement line sits beside the Google button.
+      await registerUser(result.user, { provider: "google", termsAccepted: true });
       const db = getFirebaseDb();
       const userDoc = await getDoc(doc(db, "users", result.user.uid));
       const firestoreData = userDoc.exists() ? userDoc.data() : {};
@@ -174,6 +176,7 @@ const Login = () => {
               </svg>
               Continue with Google
             </button>
+            <GoogleTermsNote />
 
             <div className="divider">
               <span>OR</span>

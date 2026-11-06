@@ -3979,6 +3979,58 @@ tampered amount refused, one-time hold → payment → used, the report and CSV,
 
 ---
 
+## E-28 — Sign-up: Password Rules and Terms Agreement (#35) [Phase 2]
+
+**Goal**: Everyone who makes an account chooses a strong password, sees the rules while typing it,
+and agrees to the Terms & Conditions and Privacy Policy before the account exists, with the date
+they agreed recorded.
+
+**Why this is an epic.** #35 (raised 2026-06-01) touches every place a person chooses their own
+password: three sign-up forms (the website's Sign Up page, the website checkout's "Create your
+account", the Portal's sign-up, which the Android app also shows) and the Portal's
+create/reset-password page from an emailed link. It also adds a recorded agreement to the
+account. It fits no existing epic. Design in architecture.md, "Sign-up: password rules and terms
+(#35)".
+
+**Constraints**: the rules hold with no Firebase password policy configured (that is a console
+setting on the shared sign-in project, the owner's decision); the website keeps its own copy of
+the rules because it is built and deployed from `Frontend/` alone; `POST /api/auth/register`
+runs on every sign-in and the Android build in review sends the old body, so a missing agreement
+is never refused there.
+
+| Story | What | Status |
+|---|---|---|
+| E28-S01 | One rule set (`shared/auth/passwordRules.js`, twin `Frontend/src/utils/passwordRules.js`, a unit test keeps them equal): 8+ characters, upper, lower, number, special character | 🔄 In review |
+| E28-S02 | A live checklist under the password field on every form above; a weak password is refused in words before Firebase is called; Firebase's `auth/weak-password` and `auth/password-does-not-meet-requirements` become the same sentence | 🔄 In review |
+| E28-S03 | A required "I agree to the Terms & Conditions and Privacy Policy" box on the email sign-up forms; "By continuing with Google you agree…" beside every Google button | 🔄 In review |
+| E28-S04 | `termsAccepted: true` on `POST /api/auth/register` records `users.termsAcceptedAt` (ISO time) the first time; later sign-ins do not move it | 🔄 In review |
+
+**Acceptance Criteria**
+- The rules show under the password field and tick one by one as they are met; the state is told
+  by a tick and words, not colour alone.
+- Sign-up with a password missing any rule, or with the Terms box unticked, does not create an
+  account and says why.
+- The Terms and Privacy links open the website's policy pages in a new tab (in the app, on the
+  website's address).
+- A new account's profile carries the time its owner agreed.
+
+**Tests**: `backend/src/__tests__/passwordRules.test.js` (the rules, the website copy equal to the
+shared one, the agreement record); `Frontend/tests/e2e/signup.spec.js` (checklist, weak password
+and unticked box stop the form, links, the Google line on sign-up and sign-in, a 360px phone);
+`Portal/e2e/signup-rules.spec.ts` (the same on the Portal sign-up, the Google line on sign-in).
+Firebase's sign-up call is answered by the specs, so no account is created.
+
+**Open / not done**
+- Firebase still accepts a 6-character password from any client that skips these forms (an old
+  app build, a script). Switching on the project's password policy with the same rules (Firebase
+  console → Authentication → Settings → Password policy, "Notify" mode first so existing users
+  can still sign in) closes that; it is the owner's decision on the shared sign-in project.
+- Staff-created employee passwords (`employeeCreateSchema`, minimum 6) are set by staff, not by
+  the person, and were left as they are.
+- Accounts made before this change have no `termsAcceptedAt`.
+
+---
+
 ## APPENDIX A — Infrastructure & Build System (Updated 2026-06-01)
 
 ### NPM Run Commands Standardization

@@ -10,6 +10,7 @@ import {
   updateUserRole,
   normalizeUserProfile,
 } from "../services/userService.js";
+import { termsAcceptanceFields } from "../services/termsAcceptance.js";
 
 const router = express.Router();
 
@@ -71,7 +72,7 @@ router.get("/firebase-config", (req, res) => {
  * 3. Admin + Google merge → Link accounts, preserve admin role
  * 
  * Auth: Bearer <firebase_id_token>
- * Body: { fullName, mobile, businessName, state, provider: 'google' | 'email' }
+ * Body: { fullName, mobile, businessName, state, provider: 'google' | 'email', termsAccepted?: true }
  */
 router.post("/register", verifyToken, async (req, res) => {
   try {
@@ -90,6 +91,14 @@ router.post("/register", verifyToken, async (req, res) => {
     // - If new: default to 'client'
     const role = existingUser?.role || 'client';
 
+    // #35: the first agreement to the Terms & Privacy Policy is kept (see
+    // termsAcceptance.js). The user's own document, read only when they agreed.
+    let terms = {};
+    if (req.body?.termsAccepted === true) {
+      const own = await getDb().collection('users').doc(uid).get();
+      terms = termsAcceptanceFields(req.body, own.exists ? own.data() : null);
+    }
+
     // Prepare profile data
     const profileData = {
       name: String(fullName || '').slice(0, 200),
@@ -99,6 +108,7 @@ router.post("/register", verifyToken, async (req, res) => {
       businessName: String(businessName || '').slice(0, 200),
       state: String(state || '').slice(0, 100),
       ...(photoURL && provider === 'google' && { profilePictureUrl: photoURL }),
+      ...terms,
     };
 
     // Call unified upsertUser service

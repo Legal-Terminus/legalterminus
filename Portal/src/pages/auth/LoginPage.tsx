@@ -10,6 +10,7 @@ import { apiFetch, type ApiError } from '../../api/client';
 import { AlertCircle, Mail } from 'lucide-react';
 import { requestSignInLink, EMAIL_FOR_SIGN_IN_KEY } from '../../api/account';
 import { LTMark, LTLockup } from '../../components/common/LTLogo';
+import { GoogleTermsNote } from '../../components/auth/PasswordChecklist';
 
 /** Set just before leaving for Google, so the return is recognised (#213). */
 const GOOGLE_RETURN_KEY = 'lt.googleSignInReturning';
@@ -95,7 +96,8 @@ export default function LoginPage() {
       await apiFetch('/api/auth/register', {
         method: 'POST',
         headers: { Authorization: `Bearer ${idToken}` },
-        body: JSON.stringify({ fullName: user.displayName || user.email, provider: 'google' }),
+        // #35: the agreement line sits under the Google button.
+        body: JSON.stringify({ fullName: user.displayName || user.email, provider: 'google', termsAccepted: true }),
       });
     } catch (err) {
       // The server refuses accounts this deployment does not accept (QA takes only test accounts,
@@ -265,6 +267,7 @@ export default function LoginPage() {
             </svg>
             Continue with Google
           </button>
+          <GoogleTermsNote />
 
           <button
             type="button"
