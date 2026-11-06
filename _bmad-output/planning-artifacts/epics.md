@@ -2810,7 +2810,7 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 ---
 
-### E18-S08 — Trademark Reports on a shared worksheet engine (#210) [Phase 2] 🔄 In Progress
+### E18-S08 — Trademark Reports on a shared worksheet engine (#210) [Phase 2] ✅ Released in v1.6.0-lt.9
 
 **Priority**: P1 | **Complexity**: L | **Dependencies**: E18-S06
 
@@ -2831,7 +2831,7 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 ---
 
-### E18-S09 — Company Worksheets with KYC reminders (#217) [Phase 2] 🔄 In Progress
+### E18-S09 — Company Worksheets with KYC reminders (#217) [Phase 2] ✅ Released in v1.6.0-lt.9
 
 **Priority**: P1 | **Complexity**: M | **Dependencies**: E18-S08 (same engine)
 
@@ -3261,7 +3261,7 @@ if the customer's browser returns, and creates nothing in the portal.
 
 ---
 
-### E24-S00 — A parallel QA deployment [Phase 2] 🔄 In Progress
+### E24-S00 — A parallel QA deployment [Phase 2] ✅ Done — QA runs at https://legal-terminus-qa.web.app (deploy-qa on every merge to `main`)
 
 > **Decided 2026-10-03 (product owner): a TEMPORARY environment in the SAME project**, no
 > custom domain, no CI — deployed by hand with `scripts/deploy-qa.sh` from the `qa` branch.
@@ -3308,7 +3308,7 @@ payment integration cannot be developed against live customers.
 
 ---
 
-### E24-S01 — Prices come from the server [Phase 2] 🔄 In Progress
+### E24-S01 — Prices come from the server [Phase 2] ✅ Released in v1.6.0-lt.8
 
 > **Built on the `qa` branch (2026-10-03), deployed to QA only.**
 > - `shared/pricing/catalog.json` — 61 products, 195 plans — generated from the 62 pricing
@@ -3366,7 +3366,7 @@ payment integration cannot be developed against live customers.
 
 ---
 
-### E24-S02 — Pay with Razorpay [Phase 2] 🔄 In Progress — built against a SIMULATED gateway
+### E24-S02 — Pay with Razorpay [Phase 2] ✅ Released in v1.6.0-lt.13
 
 > **Built 2026-10-04, on QA only.** Razorpay keys are not available, so the gateway is simulated
 > (`paymentGateway.service.js`): it signs and verifies as Razorpay does and speaks its webhook
@@ -3881,7 +3881,7 @@ and the old CSS the switch was protecting; close #209; release by tag per `docs/
 
 ---
 
-## E-26 — Android App (Capacitor wrapper of the Portal) (#TBD) [Phase 2]
+## E-26 — Android App (Capacitor wrapper of the Portal) (#267) [Phase 2]
 
 **Goal**: The Portal runs as an Android app from the same code as the website, for the same
 four roles, installable from Google Play. The website must not change in any way.
@@ -3937,11 +3937,11 @@ never stops a client paying without it.
 
 | Story | What | Status |
 |---|---|---|
-| E27-S01 | Coupons and their rules: `coupons/{CODE}` (unique by construction), percent or fixed, general / services / minimum amount, one-time or a period of IST days; admin and manager create, edit, switch on/off, delete an unused one (`/api/coupons`, `COUPON_MANAGER_ROLES`) | 🔄 In review (PR open; reaches QA on merge) |
-| E27-S02 | Pricing with a code: the discount comes off before GST, GST re-worked per line; fixed amounts capped and split by price; under ₹1 refused; `POST /api/orders/quote`; `POST /api/orders` takes `couponCode` | 🔄 In review |
-| E27-S03 | One-time codes: held 30 minutes by the checkout that took them, used up by its payment inside `settlePaid`, then refused to everyone; a late payment is honoured and noted | 🔄 In review |
-| E27-S04 | Coupon & Discount report: each use (`couponRedemptions/{orderId}`) with its own figures, uses per coupon, IST date filter, CSV | 🔄 In review |
-| E27-S05 | Screens: Portal Settings → Coupons (list + full-page forms), Reports → Coupon & Discount, discount on Website Orders; website checkout "Have a coupon code?", the cart's note, the result page and the email | 🔄 In review |
+| E27-S01 | Coupons and their rules: `coupons/{CODE}` (unique by construction), percent or fixed, general / services / minimum amount, one-time or a period of IST days; admin and manager create, edit, switch on/off, delete an unused one (`/api/coupons`, `COUPON_MANAGER_ROLES`) | ✅ Released in v1.6.0-lt.19 |
+| E27-S02 | Pricing with a code: the discount comes off before GST, GST re-worked per line; fixed amounts capped and split by price; under ₹1 refused; `POST /api/orders/quote`; `POST /api/orders` takes `couponCode` | ✅ Released in v1.6.0-lt.19 |
+| E27-S03 | One-time codes: held 30 minutes by the checkout that took them, used up by its payment inside `settlePaid`, then refused to everyone; a late payment is honoured and noted | ✅ Released in v1.6.0-lt.19 |
+| E27-S04 | Coupon & Discount report: each use (`couponRedemptions/{orderId}`) with its own figures, uses per coupon, IST date filter, CSV | ✅ Released in v1.6.0-lt.19 |
+| E27-S05 | Screens: Portal Settings → Coupons (list + full-page forms), Reports → Coupon & Discount, discount on Website Orders; website checkout "Have a coupon code?", the cart's note, the result page and the email | ✅ Released in v1.6.0-lt.19 |
 
 **Acceptance Criteria**
 - Only admin and manager can create, edit, switch on or off and delete coupons, and read the
@@ -4390,7 +4390,7 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
-### Node.js 26 everywhere and the critical/high npm findings — #218 (2026-10-30) 🔄 On branch `chore/218-node-and-vulnerabilities`, not merged
+### Node.js 26 everywhere and the critical/high npm findings — #218 (2026-10-30) ✅ Released in v1.6.0-lt.9
 
 `npm audit` on 30 Oct reported 2 critical and 28 high findings across the four
 packages, and local development ran a different Node.js from production.
@@ -4486,7 +4486,7 @@ client-form fields and the Clients page download from `d87ae2b2` are untouched.
   (7). The old #205/#206 spec moved to `client-group-fees.spec.ts`, its Reports-link
   test now checks the Clients page download directly.
 
-### Images in step comments and the Discussion — #122 follow-up (2026-10-29) 🔄 On branch `feat/122-comment-images`
+### Images in step comments and the Discussion — #122 follow-up (2026-10-29) ✅ Released in v1.6.0-lt.9
 
 The firm reopened #122: screenshots must go into the step comment box and the
 Discussion, by paste or by an "Upload image" button. Inline base64 was rejected in
@@ -4568,7 +4568,7 @@ workload, exportable to Excel; a person's view exports their task list.
   away leaves the previous person's figures; elapsed time after a correction is the
   last round only; in the whole-team view "not started" is per person only.
 
-### Trademark Reports on a shared worksheet engine — #210 (2026-10-29) 🔄 In Progress
+### Trademark Reports on a shared worksheet engine — #210 (2026-10-29) ✅ Released in v1.6.0-lt.9
 
 On branch `feat/210-217-worksheets`, not yet on `main`. Story E18-S08.
 
@@ -4613,7 +4613,7 @@ On branch `feat/210-217-worksheets`, not yet on `main`. Story E18-S08.
   under the deny-all catch-all.
 - **Tests:** unit as above; `Portal/e2e/trademark-reports.spec.ts` (8, not yet run).
 
-### Company Worksheets with KYC reminders — #217 (2026-10-29) 🔄 In Progress
+### Company Worksheets with KYC reminders — #217 (2026-10-29) ✅ Released in v1.6.0-lt.9
 
 Same branch; story E18-S09. Thirteen sheets on the #210 engine, each its own book.
 
@@ -4671,7 +4671,7 @@ Same branch; story E18-S09. Thirteen sheets on the #210 engine, each its own boo
   team member; also a tile on the Reports hub.
 - **Tests:** unit (in the 29 above); `Portal/e2e/worksheets.spec.ts` (9, not yet run).
 
-### Website Theme C, round 3 — the firm's review of 13 Oct and answers of 22 Oct (#209) (2026-10-29) 🔄 On branch `feat/209-theme-c`, not merged
+### Website Theme C, round 3 — the firm's review of 13 Oct and answers of 22 Oct (#209) (2026-10-29) ✅ Released in v1.6.0-lt.9
 
 Part of E-25. Everything is behind `VITE_THEME_C` (QA only) except the footer typo.
 With the switch off, Home and Private Limited render as before (text and screenshots
@@ -4740,7 +4740,7 @@ found on this repo's production data.
 - **Not changed:** removing the step a matter is ON still leaves it there; a request
   for changes does not reset the step's due date.
 
-### Website payments — feedback from the firm's test (#212) (2026-10-13) 🔄 In Progress
+### Website payments — feedback from the firm's test (#212) (2026-10-13) ✅ Released in v1.6.0-lt.8
 
 On `main` (QA) only. Part of E-24; nothing here is in production.
 
@@ -4789,7 +4789,7 @@ On `main` (QA) only. Part of E-24; nothing here is in production.
   `pricing.service.test.js`.
 - **Still with the firm:** the product-to-service links, and the prices themselves.
 
-### Website enquiries go to their own inbox — #20 (2026-10-13) 🔄 On `main`, not in production
+### Website enquiries go to their own inbox — #20 (2026-10-13) ✅ Released in v1.6.0-lt.8
 
 The firm added `CONTACT_LEADS_EMAIL` in the Cloud Run console and it "kept getting
 removed". The production deploy passes `--set-env-vars`, which REPLACES the
@@ -6140,7 +6140,7 @@ Follow-ups raised after the earlier batches went to QA. Each shipped as its own 
 
 *Document generated by Winston (BMAD Architect Agent) — 2026-05-31; change log appended 2026-06-27.*
 
-### Website Theme C, round 4 — the firm accepts the alignment recommendation (#209) (2026-10-30) 🔄 On QA, awaiting the firm's approval
+### Website Theme C, round 4 — the firm accepts the alignment recommendation (#209) (2026-10-30) ✅ Released in v1.6.0-lt.10
 
 The firm replied "Apply recommendation", adding that Home now looks right, and asked
 for the Private Limited page and every Policies page to be fixed.
@@ -6159,14 +6159,14 @@ for the Private Limited page and every Policies page to be fixed.
   as the firm asked for one common bottom section. Live build untouched (Theme C only).
 - Tests: `Frontend/tests/e2e/theme-alignment.spec.js`; all-routes with the switch on.
 
-### Security: exact CORS allowlist (2026-10-31) 🔄 On QA, reaches production with the next release
+### Security: exact CORS allowlist (2026-10-31) ✅ Released in v1.6.0-lt.9
 
 Any site on `web.app` or `firebaseapp.com`, and lookalike domains, could make credentialed
 calls to the API. Ported Ambyflow's anchored allowlist by content. QA also allows
 `https://localhost` and `http://localhost:5173` for the Android build. Not user-visible.
 Tests: `backend/src/__tests__/corsOrigins.test.js`.
 
-### Team members: no button they cannot use, and a dashboard they can load (2026-10-31) 🔄 On QA, reaches production with the next release
+### Team members: no button they cannot use, and a dashboard they can load (2026-10-31) ✅ Released in v1.6.0-lt.9
 
 From the firm's QA sanity report that team members could not close steps. The rule is
 unchanged by decision: a team member completes a step only if they own the matter or
@@ -6180,12 +6180,12 @@ the step. The page offered the button anyway, and it failed with 403.
   neither it nor the matter. It stays with managers and admins until someone assigns it.
 - Tests: `Portal/e2e/team-step-access.spec.ts`, `Portal/e2e/dashboard-cockpits.spec.ts`.
 
-### Blog headline on one line (2026-11-01) 🔄 On QA, Theme C only
+### Blog headline on one line (2026-11-01) ✅ Released in v1.6.0-lt.10
 
 #209: "Discover Our Articles & News" now fits on one line at every width, sized to fit.
 Tests: `Frontend/tests/e2e/theme-alignment.spec.js`.
 
-### Pricing cards aligned like Private Limited on every page (2026-11-02) 🔄 On QA, Theme C only
+### Pricing cards aligned like Private Limited on every page (2026-11-02) ✅ Released in v1.6.0-lt.10
 
 #209, the firm on 2 Nov: "make the text alignment consistent with the Private Limited
 pricing section". 49 of the 55 service pages with pricing cards had the plan name,
@@ -6202,7 +6202,7 @@ differently and the round-3 centring named only Private Limited's.
 - Tests: `Frontend/tests/e2e/theme-alignment.spec.js` ("Pricing cards read the same
   on every page").
 
-### Supreme Plus on OPC and Trademark Registration (2026-11-02) 🔄 On QA
+### Supreme Plus on OPC and Trademark Registration (2026-11-02) ✅ Released in v1.6.0-lt.9
 
 #209, the firm on 2 Nov, with a picture of each table: a fourth plan, "Supreme Plus", on
 the OPC and Trademark Registration pages, as Private Limited has.
@@ -6397,7 +6397,7 @@ and confirming a shared message".
 - Tests: `Portal/e2e/pricing.spec.ts` (a manager saves a price through the API and the
   screen; other roles still 403).
 
-### Refund log; the client dashboard before approval (2026-11-05, #240, #242) 🔄 In review
+### Refund log; the client dashboard before approval (2026-11-05, #240, #242) ✅ Released in v1.6.0-lt.18
 
 **Refund log (#240).** Admins and managers record a refund under a matter's Payments →
 **Refund History** — reason, refund amount, initiation date, transaction id, status
@@ -6449,7 +6449,7 @@ Design in architecture.md, "Website orders and payments" → "Additional payment
 - Tests: `backend/src/__tests__/paymentRequests.test.js`,
   `Portal/e2e/payment-requests.spec.ts`.
 
-### Website cart: several services, one payment (2026-11-05, #244) 🔄 In review
+### Website cart: several services, one payment (2026-11-05, #244) ✅ Released in v1.6.0-lt.18
 
 The firm asked for an Add to Cart on the website: choose several services, review them, and
 pay for all of them in one checkout. Design in architecture.md, "Website orders and
@@ -6482,7 +6482,7 @@ payments" → "Cart".
   vite 7, so `npm ci` failed and so would the next website deploy. Back on 5 until vite 8
   is its own change.
 
-### Coupon codes at the website checkout (2026-11-06, #256, #257, #260) — E-27 🔄 In review
+### Coupon codes at the website checkout (2026-11-06, #256, #257, #260) — E-27 ✅ Released in v1.6.0-lt.19
 
 - Admins and managers create coupon codes under Settings → Coupons: a percentage or a fixed
   amount; for every service, for chosen services only, or for orders above an amount; usable
