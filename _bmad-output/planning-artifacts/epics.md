@@ -3521,6 +3521,48 @@ Every failure below must leave a record the firm can act on, and a truthful scre
 
 ---
 
+### E24-S07 — Trademark user type: "Proposed to be Used" or "Prior User" (#221) [Phase 2] 🔄 In Progress — PR open, not yet on QA
+
+> **Built 2026-11-06 on `feat/221-trademark-user-type`.** A product in the price catalogue may
+> now ask ONE required question whose answer adds a surcharge to every plan (`choice` on the
+> product; design in architecture.md, "Website orders and payments" → "A required question
+> that changes the price"). Trademark Registration (`trademark-application`, both pages that
+> sell it) is the only product that asks one: **User type — Proposed to be Used (₹0) / Prior
+> User (₹2,500 by default)**, on all four plans (Elemental, Enriched, Supreme, Supreme Plus).
+> - Website: the question sits above the cards; nothing is chosen at first, Buy Now asks for an
+>   answer, and every card's price changes at once ("Includes ₹2,500 for Prior User"). The
+>   checkout shows "User type: Prior User" and the final price with GST. The cart keeps the
+>   answer, shows it as a dropdown that can be changed, and blocks paying until a line that
+>   needs one has one.
+> - Server: the page sends `optionId` with the plan (one plan or a cart line), never a price.
+>   `findPlan` adds the answer's surcharge before GST and before any coupon; a missing or
+>   unknown answer is a 400 in words. The order records `optionId/optionName/optionLabel`,
+>   `basePrice`, `surcharge`, and `planName` becomes "Supreme (Prior User)".
+> - Portal: Website Prices shows each answer's extra charge, editable by admins and managers.
+>   Website Orders shows the user type, the plan price and the extra. The matter opened on
+>   approval carries it in its payment note and in `websiteOrderPlanName` / `websiteOrderOption`.
+> - Tests: `backend/src/__tests__/productChoice.test.js` (both user types, unknown/missing,
+>   cart line, coupon, edit, seed merge); `Portal/e2e/pricing.spec.ts` "#221"; the order and
+>   coupon specs skip products that ask a question; `Frontend/tests/e2e/trademark-user-type.spec.js`.
+>
+> **Open for the firm:** the Elemental card's badge still reads "★ PROPOSED-TO-BE-USED", which
+> now reads oddly beside a "Prior User" choice — left unchanged pending the firm's wording.
+> The hints under each answer ("You have not started using this trademark yet." / "You are
+> already using this trademark for your goods or services.") are ours, for the firm to confirm.
+
+**Priority**: P1 | **Complexity**: M | **Dependencies**: E24-S01, #244 (cart), #256 (coupons)
+
+**Acceptance Criteria**:
+- A required choice above the trademark plans; Buy Now / Add to Cart with nothing chosen asks the
+  customer to choose (no silent default).
+- Prior User adds the firm's surcharge (default ₹2,500, editable under Website Prices) to every
+  plan; prices update on change and the final price is shown before paying.
+- The amount is computed on the server from the plan id and the answer id, for one plan and for a
+  cart line, with coupons and GST on the surcharged amount; an unknown answer is a 400.
+- Staff see the user type on the order and on the matter it opens.
+
+---
+
 **Not in this epic**: paying a matter's outstanding balance from inside the portal; refunds issued
 from the portal; guest checkout (the customer signs in before paying, as the modal requires today).
 
@@ -6553,3 +6595,17 @@ payments" → "Cart".
   `auth-rbac.spec.ts`; `Frontend/tests/e2e/cart.spec.js`.
 - Open: no browser test of the website checkout's coupon field (needs a signed-in website
   session); a payment held for review does not use up its code.
+
+### Trademark user type: Proposed to be Used or Prior User (2026-11-06, #221) — E24-S07 🔄 PR open
+
+- The trademark page asks "Proposed to be Used" or "Prior User" above its four plans. Nothing is
+  chosen at first and Buy Now asks for an answer; Prior User adds ₹2,500 (the firm can change it
+  under Website Prices) to every plan at once, before GST.
+- The server adds the surcharge from the answer's id; the browser never sends a price. Works for
+  Buy Now, the cart (which keeps and shows the answer) and coupons. Website Orders and the matter
+  opened on approval show the user type.
+- Catalogue: a generic one-question `choice` on a product (`pricing.service.js`); the question is
+  in `scripts/build-pricing-catalog.py` (`CHOICES`) and `shared/pricing/catalog.json`. Stored
+  products without it are read with the seed's question, so no seed run is needed to deploy;
+  `npm run db:seed:pricing` stores it, keeping any surcharge the firm set.
+- Open: the Elemental badge "★ PROPOSED-TO-BE-USED" and the answer hints need the firm's wording.

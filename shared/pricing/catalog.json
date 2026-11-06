@@ -1897,7 +1897,22 @@
       "components": [
         "Frontend/src/Components/TmarkPlans/TmarkPlans.jsx",
         "Frontend/src/Components/TrademarkPlans/TrademarkPlans.jsx"
-      ]
+      ],
+      "choice": {
+        "label": "User type",
+        "options": [
+          {
+            "id": "proposed",
+            "name": "Proposed to be Used",
+            "surcharge": 0
+          },
+          {
+            "id": "prior-user",
+            "name": "Prior User",
+            "surcharge": 2500
+          }
+        ]
+      }
     },
     "trademark-exam-reply": {
       "code": "SVC-055",

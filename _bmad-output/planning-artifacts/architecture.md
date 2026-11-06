@@ -1922,6 +1922,40 @@ a product is keyed by the `source` its component passes to the checkout, and
 - At least one plan per product must stay on sale: a product with none drops out
   of the public catalogue and the website falls back to `DEFAULT_PLANS`.
 
+### A required question that changes the price (E24-S07, #221, 2026-11-06)
+
+A product may carry `choice: { label, options: [{ id, name, surcharge }] }` — ONE
+required question whose answer adds `surcharge` (whole rupees, before GST) to
+every plan. Only `trademark-application` asks one today ("User type": Proposed
+to be Used ₹0 / Prior User ₹2,500). Deliberately one question, not a list of
+modifiers: one consumer, and a second question would need its own UI anyway.
+
+- **Ownership.** The question, answer ids and names are the WEBSITE's: declared in
+  `CHOICES` in `scripts/build-pricing-catalog.py`, written into the seed. Each
+  answer's `surcharge` is the FIRM's: edited on Website Prices
+  (`PUT /api/pricing/:key` `{ choice: { options: [{ id, surcharge }] } }` — the
+  label and names cannot be edited) and kept by `mergeSeed`/`mergeChoice`.
+- **No seed run needed to deploy.** `loadCatalog` gives a stored product with no
+  `choice` the seed's (`withSeedChoice`), so the server knows the question the
+  moment the code ships; the first surcharge edit (or `db:seed:pricing`) stores it.
+- **Price.** The request carries `optionId` beside `planId` (top level for one
+  plan, on each `items[]` line for a cart; `.strict()` refuses a surcharge).
+  `findPlan(products, key, planId, optionId)` adds the surcharge, so `price` is
+  plan + surcharge; GST and any coupon then work on that, unchanged. A missing
+  answer (`OPTION_REQUIRED`), an unknown one, or an answer to a product that asks
+  nothing (`OPTION_UNKNOWN`) is a 400 with the customer's message.
+- **Record.** The order (or cart line) adds `optionId, optionName, optionLabel,
+  basePrice, surcharge`, and `planName` names the answer ("Supreme (Prior User)"),
+  so every screen, email, quote and coupon redemption that shows the plan shows
+  it. The matter opened on approval gets it in `paymentDescription` and in
+  `websiteOrderPlanName` / `websiteOrderOption { label, id, name }`.
+- **Website.** `GET /api/public/pricing` includes `choice`. `usePlanChoice`
+  (`Frontend/src/Components/PlanChoice/`) holds the answer (none at first),
+  reprices the cards (cut price moves with it), and makes Buy Now ask first.
+  The cart stores the answer id (and the PLAN price), reprices from the
+  catalogue, offers the answer as a dropdown, and blocks paying while a line
+  that needs an answer has none.
+
 ## Website orders and payments (E24-S02 … S05)
 
 - **Gateway behind an interface** (`paymentGateway.service.js`): `razorpay`

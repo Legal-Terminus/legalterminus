@@ -85,6 +85,8 @@
 .cart-plan select:focus { outline: none; }
 .cart-plan-text { padding-right: 14px; font-weight: 600; font-size: 16px; }
 .cart-line-warn { margin: 10px 0 0; font-size: 14px; color: #92400e; }
+/* #221: the answer to the product's question, on its own row under the plan. */
+.cart-option { display: flex; width: fit-content; margin-top: 8px; }
 
 .cart-line-price { grid-area: price; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
 .cart-line-was { font-size: 14px; color: #8a948e; }

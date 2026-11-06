@@ -33,7 +33,7 @@ export function getPaymentConfig(_req, res) {
  */
 export async function postOrder(req, res) {
   try {
-    const { productKey, planId, items, couponCode, customer, simulate } = req.body;
+    const { productKey, planId, optionId, items, couponCode, customer, simulate } = req.body;
     const profile = await getDb().collection('users').doc(req.user.uid).get();
     const p = profile.exists ? profile.data() : {};
     const order = await createOrder({
@@ -44,7 +44,7 @@ export async function postOrder(req, res) {
         email: req.user.email || p.email || '',
         phone: customer?.phone || p.phone || p.mobile || '',
       },
-      productKey, planId, items, couponCode, simulate,
+      productKey, planId, optionId, items, couponCode, simulate,
     });
     res.status(201).json({ ...publicOrder(order), checkout: order.checkout });
   } catch (err) { fail(res, err, 'postOrder error'); }
@@ -58,8 +58,8 @@ export async function postOrder(req, res) {
  */
 export async function postQuote(req, res) {
   try {
-    const { productKey, planId, items, couponCode } = req.body;
-    res.json(await quoteOrder({ uid: req.user.uid, productKey, planId, items, couponCode }));
+    const { productKey, planId, optionId, items, couponCode } = req.body;
+    res.json(await quoteOrder({ uid: req.user.uid, productKey, planId, optionId, items, couponCode }));
   } catch (err) { fail(res, err, 'postQuote error'); }
 }
 

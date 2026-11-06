@@ -8,8 +8,15 @@ const id = z.string().trim().min(1).max(100);
  * amount: the server looks the price up (E24-S01). `.strict()` so an `amount`
  * sent by an old or tampered page is refused, not silently ignored.
  */
-/** #244: one line of a cart — a plan, never a price. */
-const orderItem = z.object({ productKey: id, planId: id }).strict();
+/**
+ * #221: the answer to a product's question ("prior-user") — an id, never a
+ * surcharge. Whether it is required, and whether it exists, is the catalogue's
+ * call (`findPlan`), answered with a 400 in words.
+ */
+const optionId = z.string().trim().min(1).max(60).optional();
+
+/** #244: one line of a cart — a plan, never a price. #221: and its answer, if asked. */
+const orderItem = z.object({ productKey: id, planId: id, optionId }).strict();
 
 /**
  * #256: a coupon code, as typed. Only its length is checked here: a code that
@@ -20,7 +27,7 @@ const couponCode = z.string().trim().max(40).optional();
 
 /** Either ONE plan or a cart — never both, never neither. */
 const onePlanOrCart = (v, ctx) => {
-  const single = v.productKey !== undefined || v.planId !== undefined;
+  const single = v.productKey !== undefined || v.planId !== undefined || v.optionId !== undefined;
   if (v.items && single) {
     ctx.addIssue({ code: 'custom', message: 'Send either one plan or a list of items, not both.', path: ['items'] });
   } else if (!v.items && !(v.productKey && v.planId)) {
@@ -39,6 +46,7 @@ const onePlanOrCart = (v, ctx) => {
 export const createOrderSchema = z.object({
   productKey: id.optional(),
   planId: id.optional(),
+  optionId,
   items: z.array(orderItem).min(1).max(MAX_ORDER_ITEMS).optional(),
   couponCode,
   customer: z.object({
@@ -58,6 +66,7 @@ export const createOrderSchema = z.object({
 export const quoteOrderSchema = z.object({
   productKey: id.optional(),
   planId: id.optional(),
+  optionId,
   items: z.array(orderItem).min(1).max(MAX_ORDER_ITEMS).optional(),
   couponCode,
 }).strict().superRefine(onePlanOrCart);

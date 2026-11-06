@@ -36,15 +36,20 @@ async function call(path, { method = "GET", body } = {}) {
 /** Is online payment switched on for this site, and through which gateway? */
 export const getPaymentConfig = () => call("/api/orders/config").catch(() => ({ enabled: false, gateway: null }));
 
-/** #256: the plans being bought, as the server takes them — never a price. */
-const planBody = (lines) => (Array.isArray(lines)
-  ? { items: lines.map(({ productKey, planId }) => ({ productKey, planId })) }
-  : { productKey: lines.productKey, planId: lines.planId });
+/**
+ * #256: the plans being bought, as the server takes them — never a price.
+ * #221: with the answer to a product's question (`optionId`), where it asks one;
+ * the server adds that answer's surcharge itself.
+ */
+const withOption = (line) => ({
+  productKey: line.productKey, planId: line.planId, ...(line.optionId ? { optionId: line.optionId } : {}),
+});
+const planBody = (lines) => (Array.isArray(lines) ? { items: lines.map(withOption) } : withOption(lines));
 
-export const startOrder = (productKey, planId, customer, couponCode) =>
+export const startOrder = (productKey, planId, customer, couponCode, optionId) =>
   call("/api/orders", {
     method: "POST",
-    body: { productKey, planId, ...(couponCode ? { couponCode } : {}), ...(customer ? { customer } : {}) },
+    body: { ...withOption({ productKey, planId, optionId }), ...(couponCode ? { couponCode } : {}), ...(customer ? { customer } : {}) },
   });
 
 /**

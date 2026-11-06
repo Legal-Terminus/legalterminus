@@ -45,10 +45,12 @@ export const isMultiItem = (o) => Array.isArray(o?.items) && o.items.length > 0;
  * one-plan request or a list. Throws (400) on an empty, oversized or
  * repeated list — the schema refuses these too; this is the service's own guard.
  */
-export function requestedItems({ productKey, planId, items } = {}) {
+export function requestedItems({ productKey, planId, optionId, items } = {}) {
+  // #221: a line may carry the answer to its product's question; the catalogue checks it.
+  const withOption = (l, o) => (o ? { ...l, optionId: o } : l);
   const list = Array.isArray(items) && items.length
-    ? items.map((i) => ({ productKey: i.productKey, planId: i.planId }))
-    : (productKey && planId ? [{ productKey, planId }] : []);
+    ? items.map((i) => withOption({ productKey: i.productKey, planId: i.planId }, i.optionId))
+    : (productKey && planId ? [withOption({ productKey, planId }, optionId)] : []);
   if (!list.length) throw httpError(400, 'Choose a service to buy.', 'NO_ITEMS');
   if (list.length > MAX_ORDER_ITEMS) {
     throw httpError(400, `An order can hold at most ${MAX_ORDER_ITEMS} services. Please pay for the rest separately.`, 'TOO_MANY_ITEMS');
@@ -85,6 +87,11 @@ export function priceOrder(plans, discount = null) {
       productKey: p.productKey, productCode: p.productCode ?? '', planId: p.planId,
       label: p.label, planName: p.planName, serviceKey: p.serviceKey ?? null,
       price: p.price, gst: p.gst, gstPercent: p.gstPercent, amount: p.amount,
+      // #221: the answer and the surcharge it added — `price` already includes it.
+      ...(p.optionId ? {
+        optionId: p.optionId, optionName: p.optionName, optionLabel: p.optionLabel,
+        basePrice: p.basePrice, surcharge: p.surcharge,
+      } : {}),
     };
     if (!discount) return base;
     const off = discount.perLine[i] ?? 0;
@@ -157,6 +164,7 @@ export function publicItems(o) {
   if (!isMultiItem(o)) return {};
   const items = o.items.map((it) => ({
     label: it.label, planName: it.planName, price: it.price, gst: it.gst ?? 0, amount: it.amount,
+    ...(it.optionId ? { optionLabel: it.optionLabel, optionName: it.optionName } : {}), // #221
     // #256: a line a coupon reduced shows what it cost before, and by how much.
     ...(it.discount ? { listPrice: it.listPrice, discount: it.discount } : {}),
     matterId: it.matter?.state === 'created' ? (it.matter.taskId ?? null) : null,

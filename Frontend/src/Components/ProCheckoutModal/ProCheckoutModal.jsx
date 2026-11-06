@@ -120,8 +120,12 @@ function failureKeyFor(err) {
  * One checkout for one plan (`plan` + `source`, from a pricing card) or, #244,
  * for the whole website cart (`cartLines`, from the cart page). Either way the
  * page sends only plans; the server prices the order.
+ *
+ * #221: `option` is the answer to the product's question ("Prior User"), when
+ * it asks one — `{ id, name, label, surcharge }`. `plan.price` then already
+ * includes the surcharge (for display); the page sends only `option.id`.
  */
-const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null }) => {
+const ProCheckoutModal = ({ plan, option = null, onClose, source = 'unknown', cartLines = null }) => {
   const isCart = Array.isArray(cartLines) && cartLines.length > 0;
   const [step, setStep] = useState("order-summary");
   // #244: "Add to Cart" from a plan's summary — what happened, to say so.
@@ -223,16 +227,17 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
   // server's (`order.amount`), worked out from the same price and rate.
   // #244: the lines shown — the cart's, or this one plan. Each line's GST is
   // the same sum the server does; the order total is their sum.
+  // #221: a line names the answer to its question, so the customer sees what they chose.
   const lines = isCart
-    ? cartLines.map((l) => ({ key: l.productKey, name: `${l.label} — ${l.planName}`, price: l.price, ...withGst(l.price) }))
-    : [{ key: source, name: `${plan.name} Plan`, price: plan.price, ...withGst(plan.price) }];
+    ? cartLines.map((l) => ({ key: l.productKey, name: `${l.label} — ${l.planName}${l.optionName ? ` (${l.optionName})` : ""}`, price: l.price, ...withGst(l.price) }))
+    : [{ key: source, name: `${plan.name} Plan${option ? ` (${option.name})` : ""}`, price: plan.price, ...withGst(plan.price) }];
   const sum = (k) => Math.round(lines.reduce((s, l) => s + l[k], 0) * 100) / 100;
   const gst = sum("gst");
   const total = sum("total");
   const { gstPercent } = lines[0];
 
   // #256: what is being bought, as the server prices it — the plans, never a price.
-  const wanted = isCart ? cartLines : { productKey: source, planId: plan.id };
+  const wanted = isCart ? cartLines : { productKey: source, planId: plan.id, optionId: option?.id };
 
   const applyCoupon = async () => {
     const code = couponInput.trim();
@@ -258,12 +263,16 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
   const handleAddToCart = async () => {
     const catalog = await loadPricing();
     const result = addToCart({
-      productKey: source, planId: plan.id, planName: plan.name, price: plan.price,
+      productKey: source, planId: plan.id, planName: plan.name,
       label: catalog?.[source]?.label || getServiceDisplayName(source),
+      // #221: the cart keeps the answer and the PLAN's own price; the surcharge is
+      // worked out again there, and by the server.
+      price: plan.basePrice ?? plan.price,
+      ...(option ? { optionId: option.id, optionName: option.name, optionSurcharge: option.surcharge } : {}),
     });
     setCartNote({
       added: "Added to your cart.",
-      swapped: `Your cart now has the ${plan.name} plan for this service.`,
+      swapped: `Your cart now has the ${plan.name} plan${option ? ` (${option.name})` : ""} for this service.`,
       already: "This plan is already in your cart.",
       full: "Your cart is full. Pay for it first, or remove a service.",
     }[result]);
@@ -465,7 +474,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
       const couponCode = quote?.coupon?.code;
       const created = isCart
         ? await startCartOrder(cartLines, customer, couponCode)
-        : await startOrder(source, plan.id, customer, couponCode);
+        : await startOrder(source, plan.id, customer, couponCode, option?.id);
       setOrder(created);
 
       if (created.checkout?.gateway === 'simulated') {
@@ -589,6 +598,13 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
               <div className="pco-plan-gift-icon">🎁</div>
               <div>
                 <div className="pco-plan-name-tag">{plan.name} Plan</div>
+                {/* #221: the answer chosen above the plans, and what it added. */}
+                {option && (
+                  <div className="pco-plan-option-tag">
+                    {option.label}: <strong>{option.name}</strong>
+                    {option.surcharge > 0 && <> · includes {inr(option.surcharge)}</>}
+                  </div>
+                )}
                 <div className="pco-plan-price-tag">₹{plan.price.toLocaleString("en-IN")}</div>
               </div>
             </div>

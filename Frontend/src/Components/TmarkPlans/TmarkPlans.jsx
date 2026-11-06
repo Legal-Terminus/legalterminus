@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import "./TmarkPlans.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
-import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
+import { usePlans, inr, PAYMENTS_ENABLED } from "../../utils/pricing";
+import PlanChoice from "../PlanChoice/PlanChoice";
+import { usePlanChoice } from "../PlanChoice/usePlanChoice";
+import { TRADEMARK_CHOICE, TRADEMARK_CHOICE_HINTS } from "../TmarkPlans/trademarkChoice";
 
 const DEFAULT_PLANS = [
   {
@@ -59,7 +62,12 @@ const DEFAULT_PLANS = [
 
 const TmarkPlans = () => {
   // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
-  const PLANS = usePlans("trademark-application", DEFAULT_PLANS);
+  const LIVE_PLANS = usePlans("trademark-application", DEFAULT_PLANS);
+  // #221: "Proposed to be Used" / "Prior User", asked above the cards. The cards
+  // show the plan price plus the answer's surcharge; the server charges it.
+  const choiceRef = useRef(null);
+  const pc = usePlanChoice("trademark-application", TRADEMARK_CHOICE, choiceRef);
+  const PLANS = pc.priced(LIVE_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
   // Consultation" button below opens the consultation popup instead.
@@ -77,6 +85,16 @@ const TmarkPlans = () => {
             </p>
           </header>
 
+          <PlanChoice
+            ref={choiceRef}
+            choice={pc.choice}
+            value={pc.optionId}
+            onChange={pc.choose}
+            hints={TRADEMARK_CHOICE_HINTS}
+            error={pc.error}
+            idPrefix="tm-user-type"
+          />
+
           <div className="opcpricing-cards tmark-cards-center">
             {PLANS.map((plan) => (
               <article
@@ -93,6 +111,9 @@ const TmarkPlans = () => {
                     <div className="opcplan-name">{plan.name}</div>
                     {plan.oldPrice ? <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div> : null}
                     <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+                    {pc.surcharge > 0 && (
+                      <div className="plan-choice-card-note">Includes {inr(pc.surcharge)} for {pc.option.name}</div>
+                    )}
                     <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
@@ -111,7 +132,11 @@ const TmarkPlans = () => {
                 <div className="opcplan-footer">
                   <button
                     className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
-                    onClick={() => setActivePlan(plan)}
+                    onClick={() => {
+                      // #221: no answer yet → ask for one; never pick a default for the customer.
+                      const { ok, option } = pc.requireChoice();
+                      if (ok) setActivePlan({ plan, option });
+                    }}
                   >
                     Buy Now
                   </button>
@@ -136,7 +161,7 @@ const TmarkPlans = () => {
       </section>
 
       {activePlan && (
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="trademark-application" />
+        <CheckoutModal plan={activePlan.plan} option={activePlan.option} onClose={() => setActivePlan(null)} source="trademark-application" />
       )}
 
       <ConsultationModal
