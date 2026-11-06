@@ -61,8 +61,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: qa
     # One QA deploy at a time; a newer push supersedes one still waiting.
+    # Renamed from `deploy-qa` on 2026-11-06: a run GitHub left stuck in its queue
+    # during an Actions incident (run 42067527953) held that group and could not
+    # be cancelled, so every later QA deploy waited behind it.
     concurrency:
-      group: deploy-qa
+      group: deploy-qa-2
       cancel-in-progress: false
 
     steps:
