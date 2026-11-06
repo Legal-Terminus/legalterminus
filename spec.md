@@ -31,7 +31,7 @@ Workflows are modelled as **XState state machines**. Each workflow service (Comp
 - **Workflow engine**: XState v5 (state machines) — frontend and backend share the same machine config
 - **Backend**: Node.js/Express (ES Modules), Firebase Admin SDK — `backend/`
 - **Database**: Firestore (single source of truth); Firebase Storage for documents
-- **Auth**: Firebase Authentication; role stored in Firestore `/users/{uid}` document. **Auth methods**: Email/password login, Google Sign-In (OAuth), client self-signup (email/password), password reset via email link
+- **Auth**: Firebase Authentication; role stored in Firestore `/users/{uid}` document. **Auth methods**: Email/password login, Google Sign-In (OAuth), client self-signup (email/password; the password must have 8+ characters with an uppercase letter, a lowercase letter, a number and a special character, shown as a checklist, and the Terms & Conditions and Privacy Policy must be agreed, recorded as `users.termsAcceptedAt` — #35), password reset via email link (same password rules)
 - **Existing public website**: `Frontend/` — unchanged; marketing, blog, Razorpay payments
 
 ### Scope

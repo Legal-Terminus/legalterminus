@@ -22,7 +22,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 /**
  * @param {import('firebase/auth').User} user  the signed-in Firebase user
  * @param {{ provider?: 'google'|'email', fullName?: string, mobile?: string,
- *           businessName?: string, state?: string }} [profile]
+ *           businessName?: string, state?: string, termsAccepted?: boolean }} [profile]
  * @returns {Promise<object|null>} the backend user payload, or null on failure
  */
 export async function registerUser(user, profile = {}) {
@@ -43,6 +43,8 @@ export async function registerUser(user, profile = {}) {
         mobile: profile.mobile ?? "",
         businessName: profile.businessName ?? "",
         state: profile.state ?? "",
+        // #35: sent only where the person agreed to the Terms & Privacy Policy.
+        ...(profile.termsAccepted === true && { termsAccepted: true }),
       }),
     });
 

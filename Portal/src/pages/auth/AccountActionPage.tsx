@@ -13,6 +13,8 @@ import { LTMark } from '../../components/common/LTLogo';
 import { useAuthStore } from '../../store/authStore';
 import { EMAIL_FOR_SIGN_IN_KEY } from '../../api/account';
 import { apiFetch } from '../../api/client';
+import PasswordChecklist from '../../components/auth/PasswordChecklist';
+import { isStrongPassword, PASSWORD_RULES_MESSAGE } from '@shared/auth/passwordRules.js';
 
 /**
  * #203 — where every emailed account link lands: "create your password",
@@ -29,8 +31,6 @@ import { apiFetch } from '../../api/client';
  * Firebase's custom action handler, so the Firebase console's "action URL" can
  * point here too.
  */
-
-const MIN_PASSWORD = 8;
 
 /**
  * The same post-sign-in call LoginPage makes, so every way in leaves the
@@ -73,7 +73,7 @@ function friendly(err: unknown, mode: string): string {
     return 'That email address does not match the one this link was sent to.';
   }
   if (code === 'auth/user-disabled') return 'This account has been switched off. Contact your firm.';
-  if (code === 'auth/weak-password') return `Choose a longer password — at least ${MIN_PASSWORD} characters.`;
+  if (code === 'auth/weak-password' || code === 'auth/password-does-not-meet-requirements') return PASSWORD_RULES_MESSAGE;
   if (code === 'auth/network-request-failed') return 'No connection. Check your internet and try again.';
   return 'Something went wrong with this link. Ask for a new one from the sign-in page.';
 }
@@ -183,8 +183,9 @@ export default function AccountActionPage() {
     e.preventDefault();
     if (phase.kind !== 'password') return;
     setFormError('');
-    if (password.length < MIN_PASSWORD) {
-      setFormError(`Use at least ${MIN_PASSWORD} characters.`);
+    // #35: the same rules as sign-up (shared/auth/passwordRules.js).
+    if (!isStrongPassword(password)) {
+      setFormError(PASSWORD_RULES_MESSAGE);
       return;
     }
     if (password !== confirm) {
@@ -200,7 +201,7 @@ export default function AccountActionPage() {
       setPhase({ kind: 'done' });
     } catch (err) {
       const code = (err as { code?: string })?.code;
-      if (code === 'auth/weak-password') {
+      if (code === 'auth/weak-password' || code === 'auth/password-does-not-meet-requirements') {
         setFormError(friendly(err, mode));
         setPhase({ kind: 'password', email: address });
         return;
@@ -262,6 +263,7 @@ export default function AccountActionPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="input-field w-full pr-12"
+                    aria-describedby="password-rules"
                     autoFocus
                   />
                   <button
@@ -273,7 +275,7 @@ export default function AccountActionPage() {
                     {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-xs text-ink-muted mt-1">At least {MIN_PASSWORD} characters.</p>
+                <PasswordChecklist password={password} id="password-rules" />
               </div>
               <div>
                 <label htmlFor="confirm-password" className="block text-sm font-medium text-ink mb-1">Confirm password</label>

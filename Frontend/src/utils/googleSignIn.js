@@ -125,7 +125,9 @@ export async function startGoogleSignIn(auth = getFirebaseAuth()) {
  * through the backend, then cache the profile the site reads.
  */
 export async function syncGoogleUser(user) {
-  await registerUser(user, { provider: "google", fullName: user.displayName || "" });
+  // #35: every Google button on the site (sign-in, sign-up, checkout) has the
+  // "By continuing with Google you agree…" line beside it.
+  await registerUser(user, { provider: "google", fullName: user.displayName || "", termsAccepted: true });
   let data = {};
   try {
     const snap = await getDoc(doc(getFirebaseDb(), "users", user.uid));

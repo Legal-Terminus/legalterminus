@@ -15,6 +15,8 @@ import { addToCart, clearCart } from "../../utils/cart.js";
 import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
 import { withGst, inr, loadPricing } from "../../utils/pricing.js";
 import { registerUser } from "../../utils/registerUser.js";
+import { isStrongPassword, PASSWORD_RULES_MESSAGE } from "../../utils/passwordRules.js";
+import PasswordChecklist, { TermsAgreement, GoogleTermsNote } from "../PasswordChecklist/PasswordChecklist.jsx";
 import {
   startGoogleSignIn, googleSignInMessage, UNSUPPORTED_BROWSER_MESSAGE,
 } from "../../utils/googleSignIn.js";
@@ -135,6 +137,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authName, setAuthName] = useState("");
+  const [authTerms, setAuthTerms] = useState(false); // #35
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [form, setForm] = useState({
@@ -312,13 +315,16 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
   };
 
   // After a successful auth inside the modal, fill form and advance
-  const afterAuth = useCallback(async (currentUser, provider = "email") => {
+  // #35: `termsAccepted` — a new account ticked the box, or chose Google with the
+  // agreement line beside the button.
+  const afterAuth = useCallback(async (currentUser, provider = "email", termsAccepted = false) => {
     // Create/sync the Firestore user doc via the backend chokepoint (ISO
     // createdAt, normalized fields, role). Runs for every auth path through the
     // modal — login and signup, email and Google — replacing direct setDoc writes.
     await registerUser(currentUser, {
       provider,
       fullName: currentUser.displayName || "",
+      termsAccepted,
     });
     setLoggedInUser(currentUser);
     await fillFormFromUser(currentUser);
@@ -337,6 +343,14 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
       setAuthError("Please enter your name.");
       return;
     }
+    if (authMode === "signup" && !isStrongPassword(authPassword)) {
+      setAuthError(PASSWORD_RULES_MESSAGE);
+      return;
+    }
+    if (authMode === "signup" && !authTerms) {
+      setAuthError("Please agree to the Terms & Conditions and Privacy Policy to continue.");
+      return;
+    }
     setAuthLoading(true);
     const auth = getAuth();
     try {
@@ -350,14 +364,16 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
           await updateProfile(userCredential.user, { displayName: authName.trim() });
         }
       }
-      await afterAuth(userCredential.user, "email");
+      await afterAuth(userCredential.user, "email", authMode === "signup");
     } catch (err) {
       const map = {
         "auth/user-not-found":      "No account found with this email.",
         "auth/wrong-password":      "Incorrect password.",
         "auth/invalid-credential": "Incorrect email or password.",
         "auth/email-already-in-use": "An account with this email already exists.",
-        "auth/weak-password":       "Password must be at least 6 characters.",
+        "auth/weak-password":       PASSWORD_RULES_MESSAGE,
+        // From a Firebase password policy, if one is switched on (#35).
+        "auth/password-does-not-meet-requirements": PASSWORD_RULES_MESSAGE,
         "auth/invalid-email":       "Invalid email address.",
         "auth/too-many-requests":   "Too many attempts. Please try again later.",
       };
@@ -382,7 +398,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
         setAuthError(UNSUPPORTED_BROWSER_MESSAGE);
         return;
       }
-      await afterAuth(result.user, "google");
+      await afterAuth(result.user, "google", true);
     } catch (err) {
       console.error("[google-sign-in]", err?.code, err);
       // null = the user closed the Google window themselves — say nothing.
@@ -652,6 +668,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
               <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
               Continue with Google
             </button>
+            <div style={{ marginTop: "-12px", marginBottom: "16px" }}><GoogleTermsNote /></div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
               <div style={{ flex: 1, height: "1px", background: "#e5e7eb" }} />
@@ -689,12 +706,17 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
                 <input
                   className="pco-input"
                   type="password"
-                  placeholder={authMode === "signup" ? "Create a password (min 6 chars)" : "Enter your password"}
+                  placeholder={authMode === "signup" ? "Create a password" : "Enter your password"}
                   value={authPassword}
                   onChange={(e) => { setAuthPassword(e.target.value); setAuthError(""); }}
                   autoComplete={authMode === "signup" ? "new-password" : "current-password"}
+                  aria-describedby={authMode === "signup" ? "pco-password-rules" : undefined}
                 />
+                {authMode === "signup" && <PasswordChecklist password={authPassword} id="pco-password-rules" />}
               </div>
+              {authMode === "signup" && (
+                <TermsAgreement id="pco-terms" checked={authTerms} onChange={(v) => { setAuthTerms(v); setAuthError(""); }} />
+              )}
 
               {authError && (
                 <div style={{ color: "#e53935", fontSize: "13px", marginBottom: "12px", padding: "8px 12px", background: "#fff5f5", borderRadius: "6px", border: "1px solid #ffcdd2" }}>
