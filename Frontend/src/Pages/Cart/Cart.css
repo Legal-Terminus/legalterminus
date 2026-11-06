@@ -40,7 +40,6 @@
 }
 .cart-line.is-unavailable { border-color: #f1c36d; background: #fffcf4; }
 .cart-line-main { grid-area: main; min-width: 0; }
-/* text-align: the site centres h2 globally; these are list and panel headings. */
 .cart-line-name { text-align: left; font-size: 17px; line-height: 1.35; font-weight: 600; margin: 0 0 10px; color: var(--cart-ink); overflow-wrap: anywhere; }
 
 /* The plan: a compact labelled control, not a full-width form field. */

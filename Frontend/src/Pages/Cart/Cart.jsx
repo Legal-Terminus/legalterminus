@@ -14,6 +14,10 @@ import "./Cart.css";
  * charged is worked out again by the server from the plans alone. A plan that
  * is no longer on sale has to be changed or removed before paying.
  *
+ * Headings below the page title are h3 on purpose: the site theme centres
+ * every h2 as a section headline (theme/typography.css), and these are a
+ * list's and a panel's headings.
+ *
  * Layout: the services on the left and a sticky order summary on the right
  * from 992px; one column below that, the summary after the list.
  */
@@ -87,7 +91,7 @@ const Cart = () => {
             {view.map((l) => (
               <li key={l.productKey} className={`cart-line${l.unavailable ? " is-unavailable" : ""}`}>
                 <div className="cart-line-main">
-                  <h2 className="cart-line-name">{l.label}</h2>
+                  <h3 className="cart-line-name">{l.label}</h3>
                   {l.plans.length > 1 ? (
                     <label className="cart-plan">
                       <span className="cart-plan-label">Plan</span>
@@ -141,7 +145,7 @@ const Cart = () => {
         </section>
 
         <aside className="cart-summary" aria-label="Order summary">
-          <h2 className="cart-summary-title">Order summary</h2>
+          <h3 className="cart-summary-title">Order summary</h3>
           <dl className="cart-summary-rows">
             <div><dt>Price ({count})</dt><dd>{inr(sum("price"))}</dd></div>
             <div><dt>GST ({view[0].gstPercent}%)</dt><dd>{inr(sum("gst"))}</dd></div>
