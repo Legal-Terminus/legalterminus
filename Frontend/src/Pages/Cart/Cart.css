@@ -20,7 +20,7 @@
   gap: 20px;
 }
 .cart-head { margin-bottom: 4px; }
-.cart-title { font-size: 28px; line-height: 1.2; font-weight: 700; margin: 0 0 6px; color: var(--cart-ink); letter-spacing: -0.01em; }
+.cart-title { text-align: left; font-size: 28px; line-height: 1.2; font-weight: 700; margin: 0 0 6px; color: var(--cart-ink); letter-spacing: -0.01em; }
 .cart-sub { font-size: 16px; color: var(--cart-muted); margin: 0; line-height: 1.5; }
 
 /* ── The services ── */
@@ -40,7 +40,8 @@
 }
 .cart-line.is-unavailable { border-color: #f1c36d; background: #fffcf4; }
 .cart-line-main { grid-area: main; min-width: 0; }
-.cart-line-name { font-size: 17px; line-height: 1.35; font-weight: 600; margin: 0 0 10px; color: var(--cart-ink); overflow-wrap: anywhere; }
+/* text-align: the site centres h2 globally; these are list and panel headings. */
+.cart-line-name { text-align: left; font-size: 17px; line-height: 1.35; font-weight: 600; margin: 0 0 10px; color: var(--cart-ink); overflow-wrap: anywhere; }
 
 /* The plan: a compact labelled control, not a full-width form field. */
 .cart-plan {
@@ -134,7 +135,7 @@
   align-self: start;
   box-shadow: 0 10px 30px rgba(15, 26, 20, 0.06);
 }
-.cart-summary-title { font-size: 18px; font-weight: 700; margin: 0 0 14px; color: var(--cart-ink); }
+.cart-summary-title { text-align: left; font-size: 18px; font-weight: 700; margin: 0 0 14px; color: var(--cart-ink); }
 .cart-summary-rows { margin: 0; }
 .cart-summary-rows > div { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 15px; color: var(--cart-muted); }
 .cart-summary-rows dt, .cart-summary-rows dd { margin: 0; }
@@ -206,6 +207,7 @@
   color: var(--cart-brand);
   font-size: 26px;
 }
+.cart-empty .cart-title { text-align: center; }
 .cart-empty .cart-sub { margin-bottom: 24px; }
 .cart-empty .cart-btn-primary { display: inline-flex; width: auto; min-width: 200px; }
 
