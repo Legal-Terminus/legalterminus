@@ -27,10 +27,13 @@ export function getPaymentConfig(_req, res) {
   res.json({ enabled: !!activeGateway(), gateway: activeGateway() });
 }
 
-/** POST /api/orders — start an order for a plan. The amount is the server's. */
+/**
+ * POST /api/orders — start an order for a plan, or (#244) for a cart of plans
+ * (`items`). The amount is the server's.
+ */
 export async function postOrder(req, res) {
   try {
-    const { productKey, planId, customer, simulate } = req.body;
+    const { productKey, planId, items, customer, simulate } = req.body;
     const profile = await getDb().collection('users').doc(req.user.uid).get();
     const p = profile.exists ? profile.data() : {};
     const order = await createOrder({
@@ -41,7 +44,7 @@ export async function postOrder(req, res) {
         email: req.user.email || p.email || '',
         phone: customer?.phone || p.phone || p.mobile || '',
       },
-      productKey, planId, simulate,
+      productKey, planId, items, simulate,
     });
     res.status(201).json({ ...publicOrder(order), checkout: order.checkout });
   } catch (err) { fail(res, err, 'postOrder error'); }

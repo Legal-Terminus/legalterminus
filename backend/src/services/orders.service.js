@@ -11,7 +11,7 @@
  *
  * THE RULES THIS MODULE EXISTS TO KEEP
  *
- * 1. The AMOUNT comes from the price catalogue (`resolvePlan`), never from the
+ * 1. The AMOUNT comes from the price catalogue (`findPlan` over a fresh read), never from the
  *    request.
  * 2. An order becomes paid only on a VERIFIED signal: a signed return from the
  *    checkout, a signed webhook, or the gateway's own answer when asked.
@@ -51,14 +51,22 @@
  * adds it to the payment history in one transaction (paymentRequests.service).
  * Its `matter.state` runs request ─▶ crediting ─▶ credited | credit_failed.
  *
+ * CART (#244): one order can hold several services (`items`, at most 10), each
+ * priced from the catalogue like a single plan; the order's amount is their
+ * sum and is paid in one checkout. ONE approval opens one matter per line. The
+ * shape and the rules are in orderItems.js; a one-service order is unchanged.
+ *
  * `decideSettlement`, `matterOutcome`, `canApprove`, `payNowRefusal` and
  * `payNowAmount` are pure and unit-tested.
  */
 import crypto from 'crypto';
 import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
-import { resolvePlan } from './pricing.service.js';
+import { findPlan, loadCatalog } from './pricing.service.js';
 import { gateway } from './paymentGateway.service.js';
+import {
+  isMultiItem, itemLines, linesToOpen, planLineMatters, priceOrder, publicItems, requestedItems, settleLineMatters,
+} from './orderItems.js';
 import { getCompiledForServiceKey } from './workflowDefinitions.service.js';
 import { createNotification } from '../controllers/notifications.controller.js';
 import { sendNotificationEmail, publicSiteUrl } from './emailService.js';
@@ -140,6 +148,8 @@ export function publicOrder(o) {
     matterId: o.matter?.state === 'created' || isMatterKind(o.kind) ? (o.matter?.taskId ?? o.taskId ?? null) : null,
     kind: o.kind ?? 'website',
     requestId: o.requestId ?? null, // #222
+    // #244: a cart order lists its services, each with the matter it opened.
+    ...publicItems(o),
   };
 }
 
@@ -188,32 +198,35 @@ async function tellStaff(title, message, taskId, roles = ['admin']) {
  * Start an order. The gateway order is created FIRST: if the gateway cannot be
  * reached nothing is stored, so there is no half-made order to explain later.
  */
-export async function createOrder({ uid, customer, productKey, planId, simulate }) {
+export async function createOrder({ uid, customer, productKey, planId, items, simulate }) {
   const gw = gateway();
   if (!gw) throw httpError(503, 'Online payment is not available right now.', 'PAYMENTS_OFF');
-  const plan = await resolvePlan(productKey, planId);
-  if (!plan) throw httpError(404, 'That plan is not available.', 'PLAN_NOT_FOUND');
+  // #244: one plan or a cart of them. Every price is read fresh from the
+  // catalogue (one read for the whole cart) — never from the request.
+  const wanted = requestedItems({ productKey, planId, items });
+  const catalog = await loadCatalog({ fresh: true });
+  const priced = priceOrder(wanted.map((w) => findPlan(catalog, w.productKey, w.planId)));
 
   const orderId = newOrderId();
   let gatewayOrderId;
   try {
-    ({ gatewayOrderId } = await gw.createOrder({ amount: plan.amount, receipt: orderId, simulate }));
+    ({ gatewayOrderId } = await gw.createOrder({ amount: priced.amount, receipt: orderId, simulate }));
   } catch (err) {
-    logger.error({ err, productKey, planId }, 'orders: the gateway could not create an order');
+    logger.error({ err, items: wanted }, 'orders: the gateway could not create an order');
     throw httpError(502, 'We could not reach the payment service. Please try again in a few minutes.', 'GATEWAY_UNAVAILABLE');
   }
 
   const order = {
     uid, customer: customer ?? {},
-    productKey, productCode: plan.productCode ?? '', planId, label: plan.label, planName: plan.planName, serviceKey: plan.serviceKey,
-    // Charged: price + GST. All three are the server's, from the catalogue.
-    price: plan.price, gst: plan.gst, gstPercent: plan.gstPercent, amount: plan.amount, currency: 'INR',
+    // Charged: price + GST. All of it is the server's, from the catalogue; a
+    // cart's figures are the sums of its lines (`items`).
+    ...priced, currency: 'INR',
     status: 'created', gateway: gw.name, gatewayOrderId,
     matter: { state: 'none' },
     createdAt: nowIso(), updatedAt: nowIso(),
   };
   await col().doc(orderId).set(order);
-  logger.info({ orderId, uid, productKey, planId, amount: plan.amount, gateway: gw.name }, 'orders: created');
+  logger.info({ orderId, uid, items: wanted, amount: priced.amount, gateway: gw.name }, 'orders: created');
   return { orderId, ...order, checkout: gw.checkout({ gatewayOrderId }) };
 }
 
@@ -297,21 +310,34 @@ export async function fulfil(orderId, { retry = false } = {}) {
     logger.warn({ err, orderId }, 'orders: could not write the customer order history');
   }
 
-  let hasWorkflow = false;
-  try {
-    hasWorkflow = !!(o.serviceKey && await getCompiledForServiceKey(o.serviceKey));
-  } catch { /* treated as no workflow */ }
-  const plan = matterOutcome(o, hasWorkflow);
-  const matter = plan.open ? { state: 'awaiting_approval' } : { state: 'not_applicable', reason: plan.why };
-  await ref.update({ matter, updatedAt: nowIso() });
+  const workflowFor = async (serviceKey) => {
+    try { return !!(serviceKey && await getCompiledForServiceKey(serviceKey)); } catch { return false; } // treated as no workflow
+  };
+  let matter;
+  if (isMultiItem(o)) {
+    // #244: each line is judged on its own service; the order waits for
+    // approval if any of them can open a matter.
+    const flags = await Promise.all(o.items.map((it) => workflowFor(it.serviceKey)));
+    const planned = planLineMatters(o.items, flags, matterOutcome);
+    matter = planned.matter;
+    await ref.update({ matter, items: planned.items, updatedAt: nowIso() });
+    o.items = planned.items;
+  } else {
+    const plan = matterOutcome(o, await workflowFor(o.serviceKey));
+    matter = plan.open ? { state: 'awaiting_approval' } : { state: 'not_applicable', reason: plan.why };
+    await ref.update({ matter, updatedAt: nowIso() });
+  }
   // A staff "look again" that changes nothing has already been announced.
   if (retry && matter.state === 'not_applicable') return getOrder(orderId);
 
   const who = o.customer?.name || o.customer?.email || 'A customer';
   const paid = rupees(o.amount);
+  // #244: lines of a cart that cannot open a matter by themselves.
+  const byHand = isMultiItem(o) ? o.items.filter((it) => it.matter?.state === 'not_applicable') : [];
   if (matter.state === 'awaiting_approval') {
     await tellStaff('Website order paid — approve it to open the matter',
-      `${who} paid ${paid} for ${o.label} — ${o.planName} (order ${orderId}). Approve the order under Website Orders and its matter will be opened.`,
+      `${who} paid ${paid} for ${o.label} — ${o.planName} (order ${orderId}). Approve the order under Website Orders and its matter${isMultiItem(o) ? 's' : ''} will be opened.`
+        + (byHand.length ? ` No matter can be opened automatically for ${byHand.map((it) => it.label).join(', ')}: please open ${byHand.length > 1 ? 'those' : 'that one'} by hand.` : ''),
       undefined, ['admin', 'manager']);
     // Told once: the customer's email below went out when the payment arrived.
     if (retry) return getOrder(orderId);
@@ -325,7 +351,10 @@ export async function fulfil(orderId, { retry = false } = {}) {
       to: o.customer.email,
       title: 'Payment received',
       message: [
-        `Thank you. We have received your payment of ${paid} for ${o.label} — ${o.planName}.`,
+        isMultiItem(o)
+          ? `Thank you. We have received your payment of ${paid} for these ${o.items.length} services:`
+          : `Thank you. We have received your payment of ${paid} for ${o.label} — ${o.planName}.`,
+        ...itemLines(o, rupees),
         ...(o.gst ? [`That is ${rupees(priceOf(o))} plus ${rupees(o.gst)} GST (${o.gstPercent}%).`] : []),
         '', `Order reference: ${orderId}`,
         '', 'Our team will be in touch shortly. You can follow progress in your portal.',
@@ -359,6 +388,7 @@ export async function approveMatter(orderId, actor) {
 
 /** Open the matter of an order that has been approved, and record how it went. */
 async function openApprovedMatter(o, approval) {
+  if (isMultiItem(o)) return openApprovedLines(o, approval);
   let matter;
   try {
     matter = { state: 'created', taskId: await openMatter(o, approval), ...approval };
@@ -376,15 +406,46 @@ async function openApprovedMatter(o, approval) {
 }
 
 /**
+ * #244: an approved cart opens one matter per line that can have one. Lines
+ * are opened one after another (each is a full matter creation); a line that
+ * fails does not stop the rest, and a retry opens only what is still missing.
+ */
+async function openApprovedLines(o, approval) {
+  const opened = [];
+  for (const { it, index } of linesToOpen(o.items)) {
+    try {
+      opened.push({ index, taskId: await openMatter(o, approval, { item: it, index }) });
+    } catch (err) {
+      logger.error({ err, orderId: o.orderId, line: index }, 'orders: approved, but a matter could not be opened');
+      opened.push({ index, error: err?.message || 'The matter could not be opened.' });
+    }
+  }
+  const { items, matter } = settleLineMatters(o.items, opened, approval);
+  await col().doc(o.orderId).update({ matter, items, updatedAt: nowIso() });
+  if (matter.state === 'failed') {
+    const who = o.customer?.name || o.customer?.email || 'A customer';
+    await tellStaff('Website order approved — a matter could NOT be opened',
+      `${who}'s order ${o.orderId} (${o.label}) was approved, but not every matter could be opened: ${matter.error} Retry from the order, or open it by hand.`);
+  }
+  return getOrder(o.orderId);
+}
+
+/**
  * Open the matter for a paid order, through the same code an admin's "Create
  * Matter" uses — so the workflow, the steps, the payment history and the
  * assignment rules are identical. A matter already opened for this order is
  * reused instead of being opened twice.
  */
-async function openMatter(o, approval = {}) {
+async function openMatter(o, approval = {}, line = null) {
   const db = getDb();
-  const existing = await db.collection('tasks').where('websiteOrderId', '==', o.orderId).limit(1).get();
+  // #244: a cart line opens its own matter, tagged with its line number; the
+  // matter is what the customer paid for THAT line, GST included.
+  const it = line?.item;
+  const existing = line
+    ? await db.collection('tasks').where('websiteOrderId', '==', o.orderId).where('websiteOrderItem', '==', line.index).limit(1).get()
+    : await db.collection('tasks').where('websiteOrderId', '==', o.orderId).limit(1).get();
   if (!existing.empty) return existing.docs[0].id;
+  const what = it ?? o;
 
   const { createTask } = await import('../controllers/tasks.controller.js');
   const result = {};
@@ -398,10 +459,10 @@ async function openMatter(o, approval = {}) {
     // approval. The total includes GST — it is what the customer paid.
     user: { uid: 'system:website-order', role: 'admin' },
     body: {
-      clientUid: o.uid, serviceKey: o.serviceKey,
-      paymentStatus: 'fully_paid', totalCost: o.amount, amountReceived: o.amount,
+      clientUid: o.uid, serviceKey: what.serviceKey,
+      paymentStatus: 'fully_paid', totalCost: what.amount, amountReceived: what.amount,
       paymentMode: o.gateway === 'simulated' ? 'Online (test payment)' : 'Online (Razorpay)',
-      paymentDescription: `Website order ${o.orderId}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}${o.gst ? ` (${rupees(priceOf(o))} + ${rupees(o.gst)} GST)` : ''}`,
+      paymentDescription: `Website order ${o.orderId}${line ? ` (${line.index + 1} of ${o.items.length}: ${it.label})` : ''}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}${what.gst ? ` (${rupees(priceOf(what))} + ${rupees(what.gst)} GST)` : ''}`,
     },
   }, res);
   if (result.code !== 201 || !result.body?.id) {
@@ -409,6 +470,7 @@ async function openMatter(o, approval = {}) {
   }
   await db.collection('tasks').doc(result.body.id).set({
     websiteOrderId: o.orderId, websiteOrderApprovedBy: approval.approvedBy ?? null,
+    ...(line ? { websiteOrderItem: line.index } : {}),
   }, { merge: true });
   return result.body.id;
 }
@@ -480,7 +542,8 @@ export async function applyGatewayEvent(event) {
           o.taskId, ['admin', 'manager']);
       } else {
         await tellStaff('Website order refunded',
-          `Order ${orderId} (${o.label} — ${o.planName}) was refunded at the payment gateway.${o.matter?.taskId ? ' Its matter is still open — decide what to do with it.' : ''}`,
+          `Order ${orderId} (${o.label} — ${o.planName}) was refunded at the payment gateway.${o.matter?.taskId ? ' Its matter is still open — decide what to do with it.' : ''}`
+            + (isMultiItem(o) && o.items.some((it) => it.matter?.taskId) ? ' Its matters are still open — decide what to do with them.' : ''),
           o.matter?.taskId);
       }
     }
@@ -527,10 +590,15 @@ export async function listOrders({ limit = 25, cursor } = {}) {
   const data = rows.slice(0, limit);
   // A matter can be deleted after its order opened it. Say so, rather than
   // offer a link that leads nowhere — one read for the page, not one per row.
-  const linked = data.filter((o) => o.matter?.state === 'created' && o.matter.taskId);
+  // #244: a cart's matters are on its lines.
+  const linked = [
+    ...data.filter((o) => o.matter?.state === 'created' && o.matter.taskId).map((o) => ({ holder: o, taskId: o.matter.taskId })),
+    ...data.filter(isMultiItem).flatMap((o) => o.items.filter((it) => it.matter?.state === 'created' && it.matter.taskId)
+      .map((it) => ({ holder: it, taskId: it.matter.taskId }))),
+  ];
   if (linked.length) {
-    const found = await getDb().getAll(...linked.map((o) => getDb().collection('tasks').doc(o.matter.taskId)));
-    found.forEach((t, i) => { if (!t.exists) linked[i].matter = { ...linked[i].matter, deleted: true }; });
+    const found = await getDb().getAll(...linked.map((l) => getDb().collection('tasks').doc(l.taskId)));
+    found.forEach((t, i) => { if (!t.exists) linked[i].holder.matter = { ...linked[i].holder.matter, deleted: true }; });
   }
   return { data, nextCursor: rows.length > limit ? rows[limit - 1].orderId : null };
 }

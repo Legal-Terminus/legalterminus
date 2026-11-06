@@ -8,10 +8,11 @@ import {
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { getFirebaseDb } from "../../utils/firebase";
 import {
-  startOrder, confirmPayment, reportFailure, simulatePayment, payWithRazorpay, resultUrl,
+  startOrder, startCartOrder, confirmPayment, reportFailure, simulatePayment, payWithRazorpay, resultUrl,
 } from "../../utils/checkout";
+import { addToCart, clearCart } from "../../utils/cart.js";
 import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
-import { withGst, inr } from "../../utils/pricing.js";
+import { withGst, inr, loadPricing } from "../../utils/pricing.js";
 import { registerUser } from "../../utils/registerUser.js";
 import {
   startGoogleSignIn, googleSignInMessage, UNSUPPORTED_BROWSER_MESSAGE,
@@ -112,8 +113,16 @@ function failureKeyFor(err) {
   return "network_error";
 }
 
-const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
+/**
+ * One checkout for one plan (`plan` + `source`, from a pricing card) or, #244,
+ * for the whole website cart (`cartLines`, from the cart page). Either way the
+ * page sends only plans; the server prices the order.
+ */
+const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null }) => {
+  const isCart = Array.isArray(cartLines) && cartLines.length > 0;
   const [step, setStep] = useState("order-summary");
+  // #244: "Add to Cart" from a plan's summary — what happened, to say so.
+  const [cartNote, setCartNote] = useState("");
   const [failureReason, setFailureReason] = useState(null);
   // E24-S02: the order the server created for this attempt.
   const [order, setOrderState] = useState(null);
@@ -202,7 +211,35 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
   // #212: the plan's price is exclusive of GST, which is added here. This is
   // only what is SHOWN before the order exists; the amount charged is the
   // server's (`order.amount`), worked out from the same price and rate.
-  const { gst, gstPercent, total } = withGst(plan.price);
+  // #244: the lines shown — the cart's, or this one plan. Each line's GST is
+  // the same sum the server does; the order total is their sum.
+  const lines = isCart
+    ? cartLines.map((l) => ({ key: l.productKey, name: `${l.label} — ${l.planName}`, price: l.price, ...withGst(l.price) }))
+    : [{ key: source, name: `${plan.name} Plan`, price: plan.price, ...withGst(plan.price) }];
+  const sum = (k) => Math.round(lines.reduce((s, l) => s + l[k], 0) * 100) / 100;
+  const gst = sum("gst");
+  const total = sum("total");
+  const { gstPercent } = lines[0];
+
+  const handleAddToCart = async () => {
+    const catalog = await loadPricing();
+    const result = addToCart({
+      productKey: source, planId: plan.id, planName: plan.name, price: plan.price,
+      label: catalog?.[source]?.label || getServiceDisplayName(source),
+    });
+    setCartNote({
+      added: "Added to your cart.",
+      swapped: `Your cart now has the ${plan.name} plan for this service.`,
+      already: "This plan is already in your cart.",
+      full: "Your cart is full. Pay for it first, or remove a service.",
+    }[result]);
+  };
+
+  /** Off to the result page. A cart that has been paid for is emptied. */
+  const goToResult = (orderId) => {
+    if (isCart) clearCart();
+    window.location.assign(resultUrl(orderId));
+  };
 
   const stepIndex = STEPS.indexOf(step);
   const showProgress = step === "order-summary" || step === "checkout";
@@ -377,7 +414,9 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
     // server prices the order and says which gateway to open.
     try {
       const customer = { name: form.fullName, phone: form.mobile, businessName: form.businessName, state: form.state };
-      const created = await startOrder(source, plan.id, customer);
+      const created = isCart
+        ? await startCartOrder(cartLines, customer)
+        : await startOrder(source, plan.id, customer);
       setOrder(created);
 
       if (created.checkout?.gateway === 'simulated') {
@@ -390,7 +429,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
       setStep('redirecting');
       const result = await payWithRazorpay(created, { name: form.fullName, email: form.email, phone: form.mobile });
       await confirmPayment(created.orderId, result);
-      window.location.assign(resultUrl(created.orderId));
+      goToResult(created.orderId);
     } catch (err) {
       console.error('Payment error:', err);
       setIsProcessing(false);
@@ -409,14 +448,14 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
       if (outcome === 'success') {
         const result = await simulatePayment(order.orderId, 'success');
         await confirmPayment(order.orderId, result);
-        window.location.assign(resultUrl(order.orderId));
+        goToResult(order.orderId);
         return;
       }
       if (outcome === 'close_tab') {
         // Paid, but the browser never comes back: only the gateway's own message
         // (the webhook) tells the server. The result page shows what it learned.
         await simulatePayment(order.orderId, 'success_webhook');
-        window.location.assign(resultUrl(order.orderId));
+        goToResult(order.orderId);
         return;
       }
       const declined = await simulatePayment(order.orderId, 'failure');
@@ -485,9 +524,10 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
           <div className="pco-step">
             <div className="pco-plan-header-row">
               <div className="pco-plan-avatar">👤</div>
-              <h2 className="pco-section-title">Your Selected Plan</h2>
+              <h2 className="pco-section-title">{isCart ? `Your Cart (${lines.length})` : "Your Selected Plan"}</h2>
             </div>
 
+            {!isCart && (<>
             <div className="pco-selected-plan-box">
               <div className="pco-plan-gift-icon">🎁</div>
               <div>
@@ -498,19 +538,22 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
 
             <div className="pco-includes">
               <div className="pco-includes-label">Includes:</div>
-              {plan.services.map((s) => (
+              {(plan.services ?? []).map((s) => (
                 <div key={s} className="pco-include-row">
                   <span className="pco-green-check">✓</span>
                   <span>{s}</span>
                 </div>
               ))}
             </div>
+            </>)}
 
             <div className="pco-summary-box">
-              <div className="pco-summary-row">
-                <span>{plan.name} Plan</span>
-                <span>₹{plan.price.toLocaleString("en-IN")}</span>
-              </div>
+              {lines.map((l) => (
+                <div key={l.key} className="pco-summary-row">
+                  <span>{l.name}</span>
+                  <span>{inr(l.price)}</span>
+                </div>
+              ))}
               <div className="pco-summary-row">
                 <span>GST ({gstPercent}%)</span>
                 <span>{inr(gst)}</span>
@@ -523,8 +566,19 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
             </div>
 
             <button className="pco-btn-primary" onClick={handleProceedToCheckout}>
-              Proceed to Checkout
+              {isCart ? "Checkout — pay for all" : "Proceed to Checkout"}
             </button>
+            {/* #244: or keep shopping and pay for several services at once. */}
+            {!isCart && (
+              <button type="button" className="pco-btn-outline pco-btn-mt" onClick={handleAddToCart}>
+                Add to Cart
+              </button>
+            )}
+            {cartNote && (
+              <p role="status" className="pco-cart-note">
+                {cartNote} <a href="/cart">View cart</a>
+              </p>
+            )}
           </div>
         )}
 
@@ -721,10 +775,12 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
             </div>
 
             <div className="pco-summary-box">
-              <div className="pco-summary-row">
-                <span>{plan.name} Plan</span>
-                <span>₹{plan.price.toLocaleString("en-IN")}</span>
-              </div>
+              {lines.map((l) => (
+                <div key={l.key} className="pco-summary-row">
+                  <span>{l.name}</span>
+                  <span>{inr(l.price)}</span>
+                </div>
+              ))}
               <div className="pco-summary-row">
                 <span>GST ({gstPercent}%)</span>
                 <span>{inr(gst)}</span>
@@ -813,7 +869,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
 
             <div className="pco-services-box">
               <div className="pco-services-title">Services Purchased</div>
-              {plan.services.map((s) => (
+              {(isCart ? [] : plan.services ?? []).map((s) => (
                 <div key={s} className="pco-service-row">
                   <span className="pco-green-check">✓</span>
                   <span>{s}</span>

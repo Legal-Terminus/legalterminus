@@ -25,6 +25,8 @@ type Full = Pub & { matter: { state: string; taskId?: string; reason?: string; a
 type Product = { key: string; serviceKey: string | null; plans: { id: string; price: number; active: boolean }[] };
 
 let withWorkflow: { productKey: string; planId: string; price: number };
+/** #244: two more services WITH a workflow, different from each other, for a cart. */
+let cartPair: { productKey: string; planId: string; price: number }[] = [];
 let withoutWorkflow: { productKey: string; planId: string; price: number };
 /** The GST rate, read from the server — never assumed here. */
 let gstPercent = 0;
@@ -79,6 +81,7 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       const b = products.find((p) => !p.serviceKey || !covered.has(p.serviceKey));
       test.skip(!a || !b, 'need one product with a workflow and one without');
       withWorkflow = pick(a!); withoutWorkflow = pick(b!);
+      cartPair = products.filter((p) => p.serviceKey && covered.has(p.serviceKey) && p.plans.some((x) => x.active)).slice(0, 2).map(pick);
       gstPercent = (await (await anon.get('/api/public/pricing')).json()).gstPercent;
       expect(gstPercent, 'the website is told the GST rate').toBeGreaterThan(0);
     } finally { await admin.dispose(); await anon.dispose(); }
@@ -414,6 +417,112 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       // A client has no business on this screen.
       await clientPage.goto('website-orders');
       await expect(clientPage).toHaveURL(/\/unauthorized/);
+    } finally { await buyer.dispose(); }
+  });
+  /* ───────────────────────── #244: the website cart ───────────────────────── */
+
+  type Line = { label: string; planName: string; price: number; gst: number; amount: number; matterId: string | null };
+  type CartPub = Pub & { items?: Line[] };
+  type CartFull = Full & { items?: { productKey: string; amount: number; matter: { state: string; taskId?: string; reason?: string } }[] };
+  const startCart = async (buyer: APIRequestContext, items: { productKey: string; planId: string }[], extra: Record<string, unknown> = {}) => {
+    const res = await buyer.post('/api/orders', { data: { items: items.map(({ productKey, planId }) => ({ productKey, planId })), ...extra } });
+    if (res.status() === 201) started.push((await res.json()).orderId);
+    return res;
+  };
+
+  test('#244 a cart is priced by the server line by line; a price, a repeated service or too many lines is refused', async () => {
+    test.skip(cartPair.length < 2, 'need two products with a workflow');
+    const buyer = await apiAs('client');
+    try {
+      const lines = [cartPair[0], withoutWorkflow];
+      // Tampered: a price on a line, or an amount on the order, is refused — not ignored.
+      expect((await buyer.post('/api/orders', { data: { items: lines.map((l) => ({ productKey: l.productKey, planId: l.planId, price: 1 })) } })).status()).toBe(400);
+      expect((await startCart(buyer, lines, { amount: 1 })).status()).toBe(400);
+      // One plan per service, at most ten lines, and not a plan AND a cart.
+      expect((await startCart(buyer, [cartPair[0], cartPair[0]])).status()).toBe(400);
+      expect((await startCart(buyer, Array.from({ length: 11 }, (_, i) => ({ productKey: `p${i}`, planId: 'x' })))).status()).toBe(400);
+      expect((await buyer.post('/api/orders', { data: { productKey: cartPair[0].productKey, planId: cartPair[0].planId, items: [{ productKey: cartPair[1].productKey, planId: cartPair[1].planId }] } })).status()).toBe(400);
+      // A line not for sale makes the whole cart unavailable.
+      expect((await startCart(buyer, [cartPair[0], { productKey: withoutWorkflow.productKey, planId: 'no-such-plan' }])).status()).toBe(404);
+
+      const res = await startCart(buyer, lines);
+      expect(res.status()).toBe(201);
+      const order = await res.json() as CartPub;
+      expect(order.items).toHaveLength(2);
+      for (const [i, l] of lines.entries()) {
+        expect(order.items![i].price).toBe(l.price);
+        expect(order.items![i].amount).toBe(charged(l.price));
+      }
+      // ONE total, the sum of the lines — what the gateway is asked for.
+      expect(order.amount).toBe(Math.round((charged(lines[0].price) + charged(lines[1].price)) * 100) / 100);
+      expect(order.price).toBe(lines[0].price + lines[1].price);
+      expect(order.checkout?.gateway).toBe('simulated');
+    } finally { await buyer.dispose(); }
+  });
+
+  test('#244 a paid cart waits for ONE approval, which opens one matter per service', async () => {
+    test.skip(cartPair.length < 2, 'need two products with a workflow');
+    const buyer = await apiAs('client');
+    const admin = await apiAs('admin');
+    try {
+      const order = await (await startCart(buyer, cartPair)).json() as CartPub;
+      const paid = await simulate(buyer, order.orderId, 'success');
+      const after = await (await buyer.post(`/api/orders/${order.orderId}/verify`, { data: paid })).json() as CartPub;
+      expect(after.status).toBe('paid');
+      expect(after.matterId).toBeNull();
+      const waiting = await full(order.orderId) as CartFull;
+      expect(waiting.matter.state).toBe('awaiting_approval');
+      expect(waiting.items!.map((i) => i.matter.state)).toEqual(['awaiting_approval', 'awaiting_approval']);
+      // Settled once: the webhook after the return changes nothing.
+      expect((await simulate(buyer, order.orderId, 'success_webhook')).delivered.outcome).toBe('noop');
+
+      const approved = await approve(order.orderId, 'team');
+      expect(approved.status).toBe(200);
+      const done = approved.body as CartFull;
+      expect(done.matter.state).toBe('created');
+      const taskIds = done.items!.map((i) => i.matter.taskId!);
+      taskIds.forEach((id) => track({ matterId: id }));
+      expect(new Set(taskIds).size, 'one matter per service').toBe(2);
+      for (const [i, id] of taskIds.entries()) {
+        const matter = await (await admin.get(`/api/tasks/${id}`)).json();
+        expect(matter.clientUid).toBe(env('E2E_CLIENT_UID'));
+        expect(matter.paymentStatus).toBe('fully_paid');
+        // Each matter carries what was paid for ITS service, GST included.
+        expect(matter.totalCost).toBe(charged(cartPair[i].price));
+      }
+      // The customer sees every service, each with its matter.
+      const mineNow = await mine(buyer, order.orderId) as CartPub;
+      expect(mineNow.items!.map((i) => i.matterId)).toEqual(taskIds);
+      expect(mineNow.matterId).toBe(taskIds[0]);
+      // Approving again opens nothing more.
+      expect((await approve(order.orderId)).status).toBe(409);
+      expect(((await full(order.orderId)) as CartFull).items!.map((i) => i.matter.taskId)).toEqual(taskIds);
+    } finally { await buyer.dispose(); await admin.dispose(); }
+  });
+
+  test('#244 a cart line whose service has no workflow is left for staff; the others open on approval', async ({ adminPage: page }) => {
+    test.skip(cartPair.length < 1, 'need a product with a workflow');
+    const buyer = await apiAs('client');
+    try {
+      const order = await (await startCart(buyer, [cartPair[0], withoutWorkflow])).json() as CartPub;
+      await simulate(buyer, order.orderId, 'success_webhook');
+      const waiting = await full(order.orderId) as CartFull;
+      expect(waiting.matter.state).toBe('awaiting_approval');
+      expect(waiting.items!.map((i) => i.matter.state)).toEqual(['awaiting_approval', 'not_applicable']);
+
+      // Staff see each service of the order on the Website Orders screen.
+      await page.goto('website-orders');
+      const services = page.getByRole('list', { name: `Services in order ${order.orderId}` }).first();
+      await expect(services.getByRole('listitem')).toHaveCount(2);
+      await expect(services.getByText(/Open by hand/)).toBeVisible();
+
+      const done = (await approve(order.orderId)).body as CartFull;
+      expect(done.matter.state).toBe('created');
+      expect(done.items![0].matter.state).toBe('created');
+      expect(done.items![1].matter.state).toBe('not_applicable');
+      track({ matterId: done.items![0].matter.taskId });
+      await page.reload();
+      await expect(page.getByRole('link', { name: `Open the matter for ${(await mine(buyer, order.orderId) as CartPub).items![0].label}` }).first()).toBeVisible();
     } finally { await buyer.dispose(); }
   });
 });

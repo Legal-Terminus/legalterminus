@@ -17,6 +17,7 @@ import PdfTools from "./Pages/PdfTools/PdfTools";
 
 const MyProfile = lazy(() => import("./Pages/MyProfile/MyProfile"));
 const PaymentResult = lazy(() => import("./Pages/PaymentResult/PaymentResult"));
+const Cart = lazy(() => import("./Pages/Cart/Cart"));
 const Login = lazy(() => import("./Pages/Login/Login"));
 const Signup = lazy(() => import("./Pages/Signup/Signup"));
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword/ForgotPassword"));
@@ -244,6 +245,7 @@ function App() {
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
             <Route path="/payment/result" element={<PaymentResult />} />
+            <Route path="/cart" element={<Cart />} />
             <Route path="/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india" element={<OPC />} />
             <Route path="/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india" element={<Publicltd />} />
             <Route path="/setting-up-a-business/profit-making-structures/incorporation-of-wholly-owned-subsidiary-in-india" element={<IncorptionPage />} />

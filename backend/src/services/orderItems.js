@@ -1,0 +1,143 @@
+/**
+ * #244 — a website order for SEVERAL services (the website's cart), paid in one
+ * checkout. Pure: no I/O, unit-tested in __tests__/orderItems.test.js. The
+ * order lifecycle itself stays in orders.service.js; this module only answers
+ * "what does this cart cost" and "what became of each line".
+ *
+ * SHAPE. A one-service order is stored EXACTLY as before (#212): productKey,
+ * planId, label, planName, serviceKey, price, gst, amount — and no `items`.
+ * An order of two or more services adds `items`, one per service:
+ *
+ *   items: [{ productKey, productCode, planId, label, planName, serviceKey,
+ *             price, gst, gstPercent, amount,
+ *             matter: { state, taskId?, reason?, error? } }]
+ *
+ * and its top-level price / gst / amount are the SUMS of the lines — so every
+ * check that compares a payment with `order.amount` (decideSettlement, the
+ * review hold) works unchanged. Its top-level `matter.state` is the one the
+ * staff screen and `canApprove` already read; each line's own state says which
+ * matter it opened.
+ *
+ * DECISIONS
+ * - One plan per SERVICE in an order. A service's plans are tiers ("Everything
+ *   in Elemental, plus…"), so two of them in one order is almost always a
+ *   mistake; the cart swaps the plan instead of adding a second. No quantity
+ *   either: the catalogue has none, and one line opens one matter.
+ * - At most MAX_ORDER_ITEMS lines: one checkout, one approval, a bounded number
+ *   of matters opened by one click.
+ * - ONE approval opens every line's matter. The staff screen has one Approve
+ *   button per order, and the customer paid once — splitting the approval
+ *   would leave a paid order half-started with nothing on screen to say why.
+ */
+
+export const MAX_ORDER_ITEMS = 10;
+
+const httpError = (status, message, code) => Object.assign(new Error(message), { status, code });
+const paise = (n) => Math.round(n * 100) / 100;
+
+/** The order has several lines (a cart). A one-service order has no `items`. */
+export const isMultiItem = (o) => Array.isArray(o?.items) && o.items.length > 0;
+
+/**
+ * What is being bought, as a list of { productKey, planId }. Accepts the old
+ * one-plan request or a list. Throws (400) on an empty, oversized or
+ * repeated list — the schema refuses these too; this is the service's own guard.
+ */
+export function requestedItems({ productKey, planId, items } = {}) {
+  const list = Array.isArray(items) && items.length
+    ? items.map((i) => ({ productKey: i.productKey, planId: i.planId }))
+    : (productKey && planId ? [{ productKey, planId }] : []);
+  if (!list.length) throw httpError(400, 'Choose a service to buy.', 'NO_ITEMS');
+  if (list.length > MAX_ORDER_ITEMS) {
+    throw httpError(400, `An order can hold at most ${MAX_ORDER_ITEMS} services. Please pay for the rest separately.`, 'TOO_MANY_ITEMS');
+  }
+  const seen = new Set();
+  for (const i of list) {
+    if (seen.has(i.productKey)) throw httpError(400, 'Each service can be in an order only once. Choose one plan for it.', 'DUPLICATE_ITEM');
+    seen.add(i.productKey);
+  }
+  return list;
+}
+
+/**
+ * Price an order from the catalogue's plans (`findPlan` results, null for a
+ * plan not on sale). Each line's GST is the catalogue's own (`findPlan` →
+ * `withGst`); the order's figures are the sums, to the paisa. One plan →
+ * the order fields exactly as a one-service order has always had them.
+ */
+export function priceOrder(plans) {
+  if (!plans.length || plans.some((p) => !p)) throw httpError(404, 'That plan is not available.', 'PLAN_NOT_FOUND');
+  const line = (p) => ({
+    productKey: p.productKey, productCode: p.productCode ?? '', planId: p.planId,
+    label: p.label, planName: p.planName, serviceKey: p.serviceKey ?? null,
+    price: p.price, gst: p.gst, gstPercent: p.gstPercent, amount: p.amount,
+  });
+  if (plans.length === 1) return line(plans[0]);
+  const items = plans.map((p) => ({ ...line(p), matter: { state: 'none' } }));
+  return {
+    // No single product: staff and the customer read the lines.
+    productKey: null, productCode: '', planId: null, serviceKey: null,
+    label: `${items.length} services`,
+    planName: items.map((i) => `${i.label} (${i.planName})`).join(', '),
+    price: paise(items.reduce((s, i) => s + i.price, 0)),
+    gst: paise(items.reduce((s, i) => s + i.gst, 0)),
+    gstPercent: items[0].gstPercent,
+    amount: paise(items.reduce((s, i) => s + i.amount, 0)),
+    items,
+  };
+}
+
+/**
+ * After payment: which lines can open a matter. `hasWorkflow[i]` answers for
+ * line i; `matterOutcome` is orders.service's own rule, passed in so there is
+ * one rule. The order waits for approval when ANY line can open a matter.
+ */
+export function planLineMatters(items, hasWorkflow, matterOutcome) {
+  const lines = items.map((it, i) => {
+    if (it.matter?.state === 'created') return it; // already opened: a retry leaves it alone
+    const plan = matterOutcome(it, !!hasWorkflow[i]);
+    return { ...it, matter: plan.open ? { state: 'awaiting_approval' } : { state: 'not_applicable', reason: plan.why } };
+  });
+  const any = lines.some((l) => l.matter.state === 'awaiting_approval');
+  return {
+    items: lines,
+    matter: any ? { state: 'awaiting_approval' } : { state: 'not_applicable', reason: 'None of these services opens a matter by itself.' },
+  };
+}
+
+/** The lines an approval opens a matter for: waiting, or tried and failed. */
+export const linesToOpen = (items) => items
+  .map((it, index) => ({ it, index }))
+  .filter(({ it }) => ['awaiting_approval', 'pending', 'failed'].includes(it.matter?.state));
+
+/**
+ * The order's matter state once its lines have been tried. Pure.
+ * `opened` is [{ index, taskId } | { index, error }], one per line tried.
+ * Lines not tried (opened before, or not_applicable) keep their state.
+ */
+export function settleLineMatters(items, opened, approval) {
+  const next = items.map((it) => ({ ...it }));
+  for (const { index, taskId, error } of opened) {
+    next[index].matter = taskId ? { state: 'created', taskId } : { state: 'failed', error };
+  }
+  const failed = next.filter((it) => it.matter?.state === 'failed');
+  const matter = failed.length
+    ? { state: 'failed', error: failed.map((f) => `${f.label}: ${f.matter.error}`).join(' '), ...approval }
+    : { state: 'created', ...approval };
+  return { items: next, matter };
+}
+
+/** The customer's view of each line, and the first matter they can follow. */
+export function publicItems(o) {
+  if (!isMultiItem(o)) return {};
+  const items = o.items.map((it) => ({
+    label: it.label, planName: it.planName, price: it.price, gst: it.gst ?? 0, amount: it.amount,
+    matterId: it.matter?.state === 'created' ? (it.matter.taskId ?? null) : null,
+  }));
+  return { items, matterId: items.find((i) => i.matterId)?.matterId ?? null };
+}
+
+/** Lines for a message or an email: "Proprietorship — Elemental: ₹1,178.82". */
+export const itemLines = (o, rupees) => (isMultiItem(o)
+  ? o.items.map((it) => `• ${it.label} — ${it.planName}: ${rupees(it.amount)}`)
+  : []);

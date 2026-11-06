@@ -895,3 +895,12 @@
     height: calc(95vh - 100px);
   }
 }
+
+/* #244: what "Add to Cart" did, with a link to the cart. */
+.pco-cart-note {
+  margin: 12px 0 0;
+  font-size: 15px;
+  color: #166534;
+  text-align: center;
+}
+.pco-cart-note a { color: #166534; font-weight: 600; text-decoration: underline; display: inline-block; padding: 10px 4px; }

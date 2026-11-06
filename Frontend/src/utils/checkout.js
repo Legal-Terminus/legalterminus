@@ -39,7 +39,17 @@ export const getPaymentConfig = () => call("/api/orders/config").catch(() => ({ 
 export const startOrder = (productKey, planId, customer) =>
   call("/api/orders", { method: "POST", body: { productKey, planId, ...(customer ? { customer } : {}) } });
 
-export const confirmPayment = (orderId, result) =>
+/**
+ * #244: one order, one payment, for every service in the cart. Only the plans
+ * are sent; the server prices each line and the total.
+ */
+export const startCartOrder = (lines, customer) =>
+  call("/api/orders", {
+    method: "POST",
+    body: { items: lines.map(({ productKey, planId }) => ({ productKey, planId })), ...(customer ? { customer } : {}) },
+  });
+
+export const confirmPayment =(orderId, result) =>
   call(`/api/orders/${orderId}/verify`, { method: "POST", body: result });
 
 export const reportFailure = (orderId, reason) =>
@@ -89,7 +99,8 @@ export async function payWithRazorpay(order, customer) {
       amount: Math.round(order.amount * 100),
       currency: order.currency || "INR",
       name: "Legal Terminus",
-      description: `${order.label} — ${order.planName}`,
+      // #244: a cart's planName lists every service; Razorpay keeps descriptions short.
+      description: `${order.label} — ${order.planName}`.slice(0, 250),
       prefill: { name: customer?.name || "", email: customer?.email || "", contact: customer?.phone || "" },
       handler: (r) => resolve({ gatewayPaymentId: r.razorpay_payment_id, signature: r.razorpay_signature }),
       modal: {

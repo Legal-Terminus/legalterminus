@@ -7,7 +7,28 @@ import type { RefundSummary } from './refunds';
  */
 export type OrderStatus = 'created' | 'paid' | 'review' | 'failed' | 'abandoned' | 'refunded';
 
+/**
+ * #244: one service of a cart order. A cart order's own label/price/amount are
+ * the totals; each line says what it cost and which matter it opened.
+ */
+export interface WebsiteOrderItem {
+  productKey: string;
+  productCode?: string;
+  planId: string;
+  label: string;
+  planName: string;
+  serviceKey: string | null;
+  price: number;
+  gst: number;
+  gstPercent: number;
+  amount: number;
+  matter: { state: 'none' | 'awaiting_approval' | 'created' | 'failed' | 'not_applicable';
+    taskId?: string; error?: string; reason?: string; deleted?: boolean };
+}
+
 export interface WebsiteOrder {
+  /** #244: present only on an order of two or more services. */
+  items?: WebsiteOrderItem[];
   orderId: string;
   status: OrderStatus;
   uid: string;
@@ -31,8 +52,9 @@ export interface WebsiteOrder {
   method?: string | null;
   /** How we learned it was paid: the customer's return, the gateway's own message, or a staff check. */
   settledBy?: 'return' | 'webhook' | 'reconcile';
-  productKey?: string;
-  planId?: string;
+  /** null on a cart order (#244): its services are in `items`. */
+  productKey?: string | null;
+  planId?: string | null;
   failureReason?: string | null;
   reviewReason?: string;
   /**

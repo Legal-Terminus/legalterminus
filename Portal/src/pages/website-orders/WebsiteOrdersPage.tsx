@@ -9,7 +9,7 @@ import { useAuthStore } from '../../store/authStore';
 import RefundHistory from '../../components/payments/RefundHistory';
 import {
   approveOrder, getWebsiteOrders, reconcileOrder, retryOrderMatter, WEBSITE_ORDERS_KEY,
-  type OrderStatus, type WebsiteOrder,
+  type OrderStatus, type WebsiteOrder, type WebsiteOrderItem,
 } from '../../api/websiteOrders';
 
 /**
@@ -57,11 +57,57 @@ function matterLine(o: WebsiteOrder): { text: string; warn: boolean } {
   switch (o.matter.state) {
     // #212: payment alone opens nothing — someone approves the order first.
     case 'awaiting_approval': return { text: 'Waiting for approval. Approve the order to open its matter.', warn: true };
-    case 'created': return { text: o.matter.deleted ? 'Matter opened, then deleted' : 'Matter opened', warn: false };
+    case 'created':
+      // #244: a cart opens one matter per service — see the lines for each.
+      if (o.items?.length) {
+        const n = o.items.filter((it) => it.matter.state === 'created').length;
+        const byHand = o.items.length - n;
+        return { text: `${n} matter${n === 1 ? '' : 's'} opened${byHand ? `; ${byHand} to open by hand` : ''}`, warn: byHand > 0 };
+      }
+      return { text: o.matter.deleted ? 'Matter opened, then deleted' : 'Matter opened', warn: false };
     case 'failed': return { text: `Could not open the matter: ${o.matter.error ?? 'unknown reason'}`, warn: true };
     case 'not_applicable': return { text: `No matter opened. ${o.matter.reason ?? ''} Open one by hand.`, warn: true };
     default: return { text: 'Opening the matter…', warn: false };
   }
+}
+
+/** #244: what became of one service of a cart order. */
+function lineMatter(it: WebsiteOrderItem, paid: boolean): { text: string; warn: boolean } {
+  if (!paid) return { text: '', warn: false };
+  switch (it.matter.state) {
+    case 'awaiting_approval': return { text: 'Waiting for approval', warn: false };
+    case 'created': return { text: it.matter.deleted ? 'Matter opened, then deleted' : 'Matter opened', warn: false };
+    case 'failed': return { text: `Could not open: ${it.matter.error ?? 'unknown reason'}`, warn: true };
+    case 'not_applicable': return { text: `Open by hand. ${it.matter.reason ?? ''}`, warn: true };
+    default: return { text: '', warn: false };
+  }
+}
+
+/**
+ * #244: the services of a cart order, one per line, each with its price and
+ * the matter it opened. Wraps on a phone; no sideways scroll.
+ */
+function OrderItems({ o }: { o: WebsiteOrder }) {
+  if (!o.items?.length) return null;
+  const paid = o.status === 'paid';
+  return (
+    <ul className="mt-1 space-y-1.5" aria-label={`Services in order ${o.orderId}`}>
+      {o.items.map((it, i) => {
+        const m = lineMatter(it, paid);
+        return (
+          <li key={`${it.productKey}-${i}`} className="text-xs">
+            <span className="text-ink">{it.label} — {it.planName}</span>
+            <span className="text-ink-muted"> · {inr(it.amount)}</span>
+            {m.text && <span className={m.warn ? 'text-amber-800' : 'text-ink-muted'}> · {m.text}</span>}
+            {it.matter.state === 'created' && it.matter.taskId && !it.matter.deleted && (
+              <> · <Link to={`/tasks/${it.matter.taskId}`} className="inline-flex items-center min-h-11 md:min-h-0 text-brand-700 underline"
+                aria-label={`Open the matter for ${it.label}`}>Open matter</Link></>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 const METHOD: Record<string, string> = {
@@ -87,7 +133,7 @@ function OrderDetails({ o, canManage, onChanged }: { o: WebsiteOrder; canManage:
   const matches = o.amountPaid === o.amount;
   const rows: [string, string | undefined | null][] = [
     ['Order reference', o.orderId],
-    ['Service', `${o.label} — ${o.planName}`],
+    ['Service', o.items?.length ? `${o.items.length} services` : `${o.label} — ${o.planName}`],
     ['Product code', o.productCode],
     ['Customer', [o.customer?.name, o.customer?.email, o.customer?.phone].filter(Boolean).join(' · ')],
     ['Ordered', when(o.createdAt)],
@@ -184,7 +230,7 @@ export default function WebsiteOrdersPage() {
     mutationFn: approveOrder,
     onSuccess: (o) => {
       refresh();
-      if (o.matter.state === 'created') toast.success('Order approved. The matter is open.');
+      if (o.matter.state === 'created') toast.success(o.items?.length ? 'Order approved. Its matters are open.' : 'Order approved. The matter is open.');
       else toast.error(o.matter.error || 'The order is approved, but the matter could not be opened.');
     },
     // Someone else may have approved it a moment ago; show what is true now.
@@ -265,7 +311,9 @@ export default function WebsiteOrdersPage() {
                       </td>
                       <td className="p-3">
                         <p className="text-ink">{o.label}</p>
-                        <p className="text-xs text-ink-muted">{[o.productCode, o.planName].filter(Boolean).join(' · ')}</p>
+                        {o.items?.length ? <OrderItems o={o} /> : (
+                          <p className="text-xs text-ink-muted">{[o.productCode, o.planName].filter(Boolean).join(' · ')}</p>
+                        )}
                       </td>
                       <td className="p-3 text-right whitespace-nowrap">{inr(o.amount)}</td>
                       <td className="p-3"><span className={STATUS[o.status].cls}>{STATUS[o.status].label}</span></td>
@@ -290,7 +338,8 @@ export default function WebsiteOrdersPage() {
                 <li key={o.orderId} className="card p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-ink">{o.label} — {o.planName}</p>
+                      <p className="text-sm font-semibold text-ink">{o.items?.length ? o.label : `${o.label} — ${o.planName}`}</p>
+                      <OrderItems o={o} />
                       <p className="text-xs text-ink-muted">{[o.productCode, o.customer?.name || o.customer?.email || '—'].filter(Boolean).join(' · ')}</p>
                     </div>
                     <span className={`${STATUS[o.status].cls} shrink-0`}>{STATUS[o.status].label}</span>
