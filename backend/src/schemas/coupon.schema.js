@@ -8,9 +8,18 @@ import {
  * schema does not name is refused.
  */
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Choose a date.');
-// Tags out, then any angle bracket left over: one pass alone lets a nested
-// "<scr<script>ipt>" leave "<script>" behind (CodeQL js/incomplete-multi-character-sanitization).
-const stripTags = (s) => s.replace(/<[^>]*>/g, '').replace(/[<>]/g, '');
+// Tags out until none is left, then any stray angle bracket: one pass alone
+// lets a nested "<scr<script>ipt>" leave "<script>" behind
+// (CodeQL js/incomplete-multi-character-sanitization).
+const stripTags = (input) => {
+  let s = input;
+  let before;
+  do {
+    before = s;
+    s = s.replace(/<[^>]*>/g, '');
+  } while (s !== before);
+  return s.replace(/[<>]/g, '');
+};
 
 /** The terms of a coupon — everything staff can set, except its code. */
 const terms = {
