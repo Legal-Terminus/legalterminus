@@ -25,6 +25,12 @@ export interface WebsiteOrderItem {
   /** #256: when a coupon reduced this line — its catalogue price, and the discount before GST. */
   listPrice?: number;
   discount?: number;
+  /** #221: the answer to the product's question (e.g. User type: Prior User) and what it added before GST. */
+  optionId?: string;
+  optionLabel?: string;
+  optionName?: string;
+  basePrice?: number;
+  surcharge?: number;
   matter: { state: 'none' | 'awaiting_approval' | 'created' | 'failed' | 'not_applicable';
     taskId?: string; error?: string; reason?: string; deleted?: boolean };
 }
@@ -55,6 +61,16 @@ export interface WebsiteOrder {
   discount?: number;
   subtotalBeforeDiscount?: number;
   coupon?: { discountType: 'percent' | 'fixed'; discountValue: number };
+  /**
+   * #221: the answer to the product's question — e.g. User type: Prior User —
+   * the plan's own price, and the extra charge the answer added (before GST).
+   * `planName` already names the answer: "Supreme (Prior User)".
+   */
+  optionId?: string;
+  optionLabel?: string;
+  optionName?: string;
+  basePrice?: number;
+  surcharge?: number;
   amountPaid?: number;
   gateway: string;
   gatewayOrderId?: string;

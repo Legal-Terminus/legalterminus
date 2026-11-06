@@ -20,7 +20,7 @@ import { apiAs } from './api';
  */
 
 const API = () => process.env.E2E_API_BASE ?? 'http://localhost:5001';
-type Product = { key: string; code: string; label: string; plans: { id: string; price: number; active: boolean }[] };
+type Product = { choice?: unknown; key: string; code: string; label: string; plans: { id: string; price: number; active: boolean }[] };
 type Line = { productKey: string; planId: string; price: number; label: string; code: string };
 type Quote = { lines: { productKey: string; listPrice: number; discount: number; price: number; gst: number; amount: number }[];
   subtotalBeforeDiscount: number; discount: number; price: number; gst: number; gstPercent: number; amount: number; coupon: { code: string } | null };
@@ -80,7 +80,8 @@ test.describe.serial('Coupons #256 #257 #260 (simulated gateway)', () => {
       const config = await (await anon.get('/api/orders/config')).json();
       test.skip(config.gateway !== 'simulated', 'the simulated gateway is not active in this environment');
       const products = ((await (await admin.get('/api/pricing')).json()).products as Product[])
-        .filter((p) => p.plans.some((x) => x.active));
+        // #221: a product that asks a question (trademark's user type) needs an answer; not used here.
+        .filter((p) => p.plans.some((x) => x.active) && !p.choice);
       test.skip(products.length < 2, 'need two services on sale in the price catalogue');
       const pick = (p: Product): Line => {
         const plan = p.plans.find((x) => x.active)!;

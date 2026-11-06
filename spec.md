@@ -212,6 +212,8 @@ The admin has access to a comprehensive reporting dashboard covering 13 distinct
 
 **Website prices (E24-S01)** — **Given** an admin opens Settings → Website Prices and changes a plan's price, **Then** the website shows the new price within a couple of minutes and a payment for that plan is charged that amount. A manager can change prices too (#241); no other role can view or change them. At least one plan of a service stays on sale.
 
+**Trademark user type (#221)** — **Given** a customer opens Trademark Registration on the website, **Then** above the four plans they must choose **Proposed to be Used** or **Prior User**; nothing is chosen for them, and Buy Now with no choice asks them to choose first. Prior User adds an extra charge (₹2,500 unless the firm changes it under Website Prices — admins and managers) to every plan, before GST and before any coupon; every card's price changes at once, and the checkout shows the user type and the final amount. The server works the amount out from the plan and the user type — the page cannot set it — for Buy Now and for the cart, which keeps and shows the user type and lets it be changed. Website Orders shows the user type, the plan price and the extra charge; the matter opened on approval shows them in its payment note.
+
 ---
 
 ### User Story 8 — Role-Based User and Client Management (Priority: P2)
@@ -690,6 +692,12 @@ coupon { discountType, discountValue, scope, validity, productKeys?, minAmount?,
 items[].listPrice, items[].discount      // (top level on a one-service order)
 ```
 `price`, `gst` and `amount` are AFTER the discount (GST worked on the discounted price).
+
+#221 — an order (or cart line) for a product that asks a question (trademark's user type) also has
+`optionId, optionName, optionLabel, basePrice (the plan's own price), surcharge`; `price` is
+basePrice + surcharge and `planName` names the answer ("Supreme (Prior User)"). The matter it opens
+carries `websiteOrderPlanName` and `websiteOrderOption { label, id, name }`. In
+`pricingCatalog/{productKey}` the question is `choice { label, options[{ id, name, surcharge }] }`.
 
 ### `coupons/{CODE}` — coupon codes (#256, #257, #260)
 The document id is the code (upper case, `[A-Z0-9-]{3,30}`), so each is unique. Backend only.

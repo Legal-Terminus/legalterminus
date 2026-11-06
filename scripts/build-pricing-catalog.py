@@ -45,6 +45,17 @@ SERVICE_ALIASES = {
 # linked automatically; staff link them by hand under Website Prices.
 NOT_THE_SAME = {'bc-registration', 'cic-registration', 'cio-registration', 'cir-registration', 'company-to-llp'}
 
+# #221: a product's one required question, whose answer adds a surcharge (whole
+# rupees, before GST) to every plan. The question and its answers belong to the
+# website and live here; the surcharge below is only the starting figure — the
+# firm changes it under Website Prices, and the seed never overwrites it.
+CHOICES = {
+    'trademark-application': {'label': 'User type', 'options': [
+        {'id': 'proposed', 'name': 'Proposed to be Used', 'surcharge': 0},
+        {'id': 'prior-user', 'name': 'Prior User', 'surcharge': 2500},
+    ]},
+}
+
 def existing_codes():
     """key -> product code already issued. A code, once given, never changes or is reused."""
     if not os.path.exists(OUT): return {}
@@ -188,6 +199,9 @@ def build():
     for key in sorted(products):
         if key not in codes:
             codes[key] = f'SVC-{nxt:03d}'; nxt += 1
+    for key, choice in CHOICES.items():
+        if key not in products: problems.append(f'CHOICES names "{key}", which no live page sells')
+        else: products[key]['choice'] = choice
     products = collections.OrderedDict(
         (key, collections.OrderedDict([('code', codes[key]), *p.items()])) for key, p in products.items())
     return products, problems, notes

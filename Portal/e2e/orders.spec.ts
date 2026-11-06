@@ -22,7 +22,7 @@ import { env } from './helpers';
 const API = () => process.env.E2E_API_BASE ?? 'http://localhost:5001';
 type Pub = { orderId: string; status: string; price: number; gst: number; gstPercent: number; amount: number; matterId: string | null; failureReason: string | null; checkout?: { gateway: string } };
 type Full = Pub & { matter: { state: string; taskId?: string; reason?: string; approvedBy?: string; approvedByName?: string }; uid: string; gatewayPaymentId?: string; reviewReason?: string };
-type Product = { key: string; serviceKey: string | null; plans: { id: string; price: number; active: boolean }[] };
+type Product = { choice?: unknown; key: string; serviceKey: string | null; plans: { id: string; price: number; active: boolean }[] };
 
 let withWorkflow: { productKey: string; planId: string; price: number };
 /** #244: two more services WITH a workflow, different from each other, for a cart. */
@@ -72,7 +72,8 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
     try {
       const config = await (await anon.get('/api/orders/config')).json();
       test.skip(config.gateway !== 'simulated', 'the simulated gateway is not active in this environment');
-      const products = (await (await admin.get('/api/pricing')).json()).products as Product[];
+      // #221: a product that asks a question (trademark's user type) needs an answer; pricing.spec covers it.
+      const products = ((await (await admin.get('/api/pricing')).json()).products as Product[]).filter((p) => !p.choice);
       test.skip(products.length === 0, 'the price catalogue is not seeded in this database');
       const defs = await (await admin.get('/api/workflow-definitions')).json() as { serviceKeys?: string[] }[];
       const covered = new Set(defs.flatMap((d) => d.serviceKeys ?? []));

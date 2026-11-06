@@ -97,6 +97,7 @@ function OrderItems({ o }: { o: WebsiteOrder }) {
         return (
           <li key={`${it.productKey}-${i}`} className="text-xs">
             <span className="text-ink">{it.label} — {it.planName}</span>
+            {!!it.surcharge && <span className="text-ink-muted"> (incl. {inr(it.surcharge)} for {it.optionName})</span>}
             <span className="text-ink-muted"> · {inr(it.amount)}</span>
             {!!it.discount && <span className="text-ink-muted"> (after {inr(it.discount)} off {inr(it.listPrice ?? it.price)})</span>}
             {m.text && <span className={m.warn ? 'text-amber-800' : 'text-ink-muted'}> · {m.text}</span>}
@@ -136,6 +137,14 @@ function OrderDetails({ o, canManage, onChanged }: { o: WebsiteOrder; canManage:
     ['Order reference', o.orderId],
     ['Service', o.items?.length ? `${o.items.length} services` : `${o.label} — ${o.planName}`],
     ['Product code', o.productCode],
+    // #221: the answer the customer gave above the plans, and what it added.
+    ...(o.optionName ? ([
+      [o.optionLabel || 'Option', o.optionName],
+      ...(o.surcharge ? ([
+        ['Plan price', inr(o.basePrice ?? 0)],
+        [`Extra for ${o.optionName}`, inr(o.surcharge)],
+      ] as [string, string][]) : []),
+    ] as [string, string][]) : []),
     ['Customer', [o.customer?.name, o.customer?.email, o.customer?.phone].filter(Boolean).join(' · ')],
     ['Ordered', when(o.createdAt)],
     // #256: a coupon came off the price before GST.

@@ -9,7 +9,7 @@ import { getServiceCatalog } from '../../api/services';
 import { getWorkflowDefinitions } from '../../api/workflowDefinitions';
 import {
   getPricing, updatePricing, PRICING_QUERY_KEY,
-  type PlanEdit, type PricePlan, type PriceProduct, type ProductEdit,
+  type PlanEdit, type PriceChoice, type PricePlan, type PriceProduct, type ProductEdit,
 } from '../../api/pricing';
 
 /**
@@ -32,8 +32,14 @@ interface Draft { price: string; oldPrice: string; active: boolean }
 const toDraft = (p: PricePlan): Draft => ({ price: String(p.price), oldPrice: p.oldPrice ? String(p.oldPrice) : '', active: p.active });
 const whole = (s: string) => (/^\d+$/.test(s.trim()) ? Number(s.trim()) : NaN);
 
+/** #221: a surcharge as typed — whole rupees, 0 allowed. */
+const surchargeOk = (s: string) => /^\d+$/.test(s.trim());
+
 /** The first thing wrong with a product's drafts, in words — or null. */
-function problem(plans: PricePlan[], drafts: Record<string, Draft>): string | null {
+function problem(plans: PricePlan[], drafts: Record<string, Draft>, choice?: PriceChoice, extras: Record<string, string> = {}): string | null {
+  for (const o of choice?.options ?? []) {
+    if (!surchargeOk(extras[o.id] ?? '')) return `${o.name}: enter the extra charge in whole rupees (0 for none).`;
+  }
   for (const p of plans) {
     const d = drafts[p.id];
     const price = whole(d.price);
@@ -49,7 +55,7 @@ function problem(plans: PricePlan[], drafts: Record<string, Draft>): string | nu
 }
 
 /** Only what actually changed — so one admin's edit cannot undo another's. */
-function changes(product: PriceProduct, drafts: Record<string, Draft>, serviceKey: string | null): ProductEdit {
+function changes(product: PriceProduct, drafts: Record<string, Draft>, serviceKey: string | null, extras: Record<string, string> = {}): ProductEdit {
   const plans: PlanEdit[] = [];
   for (const p of product.plans) {
     const d = drafts[p.id];
@@ -60,11 +66,19 @@ function changes(product: PriceProduct, drafts: Record<string, Draft>, serviceKe
     if (d.active !== p.active) edit.active = d.active;
     if (Object.keys(edit).length > 1) plans.push(edit);
   }
+  // #221: only the surcharges that changed. A half-typed one counts as a change,
+  // so its problem is shown (and Save stays off until it is whole rupees).
+  const options = (product.choice?.options ?? [])
+    .filter((o) => (extras[o.id] ?? '').trim() !== String(o.surcharge))
+    .map((o) => ({ id: o.id, surcharge: Number((extras[o.id] ?? '').trim()) }));
   return {
     ...(plans.length ? { plans } : {}),
     ...(serviceKey !== product.serviceKey ? { serviceKey } : {}),
+    ...(options.length ? { choice: { options } } : {}),
   };
 }
+
+const toExtras = (p: PriceProduct) => Object.fromEntries((p.choice?.options ?? []).map((o) => [o.id, String(o.surcharge)]));
 
 export default function WebsitePricesPage() {
   const role = useAuthStore((s) => s.role);
@@ -156,11 +170,13 @@ function ProductCard({ product, isOpen, onToggle, canEdit, services, opensMatter
   const initial = () => Object.fromEntries(product.plans.map((p) => [p.id, toDraft(p)]));
   const [drafts, setDrafts] = useState<Record<string, Draft>>(initial);
   const [serviceKey, setServiceKey] = useState<string | null>(product.serviceKey);
+  // #221: the extra charge for each answer to the product's question, as typed.
+  const [extras, setExtras] = useState<Record<string, string>>(() => toExtras(product));
 
-  const edit = changes(product, drafts, serviceKey);
+  const edit = changes(product, drafts, serviceKey, extras);
   const dirty = Object.keys(edit).length > 0;
-  const error = problem(product.plans, drafts);
-  const reset = () => { setDrafts(initial()); setServiceKey(product.serviceKey); };
+  const error = problem(product.plans, drafts, product.choice, extras);
+  const reset = () => { setDrafts(initial()); setServiceKey(product.serviceKey); setExtras(toExtras(product)); };
 
   const save = useMutation({
     mutationFn: () => updatePricing(product.key, edit),
@@ -168,6 +184,7 @@ function ProductCard({ product, isOpen, onToggle, canEdit, services, opensMatter
       qc.setQueryData<PriceProduct[]>(PRICING_QUERY_KEY, (all) => all?.map((x) => (x.key === saved.key ? saved : x)));
       setDrafts(Object.fromEntries(saved.plans.map((p) => [p.id, toDraft(p)])));
       setServiceKey(saved.serviceKey);
+      setExtras(toExtras(saved));
       toast.success(`${saved.label}: prices saved. The website updates within a couple of minutes.`);
     },
     onError: (e: Error) => toast.error(e.message || 'Could not save the prices.'),
@@ -203,6 +220,7 @@ function ProductCard({ product, isOpen, onToggle, canEdit, services, opensMatter
             {product.plans.length} {product.plans.length === 1 ? 'plan' : 'plans'}
             {range && ` · ${range[0] === range[1] ? inr(range[0]) : `${inr(range[0])} – ${inr(range[1])}`}`}
             {onSale.length < product.plans.length && ` · ${product.plans.length - onSale.length} off sale`}
+            {product.choice && ` · ${product.choice.options.filter((o) => o.surcharge > 0).map((o) => `${o.name} +${inr(o.surcharge)}`).join(', ') || `asks ${product.choice.label.toLowerCase()}`}`}
           </span>
         </span>
         {/* Neutral unless something will happen: opening a matter is the exception worth marking. */}
@@ -277,6 +295,31 @@ function ProductCard({ product, isOpen, onToggle, canEdit, services, opensMatter
               );
             })}
           </div>
+
+          {/* #221: a required question on the website, whose answer adds to every plan. */}
+          {product.choice && (
+            <fieldset className="rounded-lg border border-hairline p-3" disabled={!canEdit || save.isPending}>
+              <legend className="px-1 text-sm font-medium text-ink">{product.choice.label} — extra charge on every plan</legend>
+              <p className="text-xs text-ink-muted mb-3">
+                Customers must choose one of these before they can buy. The extra charge is added to the plan's price, before GST
+                and before any coupon. Enter 0 for no extra charge.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {product.choice.options.map((o) => (
+                  <div key={o.id}>
+                    <label htmlFor={`${product.key}-option-${o.id}`} className="input-label">{o.name} (₹)</label>
+                    <input
+                      id={`${product.key}-option-${o.id}`}
+                      inputMode="numeric"
+                      value={extras[o.id] ?? ''}
+                      onChange={(e) => setExtras((x) => ({ ...x, [o.id]: e.target.value }))}
+                      className="input-field"
+                    />
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+          )}
 
           <div>
             <label htmlFor={`${product.key}-service`} className="input-label">Portal service</label>

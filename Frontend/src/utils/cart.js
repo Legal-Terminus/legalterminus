@@ -43,6 +43,14 @@ function clean(raw) {
     label: typeof raw.label === "string" ? raw.label.slice(0, 200) : raw.productKey,
     planName: typeof raw.planName === "string" ? raw.planName.slice(0, 200) : raw.planId,
     price: priceOf(raw.price),
+    // #221: the answer to the product's question ("prior-user"), where it asks one.
+    // `price` stays the PLAN's price; `optionSurcharge` is only shown until the
+    // catalogue arrives — the cart page and the server work the surcharge out themselves.
+    ...(typeof raw.optionId === "string" && raw.optionId ? {
+      optionId: raw.optionId.slice(0, 60),
+      optionName: typeof raw.optionName === "string" ? raw.optionName.slice(0, 100) : raw.optionId,
+      optionSurcharge: priceOf(raw.optionSurcharge),
+    } : {}),
   };
 }
 
@@ -79,7 +87,8 @@ export function addToCart(line) {
   const lines = getCart();
   const at = lines.findIndex((l) => l.productKey === next.productKey);
   if (at >= 0) {
-    if (lines[at].planId === next.planId) return "already";
+    // #221: the same plan with a different answer ("Prior User") is a swap too.
+    if (lines[at].planId === next.planId && lines[at].optionId === next.optionId) return "already";
     lines[at] = next;
     save(lines);
     return "swapped";
@@ -97,6 +106,13 @@ export function removeFromCart(productKey) {
 export function changePlan(productKey, plan) {
   save(getCart().map((l) => (l.productKey === productKey
     ? clean({ ...l, planId: plan.id, planName: plan.name, price: plan.price }) ?? l
+    : l)));
+}
+
+/** #221: change the answer to a product's question for a service in the cart. */
+export function changeOption(productKey, option) {
+  save(getCart().map((l) => (l.productKey === productKey
+    ? clean({ ...l, optionId: option.id, optionName: option.name, optionSurcharge: option.surcharge }) ?? l
     : l)));
 }
 

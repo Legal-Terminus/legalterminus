@@ -159,6 +159,8 @@ export function publicOrder(o) {
     matterId: o.matter?.state === 'created' || isMatterKind(o.kind) ? (o.matter?.taskId ?? o.taskId ?? null) : null,
     kind: o.kind ?? 'website',
     requestId: o.requestId ?? null, // #222
+    // #221: the answer to the product's question, and what it added before GST.
+    ...(o.optionId ? { optionLabel: o.optionLabel, optionName: o.optionName, surcharge: o.surcharge, basePrice: o.basePrice } : {}),
     // #256: what a coupon took off, before GST.
     ...(o.couponCode ? { couponCode: o.couponCode, discount: o.discount, subtotalBeforeDiscount: o.subtotalBeforeDiscount } : {}),
     // #244: a cart order lists its services, each with the matter it opened.
@@ -213,10 +215,12 @@ async function tellStaff(title, message, taskId, roles = ['admin']) {
  * record; nothing about the price comes from the request. Throws the coupon's
  * own friendly 4xx when it cannot be used on this order.
  */
-async function priceWanted({ uid, productKey, planId, items, couponCode }) {
-  const wanted = requestedItems({ productKey, planId, items });
+async function priceWanted({ uid, productKey, planId, optionId, items, couponCode }) {
+  const wanted = requestedItems({ productKey, planId, optionId, items });
   const catalog = await loadCatalog({ fresh: true });
-  const plans = wanted.map((w) => findPlan(catalog, w.productKey, w.planId));
+  // #221: the answer to a product's question adds its surcharge here, before
+  // GST and before any coupon; a missing or unknown answer is refused (400).
+  const plans = wanted.map((w) => findPlan(catalog, w.productKey, w.planId, w.optionId));
   if (!normaliseCode(couponCode)) return { wanted, plans, priced: priceOrder(plans), coupon: null };
   priceOrder(plans); // an unknown plan is refused as before, whatever the code
   const coupon = await findCoupon(couponCode);
@@ -231,8 +235,8 @@ async function priceWanted({ uid, productKey, planId, items, couponCode }) {
  * with the coupon if one is given. Writes nothing; the order is priced again,
  * from scratch, when it is made.
  */
-export async function quoteOrder({ uid, productKey, planId, items, couponCode }) {
-  const { priced, coupon } = await priceWanted({ uid, productKey, planId, items, couponCode });
+export async function quoteOrder({ uid, productKey, planId, optionId, items, couponCode }) {
+  const { priced, coupon } = await priceWanted({ uid, productKey, planId, optionId, items, couponCode });
   return quoteView(priced, coupon);
 }
 
@@ -240,13 +244,13 @@ export async function quoteOrder({ uid, productKey, planId, items, couponCode })
  * Start an order. The gateway order is created FIRST: if the gateway cannot be
  * reached nothing is stored, so there is no half-made order to explain later.
  */
-export async function createOrder({ uid, customer, productKey, planId, items, couponCode, simulate }) {
+export async function createOrder({ uid, customer, productKey, planId, optionId, items, couponCode, simulate }) {
   const gw = gateway();
   if (!gw) throw httpError(503, 'Online payment is not available right now.', 'PAYMENTS_OFF');
   // #244: one plan or a cart of them. Every price is read fresh from the
   // catalogue (one read for the whole cart) — never from the request.
   // #256: and the coupon, if any, from its own record.
-  const { wanted, plans, priced, coupon, labels } = await priceWanted({ uid, productKey, planId, items, couponCode });
+  const { wanted, plans, priced, coupon, labels } = await priceWanted({ uid, productKey, planId, optionId, items, couponCode });
 
   const orderId = newOrderId();
   let gatewayOrderId;
@@ -540,7 +544,8 @@ async function openMatter(o, approval = {}, line = null) {
       clientUid: o.uid, serviceKey: what.serviceKey,
       paymentStatus: 'fully_paid', totalCost: what.amount, amountReceived: what.amount,
       paymentMode: o.gateway === 'simulated' ? 'Online (test payment)' : 'Online (Razorpay)',
-      paymentDescription: `Website order ${o.orderId}${line ? ` (${line.index + 1} of ${o.items.length}: ${it.label})` : ''}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}${what.gst ? ` (${rupees(priceOf(what))} + ${rupees(what.gst)} GST)` : ''}${what.discount ? `, after coupon ${o.couponCode}: ${rupees(what.discount)} off ${rupees(what.listPrice)}` : ''}`,
+      // #221: the plan bought — with the answer to its question ("Supreme (Prior User)") — so staff see it on the matter.
+      paymentDescription: `Website order ${o.orderId}${line ? ` (${line.index + 1} of ${o.items.length}: ${it.label})` : ''}${what.planName ? `, ${what.planName}` : ''}${what.optionId ? ` — ${what.optionLabel}: ${what.optionName}, surcharge ${rupees(what.surcharge)} before GST` : ''}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}${what.gst ? ` (${rupees(priceOf(what))} + ${rupees(what.gst)} GST)` : ''}${what.discount ? `, after coupon ${o.couponCode}: ${rupees(what.discount)} off ${rupees(what.listPrice)}` : ''}`,
     },
   }, res);
   if (result.code !== 201 || !result.body?.id) {
@@ -549,6 +554,9 @@ async function openMatter(o, approval = {}, line = null) {
   await db.collection('tasks').doc(result.body.id).set({
     websiteOrderId: o.orderId, websiteOrderApprovedBy: approval.approvedBy ?? null,
     ...(line ? { websiteOrderItem: line.index } : {}),
+    // #221: the plan and the answer to its question, as fields too, for reports and filters.
+    ...(what.planName ? { websiteOrderPlanName: what.planName } : {}),
+    ...(what.optionId ? { websiteOrderOption: { label: what.optionLabel, id: what.optionId, name: what.optionName } } : {}),
   }, { merge: true });
   return result.body.id;
 }

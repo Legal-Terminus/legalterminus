@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaLock, FaTrashAlt, FaShoppingCart, FaArrowLeft } from "react-icons/fa";
 import ProCheckoutModal from "../../Components/ProCheckoutModal/ProCheckoutModal";
-import { useCart, removeFromCart, changePlan, MAX_CART_ITEMS } from "../../utils/cart.js";
+import { useCart, removeFromCart, changePlan, changeOption, MAX_CART_ITEMS } from "../../utils/cart.js";
 import { loadPricing, withGst, inr, PAYMENTS_ENABLED } from "../../utils/pricing.js";
 import "./Cart.css";
 
@@ -38,25 +38,38 @@ const Cart = () => {
   }, []);
 
   // The live price of each line, and whether its plan is still for sale.
+  // #221: a product that asks a question (the trademark "Proposed to be Used" /
+  // "Prior User") shows the answer, lets it be changed, and adds its surcharge
+  // to the line. A line with no answer — or one no longer offered — must be
+  // answered before paying; nothing is chosen for the customer.
   const view = lines.map((l) => {
     const product = catalog?.[l.productKey];
     const live = product?.plans?.find((p) => p.id === l.planId);
-    const price = live?.price ?? l.price;
+    const choice = product?.choice ?? null;
+    const option = choice?.options?.find((o) => o.id === l.optionId) ?? null;
+    const surcharge = option ? option.surcharge : (catalog ? 0 : (l.optionSurcharge ?? 0));
+    const price = (live?.price ?? l.price) + surcharge;
     return {
       ...l,
       label: product?.label || l.label,
       planName: planLabel(live?.name || l.planName),
+      optionName: option?.name ?? l.optionName,
       price,
+      surcharge,
       // Only a higher figure is a cut price — the same rule as the pricing cards.
-      oldPrice: live?.oldPrice > price ? live.oldPrice : null,
+      oldPrice: live?.oldPrice + surcharge > price ? live.oldPrice + surcharge : null,
       plans: product?.plans ?? [],
+      choice,
       unavailable: !!catalog && !live,
+      needsOption: !!choice && !option,
+      // An answer to a question the product no longer asks is not sent.
+      ...(catalog && !choice ? { optionId: undefined, optionName: undefined } : {}),
       ...withGst(price),
     };
   });
   const sum = (k) => Math.round(view.reduce((s, l) => s + l[k], 0) * 100) / 100;
   const saved = Math.round(view.reduce((s, l) => s + (l.oldPrice ? l.oldPrice - l.price : 0), 0));
-  const blocked = view.some((l) => l.unavailable);
+  const blocked = view.some((l) => l.unavailable || l.needsOption);
   const count = `${view.length} service${view.length === 1 ? "" : "s"}`;
 
   if (!PAYMENTS_ENABLED || view.length === 0) {
@@ -113,6 +126,30 @@ const Cart = () => {
                   ) : (
                     <p className="cart-plan cart-plan-text"><span className="cart-plan-label">Plan</span>{l.planName}</p>
                   )}
+                  {/* #221: the answer to the product's question, kept from the plan card and changeable here. */}
+                  {l.choice && (
+                    <label className="cart-plan cart-option">
+                      <span className="cart-plan-label">{l.choice.label}</span>
+                      <select
+                        value={l.needsOption ? "" : l.optionId}
+                        aria-label={`${l.choice.label} for ${l.label}`}
+                        onChange={(e) => {
+                          const next = l.choice.options.find((o) => o.id === e.target.value);
+                          if (next) changeOption(l.productKey, next);
+                        }}
+                      >
+                        {l.needsOption && <option value="">Choose one</option>}
+                        {l.choice.options.map((o) => (
+                          <option key={o.id} value={o.id}>{o.name}{o.surcharge > 0 ? ` (+ ${inr(o.surcharge)})` : ""}</option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                  {l.needsOption && (
+                    <p className="cart-line-warn" role="alert">
+                      Choose {l.choice.options.map((o) => o.name).join(" or ")} to see the price of this service.
+                    </p>
+                  )}
                   {l.unavailable && (
                     <p className="cart-line-warn" role="alert">This plan is no longer offered. Choose another plan or remove it.</p>
                   )}
@@ -121,6 +158,7 @@ const Cart = () => {
                 <div className="cart-line-price">
                   {l.oldPrice && <s className="cart-line-was"><span className="cart-sr">Was </span>{inr(l.oldPrice)}</s>}
                   <span className="cart-line-now">{inr(l.price)}</span>
+                  {l.surcharge > 0 && <span className="cart-line-gst">Includes {inr(l.surcharge)} for {l.optionName}</span>}
                   <span className="cart-line-gst">+ {inr(l.gst)} GST</span>
                 </div>
 
@@ -161,7 +199,7 @@ const Cart = () => {
           >
             <FaLock aria-hidden="true" /> Checkout · pay {inr(sum("total"))}
           </button>
-          {blocked && <p className="cart-note">Choose a plan for every service to continue.</p>}
+          {blocked && <p className="cart-note">Choose a plan{view.some((l) => l.needsOption) ? " and the options asked for" : ""} for every service to continue.</p>}
           {/* #256: codes are checked and applied by the server, at checkout. */}
           <p className="cart-summary-note cart-coupon-note">Have a coupon code? You can apply it at checkout.</p>
           <p className="cart-summary-note">

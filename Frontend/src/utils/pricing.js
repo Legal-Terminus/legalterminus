@@ -25,7 +25,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
  */
 export const PAYMENTS_ENABLED = import.meta.env.VITE_PAYMENTS_ENABLED === "true";
 
-let cached = null;      // { [productKey]: { label, plans: [{ id, name, price, oldPrice }] } }
+let cached = null;      // { [productKey]: { label, plans: [{ id, name, price, oldPrice }], choice? } }
 let pending = null;     // one request for the whole site, however many cards ask
 
 /**
@@ -100,12 +100,8 @@ export function withLivePrices(defaults, product) {
   return plans.length ? plans : defaults;
 }
 
-/**
- * `const PLANS = usePlans("trademark-application", DEFAULT_PLANS);`
- *
- * `productKey` is the same value the component passes to the checkout as `source`.
- */
-export function usePlans(productKey, defaults) {
+/** The catalogue, once loaded; null until then (and if it cannot be reached). */
+function useCatalog() {
   const [catalog, setCatalog] = useState(cached);
   useEffect(() => {
     if (cached) return undefined;
@@ -113,5 +109,29 @@ export function usePlans(productKey, defaults) {
     loadPricing().then((c) => { if (alive && c) setCatalog(c); });
     return () => { alive = false; };
   }, []);
+  return catalog;
+}
+
+/**
+ * `const PLANS = usePlans("trademark-application", DEFAULT_PLANS);`
+ *
+ * `productKey` is the same value the component passes to the checkout as `source`.
+ */
+export function usePlans(productKey, defaults) {
+  const catalog = useCatalog();
   return useMemo(() => withLivePrices(defaults, catalog?.[productKey]), [defaults, catalog, productKey]);
 }
+
+/**
+ * #221: a product's one required question — `{ label, options: [{ id, name,
+ * surcharge }] }` — as the catalogue has it, or the component's default until
+ * (and unless) the catalogue arrives. The surcharge shown is only for display:
+ * the page sends the ANSWER's id, and the server adds the surcharge itself.
+ */
+export function useChoice(productKey, defaultChoice) {
+  const catalog = useCatalog();
+  return catalog?.[productKey]?.choice ?? defaultChoice ?? null;
+}
+
+/** #221: what an answer adds to a plan's price, before GST; 0 when there is none. */
+export const surchargeOf = (choice, optionId) => choice?.options?.find((o) => o.id === optionId)?.surcharge ?? 0;

@@ -939,3 +939,6 @@
 .pco-coupon-error { margin: 6px 0 0; font-size: 14px; color: #c62828; }
 .pco-summary-discount { color: #168a2a; font-weight: 600; }
 .pco-summary-saved { margin: 8px 0 0; font-size: 13px; color: #166534; text-align: right; }
+
+/* #221: the answer to the product's question ("User type: Prior User"). */
+.pco-plan-option-tag { font-size: 14px; color: #3f4a44; margin: 0 0 4px; }
