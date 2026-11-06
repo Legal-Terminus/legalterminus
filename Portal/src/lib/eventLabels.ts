@@ -39,6 +39,8 @@ const EVENT_LABEL: Record<string, string> = {
   PAYMENT_RECORDED: 'Payment recorded',
   PAYMENT_UPDATED: 'Payment updated',
   PAYMENT_DELETED: 'Payment deleted',
+  REFUND_RECORDED: 'Refund recorded',
+  REFUND_UPDATED: 'Refund updated',
   ADMIN_OVERRIDE_PAYMENT: 'Payment gate overridden',
   STEP_NOTE: 'Note added',
   STEP_REASSIGNED: 'Step reassigned',

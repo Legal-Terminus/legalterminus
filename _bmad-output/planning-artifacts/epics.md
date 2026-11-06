@@ -6336,3 +6336,30 @@ and confirming a shared message".
   the API (`PUT /api/pricing/:productKey` now allows `admin, manager`).
 - Tests: `Portal/e2e/pricing.spec.ts` (a manager saves a price through the API and the
   screen; other roles still 403).
+
+### Refund log; the client dashboard before approval (2026-11-05, #240, #242) 🔄 In review
+
+**Refund log (#240).** Admins and managers record a refund under a matter's Payments →
+**Refund History** — reason, refund amount, initiation date, transaction id, status
+(Initiated, Processing, Successfully Credited, Failed) — and move the status on by hand.
+The client name, matter and payment amount come from the matter. A refund of a website
+order that was never approved is recorded on the order (Website Orders → Details), and
+stops it being approved. The client sees their matter's refunds read-only and a fifth
+**Refund** card on the dashboard when they have one. Design in architecture.md, "Refund
+log and the client dashboard before approval".
+- Not built: refund automation. Razorpay's refund API is not connected; the refund is
+  made in Razorpay or at the bank and recorded here.
+- Decision: a refund does not change the payment history. Amount paid stays what was
+  received; the log shows net received beside it.
+- Refund total never exceeds the amount paid (server-checked). Credited needs the
+  transaction id. Credited and Failed are final.
+
+**Client dashboard before approval (#242).** A client who paid on the website and has no
+matter yet sees Payment status, Matter status, Amount paid and Service requests with a
+Pending approval notice, never ₹0 due or progress. After approval the usual four cards
+return on the next refresh. A client with matters sees a "Waiting for approval" list. A
+service cancelled and refunded before approval shows as Refunded with amount, status and
+reason (the open question in #242), and the notice reads "Service cancelled".
+- New endpoint `GET /api/orders/mine` (the client's own orders, from the sign-in).
+- Tests: `backend/src/__tests__/refunds.test.js`, `Portal/e2e/refunds.spec.ts`.
+

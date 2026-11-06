@@ -39,6 +39,11 @@
  * payment history (`creditMatter`) instead of waiting for approval, and its
  * `matter.state` runs balance ─▶ crediting ─▶ credited | credit_failed.
  *
+ * REFUNDS (#240): staff may record a refund against an order whose matter was
+ * never opened (services/refunds.service.js). While one stands the order cannot
+ * be approved, and once refunds credited reach what was paid it is `refunded`.
+ * The customer reads their own requests through `listMyOrders` (#242).
+ *
  * `decideSettlement`, `matterOutcome`, `canApprove` and `payNowRefusal` are pure
  * and unit-tested.
  */
@@ -50,6 +55,7 @@ import { gateway } from './paymentGateway.service.js';
 import { getCompiledForServiceKey } from './workflowDefinitions.service.js';
 import { createNotification } from '../controllers/notifications.controller.js';
 import { sendNotificationEmail, publicSiteUrl } from './emailService.js';
+import { clientOrderStage } from './refunds.service.js';
 
 export const COLLECTION = 'paymentOrders';
 /** An order nobody completed is marked abandoned after this long. */
@@ -95,6 +101,9 @@ export function matterOutcome(order, hasWorkflow) {
 export function canApprove(order) {
   if (order.status === 'refunded') return 'This order was refunded. A matter cannot be opened for it.';
   if (order.status !== 'paid') return 'Only a paid order can be approved.';
+  // #240/#242: a refund recorded before approval means the service was
+  // cancelled. While it stands (it has not failed), no matter is opened.
+  if ((order.refundSummary?.activeTotal ?? 0) > 0) return 'A refund has been recorded for this order. A matter cannot be opened for it.';
   const state = order.matter?.state ?? 'none';
   if (state === 'created') return 'A matter has already been opened for this order.';
   if (state === 'pending') return 'This order is already being approved.';
@@ -116,6 +125,24 @@ export function publicOrder(o) {
     // Whether there is a matter to go and look at — not its internal state.
     matterId: o.matter?.state === 'created' || o.kind === 'matter_balance' ? (o.matter?.taskId ?? o.taskId ?? null) : null,
     kind: o.kind ?? 'website',
+  };
+}
+
+/**
+ * #242 — one of the client's own service requests, for their dashboard: the
+ * order as `publicOrder` shows it, where it stands (`stage`), and its refunds'
+ * rollup (#240). Approval is a stage of its own, never inferred from payment.
+ */
+export function clientOrderView(o) {
+  const r = o.refundSummary;
+  return {
+    ...publicOrder(o),
+    amountPaid: o.amountPaid ?? (['paid', 'review', 'refunded'].includes(o.status) ? o.amount : 0),
+    stage: clientOrderStage(o),
+    refund: r?.count ? {
+      count: r.count, activeTotal: r.activeTotal, creditedTotal: r.creditedTotal,
+      latest: r.latest ? { ...r.latest, id: undefined } : null,
+    } : null,
   };
 }
 
@@ -490,6 +517,21 @@ export async function listOrders({ limit = 25, cursor } = {}) {
     found.forEach((t, i) => { if (!t.exists) linked[i].matter = { ...linked[i].matter, deleted: true }; });
   }
   return { data, nextCursor: rows.length > limit ? rows[limit - 1].orderId : null };
+}
+
+/**
+ * #242 — the signed-in customer's own website orders that are SERVICE
+ * REQUESTS (paid, under review or refunded; not Pay Now payments), newest
+ * first. One equality query on `uid` — no composite index — capped, and sorted
+ * here: a customer has a handful of orders, never the whole collection.
+ */
+export const MY_ORDERS_LIMIT = 100;
+export async function listMyOrders(uid) {
+  const snap = await col().where('uid', '==', uid).limit(MY_ORDERS_LIMIT).get();
+  return snap.docs
+    .map((d) => clientOrderView({ orderId: d.id, ...d.data() }))
+    .filter((o) => o.stage)
+    .sort((a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? '')));
 }
 
 /** TEST ENVIRONMENTS ONLY (reached through the simulator): remove a simulated order. */

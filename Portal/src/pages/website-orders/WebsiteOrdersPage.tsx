@@ -6,6 +6,7 @@ import PageShell from '../../components/common/PageShell';
 import { SkeletonCards } from '../../components/common/Skeleton';
 import { useToast } from '../../components/common/toastContext';
 import { useAuthStore } from '../../store/authStore';
+import RefundHistory from '../../components/payments/RefundHistory';
 import {
   approveOrder, getWebsiteOrders, reconcileOrder, retryOrderMatter, WEBSITE_ORDERS_KEY,
   type OrderStatus, type WebsiteOrder,
@@ -40,6 +41,10 @@ const STATUS: Record<OrderStatus, { label: string; cls: string }> = {
 function matterLine(o: WebsiteOrder): { text: string; warn: boolean } {
   if (o.status === 'review') return { text: o.reviewReason ?? 'The amount paid does not match. Check before opening a matter.', warn: true };
   if (o.status !== 'paid') return { text: '—', warn: false };
+  // #240: a refund recorded before approval — the service was cancelled.
+  if (o.kind !== 'matter_balance' && o.matter.state !== 'created' && (o.refundSummary?.activeTotal ?? 0) > 0) {
+    return { text: `Refund of ${inr(o.refundSummary!.activeTotal)} recorded. No matter will be opened.`, warn: false };
+  }
   // #220: a client's Pay Now payment goes into an existing matter's payment history.
   if (o.kind === 'matter_balance') {
     switch (o.matter.state) {
@@ -72,7 +77,11 @@ const LEARNED: Record<string, string> = {
  * what someone needs when a customer rings to ask "did my payment go through?"
  * — the references to quote, how it was paid, and whether the money matched.
  */
-function OrderDetails({ o }: { o: WebsiteOrder }) {
+/** #240: an order refunded before its matter existed keeps its refunds itself. */
+const refundableHere = (o: WebsiteOrder) => o.kind !== 'matter_balance'
+  && ['paid', 'review', 'refunded'].includes(o.status) && o.matter.state !== 'created' && o.matter.state !== 'pending';
+
+function OrderDetails({ o, canManage, onChanged }: { o: WebsiteOrder; canManage: boolean; onChanged: () => void }) {
   const paidSomething = ['paid', 'review', 'refunded'].includes(o.status);
   const matches = o.amountPaid === o.amount;
   const rows: [string, string | undefined | null][] = [
@@ -119,6 +128,13 @@ function OrderDetails({ o }: { o: WebsiteOrder }) {
           </div>
         ))}
       </dl>
+      {/* #240: refunds before approval — admins and managers record them here. */}
+      {canManage && refundableHere(o) && (
+        <div>
+          <p className="text-sm font-semibold text-ink mb-2">Refund history</p>
+          <RefundHistory target={{ kind: 'order', id: o.orderId }} canEdit compact onChanged={onChanged} />
+        </div>
+      )}
     </div>
   );
 }
@@ -177,7 +193,7 @@ export default function WebsiteOrdersPage() {
 
   const Actions = ({ o }: { o: WebsiteOrder }) => (
     <div className="flex flex-wrap gap-2">
-      {o.status === 'paid' && o.matter.state === 'awaiting_approval' && (
+      {o.status === 'paid' && o.matter.state === 'awaiting_approval' && !((o.refundSummary?.activeTotal ?? 0) > 0) && (
         <button type="button" className="btn-primary min-h-11 disabled:opacity-50" disabled={busy}
           aria-label={`Approve order ${o.orderId} and open its matter`} onClick={() => approve.mutate(o.orderId)}>
           Approve and open matter
@@ -257,7 +273,7 @@ export default function WebsiteOrdersPage() {
                     </tr>,
                     open === o.orderId && (
                       <tr key={`${o.orderId}-details`} className="border-b border-hairline bg-surface-soft">
-                        <td colSpan={7} className="p-4"><OrderDetails o={o} /></td>
+                        <td colSpan={7} className="p-4"><OrderDetails o={o} canManage={canManage} onChanged={refresh} /></td>
                       </tr>
                     ),
                   ];
@@ -281,7 +297,7 @@ export default function WebsiteOrdersPage() {
                   <p className="mt-2 text-sm text-ink">{inr(o.amount)} <span className="text-xs text-ink-muted">· {o.orderId} · {when(o.createdAt)}</span></p>
                   <p className={`mt-1 text-sm ${m.warn ? 'text-amber-800' : 'text-ink-muted'}`}>{m.text}</p>
                   <div className="mt-3"><Actions o={o} /></div>
-                  {open === o.orderId && <div className="mt-3 pt-3 border-t border-hairline"><OrderDetails o={o} /></div>}
+                  {open === o.orderId && <div className="mt-3 pt-3 border-t border-hairline"><OrderDetails o={o} canManage={canManage} onChanged={refresh} /></div>}
                 </li>
               );
             })}

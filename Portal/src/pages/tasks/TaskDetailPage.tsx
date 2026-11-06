@@ -21,6 +21,7 @@ import { CommentImageTaskContext } from '../../components/common/commentImageCon
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
 import PayNowCard from '../../components/tasks/PayNowCard';
+import RefundHistory from '../../components/payments/RefundHistory';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
@@ -2767,6 +2768,12 @@ function PaymentsTab({ task, canEdit, isClient }: { task: Task; canEdit: boolean
     {/* #148: the payment LEDGER — clients pay in instalments, so every payment
         received is its own record rather than one overwritten latest figure. */}
     <PaymentHistory task={task} canEdit={canEdit} />
+
+    {/* #240: Refund History. Staff always see it (to record one); the client
+        sees it, read-only, once a refund has been recorded on their matter. */}
+    {(canEdit || (task.refundSummary?.count ?? 0) > 0) && (
+      <RefundHistory target={{ kind: 'task', id: task.id }} canEdit={canEdit} />
+    )}
     </div>
   );
 }

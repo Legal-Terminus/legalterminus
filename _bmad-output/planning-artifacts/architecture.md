@@ -2341,3 +2341,64 @@ Ambyflow's shapes, and `validateDefinition` runs `validateCondition`, `validateF
 and `validateDueRule`. Step objects are not `.strict()`, so before this an unlisted
 field was dropped without an error. When the Portal editor gains a step field, add it
 here in the same change.
+
+## Refund log and the client dashboard before approval (#240, #242, 2026-11-05)
+
+**Refunds are recorded, not sent.** Razorpay's refund API is not wired in. Staff
+make the refund in Razorpay (or at the bank) and record it; its status is moved on
+by hand: initiated → processing → credited ("Successfully Credited") | failed.
+`credited` and `failed` are final, so the log keeps what happened; a retry is a new
+refund. `credited` needs a `transactionId`. (Razorpay's `refund.processed` webhook
+still marks a website order `refunded`, as before; it writes nothing to this log.)
+
+- **Storage.** `tasks/{taskId}/refunds/{id}` for a matter;
+  `paymentOrders/{orderId}/refunds/{id}` for a website order whose matter was never
+  opened (refused with `USE_MATTER` once the matter exists, and for Pay Now orders).
+  The parent carries `refundSummary` (`count`, `activeTotal` — every refund not
+  failed, `creditedTotal`, `latest`), recomputed from the subcollection in the same
+  transaction as each write — the ledger-rollup pattern. It holds no staff names,
+  because the client reads it. The client dashboard therefore needs no subcollection
+  or collection-group read, and no new index.
+- **Amounts are the server's.** `paymentAmount` is the matter's `amountPaid` (or the
+  order's `amountPaid ?? amount`) at the time; the schema (`refund.schema.js`,
+  `.strict()`) refuses `paymentAmount`/`clientUid`. In the transaction:
+  `refundAmount ≤ paid − activeTotal`, else 400 `REFUND_EXCEEDS_PAID`. A failed
+  refund frees its amount.
+- **Decision: a refund does not change the payment ledger.** `amountPaid`,
+  `amountDue` and `paymentStatus` stay derived from `tasks/{id}/payments` only.
+  Rewriting them would reopen a payment checkpoint on a paid matter and erase the
+  record of money received. The Refund History shows **Net received** =
+  `amountPaid − creditedTotal` beside the ledger instead. If the firm wants a refunded
+  matter to read differently in reports, that is a new decision.
+- **Order before approval.** While an order has `refundSummary.activeTotal > 0`,
+  `canApprove` refuses (409): the service was cancelled. When `creditedTotal ≥` paid
+  the order becomes `status: 'refunded'` with `refundedAt`.
+- **Access.** `GET /api/tasks/:id/refunds` admin, manager, client (owner via
+  `clientCanSeeMatter`, otherwise 404); `POST`/`PATCH` admin, manager. Team members
+  are refused, as for payments (#148). `/api/orders/:id/refunds` (GET/POST/PATCH) is
+  admin/manager. Clients never get `recordedBy*` or `statusHistory`. Each matter
+  change writes a `REFUND_RECORDED` / `REFUND_UPDATED` event (staff-only feed) and an
+  in-app notification to the client (with the usual email mirror) on record and on
+  credited/failed. Firestore rule: `tasks/{id}/refunds` read admin/manager, write
+  never; order refunds fall to the catch-all deny.
+- Code: `services/refunds.service.js` (pure rules + I/O), `controllers/refunds.controller.js`,
+  `schemas/refund.schema.js`; Portal `components/payments/RefundHistory.tsx`, used in the
+  matter's Payments tab and in Website Orders → Details.
+
+**Client dashboard before approval (#242).** `GET /api/orders/mine` (client only,
+`req.user.uid` from the token; registered before `/:orderId`) returns the client's
+own paid / under-review / refunded website orders (not Pay Now) as `clientOrderView`:
+`publicOrder` plus `amountPaid`, `stage` and the refund rollup. One equality query on
+`uid`, capped at 100, sorted in memory — no composite index. `clientOrderStage` is
+pure: `approved` (matter created) · `refunded` · `refund_in_progress` ·
+`under_review` · `awaiting_approval`. Approval is never inferred from payment.
+
+`ClientCockpit` polls both `/api/tasks` and `/api/orders/mine` every 30 s. With no
+matters and at least one unapproved request it renders the pre-approval cards
+(Payment status, Matter status, Amount paid, Service requests) and the Pending
+Approval notice, and no amount due or progress. Otherwise the usual four cards, plus
+a "Waiting for approval" list when requests are still open. A fifth **Refund** card
+(`activeTotal` across matters and orders, latest status and reason) appears only when
+a refund exists. The switch after approval needs nothing: the matter appears in
+`/api/tasks` and the order's stage becomes `approved`.
+

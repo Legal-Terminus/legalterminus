@@ -1,3 +1,5 @@
+import type { RefundSummary } from '../api/refunds';
+
 export type TaskStatus =
   | 'pending' | 'active' | 'completed' | 'cancelled' | 'on_hold'
   | 'pending_admin_approval' | 'rejected' | 'archived';
@@ -58,6 +60,8 @@ export interface Task {
   paymentDescription?: string | null;
   /** #220: Pay Now is on unless an admin/manager switched it off (`false`). */
   onlinePaymentEnabled?: boolean;
+  /** #240: rollup of the matter's refund log, kept in step server-side. Absent until a refund is recorded. */
+  refundSummary?: RefundSummary;
   professionalUid?: string | null; // #85
   professionalName?: string | null; // #85 (snapshot for display)
   /** #167: recurring cadence, or null/absent when the matter is one-off. */

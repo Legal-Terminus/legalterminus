@@ -109,6 +109,17 @@ service cloud.firestore {
         allow read: if isAdminOrManager();
         allow write: if false;
       }
+
+      // ── tasks/{taskId}/refunds/{refundId} ────────────────────────────────
+      // #240: the refund log. Same rule as the ledger: admin/manager may read
+      // directly, nobody writes from the client SDK. The client reads their own
+      // matter's refunds through GET /api/tasks/:taskId/refunds, which strips
+      // staff identities. (Refunds of a website order before approval live under
+      // paymentOrders/{orderId}/refunds — denied here by the catch-all.)
+      match /refunds/{refundId} {
+        allow read: if isAdminOrManager();
+        allow write: if false;
+      }
     }
 
     // ── workflowTemplates/{workflowId} ─────────────────────────────────────

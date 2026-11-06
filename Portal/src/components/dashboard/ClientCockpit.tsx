@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Clock } from 'lucide-react';
 import { getTasks } from '../../api/tasks';
+import { getMyServiceRequests, MY_SERVICE_REQUESTS_KEY, type ServiceRequest } from '../../api/websiteOrders';
+import { REFUND_STATUS, type RefundSummary } from '../../api/refunds';
 import { stepProgress } from '../../lib/stepProgress';
 import type { Task } from '../../types/task';
 import CockpitStat, { CockpitSection } from './CockpitStat';
 
-const inr = (n: number) => `₹${(n ?? 0).toLocaleString('en-IN')}`;
+const inr = (n: number) => `₹${(n ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 
 const LIVE = new Set(['active', 'pending', 'pending_admin_approval', 'on_hold']);
 
@@ -17,6 +19,16 @@ const LIVE = new Set(['active', 'pending', 'pending_admin_approval', 'on_hold'])
  * The figures and the list come from the SAME query, which is what makes the
  * old "0 in progress while she has active matters" bug impossible: a count
  * cannot disagree with the rows it is counted from.
+ *
+ * #242: a client who bought on the website has PAID, but no matter exists until
+ * the firm approves the order. Until they have a matter the same four cards
+ * show the request instead (Payment status, Matter status, Amount paid, Service
+ * requests) with a Pending Approval notice — never "₹0 due" or workflow
+ * progress. It follows the data: once an order is approved its matter appears
+ * in the tasks query and the usual cards return, on the next refetch.
+ *
+ * #240: a fifth "Refund" card appears beside the four only when the client has
+ * a refund — colour marks the exception, and a zero is never shown.
  */
 export default function ClientCockpit() {
   const { data: tasks } = useQuery({
@@ -25,6 +37,21 @@ export default function ClientCockpit() {
     staleTime: 5_000,
     refetchInterval: 30_000,
   });
+  const { data: requestsRes } = useQuery({
+    queryKey: MY_SERVICE_REQUESTS_KEY,
+    queryFn: getMyServiceRequests,
+    staleTime: 5_000,
+    refetchInterval: 30_000,
+  });
+  // Orders still without a matter: waiting for approval, or refunded before it.
+  const requests = requestsRes?.data.filter((o) => o.stage !== 'approved');
+  const refund = refundCard(tasks ?? [], requestsRes?.data ?? []);
+
+  // Before approval: paid on the website, and no matter yet.
+  if (tasks && tasks.length === 0 && requests && requests.length > 0) {
+    return <PreApprovalCockpit requests={requests} refund={refund} />;
+  }
+  const waiting = requests?.filter((o) => o.stage !== 'refunded') ?? [];
 
   const live = tasks?.filter((t) => LIVE.has(t.status));
   const needsYou = live?.filter((t) => t.awaitingClient);
@@ -34,7 +61,7 @@ export default function ClientCockpit() {
 
   return (
     <>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div className={`grid grid-cols-2 ${refund ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-3 mb-6`}>
         <CockpitStat
           testId="stat-needs-you"
           label="Needs you"
@@ -52,7 +79,17 @@ export default function ClientCockpit() {
           tone="warning"
         />
         <CockpitStat testId="stat-completed" label="Completed" value={completed} to="/tasks?status=completed" />
+        {refund && <RefundStat refund={refund} />}
       </div>
+
+      {/* #242: a new purchase waiting for approval, beside matters already open. */}
+      {waiting.length > 0 && (
+        <CockpitSection title="Waiting for approval">
+          <ul className="flex flex-col gap-2" data-testid="cockpit-awaiting-approval">
+            {waiting.map((o) => <RequestRow key={o.orderId} request={o} />)}
+          </ul>
+        </CockpitSection>
+      )}
 
       {needsYou && needsYou.length > 0 && (
         <CockpitSection title="Waiting on you">
@@ -131,6 +168,123 @@ function MatterRow({ task, highlight = false }: { task: Task; highlight?: boolea
         </div>
         <ArrowRight className="w-4 h-4 shrink-0 text-ink-muted opacity-0 group-hover:opacity-100 transition-opacity" />
       </Link>
+    </li>
+  );
+}
+
+/* ───────────── #242 before approval · #240 the Refund card ───────────── */
+
+interface RefundCardData { total: number; latest: NonNullable<RefundSummary['latest']>; to: string }
+
+/** Every refund the client has — on matters and on orders never approved. */
+function refundCard(tasks: Task[], requests: ServiceRequest[]): RefundCardData | null {
+  const sources: { summary: RefundSummary; to: string }[] = [
+    ...tasks.filter((t) => t.refundSummary?.count).map((t) => ({ summary: t.refundSummary!, to: `/tasks/${t.id}` })),
+    ...requests.filter((o) => o.refund?.count).map((o) => ({ summary: o.refund!, to: '/orders' })),
+  ];
+  if (sources.length === 0) return null;
+  const withLatest = sources.filter((x) => x.summary.latest)
+    .sort((a, b) => String(b.summary.latest!.initiatedAt).localeCompare(String(a.summary.latest!.initiatedAt)));
+  if (withLatest.length === 0) return null;
+  return {
+    total: sources.reduce((n, x) => n + (x.summary.activeTotal ?? 0), 0),
+    latest: withLatest[0].summary.latest!,
+    to: withLatest[0].to,
+  };
+}
+
+function RefundStat({ refund }: { refund: RefundCardData }) {
+  const st = refund.latest.status;
+  return (
+    <CockpitStat
+      testId="stat-refund"
+      label="Refund"
+      value={inr(refund.total)}
+      to={refund.to}
+      tone={st === 'failed' ? 'danger' : st === 'credited' ? 'success' : 'info'}
+      hint={`${REFUND_STATUS[st].label} · ${refund.latest.reason}`}
+    />
+  );
+}
+
+const STAGE: Record<ServiceRequest['stage'], { label: string; cls: string }> = {
+  awaiting_approval: { label: 'Pending approval', cls: 'badge-blue' },
+  under_review: { label: 'Payment under review', cls: 'badge-amber' },
+  refund_in_progress: { label: 'Refund in progress', cls: 'badge-blue' },
+  refunded: { label: 'Refunded', cls: 'badge-gray' },
+  approved: { label: 'Approved', cls: 'badge-gray' },
+};
+
+function PreApprovalCockpit({ requests, refund }: { requests: ServiceRequest[]; refund: RefundCardData | null }) {
+  const live = requests.filter((o) => o.stage !== 'refunded' && o.stage !== 'refund_in_progress');
+  const allRefunded = live.length === 0;
+  const underReview = requests.some((o) => o.stage === 'under_review');
+  const paid = requests.reduce((n, o) => n + (o.amountPaid ?? 0), 0);
+
+  const payment = allRefunded
+    ? (requests.every((o) => o.stage === 'refunded') ? 'Refunded' : 'Refund in progress')
+    : underReview ? 'Under review' : 'Paid';
+  const matter = allRefunded ? 'Cancelled' : 'Pending approval';
+
+  return (
+    <>
+      <div
+        role="status"
+        data-testid="pending-approval-notice"
+        className={`mb-4 rounded-lg border p-4 flex gap-3 ${allRefunded ? 'border-hairline bg-surface-card' : 'border-blue-100 bg-blue-50'}`}
+      >
+        <Clock className={`w-5 h-5 shrink-0 mt-0.5 ${allRefunded ? 'text-ink-muted' : 'text-blue-700'}`} aria-hidden="true" />
+        <div className="min-w-0">
+          <p className={`text-sm font-semibold ${allRefunded ? 'text-ink' : 'text-blue-800'}`}>
+            {allRefunded ? 'Service cancelled' : 'Pending approval'}
+          </p>
+          <p className={`text-sm mt-0.5 ${allRefunded ? 'text-ink-muted' : 'text-blue-800'}`}>
+            {allRefunded
+              ? 'Your request was cancelled before work began, and your payment is being refunded. The details are below.'
+              : 'We have received your payment. Our team is reviewing your request, and your matter will appear here once it is approved.'}
+          </p>
+        </div>
+      </div>
+
+      <div className={`grid grid-cols-2 ${refund ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-3 mb-6`}>
+        <CockpitStat testId="stat-payment-status" label="Payment status" value={payment} to="/orders"
+          tone={underReview ? 'warning' : undefined} hint={underReview ? 'We are checking the amount received' : undefined} />
+        <CockpitStat testId="stat-matter-status" label="Matter status" value={matter} to="/dashboard"
+          tone={allRefunded ? undefined : 'info'} hint={allRefunded ? undefined : 'Waiting for our team to approve'} />
+        <CockpitStat testId="stat-amount-paid" label="Amount paid" value={inr(paid)} to="/orders" />
+        <CockpitStat testId="stat-service-requests" label="Service requests" value={requests.length} to="/orders" />
+        {refund && <RefundStat refund={refund} />}
+      </div>
+
+      <CockpitSection title="Your service requests" to="/orders" linkLabel="My orders">
+        <ul className="flex flex-col gap-2" data-testid="cockpit-service-requests">
+          {requests.map((o) => <RequestRow key={o.orderId} request={o} />)}
+        </ul>
+      </CockpitSection>
+    </>
+  );
+}
+
+/** One paid website order with no matter yet. No progress bar: there is no workflow to show. */
+function RequestRow({ request: o }: { request: ServiceRequest }) {
+  const stage = STAGE[o.stage];
+  const r = o.refund?.latest;
+  return (
+    <li className="card p-4" data-testid="service-request">
+      <div className="flex flex-wrap items-center gap-2 min-w-0">
+        <span className="text-sm font-medium text-ink truncate">{o.label}{o.planName ? ` — ${o.planName}` : ''}</span>
+        <span className={`${stage.cls} shrink-0`}>{stage.label}</span>
+      </div>
+      <p className="mt-0.5 text-xs text-ink-muted">
+        Paid {inr(o.amountPaid)} · Order {o.orderId}
+        {o.paidAt ? ` · ${new Date(o.paidAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}
+      </p>
+      {r && (
+        <p className="mt-1 text-xs text-ink" data-testid="service-request-refund">
+          Refund {inr(r.refundAmount)} · {REFUND_STATUS[r.status].label} · {r.reason}
+          {r.transactionId ? ` · Ref ${r.transactionId}` : ''}
+        </p>
+      )}
     </li>
   );
 }
