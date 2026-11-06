@@ -1079,16 +1079,6 @@
         "type": 301
       },
       {
-        "source": "/cart",
-        "destination": "/",
-        "type": 301
-      },
-      {
-        "source": "/cart/",
-        "destination": "/",
-        "type": 301
-      },
-      {
         "source": "/checkout",
         "destination": "/",
         "type": 301
