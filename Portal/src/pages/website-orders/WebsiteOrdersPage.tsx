@@ -98,6 +98,7 @@ function OrderItems({ o }: { o: WebsiteOrder }) {
           <li key={`${it.productKey}-${i}`} className="text-xs">
             <span className="text-ink">{it.label} — {it.planName}</span>
             <span className="text-ink-muted"> · {inr(it.amount)}</span>
+            {!!it.discount && <span className="text-ink-muted"> (after {inr(it.discount)} off {inr(it.listPrice ?? it.price)})</span>}
             {m.text && <span className={m.warn ? 'text-amber-800' : 'text-ink-muted'}> · {m.text}</span>}
             {it.matter.state === 'created' && it.matter.taskId && !it.matter.deleted && (
               <> · <Link to={`/tasks/${it.matter.taskId}`} className="inline-flex items-center min-h-11 md:min-h-0 text-brand-700 underline"
@@ -137,6 +138,11 @@ function OrderDetails({ o, canManage, onChanged }: { o: WebsiteOrder; canManage:
     ['Product code', o.productCode],
     ['Customer', [o.customer?.name, o.customer?.email, o.customer?.phone].filter(Boolean).join(' · ')],
     ['Ordered', when(o.createdAt)],
+    // #256: a coupon came off the price before GST.
+    ...(o.couponCode ? ([
+      ['Price before discount', inr(o.subtotalBeforeDiscount ?? 0)],
+      [`Coupon ${o.couponCode}${o.coupon ? ` (${o.coupon.discountType === 'percent' ? `${o.coupon.discountValue}%` : inr(o.coupon.discountValue)} off)` : ''}`, `−${inr(o.discount ?? 0)}`],
+    ] as [string, string][]) : []),
     // #212: prices are exclusive of GST. An order made before that has no GST.
     ...(o.gst ? ([
       ['Price', inr(o.price ?? o.amount)],
@@ -315,7 +321,10 @@ export default function WebsiteOrdersPage() {
                           <p className="text-xs text-ink-muted">{[o.productCode, o.planName].filter(Boolean).join(' · ')}</p>
                         )}
                       </td>
-                      <td className="p-3 text-right whitespace-nowrap">{inr(o.amount)}</td>
+                      <td className="p-3 text-right whitespace-nowrap">
+                        {inr(o.amount)}
+                        {o.couponCode && <p className="text-xs text-ink-muted">Coupon {o.couponCode}: −{inr(o.discount ?? 0)}</p>}
+                      </td>
                       <td className="p-3"><span className={STATUS[o.status].cls}>{STATUS[o.status].label}</span></td>
                       <td className={`p-3 max-w-xs ${m.warn ? 'text-amber-800' : 'text-ink-muted'}`}>{m.text}</td>
                       <td className="p-3"><Actions o={o} /></td>
@@ -345,6 +354,7 @@ export default function WebsiteOrdersPage() {
                     <span className={`${STATUS[o.status].cls} shrink-0`}>{STATUS[o.status].label}</span>
                   </div>
                   <p className="mt-2 text-sm text-ink">{inr(o.amount)} <span className="text-xs text-ink-muted">· {o.orderId} · {when(o.createdAt)}</span></p>
+                  {o.couponCode && <p className="text-xs text-ink-muted">Coupon {o.couponCode}: −{inr(o.discount ?? 0)} before GST</p>}
                   <p className={`mt-1 text-sm ${m.warn ? 'text-amber-800' : 'text-ink-muted'}`}>{m.text}</p>
                   <div className="mt-3"><Actions o={o} /></div>
                   {open === o.orderId && <div className="mt-3 pt-3 border-t border-hairline"><OrderDetails o={o} canManage={canManage} onChanged={refresh} /></div>}

@@ -97,3 +97,13 @@ test("phone: one column, no sideways scroll", async ({ page }) => {
   const items = await page.getByRole("region", { name: "Services in your cart" }).boundingBox();
   expect(summary && items && summary.y > items.y + items.height - 1).toBe(true);
 });
+
+// #256: a coupon code is applied at checkout (the server checks and prices it);
+// the cart only says so, and its total stays the price without a code.
+test("the summary says a coupon code is applied at checkout", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openCart(page);
+  const summary = page.getByRole("complementary", { name: "Order summary" });
+  await expect(summary).toContainText("Have a coupon code? You can apply it at checkout.");
+  await expect(page.getByRole("button", { name: /Checkout · pay ₹20,647.64/ })).toBeEnabled();
+});

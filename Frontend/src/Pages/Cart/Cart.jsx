@@ -162,6 +162,8 @@ const Cart = () => {
             <FaLock aria-hidden="true" /> Checkout · pay {inr(sum("total"))}
           </button>
           {blocked && <p className="cart-note">Choose a plan for every service to continue.</p>}
+          {/* #256: codes are checked and applied by the server, at checkout. */}
+          <p className="cart-summary-note cart-coupon-note">Have a coupon code? You can apply it at checkout.</p>
           <p className="cart-summary-note">
             Secure online payment. Government fees, where applicable, are extra; the final amount is confirmed at payment.
           </p>

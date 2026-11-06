@@ -56,6 +56,7 @@ Workflows are modelled as **XState state machines**. Each workflow service (Comp
 | Reassign task steps | ✅ Any | ✅ Any | ✅ To other members | ❌ |
 | Configure email templates | ✅ | ❌ | ❌ | ❌ |
 | Send broadcast notifications | ✅ | ❌ | ❌ | ❌ |
+| Create, edit, switch on/off coupon codes; read the Coupon & Discount report (#256) | ✅ | ✅ | ❌ | ❌ (applies a code at checkout) |
 
 ---
 
@@ -341,6 +342,21 @@ Every payment recorded against a task must capture the mode (Bank Transfer, Cash
 2. **Given** a payment is recorded, **Then** `amountPaid` on the task is updated, `amountDue` is recalculated, and `paymentStatus` is recomputed automatically (`not_paid → part_paid → fully_paid`).
 3. **Given** a payment is recorded at or above the amount for a payment gate, **Then** the XState machine fires the `PAYMENT_CONFIRMED` event and activates the gated step.
 4. **Given** admin views payment history for a task, **Then** they see a chronological list of all payments with mode, amount, date, recorded-by, and reference.
+
+---
+
+### User Story 15c — Coupon Codes at the Website Checkout (Priority: P2) — #256, #257, #260
+
+A client lowers what they pay on the website only by entering a valid coupon code. Admins and managers manage the codes; a report records every use. (E-27.)
+
+**Acceptance Scenarios**:
+
+1. **Given** an admin or manager opens Settings → Coupons and creates a coupon, **Then** they choose a unique code (3–30 letters, numbers or hyphens; a code already used is refused), a **discount type** — a percentage (1–100) or a fixed amount in whole rupees — a **coupon type** — General (every service, the whole cart), Specific services (only the services chosen) or Minimum order amount (the whole cart once its price before GST reaches the amount) — and a **validity** — One-time use, or a Time period of 7 days, 30 days or chosen dates (India time, from the start of the first day to the end of the last). They can edit it, switch it off and on, and delete it while nobody has used it. A team member, client or professional cannot reach the screen or the API.
+2. **Given** a signed-in client at checkout on the website enters a code and presses Apply, **Then** the server checks it and the checkout shows the original price, the discount (with the code), the GST and the final amount; Pay charges exactly that. The discount comes off the price **before GST**; GST is worked on the discounted price. A fixed amount is never more than the services it applies to cost, and is shared across them in proportion to price. A code that would leave less than ₹1 to pay is refused.
+3. **Given** a code that cannot be used, **Then** the client is told why: it is not valid (unknown or switched off); it "can be used from" a date; it "expired on" a date; it "has already been used"; it "is being used in another checkout. Try again in a few minutes."; "This code applies only to: <services>."; or "This code needs an order of at least ₹X before GST — add ₹Y more." The client can always remove the code and pay without it.
+4. **Given** a one-time code, **Then** the checkout that applies it holds it for 30 minutes (another person is turned away meanwhile; the same client coming back is not); when that order is paid the code is used up and switched off for everyone. A time-period code can be used by any number of clients until its last day.
+5. **Given** the page sends an amount or a discount, **Then** the order is refused (400); the server prices every order from the plans and the code alone.
+6. **Given** a paid order used a code, **Then** Reports → Coupon & Discount shows that use — code, discount type and value, who created the coupon and when, the client's name and email, the services, the original amount (before GST), the discount, the final amount paid and the date — plus the number of uses per coupon, with a date filter and CSV export. Editing or switching off a coupon later does not change what the report says happened. Website Orders, the payment result page and the confirmation email show the code and the discount.
 
 ---
 
@@ -666,6 +682,36 @@ createdAt, updatedAt
 A one-service order has no `items` and is stored exactly as before #244. On a cart order the
 top-level price / gst / amount are the sums of the lines, and each matter it opens carries
 `websiteOrderId` and `websiteOrderItem` (the line number).
+
+#256 — an order priced with a coupon code also has (an order without one has none of these):
+```
+couponCode, discount (rupees off, before GST — the sum of the lines'), subtotalBeforeDiscount,
+coupon { discountType, discountValue, scope, validity, productKeys?, minAmount?, createdBy, createdAt },  // the terms on the day
+items[].listPrice, items[].discount      // (top level on a one-service order)
+```
+`price`, `gst` and `amount` are AFTER the discount (GST worked on the discounted price).
+
+### `coupons/{CODE}` — coupon codes (#256, #257, #260)
+The document id is the code (upper case, `[A-Z0-9-]{3,30}`), so each is unique. Backend only.
+```
+description, discountType (percent|fixed), discountValue (whole % 1–100 | whole rupees),
+scope (general|services|min_amount), productKeys[] (services), minAmount|null (min_amount, before GST),
+validity (one_time|period), startsAt|null, endsAt|null (period: IST start of first day → IST end of last),
+active, usedCount, lastUsedAt?,
+heldBy { orderId, uid, until }|null      // one_time: a checkout in progress, 30 minutes
+consumedBy { orderId, uid, at }|null     // one_time: the payment that used it
+createdBy { uid, name }, createdAt, updatedAt, updatedBy { uid, name }
+```
+
+### `couponRedemptions/{orderId}` — one per paid order that used a code (#256)
+Written once, in the transaction that marks the order paid. Backend only.
+```
+orderId, code, discountType, discountValue, scope, validity, couponCreatedBy { uid, name }, couponCreatedAt,
+uid, clientName, clientEmail,
+services[ { productKey, label, planName, listPrice, discount, price, gst, amount } ],
+originalAmount (before discount and GST), discount, gst, amountCharged, amountPaid, paidAt, gateway,
+note?   // e.g. a payment that arrived after its one-time code had been used by another order
+```
 
 ### `auditLog/{entryId}`
 ```

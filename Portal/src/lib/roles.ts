@@ -101,6 +101,12 @@ export const USER_MANAGER_ROLES: Role[] = ['admin', 'manager'];
 /** Roles allowed to delete users. */
 export const USER_DELETE_ROLES: Role[] = ['admin'];
 
+/**
+ * #256: roles that create, edit and switch coupon codes, and read the coupon
+ * report. Mirrors COUPON_MANAGER_ROLES in backend/src/config/roles.js.
+ */
+export const COUPON_MANAGER_ROLES: Role[] = ['admin', 'manager'];
+
 export const can = (role: Role | null, allowed: Role[]): boolean =>
   !!role && allowed.includes(role);
 

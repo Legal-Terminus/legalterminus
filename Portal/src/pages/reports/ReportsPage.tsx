@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import {
-  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX, IndianRupee, Gauge, HardDrive, Megaphone, ShieldCheck, Contact, Layers, Stamp, Sheet,
+  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX, IndianRupee, Gauge, HardDrive, Megaphone, ShieldCheck, Contact, Layers, Stamp, Sheet, TicketPercent,
 } from 'lucide-react';
 
 const REPORTS = [
@@ -13,6 +13,8 @@ const REPORTS = [
   { to: '/reports/sla',          title: 'SLA / Delay',       desc: 'Overdue & at-risk steps, plus on-time rate by service and phase.', icon: AlertTriangle },
   { to: '/reports/team-performance', title: 'Employee Performance', desc: 'Per person or whole team: daily work, deadlines and delays, trends, first-time-right and approvals.', icon: Gauge },
   { to: '/reports/revenue',      title: 'Revenue Analytics', desc: 'Collected, outstanding & pending revenue by month, service and team.', icon: IndianRupee },
+  // #256: every use of a coupon code, and how often each was used.
+  { to: '/reports/coupons',      title: 'Coupon & Discount', desc: 'Each coupon use — code, discount, client, services, original amount, discount and amount paid — and uses per coupon. CSV export.', icon: TicketPercent },
   { to: '/reports/payment-overrides', title: 'Payment Overrides', desc: 'Matters progressing ahead of payment (no-payment or gate override).', icon: CreditCard },
   { to: '/reports/professional-mapping', title: 'Professional / Group', desc: 'Client counts per handling professional and parent/group company.', icon: Users },
   { to: '/reports/storage',      title: 'Storage Usage',     desc: 'Total & per-client document storage with alert levels.', icon: HardDrive },

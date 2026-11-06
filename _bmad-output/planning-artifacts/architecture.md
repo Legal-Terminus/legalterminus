@@ -2092,6 +2092,97 @@ a product is keyed by the `source` its component passes to the checkout, and
     before the result page. All of it is behind `VITE_PAYMENTS_ENABLED`.
   - Portal: Website Orders lists each line of a cart order under Service with
     its amount, its matter state and an "Open matter" link per line.
+- **Coupon codes (E-27: #256, #257, #260, 2026-11-06).** One code per order,
+  on single-plan and cart orders alike. The page sends only the code; the
+  server checks it and prices the order with it.
+  - **Collections.** `coupons/{CODE}` — the document id IS the code (upper
+    case, `[A-Z0-9-]{3,30}`), so uniqueness is by construction (`create()`
+    fails on a duplicate → 409). Fields: `discountType` percent | fixed,
+    `discountValue` (whole %, 1–100, or whole rupees), `scope` general |
+    services (`productKeys[]`) | min_amount (`minAmount`, before GST),
+    `validity` one_time | period (`startsAt`/`endsAt`: IST start of the first
+    day to IST end of the last, stored as instants), `active`, `usedCount`,
+    `heldBy {orderId, uid, until}`, `consumedBy {orderId, uid, at}`,
+    `createdBy {uid, name}`, `createdAt`, `updatedAt`, `updatedBy`. Only the
+    fields a type uses are kept (`couponDefinition`). `couponRedemptions/{orderId}`
+    — one per PAID order that used a code, written once, with its own copy of
+    every figure (see below). Both are denied to browsers in `firestore.rules`
+    (a readable `coupons` would list every live code).
+  - **Rules are pure** (`services/coupons.js`, tested in
+    `__tests__/coupons.test.js`): `couponRefusal` (unknown / switched off →
+    one "not valid" message, so a guess learns nothing; used; not started;
+    expired; held by another checkout), `couponState` for the staff list,
+    `editRefusal` (a used one-time code cannot be switched on again; a used
+    code cannot become one-time), `deleteRefusal` (only a code never used and
+    not in a checkout), `couponOnPaid`, `redemptionRecord`. I/O is
+    `services/coupons.service.js`; routes `routes/coupons.routes.js`, guarded
+    `verifyToken, requireRole(...COUPON_MANAGER_ROLES)` — a new role group
+    (admin, manager: the same people as website prices, #241) in
+    `config/roles.js` and `Portal/src/lib/roles.ts`.
+  - **Pricing: the discount comes off BEFORE GST.** `couponDiscounts(plans,
+    coupon)` in `orderItems.js` (pure) decides the rupees off each line:
+    eligible lines are all of them (general, min_amount) or those in
+    `productKeys` (services); percent = price × % per line to the paisa;
+    fixed = min(value, eligible subtotal) split in proportion to price, the
+    last eligible line taking the rounding remainder. min_amount compares the
+    whole order's pre-GST subtotal. A result under ₹1 payable is refused.
+    `priceOrder(plans, discount)` then re-runs `withGst` on each discounted
+    price, so every line is still `amount = price + GST`; a line keeps
+    `listPrice` and `discount`, the order gains `couponCode`, `discount` (sum)
+    and `subtotalBeforeDiscount`, and its `price`/`gst`/`amount` are the
+    discounted sums. Hence `decideSettlement`, the review hold, refunds and a
+    matter's `totalCost` (the line's `amount`) needed no change. Without a code
+    nothing about an order changes — no coupon field is written. The order
+    also stores `coupon` — the terms on the day plus who created the coupon
+    and when — so its redemption is built from the order alone.
+  - **Endpoints.** `POST /api/orders/quote` (signed in, `quoteOrderSchema`
+    `.strict()`, its own limiter of 30 / 15 min per uid against code-guessing)
+    prices plans with an optional code and writes nothing; a code that cannot
+    be used answers 422 (409 when held) with the reason in words.
+    `POST /api/orders` accepts an optional `couponCode`; still no amount.
+    `/api/coupons` CRUD (paginated list on `createdAt`) and
+    `/api/coupons/redemptions` (paginated on `paidAt`, IST date range on the
+    same field, `?format=csv` up to 5,000 rows). Every query orders and filters
+    on ONE field, so no composite index was added.
+  - **One-time concurrency.** `createOrder` creates the gateway order, then
+    in ONE transaction re-reads the coupon, re-checks it, re-prices (a coupon
+    edited since the quote → 409 "apply it again"), places
+    `heldBy {orderId, uid, until: now + 30 min}` and writes the order — so the
+    order exists only if the hold does. A second checkout by another person
+    while the hold stands is refused ("This code is being used in another
+    checkout…"); the SAME person returning takes their hold over (decided
+    here: otherwise a customer who closed the window is locked out of their
+    own code for half an hour). A failed or abandoned order just lets the hold
+    expire. Period codes are not held; their price is fixed when the order is
+    made.
+  - **Consumption, exactly once.** `settlePaid`'s transaction now also reads
+    the order's coupon (reads before writes) and, on the `paid` decision only,
+    applies `couponOnPaid`: `usedCount + 1` (every type), and for a one-time
+    code `active: false`, `consumedBy`, hold released. It writes
+    `couponRedemptions/{orderId}` in the same transaction: code, discount
+    type/value, scope, validity, coupon creator and creation date, client uid,
+    name and email, services (label, plan, listPrice, discount, price, gst,
+    amount), `originalAmount` (pre-GST, pre-discount), `discount`, `gst`,
+    `amountCharged`, `amountPaid`, `paidAt`. A repeat confirmation is a
+    `noop`, so nothing is counted twice. A payment arriving after its hold
+    expired and someone else consumed the code is still honoured (money taken
+    is never refused) and its redemption carries a `note` saying so. A
+    payment held for `review` (wrong amount) does not consume the code.
+  - **Test cleanup.** The simulator's `discard` (test environments only)
+    removes the order's redemption and gives back its use, so an e2e run
+    leaves the coupon deletable.
+  - **Screens.** Portal: Settings → Coupons (`/settings/coupons`, list with
+    state and use count, Switch on/off, Delete if unused) and full-page forms
+    (`/settings/coupons/new`, `/settings/coupons/edit/:code`; presets 7 / 30
+    days or chosen dates); Reports → Coupon & Discount (`/reports/coupons`,
+    uses with a date filter, uses per coupon, CSV). Website Orders shows the
+    code and the discount. Website: `ProCheckoutModal`'s details step has
+    "Have a coupon code?" (Apply / Remove); the summary shows the server's
+    quote (price, discount, GST, total) and Pay creates the order with the
+    code; a code that stopped working between Apply and Pay is dropped with
+    its reason and the customer can pay without it. The cart says codes are
+    applied at checkout; the result page and the confirmation email show the
+    discount.
 
 ---
 

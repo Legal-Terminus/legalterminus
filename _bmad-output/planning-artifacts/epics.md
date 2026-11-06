@@ -3919,6 +3919,66 @@ shows which devices are excluded; the Master Sheet step number differs from the 
 
 ---
 
+## E-27 — Coupon Codes at the Website Checkout (#256, #257, #260) [Phase 2]
+
+**Goal**: A client can lower what they pay on the website only by typing a valid coupon code at
+checkout. Admins and managers create and control the codes, and a report shows every use.
+
+**Why this is an epic.** Raised by the firm on 2026-11-06 as three issues that only make sense
+together: #256 (discounts by code, management, the report), #257 (one-time or time-based
+validity) and #260 (general, specific-service or minimum-amount codes). A discount changes the
+amount charged, which E-24 deliberately keeps on the server; it therefore touches the price
+rule, the order lifecycle, the payment transaction, both apps and a new report. Design in
+architecture.md, "Website orders and payments" → "Coupon codes".
+
+**Constraints**: the amount is still the server's — the page sends a code, never a price or a
+discount (Security Standard §2); a payment settles once, so a code is counted once; a bad code
+never stops a client paying without it.
+
+| Story | What | Status |
+|---|---|---|
+| E27-S01 | Coupons and their rules: `coupons/{CODE}` (unique by construction), percent or fixed, general / services / minimum amount, one-time or a period of IST days; admin and manager create, edit, switch on/off, delete an unused one (`/api/coupons`, `COUPON_MANAGER_ROLES`) | 🔄 In review (PR open; reaches QA on merge) |
+| E27-S02 | Pricing with a code: the discount comes off before GST, GST re-worked per line; fixed amounts capped and split by price; under ₹1 refused; `POST /api/orders/quote`; `POST /api/orders` takes `couponCode` | 🔄 In review |
+| E27-S03 | One-time codes: held 30 minutes by the checkout that took them, used up by its payment inside `settlePaid`, then refused to everyone; a late payment is honoured and noted | 🔄 In review |
+| E27-S04 | Coupon & Discount report: each use (`couponRedemptions/{orderId}`) with its own figures, uses per coupon, IST date filter, CSV | 🔄 In review |
+| E27-S05 | Screens: Portal Settings → Coupons (list + full-page forms), Reports → Coupon & Discount, discount on Website Orders; website checkout "Have a coupon code?", the cart's note, the result page and the email | 🔄 In review |
+
+**Acceptance Criteria**
+- Only admin and manager can create, edit, switch on or off and delete coupons, and read the
+  report — on the screen and on the API (team member, client, professional: refused).
+- Each code is unique; creating a second with the same code is refused in words.
+- Discount types: a percentage (1–100) or a fixed amount in rupees.
+- Coupon types: **General** (every service, the whole cart); **Specific services** (only the
+  services chosen; the others in the cart pay full price); **Minimum order amount** (the whole
+  cart, once its price before GST reaches the amount).
+- Validity: **One-time use** — one successful payment, then inactive for everyone; **Time period**
+  — 7 days, 30 days or chosen dates (India time, first to last day inclusive), any number of
+  clients, inactive after.
+- At checkout the client sees the original price, the discount with the code, the GST and the
+  final payable amount, and pays exactly that; the server prices the order again from the code.
+- Clear messages: not valid; not started yet ("can be used from …"); expired ("expired on …");
+  already used; in another checkout ("Try again in a few minutes"); "This code applies only to:
+  …"; "This code needs an order of at least ₹X before GST — add ₹Y more."; below ₹1 refused.
+- The report shows, per use: code, discount type and value, created by, coupon creation date,
+  client name and email, services, original amount, discount, final paid amount, date used;
+  and the number of uses per coupon. CSV export. Editing a coupon later does not change it.
+
+**Tests**: `backend/src/__tests__/coupons.test.js` (22: pricing, every validity case, hold and
+consume, redemption figures, schemas); `Portal/e2e/coupons.spec.ts` (6: each type created on the
+screen, manager allowed and team/client refused, server pricing and every refusal message, a
+tampered amount refused, one-time hold → payment → used, the report and CSV, switching off);
+`auth-rbac.spec.ts` (coupons refused to team and client); `Frontend/tests/e2e/cart.spec.js`
+(the cart's note).
+
+**Open / not done**
+- The website checkout's coupon field has no automated browser test: it needs a signed-in
+  website session, which the website suite cannot stub. Its server side is covered above.
+- A payment held for **review** (wrong amount received) does not use up its code; staff settle
+  such an order by hand.
+- One code per order; codes do not stack. No per-client limit on a period code.
+
+---
+
 ## APPENDIX A — Infrastructure & Build System (Updated 2026-06-01)
 
 ### NPM Run Commands Standardization
@@ -6421,3 +6481,23 @@ payments" → "Cart".
 - Dependabot #235 moved `@vitejs/plugin-react` to 6, which needs vite 8; the site is on
   vite 7, so `npm ci` failed and so would the next website deploy. Back on 5 until vite 8
   is its own change.
+
+### Coupon codes at the website checkout (2026-11-06, #256, #257, #260) — E-27 🔄 In review
+
+- Admins and managers create coupon codes under Settings → Coupons: a percentage or a fixed
+  amount; for every service, for chosen services only, or for orders above an amount; usable
+  once (by one payment, then off for everyone) or between two dates (7 days, 30 days or chosen
+  dates, India time). They switch codes on and off and can delete one nobody has used.
+- At checkout on the website the client types a code; the server checks it and shows the
+  original price, the discount, the GST and the total, and the order is charged that. The
+  discount comes off before GST. A code that does not fit says why in words, and the client
+  can always pay without it.
+- A one-time code is held by the checkout that applied it for 30 minutes, and used up when
+  that order is paid — inside the same transaction that marks it paid, so it counts once.
+- Reports → Coupon & Discount lists every use with its own figures, uses per coupon, a date
+  filter and CSV. Website Orders, the payment result page and the confirmation email show the
+  discount.
+- Tests: `backend/src/__tests__/coupons.test.js`; `Portal/e2e/coupons.spec.ts`,
+  `auth-rbac.spec.ts`; `Frontend/tests/e2e/cart.spec.js`.
+- Open: no browser test of the website checkout's coupon field (needs a signed-in website
+  session); a payment held for review does not use up its code.

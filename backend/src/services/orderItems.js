@@ -30,6 +30,8 @@
  *   would leave a paid order half-started with nothing on screen to say why.
  */
 
+import { withGst } from './pricing.service.js';
+
 export const MAX_ORDER_ITEMS = 10;
 
 const httpError = (status, message, code) => Object.assign(new Error(message), { status, code });
@@ -64,16 +66,38 @@ export function requestedItems({ productKey, planId, items } = {}) {
  * plan not on sale). Each line's GST is the catalogue's own (`findPlan` →
  * `withGst`); the order's figures are the sums, to the paisa. One plan →
  * the order fields exactly as a one-service order has always had them.
+ *
+ * COUPONS (#256, #257, #260). With `discount` — the result of
+ * `couponDiscounts(plans, coupon)` — each discounted line keeps its catalogue
+ * price as `listPrice`, records its `discount`, and its `price` becomes the
+ * price AFTER the discount. GST is then worked out again on that price
+ * (`withGst`), so the discount comes off before GST and `amount` stays
+ * "price + GST" for every line. The order adds `couponCode`, `discount` (the
+ * sum) and `subtotalBeforeDiscount`; its price / gst / amount are the
+ * discounted sums — so every check against `order.amount` and every matter's
+ * total (a line's `amount`) works unchanged. Without a coupon nothing here
+ * changes: no coupon field is written.
  */
-export function priceOrder(plans) {
+export function priceOrder(plans, discount = null) {
   if (!plans.length || plans.some((p) => !p)) throw httpError(404, 'That plan is not available.', 'PLAN_NOT_FOUND');
-  const line = (p) => ({
-    productKey: p.productKey, productCode: p.productCode ?? '', planId: p.planId,
-    label: p.label, planName: p.planName, serviceKey: p.serviceKey ?? null,
-    price: p.price, gst: p.gst, gstPercent: p.gstPercent, amount: p.amount,
-  });
-  if (plans.length === 1) return line(plans[0]);
-  const items = plans.map((p) => ({ ...line(p), matter: { state: 'none' } }));
+  const line = (p, i) => {
+    const base = {
+      productKey: p.productKey, productCode: p.productCode ?? '', planId: p.planId,
+      label: p.label, planName: p.planName, serviceKey: p.serviceKey ?? null,
+      price: p.price, gst: p.gst, gstPercent: p.gstPercent, amount: p.amount,
+    };
+    if (!discount) return base;
+    const off = discount.perLine[i] ?? 0;
+    const after = withGst(paise(p.price - off), p.gstPercent);
+    return { ...base, listPrice: p.price, discount: off, price: after.price, gst: after.gst, amount: after.total };
+  };
+  const coupon = discount ? {
+    couponCode: discount.code,
+    discount: paise(discount.perLine.reduce((s, d) => s + d, 0)),
+    subtotalBeforeDiscount: paise(plans.reduce((s, p) => s + p.price, 0)),
+  } : {};
+  if (plans.length === 1) return { ...line(plans[0], 0), ...coupon };
+  const items = plans.map((p, i) => ({ ...line(p, i), matter: { state: 'none' } }));
   return {
     // No single product: staff and the customer read the lines.
     productKey: null, productCode: '', planId: null, serviceKey: null,
@@ -83,6 +107,7 @@ export function priceOrder(plans) {
     gst: paise(items.reduce((s, i) => s + i.gst, 0)),
     gstPercent: items[0].gstPercent,
     amount: paise(items.reduce((s, i) => s + i.amount, 0)),
+    ...coupon,
     items,
   };
 }
@@ -132,6 +157,8 @@ export function publicItems(o) {
   if (!isMultiItem(o)) return {};
   const items = o.items.map((it) => ({
     label: it.label, planName: it.planName, price: it.price, gst: it.gst ?? 0, amount: it.amount,
+    // #256: a line a coupon reduced shows what it cost before, and by how much.
+    ...(it.discount ? { listPrice: it.listPrice, discount: it.discount } : {}),
     matterId: it.matter?.state === 'created' ? (it.matter.taskId ?? null) : null,
   }));
   return { items, matterId: items.find((i) => i.matterId)?.matterId ?? null };
@@ -139,5 +166,64 @@ export function publicItems(o) {
 
 /** Lines for a message or an email: "Proprietorship — Elemental: ₹1,178.82". */
 export const itemLines = (o, rupees) => (isMultiItem(o)
-  ? o.items.map((it) => `• ${it.label} — ${it.planName}: ${rupees(it.amount)}`)
+  ? o.items.map((it) => `• ${it.label} — ${it.planName}: ${rupees(it.amount)}${it.discount ? ` (after a discount of ${rupees(it.discount)})` : ''}`)
   : []);
+
+/* ─────────────────────── Coupons (#256, #257, #260) ─────────────────────── */
+
+/**
+ * How much a coupon takes off each line, BEFORE GST. Pure. `plans` are the
+ * `findPlan` results of the order; `coupon` is a stored coupon already found
+ * valid for use (coupons.js decides that). Returns
+ *   { code, perLine: [rupees off line i], eligible: [line indexes] }
+ * or throws (422) with the message the customer is shown.
+ *
+ * - Eligible lines: all of them for `general` and `min_amount`; for `services`
+ *   only lines whose product is in `productKeys`.
+ * - `percent`: each eligible line's price × percent, to the paisa.
+ * - `fixed`: never more than the eligible lines cost; split across them in
+ *   proportion to price, the last eligible line taking the rounding remainder
+ *   so the parts add up to the discount exactly.
+ * - A coupon that would leave less than ₹1 to pay is refused.
+ * `labels` maps productKey → the service's name, for the "applies only to" message.
+ */
+export const MIN_PAYABLE = 1;
+export function couponDiscounts(plans, coupon, labels = {}) {
+  const refuse = (message, code) => { throw httpError(422, message, code); };
+  const rupees = (n) => `₹${Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+  const subtotal = paise(plans.reduce((s, p) => s + p.price, 0));
+
+  if (coupon.scope === 'min_amount' && subtotal < coupon.minAmount) {
+    refuse(`This code needs an order of at least ${rupees(coupon.minAmount)} before GST — add ${rupees(paise(coupon.minAmount - subtotal))} more.`, 'COUPON_MIN_AMOUNT');
+  }
+  const eligible = plans.map((p, i) => i).filter((i) => coupon.scope !== 'services'
+    || (coupon.productKeys ?? []).includes(plans[i].productKey));
+  if (!eligible.length) {
+    const names = (coupon.productKeys ?? []).map((k) => labels[k] || k);
+    refuse(`This code applies only to: ${names.join(', ')}.`, 'COUPON_NOT_APPLICABLE');
+  }
+
+  const perLine = plans.map(() => 0);
+  if (coupon.discountType === 'percent') {
+    for (const i of eligible) perLine[i] = paise(plans[i].price * coupon.discountValue / 100);
+  } else {
+    const base = paise(eligible.reduce((s, i) => s + plans[i].price, 0));
+    const total = Math.min(coupon.discountValue, base);
+    let given = 0;
+    eligible.forEach((i, n) => {
+      if (n === eligible.length - 1) {
+        perLine[i] = Math.min(plans[i].price, Math.max(0, paise(total - given)));
+      } else {
+        perLine[i] = paise(total * plans[i].price / base);
+        given = paise(given + perLine[i]);
+      }
+    });
+  }
+
+  // What would be left to pay, GST included, line by line as priceOrder does it.
+  const payable = paise(plans.reduce((s, p, i) => s + withGst(paise(p.price - perLine[i]), p.gstPercent).total, 0));
+  if (payable < MIN_PAYABLE) {
+    refuse(`This code would bring the total below ${rupees(MIN_PAYABLE)}, so it cannot be used on this order.`, 'COUPON_TOO_LARGE');
+  }
+  return { code: coupon.code, perLine, eligible };
+}

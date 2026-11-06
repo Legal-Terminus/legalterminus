@@ -12,22 +12,14 @@ const id = z.string().trim().min(1).max(100);
 const orderItem = z.object({ productKey: id, planId: id }).strict();
 
 /**
- * Either ONE plan (`productKey` + `planId`, as before) or a cart (`items`, 1 to
- * MAX_ORDER_ITEMS lines, one per service) — never both, never neither.
+ * #256: a coupon code, as typed. Only its length is checked here: a code that
+ * is badly formed is answered like any unknown code ("not valid"), by the
+ * service, rather than with a validation error.
  */
-export const createOrderSchema = z.object({
-  productKey: id.optional(),
-  planId: id.optional(),
-  items: z.array(orderItem).min(1).max(MAX_ORDER_ITEMS).optional(),
-  customer: z.object({
-    name: z.string().trim().max(200).optional(),
-    phone: z.string().trim().max(20).regex(/^[0-9+\-() ]*$/, 'Invalid phone number').optional(),
-    businessName: z.string().trim().max(200).optional(),
-    state: z.string().trim().max(100).optional(),
-  }).strict().optional(),
-  // Honoured only by the simulated gateway (test environments).
-  simulate: z.enum(['gateway_down']).optional(),
-}).strict().superRefine((v, ctx) => {
+const couponCode = z.string().trim().max(40).optional();
+
+/** Either ONE plan or a cart — never both, never neither. */
+const onePlanOrCart = (v, ctx) => {
   const single = v.productKey !== undefined || v.planId !== undefined;
   if (v.items && single) {
     ctx.addIssue({ code: 'custom', message: 'Send either one plan or a list of items, not both.', path: ['items'] });
@@ -37,7 +29,38 @@ export const createOrderSchema = z.object({
   if (v.items && new Set(v.items.map((i) => i.productKey)).size !== v.items.length) {
     ctx.addIssue({ code: 'custom', message: 'Each service can be in an order only once.', path: ['items'] });
   }
-});
+};
+
+/**
+ * Either ONE plan (`productKey` + `planId`, as before) or a cart (`items`, 1 to
+ * MAX_ORDER_ITEMS lines, one per service) — never both, never neither. #256:
+ * optionally one coupon code. Still no amount: `.strict()` refuses one.
+ */
+export const createOrderSchema = z.object({
+  productKey: id.optional(),
+  planId: id.optional(),
+  items: z.array(orderItem).min(1).max(MAX_ORDER_ITEMS).optional(),
+  couponCode,
+  customer: z.object({
+    name: z.string().trim().max(200).optional(),
+    phone: z.string().trim().max(20).regex(/^[0-9+\-() ]*$/, 'Invalid phone number').optional(),
+    businessName: z.string().trim().max(200).optional(),
+    state: z.string().trim().max(100).optional(),
+  }).strict().optional(),
+  // Honoured only by the simulated gateway (test environments).
+  simulate: z.enum(['gateway_down']).optional(),
+}).strict().superRefine(onePlanOrCart);
+
+/**
+ * POST /api/orders/quote (#256) — what the checkout would charge, with a
+ * coupon code if one is given. The same plans as an order; no amount.
+ */
+export const quoteOrderSchema = z.object({
+  productKey: id.optional(),
+  planId: id.optional(),
+  items: z.array(orderItem).min(1).max(MAX_ORDER_ITEMS).optional(),
+  couponCode,
+}).strict().superRefine(onePlanOrCart);
 
 /**
  * POST /api/tasks/:taskId/pay-now (#220) — pay what is due on a matter. Takes

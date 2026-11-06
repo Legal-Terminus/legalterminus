@@ -21,6 +21,7 @@ import authRoutes from "./routes/auth.routes.js";
 import publicAccountRoutes from "./routes/publicAccount.routes.js";
 import pricingRoutes, { publicPricingRouter } from "./routes/pricing.routes.js";
 import ordersRoutes from "./routes/orders.routes.js";
+import couponsRoutes from "./routes/coupons.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import tasksRoutes from "./routes/tasks.routes.js";
@@ -171,6 +172,8 @@ app.use("/api/pricing", pricingRoutes);
 // E24-S02: website orders and their payment. See routes/orders.routes.js for
 // which two routes are public and why.
 app.use("/api/orders", ordersRoutes);
+// #256: coupon codes and the coupon report — admin and manager only.
+app.use("/api/coupons", couponsRoutes);
 app.use("/api/payment", sensitiveLimiter, paymentRoutes);
 app.use("/api/contact", sensitiveLimiter, contactRoutes);
 // #167: any API traffic may trigger the recurring-matter sweep in the

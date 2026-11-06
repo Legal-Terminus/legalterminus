@@ -73,9 +73,14 @@ const PaymentResult = () => {
     ...(order.items?.length
       ? order.items.map((it, i) => ({ label: i === 0 ? "Services" : "", key: `item-${i}`, value: `${it.label} — ${it.planName}: ${inr(it.amount)}` }))
       : [{ label: "Service", value: `${order.label} — ${order.planName}` }]),
+    // #256: a coupon comes off the price before GST.
+    ...(order.couponCode ? [
+      { label: "Price before discount", value: inr(order.subtotalBeforeDiscount) },
+      { label: `Coupon ${order.couponCode}`, value: `−${inr(order.discount)}` },
+    ] : []),
     // #212: prices are exclusive of GST. An order made before that has no GST.
     ...(order.gst ? [
-      { label: "Price", value: inr(order.price) },
+      { label: order.couponCode ? "Price after discount" : "Price", value: inr(order.price) },
       { label: `GST (${order.gstPercent}%)`, value: inr(order.gst) },
       { label: "Total paid", value: inr(order.amount) },
     ] : [{ label: "Amount", value: inr(order.amount) }]),
