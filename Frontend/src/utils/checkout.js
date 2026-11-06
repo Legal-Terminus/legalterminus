@@ -36,18 +36,39 @@ async function call(path, { method = "GET", body } = {}) {
 /** Is online payment switched on for this site, and through which gateway? */
 export const getPaymentConfig = () => call("/api/orders/config").catch(() => ({ enabled: false, gateway: null }));
 
-export const startOrder = (productKey, planId, customer) =>
-  call("/api/orders", { method: "POST", body: { productKey, planId, ...(customer ? { customer } : {}) } });
+/** #256: the plans being bought, as the server takes them — never a price. */
+const planBody = (lines) => (Array.isArray(lines)
+  ? { items: lines.map(({ productKey, planId }) => ({ productKey, planId })) }
+  : { productKey: lines.productKey, planId: lines.planId });
+
+export const startOrder = (productKey, planId, customer, couponCode) =>
+  call("/api/orders", {
+    method: "POST",
+    body: { productKey, planId, ...(couponCode ? { couponCode } : {}), ...(customer ? { customer } : {}) },
+  });
 
 /**
  * #244: one order, one payment, for every service in the cart. Only the plans
- * are sent; the server prices each line and the total.
+ * are sent; the server prices each line and the total. #256: and the coupon
+ * code, if one was applied — the server checks it and prices it again.
  */
-export const startCartOrder = (lines, customer) =>
+export const startCartOrder = (lines, customer, couponCode) =>
   call("/api/orders", {
     method: "POST",
-    body: { items: lines.map(({ productKey, planId }) => ({ productKey, planId })), ...(customer ? { customer } : {}) },
+    body: { ...planBody(lines), ...(couponCode ? { couponCode } : {}), ...(customer ? { customer } : {}) },
   });
+
+/**
+ * #256: what the checkout will charge, with a coupon code. `lines` is the cart
+ * (an array) or one { productKey, planId }. Resolves with the server's figures
+ * (original price, discount, GST, total), or rejects with the reason the code
+ * cannot be used, in words.
+ */
+export const quoteOrder = (lines, couponCode) =>
+  call("/api/orders/quote", { method: "POST", body: { ...planBody(lines), couponCode } });
+
+/** A refusal about the coupon, not about paying: the customer can still pay without it. */
+export const isCouponError = (err) => typeof err?.code === "string" && err.code.startsWith("COUPON_");
 
 export const confirmPayment =(orderId, result) =>
   call(`/api/orders/${orderId}/verify`, { method: "POST", body: result });

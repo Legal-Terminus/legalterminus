@@ -56,6 +56,13 @@
  * sum and is paid in one checkout. ONE approval opens one matter per line. The
  * shape and the rules are in orderItems.js; a one-service order is unchanged.
  *
+ * COUPONS (#256, #257, #260): a website order may carry ONE coupon code. The
+ * server checks it (coupons.js) and prices the order with it (orderItems.js:
+ * the discount comes off before GST); the page sends only the code. A one-time
+ * code is HELD by the order for HOLD_MS, in the same transaction that writes
+ * the order, so two checkouts cannot both use it; it is CONSUMED, and the
+ * redemption recorded, inside `settlePaid`'s transaction — once.
+ *
  * `decideSettlement`, `matterOutcome`, `canApprove`, `payNowRefusal` and
  * `payNowAmount` are pure and unit-tested.
  */
@@ -65,8 +72,12 @@ import { logger } from '../config/logger.js';
 import { findPlan, loadCatalog } from './pricing.service.js';
 import { gateway } from './paymentGateway.service.js';
 import {
-  isMultiItem, itemLines, linesToOpen, planLineMatters, priceOrder, publicItems, requestedItems, settleLineMatters,
+  couponDiscounts, isMultiItem, itemLines, linesToOpen, planLineMatters, priceOrder, publicItems, requestedItems, settleLineMatters,
 } from './orderItems.js';
+import {
+  COUPON_COLLECTION, HOLD_MS, REDEMPTION_COLLECTION, assertUsable, couponOnPaid, couponSnapshot, normaliseCode, quoteView, redemptionRecord,
+} from './coupons.js';
+import { findCoupon } from './coupons.service.js';
 import { getCompiledForServiceKey } from './workflowDefinitions.service.js';
 import { createNotification } from '../controllers/notifications.controller.js';
 import { sendNotificationEmail, publicSiteUrl } from './emailService.js';
@@ -148,6 +159,8 @@ export function publicOrder(o) {
     matterId: o.matter?.state === 'created' || isMatterKind(o.kind) ? (o.matter?.taskId ?? o.taskId ?? null) : null,
     kind: o.kind ?? 'website',
     requestId: o.requestId ?? null, // #222
+    // #256: what a coupon took off, before GST.
+    ...(o.couponCode ? { couponCode: o.couponCode, discount: o.discount, subtotalBeforeDiscount: o.subtotalBeforeDiscount } : {}),
     // #244: a cart order lists its services, each with the matter it opened.
     ...publicItems(o),
   };
@@ -195,17 +208,45 @@ async function tellStaff(title, message, taskId, roles = ['admin']) {
 }
 
 /**
+ * #256: what is being bought, priced — with the coupon, when one is given.
+ * Every price is read fresh from the catalogue, and the coupon fresh from its
+ * record; nothing about the price comes from the request. Throws the coupon's
+ * own friendly 4xx when it cannot be used on this order.
+ */
+async function priceWanted({ uid, productKey, planId, items, couponCode }) {
+  const wanted = requestedItems({ productKey, planId, items });
+  const catalog = await loadCatalog({ fresh: true });
+  const plans = wanted.map((w) => findPlan(catalog, w.productKey, w.planId));
+  if (!normaliseCode(couponCode)) return { wanted, plans, priced: priceOrder(plans), coupon: null };
+  priceOrder(plans); // an unknown plan is refused as before, whatever the code
+  const coupon = await findCoupon(couponCode);
+  assertUsable(coupon, { uid });
+  const labels = Object.fromEntries(catalog.map((p) => [p.key, p.label]));
+  const discount = couponDiscounts(plans, coupon, labels);
+  return { wanted, plans, priced: priceOrder(plans, discount), coupon, labels };
+}
+
+/**
+ * #256: the price the checkout shows — the order as it would be made now,
+ * with the coupon if one is given. Writes nothing; the order is priced again,
+ * from scratch, when it is made.
+ */
+export async function quoteOrder({ uid, productKey, planId, items, couponCode }) {
+  const { priced, coupon } = await priceWanted({ uid, productKey, planId, items, couponCode });
+  return quoteView(priced, coupon);
+}
+
+/**
  * Start an order. The gateway order is created FIRST: if the gateway cannot be
  * reached nothing is stored, so there is no half-made order to explain later.
  */
-export async function createOrder({ uid, customer, productKey, planId, items, simulate }) {
+export async function createOrder({ uid, customer, productKey, planId, items, couponCode, simulate }) {
   const gw = gateway();
   if (!gw) throw httpError(503, 'Online payment is not available right now.', 'PAYMENTS_OFF');
   // #244: one plan or a cart of them. Every price is read fresh from the
   // catalogue (one read for the whole cart) — never from the request.
-  const wanted = requestedItems({ productKey, planId, items });
-  const catalog = await loadCatalog({ fresh: true });
-  const priced = priceOrder(wanted.map((w) => findPlan(catalog, w.productKey, w.planId)));
+  // #256: and the coupon, if any, from its own record.
+  const { wanted, plans, priced, coupon, labels } = await priceWanted({ uid, productKey, planId, items, couponCode });
 
   const orderId = newOrderId();
   let gatewayOrderId;
@@ -221,12 +262,34 @@ export async function createOrder({ uid, customer, productKey, planId, items, si
     // Charged: price + GST. All of it is the server's, from the catalogue; a
     // cart's figures are the sums of its lines (`items`).
     ...priced, currency: 'INR',
+    ...(coupon ? { coupon: couponSnapshot(coupon) } : {}),
     status: 'created', gateway: gw.name, gatewayOrderId,
     matter: { state: 'none' },
     createdAt: nowIso(), updatedAt: nowIso(),
   };
-  await col().doc(orderId).set(order);
-  logger.info({ orderId, uid, items: wanted, amount: priced.amount, gateway: gw.name }, 'orders: created');
+  if (coupon) {
+    // The coupon is read again INSIDE the transaction that writes the order:
+    // a one-time code is held here, so a second checkout is refused, and the
+    // order exists only if the hold was placed. A coupon changed since it was
+    // priced a moment ago is refused rather than charged at an old figure.
+    const cref = getDb().collection(COUPON_COLLECTION).doc(coupon.code);
+    await getDb().runTransaction(async (tx) => {
+      const snap = await tx.get(cref);
+      const fresh = snap.exists ? { code: snap.id, ...snap.data() } : null;
+      assertUsable(fresh, { uid, orderId });
+      const again = priceOrder(plans, couponDiscounts(plans, fresh, labels));
+      if (Math.round(again.amount * 100) !== Math.round(priced.amount * 100)) {
+        throw httpError(409, 'This code changed a moment ago. Please apply it again.', 'COUPON_CHANGED');
+      }
+      if (fresh.validity === 'one_time') {
+        tx.update(cref, { heldBy: { orderId, uid, until: new Date(Date.now() + HOLD_MS).toISOString() } });
+      }
+      tx.set(col().doc(orderId), order);
+    });
+  } else {
+    await col().doc(orderId).set(order);
+  }
+  logger.info({ orderId, uid, items: wanted, amount: priced.amount, coupon: coupon?.code, gateway: gw.name }, 'orders: created');
   return { orderId, ...order, checkout: gw.checkout({ gatewayOrderId }) };
 }
 
@@ -239,7 +302,12 @@ export async function settlePaid(orderId, payment, source) {
   const outcome = await getDb().runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists) throw httpError(404, 'Order not found.');
-    const decision = decideSettlement(snap.data(), payment);
+    // #256: a coupon's use is settled in this same transaction, so it is
+    // counted once. Every read comes before the first write.
+    const o = snap.data();
+    const cref = o.couponCode ? getDb().collection(COUPON_COLLECTION).doc(o.couponCode) : null;
+    const csnap = cref ? await tx.get(cref) : null;
+    const decision = decideSettlement(o, payment);
     if (decision.action === 'noop') return 'noop';
     const common = {
       gatewayPaymentId: payment.gatewayPaymentId ?? null, method: payment.method ?? null,
@@ -250,7 +318,16 @@ export async function settlePaid(orderId, payment, source) {
       tx.set(ref, { ...common, status: 'review', reviewReason: decision.reason, paidAt: nowIso() }, { merge: true });
       return 'review';
     }
-    tx.set(ref, { ...common, status: 'paid', paidAt: nowIso() }, { merge: true });
+    const paidAt = nowIso();
+    tx.set(ref, { ...common, status: 'paid', paidAt }, { merge: true });
+    if (cref) {
+      const coupon = csnap.exists ? csnap.data() : null;
+      const { update, note } = couponOnPaid(coupon, { orderId, ...o }, paidAt);
+      if (update) tx.update(cref, update);
+      tx.set(getDb().collection(REDEMPTION_COLLECTION).doc(orderId),
+        redemptionRecord({ orderId, ...o }, { amountPaid: common.amountPaid, paidAt, note }));
+      if (note) logger.warn({ orderId, coupon: o.couponCode }, 'orders: coupon redemption honoured with a note');
+    }
     return 'paid';
   });
 
@@ -355,6 +432,7 @@ export async function fulfil(orderId, { retry = false } = {}) {
           ? `Thank you. We have received your payment of ${paid} for these ${o.items.length} services:`
           : `Thank you. We have received your payment of ${paid} for ${o.label} — ${o.planName}.`,
         ...itemLines(o, rupees),
+        ...(o.couponCode ? [`Coupon ${o.couponCode} took ${rupees(o.discount)} off the price of ${rupees(o.subtotalBeforeDiscount)}.`] : []),
         ...(o.gst ? [`That is ${rupees(priceOf(o))} plus ${rupees(o.gst)} GST (${o.gstPercent}%).`] : []),
         '', `Order reference: ${orderId}`,
         '', 'Our team will be in touch shortly. You can follow progress in your portal.',
@@ -462,7 +540,7 @@ async function openMatter(o, approval = {}, line = null) {
       clientUid: o.uid, serviceKey: what.serviceKey,
       paymentStatus: 'fully_paid', totalCost: what.amount, amountReceived: what.amount,
       paymentMode: o.gateway === 'simulated' ? 'Online (test payment)' : 'Online (Razorpay)',
-      paymentDescription: `Website order ${o.orderId}${line ? ` (${line.index + 1} of ${o.items.length}: ${it.label})` : ''}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}${what.gst ? ` (${rupees(priceOf(what))} + ${rupees(what.gst)} GST)` : ''}`,
+      paymentDescription: `Website order ${o.orderId}${line ? ` (${line.index + 1} of ${o.items.length}: ${it.label})` : ''}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}${what.gst ? ` (${rupees(priceOf(what))} + ${rupees(what.gst)} GST)` : ''}${what.discount ? `, after coupon ${o.couponCode}: ${rupees(what.discount)} off ${rupees(what.listPrice)}` : ''}`,
     },
   }, res);
   if (result.code !== 201 || !result.body?.id) {
@@ -620,7 +698,25 @@ export async function listMyOrders(uid) {
 
 /** TEST ENVIRONMENTS ONLY (reached through the simulator): remove a simulated order. */
 export async function discardOrder(orderId) {
-  await col().doc(orderId).delete();
+  // #256: a test order that used a coupon takes its redemption and its use with
+  // it, so a test run leaves the coupon as it found it (and deletable).
+  const ref = col().doc(orderId);
+  const rref = getDb().collection(REDEMPTION_COLLECTION).doc(orderId);
+  await getDb().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const code = snap.exists ? snap.data().couponCode : null;
+    const cref = code ? getDb().collection(COUPON_COLLECTION).doc(code) : null;
+    const [rsnap, csnap] = await Promise.all([tx.get(rref), cref ? tx.get(cref) : null]);
+    if (csnap?.exists) {
+      const c = csnap.data();
+      const patch = {};
+      if (rsnap.exists) patch.usedCount = Math.max(0, (c.usedCount ?? 0) - 1);
+      if (c.heldBy?.orderId === orderId) patch.heldBy = null;
+      if (Object.keys(patch).length) tx.update(cref, patch);
+    }
+    if (rsnap.exists) tx.delete(rref);
+    tx.delete(ref);
+  });
 }
 
 /**

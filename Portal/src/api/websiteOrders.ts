@@ -22,6 +22,9 @@ export interface WebsiteOrderItem {
   gst: number;
   gstPercent: number;
   amount: number;
+  /** #256: when a coupon reduced this line — its catalogue price, and the discount before GST. */
+  listPrice?: number;
+  discount?: number;
   matter: { state: 'none' | 'awaiting_approval' | 'created' | 'failed' | 'not_applicable';
     taskId?: string; error?: string; reason?: string; deleted?: boolean };
 }
@@ -44,6 +47,14 @@ export interface WebsiteOrder {
   gstPercent?: number;
   /** The total charged: price + GST. */
   amount: number;
+  /**
+   * #256: the coupon code used, the discount it gave (before GST) and the
+   * price before it. `price` and `amount` are AFTER the discount.
+   */
+  couponCode?: string;
+  discount?: number;
+  subtotalBeforeDiscount?: number;
+  coupon?: { discountType: 'percent' | 'fixed'; discountValue: number };
   amountPaid?: number;
   gateway: string;
   gatewayOrderId?: string;

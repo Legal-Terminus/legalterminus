@@ -27,6 +27,9 @@ export const STAFF_ROLES = ROLES.filter((r) => r.staff).map((r) => r.key);
 export const USER_MANAGER_ROLES = ['admin', 'manager']; // create/edit users
 export const USER_DELETE_ROLES = ['admin'];             // delete users
 export const ROLE_CHANGE_ROLES = ['admin'];             // change a user's role
+// #256: create, edit, switch on/off coupon codes and read the coupon report —
+// the same people who set website prices (#241).
+export const COUPON_MANAGER_ROLES = ['admin', 'manager'];
 
 /**
  * #168: roles that may NEVER mutate anything. Enforced centrally by the

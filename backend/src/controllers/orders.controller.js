@@ -9,7 +9,7 @@ import {
 } from '../services/paymentGateway.service.js';
 import {
   applyGatewayEvent, approveMatter, confirmReturn, createMatterBalanceOrder, createOrder, discardOrder, getOrder,
-  listMyOrders, listOrders, markFailed, publicOrder, reconcile, retryMatter,
+  listMyOrders, listOrders, markFailed, publicOrder, quoteOrder, reconcile, retryMatter,
 } from '../services/orders.service.js';
 
 const fail = (res, err, context) => {
@@ -33,7 +33,7 @@ export function getPaymentConfig(_req, res) {
  */
 export async function postOrder(req, res) {
   try {
-    const { productKey, planId, items, customer, simulate } = req.body;
+    const { productKey, planId, items, couponCode, customer, simulate } = req.body;
     const profile = await getDb().collection('users').doc(req.user.uid).get();
     const p = profile.exists ? profile.data() : {};
     const order = await createOrder({
@@ -44,10 +44,23 @@ export async function postOrder(req, res) {
         email: req.user.email || p.email || '',
         phone: customer?.phone || p.phone || p.mobile || '',
       },
-      productKey, planId, items, simulate,
+      productKey, planId, items, couponCode, simulate,
     });
     res.status(201).json({ ...publicOrder(order), checkout: order.checkout });
   } catch (err) { fail(res, err, 'postOrder error'); }
+}
+
+/**
+ * POST /api/orders/quote (#256) — what the checkout will charge for these
+ * plans, with a coupon code if one is given: the price before the discount,
+ * the discount, the GST and the total. A code that cannot be used answers 4xx
+ * with the reason in words. Writes nothing.
+ */
+export async function postQuote(req, res) {
+  try {
+    const { productKey, planId, items, couponCode } = req.body;
+    res.json(await quoteOrder({ uid: req.user.uid, productKey, planId, items, couponCode }));
+  } catch (err) { fail(res, err, 'postQuote error'); }
 }
 
 /**

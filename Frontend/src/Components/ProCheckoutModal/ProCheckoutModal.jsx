@@ -9,6 +9,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { getFirebaseDb } from "../../utils/firebase";
 import {
   startOrder, startCartOrder, confirmPayment, reportFailure, simulatePayment, payWithRazorpay, resultUrl,
+  quoteOrder, isCouponError,
 } from "../../utils/checkout";
 import { addToCart, clearCart } from "../../utils/cart.js";
 import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
@@ -145,6 +146,12 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
   });
   const [errors, setErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
+  // #256: a coupon code. `quote` is the SERVER's price with the code applied —
+  // the page never works a discount out itself — and it is what Pay charges.
+  const [couponInput, setCouponInput] = useState("");
+  const [quote, setQuote] = useState(null);
+  const [couponMsg, setCouponMsg] = useState("");
+  const [couponBusy, setCouponBusy] = useState(false);
   const saveTimerRef = useRef(null);
   const modalRef = useRef(null);
 
@@ -220,6 +227,30 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
   const gst = sum("gst");
   const total = sum("total");
   const { gstPercent } = lines[0];
+
+  // #256: what is being bought, as the server prices it — the plans, never a price.
+  const wanted = isCart ? cartLines : { productKey: source, planId: plan.id };
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code || couponBusy) return;
+    setCouponBusy(true);
+    setCouponMsg("");
+    try {
+      setQuote(await quoteOrder(wanted, code));
+    } catch (err) {
+      setQuote(null);
+      setCouponMsg(err?.message || "This code could not be applied.");
+    } finally {
+      setCouponBusy(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setQuote(null);
+    setCouponInput("");
+    setCouponMsg("");
+  };
 
   const handleAddToCart = async () => {
     const catalog = await loadPricing();
@@ -414,9 +445,11 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
     // server prices the order and says which gateway to open.
     try {
       const customer = { name: form.fullName, phone: form.mobile, businessName: form.businessName, state: form.state };
+      // #256: only the code is sent; the server checks it and prices the order again.
+      const couponCode = quote?.coupon?.code;
       const created = isCart
-        ? await startCartOrder(cartLines, customer)
-        : await startOrder(source, plan.id, customer);
+        ? await startCartOrder(cartLines, customer, couponCode)
+        : await startOrder(source, plan.id, customer, couponCode);
       setOrder(created);
 
       if (created.checkout?.gateway === 'simulated') {
@@ -433,6 +466,14 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
     } catch (err) {
       console.error('Payment error:', err);
       setIsProcessing(false);
+      // #256: the code stopped working between Apply and Pay (used up, expired,
+      // switched off). Nothing was charged: say why, drop the code, and let the
+      // customer pay without it — a bad code never blocks paying.
+      if (isCouponError(err) && !orderRef.current) {
+        setQuote(null);
+        setCouponMsg(`${err.message} You can pay without the code.`);
+        return;
+      }
       // Tell the server the attempt ended, so the order does not sit "in progress".
       if (orderRef.current) reportFailure(orderRef.current, err?.message);
       setFailureReason(failureKeyFor(err));
@@ -774,22 +815,84 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown', cartLines = null 
               </div>
             </div>
 
-            <div className="pco-summary-box">
-              {lines.map((l) => (
-                <div key={l.key} className="pco-summary-row">
-                  <span>{l.name}</span>
-                  <span>{inr(l.price)}</span>
+            {/* #256: a coupon code, checked and priced by the server. */}
+            <div className="pco-coupon">
+              {quote?.coupon ? (
+                <>
+                  <p className="pco-field-label">Coupon code</p>
+                  <div className="pco-coupon-applied" role="status">
+                    <span><strong>{quote.coupon.code}</strong> applied · {quote.coupon.label}</span>
+                    <button type="button" className="pco-coupon-btn pco-coupon-remove" onClick={removeCoupon}
+                      aria-label={`Remove coupon ${quote.coupon.code}`}>
+                      Remove
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <label htmlFor="pco-coupon-input" className="pco-field-label">Have a coupon code?</label>
+                  <div className="pco-coupon-row">
+                    <input
+                      id="pco-coupon-input"
+                      className="pco-input pco-coupon-input"
+                      type="text"
+                      placeholder="Enter code"
+                      autoComplete="off"
+                      autoCapitalize="characters"
+                      spellCheck={false}
+                      maxLength={30}
+                      value={couponInput}
+                      onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponMsg(""); }}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyCoupon(); } }}
+                    />
+                    <button type="button" className="pco-coupon-btn" onClick={applyCoupon} disabled={couponBusy || !couponInput.trim()}>
+                      {couponBusy ? "Checking…" : "Apply"}
+                    </button>
+                  </div>
+                </>
+              )}
+              {couponMsg && <p className="pco-coupon-error" role="alert">{couponMsg}</p>}
+            </div>
+
+            <div className="pco-summary-box" aria-label="Amount to pay">
+              {quote ? (<>
+                {quote.lines.map((l) => (
+                  <div key={l.productKey} className="pco-summary-row">
+                    <span>{l.label} — {l.planName}</span>
+                    <span>{inr(l.listPrice)}</span>
+                  </div>
+                ))}
+                <div className="pco-summary-row pco-summary-discount">
+                  <span>Discount ({quote.coupon.code})</span>
+                  <span>−{inr(quote.discount)}</span>
                 </div>
-              ))}
-              <div className="pco-summary-row">
-                <span>GST ({gstPercent}%)</span>
-                <span>{inr(gst)}</span>
-              </div>
-              <div className="pco-summary-divider" />
-              <div className="pco-summary-total-row">
-                <span>Total Amount</span>
-                <span className="pco-total-amount">{inr(total)}</span>
-              </div>
+                <div className="pco-summary-row">
+                  <span>GST ({quote.gstPercent}%)</span>
+                  <span>{inr(quote.gst)}</span>
+                </div>
+                <div className="pco-summary-divider" />
+                <div className="pco-summary-total-row">
+                  <span>Total Amount</span>
+                  <span className="pco-total-amount">{inr(quote.amount)}</span>
+                </div>
+                <p className="pco-summary-saved">Was {inr(total)} with GST — you save {inr(Math.round((total - quote.amount) * 100) / 100)}</p>
+              </>) : (<>
+                {lines.map((l) => (
+                  <div key={l.key} className="pco-summary-row">
+                    <span>{l.name}</span>
+                    <span>{inr(l.price)}</span>
+                  </div>
+                ))}
+                <div className="pco-summary-row">
+                  <span>GST ({gstPercent}%)</span>
+                  <span>{inr(gst)}</span>
+                </div>
+                <div className="pco-summary-divider" />
+                <div className="pco-summary-total-row">
+                  <span>Total Amount</span>
+                  <span className="pco-total-amount">{inr(total)}</span>
+                </div>
+              </>)}
             </div>
 
             <button

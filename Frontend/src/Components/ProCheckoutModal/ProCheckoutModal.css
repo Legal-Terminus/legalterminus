@@ -904,3 +904,38 @@
   text-align: center;
 }
 .pco-cart-note a { color: #166534; font-weight: 600; text-decoration: underline; display: inline-block; padding: 10px 4px; }
+
+/* #256: coupon code at checkout. 16px input (no zoom on a phone), 44px targets. */
+.pco-coupon { margin-bottom: 14px; }
+.pco-coupon-row { display: flex; gap: 8px; }
+.pco-coupon-input { flex: 1; min-width: 0; min-height: 44px; font-size: 16px; letter-spacing: 0.04em; }
+.pco-coupon-btn {
+  min-height: 44px;
+  min-width: 88px;
+  padding: 0 16px;
+  border: 1.5px solid #21b738;
+  border-radius: 7px;
+  background: #fff;
+  color: #168a2a;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+}
+.pco-coupon-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.pco-coupon-applied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 6px 6px 12px;
+  border: 1.5px dashed #21b738;
+  border-radius: 7px;
+  background: #f1fbf3;
+  font-size: 15px;
+  color: #14532d;
+}
+.pco-coupon-remove { border-color: #ccc; color: #444; }
+.pco-coupon-error { margin: 6px 0 0; font-size: 14px; color: #c62828; }
+.pco-summary-discount { color: #168a2a; font-weight: 600; }
+.pco-summary-saved { margin: 8px 0 0; font-size: 13px; color: #166534; text-align: right; }

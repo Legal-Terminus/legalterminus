@@ -1,10 +1,10 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck, IndianRupee, ShoppingBag, Sheet,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck, IndianRupee, ShoppingBag, Sheet, TicketPercent,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
-import { ALL_ROLE_KEYS } from '../lib/roles';
+import { ALL_ROLE_KEYS, COUPON_MANAGER_ROLES } from '../lib/roles';
 
 // Pages are organised by FEATURE, never by role (role-neutral architecture).
 import DashboardPage from '../pages/dashboard/DashboardPage';
@@ -50,6 +50,9 @@ import WorksheetsPage from '../pages/worksheets/WorksheetsPage';
 import ReportingAccessPage from '../pages/settings/ReportingAccessPage';
 import WebsitePricesPage from '../pages/settings/WebsitePricesPage';
 import WebsiteOrdersPage from '../pages/website-orders/WebsiteOrdersPage';
+import CouponsPage from '../pages/coupons/CouponsPage';
+import CouponFormPage from '../pages/coupons/CouponFormPage';
+import CouponReport from '../pages/reports/CouponReport';
 
 /**
  * SINGLE SOURCE OF TRUTH for every authenticated route, who can access it, and
@@ -176,5 +179,12 @@ export const APP_ROUTES: AppRoute[] = [
   // E24: orders paid for on the website, and whether each became a matter.
   // #212: a paid order is approved before its matter opens, and the firm asked
   // that a team member can approve — so team members see this screen too.
+  // #256/#257/#260: coupon codes for the website checkout — the same people
+  // who set its prices (#241). Forms are full pages, for phones.
+  { path: '/settings/coupons', element: <CouponsPage />, roles: COUPON_MANAGER_ROLES, nav: { label: 'Coupons', icon: TicketPercent, order: 14.5 } },
+  { path: '/settings/coupons/new', element: <CouponFormPage />, roles: COUPON_MANAGER_ROLES },
+  { path: '/settings/coupons/edit/:code', element: <CouponFormPage />, roles: COUPON_MANAGER_ROLES },
+  // #256: the Coupon & Discount report, reached from the Reports hub.
+  { path: '/reports/coupons', element: <CouponReport />, roles: COUPON_MANAGER_ROLES },
   { path: '/website-orders', element: <WebsiteOrdersPage />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Website Orders', icon: ShoppingBag, order: 15 } },
 ];

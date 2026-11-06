@@ -157,6 +157,18 @@ service cloud.firestore {
       allow create, delete: if false;
     }
 
+    // ── coupons/{code} and couponRedemptions/{orderId} (#256) ─────────────
+    // Backend-only. Staff manage coupons through /api/coupons (admin, manager);
+    // a customer only ever applies a code through POST /api/orders/quote, and a
+    // redemption is written once by the payment's own transaction. A browser
+    // reading these could list every live code — so neither is readable.
+    match /coupons/{code} {
+      allow read, write: if false;
+    }
+    match /couponRedemptions/{orderId} {
+      allow read, write: if false;
+    }
+
     // ── Deny everything else ───────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;

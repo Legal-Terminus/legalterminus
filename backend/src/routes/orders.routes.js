@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { paginationSchema } from '../schemas/common.schema.js';
 import {
-  createOrderSchema, failOrderSchema, simulateSchema, verifyOrderSchema,
+  createOrderSchema, failOrderSchema, quoteOrderSchema, simulateSchema, verifyOrderSchema,
 } from '../schemas/order.schema.js';
 import {
   getOrderById, getOrders, getPaymentConfig, postApprove, postFailed, postOrder, postReconcile,
-  postRetryMatter, postSimulate, postVerify, postWebhook, getMyOrders,
+  postQuote, postRetryMatter, postSimulate, postVerify, postWebhook, getMyOrders,
 } from '../controllers/orders.controller.js';
 import { createOrderRefund, listOrderRefunds, patchOrderRefund } from '../controllers/refunds.controller.js';
 import { refundCreateSchema, refundUpdateSchema } from '../schemas/refund.schema.js';
@@ -18,6 +18,7 @@ import { refundCreateSchema, refundUpdateSchema } from '../schemas/refund.schema
  *
  *   GET  /config                  public   is online payment on?
  *   POST /webhook                 public   the gateway's signed message (signature = its authentication)
+ *   POST /quote                   signed in   price a plan or cart, with a coupon code (#256)
  *   POST /                        signed in   start an order — the server sets the amount
  *   GET  /mine                    client   their own service requests and refunds (#242)
  *   GET  /:orderId                owner or staff
@@ -48,10 +49,24 @@ const createLimiter = rateLimit({
   message: { message: 'Too many attempts. Please wait a few minutes and try again.' },
 });
 
+/**
+ * #256: trying coupon codes. Enough for a customer who mistypes a few times,
+ * too few to guess codes by trying them. Counted per signed-in person.
+ */
+const quoteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isE2E ? 100_000 : 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.user?.uid || ipKeyGenerator(req.ip),
+  message: { message: 'Too many tries. Please wait a few minutes and try again.' },
+});
+
 router.get('/config', getPaymentConfig);
 router.post('/webhook', postWebhook);
 
 router.use(verifyToken);
+router.post('/quote', quoteLimiter, validate(quoteOrderSchema), postQuote);
 router.post('/', createLimiter, validate(createOrderSchema), postOrder);
 // #212: an order is approved by a member of staff before its matter opens, and
 // the firm asked that a team member can do it — so team members can see orders
