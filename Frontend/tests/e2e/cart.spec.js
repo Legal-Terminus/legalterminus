@@ -107,3 +107,14 @@ test("the summary says a coupon code is applied at checkout", async ({ page }) =
   await expect(summary).toContainText("Have a coupon code? You can apply it at checkout.");
   await expect(page.getByRole("button", { name: /Checkout · pay ₹20,647.64/ })).toBeEnabled();
 });
+
+test("an amount with paise shows two decimals (₹299.80, not ₹299.8)", async ({ page }) => {
+  await page.route("**/api/public/pricing", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({
+    gstPercent: 18, products: { "gst-registration": { label: "GST Registration in India", plans: [{ id: "supreme", name: "Supreme", price: 1010 }] } },
+  }) }));
+  await page.addInitScript(() => localStorage.setItem("lt-cart-v1", JSON.stringify([
+    { productKey: "gst-registration", planId: "supreme", label: "GST", planName: "Supreme", price: 1010 }])));
+  await openCart(page);
+  // 18% of 1,010 is 181.80
+  await expect(page.locator(".cart-line-gst")).toHaveText("+ ₹181.80 GST");
+});

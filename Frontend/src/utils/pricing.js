@@ -41,8 +41,15 @@ export function withGst(price, percent = gstPercent) {
   return { price, gstPercent: percent, gst, total: Math.round((price + gst) * 100) / 100 };
 }
 
-/** "₹7,078.82" — two decimals only when there are paise to show. */
-export const inr = (n) => `₹${Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+/**
+ * "₹7,078.82" — two decimals only when there are paise to show, and then
+ * always two: "₹299.80", never "₹299.8" (a coupon's 10% made the short form common).
+ */
+export const inr = (n) => {
+  const v = Number(n);
+  const paise = Math.round(v * 100) % 100 !== 0;
+  return `₹${v.toLocaleString("en-IN", { minimumFractionDigits: paise ? 2 : 0, maximumFractionDigits: 2 })}`;
+};
 
 export function loadPricing() {
   if (cached) return Promise.resolve(cached);
