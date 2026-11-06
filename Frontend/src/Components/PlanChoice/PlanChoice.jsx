@@ -4,9 +4,8 @@ import "./PlanChoice.css";
 
 /**
  * #221 — a product's one required question, shown ABOVE its plan cards (the
- * trademark page's "Proposed to be Used" / "Prior User"). Nothing is chosen
- * until the customer chooses: Buy Now asks for an answer first, so nobody pays
- * the wrong price because a default was picked for them.
+ * trademark page's "Proposed to be Used" / "Prior User"). A page may start on a
+ * default answer (usePlanChoice); with none, Buy Now asks for one first.
  *
  * `choice` is the catalogue's `{ label, options: [{ id, name, surcharge }] }`.
  * `hints` are the page's own words under each answer, by answer id.

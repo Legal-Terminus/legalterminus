@@ -6596,11 +6596,16 @@ payments" → "Cart".
 - Open: no browser test of the website checkout's coupon field (needs a signed-in website
   session); a payment held for review does not use up its code.
 
-### Trademark user type: Proposed to be Used or Prior User (2026-11-06, #221) — E24-S07 🔄 PR open
+### Trademark user type: Proposed to be Used or Prior User (2026-11-06, #221) — E24-S07 🔄 On QA
 
-- The trademark page asks "Proposed to be Used" or "Prior User" above its four plans. Nothing is
-  chosen at first and Buy Now asks for an answer; Prior User adds ₹2,500 (the firm can change it
-  under Website Prices) to every plan at once, before GST.
+- The trademark page asks "Proposed to be Used" or "Prior User" above its four plans. Prior User
+  adds ₹2,500 (the firm can change it under Website Prices) to every plan at once, before GST.
+- 7 Nov (owner): the page starts on **Proposed to be Used**, so Buy Now goes straight to checkout;
+  the hint under Prior User says what the surcharge pays for ("Includes preparing your user
+  affidavit and evidence of use" — the affidavit rule 25 of the Trade Marks Rules, 2017 requires
+  when earlier use is claimed). The default applies only while the catalogue still offers that
+  answer; otherwise nothing is chosen and Buy Now asks, as before. A cart line saved without an
+  answer still has to be answered in the cart.
 - The server adds the surcharge from the answer's id; the browser never sends a price. Works for
   Buy Now, the cart (which keeps and shows the answer) and coupons. Website Orders and the matter
   opened on approval show the user type.
@@ -6608,7 +6613,7 @@ payments" → "Cart".
   in `scripts/build-pricing-catalog.py` (`CHOICES`) and `shared/pricing/catalog.json`. Stored
   products without it are read with the seed's question, so no seed run is needed to deploy;
   `npm run db:seed:pricing` stores it, keeping any surcharge the firm set.
-- Open: the Elemental badge "★ PROPOSED-TO-BE-USED" and the answer hints need the firm's wording.
+- Open: the Elemental badge "★ PROPOSED-TO-BE-USED" and the answer hints need the firm's sign-off.
 
 ### Unused website components removed (2026-11-06)
 
