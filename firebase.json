@@ -80,6 +80,8 @@
         "source": "/payment/result/**",
         "destination": "/index.html"
       },
+      { "source": "/cart", "destination": "/index.html" },
+      { "source": "/cart/**", "destination": "/index.html" },
       {
         "source": "/signup",
         "destination": "/index.html"

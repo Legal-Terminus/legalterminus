@@ -6412,3 +6412,12 @@ payments" → "Cart".
 - Open: no Frontend Playwright test for the cart page itself (the website suite only
   checks that pages render); a cart order cannot be partly refunded — a refund is for the
   whole order, as before.
+
+### Website cart page opens directly; website builds again (2026-11-06, #244)
+
+- `/cart` had no hosting rewrite, so opening or reloading it went to the home page
+  (only clicking through inside the site worked). Both hosting configs now send `/cart`
+  to the app, like `/payment/result`.
+- Dependabot #235 moved `@vitejs/plugin-react` to 6, which needs vite 8; the site is on
+  vite 7, so `npm ci` failed and so would the next website deploy. Back on 5 until vite 8
+  is its own change.
