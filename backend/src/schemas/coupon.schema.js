@@ -8,7 +8,9 @@ import {
  * schema does not name is refused.
  */
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Choose a date.');
-const stripTags = (s) => s.replace(/<[^>]*>/g, '');
+// Tags out, then any angle bracket left over: one pass alone lets a nested
+// "<scr<script>ipt>" leave "<script>" behind (CodeQL js/incomplete-multi-character-sanitization).
+const stripTags = (s) => s.replace(/<[^>]*>/g, '').replace(/[<>]/g, '');
 
 /** The terms of a coupon — everything staff can set, except its code. */
 const terms = {

@@ -275,3 +275,11 @@ test('the coupon form is checked: code shape, percent ≤ 100, services chosen, 
   assert.equal(updateCouponSchema.safeParse(ok).success, false, 'the code itself cannot be edited');
   assert.equal(createCouponSchema.safeParse({ ...ok, description: '<b>Festive</b> offer' }).data.description, 'Festive offer');
 });
+
+test('a coupon description keeps no markup, even a nested tag', () => {
+  const base = { discountType: 'percent', discountValue: 10, scope: 'general', validity: 'one_time' };
+  for (const description of ['<scr<script>ipt>alert(1)</script>', 'Diwali <b>offer</b> > 10%']) {
+    const out = updateCouponSchema.parse({ ...base, description }).description;
+    assert.doesNotMatch(out, /[<>]/);
+  }
+});
