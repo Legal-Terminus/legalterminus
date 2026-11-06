@@ -65,6 +65,10 @@ test("desktop: the services beside a sticky order summary, priced from the catal
   await expect(summary).toContainText("₹20,647.64");
   await expect(summary).toContainText("You save ₹4,500");
   await expect(page.getByRole("button", { name: /Checkout · pay ₹20,647.64/ })).toBeEnabled();
+  // left-aligned, although the site centres h2 everywhere else
+  for (const h of await page.locator(".cart-line-name, .cart-summary-title").all()) {
+    expect(await h.evaluate((el) => getComputedStyle(el).textAlign)).toBe("left");
+  }
   // a plan named in capitals reads as a word
   await expect(page.locator(".cart-plan-text")).toContainText("Supreme");
 });
