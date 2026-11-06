@@ -105,11 +105,20 @@ test.describe.serial('E24-S01 price catalogue', () => {
     } finally { await admin.dispose(); }
   });
 
-  test('only an admin may change prices; a manager may read them; nobody else may', async () => {
+  test('an admin or a manager may change prices; nobody else may read or change them', async () => {
     const manager = await apiAs('manager');
-    expect((await manager.get('/api/pricing')).status()).toBe(200);
-    expect((await manager.put(`/api/pricing/${product.key}`, { data: { plans: [{ id: plan.id, price: 1 }] } })).status()).toBe(403);
-    await manager.dispose();
+    const anon = await request.newContext({ baseURL: API() });
+    try {
+      expect((await manager.get('/api/pricing')).status()).toBe(200);
+      // #241: a manager's change reaches the website like an admin's.
+      const put = await manager.put(`/api/pricing/${product.key}`, { data: { plans: [{ id: plan.id, price: plan.price + 1 }] } });
+      expect(put.status()).toBe(200);
+      const pub = (await (await anon.get('/api/public/pricing')).json()).products;
+      expect(pub[product.key].plans.find((p: Plan) => p.id === plan.id).price).toBe(plan.price + 1);
+    } finally {
+      await manager.put(`/api/pricing/${product.key}`, { data: { plans: [{ id: plan.id, price: plan.price }] } });
+      await manager.dispose(); await anon.dispose();
+    }
     for (const role of ['team', 'client', 'pro'] as const) {
       const api = await apiAs(role);
       expect((await api.get('/api/pricing')).status(), `${role} read`).toBe(403);
@@ -179,14 +188,25 @@ test.describe.serial('E24-S01 Website prices screen', () => {
     await expect(card.getByRole('button', { name: 'Save prices' })).toBeDisabled();
   });
 
-  test('a manager can look but not change; a team member cannot open the screen', async ({ managerPage, teamPage }) => {
-    await managerPage.goto('settings/pricing');
-    await expect(managerPage.getByText('Only an admin can change them.')).toBeVisible();
-    await managerPage.getByLabel('Search services').fill(product.code);
-    const card = managerPage.getByRole('region', { name: `${product.code} ${product.label}`, exact: true });
-    await card.getByRole('button', { expanded: false }).click();
-    await expect(card.getByLabel('Price (₹)', { exact: true }).first()).toBeDisabled();
-    await expect(card.getByRole('button', { name: 'Save prices' })).toHaveCount(0);
+  test('a manager can change prices too; a team member cannot open the screen', async ({ managerPage, teamPage }) => {
+    const raised = plan.price + 1;
+    try {
+      await managerPage.goto('settings/pricing');
+      await expect(managerPage.getByText('Only an admin or a manager can change them.')).toHaveCount(0);
+      await managerPage.getByLabel('Search services').fill(product.code);
+      const card = managerPage.getByRole('region', { name: `${product.code} ${product.label}`, exact: true });
+      await card.getByRole('button', { expanded: false }).click();
+      const price = card.getByRole('group', { name: plan.name }).first().getByLabel('Price (₹)', { exact: true });
+      await price.fill(String(raised));
+      await card.getByRole('button', { name: 'Save prices' }).click();
+      await expect(managerPage.getByText(/prices saved/)).toBeVisible();
+      const after = (await catalogue()).find((p) => p.key === product.key)!;
+      expect(after.plans.find((p) => p.id === plan.id)?.price).toBe(raised);
+    } finally {
+      const admin = await apiAs('admin');
+      await admin.put(`/api/pricing/${product.key}`, { data: { plans: [{ id: plan.id, price: plan.price }] } });
+      await admin.dispose();
+    }
 
     await teamPage.goto('settings/pricing');
     await expect(teamPage).toHaveURL(/\/unauthorized/);

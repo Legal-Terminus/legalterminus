@@ -9,7 +9,7 @@ import { getPricing, getPublicPricing, putPricing } from '../controllers/pricing
  *
  *   GET /api/public/pricing        public — the website's prices
  *   GET /api/pricing               admin, manager — the full catalogue
- *   PUT /api/pricing/:productKey   admin — change a product's prices
+ *   PUT /api/pricing/:productKey   admin, manager — change a product's prices (#241)
  *
  * The public route is a READ of information already printed on the website, so
  * it carries no token. It sits under the global rate limit, takes no input and
@@ -21,5 +21,5 @@ publicPricingRouter.get('/', getPublicPricing);
 const router = Router();
 router.use(verifyToken);
 router.get('/', requireRole('admin', 'manager'), getPricing);
-router.put('/:productKey', requireRole('admin'), validate(updatePricingSchema), putPricing);
+router.put('/:productKey', requireRole('admin', 'manager'), validate(updatePricingSchema), putPricing);
 export default router;
