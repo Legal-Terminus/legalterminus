@@ -11,6 +11,8 @@ import { postMatterPayNow } from '../controllers/orders.controller.js';
 import { matterPayNowSchema } from '../schemas/order.schema.js';
 import { listMatterRefunds, createMatterRefund, patchMatterRefund } from '../controllers/refunds.controller.js';
 import { refundCreateSchema, refundUpdateSchema } from '../schemas/refund.schema.js';
+import { paymentRequestCreateSchema, paymentRequestCancelSchema, paymentRequestRecordSchema, paymentRequestPaySchema } from '../schemas/paymentRequest.schema.js';
+import { getPaymentRequests, postPaymentRequest, postCancelPaymentRequest, postRecordPaymentRequest, postPayPaymentRequest } from '../controllers/paymentRequests.controller.js';
 import { getFormStep, saveFormStep } from '../controllers/forms.controller.js';
 import { uploadCommentImage, getCommentImage } from '../controllers/commentImages.controller.js';
 import { commentImageUpload } from '../middleware/commentImageUpload.middleware.js';
@@ -88,6 +90,16 @@ const payNowLimiter = rateLimit({
   message: { message: 'Too many attempts. Please wait a few minutes and try again.' },
 });
 router.post('/:taskId/pay-now', requireRole('client'), payNowLimiter, validate(matterPayNowSchema), postMatterPayNow);
+// #222 Additional payment requests (government fees etc.). Any member of staff
+// raises and sends one; admin / manager cancel one or record it paid by hand;
+// the CLIENT pays one online (amount = the request's server-computed total).
+// Team members may read the requests on a matter (they raise them) but still
+// not its payment history (#148).
+router.get('/:taskId/payment-requests', requireRole('admin', 'manager', 'team_member', 'client'), getPaymentRequests);
+router.post('/:taskId/payment-requests', requireRole('admin', 'manager', 'team_member'), validate(paymentRequestCreateSchema), postPaymentRequest);
+router.post('/:taskId/payment-requests/:requestId/cancel', requireRole('admin', 'manager'), validate(paymentRequestCancelSchema), postCancelPaymentRequest);
+router.post('/:taskId/payment-requests/:requestId/record', requireRole('admin', 'manager'), validate(paymentRequestRecordSchema), postRecordPaymentRequest);
+router.post('/:taskId/payment-requests/:requestId/pay', requireRole('client'), payNowLimiter, validate(paymentRequestPaySchema), postPayPaymentRequest);
 router.patch('/:taskId/steps/:stepId',       patchStep);
 router.post('/:taskId/transition',           validate(taskTransitionSchema), transitionTask);
 // Approval chain (E03-S04): admin-only approve / reject of a pending matter.

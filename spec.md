@@ -342,6 +342,22 @@ Every payment recorded against a task must capture the mode (Bank Transfer, Cash
 
 ---
 
+### User Story 15b — Additional Payment Requests with a Fee Breakup (Priority: P2) — #222
+
+Staff ask a matter's client for an additional payment — typically government fees — listed fee by fee, and the client pays the total online.
+
+**Acceptance Scenarios**:
+
+1. **Given** an admin, manager or team member is on a matter's Payments tab, **When** they add one or more fees (name, optional description, amount), add or remove fees and press Send, **Then** the request is stored with a total the SERVER computes from the fees, the total is added to the matter's total cost (so the amount due and payment status include it), and the client is notified in the portal and by email with the breakup.
+2. **Given** the request body carries a `total` or any field other than the fees and an optional note, **Then** it is refused (400). A fee with no name, a non-positive amount or more than two decimals is refused.
+3. **Given** the matter has no total cost, **Then** a request cannot be sent (409 `NO_TOTAL_COST`).
+4. **Given** a client opens their matter's Payments tab, **Then** they see each open or paid request with every fee, its amount and the total, and a "Pay ₹<total>" button on an open one; the amount is the request's stored total. Pay Now offers only the rest of the amount due.
+5. **Given** the gateway confirms the payment, **Then** the request becomes paid and one payment of its total is added to the payment history, once — a repeated confirmation or a second order changes nothing.
+6. **Given** an admin or manager, **Then** they can cancel an unpaid request (its total comes off the total cost) or record it as paid some other way. Team members and clients cannot.
+7. No GST is added to a request: the fees are charged as entered.
+
+---
+
 ### User Story 16 — Admin Broadcast Notifications (Priority: P3)
 
 Admin can push a notification (offer, news, alert) to all clients or a filtered group. The notification appears in-app on next open and is optionally sent as email.
@@ -620,6 +636,15 @@ date, recordedBy,
 referenceNumber?,   // UTR, cheque no., UPI transaction ID
 proofStoragePath?,  // uploaded image/receipt
 notes?, createdAt
+```
+
+### `tasks/{taskId}/paymentRequests/{requestId}` — additional payment requests (#222)
+```
+lines[{ name, description|null, amount }], total (server sum of lines), note|null,
+status (sent|paid|cancelled), createdBy, createdByName, createdByRole, createdAt,
+totalCostBefore, paidAt|null, paidVia (online|recorded)|null, orderId|null,
+paymentId|null (ledger row `request-<requestId>`),
+cancelledAt?, cancelledBy?, cancelledByName?, cancelReason?
 ```
 
 ### `auditLog/{entryId}`

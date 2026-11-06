@@ -6363,3 +6363,28 @@ reason (the open question in #242), and the notice reads "Service cancelled".
 - New endpoint `GET /api/orders/mine` (the client's own orders, from the sign-in).
 - Tests: `backend/src/__tests__/refunds.test.js`, `Portal/e2e/refunds.spec.ts`.
 
+### Additional payment requests with a government fee breakup (2026-11-05, #222)
+
+The firm asked to request more money from a client on a matter — usually government
+fees — with the fees listed one by one, and for the client to pay the total online.
+Design in architecture.md, "Website orders and payments" → "Additional payment requests".
+- In the matter's Payments tab, staff press **Request additional payment**, add fees
+  (name, description, amount), add or remove them, see the total and send. Any member of
+  staff can send; team members get a "Payment requests" tab that shows only the
+  requests, never the matter's figures or payment history.
+- The total is always the server's sum of the fees; a total sent by the page is refused.
+  A sent request is added to the matter's total cost, so the amount due includes it.
+  A matter with no total cost cannot be sent a request.
+- The client is told in the portal and by email, sees every fee and the total, and pays
+  with **Pay ₹<total>** through Razorpay. The payment lands in the payment history by
+  itself and the request shows as paid. Pay Now now offers only the rest of the amount due.
+- Admin/manager can cancel an unpaid request (it comes off the total cost) or record it
+  as paid when the client paid some other way. A request is paid once: a second payment
+  for it is not added, and admins/managers are told.
+- No GST is added: the fees are charged as entered.
+- Open: a request paid by hand while the client has a Razorpay checkout open leaves that
+  payment, if completed, unapplied (staff are told, to refund it). Editing the total cost
+  by hand afterwards can remove a request's amount from it; the firm should change fees
+  by cancelling and re-sending the request.
+- Tests: `backend/src/__tests__/paymentRequests.test.js`,
+  `Portal/e2e/payment-requests.spec.ts`.

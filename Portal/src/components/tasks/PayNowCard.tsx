@@ -7,6 +7,7 @@ import {
   PAYMENT_CONFIG_KEY, PayNowError, confirmPayNow, getPaymentConfig, payWithRazorpay, reportPayNowFailure,
   simulatePayNow, startPayNow, type PayNowOrder,
 } from '../../api/payNow';
+import { getPaymentRequests, paymentRequestsKey } from '../../api/paymentRequests';
 import type { Task } from '../../types/task';
 
 const rupees = (n: number) => `₹${n.toLocaleString('en-IN')}`;
@@ -22,9 +23,14 @@ const rupees = (n: number) => `₹${n.toLocaleString('en-IN')}`;
  */
 export default function PayNowCard({ task, isClient, canEdit }: { task: Task; isClient: boolean; canEdit: boolean }) {
   const { data: config } = useQuery({ queryKey: PAYMENT_CONFIG_KEY, queryFn: getPaymentConfig, staleTime: 5 * 60_000 });
+  // #222: open additional payment requests are paid through their own button,
+  // so Pay Now offers only the rest of the amount due (as the server charges).
+  const { data: requests, isLoading: requestsLoading } = useQuery({
+    queryKey: paymentRequestsKey(task.id), queryFn: () => getPaymentRequests(task.id), enabled: isClient,
+  });
   if (canEdit) return <PayNowSwitch task={task} paymentsOn={!!config?.enabled} />;
-  if (!isClient || !config?.enabled) return null;
-  const due = task.amountDue ?? 0;
+  if (!isClient || !config?.enabled || requestsLoading) return null;
+  const due = Math.max(0, Math.round(((task.amountDue ?? 0) - (requests?.outstanding ?? 0)) * 100) / 100);
   if (task.paymentStatus !== 'part_paid' || due <= 0 || task.onlinePaymentEnabled === false) return null;
   return <PayNowButton task={task} due={due} />;
 }

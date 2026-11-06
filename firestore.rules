@@ -120,6 +120,14 @@ service cloud.firestore {
         allow read: if isAdminOrManager();
         allow write: if false;
       }
+
+      // ── tasks/{taskId}/paymentRequests/{requestId} ───────────────────────
+      // #222: additional payment requests. Backend-only: every read and write
+      // goes through /api/tasks/:taskId/payment-requests, which enforces who
+      // may see and change them (and masks staff names for the client).
+      match /paymentRequests/{requestId} {
+        allow read, write: if false;
+      }
     }
 
     // ── workflowTemplates/{workflowId} ─────────────────────────────────────
