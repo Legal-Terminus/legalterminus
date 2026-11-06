@@ -6553,3 +6553,18 @@ payments" → "Cart".
   `auth-rbac.spec.ts`; `Frontend/tests/e2e/cart.spec.js`.
 - Open: no browser test of the website checkout's coupon field (needs a signed-in website
   session); a payment held for review does not use up its code.
+
+### Unused website components removed (2026-11-06)
+
+- 512 files under `Frontend/src` (old page versions, components no route renders, their
+  images) were not reachable from `src/main.jsx` by any import. They misled work on
+  #221: an old trademark component with a ₹1 price and a hidden Buy Now was mistaken
+  for the live page. Removed.
+- Proof of no change: the website built byte-for-byte identical before and after
+  (`vite build`, `diff -r` of the two outputs is empty).
+- **Kept on purpose:** the CSS files of the removed components (`src/Components/*/*.css`),
+  because `scripts/theme/fanout.py` groups every component stylesheet to generate
+  `src/theme/families.css`, and some live classes get their Theme C rule only through a
+  group a dead stylesheet belongs to. Dropping them and regenerating would restyle live
+  pages. `src/theme/ref/`, and `src/data/urlMap.js` (the #175 URL record), stay too.
+- Not user-visible.
