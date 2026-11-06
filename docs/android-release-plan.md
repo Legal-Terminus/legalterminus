@@ -47,7 +47,7 @@ order, who does it, and which steps touch production.
 ## Phase 1: Prepare (no production changes)
 
 1. 👤 Decide D1, D2, D4 (D3 can wait).
-2. 👤 Give the **GitHub issue number** for the Android app; replace `#TBD` in `epics.md` (E-26).
+2. ✅ The Android app is tracked on #267 (E-26 in `epics.md`); iOS on #268.
 3. Commit in separate pieces (Conventional Commits, issue in the subject, `Co-Authored-By` line):
    Portal shared fixes, then `MobileApp/`, then docs. Everything is uncommitted today. Never commit
    `google-services.json`, keystores or `.env*` (all ignored). Update `epics.md`, `architecture.md`
