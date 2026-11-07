@@ -2,22 +2,28 @@ import { useState } from "react";
 import { useChoice, surchargeOf } from "../../utils/pricing";
 
 /**
- * #221 — the state behind <PlanChoice>: which answer is chosen (none at
- * first), the plans repriced for it, and `requireChoice()` for Buy Now.
+ * #221 — the state behind <PlanChoice>: which answer is chosen, the plans
+ * repriced for it, and `requireChoice()` for Buy Now.
  *
  *   const ref = useRef(null);                  // on <PlanChoice ref={ref}>: Buy Now focuses it
- *   const pc = usePlanChoice("trademark-application", DEFAULT_CHOICE, ref);
+ *   const pc = usePlanChoice("trademark-application", DEFAULT_CHOICE, ref, "proposed");
  *   const cards = pc.priced(PLANS);            // price = plan + surcharge
  *   const { ok, option } = pc.requireChoice(); // !ok → asked the customer to choose
+ *
+ * `defaultOptionId` is selected until the customer picks another answer (the
+ * firm, 7 Nov: trademark starts on "Proposed to be Used"). It is used only if
+ * the catalogue still offers it; otherwise nothing is chosen and Buy Now asks.
  *
  * The repriced figure is only what the card SHOWS; the checkout sends the
  * answer's id and the server adds the surcharge itself.
  */
-export function usePlanChoice(productKey, defaultChoice, ref) {
+export function usePlanChoice(productKey, defaultChoice, ref, defaultOptionId = null) {
   const choice = useChoice(productKey, defaultChoice);
-  const [optionId, setOptionId] = useState(null);
+  const [picked, setOptionId] = useState(null);
   const [error, setError] = useState("");
 
+  const offersDefault = !!defaultOptionId && !!choice?.options?.some((o) => o.id === defaultOptionId);
+  const optionId = picked ?? (offersDefault ? defaultOptionId : null);
   const option = choice?.options?.find((o) => o.id === optionId) ?? null;
   const surcharge = surchargeOf(choice, optionId);
 

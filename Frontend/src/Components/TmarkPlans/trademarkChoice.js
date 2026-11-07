@@ -12,8 +12,15 @@ export const TRADEMARK_CHOICE = {
   ],
 };
 
-/** The page's own words under each answer. */
+/** Selected when the page opens (7 Nov): it adds nothing, and most applicants are not yet using their mark. */
+export const TRADEMARK_DEFAULT_OPTION = "proposed";
+
+/**
+ * The page's own words under each answer. Prior User says what its surcharge
+ * pays for: an application claiming earlier use must carry a user affidavit
+ * with evidence of that use (Trade Marks Rules, 2017, rule 25).
+ */
 export const TRADEMARK_CHOICE_HINTS = {
   proposed: "You have not started using this trademark yet.",
-  "prior-user": "You are already using this trademark for your goods or services.",
+  "prior-user": "You are already using this trademark. Includes preparing your user affidavit and evidence of use.",
 };

@@ -5,7 +5,7 @@ import ConsultationModal from "../ConsultationModal/ConsultationModal";
 import { usePlans, inr, PAYMENTS_ENABLED } from "../../utils/pricing";
 import PlanChoice from "../PlanChoice/PlanChoice";
 import { usePlanChoice } from "../PlanChoice/usePlanChoice";
-import { TRADEMARK_CHOICE, TRADEMARK_CHOICE_HINTS } from "../TmarkPlans/trademarkChoice";
+import { TRADEMARK_CHOICE, TRADEMARK_CHOICE_HINTS, TRADEMARK_DEFAULT_OPTION } from "../TmarkPlans/trademarkChoice";
 
 const DEFAULT_PLANS = [
   {
@@ -66,7 +66,7 @@ const TmarkPlans = () => {
   // #221: "Proposed to be Used" / "Prior User", asked above the cards. The cards
   // show the plan price plus the answer's surcharge; the server charges it.
   const choiceRef = useRef(null);
-  const pc = usePlanChoice("trademark-application", TRADEMARK_CHOICE, choiceRef);
+  const pc = usePlanChoice("trademark-application", TRADEMARK_CHOICE, choiceRef, TRADEMARK_DEFAULT_OPTION);
   const PLANS = pc.priced(LIVE_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
@@ -133,7 +133,7 @@ const TmarkPlans = () => {
                   <button
                     className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
                     onClick={() => {
-                      // #221: no answer yet → ask for one; never pick a default for the customer.
+                      // #221: starts on the page's default answer; asks only if the catalogue no longer offers it.
                       const { ok, option } = pc.requireChoice();
                       if (ok) setActivePlan({ plan, option });
                     }}

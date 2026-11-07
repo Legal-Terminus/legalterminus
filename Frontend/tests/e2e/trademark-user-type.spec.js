@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 
 /**
  * #221 — the trademark page asks "Proposed to be Used" or "Prior User" above
- * its plans. Nothing is chosen at first; Buy Now asks for a choice; Prior User
+ * its plans. "Proposed to be Used" is chosen at first (the firm, 7 Nov); Prior User
  * adds its surcharge to every card at once; the checkout and the cart keep the
  * choice. What is CHARGED is the server's (backend unit tests, Portal
  * pricing.spec); this spec covers the page.
@@ -43,27 +43,33 @@ test.beforeEach(async ({ page }) => {
 
 const prices = (page) => page.locator(".tmark-cards-center .opcplan-price").allTextContents();
 
-test("nothing is chosen at first; Prior User reprices every card; Buy Now asks first", async ({ page }) => {
+test("Proposed to be Used is chosen at first; Prior User reprices every card", async ({ page }) => {
   await page.goto(BASE + PAGE);
   const question = page.getByRole("group", { name: /Choose your user type/ });
   await expect(question).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByRole("radio", { name: /Proposed to be Used/ })).not.toBeChecked();
+  await expect(page.getByRole("radio", { name: /Proposed to be Used/ })).toBeChecked();
   await expect(page.getByRole("radio", { name: /Prior User/ })).not.toBeChecked();
   await expect.poll(() => prices(page)).toEqual(["₹1,499", "₹4,499", "₹11,999", "₹21,999"]);
-
-  const buy = page.getByRole("button", { name: "Buy Now" });
-  test.skip((await buy.count()) === 0, "payments are off in this build");
-  await buy.first().click();
-  await expect(question.getByRole("alert")).toContainText("Please choose Proposed to be Used or Prior User");
-  await expect(page.locator(".pco-modal")).toHaveCount(0);
+  // What the Prior User surcharge pays for is said on the page.
+  await expect(question).toContainText("Includes preparing your user affidavit and evidence of use.");
 
   await page.getByRole("radio", { name: /Prior User/ }).check();
-  await expect(question.getByRole("alert")).toHaveCount(0);
   await expect.poll(() => prices(page)).toEqual(["₹4,499", "₹7,499", "₹14,999", "₹24,999"]);
   await expect(page.getByText("Includes ₹3,000 for Prior User").first()).toBeVisible();
 
   await page.getByRole("radio", { name: /Proposed to be Used/ }).check();
   await expect.poll(() => prices(page)).toEqual(["₹1,499", "₹4,499", "₹11,999", "₹21,999"]);
+});
+
+test("Buy Now without touching the choice checks out as Proposed to be Used", async ({ page }) => {
+  await page.goto(BASE + PAGE);
+  await expect(page.getByRole("group", { name: /Choose your user type/ })).toBeVisible({ timeout: 15_000 });
+  const buy = page.getByRole("button", { name: "Buy Now" });
+  test.skip((await buy.count()) === 0, "payments are off in this build");
+  await buy.first().click(); // Elemental
+  const modal = page.locator(".pco-modal");
+  await expect(modal).toContainText("User type: Proposed to be Used");
+  await expect(modal.locator(".pco-total-amount")).toHaveText("₹1,768.82"); // 1,499 + 18% GST
 });
 
 test("the checkout shows the choice and its price; Add to Cart keeps it", async ({ page }) => {
