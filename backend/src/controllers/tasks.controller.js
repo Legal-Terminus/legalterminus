@@ -18,6 +18,7 @@ import { evaluateCondition, describeSkipReason } from '../../../shared/workflows
 import { deriveProfile } from '../services/clientProfile.service.js';
 import { deriveRollup, sumLedger, openingBalanceRow, creationPaymentRow } from '../services/paymentLedger.service.js';
 import { getOverrides, makeStatutoryResolver } from '../services/statutoryCalendar.service.js';
+import { clientDisplayName } from '../services/clientName.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
 // Add `days` (may be fractional) to an ISO instant, returning an ISO string.
@@ -612,7 +613,8 @@ export async function createTask(req, res) {
     const clientDoc = await db.collection('users').doc(clientUid).get();
     if (!clientDoc.exists) return res.status(404).json({ message: 'Client not found' });
     const c = clientDoc.data();
-    const clientName = c.name || c.fullName || c.email || 'Client';
+    // #277: one rule for the name, shared with the rename sync in clientName.service.
+    const clientName = clientDisplayName(c);
 
     // #85: optional handling professional — must be a STAFF user (never a client).
     // Snapshot the name for display/exports; store the UID as the stable ref.

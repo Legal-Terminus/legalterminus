@@ -6649,3 +6649,37 @@ portfolio (#243). The page's "View Portfolio ↗" button opened `infynialabs.com
   group a dead stylesheet belongs to. Dropping them and regenerating would restyle live
   pages. `src/theme/ref/`, and `src/data/urlMap.js` (the #175 URL record), stay too.
 - Not user-visible.
+
+### Completed matters stay listed; Clients list and renamed clients (2026-11-10, #275, #277) 🔄 PR open
+
+**#275 — completed matters disappeared from the Matters list.** The Matters page asked
+`GET /api/tasks` for one page — the 25 most recently updated matters — and filtered that
+in the browser. A completed matter dropped off once 25 others were touched after it, and
+"Status: Completed" found only those still in the first page. The admin dashboard's
+"Awaiting approval" and "Active" counts were taken from the same 25 rows.
+
+- The Portal now reads every page (`fetchAllPages`, `getTasks()`); the background
+  refresh is 60 s instead of 15 s. The list opens filtered when reached by a dashboard
+  link (`/tasks?status=completed`), which it ignored before.
+- Same for every staff role: admin and manager used the paged query; team members,
+  clients and professionals already got everything in one response.
+- `scripts/backfillTaskUpdatedAt.mjs` (dry run by default): an ordered query leaves out a
+  matter with no `updatedAt`. QA dry run: 5 matters, all fine. Not run on production.
+
+**#277 — new clients missing from the Clients list; a rename did not reach matters.**
+- The Clients page read one page of 100 clients, ordered attention-first then by name, and
+  never the next — a new client (no attention signals) late in the alphabet was not on it
+  once the firm had over 100 clients. It now reads every page (`/api/clients` allows 500
+  per page). Saving a client also refreshes the cached Clients list, which was cached for
+  30 s and not told about a new client.
+- `clientName` on a matter is a copy made at creation and was never refreshed. A client's
+  name change (staff edit, the client's own profile, re-adding an existing client) now
+  rewrites it on all their matters (`services/clientName.service.js`); `updatedAt` is not
+  touched. Matters where they are only an additional contact (#188) keep their owner's
+  name. Refunds, website orders and sent notifications keep the name of the time.
+- `scripts/syncClientNamesOnMatters.mjs` repairs matters renamed before this (dry run by
+  default). QA dry run: 0 to update, 4 already right, 1 matter with no client profile.
+  Not run on production.
+
+Tests: `backend/src/__tests__/clientName.test.js`; Playwright
+`Portal/e2e/matters-and-clients-lists.spec.ts`. User-visible: yes (lists, names).

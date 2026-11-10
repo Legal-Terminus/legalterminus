@@ -9,7 +9,7 @@ import { useToast } from '../../components/common/toastContext';
 import { exportToXlsx, type ExportColumn } from '../../lib/exportXlsx';
 import { getClientContacts, type ClientContact } from '../../api/clients';
 import {
-  getClients, needsAttention, CLIENTS_QUERY_KEY,
+  getAllClients, needsAttention, CLIENTS_QUERY_KEY,
   type ClientRollup,
 } from '../../api/clients';
 
@@ -112,30 +112,31 @@ export default function ClientsPage() {
   // E01-S34-1 (AC1): filter the roster by tag.
   const [tagFilter, setTagFilter] = useState('');
 
-  const { data, isLoading, error } = useQuery({
+  // #277: the whole roster, not its first page of 100 — see getAllClients.
+  const { data: clients, isLoading, error } = useQuery({
     queryKey: CLIENTS_QUERY_KEY,
-    queryFn: () => getClients({ limit: 100 }),
+    queryFn: getAllClients,
     staleTime: 30_000,
   });
 
   const rows = useMemo(() => {
-    let all = data?.data ?? [];
+    let all = clients ?? [];
     if (attentionOnly) all = all.filter(needsAttention);
     if (tagFilter) all = all.filter((c) => (c.tags ?? []).includes(tagFilter));
     return all;
-  }, [data, attentionOnly, tagFilter]);
+  }, [clients, attentionOnly, tagFilter]);
 
   // Offered from the tags clients ACTUALLY carry, so the filter can never
   // present an option that returns nothing.
   const tagOptions = useMemo(() => {
     const set = new Set<string>();
-    for (const c of data?.data ?? []) for (const t of c.tags ?? []) set.add(t);
+    for (const c of clients ?? []) for (const t of c.tags ?? []) set.add(t);
     return [...set].sort();
-  }, [data]);
+  }, [clients]);
 
   const attentionCount = useMemo(
-    () => (data?.data ?? []).filter(needsAttention).length,
-    [data],
+    () => (clients ?? []).filter(needsAttention).length,
+    [clients],
   );
 
   // LT #205: the contact list as a spreadsheet. Fetched on demand — it is every
@@ -298,7 +299,7 @@ export default function ClientsPage() {
                 !attentionOnly ? 'bg-ink text-white' : 'bg-surface-soft text-ink-muted hover:bg-surface-card'
               }`}
             >
-              All clients {data ? `· ${data.data.length}` : ''}
+              All clients {clients ? `· ${clients.length}` : ''}
             </button>
             <button
               type="button"
@@ -308,7 +309,7 @@ export default function ClientsPage() {
                 attentionOnly ? 'bg-ink text-white' : 'bg-surface-soft text-ink-muted hover:bg-surface-card'
               }`}
             >
-              Needs attention {data ? `· ${attentionCount}` : ''}
+              Needs attention {clients ? `· ${attentionCount}` : ''}
             </button>
             {/* E01-S34-1: only shown once tags exist — an empty dropdown is
                 clutter that teaches nothing. */}

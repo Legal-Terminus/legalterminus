@@ -6,6 +6,7 @@ import { publicSiteUrl, sendNotificationEmail, sendTemplatedEmail } from './emai
 import { renderTemplate } from './emailTemplates.service.js';
 import { assertAllowedAccountEmail, isTestEnvironment } from '../config/testEnvironment.js';
 import { passwordLinkFor, describeInviter, setupEmail } from './accountLinks.service.js';
+import { afterClientProfileWrite } from './clientName.service.js';
 
 const clean = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 
@@ -143,6 +144,12 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
       };
 
       await db.collection('users').doc(uid).set(clean(updates), { merge: true });
+
+      // #277: re-adding an existing client under a new name renames them, so
+      // their existing matters must follow.
+      if (existingFirestoreUser && updates.name) {
+        await afterClientProfileWrite(db, uid, { ...existingFirestoreUser, ...clean(updates) });
+      }
 
       // Set custom claims — may fail if the UID has no Firebase Auth account yet
       // (e.g. Google-only user whose Auth record hasn't been resolved). Non-fatal:

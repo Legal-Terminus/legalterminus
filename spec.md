@@ -58,6 +58,8 @@ Workflows are modelled as **XState state machines**. Each workflow service (Comp
 | Send broadcast notifications | ✅ | ❌ | ❌ | ❌ |
 | Create, edit, switch on/off coupon codes; read the Coupon & Discount report (#256) | ✅ | ✅ | ❌ | ❌ (applies a code at checkout) |
 
+**Matters list (#275):** "All Matters" lists every matter the user may see, whatever its status — completed matters included, however many matters there are. Only deleting a matter removes it. The Status filter (and a dashboard link that opens it, e.g. `/tasks?status=completed`) shows every matter in that status.
+
 ---
 
 ## User Scenarios & Testing
@@ -233,6 +235,8 @@ Admin can create and manage all user accounts. Managers can create/edit clients 
 5. **Given** a team member leaves, **When** admin triggers reassignment, **Then** all open workflow steps assigned to that uid are bulk-reassigned to a selected new team member; the action is logged in the audit trail.
 6. **Given** the same email address appears in multiple client profiles (multi-email client), **Then** login resolves to the profile where that email is the primary email; if it is a secondary email, the most recently created profile is returned and admin is alerted to resolve the ambiguity.
 7. **Given** a manager creates a client profile, **Then** the profile is immediately active without admin approval — managers have full create/edit rights for clients.
+8. **Given** a client is added, **Then** they appear on the Clients list straight away, however many clients the firm has (#277).
+9. **Given** a client's name is changed (by staff or by the client), **Then** every matter of that client shows the new name — in lists, the matter, reports and later emails (#277).
 
 ---
 
@@ -607,6 +611,7 @@ branches?,           // branch conditions defined in machine topology
 ### `tasks/{taskId}` — workflow instances per client
 ```
 clientUid, workflowId, workflowName,
+clientName,       // copy of the client's profile name; rewritten on every matter when the client is renamed (#277)
 status (pending_manager_approval|pending_admin_approval|active|completed|rejected),
 paymentStatus (not_paid|part_paid|fully_paid),
 amountTotal, amountPaid, amountDue,

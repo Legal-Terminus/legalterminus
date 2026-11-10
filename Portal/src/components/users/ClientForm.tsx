@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createUser, updateUser, getAllUsers, displayName, type PortalUser } from '../../api/users';
-import { CONTACT_DESIGNATIONS, getClientGroups } from '../../api/clients';
+import { CONTACT_DESIGNATIONS, CLIENTS_QUERY_KEY, getClientGroups } from '../../api/clients';
 import { getServiceCatalog } from '../../api/services';
 import { assignServiceToClient } from '../../api/tasks';
 import { getWorkflowDefinitions } from '../../api/workflowDefinitions';
@@ -121,6 +121,16 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
       // appears without a manual page refresh.
       queryClient.invalidateQueries({ queryKey: ['portalUsers'] });
       if (id) queryClient.invalidateQueries({ queryKey: ['portalUser', id] });
+      // #277: the Clients roster (and each client's 360, ['clients', uid]) was
+      // cached for 30s and never told, so a client just added was missing from
+      // it until the cache ran out. A rename also changes the name on the
+      // client's matters (server-side), so every view of matters is refreshed.
+      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
+      if (id) {
+        for (const key of [['tasks'], ['task'], ['matters-board'], ['my-steps']]) {
+          queryClient.invalidateQueries({ queryKey: key });
+        }
+      }
       onSuccess();
     },
     onError: (err: Error) => setError(err.message),
