@@ -18,14 +18,14 @@
  */
 import 'dotenv/config';
 import { db } from '../config/firebase.js';
-import { clientDisplayName } from '../services/clientName.service.js';
+import { clientRealName } from '../services/clientName.service.js';
 
 const APPLY = process.argv.includes('--apply');
 const databaseId = (process.env.FIRESTORE_DATABASE_ID || '').trim() || '(default) — LIVE';
 console.log(`Database: ${databaseId}   mode: ${APPLY ? 'APPLY' : 'dry run'}\n`);
 
 const clients = await db.collection('users').where('role', '==', 'client').get();
-const nameByUid = new Map(clients.docs.map((d) => [d.id, clientDisplayName(d.data())]));
+const nameByUid = new Map(clients.docs.map((d) => [d.id, clientRealName(d.data())]));
 
 const tasks = await db.collection('tasks').get();
 let changed = 0;
@@ -37,8 +37,9 @@ let inBatch = 0;
 for (const doc of tasks.docs) {
   const t = doc.data();
   const name = nameByUid.get(t.clientUid);
-  // The client was deleted, or is not a client any more: there is no profile
-  // to take a name from, so the matter keeps the name it has.
+  // The client was deleted, is not a client any more, or their profile has no
+  // real name (empty, or an email address that sign-in wrote over it before
+  // #277): there is no name to take, so the matter keeps the one it has.
   if (!name) { noClient += 1; continue; }
   if ((t.clientName ?? '') === name) { same += 1; continue; }
   changed += 1;
@@ -52,5 +53,5 @@ for (const doc of tasks.docs) {
 if (APPLY && inBatch) await batch.commit();
 
 console.log(`\n${APPLY ? 'updated' : 'WOULD UPDATE'}: ${changed}   already right: ${same}   `
-  + `no client profile (left alone): ${noClient}   matters: ${tasks.size}`);
+  + `no client name to take (left alone): ${noClient}   matters: ${tasks.size}`);
 process.exit(0);

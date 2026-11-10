@@ -6686,7 +6686,7 @@ portfolio (#243). The page's "View Portfolio ↗" button opened `infynialabs.com
   pages. `src/theme/ref/`, and `src/data/urlMap.js` (the #175 URL record), stay too.
 - Not user-visible.
 
-### Completed matters stay listed; Clients list and renamed clients (2026-11-10, #275, #277) 🔄 PR open
+### Completed matters stay listed; Clients list and renamed clients (2026-11-10, #275, #277) ✅ Merged (PR #283), on QA
 
 **#275 — completed matters disappeared from the Matters list.** The Matters page asked
 `GET /api/tasks` for one page — the 25 most recently updated matters — and filtered that
@@ -6719,6 +6719,25 @@ in the browser. A completed matter dropped off once 25 others were touched after
 
 Tests: `backend/src/__tests__/clientName.test.js`; Playwright
 `Portal/e2e/matters-and-clients-lists.spec.ts`. User-visible: yes (lists, names).
+
+**Follow-up found before release (2026-11-10): sign-in wrote the email over a client's name.**
+Previewing the one-off repair on the live database (`syncClientNamesOnMatters.mjs`, dry run)
+showed three clients whose profile name had become their email address. Cause: `POST
+/api/auth/register` runs on EVERY sign-in, the sign-in page sends `fullName: displayName ||
+email`, and an email-and-password account has no displayName — so every such sign-in merged the
+email over the real name (and blank `mobile` / `businessName` / `state` over saved ones). With
+#283's rename sync this would have renamed all of that client's matters to their email on each
+sign-in. Fixed before #283 reached production:
+- `services/signInProfile.js` (`buildSignInProfile`): for an existing user, sign-in fills a field
+  only when the profile has nothing there (for the name: nothing, or only an email) and the value
+  sent is real; a new user is created as before.
+- `clientName.service.js` `clientRealName`: the rename sync and the repair script never take an
+  email or an empty name; such matters keep the name they have.
+- Live preview after the fix: 26 matters would be updated, 25 already right, 4 left alone (the
+  three email-named clients and one matter with no client profile). Not applied yet.
+- Still to repair by hand or by decision: the three live client profiles whose name is now an
+  email address (their real name survives on their matters).
+
 
 ### TDS Sheet in Worksheets; dropdown choices staff can edit (2026-11-10, #280) — E18-S10 🔄 In review
 

@@ -32,6 +32,19 @@ export function clientDisplayName(user) {
   return String(user.name || user.fullName || user.email || 'Client').trim();
 }
 
+/**
+ * The client's name for the RENAME sync: their real name, or '' when the
+ * profile has none. Unlike clientDisplayName it never falls back to the email
+ * address, and a "name" that is an email is no name at all: sign-in used to
+ * write the email over a client's name (#277), and copying that onto their
+ * matters would replace a real name with an address. '' makes the sync a no-op.
+ */
+export function clientRealName(user) {
+  if (!user) return '';
+  const name = String(user.name || user.fullName || '').trim();
+  return name && !name.includes('@') ? name : '';
+}
+
 /** Firestore caps a batch at 500 writes; stay clear of it. */
 const BATCH_SIZE = 400;
 
@@ -79,7 +92,7 @@ export async function syncClientNameOnMatters(db, clientUid, name) {
 export async function afterClientProfileWrite(db, uid, user) {
   try {
     if (!user || user.role !== 'client') return 0;
-    return await syncClientNameOnMatters(db, uid, clientDisplayName(user));
+    return await syncClientNameOnMatters(db, uid, clientRealName(user));
   } catch (err) {
     logger.error({ err, clientUid: uid }, 'Could not refresh the client name on their matters');
     return 0;
