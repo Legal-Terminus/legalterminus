@@ -4136,19 +4136,20 @@ both platforms per release; the build number only ever goes up; secrets never in
 `corsOrigins.js` change and its tests, the CSS hooks, the entitlements and AASA, the deletion
 endpoint's shape, the guard script and the Android job. Read it with the story.
 
-**Prerequisites that are a person's, not code** (E29-S01): an Apple Developer **organisation**
+**Prerequisites that are a person's, not code** (E29-S01): an Apple Developer **organisation** (the firm is getting it, 2026-11-10)
 account for LEGAL TERMINUS PRIVATE LIMITED (needs a D-U-N-S number; US$99 a year), a Mac with
 Xcode 16, a real iPhone, and the decisions below.
 
-**Decisions (record the answer here before E29-S02)**
+**Decisions (all recorded 2026-11-10)**
 
 | # | Decision | Recommendation |
 |---|---|---|
 | D1 | **Sign-in on iOS.** Google is the primary sign-in method and must work in the iOS app. Guideline 4.8: an app that offers Google sign-in must also offer Sign in with Apple. | **Decided 2026-11-10: native Google sign-in on iOS, same as Android, plus Sign in with Apple in the same build** (E29-S04 and E29-S11 ship together). BeatMyEMI shipped exactly this pair. Email + password and the sign-in link stay. |
 | D2 | **Account deletion.** 5.1.1(v): deletion must be startable in the app; a web link alone is refused. Play's Data safety form already says users can request deletion. | A **deletion request** from the app (E29-S08): the person confirms, the account is signed out and disabled, the firm is told, an Admin completes it with the existing delete. Matter records the firm must keep by law are kept and the privacy policy says so (PR #223). |
-| D3 | **Minimum iOS version.** | Capacitor 8's own minimum (check the generated `ios/App/Podfile` when `cap add ios` runs; expected iOS 15). The Portal's Safari target is the same as the web build's. |
-| D4 | **First release scope.** | Same as Android: no push notifications (E29-S12 = E26-S06), iPhone only (no iPad layout work; `preferredContentMode: 'mobile'`). |
-| D5 | **Bundle id.** | `com.legalterminus.app`, the same as Android, if it is free in the Apple portal. If not, `com.legalterminus.ios` — record it here; it cannot change after the first upload. |
+| D3 | **Minimum iOS version.** | **Decided 2026-11-10: Capacitor 8's own minimum** (check the generated `ios/App/Podfile` when `cap add ios` runs; expected iOS 15). The Portal's Safari target is the same as the web build's. |
+| D4 | **First release scope.** | **Decided 2026-11-10:** same as Android: no push notifications (E29-S12 = E26-S06), iPhone only (no iPad layout work; `preferredContentMode: 'mobile'`). |
+| D5 | **Bundle id.** | **Decided 2026-11-10: `com.legalterminus.app`**, the same as Android, if it is free in the Apple portal. If not, `com.legalterminus.ios` — record it here; it cannot change after the first upload. |
+| D6 | **Apple sign-in on the website and Android.** Only the iOS app is required to offer it. | **Decided 2026-11-10: on the website, yes** — someone who signed up with Apple on an iPhone (possibly with "Hide my email", so no password and an address they never see) must be able to sign in on legalterminus.com too. **On Android, hidden** for the first release. |
 
 | Story | What | Status |
 |---|---|---|
@@ -4656,8 +4657,8 @@ the hint text. Code in `docs/ios-app-implementation-guide.md`.
 **Acceptance criteria**: on the production TestFlight build, a dedicated test Apple ID signs
 in and lands as Client with its name; cancelling shows the friendly message; the website's Apple
 button works in Safari and Chrome; a `@legalterminus.test` account is refused on QA with the
-sentence; on Android the Apple button either works (the plugin's web flow) or is hidden by
-decision, recorded here.
+sentence; on Android the Apple button is hidden (D6), and a unit test covers the
+platform check.
 
 **Tests**: Playwright `apple-sign-in.spec.ts` on the web build (mocked credential and mocked
 403, like `google-sign-in.spec.ts`); unit tests for `appleSignInMessage`; device checklist.
