@@ -2646,6 +2646,30 @@ only). **Production allows neither yet**; add both before a production build.
 committed. A throwaway key was used only to prove the release build installs.
 
 
+## iOS app (E-29, planned 2026-11-10)
+
+The iPhone app is the same `MobileApp/` shell with an `ios/` platform added; the Portal bundle,
+`native.ts` and the plugin set are shared with Android. Decisions, in `epics.md` E-29:
+
+- **Origin.** WKWebView cannot serve a custom-scheme app over `https`, so the iOS app's origin is
+  `capacitor://localhost`. `corsOrigins.js` accepts that one exact origin (and still nothing else
+  on the `capacitor` scheme) when it is listed in `CORS_ORIGINS`; the buckets' CORS carry it too.
+- **Sign-in.** Native Google on iOS as on Android (the picker's ID token into the web SDK, one
+  Firebase session), **and Sign in with Apple** in the same build — App Store 4.8 requires it
+  once Google is offered; the website gets the Apple provider too (parity). A "Hide my email"
+  relay address is treated as a new sign-up; the admin links it to the firm's client record by
+  the existing additional-emails path. Session persistence stays `indexedDBLocalPersistence`
+  unless a device test shows eviction.
+- **Emailed links.** Universal Links (`apple-app-site-association` + Associated Domains), from the
+  same source as `assetlinks.json` so the two files cannot disagree; the host is a build setting,
+  like Android's `linkHost`; production gets the file only when launch is approved.
+- **Account deletion** is started in the app (both stores require it): `POST
+  /api/auth/me/deletion-request` disables the Auth user, marks the profile, tells the firm; an
+  Admin completes it with the existing delete. Records the firm must keep are kept.
+- **Release.** Android is built and signed by the GitHub pipeline from a release tag and attached to
+  a GitHub Release; iOS is archived and uploaded from Xcode. One version name and build number for
+  both. `docs/mobile-release.md`.
+
 ## Chat: editing, deleting and confirming a shared message (2026-11-05)
 
 The matter's discussion thread (#123) is labelled **Chat** in the Portal. Code names are
