@@ -228,7 +228,27 @@ export function normalizeDate(raw) {
   return null;
 }
 
-const stripTags = (s) => String(s).replace(/<[^>]*>/g, '');
+/**
+ * Remove HTML tags — the same result as `replace(/<[^>]*>/g, '')`, in one pass.
+ * That regex is quadratic on a cell of many '<' with no '>' (CodeQL
+ * js/polynomial-redos): each '<' rescans the rest of the string. Here each
+ * character is looked at a bounded number of times, and once no '>' is left
+ * the remainder is kept as it is, which is what the regex would leave too.
+ */
+export function stripTags(input) {
+  const s = String(input);
+  let out = '';
+  let i = 0;
+  while (i < s.length) {
+    const open = s.indexOf('<', i);
+    if (open === -1) { out += s.slice(i); break; }
+    const close = s.indexOf('>', open + 1);
+    if (close === -1) { out += s.slice(i); break; }
+    out += s.slice(i, open);
+    i = close + 1;
+  }
+  return out;
+}
 const MAX_LEN = { text: 500, longtext: 5000, select: 200, image: 200, date: 100, number: 100 };
 
 /**
