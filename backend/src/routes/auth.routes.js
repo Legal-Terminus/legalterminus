@@ -1,4 +1,5 @@
 import express from "express";
+import { buildSignInProfile } from "../services/signInProfile.js";
 import admin from "firebase-admin";
 import { verifyToken, requireRole } from "../middleware/auth.middleware.js";
 import { getDb } from "../config/firebase.js";
@@ -100,17 +101,11 @@ router.post("/register", verifyToken, async (req, res) => {
       terms = termsAcceptanceFields(req.body, own.exists ? own.data() : null);
     }
 
-    // Prepare profile data
-    const profileData = {
-      name: String(fullName || '').slice(0, 200),
-      fullName: String(fullName || '').slice(0, 200),
-      email,
-      mobile: String(mobile || '').replace(/[^0-9+\-() ]/g, '').slice(0, 20),
-      businessName: String(businessName || '').slice(0, 200),
-      state: String(state || '').slice(0, 100),
-      ...(photoURL && provider === 'google' && { profilePictureUrl: photoURL }),
-      ...terms,
-    };
+    // #277: see buildSignInProfile — sign-in must not overwrite an existing
+    // profile's name (with the email address) or its contact details (with blanks).
+    const profileData = buildSignInProfile(existingUser, {
+      email, fullName, mobile, businessName, state, provider, photoURL, terms,
+    });
 
     // Call unified upsertUser service
     const result = await upsertUser(

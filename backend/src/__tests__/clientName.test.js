@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  clientDisplayName, syncClientNameOnMatters, afterClientProfileWrite,
+  clientDisplayName, clientRealName, syncClientNameOnMatters, afterClientProfileWrite,
 } from '../services/clientName.service.js';
 
 /**
@@ -106,4 +106,20 @@ test('afterClientProfileWrite acts for clients only, and takes the name from the
 test('afterClientProfileWrite never throws — the profile save already succeeded', async () => {
   const broken = { collection() { throw new Error('firestore down'); } };
   assert.equal(await afterClientProfileWrite(broken, 'u1', { role: 'client', name: 'X' }), 0);
+});
+
+// #277 (follow-up): sign-in used to write the email over a client's name. The
+// rename sync must never copy an email address onto the matters.
+test('clientRealName is empty when the profile has no name or only an email', () => {
+  assert.equal(clientRealName({ name: 'Asha Rao', email: 'a@x.test' }), 'Asha Rao');
+  assert.equal(clientRealName({ name: 'a@x.test', fullName: 'a@x.test', email: 'a@x.test' }), '');
+  assert.equal(clientRealName({ email: 'a@x.test' }), '');
+  assert.equal(clientRealName(null), '');
+});
+
+test('a client whose name is an email address does not rename their matters', async () => {
+  const db = fakeDb([{ id: 't1', clientUid: 'c1', clientName: 'Asha Rao' }]);
+  const n = await afterClientProfileWrite(db, 'c1', { role: 'client', name: 'a@x.test', email: 'a@x.test' });
+  assert.equal(n, 0);
+  assert.equal(db.docs.get('t1').clientName, 'Asha Rao');
 });
