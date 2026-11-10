@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
-import { ArrowLeft, Plus, Settings2, Upload } from 'lucide-react';
+import { ArrowLeft, ListPlus, Plus, Settings2, Upload } from 'lucide-react';
 import {
   createWorksheetRecord, deleteWorksheetRecord, getWorksheetModule, listWorksheetRecords, updateWorksheetRecord,
   type CellValue, type MatterRef, type ModuleKey, type WsPage, type WsRecord, type WsSheet,
@@ -13,6 +13,7 @@ import WorksheetGrid from '../../components/worksheets/WorksheetGrid';
 import RecordForm from '../../components/worksheets/RecordForm';
 import ColumnEditor from '../../components/worksheets/ColumnEditor';
 import ImportPanel from '../../components/worksheets/ImportPanel';
+import OptionsEditor from '../../components/worksheets/OptionsEditor';
 
 /**
  * #210 / #217 — one page for a module of worksheets: a dropdown of sheets (the
@@ -25,7 +26,7 @@ import ImportPanel from '../../components/worksheets/ImportPanel';
  */
 
 const MAX_RECORDS = 5000;
-type View = { kind: 'grid' } | { kind: 'form'; id: string | null } | { kind: 'columns' } | { kind: 'import' };
+type View = { kind: 'grid' } | { kind: 'form'; id: string | null } | { kind: 'columns' } | { kind: 'import' } | { kind: 'options' };
 
 export default function WorksheetModulePage({ module, title, subtitle, pickerLabel, back }: {
   module: ModuleKey;
@@ -169,10 +170,17 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
     invalidateSiblings();
   };
 
-  const columnsSaved = (s: WsSheet) => {
+  // A sheet's new definition (columns or dropdown choices). Choices belong to
+  // the book, so every sheet of the same book is re-read too.
+  const sheetSaved = (s: WsSheet) => {
     qc.setQueryData(['worksheet-module', module], (d: typeof mod) => (d ? { ...d, sheets: d.sheets.map((x) => (x.key === s.key ? s : x)) } : d));
-    setView({ kind: 'grid' });
   };
+  const columnsSaved = (s: WsSheet) => { sheetSaved(s); setView({ kind: 'grid' }); };
+  const optionsSaved = (s: WsSheet) => {
+    sheetSaved(s);
+    if (mod?.sheets.some((x) => x.book === s.book && x.key !== s.key)) void qc.invalidateQueries({ queryKey: ['worksheet-module', module] });
+  };
+  const hasDropdowns = !!sheet?.columns.some((c) => c.type === 'select' && !c.hidden);
 
   const bookColumns = useMemo(() => {
     if (!mod || !sheet) return [];
@@ -225,6 +233,11 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
                       <Upload className="w-4 h-4" /> Upload Excel
                     </button>
                   )}
+                  {mod.canEdit && hasDropdowns && (
+                    <button type="button" onClick={() => setView({ kind: 'options' })} className="btn-secondary inline-flex items-center gap-1.5 min-h-11">
+                      <ListPlus className="w-4 h-4" /> Edit dropdowns
+                    </button>
+                  )}
                   {mod.canManageColumns && (
                     <button type="button" onClick={() => setView({ kind: 'columns' })} className="btn-secondary inline-flex items-center gap-1.5 min-h-11">
                       <Settings2 className="w-4 h-4" /> Edit columns
@@ -234,6 +247,12 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
               )}
             </div>
 
+            {view.kind === 'grid' && sheet.source && (
+              <p className="text-xs text-ink-muted">
+                Rows of GST return matters fill in and update themselves as the matter moves on. You can add rows and change any cell;
+                a cell you change keeps your value until the matter changes that cell again.
+              </p>
+            )}
             {view.kind === 'grid' && (
               records.isLoading ? <div className="card p-10 text-center text-sm text-ink-muted">Loading records…</div>
                 : records.isError ? <div className="card p-10 text-center text-sm text-red-600">Could not load the records.</div>
@@ -266,6 +285,9 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
             )}
             {view.kind === 'columns' && (
               <ColumnEditor key={sheetKey} sheet={sheet} bookColumns={bookColumns} onSaved={columnsSaved} onCancel={() => setView({ kind: 'grid' })} />
+            )}
+            {view.kind === 'options' && (
+              <OptionsEditor key={sheetKey} sheet={sheet} onSaved={optionsSaved} onCancel={() => setView({ kind: 'grid' })} />
             )}
             {view.kind === 'import' && (
               <ImportPanel key={sheetKey} sheet={sheet} onCancel={() => setView({ kind: 'grid' })}

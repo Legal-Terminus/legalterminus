@@ -81,7 +81,7 @@ split dashboard tiles.
 | E-15 | Document Naming & Step Configuration (Visibility, Status/Notes, Descriptions) | Phase 2 | E15-S01 – E15-S04 |
 | E-16 | Comment Draft Autosave | Phase 2 | E16-S01 |
 | E-17 | Professional Assignment on Matters | Phase 2 | E17-S01 |
-| E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S09 |
+| E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S11 |
 | E-19 | Client 360 (Per-Client Status for Staff) | Phase 2 | E19-S01 – E19-S03 |
 | E-20 | Dashboard Cockpits | Phase 2 | E20-S01 – E20-S02 |
 | E-21 | Public API v1 & Webhooks | Phase 2 | E21-S01 – E21-S04 |
@@ -2844,6 +2844,42 @@ before it breaches — depends on the notification/email subsystem (E-07).
 - KYC: *Next KYC Due* = filing date + 3 years (calculated). Admins and managers are notified 30 days and 7 days before, and on the day — once per milestone.
 
 **e2e**: `Portal/e2e/worksheets.spec.ts`.
+
+---
+
+### E18-S10 — TDS Sheet in Worksheets, with editable dropdowns (#280) [Phase 2] 🔄 In review
+
+**Priority**: P1 | **Complexity**: S | **Dependencies**: E18-S09 (same engine)
+
+**Rationale**: The firm keeps its TDS register in Excel and asked for it in Worksheets, in its own
+layout, with the yellow columns as dropdowns whose choices staff manage.
+
+**Acceptance Criteria**:
+- "TDS Sheet" in the Worksheets dropdown, after GST Sheet, with the columns of the firm's file in its
+  order and spelling (see the 2026-11-10 change-log entry); "Sl. No." is the row number.
+- Add record, Upload Excel (matched by TAN NO), Edit columns (admin), Search, Download Excel — as every sheet.
+- **Edit dropdowns** (admin, manager, team member) for every dropdown column of every worksheet and report.
+
+**e2e**: `Portal/e2e/worksheets.spec.ts` (#280 tests).
+
+---
+
+### E18-S11 — GST Return Filing sheet under Reports, fed by the GST matters (#279) [Phase 2] 🔄 In review
+
+**Priority**: P1 | **Complexity**: M | **Dependencies**: E18-S10 (editable dropdowns), #219 (GST return matters)
+
+**Rationale**: The firm tracks every client's monthly and quarterly GST return in one Excel register.
+It asked for it under Reports, filled from the GST workflows, with a Monthly / Quarterly dropdown
+whose two views never mix.
+
+**Acceptance Criteria**:
+- `/reports/gst-returns` (Reports hub tile; dashboard tile for admin, manager, team member) with a
+  Monthly / Quarterly dropdown over the firm's columns plus Return Period and Matter.
+- Rows of GST return matters are created and kept up to date from the workflow when the sheet is
+  opened; staff add rows and edit any cell; last change wins per cell.
+- Monthly and Quarterly never share or reach each other's records; columns and dropdowns are shared.
+
+**e2e**: `Portal/e2e/gst-return-filing.spec.ts`.
 
 ---
 
@@ -6683,3 +6719,96 @@ in the browser. A completed matter dropped off once 25 others were touched after
 
 Tests: `backend/src/__tests__/clientName.test.js`; Playwright
 `Portal/e2e/matters-and-clients-lists.spec.ts`. User-visible: yes (lists, names).
+
+### TDS Sheet in Worksheets; dropdown choices staff can edit (2026-11-10, #280) — E18-S10 🔄 In review
+
+The firm asked for its TDS register as a sheet under Worksheets, "following the uploaded Excel format
+… do not copy the GST Sheet columns", with the yellow columns as dropdowns whose values Admin,
+Manager and Team can add, edit and remove. Design in architecture.md, "Worksheets" → "Dropdown
+choices", "Row numbers", "TDS Sheet".
+- **Columns, read from the image attached to the issue, in its order:** Sl. No., Company Name,
+  **Assigned to**, **Checker**, **Client**, TAN NO, USER ID, Traces Password, IT Password, **TDS Data
+  Received**, **Excel Prepared**, **Final Excel Mail to Client**, **Challan paid by client**, SALARY
+  (Form 138) FILING DATE, NON-SALARY (form 140) FILING DATE, SALARY (Form 138) PR NO, NON-SALARY (form
+  140) PR NO, STATEMENT STATUS 26Q (Form 140), STATEMENT STATUS 24Q (Form 138). Bold = yellow in the
+  file = dropdown. The two filing dates are date columns; everything else is text.
+- **Sl. No.** is the row number of the sheet as shown (after filters, search and sort), also in the
+  download; it is not stored, and an upload skips it.
+- **Dropdowns:** Assigned to, Checker and Client start empty — the firm adds its people and clients
+  under **Edit dropdowns**; the four status columns start Yes / No. Edit dropdowns works on every
+  dropdown column of every worksheet and Trademark Report, for admins, managers and team members.
+  A choice that is renamed or removed stays on the rows that already hold it.
+- **Upload** matches rows by TAN NO (one row per TAN). The image's PR numbers display as
+  "75230960006822400%" — an Excel percentage format on a 15-digit number; the upload reads the number
+  and keeps it whole as text.
+- **Open questions for the firm:**
+  - "Form 138" / "form 140" are kept exactly as in the file; are they Form 24Q (salary) and 26Q
+    (non-salary)? The upload accepts either spelling.
+  - One row per TAN: if the firm keeps a separate sheet per quarter, a Quarter column (and TAN +
+    Quarter as the key) is needed — otherwise uploading Q2 updates the Q1 rows.
+  - Traces and IT passwords are stored as plain text visible to every admin, manager and team member,
+    as in the firm's Excel file. The GST Sheet left them out deliberately (#217). Should they be
+    masked or restricted?
+  - Should "Assigned to" / "Checker" list the portal's staff automatically instead of a typed list?
+- Tests: `backend/src/__tests__/worksheetEngine.test.js` (5 new); `Portal/e2e/worksheets.spec.ts`
+  (columns and buttons; a team member adds a choice and uses it in a new record; upload in the firm's
+  layout; clients refused, non-dropdown column refused). Run locally against QA on 2026-11-10: worksheets.spec 13/13 passed.
+
+### GST Return Filing sheet under Reports, kept up to date from the GST matters (2026-11-10, #279) — E18-S11 🔄 In review
+
+The firm asked for a GST Return Filing sheet under Reports (not Worksheets), filled automatically
+from the GST workflows, editable by hand, with a Monthly / Quarterly dropdown "similar to the
+Marketing Report section" whose views do not mix. Design in architecture.md, "GST Return Filing
+sheet".
+- **Columns, read from the image attached to the issue, in its order:** Sl. No., GST Return Clients,
+  **CONSTITUTION**, GSTN No, Mail ID for data collection, GST User ID, GST Pswd, Contact No., **Assign
+  Person**, Current Status, **Data Received**, **Tally/ Excel Prepared**, Date of GSTR-1 Filing,
+  **GSTR-1 Filed Mail**, **GSTR_2B Reco Mail to Client**, **Additional Data or Confirmation Received
+  from Client**, **Challan Mail to the client**, **Challan paid by client**, **Annual Working Sheet
+  Update**, Date of GSTR-3B Filing, Completion Check (shaded pink, not yellow — kept as text), Remarks.
+  Bold = yellow = dropdown (Constitution: Company, Partnership, Proprietorship, OPC, LLP, Section 8;
+  Assign Person: empty, the firm adds its people; the rest Yes / No — all editable under Edit
+  dropdowns). We added **Return Period** and **Matter** at the end.
+- **What a row is (decision):** one client's return for one period. The firm's image shows one
+  client per row with per-return status columns, so a register without a period would overwrite
+  last month's status with this month's. Alternative considered: one row per client with the
+  current period's status only (simpler, but the history the firm keeps month by month would be
+  lost). Upload matches rows by GSTN No + Return Period within the view.
+- **From the workflows (decision):** a matter of a linked GST service gives one row; client details
+  from the client's profile; Current Status = the current task; Assign Person = who holds it; each
+  status column = "Yes" (or the date, for the two filing dates) once the task whose NAME says so is
+  completed — e.g. a task named "GSTR-1 filed" fills Date of GSTR-1 Filing; Completion Check = Done
+  when the matter is completed. A workflow without such a task leaves that column to people. The
+  live GST services' task names were not available to us (QA has none) — the name rules are in
+  `gstReturnSheet.service.js` and are listed in the open questions.
+- **Edits vs the workflow (decision): last change wins** per cell. A typed value stays until the
+  workflow changes that cell, then the workflow's value shows. Alternatives: workflow always wins
+  (typed values on derived columns would be lost at the next sync) or typed always wins (then "any
+  updates made to workflow data should automatically reflect" would fail for edited cells).
+- **Monthly vs Quarterly:** from the matter's GST period (#219), else its service, else the client's
+  GST return setting. A record is in one view only; keys, uploads and edits never cross.
+- **When it updates:** each time the sheet is opened (at most every 15 seconds), reading only the
+  matters changed since the last time. A change to the client's profile (new GSTIN) shows once the
+  matter next changes.
+- **Indexes to deploy with the release:** `tasks (serviceKey, updatedAt)`, `worksheetRecords (book,
+  sourceMatterId)`. Without the first, the sheet still works but only re-reads the newest 200 GST
+  matters.
+- **Open questions for the firm:**
+  - Confirm "one row per client per month / quarter". If the firm wants one row per client showing
+    only the current period, the model changes.
+  - Name the tasks of your GST Return Filing services the way the columns read (e.g. "Data received",
+    "Tally / Excel prepared", "GSTR-1 filed", "GSTR-1 filed mail", "GSTR-2B reco mail", "Additional
+    data / confirmation", "Challan mail", "Challan paid", "Annual working sheet", "GSTR-3B filed"), or
+    tell us your names and we map them. Or should each column be mapped to a task in the service
+    settings instead of by name?
+  - Completion Check is shaded differently in the file: should it be a dropdown, or set by the
+    portal only when the matter is completed (as now, plus typing)?
+  - Assign Person: should it list the portal's staff automatically?
+  - GST Pswd is stored as plain text visible to all staff, as in the file — mask or restrict?
+  - Renaming a dropdown choice does not rename it on existing rows — should it?
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` (13: columns, exclusive keys and uploads,
+  derivation, step-name matching, period and frequency, last change wins);
+  `Portal/e2e/gst-return-filing.spec.ts` (dashboard tile, dropdown and columns; a matter's row
+  follows its workflow and a typed cell yields to the next workflow change; a manual Quarterly row
+  stays out of Monthly and is 404 through it; Constitution choice added by a team member; client,
+  team and validation guards). Run locally against QA on 2026-11-10: 5/5 passed (the new tasks index is not on QA, so the sync used its fallback); trademark-reports.spec 8/8 still pass.

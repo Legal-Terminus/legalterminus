@@ -333,6 +333,34 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "serviceKey",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "worksheetRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "book",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "sourceMatterId",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [

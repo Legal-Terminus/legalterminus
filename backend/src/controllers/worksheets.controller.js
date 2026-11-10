@@ -4,10 +4,11 @@ import { getDb, getBucket } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { BOOKS, SHEETS, MODULES } from '../config/worksheetDefinitions.js';
 import {
-  resolveSheet, bookFields, computeValues, cleanRecordValues, recordKeyFor, applyColumnEdit,
+  resolveSheet, bookFields, computeValues, cleanRecordValues, sheetRecordKey, applyColumnEdit, applyOptionsEdit,
   planImport, encodeCursor, decodeCursor,
 } from '../services/worksheetEngine.service.js';
 import { runWorksheetReminderSweep } from '../services/worksheetReminders.service.js';
+import { syncSheetFromMatters } from '../services/gstReturnSheetSync.service.js';
 
 /**
  * #210 / #217 — worksheets: the trademark reports and the company worksheets,
@@ -16,7 +17,8 @@ import { runWorksheetReminderSweep } from '../services/worksheetReminders.servic
  * Storage:
  *   worksheetRecords/{id}   { module, book, sheets: [sheetKey], values: {field: value},
  *                             recordKey, images: {field: {objectPath, contentType, updatedAt}},
- *                             reminderDue, remindersSent, createdAt, createdBy, updatedAt, updatedBy }
+ *                             reminderDue, remindersSent, createdAt, createdBy, updatedAt, updatedBy,
+ *                             #279 synced rows: sourceMatterId, derived {field: what the workflow last said} }
  *   worksheetConfig/{book}  the firm's column edits (see worksheetEngine.service.js)
  *   Storage: worksheets/{book}/{recordId}/{field}-{ts}.webp  (streamed back, never a signed URL)
  *
@@ -54,14 +56,26 @@ async function sheetContext(req, res) {
   return { db, config, sheet: resolveSheet(key, config), fields: bookFields(SHEETS[key].book, config) };
 }
 
-/** A record of THIS sheet's book, or a 404 (an id from another book never resolves here). */
+/**
+ * A record of THIS sheet's book, or a 404 (an id from another book never
+ * resolves here). In an exclusive book (#279) it must also be in THIS sheet: a
+ * Quarterly row is not reachable, editable or deletable through Monthly.
+ */
 async function loadRecord(db, sheet, id, tx) {
   if (!/^[A-Za-z0-9_-]{1,128}$/.test(String(id))) return null;
   const ref = db.collection(RECORDS).doc(id);
   const snap = tx ? await tx.get(ref) : await ref.get();
   if (!snap.exists || snap.data().book !== sheet.book) return null;
+  if (sheet.exclusive && !(snap.data().sheets ?? []).includes(sheet.key)) return null;
   return { ref, snap, data: snap.data() };
 }
+
+/**
+ * #279: a row whose Matter cell a person sets is linked to that matter, so the
+ * sync updates this row instead of adding a second one. Only in a synced book.
+ */
+const matterLink = (sheet, values) => (BOOKS[sheet.book]?.sync && typeof values?.matter === 'string' && values.matter
+  ? { sourceMatterId: values.matter } : {});
 
 const reminderDueFor = (bookKey, fields, values) => {
   const r = BOOKS[bookKey]?.reminder;
@@ -153,6 +167,12 @@ export async function listRecords(req, res) {
     const ctx = await sheetContext(req, res); if (!ctx) return;
     const { db, sheet, fields } = ctx;
     const { limit, cursor } = req.query;
+    // #279: rows that come from matters are brought up to date when the sheet
+    // is opened (its first page). A failed sync never hides the sheet.
+    if (!cursor && BOOKS[sheet.book]?.sync) {
+      await syncSheetFromMatters({ bookKey: sheet.book, config: ctx.config })
+        .catch((err) => logger.warn({ err, sheet: sheet.key }, '#279 sheet sync failed; showing stored rows'));
+    }
     let q = db.collection(RECORDS).where('sheets', 'array-contains', sheet.key)
       .orderBy('createdAt').orderBy(FieldPath.documentId()).limit(limit);
     if (cursor) {
@@ -180,7 +200,7 @@ export async function createRecord(req, res) {
     if (Object.keys(values).length === 0) return res.status(400).json({ message: 'Fill in at least one column.' });
     await checkMatters(db, sheet, fields, values);
     const sheets = cleanMemberships(sheet, [sheet.key, ...(req.body.sheets ?? [])]);
-    const recordKey = recordKeyFor(sheet.recordKey, values);
+    const recordKey = sheetRecordKey(sheet, values);
     const now = new Date().toISOString();
     const ref = db.collection(RECORDS).doc();
 
@@ -200,6 +220,7 @@ export async function createRecord(req, res) {
         module: sheet.module, book: sheet.book, sheets, values, recordKey,
         images: {}, reminderDue: reminderDueFor(sheet.book, fields, values), remindersSent: {},
         createdAt: now, createdBy: req.user.uid, updatedAt: now, updatedBy: req.user.uid,
+        ...matterLink(sheet, values),
       });
     });
     const saved = await ref.get();
@@ -224,7 +245,7 @@ export async function updateRecord(req, res) {
       // Merged inside the transaction so two people editing different cells
       // of the same row never overwrite each other.
       const values = dropNulls({ ...(rec.data.values ?? {}), ...patch });
-      const recordKey = recordKeyFor(sheet.recordKey, values);
+      const recordKey = sheetRecordKey(sheet, values);
       if (recordKey && recordKey !== rec.data.recordKey) {
         const dup = await tx.get(db.collection(RECORDS).where('book', '==', sheet.book).where('recordKey', '==', recordKey).limit(2));
         if (dup.docs.some((d) => d.id !== rec.ref.id)) {
@@ -234,6 +255,7 @@ export async function updateRecord(req, res) {
       tx.update(rec.ref, {
         values, recordKey, reminderDue: reminderDueFor(sheet.book, fields, values),
         ...(sheets ? { sheets } : {}),
+        ...matterLink(sheet, patch),
         updatedAt: now, updatedBy: req.user.uid,
       });
       return rec.ref;
@@ -266,12 +288,32 @@ export async function putColumns(req, res) {
   try {
     const ctx = await sheetContext(req, res); if (!ctx) return;
     const next = applyColumnEdit(ctx.sheet.key, ctx.config, req.body);
+    // Merged, so the dropdown choices staff edit (`optionOverrides`, #280) are
+    // never wiped by a column save.
     await ctx.db.collection(CONFIG).doc(ctx.sheet.book).set({
       ...next, updatedAt: new Date().toISOString(), updatedBy: req.user.uid,
-    });
+    }, { merge: true });
     logger.info({ sheet: ctx.sheet.key, actorUid: req.user.uid }, 'Worksheet columns updated');
-    res.json(resolveSheet(ctx.sheet.key, next));
+    res.json(resolveSheet(ctx.sheet.key, { ...ctx.config, ...next }));
   } catch (err) { sendKnown(res, err, 'putColumns failed'); }
+}
+
+/* ── Dropdown options (staff) ───────────────────────────────────────────── */
+
+// PUT /api/worksheets/sheets/:sheet/options/:field { options } — #280 / #279.
+// Admin, manager and team member: the issue asks all three to manage the
+// choices of every dropdown column. One field's list per request; a merge on
+// `optionOverrides.<field>` so two people editing different lists never clash.
+export async function putOptions(req, res) {
+  try {
+    const ctx = await sheetContext(req, res); if (!ctx) return;
+    const { optionOverrides } = applyOptionsEdit(ctx.sheet.key, ctx.config, req.params.field, req.body.options);
+    const now = new Date().toISOString();
+    await ctx.db.collection(CONFIG).doc(ctx.sheet.book).set({ optionOverrides, updatedAt: now, updatedBy: req.user.uid }, { merge: true });
+    const config = { ...ctx.config, optionOverrides: { ...(ctx.config.optionOverrides ?? {}), ...optionOverrides } };
+    logger.info({ sheet: ctx.sheet.key, field: req.params.field, count: optionOverrides[req.params.field].length, actorUid: req.user.uid }, 'Worksheet dropdown options updated');
+    res.json(resolveSheet(ctx.sheet.key, config));
+  } catch (err) { sendKnown(res, err, 'putOptions failed'); }
 }
 
 /* ── Excel upload ───────────────────────────────────────────────────────── */

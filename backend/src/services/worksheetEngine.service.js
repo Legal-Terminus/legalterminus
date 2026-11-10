@@ -16,14 +16,22 @@ const httpError = (status, message, extra = {}) => Object.assign(new Error(messa
 
 /* ── Resolving definitions + overrides ──────────────────────────────────── */
 
-/** Every field a book's records may hold: built-in plus the firm's own. */
+/**
+ * Every field a book's records may hold: built-in plus the firm's own.
+ *
+ * #280 / #279: the options of ANY choice list — built-in or added — may be
+ * edited by staff; the edited list is stored in `optionOverrides[field]` and
+ * replaces the default here, so every sheet, form and upload sees it at once.
+ */
 export function bookFields(bookKey, config = {}) {
   const book = BOOKS[bookKey];
   if (!book) return [];
-  const builtIn = book.fields.map((fd) => ({ ...fd, builtIn: true }));
+  const overrides = config?.optionOverrides && typeof config.optionOverrides === 'object' ? config.optionOverrides : {};
+  const withOptions = (fd) => (fd.type === 'select' && Array.isArray(overrides[fd.key]) ? { ...fd, options: overrides[fd.key] } : fd);
+  const builtIn = book.fields.map((fd) => withOptions({ ...fd, builtIn: true }));
   const custom = (Array.isArray(config?.customFields) ? config.customFields : [])
     .filter((cf) => cf && typeof cf.key === 'string' && !book.fields.some((b) => b.key === cf.key))
-    .map((cf) => ({
+    .map((cf) => withOptions({
       key: cf.key, label: cf.label, type: ADDABLE_TYPES.includes(cf.type) ? cf.type : 'text',
       ...(cf.type === 'select' ? { options: Array.isArray(cf.options) ? cf.options : [] } : {}),
       builtIn: false,
@@ -97,9 +105,19 @@ export function resolveSheet(sheetKey, config = {}) {
     recordKey,
     recordKeyLabel: recordKey.map((k) => byKey.get(k)?.label ?? k).join(' + '),
     linkedServices: linked,
-    // The other sheets a record of this book can also appear in (#210).
-    memberships: Object.values(SHEETS).filter((s) => s.book === sheet.book).map((s) => ({ key: s.key, label: s.label })),
+    // The other sheets a record of this book can also appear in (#210). In an
+    // EXCLUSIVE book (#279: Monthly / Quarterly) a record is in one sheet only,
+    // so switching sheets never mixes records.
+    memberships: Object.values(SHEETS)
+      .filter((s) => s.book === sheet.book && (!book.exclusive || s.key === sheet.key))
+      .map((s) => ({ key: s.key, label: s.label })),
     reminder: book.reminder ? { field: book.reminder.field, milestones: book.reminder.milestones } : null,
+    // #280 / #279: the firm's sheets start with "Sl. No." — the row's number,
+    // shown and downloaded, never stored.
+    serial: !!sheet.serial,
+    exclusive: !!book.exclusive,
+    // #279: rows that come from matters (read-only provenance for the Portal).
+    source: book.sync ? { kind: book.sync } : null,
   };
 }
 
@@ -210,7 +228,27 @@ export function normalizeDate(raw) {
   return null;
 }
 
-const stripTags = (s) => String(s).replace(/<[^>]*>/g, '');
+/**
+ * Remove HTML tags — the same result as `replace(/<[^>]*>/g, '')`, in one pass.
+ * That regex is quadratic on a cell of many '<' with no '>' (CodeQL
+ * js/polynomial-redos): each '<' rescans the rest of the string. Here each
+ * character is looked at a bounded number of times, and once no '>' is left
+ * the remainder is kept as it is, which is what the regex would leave too.
+ */
+export function stripTags(input) {
+  const s = String(input);
+  let out = '';
+  let i = 0;
+  while (i < s.length) {
+    const open = s.indexOf('<', i);
+    if (open === -1) { out += s.slice(i); break; }
+    const close = s.indexOf('>', open + 1);
+    if (close === -1) { out += s.slice(i); break; }
+    out += s.slice(i, open);
+    i = close + 1;
+  }
+  return out;
+}
 const MAX_LEN = { text: 500, longtext: 5000, select: 200, image: 200, date: 100, number: 100 };
 
 /**
@@ -255,6 +293,17 @@ export function recordKeyFor(keyFields, values) {
   if (!keyFields?.length) return null;
   const parts = keyFields.map((k) => String(values?.[k] ?? '').toUpperCase().replace(/\s+/g, ''));
   return parts.every(Boolean) ? parts.join('|') : null;
+}
+
+/**
+ * The stored key of a record of `sheet` (a resolved sheet). In an EXCLUSIVE book
+ * (#279) the key is scoped to the sheet — "gst_return_monthly:GSTIN|PERIOD" — so
+ * an upload or a new record in Monthly never matches, updates or blocks a
+ * Quarterly row.
+ */
+export function sheetRecordKey(sheet, values) {
+  const base = recordKeyFor(sheet.recordKey, values);
+  return base && sheet.exclusive ? `${sheet.key}:${base}` : base;
 }
 
 /* ── Computed dates ──────────────────────────────────────────────────────── */
@@ -308,6 +357,7 @@ export function applyColumnEdit(sheetKey, config = {}, edit = {}) {
   const fields = bookFields(sheet.book, config);
   const byKey = new Map(fields.map((fd) => [fd.key, fd]));
   const customFields = [...(config.customFields ?? [])];
+  const optionOverrides = { ...(config.optionOverrides ?? {}) };
   const cols = Array.isArray(edit.columns) ? edit.columns : null;
   if (!cols || cols.length === 0 || cols.length > 80) throw httpError(400, 'A sheet needs between 1 and 80 columns.');
 
@@ -320,10 +370,13 @@ export function applyColumnEdit(sheetKey, config = {}, edit = {}) {
     if (key) {
       const fd = byKey.get(key);
       if (!fd) throw httpError(400, `Unknown column "${key}".`);
-      // The firm may change the options of a select it added; built-in ones are fixed.
+      // The firm may change the options of a select it added here; every
+      // select's options (built-in too) are also editable under Edit dropdowns.
       if (!fd.builtIn && fd.type === 'select' && Array.isArray(col.options)) {
         const i = customFields.findIndex((cf) => cf.key === key);
-        if (i >= 0) customFields[i] = { ...customFields[i], options: cleanOptions(col.options) };
+        const options = cleanOptions(col.options);
+        if (i >= 0) customFields[i] = { ...customFields[i], options };
+        optionOverrides[key] = options;
       }
     } else {
       const type = col?.type ?? 'text';
@@ -351,16 +404,46 @@ export function applyColumnEdit(sheetKey, config = {}, edit = {}) {
     ? [...new Set(edit.linkedServices.map((s) => String(s).trim()).filter((s) => /^[a-z0-9_-]{1,80}$/i.test(s)))].slice(0, 30)
     : current.linkedServices;
   sheets[sheetKey] = { columns: next, linkedServices: linked };
-  return { customFields, sheets };
+  // #279: the sheets of an exclusive book are one register in two views
+  // (Monthly / Quarterly) — "the same columns, dropdowns and functionalities",
+  // so a column edit applies to every sheet of the book.
+  if (BOOKS[sheet.book]?.exclusive) {
+    for (const s of Object.values(SHEETS)) if (s.book === sheet.book) sheets[s.key] = { columns: next, linkedServices: linked };
+  }
+  return { customFields, sheets, optionOverrides };
 }
 
-function cleanOptions(options) {
+export const MAX_OPTIONS = 200;
+export const MAX_OPTION_LENGTH = 80;
+
+/** Trimmed, tag-free, de-duplicated (case-insensitively), in the order given. */
+export function cleanOptions(options) {
   const out = [];
   for (const o of Array.isArray(options) ? options : []) {
-    const v = stripTags(o).trim().slice(0, 60);
+    const v = stripTags(o).trim().slice(0, MAX_OPTION_LENGTH);
     if (v && !out.some((x) => x.toLowerCase() === v.toLowerCase())) out.push(v);
   }
-  return out.slice(0, 40);
+  return out.slice(0, MAX_OPTIONS);
+}
+
+/* ── Dropdown options (staff) ───────────────────────────────────────────── */
+
+/**
+ * #280 / #279 — staff (admin, manager, team member) add, rename and remove the
+ * options of a choice-list column. The whole list is sent; it replaces the
+ * field's options for every sheet of the book. Records keep the value they
+ * hold: a renamed or removed option stays on the rows that use it (shown as it
+ * is) until someone picks another. Returns `{ optionOverrides }` (pure; the
+ * caller saves it with a merge).
+ */
+export function applyOptionsEdit(sheetKey, config = {}, fieldKey, options) {
+  const sheet = SHEETS[sheetKey];
+  if (!sheet) throw httpError(404, 'Unknown worksheet');
+  const fd = bookFields(sheet.book, config).find((x) => x.key === fieldKey);
+  if (!fd) throw httpError(404, 'Unknown column');
+  if (fd.type !== 'select') throw httpError(400, `"${fd.label}" is not a dropdown column.`);
+  if (!Array.isArray(options)) throw httpError(400, 'Send the list of options.');
+  return { optionOverrides: { [fieldKey]: cleanOptions(options) } };
 }
 
 /* ── Record writes ──────────────────────────────────────────────────────── */
@@ -388,6 +471,8 @@ export function cleanRecordValues(fields, values) {
 /* ── Upload planning ────────────────────────────────────────────────────── */
 
 const MAX_WARNINGS = 50;
+/** Headings that mean "row number" in the firm's files (normalised). */
+const SERIAL_HEADERS = new Set(['SLNO', 'SNO', 'SRNO', 'SERIALNO', 'SERIALNUMBER', 'SL']);
 
 /**
  * What an upload WILL do, before anything is written (the dry run), and the
@@ -411,8 +496,11 @@ export function planImport({ sheet, fields, headers, rows, existingByKey = new M
   const others = fields
     .filter((fd) => !visible.some((col) => col.key === fd.key))
     .map((fd) => ({ ...fd, aliases: [...(fd.aliases ?? []), ...bookHeadings(sheet.book, fd.key)] }));
-  const mapping = matchHeaders(headers, visible, others).map((m) => (
-    m.status === 'matched' && !visible.some((col) => col.key === m.key) ? { ...m, notShown: true } : m));
+  const mapping = matchHeaders(headers, visible, others).map((m) => {
+    // The firm's "Sl. No." is the row number: recognised, never stored.
+    if (sheet.serial && m.status === 'unknown' && SERIAL_HEADERS.has(normalizeHeader(m.header))) return { ...m, status: 'serial' };
+    return m.status === 'matched' && !visible.some((col) => col.key === m.key) ? { ...m, notShown: true } : m;
+  });
   const byKey = new Map(fields.map((fd) => [fd.key, fd]));
   const writable = mapping.filter((m) => m.status === 'matched');
   const warnings = [];
@@ -432,7 +520,7 @@ export function planImport({ sheet, fields, headers, rows, existingByKey = new M
       if (warning && warnings.length < MAX_WARNINGS) warnings.push({ row: startRow + i, column: m.header, message: warning });
     }
     if (Object.keys(values).length === 0) { emptyRows += 1; return; }
-    const key = recordKeyFor(sheet.recordKey, values);
+    const key = sheetRecordKey(sheet, values);
     if (key && existingByKey.has(key)) {
       const ex = existingByKey.get(key);
       const prev = updates.get(ex.id);
@@ -456,7 +544,7 @@ export function planImport({ sheet, fields, headers, rows, existingByKey = new M
   return {
     columns: mapping,
     unknownColumns: mapping.filter((m) => m.status === 'unknown').map((m) => m.header),
-    ignoredColumns: mapping.filter((m) => ['computed', 'matter', 'duplicate'].includes(m.status)).map((m) => ({ header: m.header, reason: m.status })),
+    ignoredColumns: mapping.filter((m) => ['computed', 'matter', 'duplicate', 'serial'].includes(m.status)).map((m) => ({ header: m.header, reason: m.status })),
     creates,
     updates: upd,
     summary: {

@@ -120,9 +120,15 @@ export default function WorksheetGrid({
     });
   };
 
+  // #280 / #279: "Sl. No." numbers the rows as they are shown (after filters,
+  // search and sort), in the grid and in the download — the firm's layout.
+  const serialOf = useMemo(() => new Map(rows.map((r, i) => [r.id, i + 1])), [rows]);
   const download = () => exportToXlsx(
     rows,
-    columns.map((c) => ({ header: c.label, value: (r: WsRecord) => (c.type === 'number' && typeof r.values[c.key] === 'number' ? r.values[c.key] as number : displayValue(c, r, matters)) })),
+    [
+      ...(sheet.serial ? [{ header: 'Sl. No.', value: (r: WsRecord) => serialOf.get(r.id) ?? '' }] : []),
+      ...columns.map((c) => ({ header: c.label, value: (r: WsRecord) => (c.type === 'number' && typeof r.values[c.key] === 'number' ? r.values[c.key] as number : displayValue(c, r, matters)) })),
+    ],
     slugify(sheet.label),
     sheet.label,
   );
@@ -162,6 +168,9 @@ export default function WorksheetGrid({
                 <th className="sticky left-0 z-20 bg-surface-soft px-2 py-2 text-left text-xs font-medium text-ink-muted border-b border-hairline w-20">
                   <span className="sr-only">Actions</span>
                 </th>
+                {sheet.serial && (
+                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-ink-muted border-b border-hairline align-top uppercase tracking-wide whitespace-nowrap">Sl. No.</th>
+                )}
                 {columns.map((c) => (
                   <th key={c.key} scope="col" className={`px-3 py-2 text-left text-xs font-semibold text-ink-muted border-b border-hairline align-top ${WIDTH[c.type] ?? ''}`}>
                     <div className="flex items-start gap-1">
@@ -182,7 +191,7 @@ export default function WorksheetGrid({
             </thead>
             <tbody>
               {shown.length === 0 && (
-                <tr><td colSpan={columns.length + 1} className="px-4 py-10 text-center text-sm text-ink-muted">
+                <tr><td colSpan={columns.length + 1 + (sheet.serial ? 1 : 0)} className="px-4 py-10 text-center text-sm text-ink-muted">
                   {records.length === 0 ? 'No records yet.' : 'No record matches the search or filters.'}
                 </td></tr>
               )}
@@ -198,6 +207,7 @@ export default function WorksheetGrid({
                       </button>
                     )}
                   </td>
+                  {sheet.serial && <td className="px-3 py-1.5 text-ink-muted tabular-nums">{serialOf.get(r.id)}</td>}
                   {columns.map((c) => (
                     <td key={c.key} className="px-1 py-1">
                       <Cell sheet={sheet} column={c} record={r} matters={matters} q={q} canEdit={canEdit}

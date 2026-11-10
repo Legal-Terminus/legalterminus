@@ -2462,6 +2462,99 @@ row. Recipients: every admin and manager, via `createNotification` (in-app + ema
 record delete add `requireRole('admin')`. No per-person grant (unlike Marketing
 Reports): the firm asked for all three roles to view and edit.
 
+**Dropdown choices (#280, 2026-11-10).** Every `select` field's options — built-in
+or added — can be replaced by staff: `PUT /api/worksheets/sheets/:sheet/options/:field
+{ options }` (admin, manager, team member: the router's guard; `optionsSchema`, up to
+200 options of 80 characters). Stored as `worksheetConfig/{book}.optionOverrides[field]`
+with a merge write, so two people editing different lists do not clash, and applied
+in `bookFields`, so the grid, the record form and upload matching all see the new
+list. Options are a book-level property: every sheet of the book shares them. The
+list is replaced whole; records are NOT rewritten — a renamed or removed option
+stays on the rows that hold it (the editors already show a value outside the list).
+`putColumns` now writes with `merge: true` and carries `optionOverrides`, so a column
+save cannot wipe staff-edited choices; the choices of an added select edited under
+Edit columns are written to the same override.
+
+**Row numbers (#280).** A sheet with `serial: true` shows "Sl. No." as its first
+column — the position of the row as displayed (after filters, search and sort), also
+the first column of Download Excel. It is never stored; on upload a heading that
+normalises to `SLNO`/`SNO`/`SRNO`/`SERIALNO` is reported as ignored (`serial`), not
+unknown.
+
+**TDS Sheet (#280).** Company worksheet `tds`, its own book, key `tan`. Columns are
+the firm's Excel file (attached to the issue) verbatim, including its labels "Form
+138" / "form 140" (presumably Form 24Q / 26Q — kept as the firm wrote them; aliases
+accept the 24Q/26Q spelling). The seven yellow columns are selects: Assigned to,
+Checker and Client start empty (the firm fills them under Edit dropdowns); the four
+status columns start Yes/No. PR numbers are text so a 15-digit number is never
+rounded or shown as a percentage. Traces/IT passwords are plain text fields, as in
+the firm's file — see the open question in epics.md.
+
+### GST Return Filing sheet (#279, 2026-11-10)
+
+**LT only.** `/reports/gst-returns`, module `gst_return` on the worksheet engine:
+book `gst_return`, sheets `gst_return_monthly` ("Monthly") and
+`gst_return_quarterly` ("Quarterly") — the dropdown at the top. A row is one
+client's GST return for one period. Columns: the firm's 21, in its order, then two
+of ours at the end — **Return Period** (without it, months would mix in one sheet)
+and **Matter**.
+
+- **Exclusive book.** `BOOKS.gst_return.exclusive`: a record's `sheets` is exactly
+  one sheet; `memberships` lists only the current sheet; `loadRecord` refuses a
+  record of the other sheet (404); the stored `recordKey` is scoped to the sheet
+  (`gst_return_monthly:<GSTIN>|<PERIOD>`, `sheetRecordKey`), so create, update and
+  upload in one view never match or block the other. A column edit is written to
+  both sheets (the issue: "same columns, dropdowns and functionalities"); dropdown
+  choices are book-level, so shared.
+- **Rows from matters — derived on sync, stored as records.** Matters of the
+  book's linked services (default `gst-returns`, `gst-returns-quarterly`; an admin
+  changes them under Edit columns) are turned into rows by
+  `services/gstReturnSheetSync.service.js` with the pure rules in
+  `services/gstReturnSheet.service.js`:
+  - *Monthly or quarterly*: `filingPeriod.frequency` (#219 sweep) → service key →
+    the client's `gstReturnFrequency` → monthly.
+  - *Period*: `filingPeriod.title`; a matter opened by hand is for the period that
+    had ended when it was opened (`duePeriod` on its India creation date).
+  - *Client columns* from the matter and `users/{clientUid}` (organisation →
+    business name → name; `entityType` → Constitution; `gstNumber`, `email`,
+    `mobile`). *Assign Person*: the current step's assignee, else the matter's
+    professional. *Current Status*: the current step's title, or Awaiting approval /
+    Completed / Stopped / Rejected / Archived. *Completion Check*: Done when completed.
+  - *Step columns* by task NAME (services are editable, so no step numbers are
+    assumed): `STEP_RULES` lists, per column, word sets one of which the
+    normalised title must contain, and words it must not ("GSTR-1 filed mail" is the
+    mail column, not the filing date). First matching step by step number; "Yes" or
+    its completion date (India) once completed, else blank.
+  - GST User ID, GST Pswd and Remarks are never derived.
+- **Last change wins.** Each synced row stores `derived` — what the workflow said
+  last time per column. A sync writes a cell only where the workflow's value
+  CHANGED since then (field-path updates, `values.<field>`), so a person's
+  correction survives until the workflow moves that cell, and a workflow update
+  always shows. The first sync of a row never blanks a cell a person filled.
+- **Linking.** `sourceMatterId` on the record. A matter without a row adopts an
+  unlinked row of the same sheet with the same GSTIN + period (typed or uploaded
+  earlier) instead of adding a duplicate; a person who sets a row's Matter cell
+  links it. A key already held by another row is left off the new one (`recordKey:
+  null`) rather than failing the sync.
+- **When and how much.** Due on read: `GET …/records` without a cursor (opening
+  the sheet) runs the sync first, at most every 15 s, under a lock in
+  `system/worksheetSync_gst_return`. A watermark `(updatedAt, id)` there means a
+  run reads only matters changed since the last run (every matter write already
+  moves `updatedAt`), 200 per page, ≤ 3 pages per run; per matter one `steps` read,
+  plus batched `getAll` of clients and assignees and `in` lookups of rows (≤ 30
+  per query). Changing the linked services restarts the watermark. A sync failure
+  is logged and the stored rows are shown.
+- **Indexes (deploy with the release):** `tasks (serviceKey, updatedAt)`,
+  `worksheetRecords (book, sourceMatterId)`. Until the first exists the sync falls
+  back to re-deriving the newest 200 matters through `tasks (serviceKey, createdAt
+  desc)` and logs a warning — bounded, but changes to older matters wait for the index.
+- **Not reflected until the matter changes:** a change on the CLIENT (a new GSTIN
+  or email) — it is read when the matter's row is next synced. A deleted matter
+  leaves its row (the firm's record), with no matter label.
+- **Access.** As every worksheet: admin, manager, team member view, add, edit and
+  edit dropdowns; admin changes columns and deletes a record; route
+  `/reports/gst-returns` with the same three roles; clients and professionals 403.
+
 ## Dependency sources and the Node.js pin (#218, 2026-10-30)
 
 **SheetJS (`xlsx`) comes from the SheetJS CDN, not npm.** The npm `xlsx` package

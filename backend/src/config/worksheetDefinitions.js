@@ -14,7 +14,8 @@
  *   - SHEET: one view onto a book — the dropdown entry. It lists which of the
  *     book's fields it shows, in which order, and under which heading. A record
  *     appears in a sheet when the sheet's key is in the record's `sheets` list.
- *   - MODULE: the page a set of sheets lives on (Trademark Reports, Worksheets).
+ *   - MODULE: the page a set of sheets lives on (Trademark Reports, Worksheets,
+ *     GST Return Filing — #279).
  *
  * Field types: text | longtext | date | number | select | computed | image | matter.
  *   - `computed` fields are derived (renewal milestones, next KYC due) and are
@@ -340,6 +341,35 @@ const COMPANY_SHEETS = [
       f('cancellation_date', 'Cancellation Date', 'date'), mobile(), email(), matter(), remarks(),
     ],
   },
+  // #280 — the firm's own TDS register, column for column from the Excel file
+  // attached to the issue (names, order and spelling are the firm's — "Form 138"
+  // and "form 140" included). Its yellow columns are the choice lists, whose
+  // options staff edit (Edit dropdowns). "Sl. No." is the row number, not data.
+  {
+    key: 'tds', label: 'TDS Sheet', recordKey: ['tan'], serial: true,
+    fields: [
+      f('company_name', 'Company Name', 'text', { aliases: ['COMPANY', 'NAME OF COMPANY', 'DEDUCTOR', 'DEDUCTOR NAME'] }),
+      select('assigned_to', 'Assigned to', [], { aliases: ['ASSIGNED', 'ASSIGN TO', 'ASSIGNED PERSON'] }),
+      select('checker', 'Checker', [], { aliases: ['CHECKED BY'] }),
+      select('client', 'Client', [], { aliases: ['CLIENT NAME'] }),
+      f('tan', 'TAN NO', 'text', { aliases: ['TAN', 'TAN NUMBER', 'TAN NO.'] }),
+      f('user_id', 'USER ID', 'text', { aliases: ['USERID', 'LOGIN ID'] }),
+      f('traces_password', 'Traces Password', 'text', { aliases: ['TRACES PASSWORD', 'TRACES PWD', 'TRACES PSWD'] }),
+      f('it_password', 'IT Password', 'text', { aliases: ['INCOME TAX PASSWORD', 'IT PWD', 'IT PSWD'] }),
+      select('tds_data_received', 'TDS Data Received', YES_NO, { aliases: ['DATA RECEIVED'] }),
+      select('excel_prepared', 'Excel Prepared', YES_NO, { aliases: ['EXCEL PREPARE'] }),
+      select('final_excel_mail', 'Final Excel Mail to Client', YES_NO, { aliases: ['FINAL EXCEL MAIL', 'FINAL EXCEL MAIL TO CLIENT'] }),
+      select('challan_paid', 'Challan paid by client', YES_NO, { aliases: ['CHALLAN PAID'] }),
+      f('salary_filing_date', 'SALARY (Form 138) FILING DATE', 'date', { aliases: ['SALARY FILING DATE', 'SALARY (FORM 24Q) FILING DATE'] }),
+      f('non_salary_filing_date', 'NON-SALARY (form 140) FILING DATE', 'date', { aliases: ['NON SALARY FILING DATE', 'NON-SALARY (FORM 26Q) FILING DATE'] }),
+      // A PR (provisional receipt) number is 15 digits; kept as text so it is
+      // never rounded or shown as a percentage, as it was in the firm's file.
+      f('salary_pr_no', 'SALARY (Form 138) PR NO', 'text', { aliases: ['SALARY PR NO', 'SALARY (FORM 24Q) PR NO'] }),
+      f('non_salary_pr_no', 'NON-SALARY (form 140) PR NO', 'text', { aliases: ['NON SALARY PR NO', 'NON-SALARY (FORM 26Q) PR NO'] }),
+      f('statement_status_26q', 'STATEMENT STATUS 26Q (Form 140)', 'text', { aliases: ['STATEMENT STATUS 26Q', 'STATUS 26Q'] }),
+      f('statement_status_24q', 'STATEMENT STATUS 24Q (Form 138)', 'text', { aliases: ['STATEMENT STATUS 24Q', 'STATUS 24Q'] }),
+    ],
+  },
   {
     key: 'udyam', label: 'Udyam Sheet', recordKey: ['udyam_no'], linkedServices: ['udyam-registration'],
     fields: [
@@ -385,6 +415,54 @@ const COMPANY_SHEETS = [
   },
 ];
 
+/* ── #279 GST Return Filing (Reports): one book, Monthly / Quarterly ───────
+ *
+ * The firm's column list, in its order and spelling (the image attached to the
+ * issue); yellow there = a dropdown here. Two columns are ours, added at the
+ * END so the firm's layout is untouched: "Return Period" (a row is one client's
+ * return for one period — without it, months would mix) and "Matter" (the GST
+ * return matter the row comes from).
+ *
+ * Rows come from two places: GST return matters (synced — see
+ * services/gstReturnSheet.service.js, which also says which columns are
+ * derived) and records typed or uploaded by staff. The two sheets are
+ * EXCLUSIVE: a record is in Monthly or in Quarterly, never both.
+ */
+const GST_RETURN_FIELDS = [
+  f('client_name', 'GST Return Clients', 'text', { aliases: ['CLIENT', 'CLIENT NAME', 'GST RETURN CLIENT', 'COMPANY NAME', 'NAME'] }),
+  select('constitution', 'CONSTITUTION', ['Company', 'Partnership', 'Proprietorship', 'OPC', 'LLP', 'Section 8'], {
+    aliases: ['CONSTITUTION OF BUSINESS', 'ENTITY TYPE'],
+  }),
+  f('gstin', 'GSTN No', 'text', { aliases: ['GSTIN', 'GST NO', 'GSTN', 'GST NUMBER', 'GSTIN NO'] }),
+  f('data_email', 'Mail ID for data collection', 'text', { aliases: ['MAIL ID', 'EMAIL', 'EMAIL ID', 'E-MAIL'] }),
+  f('gst_user_id', 'GST User ID', 'text', { aliases: ['USER ID', 'GST USERNAME', 'GST LOGIN'] }),
+  f('gst_password', 'GST Pswd', 'text', { aliases: ['GST PASSWORD', 'GST PWD', 'PASSWORD'] }),
+  f('contact_no', 'Contact No.', 'text', { aliases: ['CONTACT', 'CONTACT NUMBER', 'MOBILE', 'MOBILE NO', 'PHONE'] }),
+  select('assign_person', 'Assign Person', [], { aliases: ['ASSIGNED TO', 'ASSIGNED PERSON', 'ASSIGNEE'] }),
+  f('current_status', 'Current Status', 'text', { aliases: ['STATUS'] }),
+  select('data_received', 'Data Received', YES_NO),
+  select('tally_prepared', 'Tally/ Excel Prepared', YES_NO, { aliases: ['TALLY PREPARED', 'EXCEL PREPARED', 'TALLY EXCEL PREPARED'] }),
+  f('gstr1_date', 'Date of GSTR-1 Filing', 'date', { aliases: ['GSTR-1 FILING DATE', 'GSTR 1 DATE', 'GSTR1 FILED ON'] }),
+  select('gstr1_mail', 'GSTR-1 Filed Mail', YES_NO, { aliases: ['GSTR 1 FILED MAIL', 'GSTR1 MAIL'] }),
+  select('gstr2b_mail', 'GSTR_2B Reco Mail to Client', YES_NO, { aliases: ['GSTR-2B RECO MAIL TO CLIENT', 'GSTR 2B RECO MAIL', '2B RECO MAIL'] }),
+  select('additional_data', 'Additional Data or Confirmation Received from Client', YES_NO, {
+    aliases: ['ADDITIONAL DATA', 'ADDITIONAL DATA RECEIVED', 'CONFIRMATION RECEIVED'],
+  }),
+  select('challan_mail', 'Challan Mail to the client', YES_NO, { aliases: ['CHALLAN MAIL', 'CHALLAN MAIL TO CLIENT'] }),
+  select('challan_paid', 'Challan paid by client', YES_NO, { aliases: ['CHALLAN PAID'] }),
+  select('annual_sheet', 'Annual Working Sheet Update', YES_NO, { aliases: ['ANNUAL WORKING SHEET', 'ANNUAL SHEET UPDATE'] }),
+  f('gstr3b_date', 'Date of GSTR-3B Filing', 'date', { aliases: ['GSTR-3B FILING DATE', 'GSTR 3B DATE', 'GSTR3B FILED ON'] }),
+  f('completion_check', 'Completion Check', 'text', { aliases: ['COMPLETION', 'COMPLETED'] }),
+  remarks(),
+  f('period', 'Return Period', 'text', { aliases: ['PERIOD', 'MONTH', 'QUARTER', 'TAX PERIOD', 'RETURN MONTH', 'RETURN QUARTER'] }),
+  matter(),
+];
+
+const GST_RETURN_SHEETS = [
+  { key: 'gst_return_monthly', label: 'Monthly', frequency: 'monthly' },
+  { key: 'gst_return_quarterly', label: 'Quarterly', frequency: 'quarterly' },
+];
+
 /* ── Assembly ────────────────────────────────────────────────────────────── */
 
 export const BOOKS = {
@@ -405,12 +483,35 @@ for (const s of COMPANY_SHEETS) {
     key: s.key, module: 'company', fields: s.fields, recordKey: s.recordKey ?? [],
     linkedServices: s.linkedServices ?? [], reminder: s.reminder ?? null,
   };
-  SHEETS[s.key] = { key: s.key, label: s.label, module: 'company', book: s.key, columns: s.fields.map((x) => ({ key: x.key })) };
+  SHEETS[s.key] = {
+    key: s.key, label: s.label, module: 'company', book: s.key, columns: s.fields.map((x) => ({ key: x.key })),
+    serial: !!s.serial,
+  };
+}
+
+BOOKS.gst_return = {
+  key: 'gst_return',
+  module: 'gst_return',
+  fields: GST_RETURN_FIELDS,
+  // One row per client per period. The key is scoped to the sheet (exclusive
+  // book), so the same GSTIN and period text in Monthly and Quarterly are two rows.
+  recordKey: ['gstin', 'period'],
+  linkedServices: ['gst-returns', 'gst-returns-quarterly'],
+  reminder: null,
+  exclusive: true,
+  sync: 'gst_matters',
+};
+for (const s of GST_RETURN_SHEETS) {
+  SHEETS[s.key] = {
+    key: s.key, label: s.label, module: 'gst_return', book: 'gst_return', frequency: s.frequency,
+    columns: GST_RETURN_FIELDS.map((x) => ({ key: x.key })), serial: true,
+  };
 }
 
 export const MODULES = {
   trademark: { key: 'trademark', label: 'Trademark Reports', sheets: TM_SHEETS.map((s) => s.key) },
   company: { key: 'company', label: 'Worksheets', sheets: COMPANY_SHEETS.map((s) => s.key) },
+  gst_return: { key: 'gst_return', label: 'GST Return Filing', sheets: GST_RETURN_SHEETS.map((s) => s.key) },
 };
 
 export const FIELD_TYPES = ['text', 'longtext', 'date', 'number', 'select', 'computed', 'image', 'matter'];
