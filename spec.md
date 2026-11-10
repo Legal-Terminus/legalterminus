@@ -440,6 +440,21 @@ The firm's Excel registers live in the portal: five **Trademark Reports** (TM Ma
 
 ---
 
+### User Story 19 — GST Return Filing sheet under Reports (Priority: P1) — #279
+
+The firm's GST return register at `/reports/gst-returns` (a tile on the Reports hub and on the dashboard of admin, manager and team member): one row per client per return period, with a **Monthly / Quarterly** dropdown at the top, the firm's columns (GST Return Clients, CONSTITUTION, GSTN No, Mail ID for data collection, GST User ID, GST Pswd, Contact No., Assign Person, Current Status, Data Received, Tally/ Excel Prepared, Date of GSTR-1 Filing, GSTR-1 Filed Mail, GSTR_2B Reco Mail to Client, Additional Data or Confirmation Received from Client, Challan Mail to the client, Challan paid by client, Annual Working Sheet Update, Date of GSTR-3B Filing, Completion Check, Remarks), plus Return Period and Matter at the end, and the worksheet features (Add record, Upload Excel, Edit columns, Edit dropdowns, Search, filters, Download Excel).
+
+**Acceptance Scenarios**:
+
+1. **Given** a matter of a linked GST service (by default GST Return Filing monthly and quarterly), **When** the sheet is opened, **Then** the matter has a row in Monthly or Quarterly (the matter's GST period, else the service, else the client's GST return setting) with the client's name, constitution, GSTIN, email and mobile, the period, the current task as Current Status, its assignee as Assign Person, a link to the matter, and — for each column whose task the workflow has (matched by the task's name) — Yes or the completion date once that task is completed; Completion Check is Done when the matter is completed.
+2. **Given** a later change in the matter (a task completed, approval, a stop), **When** the sheet is opened again, **Then** the row shows it. A cell a person typed keeps the typed value until the workflow changes that same cell; then the workflow's value shows (last change wins). GST User ID, GST Pswd and Remarks are never filled from the workflow.
+3. **Given** Monthly and Quarterly, **Then** they show different records: a record is in one of them only, an upload to one never updates the other, and a record of one is not reachable through the other.
+4. **Given** a row typed or uploaded for the same GSTIN and period before the matter existed, **Then** the matter's row is that row (it is linked, not duplicated).
+5. **Given** the yellow columns (CONSTITUTION, Assign Person and the eight Yes/No status columns), **Then** an admin, manager or team member edits their choices under Edit dropdowns; Monthly and Quarterly share them. Constitution starts with Company, Partnership, Proprietorship, OPC, LLP, Section 8; Assign Person starts empty.
+6. **Given** a client or professional, **Then** neither the page nor its API is reachable; only an admin changes columns or deletes a record.
+
+---
+
 ### Edge Cases
 
 - A client with a single email linked to multiple client profiles: login resolves to the correct profile based on the primary client lookup; admin can switch context between profiles.
@@ -736,12 +751,14 @@ action, performedBy, performedAt, previousValue?, newValue?, note?
 
 ### `worksheetRecords/{id}` — Trademark Reports and Worksheets (#210, #217)
 ```
-module (trademark|company), book, sheets[] (sheet keys the record appears in),
+module (trademark|company|gst_return), book, sheets[] (sheet keys the record appears in),
 values { fieldKey: string|number },  // calculated fields are derived, not stored
 recordKey,            // normalised key fields (Application No.; DIN|FY …), unique per book
 images { fieldKey: { objectPath, contentType, updatedAt } },  // streamed, never signed
 reminderDue?, remindersSent { "<due>:<days>": iso },        // KYC reminders
-createdAt, createdBy, updatedAt, updatedBy, source? ("excel")
+createdAt, createdBy, updatedAt, updatedBy, source? ("excel" | "matter")
+sourceMatterId?,      // #279: the GST return matter a GST Return Filing row comes from
+derived?,             // #279: { field: what the workflow last said } — "last change wins"
 ```
 
 ### `worksheetConfig/{book}` — the firm's column edits

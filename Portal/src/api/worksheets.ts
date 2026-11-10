@@ -4,7 +4,7 @@ import { apiFetch } from './client';
 
 /* #210 Trademark Reports / #217 Worksheets — one engine, one API. */
 
-export type ModuleKey = 'trademark' | 'company';
+export type ModuleKey = 'trademark' | 'company' | 'gst_return';
 export type FieldType = 'text' | 'longtext' | 'date' | 'number' | 'select' | 'computed' | 'image' | 'matter';
 export type CellValue = string | number | null;
 

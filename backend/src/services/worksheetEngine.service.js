@@ -115,6 +115,7 @@ export function resolveSheet(sheetKey, config = {}) {
     // #280 / #279: the firm's sheets start with "Sl. No." — the row's number,
     // shown and downloaded, never stored.
     serial: !!sheet.serial,
+    exclusive: !!book.exclusive,
     // #279: rows that come from matters (read-only provenance for the Portal).
     source: book.sync ? { kind: book.sync } : null,
   };
@@ -274,6 +275,17 @@ export function recordKeyFor(keyFields, values) {
   return parts.every(Boolean) ? parts.join('|') : null;
 }
 
+/**
+ * The stored key of a record of `sheet` (a resolved sheet). In an EXCLUSIVE book
+ * (#279) the key is scoped to the sheet — "gst_return_monthly:GSTIN|PERIOD" — so
+ * an upload or a new record in Monthly never matches, updates or blocks a
+ * Quarterly row.
+ */
+export function sheetRecordKey(sheet, values) {
+  const base = recordKeyFor(sheet.recordKey, values);
+  return base && sheet.exclusive ? `${sheet.key}:${base}` : base;
+}
+
 /* ── Computed dates ──────────────────────────────────────────────────────── */
 
 /**
@@ -372,6 +384,12 @@ export function applyColumnEdit(sheetKey, config = {}, edit = {}) {
     ? [...new Set(edit.linkedServices.map((s) => String(s).trim()).filter((s) => /^[a-z0-9_-]{1,80}$/i.test(s)))].slice(0, 30)
     : current.linkedServices;
   sheets[sheetKey] = { columns: next, linkedServices: linked };
+  // #279: the sheets of an exclusive book are one register in two views
+  // (Monthly / Quarterly) — "the same columns, dropdowns and functionalities",
+  // so a column edit applies to every sheet of the book.
+  if (BOOKS[sheet.book]?.exclusive) {
+    for (const s of Object.values(SHEETS)) if (s.book === sheet.book) sheets[s.key] = { columns: next, linkedServices: linked };
+  }
   return { customFields, sheets, optionOverrides };
 }
 
@@ -482,7 +500,7 @@ export function planImport({ sheet, fields, headers, rows, existingByKey = new M
       if (warning && warnings.length < MAX_WARNINGS) warnings.push({ row: startRow + i, column: m.header, message: warning });
     }
     if (Object.keys(values).length === 0) { emptyRows += 1; return; }
-    const key = recordKeyFor(sheet.recordKey, values);
+    const key = sheetRecordKey(sheet, values);
     if (key && existingByKey.has(key)) {
       const ex = existingByKey.get(key);
       const prev = updates.get(ex.id);

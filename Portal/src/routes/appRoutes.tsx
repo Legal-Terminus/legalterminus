@@ -46,6 +46,7 @@ import MyServicesReport from '../pages/reports/MyServicesReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 import MarketingReportsPage from '../pages/reports/MarketingReportsPage';
 import TrademarkReportsPage from '../pages/reports/TrademarkReportsPage';
+import GstReturnFilingPage from '../pages/reports/GstReturnFilingPage';
 import WorksheetsPage from '../pages/worksheets/WorksheetsPage';
 import ReportingAccessPage from '../pages/settings/ReportingAccessPage';
 import WebsitePricesPage from '../pages/settings/WebsitePricesPage';
@@ -168,6 +169,9 @@ export const APP_ROUTES: AppRoute[] = [
   // there is no per-person grant: the role list IS the access rule. Team members
   // reach it from a dashboard tile (they have no Reports hub).
   { path: '/reports/trademark', element: <TrademarkReportsPage />, roles: ['admin', 'manager', 'team_member'] },
+  // #279: GST Return Filing, Monthly / Quarterly — under Reports as the firm
+  // asked, same access rule as #210 (admin, manager, team member view and edit).
+  { path: '/reports/gst-returns', element: <GstReturnFilingPage />, roles: ['admin', 'manager', 'team_member'] },
   // #217: the company worksheets — a day-to-day working tool, so a sidebar entry
   // rather than a tile buried under Reports. Same access rule as #210.
   { path: '/worksheets', element: <WorksheetsPage />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Worksheets', icon: Sheet, order: 1 } },

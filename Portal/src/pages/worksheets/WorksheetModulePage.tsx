@@ -247,6 +247,12 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
               )}
             </div>
 
+            {view.kind === 'grid' && sheet.source && (
+              <p className="text-xs text-ink-muted">
+                Rows of GST return matters fill in and update themselves as the matter moves on. You can add rows and change any cell;
+                a cell you change keeps your value until the matter changes that cell again.
+              </p>
+            )}
             {view.kind === 'grid' && (
               records.isLoading ? <div className="card p-10 text-center text-sm text-ink-muted">Loading records…</div>
                 : records.isError ? <div className="card p-10 text-center text-sm text-red-600">Could not load the records.</div>

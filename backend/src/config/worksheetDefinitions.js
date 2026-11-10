@@ -14,7 +14,8 @@
  *   - SHEET: one view onto a book — the dropdown entry. It lists which of the
  *     book's fields it shows, in which order, and under which heading. A record
  *     appears in a sheet when the sheet's key is in the record's `sheets` list.
- *   - MODULE: the page a set of sheets lives on (Trademark Reports, Worksheets).
+ *   - MODULE: the page a set of sheets lives on (Trademark Reports, Worksheets,
+ *     GST Return Filing — #279).
  *
  * Field types: text | longtext | date | number | select | computed | image | matter.
  *   - `computed` fields are derived (renewal milestones, next KYC due) and are
@@ -414,6 +415,54 @@ const COMPANY_SHEETS = [
   },
 ];
 
+/* ── #279 GST Return Filing (Reports): one book, Monthly / Quarterly ───────
+ *
+ * The firm's column list, in its order and spelling (the image attached to the
+ * issue); yellow there = a dropdown here. Two columns are ours, added at the
+ * END so the firm's layout is untouched: "Return Period" (a row is one client's
+ * return for one period — without it, months would mix) and "Matter" (the GST
+ * return matter the row comes from).
+ *
+ * Rows come from two places: GST return matters (synced — see
+ * services/gstReturnSheet.service.js, which also says which columns are
+ * derived) and records typed or uploaded by staff. The two sheets are
+ * EXCLUSIVE: a record is in Monthly or in Quarterly, never both.
+ */
+const GST_RETURN_FIELDS = [
+  f('client_name', 'GST Return Clients', 'text', { aliases: ['CLIENT', 'CLIENT NAME', 'GST RETURN CLIENT', 'COMPANY NAME', 'NAME'] }),
+  select('constitution', 'CONSTITUTION', ['Company', 'Partnership', 'Proprietorship', 'OPC', 'LLP', 'Section 8'], {
+    aliases: ['CONSTITUTION OF BUSINESS', 'ENTITY TYPE'],
+  }),
+  f('gstin', 'GSTN No', 'text', { aliases: ['GSTIN', 'GST NO', 'GSTN', 'GST NUMBER', 'GSTIN NO'] }),
+  f('data_email', 'Mail ID for data collection', 'text', { aliases: ['MAIL ID', 'EMAIL', 'EMAIL ID', 'E-MAIL'] }),
+  f('gst_user_id', 'GST User ID', 'text', { aliases: ['USER ID', 'GST USERNAME', 'GST LOGIN'] }),
+  f('gst_password', 'GST Pswd', 'text', { aliases: ['GST PASSWORD', 'GST PWD', 'PASSWORD'] }),
+  f('contact_no', 'Contact No.', 'text', { aliases: ['CONTACT', 'CONTACT NUMBER', 'MOBILE', 'MOBILE NO', 'PHONE'] }),
+  select('assign_person', 'Assign Person', [], { aliases: ['ASSIGNED TO', 'ASSIGNED PERSON', 'ASSIGNEE'] }),
+  f('current_status', 'Current Status', 'text', { aliases: ['STATUS'] }),
+  select('data_received', 'Data Received', YES_NO),
+  select('tally_prepared', 'Tally/ Excel Prepared', YES_NO, { aliases: ['TALLY PREPARED', 'EXCEL PREPARED', 'TALLY EXCEL PREPARED'] }),
+  f('gstr1_date', 'Date of GSTR-1 Filing', 'date', { aliases: ['GSTR-1 FILING DATE', 'GSTR 1 DATE', 'GSTR1 FILED ON'] }),
+  select('gstr1_mail', 'GSTR-1 Filed Mail', YES_NO, { aliases: ['GSTR 1 FILED MAIL', 'GSTR1 MAIL'] }),
+  select('gstr2b_mail', 'GSTR_2B Reco Mail to Client', YES_NO, { aliases: ['GSTR-2B RECO MAIL TO CLIENT', 'GSTR 2B RECO MAIL', '2B RECO MAIL'] }),
+  select('additional_data', 'Additional Data or Confirmation Received from Client', YES_NO, {
+    aliases: ['ADDITIONAL DATA', 'ADDITIONAL DATA RECEIVED', 'CONFIRMATION RECEIVED'],
+  }),
+  select('challan_mail', 'Challan Mail to the client', YES_NO, { aliases: ['CHALLAN MAIL', 'CHALLAN MAIL TO CLIENT'] }),
+  select('challan_paid', 'Challan paid by client', YES_NO, { aliases: ['CHALLAN PAID'] }),
+  select('annual_sheet', 'Annual Working Sheet Update', YES_NO, { aliases: ['ANNUAL WORKING SHEET', 'ANNUAL SHEET UPDATE'] }),
+  f('gstr3b_date', 'Date of GSTR-3B Filing', 'date', { aliases: ['GSTR-3B FILING DATE', 'GSTR 3B DATE', 'GSTR3B FILED ON'] }),
+  f('completion_check', 'Completion Check', 'text', { aliases: ['COMPLETION', 'COMPLETED'] }),
+  remarks(),
+  f('period', 'Return Period', 'text', { aliases: ['PERIOD', 'MONTH', 'QUARTER', 'TAX PERIOD', 'RETURN MONTH', 'RETURN QUARTER'] }),
+  matter(),
+];
+
+const GST_RETURN_SHEETS = [
+  { key: 'gst_return_monthly', label: 'Monthly', frequency: 'monthly' },
+  { key: 'gst_return_quarterly', label: 'Quarterly', frequency: 'quarterly' },
+];
+
 /* ── Assembly ────────────────────────────────────────────────────────────── */
 
 export const BOOKS = {
@@ -440,9 +489,29 @@ for (const s of COMPANY_SHEETS) {
   };
 }
 
+BOOKS.gst_return = {
+  key: 'gst_return',
+  module: 'gst_return',
+  fields: GST_RETURN_FIELDS,
+  // One row per client per period. The key is scoped to the sheet (exclusive
+  // book), so the same GSTIN and period text in Monthly and Quarterly are two rows.
+  recordKey: ['gstin', 'period'],
+  linkedServices: ['gst-returns', 'gst-returns-quarterly'],
+  reminder: null,
+  exclusive: true,
+  sync: 'gst_matters',
+};
+for (const s of GST_RETURN_SHEETS) {
+  SHEETS[s.key] = {
+    key: s.key, label: s.label, module: 'gst_return', book: 'gst_return', frequency: s.frequency,
+    columns: GST_RETURN_FIELDS.map((x) => ({ key: x.key })), serial: true,
+  };
+}
+
 export const MODULES = {
   trademark: { key: 'trademark', label: 'Trademark Reports', sheets: TM_SHEETS.map((s) => s.key) },
   company: { key: 'company', label: 'Worksheets', sheets: COMPANY_SHEETS.map((s) => s.key) },
+  gst_return: { key: 'gst_return', label: 'GST Return Filing', sheets: GST_RETURN_SHEETS.map((s) => s.key) },
 };
 
 export const FIELD_TYPES = ['text', 'longtext', 'date', 'number', 'select', 'computed', 'image', 'matter'];

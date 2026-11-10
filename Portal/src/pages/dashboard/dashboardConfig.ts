@@ -1,5 +1,5 @@
 import {
-  CheckSquare, Users, BarChart2, Inbox, Layers, Megaphone, Stamp, Sheet, type LucideIcon,
+  CheckSquare, Users, BarChart2, Inbox, Layers, Megaphone, Stamp, Sheet, Receipt, type LucideIcon,
 } from 'lucide-react';
 import type { Role } from '../../store/authStore';
 
@@ -25,6 +25,7 @@ export const DASHBOARD_TILES: DashboardTileDef[] = [
   { title: 'Lead Dashboard', desc: 'Leads — source, service, follow-ups and outcome.', to: '/reports/leads', icon: Inbox,       roles: ['admin', 'manager', 'team_member'] },
   { title: 'Marketing Reports', desc: 'DM cost, DM income, cold calling and the monthly report.', to: '/reports/marketing', icon: Megaphone, roles: ['admin', 'manager', 'team_member'] },
   { title: 'Trademark Reports', desc: 'TM Master, Register TM, oppositions and assignments.', to: '/reports/trademark', icon: Stamp, roles: ['admin', 'manager', 'team_member'] },
+  { title: 'GST Return Filing', desc: 'Monthly and quarterly GST returns, from the GST matters.', to: '/reports/gst-returns', icon: Receipt, roles: ['admin', 'manager', 'team_member'] },
   { title: 'Worksheets', desc: 'Incorporation, KYC, ROC, GST, TDS, FSSAI and the other company sheets.', to: '/worksheets', icon: Sheet, roles: ['admin', 'manager', 'team_member'] },
 
   // Admin + Manager
