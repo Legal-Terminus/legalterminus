@@ -4109,6 +4109,567 @@ Firebase's sign-up call is answered by the specs, so no account is created.
 
 ---
 
+## E-29 — iOS App (Capacitor wrapper of the Portal, App Store) (#268) [Phase 2]
+
+**Goal**: The Portal runs as an iPhone app from the same `MobileApp/` shell as the Android app
+(E-26), for the same roles, installable from the App Store in India. The website must not change
+in any way, and nothing on the live site may point at the app until its launch is approved.
+
+**Status (2026-11-10)**: planned. `MobileApp/` has only the `android/` platform. Nothing in this
+epic has been started.
+
+**Why this is an epic.** It is the Android epic again on a second platform, but four things are
+different enough to be their own stories: the iOS WebView serves the app from
+`capacitor://localhost`, which the API's allowlist refuses by name today; App Store rules force a
+decision on sign-in (guideline 4.8) and require that account deletion can be *started inside the
+app* (5.1.1(v)) — which Android's open point D2 also needs, so it is built once here; emailed links
+need Apple's Universal Links instead of Android's App Links; and the build is made on a Mac in
+Xcode, so the release process has to be written down rather than automated.
+
+**How the two apps are built and released** — `docs/mobile-release.md` (new in this epic, story
+E29-S09). The rule, taken from the BeatMyEMI apps: **Android is built and signed by the GitHub
+pipeline on a release and attached to a GitHub Release "vX.Y.Z (Build N)"; iOS is archived and
+uploaded to App Store Connect from Xcode on the Mac.** One version name and one build number for
+both platforms per release; the build number only ever goes up; secrets never in the repo.
+
+**Code guidance per story** — `docs/ios-app-implementation-guide.md`: the config blocks, the
+`corsOrigins.js` change and its tests, the CSS hooks, the entitlements and AASA, the deletion
+endpoint's shape, the guard script and the Android job. Read it with the story.
+
+**Prerequisites that are a person's, not code** (E29-S01): an Apple Developer **organisation**
+account for LEGAL TERMINUS PRIVATE LIMITED (needs a D-U-N-S number; US$99 a year), a Mac with
+Xcode 16, a real iPhone, and the decisions below.
+
+**Decisions (record the answer here before E29-S02)**
+
+| # | Decision | Recommendation |
+|---|---|---|
+| D1 | **Sign-in on iOS.** Google is the primary sign-in method and must work in the iOS app. Guideline 4.8: an app that offers Google sign-in must also offer Sign in with Apple. | **Decided 2026-11-10: native Google sign-in on iOS, same as Android, plus Sign in with Apple in the same build** (E29-S04 and E29-S11 ship together). BeatMyEMI shipped exactly this pair. Email + password and the sign-in link stay. |
+| D2 | **Account deletion.** 5.1.1(v): deletion must be startable in the app; a web link alone is refused. Play's Data safety form already says users can request deletion. | A **deletion request** from the app (E29-S08): the person confirms, the account is signed out and disabled, the firm is told, an Admin completes it with the existing delete. Matter records the firm must keep by law are kept and the privacy policy says so (PR #223). |
+| D3 | **Minimum iOS version.** | Capacitor 8's own minimum (check the generated `ios/App/Podfile` when `cap add ios` runs; expected iOS 15). The Portal's Safari target is the same as the web build's. |
+| D4 | **First release scope.** | Same as Android: no push notifications (E29-S12 = E26-S06), iPhone only (no iPad layout work; `preferredContentMode: 'mobile'`). |
+| D5 | **Bundle id.** | `com.legalterminus.app`, the same as Android, if it is free in the Apple portal. If not, `com.legalterminus.ios` — record it here; it cannot change after the first upload. |
+
+| Story | What | Status |
+|---|---|---|
+| E29-S01 | Accounts and decisions: Apple Developer org account, App Store Connect access, D1–D5 recorded, GitHub issue numbers | ⏳ Not started (👤) |
+| E29-S02 | iOS platform in `MobileApp/`: `cap add ios`, bundle id, signing, `GoogleService-Info.plist` ignored, usage strings, scripts, QA build runs on the simulator | ⏳ Not started |
+| E29-S03 | The app's origin on the API and the buckets: `capacitor://localhost` allowed exactly, QA first, production with the release (security change) | ⏳ Not started |
+| E29-S04 | Sign-in on iOS: native Google (same flow as Android, iOS plugin set-up), email, sign-in link; session survives restart; offline "try again"; refused-account message | ⏳ Not started |
+| E29-S05 | Files on iOS: View and share, uploads from Files / Photos / Camera, exports, image zoom | ⏳ Not started |
+| E29-S06 | Shell behaviour: safe areas, keyboard, status bar, overscroll, swipe back, external links in Safari, Razorpay inside WKWebView, icon and splash | ⏳ Not started |
+| E29-S07 | Emailed links open the app: `apple-app-site-association`, Associated Domains; QA host only until launch | ⏳ Not started |
+| E29-S08 | Account deletion started in the app (closes Android D2 too) | ⏳ Not started |
+| E29-S09 | `docs/mobile-release.md` + the Android build job in GitHub Actions + the production build guard | ⏳ Not started |
+| E29-S10 | App Store Connect: listing, privacy labels, age rating, reviewer account, screenshots, review notes; TestFlight on QA values; submission; phased release | ⏳ Not started (👤 for the console) |
+| E29-S11 | Sign in with Apple: required by guideline 4.8 because Google is offered; Firebase provider, Apple key, name-on-first-sign-in and "Hide my email" handling; the website offers it too (parity) | ⏳ Not started (ships with S04) |
+| E29-S12 | Push notifications (= E26-S06, both platforms) | ⏸ Deferred |
+
+**Order.** S01 → S02 → S03 (QA part) → S04 + S11 together, S05, S06 in any order → S07 → S08 → S09 → S10.
+S08 and S09 touch Android too and can be done by someone else in parallel from S03 on.
+
+**Rules that apply to every story**
+- Native code stays in `Portal/src/lib/native.ts` (plus the sign-in branch in `googleSignIn.ts`
+  and persistence in `firebase.ts`), guarded by `Capacitor.isNativePlatform()`, plugins loaded by
+  dynamic `import()`. Platform differences use `Capacitor.getPlatform() === 'ios'`. **The web build
+  takes the old path unchanged**, and the full Playwright suite proves it before each merge.
+- Anything with a pure branch (which flow, which message, which origin) gets a unit or Playwright
+  test. Device behaviour gets a written checklist in the story, run on a real iPhone, with the
+  result recorded in the story's status.
+- Never commit `GoogleService-Info.plist`, `.p8`, `.p12`, `.mobileprovision`, `*.keystore`,
+  `*.jks`, `key.properties`, `ios/App/Pods/`, `xcuserdata/`. E29-S02 adds the ignore lines; the
+  Android `*.jks` / `*.keystore` lines are still commented out in `MobileApp/android/.gitignore`
+  and get fixed in the same change.
+- Production is touched only with the user's explicit "yes" per step (`docs/delivery.md`), and the
+  live site shows nothing of the app until launch is approved (2026-11-03 rule).
+
+---
+
+### E29-S01 — Accounts and decisions (👤)
+
+**As** the firm, **I want** the accounts and decisions in place **so that** a developer can start
+without waiting on anyone mid-story.
+
+**Tasks**
+1. Apple Developer Program, **organisation** enrolment, LEGAL TERMINUS PRIVATE LIMITED. Needs a
+   D-U-N-S number (free from Dun & Bradstreet; 1–2 weeks). Record who is Account Holder and who
+   has App Store Connect "App Manager" access (the developer needs at least that).
+2. In the portal: App ID for the bundle id (D5) with no extra capabilities for now (Associated
+   Domains is added in S07; Sign in with Apple only in S11).
+3. Firebase: register an **iOS app** on project `legal-terminus-web` with the bundle id. Download
+   `GoogleService-Info.plist`; it goes to the developer out of band, never in git.
+4. Record D1–D5 in the table above, with the date.
+5. Replace `#268` where needed; create one GitHub issue per story if the team wants per-story
+   tracking, else all commits reference #268.
+
+**Done when** the table has answers, the developer can sign in to App Store Connect, and the
+plist exists.
+
+---
+
+### E29-S02 — The iOS platform in `MobileApp/`
+
+**As** a developer, **I want** `MobileApp/ios/` generated and building on the simulator against
+QA **so that** every later story has something to run.
+
+**Context.** `MobileApp/capacitor.config.ts` already carries the app id, `webDir`
+`../Portal/dist-mobile`, `minWebViewVersion` (Android only), `FirebaseAuthentication` and
+`SplashScreen` plugin settings. `npm run build:mobile` in `Portal/` builds the bundle; `vite
+build --mode mobile` also emits the app-only pages (`appOnlyPages()` in `Portal/vite.config.ts`).
+
+**Tasks**
+1. `cd MobileApp && npx cap add ios` (Capacitor 8; CocoaPods installed — `brew install cocoapods`).
+   Commit the generated `ios/` **except** what the ignore list below excludes.
+2. `.gitignore` (repo root, under the existing `MobileApp/` entries):
+   `MobileApp/ios/App/Pods/`, `MobileApp/ios/App/build/`, `MobileApp/ios/App/public/`,
+   `MobileApp/ios/App/App/capacitor.config.json`, `MobileApp/ios/App/App/config.xml`,
+   `MobileApp/ios/**/xcuserdata/`, `MobileApp/ios/**/GoogleService-Info*.plist`, `*.mobileprovision`,
+   `*.p8`, `*.jks`, `*.keystore`, `key.properties`, `MobileApp/ios/ExportOptions.plist` is **kept**
+   (no secret in it; the team id is not a secret). Uncomment `*.jks` / `*.keystore` in
+   `MobileApp/android/.gitignore`. Keep `Podfile.lock` tracked (reproducible pods).
+3. `MobileApp/package.json`: add `sync:ios` (`npm run build:web && cap sync ios`), `open:ios`,
+   `run:ios`; rename the existing `sync` to `sync:android` and make `sync` run both.
+4. `capacitor.config.ts`: add
+   ```ts
+   ios: { contentInset: 'automatic', preferredContentMode: 'mobile', allowsLinkPreview: false,
+          scrollEnabled: true, limitsNavigationsToAppBoundDomains: false },
+   ```
+   and keep `server.androidScheme`; **do not set `server.iosScheme` to `https`** — WKWebView
+   does not allow it; the iOS origin is `capacitor://localhost` (S03). Also set
+   `server.errorPath` only for Android — iOS has no "old WebView" case (Safari is the OS's).
+5. Xcode (`MobileApp/ios/App/App.xcworkspace`, never the `.xcodeproj`): Team = the firm's team;
+   bundle id per D5; Display Name "Legal Terminus"; deployment target per D3; Automatic signing
+   for Debug and Release (the Mac that releases signs with the account holder's login — see
+   `docs/mobile-release.md`).
+6. `Info.plist` usage strings, required or the upload is rejected the moment a file input can
+   reach the camera: `NSCameraUsageDescription` ("To photograph a document for your matter"),
+   `NSPhotoLibraryUsageDescription` ("To upload a document or image from your photos"),
+   `NSPhotoLibraryAddUsageDescription` ("To save a document you download"). Also
+   `ITSAppUsesNonExemptEncryption = false` (HTTPS only; saves a question per TestFlight build).
+7. Version: `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in the project are the version
+   name and build number; S09 says how they move. Start at `1.0.0` / `1`.
+8. Build on the simulator with QA values: `cd Portal && npm run build:mobile` (QA `.env.local`),
+   `cd ../MobileApp && npm run sync:ios && npm run run:ios`. Expected right now: the app loads,
+   the login page shows, and sign-in **fails with a CORS error** in Safari's Web Inspector
+   (Develop → Simulator) until S03 — record that it is the expected failure.
+
+**Acceptance criteria**
+- `git status` after a full build shows no untracked file under `MobileApp/ios/` — everything
+  generated is ignored or committed on purpose; `git ls-files MobileApp | grep -iE 'plist$|p8|p12|mobileprovision|keystore|jks'` lists only `Info.plist` files.
+- `npm run sync:ios` from a clean checkout (`npm ci` in `MobileApp/`) succeeds.
+- The web build (`cd Portal && npm run build`) is byte-identical to before this story
+  (compare `dist/` hashes) — the iOS platform adds nothing to the website.
+
+**Tests**: the Playwright suite (unchanged); the simulator run above with its expected failure.
+
+---
+
+### E29-S03 — The app's origin on the API and the buckets (security change)
+
+**As** the app, **I want** `capacitor://localhost` accepted by the API and the storage buckets
+**so that** every screen loads and uploads work.
+
+**Context.** `backend/src/config/corsOrigins.js` takes deployment-specific origins from
+`CORS_ORIGINS` but `isExactOrigin` accepts only `http(s)://…`, so `capacitor://localhost` in the
+env is **silently dropped**. The Android origin `https://localhost` is already set in
+`.github/workflows/deploy-qa.yml` and `deploy-production.yml` and in `storage-cors.json`.
+The architecture note of 2026-10 says `capacitor://localhost` "is no longer allowed" — that was
+the unanchored-regex clean-up; this story allows it again *exactly*.
+
+**Tasks**
+1. `corsOrigins.js`: let `isExactOrigin` accept the one additional form `capacitor://localhost`
+   (no port, no path, nothing else on the `capacitor` scheme). Update the file comment.
+2. `backend/src/config/corsOrigins.test.js` (or the existing test file): `capacitor://localhost`
+   allowed when listed; `capacitor://localhost:8080`, `capacitor://evil`, `capacitor://localhost/`
+   and `ionic://localhost` refused; nothing allowed when `CORS_ORIGINS` is empty.
+3. `deploy-qa.yml`: `CORS_ORIGINS=https://localhost,capacitor://localhost,http://localhost:5173`.
+   `deploy-production.yml`: `CORS_ORIGINS=https://localhost,capacitor://localhost`. Both PRs need
+   the code owner (`.github/` rule) and say **"security change: widens the API origin allowlist by
+   one exact origin, the iOS app's"** in the body.
+4. `storage-cors.json`: add `capacitor://localhost`. Apply to the QA bucket
+   `legal-terminus-web-qa` now (`gcloud storage buckets update gs://legal-terminus-web-qa
+   --cors-file=storage-cors.json`); the production bucket only with explicit approval, at release
+   (the Android plan step 10 did it by code with the service account — same here).
+5. Firebase Auth → Settings → Authorized domains: `localhost` is there by default; nothing to add.
+
+**Acceptance criteria**
+- Preflight `OPTIONS https://legal-terminus-qa.web.app/api/auth/me` with
+  `Origin: capacitor://localhost` returns `access-control-allow-origin: capacitor://localhost`;
+  with `Origin: capacitor://localhost:1` or `capacitor://evil` returns none.
+- The QA bucket preflight (`OPTIONS https://storage.googleapis.com/legal-terminus-web-qa/x`,
+  method `PUT`) echoes `capacitor://localhost`.
+- The simulator build from S02 signs in as a QA admin and lists matters.
+- The website's own origin and the Android origin behave exactly as before.
+
+**Tests**: the unit tests in task 2; the two `curl` checks recorded in the PR.
+
+---
+
+### E29-S04 — Sign-in on iOS
+
+**As** any role, **I want** to sign in on the iPhone app and stay signed in **so that** the app is
+usable at all.
+
+**Context.** `Portal/src/lib/googleSignIn.ts` already calls the native Google plugin on any
+native platform (`signInWithNativeGoogle`, `skipNativeAuth: true`, ID token into the web SDK), so
+iOS needs the plugin's iOS set-up, not new sign-in code. `lib/firebase.ts` pins `indexedDBLocalPersistence` under Capacitor; WKWebView supports
+IndexedDB, but iOS may evict a site's storage after 7 days of non-use when the app is not opened
+(ITP applies to WKWebView content served from a custom scheme in some versions) — test for it.
+`useAuth.ts` reads the role after the token; offline shows `RoleUnavailable`. The QA API accepts
+only `@legalterminus.test` accounts (`docs/qa-environment.md`), by design.
+
+**Tasks**
+1. Native Google on iOS (`@capacitor-firebase/authentication`, iOS section of its README):
+   `GoogleService-Info.plist` in the Xcode target (ignored by git); the `REVERSED_CLIENT_ID`
+   from that plist as a `CFBundleURLSchemes` entry in `Info.plist` (the Google picker returns
+   to the app through it); `Podfile` gets `pod 'CapacitorFirebaseAuthentication/Google'`
+   (`npx cap sync ios` writes the base pod; the `/Google` subspec is added by hand — see the
+   guide); `FirebaseAuthentication` stays `skipNativeAuth: true`. The Firebase iOS app's OAuth
+   client is created by Firebase when the iOS app is registered (E29-S01).
+2. Sign in with Apple is E29-S11 and ships in the same build; the Google button on iOS must
+   not appear in a TestFlight build that lacks the Apple button (4.8 is checked at review).
+3. Session: confirm `indexedDBLocalPersistence` survives force-quit and relaunch, and a reboot.
+   If it does not on a real device, switch the native build to the plugin's native persistence
+   (`skipNativeAuth: false` + `FirebaseAuthentication.getIdToken()` feeding the web SDK) — that
+   is a design change; write it to `architecture.md` before doing it.
+4. The emailed **sign-in link** on iOS opens the app only after S07; until then it opens Safari
+   and signs the person in on the website — acceptable on QA, say so in the test notes.
+5. Refused account (QA guard, production test-account guard): the message from the API shows,
+   and the app signs out (E26-S08 logic, already shared).
+
+**Acceptance criteria**
+- iOS app on QA: each of Admin / Manager / Team Member / Client / Professional signs in with
+  email + password and lands on their home; force-quit → relaunch stays signed in; airplane mode
+  at launch shows "We can't load your account / Try again" and recovers when online.
+- Google on iOS: the native account sheet opens; cancelling shows the friendly message; a
+  `@legalterminus.test` Google account on QA is refused with the server's sentence and signed
+  out (the guard, by design); the full sign-in is proven on the production TestFlight build with
+  a dedicated test Google account (E29-S10) — a new Google user lands as Client, an email with
+  a password account gets the "already has an account" message.
+- A refused account shows the server's sentence, not "API error", and the next screen is the
+  login page.
+
+**Tests**: existing `google-sign-in.spec.ts`, `offline-role.spec.ts` unchanged and green; device
+checklist above, recorded in this story.
+
+---
+
+### E29-S05 — Files on iOS
+
+**As** a client or staff member, **I want** to upload, view, download and export files in the
+iPhone app **so that** matters can be worked from the phone.
+
+**Context.** `native.ts` has `openBlobNative` (Filesystem → cache → `@capacitor-community/file-opener`)
+and `shareBlobNative` (Share sheet), used by document View, zip, `exportToXlsx`, Master Sheet CSV
+and comment-image zoom (`commentImageDom.ts`). On iOS, File Opener uses
+`UIDocumentInteractionController` (needs a presenting view controller; the plugin handles it) and
+Share uses the system sheet (Save to Files, AirDrop, Mail). Uploads go by signed URL straight to
+GCS (the bucket CORS from S03). `<input type="file">` in WKWebView opens the native
+Photos / Take Photo / Choose File sheet by itself; `accept="image/*"` gives Photos + Camera,
+`accept=".pdf"` gives Files; `capture` forces the camera. `multiple` works on iOS 14+.
+
+**Tasks**
+1. Walk every file path with `Capacitor.getPlatform() === 'ios'` in mind; no code change is
+   expected in the branches, but check `EXTENSIONS` covers what the share sheet needs to name
+   the file (iOS infers the viewer from the extension, not the MIME type).
+2. On iOS, a `blob:` download anchor does nothing either, so the same native branches apply —
+   confirm every `download` attribute site goes through `openBlobNative`/`shareBlobNative`
+   (grep `download=` and `URL.createObjectURL` in `Portal/src`).
+3. Image zoom (`commentImageDom.ts`): iOS has no `window.open` for blobs either; confirm the
+   native branch.
+4. Large uploads: the signed-URL `PUT` from WKWebView with a 25 MB file; background it is not
+   (the app must stay in the foreground — write that into the manual's upload page for the app).
+
+**Acceptance criteria** (real iPhone, QA): upload a PDF from Files, a photo from Photos, a new
+photo from the camera, and three files at once; the size-limit message appears for an oversized
+file; View opens a PDF in the system viewer and an image full screen; zip download offers the
+share sheet and Save to Files works; Excel and CSV exports open in Numbers/Excel or save; a
+comment image zooms; Worksheets upload and download.
+
+**Tests**: `documents.spec.ts` and `master-sheet.spec.ts` unchanged and green (web path);
+device checklist recorded here.
+
+---
+
+### E29-S06 — iOS shell behaviour
+
+**As** a person using the app, **I want** it to feel like an iPhone app, not a web page in a box.
+
+**Tasks**
+1. **Safe areas.** `Portal/index.html` viewport gets `viewport-fit=cover`; the app layout's
+   top bar and any bottom-fixed bar pad with `env(safe-area-inset-top/bottom)` **only under
+   `Capacitor.isNativePlatform()`** — a `data-native` attribute on `<html>` set in `initNative`,
+   and CSS `html[data-native] .app-topbar { padding-top: env(safe-area-inset-top) }`. The
+   website's CSS is unaffected (no attribute, no padding).
+2. **Keyboard.** `@capacitor/keyboard` with `resize: 'body'` (config `plugins.Keyboard`), so a
+   focused input near the bottom scrolls into view; check the Chat composer and the login form.
+   Inputs must be ≥16px font (they already are; a smaller one makes Safari zoom the page).
+3. **Status bar.** `@capacitor/status-bar`: style `Dark` text on the white top bar; set in
+   `initNative`.
+4. **Overscroll / bounce.** Leave `scrollEnabled: true`; stop the rubber-band at the page top
+   with `html[data-native] { overscroll-behavior-y: none }` so pull-to-refresh-looking bounce
+   does not happen on fixed-header screens.
+5. **Back.** No hardware back on iOS; `allowsBackForwardNavigationGestures` is off in Capacitor
+   by default — leave it off (an in-page router with a swipe-back WebView makes double history).
+   Every screen already has a Back control (E-26 audit); confirm on the 6 deepest screens.
+6. **External links.** Links to other hosts (payment receipts, website pages, `mailto:`, `tel:`)
+   must open outside the WebView: Capacitor iOS opens non-app hosts in Safari by default; verify,
+   and route any `window.open(url, '_blank')` through `@capacitor/browser` in a `openExternal()`
+   helper in `native.ts` (browser path unchanged).
+7. **Razorpay "Pay Now" (E-24, `PayNowCard.tsx`, `payNow.ts`).** `checkout.js` renders an iframe
+   from `api.razorpay.com`; the iframe loads inside the WebView fine, but UPI "intent" links
+   (`upi://`, `phonepe://`, `gpay://`) and bank 3-D Secure redirects must leave the app. Test a
+   card (test mode on QA: `payment.gateway = simulated` — so this can only be fully tested on
+   production with a real ₹1 payment; plan it with the firm) and a UPI app hand-off. Record
+   the result; if UPI intents fail, add `LSApplicationQueriesSchemes` for the UPI apps and let
+   Capacitor pass the scheme to the OS.
+8. **Icon and splash.** `npx @capacitor/assets generate --ios` from the same
+   `MobileApp/assets/` as Android; `SplashScreen` config already holds it until first paint
+   (`hideNativeSplash`). iOS needs a 1024×1024 icon with no alpha.
+9. **Debug.** `webContentsDebuggingEnabled` true in Debug only (Capacitor default on iOS is
+   on for Debug builds; make sure Release is off).
+
+**Acceptance criteria** (real iPhone with a notch/Dynamic Island, QA): no content under the
+status bar or home indicator on Login, Home, Matter, Chat, Reports, a full-page form; the
+keyboard never covers the focused input on Login, New Matter, Chat; rotation keeps layout;
+tapping a `mailto:`/`tel:`/website link leaves the app; Pay Now opens Razorpay and returns
+with the result (QA: simulated gateway path shown).
+
+**Tests**: Playwright `offline-role.spec.ts` and layout specs unchanged (web path has no
+`data-native`); a Playwright test that `html` has **no** `data-native` on the web build; device
+checklist recorded here.
+
+---
+
+### E29-S07 — Emailed links open the app (Universal Links)
+
+**As** a person who receives a sign-in or password link by email, **I want** it to open the app
+on my iPhone **so that** I am not signed in on the website instead.
+
+**Context.** Android uses an `https` intent filter on `/portal/account/action` plus
+`/.well-known/assetlinks.json` on the host; `appUrlOpen` in `native.ts` routes the path.
+On production, `assetlinks.json` is **generated by Firebase Hosting from the Android app's
+fingerprints in Firebase project settings** (found 2026-11-03), not from the repo; it is live now
+with three keys, one of them a debug key that should be removed in Firebase. iOS needs
+`/.well-known/apple-app-site-association` (AASA) — Firebase Hosting generates that one too when
+the iOS app in Firebase settings has its **Team ID** and **App Store ID** filled in; otherwise it
+must be a file in `Frontend/public/.well-known/` served as `application/json` with no redirect.
+
+**Tasks**
+1. Apple portal: enable **Associated Domains** on the App ID; Xcode → Signing & Capabilities →
+   Associated Domains: `applinks:legal-terminus-qa.web.app` for the QA build, and
+   `applinks:legalterminus.com` for production. Make the host a build setting like Android's
+   `linkHost` (an `.xcconfig` per configuration: `LINK_HOST`, used in `App.entitlements` as
+   `applinks:$(LINK_HOST)`), so a QA build never claims the production host.
+2. AASA content:
+   ```json
+   { "applinks": { "details": [ { "appIDs": ["TEAMID.com.legalterminus.app"],
+       "components": [ { "/": "/portal/account/action*" } ] } ] } }
+   ```
+   Decide the source: Firebase-generated (fill Team ID in Firebase → Project settings → iOS app)
+   or the repo file. **Prefer the same source as `assetlinks.json`** so the two never disagree;
+   record the choice in `architecture.md`. On QA, publish it now. **On production, not until
+   launch is approved** (the 2026-11-03 rule) — the same gate as Android's file.
+3. `native.ts` `openAccountLink` already handles the path; iOS delivers Universal Links through
+   `appUrlOpen` too. No change expected; verify the `replace: true` navigation lands on the
+   existing action page with the query intact.
+4. The reverse path: tapping the link while the app is **not installed** opens Safari — fine.
+
+**Acceptance criteria**: on a real iPhone with the QA build installed from TestFlight (not Xcode
+— Universal Links are verified at install from a signed build), a sign-in link in Mail opens the
+app and signs in; a password-set link opens the set-password page; `curl -sI
+https://legal-terminus-qa.web.app/.well-known/apple-app-site-association` is `200`,
+`content-type: application/json`, no redirect; Apple's CDN check
+(`https://app-site-association.cdn-apple.com/a/v1/legal-terminus-qa.web.app`) returns it.
+
+**Tests**: unit test for `openAccountLink` path matching (pure); device checklist above.
+
+---
+
+### E29-S08 — Account deletion started in the app (both platforms)
+
+**As** a client, **I want** to ask for my account to be deleted from inside the app **so that**
+the app meets App Store 5.1.1(v) and Play's Data safety answer is true.
+
+**Context.** Only an Admin can delete a user today (`DELETE /api/users/:uid`,
+`portalUsers.routes.js`, admin only). A client's matters, invoices and uploaded filings are
+records the firm must keep (Companies Act, GST) — so a client's deletion is a **request** the firm
+completes, not an instant purge, and the privacy policy (PR #223) says what is kept and why.
+Both stores accept a request-based flow when it starts in the app and is completed in a stated
+time.
+
+**Design** (write to `architecture.md`, "Account deletion")
+- `POST /api/auth/me/deletion-request` — `verifyToken`, any workspace role **except** `admin`
+  (an admin deletes themselves through Users like anyone else — a lone admin must not lock the
+  firm out). Body: Zod `{ reason?: string(≤500) }` `.strict()`. Effect: `users/{uid}.deletionRequestedAt`
+  + `deletionReason`; Firebase Auth user **disabled** (they cannot sign in again); email to the
+  firm's admin address (existing `emailService`, template "Account deletion requested"); an
+  audit `events` entry. Response 202 `{ message }`. Idempotent.
+- `DELETE /api/auth/me/deletion-request` is **not** offered: once asked, the admin decides.
+- Users list (`UsersPage`): a `badge-warning` "Deletion requested" on the row and a filter; the
+  existing delete action completes it (removes Auth user + profile; matters stay with the
+  client's name as the record — today's behaviour). Nothing else changes in the delete path.
+- Portal: Profile / Account menu → "Delete my account" → a full-page confirm (mobile pattern,
+  `PageShell`): what happens, what is kept, 30-day expectation → button → signed out → login
+  page shows "Your deletion request was received." Shown to **every** role except admin, on web
+  and app alike (the rule applies to the account, not the platform).
+- Website privacy policy: the PR #223 wording, plus the in-app path.
+
+**Acceptance criteria**
+- A client taps Delete my account → confirms → is signed out and cannot sign in ("This account
+  has been disabled" message is friendly, not a Firebase code); the admin gets the email within a
+  minute; the Users page shows the badge; the admin's delete removes the account; the matter
+  still lists with the client's name.
+- An admin does not see the entry; `POST` as admin returns 403.
+- Second `POST` returns 202 without a second email.
+
+**Tests**: Playwright `account-deletion.spec.ts` — client requests (mocked email, QA
+`EMAIL_DISABLED`), badge appears for admin, admin completes; RBAC: admin 403. Backend unit test
+for the schema and the role guard. Manual update: `docs-site`/manual page for the account menu
+and the Users page (LT keeps its docs in `docs/`; say where in the story's completion note).
+
+---
+
+### E29-S09 — How the apps are built and released (`docs/mobile-release.md`, Android job, build guard)
+
+**As** whoever cuts a release, **I want** one written procedure and one pipeline job **so that**
+a build is reproducible and never carries QA values.
+
+**The strategy** (adopted from BeatMyEMI; its `deploy.yml` Android job is the template):
+
+| | Android | iOS |
+|---|---|---|
+| Built by | **GitHub Actions**, job `build-android` in `deploy-production.yml`, run **by hand** (`workflow_dispatch`) from a `v*-lt.*` tag, inside the `production` environment (the reviewer approval applies) | **Xcode on the Mac**, from the same tag checked out clean |
+| Values | Production `.env` written by the job from secrets (never `.env.local`) | Production `.env` written by `MobileApp/scripts/env.sh production` from a file outside the repo |
+| Signing | Upload keystore from secrets `ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`; `GOOGLE_SERVICES_JSON_B64` | Xcode automatic signing with the team's distribution certificate; `GoogleService-Info.plist` from outside the repo; `MobileApp/ios/ExportOptions.plist` (method `app-store`) committed |
+| Version | Inputs `version_name` and `build_number`; the job writes them into `build.gradle` | The same two numbers, set in Xcode (or `agvtool`) before Archive |
+| Output | Signed `.aab` + `.apk` + `mapping.txt` as workflow artifacts (7 days) and attached to a **GitHub Release `vX.Y.Z (Build N)`** on the tag | Archive → Distribute → App Store Connect → TestFlight; the `.ipa` is also exported to `~/lt-android-release/out/` and attached to the same GitHub Release by hand |
+| Store | `.aab` uploaded to Play **by hand** (Internal testing → Production, staged rollout 10% → 100%; managed publishing stays on) | TestFlight internal group → App Store review → phased release |
+| Guard | `MobileApp/scripts/check-bundle.mjs` runs after `build:mobile`: a `production` build fails if the bundle contains `qa-data`, `legal-terminus-qa`, `localhost:5001`, `.test` or `EMAIL_DISABLED`; a `qa` build fails if it contains `legalterminus.com/api` | The same script, run by `sync:ios` |
+| Numbers | **One `version_name` and one `build_number` for both platforms per release.** `build_number` = last GitHub Release's build + 1, never reused, never lower; QA builds count too (the Play and TestFlight counters are per app, not per track) | |
+| Secrets | GitHub Secrets as base64 (`base64 -i file | pbcopy`); the originals in two places off the repo (`~/lt-android-release/keys/` + the firm's password manager) | The `.p12` export of the distribution certificate and the App Store Connect API key `.p8` in the same two places |
+
+**Tasks**
+1. `docs/mobile-release.md` exists (written 2026-11-10 with this epic). Keep it true as the
+   job lands: fill in the dry-run result, link it from `docs/delivery.md` and `README.md`, and
+   retire `docs/android-release-plan.md` into a "history" note at its top.
+2. `deploy-production.yml`: add `build_android` (boolean), `android_format`
+   (`aab`/`apk`/`both`), `version_name`, `build_number` inputs and the `build-android` job
+   (Java 21, Android SDK, `npm ci` in `Portal/` and `MobileApp/`, write `Portal/.env` from
+   secrets, `npm run build:mobile`, `check-bundle.mjs production`, restore keystore and
+   `google-services.json`, `cap sync android`, `gradle bundleRelease assembleRelease`,
+   `apksigner verify --print-certs`, upload artifacts, `softprops/action-gh-release` on the tag).
+   `needs: build-and-deploy` is **not** required — the app does not need a web deploy, but the
+   job runs only on a tag ref, same as the environment rule.
+3. The guard script and the `env.sh` helper (reads `~/lt-android-release/env/<env>.env`, writes
+   `Portal/.env.mobile`; `build:mobile` uses `--mode mobile` which loads `.env.mobile` — check
+   Vite's mode-file precedence: `.env.mobile.local` > `.env.mobile` > `.env.local` > `.env`;
+   **`.env.local` is still loaded**, so the guard is what catches a leak).
+4. New GitHub Secrets per `SETUP.md`'s procedure; document in `SETUP.md`.
+5. One dry run: build vc4 from the current tag on the pipeline, compare its signer and contents
+   with vc3 (`apksigner`, `unzip -l`), and record in the doc.
+
+**Acceptance criteria**: a release-tag run of `build-android` produces a signed `.aab` whose
+signer SHA-1 is the upload key's, contains no QA value, and is attached to the GitHub Release
+with the build number in its name; a run from `main` is refused by the environment rule;
+`check-bundle.mjs production` fails on a bundle built from this machine's `.env.local`.
+
+**Tests**: the guard script has a unit test with two fixture bundles; the workflow change needs
+the code owner's review (`.github/`).
+
+---
+
+### E29-S10 — App Store Connect, TestFlight, review, release (👤 for the console)
+
+**Tasks**
+1. App Store Connect → New app: name "Legal Terminus", bundle id (D5), SKU `legalterminus-ios`,
+   primary language English (India available). Category Business.
+2. **App Privacy** (nutrition labels): mirror `docs/play-store-listing.md`'s Data safety answers —
+   contact info, identifiers, user content (documents, messages), financial info (payment status
+   and amounts), government IDs; all "linked to you", none used for tracking; no third-party
+   advertising. Privacy policy URL: `https://legalterminus.com/privacy-policy` (must already say
+   how to delete — PR #223 merged and released first).
+3. **Age rating** questionnaire (none of the content categories → 4+). **App Review
+   Information**: the reviewer account from the Android plan step 17
+   (`play.reviewer@legalterminus.com`, production, role Client) — rename the file to
+   `STORE_REVIEWER.txt` since both stores use it; notes: "Sign in with the email and password
+   provided. Documents and matters are the firm's client work; the account has one sample
+   matter." Add a sample matter to it so the reviewer sees something (Admin creates it on
+   production — explicit approval).
+4. **Review notes for guideline 4.2** (minimum functionality): state the native parts — file
+   handling through the system viewer and share sheet, Universal Links, native session, in-app
+   deletion; and that the app is the client's only way to upload to their matter from a phone
+   camera.
+5. Screenshots: 6.7" (iPhone 15 Pro Max) and 6.5" (iPhone 11 Pro Max / Xs Max), from the
+   simulator with **QA data only** — the same five screens as Play. No iPad screenshots (D4).
+6. TestFlight: a QA-values build (`1.0.0`, build N) to an internal group (the firm's testers),
+   with the checklist from S04–S07 run on at least one real iPhone. Then the production-values
+   build (build N+1) to the same group — this is the first real Google and Apple sign-in
+   against production (QA refuses real accounts); use dedicated test Google and Apple accounts,
+   never a real client.
+7. Submit for review with **phased release** on. Managed-release equivalent: "Manually release
+   this version" so an approval does not publish by itself.
+8. After approval: publish the production AASA (S07 gate), release, watch crashes in Xcode
+   Organizer and App Store Connect for a week.
+
+**Acceptance criteria**: the app is live on the App Store in India; a Client installs it, signs
+in, opens a matter and downloads a document (the issue's done-when).
+
+---
+
+### E29-S11 — Sign in with Apple (ships with S04)
+
+**As** a person on an iPhone, **I want** to sign in with my Apple ID **so that** the app can
+offer Google sign-in at all (guideline 4.8) — and the firm wants the account to be the same one
+it registered me under.
+
+**Context.** Firebase provider `apple.com`. In the app, `@capacitor-firebase/authentication`
+`signInWithApple({ scopes: ['email', 'name'], skipNativeAuth: true })` returns `idToken` and
+`rawNonce`; `new OAuthProvider('apple.com').credential({ idToken, rawNonce })` into
+`signInWithCredential` — the same pattern as Google, so one Firebase session (BeatMyEMI's
+`auth-service.ts` is the worked example). On the website, `signInWithPopup` / redirect with the
+same provider (parity rule: the website offers what the app offers). The Apple portal needs:
+Sign in with Apple on the App ID (Xcode capability too), a **Services ID** for the web with
+the Firebase OAuth redirect URL as a return URL, and a **Sign in with Apple key** (`.p8`)
+registered in Firebase → Authentication → Apple. The QA guard applies as for Google.
+
+**Two product problems and their answers**
+1. Apple sends the person's **name only on the first sign-in**. Capture it from the credential
+   (`additionalUserInfo.profile.name` / `result.user.displayName`) and send it with
+   `/api/auth/register` on that first call, or the account is nameless forever. The Users page
+   must tolerate an empty name until the admin edits it.
+2. **"Hide my email"** gives `xxxx@privaterelay.appleid.com`. `upsertUser` matches
+   admin-created users by email, so a client the firm registered under their real address would
+   get a second, empty Client account. Decision: the login page says, above the Apple button,
+   "Use the email your firm has for you — a hidden email creates a new account"; and the backend
+   treats a `privaterelay.appleid.com` address exactly like any other new sign-up (a Client
+   with no matters) — the admin links it by editing the real client's additional emails, the
+   existing path. No special-casing in code beyond the hint.
+
+**Tasks**: provider in Firebase; portal + Xcode capability; Services ID + key; `appleSignIn.ts`
+(web + native branches, same shape as `googleSignIn.ts`, `appleSignInMessage` for the error
+codes); the button on `LoginPage` (web and app) with Apple's required styling (black button,
+"Sign in with Apple", the Apple logo asset); `providers: ['google.com', 'apple.com']` in
+`capacitor.config.ts`; `register` accepts `provider: 'apple'` and a first-sign-in `fullName`;
+the hint text. Code in `docs/ios-app-implementation-guide.md`.
+
+**Acceptance criteria**: on the production TestFlight build, a dedicated test Apple ID signs
+in and lands as Client with its name; cancelling shows the friendly message; the website's Apple
+button works in Safari and Chrome; a `@legalterminus.test` account is refused on QA with the
+sentence; on Android the Apple button either works (the plugin's web flow) or is hidden by
+decision, recorded here.
+
+**Tests**: Playwright `apple-sign-in.spec.ts` on the web build (mocked credential and mocked
+403, like `google-sign-in.spec.ts`); unit tests for `appleSignInMessage`; device checklist.
+
+### E29-S12 — Push notifications (deferred, = E26-S06)
+
+APNs key (`.p8`) uploaded to Firebase Cloud Messaging; `@capacitor/push-notifications`; the
+token in `users/{uid}.fcmToken` per `architecture.md`'s notification design; backend sends via
+the Admin SDK on the same events as the in-app notifications. Both platforms in one story.
+
+---
+
 ## APPENDIX A — Infrastructure & Build System (Updated 2026-06-01)
 
 ### NPM Run Commands Standardization
