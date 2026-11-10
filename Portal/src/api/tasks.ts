@@ -1,5 +1,6 @@
 import { apiFetch } from './client';
 import type { Task, PaymentStatus } from '../types/task';
+import { fetchAllPages } from './pagination';
 
 export interface TasksPage {
   data: Task[];
@@ -12,9 +13,20 @@ export const getTasksPage = (params?: Record<string, string>) => {
   return apiFetch<TasksPage>(`/api/tasks${qs}`);
 };
 
-/** Convenience: first page's rows only (used by the current list view). */
-export const getTasks = async (params?: Record<string, string>): Promise<Task[]> =>
-  (await getTasksPage(params)).data;
+/**
+ * EVERY matter the caller can see, following the cursor to the end.
+ *
+ * #275: this returned only the first page — the 25 most recently updated
+ * matters — and the Matters page filtered that in the browser. Once a firm had
+ * more than 25 matters, a completed one dropped off the list as soon as 25
+ * others were touched after it, and "Status: Completed" could only find the few
+ * still inside the first page. The dashboard's counts had the same blind spot.
+ */
+export const getTasks = (params?: Record<string, string>): Promise<Task[]> =>
+  fetchAllPages(
+    (cursor) => getTasksPage({ ...params, limit: '100', ...(cursor ? { cursor } : {}) }),
+    (t) => t.id,
+  );
 export const getTask = (id: string) => apiFetch<Task>(`/api/tasks/${id}`);
 
 /** A workflow event (intent) sent to the backend-authoritative transition endpoint. */
