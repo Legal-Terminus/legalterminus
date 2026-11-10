@@ -30,7 +30,6 @@ const ConsultationModal = React.lazy(() => import("../../Components/Consultation
  * gateway, business email, an online store.
  */
 export const INFYNIA_URL = "https://infynialabs.com/";
-export const INFYNIA_PORTFOLIO_URL = "https://infynialabs.com/#work";
 const SOURCE = "technology-services";
 
 // E24-S01: prices come from the server catalogue (Website Prices in the
@@ -85,7 +84,7 @@ const STEPS = [
 const FAQS = [
   { question: "Who does the work — Legal Terminus or Infynia Labs?", answer: "Legal Terminus sells and coordinates the service and remains your point of contact. The design, development and technical setup are delivered by Infynia Labs, our technology partner. You can explore their capabilities at infynialabs.com." },
   { question: "How much does it cost?", answer: "The Elemental and Enriched plans above are fixed-price packages you can buy online. Supreme is custom — an app, custom software, a larger store — and is priced on request after a short scoping call. You receive the price in writing before any work starts." },
-  { question: "Where can I see Infynia Labs' past work?", answer: "Their portfolio is on the Infynia Labs website at infynialabs.com (the Work section). Your consultant can also share examples relevant to your business." },
+  { question: "Where can I see Infynia Labs' past work?", answer: "Ask for it with the Request Portfolio button on this page and we will send it to you. Your consultant can also share examples relevant to your business." },
   { question: "How long does a website take?", answer: "A standard business website is usually live within two to three weeks of receiving your content and approving the design. Online stores and apps take longer and are planned with milestones." },
   { question: "Do I need a registered company first?", answer: "No, but most clients take these services right after registration — a domain, email and payment gateway are typically opened in the company's name, so having the incorporation certificate and PAN ready makes setup faster." },
   { question: "What if I already have a website?", answer: "We can add to it — a payment gateway, a store, business email or a redesign — rather than starting over. Mention the current site in the form and the quote will be for the change you need." },
@@ -125,6 +124,9 @@ const TechServices = () => {
   const PLANS = usePlans(SOURCE, DEFAULT_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   const [showConsult, setShowConsult] = useState(false);
+  // #243: the firm does not want this page to send visitors to infynialabs.com for
+  // the portfolio. A visitor asks for it instead, through the consultation form.
+  const [showPortfolio, setShowPortfolio] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [activeFaq, setActiveFaq] = useState(0);
 
@@ -257,8 +259,9 @@ const TechServices = () => {
                     <ul className="Add-zp-note-list">
                       <li className="Add-zp-note-item">Payment gateways and business email are opened in the company's name, so keep the incorporation certificate, PAN and bank details ready.</li>
                       <li className="Add-zp-note-item">To explore Infynia Labs' capabilities, visit{" "}
-                        <a href={INFYNIA_URL} target="_blank" rel="noopener noreferrer">infynialabs.com</a>; their past work is in the{" "}
-                        <a href={INFYNIA_PORTFOLIO_URL} target="_blank" rel="noopener noreferrer">portfolio</a>.
+                        <a href={INFYNIA_URL} target="_blank" rel="noopener noreferrer">infynialabs.com</a>; to see their past work,{" "}
+                        {/* #243: the portfolio is requested here, not opened on infynialabs.com */}
+                        <button type="button" className="Add-zp-note-link" onClick={() => setShowPortfolio(true)}>request the portfolio</button>.
                       </li>
                     </ul>
                   </div>
@@ -267,9 +270,9 @@ const TechServices = () => {
                   <button className="Add-zp-cta-btn" type="button" onClick={() => setShowConsult(true)}>
                     Consult a Technology Expert
                   </button>
-                  <a className="Add-zp-cta-btn" href={INFYNIA_PORTFOLIO_URL} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
-                    View Portfolio ↗
-                  </a>
+                  <button className="Add-zp-cta-btn" type="button" onClick={() => setShowPortfolio(true)}>
+                    Request Portfolio
+                  </button>
                 </div>
               </div>
             </div>
@@ -417,6 +420,15 @@ const TechServices = () => {
         {/* The literal source is what scripts/build-pricing-catalog.py keys the product by. */}
         {activePlan && <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="technology-services" />}
         <ConsultationModal open={showConsult} onClose={() => setShowConsult(false)} source={SOURCE} />
+        <ConsultationModal
+          open={showPortfolio}
+          onClose={() => setShowPortfolio(false)}
+          source={SOURCE}
+          title="Request Portfolio"
+          subtitle="Share your details and we will send you examples of our work"
+          request="Portfolio request"
+          submitLabel="Request Portfolio"
+        />
       </Suspense>
     </div>
   );

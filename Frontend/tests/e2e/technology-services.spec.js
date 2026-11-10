@@ -78,11 +78,48 @@ test("Buy Now opens the checkout with the plan and GST", async ({ page }) => {
   await expect(page.getByText("GST (18%)")).toBeVisible();
 });
 
-test("links to Infynia Labs and its portfolio open in a new tab", async ({ page }) => {
+// #243: the firm does not want this page to send visitors to infynialabs.com for
+// the portfolio. "Request Portfolio" opens the consultation form instead, and the
+// lead says what was asked for.
+test("Request Portfolio opens the form and never leaves the site", async ({ page, context }) => {
+  let lead = null;
+  await page.route("**/api/contact", async (route) => {
+    lead = route.request().postDataJSON();
+    await route.fulfill({ status: 200, contentType: "application/json", body: '{"success":true}' });
+  });
+  let newTabs = 0;
+  context.on("page", () => { newTabs += 1; });
+
   await page.goto(BASE + PATH);
-  const portfolio = page.getByRole("link", { name: /View Portfolio/ });
-  await expect(portfolio).toHaveAttribute("href", "https://infynialabs.com/#work", { timeout: 15_000 });
-  await expect(portfolio).toHaveAttribute("target", "_blank");
+  await expect(page.getByText("View Portfolio")).toHaveCount(0);
+  await expect(page.locator('a[href*="infynialabs.com/#work"]')).toHaveCount(0);
+
+  const button = page.getByRole("button", { name: "Request Portfolio" });
+  await button.scrollIntoViewIfNeeded();
+  await button.click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("heading", { name: "Request Portfolio" })).toBeVisible();
+  expect(page.url()).toContain(PATH);
+
+  await dialog.getByPlaceholder("Full Name *").fill("Test Visitor");
+  await dialog.getByPlaceholder("Email Address *").fill("visitor@example.com");
+  await dialog.getByPlaceholder(/Mobile Number/).fill("9876543210");
+  await dialog.locator('select[name="state"]').selectOption({ index: 1 });
+  await dialog.getByRole("button", { name: "Request Portfolio" }).click();
+
+  await expect.poll(() => lead).not.toBeNull();
+  expect(lead.subject).toBe("Portfolio request – technology-services");
+  expect(lead.message).toMatch(/^Portfolio request\./);
+  expect(lead.source).toBe("technology-services");
+  expect(newTabs).toBe(0);
+});
+
+test("the in-text portfolio link asks for the portfolio too; infynialabs.com stays a plain link", async ({ page }) => {
+  await page.goto(BASE + PATH);
+  const link = page.getByRole("button", { name: "request the portfolio" });
+  await link.scrollIntoViewIfNeeded();
+  await link.click();
+  await expect(page.getByRole("dialog").getByRole("heading", { name: "Request Portfolio" })).toBeVisible();
   await expect(page.getByRole("link", { name: "infynialabs.com", exact: true })).toHaveAttribute("href", "https://infynialabs.com/");
 });
 

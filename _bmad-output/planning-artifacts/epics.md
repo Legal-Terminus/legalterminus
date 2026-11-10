@@ -6615,6 +6615,26 @@ payments" → "Cart".
   `npm run db:seed:pricing` stores it, keeping any surcharge the firm set.
 - Open: the Elemental badge "★ PROPOSED-TO-BE-USED" and the answer hints need the firm's sign-off.
 
+### Technology Services: Request Portfolio instead of View Portfolio (2026-11-10, #243) 🔄 On QA
+
+The firm does not want the Technology Services page to send visitors to infynialabs.com for the
+portfolio (#243). The page's "View Portfolio ↗" button opened `infynialabs.com/#work` in a new tab.
+
+- The button is now **Request Portfolio** and opens the existing consultation form in a popup
+  (title "Request Portfolio", button "Request Portfolio"). The lead is recorded like any other from
+  this page (`source: technology-services`) but its subject and message start with
+  "Portfolio request", so staff see what was asked for.
+- Two other places on the page pointed visitors at the same portfolio: the note's "portfolio" link
+  now reads "request the portfolio" and opens the same form; the FAQ "Where can I see Infynia
+  Labs' past work?" now says to use the Request Portfolio button. The plain `infynialabs.com`
+  credit link in the note, and the footer's "Developed by … InfyniaLabs" credit, are unchanged.
+- `ConsultationForm` / `ConsultationModal` gained two optional props, `request` and
+  `submitLabel`; every other use is unchanged.
+- `tests/e2e/technology-services.spec.js`: the old "portfolio opens in a new tab" test is replaced
+  by two that open the form, submit it (intercepted) and check the lead and that no tab opens.
+  Not fixed here, failing before this change too: "the menu item is not bold" in the same spec,
+  and two lint errors in its header (`document`, `process` globals).
+
 ### Unused website components removed (2026-11-06)
 
 - 512 files under `Frontend/src` (old page versions, components no route renders, their
