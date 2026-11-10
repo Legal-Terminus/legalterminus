@@ -422,9 +422,9 @@ Workflows have two layers: a **code layer** (XState machine topology — step or
 
 ---
 
-### User Story 18 — Trademark Reports and Company Worksheets (Priority: P1) — #210, #217
+### User Story 18 — Trademark Reports and Company Worksheets (Priority: P1) — #210, #217, #280
 
-The firm's Excel registers live in the portal: five **Trademark Reports** (TM Master, Register TM, Opposition Raised, Opposition Received, TM Assignment) at `/reports/trademark`, and thirteen **Worksheets** (Incorporation, Auditor Master, KYC, Annual Filing, ROC Register, Strike Off, Auditor Registration (ADT-3), Startup Odisha, Startup India, GST, Udyam, Professional Tax, FSSAI) at `/worksheets`. Each page has a dropdown of its sheets.
+The firm's Excel registers live in the portal: five **Trademark Reports** (TM Master, Register TM, Opposition Raised, Opposition Received, TM Assignment) at `/reports/trademark`, and fourteen **Worksheets** (Incorporation, Auditor Master, KYC, Annual Filing, ROC Register, Strike Off, Auditor Registration (ADT-3), Startup Odisha, Startup India, GST, TDS, Udyam, Professional Tax, FSSAI) at `/worksheets`. Each page has a dropdown of its sheets.
 
 **Acceptance Scenarios**:
 
@@ -435,6 +435,8 @@ The firm's Excel registers live in the portal: five **Trademark Reports** (TM Ma
 5. **Given** any sheet, **Then** every column can be filtered and sorted both ways, a search highlights and narrows to matching rows, and Download Excel exports the rows on screen.
 6. **Given** a KYC row with a filing date, **Then** Next KYC Due is three years later, and every admin and manager is notified 30 days and 7 days before, and on the day — once each.
 7. **Given** a sheet linked to services, **Then** a record can link to a matter of one of those services and shows a link to it.
+8. **Given** the TDS Sheet (#280), **Then** its columns are the firm's Excel file's, in its order and spelling: Sl. No., Company Name, Assigned to, Checker, Client, TAN NO, USER ID, Traces Password, IT Password, TDS Data Received, Excel Prepared, Final Excel Mail to Client, Challan paid by client, SALARY (Form 138) FILING DATE, NON-SALARY (form 140) FILING DATE, SALARY (Form 138) PR NO, NON-SALARY (form 140) PR NO, STATEMENT STATUS 26Q (Form 140), STATEMENT STATUS 24Q (Form 138). Sl. No. is the row number (shown and downloaded, skipped on upload); an upload matches rows by TAN NO.
+9. **Given** a dropdown column (the yellow columns of the firm's files), **When** an admin, manager or team member adds, renames, re-orders or removes its choices under **Edit dropdowns**, **Then** the new list is offered at once when adding or editing a record, and an upload matches the new spelling. Records keep the value they hold: a renamed or removed choice stays on the rows that use it.
 
 ---
 
@@ -746,6 +748,7 @@ createdAt, createdBy, updatedAt, updatedBy, source? ("excel")
 ```
 customFields[{ key, label, type, options? }],
 sheets { sheetKey: { columns[{ key, label, hidden }], linkedServices[] } },
+optionOverrides { fieldKey: [option] },   // #280: staff-edited dropdown choices (any select)
 updatedAt, updatedBy
 ```
 

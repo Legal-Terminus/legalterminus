@@ -340,6 +340,35 @@ const COMPANY_SHEETS = [
       f('cancellation_date', 'Cancellation Date', 'date'), mobile(), email(), matter(), remarks(),
     ],
   },
+  // #280 — the firm's own TDS register, column for column from the Excel file
+  // attached to the issue (names, order and spelling are the firm's — "Form 138"
+  // and "form 140" included). Its yellow columns are the choice lists, whose
+  // options staff edit (Edit dropdowns). "Sl. No." is the row number, not data.
+  {
+    key: 'tds', label: 'TDS Sheet', recordKey: ['tan'], serial: true,
+    fields: [
+      f('company_name', 'Company Name', 'text', { aliases: ['COMPANY', 'NAME OF COMPANY', 'DEDUCTOR', 'DEDUCTOR NAME'] }),
+      select('assigned_to', 'Assigned to', [], { aliases: ['ASSIGNED', 'ASSIGN TO', 'ASSIGNED PERSON'] }),
+      select('checker', 'Checker', [], { aliases: ['CHECKED BY'] }),
+      select('client', 'Client', [], { aliases: ['CLIENT NAME'] }),
+      f('tan', 'TAN NO', 'text', { aliases: ['TAN', 'TAN NUMBER', 'TAN NO.'] }),
+      f('user_id', 'USER ID', 'text', { aliases: ['USERID', 'LOGIN ID'] }),
+      f('traces_password', 'Traces Password', 'text', { aliases: ['TRACES PASSWORD', 'TRACES PWD', 'TRACES PSWD'] }),
+      f('it_password', 'IT Password', 'text', { aliases: ['INCOME TAX PASSWORD', 'IT PWD', 'IT PSWD'] }),
+      select('tds_data_received', 'TDS Data Received', YES_NO, { aliases: ['DATA RECEIVED'] }),
+      select('excel_prepared', 'Excel Prepared', YES_NO, { aliases: ['EXCEL PREPARE'] }),
+      select('final_excel_mail', 'Final Excel Mail to Client', YES_NO, { aliases: ['FINAL EXCEL MAIL', 'FINAL EXCEL MAIL TO CLIENT'] }),
+      select('challan_paid', 'Challan paid by client', YES_NO, { aliases: ['CHALLAN PAID'] }),
+      f('salary_filing_date', 'SALARY (Form 138) FILING DATE', 'date', { aliases: ['SALARY FILING DATE', 'SALARY (FORM 24Q) FILING DATE'] }),
+      f('non_salary_filing_date', 'NON-SALARY (form 140) FILING DATE', 'date', { aliases: ['NON SALARY FILING DATE', 'NON-SALARY (FORM 26Q) FILING DATE'] }),
+      // A PR (provisional receipt) number is 15 digits; kept as text so it is
+      // never rounded or shown as a percentage, as it was in the firm's file.
+      f('salary_pr_no', 'SALARY (Form 138) PR NO', 'text', { aliases: ['SALARY PR NO', 'SALARY (FORM 24Q) PR NO'] }),
+      f('non_salary_pr_no', 'NON-SALARY (form 140) PR NO', 'text', { aliases: ['NON SALARY PR NO', 'NON-SALARY (FORM 26Q) PR NO'] }),
+      f('statement_status_26q', 'STATEMENT STATUS 26Q (Form 140)', 'text', { aliases: ['STATEMENT STATUS 26Q', 'STATUS 26Q'] }),
+      f('statement_status_24q', 'STATEMENT STATUS 24Q (Form 138)', 'text', { aliases: ['STATEMENT STATUS 24Q', 'STATUS 24Q'] }),
+    ],
+  },
   {
     key: 'udyam', label: 'Udyam Sheet', recordKey: ['udyam_no'], linkedServices: ['udyam-registration'],
     fields: [
@@ -405,7 +434,10 @@ for (const s of COMPANY_SHEETS) {
     key: s.key, module: 'company', fields: s.fields, recordKey: s.recordKey ?? [],
     linkedServices: s.linkedServices ?? [], reminder: s.reminder ?? null,
   };
-  SHEETS[s.key] = { key: s.key, label: s.label, module: 'company', book: s.key, columns: s.fields.map((x) => ({ key: x.key })) };
+  SHEETS[s.key] = {
+    key: s.key, label: s.label, module: 'company', book: s.key, columns: s.fields.map((x) => ({ key: x.key })),
+    serial: !!s.serial,
+  };
 }
 
 export const MODULES = {

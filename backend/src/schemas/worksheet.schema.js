@@ -23,7 +23,7 @@ export const columnsSchema = z.object({
     key: fieldKey.optional(),
     label: z.string().max(80),
     type: z.enum(['text', 'longtext', 'date', 'number', 'select', 'image']).optional(),
-    options: z.array(z.string().max(60)).max(40).optional(),
+    options: z.array(z.string().max(80)).max(200).optional(),
     hidden: z.boolean().optional(),
   }).strict()).min(1).max(80),
   linkedServices: z.array(z.string().max(80)).max(30).optional(),
@@ -47,3 +47,8 @@ export const recordListQuerySchema = z.object({
 export const matterQuerySchema = z.object({
   q: z.string().trim().max(100).optional(),
 }).strip();
+
+// #280 / #279: the whole option list of one dropdown column.
+export const optionsSchema = z.object({
+  options: z.array(z.string().max(80)).max(200),
+}).strict();

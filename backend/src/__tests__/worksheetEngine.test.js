@@ -9,17 +9,17 @@ import { SHEETS, BOOKS, MODULES } from '../config/worksheetDefinitions.js';
 import {
   resolveSheet, bookFields, matchHeaders, normalizeHeader, normalizeDate, normalizeValue, recordKeyFor,
   addPeriod, computeValues, applyColumnEdit, cleanRecordValues, planImport, pickReminder, reminderText,
-  daysBetween, indiaToday, encodeCursor, decodeCursor,
+  daysBetween, indiaToday, encodeCursor, decodeCursor, applyOptionsEdit, cleanOptions, MAX_OPTIONS,
 } from '../services/worksheetEngine.service.js';
 
 const labels = (sheet) => sheet.columns.filter((c) => !c.hidden).map((c) => c.label.toUpperCase());
 
 /* ── Definitions ────────────────────────────────────────────────────────── */
 
-test('five trademark reports share one book; thirteen company worksheets each have their own', () => {
+test('five trademark reports share one book; fourteen company worksheets each have their own', () => {
   assert.deepEqual(MODULES.trademark.sheets, ['tm_master', 'tm_register', 'tm_opposition_raised', 'tm_opposition_received', 'tm_assignment']);
   for (const s of MODULES.trademark.sheets) assert.equal(SHEETS[s].book, 'trademark');
-  assert.equal(MODULES.company.sheets.length, 13);
+  assert.equal(MODULES.company.sheets.length, 14);
   for (const s of MODULES.company.sheets) assert.equal(SHEETS[s].book, s);
   assert.deepEqual(BOOKS.trademark.recordKey, ['application_no']);
 });
@@ -369,4 +369,79 @@ test('cursor round-trip; a forged cursor is rejected', () => {
   assert.deepEqual(decodeCursor(encodeCursor('2026-10-29T00:00:00.000Z', 'abc')), ['2026-10-29T00:00:00.000Z', 'abc']);
   assert.equal(decodeCursor('not-base64-json'), null);
   assert.equal(decodeCursor(Buffer.from(JSON.stringify({ a: 1 })).toString('base64url')), null);
+});
+
+/* ── #280 TDS Sheet and editable dropdowns ──────────────────────────────── */
+
+test('#280 the TDS Sheet has the firm\'s columns, in the firm\'s order, after the GST Sheet', () => {
+  const sheets = MODULES.company.sheets;
+  assert.equal(sheets[sheets.indexOf('gst') + 1], 'tds');
+  const tds = resolveSheet('tds');
+  assert.deepEqual(tds.columns.map((c) => c.label), [
+    'Company Name', 'Assigned to', 'Checker', 'Client', 'TAN NO', 'USER ID', 'Traces Password', 'IT Password',
+    'TDS Data Received', 'Excel Prepared', 'Final Excel Mail to Client', 'Challan paid by client',
+    'SALARY (Form 138) FILING DATE', 'NON-SALARY (form 140) FILING DATE', 'SALARY (Form 138) PR NO',
+    'NON-SALARY (form 140) PR NO', 'STATEMENT STATUS 26Q (Form 140)', 'STATEMENT STATUS 24Q (Form 138)',
+  ]);
+  // The yellow columns of the firm's file are the dropdowns.
+  assert.deepEqual(tds.columns.filter((c) => c.type === 'select').map((c) => c.label), [
+    'Assigned to', 'Checker', 'Client', 'TDS Data Received', 'Excel Prepared', 'Final Excel Mail to Client', 'Challan paid by client',
+  ]);
+  assert.equal(tds.serial, true);
+  assert.deepEqual(tds.recordKey, ['tan']);
+  // Not shared with another sheet.
+  assert.deepEqual(tds.memberships.map((m) => m.key), ['tds']);
+});
+
+test('#280 the firm\'s TDS headings (as typed, wrapped and with "Sl. No.") all match; Sl. No. is ignored, not unknown', () => {
+  const sheet = resolveSheet('tds');
+  const headers = ['Sl. No.', 'Company Name', 'Assigned to', 'Checker', 'Client', 'TAN NO', 'USER ID', 'Traces Password', 'IT Password',
+    'TDS Data Received', 'Excel Prepar ed', 'Final Excel Mail to Client', 'Challan paid by client', 'SALARY (Form 138) FILING DATE',
+    'NON-SALARY (form 140) FILING DATE', 'SALARY (Form 138) PR NO', 'NON-SALARY (form 140) PR NO',
+    'STATEM ENT STATUS 26Q (Form 140)', 'STATEM ENT STATUS 24Q (Form 138)'];
+  const rows = [[1, 'ODISHA LIFT IRRIGATION CO-OPERATION LTD', 'Ajay Sir', 'Biswal', 'MGGS', 'BBNO00252A', 'OLICLBBSR', 'OLICL2013BBSR', 'Olic@123',
+    'Yes', 'YES', 'Yes', 'Yes', '27-10-2026', '27-10-2026', 752309600068224, 752309600068235, null, null]];
+  const plan = planImport({ sheet, fields: bookFields('tds'), headers, rows });
+  assert.deepEqual(plan.unknownColumns, []);
+  assert.deepEqual(plan.ignoredColumns, [{ header: 'Sl. No.', reason: 'serial' }]);
+  const v = plan.creates[0].values;
+  assert.equal(v.tan, 'BBNO00252A');
+  assert.equal(v.excel_prepared, 'Yes'); // "YES" lands on the option's spelling
+  assert.equal(v.salary_filing_date, '2026-10-27');
+  // A PR number read as a number from Excel is kept whole, as text.
+  assert.equal(v.salary_pr_no, '752309600068224');
+  assert.equal(plan.creates[0].key, 'BBNO00252A');
+});
+
+test('#280 staff edit a dropdown\'s options; every sheet, the form and uploads see the new list', () => {
+  const { optionOverrides } = applyOptionsEdit('tds', {}, 'assigned_to', [' Ajay Sir ', 'Biswal', 'ajay sir', '<b>Rina</b>', '']);
+  assert.deepEqual(optionOverrides, { assigned_to: ['Ajay Sir', 'Biswal', 'Rina'] });
+  const config = { optionOverrides };
+  assert.deepEqual(resolveSheet('tds', config).columns.find((c) => c.key === 'assigned_to').options, ['Ajay Sir', 'Biswal', 'Rina']);
+  // A built-in Yes/No list can be changed too (e.g. add "N/A").
+  const yn = applyOptionsEdit('tds', config, 'challan_paid', ['Yes', 'No', 'N/A']).optionOverrides;
+  assert.deepEqual(resolveSheet('tds', { optionOverrides: { ...optionOverrides, ...yn } }).columns.find((c) => c.key === 'challan_paid').options, ['Yes', 'No', 'N/A']);
+  // An upload matches the edited spelling.
+  assert.equal(normalizeValue(bookFields('tds', config).find((f) => f.key === 'assigned_to'), 'RINA').value, 'Rina');
+  // Removing every option is allowed (the column stays a dropdown, empty).
+  assert.deepEqual(applyOptionsEdit('tds', config, 'checker', []).optionOverrides, { checker: [] });
+});
+
+test('#280 only a dropdown column has options; unknown sheet or column is refused', () => {
+  assert.throws(() => applyOptionsEdit('tds', {}, 'tan', ['x']), (e) => e.status === 400);
+  assert.throws(() => applyOptionsEdit('tds', {}, 'nope', ['x']), (e) => e.status === 404);
+  assert.throws(() => applyOptionsEdit('nope', {}, 'client', ['x']), (e) => e.status === 404);
+  assert.throws(() => applyOptionsEdit('tds', {}, 'client', 'x'), (e) => e.status === 400);
+  assert.equal(cleanOptions(Array.from({ length: 500 }, (_, i) => `o${i}`)).length, MAX_OPTIONS);
+});
+
+test('#280 an added dropdown column\'s choices, edited under Edit columns, follow the same override; a column save keeps the others', () => {
+  const config = { optionOverrides: { assigned_to: ['Ajay Sir'] } };
+  const cols = resolveSheet('tds', config).columns.map((c) => ({ key: c.key, label: c.label }));
+  const next = applyColumnEdit('tds', config, { columns: [...cols, { label: 'Quarter', type: 'select', options: ['Q1', 'Q2'] }] });
+  assert.deepEqual(next.optionOverrides.assigned_to, ['Ajay Sir']);
+  const added = next.customFields.find((cf) => cf.label === 'Quarter');
+  const edited = applyColumnEdit('tds', next, { columns: [...cols, { key: added.key, label: 'Quarter', options: ['Q1', 'Q2', 'Q3'] }] });
+  assert.deepEqual(edited.optionOverrides[added.key], ['Q1', 'Q2', 'Q3']);
+  assert.deepEqual(resolveSheet('tds', edited).columns.find((c) => c.key === added.key).options, ['Q1', 'Q2', 'Q3']);
 });

@@ -847,7 +847,8 @@ export function withGrant(base: SectionGrants, uid: string, levels: Record<strin
 export interface WsRecordLite { id: string; sheets: string[]; values: Record<string, string | number | null> }
 export interface WsSheetLite {
   key: string; label: string; linkedServices: string[];
-  columns: { key: string; label: string; hidden: boolean; type: string; builtIn: boolean }[];
+  columns: { key: string; label: string; hidden: boolean; type: string; builtIn: boolean; options?: string[] }[];
+  serial?: boolean;
 }
 
 /** Every record of a sheet (all pages). */
@@ -886,7 +887,7 @@ export async function deleteWorksheetRecordsMatching(sheet: string, field: strin
   await api.dispose();
 }
 
-export async function getWorksheetSheet(module: 'trademark' | 'company', sheet: string): Promise<WsSheetLite> {
+export async function getWorksheetSheet(module: 'trademark' | 'company' | 'gst_return', sheet: string): Promise<WsSheetLite> {
   const api = await apiAs('admin');
   const res = await api.get(`/api/worksheets/modules/${module}`);
   if (!res.ok()) throw new Error(`getWorksheetSheet failed: ${res.status()}`);
@@ -902,5 +903,13 @@ export async function restoreWorksheetColumns(snapshot: WsSheetLite): Promise<vo
     data: { columns: snapshot.columns.map((c) => ({ key: c.key, label: c.label, hidden: c.hidden })), linkedServices: snapshot.linkedServices },
   });
   if (!res.ok()) throw new Error(`restoreWorksheetColumns failed: ${res.status()} ${await res.text()}`);
+  await api.dispose();
+}
+
+/** #280 / #279: put one dropdown column's choices back to a snapshot. */
+export async function restoreWorksheetOptions(sheet: string, field: string, options: string[]): Promise<void> {
+  const api = await apiAs('admin');
+  const res = await api.put(`/api/worksheets/sheets/${sheet}/options/${field}`, { data: { options } });
+  if (!res.ok()) throw new Error(`restoreWorksheetOptions failed: ${res.status()} ${await res.text()}`);
   await api.dispose();
 }

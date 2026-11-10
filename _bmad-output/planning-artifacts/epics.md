@@ -81,7 +81,7 @@ split dashboard tiles.
 | E-15 | Document Naming & Step Configuration (Visibility, Status/Notes, Descriptions) | Phase 2 | E15-S01 – E15-S04 |
 | E-16 | Comment Draft Autosave | Phase 2 | E16-S01 |
 | E-17 | Professional Assignment on Matters | Phase 2 | E17-S01 |
-| E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S09 |
+| E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S11 |
 | E-19 | Client 360 (Per-Client Status for Staff) | Phase 2 | E19-S01 – E19-S03 |
 | E-20 | Dashboard Cockpits | Phase 2 | E20-S01 – E20-S02 |
 | E-21 | Public API v1 & Webhooks | Phase 2 | E21-S01 – E21-S04 |
@@ -2844,6 +2844,23 @@ before it breaches — depends on the notification/email subsystem (E-07).
 - KYC: *Next KYC Due* = filing date + 3 years (calculated). Admins and managers are notified 30 days and 7 days before, and on the day — once per milestone.
 
 **e2e**: `Portal/e2e/worksheets.spec.ts`.
+
+---
+
+### E18-S10 — TDS Sheet in Worksheets, with editable dropdowns (#280) [Phase 2] 🔄 In review
+
+**Priority**: P1 | **Complexity**: S | **Dependencies**: E18-S09 (same engine)
+
+**Rationale**: The firm keeps its TDS register in Excel and asked for it in Worksheets, in its own
+layout, with the yellow columns as dropdowns whose choices staff manage.
+
+**Acceptance Criteria**:
+- "TDS Sheet" in the Worksheets dropdown, after GST Sheet, with the columns of the firm's file in its
+  order and spelling (see the 2026-11-10 change-log entry); "Sl. No." is the row number.
+- Add record, Upload Excel (matched by TAN NO), Edit columns (admin), Search, Download Excel — as every sheet.
+- **Edit dropdowns** (admin, manager, team member) for every dropdown column of every worksheet and report.
+
+**e2e**: `Portal/e2e/worksheets.spec.ts` (#280 tests).
 
 ---
 
@@ -6683,3 +6700,37 @@ in the browser. A completed matter dropped off once 25 others were touched after
 
 Tests: `backend/src/__tests__/clientName.test.js`; Playwright
 `Portal/e2e/matters-and-clients-lists.spec.ts`. User-visible: yes (lists, names).
+
+### TDS Sheet in Worksheets; dropdown choices staff can edit (2026-11-10, #280) — E18-S10 🔄 In review
+
+The firm asked for its TDS register as a sheet under Worksheets, "following the uploaded Excel format
+… do not copy the GST Sheet columns", with the yellow columns as dropdowns whose values Admin,
+Manager and Team can add, edit and remove. Design in architecture.md, "Worksheets" → "Dropdown
+choices", "Row numbers", "TDS Sheet".
+- **Columns, read from the image attached to the issue, in its order:** Sl. No., Company Name,
+  **Assigned to**, **Checker**, **Client**, TAN NO, USER ID, Traces Password, IT Password, **TDS Data
+  Received**, **Excel Prepared**, **Final Excel Mail to Client**, **Challan paid by client**, SALARY
+  (Form 138) FILING DATE, NON-SALARY (form 140) FILING DATE, SALARY (Form 138) PR NO, NON-SALARY (form
+  140) PR NO, STATEMENT STATUS 26Q (Form 140), STATEMENT STATUS 24Q (Form 138). Bold = yellow in the
+  file = dropdown. The two filing dates are date columns; everything else is text.
+- **Sl. No.** is the row number of the sheet as shown (after filters, search and sort), also in the
+  download; it is not stored, and an upload skips it.
+- **Dropdowns:** Assigned to, Checker and Client start empty — the firm adds its people and clients
+  under **Edit dropdowns**; the four status columns start Yes / No. Edit dropdowns works on every
+  dropdown column of every worksheet and Trademark Report, for admins, managers and team members.
+  A choice that is renamed or removed stays on the rows that already hold it.
+- **Upload** matches rows by TAN NO (one row per TAN). The image's PR numbers display as
+  "75230960006822400%" — an Excel percentage format on a 15-digit number; the upload reads the number
+  and keeps it whole as text.
+- **Open questions for the firm:**
+  - "Form 138" / "form 140" are kept exactly as in the file; are they Form 24Q (salary) and 26Q
+    (non-salary)? The upload accepts either spelling.
+  - One row per TAN: if the firm keeps a separate sheet per quarter, a Quarter column (and TAN +
+    Quarter as the key) is needed — otherwise uploading Q2 updates the Q1 rows.
+  - Traces and IT passwords are stored as plain text visible to every admin, manager and team member,
+    as in the firm's Excel file. The GST Sheet left them out deliberately (#217). Should they be
+    masked or restricted?
+  - Should "Assigned to" / "Checker" list the portal's staff automatically instead of a typed list?
+- Tests: `backend/src/__tests__/worksheetEngine.test.js` (5 new); `Portal/e2e/worksheets.spec.ts`
+  (columns and buttons; a team member adds a choice and uses it in a new record; upload in the firm's
+  layout; clients refused, non-dropdown column refused).

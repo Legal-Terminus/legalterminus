@@ -4,7 +4,7 @@ import { getDb, getBucket } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { BOOKS, SHEETS, MODULES } from '../config/worksheetDefinitions.js';
 import {
-  resolveSheet, bookFields, computeValues, cleanRecordValues, recordKeyFor, applyColumnEdit,
+  resolveSheet, bookFields, computeValues, cleanRecordValues, recordKeyFor, applyColumnEdit, applyOptionsEdit,
   planImport, encodeCursor, decodeCursor,
 } from '../services/worksheetEngine.service.js';
 import { runWorksheetReminderSweep } from '../services/worksheetReminders.service.js';
@@ -266,12 +266,32 @@ export async function putColumns(req, res) {
   try {
     const ctx = await sheetContext(req, res); if (!ctx) return;
     const next = applyColumnEdit(ctx.sheet.key, ctx.config, req.body);
+    // Merged, so the dropdown choices staff edit (`optionOverrides`, #280) are
+    // never wiped by a column save.
     await ctx.db.collection(CONFIG).doc(ctx.sheet.book).set({
       ...next, updatedAt: new Date().toISOString(), updatedBy: req.user.uid,
-    });
+    }, { merge: true });
     logger.info({ sheet: ctx.sheet.key, actorUid: req.user.uid }, 'Worksheet columns updated');
-    res.json(resolveSheet(ctx.sheet.key, next));
+    res.json(resolveSheet(ctx.sheet.key, { ...ctx.config, ...next }));
   } catch (err) { sendKnown(res, err, 'putColumns failed'); }
+}
+
+/* ── Dropdown options (staff) ───────────────────────────────────────────── */
+
+// PUT /api/worksheets/sheets/:sheet/options/:field { options } — #280 / #279.
+// Admin, manager and team member: the issue asks all three to manage the
+// choices of every dropdown column. One field's list per request; a merge on
+// `optionOverrides.<field>` so two people editing different lists never clash.
+export async function putOptions(req, res) {
+  try {
+    const ctx = await sheetContext(req, res); if (!ctx) return;
+    const { optionOverrides } = applyOptionsEdit(ctx.sheet.key, ctx.config, req.params.field, req.body.options);
+    const now = new Date().toISOString();
+    await ctx.db.collection(CONFIG).doc(ctx.sheet.book).set({ optionOverrides, updatedAt: now, updatedBy: req.user.uid }, { merge: true });
+    const config = { ...ctx.config, optionOverrides: { ...(ctx.config.optionOverrides ?? {}), ...optionOverrides } };
+    logger.info({ sheet: ctx.sheet.key, field: req.params.field, count: optionOverrides[req.params.field].length, actorUid: req.user.uid }, 'Worksheet dropdown options updated');
+    res.json(resolveSheet(ctx.sheet.key, config));
+  } catch (err) { sendKnown(res, err, 'putOptions failed'); }
 }
 
 /* ── Excel upload ───────────────────────────────────────────────────────── */

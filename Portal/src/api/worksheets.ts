@@ -29,6 +29,10 @@ export interface WsSheet {
   linkedServices: string[];
   memberships: { key: string; label: string }[];
   reminder: { field: string; milestones: number[] } | null;
+  /** #280 / #279: the sheet starts with the firm's "Sl. No." (the row number). */
+  serial: boolean;
+  /** #279: rows also come from matters (the GST Return Filing sheet). */
+  source: { kind: string } | null;
 }
 
 export interface WsModule {
@@ -76,6 +80,10 @@ export const deleteWorksheetRecord = (sheet: string, id: string) =>
 export interface ColumnEdit { key?: string; label: string; type?: FieldType; options?: string[]; hidden?: boolean }
 export const putWorksheetColumns = (sheet: string, columns: ColumnEdit[], linkedServices?: string[]) =>
   apiFetch<WsSheet>(`${sheetPath(sheet)}/columns`, { method: 'PUT', body: JSON.stringify({ columns, ...(linkedServices ? { linkedServices } : {}) }) });
+
+/** #280 / #279: replace one dropdown column's options (admin, manager, team member). */
+export const putWorksheetOptions = (sheet: string, field: string, options: string[]) =>
+  apiFetch<WsSheet>(`${sheetPath(sheet)}/options/${encodeURIComponent(field)}`, { method: 'PUT', body: JSON.stringify({ options }) });
 
 export interface ImportColumn { index: number; header: string; key: string | null; label?: string; status: string; notShown?: boolean }
 export interface ImportReport {

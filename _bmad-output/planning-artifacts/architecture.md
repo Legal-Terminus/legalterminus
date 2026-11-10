@@ -2462,6 +2462,34 @@ row. Recipients: every admin and manager, via `createNotification` (in-app + ema
 record delete add `requireRole('admin')`. No per-person grant (unlike Marketing
 Reports): the firm asked for all three roles to view and edit.
 
+**Dropdown choices (#280, 2026-11-10).** Every `select` field's options — built-in
+or added — can be replaced by staff: `PUT /api/worksheets/sheets/:sheet/options/:field
+{ options }` (admin, manager, team member: the router's guard; `optionsSchema`, up to
+200 options of 80 characters). Stored as `worksheetConfig/{book}.optionOverrides[field]`
+with a merge write, so two people editing different lists do not clash, and applied
+in `bookFields`, so the grid, the record form and upload matching all see the new
+list. Options are a book-level property: every sheet of the book shares them. The
+list is replaced whole; records are NOT rewritten — a renamed or removed option
+stays on the rows that hold it (the editors already show a value outside the list).
+`putColumns` now writes with `merge: true` and carries `optionOverrides`, so a column
+save cannot wipe staff-edited choices; the choices of an added select edited under
+Edit columns are written to the same override.
+
+**Row numbers (#280).** A sheet with `serial: true` shows "Sl. No." as its first
+column — the position of the row as displayed (after filters, search and sort), also
+the first column of Download Excel. It is never stored; on upload a heading that
+normalises to `SLNO`/`SNO`/`SRNO`/`SERIALNO` is reported as ignored (`serial`), not
+unknown.
+
+**TDS Sheet (#280).** Company worksheet `tds`, its own book, key `tan`. Columns are
+the firm's Excel file (attached to the issue) verbatim, including its labels "Form
+138" / "form 140" (presumably Form 24Q / 26Q — kept as the firm wrote them; aliases
+accept the 24Q/26Q spelling). The seven yellow columns are selects: Assigned to,
+Checker and Client start empty (the firm fills them under Edit dropdowns); the four
+status columns start Yes/No. PR numbers are text so a 15-digit number is never
+rounded or shown as a percentage. Traces/IT passwords are plain text fields, as in
+the firm's file — see the open question in epics.md.
+
 ## Dependency sources and the Node.js pin (#218, 2026-10-30)
 
 **SheetJS (`xlsx`) comes from the SheetJS CDN, not npm.** The npm `xlsx` package
