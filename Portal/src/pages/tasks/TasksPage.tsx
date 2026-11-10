@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
 import { ArrowRight, Flame, Trash2, Plus, Phone, Mail } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
@@ -66,17 +66,28 @@ export default function TasksPage() {
   };
   const c = copy[role ?? ''] ?? { title: 'Matters', body: '' };
 
+  // #275: getTasks() now returns EVERY matter (it follows the cursor), not the
+  // 25 most recently updated — which is why older Completed matters vanished.
+  // Loading all of them is several requests, so the background refresh is a
+  // minute (the board's pace), not 15 seconds; a change made here still
+  // refreshes at once through query invalidation.
   const { data: tasks = [], isLoading, error } = useQuery({
     queryKey: ['tasks'],
     queryFn: () => getTasks(),
     staleTime: 5_000,
-    refetchInterval: 15_000,
+    refetchInterval: 60_000,
   });
 
   // #91: structured multi-criteria filters (Status + Service), AND-combined,
   // composing with the free-text search box below. All client-side — the grid
-  // already has the full role-scoped row set from getTasks().
-  const [statusFilter, setStatusFilter] = useState('');
+  // holds the full role-scoped row set from getTasks().
+  // #275: the dashboard's "Awaiting approval" links here with ?status=…; the
+  // filter used to ignore it and open on every status.
+  const [searchParams] = useSearchParams();
+  const [statusFilter, setStatusFilter] = useState(() => {
+    const s = searchParams.get('status') ?? '';
+    return STATUS_OPTIONS.some((o) => o.value === s) ? s : '';
+  });
   const [serviceFilter, setServiceFilter] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('');
   // Service options are derived from the tasks THEMSELVES (serviceName), not the

@@ -11,6 +11,7 @@ import {
   normalizeUserProfile,
 } from "../services/userService.js";
 import { termsAcceptanceFields } from "../services/termsAcceptance.js";
+import { afterClientProfileWrite } from "../services/clientName.service.js";
 
 const router = express.Router();
 
@@ -194,6 +195,8 @@ router.patch("/me", verifyToken, async (req, res) => {
 
     await db.collection('users').doc(uid).set(updates, { merge: true });
     const doc = await db.collection('users').doc(uid).get();
+    // #277: a client renaming themselves renames their existing matters too.
+    if (updates.name !== undefined) await afterClientProfileWrite(db, uid, doc.data());
     res.json({ success: true, user: { uid, ...doc.data() } });
   } catch (error) {
     logger.error({ err: error }, '[PATCH_ME_ERROR]');

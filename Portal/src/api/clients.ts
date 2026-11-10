@@ -1,4 +1,5 @@
 import { apiFetch } from './client';
+import { fetchAllPages } from './pagination';
 
 /**
  * E-19 — the client-relationship read API (ported from the cometflow portal).
@@ -133,6 +134,15 @@ export function getClients(params: { limit?: number; cursor?: string } = {}) {
   const qs = q.toString();
   return apiFetch<ClientRosterPage>(`/api/clients${qs ? `?${qs}` : ''}`);
 }
+
+/**
+ * #277: EVERY client on the roster, following the cursor to the end. The page
+ * used to load one page of 100 and never the next, so once a firm had more than
+ * 100 clients, a new one sorting late (no attention signals, name late in the
+ * alphabet) was on the Users list but never on the Clients list.
+ */
+export const getAllClients = () =>
+  fetchAllPages((cursor) => getClients({ limit: 500, cursor }), (c) => c.uid);
 
 export const getClient = (uid: string) => apiFetch<ClientDetail>(`/api/clients/${uid}`);
 

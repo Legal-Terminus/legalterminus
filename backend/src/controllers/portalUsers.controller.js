@@ -8,6 +8,7 @@ import {
   deleteUser,
   normalizeUserProfile,
 } from '../services/userService.js';
+import { afterClientProfileWrite } from '../services/clientName.service.js';
 
 /**
  * Unified user-management controller (BMAD architecture §3.5).
@@ -267,6 +268,12 @@ export const updateUser = async (req, res) => {
     // A changed role must apply on this user's next request, not after the
     // 60s identity cache expires.
     invalidateIdentity(uid);
+
+    // #277: a renamed client's existing matters still showed the old name —
+    // `clientName` on a matter is a copy, and nothing refreshed it.
+    if (updates.name !== undefined) {
+      await afterClientProfileWrite(db, uid, { ...current, ...updates });
+    }
 
     // Sync the Firebase custom claim only when a role was actually (and
     // legitimately) written. `role` itself is already persisted in `updates`.

@@ -2666,3 +2666,44 @@ a "Waiting for approval" list when requests are still open. A fifth **Refund** c
 a refund exists. The switch after approval needs nothing: the matter appears in
 `/api/tasks` and the order's stage becomes `approved`.
 
+
+## Whole lists in the browser; a client's name on their matters (#275, #277, 2026-11-10)
+
+**Lists the browser filters are loaded whole.** The Matters page (`TasksPage`) and the
+Clients page filter, search and sort in the browser over the rows they hold, but they
+held only the first page of a cursor-paginated endpoint (25 matters ordered by
+`updatedAt`, 100 clients ordered attention-first) and never asked for the next. Older
+completed matters and late-alphabet clients were simply not on the page (#275, #277).
+`Portal/src/api/pagination.ts` `fetchAllPages` follows `nextCursor` to the end
+(de-duplicated by id, capped at 100 pages); `getTasks()` and `getAllClients()` use it.
+The endpoints keep paginating — the rule "all list endpoints paginate" stands; the
+caller just reads every page. The Matters page refreshes every 60 s (was 15 s), the
+board's pace, because a refresh now reads every page. `/api/clients` allows `limit` up
+to 500 (was 100): it builds every client's rollup on each request to sort them, so one
+large page is cheaper than several. The Matters page also honours `?status=` from the
+dashboard links.
+
+**`clientName` on a matter is a cache with one writer.** A matter's `clientName` is a
+copy of the client's name made at creation, read by some twenty consumers (Matters list,
+board, search, reports, the workbook export, the public API, every email). It was never
+refreshed, so a rename did not reach existing matters (#277). Reading the name at
+display time everywhere was rejected: every consumer would need a users lookup (several
+run outside a request) and any one missed would keep showing the stale copy. Instead
+the profile is the source of truth and `services/clientName.service.js` is the only
+code that rewrites the copy: `afterClientProfileWrite` runs after every write that can
+change a client's name — `PATCH /api/portal/users/:uid`, `PATCH /api/auth/me`, and the
+merge branch of `upsertUser` — and rewrites `clientName` on every matter with that
+`clientUid` (batched, idempotent, `updatedAt` untouched so the list order does not
+move). Matters where the client is only an additional contact (#188, `ccEmails`) name
+their owner and are not touched. A failed sync never fails the profile save; it is
+logged and repaired by the next save of that client or by
+`scripts/syncClientNamesOnMatters.mjs` (dry run by default, `--apply` to write).
+Historical records keep the name they were written with: refunds, website orders'
+customer name, sent notifications. The Client Database (#205) keeps its own saved
+values by design. Not changed: `professionalName` on matters and users is the same kind
+of copy and has the same staleness on a professional's rename.
+
+`scripts/backfillTaskUpdatedAt.mjs` (dry run by default) reports and repairs matters
+whose `updatedAt` is missing or not an ISO string — an ordered query leaves those out,
+so such a matter could never be listed. QA had none on 2026-11-10; production was not
+checked (the owner decides whether to run it there).
