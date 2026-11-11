@@ -57,3 +57,27 @@ test('CORS: every pattern is anchored at both ends', () => {
     }
   }
 });
+
+// E29-S03: the iOS app's origin, accepted as one exact string and nothing near it.
+test('CORS: capacitor://localhost is allowed exactly, and only when listed', () => {
+  const allowed = buildAllowedOrigins({ ...PROD, CORS_ORIGINS: 'https://localhost,capacitor://localhost' });
+  assert.equal(isAllowedOrigin('capacitor://localhost', allowed), true);
+  assert.equal(isAllowedOrigin('https://localhost', allowed), true);
+  for (const origin of [
+    'capacitor://localhost:8080',
+    'capacitor://localhost/',
+    'capacitor://evil',
+    'ionic://localhost',
+    'capacitor://localhost.evil.test',
+    'CAPACITOR://localhost',
+  ]) assert.equal(isAllowedOrigin(origin, allowed), false, `${origin} must be refused`);
+  assert.equal(isAllowedOrigin('capacitor://localhost', buildAllowedOrigins(PROD)), false);
+  assert.equal(isAllowedOrigin('capacitor://localhost', buildAllowedOrigins({ ...PROD, CORS_ORIGINS: '' })), false);
+});
+
+test('CORS: nothing else on the capacitor scheme survives CORS_ORIGINS', () => {
+  const allowed = buildAllowedOrigins({
+    ...PROD, CORS_ORIGINS: 'capacitor://evil,capacitor://localhost:1,capacitor://*,ionic://localhost',
+  });
+  assert.equal(allowed.some((e) => typeof e === 'string' && !/^https?:/.test(e)), false);
+});

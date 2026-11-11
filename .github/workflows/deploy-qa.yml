@@ -192,7 +192,7 @@ jobs:
             --set-env-vars="^||^FIREBASE_PRIVATE_KEY=${{ secrets.BACKEND_FIREBASE_PRIVATE_KEY }}" \
             --set-env-vars="FRONTEND_URL=${{ env.QA_SITE_URL }}" \
             --set-env-vars="BASE_URL=${{ env.QA_SITE_URL }}" \
-            --set-env-vars="^||^CORS_ORIGINS=https://localhost,http://localhost:5173" \
+            --set-env-vars="^||^CORS_ORIGINS=https://localhost,capacitor://localhost,http://localhost:5173" \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
 
           # Get Backend service URL for payment redirects
