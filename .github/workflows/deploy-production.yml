@@ -38,6 +38,27 @@ on:
         required: false
         default: true
         type: boolean
+      # E29-S09: build and sign the Android app instead of deploying the web. Run from a
+      # release TAG (Use workflow from → the tag); docs/mobile-release.md "Android — the pipeline".
+      build_android:
+        description: 'Build the signed Android app from this tag (skips the web deploy)'
+        required: false
+        default: false
+        type: boolean
+      android_format:
+        description: 'Android output'
+        required: false
+        default: 'both'
+        type: choice
+        options: [aab, apk, both]
+      version_name:
+        description: 'App version name, e.g. 1.6.0 (both platforms use the same)'
+        required: false
+        type: string
+      build_number:
+        description: 'App build number = last GitHub Release build + 1 (never reused)'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -52,6 +73,8 @@ env:
 
 jobs:
   build-and-deploy:
+    # E29-S09: a run that builds the Android app does not also redeploy the web.
+    if: ${{ !inputs.build_android }}
     runs-on: ubuntu-latest
     # Required reviewers on this Environment are the approval gate. Without them
     # configured in GitHub (Settings → Environments → production) a tag deploys
@@ -370,3 +393,107 @@ jobs:
             exit $CODE
           fi
 
+  # ── E29-S09: the Android app, built and signed here from a release tag ─────────────────
+  # Model (docs/mobile-release.md): Android is built by this job on a release; iOS is
+  # archived from Xcode on the Mac. Same `production` environment, so the same approval.
+  # Refused unless run by hand from a v*-lt.* tag. The environment switch is PRODUCTION
+  # (LT_APP_ENV); the guard (check-bundle.mjs) fails the run if any QA value got in.
+  build-android:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_android && startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: write
+    env:
+      LT_APP_ENV: production
+    steps:
+      - name: Checkout the tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check the inputs
+        run: |
+          [[ "${{ inputs.version_name }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "version_name must look like 1.6.0"; exit 1; }
+          [[ "${{ inputs.build_number }}" =~ ^[1-9][0-9]*$ ]] || { echo "build_number must be a positive whole number"; exit 1; }
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+
+      # The same FRONTEND values the production Portal deploy uses. The environment-defining
+      # ones (API host, database, bucket, auth domain) come from MobileApp/environments.json.
+      - name: Production values for the app's Portal bundle
+        run: |
+          printf 'VITE_FIREBASE_API_KEY=%s\nVITE_FIREBASE_MESSAGING_SENDER_ID=%s\nVITE_FIREBASE_APP_ID=%s\nVITE_THEME_C=true\nVITE_PAYMENTS_ENABLED=true\n' \
+            "${{ secrets.FIREBASE_QA_API_KEY }}" "${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}" "${{ secrets.FIREBASE_QA_APP_ID }}" \
+            > "$RUNNER_TEMP/production.env"
+          echo "LT_MOBILE_ENV_FILE=$RUNNER_TEMP/production.env" >> "$GITHUB_ENV"
+
+      - name: Signing material
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" | base64 -d > MobileApp/android/app/google-services.json
+          echo "${{ secrets.ANDROID_KEYSTORE_B64 }}" | base64 -d > "$RUNNER_TEMP/upload.keystore"
+          printf 'storeFile=%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$RUNNER_TEMP/upload.keystore" \
+            "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" "${{ secrets.ANDROID_KEY_ALIAS }}" "${{ secrets.ANDROID_KEY_PASSWORD }}" \
+            > MobileApp/android/key.properties
+
+      - run: npm ci --prefix Portal && npm ci --prefix MobileApp
+
+      # app-env (production) → build:mobile → check-bundle production → cap sync android.
+      - run: npm run sync:android --prefix MobileApp
+
+      - name: Version
+        run: |
+          sed -i "s|versionCode [0-9]*|versionCode ${{ inputs.build_number }}|; s|versionName \"[^\"]*\"|versionName \"${{ inputs.version_name }}\"|" MobileApp/android/app/build.gradle
+          grep -E "versionCode|versionName" MobileApp/android/app/build.gradle
+
+      - name: Build
+        working-directory: MobileApp/android
+        run: |
+          case "${{ inputs.android_format }}" in
+            aab) tasks="bundleRelease" ;;
+            apk) tasks="assembleRelease" ;;
+            *)   tasks="bundleRelease assembleRelease" ;;
+          esac
+          ./gradlew $tasks -PappEnv=production --no-daemon
+
+      # vars.ANDROID_UPLOAD_KEY_SHA1 = the upload key's SHA-1, 40 hex digits, no colons
+      # (a repository variable, not a secret: a fingerprint is public).
+      - name: Verify the signer
+        run: |
+          SHA="${{ vars.ANDROID_UPLOAD_KEY_SHA1 }}"
+          [ -n "$SHA" ] || { echo "Set the repository variable ANDROID_UPLOAD_KEY_SHA1"; exit 1; }
+          COLONS=$(echo "$SHA" | sed 's/../&:/g; s/:$//')
+          APKSIGNER="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
+          for f in MobileApp/android/app/build/outputs/apk/release/*.apk; do
+            [ -e "$f" ] || continue
+            "$APKSIGNER" verify --print-certs "$f" | grep -qi "SHA-1 digest: $SHA" || { echo "$f is not signed with the upload key"; exit 1; }
+          done
+          for f in MobileApp/android/app/build/outputs/bundle/release/*.aab; do
+            [ -e "$f" ] || continue
+            keytool -printcert -jarfile "$f" | grep -qi "SHA1: $COLONS" || { echo "$f is not signed with the upload key"; exit 1; }
+          done
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legalterminus-android-${{ inputs.version_name }}-${{ inputs.build_number }}
+          retention-days: 7
+          path: |
+            MobileApp/android/app/build/outputs/bundle/release/*.aab
+            MobileApp/android/app/build/outputs/apk/release/*.apk
+            MobileApp/android/app/build/outputs/mapping/release/mapping.txt
+
+      - uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ inputs.version_name }} (Build ${{ inputs.build_number }})
+          files: |
+            MobileApp/android/app/build/outputs/bundle/release/*.aab
+            MobileApp/android/app/build/outputs/apk/release/*.apk
+            MobileApp/android/app/build/outputs/mapping/release/mapping.txt
