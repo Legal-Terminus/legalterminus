@@ -31,7 +31,7 @@ Workflows are modelled as **XState state machines**. Each workflow service (Comp
 - **Workflow engine**: XState v5 (state machines) — frontend and backend share the same machine config
 - **Backend**: Node.js/Express (ES Modules), Firebase Admin SDK — `backend/`
 - **Database**: Firestore (single source of truth); Firebase Storage for documents
-- **Auth**: Firebase Authentication; role stored in Firestore `/users/{uid}` document. **Auth methods**: Email/password login, Google Sign-In (OAuth), client self-signup (email/password; the password must have 8+ characters with an uppercase letter, a lowercase letter, a number and a special character, shown as a checklist, and the Terms & Conditions and Privacy Policy must be agreed, recorded as `users.termsAcceptedAt` — #35), password reset via email link (same password rules)
+- **Auth**: Firebase Authentication; role stored in Firestore `/users/{uid}` document. **Auth methods**: Email/password login, Google Sign-In (OAuth), Sign in with Apple (E29-S11: iPhone app always, website when `VITE_APPLE_SIGN_IN` is on, not Android), client self-signup (email/password; the password must have 8+ characters with an uppercase letter, a lowercase letter, a number and a special character, shown as a checklist, and the Terms & Conditions and Privacy Policy must be agreed, recorded as `users.termsAcceptedAt` — #35), password reset via email link (same password rules)
 - **Existing public website**: `Frontend/` — unchanged; marketing, blog, Razorpay payments
 
 ### Scope
@@ -781,7 +781,21 @@ updatedAt, updatedBy
     asks the user to update it). Google sign-in uses the phone's own account picker. Documents,
     exports and images open in the phone's own viewer or share sheet. Emailed sign-in and
     password links open the app. Uploads follow the website's rules (10 MB; PDF, JPG, PNG, DOCX,
-    Excel). Push notifications and iOS are not yet built.
+    Excel). Push notifications are not yet built.
+  - **iPhone app requirements** (E-29): the same roles, screens and permissions from the same code;
+    iOS 15+, iPhone only. Sign-in: email + password, the emailed sign-in link, native Google, and
+    **Sign in with Apple** (App Store rule 4.8; also offered on the website once switched on, never
+    on Android for the first release). Documents open in the system viewer / share sheet; emailed
+    account links open the app (Universal Links).
+  - **Account deletion** (E29-S08, both apps and the website): any signed-in person except an Admin
+    can ask for their own account to be deleted (`/account/delete`). The sign-in is disabled at once,
+    the admins are emailed, the Users page marks the person "Deletion requested", and an Admin
+    completes it with the normal delete within 30 days. Records the firm must keep (matters,
+    invoices, payments, filed documents) are kept.
+  - **Environments** (D7, 2026-11-11): both apps are built for **QA by default**; a production build is
+    chosen explicitly at build time. A QA build is a separate app named "Legal Terminus QA"
+    (`com.legalterminus.app.qa`) that installs next to the production app and accepts only the QA
+    test accounts.
 - **Phase 1 workflow scope**: Company Incorporation only. All other services (Trademark, GST, UDYAM) follow in Phase 2 as XState config files.
 
 ### Workflow Engine (XState v5)
@@ -792,7 +806,7 @@ updatedAt, updatedBy
 - Frontend uses `useMachine` (or `useSelector` on a service actor) to render the current step reactively.
 
 ### Security & Auth
-- **Authentication**: Email/password + Google Sign-In + one-time email sign-in link (#203) via Firebase Auth; account emails link to the portal's own `/account/action` page, never to Firebase's hosted page; email OTP for first login on mobile (Phase 2)
+- **Authentication**: Email/password + Google Sign-In + Sign in with Apple (iPhone app; website when switched on — E29-S11) + one-time email sign-in link (#203) via Firebase Auth; account emails link to the portal's own `/account/action` page, never to Firebase's hosted page; email OTP for first login on mobile (Phase 2)
 - **Authorisation**: Firebase custom claims (`role`) verified on every protected backend route via `verifyToken` middleware; `requireRole()` enforces per-route permissions
 - **Security**: Signed URLs for document access (TTL: 15 min); no PAN/Aadhaar in list endpoints; input sanitisation on all backend routes (OWASP Top 10)
 
@@ -814,7 +828,7 @@ updatedAt, updatedBy
 - `Portal/` web build → Firebase Hosting (same project as public website)
 - `backend/` → Cloud Run (`asia-south2`, service `legal-terminus-qa`, 0–5 instances, 512Mi)
 - CI/CD via `.github/workflows/firebase-preview-qa.yml`
-- **CORS** (Phase 2): the allowlist is exact, in `backend/src/config/corsOrigins.js`. A native app's origin is added per deployment through `CORS_ORIGINS`: QA has `https://localhost` (Capacitor on Android) and `http://localhost:5173`; production gets the app's origin when a release build is ready.
+- **CORS** (Phase 2): the allowlist is exact, in `backend/src/config/corsOrigins.js`. A native app's origin is added per deployment through `CORS_ORIGINS`: QA has `https://localhost` (Capacitor on Android), `capacitor://localhost` (Capacitor on iOS — accepted as that one exact string, E29-S03) and `http://localhost:5173`; production gets the apps' origins when a release build is ready.
 
 ## Website redesign in Theme C (#209, E-25)
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- E29-S07: emailed account links open the app. The host follows the environment
+	     switch (Config/Environment.xcconfig, LT_LINK_HOST): legal-terminus-qa.web.app for
+	     a QA build, legalterminus.com for production, so a QA build never claims the live host. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:$(LT_LINK_HOST)</string>
+	</array>
+	<!-- E29-S11: Sign in with Apple (App Store guideline 4.8, because Google is offered). -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+</dict>
+</plist>

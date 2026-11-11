@@ -2670,6 +2670,56 @@ The iPhone app is the same `MobileApp/` shell with an `ios/` platform added; the
   a GitHub Release; iOS is archived and uploaded from Xcode. One version name and build number for
   both. `docs/mobile-release.md`.
 
+**Built 2026-11-11 (branch `feat/ios-app`).** Structural decisions made while building it:
+
+- **One environment switch (owner, 2026-11-11: QA first).** `MobileApp/environments.json` is the only
+  place the apps' environments are described; `LT_APP_ENV` (`qa` default | `production`) picks one at
+  build time. `MobileApp/scripts/app-env.mjs` runs first in every `npm run sync:*` and writes the
+  derived files (all git-ignored): `MobileApp/.app-env.json` (read by `capacitor.config.ts` and
+  `android/app/build.gradle`), `Portal/.env.mobile.local` (Vite's highest-precedence file for
+  `--mode mobile`, so the environment-defining values always beat a developer's `.env.local`), and
+  `ios/App/Config/Environment.xcconfig` (included by the App target's Debug/Release xcconfigs:
+  bundle id, display name, `LT_LINK_HOST`, Google URL scheme). Followers: app id and name, API/site
+  base URL (and with it every endpoint, account deletion included), database and bucket, auth
+  domain, Universal/App Link host, Firebase files, the bundle guard. A QA build is a separate app,
+  **"Legal Terminus QA", `com.legalterminus.app.qa`**; production keeps `com.legalterminus.app`.
+  Gradle and Xcode build whatever was synced and refuse a mismatch or a missing sync.
+- **The guard** (`MobileApp/scripts/check-bundle.mjs`) runs inside every sync and in CI: forbidden
+  patterns per environment plus the environment's own API URL as a required string.
+- **iOS dependencies by CocoaPods**, not Capacitor 8's SPM default: the Google subspec of
+  `@capacitor-firebase/authentication` is a Podfile line. Firebase ends CocoaPods releases after
+  October 2026; moving to SPM is a later change.
+- **App-shell CSS is opt-in.** `initNative` sets `html[data-native=<platform>]`; the safe-area
+  padding classes (`app-topbar`, `app-sidebar`, `app-bottombar`, `app-main`, `app-safe-page`) apply
+  only under it, and `viewport-fit=cover` is added by a Vite plugin in `--mode mobile` only. The
+  website's HTML and CSS behaviour are unchanged.
+- **External links need no helper.** Capacitor iOS hands every navigation to another host, every
+  `window.open`, and non-web schemes to the system (`WebViewDelegationHandler`); no
+  `allowNavigation` list is set, so nothing foreign loads inside the app. Website links built from
+  `window.location.origin` were wrong inside both apps; `siteOrigin()` in `native.ts` returns the
+  environment's host there.
+- **App-link files come from the repo, per host.** Firebase Hosting generates ONE
+  `assetlinks.json` / `apple-app-site-association` per *project* and serves it on every site
+  (seen 2026-11-11: the QA site serves production's Android entry). That cannot keep the QA app off
+  the live host, so `MobileApp/scripts/app-links.mjs` writes the files for one environment's app,
+  and `deploy-qa.yml` puts the QA pair into the QA site (`firebase.qa.json` now deploys
+  `.well-known` and serves the AASA as `application/json`). Production's files wait for launch
+  approval. This supersedes "same source as `assetlinks.json`" above.
+- **Account deletion** (`POST /api/auth/me/deletion-request`, `services/accountDeletion.service.js`):
+  `ACCOUNT_DELETION_ROLES` = every role but admin (role service, both sides). A transaction marks
+  `users/{uid}` (`deletionRequestedAt`, `deletionReason`, `status: 'deletion_requested'`); the Auth
+  user is disabled and its refresh tokens revoked; one email to the admins; a structured log line
+  `account_deletion_requested` is the audit record (LT has no account-level audit collection).
+  Idempotent. The Users page shows a "Deletion requested" tab and amber badge; the existing admin
+  delete completes it. `verifyToken` is unchanged: an already-issued ID token lives out its hour.
+- **Sign in with Apple** is shown by a pure rule (`showAppleSignIn` in `lib/nativeRules.ts`): always
+  on iOS, never on Android, on the web only with `VITE_APPLE_SIGN_IN=true` (off until the Firebase
+  provider exists). The native first-sign-in name comes from the plugin result, not the ID token,
+  and is sent as `fullName` to `/api/auth/register`.
+- **Android release signing** reads `MobileApp/android/key.properties` (absent → debug key);
+  `minifyEnabled true` for `mapping.txt`; the `build-android` job in `deploy-production.yml` runs
+  only by hand from a release tag in the `production` environment.
+
 ## Chat: editing, deleting and confirming a shared message (2026-11-05)
 
 The matter's discussion thread (#123) is labelled **Chat** in the Portal. Code names are

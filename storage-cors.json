@@ -5,6 +5,7 @@
       "http://localhost:5174",
       "http://localhost:3000",
       "https://localhost",
+      "capacitor://localhost",
       "https://legalterminus.com",
       "https://www.legalterminus.com",
       "https://portal.legalterminus.com",

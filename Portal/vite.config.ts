@@ -16,12 +16,21 @@ const appOnlyPages = () => ({
   },
 });
 
+// E29-S06: inside the apps the page is drawn under the status bar and home indicator
+// (`viewport-fit=cover`) and pads itself with the safe-area insets (index.css,
+// `html[data-native]`). Only the mobile build gets it, so the website is unchanged.
+const appViewport = () => ({
+  name: 'lt-app-viewport',
+  transformIndexHtml: (html: string) =>
+    html.replace('content="width=device-width, initial-scale=1.0"', 'content="width=device-width, initial-scale=1.0, viewport-fit=cover"'),
+});
+
 export default defineConfig(({ mode }) => ({
   // Firebase deployment: base should be '/portal/' so assets are at /portal/assets/...
   // Direct Cloud Run access: would need base='/' but we prioritize Firebase
   // `--mode mobile` (Capacitor app bundle) serves from the root. Web builds are unchanged.
   base: mode === 'mobile' ? '/' : '/portal/',
-  plugins: mode === 'mobile' ? [react(), appOnlyPages()] : [react()],
+  plugins: mode === 'mobile' ? [react(), appOnlyPages(), appViewport()] : [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

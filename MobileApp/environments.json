@@ -1,0 +1,49 @@
+{
+  "$comment": "The ONE place the mobile apps' target environment is described. Chosen at build time by LT_APP_ENV (default qa) -- see docs/mobile-release.md 'The environment switch'. Read by capacitor.config.ts, scripts/app-env.mjs (Portal .env.mobile.local + iOS Environment.xcconfig), scripts/check-bundle.mjs, scripts/app-links.mjs and android/app/build.gradle. Nothing here is a secret: the Firebase API key, app ids and sender id stay in the off-repo env file.",
+  "default": "qa",
+  "baseAppId": "com.legalterminus.app",
+  "environments": {
+    "qa": {
+      "appIdSuffix": ".qa",
+      "appName": "Legal Terminus QA",
+      "host": "legal-terminus-qa.web.app",
+      "web": {
+        "VITE_API_BASE_URL": "https://legal-terminus-qa.web.app",
+        "VITE_FIREBASE_AUTH_DOMAIN": "legal-terminus-qa.web.app",
+        "VITE_FIREBASE_PROJECT_ID": "legal-terminus-web",
+        "VITE_FIREBASE_STORAGE_BUCKET": "legal-terminus-web-qa",
+        "VITE_FIRESTORE_DATABASE_ID": "qa-data"
+      },
+      "forbidInBundle": ["legalterminus\\.com/api"]
+    },
+    "production": {
+      "appIdSuffix": "",
+      "appName": "Legal Terminus",
+      "host": "legalterminus.com",
+      "web": {
+        "VITE_API_BASE_URL": "https://legalterminus.com",
+        "VITE_FIREBASE_AUTH_DOMAIN": "legalterminus.com",
+        "VITE_FIREBASE_PROJECT_ID": "legal-terminus-web",
+        "VITE_FIREBASE_STORAGE_BUCKET": "legal-terminus-web.firebasestorage.app",
+        "VITE_FIRESTORE_DATABASE_ID": ""
+      },
+      "forbidInBundle": [
+        "qa-data",
+        "legal-terminus-qa",
+        "legal-terminus-web-qa",
+        "localhost:5001",
+        "@[\\w.-]+\\.test\\b",
+        "EMAIL_DISABLED"
+      ]
+    }
+  },
+  "appLinks": {
+    "$comment": "Universal Links / App Links. Filled by the owner once the Apple team and the signing keys exist (docs/mobile-release.md, owner checklist). Empty = scripts/app-links.mjs writes nothing, so no host claims the app by accident.",
+    "path": "/portal/account/action",
+    "appleTeamId": "",
+    "androidSha256": {
+      "qa": [],
+      "production": []
+    }
+  }
+}

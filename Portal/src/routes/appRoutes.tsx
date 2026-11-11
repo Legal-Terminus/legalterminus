@@ -4,7 +4,7 @@ import {
   LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck, IndianRupee, ShoppingBag, Sheet, TicketPercent,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
-import { ALL_ROLE_KEYS, COUPON_MANAGER_ROLES } from '../lib/roles';
+import { ALL_ROLE_KEYS, COUPON_MANAGER_ROLES, ACCOUNT_DELETION_ROLES } from '../lib/roles';
 
 // Pages are organised by FEATURE, never by role (role-neutral architecture).
 import DashboardPage from '../pages/dashboard/DashboardPage';
@@ -22,6 +22,7 @@ import Services from '../pages/services/ServicesPage';
 import ServiceDetail from '../pages/services/ServiceDetailPage';
 import WorkflowEditorPage from '../pages/workflow/WorkflowEditorPage';
 import ProfilePage from '../pages/profile/ProfilePage';
+import DeleteAccountPage from '../pages/account/DeleteAccountPage';
 import OrdersPage from '../pages/orders/OrdersPage';
 import EmailTemplatesPage from '../pages/settings/EmailTemplatesPage';
 import StatutoryCalendarPage from '../pages/settings/StatutoryCalendarPage';
@@ -156,6 +157,9 @@ export const APP_ROUTES: AppRoute[] = [
   // "My Orders" removed from the sidebar for now (all roles) — the route stays
   // reachable by URL so nothing 404s, but it no longer shows as a nav item.
   { path: '/orders',  element: <OrdersPage />,  roles: ALL_ROLE_KEYS },
+  // E29-S08: ask for your own account to be deleted. No nav entry (account menu and
+  // My Profile link to it); every role but admin.
+  { path: '/account/delete', element: <DeleteAccountPage />, roles: ACCOUNT_DELETION_ROLES },
   // Full notifications list (E07-S01) — reached from the topbar bell; no sidebar entry.
   { path: '/notifications', element: <NotificationsPage />, roles: ALL_ROLE_KEYS },
 

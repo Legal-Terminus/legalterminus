@@ -11,7 +11,13 @@
  *     including their preview channels;
  *   - localhost is allowed only outside production;
  *   - anything deployment-specific comes from CORS_ORIGINS (comma-separated,
- *     exact origins). The Android app's origin is added this way (deploy-qa.yml).
+ *     exact origins). The Android app's origin (`https://localhost`) and the iOS
+ *     app's (`capacitor://localhost`) are added this way (deploy-qa.yml).
+ *
+ * E29-S03: WKWebView cannot serve the app over https, so Capacitor's iOS origin
+ * is `capacitor://localhost`. The 2026-10 clean-up stopped accepting it (the old
+ * entry was an unanchored regex); it is accepted again as ONE exact string when
+ * listed — no port, no path, no other host, nothing else on that scheme.
  *
  * Ported by content from Ambyflow's config/corsOrigins.js (SEC F-21).
  */
@@ -20,8 +26,12 @@ const QA_HOSTING_SITE = "legal-terminus-qa";
 
 const escapeRegExp = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/** Exact origins only: scheme + host (+ port). Anything else is dropped. */
-const isExactOrigin = (value) => /^https?:\/\/[a-z0-9.-]+(:\d+)?$/i.test(value);
+/** The iOS app's origin: the one non-web form CORS_ORIGINS may carry. */
+export const IOS_APP_ORIGIN = "capacitor://localhost";
+
+/** Exact origins only: scheme + host (+ port), or the iOS app's. Anything else is dropped. */
+const isExactOrigin = (value) =>
+  value === IOS_APP_ORIGIN || /^https?:\/\/[a-z0-9.-]+(:\d+)?$/i.test(value);
 
 const firebaseHosts = (site) => new RegExp(
   `^https:\\/\\/${escapeRegExp(site)}(--[a-z0-9-]+)?\\.(web\\.app|firebaseapp\\.com)$`,

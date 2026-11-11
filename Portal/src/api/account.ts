@@ -25,3 +25,13 @@ export const requestSignInLink = (email: string) =>
  * not have to ask for the address again. Firebase's own recommendation.
  */
 export const EMAIL_FOR_SIGN_IN_KEY = 'emailForSignIn';
+
+/**
+ * E29-S08 — ask for the signed-in person's own account to be deleted. The server
+ * disables the sign-in at once; the caller signs out afterwards.
+ */
+export const requestAccountDeletion = (reason?: string) =>
+  apiFetch<{ success: boolean; message: string }>('/api/auth/me/deletion-request', {
+    method: 'POST',
+    body: JSON.stringify(reason?.trim() ? { reason: reason.trim() } : {}),
+  });
