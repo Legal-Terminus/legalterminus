@@ -392,3 +392,23 @@ layer(base);
     }
 }
 
+
+/* E29-S06 — the mobile apps' shell. `html[data-native]` is set by lib/native.ts inside
+   the Android and iPhone apps only, so none of this can reach the website. The safe-area
+   insets are the notch / Dynamic Island at the top and the home indicator at the bottom
+   (zero on phones without them, and on Android). */
+html[data-native] { overscroll-behavior-y: none; }
+html[data-native] .app-topbar {
+  padding-top: env(safe-area-inset-top);
+  height: calc(3.5rem + env(safe-area-inset-top));
+}
+html[data-native] .app-sidebar { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+html[data-native] .app-bottombar { padding-bottom: env(safe-area-inset-bottom); }
+@media (max-width: 767px) {
+  html[data-native] .app-main { padding-bottom: calc(4rem + env(safe-area-inset-bottom)); }
+}
+/* Pages outside the app layout (sign-in, account actions). */
+html[data-native] .app-safe-page {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}

@@ -31,7 +31,7 @@ export default function AppLayout() {
       {/* Sidebar — hidden on mobile unless open; collapsible to an icon rail on desktop. */}
       <div
         className={`
-          fixed inset-y-0 left-0 z-40 bg-white border-r border-hairline
+          app-sidebar fixed inset-y-0 left-0 z-40 bg-white border-r border-hairline
           transform transition-all duration-200 ease-out
           md:relative md:translate-x-0 md:flex md:flex-col md:shrink-0
           ${collapsed ? 'md:w-16' : 'md:w-64'} w-64
@@ -44,7 +44,7 @@ export default function AppLayout() {
       {/* Main */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <TopBar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
+        <main className="app-main flex-1 overflow-y-auto pb-16 md:pb-0">
           <Outlet />
         </main>
       </div>

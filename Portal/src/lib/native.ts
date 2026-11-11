@@ -1,27 +1,48 @@
 import { Capacitor } from '@capacitor/core';
+import { accountLinkPath } from './nativeRules';
+
+/** True inside the iPhone app. */
+export const isIosApp = (): boolean => Capacitor.getPlatform() === 'ios';
 
 /**
- * Behaviour that only exists inside the Android app. A no-op in the browser, so the
- * web build is unaffected.
+ * The website's address. In a browser that is this page's origin; inside the app the
+ * page runs at https://localhost (Android) or capacitor://localhost (iOS), so a link to
+ * a website page must name the environment's host instead (the build's API base URL —
+ * the API is served from the site's own host).
+ */
+export const siteOrigin = (): string =>
+  Capacitor.isNativePlatform() ? (import.meta.env.VITE_API_BASE_URL ?? '') : window.location.origin;
+
+/**
+ * Behaviour that only exists inside the Android and iPhone apps. A no-op in the browser,
+ * so the web build is unaffected.
  */
 export async function initNative(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
+  // E29-S06: CSS hooks for the app only (safe areas, overscroll) — `html[data-native]`.
+  // The web build never has the attribute, so the website's layout cannot change.
+  document.documentElement.dataset.native = Capacitor.getPlatform();
+  if (isIosApp()) {
+    // Dark text on the white top bar.
+    const { StatusBar, Style } = await import('@capacitor/status-bar');
+    await StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
+  }
   const { App } = await import('@capacitor/app');
   // Android's back button: go back through the app's history, and leave the app
-  // only from the first screen.
+  // only from the first screen. (iOS has none; every screen has its own Back control.)
   await App.addListener('backButton', ({ canGoBack }) => {
     if (canGoBack) window.history.back();
     else void App.exitApp();
   });
 
-  // Emailed account links (sign-in, password setup/reset) open the app, not the browser.
+  // Emailed account links (sign-in, password setup/reset) open the app, not the browser:
+  // Android App Links and iOS Universal Links both arrive as `appUrlOpen`.
   // Only that one path is routed; any other link the system hands over is ignored.
   const openAccountLink = async (raw: string) => {
-    let url: URL;
-    try { url = new URL(raw); } catch { return; }
-    if (!url.pathname.startsWith('/portal/account/action')) return;
+    const to = accountLinkPath(raw);
+    if (!to) return;
     const { router } = await import('../routes');
-    await router.navigate(url.pathname.replace(/^\/portal/, '') + url.search, { replace: true });
+    await router.navigate(to, { replace: true });
   };
   await App.addListener('appUrlOpen', ({ url }) => { void openAccountLink(url); });
   const launch = await App.getLaunchUrl();

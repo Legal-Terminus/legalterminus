@@ -7,6 +7,7 @@ import { useToast } from '../../components/common/toastContext';
 import { useAuthStore } from '../../store/authStore';
 import { getServiceCatalog } from '../../api/services';
 import { getWorkflowDefinitions } from '../../api/workflowDefinitions';
+import { siteOrigin } from '../../lib/native';
 import {
   getPricing, updatePricing, PRICING_QUERY_KEY,
   type PlanEdit, type PriceChoice, type PricePlan, type PriceProduct, type ProductEdit,
@@ -238,7 +239,7 @@ function ProductCard({ product, isOpen, onToggle, canEdit, services, opensMatter
               {product.pages.map((pg) => (
                 <li key={pg.path}>
                   <a
-                    href={`${window.location.origin}${pg.path}`}
+                    href={`${siteOrigin()}${pg.path}`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1.5 min-h-11 text-sm text-brand-600 hover:underline break-all"
