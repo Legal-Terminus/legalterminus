@@ -19,3 +19,10 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# E29-S09 (minify on for mapping.txt). Capacitor and its plugins ship their own keep rules
+# (consumerProguardFiles). Keep line numbers so Play's crash reports are readable with mapping.txt.
+-keepattributes SourceFile,LineNumberTable
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}

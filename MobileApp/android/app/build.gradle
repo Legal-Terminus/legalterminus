@@ -1,4 +1,29 @@
+import groovy.json.JsonSlurper
+
 apply plugin: 'com.android.application'
+
+// E29 — the environment switch (docs/mobile-release.md "The environment switch").
+// The environment is the one the web bundle was synced for (MobileApp/.app-env.json,
+// written by `npm run sync:android`), else -PappEnv / LT_APP_ENV, else qa. Asking for a
+// different one than was synced fails: the app's ids and its bundle must agree.
+def mobileDir = file('../..')
+def environments = new JsonSlurper().parse(new File(mobileDir, 'environments.json'))
+def stateFile = new File(mobileDir, '.app-env.json')
+def syncedEnv = stateFile.exists() ? new JsonSlurper().parse(stateFile).env : null
+def askedEnv = project.findProperty('appEnv') ?: System.getenv('LT_APP_ENV')
+if (askedEnv && syncedEnv && askedEnv != syncedEnv) {
+    throw new GradleException("The web bundle was synced for '${syncedEnv}', but this build asks for '${askedEnv}'. Run LT_APP_ENV=${askedEnv} npm run sync:android first.")
+}
+def appEnvName = syncedEnv ?: askedEnv ?: environments.default
+def appEnv = environments.environments[appEnvName]
+if (appEnv == null) throw new GradleException("Unknown app environment '${appEnvName}'")
+logger.lifecycle("Legal Terminus app environment: ${appEnvName} (${environments.baseAppId}${appEnv.appIdSuffix}, ${appEnv.host})")
+
+// E29-S09: release signing from key.properties (written by the CI job from secrets, or on
+// the release Mac). Absent, a local release build falls back to the debug key.
+def keyProps = new Properties()
+def keyPropsFile = rootProject.file('key.properties')
+if (keyPropsFile.exists()) keyPropsFile.withInputStream { keyProps.load(it) }
 
 android {
     namespace = "com.legalterminus.app"
@@ -9,8 +34,12 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 3
         versionName "1.0.0"
-        // Host of the emailed account links (see AndroidManifest.xml). Production unless a QA build asks.
-        manifestPlaceholders = [linkHost: project.findProperty('linkHost') ?: 'legalterminus.com']
+        // QA installs next to production as its own app: "Legal Terminus QA", com.legalterminus.app.qa.
+        applicationIdSuffix appEnv.appIdSuffix
+        resValue "string", "app_name", appEnv.appName
+        resValue "string", "title_activity_main", appEnv.appName
+        // Host of the emailed account links (see AndroidManifest.xml): the environment's own.
+        manifestPlaceholders = [linkHost: appEnv.host]
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -18,10 +47,23 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (keyPropsFile.exists()) {
+                storeFile file(keyProps['storeFile'])
+                storePassword keyProps['storePassword']
+                keyAlias keyProps['keyAlias']
+                keyPassword keyProps['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig keyPropsFile.exists() ? signingConfigs.release : signingConfigs.debug
+            // E29-S09: shrink so a mapping.txt exists for Play's crash reports. Capacitor and
+            // its plugins ship their own keep rules; proguard-rules.pro adds the bridge's.
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }

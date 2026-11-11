@@ -1,0 +1,11 @@
+// E29: settings that are the same for every environment and configuration.
+// Version name and build number: one pair for both platforms per release (docs/mobile-release.md);
+// set them here (or in Xcode → General) before Archive.
+MARKETING_VERSION = 1.0.0
+CURRENT_PROJECT_VERSION = 1
+// iPhone only for the first release (D4).
+TARGETED_DEVICE_FAMILY = 1
+CODE_SIGN_ENTITLEMENTS = App/App.entitlements
+// The firm's Apple team. OWNER: set it here once the Apple Developer account exists
+// (Membership → Team ID, 10 characters), or pick the team in Xcode → Signing & Capabilities.
+// DEVELOPMENT_TEAM = XXXXXXXXXX

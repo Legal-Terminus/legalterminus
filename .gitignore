@@ -65,3 +65,24 @@ MobileApp/android/app/src/main/assets/public/
 
 # Firebase config for the Android app: downloaded per environment, never committed
 MobileApp/android/app/google-services.json
+
+# E29: the environment switch's outputs (MobileApp/scripts/app-env.mjs) — per build, never committed
+MobileApp/.app-env.json
+MobileApp/ios/App/Config/Environment.xcconfig
+
+# E29-S02: the iOS app. Generated or secret; everything else under MobileApp/ios is committed.
+MobileApp/ios/App/Pods/
+MobileApp/ios/App/build/
+MobileApp/ios/App/App/public/
+MobileApp/ios/App/App/capacitor.config.json
+MobileApp/ios/App/App/config.xml
+MobileApp/ios/**/xcuserdata/
+MobileApp/ios/**/GoogleService-Info*.plist
+MobileApp/ios/DerivedData/
+# Signing material, both platforms (MobileApp/ios/ExportOptions.plist is NOT secret and is kept)
+*.mobileprovision
+*.p8
+*.p12
+*.jks
+*.keystore
+key.properties
