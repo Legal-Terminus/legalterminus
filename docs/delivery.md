@@ -66,6 +66,10 @@ Anything a release needs in the live database — a seed, an index, a new settin
 is done before or with the release and listed in its notes. QA has its own
 database, so data set up on QA is **not** in production.
 
+**The mobile apps** are released from a production tag too, by a different procedure:
+Android by the "Deploy to Production" run with `build_android`, iOS from Xcode. Both are QA
+builds unless asked for production. See `docs/mobile-release.md`.
+
 ## What QA is
 
 A second deployment inside the live project, with its own database and files but

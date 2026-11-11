@@ -1,3 +1,9 @@
+> **History (2026-11-11).** This was the plan for the first Android release (builds 1–3). The
+> current procedure for both apps is `docs/mobile-release.md`: Android is built by the
+> `build-android` job in `deploy-production.yml`, iOS from Xcode, and every build is QA
+> (`com.legalterminus.app.qa`, "Legal Terminus QA") unless `LT_APP_ENV=production` is given. Step 16's
+> hand build in a clean checkout is replaced by the job; the rest is kept as the record.
+
 # Android app: release plan (Google Play)
 
 Status 2026-11-03: **nothing on production has been changed.** Builds so far:
