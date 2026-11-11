@@ -58,11 +58,11 @@ export function TermsAgreement({ checked, onChange }: { checked: boolean; onChan
   );
 }
 
-/** The line beside "Continue with Google": choosing Google is the agreement. */
-export function GoogleTermsNote() {
+/** The line beside "Continue with Google": choosing Google (or Apple, E29-S11) is the agreement. */
+export function GoogleTermsNote({ withApple = false }: { withApple?: boolean }) {
   return (
     <p className="mt-2 text-center text-xs text-ink-muted">
-      By continuing with Google you agree to our <PolicyLinks />.
+      By continuing with {withApple ? 'Google or Apple' : 'Google'} you agree to our <PolicyLinks />.
     </p>
   );
 }
