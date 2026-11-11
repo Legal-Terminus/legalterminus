@@ -3,7 +3,10 @@ import { buildSignInProfile } from "../services/signInProfile.js";
 import admin from "firebase-admin";
 import { verifyToken, requireRole } from "../middleware/auth.middleware.js";
 import { getDb } from "../config/firebase.js";
-import { VALID_ROLES, canAssignRole } from "../config/roles.js";
+import { VALID_ROLES, canAssignRole, ACCOUNT_DELETION_ROLES } from "../config/roles.js";
+import { validate } from "../middleware/validate.middleware.js";
+import { deletionRequestSchema } from "../schemas/accountDeletion.schema.js";
+import { requestDeletion } from "../services/accountDeletion.service.js";
 import { logger } from "../config/logger.js";
 import {
   upsertUser,
@@ -225,6 +228,40 @@ router.get("/me/orders", verifyToken, async (req, res) => {
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
+
+/**
+ * POST /api/auth/me/deletion-request — E29-S08.
+ * The signed-in person asks for THEIR OWN account to be deleted (App Store 5.1.1(v)).
+ * The account is the token's (req.user.uid), never a body field. Every role but admin
+ * (ACCOUNT_DELETION_ROLES). Under /api/auth, so the strict rate limiter applies.
+ * Effect: profile marked, sign-in disabled, admins emailed once; an Admin completes the
+ * deletion from Users. 202 every time, including a repeat (idempotent).
+ * Body: { reason?: string (≤500) }
+ */
+router.post(
+  "/me/deletion-request",
+  verifyToken,
+  requireRole(ACCOUNT_DELETION_ROLES),
+  validate(deletionRequestSchema),
+  async (req, res) => {
+    try {
+      await requestDeletion({
+        db: getDb(),
+        auth: admin.auth(),
+        uid: req.user.uid,
+        reason: req.body.reason,
+        log: req.log ?? logger,
+      });
+      res.status(202).json({
+        success: true,
+        message: "Your deletion request was received. The firm will delete your account within 30 days.",
+      });
+    } catch (error) {
+      (req.log ?? logger).error({ err: error }, "[ACCOUNT_DELETION_REQUEST_ERROR]");
+      res.status(500).json({ success: false, error: "Internal server error" });
+    }
+  },
+);
 
 /**
  * PATCH /api/auth/set-role

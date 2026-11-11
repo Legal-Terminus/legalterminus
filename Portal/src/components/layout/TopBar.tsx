@@ -3,7 +3,9 @@ import { useAuthStore } from '../../store/authStore';
 import NotificationBell from '../notifications/NotificationBell';
 import { auth } from '../../lib/firebase';
 import { signOut as firebaseSignOut } from 'firebase/auth';
-import { Menu, LogOut, ChevronDown } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Menu, LogOut, ChevronDown, Trash2 } from 'lucide-react';
+import { ACCOUNT_DELETION_ROLES, can } from '../../lib/roles';
 import { LTMark } from '../common/LTLogo';
 
 interface Props {
@@ -11,7 +13,7 @@ interface Props {
 }
 
 export default function TopBar({ onMenuClick }: Props) {
-  const { user, signOut } = useAuthStore();
+  const { user, signOut, role } = useAuthStore();
   const [showMenu, setShowMenu] = useState(false);
 
   const handleSignOut = async () => {
@@ -27,7 +29,7 @@ export default function TopBar({ onMenuClick }: Props) {
     .toUpperCase();
 
   return (
-    <header className="h-14 bg-white border-b border-hairline flex items-center justify-between px-4 shrink-0">
+    <header className="app-topbar h-14 bg-white border-b border-hairline flex items-center justify-between px-4 shrink-0">
       {/* Left: hamburger + brand lockup — mobile only (desktop has the sidebar) */}
       <div className="flex items-center gap-2 md:hidden">
         <button
@@ -77,6 +79,17 @@ export default function TopBar({ onMenuClick }: Props) {
                   </p>
                   <p className="text-xs text-ink-muted truncate">{user?.email}</p>
                 </div>
+                {/* E29-S08: hidden for admin (an admin is deleted by another admin, in Users). */}
+                {can(role, ACCOUNT_DELETION_ROLES) && (
+                  <Link
+                    to="/account/delete"
+                    onClick={() => setShowMenu(false)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 min-h-11 text-sm font-medium text-ink-soft hover:bg-surface-soft transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete my account
+                  </Link>
+                )}
                 <button
                   onClick={handleSignOut}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"

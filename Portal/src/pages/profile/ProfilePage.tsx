@@ -3,7 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '../../components/common/PageShell';
 import { getMe, updateMe, type ProfileUpdate } from '../../api/profile';
 import { displayName } from '../../api/users';
-import { roleLabel, roleBadgeClass } from '../../lib/roles';
+import { roleLabel, roleBadgeClass, ACCOUNT_DELETION_ROLES, can } from '../../lib/roles';
+import { Link } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 import { User, Mail, Phone, MapPin, Building2, Pencil, Save, X, AlertCircle } from 'lucide-react';
 
 function initials(name?: string) {
@@ -14,6 +16,7 @@ function initials(name?: string) {
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
+  const role = useAuthStore((s) => s.role);
   const { data, isLoading, error } = useQuery({ queryKey: ['me'], queryFn: getMe });
   const user = data?.user;
 
@@ -167,6 +170,13 @@ export default function ProfilePage() {
             </button>
           </div>
         </form>
+      )}
+      {/* E29-S08: where store reviewers (and people) look for account deletion. */}
+      {can(role, ACCOUNT_DELETION_ROLES) && (
+        <p className="mt-6 text-sm text-ink-muted">
+          Want to leave?{' '}
+          <Link to="/account/delete" className="font-medium text-red-600 hover:underline">Delete my account</Link>
+        </p>
       )}
     </PageShell>
   );

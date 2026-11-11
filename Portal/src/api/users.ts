@@ -13,6 +13,8 @@ export interface PortalUser {
   email: string;
   phone?: string;
   role: Role;
+  /** E29-S08: set when the person asked for their account to be deleted. */
+  deletionRequestedAt?: string | null;
   createdAt: string;
   // team-member / staff fields
   designation?: string;

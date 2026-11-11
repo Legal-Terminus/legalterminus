@@ -26,6 +26,10 @@ export const STAFF_ROLES = ROLES.filter((r) => r.staff).map((r) => r.key);
 // Permission groups (referenced by route guards / controllers).
 export const USER_MANAGER_ROLES = ['admin', 'manager']; // create/edit users
 export const USER_DELETE_ROLES = ['admin'];             // delete users
+// E29-S08: who may ask, from the app or the website, for their OWN account to be deleted.
+// Everyone but an admin: an admin is deleted through Users by another admin, so a lone
+// admin can never lock the firm out of its own portal.
+export const ACCOUNT_DELETION_ROLES = VALID_ROLES.filter((r) => r !== 'admin');
 export const ROLE_CHANGE_ROLES = ['admin'];             // change a user's role
 // #256: create, edit, switch on/off coupon codes and read the coupon report —
 // the same people who set website prices (#241).

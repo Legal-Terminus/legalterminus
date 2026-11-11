@@ -31,7 +31,9 @@ import {
 } from 'lucide-react';
 
 // Filter tabs derive from the role service — adding a role adds a tab automatically.
-type RoleFilter = 'all' | Role;
+// E29-S08: plus "Deletion requested", shown only while someone is waiting (colour marks the exception).
+type RoleFilter = 'all' | Role | typeof DELETION_TAB;
+const DELETION_TAB = 'deletion_requested' as const;
 const ROLE_TABS: { value: RoleFilter; label: string }[] = [
   { value: 'all', label: 'All' },
   ...ROLES.map((r) => ({ value: r.key as RoleFilter, label: r.pluralLabel })),
@@ -105,6 +107,16 @@ export default function UsersPage() {
     return c;
   }, [users]);
   const countFor = (value: RoleFilter) => (value === 'all' ? users.length : counts[value] ?? 0);
+  const deletionCount = useMemo(() => users.filter((u) => u.deletionRequestedAt).length, [users]);
+  const tabs = deletionCount > 0
+    ? [...ROLE_TABS, { value: DELETION_TAB as RoleFilter, label: 'Deletion requested' }]
+    : ROLE_TABS;
+  const tabCount = (value: RoleFilter) => (value === DELETION_TAB ? deletionCount : countFor(value));
+  // The deletion tab filters the rows themselves; the role tabs filter the role column.
+  const listed = useMemo(
+    () => (roleFilter === DELETION_TAB ? users.filter((u) => u.deletionRequestedAt) : users),
+    [users, roleFilter],
+  );
 
   // The user we're offboarding via the reassign-then-delete flow (E09-S04).
   const [reassignFor, setReassignFor] = useState<PortalUser | null>(null);
@@ -147,7 +159,7 @@ export default function UsersPage() {
 
   // Role tab → column filter on `role`.
   const columnFilters: ColumnFiltersState = useMemo(
-    () => (roleFilter === 'all' ? [] : [{ id: 'role', value: roleFilter }]),
+    () => (roleFilter === 'all' || roleFilter === DELETION_TAB ? [] : [{ id: 'role', value: roleFilter }]),
     [roleFilter],
   );
 
@@ -177,6 +189,7 @@ export default function UsersPage() {
         return (
           <>
             <span className={`badge ${roleBadgeClass(user.role)}`}>{roleLabel(user.role)}</span>
+            {user.deletionRequestedAt && <DeletionBadge />}
             {user.designation && (
               <p className="text-xs text-ink-faint flex items-center gap-1 mt-1.5">
                 <Briefcase className="w-3 h-3" />{user.designation}
@@ -256,7 +269,7 @@ export default function UsersPage() {
   ], [canDelete, deleteUserMutation.isPending]);
 
   const table = useReactTable({
-    data: users,
+    data: listed,
     columns,
     state: { sorting, globalFilter: search, columnFilters },
     onSortingChange: setSorting,
@@ -304,14 +317,14 @@ export default function UsersPage() {
       <div className="relative mb-4">
       <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none pb-0.5">
         <div className="nav-pill-container shrink-0">
-          {ROLE_TABS.map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setRoleFilter(tab.value)}
               className={roleFilter === tab.value ? 'nav-pill-active' : 'nav-pill'}
             >
               {tab.label}
-              <span className="ml-1.5 text-[10px] opacity-60">{countFor(tab.value)}</span>
+              <span className="ml-1.5 text-[10px] opacity-60">{tabCount(tab.value)}</span>
             </button>
           ))}
         </div>
@@ -425,7 +438,10 @@ export default function UsersPage() {
                         )}
                       </div>
                     </div>
-                    <span className={`badge shrink-0 ${roleBadgeClass(user.role)}`}>{roleLabel(user.role)}</span>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span className={`badge ${roleBadgeClass(user.role)}`}>{roleLabel(user.role)}</span>
+                      {user.deletionRequestedAt && <DeletionBadge />}
+                    </div>
                   </div>
                   <div className="mt-3 space-y-1.5">
                     <p className="text-xs text-ink-muted flex items-center gap-2">
@@ -493,6 +509,15 @@ export default function UsersPage() {
         />
       )}
     </PageShell>
+  );
+}
+
+/** E29-S08: the person asked for their account to be deleted; Delete completes it. */
+function DeletionBadge() {
+  return (
+    <span className="badge badge-amber ml-1.5" title="This person asked for their account to be deleted. Delete the user to complete it.">
+      Deletion requested
+    </span>
   );
 }
 
