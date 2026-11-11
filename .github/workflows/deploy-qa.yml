@@ -109,7 +109,7 @@ jobs:
           changed () { ! git diff --quiet "$BASE" HEAD -- "$@"; }
           if changed backend/ shared/ Dockerfile package.json .github/workflows/deploy-qa.yml; then be=true; else be=false; fi
           if changed Portal/ shared/ Portal.Dockerfile firebase.qa.json package.json .github/workflows/deploy-qa.yml; then po=true; else po=false; fi
-          if changed Frontend/ firebase.qa.json .github/workflows/deploy-qa.yml; then fe=true; else fe=false; fi
+          if changed Frontend/ firebase.qa.json MobileApp/environments.json MobileApp/scripts/app-links.mjs .github/workflows/deploy-qa.yml; then fe=true; else fe=false; fi
           echo "backend=$be"  >> "$GITHUB_OUTPUT"
           echo "portal=$po"   >> "$GITHUB_OUTPUT"
           echo "frontend=$fe" >> "$GITHUB_OUTPUT"
@@ -313,6 +313,14 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_QA_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_QA_MEASUREMENT_ID }}
           VITE_API_BASE_URL: ${{ env.QA_SITE_URL }}
+
+      # E29-S07: the QA site's /.well-known files name the QA apps (com.legalterminus.app.qa),
+      # from MobileApp/environments.json → appLinks. Writes nothing until the owner has filled
+      # in the Apple team id / signing fingerprints there. QA only: production's files wait
+      # for the app's launch approval (2026-11-03).
+      - name: App-link files for the QA apps
+        if: steps.changes.outputs.frontend == 'true'
+        run: node MobileApp/scripts/app-links.mjs qa Frontend/dist
 
       - name: 🔥 Install Firebase CLI
         if: steps.changes.outputs.frontend == 'true'
