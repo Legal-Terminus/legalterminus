@@ -26,3 +26,6 @@
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
 }
+# @capacitor-firebase/authentication compiles a Facebook handler that this app never links
+# (no Facebook SDK). R8 must not fail on its missing classes.
+-dontwarn com.facebook.**
