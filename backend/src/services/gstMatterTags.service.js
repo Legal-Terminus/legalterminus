@@ -19,7 +19,7 @@ import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { SHEETS } from '../config/worksheetDefinitions.js';
 import { resolveSheet } from './worksheetEngine.service.js';
-import { gstMatterTags, isGstReturnMatter, frequencyOf, filedOnBounds, withAuthoredOrder } from './gstReturnSheet.service.js';
+import { gstMatterTags, isGstReturnMatter, frequencyOf, filedOnBounds, withAuthoredOrder, gstFirstEmail } from './gstReturnSheet.service.js';
 import { GST_SERVICE_KEYS } from '../../../shared/workflows/gstReturns.js';
 
 const BOOK = 'gst_return';
@@ -118,4 +118,9 @@ export async function annotateGstMatter(full, { definitionSteps = null } = {}) {
 export async function gstFrequencyOf(task) {
   const clients = needsClient(task) ? await readClients([task.clientUid]) : new Map();
   return frequencyOf(task, clients.get(task.clientUid) ?? null);
+}
+
+/** #219: the GST first email for a newly created matter, or null (see `gstFirstEmail`). */
+export async function gstFirstEmailFor(task, client) {
+  return gstFirstEmail({ task, client, linkedServices: await gstReturnServiceKeys() });
 }

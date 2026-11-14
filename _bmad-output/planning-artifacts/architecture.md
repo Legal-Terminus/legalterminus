@@ -2391,6 +2391,17 @@ modifiers: one consumer, and a second question would need its own UI anyway.
   Statutory Calendar). Sent with `keepSubject`, so the subject is exactly
   "<Company> - GST Return - <period>", still threaded with the matter. Extra
   client email addresses are copied.
+- **A GST return matter opened by hand, or copied (2026-11-14, firm's comment of
+  11 Nov):** `createTask`'s first client email is the same GST email —
+  `gstFirstEmail` (`gstReturnSheet.service.js`): when `isGstReturnMatter` (sweep
+  period, or a service linked to the GST Return Filing sheet), the template for
+  `frequencyOf`, the period from `periodObjectOf` (the Return Period / Filing
+  Month rule), the company from `companyNameOf` with the MATTER's organisation
+  first; rendered with `emailVars` and sent with `keepSubject`. It replaces the
+  `matter_created` email (one first email); if the template cannot render, the
+  `matter_created` email goes as before. The sweep still sets
+  `suppressCreatedEmail` and sends its own, so its matters get exactly one.
+  Covers duplicates and recurring copies, which go through `createTask`.
 - **Uploads:** the document allow-list adds `text/csv`, `application/json`,
   `text/plain`, `application/zip` (.csv .json .txt .zip). The Portal types these
   four by extension, because Windows reports a .csv as Excel and a .zip as

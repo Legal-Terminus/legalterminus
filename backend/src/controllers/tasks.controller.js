@@ -24,7 +24,8 @@ import { isPaymentLedgerEvent } from '../../../shared/payments/ledgerEvents.js';
 
 // #148: the roles that may see a matter's payment figures.
 const PAYMENT_VIEW_ROLES = ['admin', 'manager'];
-import { annotateGstMatter, attachGstFilingPeriods } from '../services/gstMatterTags.service.js';
+import { annotateGstMatter, attachGstFilingPeriods, gstFirstEmailFor } from '../services/gstMatterTags.service.js';
+import { emailVars as gstEmailVars } from '../services/gstReturns.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
 // Add `days` (may be fractional) to an ISO instant, returning an ISO string.
@@ -910,7 +911,13 @@ export async function createTask(req, res) {
     try {
       const clientEmail = c.email || (Array.isArray(c.emailIds) ? c.emailIds[0] : null);
       if (clientEmail && !req.suppressCreatedEmail) {
-        const rendered = await renderTemplate('matter_created', {
+        // #219 (firm, 11 Nov): a GST return matter opened by hand (or copied) sends
+        // the GST data-request email as its FIRST email — "<Company> - GST Return -
+        // <period>", subject kept exactly, still threaded — instead of "matter
+        // created". One email either way; the sweep's matters never reach here.
+        const gst = await gstFirstEmailFor({ id: ref.id, ...task }, c);
+        const gstRendered = gst ? await renderTemplate(gst.templateKey, await gstEmailVars(gst.client, gst.period)) : null;
+        const rendered = gstRendered ?? await renderTemplate('matter_created', {
           clientName, organisation: task.organisation ?? '', serviceName: task.serviceName,
           portalUrl: `${publicSiteUrl()}/portal/`,
         });
@@ -920,6 +927,7 @@ export async function createTask(req, res) {
             cc: task.ccEmails, // #149: additional recipients for this matter
             subject: rendered.subject, body: rendered.body,
             taskId: ref.id, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
+            keepSubject: !!gstRendered,
           });
         }
       }

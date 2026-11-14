@@ -27,7 +27,7 @@
  * when the WORKFLOW's value changes — so a person's correction stays until the
  * workflow moves on, and a workflow update always shows.
  */
-import { duePeriod, indiaDate, GST_SERVICE_KEYS } from '../../../shared/workflows/gstReturns.js';
+import { duePeriod, indiaDate, companyNameOf, GST_SERVICE_KEYS, GST_TEMPLATE_KEYS } from '../../../shared/workflows/gstReturns.js';
 
 /** The client profile's entity types (clientProfile.service.js) as the firm's Constitution choices. */
 const CONSTITUTION = {
@@ -134,10 +134,38 @@ export function frequencyOf(task, client) {
  * the sweep uses — a matter opened on 15 Nov is October's (or Q2's).
  */
 export function periodOf(task, frequency) {
-  if (task?.filingPeriod?.title) return task.filingPeriod.title;
+  return periodObjectOf(task, frequency)?.title ?? null;
+}
+
+/**
+ * The whole period object ({ frequency, key, month, title, label } — `duePeriod`'s
+ * shape): the sweep's `filingPeriod`, else the period that had ended when the
+ * matter was opened. The one rule behind the Return Period, the Filing Month tag,
+ * the correction bounds and the first email's subject.
+ */
+export function periodObjectOf(task, frequency) {
+  if (task?.filingPeriod?.title) return { frequency, ...task.filingPeriod };
   const at = task?.createdAt ? new Date(task.createdAt) : null;
   if (!at || Number.isNaN(at.getTime())) return null;
-  return duePeriod(frequency, indiaDate(at))?.title ?? null;
+  return duePeriod(frequency, indiaDate(at));
+}
+
+/**
+ * #219 (firm, 11 Nov) — the FIRST email of a GST return matter opened by hand
+ * (or as a copy) is the GST data-request email, with the subject
+ * "<Company Name> - GST Return - <period>", exactly as the sweep sends it.
+ * Returns null for any other matter (it keeps the "matter created" email), or
+ * { templateKey, period, client } — `client` with the matter's organisation
+ * first, so `companyNameOf` (the sweep's rule) names the company the matter is for.
+ */
+export function gstFirstEmail({ task, client, linkedServices = [] }) {
+  if (!isGstReturnMatter(task, linkedServices)) return null;
+  const frequency = frequencyOf(task, client);
+  const period = periodObjectOf(task, frequency);
+  if (!period) return null;
+  const forName = { ...(client ?? {}), organisation: task.organisation || client?.organisation || '' };
+  if (!companyNameOf(forName)) return null;
+  return { templateKey: GST_TEMPLATE_KEYS[period.frequency] ?? GST_TEMPLATE_KEYS[frequency], period, client: forName };
 }
 
 const STATUS_TEXT = {
@@ -263,10 +291,8 @@ const pad2 = (n) => String(n).padStart(2, '0');
 
 /** Last month of the matter's GST period, 'YYYY-MM' (the sweep's, else the period that had ended when it was opened). */
 export function periodEndMonthOf(task, frequency) {
-  if (/^\d{4}-\d{2}$/.test(task?.filingPeriod?.month ?? '')) return task.filingPeriod.month;
-  const at = task?.createdAt ? new Date(task.createdAt) : null;
-  if (!at || Number.isNaN(at.getTime())) return null;
-  return duePeriod(frequency, indiaDate(at))?.month ?? null;
+  const m = periodObjectOf(task, frequency)?.month;
+  return /^\d{4}-\d{2}$/.test(m ?? '') ? m : null;
 }
 
 /**

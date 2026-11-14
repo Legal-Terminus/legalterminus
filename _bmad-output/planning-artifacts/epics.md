@@ -7816,3 +7816,20 @@ The firm reported (11 Nov) a GSTR-1 filing date (11 Nov 2026) under "Date of GST
 - Tests: `gstReturnSheet.test.js` +2 (forms named; dates in their own columns with mixed names
   and out-of-order step numbers).
 
+### GST return matter opened by hand: first email subject "Company - GST Return - period" (2026-11-14, #219)
+
+The firm asked (11 Nov) that the FIRST email of a GST Return Filing matter be "<Company Name> - GST
+Return - <Month Year>" ("ABC PRIVATE LIMITED - GST Return - September 2026"; quarterly "… - Q2
+2026-27"). Matters opened by the GST reminders already did. A GST matter opened by hand — or a
+duplicate or recurring copy — sent the generic "matter created" email with the subject
+"[Legal Terminus] Org | Service (#id)".
+- **Decision:** such a matter now sends the monthly / quarterly GST email (the firm's data-request
+  text, editable under Email Templates) as its first email, instead of "matter created" — so a
+  hand-opened GST matter behaves like one the reminders opened. Subject sent exactly as the template
+  says, still threaded with the matter. One email, never two. The period and company are worked out
+  by the same rules as the Filing Month tag and the sweep (the matter's organisation first).
+- Note: the firm's quarterly example reads "Q1 2026-27"; the label is the quarter the return is FOR
+  (Q1 = April–June), as the reminders already use.
+- Tests: `backend/src/__tests__/gstFirstEmail.test.js` (4: monthly by hand, quarterly and a copy,
+  another service unchanged, the sweep still suppresses and sends one). Not verified by sending.
+
