@@ -19,6 +19,7 @@ import { deriveProfile } from '../services/clientProfile.service.js';
 import { deriveRollup, sumLedger, openingBalanceRow, creationPaymentRow } from '../services/paymentLedger.service.js';
 import { getOverrides, makeStatutoryResolver } from '../services/statutoryCalendar.service.js';
 import { clientDisplayName } from '../services/clientName.service.js';
+import { logValue } from '../utils/sanitize.js';
 import { announceStepAssignment } from '../services/stepAssignmentNotice.service.js';
 import { isPaymentLedgerEvent } from '../../../shared/payments/ledgerEvents.js';
 
@@ -3298,11 +3299,11 @@ export async function deleteTask(req, res) {
       filesDeleted = files.length;
       await Promise.all(files.map((f) => f.delete().catch(() => {})));
     } catch (e) {
-      logger.warn({ err: e?.message }, `[deleteTask] storage cleanup failed for ${taskId}`);
+      logger.warn({ err: e?.message, taskId: logValue(taskId) }, '[deleteTask] storage cleanup failed');
     }
 
     await taskRef.delete();
-    logger.info(`[deleteTask] Matter ${taskId} deleted (steps=${counts.steps}, events=${counts.events}, documents=${counts.documents}, notifications=${counts.notifications}, files=${filesDeleted})`);
+    logger.info({ taskId: logValue(taskId), ...counts, files: filesDeleted }, '[deleteTask] matter deleted');
     res.status(200).json({
       id: taskId, deleted: true,
       stepsDeleted: counts.steps, eventsDeleted: counts.events,
