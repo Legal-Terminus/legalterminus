@@ -7664,3 +7664,28 @@ service page. Design in architecture.md, "Website orders and payments" → "Cart
   `Frontend/tests/e2e/cart.spec.js` (+/−, caps, 360px). Playwright not run by the author.
 - Open: Buy Now on a service page still buys one; quantities are set in the cart. A refund
   is still for the whole order.
+
+### Convenience fee on online payments: Razorpay Customer Fee Bearer (2026-11-14, #276) 🔄 In review — waits on Razorpay
+
+The firm chose Option 1 (2026-11-12): Razorpay itself works out the convenience fee for the
+payment method the client picks and adds it at checkout, for website orders (cart included)
+and Pay Now / payment requests. Shown to the client only at checkout. Design in
+architecture.md, "Website orders and payments" → "Convenience fee".
+- We never add a fee: our totals and the Razorpay order stay price + GST.
+- A payment settles when its verified amount is the amount due, or the amount due + the fee
+  Razorpay reports for that payment (read from Razorpay's API or the signed webhook, never
+  from the browser; at most 10% of the order, or ₹25 on a small one). Anything else is held
+  for review, as before.
+- The fee is recorded on the order (`convenienceFee`, `convenienceFeeTax`, `gatewayAmount`)
+  and shown to staff under Website Orders as "Convenience fee (paid by client)". The matter
+  is credited the amount due only; client receipts, order history and emails do not show it.
+- **Owner action:** ask Razorpay to enable Customer Fee Bearer on the TEST account (QA) and
+  the LIVE account. Until then nothing changes.
+- Tests: `backend/src/__tests__/convenienceFee.test.js`; Playwright (not run by the author):
+  `Portal/e2e/orders.spec.ts` "#276", `Portal/e2e/pay-now.spec.ts` two "#276" tests, using
+  the simulator's `success_fee` / `fee_webhook` / `fee_mismatch`.
+- Open: Razorpay's docs do not say in so many words that the payment `amount` is order + fee
+  under Customer Fee Bearer, nor whether `fee` is present while a payment is only
+  `authorized` (handled: such a return waits for the webhook). Confirm on the TEST account
+  before LIVE. A full refund in Razorpay also returns the fee; our refund record stays the
+  order's amount.

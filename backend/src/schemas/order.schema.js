@@ -116,5 +116,9 @@ export const simulateSchema = z.object({
     'failed_webhook',     // declined; told by webhook
     'discard',            // removes the test order itself, so a test run leaves nothing behind
     'refund',             // refunds a paid order; told by webhook
+    // #276: a Customer Fee Bearer account — the customer pays the order + the gateway's fee.
+    'success_fee',        // pays order + fee; returns the signed result (the return reads the fee back)
+    'fee_webhook',        // pays order + fee; told by webhook carrying the fee
+    'fee_mismatch',       // pays order + fee + ₹1 with the fee reported; told by webhook → review
   ]),
 }).strict();

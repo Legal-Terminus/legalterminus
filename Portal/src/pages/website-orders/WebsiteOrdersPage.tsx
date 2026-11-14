@@ -206,6 +206,11 @@ function OrderDetails({ o, canManage, onChanged }: { o: WebsiteOrder; canManage:
     ] as [string, string][]) : []),
     ...(paidSomething ? ([
       ['Amount received', o.amountPaid != null ? inr(o.amountPaid) : '—'],
+      // #276: Razorpay's convenience fee, paid by the client on top — never on their receipt.
+      ...(o.convenienceFee ? ([
+        ['Convenience fee (paid by client)', `${inr(o.convenienceFee)}${o.convenienceFeeTax ? ` (incl. ${inr(o.convenienceFeeTax)} GST)` : ''}`],
+        ['Client paid in all', inr(o.gatewayAmount ?? (o.amountPaid ?? o.amount) + o.convenienceFee)],
+      ] as [string, string][]) : []),
       ['Paid', when(o.paidAt)],
       ['Paid by', o.method ? (METHOD[o.method] ?? o.method) : '—'],
       ['Payment reference', o.gatewayPaymentId],

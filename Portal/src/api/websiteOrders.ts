@@ -79,6 +79,15 @@ export interface WebsiteOrder {
   basePrice?: number;
   surcharge?: number;
   amountPaid?: number;
+  /**
+   * #276 — Razorpay Customer Fee Bearer: the convenience fee the CLIENT paid on
+   * top of the order (Razorpay's fee for the method they chose, GST included),
+   * its GST, and what left their account (amount + fee). Staff only; absent
+   * when no fee was paid. `amountPaid` stays the order's own amount.
+   */
+  convenienceFee?: number;
+  convenienceFeeTax?: number | null;
+  gatewayAmount?: number;
   gateway: string;
   gatewayOrderId?: string;
   gatewayPaymentId?: string | null;

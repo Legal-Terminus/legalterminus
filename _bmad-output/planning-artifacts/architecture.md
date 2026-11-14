@@ -1981,6 +1981,60 @@ modifiers: one consumer, and a second question would need its own UI anyway.
   `production` environment; webhook `https://legalterminus.com/api/orders/webhook`).
 - The legacy PayU routes under `/api/payment` are still present and unused;
   E24-S06 removes them.
+- **Convenience fee: Razorpay "Customer Fee Bearer" (#276, chosen by the firm
+  2026-11-12, Option 1).** For every online payment — website orders (single
+  plan and cart) and Pay Now / payment requests from the portal — Razorpay
+  itself works out its fee for the payment method the client picks, shows it
+  on its own checkout and adds it to what the client pays. **We never add a
+  fee**: our totals (cart, Pay Now amount, request total) and the Razorpay
+  ORDER amount stay price + GST.
+  - **What Razorpay's docs say** (checked 2026-11-14): the fee is shown on a
+    "Fees Breakup" page in Checkout and "the customer is redirected to the bank
+    page with the total amount, including the Convenience Fee"; a refund
+    returns "the convenience fees and the actual payment amount"; Razorpay's
+    own acknowledgement email shows the fee only inside the total
+    (razorpay.com/docs/payments/optimizer/convenience-fees/). The payment
+    entity has `amount` ("payment amount"), `fee` ("Fee (including GST)
+    charged by Razorpay") and `tax` ("GST charged for the payment")
+    (razorpay.com/docs/api/payments/entity/). **Not stated in the docs**:
+    in so many words, that under Customer Fee Bearer the payment `amount` =
+    order amount + `fee`, nor whether `fee` is filled while a payment is only
+    `authorized`. The code assumes amount = order + fee (the arithmetic is
+    checked exactly, so a different representation is held for review, not
+    settled wrongly) and handles a missing fee safely. Verify both on the
+    TEST account once it is enabled.
+  - **Settlement** (`decideSettlement`, pure, one rule for every order kind):
+    a verified amount equal to the order's settles as before. Otherwise it
+    settles only if amount − `fee` = the order's amount, to the paisa, with
+    `fee` from the verified payment entity (`fetchPayment`/`fetchOrder` via
+    the API, or the signed webhook — `feeOf` reads whole non-negative paise
+    only) and 0 < fee ≤ max(10% of the order, ₹25) (`MAX_FEE_SHARE`,
+    `MIN_FEE_ALLOWANCE`). Any other amount is held for `review` as before.
+    The browser never sends a fee (`.strict()` schemas unchanged). On an
+    ordinary account the entity's `fee` is the firm's cost and the amount
+    equals the order, so nothing is recorded.
+  - **Record** (`feeFields`): `convenienceFee`, `convenienceFeeTax`,
+    `gatewayAmount` (order + fee) on `paymentOrders/{id}`. `amountPaid` stays
+    the ORDER's amount, so what is credited to a matter (`creditMatter`,
+    payment requests), refund limits, `clientOrderView`, receipts, the
+    client's order history and the confirmation emails are unchanged and
+    never mention the fee (the firm: fee shown only at checkout). Staff see
+    "Convenience fee (paid by client)" and "Client paid in all" in the order's
+    details under Website Orders (which lists Pay Now and payment-request
+    orders too). A paid order settled without figures learns its fee from a
+    later verified signal for the same payment (the `noop` branch).
+  - **Return read while `authorized`** with an amount above the order and no
+    fee yet: `confirmReturn` neither settles nor refuses; the order stays
+    `created` (the result page and Pay Now already wait on that) and the
+    signed `payment.captured` webhook — or a reconcile — settles it.
+  - **Refunds**: Razorpay refunds the fee with the payment; our refund
+    records are capped at `amountPaid` (the order), so a full refund made in
+    Razorpay is recorded as the order's amount.
+  - **OWNER ACTION**: Razorpay must enable Customer Fee Bearer on the **TEST**
+    account (QA) and the **LIVE** account (Dashboard → Support → raise a
+    ticket, or the account manager). Until it is enabled behaviour is exactly
+    as before. Simulator outcomes `success_fee`, `fee_webhook`,
+    `fee_mismatch` play a fee-bearer account in tests.
 - **Prices are exclusive of GST (#212, decided by the firm 2026-10-12).**
   `GST_PERCENT` (18) and `withGst()` live in `pricing.service.js`. `findPlan`
   returns `price`, `gst`, `gstPercent` and `amount` = price + GST; an order

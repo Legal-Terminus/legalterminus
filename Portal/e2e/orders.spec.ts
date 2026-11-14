@@ -615,4 +615,34 @@ test.describe.serial('E24 website payments (simulated gateway)', () => {
       await expect(page.getByRole('list', { name: `Matters for ${mineNow.items![0].label}` }).first().getByRole('link', { name: /Open the matter for/ })).toHaveCount(3);
     } finally { await buyer.dispose(); await admin.dispose(); }
   });
+  /* ───────── #276: Razorpay Customer Fee Bearer (order + gateway fee) ───────── */
+
+  test('#276 order + the gateway’s fee settles (return and webhook); the fee is for staff only; anything else is reviewed', async ({ adminPage: page }) => {
+    const buyer = await apiAs('client');
+    try {
+      // The return path: the signed result, the payment read back with its fee.
+      const a = await (await start(buyer, withoutWorkflow)).json() as Pub;
+      const signed = await simulate(buyer, a.orderId, 'success_fee');
+      const back = await (await buyer.post(`/api/orders/${a.orderId}/verify`, { data: signed })).json() as Pub;
+      expect(back.status).toBe('paid');
+      expect(JSON.stringify(back)).not.toMatch(/convenience|gatewayAmount/);
+      const fa = await full(a.orderId) as Full & { amountPaid: number; convenienceFee?: number; gatewayAmount?: number };
+      expect(fa.amountPaid, 'what was paid for the order is the order').toBe(a.amount);
+      expect(fa.convenienceFee).toBeGreaterThan(0);
+      expect(fa.gatewayAmount).toBe(Math.round((a.amount + fa.convenienceFee!) * 100) / 100);
+
+      // The webhook path.
+      const b = await (await start(buyer, withoutWorkflow)).json() as Pub;
+      expect((await simulate(buyer, b.orderId, 'fee_webhook')).delivered.outcome).toBe('paid');
+
+      // Order + fee + ₹1 is not a fee: held for review.
+      const c = await (await start(buyer, withoutWorkflow)).json() as Pub;
+      expect((await simulate(buyer, c.orderId, 'fee_mismatch')).delivered.outcome).toBe('review');
+
+      // Staff see the fee on Website Orders.
+      await page.goto('website-orders');
+      await page.getByRole('button', { name: `Show details of order ${a.orderId}` }).click();
+      await expect(page.getByText('Convenience fee (paid by client)').first()).toBeVisible();
+    } finally { await buyer.dispose(); }
+  });
 });

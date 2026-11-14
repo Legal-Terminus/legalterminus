@@ -216,7 +216,10 @@ html[data-native] .chat-composer, html[data-native] .app-bottombar { padding-bot
 structure). Every `window.open(url, '_blank')` to another host becomes
 `if (!(await openExternal(url))) window.open(url, '_blank', 'noopener')`.
 
-Razorpay (`PayNowCard.tsx`, `payNow.ts`): no code change expected. Device test: card with
+Razorpay (`PayNowCard.tsx`, `payNow.ts`): no code change expected. Once Razorpay enables
+Customer Fee Bearer (#276), its checkout adds a "Fees Breakup" page showing the convenience fee
+before the bank page; it is Razorpay's own screen, so the app needs nothing — check it shows and
+can be scrolled inside the app's web view. Device test: card with
 3-D Secure, and UPI. If a UPI app does not open from the checkout, add to `Info.plist`:
 ```
 LSApplicationQueriesSchemes: upi, phonepe, gpay, paytmmp

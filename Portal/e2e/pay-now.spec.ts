@@ -102,6 +102,51 @@ test.describe.serial('#220 Pay Now (simulated gateway)', () => {
     }).toPass({ timeout: 15_000 });
   });
 
+  // #276: Razorpay "Customer Fee Bearer" — the client pays the amount due +
+  // Razorpay's fee. The matter is credited the amount due only; the fee is on
+  // the order for staff, never on the client's view.
+  test('#276 a fee-bearer payment (amount due + gateway fee) is accepted; the matter gets only the amount due', async () => {
+    const taskId = await createPartPaidMatter();
+    matters.push(taskId);
+    const client = await apiAs('client');
+    const admin = await apiAs('admin');
+    try {
+      const order = await (await client.post(`/api/tasks/${taskId}/pay-now`, { data: {} })).json();
+      orders.push(order.orderId);
+      const res = await (await client.post(`/api/orders/${order.orderId}/simulate`, { data: { outcome: 'fee_webhook' } })).json();
+      expect(res.delivered.outcome).toBe('paid');
+      const full = await (await admin.get(`/api/orders/${order.orderId}`)).json();
+      expect(full.status).toBe('paid');
+      expect(full.amountPaid).toBe(order.amount);
+      expect(full.convenienceFee).toBeGreaterThan(0);
+      expect(full.gatewayAmount).toBe(Math.round((order.amount + full.convenienceFee) * 100) / 100);
+      const mine = await (await client.get(`/api/orders/${order.orderId}`)).json();
+      expect(JSON.stringify(mine)).not.toMatch(/convenience|gatewayAmount/);
+      await expect(async () => {
+        const l = await ledger(taskId);
+        const online = l.payments.filter((p) => p.mode === 'Online (test payment)');
+        expect(online).toHaveLength(1);
+        expect(online[0].amount, 'the fee is not credited to the matter').toBe(order.amount);
+        expect(l.paymentStatus).toBe('fully_paid');
+      }).toPass({ timeout: 15_000 });
+    } finally { await client.dispose(); await admin.dispose(); }
+  });
+
+  test('#276 a payment that is neither the amount due nor amount due + fee is held for review', async () => {
+    const taskId = await createPartPaidMatter();
+    matters.push(taskId);
+    const client = await apiAs('client');
+    const admin = await apiAs('admin');
+    try {
+      const order = await (await client.post(`/api/tasks/${taskId}/pay-now`, { data: {} })).json();
+      orders.push(order.orderId);
+      const res = await (await client.post(`/api/orders/${order.orderId}/simulate`, { data: { outcome: 'fee_mismatch' } })).json();
+      expect(res.delivered.outcome).toBe('review');
+      expect((await (await admin.get(`/api/orders/${order.orderId}`)).json()).status).toBe('review');
+      expect((await ledger(taskId)).payments.filter((p) => p.mode === 'Online (test payment)')).toHaveLength(0);
+    } finally { await client.dispose(); await admin.dispose(); }
+  });
+
   test('nothing part-paid is due: a fully paid matter has no Pay Now', async () => {
     const taskId = await createMatter(); // fully paid
     matters.push(taskId);
