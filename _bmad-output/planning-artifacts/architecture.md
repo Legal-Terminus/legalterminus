@@ -3055,3 +3055,18 @@ of copy and has the same staleness on a professional's rename.
 whose `updatedAt` is missing or not an ISO string — an ordered query leaves those out,
 so such a matter could never be listed. QA had none on 2026-11-10; production was not
 checked (the owner decides whether to run it there).
+
+## Input sanitising is linear and lives in one module (CodeQL, 2026-11-14)
+
+`backend/src/utils/sanitize.js` is the only place the backend strips tags, checks an email's
+shape, vets a request-supplied object key or prepares a value for a log line. Rules:
+
+- **No regex tag stripping.** `replace(/<[^>]*>/g, '')` is quadratic on many `<` with no `>`
+  and was reachable from the public contact form. `stripTags` is a single pass with the same
+  output on ordinary text; a dangling `<` that would begin markup is dropped, so the result never
+  holds the start of a tag. `removeDelimited(s, '(', ')')` does the same for parentheticals.
+- **Keys from a request** are used through a `Map`, `Object.fromEntries` or `Object.hasOwn`, and
+  `isSafeKey` refuses `__proto__`, `constructor` and `prototype` — never `obj[userKey] = …`.
+- **Log values** go in pino fields through `logValue` (CR/LF collapsed, length capped), never
+  interpolated into the message.
+- A new cleaner imports from this module rather than adding its own copy.
