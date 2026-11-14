@@ -24,9 +24,10 @@ const pass = process.env.GMAIL_APP_PASSWORD;
 const from = process.env.EMAIL_FROM || user;
 const to = process.argv[2]; // optional recipient
 
+// Never print any part of a secret — not even its first and last characters,
+// which narrow an App Password's 16 characters to 12 (CodeQL js/clear-text-logging).
 function mask(v) {
-  if (!v) return '(unset)';
-  return v.length <= 4 ? '••••' : `${v.slice(0, 2)}…${v.slice(-2)} (${v.length} chars)`;
+  return v ? '(set)' : '(unset)';
 }
 
 async function main() {
@@ -48,7 +49,7 @@ async function main() {
     process.exit(1);
   }
   if (cleaned.length !== 16) {
-    console.warn(`\n⚠️  App Password is ${cleaned.length} chars after removing spaces (Google App Passwords are 16). Continuing anyway…`);
+    console.warn('\n⚠️  App Password is not 16 characters after removing spaces (Google App Passwords are 16). Continuing anyway…');
   }
 
   const transporter = nodemailer.createTransport({
