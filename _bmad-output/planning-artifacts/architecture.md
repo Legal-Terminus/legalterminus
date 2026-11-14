@@ -2615,8 +2615,15 @@ and **Matter**.
   - *Step columns* by task NAME (services are editable, so no step numbers are
     assumed): `STEP_RULES` lists, per column, word sets one of which the
     normalised title must contain, and words it must not ("GSTR-1 filed mail" is the
-    mail column, not the filing date). First matching step by step number; "Yes" or
-    its completion date (India) once completed, else blank.
+    mail column, not the filing date). First matching step in the service's AUTHORED
+    order (`withAuthoredOrder`; step numbers are identity only, #55), else by step
+    number; "Yes" or its completion date (India) once completed, else blank.
+  - *The two filing dates (fix 2026-11-14, firm's report of a GSTR-1 date under
+    GSTR-3B):* a task fills a form's date only if its name names THAT form first
+    (`formsNamed`: "GSTR-1 filed, proceed towards GSTR-3B filing" is GSTR-1's), never
+    a data / preparation / reminder / mail task (`FILING_NONE`), and a task saying
+    "filed" wins over one that only says "filing". Same function for the sheet, the
+    matter's "Filed on" tags and the date correction.
   - GST User ID, GST Pswd and Remarks are never derived.
 - **Last change wins.** Each synced row stores `derived` — what the workflow said
   last time per column. A sync writes a cell only where the workflow's value

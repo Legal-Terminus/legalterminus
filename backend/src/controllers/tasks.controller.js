@@ -1788,8 +1788,10 @@ export async function getTask(req, res) {
     // reached. Hidden here so a matter nobody touches again (a completed one)
     // shows the same list as one the engine has since tidied. Best effort:
     // without the service to compare, the list is shown as stored.
+    let definitionSteps = null; // #279: the authored order the GST filing tasks are matched in
     try {
       const compiledForView = await getCompiledById(data.workflowDefinitionId);
+      definitionSteps = compiledForView?.definition?.steps ?? null;
       if (compiledForView) {
         const removed = new Set(removedStepNumbers(steps, compiledForView.definition.steps));
         if (removed.size) steps = steps.filter((s) => !removed.has(s.stepNumber));
@@ -1802,7 +1804,7 @@ export async function getTask(req, res) {
     // #292 / #294: Filing Month on a GST return matter, "Filed on" on its GSTR-1 /
     // GSTR-3B filing tasks. Matched on the INTERNAL task names, so before the
     // client's projection (which swaps in client-facing names).
-    await annotateGstMatter(full);
+    await annotateGstMatter(full, { definitionSteps });
     // E12-S01: clients get a projection with internal ownership/assignment removed,
     // plus steps the workflow marks as not client-visible (clientVisible === false)
     // are dropped from the client's step list.

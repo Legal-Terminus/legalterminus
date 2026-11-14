@@ -18,7 +18,8 @@
  */
 import { db } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
-import { canCorrectFiledOn, checkFiledOnCorrection, longDay } from '../services/gstReturnSheet.service.js';
+import { canCorrectFiledOn, checkFiledOnCorrection, longDay, withAuthoredOrder } from '../services/gstReturnSheet.service.js';
+import { getCompiledById } from '../services/workflowDefinitions.service.js';
 import { gstReturnServiceKeys, gstFrequencyOf } from '../services/gstMatterTags.service.js';
 import { indiaDate } from '../../../shared/workflows/gstReturns.js';
 
@@ -35,14 +36,18 @@ export async function correctFiledOn(req, res) {
     if (!first.exists) return res.status(404).json({ message: 'Matter not found' });
     // Read outside the transaction: the sheet's linked services, and the client
     // only when it decides monthly vs quarterly (the bounds depend on the period).
-    const [linkedServices, frequency] = await Promise.all([gstReturnServiceKeys(), gstFrequencyOf(first.data())]);
+    const [linkedServices, frequency, compiled] = await Promise.all([
+      gstReturnServiceKeys(), gstFrequencyOf(first.data()),
+      getCompiledById(first.data().workflowDefinitionId).catch(() => null),
+    ]);
 
     const out = await db.runTransaction(async (tx) => {
       const snap = await tx.get(taskRef);
       if (!snap.exists) throw fail(404, 'Matter not found');
       const task = { id: snap.id, ...snap.data() };
       const stepDocs = (await tx.get(taskRef.collection('steps'))).docs;
-      const steps = stepDocs.map((d) => d.data());
+      // Matched in the service's authored order, exactly as the tags and the sheet are.
+      const steps = withAuthoredOrder(stepDocs.map((d) => d.data()), compiled?.definition?.steps);
       if (!canCorrectFiledOn(req.user, task, steps)) throw fail(403, 'Only staff working on this matter can correct its filing dates.');
       const check = checkFiledOnCorrection({ task, steps, stepNumber, date, frequency, linkedServices });
       if (!check.ok) throw fail(check.status, check.message);

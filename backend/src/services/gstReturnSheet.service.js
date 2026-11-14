@@ -46,17 +46,39 @@ export const normalizeTitle = (t) => String(t ?? '').toLowerCase().replace(/[^a-
  * "GSTR 1 filed", "GSTR-1 Filed" and "gstr1 filing" are the same). A workflow
  * with no such task simply leaves the column to be typed.
  */
+/** Words that make a task NOT the filing itself (the mail after it, the data or preparation before it). */
+const FILING_NONE = ['mail', 'data', 'receiv', 'collect', 'prepar', 'reminder'];
+
+/**
+ * The GST forms a (normalised) task name names, in the order it names them:
+ * "GSTR-1 filed, proceed towards GSTR-3B filing" → ['gstr1', 'gstr3b'];
+ * "GSTR 1 & 3B filing" ("gstr13bfiling") → ['gstr1', 'gstr3b']; "GSTR-3B filed" → ['gstr3b'].
+ */
+export function formsNamed(norm) {
+  const out = [];
+  const add = (f) => { if (!out.includes(f)) out.push(f); };
+  const re = /gstr(?:(1)(3b)?(?![0-9])|(3b))|(3b)/g;
+  let m;
+  while ((m = re.exec(norm))) {
+    if (m[1]) { add('gstr1'); if (m[2]) add('gstr3b'); } else add('gstr3b');
+  }
+  return out;
+}
+
 export const STEP_RULES = [
   { field: 'data_received', kind: 'yes', any: [['data', 'receiv'], ['data', 'collect']], none: ['additional', 'confirmation'] },
   { field: 'tally_prepared', kind: 'yes', any: [['tally'], ['excel', 'prepar']], none: ['annual'] },
-  { field: 'gstr1_date', kind: 'date', any: [['gstr1', 'fil']], none: ['mail'] },
+  // #279 (firm, 11 Nov): a GSTR-1 date showed under GSTR-3B. The two date rules
+  // now also need the task to name THEIR form first (`form`, see formsNamed), never
+  // take a data / preparation / reminder task, and prefer a task that says "filed".
+  { field: 'gstr1_date', kind: 'date', form: 'gstr1', any: [['gstr1', 'fil']], none: FILING_NONE },
   { field: 'gstr1_mail', kind: 'yes', any: [['gstr1', 'mail']] },
   { field: 'gstr2b_mail', kind: 'yes', any: [['2b', 'reco'], ['2b', 'mail']] },
   { field: 'additional_data', kind: 'yes', any: [['additional'], ['confirmation']] },
   { field: 'challan_mail', kind: 'yes', any: [['challan', 'mail'], ['challan', 'sent'], ['challan', 'shar']] },
   { field: 'challan_paid', kind: 'yes', any: [['challan', 'paid'], ['challan', 'payment']], none: ['mail', 'sent', 'shar'] },
   { field: 'annual_sheet', kind: 'yes', any: [['annual', 'sheet'], ['annual', 'working']] },
-  { field: 'gstr3b_date', kind: 'date', any: [['gstr3b', 'fil']], none: ['mail'] },
+  { field: 'gstr3b_date', kind: 'date', form: 'gstr3b', any: [['gstr3b', 'fil']], none: FILING_NONE },
 ];
 
 /** Every column the workflow fills. The rest (user id, password, remarks) are people's. */
@@ -66,12 +88,35 @@ export const DERIVED_FIELDS = [
 ];
 
 const ruleMatches = (rule, norm) => rule.any.some((words) => words.every((w) => norm.includes(w)))
-  && !(rule.none ?? []).some((w) => norm.includes(w));
+  && !(rule.none ?? []).some((w) => norm.includes(w))
+  // A filing-date rule takes only a task whose name names ITS form first: a task
+  // about GSTR-1 never fills the GSTR-3B date, whatever else its name mentions.
+  && (!rule.form || formsNamed(norm)[0] === rule.form);
 
-/** The step a rule picks: the first, by step number, whose title matches. */
+/**
+ * Flow order: a step's `position` in the service's AUTHORED order when the
+ * caller supplied it (`withAuthoredOrder`), else its step number. Step numbers
+ * are identity, not flow (#55): a task added later in the editor keeps a high
+ * number wherever it sits.
+ */
+const flowOrder = (a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || (a.stepNumber ?? 0) - (b.stepNumber ?? 0);
+
+/**
+ * The step a rule picks: the first in flow order whose title matches. For the
+ * two filing dates, a task that says "filed" wins over one that only says
+ * "filing" ("Proceed towards GSTR-1 filing" before "GSTR-1 filed").
+ */
 export function stepForRule(rule, steps) {
-  return [...(steps ?? [])].sort((a, b) => (a.stepNumber ?? 0) - (b.stepNumber ?? 0))
-    .find((s) => ruleMatches(rule, normalizeTitle(s.title))) ?? null;
+  const hits = [...(steps ?? [])].sort(flowOrder).filter((s) => ruleMatches(rule, normalizeTitle(s.title)));
+  if (rule.kind === 'date') return hits.find((s) => normalizeTitle(s.title).includes('filed')) ?? hits[0] ?? null;
+  return hits[0] ?? null;
+}
+
+/** Steps with `position` = their index in the service's authored step list (missing ones keep none). */
+export function withAuthoredOrder(steps, definitionSteps) {
+  if (!Array.isArray(definitionSteps) || !definitionSteps.length) return steps ?? [];
+  const pos = new Map(definitionSteps.map((d, i) => [d.stepNumber, i]));
+  return (steps ?? []).map((s) => (pos.has(s.stepNumber) ? { ...s, position: pos.get(s.stepNumber) } : s));
 }
 
 /** Monthly or quarterly: the GST period the sweep stamped, else the service, else the client's setting. */

@@ -19,7 +19,7 @@ import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { SHEETS } from '../config/worksheetDefinitions.js';
 import { resolveSheet } from './worksheetEngine.service.js';
-import { gstMatterTags, isGstReturnMatter, frequencyOf, filedOnBounds } from './gstReturnSheet.service.js';
+import { gstMatterTags, isGstReturnMatter, frequencyOf, filedOnBounds, withAuthoredOrder } from './gstReturnSheet.service.js';
 import { GST_SERVICE_KEYS } from '../../../shared/workflows/gstReturns.js';
 
 const BOOK = 'gst_return';
@@ -87,15 +87,16 @@ export async function attachGstFilingPeriods(rows) {
  * `gstFilingPeriodLabel`, `gstFilings` ([{ stepNumber, form, date, completedOn,
  * corrected }]) and `gstFilingDateBounds` ({ min, max }) on the matter, and
  * `filedOn` ('YYYY-MM-DD') on the completed GSTR-1 / GSTR-3B filing tasks. Call
- * before the client's projection.
+ * before the client's projection. `definitionSteps` (the service's authored list)
+ * gives the flow order the tasks are matched in.
  * Never throws.
  */
-export async function annotateGstMatter(full) {
+export async function annotateGstMatter(full, { definitionSteps = null } = {}) {
   try {
     const linked = await gstReturnServiceKeys();
     if (!isGstReturnMatter(full, linked)) return full;
     const clients = needsClient(full) ? await readClients([full.clientUid]) : new Map();
-    const tags = gstMatterTags({ task: full, steps: full.steps ?? [], client: clients.get(full.clientUid) ?? null, linkedServices: linked });
+    const tags = gstMatterTags({ task: full, steps: withAuthoredOrder(full.steps ?? [], definitionSteps), client: clients.get(full.clientUid) ?? null, linkedServices: linked });
     if (!tags) return full;
     full.gstFilingPeriodLabel = tags.period;
     // The completed filings, for the matter's header: the step list hides

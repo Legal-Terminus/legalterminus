@@ -7795,3 +7795,24 @@ filing task was ticked after the real filing. Design in architecture.md, "GST ta
   history entry; the sheet's matter-owned cell); `Portal/e2e/gst-return-filing.spec.ts` (+1:
   guards, header correction, step row, history, sheet follows and refuses a typed edit, client view).
   Playwright not yet run.
+
+### GST Return Filing sheet: GSTR-1 date shown under GSTR-3B (2026-11-14, #279) — E18-S11 🔄 In review
+
+The firm reported (11 Nov) a GSTR-1 filing date (11 Nov 2026) under "Date of GSTR-3B Filing".
+- **Cause (as far as can be told without the live service):** the date columns took the FIRST task,
+  by step NUMBER, whose name contained "GSTR-3B" and "fil" — a task whose name mentions both forms
+  (e.g. "GSTR-1 filed – proceed towards GSTR-3B filing", or a data task "for GSTR-1 & GSTR-3B
+  filing") filled the GSTR-3B column, and step numbers do not follow the flow once tasks are
+  added later. QA has no GST return service and the live service was not read (repository rule),
+  so the firm's exact task names are unconfirmed — **open: ask the firm for the task list of their
+  GST Return Filing service** (or the owner may allow a read-only look at live).
+- **Fix:** a task fills a form's date only if its name names that form first; data, preparation,
+  reminder and mail tasks never fill a filing date; a task saying "filed" wins over "filing";
+  tasks are taken in the service's order, not by number. The matter's "Filed on" tags (#294)
+  use the same rule. Rows already synced under the old rule correct themselves: the rules version
+  is part of the sync's watermark key, so the next openings re-derive every GST matter (200 per
+  page, 3 pages per opening) and the wrong GSTR-3B cell is cleared or set right (a cell a person
+  typed since is kept, as always).
+- Tests: `gstReturnSheet.test.js` +2 (forms named; dates in their own columns with mixed names
+  and out-of-order step numbers).
+

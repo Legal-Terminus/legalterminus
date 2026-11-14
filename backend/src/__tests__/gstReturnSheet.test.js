@@ -12,7 +12,7 @@ import {
 import {
   deriveRow, mergeDerived, frequencyOf, periodOf, stepForRule, STEP_RULES, DERIVED_FIELDS, normalizeTitle,
   gstMatterTags, isGstReturnMatter, filedOnDateOf, filedOnBounds, canCorrectFiledOn, checkFiledOnCorrection,
-  matterOwnedDateFields, isCalendarDate,
+  matterOwnedDateFields, isCalendarDate, formsNamed, withAuthoredOrder,
 } from '../services/gstReturnSheet.service.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -365,4 +365,42 @@ test('#294 the sheet: a matter-fed filing date is corrected on the matter, a typ
   assert.deepEqual(matterOwnedDateFields(linked, { gstr1_date: '2026-11-11', remarks: 'x' }), []); // unchanged value
   assert.deepEqual(matterOwnedDateFields(linked, { gstr3b_date: '2026-11-20' }), []); // the workflow has not filled it
   assert.deepEqual(matterOwnedDateFields({ values: {}, derived: null }, { gstr1_date: '2026-11-09' }), []); // no matter
+});
+
+/* ── #279 (firm, 11 Nov): a GSTR-1 date under "Date of GSTR-3B Filing" ──── */
+
+test('#279 forms named in a task name, in order', () => {
+  assert.deepEqual(formsNamed(normalizeTitle('GSTR-1 Filed')), ['gstr1']);
+  assert.deepEqual(formsNamed(normalizeTitle('Proceed Towards GSTR-3B Filing')), ['gstr3b']);
+  assert.deepEqual(formsNamed(normalizeTitle('GSTR-1 filed, proceed towards GSTR-3B filing')), ['gstr1', 'gstr3b']);
+  assert.deepEqual(formsNamed(normalizeTitle('GSTR 1 & 3B filing')), ['gstr1', 'gstr3b']);
+  assert.deepEqual(formsNamed(normalizeTitle('GSTR-10 filing')), []);
+});
+
+test('#279 the GSTR-1 and GSTR-3B dates land in their own columns and tags', () => {
+  // The firm's names (#294: "Step 6 – GSTR-1 Filed", "Step 13 – Proceed Towards GSTR-3B
+  // Filing") with the wordings that used to cross the columns over: a GSTR-1 task that
+  // also mentions GSTR-3B, a data task naming both forms, and step NUMBERS that do not
+  // follow the flow (a task added later keeps a high number).
+  const done = (n, title, at) => ({ stepNumber: n, title, status: 'completed', completedAt: at });
+  const flow = [
+    done(2, 'Data received for GSTR-1 & GSTR-3B filing', '2026-11-03T05:00:00Z'),
+    done(5, 'Proceed Towards GSTR-1 Filing', '2026-11-08T05:00:00Z'),
+    done(21, 'GSTR-1 Filed – proceed towards GSTR-3B filing', '2026-11-11T05:00:00Z'), // added later: number 21, 6th in the flow
+    { stepNumber: 7, title: 'GSTR-1 Filed Mail', status: 'active' },
+    { stepNumber: 13, title: 'Proceed Towards GSTR-3B Filing', status: 'pending' },
+  ];
+  const authored = [1, 2, 3, 4, 5, 21, 7, 8, 9, 10, 11, 12, 13].map((stepNumber) => ({ stepNumber }));
+  const steps2 = withAuthoredOrder(flow, authored);
+  const row = deriveRow({ task, client, steps: steps2 }).values;
+  assert.equal(row.gstr1_date, '2026-11-11'); // the "filed" task, not the data or "proceed" task
+  assert.equal(row.gstr3b_date, null);        // GSTR-3B not filed yet — never GSTR-1's date
+  assert.equal(row.data_received, 'Yes');
+  const tags = gstMatterTags({ task, steps: steps2, linkedServices: LINKED }).filedOn;
+  assert.deepEqual(tags.map((f) => [f.form, f.stepNumber, f.date]), [['GSTR-1', 21, '2026-11-11']]);
+
+  // Once GSTR-3B is filed, each column has its own date.
+  const later = steps2.map((x) => (x.stepNumber === 13 ? { ...x, status: 'completed', completedAt: '2026-11-20T06:00:00Z' } : x));
+  const row2 = deriveRow({ task, client, steps: later }).values;
+  assert.deepEqual([row2.gstr1_date, row2.gstr3b_date], ['2026-11-11', '2026-11-20']);
 });
