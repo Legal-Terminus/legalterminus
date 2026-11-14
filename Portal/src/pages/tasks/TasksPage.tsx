@@ -11,6 +11,7 @@ import { useToast } from '../../components/common/toastContext';
 import { dueInfo, DUE_BADGE_CLASS } from '../../lib/dueDate';
 import CreateMatterModal from '../../components/tasks/CreateMatterModal';
 import RecurringDueBanner from '../../components/tasks/RecurringDueBanner';
+import { FilingPeriodTag } from '../../components/tasks/GstFilingTags';
 import { useAuthStore } from '../../store/authStore';
 import { getTasks, deleteTask } from '../../api/tasks';
 import type { Task, TaskStatus, PaymentStatus } from '../../types/task';
@@ -214,7 +215,9 @@ export default function TasksPage() {
             (t.organisation ?? '').toLowerCase().includes(s) ||
             // #201: find a matter from the number or address a client calls from.
             (t.clientPhone ?? '').toLowerCase().includes(s) ||
-            (t.clientEmail ?? '').toLowerCase().includes(s)
+            (t.clientEmail ?? '').toLowerCase().includes(s) ||
+            // #292: find a GST return by its month ("September 2026").
+            (t.gstFilingPeriodLabel ?? '').toLowerCase().includes(s)
           );
         }}
         isLoading={isLoading}
@@ -277,6 +280,8 @@ function buildColumns({ isClientView, canDelete, onDelete, deleting, navigate }:
               )}
             </span>
             {secondary && <span className="block text-xs text-ink-muted truncate">{secondary}</span>}
+            {/* #292: GST return matters carry their Filing Month. */}
+            {t.gstFilingPeriodLabel && <span className="block mt-1"><FilingPeriodTag label={t.gstFilingPeriodLabel} /></span>}
           </button>
         );
       },
@@ -455,6 +460,7 @@ function MatterCard({ task, isClientView, canDelete, deleting, onDelete }: {
             {task.isUrgent && <span className="badge bg-red-50 text-red-600 inline-flex items-center gap-1"><Flame className="w-3 h-3" fill="currentColor" /> Urgent</span>}
           </div>
           {secondary && <p className="text-xs text-ink-muted mt-0.5 truncate">{secondary}</p>}
+          {task.gstFilingPeriodLabel && <div className="mt-1"><FilingPeriodTag label={task.gstFilingPeriodLabel} /></div>}
           {!isClientView && <div className="mt-1"><ClientContact task={task} /></div>}
         </div>
         {canDelete && (

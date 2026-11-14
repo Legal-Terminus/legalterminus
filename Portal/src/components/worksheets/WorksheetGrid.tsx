@@ -9,6 +9,7 @@ import {
 } from '../../lib/worksheets';
 import { exportToXlsx } from '../../lib/exportXlsx';
 import WorksheetImage from './WorksheetImage';
+import SecretCell from './SecretCell';
 
 /**
  * #210 / #217 — the sheet itself, Excel-style: a filter on every column, sort
@@ -263,6 +264,10 @@ function Cell({ sheet, column, record, matters, q, canEdit, onSave, onImageChang
   onSave: (v: CellValue) => Promise<void>; onImageChanged: (v: string | null) => void;
 }) {
   const text = displayValue(column, record, matters);
+  // #279: a secret cell (GST Pswd) — masked, revealed on demand; changed through the record's Edit form.
+  if (column.secret) {
+    return <SecretCell sheetKey={sheet.key} recordId={record.id} column={column} isSet={!!record.secretsSet?.[column.key]} compact />;
+  }
   if (column.type === 'image') {
     return (
       <div className="flex items-center gap-1 px-2">

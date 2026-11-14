@@ -2391,6 +2391,17 @@ modifiers: one consumer, and a second question would need its own UI anyway.
   Statutory Calendar). Sent with `keepSubject`, so the subject is exactly
   "<Company> - GST Return - <period>", still threaded with the matter. Extra
   client email addresses are copied.
+- **A GST return matter opened by hand, or copied (2026-11-14, firm's comment of
+  11 Nov):** `createTask`'s first client email is the same GST email —
+  `gstFirstEmail` (`gstReturnSheet.service.js`): when `isGstReturnMatter` (sweep
+  period, or a service linked to the GST Return Filing sheet), the template for
+  `frequencyOf`, the period from `periodObjectOf` (the Return Period / Filing
+  Month rule), the company from `companyNameOf` with the MATTER's organisation
+  first; rendered with `emailVars` and sent with `keepSubject`. It replaces the
+  `matter_created` email (one first email); if the template cannot render, the
+  `matter_created` email goes as before. The sweep still sets
+  `suppressCreatedEmail` and sends its own, so its matters get exactly one.
+  Covers duplicates and recurring copies, which go through `createTask`.
 - **Uploads:** the document allow-list adds `text/csv`, `application/json`,
   `text/plain`, `application/zip` (.csv .json .txt .zip). The Portal types these
   four by extension, because Windows reports a .csv as Excel and a .zip as
@@ -2611,12 +2622,20 @@ and **Matter**.
     business name → name; `entityType` → Constitution; `gstNumber`, `email`,
     `mobile`). *Assign Person*: the current step's assignee, else the matter's
     professional. *Current Status*: the current step's title, or Awaiting approval /
-    Completed / Stopped / Rejected / Archived. *Completion Check*: Done when completed.
+    Completed / Stopped / Rejected / Archived. *Completion Check*: Done when completed
+    (a dropdown since 2026-11-14: Done / Pending, editable choices).
   - *Step columns* by task NAME (services are editable, so no step numbers are
     assumed): `STEP_RULES` lists, per column, word sets one of which the
     normalised title must contain, and words it must not ("GSTR-1 filed mail" is the
-    mail column, not the filing date). First matching step by step number; "Yes" or
-    its completion date (India) once completed, else blank.
+    mail column, not the filing date). First matching step in the service's AUTHORED
+    order (`withAuthoredOrder`; step numbers are identity only, #55), else by step
+    number; "Yes" or its completion date (India) once completed, else blank.
+  - *The two filing dates (fix 2026-11-14, firm's report of a GSTR-1 date under
+    GSTR-3B):* a task fills a form's date only if its name names THAT form first
+    (`formsNamed`: "GSTR-1 filed, proceed towards GSTR-3B filing" is GSTR-1's), never
+    a data / preparation / reminder / mail task (`FILING_NONE`), and a task saying
+    "filed" wins over one that only says "filing". Same function for the sheet, the
+    matter's "Filed on" tags and the date correction.
   - GST User ID, GST Pswd and Remarks are never derived.
 - **Last change wins.** Each synced row stores `derived` — what the workflow said
   last time per column. A sync writes a cell only where the workflow's value
@@ -2643,9 +2662,98 @@ and **Matter**.
 - **Not reflected until the matter changes:** a change on the CLIENT (a new GSTIN
   or email) — it is read when the matter's row is next synced. A deleted matter
   leaves its row (the firm's record), with no matter label.
+- **Return Period filter (2026-11-14).** `resolveSheet` returns the sheet's
+  `frequency`; the Portal (`WorksheetModulePage`) shows a "Return period" dropdown for
+  sheets that have one, from `periodOptions` (`shared/workflows/gstReturns.js`: the
+  period being filed now, `duePeriod` of today in India, then older ones — 24 months /
+  8 quarters; option value = the row's `period` title, text = the title or the
+  quarter's long label) plus any other period typed on a row. Client-side over the
+  loaded sheet (≤ 5000 rows); default = the first option.
+- **GST Pswd is a secret cell (2026-11-14, firm's comment of 11 Nov).** Field
+  `secret: true` (`services/worksheetSecrets.service.js`):
+  - *Never in a list.* Stored in `secrets.gst_password`, not `values`; `serialize`
+    strips it from every list / create / update response and sends only
+    `secretsSet: { gst_password: true }`. `worksheetRecords` is not readable through
+    the client SDK (no rule), so the API is the only way in.
+  - *Revealed one row at a time.* `POST /api/worksheets/sheets/:sheet/records/:id/
+    secrets/:field/reveal { purpose: view | copy | login }` — router guard
+    `requireRole('admin', 'manager', 'team_member')` plus the same on the route; a
+    `worksheetAudit` entry `{ action: 'secret_revealed', purpose, field, book, sheet,
+    recordId, clientName, gstin, byUid, byRole, at }` is written BEFORE the value is
+    returned (`Cache-Control: no-store`); the log line never carries the value.
+    Returns `{ value, userId, loginUrl }`.
+  - *Encrypted at rest.* AES-256-GCM, 12-byte random IV, `{ v: 1, iv, tag, ct }`, key
+    `WORKSHEET_SECRETS_KEY` (32 bytes base64, env from Secret Manager). Without a key a
+    value is stored `{ v: 0, plain }` (out of lists, not encrypted) and encrypted at
+    its next write or reveal once a key exists. **The key is not yet wired into the
+    deploy workflows** — adding `--set-secrets`/`--set-env-vars` to
+    `deploy-qa.yml` / `deploy-production.yml` is a `.github/` change for the owner.
+  - *Migration without loss.* A legacy plaintext `values.gst_password` is moved into
+    `secrets` (sealed) on any write of the record (`secretWrites`) and on reveal.
+  - *Writes.* Typed (Edit form, a password box; empty = keep) or uploaded (Excel)
+    values are kept exactly as typed (no tag stripping), ≤ 200 chars, sealed.
+  - *"Direct login".* The firm's Apps Script in the issue has no login code. A page
+    cannot fill another site's login form (cross-origin; the GST portal also has a
+    captcha), so "Log in" copies the password, shows the user ID, and opens
+    `https://services.gst.gov.in/services/login` in a new tab.
 - **Access.** As every worksheet: admin, manager, team member view, add, edit and
   edit dropdowns; admin changes columns and deletes a record; route
   `/reports/gst-returns` with the same three roles; clients and professionals 403.
+
+### GST tags on the matter: Filing Month and "Filed on" (#292, #294, 2026-11-14)
+
+**LT only.** A GST return matter shows its period and its two filing dates on the
+matter, worked out by the **sheet's own rules** (#279) so the matter and the sheet
+never disagree. The only thing stored is a staff correction of a filing date (below).
+
+- **Which matters.** `isGstReturnMatter`: the matter carries `filingPeriod` (opened by
+  the #219 sweep) or its `serviceKey` is one of the GST book's linked services
+  (`resolveSheet(...).linkedServices` over both sheets, i.e. what the sheet syncs).
+  `services/gstMatterTags.service.js` reads `worksheetConfig/gst_return` for that, cached
+  60 s per instance and dropped when this instance saves the sheet's columns
+  (`putColumns`); another Cloud Run instance follows within a minute.
+- **Filing Month** = `periodOf(task, frequencyOf(task, client))` — the sweep's
+  `filingPeriod.title`, else the period that had ended when the matter was opened. The
+  client document is read only for a hand-opened matter on the monthly service (the one
+  case where the client's `gstReturnFrequency` decides). Served as
+  `gstFilingPeriodLabel` on `GET /api/tasks` (every role branch; one batched `getAll`
+  of those clients, no step reads) and `GET /api/tasks/:id`.
+- **Filed on** = the India date of `completedAt` of the step `stepForRule` picks for the
+  `gstr1_date` / `gstr3b_date` rules (`STEP_RULES`, `FILING_DATE_FIELDS`) — the steps
+  that fill "Date of GSTR-1 Filing" / "Date of GSTR-3B Filing". Matched on the INTERNAL
+  step titles, so `getTask` annotates before the client projection swaps in
+  `clientTitle`. Served as `filedOn` on the step and `gstFilings: [{ stepNumber, form,
+  date }]` on the matter (the header shows them because completed steps are folded
+  behind "Show completed").
+- **Correcting a date (owner's answer, 2026-11-14: yes).** `PUT /api/tasks/:taskId/steps/:stepNumber/filed-on
+  { date: 'YYYY-MM-DD' | null }` (`gstFiling.controller.js`). Route: `requireRole('admin', 'manager',
+  'team_member')` + `filedOnCorrectionSchema` (strict; a real calendar date or null). Handler, in one
+  transaction: `canCorrectFiledOn` (a team member only as the matter's owner or an assignee of one of
+  its steps — the matters their list shows); `checkFiledOnCorrection` (GST return matter; the step is
+  one `filingSteps` picks; it is completed; `filedOnBounds`: min = the 1st of the month after the GST
+  period ends — `filingPeriod.month`, else the period that had ended at creation — max = today in
+  India). Writes `filedOnCorrection { date, forCompletedAt, previous, byUid, byRole, at }` on the step
+  (null when set back to the completion date), a `FILED_ON_CORRECTED` event (comment "GSTR-1 filing
+  date corrected from … to …", `filedOn {form, from, to}`, `commentClientVisible: false`, not in the
+  client whitelist), and the matter's `updatedAt` (the sheet sync's watermark). `completedAt` is
+  never touched; `filedOnCorrection` is in `CLIENT_STEP_HIDDEN`.
+- **One source.** `filedOnDateOf(step)` — the correction whose `forCompletedAt` equals the step's
+  `completedAt`, else the India date of `completedAt`, null while not completed — is the ONLY reader:
+  `gstMatterTags` (the tags) and `deriveRow` (the sheet's two date columns) both call it.
+- **Reopen.** A correction belongs to one completion. Reopening clears `completedAt` (no date); a
+  re-completion sets a new `completedAt`, so the old correction no longer matches and is ignored
+  (left on the doc, never read). No change to the reopen code was needed.
+- **The sheet's own cell.** On a row with `sourceMatterId` whose `derived.<gstr1_date|gstr3b_date>`
+  is set (the workflow fills it), `matterOwnedDateFields` makes `updateRecord` refuse a changed value
+  (409 `MATTER_OWNED_DATE`, "correct it on the matter's filing task") and `importRows` drop it (with
+  a warning). Rows without a matter, or whose matter has no such completed task, stay typable —
+  so each date cell has exactly one owner.
+- **Portal.** `components/tasks/GstFilingTags.tsx` (`badge-gray` for the period — an
+  identifier, not a state; `badge-green` for a filing — done). `PageShell` gained an
+  optional `titleAddon` beside the title, which wraps under it on a phone. Staff (admin,
+  manager, team member) get a pencil beside each header filing tag opening a native date
+  input bounded by `gstFilingDateBounds` (44 px targets on a phone), with "Use completion
+  date" to undo a correction; the step row's tag shows the same date read-only.
 
 ## Dependency sources and the Node.js pin (#218, 2026-10-30)
 

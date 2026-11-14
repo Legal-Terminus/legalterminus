@@ -55,7 +55,9 @@ test.beforeAll(async () => {
       steps: [
         { stepNumber: 1, title: 'Data received from client', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 2 }] },
         { stepNumber: 2, title: 'GSTR-1 filed', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 3 }] },
-        { stepNumber: 3, title: 'Done', type: 'final' },
+        // #294: the issue's own name for the GSTR-3B filing task.
+        { stepNumber: 3, title: 'Proceed Towards GSTR-3B Filing', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 4 }] },
+        { stepNumber: 4, title: 'Done', type: 'final' },
       ],
     } });
     expect(res.ok(), await res.text()).toBeTruthy();
@@ -88,6 +90,8 @@ async function openView(page: Page, label: string) {
   await page.goto('reports/gst-returns');
   await expect(page.getByRole('heading', { name: 'GST Return Filing' })).toBeVisible();
   await page.getByLabel('Return filing', { exact: true }).selectOption({ label });
+  // #279: the sheet opens on the period being filed now; these tests look across all periods.
+  await page.getByLabel('Return period', { exact: true }).selectOption({ label: 'All periods' });
   await page.getByLabel('Search this sheet').fill(RUN);
 }
 const row = (page: Page, text: string) => page.locator('tr', { hasText: text });
@@ -150,6 +154,124 @@ test('a GST return matter appears as a row and follows its workflow; a typed cel
   await expect(row(adminPage, ORG)).toHaveCount(0);
 });
 
+/** Today in India as the tag writes it: "11 November 2026". */
+function todayLong(): string {
+  const ist = new Date(Date.now() + 330 * 60_000);
+  return `${ist.getUTCDate()} ${ist.toLocaleString('en-GB', { month: 'long', timeZone: 'UTC' })} ${ist.getUTCFullYear()}`;
+}
+
+test('#292 / #294 the matter shows its Filing Month, and "Filed on" for GSTR-1 and then GSTR-3B — to staff and the client', async ({ adminPage, clientPage }) => {
+  const frequency = matterSheet === 'gst_return_quarterly' ? 'quarterly' : 'monthly';
+  const period = expectedPeriod(frequency);
+  // The previous test completed "GSTR-1 filed"; GSTR-3B is the current task.
+  await adminPage.goto(`tasks/${matterId}`);
+  await expect(adminPage.getByTestId('gst-filing-period')).toContainText(period, { timeout: 20_000 });
+  await expect(adminPage.getByText(`GSTR-1 filed on: ${todayLong()}`)).toBeVisible();
+  await expect(adminPage.getByText(/GSTR-3B filed on/)).toHaveCount(0);
+
+  await transition('admin', matterId, { type: 'COMPLETE_STEP' });
+  await adminPage.reload();
+  await expect(adminPage.getByText(`GSTR-3B filed on: ${todayLong()}`)).toBeVisible({ timeout: 20_000 });
+  // Next to each task's name, separately, once completed tasks are shown.
+  await adminPage.getByRole('button', { name: /Show completed/ }).click();
+  await expect(adminPage.locator('#step-row-2')).toContainText(`Filed on: ${todayLong()}`);
+  await expect(adminPage.locator('#step-row-3')).toContainText(`Filed on: ${todayLong()}`);
+  await expect(adminPage.locator('#step-row-1').getByText(/Filed on/)).toHaveCount(0);
+
+  // The All Matters list carries the month.
+  await adminPage.goto('tasks');
+  await adminPage.getByPlaceholder(/Search by client/).fill(ORG);
+  await expect(adminPage.getByTestId('gst-filing-period').first()).toContainText(period, { timeout: 20_000 });
+
+  // The client sees the same tags on their matter and in their list.
+  await clientPage.goto(`tasks/${matterId}`);
+  await expect(clientPage.getByTestId('gst-filing-period')).toContainText(period, { timeout: 20_000 });
+  await expect(clientPage.getByText(`GSTR-1 filed on: ${todayLong()}`)).toBeVisible();
+  await expect(clientPage.getByText(`GSTR-3B filed on: ${todayLong()}`)).toBeVisible();
+});
+
+/** 'YYYY-MM-DD' → '11 November 2026'. */
+function longOf(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d} ${new Date(Date.UTC(y, m - 1, 1)).toLocaleString('en-GB', { month: 'long', timeZone: 'UTC' })} ${y}`;
+}
+
+test('#294 staff correct the GSTR-1 filing date; the matter, its history and the sheet all show it — clients cannot', async ({ adminPage, clientPage }) => {
+  const admin = await apiAs('admin');
+  const task = await (await admin.get(`/api/tasks/${matterId}`)).json();
+  const bounds = task.gstFilingDateBounds as { min: string; max: string };
+  const gstr1 = (task.gstFilings as { stepNumber: number; form: string }[]).find((f) => f.form === 'GSTR-1')!;
+  // The matter is for the period that just ended, so its earliest filing day is the 1st of this month.
+  test.skip(bounds.min >= bounds.max, 'Today is the first possible filing day — nothing earlier to correct to.');
+  const url = `/api/tasks/${matterId}/steps/${gstr1.stepNumber}/filed-on`;
+
+  // Guards: clients (and professionals) are refused; the range is enforced.
+  const client = await apiAs('client');
+  expect((await client.put(url, { data: { date: bounds.min } })).status()).toBe(403);
+  await client.dispose();
+  try {
+    const pro = await apiAs('pro');
+    expect((await pro.put(url, { data: { date: bounds.min } })).status()).toBe(403);
+    await pro.dispose();
+  } catch { /* no professional test account on this database */ }
+  expect((await admin.put(url, { data: { date: '2999-01-01' } })).status()).toBe(400);
+  expect((await admin.put(url, { data: { date: '2000-01-01' } })).status()).toBe(400);
+  expect((await admin.put(url, { data: { date: '2026-02-30' } })).status()).toBe(400);
+  await admin.dispose();
+
+  // An admin corrects it from the header.
+  await adminPage.goto(`tasks/${matterId}`);
+  await adminPage.getByRole('button', { name: 'Correct GSTR-1 filing date' }).click();
+  await adminPage.getByLabel('GSTR-1 filed on').fill(bounds.min);
+  await adminPage.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(adminPage.getByText(`GSTR-1 filed on: ${longOf(bounds.min)}`)).toBeVisible({ timeout: 20_000 });
+  await expect(adminPage.getByText(`GSTR-3B filed on: ${todayLong()}`)).toBeVisible(); // its own date is untouched
+  await adminPage.getByRole('button', { name: /Show completed/ }).click();
+  await expect(adminPage.locator(`#step-row-${gstr1.stepNumber}`)).toContainText(`Filed on: ${longOf(bounds.min)}`);
+  // Recorded in the history: who, from what, to what.
+  await expect(adminPage.getByText(`GSTR-1 filing date corrected from ${todayLong()} to ${longOf(bounds.min)}.`).first()).toBeVisible();
+
+  // The sheet's Date of GSTR-1 Filing follows, and is corrected on the matter, not typed over.
+  let recId = '';
+  await expect(async () => {
+    const [rec] = (await listWorksheet('admin', matterSheet)).filter((x) => x.values.matter === matterId);
+    expect(rec.values.gstr1_date).toBe(bounds.min);
+    recId = rec.id;
+  }).toPass({ timeout: 45_000, intervals: [2_000, 5_000, 8_000] });
+  const team = await apiAs('team');
+  const typed = await team.patch(`/api/worksheets/sheets/${matterSheet}/records/${recId}`, { data: { values: { gstr1_date: bounds.max } } });
+  expect(typed.status()).toBe(409);
+  await team.dispose();
+
+  // The client sees the corrected date, not the history entry.
+  await clientPage.goto(`tasks/${matterId}`);
+  await expect(clientPage.getByText(`GSTR-1 filed on: ${longOf(bounds.min)}`)).toBeVisible({ timeout: 20_000 });
+  await expect(clientPage.getByRole('button', { name: 'Correct GSTR-1 filing date' })).toHaveCount(0);
+  await expect(clientPage.getByText(/filing date corrected/)).toHaveCount(0);
+});
+
+test('#292 a matter of any other service has no Filing Month', async ({ adminPage }) => {
+  // Any workflow-backed service the GST sheet is NOT linked to (workflows are editable — discover one).
+  const admin0 = await apiAs('admin');
+  const defs = await (await admin0.get('/api/workflow-definitions')).json() as { serviceKeys?: string[] }[];
+  await admin0.dispose();
+  const linked = new Set([...monthlySnapshot.linkedServices, SERVICE, 'gst-returns', 'gst-returns-quarterly']);
+  const serviceKey = defs.flatMap((d) => d.serviceKeys ?? []).find((k) => !linked.has(k));
+  test.skip(!serviceKey, 'No service outside the GST sheet to compare with.');
+  const other = await createMatter({ serviceKey, organisation: `${RUN} Not GST` });
+  try {
+    await adminPage.goto(`tasks/${other}`);
+    await expect(adminPage.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
+    await expect(adminPage.getByTestId('gst-filing-period')).toHaveCount(0);
+    const admin = await apiAs('admin');
+    const body = await (await admin.get(`/api/tasks/${other}`)).json();
+    await admin.dispose();
+    expect(body.gstFilingPeriodLabel).toBeUndefined();
+  } finally {
+    await deleteMatter(other);
+  }
+});
+
 test('a manager adds a row by hand in Quarterly; Monthly does not show it, and cannot reach it', async ({ managerPage }) => {
   await openView(managerPage, 'Quarterly');
   await managerPage.getByRole('button', { name: 'Add record' }).click();
@@ -184,6 +306,81 @@ test('Constitution choices: a team member adds one and it is offered when adding
   await teamPage.getByLabel('Return filing', { exact: true }).selectOption({ label: 'Quarterly' });
   await teamPage.getByRole('button', { name: 'Add record' }).click();
   await expect(teamPage.getByLabel('CONSTITUTION', { exact: true }).locator('option', { hasText: extra })).toHaveCount(1);
+});
+
+test('#279 Completion Check is a dropdown (Done / Pending) with editable choices', async ({ teamPage }) => {
+  await openView(teamPage, 'Monthly');
+  await teamPage.getByRole('button', { name: 'Add record' }).click();
+  const field = teamPage.getByLabel('Completion Check', { exact: true });
+  await expect(field.locator('option', { hasText: 'Done' })).toHaveCount(1);
+  await expect(field.locator('option', { hasText: 'Pending' })).toHaveCount(1);
+  await teamPage.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await teamPage.getByRole('button', { name: 'Edit dropdowns' }).click();
+  await expect(teamPage.getByLabel('Dropdown column').locator('option', { hasText: 'Completion Check' })).toHaveCount(1);
+});
+
+test('#279 Return Period filter: options follow Monthly / Quarterly, default is the period being filed now', async ({ adminPage }) => {
+  await adminPage.goto('reports/gst-returns');
+  const picker = adminPage.getByLabel('Return filing', { exact: true });
+  const period = adminPage.getByLabel('Return period', { exact: true });
+  await picker.selectOption({ label: 'Monthly' });
+  await expect(period).toHaveValue(expectedPeriod('monthly'), { timeout: 20_000 });
+  const monthly = await period.locator('option').allInnerTexts();
+  expect(monthly[0]).toBe('All periods');
+  expect(monthly[1]).toBe(expectedPeriod('monthly'));
+  expect(monthly.slice(1, 25).every((t) => /^[A-Z][a-z]+ \d{4}$/.test(t))).toBeTruthy();
+
+  await picker.selectOption({ label: 'Quarterly' });
+  await expect(period).toHaveValue(expectedPeriod('quarterly'));
+  const quarterly = await period.locator('option').allInnerTexts();
+  expect(quarterly[1]).toMatch(/^Q[1-4] \d{2}-\d{2} \([A-Z][a-z]+–[A-Z][a-z]+\)$/);
+
+  // The run's matter shows under its period in its own view, and not under an older one.
+  await picker.selectOption({ label: matterSheetLabel });
+  await adminPage.getByLabel('Search this sheet').fill(ORG);
+  await expect(adminPage.locator('tr', { hasText: ORG })).toHaveCount(1, { timeout: 20_000 });
+  await period.selectOption({ index: 2 }); // the period before
+  await expect(adminPage.locator('tr', { hasText: ORG })).toHaveCount(0);
+});
+
+test('#279 GST Pswd: never in a list, revealed to staff only (audited), masked in the sheet', async ({ teamPage }) => {
+  const secret = `Pw<${RUN}>&1`;
+  const team = await apiAs('team');
+  const created = await team.post('/api/worksheets/sheets/gst_return_monthly/records', { data: { values: {
+    client_name: `${RUN} Secret Pvt Ltd`, gstin: `21${RUN}Q9`, period: expectedPeriod('monthly'), gst_user_id: `user${RUN}`, gst_password: secret,
+  } } });
+  expect(created.status(), await created.text()).toBe(201);
+  const rec = await created.json();
+  expect(JSON.stringify(rec)).not.toContain(secret);
+  expect(rec.secretsSet).toEqual({ gst_password: true });
+  // The list never carries it.
+  const list = await team.get('/api/worksheets/sheets/gst_return_monthly/records?limit=500');
+  expect(await list.text()).not.toContain(secret);
+  // Staff reveal one row on demand; a reason is required.
+  const url = `/api/worksheets/sheets/gst_return_monthly/records/${rec.id}/secrets/gst_password/reveal`;
+  expect((await team.post(url, { data: {} })).status()).toBe(400);
+  const shown = await team.post(url, { data: { purpose: 'view' } });
+  expect(shown.status()).toBe(200);
+  expect(await shown.json()).toMatchObject({ value: secret, userId: `user${RUN}`, loginUrl: 'https://services.gst.gov.in/services/login' });
+  await team.dispose();
+  // Clients (and professionals) never.
+  const client = await apiAs('client');
+  expect((await client.post(url, { data: { purpose: 'view' } })).status()).toBe(403);
+  await client.dispose();
+  try {
+    const pro = await apiAs('pro');
+    expect((await pro.post(url, { data: { purpose: 'login' } })).status()).toBe(403);
+    await pro.dispose();
+  } catch { /* no professional test account on this database */ }
+
+  // In the sheet: masked, Show reveals it, and the Log in action is there.
+  await openView(teamPage, 'Monthly');
+  const r = row(teamPage, `${RUN} Secret`);
+  await expect(r).toContainText('••••••••', { timeout: 20_000 });
+  await expect(r).not.toContainText(secret);
+  await r.getByRole('button', { name: 'Show GST Pswd' }).click();
+  await expect(r).toContainText(secret);
+  await expect(r.getByRole('button', { name: 'Log in to the GST portal' })).toBeVisible();
 });
 
 test('guards: clients are kept out; only an admin changes columns; a write is validated', async ({ clientPage }) => {

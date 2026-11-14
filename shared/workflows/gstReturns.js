@@ -93,6 +93,30 @@ export function duePeriod(frequency, today) {
 }
 
 /**
+ * #279 (firm, 11 Nov) — the Return Period filter of the GST Return Filing sheet:
+ * the `count` most recent periods, newest first, starting with the period being
+ * filed now (`duePeriod` of `today`: in November, October 2026 / Q2 2026-27).
+ * Each is { key, title, label } — `title` is what a row's Return Period holds
+ * ("October 2026", "Q2 2026-27"), `label` what the filter shows ("October 2026",
+ * "Q2 26-27 (July–September)").
+ */
+export function periodOptions(frequency, today, count = frequency === 'quarterly' ? 8 : 24) {
+  const m = String(today ?? '').match(/^(\d{4})-(\d{2})-\d{2}$/);
+  if (!m || !GST_FREQUENCIES.includes(frequency)) return [];
+  const step = frequency === 'quarterly' ? 3 : 1;
+  let y = Number(m[1]);
+  let mo = Number(m[2]);
+  const out = [];
+  for (let i = 0; i < count; i += 1) {
+    const p = duePeriod(frequency, `${y}-${pad(mo)}-01`);
+    out.push({ key: p.key, title: p.title, label: frequency === 'quarterly' ? p.label : p.title });
+    mo -= step;
+    while (mo < 1) { mo += 12; y -= 1; }
+  }
+  return out;
+}
+
+/**
  * Whether this client's matter for `period` should be opened now. Only periods
  * whose 1st falls on or after the day the frequency was chosen: choosing
  * "Monthly" on 10 November starts with the matter of 1 December (for November),

@@ -436,7 +436,10 @@ const GST_RETURN_FIELDS = [
   f('gstin', 'GSTN No', 'text', { aliases: ['GSTIN', 'GST NO', 'GSTN', 'GST NUMBER', 'GSTIN NO'] }),
   f('data_email', 'Mail ID for data collection', 'text', { aliases: ['MAIL ID', 'EMAIL', 'EMAIL ID', 'E-MAIL'] }),
   f('gst_user_id', 'GST User ID', 'text', { aliases: ['USER ID', 'GST USERNAME', 'GST LOGIN'] }),
-  f('gst_password', 'GST Pswd', 'text', { aliases: ['GST PASSWORD', 'GST PWD', 'PASSWORD'] }),
+  // #279 (firm, 11 Nov): a SECRET field — kept out of `values` and every list,
+  // encrypted at rest, revealed one row at a time to staff and audited
+  // (services/worksheetSecrets.service.js).
+  f('gst_password', 'GST Pswd', 'text', { secret: true, aliases: ['GST PASSWORD', 'GST PWD', 'PASSWORD'] }),
   f('contact_no', 'Contact No.', 'text', { aliases: ['CONTACT', 'CONTACT NUMBER', 'MOBILE', 'MOBILE NO', 'PHONE'] }),
   select('assign_person', 'Assign Person', [], { aliases: ['ASSIGNED TO', 'ASSIGNED PERSON', 'ASSIGNEE'] }),
   f('current_status', 'Current Status', 'text', { aliases: ['STATUS'] }),
@@ -452,7 +455,10 @@ const GST_RETURN_FIELDS = [
   select('challan_paid', 'Challan paid by client', YES_NO, { aliases: ['CHALLAN PAID'] }),
   select('annual_sheet', 'Annual Working Sheet Update', YES_NO, { aliases: ['ANNUAL WORKING SHEET', 'ANNUAL SHEET UPDATE'] }),
   f('gstr3b_date', 'Date of GSTR-3B Filing', 'date', { aliases: ['GSTR-3B FILING DATE', 'GSTR 3B DATE', 'GSTR3B FILED ON'] }),
-  f('completion_check', 'Completion Check', 'text', { aliases: ['COMPLETION', 'COMPLETED'] }),
+  // #279 (firm, 11 Nov): "Completion Check should be data validation format" — a
+  // dropdown, its choices editable under Edit dropdowns. "Done" is what the
+  // workflow writes when the matter is completed, so it stays the first choice.
+  select('completion_check', 'Completion Check', ['Done', 'Pending'], { aliases: ['COMPLETION', 'COMPLETED'] }),
   remarks(),
   f('period', 'Return Period', 'text', { aliases: ['PERIOD', 'MONTH', 'QUARTER', 'TAX PERIOD', 'RETURN MONTH', 'RETURN QUARTER'] }),
   matter(),

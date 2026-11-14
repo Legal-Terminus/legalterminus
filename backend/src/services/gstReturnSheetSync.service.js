@@ -28,7 +28,8 @@ import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { BOOKS, SHEETS } from '../config/worksheetDefinitions.js';
 import { resolveSheet, sheetRecordKey } from './worksheetEngine.service.js';
-import { deriveRow, mergeDerived } from './gstReturnSheet.service.js';
+import { deriveRow, mergeDerived, withAuthoredOrder } from './gstReturnSheet.service.js';
+import { getCompiledById } from './workflowDefinitions.service.js';
 
 const RECORDS = 'worksheetRecords';
 const PAGE = 200;
@@ -36,6 +37,7 @@ const MAX_PAGES = 3;
 const LOCK_MS = 2 * 60 * 1000;
 const RECENCY_MS = 15 * 1000;
 const ACTOR = 'system:gst-return-sheet';
+const RULES_VERSION = 2;
 
 const chunks = (list, n) => {
   const out = [];
@@ -55,7 +57,10 @@ export async function syncSheetFromMatters({ bookKey, config = {}, force = false
   const sheets = Object.values(SHEETS).filter((s) => s.book === bookKey).map((s) => ({ def: s, resolved: resolveSheet(s.key, config) }));
   const sheetFor = (frequency) => (sheets.find((s) => s.def.frequency === frequency) ?? sheets[0]).resolved;
   const linked = [...new Set(sheets.flatMap((s) => s.resolved.linkedServices))].sort().slice(0, 30);
-  const servicesKey = linked.join(',');
+  // RULES_VERSION is part of the key: when the derivation rules change (#279 fix of
+  // 2026-11-14: GSTR-1 / GSTR-3B dates), the watermark restarts once and every GST
+  // matter's row is re-derived, so rows synced under the old rules correct themselves.
+  const servicesKey = `${linked.join(',')}#r${RULES_VERSION}`;
 
   const stateRef = db.collection('system').doc(`worksheetSync_${bookKey}`);
   const claim = await db.runTransaction(async (tx) => {
@@ -147,8 +152,14 @@ async function syncPage(db, bookKey, book, sheetFor, docs) {
   const names = new Map([...clients, ...people].map(([uid, u]) => [uid, nameOf(u)]));
 
   const linkedRows = await recordsWhereIn(db, bookKey, 'sourceMatterId', tasks.map((t) => t.id));
+  // #279: tasks are matched in the service's authored order (step numbers are identity only).
+  const defSteps = new Map();
+  await Promise.all([...new Set(tasks.map((t) => t.workflowDefinitionId).filter(Boolean))].map(async (id) => {
+    try { defSteps.set(id, (await getCompiledById(id))?.definition?.steps ?? null); } catch { /* step-number order */ }
+  }));
   const plans = tasks.map((task) => {
-    const { frequency, values } = deriveRow({ task, client: clients.get(task.clientUid) ?? null, steps: steps.get(task.id) ?? [], names });
+    const ordered = withAuthoredOrder(steps.get(task.id) ?? [], defSteps.get(task.workflowDefinitionId));
+    const { frequency, values } = deriveRow({ task, client: clients.get(task.clientUid) ?? null, steps: ordered, names });
     const sheet = sheetFor(frequency);
     return { task, sheet, next: values, row: linkedRows.get(task.id)?.[0] ?? null };
   });

@@ -24,6 +24,8 @@ import { isPaymentLedgerEvent } from '../../../shared/payments/ledgerEvents.js';
 
 // #148: the roles that may see a matter's payment figures.
 const PAYMENT_VIEW_ROLES = ['admin', 'manager'];
+import { annotateGstMatter, attachGstFilingPeriods, gstFirstEmailFor } from '../services/gstMatterTags.service.js';
+import { emailVars as gstEmailVars } from '../services/gstReturns.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
 // Add `days` (may be fractional) to an ISO instant, returning an ISO string.
@@ -213,7 +215,8 @@ async function adminUids() {
 // masks comments that aren't client-visible (fail closed), but the raw remark on
 // the step record bypassed that — so it must never reach the client either. The
 // client sees a comment only via the (filtered) event feed.
-const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark'];
+// #294: filedOnCorrection carries who corrected a filing date — staff detail; the client sees the date (filedOn).
+const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark', 'filedOnCorrection'];
 
 /**
  * #166 — the client identity a request acts as.
@@ -908,7 +911,13 @@ export async function createTask(req, res) {
     try {
       const clientEmail = c.email || (Array.isArray(c.emailIds) ? c.emailIds[0] : null);
       if (clientEmail && !req.suppressCreatedEmail) {
-        const rendered = await renderTemplate('matter_created', {
+        // #219 (firm, 11 Nov): a GST return matter opened by hand (or copied) sends
+        // the GST data-request email as its FIRST email — "<Company> - GST Return -
+        // <period>", subject kept exactly, still threaded — instead of "matter
+        // created". One email either way; the sweep's matters never reach here.
+        const gst = await gstFirstEmailFor({ id: ref.id, ...task }, c);
+        const gstRendered = gst ? await renderTemplate(gst.templateKey, await gstEmailVars(gst.client, gst.period)) : null;
+        const rendered = gstRendered ?? await renderTemplate('matter_created', {
           clientName, organisation: task.organisation ?? '', serviceName: task.serviceName,
           portalUrl: `${publicSiteUrl()}/portal/`,
         });
@@ -918,6 +927,7 @@ export async function createTask(req, res) {
             cc: task.ccEmails, // #149: additional recipients for this matter
             subject: rendered.subject, body: rendered.body,
             taskId: ref.id, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
+            keepSubject: !!gstRendered,
           });
         }
       }
@@ -1479,6 +1489,7 @@ export async function listTasks(req, res) {
       await backfillClientNames(rows); // #164
       await attachCurrentStepNames(rows); // #191
       await attachClientContacts(rows); // #201
+      await attachGstFilingPeriods(rows); // #292
       return res.json({ data: rows, nextCursor: null });
     }
 
@@ -1502,6 +1513,7 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((t) => t.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows); // #164
+      await attachGstFilingPeriods(rows); // #292: the client sees the Filing Month too
       // E20-S01: the client cockpit needs to know which matters await THEM.
       const projected = await annotateAwaitingClient(rows.map(projectTaskForClient));
       return res.json({ data: projected, nextCursor: null });
@@ -1526,6 +1538,7 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((r) => r.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows);
+      await attachGstFilingPeriods(rows); // #292
       // E20-S01: same annotation for the client's own list.
       const projected = await annotateAwaitingClient(rows.map(projectTaskForClient));
       return res.json({ data: projected, nextCursor: null });
@@ -1551,6 +1564,7 @@ export async function listTasks(req, res) {
     if (role === 'client' || role === 'professional') data = data.map(projectTaskForClient);
     else await attachClientContacts(data); // #201: staff only
     await attachCurrentStepNames(data); // #191
+    await attachGstFilingPeriods(data); // #292
     res.json({ data, nextCursor });
   } catch (err) {
     logger.error({ err: err }, 'listTasks error:');
@@ -1782,8 +1796,10 @@ export async function getTask(req, res) {
     // reached. Hidden here so a matter nobody touches again (a completed one)
     // shows the same list as one the engine has since tidied. Best effort:
     // without the service to compare, the list is shown as stored.
+    let definitionSteps = null; // #279: the authored order the GST filing tasks are matched in
     try {
       const compiledForView = await getCompiledById(data.workflowDefinitionId);
+      definitionSteps = compiledForView?.definition?.steps ?? null;
       if (compiledForView) {
         const removed = new Set(removedStepNumbers(steps, compiledForView.definition.steps));
         if (removed.size) steps = steps.filter((s) => !removed.has(s.stepNumber));
@@ -1793,6 +1809,10 @@ export async function getTask(req, res) {
     }
 
     const full = { id: doc.id, ...data, steps };
+    // #292 / #294: Filing Month on a GST return matter, "Filed on" on its GSTR-1 /
+    // GSTR-3B filing tasks. Matched on the INTERNAL task names, so before the
+    // client's projection (which swaps in client-facing names).
+    await annotateGstMatter(full, { definitionSteps });
     // E12-S01: clients get a projection with internal ownership/assignment removed,
     // plus steps the workflow marks as not client-visible (clientVisible === false)
     // are dropped from the client's step list.

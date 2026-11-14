@@ -27,7 +27,7 @@
  * when the WORKFLOW's value changes — so a person's correction stays until the
  * workflow moves on, and a workflow update always shows.
  */
-import { duePeriod, indiaDate, GST_SERVICE_KEYS } from '../../../shared/workflows/gstReturns.js';
+import { duePeriod, indiaDate, companyNameOf, GST_SERVICE_KEYS, GST_TEMPLATE_KEYS } from '../../../shared/workflows/gstReturns.js';
 
 /** The client profile's entity types (clientProfile.service.js) as the firm's Constitution choices. */
 const CONSTITUTION = {
@@ -46,17 +46,39 @@ export const normalizeTitle = (t) => String(t ?? '').toLowerCase().replace(/[^a-
  * "GSTR 1 filed", "GSTR-1 Filed" and "gstr1 filing" are the same). A workflow
  * with no such task simply leaves the column to be typed.
  */
+/** Words that make a task NOT the filing itself (the mail after it, the data or preparation before it). */
+const FILING_NONE = ['mail', 'data', 'receiv', 'collect', 'prepar', 'reminder'];
+
+/**
+ * The GST forms a (normalised) task name names, in the order it names them:
+ * "GSTR-1 filed, proceed towards GSTR-3B filing" → ['gstr1', 'gstr3b'];
+ * "GSTR 1 & 3B filing" ("gstr13bfiling") → ['gstr1', 'gstr3b']; "GSTR-3B filed" → ['gstr3b'].
+ */
+export function formsNamed(norm) {
+  const out = [];
+  const add = (f) => { if (!out.includes(f)) out.push(f); };
+  const re = /gstr(?:(1)(3b)?(?![0-9])|(3b))|(3b)/g;
+  let m;
+  while ((m = re.exec(norm))) {
+    if (m[1]) { add('gstr1'); if (m[2]) add('gstr3b'); } else add('gstr3b');
+  }
+  return out;
+}
+
 export const STEP_RULES = [
   { field: 'data_received', kind: 'yes', any: [['data', 'receiv'], ['data', 'collect']], none: ['additional', 'confirmation'] },
   { field: 'tally_prepared', kind: 'yes', any: [['tally'], ['excel', 'prepar']], none: ['annual'] },
-  { field: 'gstr1_date', kind: 'date', any: [['gstr1', 'fil']], none: ['mail'] },
+  // #279 (firm, 11 Nov): a GSTR-1 date showed under GSTR-3B. The two date rules
+  // now also need the task to name THEIR form first (`form`, see formsNamed), never
+  // take a data / preparation / reminder task, and prefer a task that says "filed".
+  { field: 'gstr1_date', kind: 'date', form: 'gstr1', any: [['gstr1', 'fil']], none: FILING_NONE },
   { field: 'gstr1_mail', kind: 'yes', any: [['gstr1', 'mail']] },
   { field: 'gstr2b_mail', kind: 'yes', any: [['2b', 'reco'], ['2b', 'mail']] },
   { field: 'additional_data', kind: 'yes', any: [['additional'], ['confirmation']] },
   { field: 'challan_mail', kind: 'yes', any: [['challan', 'mail'], ['challan', 'sent'], ['challan', 'shar']] },
   { field: 'challan_paid', kind: 'yes', any: [['challan', 'paid'], ['challan', 'payment']], none: ['mail', 'sent', 'shar'] },
   { field: 'annual_sheet', kind: 'yes', any: [['annual', 'sheet'], ['annual', 'working']] },
-  { field: 'gstr3b_date', kind: 'date', any: [['gstr3b', 'fil']], none: ['mail'] },
+  { field: 'gstr3b_date', kind: 'date', form: 'gstr3b', any: [['gstr3b', 'fil']], none: FILING_NONE },
 ];
 
 /** Every column the workflow fills. The rest (user id, password, remarks) are people's. */
@@ -66,12 +88,35 @@ export const DERIVED_FIELDS = [
 ];
 
 const ruleMatches = (rule, norm) => rule.any.some((words) => words.every((w) => norm.includes(w)))
-  && !(rule.none ?? []).some((w) => norm.includes(w));
+  && !(rule.none ?? []).some((w) => norm.includes(w))
+  // A filing-date rule takes only a task whose name names ITS form first: a task
+  // about GSTR-1 never fills the GSTR-3B date, whatever else its name mentions.
+  && (!rule.form || formsNamed(norm)[0] === rule.form);
 
-/** The step a rule picks: the first, by step number, whose title matches. */
+/**
+ * Flow order: a step's `position` in the service's AUTHORED order when the
+ * caller supplied it (`withAuthoredOrder`), else its step number. Step numbers
+ * are identity, not flow (#55): a task added later in the editor keeps a high
+ * number wherever it sits.
+ */
+const flowOrder = (a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || (a.stepNumber ?? 0) - (b.stepNumber ?? 0);
+
+/**
+ * The step a rule picks: the first in flow order whose title matches. For the
+ * two filing dates, a task that says "filed" wins over one that only says
+ * "filing" ("Proceed towards GSTR-1 filing" before "GSTR-1 filed").
+ */
 export function stepForRule(rule, steps) {
-  return [...(steps ?? [])].sort((a, b) => (a.stepNumber ?? 0) - (b.stepNumber ?? 0))
-    .find((s) => ruleMatches(rule, normalizeTitle(s.title))) ?? null;
+  const hits = [...(steps ?? [])].sort(flowOrder).filter((s) => ruleMatches(rule, normalizeTitle(s.title)));
+  if (rule.kind === 'date') return hits.find((s) => normalizeTitle(s.title).includes('filed')) ?? hits[0] ?? null;
+  return hits[0] ?? null;
+}
+
+/** Steps with `position` = their index in the service's authored step list (missing ones keep none). */
+export function withAuthoredOrder(steps, definitionSteps) {
+  if (!Array.isArray(definitionSteps) || !definitionSteps.length) return steps ?? [];
+  const pos = new Map(definitionSteps.map((d, i) => [d.stepNumber, i]));
+  return (steps ?? []).map((s) => (pos.has(s.stepNumber) ? { ...s, position: pos.get(s.stepNumber) } : s));
 }
 
 /** Monthly or quarterly: the GST period the sweep stamped, else the service, else the client's setting. */
@@ -89,10 +134,38 @@ export function frequencyOf(task, client) {
  * the sweep uses — a matter opened on 15 Nov is October's (or Q2's).
  */
 export function periodOf(task, frequency) {
-  if (task?.filingPeriod?.title) return task.filingPeriod.title;
+  return periodObjectOf(task, frequency)?.title ?? null;
+}
+
+/**
+ * The whole period object ({ frequency, key, month, title, label } — `duePeriod`'s
+ * shape): the sweep's `filingPeriod`, else the period that had ended when the
+ * matter was opened. The one rule behind the Return Period, the Filing Month tag,
+ * the correction bounds and the first email's subject.
+ */
+export function periodObjectOf(task, frequency) {
+  if (task?.filingPeriod?.title) return { frequency, ...task.filingPeriod };
   const at = task?.createdAt ? new Date(task.createdAt) : null;
   if (!at || Number.isNaN(at.getTime())) return null;
-  return duePeriod(frequency, indiaDate(at))?.title ?? null;
+  return duePeriod(frequency, indiaDate(at));
+}
+
+/**
+ * #219 (firm, 11 Nov) — the FIRST email of a GST return matter opened by hand
+ * (or as a copy) is the GST data-request email, with the subject
+ * "<Company Name> - GST Return - <period>", exactly as the sweep sends it.
+ * Returns null for any other matter (it keeps the "matter created" email), or
+ * { templateKey, period, client } — `client` with the matter's organisation
+ * first, so `companyNameOf` (the sweep's rule) names the company the matter is for.
+ */
+export function gstFirstEmail({ task, client, linkedServices = [] }) {
+  if (!isGstReturnMatter(task, linkedServices)) return null;
+  const frequency = frequencyOf(task, client);
+  const period = periodObjectOf(task, frequency);
+  if (!period) return null;
+  const forName = { ...(client ?? {}), organisation: task.organisation || client?.organisation || '' };
+  if (!companyNameOf(forName)) return null;
+  return { templateKey: GST_TEMPLATE_KEYS[period.frequency] ?? GST_TEMPLATE_KEYS[frequency], period, client: forName };
 }
 
 const STATUS_TEXT = {
@@ -133,11 +206,183 @@ export function deriveRow({ task, client, steps = [], names = new Map() }) {
   for (const rule of STEP_RULES) {
     const step = stepForRule(rule, steps);
     values[rule.field] = !isDone(step) ? null
-      : rule.kind === 'date' ? dateOnly(step.completedAt)
+      : rule.kind === 'date' ? filedOnDateOf(step)
       : 'Yes';
   }
   for (const k of DERIVED_FIELDS) if (values[k] === undefined || values[k] === '') values[k] = null;
   return { frequency, values };
+}
+
+/**
+ * #294 — the two filing tasks whose completion date is shown on the matter
+ * ("Filed on: 11 November 2026"). The SAME rules that fill the sheet's "Date of
+ * GSTR-1 Filing" / "Date of GSTR-3B Filing" columns, so the matter and the sheet
+ * can never disagree about which task is the filing.
+ */
+export const FILING_DATE_FIELDS = { gstr1_date: 'GSTR-1', gstr3b_date: 'GSTR-3B' };
+
+/** Is this matter a GST return matter? Opened by the GST sweep (#219), or of a service linked to the sheet (#279). */
+export function isGstReturnMatter(task, linkedServices = []) {
+  return !!task?.filingPeriod?.title || (!!task?.serviceKey && linkedServices.includes(task.serviceKey));
+}
+
+/**
+ * #292 / #294 — what a GST return matter shows: its filing period (#292,
+ * "September 2026" or "Q2 2026-27"), and for each of the two filing tasks that
+ * is completed, its India completion date (#294). Pure; `steps` must carry the
+ * INTERNAL task names (match before the client's projection renames them).
+ * Returns null for any other matter.
+ * The date is `filedOnDateOf` — a staff correction, else the completion date.
+ *   → { period, frequency, filedOn: [{ stepNumber, form, date, completedOn, corrected }] }
+ */
+export function gstMatterTags({ task, steps = [], client = null, linkedServices = [] }) {
+  if (!isGstReturnMatter(task, linkedServices)) return null;
+  const filedOn = [];
+  for (const rule of STEP_RULES) {
+    const form = FILING_DATE_FIELDS[rule.field];
+    if (!form) continue;
+    const step = stepForRule(rule, steps);
+    const date = filedOnDateOf(step);
+    if (date) {
+      filedOn.push({
+        stepNumber: step.stepNumber, form, date,
+        completedOn: dateOnly(step.completedAt), corrected: !!activeCorrection(step),
+      });
+    }
+  }
+  const frequency = frequencyOf(task, client);
+  return { period: periodOf(task, frequency), frequency, filedOn };
+}
+
+/* ── #294 follow-up: correcting a filing date ─────────────────────────────
+ *
+ * Staff tick a filing task when they get to it, not always the day the return
+ * was filed. A correction is stored ON THE STEP as `filedOnCorrection`
+ * { date, forCompletedAt, byUid, at, previous } and `completedAt` is never
+ * touched. It belongs to ONE completion: `forCompletedAt` is the completedAt it
+ * corrected, so a reopened and re-completed task (new completedAt) shows its new
+ * completion date and the old correction is simply no longer read.
+ */
+
+const activeCorrection = (step) => {
+  const c = step?.filedOnCorrection;
+  return isDone(step) && c?.date && c.forCompletedAt && c.forCompletedAt === step.completedAt ? c : null;
+};
+
+/**
+ * THE filing date of a filing task — the one function the matter's "Filed on"
+ * tag AND the sheet's "Date of GSTR-1/3B Filing" cells read: the staff
+ * correction for this completion, else the India date of completion; null
+ * while the task is not completed.
+ */
+export function filedOnDateOf(step) {
+  if (!isDone(step)) return null;
+  return activeCorrection(step)?.date ?? dateOnly(step.completedAt);
+}
+
+/** The two filing tasks of a workflow: [{ field, form, step }] — only those the workflow has. */
+export function filingSteps(steps) {
+  return STEP_RULES.filter((r) => FILING_DATE_FIELDS[r.field])
+    .map((r) => ({ field: r.field, form: FILING_DATE_FIELDS[r.field], step: stepForRule(r, steps) }))
+    .filter((x) => x.step);
+}
+
+const pad2 = (n) => String(n).padStart(2, '0');
+
+/** Last month of the matter's GST period, 'YYYY-MM' (the sweep's, else the period that had ended when it was opened). */
+export function periodEndMonthOf(task, frequency) {
+  const m = periodObjectOf(task, frequency)?.month;
+  return /^\d{4}-\d{2}$/.test(m ?? '') ? m : null;
+}
+
+/**
+ * The dates a filing date may be corrected to (inclusive, 'YYYY-MM-DD'):
+ *   min  the 1st of the month after the GST period ends — a return is filed
+ *        after its period (September's from 1 October); if the period cannot be
+ *        told, the day the matter was opened
+ *   max  today in India — never a date in the future
+ */
+export function filedOnBounds(task, frequency, now = new Date()) {
+  const max = indiaDate(now);
+  const end = periodEndMonthOf(task, frequency);
+  let min = null;
+  if (end) {
+    const [y, m] = end.split('-').map(Number);
+    min = m === 12 ? `${y + 1}-01-01` : `${y}-${pad2(m + 1)}-01`;
+  } else if (task?.createdAt && !Number.isNaN(new Date(task.createdAt).getTime())) {
+    min = indiaDate(new Date(task.createdAt));
+  }
+  return { min, max };
+}
+
+/**
+ * Who may correct a filing date: internal staff who work the matter. Admin and
+ * manager on any matter (they see every matter); a team member on a matter they
+ * own or hold a task of — the same matters their list shows them. Never a
+ * client or a professional.
+ */
+export function canCorrectFiledOn(user, task, steps = []) {
+  const role = user?.role;
+  if (role === 'admin' || role === 'manager') return true;
+  if (role !== 'team_member' || !user?.uid) return false;
+  if (task?.assignedTo === user.uid) return true;
+  return steps.some((s) => {
+    const owners = Array.isArray(s.assignedToUids) && s.assignedToUids.length ? s.assignedToUids : (s.assignedTo ? [s.assignedTo] : []);
+    return owners.includes(user.uid);
+  });
+}
+
+/** A real calendar date 'YYYY-MM-DD' (2026-02-30 is not). */
+export function isCalendarDate(v) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v ?? ''));
+  if (!m) return false;
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return d.getUTCFullYear() === Number(m[1]) && d.getUTCMonth() === Number(m[2]) - 1 && d.getUTCDate() === Number(m[3]);
+}
+
+/**
+ * Check a correction against the matter. `date` null = go back to the
+ * completion date. Returns { ok: true, step, form, from, to } or
+ * { ok: false, status, message } (messages are shown to staff as they are).
+ */
+export function checkFiledOnCorrection({ task, steps, stepNumber, date, frequency, linkedServices, now = new Date() }) {
+  if (!isGstReturnMatter(task, linkedServices)) {
+    return { ok: false, status: 400, message: 'Filing dates are kept only on GST return matters.' };
+  }
+  const hit = filingSteps(steps).find((x) => x.step.stepNumber === stepNumber);
+  if (!hit) return { ok: false, status: 400, message: 'Only the GSTR-1 and GSTR-3B filing tasks have a filing date.' };
+  if (!isDone(hit.step)) return { ok: false, status: 409, message: `Complete the ${hit.form} filing task first.` };
+  const from = filedOnDateOf(hit.step);
+  if (date != null) {
+    if (!isCalendarDate(date)) return { ok: false, status: 400, message: 'Enter a valid date.' };
+    const { min, max } = filedOnBounds(task, frequency, now);
+    if (date > max) return { ok: false, status: 400, message: 'The filing date cannot be in the future.' };
+    if (min && date < min) return { ok: false, status: 400, message: `The filing date cannot be before ${longDay(min)}, when this return's period ended.` };
+  }
+  return { ok: true, step: hit.step, form: hit.form, from, to: date ?? dateOnly(hit.step.completedAt) };
+}
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+/** '2026-11-11' → '11 November 2026'. */
+export function longDay(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso ?? ''));
+  return m ? `${Number(m[3])} ${MONTH_NAMES[Number(m[2]) - 1]} ${m[1]}` : String(iso ?? '');
+}
+
+/**
+ * The sheet side of the one-source rule. On a row synced from a matter, a
+ * filing-date cell the WORKFLOW fills (its `derived` value is set — the matter
+ * has that task and it is completed) is the matter's: it is corrected on the
+ * matter, not typed in the sheet, so the two can never disagree. Returns the
+ * fields of `patch` that must be refused (typed edit) or dropped (upload).
+ * A row with no matter, or a matter whose workflow has no such task yet, keeps
+ * the cell typable as before.
+ */
+export function matterOwnedDateFields(record, patch) {
+  if (!record?.sourceMatterId) return [];
+  return Object.keys(FILING_DATE_FIELDS).filter((f) => Object.hasOwn(patch ?? {}, f)
+    && record.derived?.[f] != null && (patch[f] ?? null) !== (record.values?.[f] ?? null));
 }
 
 function str(v) {

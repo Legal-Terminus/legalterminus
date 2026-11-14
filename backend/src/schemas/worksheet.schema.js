@@ -52,3 +52,11 @@ export const matterQuerySchema = z.object({
 export const optionsSchema = z.object({
   options: z.array(z.string().max(80)).max(200),
 }).strict();
+
+// POST /api/worksheets/sheets/:sheet/records/:id/secrets/:field/reveal — #279.
+// Why the password is being revealed: shown in the row, copied, or copied to
+// log in to the GST portal. Recorded in the audit entry.
+export const secretRevealSchema = z.object({
+  purpose: z.enum(['view', 'copy', 'login']),
+}).strict();
+

@@ -2883,6 +2883,30 @@ whose two views never mix.
 
 ---
 
+### E18-S12 — Filing Month and filing dates on GST return matters (#292, #294) [Phase 2] 🔄 In review
+
+**Priority**: P1 | **Complexity**: S | **Dependencies**: E18-S11 (#279 sheet rules), #219 (GST return matters)
+
+**Rationale**: GST return matters for the same client look alike month after month; the team
+and the client asked to see which month a matter is for, and when GSTR-1 and GSTR-3B were
+actually filed, on the matter itself.
+
+**Acceptance Criteria**:
+- A GST return matter (sweep-opened, or of a service linked to the GST Return Filing sheet) shows
+  its Filing Month ("September 2026" / "Q2 2026-27") as a tag in its header and in the matters
+  list, for staff and the client; other matters do not.
+- The GSTR-1 and GSTR-3B filing tasks, once completed, show "Filed on: <date>" next to their
+  names, each with its own completion date (India); the header repeats them.
+- The period and the tasks are identified by the sheet's rules (no second rule).
+- Staff (admin, manager, a team member working the matter) correct a filing date when the task
+  was ticked late — a real date, not in the future, not before the period ended; recorded in the
+  matter's history; the sheet's date column shows the same date (one reader, `filedOnDateOf`);
+  clients and professionals cannot (owner's answer, 2026-11-14).
+
+**e2e**: `Portal/e2e/gst-return-filing.spec.ts` (#292 / #294 tests).
+
+---
+
 ---
 
 ## E-19 — Client 360 (Per-Client Status for Staff) [Phase 2]
@@ -7712,3 +7736,155 @@ file name as markup, and the Android app must be signed in again after a phone r
 - **Left for later:** `tasks.controller.js` log lines (parallel branches editing the file);
   pdf.js worker scripts cannot carry SRI (self-host to close).
 - Tests: `backend/src/__tests__/sanitize.test.js` (15).
+### Filing Month and filing dates on GST return matters (2026-11-14, #292, #294) — E18-S12 🔄 In review
+
+The firm asked for a Filing Month tag on GST Return Filing matters (header and All Matters,
+staff and client, only on GST matters — #292) and a "Filed on" date tag on the GSTR-1 filed and
+GSTR-3B filing tasks (#294: "Step 6 – GSTR-1 Filed", "Step 13 – Proceed Towards GSTR-3B Filing").
+Design in architecture.md, "GST tags on the matter".
+- **Which matters / which tasks (decision): the GST Return Filing sheet's rules, reused.** A GST
+  return matter is one the GST reminders opened, or one of a service linked to the sheet. The
+  period is the sheet's Return Period. The two tasks are the ones that fill "Date of GSTR-1 Filing"
+  and "Date of GSTR-3B Filing", found by task NAME (services are editable — no step numbers are
+  assumed; the issue's step 6 and 13 are matched by "GSTR-1 Filed" and "Proceed Towards GSTR-3B
+  Filing"; "… filed mail" tasks are excluded). Changing a task's name in the service, or the
+  sheet's linked services, changes both the sheet and the tags.
+- **"Actual date of successful filing" (decision): the day the task was completed** (India date),
+  as the sheet's date columns already use. Nothing new is stored — the completion time is the
+  record. Alternative considered: a separate stored filing date with an edit box for staff; not
+  built. Consequences to confirm with the firm: if a task is ticked a day after the return was
+  filed, the tag shows the day it was ticked; reopening a filing task removes its date until it is
+  completed again. The sheet's date cell can still be corrected by hand.
+- **Visible where:** the header (Filing Month, then "GSTR-1 filed on …", "GSTR-3B filed on …") and
+  next to each task's name in the step list. The header carries the dates because completed tasks
+  are folded behind "Show completed". The matters list (desktop table and phone cards) shows the
+  Filing Month under the service, and its search finds a matter by month.
+- **Open questions for the firm:** ~~should staff be able to correct the filed date on the matter
+  (e.g. ticked late)?~~ Answered yes by the owner on 2026-11-14 — see the next entry. Should the quarterly tag read "Q2 2026-27" (as now, the sheet's period) or a
+  month range?
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` (+2: which matters are tagged and their
+  period; Filed on per task, with the issue's names, India date, reopened task);
+  `Portal/e2e/gst-return-filing.spec.ts` (+2: header, step rows, list and client view; a non-GST
+  matter has no tag). Playwright not yet run.
+
+### Correcting a GSTR-1 / GSTR-3B filing date (2026-11-14, #294) — E18-S12 🔄 In review
+
+The owner answered the open question above: staff must be able to correct "Filed on" when the
+filing task was ticked after the real filing. Design in architecture.md, "GST tags on the matter".
+- **Who (decision):** admin and manager on any matter; a team member on a matter they own or hold
+  a task of (the matters their list shows). Never a client or a professional — refused by the route
+  guard and by the handler from the verified token.
+- **Where:** a pencil beside "GSTR-1 filed on" / "GSTR-3B filed on" in the matter's header opens a
+  date picker (the header always shows, while completed tasks are folded in the step list). Only on
+  the two filing tasks, and only once completed.
+- **Range (decision):** a real date, no later than today (India), and no earlier than the 1st of
+  the month after the return's period ended (September → 1 October; Q2 → 1 October) — a return is
+  filed after its period. If the period cannot be told, no earlier than the day the matter opened.
+- **Stored on the task:** the corrected date plus who/when and the date it replaced; the completion
+  time is kept. The matter's history says "GSTR-1 filing date corrected from 12 November 2026 to 11
+  November 2026" (staff only; the client sees just the date). "Use completion date" undoes it.
+- **One source (decision):** the matter's tags and the sheet's Date of GSTR-1 / GSTR-3B Filing read
+  the date through one function. On a sheet row fed by a matter whose filing task is completed,
+  that cell is no longer typed over or overwritten by an upload ("correct it on the matter's filing
+  task"); rows without a matter keep the cell typable, as before.
+- **Reopen (decision):** a correction belongs to the completion it corrected. Reopening the task
+  removes the date; completing it again shows the new completion date, and the old correction is no
+  longer used.
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` (+5: one source — tag and sheet agree,
+  re-completion; who may — client/professional refused, route guard; validation and range; the
+  history entry; the sheet's matter-owned cell); `Portal/e2e/gst-return-filing.spec.ts` (+1:
+  guards, header correction, step row, history, sheet follows and refuses a typed edit, client view).
+  Playwright not yet run.
+
+### GST Return Filing sheet: GSTR-1 date shown under GSTR-3B (2026-11-14, #279) — E18-S11 🔄 In review
+
+The firm reported (11 Nov) a GSTR-1 filing date (11 Nov 2026) under "Date of GSTR-3B Filing".
+- **Cause (as far as can be told without the live service):** the date columns took the FIRST task,
+  by step NUMBER, whose name contained "GSTR-3B" and "fil" — a task whose name mentions both forms
+  (e.g. "GSTR-1 filed – proceed towards GSTR-3B filing", or a data task "for GSTR-1 & GSTR-3B
+  filing") filled the GSTR-3B column, and step numbers do not follow the flow once tasks are
+  added later. QA has no GST return service and the live service was not read (repository rule),
+  so the firm's exact task names are unconfirmed — **open: ask the firm for the task list of their
+  GST Return Filing service** (or the owner may allow a read-only look at live).
+- **Fix:** a task fills a form's date only if its name names that form first; data, preparation,
+  reminder and mail tasks never fill a filing date; a task saying "filed" wins over "filing";
+  tasks are taken in the service's order, not by number. The matter's "Filed on" tags (#294)
+  use the same rule. Rows already synced under the old rule correct themselves: the rules version
+  is part of the sync's watermark key, so the next openings re-derive every GST matter (200 per
+  page, 3 pages per opening) and the wrong GSTR-3B cell is cleared or set right (a cell a person
+  typed since is kept, as always).
+- Tests: `gstReturnSheet.test.js` +2 (forms named; dates in their own columns with mixed names
+  and out-of-order step numbers).
+
+### GST return matter opened by hand: first email subject "Company - GST Return - period" (2026-11-14, #219)
+
+The firm asked (11 Nov) that the FIRST email of a GST Return Filing matter be "<Company Name> - GST
+Return - <Month Year>" ("ABC PRIVATE LIMITED - GST Return - September 2026"; quarterly "… - Q2
+2026-27"). Matters opened by the GST reminders already did. A GST matter opened by hand — or a
+duplicate or recurring copy — sent the generic "matter created" email with the subject
+"[Legal Terminus] Org | Service (#id)".
+- **Decision:** such a matter now sends the monthly / quarterly GST email (the firm's data-request
+  text, editable under Email Templates) as its first email, instead of "matter created" — so a
+  hand-opened GST matter behaves like one the reminders opened. Subject sent exactly as the template
+  says, still threaded with the matter. One email, never two. The period and company are worked out
+  by the same rules as the Filing Month tag and the sweep (the matter's organisation first).
+- Note: the firm's quarterly example reads "Q1 2026-27"; the label is the quarter the return is FOR
+  (Q1 = April–June), as the reminders already use.
+- Tests: `backend/src/__tests__/gstFirstEmail.test.js` (4: monthly by hand, quarterly and a copy,
+  another service unchanged, the sweep still suppresses and sends one). Not verified by sending.
+
+### GST Return Filing sheet: Completion Check is a dropdown (2026-11-14, #279) — E18-S11 🔄 In review
+
+The firm asked (11 Nov) for Completion Check in "data validation format". It is now a dropdown
+like the other yellow columns, choices **Done** and **Pending** (editable under Edit dropdowns by
+admin, manager and team member; shared by Monthly and Quarterly). The workflow still writes Done
+when the matter is completed. Values already in the column are kept as they are.
+Tests: `gstReturnSheet.test.js` +1; `gst-return-filing.spec.ts` +1.
+
+### GST Return Filing sheet: Return Period filter (2026-11-14, #279) — E18-S11 🔄 In review
+
+The firm asked (11 Nov) for a period filter "as in the Marketing report".
+- A **Return period** dropdown beside Monthly / Quarterly. Monthly lists "October 2026, September
+  2026, …" (24 months); Quarterly "Q2 26-27 (July–September), Q1 26-27 (April–June), …" (8
+  quarters); the list changes with the view. Any period typed on a row that is not in the list is
+  offered too, and "All periods" shows everything.
+- **Default (decision):** the period being filed now — in November, October 2026 (monthly) and Q2
+  26-27 (quarterly) — the one whose matters the reminders opened on the 1st. A literal "current
+  month" (November) has no rows until 1 December, so it would open on an empty sheet. Open: confirm
+  with the firm.
+- The firm's example "Q1 26-27 (July–September)" mixes two quarters; the filter uses the financial
+  year (Q1 = April–June, Q2 = July–September), as the reminders and Return Period already do.
+- The filter works over the whole loaded sheet (search and column filters apply on top); Download
+  Excel exports what is shown.
+- Tests: `gstReturns.test.js` +1 (options and default); `gst-return-filing.spec.ts` +1; the other
+  GST sheet tests now pick "All periods".
+
+### GST Return Filing sheet: GST portal password — masked, "Log in", audited, encrypted (2026-11-14, #279) — E18-S11 🔄 In review
+
+The firm asked (11 Nov) that clicking the GST password open the GST portal with the user ID and
+password filled in, as their Google Sheet does; masked by default; editable by admin, manager and
+team.
+- **What was NOT possible:** filling in the GST portal's login form. A web page cannot type into
+  another website (the browser forbids it), and the GST portal's login also needs a captcha. The
+  Apps Script attached to the issue is the mail automation only — it contains no login code; if the
+  firm has the actual login script, we will look at it.
+- **What was built:** the password shows as •••••••• . Three buttons per row: **Show** (for 20
+  seconds), **Copy**, and **Log in** — copies the password, shows the GST user ID, and opens the GST
+  portal's login page in a new tab, ready to paste. The same buttons are in the record's Edit form
+  (so it works on a phone). Changing it: Edit → GST Pswd (an empty box keeps the saved one).
+- **Protection (decision):** only admin, manager and team member can see, copy or change it —
+  refused for clients and professionals on the server. No list, search or Excel download contains
+  it any more (Download Excel leaves the column empty); each row's password is fetched only when a
+  button is pressed, and every show / copy / log-in is recorded (who, which client, when, why) in
+  `worksheetAudit`. Stored encrypted (AES-256-GCM) once the deployment has the new secret
+  `WORKSHEET_SECRETS_KEY`.
+- **Owner action needed:** create the key (one per environment) in Secret Manager / GitHub Secrets
+  and pass it to Cloud Run in `deploy-qa.yml` and `deploy-production.yml` (a `.github/` change —
+  code-owner review). Until then passwords are hidden and audited but stored unencrypted; they are
+  encrypted at their next use once the key is set. Existing passwords move out of the visible
+  columns at their first edit or use; nothing is lost.
+- **Open:** is there an audit screen wanted (today the log is in the database only)?
+- Tests: `backend/src/__tests__/worksheetSecrets.test.js` (8: secret field, AES-GCM round trip and
+  tamper, key handling, kept as typed, migration, lists never include it, guard, audit before
+  reply); `gst-return-filing.spec.ts` +1.
+
