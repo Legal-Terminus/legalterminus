@@ -23,6 +23,7 @@
  * Never log a secret value.
  */
 import { BOOKS } from '../config/worksheetDefinitions.js';
+import { isSafeKey } from '../utils/sanitize.js';
 
 export const SECRET_MAX_LEN = 200;
 
@@ -66,6 +67,9 @@ export function splitSecretValues(bookKey, values = {}) {
   const rest = {};
   const secrets = {};
   for (const [k, v] of Object.entries(values ?? {})) {
+    // CodeQL #73: the keys are the request's column names — never let one reach
+    // a prototype (`__proto__`, `constructor`, `prototype`).
+    if (!isSafeKey(k)) continue;
     if (fields.includes(k)) {
       const clean = cleanSecretInput(v);
       if (clean != null) secrets[k] = clean;
