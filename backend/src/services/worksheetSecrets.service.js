@@ -64,17 +64,15 @@ export function cleanSecretInput(raw) {
  */
 export function splitSecretValues(bookKey, values = {}) {
   const fields = secretFieldsOf(bookKey);
-  const rest = {};
-  const secrets = {};
-  for (const [k, v] of Object.entries(values ?? {})) {
-    // CodeQL #73: the keys are the request's column names — never let one reach
-    // a prototype (`__proto__`, `constructor`, `prototype`).
-    if (!isSafeKey(k)) continue;
-    if (fields.includes(k)) {
-      const clean = cleanSecretInput(v);
-      if (clean != null) secrets[k] = clean;
-    } else rest[k] = v;
-  }
+  // CodeQL #73: the keys are the request's column names. Prototype names
+  // (`__proto__`, `constructor`, `prototype`) are dropped, and both objects are
+  // built with Object.fromEntries — no `obj[userKey] = …` write at all.
+  const entries = Object.entries(values ?? {}).filter(([k]) => isSafeKey(k));
+  const rest = Object.fromEntries(entries.filter(([k]) => !fields.includes(k)));
+  const secrets = Object.fromEntries(entries
+    .filter(([k]) => fields.includes(k))
+    .map(([k, v]) => [k, cleanSecretInput(v)])
+    .filter(([, clean]) => clean != null));
   return { values: rest, secrets };
 }
 
