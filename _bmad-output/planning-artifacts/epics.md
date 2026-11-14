@@ -7564,3 +7564,22 @@ sheet".
   follows its workflow and a typed cell yields to the next workflow change; a manual Quarterly row
   stays out of Monthly and is 404 through it; Constitution choice added by a team member; client,
   team and validation guards). Run locally against QA on 2026-11-10: 5/5 passed (the new tasks index is not on QA, so the sync used its fallback); trademark-reports.spec 8/8 still pass.
+
+### Matter steps and Chat fixes (2026-11-14, #293, #295, #296, #297) 🔄 In review
+
+**#293 (1) — the team member assigned on a GST matter got no email.** Root cause: a matter
+created with no payment — every GST return matter the #219 sweep opens, every #167
+recurring copy, any matter created as "No payment" — waits in `pending_admin_approval`.
+Creation tells only the admins, and approving it told only the matter's creator (for GST:
+`system:gst-returns`, nobody). The people the first step is assigned to were never told, at
+creation or at approval. A paid matter skips approval and was announced at creation —
+hence "especially matters with no payment".
+- `services/stepAssignmentNotice.service.js`: one "this step is yours" notice, used at
+  creation, at approval (new) and on every move to an internal step.
+- It now reaches every assignee of a shared step (#192); creation and transitions told
+  only the primary assignee.
+- `notify()` skips `system:*` recipients.
+- Not changed: a matter whose first step is the CLIENT's is not announced to the client
+  at approval (the client already got the matter-created / GST email when it opened).
+- Tests: `backend/src/__tests__/stepAssignmentNotice.test.js` (8).
+

@@ -19,6 +19,7 @@ import { deriveProfile } from '../services/clientProfile.service.js';
 import { deriveRollup, sumLedger, openingBalanceRow, creationPaymentRow } from '../services/paymentLedger.service.js';
 import { getOverrides, makeStatutoryResolver } from '../services/statutoryCalendar.service.js';
 import { clientDisplayName } from '../services/clientName.service.js';
+import { announceStepAssignment } from '../services/stepAssignmentNotice.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
 // Add `days` (may be fractional) to an ISO instant, returning an ISO string.
@@ -173,11 +174,18 @@ async function attachClientContacts(rows) {
 async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId, stepNumber }) {
   try {
     if (!recipientUid || recipientUid === actorUid) return;
+    // #293: a system actor (`system:gst-returns`) is recorded as a matter's
+    // creator but is nobody's inbox — "Matter approved" to it was a dead write.
+    if (String(recipientUid).startsWith('system:')) return;
     await createNotification({ recipientUid, type, title, message, taskId, stepNumber });
   } catch (err) {
     logger.warn({ err: err?.message }, 'notify: failed to create notification');
   }
 }
+
+// #293: the "step is now yours" notice — creation, approval and transitions all
+// go through announceStepAssignment so the three can never drift apart again.
+const assignmentNoticeDeps = { createNotification, renderTemplate, logger };
 
 // All admin UIDs — recipients for "needs approval" notifications. Best-effort.
 async function adminUids() {
@@ -879,16 +887,13 @@ export async function createTask(req, res) {
         await notify({ recipientUid: firstAssignee, actorUid: req.user.uid, type: 'info', title, message, taskId: ref.id });
       } else {
         // #109: internal "step assigned" copy from the editable template.
-        const t = await renderTemplate('step_assigned', {
-          clientName, serviceName: task.serviceName,
-          stepName: firstStepDef?.title ?? `Step ${resolvedFirstStep}`,
-        });
-        await notify({
-          recipientUid: firstAssignee, actorUid: req.user.uid, type: 'info',
-          title: t?.subject || 'New step assigned to you',
-          message: t?.body || `${clientName} · ${task.serviceName}: ${firstStepDef?.title ?? `Step ${resolvedFirstStep}`}`,
-          taskId: ref.id,
-        });
+        // #293: EVERYONE on the first step (#192), not only its primary assignee.
+        await announceStepAssignment(db, {
+          taskId: ref.id, task, stepNumber: resolvedFirstStep,
+          stepTitle: firstStepDef?.title ?? `Step ${resolvedFirstStep}`,
+          step: { assignedTo: assigneesForStep(firstStepDef ?? {})[0] ?? null, assignedToUids: assigneesForStep(firstStepDef ?? {}) },
+          actorUid: req.user.uid,
+        }, assignmentNoticeDeps);
       }
     }
 
@@ -955,11 +960,13 @@ export async function approveTask(req, res) {
     // definition can't be loaded, fall back to no due dates rather than failing.
     let matterDueAt = null;
     let firstDueAt = null;
+    // #293: the first step's definition, kept for the assignment notice below.
+    let firstDef = null;
     try {
       const compiled = await getCompiledById(task.workflowDefinitionId);
       if (compiled) {
         const stepDefs = materialisableSteps(compiled.definition.steps);
-        const firstDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber);
+        firstDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber) ?? null;
         // #219: the same resolution creation uses, so a first step due on a
         // statutory date (a GSTR filing) gets that date — for the matter's own
         // GST period — instead of only its typical duration.
@@ -1002,6 +1009,19 @@ export async function approveTask(req, res) {
       message: `${task.clientName ?? ''} · ${task.serviceName ?? ''} was approved and is now active.`,
       taskId: req.params.taskId,
     });
+
+    // #293 ROOT CAUSE: approval is when a no-payment matter's first step goes
+    // live, but only the creator was told. The people the step is assigned to
+    // (the GST team member, for every sweep-opened GST matter) never got the
+    // "New step assigned to you" email. Tell them now — the same notice a paid
+    // matter's first step gets at creation. A client step is skipped: the
+    // client was already written to when the matter was opened.
+    await announceStepAssignment(db, {
+      taskId: req.params.taskId, task, stepNumber: task.currentStepNumber,
+      stepTitle: firstDef?.title,
+      clientOwned: firstDef ? deriveOwnerType(firstDef) === 'client' : false,
+      actorUid: req.user.uid,
+    }, assignmentNoticeDeps);
 
     res.json({ success: true, status: 'active' });
   } catch (err) {
@@ -3093,9 +3113,8 @@ export async function transitionTask(req, res) {
           await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'info',
             title: promptTitle, message: promptMessage, taskId, stepNumber: newStep });
         } else {
-          // Internal step — notify its assignee (pre-assigned or matter owner).
+          // Internal step — notify its assignees (pre-assigned or matter owner).
           const nextStepSnap = await taskRef.collection('steps').doc(String(newStep)).get();
-          const nextAssignee = nextStepSnap.exists ? nextStepSnap.data().assignedTo : null;
           // #53: client-approval → explicit "proceed" copy.
           // #56: REWORK (form-check reject) → tell the prior-step owner correction
           // is required so they can rectify and resubmit for approval.
@@ -3110,8 +3129,13 @@ export async function transitionTask(req, res) {
             title = 'Correction required';
             message = `Correction required for ${ctx}: ${newDef?.title ?? `Step ${newStep}`}.${comment ? ` Note: ${richTextToPlain(comment)}` : ''} Please review, rectify and resubmit for approval.`;
           }
-          await notify({ recipientUid: nextAssignee || task.assignedTo, actorUid: uid, type: isRework ? 'warning' : 'info',
-            title, message, taskId, stepNumber: newStep });
+          // #293: every assignee of a shared step (#192), not only the primary;
+          // the matter owner when nobody holds it — as before.
+          await announceStepAssignment(db, {
+            taskId, task, stepNumber: newStep,
+            step: nextStepSnap.exists ? nextStepSnap.data() : null,
+            actorUid: uid, type: isRework ? 'warning' : 'info', title, message,
+          }, assignmentNoticeDeps);
         }
         // If the CLIENT just acted, also let the matter owner know they responded.
         if (role === 'client') {

@@ -260,6 +260,7 @@ Every meaningful workflow event triggers an in-app notification and an email to 
 8. **Given** a user writes a step comment, a note to the client or a Discussion message of up to 1,000 words (#194), **Then** it is saved in full and shown folded behind "Read more" when long; **Given** it exceeds 1,000 words, **Then** it is refused with the actual word count and nothing is saved.
 9. **Given** a user opens a matter from a report, the dashboard, a client's page or search and presses Back (#208), **Then** they return to that page; a report's filters are part of its address and are still applied.
 10. **Given** an admin or manager creates a matter from the Matters page or a client's page (#211), **Then** the new matter opens, and Back returns them to the page they created it from.
+11. **Given** a step becomes someone's to work — when a matter is created already paid, when an admin approves a matter created with no payment (every automatic GST return matter), or when the matter moves on to that step (#293), **Then** every team member assigned to the step receives one notification and one email; if nobody is assigned, the matter's owner does.
 
 ---
 

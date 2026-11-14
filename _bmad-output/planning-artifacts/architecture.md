@@ -2746,6 +2746,28 @@ opens a preview (the app-wide `useConfirm` dialog) before it is posted. This is 
 only: the API still accepts `clientVisible: true` directly, as integrations and tests use
 it.
 
+## Who is told that a step is theirs (#293, 2026-11-14)
+
+`services/stepAssignmentNotice.service.js` — `announceStepAssignment(db, {...}, deps)`
+is the ONE place that tells people a step is now theirs. `createTask` (an active
+matter's first step), `approveTask` (a no-payment matter's first step, when approval
+makes it live) and `transitionTask` (every move onto an internal step) all call it.
+Each recipient gets one in-app notification, mirrored to email by
+`createNotification` (so the `EMAIL_DISABLED` kill-switch applies).
+
+- **Recipients** (`stepAssignmentRecipients`, pure): every assignee of the step
+  (`assignedToUids`, #192), minus the client; if nobody on our side holds it and it
+  is not the client's step, the matter owner. Never the actor, never a
+  `system:*` actor.
+- **Why approval:** a matter created with no payment (every GST matter the #219 sweep
+  opens, every #167 recurring copy) is `pending_admin_approval` at creation, so
+  creation tells only the admins. Approval used to tell only the creator — the first
+  step's assignee was never told. That was the missing GST assignment email.
+- Copy: the editable `step_assigned` template, unless a transition passes its own
+  ("Step ready for you", "Client approval received", "Correction required").
+- `notify()` in `tasks.controller.js` skips `system:*` recipients ("Matter approved"
+  to `system:gst-returns` was a dead write).
+
 ## Scheduled calls without a shared secret (2026-11-05)
 
 `/api/internal/run-gst-returns` accepts three callers: an admin (Firebase token), a
