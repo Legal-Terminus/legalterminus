@@ -306,6 +306,17 @@ test('Constitution choices: a team member adds one and it is offered when adding
   await expect(teamPage.getByLabel('CONSTITUTION', { exact: true }).locator('option', { hasText: extra })).toHaveCount(1);
 });
 
+test('#279 Completion Check is a dropdown (Done / Pending) with editable choices', async ({ teamPage }) => {
+  await openView(teamPage, 'Monthly');
+  await teamPage.getByRole('button', { name: 'Add record' }).click();
+  const field = teamPage.getByLabel('Completion Check', { exact: true });
+  await expect(field.locator('option', { hasText: 'Done' })).toHaveCount(1);
+  await expect(field.locator('option', { hasText: 'Pending' })).toHaveCount(1);
+  await teamPage.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await teamPage.getByRole('button', { name: 'Edit dropdowns' }).click();
+  await expect(teamPage.getByLabel('Dropdown column').locator('option', { hasText: 'Completion Check' })).toHaveCount(1);
+});
+
 test('guards: clients are kept out; only an admin changes columns; a write is validated', async ({ clientPage }) => {
   await clientPage.goto('reports/gst-returns');
   await expect(clientPage).not.toHaveURL(/\/reports\/gst-returns/);

@@ -455,7 +455,7 @@ The firm's GST return register at `/reports/gst-returns` (a tile on the Reports 
 2. **Given** a later change in the matter (a task completed, approval, a stop), **When** the sheet is opened again, **Then** the row shows it. A cell a person typed keeps the typed value until the workflow changes that same cell; then the workflow's value shows (last change wins). GST User ID, GST Pswd and Remarks are never filled from the workflow.
 3. **Given** Monthly and Quarterly, **Then** they show different records: a record is in one of them only, an upload to one never updates the other, and a record of one is not reachable through the other.
 4. **Given** a row typed or uploaded for the same GSTIN and period before the matter existed, **Then** the matter's row is that row (it is linked, not duplicated).
-5. **Given** the yellow columns (CONSTITUTION, Assign Person and the eight Yes/No status columns), **Then** an admin, manager or team member edits their choices under Edit dropdowns; Monthly and Quarterly share them. Constitution starts with Company, Partnership, Proprietorship, OPC, LLP, Section 8; Assign Person starts empty.
+5. **Given** the yellow columns (CONSTITUTION, Assign Person, the eight Yes/No status columns, and Completion Check — Done / Pending), **Then** an admin, manager or team member edits their choices under Edit dropdowns; Monthly and Quarterly share them. Constitution starts with Company, Partnership, Proprietorship, OPC, LLP, Section 8; Assign Person starts empty.
 6. **Given** a client or professional, **Then** neither the page nor its API is reachable; only an admin changes columns or deletes a record.
 
 ---

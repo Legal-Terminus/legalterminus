@@ -452,7 +452,10 @@ const GST_RETURN_FIELDS = [
   select('challan_paid', 'Challan paid by client', YES_NO, { aliases: ['CHALLAN PAID'] }),
   select('annual_sheet', 'Annual Working Sheet Update', YES_NO, { aliases: ['ANNUAL WORKING SHEET', 'ANNUAL SHEET UPDATE'] }),
   f('gstr3b_date', 'Date of GSTR-3B Filing', 'date', { aliases: ['GSTR-3B FILING DATE', 'GSTR 3B DATE', 'GSTR3B FILED ON'] }),
-  f('completion_check', 'Completion Check', 'text', { aliases: ['COMPLETION', 'COMPLETED'] }),
+  // #279 (firm, 11 Nov): "Completion Check should be data validation format" — a
+  // dropdown, its choices editable under Edit dropdowns. "Done" is what the
+  // workflow writes when the matter is completed, so it stays the first choice.
+  select('completion_check', 'Completion Check', ['Done', 'Pending'], { aliases: ['COMPLETION', 'COMPLETED'] }),
   remarks(),
   f('period', 'Return Period', 'text', { aliases: ['PERIOD', 'MONTH', 'QUARTER', 'TAX PERIOD', 'RETURN MONTH', 'RETURN QUARTER'] }),
   matter(),

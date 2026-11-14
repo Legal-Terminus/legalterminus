@@ -7833,3 +7833,11 @@ duplicate or recurring copy — sent the generic "matter created" email with the
 - Tests: `backend/src/__tests__/gstFirstEmail.test.js` (4: monthly by hand, quarterly and a copy,
   another service unchanged, the sweep still suppresses and sends one). Not verified by sending.
 
+### GST Return Filing sheet: Completion Check is a dropdown (2026-11-14, #279) — E18-S11 🔄 In review
+
+The firm asked (11 Nov) for Completion Check in "data validation format". It is now a dropdown
+like the other yellow columns, choices **Done** and **Pending** (editable under Edit dropdowns by
+admin, manager and team member; shared by Monthly and Quarterly). The workflow still writes Done
+when the matter is completed. Values already in the column are kept as they are.
+Tests: `gstReturnSheet.test.js` +1; `gst-return-filing.spec.ts` +1.
+

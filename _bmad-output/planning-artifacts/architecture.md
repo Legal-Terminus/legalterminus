@@ -2622,7 +2622,8 @@ and **Matter**.
     business name → name; `entityType` → Constitution; `gstNumber`, `email`,
     `mobile`). *Assign Person*: the current step's assignee, else the matter's
     professional. *Current Status*: the current step's title, or Awaiting approval /
-    Completed / Stopped / Rejected / Archived. *Completion Check*: Done when completed.
+    Completed / Stopped / Rejected / Archived. *Completion Check*: Done when completed
+    (a dropdown since 2026-11-14: Done / Pending, editable choices).
   - *Step columns* by task NAME (services are editable, so no step numbers are
     assumed): `STEP_RULES` lists, per column, word sets one of which the
     normalised title must contain, and words it must not ("GSTR-1 filed mail" is the

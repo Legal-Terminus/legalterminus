@@ -29,6 +29,8 @@ const FIRM_COLUMNS = [
 const YELLOW = [
   'CONSTITUTION', 'Assign Person', 'Data Received', 'Tally/ Excel Prepared', 'GSTR-1 Filed Mail', 'GSTR_2B Reco Mail to Client',
   'Additional Data or Confirmation Received from Client', 'Challan Mail to the client', 'Challan paid by client', 'Annual Working Sheet Update',
+  // #279 (firm, 11 Nov): Completion Check is a dropdown too.
+  'Completion Check',
 ];
 
 const rule = (field) => STEP_RULES.find((r) => r.field === field);
@@ -403,4 +405,14 @@ test('#279 the GSTR-1 and GSTR-3B dates land in their own columns and tags', () 
   const later = steps2.map((x) => (x.stepNumber === 13 ? { ...x, status: 'completed', completedAt: '2026-11-20T06:00:00Z' } : x));
   const row2 = deriveRow({ task, client, steps: later }).values;
   assert.deepEqual([row2.gstr1_date, row2.gstr3b_date], ['2026-11-11', '2026-11-20']);
+});
+
+test('#279 Completion Check is a dropdown: Done / Pending, editable, and the workflow\'s "Done" is a choice', () => {
+  const col = resolveSheet('gst_return_monthly').columns.find((c) => c.key === 'completion_check');
+  assert.equal(col.type, 'select');
+  assert.deepEqual(col.options, ['Done', 'Pending']);
+  const done = deriveRow({ task: { ...task, status: 'completed' }, client, steps }).values.completion_check;
+  assert.ok(col.options.includes(done));
+  const { optionOverrides } = applyOptionsEdit('gst_return_monthly', {}, 'completion_check', ['Done', 'Pending', 'On hold']);
+  assert.deepEqual(resolveSheet('gst_return_quarterly', { optionOverrides }).columns.find((c) => c.key === 'completion_check').options, ['Done', 'Pending', 'On hold']);
 });
