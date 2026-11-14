@@ -86,6 +86,12 @@ test.afterAll(async () => {
   if (defId) await deleteDefinition(defId);
 });
 
+/**
+ * The matter page renders its step list once per screen-size layout and hides all
+ * but one with CSS, so an id matches several rows. Only the visible one counts.
+ */
+const visibleRow = (page: Page, selector: string) => page.locator(selector).filter({ visible: true });
+
 async function openView(page: Page, label: string) {
   await page.goto('reports/gst-returns');
   await expect(page.getByRole('heading', { name: 'GST Return Filing' })).toBeVisible();
@@ -177,9 +183,9 @@ test('#292 / #294 the matter shows its Filing Month, and "Filed on" for GSTR-1 a
   // only expand when the toggle offers to.
   const showCompleted = adminPage.getByRole('button', { name: /Show completed/ });
   if (await showCompleted.isVisible().catch(() => false)) await showCompleted.click();
-  await expect(adminPage.locator('#step-row-2')).toContainText(`Filed on: ${todayLong()}`);
-  await expect(adminPage.locator('#step-row-3')).toContainText(`Filed on: ${todayLong()}`);
-  await expect(adminPage.locator('#step-row-1').getByText(/Filed on/)).toHaveCount(0);
+  await expect(visibleRow(adminPage, '#step-row-2')).toContainText(`Filed on: ${todayLong()}`);
+  await expect(visibleRow(adminPage, '#step-row-3')).toContainText(`Filed on: ${todayLong()}`);
+  await expect(visibleRow(adminPage, '#step-row-1').getByText(/Filed on/)).toHaveCount(0);
 
   // The All Matters list carries the month.
   await adminPage.goto('tasks');
@@ -230,7 +236,7 @@ test('#294 staff correct the GSTR-1 filing date; the matter, its history and the
   await expect(adminPage.getByText(`GSTR-1 filed on: ${longOf(bounds.min)}`)).toBeVisible({ timeout: 20_000 });
   await expect(adminPage.getByText(`GSTR-3B filed on: ${todayLong()}`)).toBeVisible(); // its own date is untouched
   { const t = adminPage.getByRole('button', { name: /Show completed/ }); if (await t.isVisible().catch(() => false)) await t.click(); }
-  await expect(adminPage.locator(`#step-row-${gstr1.stepNumber}`)).toContainText(`Filed on: ${longOf(bounds.min)}`);
+  await expect(visibleRow(adminPage, `#step-row-${gstr1.stepNumber}`)).toContainText(`Filed on: ${longOf(bounds.min)}`);
   // Recorded in the history: who, from what, to what.
   await expect(adminPage.getByText(`GSTR-1 filing date corrected from ${todayLong()} to ${longOf(bounds.min)}.`).first()).toBeVisible();
 
