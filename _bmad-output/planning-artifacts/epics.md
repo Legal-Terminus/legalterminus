@@ -7859,32 +7859,27 @@ The firm asked (11 Nov) for a period filter "as in the Marketing report".
 - Tests: `gstReturns.test.js` +1 (options and default); `gst-return-filing.spec.ts` +1; the other
   GST sheet tests now pick "All periods".
 
-### GST Return Filing sheet: GST portal password — masked, "Log in", audited, encrypted (2026-11-14, #279) — E18-S11 🔄 In review
+### GST Return Filing sheet: GST portal password — masked, click to log in (2026-11-14, #279) — E18-S11 🔄 In review
 
 The firm asked (11 Nov) that clicking the GST password open the GST portal with the user ID and
 password filled in, as their Google Sheet does; masked by default; editable by admin, manager and
 team.
 - **What was NOT possible:** filling in the GST portal's login form. A web page cannot type into
   another website (the browser forbids it), and the GST portal's login also needs a captcha. The
-  Apps Script attached to the issue is the mail automation only — it contains no login code; if the
-  firm has the actual login script, we will look at it.
-- **What was built:** the password shows as •••••••• . Three buttons per row: **Show** (for 20
-  seconds), **Copy**, and **Log in** — copies the password, shows the GST user ID, and opens the GST
-  portal's login page in a new tab, ready to paste. The same buttons are in the record's Edit form
-  (so it works on a phone). Changing it: Edit → GST Pswd (an empty box keeps the saved one).
-- **Protection (decision):** only admin, manager and team member can see, copy or change it —
-  refused for clients and professionals on the server. No list, search or Excel download contains
-  it any more (Download Excel leaves the column empty); each row's password is fetched only when a
-  button is pressed, and every show / copy / log-in is recorded (who, which client, when, why) in
-  `worksheetAudit`. Stored encrypted (AES-256-GCM) once the deployment has the new secret
-  `WORKSHEET_SECRETS_KEY`.
-- **Owner action needed:** create the key (one per environment) in Secret Manager / GitHub Secrets
-  and pass it to Cloud Run in `deploy-qa.yml` and `deploy-production.yml` (a `.github/` change —
-  code-owner review). Until then passwords are hidden and audited but stored unencrypted; they are
-  encrypted at their next use once the key is set. Existing passwords move out of the visible
-  columns at their first edit or use; nothing is lost.
-- **Open:** is there an audit screen wanted (today the log is in the database only)?
-- Tests: `backend/src/__tests__/worksheetSecrets.test.js` (8: secret field, AES-GCM round trip and
-  tamper, key handling, kept as typed, migration, lists never include it, guard, audit before
-  reply); `gst-return-filing.spec.ts` +1.
+  Apps Script attached to the issue is the mail automation only — it contains no login code.
+- **What was built:** the password shows as ••••••••. Clicking it copies the password, shows the
+  GST user ID, and opens the GST portal's login page in a new tab, ready to paste. The same button
+  is in the record's Edit form (so it works on a phone). Changing it: Edit → GST Pswd (an empty box
+  keeps the saved one).
+- **Protection:** only admin, manager and team member can get or change it — refused for clients
+  and professionals on the server. No list, search or Excel download contains it (Download Excel
+  leaves the column empty); a row's password is fetched only when it is clicked. Existing passwords
+  move out of the visible columns at their first edit or use; nothing is lost.
+- **Scope decision (owner, 2026-11-14):** the first version (#301, QA only, never released) also
+  had Show / Copy buttons, a record of every reveal and encryption at rest. Removed as beyond what
+  the firm asked for (PR "simple GST password"). Not encrypted; no access log. Encryption, an access
+  log and the same treatment for the Traces / IT passwords would be a separate change request.
+- Tests: `backend/src/__tests__/worksheetSecrets.test.js` (7: secret field, stored as typed,
+  kept as typed, migration, lists never include it, guard, no caching or logging);
+  `gst-return-filing.spec.ts` (masked; click copies it and opens the GST portal; client 403).
 

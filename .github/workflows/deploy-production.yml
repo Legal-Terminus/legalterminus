@@ -214,7 +214,6 @@ jobs:
             --set-env-vars="PHONEPE_CLIENT_VERSION=1" \
             --set-env-vars="RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}" \
             --set-env-vars="RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}" \
-            --set-env-vars="WORKSHEET_SECRETS_KEY=${{ secrets.WORKSHEET_SECRETS_KEY }}" \
             --set-env-vars="RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}" \
             --set-env-vars="FRONTEND_URL=${{ secrets.BACKEND_FRONTEND_URL }}" \
             --set-env-vars="GMAIL_USER=${{ secrets.BACKEND_GMAIL_USER }}" \

@@ -2675,27 +2675,24 @@ and **Matter**.
     strips it from every list / create / update response and sends only
     `secretsSet: { gst_password: true }`. `worksheetRecords` is not readable through
     the client SDK (no rule), so the API is the only way in.
-  - *Revealed one row at a time.* `POST /api/worksheets/sheets/:sheet/records/:id/
-    secrets/:field/reveal { purpose: view | copy | login }` — router guard
-    `requireRole('admin', 'manager', 'team_member')` plus the same on the route; a
-    `worksheetAudit` entry `{ action: 'secret_revealed', purpose, field, book, sheet,
-    recordId, clientName, gstin, byUid, byRole, at }` is written BEFORE the value is
-    returned (`Cache-Control: no-store`); the log line never carries the value.
-    Returns `{ value, userId, loginUrl }`.
-  - *Encrypted at rest.* AES-256-GCM, 12-byte random IV, `{ v: 1, iv, tag, ct }`, key
-    `WORKSHEET_SECRETS_KEY` (32 bytes base64, env from Secret Manager). Without a key a
-    value is stored `{ v: 0, plain }` (out of lists, not encrypted) and encrypted at
-    its next write or reveal once a key exists. **The key is not yet wired into the
-    deploy workflows** — adding `--set-secrets`/`--set-env-vars` to
-    `deploy-qa.yml` / `deploy-production.yml` is a `.github/` change for the owner.
-  - *Migration without loss.* A legacy plaintext `values.gst_password` is moved into
-    `secrets` (sealed) on any write of the record (`secretWrites`) and on reveal.
+  - *Fetched one row at a time.* `POST /api/worksheets/sheets/:sheet/records/:id/
+    secrets/:field/reveal` — router guard `requireRole('admin', 'manager',
+    'team_member')` plus the same on the route; `Cache-Control: no-store`; the value is
+    never logged. Returns `{ value, userId, loginUrl }`.
+  - *Not encrypted, no access log (decision 2026-11-14, owner).* Stored as typed,
+    `{ v: 0, plain }` — the firm asked only for masked + click-to-log-in + staff edit.
+    The first #301 version encrypted it (AES-256-GCM, `WORKSHEET_SECRETS_KEY`) and wrote
+    a `worksheetAudit` entry per reveal; both were removed before any release as out of
+    scope. The `v` tag leaves room to add an encrypted format later without a migration.
+  - *Migration without loss.* A legacy `values.gst_password` is moved into `secrets` on
+    any write of the record (`secretWrites`) and on reveal.
   - *Writes.* Typed (Edit form, a password box; empty = keep) or uploaded (Excel)
-    values are kept exactly as typed (no tag stripping), ≤ 200 chars, sealed.
+    values are kept exactly as typed (no tag stripping), ≤ 200 chars.
   - *"Direct login".* The firm's Apps Script in the issue has no login code. A page
     cannot fill another site's login form (cross-origin; the GST portal also has a
-    captcha), so "Log in" copies the password, shows the user ID, and opens
-    `https://services.gst.gov.in/services/login` in a new tab.
+    captcha), so clicking the masked password (the cell's one button) copies it,
+    shows the user ID, and opens `https://services.gst.gov.in/services/login` in a new
+    tab. No separate Show / Copy buttons.
 - **Access.** As every worksheet: admin, manager, team member view, add, edit and
   edit dropdowns; admin changes columns and deletes a record; route
   `/reports/gst-returns` with the same three roles; clients and professionals 403.

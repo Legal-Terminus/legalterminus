@@ -436,9 +436,9 @@ const GST_RETURN_FIELDS = [
   f('gstin', 'GSTN No', 'text', { aliases: ['GSTIN', 'GST NO', 'GSTN', 'GST NUMBER', 'GSTIN NO'] }),
   f('data_email', 'Mail ID for data collection', 'text', { aliases: ['MAIL ID', 'EMAIL', 'EMAIL ID', 'E-MAIL'] }),
   f('gst_user_id', 'GST User ID', 'text', { aliases: ['USER ID', 'GST USERNAME', 'GST LOGIN'] }),
-  // #279 (firm, 11 Nov): a SECRET field — kept out of `values` and every list,
-  // encrypted at rest, revealed one row at a time to staff and audited
-  // (services/worksheetSecrets.service.js).
+  // #279 (firm, 11 Nov): a SECRET field — kept out of `values`, every list and
+  // every download, and fetched one row at a time by staff
+  // (services/worksheetSecrets.service.js). Not encrypted.
   f('gst_password', 'GST Pswd', 'text', { secret: true, aliases: ['GST PASSWORD', 'GST PWD', 'PASSWORD'] }),
   f('contact_no', 'Contact No.', 'text', { aliases: ['CONTACT', 'CONTACT NUMBER', 'MOBILE', 'MOBILE NO', 'PHONE'] }),
   select('assign_person', 'Assign Person', [], { aliases: ['ASSIGNED TO', 'ASSIGNED PERSON', 'ASSIGNEE'] }),
