@@ -1,6 +1,7 @@
 import { db } from '../config/firebase.js';
 import { VALID_ROLES, isValidRole, canAssignRole } from '../config/roles.js';
 import { logger } from "../config/logger.js";
+import { logValue } from '../utils/sanitize.js';
 import { invalidateIdentity } from '../middleware/auth.middleware.js';
 import {
   upsertUser,
@@ -282,7 +283,7 @@ export const updateUser = async (req, res) => {
       try {
         await admin.auth().setCustomUserClaims(uid, { role: writableRole });
       } catch (e) {
-        logger.warn({ err: e }, `[updateUser] Could not set claims for ${uid}:`);
+        logger.warn({ err: e, uid: logValue(uid) }, '[updateUser] Could not set claims');
       }
     }
 
@@ -349,7 +350,7 @@ export const reassignUserWork = async (req, res) => {
       await batch.commit();
     }
 
-    logger.info(`[reassignUserWork] ${uid} → ${toUid}: matters=${matters.size}, steps=${steps.size}`);
+    logger.info({ uid: logValue(uid), toUid: logValue(toUid), matters: matters.size, steps: steps.size }, '[reassignUserWork] Work reassigned');
     res.status(200).json({
       message: 'Work reassigned successfully',
       mattersMoved: matters.size,
