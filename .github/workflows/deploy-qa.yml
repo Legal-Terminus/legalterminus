@@ -58,7 +58,10 @@ env:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    # Pinned (2026-11-14): ubuntu-latest moved to 26.04, where Playwright cannot
+    # install Chromium for the website prerender, and every deploy failed.
+    # Move to the next LTS once Playwright supports it.
+    runs-on: ubuntu-24.04
     environment: qa
     # One QA deploy at a time; a newer push supersedes one still waiting.
     # Renamed from `deploy-qa` on 2026-11-06: a run GitHub left stuck in its queue

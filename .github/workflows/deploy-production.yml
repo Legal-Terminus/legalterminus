@@ -75,7 +75,10 @@ jobs:
   build-and-deploy:
     # E29-S09: a run that builds the Android app does not also redeploy the web.
     if: ${{ !inputs.build_android }}
-    runs-on: ubuntu-latest
+    # Pinned (2026-11-14): ubuntu-latest moved to 26.04, where Playwright cannot
+    # install Chromium for the website prerender, and every deploy failed.
+    # Move to the next LTS once Playwright supports it.
+    runs-on: ubuntu-24.04
     # Required reviewers on this Environment are the approval gate. Without them
     # configured in GitHub (Settings → Environments → production) a tag deploys
     # immediately.
@@ -400,7 +403,10 @@ jobs:
   # (LT_APP_ENV); the guard (check-bundle.mjs) fails the run if any QA value got in.
   build-android:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_android && startsWith(github.ref, 'refs/tags/v') }}
-    runs-on: ubuntu-latest
+    # Pinned (2026-11-14): ubuntu-latest moved to 26.04, where Playwright cannot
+    # install Chromium for the website prerender, and every deploy failed.
+    # Move to the next LTS once Playwright supports it.
+    runs-on: ubuntu-24.04
     environment: production
     permissions:
       contents: write
