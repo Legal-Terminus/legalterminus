@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { db, admin } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
+import { logValue } from '../utils/sanitize.js';
 import { invalidateIdentity } from '../middleware/auth.middleware.js';
 import { publicSiteUrl, sendNotificationEmail, sendTemplatedEmail } from './emailService.js';
 import { renderTemplate } from './emailTemplates.service.js';
@@ -75,10 +76,10 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
     // ===== 1. Check Firebase Auth by email =====
     try {
       userRecord = await admin.auth().getUserByEmail(email);
-      logger.info(`[UPSERT] Firebase Auth found for ${email}`);
+      logger.info({ email: logValue(email) }, '[UPSERT] Firebase Auth found');
     } catch (authError) {
       // User doesn't exist in Firebase Auth
-      logger.info(`[UPSERT] No Firebase Auth for ${email}, checking Firestore...`);
+      logger.info({ email: logValue(email) }, '[UPSERT] No Firebase Auth, checking Firestore');
     }
 
     // ===== 2. Check Firestore by email (for users who signed in via Google only) =====
@@ -93,7 +94,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
         const doc = snapshot.docs[0];
         existingFirestoreUser = { uid: doc.id, ...doc.data() };
         userRecord = { uid: doc.id }; // Placeholder for update logic
-        logger.info(`[UPSERT] Firestore user found for ${email}`);
+        logger.info({ email: logValue(email) }, '[UPSERT] Firestore user found');
       }
     } else if (userRecord) {
       // Fetch existing Firestore doc if Firebase user exists
@@ -103,14 +104,14 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
           existingFirestoreUser = { uid: userRecord.uid, ...doc.data() };
         }
       } catch (e) {
-        logger.info(`[UPSERT] No Firestore doc yet for Firebase user ${email}`);
+        logger.info({ email: logValue(email) }, '[UPSERT] No Firestore doc yet for Firebase user');
       }
     }
 
     // ===== 3. USER EXISTS → UPDATE (MERGE) =====
     if (userRecord) {
       const uid = userRecord.uid || existingFirestoreUser?.uid;
-      logger.info(`[UPSERT] User exists (${uid}). Merging: role=${role}, provider=${authProvider}`);
+      logger.info({ uid: logValue(uid), role: logValue(role), provider: logValue(authProvider) }, '[UPSERT] User exists, merging');
 
       // Derive existing providers from Firestore doc if available; otherwise
       // inspect the Firebase Auth record's providerData so we don't incorrectly
@@ -163,7 +164,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
           primaryClientUid: profileData?.primaryClientUid ?? undefined,
         }));
       } catch (claimsErr) {
-        logger.warn({ err: claimsErr }, `[UPSERT] Could not set claims for ${uid} (no Auth record yet):`);
+        logger.warn({ err: claimsErr, uid: logValue(uid) }, '[UPSERT] Could not set claims (no Auth record yet)');
       }
 
       // Send password reset email only if:
@@ -184,9 +185,9 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
             to: email,
             ...setupEmail({ name: profileData?.name, role, link, inviter }),
           });
-          logger.info(`[EMAIL] Password setup link sent to ${email}`);
+          logger.info({ email: logValue(email) }, '[EMAIL] Password setup link sent');
         } catch (e) {
-          logger.warn({ err: e }, `[EMAIL] Could not generate/send password reset for ${email}:`);
+          logger.warn({ err: e, email: logValue(email) }, '[EMAIL] Could not generate/send password reset');
         }
       }
 
@@ -205,7 +206,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
     }
 
     // ===== 4. NEW USER → CREATE =====
-    logger.info(`[CREATE] New user: ${email}, role=${role}, provider=${authProvider}`);
+    logger.info({ email: logValue(email), role: logValue(role), provider: logValue(authProvider) }, '[CREATE] New user');
 
     // Create Firebase Auth account
     const newUserRecord = await admin.auth().createUser({
@@ -254,9 +255,9 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
           to: email,
           ...setupEmail({ name: profileData?.name, role, link, inviter }),
         });
-        logger.info(`[EMAIL] Password setup link for ${email} (emailed: ${resetEmailSent})`);
+        logger.info({ email: logValue(email), emailed: resetEmailSent }, '[EMAIL] Password setup link');
       } catch (e) {
-        logger.warn({ err: e }, `[EMAIL] Could not generate/send password reset for ${email}:`);
+        logger.warn({ err: e, email: logValue(email) }, '[EMAIL] Could not generate/send password reset');
       }
     }
 
@@ -271,7 +272,7 @@ export const upsertUser = async (email, role, profileData, options = {}) => {
         });
         if (rendered) await sendTemplatedEmail({ to: email, subject: rendered.subject, body: rendered.body });
       } catch (e) {
-        logger.warn({ err: e?.message }, `[EMAIL] welcome email failed for ${email}`);
+        logger.warn({ err: e, email: logValue(email) }, '[EMAIL] welcome email failed');
       }
     }
 
@@ -343,7 +344,7 @@ export const getUserByUid = async (uid) => {
     if (!doc.exists) return null;
     return { uid: doc.id, ...doc.data() };
   } catch (error) {
-    logger.error({ err: error }, `[getUserByUid] Error fetching ${uid}:`);
+    logger.error({ err: error, uid: logValue(uid) }, '[getUserByUid] Error fetching user');
     throw error;
   }
 };
@@ -365,7 +366,7 @@ export const getUserByEmail = async (email) => {
     const doc = snapshot.docs[0];
     return { uid: doc.id, ...doc.data() };
   } catch (error) {
-    logger.error({ err: error }, `[getUserByEmail] Error fetching ${email}:`);
+    logger.error({ err: error, email: logValue(email) }, '[getUserByEmail] Error fetching user');
     throw error;
   }
 };
@@ -390,11 +391,11 @@ export const updateUserRole = async (uid, newRole) => {
     await admin.auth().setCustomUserClaims(uid, { role: newRole });
     invalidateIdentity(uid); // the new role applies on the next request, not in 60s
 
-    logger.info(`[updateUserRole] ${uid} → ${newRole}`);
+    logger.info({ uid: logValue(uid), role: logValue(newRole) }, '[updateUserRole] Role updated');
 
     return { uid, role: newRole, updated: true };
   } catch (error) {
-    logger.error({ err: error }, `[updateUserRole] Error for ${uid}:`);
+    logger.error({ err: error, uid: logValue(uid) }, '[updateUserRole] Failed');
     throw error;
   }
 };
@@ -435,7 +436,7 @@ export const deleteUser = async (uid) => {
     firestoreDeleted = true;
     invalidateIdentity(uid); // NFR3: the deleted user's cached identity must not outlive them
   } catch (error) {
-    logger.error({ err: error }, `[deleteUser] Firestore delete failed for ${uid}:`);
+    logger.error({ err: error, uid: logValue(uid) }, '[deleteUser] Firestore delete failed');
     throw error; // nothing destructive happened in Auth yet — safe to surface
   }
 
@@ -444,14 +445,14 @@ export const deleteUser = async (uid) => {
     authDeleted = true;
   } catch (error) {
     if (error?.code === 'auth/user-not-found') {
-      logger.info(`[deleteUser] No Auth account for ${uid} (doc removed).`);
+      logger.info({ uid: logValue(uid) }, '[deleteUser] No Auth account (doc removed)');
     } else {
       // Firestore doc is already gone; report so the caller knows Auth lingers.
-      logger.error({ err: error }, `[deleteUser] Auth delete failed for ${uid} (Firestore doc already removed):`);
+      logger.error({ err: error, uid: logValue(uid) }, '[deleteUser] Auth delete failed (Firestore doc already removed)');
       throw error;
     }
   }
 
-  logger.info(`[deleteUser] User ${uid} deleted (firestore=${firestoreDeleted}, auth=${authDeleted}, payments=${paymentsDeleted})`);
+  logger.info({ uid: logValue(uid), firestoreDeleted, authDeleted, paymentsDeleted }, '[deleteUser] User deleted');
   return { deleted: true, firestoreDeleted, authDeleted, paymentsDeleted };
 };

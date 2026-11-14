@@ -13,6 +13,7 @@
  * "dynamic" part. A column is either money (summed into the totals) or a count
  * ("Convert" — clients won), which is never added to money.
  */
+import { stripTags, isSafeKey } from '../utils/sanitize.js';
 
 const SERVICES = [
   ['trademark', 'Trademark'], ['fssai', 'FSSAI'], ['gst', 'GST'],
@@ -195,11 +196,13 @@ export function cleanColumns(columns) {
   }
   const seen = new Set();
   return columns.map((c) => {
-    const label = String(c?.label ?? '').replace(/<[^>]*>/g, '').trim().slice(0, 40);
+    const label = stripTags(c?.label ?? '').trim().slice(0, 40);
     if (!label) throw Object.assign(new Error('Every column needs a name.'), { status: 400 });
     let key = String(c?.key ?? '').trim()
       || label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 30) || 'col';
-    if (!/^[a-z0-9_]{1,40}$/.test(key)) throw Object.assign(new Error(`Invalid column key "${key}".`), { status: 400 });
+    // `__proto__` / `constructor` / `prototype` match the pattern but would
+    // write to the prototype of the day's values object (js/remote-property-injection).
+    if (!/^[a-z0-9_]{1,40}$/.test(key) || !isSafeKey(key)) throw Object.assign(new Error(`Invalid column key "${key}".`), { status: 400 });
     while (seen.has(key)) key = `${key}_2`;
     seen.add(key);
     return { key, label, kind: c?.kind === 'count' ? 'count' : 'money', hidden: !!c?.hidden };

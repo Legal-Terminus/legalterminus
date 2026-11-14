@@ -135,7 +135,7 @@
     </div>
     
     <!-- PDF-LIB.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" integrity="sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI" crossorigin="anonymous"></script>
     
     <script>
         let uploadedFiles = [];
@@ -306,10 +306,10 @@
                 
                 li.innerHTML = `
                     <div class="file-preview">
-                        <img src="${fileObj.preview}" alt="Preview of ${fileObj.name}">
+                        <img src="${fileObj.preview}" alt="">
                     </div>
                     <div class="file-info">
-                        <div class="file-name">${fileObj.name}</div>
+                        <div class="file-name"></div>
                         <div class="file-size">${(fileObj.size / 1024).toFixed(2)} KB</div>
                         <div class="file-status ${fileObj.status}" id="status-${fileObj.id}">
                             ${fileObj.status === 'ready' ? 'Ready for conversion' : fileObj.status}
@@ -319,6 +319,9 @@
                         <button class="btn btn-danger" onclick="removeFile(${fileObj.id})">Remove</button>
                     </div>
                 `;
+                // The file name is the user's text, never markup.
+                li.querySelector('.file-preview img').alt = `Preview of ${fileObj.name}`;
+                li.querySelector('.file-name').textContent = fileObj.name;
                 
                 filesList.appendChild(li);
             });

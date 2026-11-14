@@ -7689,3 +7689,26 @@ architecture.md, "Website orders and payments" → "Convenience fee".
   `authorized` (handled: such a return waits for the webhook). Confirm on the TEST account
   before LIVE. A full refund in Razorpay also returns the fee; our refund record stays the
   order's amount.
+
+### Security: CodeQL code-scanning alerts triaged and fixed (2026-11-14) 🔄 In review
+
+CodeQL with `security-extended` (enabled in PR #298) opened 67 alerts on `main`. Branch
+`fix/codeql-alerts` fixes the ones in shipped code; the rest are listed for the owner to
+dismiss on GitHub with a reason. Not user-visible, except: the PDF tools no longer run a
+file name as markup, and the Android app must be signed in again after a phone restore
+(backups are off because the app holds a signed-in session).
+
+- **One linear sanitiser** — `backend/src/utils/sanitize.js` (`stripTags`, `removeDelimited`,
+  `isPlausibleEmail`, `isSafeKey`, `logValue`). Replaces the regex tag stripper in the contact
+  form, leads, Client Database, payment-request, refund, coupon and marketing-column cleaners,
+  and the worksheet engine (ReDoS, incomplete sanitisation).
+- **No request key reaches a prototype** — marketing day values, statutory calendar overrides,
+  worksheet record/dropdown/column edits.
+- **Logs** — request values go in structured fields, single-line (`userService`, `portalUsers`,
+  PayU routes, the Portal's static server).
+- **Android** — `allowBackup="false"` plus data-extraction rules excluding cloud backup and
+  device transfer.
+- **PDF tool pages** — file names set as text; SRI on every CDN script.
+- **Left for later:** `tasks.controller.js` log lines (parallel branches editing the file);
+  pdf.js worker scripts cannot carry SRI (self-host to close).
+- Tests: `backend/src/__tests__/sanitize.test.js` (15).

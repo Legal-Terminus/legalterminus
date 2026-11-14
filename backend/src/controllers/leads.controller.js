@@ -1,5 +1,6 @@
 import { getDb } from '../config/firebase.js';
 import { logger } from "../config/logger.js";
+import { stripTags as stripMarkup } from "../utils/sanitize.js";
 import { upsertUser } from '../services/userService.js';
 import { LEAD_SOURCES, LEAD_SERVICES, LEAD_OUTCOMES, outcomeNeedsRemarks } from '../config/leadFields.js';
 
@@ -146,7 +147,8 @@ export const getContactLeadsReport = async (req, res) => {
   }
 };
 
-const stripTags = (s) => (typeof s === 'string' ? s.replace(/<[^>]*>/g, '').trim() : '');
+// Linear tag removal (utils/sanitize.js) — the old regex was quadratic on many '<'.
+const stripTags = (s) => (typeof s === 'string' ? stripMarkup(s).trim() : '');
 const digitsOnly = (s) => (typeof s === 'string' ? s.replace(/\D/g, '') : '');
 
 // Fields a staff user may set when creating/editing a lead manually.

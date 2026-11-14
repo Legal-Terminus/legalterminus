@@ -11,6 +11,7 @@
  *     sheets: { [sheetKey]: { columns: [{ key, label?, hidden? }], linkedServices?: [] } } }
  */
 import { BOOKS, SHEETS, MODULES, ADDABLE_TYPES } from '../config/worksheetDefinitions.js';
+import { stripTags, removeDelimited, isSafeKey } from '../utils/sanitize.js';
 
 const httpError = (status, message, extra = {}) => Object.assign(new Error(message), { status, ...extra });
 
@@ -129,8 +130,12 @@ export const moduleSheets = (moduleKey) => MODULES[moduleKey]?.sheets ?? null;
 export function normalizeHeader(h) {
   return String(h ?? '').toUpperCase().replace(/[^A-Z0-9%]+/g, '');
 }
-/** Same, with any (parenthetical) removed: "CONSTITUTION (COMPANY/LLP)" → "CONSTITUTION". */
-const normalizeBare = (h) => normalizeHeader(String(h ?? '').replace(/\([^)]*\)/g, ''));
+/**
+ * Same, with any (parenthetical) removed: "CONSTITUTION (COMPANY/LLP)" → "CONSTITUTION".
+ * Linear: `replace(/\([^)]*\)/g, '')` was quadratic on a header of many '('
+ * (CodeQL js/polynomial-redos), and headers come from an uploaded file.
+ */
+const normalizeBare = (h) => normalizeHeader(removeDelimited(h, '(', ')'));
 
 /** Every normalised spelling that names a column. */
 function spellings(col) {
@@ -228,27 +233,7 @@ export function normalizeDate(raw) {
   return null;
 }
 
-/**
- * Remove HTML tags — the same result as `replace(/<[^>]*>/g, '')`, in one pass.
- * That regex is quadratic on a cell of many '<' with no '>' (CodeQL
- * js/polynomial-redos): each '<' rescans the rest of the string. Here each
- * character is looked at a bounded number of times, and once no '>' is left
- * the remainder is kept as it is, which is what the regex would leave too.
- */
-export function stripTags(input) {
-  const s = String(input);
-  let out = '';
-  let i = 0;
-  while (i < s.length) {
-    const open = s.indexOf('<', i);
-    if (open === -1) { out += s.slice(i); break; }
-    const close = s.indexOf('>', open + 1);
-    if (close === -1) { out += s.slice(i); break; }
-    out += s.slice(i, open);
-    i = close + 1;
-  }
-  return out;
-}
+// stripTags lives in utils/sanitize.js — one linear copy for the whole backend.
 const MAX_LEN = { text: 500, longtext: 5000, select: 200, image: 200, date: 100, number: 100 };
 
 /**
@@ -351,13 +336,16 @@ const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(
  * Returns the next config document (pure; the caller saves it).
  */
 export function applyColumnEdit(sheetKey, config = {}, edit = {}) {
-  const sheet = SHEETS[sheetKey];
+  const sheet = Object.hasOwn(SHEETS, sheetKey) ? SHEETS[sheetKey] : null;
   if (!sheet) throw httpError(404, 'Unknown worksheet');
   const current = resolveSheet(sheetKey, config);
   const fields = bookFields(sheet.book, config);
   const byKey = new Map(fields.map((fd) => [fd.key, fd]));
   const customFields = [...(config.customFields ?? [])];
-  const optionOverrides = { ...(config.optionOverrides ?? {}) };
+  // A Map, not `obj[key] = …`: the key comes from the request (it is checked
+  // against the book's fields first, but a Map cannot reach a prototype at all —
+  // CodeQL js/remote-property-injection).
+  const optionOverrides = new Map(Object.entries(config.optionOverrides ?? {}));
   const cols = Array.isArray(edit.columns) ? edit.columns : null;
   if (!cols || cols.length === 0 || cols.length > 80) throw httpError(400, 'A sheet needs between 1 and 80 columns.');
 
@@ -376,7 +364,7 @@ export function applyColumnEdit(sheetKey, config = {}, edit = {}) {
         const i = customFields.findIndex((cf) => cf.key === key);
         const options = cleanOptions(col.options);
         if (i >= 0) customFields[i] = { ...customFields[i], options };
-        optionOverrides[key] = options;
+        optionOverrides.set(key, options);
       }
     } else {
       const type = col?.type ?? 'text';
@@ -403,14 +391,14 @@ export function applyColumnEdit(sheetKey, config = {}, edit = {}) {
   const linked = Array.isArray(edit.linkedServices)
     ? [...new Set(edit.linkedServices.map((s) => String(s).trim()).filter((s) => /^[a-z0-9_-]{1,80}$/i.test(s)))].slice(0, 30)
     : current.linkedServices;
-  sheets[sheetKey] = { columns: next, linkedServices: linked };
+  sheets[sheet.key] = { columns: next, linkedServices: linked };
   // #279: the sheets of an exclusive book are one register in two views
   // (Monthly / Quarterly) — "the same columns, dropdowns and functionalities",
   // so a column edit applies to every sheet of the book.
   if (BOOKS[sheet.book]?.exclusive) {
     for (const s of Object.values(SHEETS)) if (s.book === sheet.book) sheets[s.key] = { columns: next, linkedServices: linked };
   }
-  return { customFields, sheets, optionOverrides };
+  return { customFields, sheets, optionOverrides: Object.fromEntries(optionOverrides) };
 }
 
 export const MAX_OPTIONS = 200;
@@ -437,13 +425,13 @@ export function cleanOptions(options) {
  * caller saves it with a merge).
  */
 export function applyOptionsEdit(sheetKey, config = {}, fieldKey, options) {
-  const sheet = SHEETS[sheetKey];
+  const sheet = Object.hasOwn(SHEETS, sheetKey) ? SHEETS[sheetKey] : null;
   if (!sheet) throw httpError(404, 'Unknown worksheet');
   const fd = bookFields(sheet.book, config).find((x) => x.key === fieldKey);
   if (!fd) throw httpError(404, 'Unknown column');
   if (fd.type !== 'select') throw httpError(400, `"${fd.label}" is not a dropdown column.`);
   if (!Array.isArray(options)) throw httpError(400, 'Send the list of options.');
-  return { optionOverrides: { [fieldKey]: cleanOptions(options) } };
+  return { optionOverrides: Object.fromEntries([[fd.key, cleanOptions(options)]]) };
 }
 
 /* ── Record writes ──────────────────────────────────────────────────────── */
@@ -455,17 +443,18 @@ export function applyOptionsEdit(sheetKey, config = {}, fieldKey, options) {
  */
 export function cleanRecordValues(fields, values) {
   const byKey = new Map(fields.map((fd) => [fd.key, fd]));
-  const out = {};
+  const out = [];
   for (const [key, raw] of Object.entries(values ?? {})) {
-    const fd = byKey.get(key);
+    const fd = isSafeKey(key) ? byKey.get(key) : undefined;
     if (!fd) throw httpError(400, `Unknown column "${key}".`);
     if (fd.type === 'computed') throw httpError(400, `"${fd.label}" is calculated and cannot be typed.`);
     const { value, warning } = normalizeValue(fd, raw);
     if (warning && (fd.type === 'number' || fd.type === 'matter')) throw httpError(400, `${warning}.`);
     if (warning && fd.type === 'date') throw httpError(400, `${warning} — use the date picker.`);
-    out[key] = value;
+    out.push([fd.key, value]);
   }
-  return out;
+  // Entries → object, so a key can only be an own property (js/remote-property-injection).
+  return Object.fromEntries(out);
 }
 
 /* ── Upload planning ────────────────────────────────────────────────────── */

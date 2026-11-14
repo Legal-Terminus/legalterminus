@@ -7,14 +7,15 @@ import {
   deleteDoc,
 } from "../config/firestore.js";
 import { logger } from "../config/logger.js";
+import { stripTags as stripMarkup, isPlausibleEmail } from "../utils/sanitize.js";
 import { sendContactLeadEmail } from "../services/emailService.js";
 
 const COLLECTION = "contactLeads";
 
 /* ── Sanitization helpers ───────────────────────────────────────────────── */
-// Strip all HTML/script tags and trim whitespace
+// Strip all HTML/script tags and trim whitespace (linear — see utils/sanitize.js)
 const stripTags = (str) =>
-  typeof str === "string" ? str.replace(/<[^>]*>/g, "").trim() : "";
+  typeof str === "string" ? stripMarkup(str).trim() : "";
 
 // Keep only digits (for phone numbers)
 const digitsOnly = (str) =>
@@ -56,7 +57,7 @@ export const createContactLead = async (req, res) => {
     }
 
     // Basic email format check
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!isPlausibleEmail(email)) {
       return res.status(400).json({ message: "Invalid email address." });
     }
 
