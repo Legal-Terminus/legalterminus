@@ -89,7 +89,7 @@ test('#123: the Discussion tab renders and can post a message', async ({ adminPa
     await expect(adminPage.getByText('No messages yet')).toBeVisible();
 
     const msg = `UI-MSG-${Date.now()}`;
-    await adminPage.getByLabel('Message').fill(msg);
+    await adminPage.getByLabel('Message', { exact: true }).fill(msg);
     await adminPage.getByRole('button', { name: /^Send$/ }).click();
     await expect(adminPage.getByText(msg)).toBeVisible();
     // Staff default is internal-only — the bubble says so.
@@ -168,7 +168,7 @@ test('#200: typing "@" suggests colleagues; picking one inserts their address an
   try {
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
-    const box = adminPage.getByLabel('Message');
+    const box = adminPage.getByLabel('Message', { exact: true });
     await box.click();
     await box.pressSequentially('Please check @E2E Te');
     const list = adminPage.getByRole('listbox', { name: 'Mention a colleague' });
@@ -189,7 +189,7 @@ test('#200: typing "@" alone lists the WHOLE team, not the first six', async ({ 
 
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
-    const box = adminPage.getByLabel('Message');
+    const box = adminPage.getByLabel('Message', { exact: true });
     await box.click();
     await box.pressSequentially('@');
     const list = adminPage.getByRole('listbox', { name: 'Mention a colleague' });
@@ -418,7 +418,7 @@ test('#297: staff see no Edit on a client\'s message; their own sent bubble is a
     await expect(theirs.getByRole('button', { name: 'Delete message' })).toBeVisible(); // admin moderation
 
     const mine = `ADMIN-WROTE-${Date.now()}`;
-    await adminPage.getByLabel('Message').fill(mine);
+    await adminPage.getByLabel('Message', { exact: true }).fill(mine);
     await adminPage.getByRole('button', { name: /^Send$/ }).click();
     const bubble = adminPage.getByTestId('chat-bubble-mine').filter({ hasText: mine });
     await expect(bubble.getByRole('button', { name: 'Edit message' })).toBeVisible();
@@ -437,7 +437,7 @@ test('Chat: the tab is called Chat; sharing with the client asks first; a messag
     await expect(adminPage.getByRole('button', { name: 'Discussion', exact: true })).toHaveCount(0);
 
     const msg = `TO-CLIENT-${Date.now()}`;
-    await adminPage.getByLabel('Message').fill(msg);
+    await adminPage.getByLabel('Message', { exact: true }).fill(msg);
     await adminPage.getByLabel('Visible to client').check();
     await adminPage.getByRole('button', { name: /^Send$/ }).click();
 
@@ -481,7 +481,7 @@ test('#295: on a phone, a long message keeps Send on screen and the tab is calle
     await expect(clientPage.getByRole('button', { name: 'Discussion', exact: true })).toHaveCount(0);
 
     // A long message: 120 paragraphs, far taller than the screen.
-    const editor = clientPage.getByLabel('Message');
+    const editor = clientPage.getByLabel('Message', { exact: true });
     await editor.click();
     const long = Array.from({ length: 120 }, (_, i) => `Line ${i + 1} of a very long message about the proposed company names.`).join('\n');
     await editor.fill(long);
@@ -507,7 +507,7 @@ test('#295: a 5,000-word message can be sent; the counter shows the 5,000 limit'
   try {
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
-    const editor = adminPage.getByLabel('Message');
+    const editor = adminPage.getByLabel('Message', { exact: true });
     await editor.click();
     await editor.fill(Array(4200).fill('word').join(' '));
     // The counter appears near the limit and names the CHAT limit, not a comment's 1,000.

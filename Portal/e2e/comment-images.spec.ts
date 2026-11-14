@@ -248,10 +248,10 @@ test('UI: the client sees an image shared in the Discussion, rendered', async ({
     await adminPage.goto(`tasks/${taskId}`);
     await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
     const msg = `IMG-MSG-${Date.now()}`;
-    await adminPage.getByLabel('Message').pressSequentially(msg);
+    await adminPage.getByLabel('Message', { exact: true }).pressSequentially(msg);
     await adminPage.getByTestId('comment-image-input').first()
       .setInputFiles({ name: 'shot.png', mimeType: 'image/png', buffer: PNG });
-    await expect(adminPage.getByLabel('Message').locator('img[data-lt-image]')).toHaveAttribute('src', /^blob:/, { timeout: 15_000 });
+    await expect(adminPage.getByLabel('Message', { exact: true }).locator('img[data-lt-image]')).toHaveAttribute('src', /^blob:/, { timeout: 15_000 });
     await adminPage.getByLabel('Visible to client').check();
     await adminPage.getByRole('button', { name: /^Send$/ }).click();
     // A message shared with the client asks for confirmation first.
