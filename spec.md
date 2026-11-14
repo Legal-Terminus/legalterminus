@@ -468,7 +468,9 @@ A GST return matter says which return it is for, and when each return was filed,
 
 1. **Given** a GST return matter (opened by the GST reminders, or a matter of a service linked to the GST Return Filing sheet), **Then** its header and its row in the matters list (All Matters for staff, My Services for the client) show its **Filing Month** as a tag — "September 2026", or "Q2 2026-27" for a quarterly return — the same period as the sheet's Return Period. Staff and the client both see it. A matter of any other service has no such tag.
 2. **Given** a GST return matter whose GSTR-1 filing task is completed, **Then** that task shows "Filed on: 11 November 2026" next to its name, with the date the task was completed (India); the same for the GSTR-3B filing task, each with its own date. The matter's header also shows "GSTR-1 filed on: …" / "GSTR-3B filed on: …", because completed tasks are folded away in the step list. The two tasks are the ones the sheet's "Date of GSTR-1 Filing" / "Date of GSTR-3B Filing" columns read (matched by the task's name, e.g. "GSTR-1 Filed", "Proceed Towards GSTR-3B Filing"; never the "… filed mail" tasks).
-3. **Given** a filing task that is reopened, **Then** its date disappears until it is completed again, and then shows the new completion date. The date is not edited by hand on the matter; the sheet's date cell can be corrected by staff as before.
+3. **Given** a filing task that was ticked after the return was actually filed, **When** an admin, manager or a team member working the matter (its owner, or the holder of one of its tasks) corrects the date with the pencil beside "GSTR-1 filed on" / "GSTR-3B filed on" in the matter's header, **Then** the matter, its client and the GST Return Filing sheet's date column all show the corrected date, the completion time is kept, and the matter's history records who changed which date from what to what (staff only). The date must be a real date, not in the future, and not before the 1st of the month after the return's period ended (from 1 October for September or for Q2). "Use completion date" undoes a correction. Clients and professionals cannot correct a date.
+4. **Given** a matter-fed row of the GST Return Filing sheet, **Then** its Date of GSTR-1 / GSTR-3B Filing cell is not typed over (refused, "correct it on the matter") and an Excel upload leaves it as it is; a row with no matter, or whose matter has no such task, keeps the cell typable.
+5. **Given** a filing task that is reopened, **Then** its date (and any correction) is no longer shown; when it is completed again, the new completion date shows.
 
 ---
 
@@ -640,6 +642,14 @@ paymentGated,        // true if this step is behind a payment guard in the machi
 allowedWithoutPayment, // true if machine allows this step before full payment
 parallelGroup?,      // step group ID if this step runs in parallel with others
 branches?,           // branch conditions defined in machine topology
+```
+
+### `tasks/{taskId}/steps/{n}.filedOnCorrection` — #294 corrected filing date
+```
+date,            // 'YYYY-MM-DD' — the corrected GSTR-1 / GSTR-3B filing date
+forCompletedAt,  // the step's completedAt it corrects; a re-completion makes it stale (ignored)
+previous,        // the date shown before
+byUid, byRole, at
 ```
 
 ### `tasks/{taskId}` — workflow instances per client

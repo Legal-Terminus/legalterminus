@@ -242,6 +242,14 @@ export const postStepNote = (taskId: string, stepNumber: number, note: string) =
     { method: 'POST', body: JSON.stringify({ note }) },
   );
 
+/** #294: staff correct when a GSTR-1 / GSTR-3B return was filed (`null` = back
+ *  to the day the task was completed). The server checks the range and who may. */
+export const correctFiledOn = (taskId: string, stepNumber: number, date: string | null) =>
+  apiFetch<{ stepNumber: number; form: string; date: string; previous?: string; changed: boolean }>(
+    `/api/tasks/${taskId}/steps/${stepNumber}/filed-on`,
+    { method: 'PUT', body: JSON.stringify({ date }) },
+  );
+
 /* ── #167: recurring matters ──────────────────────────────────────────────── */
 
 export type Recurrence = 'monthly' | 'quarterly';

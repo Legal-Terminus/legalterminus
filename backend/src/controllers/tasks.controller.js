@@ -214,7 +214,8 @@ async function adminUids() {
 // masks comments that aren't client-visible (fail closed), but the raw remark on
 // the step record bypassed that — so it must never reach the client either. The
 // client sees a comment only via the (filtered) event feed.
-const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark'];
+// #294: filedOnCorrection carries who corrected a filing date — staff detail; the client sees the date (filedOn).
+const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark', 'filedOnCorrection'];
 
 /**
  * #166 — the client identity a request acts as.

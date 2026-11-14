@@ -226,3 +226,17 @@ export const messageCreateSchema = z.object({
 export const messageUpdateSchema = z.object({
   body: z.string().max(MESSAGE_MAX_INPUT_CHARS),
 }).strict();
+
+// PUT /api/tasks/:taskId/steps/:stepNumber/filed-on — #294: staff correct the
+// date a GSTR-1 / GSTR-3B return was filed. A real calendar date, or null to go
+// back to the day the task was completed. The matter decides the allowed range
+// (not before its period ended, not in the future) — checked in the handler.
+export const filedOnCorrectionSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter the date as YYYY-MM-DD.")
+    .refine((v) => {
+      const [y, m, d] = v.split("-").map(Number);
+      const t = new Date(Date.UTC(y, m - 1, d));
+      return t.getUTCFullYear() === y && t.getUTCMonth() === m - 1 && t.getUTCDate() === d;
+    }, "Enter a valid date.")
+    .nullable(),
+}).strict();

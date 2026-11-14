@@ -2898,6 +2898,10 @@ actually filed, on the matter itself.
 - The GSTR-1 and GSTR-3B filing tasks, once completed, show "Filed on: <date>" next to their
   names, each with its own completion date (India); the header repeats them.
 - The period and the tasks are identified by the sheet's rules (no second rule).
+- Staff (admin, manager, a team member working the matter) correct a filing date when the task
+  was ticked late — a real date, not in the future, not before the period ended; recorded in the
+  matter's history; the sheet's date column shows the same date (one reader, `filedOnDateOf`);
+  clients and professionals cannot (owner's answer, 2026-11-14).
 
 **e2e**: `Portal/e2e/gst-return-filing.spec.ts` (#292 / #294 tests).
 
@@ -7755,10 +7759,39 @@ Design in architecture.md, "GST tags on the matter".
   next to each task's name in the step list. The header carries the dates because completed tasks
   are folded behind "Show completed". The matters list (desktop table and phone cards) shows the
   Filing Month under the service, and its search finds a matter by month.
-- **Open questions for the firm:** should staff be able to correct the filed date on the matter
-  (e.g. ticked late)? Should the quarterly tag read "Q2 2026-27" (as now, the sheet's period) or a
+- **Open questions for the firm:** ~~should staff be able to correct the filed date on the matter
+  (e.g. ticked late)?~~ Answered yes by the owner on 2026-11-14 — see the next entry. Should the quarterly tag read "Q2 2026-27" (as now, the sheet's period) or a
   month range?
 - Tests: `backend/src/__tests__/gstReturnSheet.test.js` (+2: which matters are tagged and their
   period; Filed on per task, with the issue's names, India date, reopened task);
   `Portal/e2e/gst-return-filing.spec.ts` (+2: header, step rows, list and client view; a non-GST
   matter has no tag). Playwright not yet run.
+
+### Correcting a GSTR-1 / GSTR-3B filing date (2026-11-14, #294) — E18-S12 🔄 In review
+
+The owner answered the open question above: staff must be able to correct "Filed on" when the
+filing task was ticked after the real filing. Design in architecture.md, "GST tags on the matter".
+- **Who (decision):** admin and manager on any matter; a team member on a matter they own or hold
+  a task of (the matters their list shows). Never a client or a professional — refused by the route
+  guard and by the handler from the verified token.
+- **Where:** a pencil beside "GSTR-1 filed on" / "GSTR-3B filed on" in the matter's header opens a
+  date picker (the header always shows, while completed tasks are folded in the step list). Only on
+  the two filing tasks, and only once completed.
+- **Range (decision):** a real date, no later than today (India), and no earlier than the 1st of
+  the month after the return's period ended (September → 1 October; Q2 → 1 October) — a return is
+  filed after its period. If the period cannot be told, no earlier than the day the matter opened.
+- **Stored on the task:** the corrected date plus who/when and the date it replaced; the completion
+  time is kept. The matter's history says "GSTR-1 filing date corrected from 12 November 2026 to 11
+  November 2026" (staff only; the client sees just the date). "Use completion date" undoes it.
+- **One source (decision):** the matter's tags and the sheet's Date of GSTR-1 / GSTR-3B Filing read
+  the date through one function. On a sheet row fed by a matter whose filing task is completed,
+  that cell is no longer typed over or overwritten by an upload ("correct it on the matter's filing
+  task"); rows without a matter keep the cell typable, as before.
+- **Reopen (decision):** a correction belongs to the completion it corrected. Reopening the task
+  removes the date; completing it again shows the new completion date, and the old correction is no
+  longer used.
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` (+5: one source — tag and sheet agree,
+  re-completion; who may — client/professional refused, route guard; validation and range; the
+  history entry; the sheet's matter-owned cell); `Portal/e2e/gst-return-filing.spec.ts` (+1:
+  guards, header correction, step row, history, sheet follows and refuses a typed edit, client view).
+  Playwright not yet run.

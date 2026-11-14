@@ -133,7 +133,7 @@ export function deriveRow({ task, client, steps = [], names = new Map() }) {
   for (const rule of STEP_RULES) {
     const step = stepForRule(rule, steps);
     values[rule.field] = !isDone(step) ? null
-      : rule.kind === 'date' ? dateOnly(step.completedAt)
+      : rule.kind === 'date' ? filedOnDateOf(step)
       : 'Yes';
   }
   for (const k of DERIVED_FIELDS) if (values[k] === undefined || values[k] === '') values[k] = null;
@@ -159,7 +159,8 @@ export function isGstReturnMatter(task, linkedServices = []) {
  * is completed, its India completion date (#294). Pure; `steps` must carry the
  * INTERNAL task names (match before the client's projection renames them).
  * Returns null for any other matter.
- *   → { period: string|null, filedOn: [{ stepNumber, form, date: 'YYYY-MM-DD' }] }
+ * The date is `filedOnDateOf` — a staff correction, else the completion date.
+ *   → { period, frequency, filedOn: [{ stepNumber, form, date, completedOn, corrected }] }
  */
 export function gstMatterTags({ task, steps = [], client = null, linkedServices = [] }) {
   if (!isGstReturnMatter(task, linkedServices)) return null;
@@ -168,10 +169,149 @@ export function gstMatterTags({ task, steps = [], client = null, linkedServices 
     const form = FILING_DATE_FIELDS[rule.field];
     if (!form) continue;
     const step = stepForRule(rule, steps);
-    const date = isDone(step) ? dateOnly(step.completedAt) : null;
-    if (date) filedOn.push({ stepNumber: step.stepNumber, form, date });
+    const date = filedOnDateOf(step);
+    if (date) {
+      filedOn.push({
+        stepNumber: step.stepNumber, form, date,
+        completedOn: dateOnly(step.completedAt), corrected: !!activeCorrection(step),
+      });
+    }
   }
-  return { period: periodOf(task, frequencyOf(task, client)), filedOn };
+  const frequency = frequencyOf(task, client);
+  return { period: periodOf(task, frequency), frequency, filedOn };
+}
+
+/* ── #294 follow-up: correcting a filing date ─────────────────────────────
+ *
+ * Staff tick a filing task when they get to it, not always the day the return
+ * was filed. A correction is stored ON THE STEP as `filedOnCorrection`
+ * { date, forCompletedAt, byUid, at, previous } and `completedAt` is never
+ * touched. It belongs to ONE completion: `forCompletedAt` is the completedAt it
+ * corrected, so a reopened and re-completed task (new completedAt) shows its new
+ * completion date and the old correction is simply no longer read.
+ */
+
+const activeCorrection = (step) => {
+  const c = step?.filedOnCorrection;
+  return isDone(step) && c?.date && c.forCompletedAt && c.forCompletedAt === step.completedAt ? c : null;
+};
+
+/**
+ * THE filing date of a filing task — the one function the matter's "Filed on"
+ * tag AND the sheet's "Date of GSTR-1/3B Filing" cells read: the staff
+ * correction for this completion, else the India date of completion; null
+ * while the task is not completed.
+ */
+export function filedOnDateOf(step) {
+  if (!isDone(step)) return null;
+  return activeCorrection(step)?.date ?? dateOnly(step.completedAt);
+}
+
+/** The two filing tasks of a workflow: [{ field, form, step }] — only those the workflow has. */
+export function filingSteps(steps) {
+  return STEP_RULES.filter((r) => FILING_DATE_FIELDS[r.field])
+    .map((r) => ({ field: r.field, form: FILING_DATE_FIELDS[r.field], step: stepForRule(r, steps) }))
+    .filter((x) => x.step);
+}
+
+const pad2 = (n) => String(n).padStart(2, '0');
+
+/** Last month of the matter's GST period, 'YYYY-MM' (the sweep's, else the period that had ended when it was opened). */
+export function periodEndMonthOf(task, frequency) {
+  if (/^\d{4}-\d{2}$/.test(task?.filingPeriod?.month ?? '')) return task.filingPeriod.month;
+  const at = task?.createdAt ? new Date(task.createdAt) : null;
+  if (!at || Number.isNaN(at.getTime())) return null;
+  return duePeriod(frequency, indiaDate(at))?.month ?? null;
+}
+
+/**
+ * The dates a filing date may be corrected to (inclusive, 'YYYY-MM-DD'):
+ *   min  the 1st of the month after the GST period ends — a return is filed
+ *        after its period (September's from 1 October); if the period cannot be
+ *        told, the day the matter was opened
+ *   max  today in India — never a date in the future
+ */
+export function filedOnBounds(task, frequency, now = new Date()) {
+  const max = indiaDate(now);
+  const end = periodEndMonthOf(task, frequency);
+  let min = null;
+  if (end) {
+    const [y, m] = end.split('-').map(Number);
+    min = m === 12 ? `${y + 1}-01-01` : `${y}-${pad2(m + 1)}-01`;
+  } else if (task?.createdAt && !Number.isNaN(new Date(task.createdAt).getTime())) {
+    min = indiaDate(new Date(task.createdAt));
+  }
+  return { min, max };
+}
+
+/**
+ * Who may correct a filing date: internal staff who work the matter. Admin and
+ * manager on any matter (they see every matter); a team member on a matter they
+ * own or hold a task of — the same matters their list shows them. Never a
+ * client or a professional.
+ */
+export function canCorrectFiledOn(user, task, steps = []) {
+  const role = user?.role;
+  if (role === 'admin' || role === 'manager') return true;
+  if (role !== 'team_member' || !user?.uid) return false;
+  if (task?.assignedTo === user.uid) return true;
+  return steps.some((s) => {
+    const owners = Array.isArray(s.assignedToUids) && s.assignedToUids.length ? s.assignedToUids : (s.assignedTo ? [s.assignedTo] : []);
+    return owners.includes(user.uid);
+  });
+}
+
+/** A real calendar date 'YYYY-MM-DD' (2026-02-30 is not). */
+export function isCalendarDate(v) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v ?? ''));
+  if (!m) return false;
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return d.getUTCFullYear() === Number(m[1]) && d.getUTCMonth() === Number(m[2]) - 1 && d.getUTCDate() === Number(m[3]);
+}
+
+/**
+ * Check a correction against the matter. `date` null = go back to the
+ * completion date. Returns { ok: true, step, form, from, to } or
+ * { ok: false, status, message } (messages are shown to staff as they are).
+ */
+export function checkFiledOnCorrection({ task, steps, stepNumber, date, frequency, linkedServices, now = new Date() }) {
+  if (!isGstReturnMatter(task, linkedServices)) {
+    return { ok: false, status: 400, message: 'Filing dates are kept only on GST return matters.' };
+  }
+  const hit = filingSteps(steps).find((x) => x.step.stepNumber === stepNumber);
+  if (!hit) return { ok: false, status: 400, message: 'Only the GSTR-1 and GSTR-3B filing tasks have a filing date.' };
+  if (!isDone(hit.step)) return { ok: false, status: 409, message: `Complete the ${hit.form} filing task first.` };
+  const from = filedOnDateOf(hit.step);
+  if (date != null) {
+    if (!isCalendarDate(date)) return { ok: false, status: 400, message: 'Enter a valid date.' };
+    const { min, max } = filedOnBounds(task, frequency, now);
+    if (date > max) return { ok: false, status: 400, message: 'The filing date cannot be in the future.' };
+    if (min && date < min) return { ok: false, status: 400, message: `The filing date cannot be before ${longDay(min)}, when this return's period ended.` };
+  }
+  return { ok: true, step: hit.step, form: hit.form, from, to: date ?? dateOnly(hit.step.completedAt) };
+}
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+/** '2026-11-11' → '11 November 2026'. */
+export function longDay(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso ?? ''));
+  return m ? `${Number(m[3])} ${MONTH_NAMES[Number(m[2]) - 1]} ${m[1]}` : String(iso ?? '');
+}
+
+/**
+ * The sheet side of the one-source rule. On a row synced from a matter, a
+ * filing-date cell the WORKFLOW fills (its `derived` value is set — the matter
+ * has that task and it is completed) is the matter's: it is corrected on the
+ * matter, not typed in the sheet, so the two can never disagree. Returns the
+ * fields of `patch` that must be refused (typed edit) or dropped (upload).
+ * A row with no matter, or a matter whose workflow has no such task yet, keeps
+ * the cell typable as before.
+ */
+export function matterOwnedDateFields(record, patch) {
+  if (!record?.sourceMatterId) return [];
+  return Object.keys(FILING_DATE_FIELDS).filter((f) => Object.hasOwn(patch ?? {}, f)
+    && record.derived?.[f] != null && (patch[f] ?? null) !== (record.values?.[f] ?? null));
 }
 
 function str(v) {

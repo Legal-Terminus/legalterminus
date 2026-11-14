@@ -10,6 +10,7 @@ import {
 import { runWorksheetReminderSweep } from '../services/worksheetReminders.service.js';
 import { syncSheetFromMatters } from '../services/gstReturnSheetSync.service.js';
 import { invalidateGstReturnServiceKeys } from '../services/gstMatterTags.service.js';
+import { matterOwnedDateFields } from '../services/gstReturnSheet.service.js';
 
 /**
  * #210 / #217 — worksheets: the trademark reports and the company worksheets,
@@ -243,6 +244,14 @@ export async function updateRecord(req, res) {
     const ref = await db.runTransaction(async (tx) => {
       const rec = await loadRecord(db, sheet, req.params.id, tx);
       if (!rec) throw httpError(404, 'Record not found');
+      // #294: on a row synced from a matter, the GSTR-1 / GSTR-3B filing date the
+      // workflow fills is the MATTER's — corrected on its filing task, so the
+      // sheet and the matter's "Filed on" tag can never disagree.
+      const owned = matterOwnedDateFields(rec.data, patch);
+      if (owned.length) {
+        const label = fields.find((fd) => fd.key === owned[0])?.label ?? 'This date';
+        throw httpError(409, `${label} comes from the matter. Correct it on the matter's filing task ("Filed on").`, { code: 'MATTER_OWNED_DATE' });
+      }
       // Merged inside the transaction so two people editing different cells
       // of the same row never overwrite each other.
       const values = dropNulls({ ...(rec.data.values ?? {}), ...patch });
@@ -334,9 +343,28 @@ export async function importRows(req, res) {
     const existingByKey = new Map();
     for (let i = 0; i < keys.length; i += 30) {
       const snap = await db.collection(RECORDS).where('book', '==', sheet.book).where('recordKey', 'in', keys.slice(i, i + 30)).get();
-      for (const d of snap.docs) existingByKey.set(d.data().recordKey, { id: d.id, values: d.data().values ?? {}, sheets: d.data().sheets ?? [] });
+      for (const d of snap.docs) {
+        existingByKey.set(d.data().recordKey, {
+          id: d.id, values: d.data().values ?? {}, sheets: d.data().sheets ?? [],
+          sourceMatterId: d.data().sourceMatterId ?? null, derived: d.data().derived ?? null,
+        });
+      }
     }
     const plan = planImport({ sheet, fields, headers, rows, existingByKey, startRow });
+    // #294: an upload never overwrites a filing date that comes from a matter (see updateRecord).
+    for (const up of plan.updates) {
+      const ex = existingByKey.get(up.key);
+      const owned = matterOwnedDateFields(ex, up.values);
+      if (!owned.length) continue;
+      for (const k of owned) delete up.values[k];
+      up.changed = Object.entries(up.values).some(([k, v]) => ex.values?.[k] !== v);
+      if (plan.warnings.length < 50) {
+        plan.warnings.push({ row: null, column: owned.map((k) => fields.find((fd) => fd.key === k)?.label ?? k).join(', '),
+          message: `Kept the matter's date for ${up.key}: correct it on the matter's filing task.` });
+      }
+    }
+    plan.summary.updatedRows = plan.updates.filter((u) => u.changed || u.addsSheet).length;
+    plan.summary.unchangedRows = plan.updates.filter((u) => !u.changed && !u.addsSheet).length;
     const report = {
       columns: plan.columns,
       unknownColumns: plan.unknownColumns,

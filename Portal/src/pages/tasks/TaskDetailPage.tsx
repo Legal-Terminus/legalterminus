@@ -416,7 +416,17 @@ export default function TaskDetailPage() {
       // #292 / #294: a GST return matter's Filing Month and its filing dates, for
       // staff and client alike (completed tasks are folded away in the list below).
       titleAddon={(task.gstFilingPeriodLabel || task.gstFilings?.length)
-        ? <GstMatterTags period={task.gstFilingPeriodLabel} filings={task.gstFilings} /> : undefined}
+        ? (
+          <GstMatterTags
+            taskId={task.id}
+            period={task.gstFilingPeriodLabel}
+            filings={task.gstFilings}
+            bounds={task.gstFilingDateBounds}
+            // #294: internal staff correct a filing date; the server also checks
+            // that a team member works this matter.
+            canCorrect={role === 'admin' || role === 'manager' || role === 'team_member'}
+          />
+        ) : undefined}
       // #118: show the matter's ORGANISATION next to the client name — a client can
       // have several matters under different organisations, so the name alone is
       // ambiguous. Clients see it too (they may hold matters for multiple orgs).
@@ -1658,6 +1668,7 @@ const EVENT_VERB: Record<string, string> = {
   BRANCH_DECISION: 'made a decision',
   CLIENT_APPROVE: 'approved',
   STEP_NOTE: 'shared a note', // #105
+  FILED_ON_CORRECTED: 'corrected the filing date', // #294
   CLIENT_REJECT: 'requested changes',
   GOVT_APPROVE: 'marked Govt approved',
   GOVT_REJECT: 'marked Govt rejected',

@@ -19,7 +19,7 @@ import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { SHEETS } from '../config/worksheetDefinitions.js';
 import { resolveSheet } from './worksheetEngine.service.js';
-import { gstMatterTags, isGstReturnMatter } from './gstReturnSheet.service.js';
+import { gstMatterTags, isGstReturnMatter, frequencyOf, filedOnBounds } from './gstReturnSheet.service.js';
 import { GST_SERVICE_KEYS } from '../../../shared/workflows/gstReturns.js';
 
 const BOOK = 'gst_return';
@@ -84,8 +84,10 @@ export async function attachGstFilingPeriods(rows) {
 
 /**
  * #292 / #294 — one matter (with its steps, INTERNAL names): sets
- * `gstFilingPeriodLabel` and `gstFilings` ([{ stepNumber, form, date }]) on the
- * matter and `filedOn` ('YYYY-MM-DD') on the completed GSTR-1 / GSTR-3B filing tasks. Call before the client's projection.
+ * `gstFilingPeriodLabel`, `gstFilings` ([{ stepNumber, form, date, completedOn,
+ * corrected }]) and `gstFilingDateBounds` ({ min, max }) on the matter, and
+ * `filedOn` ('YYYY-MM-DD') on the completed GSTR-1 / GSTR-3B filing tasks. Call
+ * before the client's projection.
  * Never throws.
  */
 export async function annotateGstMatter(full) {
@@ -99,6 +101,8 @@ export async function annotateGstMatter(full) {
     // The completed filings, for the matter's header: the step list hides
     // completed tasks until "Show completed" is pressed.
     full.gstFilings = tags.filedOn;
+    // #294 follow-up: the range a filing date may be corrected to (the date picker's min / max).
+    full.gstFilingDateBounds = filedOnBounds(full, tags.frequency);
     const byStep = new Map(tags.filedOn.map((f) => [f.stepNumber, f.date]));
     if (byStep.size && Array.isArray(full.steps)) {
       full.steps = full.steps.map((s) => (byStep.has(s.stepNumber) ? { ...s, filedOn: byStep.get(s.stepNumber) } : s));
@@ -107,4 +111,10 @@ export async function annotateGstMatter(full) {
     logger.warn({ err, taskId: full?.id }, '#292 could not work out the GST tags of a matter');
   }
   return full;
+}
+
+/** Monthly or quarterly for one matter, by the sheet's rule (reads the client only when it decides). */
+export async function gstFrequencyOf(task) {
+  const clients = needsClient(task) ? await readClients([task.clientUid]) : new Map();
+  return frequencyOf(task, clients.get(task.clientUid) ?? null);
 }

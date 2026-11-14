@@ -188,6 +188,66 @@ test('#292 / #294 the matter shows its Filing Month, and "Filed on" for GSTR-1 a
   await expect(clientPage.getByText(`GSTR-3B filed on: ${todayLong()}`)).toBeVisible();
 });
 
+/** 'YYYY-MM-DD' → '11 November 2026'. */
+function longOf(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d} ${new Date(Date.UTC(y, m - 1, 1)).toLocaleString('en-GB', { month: 'long', timeZone: 'UTC' })} ${y}`;
+}
+
+test('#294 staff correct the GSTR-1 filing date; the matter, its history and the sheet all show it — clients cannot', async ({ adminPage, clientPage }) => {
+  const admin = await apiAs('admin');
+  const task = await (await admin.get(`/api/tasks/${matterId}`)).json();
+  const bounds = task.gstFilingDateBounds as { min: string; max: string };
+  const gstr1 = (task.gstFilings as { stepNumber: number; form: string }[]).find((f) => f.form === 'GSTR-1')!;
+  // The matter is for the period that just ended, so its earliest filing day is the 1st of this month.
+  test.skip(bounds.min >= bounds.max, 'Today is the first possible filing day — nothing earlier to correct to.');
+  const url = `/api/tasks/${matterId}/steps/${gstr1.stepNumber}/filed-on`;
+
+  // Guards: clients (and professionals) are refused; the range is enforced.
+  const client = await apiAs('client');
+  expect((await client.put(url, { data: { date: bounds.min } })).status()).toBe(403);
+  await client.dispose();
+  try {
+    const pro = await apiAs('pro');
+    expect((await pro.put(url, { data: { date: bounds.min } })).status()).toBe(403);
+    await pro.dispose();
+  } catch { /* no professional test account on this database */ }
+  expect((await admin.put(url, { data: { date: '2999-01-01' } })).status()).toBe(400);
+  expect((await admin.put(url, { data: { date: '2000-01-01' } })).status()).toBe(400);
+  expect((await admin.put(url, { data: { date: '2026-02-30' } })).status()).toBe(400);
+  await admin.dispose();
+
+  // An admin corrects it from the header.
+  await adminPage.goto(`tasks/${matterId}`);
+  await adminPage.getByRole('button', { name: 'Correct GSTR-1 filing date' }).click();
+  await adminPage.getByLabel('GSTR-1 filed on').fill(bounds.min);
+  await adminPage.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(adminPage.getByText(`GSTR-1 filed on: ${longOf(bounds.min)}`)).toBeVisible({ timeout: 20_000 });
+  await expect(adminPage.getByText(`GSTR-3B filed on: ${todayLong()}`)).toBeVisible(); // its own date is untouched
+  await adminPage.getByRole('button', { name: /Show completed/ }).click();
+  await expect(adminPage.locator(`#step-row-${gstr1.stepNumber}`)).toContainText(`Filed on: ${longOf(bounds.min)}`);
+  // Recorded in the history: who, from what, to what.
+  await expect(adminPage.getByText(`GSTR-1 filing date corrected from ${todayLong()} to ${longOf(bounds.min)}.`).first()).toBeVisible();
+
+  // The sheet's Date of GSTR-1 Filing follows, and is corrected on the matter, not typed over.
+  let recId = '';
+  await expect(async () => {
+    const [rec] = (await listWorksheet('admin', matterSheet)).filter((x) => x.values.matter === matterId);
+    expect(rec.values.gstr1_date).toBe(bounds.min);
+    recId = rec.id;
+  }).toPass({ timeout: 45_000, intervals: [2_000, 5_000, 8_000] });
+  const team = await apiAs('team');
+  const typed = await team.patch(`/api/worksheets/sheets/${matterSheet}/records/${recId}`, { data: { values: { gstr1_date: bounds.max } } });
+  expect(typed.status()).toBe(409);
+  await team.dispose();
+
+  // The client sees the corrected date, not the history entry.
+  await clientPage.goto(`tasks/${matterId}`);
+  await expect(clientPage.getByText(`GSTR-1 filed on: ${longOf(bounds.min)}`)).toBeVisible({ timeout: 20_000 });
+  await expect(clientPage.getByRole('button', { name: 'Correct GSTR-1 filing date' })).toHaveCount(0);
+  await expect(clientPage.getByText(/filing date corrected/)).toHaveCount(0);
+});
+
 test('#292 a matter of any other service has no Filing Month', async ({ adminPage }) => {
   // Any workflow-backed service the GST sheet is NOT linked to (workflows are editable — discover one).
   const admin0 = await apiAs('admin');

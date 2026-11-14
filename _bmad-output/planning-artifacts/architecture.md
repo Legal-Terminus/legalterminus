@@ -2651,7 +2651,7 @@ and **Matter**.
 
 **LT only.** A GST return matter shows its period and its two filing dates on the
 matter, worked out by the **sheet's own rules** (#279) so the matter and the sheet
-never disagree. Nothing new is stored.
+never disagree. The only thing stored is a staff correction of a filing date (below).
 
 - **Which matters.** `isGstReturnMatter`: the matter carries `filingPeriod` (opened by
   the #219 sweep) or its `serviceKey` is one of the GST book's linked services
@@ -2672,15 +2672,35 @@ never disagree. Nothing new is stored.
   `clientTitle`. Served as `filedOn` on the step and `gstFilings: [{ stepNumber, form,
   date }]` on the matter (the header shows them because completed steps are folded
   behind "Show completed").
-- **Why not a stored `filedOn`.** `completedAt` is already the record of when the task
-  was done and is what the sheet reads; a copy would be a second source of truth. The
-  consequence: reopening a filing task (#116) clears `completedAt`, so its tag goes
-  until the task is completed again. There is no hand-edit of the date on the matter
-  (the sheet's date cell is editable, last change wins, but the matter tag does not read
-  the sheet — its rows sync only when the sheet is opened).
+- **Correcting a date (owner's answer, 2026-11-14: yes).** `PUT /api/tasks/:taskId/steps/:stepNumber/filed-on
+  { date: 'YYYY-MM-DD' | null }` (`gstFiling.controller.js`). Route: `requireRole('admin', 'manager',
+  'team_member')` + `filedOnCorrectionSchema` (strict; a real calendar date or null). Handler, in one
+  transaction: `canCorrectFiledOn` (a team member only as the matter's owner or an assignee of one of
+  its steps — the matters their list shows); `checkFiledOnCorrection` (GST return matter; the step is
+  one `filingSteps` picks; it is completed; `filedOnBounds`: min = the 1st of the month after the GST
+  period ends — `filingPeriod.month`, else the period that had ended at creation — max = today in
+  India). Writes `filedOnCorrection { date, forCompletedAt, previous, byUid, byRole, at }` on the step
+  (null when set back to the completion date), a `FILED_ON_CORRECTED` event (comment "GSTR-1 filing
+  date corrected from … to …", `filedOn {form, from, to}`, `commentClientVisible: false`, not in the
+  client whitelist), and the matter's `updatedAt` (the sheet sync's watermark). `completedAt` is
+  never touched; `filedOnCorrection` is in `CLIENT_STEP_HIDDEN`.
+- **One source.** `filedOnDateOf(step)` — the correction whose `forCompletedAt` equals the step's
+  `completedAt`, else the India date of `completedAt`, null while not completed — is the ONLY reader:
+  `gstMatterTags` (the tags) and `deriveRow` (the sheet's two date columns) both call it.
+- **Reopen.** A correction belongs to one completion. Reopening clears `completedAt` (no date); a
+  re-completion sets a new `completedAt`, so the old correction no longer matches and is ignored
+  (left on the doc, never read). No change to the reopen code was needed.
+- **The sheet's own cell.** On a row with `sourceMatterId` whose `derived.<gstr1_date|gstr3b_date>`
+  is set (the workflow fills it), `matterOwnedDateFields` makes `updateRecord` refuse a changed value
+  (409 `MATTER_OWNED_DATE`, "correct it on the matter's filing task") and `importRows` drop it (with
+  a warning). Rows without a matter, or whose matter has no such completed task, stay typable —
+  so each date cell has exactly one owner.
 - **Portal.** `components/tasks/GstFilingTags.tsx` (`badge-gray` for the period — an
   identifier, not a state; `badge-green` for a filing — done). `PageShell` gained an
-  optional `titleAddon` beside the title, which wraps under it on a phone.
+  optional `titleAddon` beside the title, which wraps under it on a phone. Staff (admin,
+  manager, team member) get a pencil beside each header filing tag opening a native date
+  input bounded by `gstFilingDateBounds` (44 px targets on a phone), with "Use completion
+  date" to undo a correction; the step row's tag shows the same date read-only.
 
 ## Dependency sources and the Node.js pin (#218, 2026-10-30)
 

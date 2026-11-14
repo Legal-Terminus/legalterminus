@@ -11,8 +11,14 @@ import {
 } from '../services/worksheetEngine.service.js';
 import {
   deriveRow, mergeDerived, frequencyOf, periodOf, stepForRule, STEP_RULES, DERIVED_FIELDS, normalizeTitle,
-  gstMatterTags, isGstReturnMatter,
+  gstMatterTags, isGstReturnMatter, filedOnDateOf, filedOnBounds, canCorrectFiledOn, checkFiledOnCorrection,
+  matterOwnedDateFields, isCalendarDate,
 } from '../services/gstReturnSheet.service.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { filedOnCorrectionSchema } from '../schemas/task.schema.js';
+import { requireRole } from '../middleware/auth.middleware.js';
 
 const FIRM_COLUMNS = [
   'GST Return Clients', 'CONSTITUTION', 'GSTN No', 'Mail ID for data collection', 'GST User ID', 'GST Pswd', 'Contact No.',
@@ -249,8 +255,9 @@ test('#294 "Filed on": the GSTR-1 and GSTR-3B filing tasks, each with its own In
     { stepNumber: 14, title: 'GSTR-3B filed mail to client', status: 'active' },
   ];
   assert.deepEqual(gstMatterTags({ task, steps: flow, linkedServices: LINKED }).filedOn, [
-    { stepNumber: 6, form: 'GSTR-1', date: '2026-11-11' }, // 20:00 UTC on 10 Nov is 11 Nov in India
-    { stepNumber: 13, form: 'GSTR-3B', date: '2026-11-20' },
+    // 20:00 UTC on 10 Nov is 11 Nov in India
+    { stepNumber: 6, form: 'GSTR-1', date: '2026-11-11', completedOn: '2026-11-11', corrected: false },
+    { stepNumber: 13, form: 'GSTR-3B', date: '2026-11-20', completedOn: '2026-11-20', corrected: false },
   ]);
   // Not completed yet, or reopened (its completion cleared): no date.
   const open = flow.map((s) => (s.stepNumber === 13 ? { ...s, status: 'active', completedAt: null } : s));
@@ -258,4 +265,104 @@ test('#294 "Filed on": the GSTR-1 and GSTR-3B filing tasks, each with its own In
   // Same task the sheet's "Date of GSTR-1 Filing" column reads.
   assert.equal(deriveRow({ task, client, steps: flow }).values.gstr1_date, '2026-11-11');
   assert.equal(deriveRow({ task, client, steps: flow }).values.gstr3b_date, '2026-11-20');
+});
+
+/* ── #294 follow-up: correcting a filing date ───────────────────────────── */
+
+const filed = { stepNumber: 6, title: 'GSTR-1 Filed', status: 'completed', completedAt: '2026-11-12T05:00:00Z' };
+const filed3b = { stepNumber: 13, title: 'Proceed Towards GSTR-3B Filing', status: 'completed', completedAt: '2026-11-20T06:00:00Z' };
+const correction = { date: '2026-11-11', forCompletedAt: filed.completedAt, previous: '2026-11-12', byUid: 'u-ajay', at: '2026-11-14T06:00:00Z' };
+const NOW = new Date('2026-11-14T06:00:00Z');
+
+test('#294 one source: the tag and the sheet read the same corrected date, and a re-completion drops the old correction', () => {
+  const corrected = { ...filed, filedOnCorrection: correction };
+  assert.equal(filedOnDateOf(filed), '2026-11-12');
+  assert.equal(filedOnDateOf(corrected), '2026-11-11');
+  const steps2 = [corrected, filed3b];
+  const tag = gstMatterTags({ task, steps: steps2, linkedServices: LINKED }).filedOn.find((f) => f.form === 'GSTR-1');
+  const cell = deriveRow({ task, client, steps: steps2 }).values.gstr1_date;
+  assert.equal(tag.date, '2026-11-11');
+  assert.equal(cell, tag.date); // the sheet never disagrees with the matter
+  assert.equal(tag.corrected, true);
+  assert.equal(tag.completedOn, '2026-11-12');
+  // GSTR-3B keeps its own date.
+  assert.equal(deriveRow({ task, client, steps: steps2 }).values.gstr3b_date, '2026-11-20');
+  // Reopened: no date at all; re-completed later: the new completion date, not the old correction.
+  assert.equal(filedOnDateOf({ ...corrected, status: 'active', completedAt: null }), null);
+  const again = { ...corrected, completedAt: '2026-11-25T05:00:00Z' };
+  assert.equal(filedOnDateOf(again), '2026-11-25');
+  assert.equal(deriveRow({ task, client, steps: [again] }).values.gstr1_date, '2026-11-25');
+});
+
+test('#294 who may correct: admin, manager, and a team member working the matter — never a client or professional', () => {
+  const m = { assignedTo: 'u-owner' };
+  const steps2 = [{ ...filed, assignedToUids: ['u-a', 'u-b'] }];
+  assert.equal(canCorrectFiledOn({ role: 'admin', uid: 'x' }, m, steps2), true);
+  assert.equal(canCorrectFiledOn({ role: 'manager', uid: 'x' }, m, steps2), true);
+  assert.equal(canCorrectFiledOn({ role: 'team_member', uid: 'u-owner' }, m, steps2), true);
+  assert.equal(canCorrectFiledOn({ role: 'team_member', uid: 'u-b' }, m, steps2), true);
+  assert.equal(canCorrectFiledOn({ role: 'team_member', uid: 'u-stranger' }, m, steps2), false);
+  assert.equal(canCorrectFiledOn({ role: 'client', uid: 'u-owner' }, m, steps2), false);
+  assert.equal(canCorrectFiledOn({ role: 'professional', uid: 'u-a' }, m, steps2), false);
+
+  // The route refuses clients and professionals before the handler runs.
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const routes = fs.readFileSync(path.join(here, '../routes/tasks.routes.js'), 'utf8');
+  assert.match(routes, /router\.put\('\/:taskId\/steps\/:stepNumber\/filed-on', requireRole\('admin', 'manager', 'team_member'\), validate\(filedOnCorrectionSchema\), correctFiledOn\)/);
+  const guard = requireRole('admin', 'manager', 'team_member');
+  for (const [role, expected] of [['client', 403], ['professional', 403], ['team_member', 'next'], ['admin', 'next']]) {
+    let status = 'next';
+    guard({ user: { role } }, { status(c) { status = c; return this; }, json() { return this; } }, () => {});
+    assert.equal(status, expected, role);
+  }
+});
+
+test('#294 validation: a real date, not in the future, not before the period ended; only a completed filing task', () => {
+  // The request body.
+  assert.equal(filedOnCorrectionSchema.safeParse({ date: '2026-11-11' }).success, true);
+  assert.equal(filedOnCorrectionSchema.safeParse({ date: null }).success, true);
+  assert.equal(filedOnCorrectionSchema.safeParse({ date: '2026-02-30' }).success, false);
+  assert.equal(filedOnCorrectionSchema.safeParse({ date: '11/11/2026' }).success, false);
+  assert.equal(filedOnCorrectionSchema.safeParse({ date: '2026-11-11', by: 'x' }).success, false); // strict
+  assert.equal(isCalendarDate('2028-02-29'), true);
+
+  // Bounds: October's return (sweep period 2026-10) is filed from 1 November to today.
+  assert.deepEqual(filedOnBounds(task, 'monthly', NOW), { min: '2026-11-01', max: '2026-11-14' });
+  // Hand-opened on 3 Dec by a quarterly client: for Q2 (Jul–Sep), so from 1 October.
+  assert.deepEqual(filedOnBounds({ createdAt: '2026-12-03T05:00:00Z' }, 'quarterly', new Date('2027-01-20T05:00:00Z')),
+    { min: '2026-10-01', max: '2027-01-20' });
+
+  const base = { task, steps: [filed, filed3b, { stepNumber: 7, title: 'GSTR-1 Filed Mail', status: 'completed', completedAt: filed.completedAt }],
+    frequency: 'monthly', linkedServices: LINKED, now: NOW };
+  const ok = checkFiledOnCorrection({ ...base, stepNumber: 6, date: '2026-11-11' });
+  assert.deepEqual([ok.ok, ok.form, ok.from, ok.to], [true, 'GSTR-1', '2026-11-12', '2026-11-11']);
+  assert.equal(checkFiledOnCorrection({ ...base, stepNumber: 6, date: '2026-11-15' }).message, 'The filing date cannot be in the future.');
+  assert.match(checkFiledOnCorrection({ ...base, stepNumber: 6, date: '2026-10-31' }).message, /before 1 November 2026/);
+  assert.equal(checkFiledOnCorrection({ ...base, stepNumber: 7, date: '2026-11-11' }).status, 400); // the mail task has no filing date
+  const pending = { ...base, steps: [{ ...filed, status: 'active', completedAt: null }] };
+  assert.equal(checkFiledOnCorrection({ ...pending, stepNumber: 6, date: '2026-11-11' }).status, 409);
+  assert.equal(checkFiledOnCorrection({ ...base, task: { serviceKey: 'trademark-application' }, stepNumber: 6, date: '2026-11-11' }).status, 400);
+  // null = back to the completion date.
+  const reset = checkFiledOnCorrection({ ...base, steps: [{ ...filed, filedOnCorrection: correction }], stepNumber: 6, date: null });
+  assert.deepEqual([reset.from, reset.to], ['2026-11-11', '2026-11-12']);
+});
+
+test('#294 the history entry: who changed which return\'s date, from what to what — staff only', () => {
+  const src = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '../controllers/gstFiling.controller.js'), 'utf8');
+  assert.match(src, /type: 'FILED_ON_CORRECTED'/);
+  assert.match(src, /filedOn: \{ form: check\.form, from: check\.from, to: check\.to \}/);
+  assert.match(src, /byUid: req\.user\.uid/);
+  assert.match(src, /commentClientVisible: false/);
+  // The matter's updatedAt moves, which is what the sheet's sync watches.
+  assert.match(src, /tx\.update\(taskRef, \{ updatedAt: now \}\)/);
+  // completedAt is never written by the correction.
+  assert.doesNotMatch(src, /completedAt:/);
+});
+
+test('#294 the sheet: a matter-fed filing date is corrected on the matter, a typed-only one stays typable', () => {
+  const linked = { sourceMatterId: 'm1', values: { gstr1_date: '2026-11-11' }, derived: { gstr1_date: '2026-11-11', gstr3b_date: null } };
+  assert.deepEqual(matterOwnedDateFields(linked, { gstr1_date: '2026-11-09' }), ['gstr1_date']);
+  assert.deepEqual(matterOwnedDateFields(linked, { gstr1_date: '2026-11-11', remarks: 'x' }), []); // unchanged value
+  assert.deepEqual(matterOwnedDateFields(linked, { gstr3b_date: '2026-11-20' }), []); // the workflow has not filled it
+  assert.deepEqual(matterOwnedDateFields({ values: {}, derived: null }, { gstr1_date: '2026-11-09' }), []); // no matter
 });

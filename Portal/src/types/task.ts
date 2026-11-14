@@ -35,6 +35,16 @@ export interface TaskStep {
   filedOn?: string;
 }
 
+/** #294: one completed GST filing. `date` is the staff correction if any, else
+ *  `completedOn` (the day its task was completed, India). */
+export interface GstFiling {
+  stepNumber: number;
+  form: 'GSTR-1' | 'GSTR-3B';
+  date: string;
+  completedOn?: string | null;
+  corrected?: boolean;
+}
+
 export interface Task {
   id: string;
   workflowType: string;
@@ -96,7 +106,9 @@ export interface Task {
   gstFilingPeriodLabel?: string | null;
   /** #294: matter detail only — the completed GSTR-1 / GSTR-3B filings, each with
    *  the India date its task was completed ('YYYY-MM-DD'). */
-  gstFilings?: { stepNumber: number; form: 'GSTR-1' | 'GSTR-3B'; date: string }[];
+  gstFilings?: GstFiling[];
+  /** #294: the range a filing date may be corrected to (inclusive, 'YYYY-MM-DD'). */
+  gstFilingDateBounds?: { min: string | null; max: string };
   isUrgent?: boolean;
   // Projected matter completion (E13-S02); null while pending approval/untracked.
   matterDueAt?: string | null;
