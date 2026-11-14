@@ -2883,6 +2883,26 @@ whose two views never mix.
 
 ---
 
+### E18-S12 — Filing Month and filing dates on GST return matters (#292, #294) [Phase 2] 🔄 In review
+
+**Priority**: P1 | **Complexity**: S | **Dependencies**: E18-S11 (#279 sheet rules), #219 (GST return matters)
+
+**Rationale**: GST return matters for the same client look alike month after month; the team
+and the client asked to see which month a matter is for, and when GSTR-1 and GSTR-3B were
+actually filed, on the matter itself.
+
+**Acceptance Criteria**:
+- A GST return matter (sweep-opened, or of a service linked to the GST Return Filing sheet) shows
+  its Filing Month ("September 2026" / "Q2 2026-27") as a tag in its header and in the matters
+  list, for staff and the client; other matters do not.
+- The GSTR-1 and GSTR-3B filing tasks, once completed, show "Filed on: <date>" next to their
+  names, each with its own completion date (India); the header repeats them.
+- The period and the tasks are identified by the sheet's rules (no second rule).
+
+**e2e**: `Portal/e2e/gst-return-filing.spec.ts` (#292 / #294 tests).
+
+---
+
 ---
 
 ## E-19 — Client 360 (Per-Client Status for Staff) [Phase 2]
@@ -7712,3 +7732,33 @@ file name as markup, and the Android app must be signed in again after a phone r
 - **Left for later:** `tasks.controller.js` log lines (parallel branches editing the file);
   pdf.js worker scripts cannot carry SRI (self-host to close).
 - Tests: `backend/src/__tests__/sanitize.test.js` (15).
+### Filing Month and filing dates on GST return matters (2026-11-14, #292, #294) — E18-S12 🔄 In review
+
+The firm asked for a Filing Month tag on GST Return Filing matters (header and All Matters,
+staff and client, only on GST matters — #292) and a "Filed on" date tag on the GSTR-1 filed and
+GSTR-3B filing tasks (#294: "Step 6 – GSTR-1 Filed", "Step 13 – Proceed Towards GSTR-3B Filing").
+Design in architecture.md, "GST tags on the matter".
+- **Which matters / which tasks (decision): the GST Return Filing sheet's rules, reused.** A GST
+  return matter is one the GST reminders opened, or one of a service linked to the sheet. The
+  period is the sheet's Return Period. The two tasks are the ones that fill "Date of GSTR-1 Filing"
+  and "Date of GSTR-3B Filing", found by task NAME (services are editable — no step numbers are
+  assumed; the issue's step 6 and 13 are matched by "GSTR-1 Filed" and "Proceed Towards GSTR-3B
+  Filing"; "… filed mail" tasks are excluded). Changing a task's name in the service, or the
+  sheet's linked services, changes both the sheet and the tags.
+- **"Actual date of successful filing" (decision): the day the task was completed** (India date),
+  as the sheet's date columns already use. Nothing new is stored — the completion time is the
+  record. Alternative considered: a separate stored filing date with an edit box for staff; not
+  built. Consequences to confirm with the firm: if a task is ticked a day after the return was
+  filed, the tag shows the day it was ticked; reopening a filing task removes its date until it is
+  completed again. The sheet's date cell can still be corrected by hand.
+- **Visible where:** the header (Filing Month, then "GSTR-1 filed on …", "GSTR-3B filed on …") and
+  next to each task's name in the step list. The header carries the dates because completed tasks
+  are folded behind "Show completed". The matters list (desktop table and phone cards) shows the
+  Filing Month under the service, and its search finds a matter by month.
+- **Open questions for the firm:** should staff be able to correct the filed date on the matter
+  (e.g. ticked late)? Should the quarterly tag read "Q2 2026-27" (as now, the sheet's period) or a
+  month range?
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` (+2: which matters are tagged and their
+  period; Filed on per task, with the issue's names, India date, reopened task);
+  `Portal/e2e/gst-return-filing.spec.ts` (+2: header, step rows, list and client view; a non-GST
+  matter has no tag). Playwright not yet run.

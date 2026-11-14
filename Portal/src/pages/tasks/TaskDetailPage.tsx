@@ -9,6 +9,7 @@ import {
   ChevronsLeft, ChevronsRight, MoreVertical, Users,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
+import { GstMatterTags, FiledOnTag } from '../../components/tasks/GstFilingTags';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
 import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
@@ -412,6 +413,10 @@ export default function TaskDetailPage() {
     <CommentImageTaskContext.Provider value={taskId ?? null}>
     <PageShell
       title={task.serviceName || task.workflowType}
+      // #292 / #294: a GST return matter's Filing Month and its filing dates, for
+      // staff and client alike (completed tasks are folded away in the list below).
+      titleAddon={(task.gstFilingPeriodLabel || task.gstFilings?.length)
+        ? <GstMatterTags period={task.gstFilingPeriodLabel} filings={task.gstFilings} /> : undefined}
       // #118: show the matter's ORGANISATION next to the client name — a client can
       // have several matters under different organisations, so the name alone is
       // ambiguous. Clients see it too (they may hold matters for multiple orgs).
@@ -2534,6 +2539,8 @@ function ExpandableStepRow({ step, displayNumber, stageName, description, status
               row layout, icon, or "Done" badge — the checklist cue the client asked
               for, applied lightly to preserve the design language. */}
           <p className={`text-sm ${isCurrent ? 'font-semibold text-ink' : 'text-ink-soft'} ${step.status === 'completed' ? 'line-through decoration-1 decoration-ink-faint/60' : ''}`}>{displayNumber}. {step.title}</p>
+          {/* #294: "Filed on" on a completed GSTR-1 / GSTR-3B filing task (server-derived). */}
+          {step.filedOn && <div className="mt-1"><FiledOnTag date={step.filedOn} /></div>}
           {statusLabel && <p className="text-[11px] text-ink-muted mt-0.5">{statusLabel}</p>}
           {description && !open && <p className="text-xs text-ink-muted mt-0.5 truncate">{description}</p>}
           {!open && countBits && <p className="text-[11px] text-ink-faint mt-0.5">{countBits}</p>}

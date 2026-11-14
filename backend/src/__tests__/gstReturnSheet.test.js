@@ -11,6 +11,7 @@ import {
 } from '../services/worksheetEngine.service.js';
 import {
   deriveRow, mergeDerived, frequencyOf, periodOf, stepForRule, STEP_RULES, DERIVED_FIELDS, normalizeTitle,
+  gstMatterTags, isGstReturnMatter,
 } from '../services/gstReturnSheet.service.js';
 
 const FIRM_COLUMNS = [
@@ -218,4 +219,43 @@ test('a step reopened in the workflow clears the cell it had filled', () => {
   const b = mergeDerived(a, { ...blank, data_received: null });
   assert.equal(Object.hasOwn(b.values, 'data_received'), false);
   assert.deepEqual(b.set, { data_received: null });
+});
+
+/* ── #292 / #294: the tags on the matter itself ─────────────────────────── */
+
+const LINKED = ['gst-returns', 'gst-returns-quarterly'];
+
+test('#292 only a GST return matter is tagged: opened by the sweep, or of a service linked to the sheet', () => {
+  assert.equal(isGstReturnMatter({ serviceKey: 'trademark-application' }, LINKED), false);
+  assert.equal(gstMatterTags({ task: { serviceKey: 'trademark-application', createdAt: '2026-11-03T05:00:00Z' }, linkedServices: LINKED }), null);
+  // The sweep's period wins, whatever the service.
+  assert.equal(gstMatterTags({ task: { ...task, serviceKey: 'something-else' }, linkedServices: LINKED }).period, 'October 2026');
+  // Opened by hand on a linked service: the period that had ended when it was opened (India date).
+  const byHand = { serviceKey: 'gst-returns', createdAt: '2026-09-30T19:00:00Z' }; // 1 Oct 00:30 in India
+  assert.equal(gstMatterTags({ task: byHand, client, linkedServices: LINKED }).period, 'September 2026');
+  assert.equal(gstMatterTags({ task: byHand, client: { gstReturnFrequency: 'quarterly' }, linkedServices: LINKED }).period, 'Q2 2026-27');
+  assert.equal(gstMatterTags({ task: { ...byHand, serviceKey: 'gst-returns-quarterly' }, linkedServices: LINKED }).period, 'Q2 2026-27');
+  // A service the admin unlinked from the sheet is not tagged.
+  assert.equal(gstMatterTags({ task: byHand, client, linkedServices: ['gst-returns-quarterly'] }), null);
+});
+
+test('#294 "Filed on": the GSTR-1 and GSTR-3B filing tasks, each with its own India completion date', () => {
+  // The names in the issue, around the mail tasks that must not be confused with them.
+  const flow = [
+    { stepNumber: 5, title: 'Tally / Excel prepared', status: 'completed', completedAt: '2026-11-05T05:00:00Z' },
+    { stepNumber: 6, title: 'GSTR-1 Filed', status: 'completed', completedAt: '2026-11-10T20:00:00Z' },
+    { stepNumber: 7, title: 'GSTR-1 Filed Mail', status: 'completed', completedAt: '2026-11-12T05:00:00Z' },
+    { stepNumber: 13, title: 'Proceed Towards GSTR-3B Filing', status: 'completed', completedAt: '2026-11-20T06:00:00Z' },
+    { stepNumber: 14, title: 'GSTR-3B filed mail to client', status: 'active' },
+  ];
+  assert.deepEqual(gstMatterTags({ task, steps: flow, linkedServices: LINKED }).filedOn, [
+    { stepNumber: 6, form: 'GSTR-1', date: '2026-11-11' }, // 20:00 UTC on 10 Nov is 11 Nov in India
+    { stepNumber: 13, form: 'GSTR-3B', date: '2026-11-20' },
+  ]);
+  // Not completed yet, or reopened (its completion cleared): no date.
+  const open = flow.map((s) => (s.stepNumber === 13 ? { ...s, status: 'active', completedAt: null } : s));
+  assert.deepEqual(gstMatterTags({ task, steps: open, linkedServices: LINKED }).filedOn.map((f) => f.form), ['GSTR-1']);
+  // Same task the sheet's "Date of GSTR-1 Filing" column reads.
+  assert.equal(deriveRow({ task, client, steps: flow }).values.gstr1_date, '2026-11-11');
+  assert.equal(deriveRow({ task, client, steps: flow }).values.gstr3b_date, '2026-11-20');
 });

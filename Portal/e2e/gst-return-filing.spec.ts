@@ -55,7 +55,9 @@ test.beforeAll(async () => {
       steps: [
         { stepNumber: 1, title: 'Data received from client', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 2 }] },
         { stepNumber: 2, title: 'GSTR-1 filed', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 3 }] },
-        { stepNumber: 3, title: 'Done', type: 'final' },
+        // #294: the issue's own name for the GSTR-3B filing task.
+        { stepNumber: 3, title: 'Proceed Towards GSTR-3B Filing', type: 'step', transitions: [{ event: 'COMPLETE_STEP', to: 4 }] },
+        { stepNumber: 4, title: 'Done', type: 'final' },
       ],
     } });
     expect(res.ok(), await res.text()).toBeTruthy();
@@ -148,6 +150,64 @@ test('a GST return matter appears as a row and follows its workflow; a typed cel
   // Never in the other view.
   await openView(adminPage, matterSheetLabel === 'Monthly' ? 'Quarterly' : 'Monthly');
   await expect(row(adminPage, ORG)).toHaveCount(0);
+});
+
+/** Today in India as the tag writes it: "11 November 2026". */
+function todayLong(): string {
+  const ist = new Date(Date.now() + 330 * 60_000);
+  return `${ist.getUTCDate()} ${ist.toLocaleString('en-GB', { month: 'long', timeZone: 'UTC' })} ${ist.getUTCFullYear()}`;
+}
+
+test('#292 / #294 the matter shows its Filing Month, and "Filed on" for GSTR-1 and then GSTR-3B — to staff and the client', async ({ adminPage, clientPage }) => {
+  const frequency = matterSheet === 'gst_return_quarterly' ? 'quarterly' : 'monthly';
+  const period = expectedPeriod(frequency);
+  // The previous test completed "GSTR-1 filed"; GSTR-3B is the current task.
+  await adminPage.goto(`tasks/${matterId}`);
+  await expect(adminPage.getByTestId('gst-filing-period')).toContainText(period, { timeout: 20_000 });
+  await expect(adminPage.getByText(`GSTR-1 filed on: ${todayLong()}`)).toBeVisible();
+  await expect(adminPage.getByText(/GSTR-3B filed on/)).toHaveCount(0);
+
+  await transition('admin', matterId, { type: 'COMPLETE_STEP' });
+  await adminPage.reload();
+  await expect(adminPage.getByText(`GSTR-3B filed on: ${todayLong()}`)).toBeVisible({ timeout: 20_000 });
+  // Next to each task's name, separately, once completed tasks are shown.
+  await adminPage.getByRole('button', { name: /Show completed/ }).click();
+  await expect(adminPage.locator('#step-row-2')).toContainText(`Filed on: ${todayLong()}`);
+  await expect(adminPage.locator('#step-row-3')).toContainText(`Filed on: ${todayLong()}`);
+  await expect(adminPage.locator('#step-row-1').getByText(/Filed on/)).toHaveCount(0);
+
+  // The All Matters list carries the month.
+  await adminPage.goto('tasks');
+  await adminPage.getByPlaceholder(/Search by client/).fill(ORG);
+  await expect(adminPage.getByTestId('gst-filing-period').first()).toContainText(period, { timeout: 20_000 });
+
+  // The client sees the same tags on their matter and in their list.
+  await clientPage.goto(`tasks/${matterId}`);
+  await expect(clientPage.getByTestId('gst-filing-period')).toContainText(period, { timeout: 20_000 });
+  await expect(clientPage.getByText(`GSTR-1 filed on: ${todayLong()}`)).toBeVisible();
+  await expect(clientPage.getByText(`GSTR-3B filed on: ${todayLong()}`)).toBeVisible();
+});
+
+test('#292 a matter of any other service has no Filing Month', async ({ adminPage }) => {
+  // Any workflow-backed service the GST sheet is NOT linked to (workflows are editable — discover one).
+  const admin0 = await apiAs('admin');
+  const defs = await (await admin0.get('/api/workflow-definitions')).json() as { serviceKeys?: string[] }[];
+  await admin0.dispose();
+  const linked = new Set([...monthlySnapshot.linkedServices, SERVICE, 'gst-returns', 'gst-returns-quarterly']);
+  const serviceKey = defs.flatMap((d) => d.serviceKeys ?? []).find((k) => !linked.has(k));
+  test.skip(!serviceKey, 'No service outside the GST sheet to compare with.');
+  const other = await createMatter({ serviceKey, organisation: `${RUN} Not GST` });
+  try {
+    await adminPage.goto(`tasks/${other}`);
+    await expect(adminPage.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
+    await expect(adminPage.getByTestId('gst-filing-period')).toHaveCount(0);
+    const admin = await apiAs('admin');
+    const body = await (await admin.get(`/api/tasks/${other}`)).json();
+    await admin.dispose();
+    expect(body.gstFilingPeriodLabel).toBeUndefined();
+  } finally {
+    await deleteMatter(other);
+  }
 });
 
 test('a manager adds a row by hand in Quarterly; Monthly does not show it, and cannot reach it', async ({ managerPage }) => {

@@ -30,6 +30,9 @@ export interface TaskStep {
   startedAt?: string;
   dueAt?: string | null;
   onTime?: boolean;
+  /** #294: on a GST return matter's GSTR-1 / GSTR-3B filing task, once completed —
+   *  the India date it was completed ('YYYY-MM-DD'), shown as "Filed on". Server-derived. */
+  filedOn?: string;
 }
 
 export interface Task {
@@ -88,6 +91,12 @@ export interface Task {
    *  current step's owner; absent (not false) when the definition is unavailable,
    *  because a wrong "needs you" is worse than no badge at all. */
   awaitingClient?: boolean;
+  /** #292: a GST return matter's filing period ("September 2026", "Q2 2026-27"),
+   *  server-derived by the GST Return Filing sheet's rules; absent on other matters. */
+  gstFilingPeriodLabel?: string | null;
+  /** #294: matter detail only — the completed GSTR-1 / GSTR-3B filings, each with
+   *  the India date its task was completed ('YYYY-MM-DD'). */
+  gstFilings?: { stepNumber: number; form: 'GSTR-1' | 'GSTR-3B'; date: string }[];
   isUrgent?: boolean;
   // Projected matter completion (E13-S02); null while pending approval/untracked.
   matterDueAt?: string | null;

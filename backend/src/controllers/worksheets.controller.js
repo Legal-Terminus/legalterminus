@@ -9,6 +9,7 @@ import {
 } from '../services/worksheetEngine.service.js';
 import { runWorksheetReminderSweep } from '../services/worksheetReminders.service.js';
 import { syncSheetFromMatters } from '../services/gstReturnSheetSync.service.js';
+import { invalidateGstReturnServiceKeys } from '../services/gstMatterTags.service.js';
 
 /**
  * #210 / #217 — worksheets: the trademark reports and the company worksheets,
@@ -293,6 +294,8 @@ export async function putColumns(req, res) {
     await ctx.db.collection(CONFIG).doc(ctx.sheet.book).set({
       ...next, updatedAt: new Date().toISOString(), updatedBy: req.user.uid,
     }, { merge: true });
+    // #292: the GST sheet's linked services decide which matters show a Filing Month.
+    if (ctx.sheet.book === 'gst_return') invalidateGstReturnServiceKeys();
     logger.info({ sheet: ctx.sheet.key, actorUid: req.user.uid }, 'Worksheet columns updated');
     res.json(resolveSheet(ctx.sheet.key, { ...ctx.config, ...next }));
   } catch (err) { sendKnown(res, err, 'putColumns failed'); }

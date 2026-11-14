@@ -140,6 +140,40 @@ export function deriveRow({ task, client, steps = [], names = new Map() }) {
   return { frequency, values };
 }
 
+/**
+ * #294 — the two filing tasks whose completion date is shown on the matter
+ * ("Filed on: 11 November 2026"). The SAME rules that fill the sheet's "Date of
+ * GSTR-1 Filing" / "Date of GSTR-3B Filing" columns, so the matter and the sheet
+ * can never disagree about which task is the filing.
+ */
+export const FILING_DATE_FIELDS = { gstr1_date: 'GSTR-1', gstr3b_date: 'GSTR-3B' };
+
+/** Is this matter a GST return matter? Opened by the GST sweep (#219), or of a service linked to the sheet (#279). */
+export function isGstReturnMatter(task, linkedServices = []) {
+  return !!task?.filingPeriod?.title || (!!task?.serviceKey && linkedServices.includes(task.serviceKey));
+}
+
+/**
+ * #292 / #294 — what a GST return matter shows: its filing period (#292,
+ * "September 2026" or "Q2 2026-27"), and for each of the two filing tasks that
+ * is completed, its India completion date (#294). Pure; `steps` must carry the
+ * INTERNAL task names (match before the client's projection renames them).
+ * Returns null for any other matter.
+ *   → { period: string|null, filedOn: [{ stepNumber, form, date: 'YYYY-MM-DD' }] }
+ */
+export function gstMatterTags({ task, steps = [], client = null, linkedServices = [] }) {
+  if (!isGstReturnMatter(task, linkedServices)) return null;
+  const filedOn = [];
+  for (const rule of STEP_RULES) {
+    const form = FILING_DATE_FIELDS[rule.field];
+    if (!form) continue;
+    const step = stepForRule(rule, steps);
+    const date = isDone(step) ? dateOnly(step.completedAt) : null;
+    if (date) filedOn.push({ stepNumber: step.stepNumber, form, date });
+  }
+  return { period: periodOf(task, frequencyOf(task, client)), filedOn };
+}
+
 function str(v) {
   if (v == null) return null;
   const s = String(v).trim();

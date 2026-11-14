@@ -24,6 +24,7 @@ import { isPaymentLedgerEvent } from '../../../shared/payments/ledgerEvents.js';
 
 // #148: the roles that may see a matter's payment figures.
 const PAYMENT_VIEW_ROLES = ['admin', 'manager'];
+import { annotateGstMatter, attachGstFilingPeriods } from '../services/gstMatterTags.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
 // Add `days` (may be fractional) to an ISO instant, returning an ISO string.
@@ -1479,6 +1480,7 @@ export async function listTasks(req, res) {
       await backfillClientNames(rows); // #164
       await attachCurrentStepNames(rows); // #191
       await attachClientContacts(rows); // #201
+      await attachGstFilingPeriods(rows); // #292
       return res.json({ data: rows, nextCursor: null });
     }
 
@@ -1502,6 +1504,7 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((t) => t.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows); // #164
+      await attachGstFilingPeriods(rows); // #292: the client sees the Filing Month too
       // E20-S01: the client cockpit needs to know which matters await THEM.
       const projected = await annotateAwaitingClient(rows.map(projectTaskForClient));
       return res.json({ data: projected, nextCursor: null });
@@ -1526,6 +1529,7 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((r) => r.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows);
+      await attachGstFilingPeriods(rows); // #292
       // E20-S01: same annotation for the client's own list.
       const projected = await annotateAwaitingClient(rows.map(projectTaskForClient));
       return res.json({ data: projected, nextCursor: null });
@@ -1551,6 +1555,7 @@ export async function listTasks(req, res) {
     if (role === 'client' || role === 'professional') data = data.map(projectTaskForClient);
     else await attachClientContacts(data); // #201: staff only
     await attachCurrentStepNames(data); // #191
+    await attachGstFilingPeriods(data); // #292
     res.json({ data, nextCursor });
   } catch (err) {
     logger.error({ err: err }, 'listTasks error:');
@@ -1793,6 +1798,10 @@ export async function getTask(req, res) {
     }
 
     const full = { id: doc.id, ...data, steps };
+    // #292 / #294: Filing Month on a GST return matter, "Filed on" on its GSTR-1 /
+    // GSTR-3B filing tasks. Matched on the INTERNAL task names, so before the
+    // client's projection (which swaps in client-facing names).
+    await annotateGstMatter(full);
     // E12-S01: clients get a projection with internal ownership/assignment removed,
     // plus steps the workflow marks as not client-visible (clientVisible === false)
     // are dropped from the client's step list.

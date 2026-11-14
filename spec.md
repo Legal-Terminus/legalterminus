@@ -460,6 +460,18 @@ The firm's GST return register at `/reports/gst-returns` (a tile on the Reports 
 
 ---
 
+### User Story 20 — Filing Month and filing dates on GST return matters (Priority: P1) — #292, #294
+
+A GST return matter says which return it is for, and when each return was filed, on the matter itself — so the team and the client can tell one month's matter from the next without opening the GST Return Filing sheet.
+
+**Acceptance Scenarios**:
+
+1. **Given** a GST return matter (opened by the GST reminders, or a matter of a service linked to the GST Return Filing sheet), **Then** its header and its row in the matters list (All Matters for staff, My Services for the client) show its **Filing Month** as a tag — "September 2026", or "Q2 2026-27" for a quarterly return — the same period as the sheet's Return Period. Staff and the client both see it. A matter of any other service has no such tag.
+2. **Given** a GST return matter whose GSTR-1 filing task is completed, **Then** that task shows "Filed on: 11 November 2026" next to its name, with the date the task was completed (India); the same for the GSTR-3B filing task, each with its own date. The matter's header also shows "GSTR-1 filed on: …" / "GSTR-3B filed on: …", because completed tasks are folded away in the step list. The two tasks are the ones the sheet's "Date of GSTR-1 Filing" / "Date of GSTR-3B Filing" columns read (matched by the task's name, e.g. "GSTR-1 Filed", "Proceed Towards GSTR-3B Filing"; never the "… filed mail" tasks).
+3. **Given** a filing task that is reopened, **Then** its date disappears until it is completed again, and then shows the new completion date. The date is not edited by hand on the matter; the sheet's date cell can be corrected by staff as before.
+
+---
+
 ### Edge Cases
 
 - A client with a single email linked to multiple client profiles: login resolves to the correct profile based on the primary client lookup; admin can switch context between profiles.

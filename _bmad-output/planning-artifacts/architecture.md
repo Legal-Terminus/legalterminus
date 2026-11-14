@@ -2647,6 +2647,41 @@ and **Matter**.
   edit dropdowns; admin changes columns and deletes a record; route
   `/reports/gst-returns` with the same three roles; clients and professionals 403.
 
+### GST tags on the matter: Filing Month and "Filed on" (#292, #294, 2026-11-14)
+
+**LT only.** A GST return matter shows its period and its two filing dates on the
+matter, worked out by the **sheet's own rules** (#279) so the matter and the sheet
+never disagree. Nothing new is stored.
+
+- **Which matters.** `isGstReturnMatter`: the matter carries `filingPeriod` (opened by
+  the #219 sweep) or its `serviceKey` is one of the GST book's linked services
+  (`resolveSheet(...).linkedServices` over both sheets, i.e. what the sheet syncs).
+  `services/gstMatterTags.service.js` reads `worksheetConfig/gst_return` for that, cached
+  60 s per instance and dropped when this instance saves the sheet's columns
+  (`putColumns`); another Cloud Run instance follows within a minute.
+- **Filing Month** = `periodOf(task, frequencyOf(task, client))` — the sweep's
+  `filingPeriod.title`, else the period that had ended when the matter was opened. The
+  client document is read only for a hand-opened matter on the monthly service (the one
+  case where the client's `gstReturnFrequency` decides). Served as
+  `gstFilingPeriodLabel` on `GET /api/tasks` (every role branch; one batched `getAll`
+  of those clients, no step reads) and `GET /api/tasks/:id`.
+- **Filed on** = the India date of `completedAt` of the step `stepForRule` picks for the
+  `gstr1_date` / `gstr3b_date` rules (`STEP_RULES`, `FILING_DATE_FIELDS`) — the steps
+  that fill "Date of GSTR-1 Filing" / "Date of GSTR-3B Filing". Matched on the INTERNAL
+  step titles, so `getTask` annotates before the client projection swaps in
+  `clientTitle`. Served as `filedOn` on the step and `gstFilings: [{ stepNumber, form,
+  date }]` on the matter (the header shows them because completed steps are folded
+  behind "Show completed").
+- **Why not a stored `filedOn`.** `completedAt` is already the record of when the task
+  was done and is what the sheet reads; a copy would be a second source of truth. The
+  consequence: reopening a filing task (#116) clears `completedAt`, so its tag goes
+  until the task is completed again. There is no hand-edit of the date on the matter
+  (the sheet's date cell is editable, last change wins, but the matter tag does not read
+  the sheet — its rows sync only when the sheet is opened).
+- **Portal.** `components/tasks/GstFilingTags.tsx` (`badge-gray` for the period — an
+  identifier, not a state; `badge-green` for a filing — done). `PageShell` gained an
+  optional `titleAddon` beside the title, which wraps under it on a phone.
+
 ## Dependency sources and the Node.js pin (#218, 2026-10-30)
 
 **SheetJS (`xlsx`) comes from the SheetJS CDN, not npm.** The npm `xlsx` package
