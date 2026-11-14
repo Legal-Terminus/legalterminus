@@ -38,6 +38,10 @@ test('a typed or uploaded password is kept exactly as typed; an empty box change
   assert.deepEqual(splitSecretValues('gst_return', { gst_password: null }).secrets, {});
   assert.equal(normalizeValue({ type: 'text', secret: true }, PW).value, PW); // upload path: no tag stripping
   assert.throws(() => cleanSecretInput('x'.repeat(201)), /too long/);
+  // CodeQL #73: a column named after a prototype key is dropped, never copied.
+  const polluted = splitSecretValues('gst_return', JSON.parse('{"__proto__": {"x": 1}, "constructor": "c", "client_name": "A"}'));
+  assert.deepEqual(polluted.values, { client_name: 'A' });
+  assert.equal({}.x, undefined);
 });
 
 test('migration: a legacy password moves out of values, with no loss', () => {
