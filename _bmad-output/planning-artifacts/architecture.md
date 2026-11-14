@@ -2727,7 +2727,9 @@ unchanged (`messages` subcollection, `DiscussionPanel`, tab key `discussion`), s
 and stored data are untouched.
 
 **Edit and delete.** `PATCH` and `DELETE /api/tasks/:taskId/messages/:messageId`.
-- Allowed for the message's author or an admin (`canModify` in `messages.controller.js`).
+- **Superseded by #297 (2026-11-14):** EDIT is the author's only
+  (`canEditMessage`); DELETE is the author or an admin (`canDeleteMessage`). The
+  earlier rule let an admin edit anyone's message, including a client's.
   Managers are not given blanket rights: a message is its author's words.
 - A client gets 404 for an internal message, so its existence is never revealed, and 403
   for a firm message they can see.
@@ -2737,14 +2739,101 @@ and stored data are untouched.
   sense. A deleted message cannot be edited again (409).
 - Both keep the replaced text in `revisions` (`{ body, replacedAt, replacedBy }`), never
   returned by the API. The firm keeps a record of what a client was actually sent.
-- Neither notifies anyone. The email for the original message cannot be recalled, and a
-  second email for a corrected typo would be noise.
-- `listMessages` returns `editedAt`, `deleted` and `canEdit` per message.
+- ~~Neither notifies anyone.~~ **Superseded by #297:** an EDIT is announced exactly
+  like a new message (below); a delete still notifies nobody.
+- `listMessages` returns `editedAt`, `deleted`, `canEdit` and (#297) `canDelete` per message.
 
 **Confirm before sharing.** In the Portal, a staff message with "Visible to client" ticked
 opens a preview (the app-wide `useConfirm` dialog) before it is posted. This is a UI step
 only: the API still accepts `clientVisible: true` directly, as integrations and tests use
 it.
+
+## Who is told that a step is theirs (#293, 2026-11-14)
+
+`services/stepAssignmentNotice.service.js` — `announceStepAssignment(db, {...}, deps)`
+is the ONE place that tells people a step is now theirs. `createTask` (an active
+matter's first step), `approveTask` (a no-payment matter's first step, when approval
+makes it live) and `transitionTask` (every move onto an internal step) all call it.
+Each recipient gets one in-app notification, mirrored to email by
+`createNotification` (so the `EMAIL_DISABLED` kill-switch applies).
+
+- **Recipients** (`stepAssignmentRecipients`, pure): every assignee of the step
+  (`assignedToUids`, #192), minus the client; if nobody on our side holds it and it
+  is not the client's step, the matter owner. Never the actor, never a
+  `system:*` actor.
+- **Why approval:** a matter created with no payment (every GST matter the #219 sweep
+  opens, every #167 recurring copy) is `pending_admin_approval` at creation, so
+  creation tells only the admins. Approval used to tell only the creator — the first
+  step's assignee was never told. That was the missing GST assignment email.
+- Copy: the editable `step_assigned` template, unless a transition passes its own
+  ("Step ready for you", "Client approval received", "Correction required").
+- `notify()` in `tasks.controller.js` skips `system:*` recipients ("Matter approved"
+  to `system:gst-returns` was a dead write).
+
+## Payment entries are not step information (#296, #293 part 2, 2026-11-14)
+
+Ledger changes write an event on the matter's CURRENT step (`commitLedgerChange`,
+`paymentRequests`, `refunds`), so the Steps tab showed "Payment received: ₹… ₹…
+remaining" as that step's "From the previous step" note — to team members too.
+`shared/payments/ledgerEvents.js` (`PAYMENT_LEDGER_EVENT_TYPES`,
+`isPaymentLedgerEvent`) is the one list of event types that carry figures:
+- `listTaskEvents` drops them for every role outside `PAYMENT_VIEW_ROLES`
+  (`admin`, `manager`); clients never got them (`CLIENT_EVENT_WHITELIST`).
+- `TaskDetailPage` never uses one as a step's carried-forward note, for any role.
+- The amber, blinking part-payment banner (#54/#124) is removed from the Steps tab
+  for everyone. Figures stay on the Payments tab; the `REMIND_PART_PAYMENT` effect
+  still emails the client.
+- `RECORD_PAYMENT` / `ADMIN_OVERRIDE_PAYMENT` are gate transitions, not ledger
+  entries, and are not on the list.
+
+## Chat on a phone, and 5,000-word messages (#295, 2026-11-14)
+
+- **One copy of the limits:** `shared/richText/limits.js` — `COMMENT_WORD_LIMIT`
+  (1,000: step comments, notes), `MESSAGE_WORD_LIMIT` (5,000: Chat messages),
+  `wordLimitFor(what)`, and the matching size caps (sanitised markup 60,000 /
+  300,000; raw input 200,000 / 600,000, under the 1 MB JSON body limit).
+  `prepareRichText(raw, { what })` picks by `what`; the message Zod schemas use
+  `MESSAGE_MAX_INPUT_CHARS`; the Portal's `RichTextEditor` takes `wordLimit` and the
+  Chat passes `MESSAGE_WORD_LIMIT`. Supersedes the 1,000-for-everything rule of the
+  #194 section above for messages only.
+- **Edit history stays under Firestore's 1 MiB document limit:** `appendRevision`
+  in `messages.controller.js` keeps the newest `revisions` that fit in 900 KB beside
+  the current text (measured in UTF-8 bytes), dropping the oldest and logging it.
+  It replaces `FieldValue.arrayUnion`, which grew without bound.
+- **Composer on a phone:** the card no longer has a height cap — the thread does
+  (`55dvh`) — and the editor grows to `min(35dvh, 18rem)` then scrolls inside itself
+  (`RichTextEditor` `maxHeight`). The Send row is scrolled into view on focus and
+  while typing, and `index.css` hides the fixed bottom navigation while
+  `[data-chat-composer]` has focus below `md`. Before, a long message made the
+  composer taller than the 70vh card and Send spilled out under the bottom bar.
+- **"Discussion" → "Chat":** the tab has been Chat since 2026-11-05 (lt.17); the
+  mobile app bundles the Portal, so an app built earlier still says Discussion until
+  rebuilt. The last user-visible "discussion" (an error message) now says chat. Code
+  names stay (`DiscussionPanel`, tab key `discussion`, `messages`).
+
+## Chat: an edit is announced; only the author edits (#297, 2026-11-14)
+
+- `services/chatMessageNotify.service.js` — `notifyChatMessage({ ..., edited })` is
+  the one path for a new AND an edited message: a client's message → owner + current
+  step's assignees, else admins (#200), template `matter_message_team` /
+  `matter_message_team_edited`; a staff message shared with the client → the client
+  (CC the matter's `ccEmails`), `matter_message` / `matter_message_edited`; an
+  internal staff message → only @mentioned colleagues (on an edit, only those
+  mentioned for the first time; `mentionedUids` keeps the union). Each person gets
+  one bell notification (`email: false`) and one templated email; the
+  `EMAIL_DISABLED` kill-switch applies through `sendTemplatedEmail`. The two
+  `*_edited` templates are editable in Settings → Email Templates and carry the
+  updated text in `{{message}}`.
+- **No duplicates:** one server path serves the internal and the client portal;
+  `updateMessage` compares and writes in a Firestore transaction, so an unchanged
+  body (a double-clicked Save) writes and notifies nothing.
+- **Edit = author only, enforced by the API:** `loadModifiableMessage(req, res,
+  'edit')` → `canEditMessage(req.user, m)` (`m.authorUid === req.user.uid`, the
+  verified token's uid), re-checked inside the transaction; 403 "You can only edit
+  messages you wrote." The Portal shows Edit only when `canEdit`. Delete stays
+  author-or-admin as moderation.
+- Own ("sent") bubbles are `bg-emerald-100` with an `emerald-300` edge (were
+  `emerald-50`, barely distinct from the white thread).
 
 ## Scheduled calls without a shared secret (2026-11-05)
 

@@ -7564,3 +7564,78 @@ sheet".
   follows its workflow and a typed cell yields to the next workflow change; a manual Quarterly row
   stays out of Monthly and is 404 through it; Constitution choice added by a team member; client,
   team and validation guards). Run locally against QA on 2026-11-10: 5/5 passed (the new tasks index is not on QA, so the sync used its fallback); trademark-reports.spec 8/8 still pass.
+
+### Matter steps and Chat fixes (2026-11-14, #293, #295, #296, #297) 🔄 In review
+
+**#293 (1) — the team member assigned on a GST matter got no email.** Root cause: a matter
+created with no payment — every GST return matter the #219 sweep opens, every #167
+recurring copy, any matter created as "No payment" — waits in `pending_admin_approval`.
+Creation tells only the admins, and approving it told only the matter's creator (for GST:
+`system:gst-returns`, nobody). The people the first step is assigned to were never told, at
+creation or at approval. A paid matter skips approval and was announced at creation —
+hence "especially matters with no payment".
+- `services/stepAssignmentNotice.service.js`: one "this step is yours" notice, used at
+  creation, at approval (new) and on every move to an internal step.
+- It now reaches every assignee of a shared step (#192); creation and transitions told
+  only the primary assignee.
+- `notify()` skips `system:*` recipients.
+- Not changed: a matter whose first step is the CLIENT's is not announced to the client
+  at approval (the client already got the matter-created / GST email when it opened).
+- Tests: `backend/src/__tests__/stepAssignmentNotice.test.js` (8).
+
+**#296 — payment messages out of the Steps tab (supersedes #293 part 2).** Two things showed
+there: the amber, blinking "Part payment received" banner (client and staff), and the
+payment entry ("Payment received: ₹1000 via UPI. ₹0 remaining of ₹2000.") as the current
+step's "From the previous step" note — which reached team members, who must not see
+figures (#148). Both are gone for everyone; the Payments tab is unchanged. Because #296
+removes them for all roles, #293's "only Admin and Manager" ask is met in the Steps tab.
+- `shared/payments/ledgerEvents.js`: the event types that carry payment figures, used by
+  the Portal and the API.
+- The API also stopped returning those entries in a team member's or professional's
+  activity feed; admins and managers keep them in the history.
+- Tests: `backend/src/__tests__/paymentLedgerEvents.test.js` (4); Playwright
+  `Portal/e2e/payments-not-in-steps.spec.ts`. User-visible: yes.
+
+**#295 — Chat in the mobile app: name, Send button, 5,000 words.**
+- **Rename:** the Portal tab has been "Chat" since 2026-11-05 (v1.6.0-lt.17), everywhere
+  — website and app, because the app renders the Portal. A phone app built before that
+  still shows "Discussion" until the next app build. Portal-wide is the right scope: an
+  app-only name would make the same screen read differently on the website. The last
+  user-visible "discussion" (the load-error message) now says "chat".
+- **Send button:** the Chat card had a 70% height cap and the text box grew without
+  limit, so a long message pushed Send out of the card, where the fixed bottom navigation
+  covered it. Now the thread carries the cap, the text box stops at about a third of the
+  screen and scrolls inside, Send is kept in view while typing, and the bottom navigation
+  steps aside while the composer has focus on a phone. Send is a 44px target.
+- **5,000 words:** Chat messages only; step comments and notes stay at 1,000. One copy of
+  the numbers in `shared/richText/limits.js`, read by the API and the editor. A message's
+  edit history is trimmed oldest-first so a long, often-edited message stays under
+  Firestore's document limit.
+- Tests: `backend/src/__tests__/richTextWordLimit.test.js` (+4),
+  `chatMessages.test.js` (3); Playwright `discussion.spec.ts` (+2, a 390px phone screen),
+  `comment-editor.spec.ts` (5,000-word boundary). User-visible: yes.
+- Not verified on a device: the Playwright check uses a 390x520 browser window to stand
+  in for a phone with its keyboard open.
+
+**#297 — Chat edits are announced; only the author can edit; darker sent bubble.**
+- An edit is announced exactly like a new message, through one shared path
+  (`services/chatMessageNotify.service.js`): a staff edit of a message the client can see
+  emails the client (and the matter's CC addresses); a client's edit emails the matter's
+  owner and the people on its current step, or the admins. The email says the message was
+  edited and carries the new text — two new editable templates, "Client — Chat message
+  edited" and "Internal — A client edited a message". An internal staff note tells only
+  colleagues @mentioned for the first time. One bell notification and one email per
+  person; an unchanged save sends nothing (checked in a transaction).
+- **Bug fixed:** staff, admins included, could edit a client's message (the 2026-11-05
+  rule let an admin edit anyone's). Edit is now the author's only — the Edit icon shows
+  only on your own messages and the API refuses anything else with 403, judged from the
+  signed-in user, not the request. **Decision:** an admin can still DELETE any message as
+  moderation; the issue asked only about editing. Say if admins should lose that too.
+- Sent bubbles are a darker green (`emerald-100`, visible edge) for contrast on white.
+- Tests: `backend/src/__tests__/chatMessages.test.js` (+9: edit rights, the API check,
+  edit emails for both directions, no internal leak, new-message wording unchanged,
+  templates); `singleEmailPerEvent.test.js` now guards the shared service. Playwright
+  `discussion.spec.ts` (edit notifies once, client edit reaches the owner, edit rights by
+  role, no Edit on a client's bubble, bubble colour). User-visible: yes (emails, Edit
+  icon, colour).
+

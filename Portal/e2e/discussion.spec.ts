@@ -284,13 +284,17 @@ test('#200: a staff reply shared with the client does not page the team', async 
 
 /* ── Chat: edit, delete, and confirm before sharing with the client ── */
 
-type Msg = { id: string; body: string; editedAt?: string | null; deleted?: boolean; canEdit?: boolean };
+type Msg = { id: string; body: string; editedAt?: string | null; deleted?: boolean; canEdit?: boolean; canDelete?: boolean };
 const listAs = async (api: Awaited<ReturnType<typeof apiAs>>, taskId: string) =>
   ((await (await api.get(`/api/tasks/${taskId}/messages`)).json()).data ?? []) as Msg[];
 const clientNotes = async (taskId: string) =>
   (await getNotifications('client')).filter((n) => n.taskId === taskId).length;
 
-test('Chat: the author fixes a shared message; the client sees the new text and gets no new notification', async () => {
+/** The client's notifications for this matter whose title says a message was edited. */
+const editedNotes = async (role: 'client' | 'team' | 'manager', taskId: string) =>
+  (await getNotifications(role)).filter((n) => n.taskId === taskId && /edited/i.test(n.title));
+
+test('#297: the author fixes a shared message; the client sees the new text and is told ONCE that it was edited', async () => {
   const taskId = await createMatter();
   const admin = await apiAs('admin');
   const client = await apiAs('client');
@@ -304,6 +308,8 @@ test('Chat: the author fixes a shared message; the client sees the new text and 
     const fixed = `FIXED-${Date.now()}`;
     const edit = await admin.patch(`/api/tasks/${taskId}/messages/${id}`, { data: { body: fixed } });
     expect(edit.status(), await edit.text()).toBe(200);
+    // The same text again (a double-clicked Save) changes nothing and tells nobody.
+    expect((await admin.patch(`/api/tasks/${taskId}/messages/${id}`, { data: { body: fixed } })).status()).toBe(200);
 
     const seen = (await listAs(client, taskId)).find((m) => m.id === id)!;
     expect(seen.body).toContain(fixed);
@@ -311,8 +317,14 @@ test('Chat: the author fixes a shared message; the client sees the new text and 
     expect(seen.editedAt).toBeTruthy();
     // The client cannot change the firm's message.
     expect(seen.canEdit).toBe(false);
+
+    // #297: exactly one new notification (its email is the template's), saying it was edited, with the new text.
+    expect(await waitForNotification('client', /edited/i, 20_000, taskId)).toBe(true);
     await new Promise((r) => setTimeout(r, 2000));
-    expect(await clientNotes(taskId)).toBe(before);
+    expect(await clientNotes(taskId)).toBe(before + 1);
+    const notes = await editedNotes('client', taskId);
+    expect(notes).toHaveLength(1);
+    expect(notes[0].message).toContain(fixed);
 
     // The earlier text is never returned by the API.
     expect(JSON.stringify(await listAs(admin, taskId))).not.toContain(typo);
@@ -321,12 +333,36 @@ test('Chat: the author fixes a shared message; the client sees the new text and 
   } finally { await admin.dispose(); await client.dispose(); await deleteMatter(taskId); }
 });
 
-test('Chat: who may edit or delete — the author or an admin, nobody else', async () => {
+test('#297: a client edits their message — the matter owner is told once; editing an internal note tells the client nothing', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  const client = await apiAs('client');
+  try {
+    await assignMatter(taskId, env('E2E_TEAM_UID'));
+    const { id } = await (await client.post(`/api/tasks/${taskId}/messages`, { data: { body: 'The name is XZY' } })).json();
+    const fixed = `The name is XYZ-${Date.now()}`;
+    expect((await client.patch(`/api/tasks/${taskId}/messages/${id}`, { data: { body: fixed } })).status()).toBe(200);
+    expect(await waitForNotification('team', /edited/i, 20_000, taskId)).toBe(true);
+    const teamNotes = await editedNotes('team', taskId);
+    expect(teamNotes).toHaveLength(1);
+    expect(teamNotes[0].message).toContain(fixed);
+
+    // An internal staff note, edited: the client hears nothing.
+    const { id: internal } = await (await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: 'internal' } })).json();
+    expect((await admin.patch(`/api/tasks/${taskId}/messages/${internal}`, { data: { body: 'internal, fixed' } })).status()).toBe(200);
+    await new Promise((r) => setTimeout(r, 2000));
+    expect(await editedNotes('client', taskId)).toHaveLength(0);
+  } finally { await admin.dispose(); await client.dispose(); await deleteMatter(taskId); }
+});
+
+test('#297: who may edit — the author only; who may delete — the author or an admin', async () => {
   const taskId = await createMatter();
   const admin = await apiAs('admin');
   const manager = await apiAs('manager');
+  const team = await apiAs('team');
   const client = await apiAs('client');
   try {
+    await assignMatter(taskId, env('E2E_TEAM_UID'));
     const post = async (api: typeof admin, body: string, clientVisible?: boolean) =>
       (await (await api.post(`/api/tasks/${taskId}/messages`, { data: { body, clientVisible } })).json()).id as string;
     const byAdmin = await post(admin, 'admin note', true);
@@ -334,16 +370,27 @@ test('Chat: who may edit or delete — the author or an admin, nobody else', asy
     const internal = await post(admin, 'internal note');
     const byClient = await post(client, 'client question');
 
-    // A colleague cannot change someone else's message…
+    // A colleague cannot change someone else's message — and since #297 neither can an admin.
     expect((await manager.patch(`/api/tasks/${taskId}/messages/${byAdmin}`, { data: { body: 'x' } })).status()).toBe(403);
     expect((await manager.delete(`/api/tasks/${taskId}/messages/${byAdmin}`)).status()).toBe(403);
-    // …an admin can.
-    expect((await admin.patch(`/api/tasks/${taskId}/messages/${byManager}`, { data: { body: 'tidied by admin' } })).status()).toBe(200);
+    expect((await admin.patch(`/api/tasks/${taskId}/messages/${byManager}`, { data: { body: 'tidied by admin' } })).status()).toBe(403);
+    // #297: no internal user may edit a CLIENT's message — enforced by the API, not only the UI.
+    for (const staff of [admin, manager, team]) {
+      expect((await staff.patch(`/api/tasks/${taskId}/messages/${byClient}`, { data: { body: 'rewritten by staff' } })).status()).toBe(403);
+    }
+    const listed = await listAs(admin, taskId);
+    expect(listed.find((m) => m.id === byClient)).toMatchObject({ canEdit: false, canDelete: true });
+    expect(listed.find((m) => m.id === byManager)).toMatchObject({ canEdit: false, canDelete: true });
+    expect(listed.find((m) => m.id === byAdmin)).toMatchObject({ canEdit: true, canDelete: true });
+    expect((await listAs(manager, taskId)).find((m) => m.id === byClient)).toMatchObject({ canEdit: false, canDelete: false });
+
     // A client cannot touch the firm's messages, and an internal one does not exist for them.
     expect((await client.patch(`/api/tasks/${taskId}/messages/${byAdmin}`, { data: { body: 'x' } })).status()).toBe(403);
     expect((await client.delete(`/api/tasks/${taskId}/messages/${internal}`)).status()).toBe(404);
     // A client can fix and delete their own.
     expect((await client.patch(`/api/tasks/${taskId}/messages/${byClient}`, { data: { body: 'client question, fixed' } })).status()).toBe(200);
+    // An admin may still delete any message (moderation).
+    expect((await admin.delete(`/api/tasks/${taskId}/messages/${byManager}`)).status()).toBe(200);
     expect((await client.delete(`/api/tasks/${taskId}/messages/${byClient}`)).status()).toBe(200);
 
     // A deleted message keeps its place, without its text, and cannot be changed again.
@@ -352,7 +399,34 @@ test('Chat: who may edit or delete — the author or an admin, nobody else', asy
     expect((await client.patch(`/api/tasks/${taskId}/messages/${byClient}`, { data: { body: 'again' } })).status()).toBe(409);
     // Unknown fields are refused: an edit cannot change who sees the message.
     expect((await admin.patch(`/api/tasks/${taskId}/messages/${internal}`, { data: { body: 'x', clientVisible: true } })).status()).toBe(400);
-  } finally { await admin.dispose(); await manager.dispose(); await client.dispose(); await deleteMatter(taskId); }
+  } finally {
+    await admin.dispose(); await manager.dispose(); await team.dispose(); await client.dispose(); await deleteMatter(taskId);
+  }
+});
+
+test('#297: staff see no Edit on a client\'s message; their own sent bubble is a darker green', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  const client = await apiAs('client');
+  try {
+    const text = `CLIENT-WROTE-${Date.now()}`;
+    await client.post(`/api/tasks/${taskId}/messages`, { data: { body: text } });
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const theirs = adminPage.getByTestId('chat-bubble').filter({ hasText: text });
+    await expect(theirs).toBeVisible();
+    await expect(theirs.getByRole('button', { name: 'Edit message' })).toHaveCount(0);
+    await expect(theirs.getByRole('button', { name: 'Delete message' })).toBeVisible(); // admin moderation
+
+    const mine = `ADMIN-WROTE-${Date.now()}`;
+    await adminPage.getByLabel('Message').fill(mine);
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+    const bubble = adminPage.getByTestId('chat-bubble-mine').filter({ hasText: mine });
+    await expect(bubble.getByRole('button', { name: 'Edit message' })).toBeVisible();
+    // Not white and not the old, near-white emerald-50.
+    const bg = await bubble.evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(bg).not.toMatch(/^rgba?\(255, 255, 255/);
+    await expect(bubble).toHaveClass(/bg-emerald-100/);
+  } finally { await client.dispose(); await deleteMatter(taskId); }
 });
 
 test('Chat: the tab is called Chat; sharing with the client asks first; a message can be edited and deleted', async ({ adminPage }) => {
@@ -392,5 +466,53 @@ test('Chat: the tab is called Chat; sharing with the client asks first; a messag
     await adminPage.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
     await expect(adminPage.getByText('This message was deleted')).toBeVisible();
     await expect(adminPage.getByText(fixed)).toHaveCount(0);
+  } finally { await deleteMatter(taskId); }
+});
+
+/* ── #295: Chat on a phone (the mobile app renders this same page) ───────── */
+
+test('#295: on a phone, a long message keeps Send on screen and the tab is called Chat', async ({ clientPage }) => {
+  const taskId = await createMatter();
+  try {
+    // An iPhone-12-sized viewport, with room taken off for an on-screen keyboard.
+    await clientPage.setViewportSize({ width: 390, height: 520 });
+    await clientPage.goto(`tasks/${taskId}`);
+    await clientPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await expect(clientPage.getByRole('button', { name: 'Discussion', exact: true })).toHaveCount(0);
+
+    // A long message: 120 paragraphs, far taller than the screen.
+    const editor = clientPage.getByLabel('Message');
+    await editor.click();
+    const long = Array.from({ length: 120 }, (_, i) => `Line ${i + 1} of a very long message about the proposed company names.`).join('\n');
+    await editor.fill(long);
+
+    // The text area stops growing and scrolls inside itself…
+    const box = await clientPage.getByTestId('rich-text-scroll').first().boundingBox();
+    expect(box!.height, 'the text area is capped').toBeLessThan(520 * 0.5);
+    // …so Send stays visible and usable, not under the bottom navigation.
+    const send = clientPage.getByRole('button', { name: /^Send$/ });
+    await expect(send).toBeInViewport();
+    await expect(send).toBeEnabled();
+    await expect(clientPage.locator('.app-bottombar')).toBeHidden();
+    const sendBox = await send.boundingBox();
+    expect(sendBox!.height, 'a 44px touch target').toBeGreaterThanOrEqual(44);
+
+    await send.click();
+    await expect(clientPage.getByText('Line 120 of a very long message', { exact: false })).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#295: a 5,000-word message can be sent; the counter shows the 5,000 limit', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const editor = adminPage.getByLabel('Message');
+    await editor.click();
+    await editor.fill(Array(4200).fill('word').join(' '));
+    // The counter appears near the limit and names the CHAT limit, not a comment's 1,000.
+    await expect(adminPage.getByText(/4,200 \/ 5,000 words/)).toBeVisible();
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+    await expect(adminPage.getByText('internal').first()).toBeVisible();
   } finally { await deleteMatter(taskId); }
 });

@@ -251,15 +251,18 @@ Every meaningful workflow event triggers an in-app notification and an email to 
 **Acceptance Scenarios**:
 
 1. **Given** a workflow step is completed, **Then** the client receives an in-app notification and email with the step name, service name, and current overall status.
-2. **Given** a payment is due, **Then** automated reminder emails are sent at the configured frequency; the blinking payment indicator appears in both client and team-member views.
+2. **Given** a payment is due, **Then** automated reminder emails are sent at the configured frequency. Since #296 (2026-11-14) the Steps tab shows no payment banner or payment message to anyone — no blinking — and the balance is shown on the Payments tab (Admin, Manager, the client); a team member sees no payment figures anywhere, including the activity history (#293).
 3. **Given** an email fails to deliver (invalid address, full mailbox), **Then** admin and manager receive an in-app alert identifying the client, the email address, and the failure reason.
 4. **Given** admin configures an email template for a step, **Then** all future notifications for that step use the custom template with branding, content, and tone settings.
 5. **Given** a notification pop-up (news/offer/update) is created by admin, **Then** it is shown in-app on next open and optionally sent as email to selected client groups.
-6. **Given** a client sends a message in a matter's Discussion (#200), **Then** the matter's owner and everyone assigned to its current step each receive one notification and one email; if the matter has neither, the admins do.
-7. **Given** staff send a client a reminder, or post a Discussion message visible to the client (#207), **Then** the client receives exactly one email for it, alongside the in-app notification.
-8. **Given** a user writes a step comment, a note to the client or a Discussion message of up to 1,000 words (#194), **Then** it is saved in full and shown folded behind "Read more" when long; **Given** it exceeds 1,000 words, **Then** it is refused with the actual word count and nothing is saved.
+6. **Given** a client sends a message in a matter's Chat (formerly Discussion; #200), **Then** the matter's owner and everyone assigned to its current step each receive one notification and one email; if the matter has neither, the admins do.
+7. **Given** staff send a client a reminder, or post a Chat message visible to the client (#207), **Then** the client receives exactly one email for it, alongside the in-app notification.
+8. **Given** a user writes a step comment or a note to the client of up to 1,000 words, or a Chat message of up to 5,000 words (#194, #295), **Then** it is saved in full and shown folded behind "Read more" when long; **Given** it exceeds its limit, **Then** it is refused with the actual word count and nothing is saved.
+7a. **Given** someone edits their own Chat message (#297), **Then** it is announced exactly like a new one — a staff edit of a message the client can see emails the client, a client's edit emails the matter's owner and the people on its current step — saying the message was edited and giving the new text, once per person; editing an internal staff message tells only colleagues newly @mentioned. **Given** a staff member views a message someone else wrote (a client's included), **Then** there is no Edit option, and the API refuses the edit; an admin may still delete any message.
+8a. **Given** a user types a long Chat message on a phone, in the browser or the mobile app (#295), **Then** the text box stops growing and scrolls inside itself, the bottom navigation steps aside while they type, and the Send button stays on screen.
 9. **Given** a user opens a matter from a report, the dashboard, a client's page or search and presses Back (#208), **Then** they return to that page; a report's filters are part of its address and are still applied.
 10. **Given** an admin or manager creates a matter from the Matters page or a client's page (#211), **Then** the new matter opens, and Back returns them to the page they created it from.
+11. **Given** a step becomes someone's to work — when a matter is created already paid, when an admin approves a matter created with no payment (every automatic GST return matter), or when the matter moves on to that step (#293), **Then** every team member assigned to the step receives one notification and one email; if nobody is assigned, the matter's owner does.
 
 ---
 

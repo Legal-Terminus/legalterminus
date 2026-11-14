@@ -13,8 +13,10 @@ export interface MatterMessage {
   editedAt?: string | null;
   /** A deleted message keeps its place in the thread, with no text. */
   deleted?: boolean;
-  /** The author, or an admin, may edit or delete it. */
+  /** #297: only the author may edit it. */
   canEdit?: boolean;
+  /** The author, or an admin, may delete it. */
+  canDelete?: boolean;
   clientVisible: boolean;
   authorRole: 'admin' | 'manager' | 'team_member' | 'client' | null;
   authorName: string;
@@ -30,7 +32,11 @@ export const postMessage = (taskId: string, body: string, clientVisible: boolean
     body: JSON.stringify({ body, clientVisible }),
   });
 
-/** Fix a message's text. Sends no email. */
+/**
+ * Change your own message's text. #297: announced like a new message — a
+ * shared staff message emails the client, a client's message emails the team —
+ * saying it was edited and giving the new text.
+ */
 export const editMessage = (taskId: string, messageId: string, body: string) =>
   apiFetch<{ id: string; body: string; editedAt: string | null }>(`/api/tasks/${taskId}/messages/${messageId}`, {
     method: 'PATCH',

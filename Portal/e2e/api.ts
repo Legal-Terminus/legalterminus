@@ -724,6 +724,41 @@ export async function createClientAssignedMatter(): Promise<{ taskId: string; de
   return { taskId, defId };
 }
 
+/**
+ * #293: a NO-PAYMENT matter (so it waits for admin approval, like every GST
+ * return matter the sweep opens) whose first step is pre-assigned to the e2e
+ * team member. Created by the MANAGER so the admin who approves it is not the
+ * creator. Returns the matter id + def id for teardown.
+ */
+export async function createPendingTeamStepMatter(): Promise<{ taskId: string; defId: string }> {
+  const admin = await apiAs('admin');
+  const stamp = Date.now();
+  const defId = `e2e-pendingteam-${stamp}`;
+  const serviceKey = `e2e-svc-pendingteam-${stamp}`;
+  const def = {
+    id: defId,
+    name: `E2E Pending Team Step ${defId}`,
+    initialStep: 1,
+    serviceKeys: [serviceKey],
+    steps: [
+      { stepNumber: 1, title: 'Prepare the return (team)', type: 'step',
+        defaultAssigneeUid: env('E2E_TEAM_UID'), transitions: [{ event: 'COMPLETE_STEP', to: 2 }] },
+      { stepNumber: 2, title: 'Done', type: 'final' },
+    ],
+  };
+  const dres = await admin.post('/api/workflow-definitions', { data: def });
+  if (!dres.ok()) throw new Error(`createPendingTeamStepMatter def failed: ${dres.status()} ${await dres.text()}`);
+  await admin.dispose();
+  const manager = await apiAs('manager');
+  const tres = await manager.post('/api/tasks', {
+    data: { clientUid: env('E2E_CLIENT_UID'), serviceKey, paymentStatus: 'not_paid' },
+  });
+  if (!tres.ok()) throw new Error(`createPendingTeamStepMatter task failed: ${tres.status()} ${await tres.text()}`);
+  const taskId = (await tres.json()).id as string;
+  await manager.dispose();
+  return { taskId, defId };
+}
+
 /** Delete a workflow definition by id (admin). Best-effort teardown. */
 export async function deleteDefinition(id: string): Promise<void> {
   if (!id) return;

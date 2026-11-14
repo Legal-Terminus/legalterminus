@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MESSAGE_MAX_INPUT_CHARS } from "../../../shared/richText/limits.js";
 
 /**
  * Task schemas. Validation for the task endpoints (create/assign, list filters,
@@ -214,12 +215,14 @@ export const internalReminderSchema = z.object({
 
 // POST /api/tasks/:taskId/messages — the discussion thread (#123). Mentions
 // (#200) are parsed from the body server-side, never sent as a list.
+// #295: a message may be 5,000 words, so its raw cap is the message cap from
+// shared/richText/limits.js (the word limit itself is applied by prepareRichText).
 export const messageCreateSchema = z.object({
-  body: z.string().max(200000),
+  body: z.string().max(MESSAGE_MAX_INPUT_CHARS),
   clientVisible: z.boolean().optional(),
 }).strict();
 
 // Editing a chat message changes its text only — never who can see it.
 export const messageUpdateSchema = z.object({
-  body: z.string().max(200000),
+  body: z.string().max(MESSAGE_MAX_INPUT_CHARS),
 }).strict();

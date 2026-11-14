@@ -36,6 +36,7 @@ import { parseCcEmails, validateCcEmails, formatCcEmails } from '../../lib/ccEma
 import { usePageTitle } from '../../hooks/useDocumentTitle';
 import FormStepPanel from '../../components/tasks/FormStepPanel';
 import { useGoBack } from '../../hooks/useGoBack';
+import { isPaymentLedgerEvent as isPaymentEvent } from '@shared/payments/ledgerEvents.js';
 
 type TabKey = 'steps' | 'documents' | 'payments' | 'discussion';
 
@@ -1127,8 +1128,12 @@ function StepsTab({
   // and a client's own comment ('You') isn't echoed back to them — but it DOES
   // reach the internal team on the next step.
   const approvalNoteFor = (n: number): { text: string; by: string; at: string | null } | undefined => {
+    // #296 (also #293): a payment entry ("Payment received: ₹1000 via UPI. ₹0
+    // remaining of ₹2000.") is stamped on the current step, so it surfaced here
+    // as the step's "From the previous step" note — to team members too, who
+    // must never see payment figures (#148). Payments live on the Payments tab.
     const relevant = events
-      .filter((e) => e.comment && e.toStep === n && e.byName !== 'You')
+      .filter((e) => e.comment && e.toStep === n && e.byName !== 'You' && !isPaymentEvent(e.type))
       .sort((a, b) => (a.at ?? '').localeCompare(b.at ?? ''));
     const last = relevant[relevant.length - 1];
     return last?.comment ? { text: last.comment, by: last.byName, at: last.at } : undefined;
@@ -1365,33 +1370,11 @@ function StepsTab({
     </div>
   );
 
-  // #54: part-payment alert — a blinking banner shown to BOTH client and team when
-  // only part payment has been received, replacing the old "Part Payment Due" step.
-  //
-  // #124/#117: don't nag from step 1. The balance is chased from a specific point
-  // in the service — the alert starts only once the step carrying the
-  // `REMIND_PART_PAYMENT` effect (the same setting that drives the reminder email,
-  // #76) has been COMPLETED (stakeholder: e.g. after "Name Approval Received").
-  // Workflows with no such step configured keep the previous always-on behaviour.
-  // It stops automatically once the balance is cleared (paymentStatus is no longer
-  // part_paid) — and it never shows for Full/No Payment matters, which are not
-  // `part_paid` in the first place.
-  const partPaymentFromStep = stepDefs.find((s) => (s.effects ?? []).includes('REMIND_PART_PAYMENT'))?.stepNumber;
-  const partPaymentDue = partPaymentFromStep == null
-    || allSteps.find((s) => s.stepNumber === partPaymentFromStep)?.status === 'completed';
-  const partPaymentAlert = !completed && task.paymentStatus === 'part_paid' && partPaymentDue && (
-    <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 flex items-start gap-2.5 animate-pulse">
-      <CreditCard className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-amber-900">Part payment received</p>
-        <p className="text-sm text-amber-800">
-          {role.isClient
-            ? 'Please make the remaining payment for completion and uploading of the final e-forms for company incorporation.'
-            : `Only part payment received${task.amountDue ? ` — ₹${task.amountDue} due` : ''}. Follow up with the client for the balance.`}
-        </p>
-      </div>
-    </div>
-  );
+  // #296: the amber, blinking part-payment banner (#54, with its #124/#117
+  // "start from step N" rule) is gone from the Steps tab for EVERYONE — client
+  // and staff. The firm wants the Steps tab to show step information only; what
+  // is paid and what is due stays on the Payments tab, and the
+  // REMIND_PART_PAYMENT step effect still emails the client the balance reminder.
 
   // Activity as a sticky RIGHT sidebar (xl+). Capped height with internal scroll
   // so a long feed never runs past the viewport while sticky.
@@ -1406,7 +1389,6 @@ function StepsTab({
           style={{ gridTemplateColumns: `1fr auto ${activitySection ? activityCol : '0px'}` }}
         >
           <div className="space-y-7 min-w-0 mr-4">
-            {partPaymentAlert}
             {pendingBar}
             {formPanel}
             {hero}
@@ -1418,7 +1400,6 @@ function StepsTab({
           {activitySection && <ActivityRail rail={activityRail}>{activitySection}</ActivityRail>}
         </div>
         <div className="xl:hidden space-y-7">
-          {partPaymentAlert}
           {pendingBar}
           {formPanel}
           {hero}
@@ -1447,7 +1428,6 @@ function StepsTab({
           ? <PanelHandle onPointerDown={stagesRail.startDrag('left')} />
           : <div />}
         <div className="space-y-7 min-w-0 mx-4">
-          {partPaymentAlert}
           {pendingBar}
           {hero}
           {stepsSection}
@@ -1462,7 +1442,6 @@ function StepsTab({
       <div className="hidden lg:grid xl:hidden lg:grid-cols-[210px_1fr] lg:gap-6 items-start">
         <StagesRail stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} rail={stagesRail} />
         <div className="space-y-7 min-w-0">
-          {partPaymentAlert}
           {pendingBar}
           {hero}
           {activitySection}
@@ -1473,7 +1452,6 @@ function StepsTab({
       {/* Mobile: stage dropdown + stacked content. */}
       <div className="lg:hidden space-y-7">
         <MobileStagePicker stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} />
-        {partPaymentAlert}
         {pendingBar}
         {hero}
         {activitySection}
