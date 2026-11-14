@@ -141,12 +141,14 @@ const TechServices = () => {
       <section className="Add-public-hero">
         <div className="Add-public-container">
           <div className="Add-public-content">
-            <span className="Add-public-tag">In partnership with Infynia Labs</span>
+            <span className="Add-public-tag">Along with Infynia Labs</span>
             <h1 className="Add-public-title">Technology Services For Your New Business</h1>
             <p className="Add-public-description">
-              Website, payment gateway, business email, online store and custom software — arranged by
-              Legal Terminus and built by our technology partner, Infynia Labs. One contact for your
-              compliance and your technology, with packages starting from Rs. 14,999/-.
+              Take your business online with complete technology solutions, including website
+              development, payment gateway integration, professional business email, online stores and
+              custom software. Legal Terminus along with Infynia Labs, brings you everything under one
+              roof with seamless coordination and a single point of contact. Packages start at just
+              ₹14,999/-.
             </p>
             <div className="Add-public-features">
               <div className="Add-feature-item"> Website, Domain & Business Email</div>
@@ -156,16 +158,16 @@ const TechServices = () => {
             </div>
             <div className="Add-public-highlights">
               <div>
-                <h3>End-to-End</h3>
-                <p>Owned by Legal Terminus</p>
+                <h3>Complete Solutions</h3>
+                <p>Managed by Legal Terminus</p>
               </div>
               <div>
-                <h3>AI-Native</h3>
-                <p>Fast Build &amp; Deployment</p>
+                <h3>Smart Technology</h3>
+                <p>Powered by AI</p>
               </div>
               <div>
-                <h3>Fixed</h3>
-                <p>Scope &amp; Price</p>
+                <h3>Transparent Pricing</h3>
+                <p>Clear Scope &amp; Fixed Cost</p>
               </div>
             </div>
           </div>
@@ -221,7 +223,7 @@ const TechServices = () => {
           <ol className="Add-tc-list">
             <li className="Add-tc-item">18% GST applicable on professional fee.</li>
             <li className="Add-tc-item">Domain, hosting, email and payment-gateway charges are payable to the respective provider as per actuals and are not included unless stated in the plan.</li>
-            <li className="Add-tc-item">Services are delivered by Infynia Labs, the technology partner of Legal Terminus; Legal Terminus remains your point of contact.</li>
+            <li className="Add-tc-item">Services are delivered by Legal Terminus along with Infynia Labs.</li>
             <li className="Add-tc-item">In case the above plans do not qualify your requirements, kindly contact our executive, we shall be happy to customize a plan for you.</li>
           </ol>
         </div>
@@ -248,7 +250,7 @@ const TechServices = () => {
                 <section className="Add-zp-section-block">
                   <h3 className="Add-zp-label">What You Get:</h3>
                   <ul className="Add-zp-list Add-zp-features-list">
-                    <li className="Add-zp-list-item"><span className="Add-zp-list-icon">🧑‍💻</span>End-to-end delivery owned by Legal Terminus: a dedicated Infynia Labs team for design, development and setup, coordinated by your consultant.</li>
+                    <li className="Add-zp-list-item"><span className="Add-zp-list-icon">🧑‍💻</span>End-to-end delivery by Legal Terminus, together with the Infynia Labs team, covering design, development and setup, coordinated by your dedicated consultant.</li>
                     <li className="Add-zp-list-item"><span className="Add-zp-list-icon">⚡</span>AI-native development and deployment — a business website live in days, and changes after launch just as fast.</li>
                     <li className="Add-zp-list-item"><span className="Add-zp-list-icon">📑</span>A written scope and timeline before work starts, a preview link at every stage, and a walkthrough with all logins at handover.</li>
                   </ul>
