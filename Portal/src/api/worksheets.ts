@@ -33,6 +33,8 @@ export interface WsSheet {
   serial: boolean;
   /** #279: rows also come from matters (the GST Return Filing sheet). */
   source: { kind: string } | null;
+  /** #279: 'monthly' | 'quarterly' on the GST Return Filing sheets — drives the Return Period filter. */
+  frequency?: 'monthly' | 'quarterly' | null;
 }
 
 export interface WsModule {

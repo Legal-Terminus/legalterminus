@@ -119,6 +119,8 @@ export function resolveSheet(sheetKey, config = {}) {
     exclusive: !!book.exclusive,
     // #279: rows that come from matters (read-only provenance for the Portal).
     source: book.sync ? { kind: book.sync } : null,
+    // #279: Monthly / Quarterly, for the Return Period filter of the GST sheets.
+    frequency: sheet.frequency ?? null,
   };
 }
 

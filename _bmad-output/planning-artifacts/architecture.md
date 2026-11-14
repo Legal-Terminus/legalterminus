@@ -2662,6 +2662,13 @@ and **Matter**.
 - **Not reflected until the matter changes:** a change on the CLIENT (a new GSTIN
   or email) — it is read when the matter's row is next synced. A deleted matter
   leaves its row (the firm's record), with no matter label.
+- **Return Period filter (2026-11-14).** `resolveSheet` returns the sheet's
+  `frequency`; the Portal (`WorksheetModulePage`) shows a "Return period" dropdown for
+  sheets that have one, from `periodOptions` (`shared/workflows/gstReturns.js`: the
+  period being filed now, `duePeriod` of today in India, then older ones — 24 months /
+  8 quarters; option value = the row's `period` title, text = the title or the
+  quarter's long label) plus any other period typed on a row. Client-side over the
+  loaded sheet (≤ 5000 rows); default = the first option.
 - **Access.** As every worksheet: admin, manager, team member view, add, edit and
   edit dropdowns; admin changes columns and deletes a record; route
   `/reports/gst-returns` with the same three roles; clients and professionals 403.

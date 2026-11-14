@@ -7,6 +7,7 @@ import {
   companyNameOf, duePeriod, indiaDate, longDate, shouldOpen,
 } from '../../../shared/workflows/gstReturns.js';
 import { resolveStatutoryDate } from '../../../shared/workflows/statutoryCalendar.js';
+import { periodOptions as _periodOptions } from '../../../shared/workflows/gstReturns.js';
 import { TEMPLATE_DEFS, fillTemplate } from '../services/emailTemplates.service.js';
 import { updateUserSchema } from '../schemas/user.schema.js';
 
@@ -99,4 +100,19 @@ test('a Service step keeps its due rule when saved (it used to be stripped)', as
   if (updated.success && updated.data.steps) assert.deepEqual(updated.data.steps[0].dueRule, step.dueRule);
   assert.equal(createDefinitionSchema.safeParse({ id: 'gst', name: 'GST', initialStep: 1,
     steps: [{ ...step, dueRule: { anchor: 'whenever' } }] }).success, false);
+});
+
+/* #279 (firm, 11 Nov): the Return Period filter's options. */
+
+test('#279 period filter: newest first, starting with the period being filed now; quarters labelled like the firm', () => {
+  const months = _periodOptions('monthly', '2026-11-14', 3);
+  assert.deepEqual(months.map((o) => o.label), ['October 2026', 'September 2026', 'August 2026']);
+  assert.deepEqual(months.map((o) => o.title), ['October 2026', 'September 2026', 'August 2026']);
+  assert.deepEqual(_periodOptions('monthly', '2027-01-03', 2).map((o) => o.title), ['December 2026', 'November 2026']);
+  const quarters = _periodOptions('quarterly', '2026-11-14', 3);
+  assert.deepEqual(quarters.map((o) => o.title), ['Q2 2026-27', 'Q1 2026-27', 'Q4 2025-26']);
+  assert.deepEqual(quarters.map((o) => o.label), ['Q2 26-27 (July–September)', 'Q1 26-27 (April–June)', 'Q4 25-26 (January–March)']);
+  assert.equal(_periodOptions('monthly', '2026-11-14').length, 24);
+  assert.equal(_periodOptions('quarterly', '2026-11-14').length, 8);
+  assert.deepEqual(_periodOptions('weekly', '2026-11-14'), []);
 });

@@ -14,6 +14,7 @@ import RecordForm from '../../components/worksheets/RecordForm';
 import ColumnEditor from '../../components/worksheets/ColumnEditor';
 import ImportPanel from '../../components/worksheets/ImportPanel';
 import OptionsEditor from '../../components/worksheets/OptionsEditor';
+import { periodOptions } from '@shared/workflows/gstReturns.js';
 
 /**
  * #210 / #217 — one page for a module of worksheets: a dropdown of sheets (the
@@ -26,6 +27,8 @@ import OptionsEditor from '../../components/worksheets/OptionsEditor';
  */
 
 const MAX_RECORDS = 5000;
+/** Today's date in India, 'YYYY-MM-DD' (module scope: no impure call during render). */
+const indiaToday = () => new Date(Date.now() + 330 * 60_000).toISOString().slice(0, 10);
 type View = { kind: 'grid' } | { kind: 'form'; id: string | null } | { kind: 'columns' } | { kind: 'import' } | { kind: 'options' };
 
 export default function WorksheetModulePage({ module, title, subtitle, pickerLabel, back }: {
@@ -191,6 +194,27 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
 
   const editing = view.kind === 'form' && view.id ? all.find((r) => r.id === view.id) ?? null : null;
 
+  // #279 (firm, 11 Nov): the GST Return Filing sheets filter by Return Period, like
+  // the Marketing report's month. Options follow Monthly / Quarterly; the default
+  // is the period being filed now (in November: October 2026, or Q2 26-27); older
+  // periods and any period typed on a row can be picked; "All periods" shows all.
+  const frequency = sheet?.frequency ?? null;
+  const [today] = useState(indiaToday);
+  const periodChoices = useMemo(() => {
+    if (!frequency) return [];
+    const listed = periodOptions(frequency, today) as { key: string; title: string; label: string }[];
+    const known = new Set(listed.map((o) => o.title.toLowerCase()));
+    const typed = [...new Set(all.map((r) => String(r.values.period ?? '').trim()).filter(Boolean))]
+      .filter((p) => !known.has(p.toLowerCase())).sort();
+    return [...listed, ...typed.map((p) => ({ key: p, title: p, label: p }))];
+  }, [frequency, all, today]);
+  const [periodBySheet, setPeriodBySheet] = useState<Record<string, string>>({});
+  const period = frequency ? (periodBySheet[sheetKey] ?? periodChoices[0]?.title ?? '') : '';
+  const shown = useMemo(
+    () => (period ? all.filter((r) => String(r.values.period ?? '').trim().toLowerCase() === period.toLowerCase()) : all),
+    [all, period],
+  );
+
   return (
     <div className="flex flex-col min-h-full">
       <div className="page-header">
@@ -221,6 +245,16 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
                   {mod.sheets.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
                 </select>
               </label>
+              {frequency && view.kind === 'grid' && (
+                <label className="block sm:w-72">
+                  <span className="input-label">Return period</span>
+                  <select aria-label="Return period" value={period}
+                    onChange={(e) => setPeriodBySheet((m) => ({ ...m, [sheetKey]: e.target.value }))} className="input-field px-4 py-3">
+                    <option value="">All periods</option>
+                    {periodChoices.map((o) => <option key={o.key} value={o.title}>{o.label}</option>)}
+                  </select>
+                </label>
+              )}
               {view.kind === 'grid' && (
                 <div className="flex flex-wrap gap-2 sm:ml-auto">
                   {mod.canEdit && (
@@ -263,7 +297,7 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
                     )}
                     <WorksheetGrid
                       key={sheetKey}
-                      sheet={sheet} records={all} matters={matters} canEdit={mod.canEdit} canDelete={mod.canDelete}
+                      sheet={sheet} records={shown} matters={matters} canEdit={mod.canEdit} canDelete={mod.canDelete}
                       loadingMore={isFetchingNextPage}
                       onSaveCell={saveCell}
                       onOpen={(r) => setView({ kind: 'form', id: r.id })}

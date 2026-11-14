@@ -7841,3 +7841,21 @@ admin, manager and team member; shared by Monthly and Quarterly). The workflow s
 when the matter is completed. Values already in the column are kept as they are.
 Tests: `gstReturnSheet.test.js` +1; `gst-return-filing.spec.ts` +1.
 
+### GST Return Filing sheet: Return Period filter (2026-11-14, #279) — E18-S11 🔄 In review
+
+The firm asked (11 Nov) for a period filter "as in the Marketing report".
+- A **Return period** dropdown beside Monthly / Quarterly. Monthly lists "October 2026, September
+  2026, …" (24 months); Quarterly "Q2 26-27 (July–September), Q1 26-27 (April–June), …" (8
+  quarters); the list changes with the view. Any period typed on a row that is not in the list is
+  offered too, and "All periods" shows everything.
+- **Default (decision):** the period being filed now — in November, October 2026 (monthly) and Q2
+  26-27 (quarterly) — the one whose matters the reminders opened on the 1st. A literal "current
+  month" (November) has no rows until 1 December, so it would open on an empty sheet. Open: confirm
+  with the firm.
+- The firm's example "Q1 26-27 (July–September)" mixes two quarters; the filter uses the financial
+  year (Q1 = April–June, Q2 = July–September), as the reminders and Return Period already do.
+- The filter works over the whole loaded sheet (search and column filters apply on top); Download
+  Excel exports what is shown.
+- Tests: `gstReturns.test.js` +1 (options and default); `gst-return-filing.spec.ts` +1; the other
+  GST sheet tests now pick "All periods".
+

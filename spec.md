@@ -457,6 +457,7 @@ The firm's GST return register at `/reports/gst-returns` (a tile on the Reports 
 4. **Given** a row typed or uploaded for the same GSTIN and period before the matter existed, **Then** the matter's row is that row (it is linked, not duplicated).
 5. **Given** the yellow columns (CONSTITUTION, Assign Person, the eight Yes/No status columns, and Completion Check — Done / Pending), **Then** an admin, manager or team member edits their choices under Edit dropdowns; Monthly and Quarterly share them. Constitution starts with Company, Partnership, Proprietorship, OPC, LLP, Section 8; Assign Person starts empty.
 6. **Given** a client or professional, **Then** neither the page nor its API is reachable; only an admin changes columns or deletes a record.
+7. **Given** the sheet, **Then** a Return period dropdown filters its rows: Monthly offers "October 2026", "September 2026", …; Quarterly "Q2 26-27 (July–September)", …; it opens on the period being filed now and offers earlier periods and "All periods".
 
 ---
 

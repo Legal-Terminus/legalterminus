@@ -90,6 +90,8 @@ async function openView(page: Page, label: string) {
   await page.goto('reports/gst-returns');
   await expect(page.getByRole('heading', { name: 'GST Return Filing' })).toBeVisible();
   await page.getByLabel('Return filing', { exact: true }).selectOption({ label });
+  // #279: the sheet opens on the period being filed now; these tests look across all periods.
+  await page.getByLabel('Return period', { exact: true }).selectOption({ label: 'All periods' });
   await page.getByLabel('Search this sheet').fill(RUN);
 }
 const row = (page: Page, text: string) => page.locator('tr', { hasText: text });
@@ -315,6 +317,30 @@ test('#279 Completion Check is a dropdown (Done / Pending) with editable choices
   await teamPage.getByRole('button', { name: 'Cancel', exact: true }).click();
   await teamPage.getByRole('button', { name: 'Edit dropdowns' }).click();
   await expect(teamPage.getByLabel('Dropdown column').locator('option', { hasText: 'Completion Check' })).toHaveCount(1);
+});
+
+test('#279 Return Period filter: options follow Monthly / Quarterly, default is the period being filed now', async ({ adminPage }) => {
+  await adminPage.goto('reports/gst-returns');
+  const picker = adminPage.getByLabel('Return filing', { exact: true });
+  const period = adminPage.getByLabel('Return period', { exact: true });
+  await picker.selectOption({ label: 'Monthly' });
+  await expect(period).toHaveValue(expectedPeriod('monthly'), { timeout: 20_000 });
+  const monthly = await period.locator('option').allInnerTexts();
+  expect(monthly[0]).toBe('All periods');
+  expect(monthly[1]).toBe(expectedPeriod('monthly'));
+  expect(monthly.slice(1, 25).every((t) => /^[A-Z][a-z]+ \d{4}$/.test(t))).toBeTruthy();
+
+  await picker.selectOption({ label: 'Quarterly' });
+  await expect(period).toHaveValue(expectedPeriod('quarterly'));
+  const quarterly = await period.locator('option').allInnerTexts();
+  expect(quarterly[1]).toMatch(/^Q[1-4] \d{2}-\d{2} \([A-Z][a-z]+–[A-Z][a-z]+\)$/);
+
+  // The run's matter shows under its period in its own view, and not under an older one.
+  await picker.selectOption({ label: matterSheetLabel });
+  await adminPage.getByLabel('Search this sheet').fill(ORG);
+  await expect(adminPage.locator('tr', { hasText: ORG })).toHaveCount(1, { timeout: 20_000 });
+  await period.selectOption({ index: 2 }); // the period before
+  await expect(adminPage.locator('tr', { hasText: ORG })).toHaveCount(0);
 });
 
 test('guards: clients are kept out; only an admin changes columns; a write is validated', async ({ clientPage }) => {
