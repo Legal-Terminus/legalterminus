@@ -7583,3 +7583,16 @@ hence "especially matters with no payment".
   at approval (the client already got the matter-created / GST email when it opened).
 - Tests: `backend/src/__tests__/stepAssignmentNotice.test.js` (8).
 
+**#296 — payment messages out of the Steps tab (supersedes #293 part 2).** Two things showed
+there: the amber, blinking "Part payment received" banner (client and staff), and the
+payment entry ("Payment received: ₹1000 via UPI. ₹0 remaining of ₹2000.") as the current
+step's "From the previous step" note — which reached team members, who must not see
+figures (#148). Both are gone for everyone; the Payments tab is unchanged. Because #296
+removes them for all roles, #293's "only Admin and Manager" ask is met in the Steps tab.
+- `shared/payments/ledgerEvents.js`: the event types that carry payment figures, used by
+  the Portal and the API.
+- The API also stopped returning those entries in a team member's or professional's
+  activity feed; admins and managers keep them in the history.
+- Tests: `backend/src/__tests__/paymentLedgerEvents.test.js` (4); Playwright
+  `Portal/e2e/payments-not-in-steps.spec.ts`. User-visible: yes.
+

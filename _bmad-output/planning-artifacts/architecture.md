@@ -2768,6 +2768,22 @@ Each recipient gets one in-app notification, mirrored to email by
 - `notify()` in `tasks.controller.js` skips `system:*` recipients ("Matter approved"
   to `system:gst-returns` was a dead write).
 
+## Payment entries are not step information (#296, #293 part 2, 2026-11-14)
+
+Ledger changes write an event on the matter's CURRENT step (`commitLedgerChange`,
+`paymentRequests`, `refunds`), so the Steps tab showed "Payment received: ₹… ₹…
+remaining" as that step's "From the previous step" note — to team members too.
+`shared/payments/ledgerEvents.js` (`PAYMENT_LEDGER_EVENT_TYPES`,
+`isPaymentLedgerEvent`) is the one list of event types that carry figures:
+- `listTaskEvents` drops them for every role outside `PAYMENT_VIEW_ROLES`
+  (`admin`, `manager`); clients never got them (`CLIENT_EVENT_WHITELIST`).
+- `TaskDetailPage` never uses one as a step's carried-forward note, for any role.
+- The amber, blinking part-payment banner (#54/#124) is removed from the Steps tab
+  for everyone. Figures stay on the Payments tab; the `REMIND_PART_PAYMENT` effect
+  still emails the client.
+- `RECORD_PAYMENT` / `ADMIN_OVERRIDE_PAYMENT` are gate transitions, not ledger
+  entries, and are not on the list.
+
 ## Scheduled calls without a shared secret (2026-11-05)
 
 `/api/internal/run-gst-returns` accepts three callers: an admin (Firebase token), a

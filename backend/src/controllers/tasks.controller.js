@@ -20,6 +20,10 @@ import { deriveRollup, sumLedger, openingBalanceRow, creationPaymentRow } from '
 import { getOverrides, makeStatutoryResolver } from '../services/statutoryCalendar.service.js';
 import { clientDisplayName } from '../services/clientName.service.js';
 import { announceStepAssignment } from '../services/stepAssignmentNotice.service.js';
+import { isPaymentLedgerEvent } from '../../../shared/payments/ledgerEvents.js';
+
+// #148: the roles that may see a matter's payment figures.
+const PAYMENT_VIEW_ROLES = ['admin', 'manager'];
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
 // Add `days` (may be fractional) to an ISO instant, returning an ISO string.
@@ -1861,6 +1865,14 @@ export async function listTaskEvents(req, res) {
     });
 
     const isClient = req.user.role === 'client';
+
+    // #293 / #296: payment entries carry the matter's figures. Only admins and
+    // managers may see those (#148), but the feed returned them to team members
+    // and professionals too, and the Steps tab showed them as a step's note.
+    // Clients are covered by the whitelist below.
+    if (!isClient && !PAYMENT_VIEW_ROLES.includes(req.user.role)) {
+      events = events.filter((e) => !isPaymentLedgerEvent(e.type));
+    }
 
     // E12-S02: clients get a CLIENT-SAFE feed — internal-only events (assignment,
     // approval gate, override) are dropped, and staff actor names are masked to a

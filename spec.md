@@ -251,7 +251,7 @@ Every meaningful workflow event triggers an in-app notification and an email to 
 **Acceptance Scenarios**:
 
 1. **Given** a workflow step is completed, **Then** the client receives an in-app notification and email with the step name, service name, and current overall status.
-2. **Given** a payment is due, **Then** automated reminder emails are sent at the configured frequency; the blinking payment indicator appears in both client and team-member views.
+2. **Given** a payment is due, **Then** automated reminder emails are sent at the configured frequency. Since #296 (2026-11-14) the Steps tab shows no payment banner or payment message to anyone — no blinking — and the balance is shown on the Payments tab (Admin, Manager, the client); a team member sees no payment figures anywhere, including the activity history (#293).
 3. **Given** an email fails to deliver (invalid address, full mailbox), **Then** admin and manager receive an in-app alert identifying the client, the email address, and the failure reason.
 4. **Given** admin configures an email template for a step, **Then** all future notifications for that step use the custom template with branding, content, and tone settings.
 5. **Given** a notification pop-up (news/offer/update) is created by admin, **Then** it is shown in-app on next open and optionally sent as email to selected client groups.
