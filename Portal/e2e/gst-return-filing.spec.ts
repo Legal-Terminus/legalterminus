@@ -173,7 +173,10 @@ test('#292 / #294 the matter shows its Filing Month, and "Filed on" for GSTR-1 a
   await adminPage.reload();
   await expect(adminPage.getByText(`GSTR-3B filed on: ${todayLong()}`)).toBeVisible({ timeout: 20_000 });
   // Next to each task's name, separately, once completed tasks are shown.
-  await adminPage.getByRole('button', { name: /Show completed/ }).click();
+  // A fully completed matter already lists its completed tasks ("Hide completed");
+  // only expand when the toggle offers to.
+  const showCompleted = adminPage.getByRole('button', { name: /Show completed/ });
+  if (await showCompleted.isVisible().catch(() => false)) await showCompleted.click();
   await expect(adminPage.locator('#step-row-2')).toContainText(`Filed on: ${todayLong()}`);
   await expect(adminPage.locator('#step-row-3')).toContainText(`Filed on: ${todayLong()}`);
   await expect(adminPage.locator('#step-row-1').getByText(/Filed on/)).toHaveCount(0);
@@ -226,7 +229,7 @@ test('#294 staff correct the GSTR-1 filing date; the matter, its history and the
   await adminPage.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(adminPage.getByText(`GSTR-1 filed on: ${longOf(bounds.min)}`)).toBeVisible({ timeout: 20_000 });
   await expect(adminPage.getByText(`GSTR-3B filed on: ${todayLong()}`)).toBeVisible(); // its own date is untouched
-  await adminPage.getByRole('button', { name: /Show completed/ }).click();
+  { const t = adminPage.getByRole('button', { name: /Show completed/ }); if (await t.isVisible().catch(() => false)) await t.click(); }
   await expect(adminPage.locator(`#step-row-${gstr1.stepNumber}`)).toContainText(`Filed on: ${longOf(bounds.min)}`);
   // Recorded in the history: who, from what, to what.
   await expect(adminPage.getByText(`GSTR-1 filing date corrected from ${todayLong()} to ${longOf(bounds.min)}.`).first()).toBeVisible();

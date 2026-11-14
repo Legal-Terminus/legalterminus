@@ -1830,7 +1830,10 @@ export async function getTask(req, res) {
       ...steps.flatMap((s) => [s.assignedTo, ...(s.assignedToUids ?? [])]),
     ]);
     full.assignedToName = data.assignedTo ? (names[data.assignedTo] ?? null) : null;
-    full.steps = steps.map((s) => {
+    // Map over full.steps, not the raw `steps`: annotateGstMatter above has
+    // added `filedOn` to the GSTR-1 / GSTR-3B tasks, and rebuilding from the raw
+    // list dropped it for staff (clients, served earlier, kept it) — #294.
+    full.steps = full.steps.map((s) => {
       const list = Array.isArray(s.assignedToUids) && s.assignedToUids.length
         ? s.assignedToUids
         : (s.assignedTo ? [s.assignedTo] : []);
