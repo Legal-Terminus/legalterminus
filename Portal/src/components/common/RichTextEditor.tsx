@@ -13,6 +13,8 @@ import {
 import { LtImage } from './ltImageExtension';
 import { useCommentImageTaskId } from './commentImageContext';
 import { uploadCommentImage, commentImageProblem, COMMENT_IMAGE_TYPES } from '../../api/commentImages';
+// #194/#295: the word limits — one copy in shared/, read by the server too.
+import { COMMENT_WORD_LIMIT } from '@shared/richText/limits.js';
 
 /**
  * #122 — rich-text editor for workflow comments and discussion messages.
@@ -31,14 +33,12 @@ import { uploadCommentImage, commentImageProblem, COMMENT_IMAGE_TYPES } from '..
  * offered only when the editor knows its matter (prop or CommentImageTaskContext).
  *
  * #194 — adds text COLOUR (red for urgent, amber for important), HIGHLIGHT, three
- * text SIZES, and a 1,000-word limit. The limit is advisory here and enforced on
- * the server (see the security note above): this component can be bypassed by
+ * text SIZES, and a word limit (1,000 for a comment; #295: 5,000 for a Chat
+ * message, via `wordLimit`). The limit is advisory here and enforced on the
+ * server (see the security note above): this component can be bypassed by
  * posting straight to the API, so the editor shows the count and stops typing,
  * while the API is what actually rejects an oversized comment.
  */
-
-/** #194: maximum words per comment. Shared with the server rule. */
-export const COMMENT_WORD_LIMIT = 1000;
 
 /** Words in a rich-text value, counted on the PLAIN text (markup isn't content). */
 function countWords(text: string) {
@@ -74,7 +74,7 @@ function pastedImageFiles(data: DataTransfer | null): File[] {
 /** #200: someone the author can @mention. */
 export interface MentionCandidate { name: string; email: string }
 
-export default function RichTextEditor({ value, onChange, placeholder, disabled, ariaLabel, rows = 3, mentions, imageTaskId }: {
+export default function RichTextEditor({ value, onChange, placeholder, disabled, ariaLabel, rows = 3, mentions, imageTaskId, wordLimit = COMMENT_WORD_LIMIT, maxHeight }: {
   value: string;
   onChange: (html: string) => void;
   placeholder?: string;
@@ -86,6 +86,14 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
   mentions?: MentionCandidate[];
   /** #122 follow-up: the matter images are uploaded to. Defaults to CommentImageTaskContext; none → no images. */
   imageTaskId?: string | null;
+  /** #295: words allowed (default: a comment's 1,000; a Chat message passes MESSAGE_WORD_LIMIT). */
+  wordLimit?: number;
+  /**
+   * #295: tallest the text area may grow (any CSS length) before it scrolls
+   * inside itself. Without it a long message pushed whatever sits below the
+   * editor — the Chat's Send button — off a phone screen.
+   */
+  maxHeight?: string;
 }) {
   // #122 follow-up: images need a matter to upload to. The paste/drop handlers
   // are bound once at editor creation, so they read the live values via refs.
@@ -97,6 +105,9 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
   // #194: handleKeyDown needs the editor instance, which doesn't exist yet inside
   // its own config — a ref breaks that cycle.
   const editorRef = useRef<Editor | null>(null);
+  // #295: read by handleKeyDown, which is bound once at editor creation.
+  const wordLimitRef = useRef(wordLimit);
+  useEffect(() => { wordLimitRef.current = wordLimit; }, [wordLimit]);
 
   // #200: the "@query" being typed right before the caret, if any. Refs mirror
   // the state for handleKeyDown, which is bound once at editor creation.
@@ -182,7 +193,7 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
         if (!ed) return false;
         const { from, to } = ed.state.selection;
         if (from !== to) return false; // replacing a selection can't grow the count
-        return countWords(ed.getText()) >= COMMENT_WORD_LIMIT;
+        return countWords(ed.getText()) >= wordLimitRef.current;
       },
       attributes: {
         class: 'prose-sm max-w-none focus:outline-hidden px-3 py-2',
@@ -299,7 +310,9 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
           <button type="button" className="underline" onClick={() => setImageError(null)}>Dismiss</button>
         </p>
       )}
-      <EditorContent editor={editor} />
+      {maxHeight
+        ? <div className="overflow-y-auto overscroll-contain" style={{ maxHeight }} data-testid="rich-text-scroll"><EditorContent editor={editor} /></div>
+        : <EditorContent editor={editor} />}
       {/* #200: @mention suggestions, under the box (tap or ↑/↓ + Enter). */}
       {matches.length > 0 && (
         <ul ref={listRef} role="listbox" aria-label="Mention a colleague" className="mx-2 mb-2 max-h-60 overflow-y-auto rounded-lg border border-hairline bg-white shadow-card">
@@ -324,15 +337,15 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
           every comment box would be noise for the short comments that are the norm. */}
       {(() => {
         const words = countWords(editor.getText());
-        if (words < COMMENT_WORD_LIMIT * 0.8) return null;
-        const atLimit = words >= COMMENT_WORD_LIMIT;
+        if (words < wordLimit * 0.8) return null;
+        const atLimit = words >= wordLimit;
         // #194: exactly at the limit is fine to send; a paste can go OVER it (typing
         // cannot), and then the server will refuse — so say how many to remove
         // rather than leaving the person to find out from an error.
-        const over = words - COMMENT_WORD_LIMIT;
+        const over = words - wordLimit;
         return (
           <p className={`px-3 pb-1.5 text-[11px] text-right ${atLimit ? 'text-red-600 font-medium' : 'text-ink-faint'}`}>
-            {words} / {COMMENT_WORD_LIMIT} words
+            {words.toLocaleString('en-IN')} / {wordLimit.toLocaleString('en-IN')} words
             {over > 0
               ? ` — ${over} over the limit; shorten it before sending`
               : atLimit ? ' — limit reached' : ''}

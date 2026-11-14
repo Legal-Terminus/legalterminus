@@ -2784,6 +2784,31 @@ remaining" as that step's "From the previous step" note — to team members too.
 - `RECORD_PAYMENT` / `ADMIN_OVERRIDE_PAYMENT` are gate transitions, not ledger
   entries, and are not on the list.
 
+## Chat on a phone, and 5,000-word messages (#295, 2026-11-14)
+
+- **One copy of the limits:** `shared/richText/limits.js` — `COMMENT_WORD_LIMIT`
+  (1,000: step comments, notes), `MESSAGE_WORD_LIMIT` (5,000: Chat messages),
+  `wordLimitFor(what)`, and the matching size caps (sanitised markup 60,000 /
+  300,000; raw input 200,000 / 600,000, under the 1 MB JSON body limit).
+  `prepareRichText(raw, { what })` picks by `what`; the message Zod schemas use
+  `MESSAGE_MAX_INPUT_CHARS`; the Portal's `RichTextEditor` takes `wordLimit` and the
+  Chat passes `MESSAGE_WORD_LIMIT`. Supersedes the 1,000-for-everything rule of the
+  #194 section above for messages only.
+- **Edit history stays under Firestore's 1 MiB document limit:** `appendRevision`
+  in `messages.controller.js` keeps the newest `revisions` that fit in 900 KB beside
+  the current text (measured in UTF-8 bytes), dropping the oldest and logging it.
+  It replaces `FieldValue.arrayUnion`, which grew without bound.
+- **Composer on a phone:** the card no longer has a height cap — the thread does
+  (`55dvh`) — and the editor grows to `min(35dvh, 18rem)` then scrolls inside itself
+  (`RichTextEditor` `maxHeight`). The Send row is scrolled into view on focus and
+  while typing, and `index.css` hides the fixed bottom navigation while
+  `[data-chat-composer]` has focus below `md`. Before, a long message made the
+  composer taller than the 70vh card and Send spilled out under the bottom bar.
+- **"Discussion" → "Chat":** the tab has been Chat since 2026-11-05 (lt.17); the
+  mobile app bundles the Portal, so an app built earlier still says Discussion until
+  rebuilt. The last user-visible "discussion" (an error message) now says chat. Code
+  names stay (`DiscussionPanel`, tab key `discussion`, `messages`).
+
 ## Scheduled calls without a shared secret (2026-11-05)
 
 `/api/internal/run-gst-returns` accepts three callers: an admin (Firebase token), a

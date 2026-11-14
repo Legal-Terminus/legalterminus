@@ -7596,3 +7596,24 @@ removes them for all roles, #293's "only Admin and Manager" ask is met in the St
 - Tests: `backend/src/__tests__/paymentLedgerEvents.test.js` (4); Playwright
   `Portal/e2e/payments-not-in-steps.spec.ts`. User-visible: yes.
 
+**#295 — Chat in the mobile app: name, Send button, 5,000 words.**
+- **Rename:** the Portal tab has been "Chat" since 2026-11-05 (v1.6.0-lt.17), everywhere
+  — website and app, because the app renders the Portal. A phone app built before that
+  still shows "Discussion" until the next app build. Portal-wide is the right scope: an
+  app-only name would make the same screen read differently on the website. The last
+  user-visible "discussion" (the load-error message) now says "chat".
+- **Send button:** the Chat card had a 70% height cap and the text box grew without
+  limit, so a long message pushed Send out of the card, where the fixed bottom navigation
+  covered it. Now the thread carries the cap, the text box stops at about a third of the
+  screen and scrolls inside, Send is kept in view while typing, and the bottom navigation
+  steps aside while the composer has focus on a phone. Send is a 44px target.
+- **5,000 words:** Chat messages only; step comments and notes stay at 1,000. One copy of
+  the numbers in `shared/richText/limits.js`, read by the API and the editor. A message's
+  edit history is trimmed oldest-first so a long, often-edited message stays under
+  Firestore's document limit.
+- Tests: `backend/src/__tests__/richTextWordLimit.test.js` (+4),
+  `chatMessages.test.js` (3); Playwright `discussion.spec.ts` (+2, a 390px phone screen),
+  `comment-editor.spec.ts` (5,000-word boundary). User-visible: yes.
+- Not verified on a device: the Playwright check uses a 390x520 browser window to stand
+  in for a phone with its keyboard open.
+

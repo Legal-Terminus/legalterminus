@@ -53,23 +53,28 @@ test('#194: dangerous styles are still stripped while colour is kept', async () 
   } finally { await deleteMatter(taskId); }
 });
 
-test('#194: a message over 1,000 words is refused by the API', async () => {
+// #295: a Chat message may be 5,000 words (step comments and notes stay at 1,000).
+test('#295: a message over 5,000 words is refused by the API; 5,000 is accepted', async () => {
   const taskId = await createMatter();
   try {
     const admin = await apiAs('admin');
-    const over = `<p>${Array(1001).fill('word').join(' ')}</p>`;
+    const over = `<p>${Array(5001).fill('word').join(' ')}</p>`;
     const res = await admin.post(`/api/tasks/${taskId}/messages`, {
       data: { body: over, clientVisible: true },
     });
     expect(res.status(), 'over the limit is rejected').toBe(400);
     const body = await res.json();
     expect(body.code).toBe('WORD_LIMIT_EXCEEDED');
-    expect(body.message, 'error names the real count').toMatch(/1001/);
+    expect(body.message, 'error names the real count').toMatch(/5001/);
 
-    // Exactly at the limit is accepted — the boundary is inclusive.
-    const at = `<p>${Array(1000).fill('word').join(' ')}</p>`;
+    // Exactly at the limit is accepted — the boundary is inclusive. 1,001 words,
+    // refused before #295, now go through too.
+    const at = `<p>${Array(5000).fill('word').join(' ')}</p>`;
     expect((await admin.post(`/api/tasks/${taskId}/messages`, {
       data: { body: at, clientVisible: true },
+    })).ok()).toBeTruthy();
+    expect((await admin.post(`/api/tasks/${taskId}/messages`, {
+      data: { body: `<p>${Array(1001).fill('word').join(' ')}</p>`, clientVisible: false },
     })).ok()).toBeTruthy();
     await admin.dispose();
   } finally { await deleteMatter(taskId); }

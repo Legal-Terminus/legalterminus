@@ -1,4 +1,3 @@
-import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { createNotification } from './notifications.controller.js';
@@ -113,7 +112,7 @@ export async function listMessages(req, res) {
     res.json({ data });
   } catch (err) {
     logger.error({ err }, 'listMessages error:');
-    res.status(500).json({ message: 'Failed to load the discussion' });
+    res.status(500).json({ message: 'Failed to load the chat' });
   }
 }
 
@@ -299,6 +298,24 @@ export async function createMessage(req, res) {
   }
 }
 
+/**
+ * #295: a message may now be 5,000 words, and every edit or delete keeps the
+ * replaced text in `revisions` on the same document. Firestore refuses a
+ * document over 1 MiB, so a few edits of a long message would start failing.
+ * Keep the NEWEST revisions that fit beside the current text; the oldest go
+ * first, and only when they would not fit.
+ */
+export const MESSAGE_DOC_BUDGET_BYTES = 900_000;
+export function appendRevision(revisions, entry, currentBody = '', budget = MESSAGE_DOC_BUDGET_BYTES) {
+  const size = (r) => Buffer.byteLength(String(r?.body ?? ''), 'utf8') + 200; // + the entry's other fields
+  const list = [...(Array.isArray(revisions) ? revisions : []), entry];
+  const room = budget - Buffer.byteLength(String(currentBody ?? ''), 'utf8');
+  let total = list.reduce((n, r) => n + size(r), 0);
+  let dropped = 0;
+  while (list.length && total > room) { total -= size(list.shift()); dropped += 1; }
+  return { revisions: list, dropped };
+}
+
 /** The author may change their own message; an admin may change anyone's. */
 function canModify(user, m) {
   return Boolean(user?.uid) && (m.authorUid === user.uid || user.role === 'admin');
@@ -351,10 +368,9 @@ export async function updateMessage(req, res) {
     if (body === m.body) return res.json({ id: ref.id, body, editedAt: toISO(m.editedAt) });
 
     const now = new Date();
-    await ref.update({
-      body, editedAt: now, editedBy: req.user.uid,
-      revisions: FieldValue.arrayUnion({ body: m.body, replacedAt: now, replacedBy: req.user.uid }),
-    });
+    const kept = appendRevision(m.revisions, { body: m.body, replacedAt: now, replacedBy: req.user.uid }, body);
+    if (kept.dropped) logger.warn({ taskId, messageId: ref.id, dropped: kept.dropped }, 'chat message: oldest revisions dropped to stay under the document limit');
+    await ref.update({ body, editedAt: now, editedBy: req.user.uid, revisions: kept.revisions });
     if (m.clientVisible === true) await shareCommentImages(db, taskId, imageIds);
     logger.info({ taskId, messageId: ref.id, by: req.user.uid }, 'chat message edited');
     res.json({ id: ref.id, body, editedAt: now.toISOString() });
@@ -375,10 +391,8 @@ export async function deleteMessage(req, res) {
     if (!found) return;
     const { ref, m } = found;
     const now = new Date();
-    await ref.update({
-      body: '', deletedAt: now, deletedBy: req.user.uid,
-      revisions: FieldValue.arrayUnion({ body: m.body, replacedAt: now, replacedBy: req.user.uid }),
-    });
+    const kept = appendRevision(m.revisions, { body: m.body, replacedAt: now, replacedBy: req.user.uid }, '');
+    await ref.update({ body: '', deletedAt: now, deletedBy: req.user.uid, revisions: kept.revisions });
     logger.info({ taskId: req.params.taskId, messageId: ref.id, by: req.user.uid }, 'chat message deleted');
     res.json({ id: ref.id, deleted: true });
   } catch (err) {

@@ -407,6 +407,13 @@ html[data-native] .app-bottombar { padding-bottom: env(safe-area-inset-bottom); 
 @media (max-width: 767px) {
   html[data-native] .app-main { padding-bottom: calc(4rem + env(safe-area-inset-bottom)); }
 }
+/* #295 — while someone types in the Chat composer on a phone, the bottom
+   navigation steps aside. The on-screen keyboard leaves little room, and the
+   fixed bar used to sit over the composer's Send button. (Website and app.) */
+@media (max-width: 767px) {
+  html:has([data-chat-composer]:focus-within) .app-bottombar { display: none; }
+  html:has([data-chat-composer]:focus-within) .app-main { padding-bottom: 0; }
+}
 /* Pages outside the app layout (sign-in, account actions). */
 html[data-native] .app-safe-page {
   padding-top: env(safe-area-inset-top);

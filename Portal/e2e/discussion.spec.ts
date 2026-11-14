@@ -394,3 +394,51 @@ test('Chat: the tab is called Chat; sharing with the client asks first; a messag
     await expect(adminPage.getByText(fixed)).toHaveCount(0);
   } finally { await deleteMatter(taskId); }
 });
+
+/* ── #295: Chat on a phone (the mobile app renders this same page) ───────── */
+
+test('#295: on a phone, a long message keeps Send on screen and the tab is called Chat', async ({ clientPage }) => {
+  const taskId = await createMatter();
+  try {
+    // An iPhone-12-sized viewport, with room taken off for an on-screen keyboard.
+    await clientPage.setViewportSize({ width: 390, height: 520 });
+    await clientPage.goto(`tasks/${taskId}`);
+    await clientPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await expect(clientPage.getByRole('button', { name: 'Discussion', exact: true })).toHaveCount(0);
+
+    // A long message: 120 paragraphs, far taller than the screen.
+    const editor = clientPage.getByLabel('Message');
+    await editor.click();
+    const long = Array.from({ length: 120 }, (_, i) => `Line ${i + 1} of a very long message about the proposed company names.`).join('\n');
+    await editor.fill(long);
+
+    // The text area stops growing and scrolls inside itself…
+    const box = await clientPage.getByTestId('rich-text-scroll').first().boundingBox();
+    expect(box!.height, 'the text area is capped').toBeLessThan(520 * 0.5);
+    // …so Send stays visible and usable, not under the bottom navigation.
+    const send = clientPage.getByRole('button', { name: /^Send$/ });
+    await expect(send).toBeInViewport();
+    await expect(send).toBeEnabled();
+    await expect(clientPage.locator('.app-bottombar')).toBeHidden();
+    const sendBox = await send.boundingBox();
+    expect(sendBox!.height, 'a 44px touch target').toBeGreaterThanOrEqual(44);
+
+    await send.click();
+    await expect(clientPage.getByText('Line 120 of a very long message', { exact: false })).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#295: a 5,000-word message can be sent; the counter shows the 5,000 limit', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const editor = adminPage.getByLabel('Message');
+    await editor.click();
+    await editor.fill(Array(4200).fill('word').join(' '));
+    // The counter appears near the limit and names the CHAT limit, not a comment's 1,000.
+    await expect(adminPage.getByText(/4,200 \/ 5,000 words/)).toBeVisible();
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+    await expect(adminPage.getByText('internal').first()).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});

@@ -8,6 +8,12 @@ import { useToast } from '../common/toastContext';
 import { useConfirm } from '../common/confirmContext';
 import RichTextEditor from '../common/RichTextEditor';
 import RichText from '../common/RichText';
+import { MESSAGE_WORD_LIMIT } from '@shared/richText/limits.js';
+
+// #295: the composer's text area grows to this and then scrolls inside itself,
+// so the Send button below it never leaves a phone screen however long the
+// message is. Shared by the new-message and edit editors.
+const COMPOSER_MAX_HEIGHT = 'min(35dvh, 18rem)';
 
 /**
  * #123 — the matter's chat (the "Chat" tab; it was called Discussion). One conversation per matter; staff tick
@@ -25,6 +31,17 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
   const [body, setBody] = useState('');
   const [visible, setVisible] = useState(false); // staff: share with client? default OFF
   const endRef = useRef<HTMLDivElement>(null);
+  // #295: the Send row. While someone types, it is kept on screen (the phone's
+  // keyboard and a long message used to push it out of reach).
+  const sendRowRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
+  const keepSendInView = (delay = 0) => {
+    window.setTimeout(() => {
+      if (composerRef.current?.contains(document.activeElement)) {
+        sendRowRef.current?.scrollIntoView({ block: 'nearest' });
+      }
+    }, delay);
+  };
 
   // #200: staff get suggestions when they type "@". Never fetched for a client.
   const { data: mentionable = [] } = useQuery({
@@ -78,7 +95,10 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
   };
 
   return (
-    <div className="card flex flex-col" style={{ maxHeight: '70vh' }}>
+    // #295: the THREAD has the height cap, not the card. With the cap on the card,
+    // a long message made the composer taller than the card and the Send button
+    // spilled out underneath — on a phone, under the bottom navigation.
+    <div className="card flex flex-col">
       <div className="px-5 py-3 border-b border-hairline flex items-center gap-2">
         <MessageSquare className="w-4 h-4 text-ink-muted" />
         <p className="text-sm font-semibold text-ink">Chat</p>
@@ -88,7 +108,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
       </div>
 
       {/* Thread */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-3" style={{ maxHeight: '55dvh' }}>
         {isLoading ? (
           <div className="flex justify-center py-8 text-ink-faint"><Loader2 className="w-5 h-5 animate-spin" /></div>
         ) : error ? (
@@ -110,17 +130,20 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
       </div>
 
       {/* Composer */}
-      <div className="border-t border-hairline p-3 space-y-2">
+      <div ref={composerRef} data-chat-composer className="shrink-0 border-t border-hairline p-3 space-y-2"
+        onFocus={() => keepSendInView(300) /* after the keyboard has opened */}>
         {/* #122: rich text — paste tables/formatting from Word, Excel or email,
             and (follow-up) paste or upload images. */}
         <RichTextEditor
           value={body}
-          onChange={setBody}
+          onChange={(v) => { setBody(v); keepSendInView(); }}
           placeholder="Write a message…"
           ariaLabel="Message"
           rows={2}
           mentions={isStaff ? mentionable : undefined}
           imageTaskId={taskId}
+          wordLimit={MESSAGE_WORD_LIMIT}
+          maxHeight={COMPOSER_MAX_HEIGHT}
         />
         {/* #200: staff can notify a colleague by typing @ and their email. */}
         {isStaff && (
@@ -128,7 +151,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
             Type @ and pick a colleague to notify them by email.
           </p>
         )}
-        <div className="flex items-center justify-between gap-3">
+        <div ref={sendRowRef} className="flex items-center justify-between gap-3">
           {isStaff ? (
             <label className="inline-flex items-center gap-2 text-xs text-ink-muted cursor-pointer">
               <input
@@ -146,7 +169,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
           <button
             onClick={submit}
             disabled={!body.trim() || send.isPending}
-            className="btn-primary inline-flex items-center gap-1.5 disabled:opacity-50"
+            className="btn-primary shrink-0 min-h-11 inline-flex items-center gap-1.5 disabled:opacity-50"
           >
             {send.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Send
           </button>
@@ -219,7 +242,8 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
           <p className="text-sm italic text-ink-faint">This message was deleted</p>
         ) : editing ? (
           <div className="space-y-2 min-w-[min(28rem,70vw)]">
-            <RichTextEditor value={draft} onChange={setDraft} ariaLabel="Edit message" rows={2} imageTaskId={taskId} />
+            <RichTextEditor value={draft} onChange={setDraft} ariaLabel="Edit message" rows={2} imageTaskId={taskId}
+              wordLimit={MESSAGE_WORD_LIMIT} maxHeight={COMPOSER_MAX_HEIGHT} />
             {m.clientVisible && (
               <p className="text-[11px] text-ink-muted">The client will see the new text in the portal. No new email is sent, and the one already sent stays as it was.</p>
             )}
