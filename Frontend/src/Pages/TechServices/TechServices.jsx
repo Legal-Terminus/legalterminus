@@ -64,27 +64,25 @@ const SERVICES = [
 
 const BENEFITS = [
   { title: "End-to-End, Owned by Legal Terminus", text: "From the first call to launch and support, Legal Terminus owns the engagement — the scope, the timeline, the quality and the handover — exactly as it does for your compliance work. You never chase a third party." },
-  { title: "AI-Native, Fast Development and Deployment", text: "Infynia Labs builds with AI-native tooling at every stage — design, code, testing and deployment — so a business website goes live in days, not months, and changes after launch are just as quick." },
+  { title: "AI-Native, Fast Development and Deployment", text: "Legal Terminus along with Infynia Labs builds with AI-native tooling at every stage — design, code, testing and deployment — so a business website goes live in days, not months, and changes after launch are just as quick." },
   { title: "One Partner for Compliance and Technology", text: "Your consultant already knows your company, its directors and its timelines. Technology work is coordinated through the same relationship, with one point of contact." },
-  { title: "Built by Infynia Labs", text: "Delivery is by Infynia Labs, a software company that builds web, mobile and cloud products — including the platform Legal Terminus itself runs on." },
+  { title: "Built by Legal Terminus together with Infynia Labs", text: "Delivery is by Legal Terminus together with Infynia Labs — a software company that builds web, mobile and cloud products — including the platform Legal Terminus itself runs on." },
   { title: "Fixed Scope, Fixed Price", text: "Every project starts with a written scope and a price you approve before any work begins. Changes are quoted before they are made." },
   { title: "Everything in Your Name", text: "Domains, hosting, gateway and store accounts are opened under your company, so you own them from day one and nothing is tied to a vendor." },
 ];
 
 const STEPS = [
   { title: "Step 1 – Requirement Discussion", text: "Share your requirement through the form or on a call with your Legal Terminus consultant — the same person who handled your registration." },
-  { title: "Step 2 – Scope & Quotation", text: "Infynia Labs reviews the requirement and you receive a written scope, timeline and fixed price. No work starts until you approve it." },
+  { title: "Step 2 – Scope & Quotation", text: "Legal Terminus reviews the requirement and you receive a written scope, timeline and fixed price. No work starts until you approve it." },
   { title: "Step 3 – Content & Accounts", text: "You share your logo, content and documents; we open the domain, hosting, email and payment-gateway accounts in your company's name." },
   { title: "Step 4 – Design Approval", text: "You review the design on a preview link and approve it before development begins." },
-  { title: "Step 5 – Build & Testing", text: "The Infynia Labs team builds and tests it on every screen size, with a test payment end to end where a gateway is involved." },
+  { title: "Step 5 – Build & Testing", text: "The Legal Terminus team builds and tests it on every screen size, with a test payment end to end where a gateway is involved." },
   { title: "Step 6 – Launch & Handover", text: "The site or app goes live and everything — code, logins, domain — is handed over to you with a short walkthrough." },
   { title: "Step 7 – Support", text: "Post-launch support for the period in your plan, with optional monthly support after that." },
 ];
 
 const FAQS = [
-  { question: "Who does the work — Legal Terminus or Infynia Labs?", answer: "Legal Terminus sells and coordinates the service and remains your point of contact. The design, development and technical setup are delivered by Infynia Labs, our technology partner. You can explore their capabilities at infynialabs.com." },
   { question: "How much does it cost?", answer: "The Elemental and Enriched plans above are fixed-price packages you can buy online. Supreme is custom — an app, custom software, a larger store — and is priced on request after a short scoping call. You receive the price in writing before any work starts." },
-  { question: "Where can I see Infynia Labs' past work?", answer: "Ask for it with the Request Portfolio button on this page and we will send it to you. Your consultant can also share examples relevant to your business." },
   { question: "How long does a website take?", answer: "A standard business website is usually live within two to three weeks of receiving your content and approving the design. Online stores and apps take longer and are planned with milestones." },
   { question: "Do I need a registered company first?", answer: "No, but most clients take these services right after registration — a domain, email and payment gateway are typically opened in the company's name, so having the incorporation certificate and PAN ready makes setup faster." },
   { question: "What if I already have a website?", answer: "We can add to it — a payment gateway, a store, business email or a redesign — rather than starting over. Mention the current site in the form and the quote will be for the change you need." },
@@ -308,14 +306,16 @@ const TechServices = () => {
               <div className="Add-com-tabintro-content">
                 <h2 className="Add-com-tabintro-title">Why Choose Technology Services From Legal Terminus</h2>
                 <p className="Add-com-tabintro-text">
-                  A newly registered company needs a few things almost immediately: a website, an email on its own
-                  domain, a way to accept payments and, often, a store or a booking system. Legal Terminus now
-                  delivers all of these end to end through its technology partner, Infynia Labs — and owns the
-                  engagement the same way it owns your compliance work, so the consultant who handled your
-                  registration also answers for your technology. Infynia Labs builds with AI-native tooling, which
-                  means fast development and deployment: a business website is live in days, not months. Every
-                  project starts with a written scope and a fixed price, every account is opened in your company's
-                  name, and you get one point of contact for your compliance and your systems.
+                  A newly registered company needs a few things almost immediately: a website, a professional
+                  email on its own domain, a way to accept payments and, often, an online store or booking system.
+                  Legal Terminus, together with Infynia Labs, provides all these technology solutions end to end
+                  while maintaining the same commitment to service and coordination as its compliance offerings.
+                  The consultant who handled your company registration remains your single point of contact for
+                  your technology requirements as well. With combined expertise in AI-powered development, design
+                  and deployment, Legal Terminus along with Infynia Labs help businesses launch faster, with a
+                  business website ready in days rather than months. Every project begins with a clearly defined
+                  scope and transparent pricing, all accounts are created in your company's name, and you get one
+                  reliable point of contact for both your compliance and technology needs.
                 </p>
               </div>
             </div>
