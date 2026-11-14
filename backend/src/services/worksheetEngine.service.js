@@ -91,6 +91,7 @@ export function resolveSheet(sheetKey, config = {}) {
       ...(fd.compute ? { compute: fd.compute } : {}),
       hidden: !!col.hidden,
       builtIn: fd.builtIn,
+      ...(fd.secret ? { secret: true } : {}), // #279: masked; revealed through its own endpoint
       aliases: [...aliases],
     });
   }
@@ -246,6 +247,12 @@ const MAX_LEN = { text: 500, longtext: 5000, select: 200, image: 200, date: 100,
  */
 export function normalizeValue(field, raw) {
   if (raw == null) return { value: null };
+  // #279: a secret (a GST portal password) is kept exactly as typed — never
+  // tag-stripped or trimmed — only bounded. It is never rendered as HTML.
+  if (field?.secret) {
+    const text = String(raw);
+    return text.trim() ? { value: text.slice(0, 200) } : { value: null };
+  }
   if (typeof raw === 'boolean') raw = raw ? 'Yes' : 'No';
   if (typeof raw === 'string' && raw.trim() === '') return { value: null };
   const type = field.type;

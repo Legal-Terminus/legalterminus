@@ -4,10 +4,11 @@ import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import {
   recordCreateSchema, recordPatchSchema, columnsSchema, optionsSchema, importSchema, recordListQuerySchema, matterQuerySchema,
+  secretRevealSchema,
 } from '../schemas/worksheet.schema.js';
 import {
   getModule, listRecords, createRecord, updateRecord, deleteRecord, putColumns, putOptions, importRows, matterOptions,
-  uploadImage, getImage, deleteImage, runReminders,
+  uploadImage, getImage, deleteImage, runReminders, revealSecret,
 } from '../controllers/worksheets.controller.js';
 
 /**
@@ -54,6 +55,9 @@ router.get('/sheets/:sheet/matters', validate(matterQuerySchema, 'query'), matte
 router.post('/sheets/:sheet/records/:id/images/:field', singleImage, uploadImage);
 router.get('/sheets/:sheet/records/:id/images/:field', getImage);
 router.delete('/sheets/:sheet/records/:id/images/:field', deleteImage);
+// #279: one row's GST portal password, on demand, audited. Staff only (the router
+// guard above); never part of a list response.
+router.post('/sheets/:sheet/records/:id/secrets/:field/reveal', requireRole('admin', 'manager', 'team_member'), validate(secretRevealSchema), revealSecret);
 
 router.post('/reminders/run', requireRole('admin'), runReminders);
 

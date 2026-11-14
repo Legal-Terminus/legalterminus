@@ -16,6 +16,8 @@ export interface WsColumn {
   hidden: boolean;
   builtIn: boolean;
   aliases: string[];
+  /** #279: a secret cell (GST Pswd) — never in a list response; revealed on demand. */
+  secret?: boolean;
 }
 
 export interface WsSheet {
@@ -50,6 +52,8 @@ export interface WsRecord {
   sheets: string[];
   values: Record<string, CellValue>;
   images: Record<string, { v: string }>;
+  /** #279: which secret cells hold a value (never the value itself). */
+  secretsSet?: Record<string, boolean>;
   createdAt: string | null;
   updatedAt: string | null;
 }
@@ -127,3 +131,11 @@ export async function uploadWorksheetImage(sheet: string, id: string, field: str
 
 export const deleteWorksheetImage = (sheet: string, id: string, field: string) =>
   apiFetch<{ deleted: true }>(imagePath(sheet, id, field), { method: 'DELETE' });
+
+/** #279: one row's secret (GST portal password), for staff; every call is audited server-side. */
+export const revealWorksheetSecret = (sheet: string, id: string, field: string, purpose: 'view' | 'copy' | 'login') =>
+  apiFetch<{ value: string; userId: string | null; loginUrl: string }>(
+    `${sheetPath(sheet)}/records/${encodeURIComponent(id)}/secrets/${encodeURIComponent(field)}/reveal`,
+    { method: 'POST', body: JSON.stringify({ purpose }) },
+  );
+

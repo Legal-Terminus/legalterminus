@@ -11,6 +11,9 @@ import { runWorksheetReminderSweep } from '../services/worksheetReminders.servic
 import { syncSheetFromMatters } from '../services/gstReturnSheetSync.service.js';
 import { invalidateGstReturnServiceKeys } from '../services/gstMatterTags.service.js';
 import { matterOwnedDateFields } from '../services/gstReturnSheet.service.js';
+import {
+  secretFieldsOf, secretsKey, splitSecretValues, secretWrites, secretsSetOf, withoutSecrets, sealSecret, openSecret,
+} from '../services/worksheetSecrets.service.js';
 
 /**
  * #210 / #217 — worksheets: the trademark reports and the company worksheets,
@@ -85,14 +88,17 @@ const reminderDueFor = (bookKey, fields, values) => {
 };
 
 /** What the Portal receives for a record: stored values plus the calculated ones. */
-function serialize(doc, fields) {
+export function serialize(doc, fields) {
   const d = doc.data();
   const images = {};
   for (const [k, v] of Object.entries(d.images ?? {})) if (v?.objectPath) images[k] = { v: v.updatedAt ?? '' };
   return {
     id: doc.id,
     sheets: d.sheets ?? [],
-    values: { ...(d.values ?? {}), ...computeValues(fields, d.values ?? {}) },
+    // #279: a secret cell (GST Pswd) never leaves in a list or write response —
+    // only whether one is set; its value comes from the audited reveal endpoint.
+    values: withoutSecrets(d.book, { ...(d.values ?? {}), ...computeValues(fields, d.values ?? {}) }),
+    secretsSet: secretsSetOf(d.book, d),
     images,
     createdAt: d.createdAt ?? null,
     updatedAt: d.updatedAt ?? null,
@@ -198,9 +204,12 @@ export async function createRecord(req, res) {
   try {
     const ctx = await sheetContext(req, res); if (!ctx) return;
     const { db, sheet, fields } = ctx;
-    const values = dropNulls(cleanRecordValues(fields, req.body.values));
-    if (Object.keys(values).length === 0) return res.status(400).json({ message: 'Fill in at least one column.' });
+    // #279: secret cells are taken out first, kept as typed and sealed separately.
+    const split = splitSecretValues(sheet.book, req.body.values);
+    const values = dropNulls(cleanRecordValues(fields, split.values));
+    if (Object.keys(values).length === 0 && Object.keys(split.secrets).length === 0) return res.status(400).json({ message: 'Fill in at least one column.' });
     await checkMatters(db, sheet, fields, values);
+    const sealed = secretWrites(sheet.book, { values, incoming: split.secrets }, secretsKey());
     const sheets = cleanMemberships(sheet, [sheet.key, ...(req.body.sheets ?? [])]);
     const recordKey = sheetRecordKey(sheet, values);
     const now = new Date().toISOString();
@@ -219,7 +228,8 @@ export async function createRecord(req, res) {
         }
       }
       tx.set(ref, {
-        module: sheet.module, book: sheet.book, sheets, values, recordKey,
+        module: sheet.module, book: sheet.book, sheets, values: sealed.values, recordKey,
+        ...(Object.keys(sealed.secrets).length ? { secrets: sealed.secrets } : {}),
         images: {}, reminderDue: reminderDueFor(sheet.book, fields, values), remindersSent: {},
         createdAt: now, createdBy: req.user.uid, updatedAt: now, updatedBy: req.user.uid,
         ...matterLink(sheet, values),
@@ -236,7 +246,10 @@ export async function updateRecord(req, res) {
   try {
     const ctx = await sheetContext(req, res); if (!ctx) return;
     const { db, sheet, fields } = ctx;
-    const patch = req.body.values ? cleanRecordValues(fields, req.body.values) : {};
+    // #279: secret cells are taken out first (an empty password box means "no change").
+    const split = splitSecretValues(sheet.book, req.body.values ?? {});
+    const patch = req.body.values ? cleanRecordValues(fields, split.values) : {};
+    const key = secretsKey();
     await checkMatters(db, sheet, fields, patch);
     const sheets = req.body.sheets ? cleanMemberships(sheet, req.body.sheets) : null;
     const now = new Date().toISOString();
@@ -262,8 +275,10 @@ export async function updateRecord(req, res) {
           throw httpError(409, `Another record already has this ${sheet.recordKeyLabel}.`, { code: 'DUPLICATE_KEY' });
         }
       }
+      const sealed = secretWrites(sheet.book, { values, existingSecrets: rec.data.secrets, incoming: split.secrets }, key);
       tx.update(rec.ref, {
-        values, recordKey, reminderDue: reminderDueFor(sheet.book, fields, values),
+        values: sealed.values, recordKey, reminderDue: reminderDueFor(sheet.book, fields, values),
+        ...Object.fromEntries(Object.entries(sealed.secrets).map(([f, v]) => [`secrets.${f}`, v])),
         ...(sheets ? { sheets } : {}),
         ...matterLink(sheet, patch),
         updatedAt: now, updatedBy: req.user.uid,
@@ -382,9 +397,14 @@ export async function importRows(req, res) {
     let ops = 0;
     const flush = async () => { if (ops) { await batch.commit(); batch = db.batch(); ops = 0; } };
     // createdAt steps by a millisecond per row so the sheet keeps the file's order.
+    const key = secretsKey();
+    const secretFields = secretFieldsOf(sheet.book);
     for (const [i, cr] of plan.creates.entries()) {
+      // #279: an uploaded GST Pswd goes to `secrets`, sealed — never into `values`.
+      const sealed = secretWrites(sheet.book, { values: cr.values }, key);
       batch.set(db.collection(RECORDS).doc(), {
-        module: sheet.module, book: sheet.book, sheets: [sheet.key], values: cr.values, recordKey: cr.key,
+        module: sheet.module, book: sheet.book, sheets: [sheet.key], values: sealed.values, recordKey: cr.key,
+        ...(Object.keys(sealed.secrets).length ? { secrets: sealed.secrets } : {}),
         images: {}, reminderDue: reminderDueFor(sheet.book, fields, cr.values), remindersSent: {},
         createdAt: new Date(baseMs + i).toISOString(), createdBy: req.user.uid, updatedAt: now, updatedBy: req.user.uid,
         source: 'excel',
@@ -396,7 +416,12 @@ export async function importRows(req, res) {
       const merged = { ...existingByKey.get(up.key).values, ...up.values };
       const update = { sheets: FieldValue.arrayUnion(sheet.key), reminderDue: reminderDueFor(sheet.book, fields, merged), updatedAt: now, updatedBy: req.user.uid };
       // Cell by cell: a value the file leaves blank is never cleared.
-      for (const [k, v] of Object.entries(up.values)) update[`values.${k}`] = v;
+      for (const [k, v] of Object.entries(up.values)) {
+        if (secretFields.includes(k)) {
+          // #279: sealed into `secrets`; a legacy plaintext copy in `values` is removed.
+          if (v != null && v !== '') { update[`secrets.${k}`] = sealSecret(v, key); update[`values.${k}`] = FieldValue.delete(); }
+        } else update[`values.${k}`] = v;
+      }
       batch.update(db.collection(RECORDS).doc(up.id), update);
       ops += 1; if (ops >= 400) await flush();
     }
@@ -404,6 +429,54 @@ export async function importRows(req, res) {
     logger.info({ sheet: sheet.key, actorUid: req.user.uid, ...plan.summary }, 'Worksheet Excel batch applied');
     res.json({ ...report, applied: true });
   } catch (err) { sendKnown(res, err, 'importRows failed'); }
+}
+
+/* ── Secret cells (#279: GST portal password) ───────────────────────────── */
+
+const AUDIT = 'worksheetAudit';
+export const GST_PORTAL_LOGIN_URL = 'https://services.gst.gov.in/services/login';
+
+// POST /api/worksheets/sheets/:sheet/records/:id/secrets/:field/reveal { purpose }
+// Staff only (router + route guard). Returns ONE row's secret, after writing an
+// audit entry (who, which client, why, when) — no entry, no secret. A legacy
+// plaintext value is moved into `secrets` (sealed) on the way.
+export async function revealSecret(req, res) {
+  try {
+    const ctx = await sheetContext(req, res); if (!ctx) return;
+    const { db, sheet } = ctx;
+    const field = String(req.params.field);
+    if (!secretFieldsOf(sheet.book).includes(field)) return res.status(404).json({ message: 'Unknown column' });
+    const rec = await loadRecord(db, sheet, req.params.id);
+    if (!rec) return res.status(404).json({ message: 'Record not found' });
+
+    const key = secretsKey();
+    const stored = rec.data.secrets?.[field] ?? null;
+    const legacy = rec.data.values?.[field];
+    let value;
+    try {
+      value = stored ? openSecret(stored, key) : (legacy != null && legacy !== '' ? String(legacy) : null);
+    } catch (err) {
+      logger.error({ err: { message: err.message }, recordId: rec.ref.id }, '#279 a worksheet secret could not be decrypted');
+      return res.status(500).json({ message: 'The password could not be read. Please contact an administrator.' });
+    }
+    if (value == null) return res.status(404).json({ message: 'No password is saved for this row.' });
+
+    const now = new Date().toISOString();
+    const v = rec.data.values ?? {};
+    await db.collection(AUDIT).add({
+      action: 'secret_revealed', purpose: req.body.purpose, field,
+      book: sheet.book, sheet: sheet.key, recordId: rec.ref.id,
+      clientName: v.client_name ?? null, gstin: v.gstin ?? null,
+      byUid: req.user.uid, byRole: req.user.role, at: now,
+    });
+    // Migrate: out of `values`, and encrypted once the deployment has a key.
+    if (!stored || (stored.v === 0 && key)) {
+      await rec.ref.update({ [`secrets.${field}`]: sealSecret(value, key), [`values.${field}`]: FieldValue.delete() });
+    }
+    logger.info({ sheet: sheet.key, recordId: rec.ref.id, field, purpose: req.body.purpose, actorUid: req.user.uid }, '#279 worksheet secret revealed');
+    res.set('Cache-Control', 'no-store');
+    res.json({ value, userId: v.gst_user_id ?? null, loginUrl: GST_PORTAL_LOGIN_URL });
+  } catch (err) { sendKnown(res, err, 'revealSecret failed'); }
 }
 
 /* ── Matter link ────────────────────────────────────────────────────────── */
