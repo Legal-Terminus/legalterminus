@@ -44,7 +44,14 @@ export const getPaymentConfig = () => call("/api/orders/config").catch(() => ({ 
 const withOption = (line) => ({
   productKey: line.productKey, planId: line.planId, ...(line.optionId ? { optionId: line.optionId } : {}),
 });
-const planBody = (lines) => (Array.isArray(lines) ? { items: lines.map(withOption) } : withOption(lines));
+/**
+ * #244: a cart line also says HOW MANY (a whole number; the server checks the
+ * limits and prices every unit itself). Never a price.
+ */
+const cartLine = (line) => ({
+  ...withOption(line), ...(Number.isInteger(line.quantity) && line.quantity > 1 ? { quantity: line.quantity } : {}),
+});
+const planBody = (lines) => (Array.isArray(lines) ? { items: lines.map(cartLine) } : withOption(lines));
 
 export const startOrder = (productKey, planId, customer, couponCode, optionId) =>
   call("/api/orders", {

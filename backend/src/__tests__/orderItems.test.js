@@ -130,7 +130,7 @@ test('the customer sees every line of a cart order and the first matter to follo
   const waiting = { orderId: 'LT-1', status: 'paid', ...cart, matter: { state: 'awaiting_approval' } };
   const view = publicOrder(waiting);
   assert.equal(view.items.length, 2);
-  assert.deepEqual(Object.keys(view.items[0]).sort(), ['amount', 'gst', 'label', 'matterId', 'planName', 'price']);
+  assert.deepEqual(Object.keys(view.items[0]).sort(), ['amount', 'gst', 'label', 'matterId', 'matterIds', 'planName', 'price', 'quantity', 'unitAmount']);
   assert.equal(view.matterId, null);
   assert.equal('serviceKey' in view.items[0], false);
 

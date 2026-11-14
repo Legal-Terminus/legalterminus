@@ -71,7 +71,7 @@ const PaymentResult = () => {
     { label: "Order reference", value: order.orderId },
     // #244: a cart order lists each service it paid for.
     ...(order.items?.length
-      ? order.items.map((it, i) => ({ label: i === 0 ? "Services" : "", key: `item-${i}`, value: `${it.label} — ${it.planName}: ${inr(it.amount)}` }))
+      ? order.items.map((it, i) => ({ label: i === 0 ? "Services" : "", key: `item-${i}`, value: `${it.label} — ${it.planName}${it.quantity > 1 ? ` × ${it.quantity}` : ""}: ${inr(it.amount)}` })) // #244: the line's total
       : [{ label: "Service", value: `${order.label} — ${order.planName}` }]),
     // #256: a coupon comes off the price before GST.
     ...(order.couponCode ? [

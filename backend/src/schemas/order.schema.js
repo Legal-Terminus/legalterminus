@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MAX_ORDER_ITEMS } from '../services/orderItems.js';
+import { MAX_LINE_QUANTITY, MAX_ORDER_ITEMS, MAX_ORDER_UNITS } from '../services/orderItems.js';
 
 const id = z.string().trim().min(1).max(100);
 
@@ -15,8 +15,18 @@ const id = z.string().trim().min(1).max(100);
  */
 const optionId = z.string().trim().min(1).max(60).optional();
 
-/** #244: one line of a cart — a plan, never a price. #221: and its answer, if asked. */
-const orderItem = z.object({ productKey: id, planId: id, optionId }).strict();
+/**
+ * #244: one line of a cart — a plan, never a price. #221: and its answer, if
+ * asked. And how many units of it (a whole number, 1 to MAX_LINE_QUANTITY;
+ * missing is 1). The quantity multiplies nothing the page sends: the server
+ * prices each unit from the catalogue.
+ */
+const quantity = z.number({ message: `Choose a quantity from 1 to ${MAX_LINE_QUANTITY}.` })
+  .int(`Choose a quantity from 1 to ${MAX_LINE_QUANTITY}.`)
+  .min(1, `Choose a quantity from 1 to ${MAX_LINE_QUANTITY}.`)
+  .max(MAX_LINE_QUANTITY, `At most ${MAX_LINE_QUANTITY} of one service in an order.`)
+  .optional();
+const orderItem = z.object({ productKey: id, planId: id, optionId, quantity }).strict();
 
 /**
  * #256: a coupon code, as typed. Only its length is checked here: a code that
@@ -35,6 +45,10 @@ const onePlanOrCart = (v, ctx) => {
   }
   if (v.items && new Set(v.items.map((i) => i.productKey)).size !== v.items.length) {
     ctx.addIssue({ code: 'custom', message: 'Each service can be in an order only once.', path: ['items'] });
+  }
+  // #244: every unit is a matter one approval opens — bounded for the order as a whole.
+  if (v.items && v.items.reduce((s, i) => s + (i.quantity ?? 1), 0) > MAX_ORDER_UNITS) {
+    ctx.addIssue({ code: 'custom', message: `An order can hold at most ${MAX_ORDER_UNITS} services in all.`, path: ['items'] });
   }
 };
 

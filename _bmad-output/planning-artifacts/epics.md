@@ -7639,3 +7639,28 @@ removes them for all roles, #293's "only Admin and Manager" ask is met in the St
   role, no Edit on a client's bubble, bubble colour). User-visible: yes (emails, Edit
   icon, colour).
 
+
+### Website cart: quantities per service (2026-11-14, #244) 🔄 In review
+
+The firm asked (2026-11-12) for + and − on each cart line, Flipkart-style, so a client can
+buy several units of one service — "3 Trademark Registrations" — without going back to the
+service page. Design in architecture.md, "Website orders and payments" → "Cart" →
+"Quantities".
+- Each cart line has − / quantity / +. − stops at 1 (Remove takes the line out); + stops at
+  **10 of a service** and **20 services in all** (the server refuses more, too). The line
+  shows its total and the unit price ("₹9,499 each"); the summary's price, GST, the cut-price
+  saving and the total follow the quantity. The header count is the number of units.
+- Every unit is a service of its own: the server prices each one from Website Prices
+  (GST per unit, and a coupon's discount spread over the units), and the order total — the
+  figure Razorpay is asked for and every payment is checked against — is their sum.
+- One approval under Website Orders opens **one matter per unit** (3 units → 3 matters),
+  each fully paid with that unit's share; approving again, or Try again, never opens more.
+  A unit whose service has no workflow is listed for staff to open by hand.
+- Website Orders, the confirmation page and the confirmation email show "× 3" and the line
+  total. Carts saved in a browser before this load with 1 of each; orders stored before it
+  are read as 1 of each.
+- Tests: `backend/src/__tests__/cartQuantity.test.js` (caps, pricing, coupons, settlement,
+  one matter per unit, old orders); `Portal/e2e/orders.spec.ts` (two "#244 quantity" tests);
+  `Frontend/tests/e2e/cart.spec.js` (+/−, caps, 360px). Playwright not run by the author.
+- Open: Buy Now on a service page still buys one; quantities are set in the cart. A refund
+  is still for the whole order.

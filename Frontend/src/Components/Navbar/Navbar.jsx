@@ -19,7 +19,7 @@ import {
 } from "react-icons/fa";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "../../utils/firebase";
-import { useCart } from "../../utils/cart.js";
+import { useCart, unitsIn } from "../../utils/cart.js";
 import { PAYMENTS_ENABLED } from "../../utils/pricing.js";
 import "./Navbar.css";
 import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
@@ -247,7 +247,8 @@ const navData = [
 
 /** #244: the cart link in the header, with a count of the services in it. */
 function CartIcon() {
-  const count = useCart().length;
+  // #244: every unit is a service (3 Trademark Registrations count 3).
+  const count = unitsIn(useCart());
   const label = count ? `Cart, ${count} service${count === 1 ? "" : "s"}` : "Cart, empty";
   return (
     <div className="user-login-wrap">

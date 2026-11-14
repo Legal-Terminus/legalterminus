@@ -2155,6 +2155,44 @@ modifiers: one consumer, and a second question would need its own UI anyway.
     before the result page. All of it is behind `VITE_PAYMENTS_ENABLED`.
   - Portal: Website Orders lists each line of a cart order under Service with
     its amount, its matter state and an "Open matter" link per line.
+  - **Quantities (2026-11-14, the firm's request of 2026-11-12).** A cart
+    line may carry `quantity` — an integer 1..`MAX_LINE_QUANTITY` (10),
+    at most `MAX_ORDER_UNITS` (20) units in the order (= the matters one
+    approval opens; bounded so one click stays a bounded amount of work).
+    Both caps are in the Zod schema (`orderItem.quantity`, a refinement on
+    the total; the one-plan body has no quantity) and again in
+    `requestedItems`; the website clamps to the same numbers.
+    - **Each unit is stored as an item.** `expandUnits` turns a line of
+      quantity N into N `findPlan` results; `priceOrder` prices them exactly
+      as separate lines (per-unit `withGst`, coupon discount per unit —
+      percent on each, fixed split by price with the remainder on the last),
+      and the order's `price`/`gst`/`amount` are the sums. So the gateway
+      order, `decideSettlement`'s amount check, the review hold and reconcile
+      all compare against the server's quantity-aware total with no code of
+      their own. A unit of a line of 2+ carries `quantity` and `unitNo`;
+      a quantity-1 line is stored as before (and a 1-unit cart is still a
+      one-service order with no `items`).
+    - **Approval** opens one matter per unit with the unchanged machinery:
+      `linesToOpen` / `openApprovedLines` / `settleLineMatters` work per
+      stored item, `openMatter`'s idempotency lookup is `websiteOrderId` +
+      `websiteOrderItem` (the unit's index), so a re-approval (409 from
+      `canApprove`) or a retry never opens a second matter for a unit. Each
+      matter's total is its unit's `amount`; it also gets
+      `websiteOrderUnit { no, of }`. `fulfil` asks for a service's workflow
+      once per service, not per unit.
+    - **Reading it back.** `groupUnits` (pure) regroups items by
+      `productKey` — a service is in an order once — into lines with
+      `quantity`, sums and `units[]`. `publicOrder.items`, `quoteView.lines`,
+      the email (`itemLines`), the staff notice (`linesSentence`) and the
+      coupon redemption's `services` use it. An item without `quantity`
+      (every order stored before this) is a line of one, so old orders read
+      exactly as before. Portal Website Orders groups the same way and lists
+      each unit's matter under its line.
+    - Website: `cart.js` stores `quantity` per line (`lt-cart-v1` unchanged;
+      a line without one reads as 1, an out-of-range one is clamped, and the
+      stored cart is trimmed to 20 units). The cart page works out one unit's
+      price/GST with `withGst` and multiplies — the server's per-unit sum —
+      so the page, the checkout and the charge agree to the paisa.
 - **Coupon codes (E-27: #256, #257, #260, 2026-11-06).** One code per order,
   on single-plan and cart orders alike. The page sends only the code; the
   server checks it and prices the order with it.

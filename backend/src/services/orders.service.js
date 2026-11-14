@@ -55,6 +55,10 @@
  * priced from the catalogue like a single plan; the order's amount is their
  * sum and is paid in one checkout. ONE approval opens one matter per line. The
  * shape and the rules are in orderItems.js; a one-service order is unchanged.
+ * A line may ask for several units (`quantity`, 1–10, at most 20 units in an
+ * order): each unit is stored, priced and opened as a line of its own, so the
+ * order's amount — the figure every payment check compares — is the server's
+ * sum over the units, and one approval opens one matter per unit.
  *
  * COUPONS (#256, #257, #260): a website order may carry ONE coupon code. The
  * server checks it (coupons.js) and prices the order with it (orderItems.js:
@@ -72,7 +76,8 @@ import { logger } from '../config/logger.js';
 import { findPlan, loadCatalog } from './pricing.service.js';
 import { gateway } from './paymentGateway.service.js';
 import {
-  couponDiscounts, isMultiItem, itemLines, linesToOpen, planLineMatters, priceOrder, publicItems, requestedItems, settleLineMatters,
+  couponDiscounts, expandUnits, isMultiItem, itemLines, linesSentence, linesToOpen, planLineMatters, priceOrder, publicItems,
+  requestedItems, settleLineMatters,
 } from './orderItems.js';
 import {
   COUPON_COLLECTION, HOLD_MS, REDEMPTION_COLLECTION, assertUsable, couponOnPaid, couponSnapshot, normaliseCode, quoteView, redemptionRecord,
@@ -220,7 +225,8 @@ async function priceWanted({ uid, productKey, planId, optionId, items, couponCod
   const catalog = await loadCatalog({ fresh: true });
   // #221: the answer to a product's question adds its surcharge here, before
   // GST and before any coupon; a missing or unknown answer is refused (400).
-  const plans = wanted.map((w) => findPlan(catalog, w.productKey, w.planId, w.optionId));
+  // #244: a line of quantity N is N units, each priced from the catalogue.
+  const plans = expandUnits(wanted, wanted.map((w) => findPlan(catalog, w.productKey, w.planId, w.optionId)));
   if (!normaliseCode(couponCode)) return { wanted, plans, priced: priceOrder(plans), coupon: null };
   priceOrder(plans); // an unknown plan is refused as before, whatever the code
   const coupon = await findCoupon(couponCode);
@@ -391,8 +397,15 @@ export async function fulfil(orderId, { retry = false } = {}) {
     logger.warn({ err, orderId }, 'orders: could not write the customer order history');
   }
 
-  const workflowFor = async (serviceKey) => {
-    try { return !!(serviceKey && await getCompiledForServiceKey(serviceKey)); } catch { return false; } // treated as no workflow
+  // #244: asked once per service — the units of a line share theirs.
+  const asked = new Map();
+  const workflowFor = (serviceKey) => {
+    if (!asked.has(serviceKey)) {
+      asked.set(serviceKey, (async () => {
+        try { return !!(serviceKey && await getCompiledForServiceKey(serviceKey)); } catch { return false; } // treated as no workflow
+      })());
+    }
+    return asked.get(serviceKey);
   };
   let matter;
   if (isMultiItem(o)) {
@@ -418,7 +431,7 @@ export async function fulfil(orderId, { retry = false } = {}) {
   if (matter.state === 'awaiting_approval') {
     await tellStaff('Website order paid — approve it to open the matter',
       `${who} paid ${paid} for ${o.label} — ${o.planName} (order ${orderId}). Approve the order under Website Orders and its matter${isMultiItem(o) ? 's' : ''} will be opened.`
-        + (byHand.length ? ` No matter can be opened automatically for ${byHand.map((it) => it.label).join(', ')}: please open ${byHand.length > 1 ? 'those' : 'that one'} by hand.` : ''),
+        + (byHand.length ? ` No matter can be opened automatically for ${linesSentence(byHand)}: please open ${byHand.length > 1 ? 'those' : 'that one'} by hand.` : ''),
       undefined, ['admin', 'manager']);
     // Told once: the customer's email below went out when the payment arrived.
     if (retry) return getOrder(orderId);
@@ -433,7 +446,7 @@ export async function fulfil(orderId, { retry = false } = {}) {
       title: 'Payment received',
       message: [
         isMultiItem(o)
-          ? `Thank you. We have received your payment of ${paid} for these ${o.items.length} services:`
+          ? `Thank you. We have received your payment of ${paid} for these ${o.items.length} services:` // #244: units
           : `Thank you. We have received your payment of ${paid} for ${o.label} — ${o.planName}.`,
         ...itemLines(o, rupees),
         ...(o.couponCode ? [`Coupon ${o.couponCode} took ${rupees(o.discount)} off the price of ${rupees(o.subtotalBeforeDiscount)}.`] : []),
@@ -545,7 +558,7 @@ async function openMatter(o, approval = {}, line = null) {
       paymentStatus: 'fully_paid', totalCost: what.amount, amountReceived: what.amount,
       paymentMode: o.gateway === 'simulated' ? 'Online (test payment)' : 'Online (Razorpay)',
       // #221: the plan bought — with the answer to its question ("Supreme (Prior User)") — so staff see it on the matter.
-      paymentDescription: `Website order ${o.orderId}${line ? ` (${line.index + 1} of ${o.items.length}: ${it.label})` : ''}${what.planName ? `, ${what.planName}` : ''}${what.optionId ? ` — ${what.optionLabel}: ${what.optionName}, surcharge ${rupees(what.surcharge)} before GST` : ''}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}${what.gst ? ` (${rupees(priceOf(what))} + ${rupees(what.gst)} GST)` : ''}${what.discount ? `, after coupon ${o.couponCode}: ${rupees(what.discount)} off ${rupees(what.listPrice)}` : ''}`,
+      paymentDescription: `Website order ${o.orderId}${line ? ` (${line.index + 1} of ${o.items.length}: ${it.label}${it.quantity > 1 ? `, unit ${it.unitNo} of ${it.quantity}` : ''})` : ''}${what.planName ? `, ${what.planName}` : ''}${what.optionId ? ` — ${what.optionLabel}: ${what.optionName}, surcharge ${rupees(what.surcharge)} before GST` : ''}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}${what.gst ? ` (${rupees(priceOf(what))} + ${rupees(what.gst)} GST)` : ''}${what.discount ? `, after coupon ${o.couponCode}: ${rupees(what.discount)} off ${rupees(what.listPrice)}` : ''}`,
     },
   }, res);
   if (result.code !== 201 || !result.body?.id) {
@@ -554,6 +567,8 @@ async function openMatter(o, approval = {}, line = null) {
   await db.collection('tasks').doc(result.body.id).set({
     websiteOrderId: o.orderId, websiteOrderApprovedBy: approval.approvedBy ?? null,
     ...(line ? { websiteOrderItem: line.index } : {}),
+    // #244: which unit of its line this matter is ("2 of 3 Trademark Registrations").
+    ...(it?.quantity > 1 ? { websiteOrderUnit: { no: it.unitNo, of: it.quantity } } : {}),
     // #221: the plan and the answer to its question, as fields too, for reports and filters.
     ...(what.planName ? { websiteOrderPlanName: what.planName } : {}),
     ...(what.optionId ? { websiteOrderOption: { label: what.optionLabel, id: what.optionId, name: what.optionName } } : {}),

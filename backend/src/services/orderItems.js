@@ -25,6 +25,19 @@
  *   either: the catalogue has none, and one line opens one matter.
  * - At most MAX_ORDER_ITEMS lines: one checkout, one approval, a bounded number
  *   of matters opened by one click.
+ *
+ * QUANTITIES (#244, the firm's request of 2026-11-12). A cart line may ask for
+ * several UNITS of its plan ("3 Trademark Registrations"): `quantity`, an
+ * integer 1..MAX_LINE_QUANTITY, at most MAX_ORDER_UNITS units in the order.
+ * The server EXPANDS a line into one stored item per unit (`expandUnits`), so
+ * each unit is priced, discounted and GST'd exactly as a line always was, and
+ * opens its own matter with its own share — the matter machinery below is
+ * unchanged and stays idempotent per stored item. A unit of a line of 2+
+ * carries `quantity` (the line's) and `unitNo` (1-based); an item without
+ * them is a quantity of 1, which is every order stored before quantities.
+ * `groupUnits` puts the units back together for anything a person reads
+ * (the checkout quote, the customer's order, the email, the redemption).
+ * A line of quantity 1 is stored exactly as before.
  * - ONE approval opens every line's matter. The staff screen has one Approve
  *   button per order, and the customer paid once — splitting the approval
  *   would leave a paid order half-started with nothing on screen to say why.
@@ -33,6 +46,9 @@
 import { withGst } from './pricing.service.js';
 
 export const MAX_ORDER_ITEMS = 10;
+/** #244: units of one service on one line, and units in one order (= matters one approval opens). */
+export const MAX_LINE_QUANTITY = 10;
+export const MAX_ORDER_UNITS = 20;
 
 const httpError = (status, message, code) => Object.assign(new Error(message), { status, code });
 const paise = (n) => Math.round(n * 100) / 100;
@@ -48,8 +64,16 @@ export const isMultiItem = (o) => Array.isArray(o?.items) && o.items.length > 0;
 export function requestedItems({ productKey, planId, optionId, items } = {}) {
   // #221: a line may carry the answer to its product's question; the catalogue checks it.
   const withOption = (l, o) => (o ? { ...l, optionId: o } : l);
+  // #244: and how many units of it. Missing is 1; 1 is not stored on the line.
+  const withQuantity = (l, q) => {
+    if (q === undefined || q === null) return l;
+    if (!Number.isInteger(q) || q < 1 || q > MAX_LINE_QUANTITY) {
+      throw httpError(400, `Choose a quantity from 1 to ${MAX_LINE_QUANTITY} for each service.`, 'BAD_QUANTITY');
+    }
+    return q > 1 ? { ...l, quantity: q } : l;
+  };
   const list = Array.isArray(items) && items.length
-    ? items.map((i) => withOption({ productKey: i.productKey, planId: i.planId }, i.optionId))
+    ? items.map((i) => withQuantity(withOption({ productKey: i.productKey, planId: i.planId }, i.optionId), i.quantity))
     : (productKey && planId ? [withOption({ productKey, planId }, optionId)] : []);
   if (!list.length) throw httpError(400, 'Choose a service to buy.', 'NO_ITEMS');
   if (list.length > MAX_ORDER_ITEMS) {
@@ -60,9 +84,65 @@ export function requestedItems({ productKey, planId, optionId, items } = {}) {
     if (seen.has(i.productKey)) throw httpError(400, 'Each service can be in an order only once. Choose one plan for it.', 'DUPLICATE_ITEM');
     seen.add(i.productKey);
   }
+  if (unitCount(list) > MAX_ORDER_UNITS) {
+    throw httpError(400, `An order can hold at most ${MAX_ORDER_UNITS} services in all. Please lower a quantity, or pay for the rest separately.`, 'TOO_MANY_UNITS');
+  }
   return list;
 }
 
+/** #244: how many units a list of lines (or stored items) holds. Missing quantity is 1. */
+const qty = (l) => (Number.isInteger(l?.quantity) && l.quantity > 1 ? l.quantity : 1);
+export const unitCount = (lines) => lines.reduce((s, l) => s + qty(l), 0);
+
+/**
+ * #244: one entry per UNIT — `[plan, plan, plan]` for a line of 3 — each
+ * marked with the line's quantity and its own number when the line has more
+ * than one. `plans[i]` is the `findPlan` result for `lines[i]` (null when not
+ * on sale: kept, so `priceOrder` refuses the whole order as before).
+ */
+export function expandUnits(lines, plans) {
+  return lines.flatMap((l, i) => {
+    const q = qty(l);
+    const p = plans[i];
+    if (q === 1 || !p) return [p];
+    return Array.from({ length: q }, (_, n) => ({ ...p, quantity: q, unitNo: n + 1 }));
+  });
+}
+
+/**
+ * #244: the units of an order put back into the lines the customer chose — one
+ * per service (an order holds a service once), in order, with `quantity` and
+ * the line's sums. `units` keeps the stored items, with their index in
+ * `items`. An item with no quantity is a line of one, so an order stored
+ * before quantities groups into exactly its old lines.
+ */
+export function groupUnits(items) {
+  const lines = [];
+  const at = new Map();
+  items.forEach((it, index) => {
+    const key = it.productKey ?? `#${index}`;
+    let line = at.get(key);
+    if (!line) {
+      line = { ...it, quantity: 0, price: 0, gst: 0, amount: 0, listPrice: 0, discount: 0, units: [] };
+      delete line.unitNo;
+      delete line.matter;
+      at.set(key, line);
+      lines.push(line);
+    }
+    line.quantity += 1;
+    line.price = paise(line.price + it.price);
+    line.gst = paise(line.gst + (it.gst ?? 0));
+    line.amount = paise(line.amount + it.amount);
+    line.listPrice = paise(line.listPrice + (it.listPrice ?? it.price));
+    line.discount = paise(line.discount + (it.discount ?? 0));
+    line.units.push({ ...it, index });
+  });
+  // A unit's own figures; when a fixed coupon split unevenly, the first unit's.
+  return lines.map((l) => ({
+    ...l, unitPrice: l.units[0].price, unitAmount: l.units[0].amount,
+    sameUnits: l.units.every((u) => u.amount === l.units[0].amount),
+  }));
+}
 /**
  * Price an order from the catalogue's plans (`findPlan` results, null for a
  * plan not on sale). Each line's GST is the catalogue's own (`findPlan` →
@@ -92,6 +172,8 @@ export function priceOrder(plans, discount = null) {
         optionId: p.optionId, optionName: p.optionName, optionLabel: p.optionLabel,
         basePrice: p.basePrice, surcharge: p.surcharge,
       } : {}),
+      // #244: one unit of a line of several (see expandUnits).
+      ...(p.quantity > 1 ? { quantity: p.quantity, unitNo: p.unitNo } : {}),
     };
     if (!discount) return base;
     const off = discount.perLine[i] ?? 0;
@@ -108,8 +190,9 @@ export function priceOrder(plans, discount = null) {
   return {
     // No single product: staff and the customer read the lines.
     productKey: null, productCode: '', planId: null, serviceKey: null,
+    // #244: every unit is a service bought ("3 services" for 3 Trademark Registrations).
     label: `${items.length} services`,
-    planName: items.map((i) => `${i.label} (${i.planName})`).join(', '),
+    planName: groupUnits(items).map((l) => `${l.label} (${l.planName})${l.quantity > 1 ? ` × ${l.quantity}` : ''}`).join(', '),
     price: paise(items.reduce((s, i) => s + i.price, 0)),
     gst: paise(items.reduce((s, i) => s + i.gst, 0)),
     gstPercent: items[0].gstPercent,
@@ -162,20 +245,36 @@ export function settleLineMatters(items, opened, approval) {
 /** The customer's view of each line, and the first matter they can follow. */
 export function publicItems(o) {
   if (!isMultiItem(o)) return {};
-  const items = o.items.map((it) => ({
-    label: it.label, planName: it.planName, price: it.price, gst: it.gst ?? 0, amount: it.amount,
-    ...(it.optionId ? { optionLabel: it.optionLabel, optionName: it.optionName } : {}), // #221
-    // #256: a line a coupon reduced shows what it cost before, and by how much.
-    ...(it.discount ? { listPrice: it.listPrice, discount: it.discount } : {}),
-    matterId: it.matter?.state === 'created' ? (it.matter.taskId ?? null) : null,
-  }));
+  // #244: one entry per line the customer chose, with its quantity and the
+  // line's totals; `matterIds` has one entry per matter opened for it.
+  const items = groupUnits(o.items).map((l) => {
+    const matterIds = l.units.map((u) => (u.matter?.state === 'created' ? (u.matter.taskId ?? null) : null)).filter(Boolean);
+    return {
+      label: l.label, planName: l.planName, quantity: l.quantity,
+      unitAmount: l.unitAmount, price: l.price, gst: l.gst, amount: l.amount,
+      ...(l.optionId ? { optionLabel: l.optionLabel, optionName: l.optionName } : {}), // #221
+      // #256: a line a coupon reduced shows what it cost before, and by how much.
+      ...(l.discount ? { listPrice: l.listPrice, discount: l.discount } : {}),
+      matterId: matterIds[0] ?? null,
+      matterIds,
+    };
+  });
   return { items, matterId: items.find((i) => i.matterId)?.matterId ?? null };
 }
 
-/** Lines for a message or an email: "Proprietorship — Elemental: ₹1,178.82". */
+/**
+ * Lines for a message or an email: "Proprietorship — Elemental: ₹1,178.82".
+ * #244: a line of several units: "Trademark — Supreme × 3: ₹21,237.64 (₹7,079.21 each)".
+ */
 export const itemLines = (o, rupees) => (isMultiItem(o)
-  ? o.items.map((it) => `• ${it.label} — ${it.planName}: ${rupees(it.amount)}${it.discount ? ` (after a discount of ${rupees(it.discount)})` : ''}`)
+  ? groupUnits(o.items).map((l) => `• ${l.label} — ${l.planName}${l.quantity > 1 ? ` × ${l.quantity}` : ''}: ${rupees(l.amount)}`
+    + `${l.quantity > 1 && l.sameUnits ? ` (${rupees(l.unitAmount)} each)` : ''}`
+    + `${l.discount ? ` (after a discount of ${rupees(l.discount)})` : ''}`)
   : []);
+
+/** #244: "Startup India × 2, GST Registration" — a sentence's list of lines. */
+export const linesSentence = (items) => groupUnits(items)
+  .map((l) => `${l.label}${l.quantity > 1 ? ` × ${l.quantity}` : ''}`).join(', ');
 
 /* ─────────────────────── Coupons (#256, #257, #260) ─────────────────────── */
 

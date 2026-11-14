@@ -84,26 +84,69 @@ function lineMatter(it: WebsiteOrderItem, paid: boolean): { text: string; warn: 
 }
 
 /**
- * #244: the services of a cart order, one per line, each with its price and
- * the matter it opened. Wraps on a phone; no sideways scroll.
+ * #244: the units of a cart order put back into the lines the customer chose
+ * — one per service, with its quantity and the line's total. An order holds a
+ * service once, so its units share a productKey; an item with no quantity
+ * (every order made before quantities) is a line of one.
+ */
+interface OrderLine { first: WebsiteOrderItem; units: WebsiteOrderItem[]; amount: number }
+function orderLines(items: WebsiteOrderItem[]): OrderLine[] {
+  const lines: OrderLine[] = [];
+  const at = new Map<string, OrderLine>();
+  items.forEach((it, i) => {
+    const key = it.productKey ?? `#${i}`;
+    let line = at.get(key);
+    if (!line) { line = { first: it, units: [], amount: 0 }; at.set(key, line); lines.push(line); }
+    line.units.push(it);
+    line.amount = Math.round((line.amount + it.amount) * 100) / 100;
+  });
+  return lines;
+}
+
+/** What one unit's matter is doing, with a link to it once opened. */
+function UnitMatter({ it, paid, name }: { it: WebsiteOrderItem; paid: boolean; name: string }) {
+  const m = lineMatter(it, paid);
+  return (
+    <>
+      {m.text && <span className={m.warn ? 'text-amber-800' : 'text-ink-muted'}>{m.text}</span>}
+      {it.matter.state === 'created' && it.matter.taskId && !it.matter.deleted && (
+        <> · <Link to={`/tasks/${it.matter.taskId}`} className="inline-flex items-center min-h-11 md:min-h-0 text-brand-700 underline"
+          aria-label={`Open the matter for ${name}`}>Open matter</Link></>
+      )}
+    </>
+  );
+}
+
+/**
+ * #244: the services of a cart order, one per line, each with its quantity,
+ * its total and the matter each unit opened. Wraps on a phone; no sideways scroll.
  */
 function OrderItems({ o }: { o: WebsiteOrder }) {
   if (!o.items?.length) return null;
   const paid = o.status === 'paid';
   return (
     <ul className="mt-1 space-y-1.5" aria-label={`Services in order ${o.orderId}`}>
-      {o.items.map((it, i) => {
-        const m = lineMatter(it, paid);
+      {orderLines(o.items).map(({ first: it, units, amount }, i) => {
+        const q = units.length;
+        const discount = units.reduce((s, u) => s + (u.discount ?? 0), 0);
+        const listPrice = units.reduce((s, u) => s + (u.listPrice ?? u.price), 0);
         return (
           <li key={`${it.productKey}-${i}`} className="text-xs">
             <span className="text-ink">{it.label} — {it.planName}</span>
-            {!!it.surcharge && <span className="text-ink-muted"> (incl. {inr(it.surcharge)} for {it.optionName})</span>}
-            <span className="text-ink-muted"> · {inr(it.amount)}</span>
-            {!!it.discount && <span className="text-ink-muted"> (after {inr(it.discount)} off {inr(it.listPrice ?? it.price)})</span>}
-            {m.text && <span className={m.warn ? 'text-amber-800' : 'text-ink-muted'}> · {m.text}</span>}
-            {it.matter.state === 'created' && it.matter.taskId && !it.matter.deleted && (
-              <> · <Link to={`/tasks/${it.matter.taskId}`} className="inline-flex items-center min-h-11 md:min-h-0 text-brand-700 underline"
-                aria-label={`Open the matter for ${it.label}`}>Open matter</Link></>
+            {q > 1 && <span className="text-ink font-semibold"> × {q}</span>}
+            {!!it.surcharge && <span className="text-ink-muted"> (incl. {inr(it.surcharge)}{q > 1 ? ' each' : ''} for {it.optionName})</span>}
+            <span className="text-ink-muted"> · {inr(amount)}</span>
+            {q > 1 && units.every((u) => u.amount === it.amount) && <span className="text-ink-muted"> ({inr(it.amount)} each)</span>}
+            {!!discount && <span className="text-ink-muted"> (after {inr(Math.round(discount * 100) / 100)} off {inr(Math.round(listPrice * 100) / 100)})</span>}
+            {q === 1 ? (
+              paid && lineMatter(it, paid).text && <> · <UnitMatter it={it} paid={paid} name={it.label} /></>
+            ) : paid && (
+              // One matter per unit: say what became of each.
+              <ol className="mt-1 ml-4 space-y-1 list-decimal" aria-label={`Matters for ${it.label}`}>
+                {units.map((u, n) => (
+                  <li key={n}><UnitMatter it={u} paid={paid} name={`${it.label}, ${n + 1} of ${q}`} /></li>
+                ))}
+              </ol>
             )}
           </li>
         );
