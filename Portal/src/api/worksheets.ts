@@ -132,10 +132,10 @@ export async function uploadWorksheetImage(sheet: string, id: string, field: str
 export const deleteWorksheetImage = (sheet: string, id: string, field: string) =>
   apiFetch<{ deleted: true }>(imagePath(sheet, id, field), { method: 'DELETE' });
 
-/** #279: one row's secret (GST portal password), for staff; every call is audited server-side. */
-export const revealWorksheetSecret = (sheet: string, id: string, field: string, purpose: 'view' | 'copy' | 'login') =>
+/** #279: one row's secret (GST portal password), for staff only. */
+export const revealWorksheetSecret = (sheet: string, id: string, field: string) =>
   apiFetch<{ value: string; userId: string | null; loginUrl: string }>(
     `${sheetPath(sheet)}/records/${encodeURIComponent(id)}/secrets/${encodeURIComponent(field)}/reveal`,
-    { method: 'POST', body: JSON.stringify({ purpose }) },
+    { method: 'POST' },
   );
 

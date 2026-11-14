@@ -186,7 +186,6 @@ jobs:
             --set-env-vars="PAYMENT_GATEWAY=simulated" \
             --set-env-vars="RAZORPAY_KEY_ID=${{ secrets.QA_RAZORPAY_KEY_ID }}" \
             --set-env-vars="RAZORPAY_KEY_SECRET=${{ secrets.QA_RAZORPAY_KEY_SECRET }}" \
-            --set-env-vars="WORKSHEET_SECRETS_KEY=${{ secrets.QA_WORKSHEET_SECRETS_KEY }}" \
             --set-env-vars="RAZORPAY_WEBHOOK_SECRET=${{ secrets.QA_RAZORPAY_WEBHOOK_SECRET }}" \
             --set-env-vars="FIREBASE_PROJECT_ID=${{ secrets.BACKEND_FIREBASE_PROJECT_ID }}" \
             --set-env-vars="FIREBASE_PRIVATE_KEY_ID=${{ secrets.BACKEND_FIREBASE_PRIVATE_KEY_ID }}" \

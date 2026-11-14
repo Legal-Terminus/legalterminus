@@ -1,26 +1,27 @@
 /**
  * #279 (firm, 11 Nov) — secret cells of a worksheet: the GST Return Filing
- * sheet's "GST Pswd". Pure, apart from reading the key from the environment.
+ * sheet's "GST Pswd". Pure.
  *
- * WHERE. A secret field is never kept in `values` (which every list response
- * sends). It lives in `secrets.<field>` on the record and leaves the server only
- * through the guarded reveal endpoint, one row at a time, audited.
+ * WHAT THE FIRM ASKED FOR: the password masked in the report, opened from the
+ * report with one click, and changed through Edit by Admin, Manager and Team.
  *
- * ENCRYPTED AT REST. AES-256-GCM, a fresh 12-byte IV per value, key from
- * `WORKSHEET_SECRETS_KEY` (32 bytes, base64; Secret Manager → Cloud Run env).
- * Stored as { v: 1, iv, tag, ct } (base64). Without the key (a deployment not
- * yet given one) a value is stored as { v: 0, plain } — still out of `values`
- * and out of every list, but NOT encrypted; it is encrypted the next time the
- * record is written or revealed once the key exists. Nothing is lost either way.
+ * WHERE. A secret field is never kept in `values` (which every list response and
+ * every Excel download sends). It lives in `secrets.<field>` on the record as
+ * { v: 0, plain } and leaves the server only through the staff-only reveal
+ * endpoint, one row at a time. "Masked" therefore means not in the browser at
+ * all until someone clicks, not just dots over a value the page already holds.
  *
- * MIGRATION. Records written before this kept the password in
+ * NOT ENCRYPTED. Stored as typed. Encryption at rest, an access log and the
+ * other sensitive columns (Traces / IT passwords) are out of scope for now; the
+ * `v` tag leaves room for an encrypted format later without a data migration.
+ *
+ * MIGRATION. Records written before #279 kept the password in
  * `values.gst_password`. Every write and every reveal of such a record moves it
- * into `secrets` (encrypted when the key exists) and deletes it from `values`;
- * list responses never send it meanwhile.
+ * into `secrets` and deletes it from `values`; list responses never send it
+ * meanwhile.
  *
  * Never log a secret value.
  */
-import crypto from 'node:crypto';
 import { BOOKS } from '../config/worksheetDefinitions.js';
 
 export const SECRET_MAX_LEN = 200;
@@ -30,44 +31,15 @@ export function secretFieldsOf(bookKey) {
   return (BOOKS[bookKey]?.fields ?? []).filter((fd) => fd.secret).map((fd) => fd.key);
 }
 
-/** The key, or null when the deployment has none (or a malformed one). */
-export function secretsKey(env = process.env) {
-  const raw = env.WORKSHEET_SECRETS_KEY;
-  if (!raw) return null;
-  const key = Buffer.from(String(raw).trim(), 'base64');
-  return key.length === 32 ? key : null;
+/** How a value is stored. */
+export function sealSecret(plain) {
+  return { v: 0, plain: String(plain) };
 }
 
-export function encryptSecret(plain, key) {
-  const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
-  const ct = Buffer.concat([cipher.update(String(plain), 'utf8'), cipher.final()]);
-  return { v: 1, iv: iv.toString('base64'), tag: cipher.getAuthTag().toString('base64'), ct: ct.toString('base64') };
-}
-
-export function decryptSecret(blob, key) {
-  const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(blob.iv, 'base64'));
-  decipher.setAuthTag(Buffer.from(blob.tag, 'base64'));
-  return Buffer.concat([decipher.update(Buffer.from(blob.ct, 'base64')), decipher.final()]).toString('utf8');
-}
-
-/** How a value is stored: encrypted with the key, else plain (see the header). */
-export function sealSecret(plain, key) {
-  return key ? encryptSecret(plain, key) : { v: 0, plain: String(plain) };
-}
-
-/**
- * The plain value of a stored secret, or null. Throws when it is encrypted and
- * the key is missing or wrong (the caller answers with a generic error).
- */
-export function openSecret(stored, key) {
+/** The plain value of a stored secret, or null. */
+export function openSecret(stored) {
   if (!stored) return null;
-  if (stored.v === 0) return stored.plain ?? null;
-  if (stored.v === 1) {
-    if (!key) throw new Error('worksheet secrets key missing');
-    return decryptSecret(stored, key);
-  }
-  return null;
+  return stored.v === 0 ? (stored.plain ?? null) : null;
 }
 
 /**
@@ -87,7 +59,7 @@ export function cleanSecretInput(raw) {
 
 /**
  * Split incoming cell values: `values` without the secret fields, and the
- * secret ones (non-empty only) to be sealed.
+ * secret ones (non-empty only) to be stored under `secrets`.
  */
 export function splitSecretValues(bookKey, values = {}) {
   const fields = secretFieldsOf(bookKey);
@@ -104,12 +76,12 @@ export function splitSecretValues(bookKey, values = {}) {
 
 /**
  * The Firestore fields to write for a record of `bookKey`: each new secret
- * sealed, and each legacy plaintext value still in `values` moved out (sealed)
+ * stored, and each legacy value still in `values` moved out
  * unless a new one replaces it. `values` is the record's values after the write;
  * the returned `values` has every secret field removed.
  *   → { values, secrets: { field: sealed }, moved: [field] }
  */
-export function secretWrites(bookKey, { values = {}, existingSecrets = {}, incoming = {} }, key) {
+export function secretWrites(bookKey, { values = {}, existingSecrets = {}, incoming = {} }) {
   const fields = secretFieldsOf(bookKey);
   const clean = { ...values };
   const secrets = {};
@@ -117,9 +89,8 @@ export function secretWrites(bookKey, { values = {}, existingSecrets = {}, incom
   for (const f of fields) {
     const legacy = clean[f];
     delete clean[f];
-    if (incoming[f] != null) secrets[f] = sealSecret(incoming[f], key);
-    else if (legacy != null && legacy !== '' && !existingSecrets?.[f]) { secrets[f] = sealSecret(legacy, key); moved.push(f); }
-    else if (existingSecrets?.[f]?.v === 0 && key) secrets[f] = sealSecret(existingSecrets[f].plain, key); // encrypt once a key exists
+    if (incoming[f] != null) secrets[f] = sealSecret(incoming[f]);
+    else if (legacy != null && legacy !== '' && !existingSecrets?.[f]) { secrets[f] = sealSecret(legacy); moved.push(f); }
   }
   return { values: clean, secrets, moved };
 }

@@ -346,7 +346,7 @@ test('#279 Return Period filter: options follow Monthly / Quarterly, default is 
   await expect(adminPage.locator('tr', { hasText: ORG })).toHaveCount(0);
 });
 
-test('#279 GST Pswd: never in a list, revealed to staff only (audited), masked in the sheet', async ({ teamPage }) => {
+test('#279 GST Pswd: never in a list, given to staff only, masked; a click copies it and opens the GST portal', async ({ teamPage }) => {
   const secret = `Pw<${RUN}>&1`;
   const team = await apiAs('team');
   const created = await team.post('/api/worksheets/sheets/gst_return_monthly/records', { data: { values: {
@@ -359,31 +359,36 @@ test('#279 GST Pswd: never in a list, revealed to staff only (audited), masked i
   // The list never carries it.
   const list = await team.get('/api/worksheets/sheets/gst_return_monthly/records?limit=500');
   expect(await list.text()).not.toContain(secret);
-  // Staff reveal one row on demand; a reason is required.
+  // Staff fetch one row on demand.
   const url = `/api/worksheets/sheets/gst_return_monthly/records/${rec.id}/secrets/gst_password/reveal`;
-  expect((await team.post(url, { data: {} })).status()).toBe(400);
-  const shown = await team.post(url, { data: { purpose: 'view' } });
+  const shown = await team.post(url);
   expect(shown.status()).toBe(200);
   expect(await shown.json()).toMatchObject({ value: secret, userId: `user${RUN}`, loginUrl: 'https://services.gst.gov.in/services/login' });
   await team.dispose();
   // Clients (and professionals) never.
   const client = await apiAs('client');
-  expect((await client.post(url, { data: { purpose: 'view' } })).status()).toBe(403);
+  expect((await client.post(url)).status()).toBe(403);
   await client.dispose();
   try {
     const pro = await apiAs('pro');
-    expect((await pro.post(url, { data: { purpose: 'login' } })).status()).toBe(403);
+    expect((await pro.post(url)).status()).toBe(403);
     await pro.dispose();
   } catch { /* no professional test account on this database */ }
 
-  // In the sheet: masked, Show reveals it, and the Log in action is there.
+  // In the sheet: masked; clicking it copies the password and opens the GST portal.
+  await teamPage.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   await openView(teamPage, 'Monthly');
   const r = row(teamPage, `${RUN} Secret`);
   await expect(r).toContainText('••••••••', { timeout: 20_000 });
   await expect(r).not.toContainText(secret);
-  await r.getByRole('button', { name: 'Show GST Pswd' }).click();
-  await expect(r).toContainText(secret);
-  await expect(r.getByRole('button', { name: 'Log in to the GST portal' })).toBeVisible();
+  const [portal] = await Promise.all([
+    teamPage.context().waitForEvent('page'),
+    r.getByRole('button', { name: 'Log in to the GST portal' }).click(),
+  ]);
+  await expect.poll(() => portal.url()).toContain('services.gst.gov.in');
+  await portal.close();
+  expect(await teamPage.evaluate(() => navigator.clipboard.readText())).toBe(secret);
+  await expect(r).not.toContainText(secret);
 });
 
 test('guards: clients are kept out; only an admin changes columns; a write is validated', async ({ clientPage }) => {
