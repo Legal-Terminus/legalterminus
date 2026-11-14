@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { stripTags as stripMarkup } from '../utils/sanitize.js';
 import {
   CODE_PATTERN, DISCOUNT_TYPES, SCOPES, VALIDITIES,
 } from '../services/coupons.js';
@@ -8,18 +9,9 @@ import {
  * schema does not name is refused.
  */
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Choose a date.');
-// Tags out until none is left, then any stray angle bracket: one pass alone
-// lets a nested "<scr<script>ipt>" leave "<script>" behind
-// (CodeQL js/incomplete-multi-character-sanitization).
-const stripTags = (input) => {
-  let s = input;
-  let before;
-  do {
-    before = s;
-    s = s.replace(/<[^>]*>/g, '');
-  } while (s !== before);
-  return s.replace(/[<>]/g, '');
-};
+// Tags out (linear, utils/sanitize.js), then any stray angle bracket, so a
+// coupon description never carries one into an email or the checkout page.
+const stripTags = (input) => stripMarkup(input).replace(/[<>]/g, '');
 
 /** The terms of a coupon — everything staff can set, except its code. */
 const terms = {

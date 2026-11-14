@@ -1,11 +1,12 @@
 import { z } from 'zod';
+import { stripTags as stripMarkup } from '../utils/sanitize.js';
 
 /**
  * #240 — the refund log. `.strict()` throughout: the PAYMENT amount and the
  * client are read from the matter or order on the server, so a request that
  * sends `paymentAmount`, `clientUid` or `clientName` is refused, not ignored.
  */
-const stripTags = (s) => s.replace(/<[^>]*>/g, '').trim();
+const stripTags = (s) => stripMarkup(s).trim();
 
 export const refundStatusSchema = z.enum(['initiated', 'processing', 'credited', 'failed']);
 

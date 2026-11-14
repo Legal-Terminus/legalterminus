@@ -1,4 +1,5 @@
 import { logger } from '../config/logger.js';
+import { isSafeKey } from '../utils/sanitize.js';
 import {
   DEFAULT_CALENDAR, resolveStatutoryDate, presentCalendar, validateCalendarEntry,
   calendarKeys,
@@ -90,6 +91,14 @@ export async function readCalendar(db, { month = null } = {}) {
  * to today's default and miss the next platform correction.
  */
 export async function setOverride(db, key, entry, { periodKey = null, actorUid = null } = {}) {
+  // `key` is a URL segment and `periodKey` a body field. Either one named
+  // `__proto__` / `constructor` / `prototype` would write to a prototype rather
+  // than the map (CodeQL js/remote-property-injection), so they are refused,
+  // and the maps below are rebuilt with Object.fromEntries — never `m[key] = …`.
+  if (!isSafeKey(key) || key.length > 60) throw new Error('Unknown calendar key.');
+  if (periodKey !== null && !/^\d{4}(-\d{2})?$/.test(String(periodKey))) {
+    throw new Error('periodKey must be YYYY or YYYY-MM.');
+  }
   if (!calendarKeys({ defaults: DEFAULT_CALENDAR, overrides: await getOverrides(db) }).includes(key)
       && !entry) {
     throw new Error('Unknown calendar key.');
@@ -99,13 +108,12 @@ export async function setOverride(db, key, entry, { periodKey = null, actorUid =
     if (err) throw new Error(err);
   }
 
-  const overrides = { ...(await getOverrides(db)) };
-  const current = { ...(overrides[key] ?? {}) };
+  const stored = await getOverrides(db);
+  const current = { ...(Object.hasOwn(stored, key) ? stored[key] : {}) };
 
   if (periodKey) {
-    const periods = { ...(current.periods ?? {}) };
-    if (entry) periods[periodKey] = entry; else delete periods[periodKey];
-    current.periods = periods;
+    const others = Object.entries(current.periods ?? {}).filter(([k]) => k !== periodKey);
+    current.periods = Object.fromEntries(entry ? [...others, [periodKey, entry]] : others);
   } else if (entry) {
     current.entry = entry;
   } else {
@@ -114,11 +122,9 @@ export async function setOverride(db, key, entry, { periodKey = null, actorUid =
 
   // Drop the key entirely when nothing is left, so a reverted key reads as
   // 'platform' again rather than lingering as an empty override.
-  if (!current.entry && Object.keys(current.periods ?? {}).length === 0) {
-    delete overrides[key];
-  } else {
-    overrides[key] = current;
-  }
+  const rest = Object.entries(stored).filter(([k]) => k !== key);
+  const empty = !current.entry && Object.keys(current.periods ?? {}).length === 0;
+  const overrides = Object.fromEntries(empty ? rest : [...rest, [key, current]]);
 
   await db.collection(SETTINGS).doc(DOC).set({
     overrides,

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { stripTags } from '../utils/sanitize.js';
 
 /**
  * #222 — additional payment requests on a matter (government fees and the like).
@@ -10,7 +11,7 @@ import { z } from 'zod';
  */
 
 /** Plain text: tags stripped, whitespace trimmed. Fee names land in emails. */
-const text = (max) => z.string().transform((s) => s.replace(/<[^>]*>/g, '').trim()).pipe(z.string().max(max));
+const text = (max) => z.string().transform((s) => stripTags(s).trim()).pipe(z.string().max(max));
 
 /** Rupees, positive, at most two decimals (paise), at most ₹1 crore a line. */
 const rupees = z.number().finite().positive().max(10_000_000)

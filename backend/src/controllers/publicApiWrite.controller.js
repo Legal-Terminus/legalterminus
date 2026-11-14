@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { logger } from '../config/logger.js';
+import { isPlausibleEmail } from '../utils/sanitize.js';
 import { db } from '../config/firebase.js';
 import { createTask } from './tasks.controller.js';
 import { serializeMatter, serializeClient } from './publicApi.controller.js';
@@ -145,7 +146,7 @@ export async function createClientViaApi(req, res) {
     if (!clean) return res.status(400).json({ error: 'bad_request', message: 'name is required.' });
     if (clean.length > 200) return res.status(400).json({ error: 'bad_request', message: 'name is too long.' });
     const mail = String(email ?? '').trim().toLowerCase();
-    if (mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) {
+    if (mail && !isPlausibleEmail(mail)) {
       return res.status(400).json({ error: 'bad_request', message: 'email is not valid.' });
     }
 
