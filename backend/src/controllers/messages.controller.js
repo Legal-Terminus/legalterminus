@@ -3,6 +3,7 @@ import { logger } from '../config/logger.js';
 import { createNotification } from './notifications.controller.js';
 import { resolveClientMessageRecipients } from '../services/discussionRecipients.service.js';
 import { sendTemplatedEmail } from '../services/emailService.js';
+import { notifyChatMessage, CLIENT_FACING_SENDER } from '../services/chatMessageNotify.service.js';
 import { renderTemplate } from '../services/emailTemplates.service.js';
 import { prepareRichText, richTextToPlain } from '../services/richText.service.js';
 import { extractMentionEmails, resolveStaffByEmails, listMentionableStaff } from '../services/mentions.service.js';
@@ -24,8 +25,10 @@ import { resolveCommentImages, shareCommentImages } from '../services/commentIma
  */
 
 const MESSAGES_SUB = 'messages';
-// #123: how a staff sender is shown to the CLIENT in the discussion thread.
-const CLIENT_FACING_SENDER = 'Legal Terminus';
+// #123: how a staff sender is shown to the CLIENT is CLIENT_FACING_SENDER
+// (chatMessageNotify.service.js), shared with the notification emails.
+
+const chatNoticeDeps = { createNotification, renderTemplate, sendTemplatedEmail, resolveClientMessageRecipients, logger };
 
 const toISO = (ts) => {
   if (!ts) return null;
@@ -94,7 +97,9 @@ export async function listMessages(req, res) {
       createdAt: m.createdAt,
       editedAt: m.deletedAt ? null : toISO(m.editedAt),
       deleted: Boolean(m.deletedAt),
-      canEdit: !m.deletedAt && canModify(req.user, m),
+      // #297: Edit only on your own message; Delete also for an admin.
+      canEdit: canEditMessage(req.user, m),
+      canDelete: canDeleteMessage(req.user, m),
       clientVisible: m.clientVisible === true,
       authorRole: m.authorRole ?? null,
       isMine: m.authorUid === req.user.uid,
@@ -174,123 +179,11 @@ export async function createMessage(req, res) {
 
     // Notification/email previews use the PLAIN projection — HTML would be noise
     // in a bell popup and unsafe to inject into an email template.
-    const plain = richTextToPlain(body);
-    const preview = plain.length > 140 ? `${plain.slice(0, 140)}…` : plain;
-
-    if (isClient) {
-      // #200: a client's message reaches the people working the matter — its
-      // owner and everyone on its current step, or the admins if there are none.
-      // It used to reach the owner alone, and nobody when there was no owner.
-      // One notification and ONE email each: `email: false` stops the generic
-      // mirror, and the email is the internal template — the old path sent staff
-      // the client-facing "reply from the Client Portal" wording.
-      try {
-        const { recipients, fallback } = await resolveClientMessageRecipients(db, { id: taskId, ...task }, req.user.uid);
-        const clientName = task.clientName || 'Your client';
-        for (const r of recipients) {
-          try {
-            await createNotification({
-              recipientUid: r.uid, type: 'info',
-              title: 'New message from your client',
-              message: preview,
-              taskId, email: false,
-            });
-            const rendered = r.email ? await renderTemplate('matter_message_team', {
-              recipientName: r.name, clientName,
-              organisation: task.organisation ?? '', serviceName: task.serviceName ?? '', message: plain,
-            }) : null;
-            // No cc: the matter's ccEmails are the client's, and this is internal.
-            if (rendered) {
-              await sendTemplatedEmail({
-                to: r.email, subject: rendered.subject, body: rendered.body,
-                taskId, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
-              });
-            }
-          } catch (e) {
-            logger.warn({ err: e?.message, recipientUid: r.uid }, 'createMessage: team notify failed (non-fatal)');
-          }
-        }
-        logger.info({ taskId, notified: recipients.length, fallback }, 'client message: team notified');
-      } catch (e) {
-        logger.warn({ err: e?.message }, 'createMessage: team notification failed (non-fatal)');
-      }
-    } else if (clientVisible && task.clientUid && task.clientUid !== req.user.uid) {
-      // A client-visible staff message pings the client. Internal-only staff
-      // messages notify nobody but those @mentioned (below).
-      try {
-        const recipient = task.clientUid;
-        // #207: `email: false` — the templated message email just below is the
-        // client's email. Left to mirror itself, this notification sent a second
-        // one ("New message about your service") for every client-visible reply.
-        await createNotification({
-          recipientUid: recipient,
-          type: 'info',
-          title: 'New message about your service',
-          message: preview,
-          taskId,
-          email: false,
-        });
-
-        // Email via the editable template (falls back to a sensible default).
-        const to = await emailFor(recipient);
-        if (to) {
-          const rendered = await renderTemplate('matter_message', {
-            clientName: task.clientName ?? '',
-            organisation: task.organisation ?? '',
-            serviceName: task.serviceName ?? '',
-            message: plain,
-            senderName: CLIENT_FACING_SENDER,
-          });
-          if (rendered) {
-            await sendTemplatedEmail({
-              to,
-              // #149: CC the matter's additional recipients on the client's copy.
-              cc: task.ccEmails,
-              subject: rendered.subject, body: rendered.body,
-              taskId, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
-            });
-          }
-        }
-      } catch (e) {
-        logger.warn({ err: e?.message }, 'createMessage: notification/email failed (non-fatal)');
-      }
-    }
-
-    // #200: each mentioned colleague gets one notification and one email.
-    // Skips whoever the message already notified above, so nobody gets two.
-    // The response below is the same whether or not any address resolved.
-    // (Mentions are staff-only, so the client is the only possible overlap.)
-    const alreadyNotified = clientVisible ? task.clientUid : null;
-    const authorSnap = mentioned.length ? await db.collection('users').doc(req.user.uid).get() : null;
-    const authorName = authorSnap?.exists
-      ? (authorSnap.data().name || authorSnap.data().fullName || authorSnap.data().email || 'A colleague')
-      : 'A colleague';
-    for (const u of mentioned.filter((m) => m.uid !== alreadyNotified)) {
-      try {
-        await createNotification({
-          recipientUid: u.uid, type: 'info',
-          title: `${authorName} mentioned you`,
-          message: plain.length > 140 ? `${plain.slice(0, 140)}…` : plain,
-          taskId, email: false,
-        });
-        const to = u.email || (Array.isArray(u.emailIds) ? u.emailIds[0] : null);
-        const rendered = to ? await renderTemplate('matter_mention', {
-          recipientName: u.name || u.fullName || '', senderName: authorName,
-          clientName: task.clientName ?? '', organisation: task.organisation ?? '',
-          serviceName: task.serviceName ?? '', message: plain,
-        }) : null;
-        // No cc: the matter's ccEmails are the client's, and a mention is internal.
-        if (rendered) {
-          await sendTemplatedEmail({
-            to, subject: rendered.subject, body: rendered.body,
-            taskId, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
-          });
-        }
-      } catch (e) {
-        logger.warn({ err: e?.message }, 'createMessage: mention notify failed (non-fatal)');
-      }
-    }
-
+    // #297: the same notice path announces an EDIT (updateMessage below).
+    await notifyChatMessage({
+      db, task, taskId, author: { uid: req.user.uid, role: req.user.role },
+      plain: richTextToPlain(body), clientVisible, mentioned,
+    }, chatNoticeDeps);
     res.status(201).json({ id: ref.id, ...doc, createdAt: now.toISOString(), isMine: true });
   } catch (err) {
     logger.error({ err }, 'createMessage error:');
@@ -316,16 +209,26 @@ export function appendRevision(revisions, entry, currentBody = '', budget = MESS
   return { revisions: list, dropped };
 }
 
-/** The author may change their own message; an admin may change anyone's. */
-function canModify(user, m) {
-  return Boolean(user?.uid) && (m.authorUid === user.uid || user.role === 'admin');
+/**
+ * #297: only the AUTHOR may edit a message — staff could edit a client's words,
+ * which the firm does not allow ("an admin may change anyone's" was the
+ * 2026-11-05 rule). Identity is the verified token's uid, never anything the
+ * request says. Deleting stays open to an admin as moderation: removing a
+ * message does not put words in anyone's mouth.
+ */
+export function canEditMessage(user, m) {
+  return Boolean(user?.uid) && !m?.deletedAt && m?.authorUid === user.uid;
+}
+export function canDeleteMessage(user, m) {
+  return Boolean(user?.uid) && !m?.deletedAt && (m?.authorUid === user.uid || user.role === 'admin');
 }
 
 /**
- * Load a message the caller may edit or delete, or answer the request.
- * A client never learns that an internal message exists: it 404s for them.
+ * Load a message the caller may edit (`action: 'edit'`) or delete, or answer
+ * the request. A client never learns that an internal message exists: it 404s
+ * for them.
  */
-async function loadModifiableMessage(req, res) {
+async function loadModifiableMessage(req, res, action) {
   const { taskId, messageId } = req.params;
   const task = await loadAuthorizedTask(req, res, taskId);
   if (!task) return null;
@@ -335,26 +238,36 @@ async function loadModifiableMessage(req, res) {
   if (!m || (req.user.role === 'client' && m.clientVisible !== true)) {
     res.status(404).json({ message: 'Message not found' }); return null;
   }
-  if (!canModify(req.user, m)) {
-    res.status(403).json({ message: 'Only the person who wrote this message, or an admin, can change it.' });
+  if (m.deletedAt) { res.status(409).json({ message: 'This message has already been deleted.' }); return null; }
+  const allowed = action === 'edit' ? canEditMessage(req.user, m) : canDeleteMessage(req.user, m);
+  if (!allowed) {
+    res.status(403).json({
+      message: action === 'edit'
+        ? 'You can only edit messages you wrote.'
+        : 'Only the person who wrote this message, or an admin, can delete it.',
+    });
     return null;
   }
-  if (m.deletedAt) { res.status(409).json({ message: 'This message has already been deleted.' }); return null; }
-  return { ref, m };
+  return { ref, m, task };
 }
 
 /**
- * PATCH /api/tasks/:taskId/messages/:messageId — fix a message's text.
- * Sends nothing: an email the client already received cannot be recalled, and a
- * second email for a typo would be noise. The earlier text is kept in
- * `revisions` (never returned by the API) so the firm has a record of what was
- * actually sent.
+ * PATCH /api/tasks/:taskId/messages/:messageId — change a message's text.
+ * Author only (#297, `canEditMessage`). The earlier text is kept in `revisions`
+ * (never returned by the API) so the firm has a record of what was actually sent.
+ *
+ * #297: an edit is announced exactly like a new message — a staff edit of a
+ * message the client can see emails the client; a client's edit emails the
+ * people working the matter — with "edited" wording and the NEW text. An
+ * internal staff message tells only colleagues @mentioned for the first time.
+ * The read-compare-write runs in a transaction, so a double-clicked Save (two
+ * identical PATCHes) changes the message once and notifies once.
  */
 export async function updateMessage(req, res) {
   try {
-    const found = await loadModifiableMessage(req, res);
+    const found = await loadModifiableMessage(req, res, 'edit');
     if (!found) return;
-    const { ref, m } = found;
+    const { ref, task } = found;
     const { taskId } = req.params;
 
     const prepared = prepareRichText(String(req.body?.body ?? ''), { what: 'message' });
@@ -365,14 +278,41 @@ export async function updateMessage(req, res) {
     if (!richTextToPlain(body)) {
       return res.status(400).json({ message: 'Message cannot be empty. To remove it, delete it instead.' });
     }
-    if (body === m.body) return res.json({ id: ref.id, body, editedAt: toISO(m.editedAt) });
+
+    // #200 on an edit: colleagues @mentioned now who were not before.
+    const isClient = req.user.role === 'client';
+    const mentionedNow = isClient ? [] : (await resolveStaffByEmails(db, extractMentionEmails(richTextToPlain(body))))
+      .filter((u) => u.uid !== req.user.uid);
 
     const now = new Date();
-    const kept = appendRevision(m.revisions, { body: m.body, replacedAt: now, replacedBy: req.user.uid }, body);
-    if (kept.dropped) logger.warn({ taskId, messageId: ref.id, dropped: kept.dropped }, 'chat message: oldest revisions dropped to stay under the document limit');
-    await ref.update({ body, editedAt: now, editedBy: req.user.uid, revisions: kept.revisions });
-    if (m.clientVisible === true) await shareCommentImages(db, taskId, imageIds);
+    const result = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const cur = snap.exists ? snap.data() : null;
+      // Re-checked inside the transaction: deleted or re-authored meanwhile.
+      if (!cur || !canEditMessage(req.user, cur)) return { gone: true };
+      if (cur.body === body) return { unchanged: true, editedAt: cur.editedAt };
+      const before = new Set(Array.isArray(cur.mentionedUids) ? cur.mentionedUids : []);
+      const kept = appendRevision(cur.revisions, { body: cur.body, replacedAt: now, replacedBy: req.user.uid }, body);
+      if (kept.dropped) logger.warn({ taskId, messageId: ref.id, dropped: kept.dropped }, 'chat message: oldest revisions dropped to stay under the document limit');
+      const allMentioned = [...new Set([...before, ...mentionedNow.map((u) => u.uid)])];
+      tx.update(ref, {
+        body, editedAt: now, editedBy: req.user.uid, revisions: kept.revisions,
+        ...(allMentioned.length ? { mentionedUids: allMentioned } : {}),
+      });
+      return { newlyMentioned: mentionedNow.filter((u) => !before.has(u.uid)), clientVisible: cur.clientVisible === true };
+    });
+    if (result.gone) return res.status(409).json({ message: 'This message has already been deleted.' });
+    if (result.unchanged) return res.json({ id: ref.id, body, editedAt: toISO(result.editedAt) });
+
+    if (result.clientVisible) await shareCommentImages(db, taskId, imageIds);
     logger.info({ taskId, messageId: ref.id, by: req.user.uid }, 'chat message edited');
+
+    await notifyChatMessage({
+      db, task, taskId, author: { uid: req.user.uid, role: req.user.role },
+      plain: richTextToPlain(body), clientVisible: isClient ? true : result.clientVisible,
+      edited: true, mentioned: result.newlyMentioned,
+    }, chatNoticeDeps);
+
     res.json({ id: ref.id, body, editedAt: now.toISOString() });
   } catch (err) {
     logger.error({ err }, 'updateMessage error:');
@@ -387,7 +327,7 @@ export async function updateMessage(req, res) {
  */
 export async function deleteMessage(req, res) {
   try {
-    const found = await loadModifiableMessage(req, res);
+    const found = await loadModifiableMessage(req, res, 'delete');
     if (!found) return;
     const { ref, m } = found;
     const now = new Date();
@@ -416,14 +356,4 @@ export async function listMentionable(req, res) {
     logger.error({ err }, 'listMentionable error:');
     res.status(500).json({ message: 'Failed to load colleagues' });
   }
-}
-
-/** Resolve a user's email address (best-effort). */
-async function emailFor(uid) {
-  try {
-    const d = await db.collection('users').doc(uid).get();
-    if (!d.exists) return null;
-    const u = d.data();
-    return u.email || (Array.isArray(u.emailIds) ? u.emailIds[0] : null) || null;
-  } catch { return null; }
 }

@@ -7617,3 +7617,25 @@ removes them for all roles, #293's "only Admin and Manager" ask is met in the St
 - Not verified on a device: the Playwright check uses a 390x520 browser window to stand
   in for a phone with its keyboard open.
 
+**#297 — Chat edits are announced; only the author can edit; darker sent bubble.**
+- An edit is announced exactly like a new message, through one shared path
+  (`services/chatMessageNotify.service.js`): a staff edit of a message the client can see
+  emails the client (and the matter's CC addresses); a client's edit emails the matter's
+  owner and the people on its current step, or the admins. The email says the message was
+  edited and carries the new text — two new editable templates, "Client — Chat message
+  edited" and "Internal — A client edited a message". An internal staff note tells only
+  colleagues @mentioned for the first time. One bell notification and one email per
+  person; an unchanged save sends nothing (checked in a transaction).
+- **Bug fixed:** staff, admins included, could edit a client's message (the 2026-11-05
+  rule let an admin edit anyone's). Edit is now the author's only — the Edit icon shows
+  only on your own messages and the API refuses anything else with 403, judged from the
+  signed-in user, not the request. **Decision:** an admin can still DELETE any message as
+  moderation; the issue asked only about editing. Say if admins should lose that too.
+- Sent bubbles are a darker green (`emerald-100`, visible edge) for contrast on white.
+- Tests: `backend/src/__tests__/chatMessages.test.js` (+9: edit rights, the API check,
+  edit emails for both directions, no internal leak, new-message wording unchanged,
+  templates); `singleEmailPerEvent.test.js` now guards the shared service. Playwright
+  `discussion.spec.ts` (edit notifies once, client edit reaches the owner, edit rights by
+  role, no Edit on a client's bubble, bubble colour). User-visible: yes (emails, Edit
+  icon, colour).
+

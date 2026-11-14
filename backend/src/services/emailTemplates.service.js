@@ -59,6 +59,21 @@ export const TEMPLATE_DEFS = {
       'You can reply from the Chat tab of your matter in the Client Portal.\n\n' +
       '— The Legal Terminus Team',
   },
+  // #297: an EDITED chat message is announced like a new one, saying it was
+  // edited and carrying the new text.
+  matter_message_edited: {
+    label: 'Client — Chat message edited',
+    audience: 'client',
+    description: 'Sent when our team edits a message the client can see in a matter\'s Chat (#297). Contains the updated message.',
+    placeholders: ['clientName', 'organisation', 'serviceName', 'senderName', 'message'],
+    subject: 'A message on your service was edited',
+    body:
+      'Hello {{clientName}},\n\n' +
+      '{{senderName}} has edited a message about {{serviceName}}. The updated message reads:\n\n' +
+      '{{message}}\n\n' +
+      'You can see the whole conversation in the Chat tab of your matter in the Client Portal.\n\n' +
+      '— The Legal Terminus Team',
+  },
   // #111 — MANUAL reminders a staff member sends from a step. Several variants so
   // the team can pick the right tone; all are editable here and support the same
   // placeholders. `reminder_gentle` is the default offered in the picker.
@@ -151,6 +166,17 @@ export const TEMPLATE_DEFS = {
     subject: 'New message from {{clientName}} · {{serviceName}}',
     body: 'Hi {{recipientName}},\n\n' +
       '{{clientName}} sent a message on {{serviceName}}:\n\n' +
+      '{{message}}\n\n' +
+      'Open the matter in the portal to reply.',
+  },
+  matter_message_team_edited: {
+    label: 'Internal — A client edited a message',
+    audience: 'internal',
+    description: 'Sent to the same people as "A client sent a message" when the client edits one of their Chat messages (#297). Contains the updated message.',
+    placeholders: ['recipientName', 'clientName', 'organisation', 'serviceName', 'message'],
+    subject: '{{clientName}} edited a message · {{serviceName}}',
+    body: 'Hi {{recipientName}},\n\n' +
+      '{{clientName}} edited a message on {{serviceName}}. The updated message reads:\n\n' +
       '{{message}}\n\n' +
       'Open the matter in the portal to reply.',
   },

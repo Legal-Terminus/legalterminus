@@ -212,25 +212,34 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
   };
 
   const startEdit = () => { setDraft(m.body); setEditing(true); };
+  // #297: who an edit reaches, said before Save — the same people a new message does.
+  const editNotice = !isStaff
+    ? 'Our team will be emailed that you edited this message, with the new text.'
+    : m.clientVisible
+      ? 'The client will be emailed that this message was edited, with the new text. The email already sent stays as it was.'
+      : null;
   // #193: own messages were white-on-brand-blue, which made the text hard to
   // read. They now use a WhatsApp-style LIGHT GREEN bubble with dark ink. Because
   // the bubble went from a dark to a light background, every dependent colour has
   // to change with it — the author line, the shared/internal hint, the timestamp
   // and the rich-text link/table overrides were all tuned for white-on-dark and
   // would be invisible on light green if left behind.
+  // #297: one step darker (emerald-100, a visible emerald-300 edge) — emerald-50
+  // was barely distinguishable from the white chat background. Text stays dark
+  // ink; the author line, hint and time move to darker greens to keep contrast.
   return (
     <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${
-        mine ? 'bg-emerald-50 text-ink border border-emerald-100' : 'bg-surface-soft text-ink'
-      }`}>
+        mine ? 'bg-emerald-100 text-ink border border-emerald-300' : 'bg-surface-soft text-ink'
+      }`} data-testid={mine ? 'chat-bubble-mine' : 'chat-bubble'}>
         <div className="flex items-center gap-2 mb-0.5">
-          <span className={`text-[11px] font-semibold ${mine ? 'text-emerald-800' : 'text-ink-muted'}`}>
+          <span className={`text-[11px] font-semibold ${mine ? 'text-emerald-900' : 'text-ink-muted'}`}>
             {m.authorName}
           </span>
           {/* Staff can see at a glance whether the client can read this. */}
           {isStaff && (
             <span className={`text-[10px] inline-flex items-center gap-0.5 ${
-              mine ? 'text-emerald-700/80' : 'text-ink-faint'
+              mine ? 'text-emerald-800' : 'text-ink-faint'
             }`}>
               {m.clientVisible
                 ? <><Eye className="w-3 h-3" /> shared</>
@@ -244,9 +253,8 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
           <div className="space-y-2 min-w-[min(28rem,70vw)]">
             <RichTextEditor value={draft} onChange={setDraft} ariaLabel="Edit message" rows={2} imageTaskId={taskId}
               wordLimit={MESSAGE_WORD_LIMIT} maxHeight={COMPOSER_MAX_HEIGHT} />
-            {m.clientVisible && (
-              <p className="text-[11px] text-ink-muted">The client will see the new text in the portal. No new email is sent, and the one already sent stays as it was.</p>
-            )}
+            {/* #297: an edit is announced like a new message. */}
+            {editNotice && <p className="text-[11px] text-ink-muted">{editNotice}</p>}
             <div className="flex justify-end gap-2">
               <button type="button" className="btn-ghost" onClick={() => setEditing(false)} disabled={save.isPending}>Cancel</button>
               <button type="button" className="btn-primary inline-flex items-center gap-1.5 disabled:opacity-50"
@@ -259,22 +267,28 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
           <RichText html={m.body} className="text-sm" taskId={taskId} />
         )}
         {m.createdAt && !editing && (
-          <div className={`flex items-center gap-1 mt-1 text-[10px] ${mine ? 'text-emerald-700/70' : 'text-ink-faint'}`}>
+          <div className={`flex items-center gap-1 mt-1 text-[10px] ${mine ? 'text-emerald-800' : 'text-ink-faint'}`}>
             <span>
               {new Date(m.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
               {m.editedAt && ' · edited'}
             </span>
-            {m.canEdit && (
+            {/* #297: Edit only on your OWN message (the API refuses anything
+                else); an admin may still delete any message. */}
+            {(m.canEdit || m.canDelete) && (
               <span className="ml-auto inline-flex items-center">
-                <button type="button" onClick={startEdit} aria-label="Edit message" title="Edit"
-                  className="p-2 -my-1 rounded-md hover:bg-black/5 hover:text-ink">
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-                <button type="button" onClick={askDelete} aria-label="Delete message" title="Delete"
-                  disabled={remove.isPending}
-                  className="p-2 -my-1 rounded-md hover:bg-black/5 hover:text-red-700 disabled:opacity-50">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                {m.canEdit && (
+                  <button type="button" onClick={startEdit} aria-label="Edit message" title="Edit"
+                    className="p-2 -my-1 rounded-md hover:bg-black/5 hover:text-ink">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {m.canDelete && (
+                  <button type="button" onClick={askDelete} aria-label="Delete message" title="Delete"
+                    disabled={remove.isPending}
+                    className="p-2 -my-1 rounded-md hover:bg-black/5 hover:text-red-700 disabled:opacity-50">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </span>
             )}
           </div>

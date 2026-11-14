@@ -2727,7 +2727,9 @@ unchanged (`messages` subcollection, `DiscussionPanel`, tab key `discussion`), s
 and stored data are untouched.
 
 **Edit and delete.** `PATCH` and `DELETE /api/tasks/:taskId/messages/:messageId`.
-- Allowed for the message's author or an admin (`canModify` in `messages.controller.js`).
+- **Superseded by #297 (2026-11-14):** EDIT is the author's only
+  (`canEditMessage`); DELETE is the author or an admin (`canDeleteMessage`). The
+  earlier rule let an admin edit anyone's message, including a client's.
   Managers are not given blanket rights: a message is its author's words.
 - A client gets 404 for an internal message, so its existence is never revealed, and 403
   for a firm message they can see.
@@ -2737,9 +2739,9 @@ and stored data are untouched.
   sense. A deleted message cannot be edited again (409).
 - Both keep the replaced text in `revisions` (`{ body, replacedAt, replacedBy }`), never
   returned by the API. The firm keeps a record of what a client was actually sent.
-- Neither notifies anyone. The email for the original message cannot be recalled, and a
-  second email for a corrected typo would be noise.
-- `listMessages` returns `editedAt`, `deleted` and `canEdit` per message.
+- ~~Neither notifies anyone.~~ **Superseded by #297:** an EDIT is announced exactly
+  like a new message (below); a delete still notifies nobody.
+- `listMessages` returns `editedAt`, `deleted`, `canEdit` and (#297) `canDelete` per message.
 
 **Confirm before sharing.** In the Portal, a staff message with "Visible to client" ticked
 opens a preview (the app-wide `useConfirm` dialog) before it is posted. This is a UI step
@@ -2808,6 +2810,30 @@ remaining" as that step's "From the previous step" note — to team members too.
   mobile app bundles the Portal, so an app built earlier still says Discussion until
   rebuilt. The last user-visible "discussion" (an error message) now says chat. Code
   names stay (`DiscussionPanel`, tab key `discussion`, `messages`).
+
+## Chat: an edit is announced; only the author edits (#297, 2026-11-14)
+
+- `services/chatMessageNotify.service.js` — `notifyChatMessage({ ..., edited })` is
+  the one path for a new AND an edited message: a client's message → owner + current
+  step's assignees, else admins (#200), template `matter_message_team` /
+  `matter_message_team_edited`; a staff message shared with the client → the client
+  (CC the matter's `ccEmails`), `matter_message` / `matter_message_edited`; an
+  internal staff message → only @mentioned colleagues (on an edit, only those
+  mentioned for the first time; `mentionedUids` keeps the union). Each person gets
+  one bell notification (`email: false`) and one templated email; the
+  `EMAIL_DISABLED` kill-switch applies through `sendTemplatedEmail`. The two
+  `*_edited` templates are editable in Settings → Email Templates and carry the
+  updated text in `{{message}}`.
+- **No duplicates:** one server path serves the internal and the client portal;
+  `updateMessage` compares and writes in a Firestore transaction, so an unchanged
+  body (a double-clicked Save) writes and notifies nothing.
+- **Edit = author only, enforced by the API:** `loadModifiableMessage(req, res,
+  'edit')` → `canEditMessage(req.user, m)` (`m.authorUid === req.user.uid`, the
+  verified token's uid), re-checked inside the transaction; 403 "You can only edit
+  messages you wrote." The Portal shows Edit only when `canEdit`. Delete stays
+  author-or-admin as moderation.
+- Own ("sent") bubbles are `bg-emerald-100` with an `emerald-300` edge (were
+  `emerald-50`, barely distinct from the white thread).
 
 ## Scheduled calls without a shared secret (2026-11-05)
 
