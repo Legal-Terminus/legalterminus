@@ -118,3 +118,66 @@ test("an amount with paise shows two decimals (₹299.80, not ₹299.8)", async 
   // 18% of 1,010 is 181.80
   await expect(page.locator(".cart-line-gst")).toHaveText("+ ₹181.80 GST");
 });
+
+/* ── #244 (2026-11-12): quantities — − and + on each line, Flipkart-style ── */
+
+test("a cart saved before quantities loads with 1 of each; + and − reprice the line and the summary", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openCart(page);
+  const summary = page.getByRole("complementary", { name: "Order summary" });
+  const qty = page.getByRole("group", { name: "Quantity of Private Limited Company Registration in India" });
+  await expect(qty.locator(".cart-qty-value")).toHaveText("1");
+  await expect(qty.getByRole("button", { name: /One fewer/ })).toBeDisabled();
+
+  await qty.getByRole("button", { name: /One more/ }).click();
+  await expect(qty.locator(".cart-qty-value")).toHaveText("2");
+  // 9,499 × 2 + 7,999 = 26,997; GST 1,709.82 × 2 + 1,439.82 = 4,859.46; total 31,856.46.
+  await expect(summary).toContainText("Price (3 services)");
+  await expect(summary).toContainText("₹26,997");
+  await expect(summary).toContainText("₹4,859.46");
+  await expect(page.getByRole("button", { name: /Checkout · pay ₹31,856.46/ })).toBeEnabled();
+  // The cut price is per unit too: (13,999 − 9,499) × 2.
+  await expect(summary).toContainText("You save ₹9,000");
+  await expect(page.locator(".cart-line").first()).toContainText("₹9,499 each");
+  await expect(page.locator(".cart-line").first()).toContainText("₹18,998");
+
+  await qty.getByRole("button", { name: /One fewer/ }).click();
+  await expect(qty.locator(".cart-qty-value")).toHaveText("1");
+  await expect(summary).toContainText("₹17,498");
+  // Kept across a reload.
+  await qty.getByRole("button", { name: /One more/ }).click();
+  await page.reload();
+  await expect(page.getByRole("group", { name: /Quantity of Private Limited/ }).locator(".cart-qty-value")).toHaveText("2");
+});
+
+test("at most 10 of a service and 20 in all: + stops there and says so", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("lt-cart-v1", JSON.stringify([
+    { productKey: "private-limited", planId: "enriched", label: "Private Limited", planName: "Enriched", price: 9499, quantity: 10 },
+    { productKey: "gst-registration", planId: "supreme", label: "GST", planName: "Supreme", price: 7999, quantity: 99 },
+  ])));
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openCart(page);
+  const pl = page.getByRole("group", { name: /Quantity of Private Limited/ });
+  const gst = page.getByRole("group", { name: /Quantity of GST Registration/ });
+  await expect(pl.locator(".cart-qty-value")).toHaveText("10");
+  await expect(gst.locator(".cart-qty-value")).toHaveText("10", { timeout: 5_000 }); // 99 is read as the cap
+  await expect(pl.getByRole("button", { name: /One more/ })).toBeDisabled();
+  await expect(gst.getByRole("button", { name: /One more/ })).toBeDisabled();
+  await expect(page.getByText(/up to 10 of a service and 20 services in all/)).toBeVisible();
+  await gst.getByRole("button", { name: /One fewer/ }).click();
+  await expect(gst.locator(".cart-qty-value")).toHaveText("9");
+  await expect(page.getByRole("complementary", { name: "Order summary" })).toContainText("Price (19 services)");
+});
+
+test("phone (360px): the − and + buttons are 44px targets, and nothing scrolls sideways", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await openCart(page);
+  for (const b of await page.locator(".cart-qty-btn").all()) {
+    const box = await b.boundingBox();
+    expect(box && box.width >= 44 && box.height >= 44).toBe(true);
+  }
+  await page.getByRole("button", { name: /One more Private Limited/ }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  // No product codes on the customer's page.
+  expect(await page.locator(".cart-page").innerText()).not.toMatch(/SVC-\d/);
+});

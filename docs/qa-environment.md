@@ -16,6 +16,7 @@ building and testing changes that must not touch the live site. Set up on
 | File storage | `legal-terminus-web.firebasestorage.app` | `legal-terminus-web-qa` |
 | Email | sent | **switched off** |
 | Payments | **Razorpay LIVE keys — real money** (on since 2026-11-04) | **Razorpay in TEST mode — no money moves** (the automated tests use a simulated gateway) |
+| Convenience fee (#276) | Waits for Razorpay to enable **Customer Fee Bearer** on the LIVE account | Waits for Razorpay to enable it on the TEST account — test it here first |
 | Sign-in accounts | **shared — see below** | **shared — see below** |
 
 Both live in the same Google Cloud / Firebase project, `legal-terminus-web`,

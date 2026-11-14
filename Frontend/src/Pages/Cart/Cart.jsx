@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaLock, FaTrashAlt, FaShoppingCart, FaArrowLeft } from "react-icons/fa";
+import { FaLock, FaTrashAlt, FaShoppingCart, FaArrowLeft, FaMinus, FaPlus } from "react-icons/fa";
 import ProCheckoutModal from "../../Components/ProCheckoutModal/ProCheckoutModal";
-import { useCart, removeFromCart, changePlan, changeOption, MAX_CART_ITEMS } from "../../utils/cart.js";
+import {
+  useCart, removeFromCart, changePlan, changeOption, setQuantity, maxQuantityFor, unitsIn,
+  MAX_CART_ITEMS, MAX_CART_UNITS, MAX_LINE_QUANTITY,
+} from "../../utils/cart.js";
 import { loadPricing, withGst, inr, PAYMENTS_ENABLED } from "../../utils/pricing.js";
 import "./Cart.css";
 
@@ -18,9 +21,17 @@ import "./Cart.css";
  * every h2 as a section headline (theme/typography.css), and these are a
  * list's and a panel's headings.
  *
+ * QUANTITY (#244, 2026-11-12): each line has − and + to buy several units of
+ * the service ("3 Trademark Registrations"); every unit is a service of its
+ * own. A unit's price and GST are worked out once and multiplied — the same
+ * sum the server does unit by unit — so the line, the summary and the amount
+ * charged agree to the paisa. − stops at 1; Remove takes the line out.
+ *
  * Layout: the services on the left and a sticky order summary on the right
  * from 992px; one column below that, the summary after the list.
  */
+
+const r2 = (n) => Math.round(n * 100) / 100;
 
 /** "ENRICHED" → "Enriched": some catalogue plans are named in capitals. */
 const planLabel = (name) => (name && name === name.toUpperCase() ? name.charAt(0) + name.slice(1).toLowerCase() : name);
@@ -49,6 +60,9 @@ const Cart = () => {
     const option = choice?.options?.find((o) => o.id === l.optionId) ?? null;
     const surcharge = option ? option.surcharge : (catalog ? 0 : (l.optionSurcharge ?? 0));
     const price = (live?.price ?? l.price) + surcharge;
+    const unit = withGst(price);
+    const quantity = l.quantity ?? 1;
+    const oldPrice = live?.oldPrice + surcharge > price ? live.oldPrice + surcharge : null;
     return {
       ...l,
       label: product?.label || l.label,
@@ -57,20 +71,31 @@ const Cart = () => {
       price,
       surcharge,
       // Only a higher figure is a cut price — the same rule as the pricing cards.
-      oldPrice: live?.oldPrice + surcharge > price ? live.oldPrice + surcharge : null,
+      oldPrice,
       plans: product?.plans ?? [],
       choice,
       unavailable: !!catalog && !live,
       needsOption: !!choice && !option,
       // An answer to a question the product no longer asks is not sent.
       ...(catalog && !choice ? { optionId: undefined, optionName: undefined } : {}),
-      ...withGst(price),
+      // One unit (`price` is a unit's), then the line: the unit's figures × quantity.
+      gstPercent: unit.gstPercent,
+      unitGst: unit.gst,
+      unitTotal: unit.total,
+      quantity,
+      maxQuantity: maxQuantityFor(lines, l.productKey),
+      linePrice: r2(price * quantity),
+      lineGst: r2(unit.gst * quantity),
+      lineTotal: r2(unit.total * quantity),
+      lineOldPrice: oldPrice ? r2(oldPrice * quantity) : null,
     };
   });
-  const sum = (k) => Math.round(view.reduce((s, l) => s + l[k], 0) * 100) / 100;
-  const saved = Math.round(view.reduce((s, l) => s + (l.oldPrice ? l.oldPrice - l.price : 0), 0));
+  const sum = (k) => r2(view.reduce((s, l) => s + l[k], 0));
+  const saved = Math.round(view.reduce((s, l) => s + (l.lineOldPrice ? l.lineOldPrice - l.linePrice : 0), 0));
   const blocked = view.some((l) => l.unavailable || l.needsOption);
-  const count = `${view.length} service${view.length === 1 ? "" : "s"}`;
+  // Every unit is a service bought: "3 services" for 3 Trademark Registrations.
+  const units = unitsIn(view);
+  const count = `${units} service${units === 1 ? "" : "s"}`;
 
   if (!PAYMENTS_ENABLED || view.length === 0) {
     return (
@@ -156,10 +181,30 @@ const Cart = () => {
                 </div>
 
                 <div className="cart-line-price">
-                  {l.oldPrice && <s className="cart-line-was"><span className="cart-sr">Was </span>{inr(l.oldPrice)}</s>}
-                  <span className="cart-line-now">{inr(l.price)}</span>
-                  {l.surcharge > 0 && <span className="cart-line-gst">Includes {inr(l.surcharge)} for {l.optionName}</span>}
-                  <span className="cart-line-gst">+ {inr(l.gst)} GST</span>
+                  {l.lineOldPrice && <s className="cart-line-was"><span className="cart-sr">Was </span>{inr(l.lineOldPrice)}</s>}
+                  <span className="cart-line-now">{inr(l.linePrice)}</span>
+                  {l.quantity > 1 && <span className="cart-line-gst cart-line-each">{inr(l.price)} each</span>}
+                  {l.surcharge > 0 && <span className="cart-line-gst">Includes {inr(l.surcharge)}{l.quantity > 1 ? " each" : ""} for {l.optionName}</span>}
+                  <span className="cart-line-gst">+ {inr(l.lineGst)} GST</span>
+                </div>
+
+                {/* #244: how many of this service — − and +, Flipkart-style. */}
+                <div className="cart-qty" role="group" aria-label={`Quantity of ${l.label}`}>
+                  <button
+                    type="button"
+                    className="cart-qty-btn"
+                    onClick={() => setQuantity(l.productKey, l.quantity - 1)}
+                    disabled={l.quantity <= 1}
+                    aria-label={`One fewer ${l.label}`}
+                  ><FaMinus aria-hidden="true" /></button>
+                  <output className="cart-qty-value" aria-live="polite">{l.quantity}</output>
+                  <button
+                    type="button"
+                    className="cart-qty-btn"
+                    onClick={() => setQuantity(l.productKey, l.quantity + 1)}
+                    disabled={l.quantity >= l.maxQuantity}
+                    aria-label={`One more ${l.label}`}
+                  ><FaPlus aria-hidden="true" /></button>
                 </div>
 
                 <button
@@ -178,16 +223,21 @@ const Cart = () => {
             <FaArrowLeft aria-hidden="true" /> Add more services
           </Link>
           {view.length >= MAX_CART_ITEMS && (
-            <p className="cart-note">One payment covers up to {MAX_CART_ITEMS} services.</p>
+            <p className="cart-note">One payment covers up to {MAX_CART_ITEMS} different services.</p>
+          )}
+          {(units >= MAX_CART_UNITS || view.some((l) => l.quantity >= MAX_LINE_QUANTITY)) && (
+            <p className="cart-note">
+              One payment covers up to {MAX_LINE_QUANTITY} of a service and {MAX_CART_UNITS} services in all. For more, please pay separately or contact us.
+            </p>
           )}
         </section>
 
         <aside className="cart-summary" aria-label="Order summary">
           <h3 className="cart-summary-title">Order summary</h3>
           <dl className="cart-summary-rows">
-            <div><dt>Price ({count})</dt><dd>{inr(sum("price"))}</dd></div>
-            <div><dt>GST ({view[0].gstPercent}%)</dt><dd>{inr(sum("gst"))}</dd></div>
-            <div className="cart-summary-total"><dt>Total</dt><dd>{inr(sum("total"))}</dd></div>
+            <div><dt>Price ({count})</dt><dd>{inr(sum("linePrice"))}</dd></div>
+            <div><dt>GST ({view[0].gstPercent}%)</dt><dd>{inr(sum("lineGst"))}</dd></div>
+            <div className="cart-summary-total"><dt>Total</dt><dd>{inr(sum("lineTotal"))}</dd></div>
           </dl>
           {saved > 0 && <p className="cart-saved">You save {inr(saved)} on list prices</p>}
 
@@ -197,7 +247,7 @@ const Cart = () => {
             disabled={blocked}
             onClick={() => setCheckingOut(true)}
           >
-            <FaLock aria-hidden="true" /> Checkout · pay {inr(sum("total"))}
+            <FaLock aria-hidden="true" /> Checkout · pay {inr(sum("lineTotal"))}
           </button>
           {blocked && <p className="cart-note">Choose a plan{view.some((l) => l.needsOption) ? " and the options asked for" : ""} for every service to continue.</p>}
           {/* #256: codes are checked and applied by the server, at checkout. */}

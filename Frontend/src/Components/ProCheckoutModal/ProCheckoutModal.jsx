@@ -228,8 +228,20 @@ const ProCheckoutModal = ({ plan, option = null, onClose, source = 'unknown', ca
   // #244: the lines shown — the cart's, or this one plan. Each line's GST is
   // the same sum the server does; the order total is their sum.
   // #221: a line names the answer to its question, so the customer sees what they chose.
+  // #244: a cart line of several units is the unit's figures × its quantity —
+  // the server's sum, unit by unit.
+  const r2 = (n) => Math.round(n * 100) / 100;
+  const cartLine = (l) => {
+    const u = withGst(l.price);
+    const q = l.quantity ?? 1;
+    return {
+      key: l.productKey,
+      name: `${l.label} — ${l.planName}${l.optionName ? ` (${l.optionName})` : ""}${q > 1 ? ` × ${q}` : ""}`,
+      quantity: q, gstPercent: u.gstPercent, price: r2(u.price * q), gst: r2(u.gst * q), total: r2(u.total * q),
+    };
+  };
   const lines = isCart
-    ? cartLines.map((l) => ({ key: l.productKey, name: `${l.label} — ${l.planName}${l.optionName ? ` (${l.optionName})` : ""}`, price: l.price, ...withGst(l.price) }))
+    ? cartLines.map(cartLine)
     : [{ key: source, name: `${plan.name} Plan${option ? ` (${option.name})` : ""}`, price: plan.price, ...withGst(plan.price) }];
   const sum = (k) => Math.round(lines.reduce((s, l) => s + l[k], 0) * 100) / 100;
   const gst = sum("gst");
@@ -273,7 +285,7 @@ const ProCheckoutModal = ({ plan, option = null, onClose, source = 'unknown', ca
     setCartNote({
       added: "Added to your cart.",
       swapped: `Your cart now has the ${plan.name} plan${option ? ` (${option.name})` : ""} for this service.`,
-      already: "This plan is already in your cart.",
+      already: "This plan is already in your cart. You can change how many there.",
       full: "Your cart is full. Pay for it first, or remove a service.",
     }[result]);
   };
@@ -590,7 +602,7 @@ const ProCheckoutModal = ({ plan, option = null, onClose, source = 'unknown', ca
           <div className="pco-step">
             <div className="pco-plan-header-row">
               <div className="pco-plan-avatar">👤</div>
-              <h2 className="pco-section-title">{isCart ? `Your Cart (${lines.length})` : "Your Selected Plan"}</h2>
+              <h2 className="pco-section-title">{isCart ? `Your Cart (${lines.reduce((n, l) => n + l.quantity, 0)})` : "Your Selected Plan"}</h2>
             </div>
 
             {!isCart && (<>
@@ -896,7 +908,7 @@ const ProCheckoutModal = ({ plan, option = null, onClose, source = 'unknown', ca
               {quote ? (<>
                 {quote.lines.map((l) => (
                   <div key={l.productKey} className="pco-summary-row">
-                    <span>{l.label} — {l.planName}</span>
+                    <span>{l.label} — {l.planName}{l.quantity > 1 ? ` × ${l.quantity}` : ""}</span>
                     <span>{inr(l.listPrice)}</span>
                   </div>
                 ))}

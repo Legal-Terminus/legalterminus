@@ -25,6 +25,8 @@
  * off a coupon later never changes what the report says happened.
  */
 
+import { groupUnits } from './orderItems.js';
+
 export const COUPON_COLLECTION = 'coupons';
 export const REDEMPTION_COLLECTION = 'couponRedemptions';
 /** How long a checkout holds a one-time code. The same as an order's own life. */
@@ -171,7 +173,8 @@ export const discountLabel = (c) => (c.discountType === 'percent' ? `${c.discoun
  * originalAmount − discount + gst = amountCharged.
  */
 export function redemptionRecord(order, { amountPaid, paidAt, note } = {}) {
-  const lines = Array.isArray(order.items) && order.items.length ? order.items : [order];
+  // #244: one entry per line, with its quantity; a one-service order is its own line.
+  const lines = Array.isArray(order.items) && order.items.length ? groupUnits(order.items) : [order];
   const c = order.coupon ?? {};
   return {
     orderId: order.orderId, code: order.couponCode,
@@ -180,7 +183,7 @@ export function redemptionRecord(order, { amountPaid, paidAt, note } = {}) {
     couponCreatedBy: c.createdBy ?? null, couponCreatedAt: c.createdAt ?? null,
     uid: order.uid, clientName: order.customer?.name ?? '', clientEmail: order.customer?.email ?? '',
     services: lines.map((l) => ({
-      productKey: l.productKey ?? null, label: l.label, planName: l.planName,
+      productKey: l.productKey ?? null, label: l.label, planName: l.planName, quantity: l.quantity ?? 1,
       listPrice: l.listPrice ?? l.price, discount: l.discount ?? 0, price: l.price, gst: l.gst ?? 0, amount: l.amount,
     })),
     originalAmount: order.subtotalBeforeDiscount, discount: order.discount, gst: order.gst ?? 0,
@@ -219,10 +222,11 @@ export function couponOnPaid(coupon, order, at) {
 
 /** The coupon's figures as the checkout shows them. */
 export function quoteView(priced, coupon) {
-  const lines = Array.isArray(priced.items) && priced.items.length ? priced.items : [priced];
+  // #244: one entry per line the customer chose, with its quantity and the line's sums.
+  const lines = Array.isArray(priced.items) && priced.items.length ? groupUnits(priced.items) : [priced];
   return {
     lines: lines.map((l) => ({
-      productKey: l.productKey, label: l.label, planName: l.planName,
+      productKey: l.productKey, label: l.label, planName: l.planName, quantity: l.quantity ?? 1,
       listPrice: l.listPrice ?? l.price, discount: l.discount ?? 0, price: l.price, gst: l.gst, amount: l.amount,
     })),
     subtotalBeforeDiscount: priced.subtotalBeforeDiscount ?? priced.price,

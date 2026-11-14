@@ -55,6 +55,10 @@
  * priced from the catalogue like a single plan; the order's amount is their
  * sum and is paid in one checkout. ONE approval opens one matter per line. The
  * shape and the rules are in orderItems.js; a one-service order is unchanged.
+ * A line may ask for several units (`quantity`, 1–10, at most 20 units in an
+ * order): each unit is stored, priced and opened as a line of its own, so the
+ * order's amount — the figure every payment check compares — is the server's
+ * sum over the units, and one approval opens one matter per unit.
  *
  * COUPONS (#256, #257, #260): a website order may carry ONE coupon code. The
  * server checks it (coupons.js) and prices the order with it (orderItems.js:
@@ -72,7 +76,8 @@ import { logger } from '../config/logger.js';
 import { findPlan, loadCatalog } from './pricing.service.js';
 import { gateway } from './paymentGateway.service.js';
 import {
-  couponDiscounts, isMultiItem, itemLines, linesToOpen, planLineMatters, priceOrder, publicItems, requestedItems, settleLineMatters,
+  couponDiscounts, expandUnits, isMultiItem, itemLines, linesSentence, linesToOpen, planLineMatters, priceOrder, publicItems,
+  requestedItems, settleLineMatters,
 } from './orderItems.js';
 import {
   COUPON_COLLECTION, HOLD_MS, REDEMPTION_COLLECTION, assertUsable, couponOnPaid, couponSnapshot, normaliseCode, quoteView, redemptionRecord,
@@ -106,18 +111,63 @@ export function newOrderId(now = new Date()) {
 }
 
 /**
+ * #276 — Customer Fee Bearer. The largest convenience fee accepted on top of
+ * an order: 10% of it, or ₹25 on a small one. Razorpay's own rates are about
+ * 2–3.5% + GST; anything above this is not a fee we will take on trust.
+ */
+export const MAX_FEE_SHARE = 0.10;
+export const MIN_FEE_ALLOWANCE = 25;
+const paiseOf = (n) => Math.round(n * 100);
+
+/**
+ * #276: the convenience fee the CLIENT paid on this payment, or null. Pure.
+ * Only when the payment's verified `amount` is exactly the order's amount +
+ * the gateway's reported `fee` for that payment (a Customer Fee Bearer
+ * account), and the fee is a sane positive figure. On an ordinary account the
+ * amount equals the order and the entity's `fee` is the firm's own cost —
+ * never the client's — so null. `tax` is kept only when 0 ≤ tax ≤ fee.
+ */
+export function convenienceFee(order, payment) {
+  const { amount, fee, tax } = payment ?? {};
+  if (!Number.isFinite(amount) || !Number.isFinite(fee) || fee <= 0) return null;
+  if (fee > Math.max(order.amount * MAX_FEE_SHARE, MIN_FEE_ALLOWANCE)) return null;
+  if (paiseOf(amount) - paiseOf(fee) !== paiseOf(order.amount)) return null;
+  return { fee: paiseOf(fee) / 100, tax: Number.isFinite(tax) && tax >= 0 && tax <= fee ? paiseOf(tax) / 100 : null };
+}
+
+/**
  * What a verified payment does to an order. Pure.
  *   noop   — already settled; this is a repeat. Change nothing.
  *   review — money arrived but it is not the amount we asked for. Record it,
  *            open nothing, tell staff.
- *   paid   — settle it.
+ *   paid   — settle it. #276: with `convenienceFee` (and `convenienceFeeTax`)
+ *            when the client paid the order + Razorpay's fee for this payment
+ *            (Customer Fee Bearer). The order's own amount is unchanged.
  */
 export function decideSettlement(order, payment) {
   if (['paid', 'review', 'refunded'].includes(order.status)) return { action: 'noop' };
-  if (payment.amount != null && Math.round(payment.amount * 100) !== Math.round(order.amount * 100)) {
-    return { action: 'review', reason: `Paid ₹${payment.amount}, expected ₹${order.amount}.` };
+  if (payment.amount != null && paiseOf(payment.amount) !== paiseOf(order.amount)) {
+    const cf = convenienceFee(order, payment);
+    if (cf) return { action: 'paid', convenienceFee: cf.fee, convenienceFeeTax: cf.tax };
+    const fee = Number.isFinite(payment.fee) && payment.fee > 0 ? ` (the gateway reported a fee of ₹${payment.fee})` : '';
+    return { action: 'review', reason: `Paid ₹${payment.amount}${fee}, expected ₹${order.amount}.` };
   }
   return { action: 'paid' };
+}
+
+/**
+ * #276: what the order records about a client-paid convenience fee. Pure.
+ * `amountPaid` stays the ORDER's amount — what is credited to a matter, what a
+ * refund is measured against, what the client's receipt says — and the fee is
+ * kept apart, for staff only.
+ */
+export function feeFields(decision, payment) {
+  if (!decision.convenienceFee) return {};
+  return {
+    convenienceFee: decision.convenienceFee,
+    convenienceFeeTax: decision.convenienceFeeTax ?? null,
+    gatewayAmount: payment.amount, // the order + the fee: what left the client's account
+  };
 }
 
 /** Whether a paid order opens a matter by itself. Pure. */
@@ -220,7 +270,8 @@ async function priceWanted({ uid, productKey, planId, optionId, items, couponCod
   const catalog = await loadCatalog({ fresh: true });
   // #221: the answer to a product's question adds its surcharge here, before
   // GST and before any coupon; a missing or unknown answer is refused (400).
-  const plans = wanted.map((w) => findPlan(catalog, w.productKey, w.planId, w.optionId));
+  // #244: a line of quantity N is N units, each priced from the catalogue.
+  const plans = expandUnits(wanted, wanted.map((w) => findPlan(catalog, w.productKey, w.planId, w.optionId)));
   if (!normaliseCode(couponCode)) return { wanted, plans, priced: priceOrder(plans), coupon: null };
   priceOrder(plans); // an unknown plan is refused as before, whatever the code
   const coupon = await findCoupon(couponCode);
@@ -312,10 +363,20 @@ export async function settlePaid(orderId, payment, source) {
     const cref = o.couponCode ? getDb().collection(COUPON_COLLECTION).doc(o.couponCode) : null;
     const csnap = cref ? await tx.get(cref) : null;
     const decision = decideSettlement(o, payment);
-    if (decision.action === 'noop') return 'noop';
+    if (decision.action === 'noop') {
+      // #276: a paid order settled without the gateway's figures (the return
+      // could not read the payment back) learns its fee from a later verified
+      // signal for the SAME payment — recorded once, nothing else changes.
+      const cf = o.status === 'paid' && o.convenienceFee == null && o.gatewayPaymentId
+        && payment.gatewayPaymentId === o.gatewayPaymentId ? convenienceFee(o, payment) : null;
+      if (cf) tx.update(ref, { ...feeFields({ convenienceFee: cf.fee, convenienceFeeTax: cf.tax }, payment), updatedAt: nowIso() });
+      return 'noop';
+    }
     const common = {
       gatewayPaymentId: payment.gatewayPaymentId ?? null, method: payment.method ?? null,
-      amountPaid: payment.amount ?? snap.data().amount, settledBy: source,
+      // #276: with a client-paid fee, what was paid FOR THE ORDER is its amount; the fee is apart.
+      amountPaid: decision.convenienceFee ? o.amount : (payment.amount ?? snap.data().amount), settledBy: source,
+      ...feeFields(decision, payment),
       failureReason: null, updatedAt: nowIso(),
     };
     if (decision.action === 'review') {
@@ -391,8 +452,15 @@ export async function fulfil(orderId, { retry = false } = {}) {
     logger.warn({ err, orderId }, 'orders: could not write the customer order history');
   }
 
-  const workflowFor = async (serviceKey) => {
-    try { return !!(serviceKey && await getCompiledForServiceKey(serviceKey)); } catch { return false; } // treated as no workflow
+  // #244: asked once per service — the units of a line share theirs.
+  const asked = new Map();
+  const workflowFor = (serviceKey) => {
+    if (!asked.has(serviceKey)) {
+      asked.set(serviceKey, (async () => {
+        try { return !!(serviceKey && await getCompiledForServiceKey(serviceKey)); } catch { return false; } // treated as no workflow
+      })());
+    }
+    return asked.get(serviceKey);
   };
   let matter;
   if (isMultiItem(o)) {
@@ -418,7 +486,7 @@ export async function fulfil(orderId, { retry = false } = {}) {
   if (matter.state === 'awaiting_approval') {
     await tellStaff('Website order paid — approve it to open the matter',
       `${who} paid ${paid} for ${o.label} — ${o.planName} (order ${orderId}). Approve the order under Website Orders and its matter${isMultiItem(o) ? 's' : ''} will be opened.`
-        + (byHand.length ? ` No matter can be opened automatically for ${byHand.map((it) => it.label).join(', ')}: please open ${byHand.length > 1 ? 'those' : 'that one'} by hand.` : ''),
+        + (byHand.length ? ` No matter can be opened automatically for ${linesSentence(byHand)}: please open ${byHand.length > 1 ? 'those' : 'that one'} by hand.` : ''),
       undefined, ['admin', 'manager']);
     // Told once: the customer's email below went out when the payment arrived.
     if (retry) return getOrder(orderId);
@@ -433,7 +501,7 @@ export async function fulfil(orderId, { retry = false } = {}) {
       title: 'Payment received',
       message: [
         isMultiItem(o)
-          ? `Thank you. We have received your payment of ${paid} for these ${o.items.length} services:`
+          ? `Thank you. We have received your payment of ${paid} for these ${o.items.length} services:` // #244: units
           : `Thank you. We have received your payment of ${paid} for ${o.label} — ${o.planName}.`,
         ...itemLines(o, rupees),
         ...(o.couponCode ? [`Coupon ${o.couponCode} took ${rupees(o.discount)} off the price of ${rupees(o.subtotalBeforeDiscount)}.`] : []),
@@ -545,7 +613,7 @@ async function openMatter(o, approval = {}, line = null) {
       paymentStatus: 'fully_paid', totalCost: what.amount, amountReceived: what.amount,
       paymentMode: o.gateway === 'simulated' ? 'Online (test payment)' : 'Online (Razorpay)',
       // #221: the plan bought — with the answer to its question ("Supreme (Prior User)") — so staff see it on the matter.
-      paymentDescription: `Website order ${o.orderId}${line ? ` (${line.index + 1} of ${o.items.length}: ${it.label})` : ''}${what.planName ? `, ${what.planName}` : ''}${what.optionId ? ` — ${what.optionLabel}: ${what.optionName}, surcharge ${rupees(what.surcharge)} before GST` : ''}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}${what.gst ? ` (${rupees(priceOf(what))} + ${rupees(what.gst)} GST)` : ''}${what.discount ? `, after coupon ${o.couponCode}: ${rupees(what.discount)} off ${rupees(what.listPrice)}` : ''}`,
+      paymentDescription: `Website order ${o.orderId}${line ? ` (${line.index + 1} of ${o.items.length}: ${it.label}${it.quantity > 1 ? `, unit ${it.unitNo} of ${it.quantity}` : ''})` : ''}${what.planName ? `, ${what.planName}` : ''}${what.optionId ? ` — ${what.optionLabel}: ${what.optionName}, surcharge ${rupees(what.surcharge)} before GST` : ''}${o.gatewayPaymentId ? `, payment ${o.gatewayPaymentId}` : ''}${what.gst ? ` (${rupees(priceOf(what))} + ${rupees(what.gst)} GST)` : ''}${what.discount ? `, after coupon ${o.couponCode}: ${rupees(what.discount)} off ${rupees(what.listPrice)}` : ''}`,
     },
   }, res);
   if (result.code !== 201 || !result.body?.id) {
@@ -554,6 +622,8 @@ async function openMatter(o, approval = {}, line = null) {
   await db.collection('tasks').doc(result.body.id).set({
     websiteOrderId: o.orderId, websiteOrderApprovedBy: approval.approvedBy ?? null,
     ...(line ? { websiteOrderItem: line.index } : {}),
+    // #244: which unit of its line this matter is ("2 of 3 Trademark Registrations").
+    ...(it?.quantity > 1 ? { websiteOrderUnit: { no: it.unitNo, of: it.quantity } } : {}),
     // #221: the plan and the answer to its question, as fields too, for reports and filters.
     ...(what.planName ? { websiteOrderPlanName: what.planName } : {}),
     ...(what.optionId ? { websiteOrderOption: { label: what.optionLabel, id: what.optionId, name: what.optionName } } : {}),
@@ -580,7 +650,20 @@ export async function confirmReturn(orderId, uid, { gatewayPaymentId, signature 
   });
   if (payment === null) throw httpError(400, 'We could not confirm this payment.', 'BAD_SIGNATURE');
   if (payment && !payment.ok) throw httpError(409, 'The payment is not complete yet.', 'NOT_PAID');
-  return settlePaid(orderId, { gatewayPaymentId, amount: payment?.amount ?? null, method: payment?.method ?? null }, 'return');
+  // #276: a payment above the order with no fee reported yet may be a Customer
+  // Fee Bearer payment read while only `authorized` — its fee is not on it
+  // until capture. Neither settle nor refuse on that: the signed webhook
+  // (payment.captured, with the fee) or a reconcile decides. The customer's
+  // result page waits on a `created` order exactly as it waits for a webhook.
+  if (payment && payment.status === 'authorized' && payment.fee == null
+    && paiseOf(payment.amount) > paiseOf(order.amount)) {
+    logger.info({ orderId, gatewayPaymentId }, 'orders: payment above the order with no fee yet — left for the webhook');
+    return { order, outcome: 'pending' };
+  }
+  return settlePaid(orderId, {
+    gatewayPaymentId, amount: payment?.amount ?? null, method: payment?.method ?? null,
+    fee: payment?.fee ?? null, tax: payment?.tax ?? null, // #276
+  }, 'return');
 }
 
 /** The customer cancelled, or the payment was declined. Only a `created` order changes. */
@@ -650,7 +733,7 @@ export async function reconcile(orderId) {
   if (!gw) throw httpError(503, 'Online payment is not available right now.', 'PAYMENTS_OFF');
   const at = await gw.fetchOrder(order.gatewayOrderId);
   if (!at?.paid) return { order, outcome: 'not_paid' };
-  return settlePaid(orderId, { gatewayPaymentId: at.gatewayPaymentId, amount: at.amount, method: at.method }, 'reconcile');
+  return settlePaid(orderId, { gatewayPaymentId: at.gatewayPaymentId, amount: at.amount, method: at.method, fee: at.fee ?? null, tax: at.tax ?? null }, 'reconcile');
 }
 
 /** Mark orders nobody completed as abandoned. Cheap: only `created` orders are read. */

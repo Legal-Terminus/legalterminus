@@ -34,7 +34,8 @@
   grid-template-columns: 1fr auto;
   grid-template-areas:
     "main main"
-    "price remove";
+    "price price"
+    "qty remove";
   gap: 14px 16px;
   align-items: center;
 }
@@ -92,6 +93,42 @@
 .cart-line-was { font-size: 14px; color: #8a948e; }
 .cart-line-now { font-size: 20px; font-weight: 700; color: var(--cart-ink); font-variant-numeric: tabular-nums; }
 .cart-line-gst { font-size: 13px; color: var(--cart-muted); flex-basis: 100%; }
+
+/* #244: the quantity — − value +, every button a 44px target. */
+.cart-qty {
+  grid-area: qty;
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  border: 1px solid var(--cart-line);
+  border-radius: 999px;
+  background: #f7f9f8;
+}
+.cart-qty-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cart-brand-dark);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.cart-qty-btn:hover:not(:disabled), .cart-qty-btn:focus-visible { background: #e6f6e9; }
+.cart-qty-btn:disabled { color: #b5beb9; cursor: not-allowed; }
+.cart-qty-value {
+  min-width: 32px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cart-ink);
+  font-variant-numeric: tabular-nums;
+}
 
 .cart-remove {
   grid-area: remove;
@@ -214,8 +251,8 @@
 
 @media (min-width: 640px) {
   .cart-line {
-    grid-template-columns: 1fr auto auto;
-    grid-template-areas: "main price remove";
+    grid-template-columns: 1fr auto auto auto;
+    grid-template-areas: "main qty price remove";
     padding: 20px 20px 20px 22px;
   }
   .cart-line-price { flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }

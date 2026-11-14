@@ -42,7 +42,7 @@ test('the payment signature is Razorpay’s scheme: HMAC-SHA256 of "order|paymen
 
 test('parseWebhookEvent reads Razorpay’s payload and converts paise to rupees', () => {
   const body = (event, extra = {}) => ({ event, payload: { payment: { entity: { id: 'pay_1', order_id: 'order_1', amount: 649900, method: 'upi', ...extra } } } });
-  assert.deepEqual(parseWebhookEvent(body('payment.captured')), { type: 'paid', gatewayOrderId: 'order_1', gatewayPaymentId: 'pay_1', amount: 6499, method: 'upi' });
+  assert.deepEqual(parseWebhookEvent(body('payment.captured')), { type: 'paid', gatewayOrderId: 'order_1', gatewayPaymentId: 'pay_1', amount: 6499, method: 'upi', fee: null, tax: null });
   assert.equal(parseWebhookEvent(body('order.paid')).type, 'paid');
   assert.equal(parseWebhookEvent(body('payment.failed', { error_description: 'Declined' })).reason, 'Declined');
   assert.equal(parseWebhookEvent(body('refund.processed')).type, 'refunded');

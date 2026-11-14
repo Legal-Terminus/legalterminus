@@ -223,6 +223,19 @@ export async function postSimulate(req, res) {
         const paid = await sim.pay(g, { amount: order.amount - 1 });
         return res.json({ delivered: await deliver('payment.captured', { gatewayPaymentId: paid.gatewayPaymentId, amount: paid.amount }) });
       }
+      // #276: Customer Fee Bearer. The fee is worked out like Razorpay's
+      // standard rate — 2% + 18% GST on it — only so the figures look real.
+      case 'success_fee':
+      case 'fee_webhook':
+      case 'fee_mismatch': {
+        const base = Math.round(order.amount * 2) / 100;
+        const tax = Math.round(base * 18) / 100;
+        const fee = Math.round((base + tax) * 100) / 100;
+        const extra = req.body.outcome === 'fee_mismatch' ? 1 : 0;
+        const paid = await sim.pay(g, { amount: order.amount + extra, fee, tax });
+        if (req.body.outcome === 'success_fee') return res.json({ gatewayPaymentId: paid.gatewayPaymentId, signature: paid.signature });
+        return res.json({ delivered: await deliver('payment.captured', { gatewayPaymentId: paid.gatewayPaymentId, amount: paid.amount, fee, tax }) });
+      }
       case 'paid_silently': {
         await sim.pay(g);
         return res.json({ note: 'Paid at the gateway; nothing was sent to us.' });

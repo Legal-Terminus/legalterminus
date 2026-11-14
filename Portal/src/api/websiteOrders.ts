@@ -31,6 +31,13 @@ export interface WebsiteOrderItem {
   optionName?: string;
   basePrice?: number;
   surcharge?: number;
+  /**
+   * #244: one UNIT of a line of several ("2 of 3 Trademark Registrations"):
+   * the line's quantity and this unit's number. Absent on a line of one — and
+   * on every order made before quantities, which is a quantity of 1.
+   */
+  quantity?: number;
+  unitNo?: number;
   matter: { state: 'none' | 'awaiting_approval' | 'created' | 'failed' | 'not_applicable';
     taskId?: string; error?: string; reason?: string; deleted?: boolean };
 }
@@ -72,6 +79,15 @@ export interface WebsiteOrder {
   basePrice?: number;
   surcharge?: number;
   amountPaid?: number;
+  /**
+   * #276 — Razorpay Customer Fee Bearer: the convenience fee the CLIENT paid on
+   * top of the order (Razorpay's fee for the method they chose, GST included),
+   * its GST, and what left their account (amount + fee). Staff only; absent
+   * when no fee was paid. `amountPaid` stays the order's own amount.
+   */
+  convenienceFee?: number;
+  convenienceFeeTax?: number | null;
+  gatewayAmount?: number;
   gateway: string;
   gatewayOrderId?: string;
   gatewayPaymentId?: string | null;
