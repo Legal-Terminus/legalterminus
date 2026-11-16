@@ -29,8 +29,8 @@ const rows = [
   },
   {
     head: "DIN",
-    range: "₹500 / director",
-    note: "No Additional Charge for the First 3 Directors' DINs.",
+    range: "₹0",
+    note: "No charge for the first 3 directors. ₹500 per director will be chargeable for every additional director above 3.",
   },
   {
     head: "INC-20A (Commencement)",
