@@ -1,7 +1,7 @@
 # Dependency updates, adapted from Ambyflow's config (security audit 2026-10-04).
 #
 # Unlike Ambyflow, this repo is not one npm workspace: the root, backend, Portal,
-# website (Frontend) and Android app (MobileApp) each have their own lockfile, so
+# website (Frontend), iPhone app (iOSApp) and Android app (AndroidApp) each have their own lockfile, so
 # the npm entry lists every folder. Grouping keeps it to one minor/patch PR per
 # folder per week instead of dozens.
 #
@@ -19,7 +19,8 @@ updates:
       - /backend
       - /Portal
       - /Frontend
-      - /MobileApp
+      - /iOSApp
+      - /AndroidApp
     schedule:
       interval: weekly
     open-pull-requests-limit: 5

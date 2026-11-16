@@ -433,7 +433,7 @@ jobs:
       - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
 
       # The same FRONTEND values the production Portal deploy uses. The environment-defining
-      # ones (API host, database, bucket, auth domain) come from MobileApp/environments.json.
+      # ones (API host, database, bucket, auth domain) come from MobileShared/environments.json.
       - name: Production values for the app's Portal bundle
         run: |
           printf 'VITE_FIREBASE_API_KEY=%s\nVITE_FIREBASE_MESSAGING_SENDER_ID=%s\nVITE_FIREBASE_APP_ID=%s\nVITE_THEME_C=true\nVITE_PAYMENTS_ENABLED=true\n' \
@@ -443,24 +443,24 @@ jobs:
 
       - name: Signing material
         run: |
-          echo "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" | base64 -d > MobileApp/android/app/google-services.json
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" | base64 -d > AndroidApp/android/app/google-services.json
           echo "${{ secrets.ANDROID_KEYSTORE_B64 }}" | base64 -d > "$RUNNER_TEMP/upload.keystore"
           printf 'storeFile=%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$RUNNER_TEMP/upload.keystore" \
             "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" "${{ secrets.ANDROID_KEY_ALIAS }}" "${{ secrets.ANDROID_KEY_PASSWORD }}" \
-            > MobileApp/android/key.properties
+            > AndroidApp/android/key.properties
 
-      - run: npm ci --prefix Portal && npm ci --prefix MobileApp
+      - run: npm ci --prefix Portal && npm ci --prefix AndroidApp
 
       # app-env (production) → build:mobile → check-bundle production → cap sync android.
-      - run: npm run sync:android --prefix MobileApp
+      - run: npm run sync --prefix AndroidApp
 
       - name: Version
         run: |
-          sed -i "s|versionCode [0-9]*|versionCode ${{ inputs.build_number }}|; s|versionName \"[^\"]*\"|versionName \"${{ inputs.version_name }}\"|" MobileApp/android/app/build.gradle
-          grep -E "versionCode|versionName" MobileApp/android/app/build.gradle
+          sed -i "s|versionCode [0-9]*|versionCode ${{ inputs.build_number }}|; s|versionName \"[^\"]*\"|versionName \"${{ inputs.version_name }}\"|" AndroidApp/android/app/build.gradle
+          grep -E "versionCode|versionName" AndroidApp/android/app/build.gradle
 
       - name: Build
-        working-directory: MobileApp/android
+        working-directory: AndroidApp/android
         run: |
           case "${{ inputs.android_format }}" in
             aab) tasks="bundleRelease" ;;
@@ -477,11 +477,11 @@ jobs:
           [ -n "$SHA" ] || { echo "Set the repository variable ANDROID_UPLOAD_KEY_SHA1"; exit 1; }
           COLONS=$(echo "$SHA" | sed 's/../&:/g; s/:$//')
           APKSIGNER="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
-          for f in MobileApp/android/app/build/outputs/apk/release/*.apk; do
+          for f in AndroidApp/android/app/build/outputs/apk/release/*.apk; do
             [ -e "$f" ] || continue
             "$APKSIGNER" verify --print-certs "$f" | grep -qi "SHA-1 digest: $SHA" || { echo "$f is not signed with the upload key"; exit 1; }
           done
-          for f in MobileApp/android/app/build/outputs/bundle/release/*.aab; do
+          for f in AndroidApp/android/app/build/outputs/bundle/release/*.aab; do
             [ -e "$f" ] || continue
             keytool -printcert -jarfile "$f" | grep -qi "SHA1: $COLONS" || { echo "$f is not signed with the upload key"; exit 1; }
           done
@@ -491,15 +491,15 @@ jobs:
           name: legalterminus-android-${{ inputs.version_name }}-${{ inputs.build_number }}
           retention-days: 7
           path: |
-            MobileApp/android/app/build/outputs/bundle/release/*.aab
-            MobileApp/android/app/build/outputs/apk/release/*.apk
-            MobileApp/android/app/build/outputs/mapping/release/mapping.txt
+            AndroidApp/android/app/build/outputs/bundle/release/*.aab
+            AndroidApp/android/app/build/outputs/apk/release/*.apk
+            AndroidApp/android/app/build/outputs/mapping/release/mapping.txt
 
       - uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ inputs.version_name }} (Build ${{ inputs.build_number }})
           files: |
-            MobileApp/android/app/build/outputs/bundle/release/*.aab
-            MobileApp/android/app/build/outputs/apk/release/*.apk
-            MobileApp/android/app/build/outputs/mapping/release/mapping.txt
+            AndroidApp/android/app/build/outputs/bundle/release/*.aab
+            AndroidApp/android/app/build/outputs/apk/release/*.apk
+            AndroidApp/android/app/build/outputs/mapping/release/mapping.txt

@@ -10,7 +10,7 @@ name: "CodeQL"
 #
 # Languages — chosen from what the repo actually contains:
 #   javascript-typescript  backend/, Portal/, Frontend/, shared/, scripts
-#   java-kotlin            MobileApp/android (MainActivity)
+#   java-kotlin            AndroidApp/android (MainActivity)
 #   python                 the patch_*.py and _bmad/ scripts
 #   actions                .github/workflows/* themselves
 # Deliberately NOT analysed (both failed under GitHub's template, 2026-11-14):
@@ -76,8 +76,8 @@ jobs:
               - "**/dist/**"
               - "**/build/**"
               - "Portal/public/docs/**"
-              - "MobileApp/android/app/src/androidTest/**"
-              - "MobileApp/android/app/src/test/**"
+              - "AndroidApp/android/app/src/androidTest/**"
+              - "AndroidApp/android/app/src/test/**"
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1

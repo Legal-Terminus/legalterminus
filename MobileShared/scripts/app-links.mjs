@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // E29-S07 — the files that let emailed links open the app, for ONE environment's host.
 //
-//   node MobileApp/scripts/app-links.mjs <qa|production> <hosting dir>
+//   node MobileShared/scripts/app-links.mjs <qa|production> <hosting dir>
 //
 // Writes <dir>/.well-known/apple-app-site-association (iOS Universal Links) and
 // <dir>/.well-known/assetlinks.json (Android App Links) naming THAT environment's app

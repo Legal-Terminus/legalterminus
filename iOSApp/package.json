@@ -1,0 +1,35 @@
+{
+  "name": "legal-terminus-ios",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Legal Terminus iPhone app: a Capacitor shell around the Portal (Portal/dist-mobile). QA and production builds come from one switch, LT_APP_ENV.",
+  "scripts": {
+    "app-env": "node ../MobileShared/scripts/app-env.mjs",
+    "build:web": "node ../MobileShared/scripts/app-env.mjs && cd ../Portal && npm run build:mobile && cd ../iOSApp && node ../MobileShared/scripts/check-bundle.mjs",
+    "sync": "npm run build:web && cap sync ios",
+    "sync:qa": "LT_APP_ENV=qa npm run sync",
+    "sync:production": "LT_APP_ENV=production npm run sync",
+    "open": "cap open ios",
+    "run:app": "npm run sync && cap run ios",
+    "check:bundle": "node ../MobileShared/scripts/check-bundle.mjs",
+    "test": "node --test ../MobileShared/scripts/__tests__/mobile-scripts.test.mjs"
+  },
+  "dependencies": {
+    "@capacitor-community/file-opener": "^8.0.1",
+    "@capacitor-firebase/authentication": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/ios": "^8.6.0",
+    "@capacitor/keyboard": "^8.0.6",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
+    "firebase": "^12.19.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.0",
+    "typescript": "^5.9.3"
+  }
+}

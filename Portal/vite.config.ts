@@ -4,12 +4,12 @@ import path from 'path';
 import fs from 'fs';
 
 // Pages only the Android app shows (capacitor.config.ts `server.errorPath`). They live
-// in MobileApp/web, not public/, so the website never serves them: the app is still
+// in MobileShared/web, not public/, so the website never serves them: the app is still
 // in development and the site must not mention it.
 const appOnlyPages = () => ({
   name: 'lt-app-only-pages',
   generateBundle(this: { emitFile: (f: { type: 'asset'; fileName: string; source: string }) => void }) {
-    const dir = path.resolve(__dirname, '../MobileApp/web');
+    const dir = path.resolve(__dirname, '../MobileShared/web');
     for (const fileName of fs.readdirSync(dir)) {
       this.emitFile({ type: 'asset', fileName, source: fs.readFileSync(path.join(dir, fileName), 'utf8') });
     }

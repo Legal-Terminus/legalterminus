@@ -15,15 +15,30 @@ tag vX.Y.Z-lt.N on main  ──(deploy-production.yml, approval)──▶ websit
         ├── "Deploy to Production" run by hand from the TAG with build_android=true
         │        └─▶ signed .aab/.apk ──▶ GitHub Release "vX.Y.Z (Build N)" ──▶ Play Console (by hand)
         │
-        └── Mac: git checkout vX.Y.Z-lt.N → LT_APP_ENV=production npm run sync:ios
+        └── Mac: git checkout vX.Y.Z-lt.N → cd iOSApp && npm run sync:production
                  └─▶ Xcode: Archive → Distribute → App Store Connect ──▶ TestFlight ──▶ App Store
 ```
+
+## Repo layout (since 2026-11-16)
+
+```
+iOSApp/        the iPhone app: package.json, capacitor.config.ts, ios/ (Xcode project). Run npm here.
+AndroidApp/    the Android app: package.json, capacitor.config.ts, android/ (Gradle project). Run npm here.
+MobileShared/  what both use: environments.json (the one QA/production description), scripts/
+               (app-env, check-bundle, app-links + tests), assets/ (icon, splash), web/ (the
+               old-WebView page)
+Portal/        the web app both apps wrap; `npm run build:mobile` writes Portal/dist-mobile
+```
+
+Each app has its own `node_modules`, lockfile, Capacitor config and QA/production switch
+(`npm run sync:qa` / `npm run sync:production`). The old single `MobileApp/` folder is gone; the
+QA and production apps are still separate installs (different app id and name), chosen at build time.
 
 ## The environment switch
 
 **One value decides which environment a build talks to: `LT_APP_ENV` = `qa` (the default) or
 `production`.** Everything that depends on the environment comes from one file,
-`MobileApp/environments.json`, and follows that value. Nothing environment-specific is written
+`MobileShared/environments.json`, and follows that value. Nothing environment-specific is written
 anywhere else.
 
 | | QA (`LT_APP_ENV=qa`, default) | Production (`LT_APP_ENV=production`) |
@@ -42,8 +57,8 @@ never mistaken for it.
 How it works:
 
 ```
-LT_APP_ENV ─▶ MobileApp/scripts/app-env.mjs  (run first by every `npm run sync:*`)
-               ├─ MobileApp/.app-env.json              the choice; Gradle and capacitor.config.ts read it
+LT_APP_ENV ─▶ MobileShared/scripts/app-env.mjs  (run first by every `npm run sync` in iOSApp/ and AndroidApp/)
+               ├─ <app>/.app-env.json              the choice; Gradle and capacitor.config.ts read it
                ├─ Portal/.env.mobile.local             the Portal's values (outranks Portal/.env.local)
                ├─ ios/App/Config/Environment.xcconfig  bundle id, display name, link host, Google URL scheme
                └─ copies the environment's google-services.json / GoogleService-Info.plist, and
@@ -51,8 +66,8 @@ LT_APP_ENV ─▶ MobileApp/scripts/app-env.mjs  (run first by every `npm run sy
             ─▶ Portal: vite build --mode mobile ─▶ scripts/check-bundle.mjs (the guard) ─▶ cap sync
 ```
 
-- `npm run sync:android` / `sync:ios` / `sync` in `MobileApp/` → a **QA** build.
-- `LT_APP_ENV=production npm run sync:android` (or `sync:ios`) → a **production** build.
+- `npm run sync:qa` in `iOSApp/` or `AndroidApp/` (or plain `npm run sync`) → a **QA** build.
+- `npm run sync:production` in either folder → a **production** build.
 - Gradle and Xcode then build whatever was synced. Gradle refuses `-PappEnv=production` on a
   bundle synced for QA (and the other way round). Xcode refuses to build at all until a sync has
   written `Config/Environment.xcconfig`.
@@ -69,7 +84,7 @@ LT_APP_ENV ─▶ MobileApp/scripts/app-env.mjs  (run first by every `npm run sy
 
 - **One `version_name` and one `build_number` for both platforms per release.** Android's
   `versionName`/`versionCode`, iOS's `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION`
-  (`MobileApp/ios/App/Config/Shared.xcconfig`, or Xcode → General).
+  (`iOSApp/ios/App/Config/Shared.xcconfig`, or Xcode → General).
 - `build_number` = the last GitHub Release's build + 1. It never goes down and is never reused,
   and a QA build takes a number too: Play and TestFlight count per app, not per track.
 - `version_name` follows the Ambyflow release the tag carries (`v1.6.0-lt.9` → app `1.6.0`), so
@@ -100,12 +115,12 @@ and every generated file of the switch.
 
 ## The guard
 
-`MobileApp/scripts/check-bundle.mjs [qa|production]` runs inside every `npm run sync:*` (and the
+`MobileShared/scripts/check-bundle.mjs [qa|production]` runs inside every `npm run sync` (and the
 pipeline) and **fails the build** when the bundle carries the wrong environment: a production
 bundle must not contain `qa-data`, `legal-terminus-qa`, `localhost:5001`, a `.test` address or
 `EMAIL_DISABLED`; a QA bundle must not contain `legalterminus.com/api`; and either must contain its
 own API address. The patterns are in `environments.json` (`forbidInBundle`). `npm test` in
-`MobileApp/` checks the guard against a QA and a production fixture bundle.
+`iOSApp/` or `AndroidApp/` runs the shared tests in `MobileShared/` that check the guard against a QA and a production fixture bundle.
 
 ## Android — the pipeline (production)
 
@@ -115,7 +130,7 @@ own API address. The patterns are in `environments.json` (`forbidInBundle`). `np
    The run waits for the `production` environment reviewer like any production deploy. With
    `build_android` on, the web deploy job is skipped.
 3. The job (`build-android`) writes the Portal values from secrets, runs
-   `LT_APP_ENV=production npm run sync:android` (switch → `build:mobile` → guard → `cap sync`),
+   `npm run sync:production` in `AndroidApp/` (switch → `build:mobile` → guard → `cap sync`),
    writes the keystore and `google-services.json` from secrets, sets the version, runs
    `gradle bundleRelease assembleRelease`, checks the signer is the upload key (`apksigner` /
    `keytool` against `ANDROID_UPLOAD_KEY_SHA1`), and attaches `.aab`, `.apk` and `mapping.txt` to
@@ -133,8 +148,8 @@ pipeline-built APK on a real phone before uploading it (sign-in, View a document
 ## Android — a QA build (Mac)
 
 ```
-cd MobileApp && npm ci
-npm run sync:android                      # QA: Legal Terminus QA, com.legalterminus.app.qa
+cd AndroidApp && npm ci
+npm run sync:qa                      # QA: Legal Terminus QA, com.legalterminus.app.qa
 cd android && ./gradlew assembleDebug     # or assembleRelease with key.properties present
 ```
 
@@ -145,7 +160,7 @@ give the QA app its own Play Console entry (owner checklist).
 ## iOS — Xcode on the Mac
 
 1. Clean checkout of the tag: `git clone --branch vX.Y.Z-lt.N … lt-release && cd lt-release`.
-2. `cd MobileApp && npm ci && LT_APP_ENV=production npm run sync:ios` — writes the production
+2. `cd iOSApp && npm ci && npm run sync:production` — writes the production
    values (from `~/lt-android-release/env/production.env`), copies
    `~/lt-android-release/keys/production/GoogleService-Info.plist` into `ios/App/App/`, builds the
    Portal, runs the guard and `cap sync ios` (which runs `pod install`). For QA, leave
@@ -157,7 +172,7 @@ give the QA app its own Play Console entry (owner checklist).
    signing; the capabilities Sign in with Apple and Associated Domains come from
    `App/App.entitlements` (the domain is `applinks:` + the environment's host).
 4. Product → Destination "Any iOS Device" → Product → **Archive**. Organizer → Distribute App →
-   **App Store Connect** → Upload (the settings of `MobileApp/ios/ExportOptions.plist`: method
+   **App Store Connect** → Upload (the settings of `iOSApp/ios/ExportOptions.plist`: method
    `app-store-connect`, symbols included). Also **Export** the `.ipa` to
    `~/lt-android-release/out/legalterminus-<version>-<build>.ipa` and attach it to the GitHub
    Release by hand, so both platforms' binaries sit on one release.
@@ -170,7 +185,7 @@ give the QA app its own Play Console entry (owner checklist).
 
 A simulator build needs none of the Apple items:
 `xcodebuild -workspace App.xcworkspace -scheme App -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build`
-(from `MobileApp/ios/App`, after `npm run sync:ios`).
+(from `iOSApp/ios/App`, after `npm run sync:qa` in `iOSApp/`).
 
 ## Before any production build (both platforms)
 
@@ -189,7 +204,7 @@ A simulator build needs none of the Apple items:
 
 `deploy-qa.yml` writes the QA site's `/.well-known/apple-app-site-association` and
 `/.well-known/assetlinks.json` from `environments.json` → `appLinks`
-(`MobileApp/scripts/app-links.mjs qa Frontend/dist`). They name the QA apps only
+(`MobileShared/scripts/app-links.mjs qa Frontend/dist`). They name the QA apps only
 (`com.legalterminus.app.qa`). Until the owner fills in the Apple team id and the QA signing
 fingerprints there, nothing is written and Firebase's own generated files keep being served.
 After the first deploy with values, check that the repo's files win over Firebase's:
@@ -204,8 +219,8 @@ Nothing below has been done; every value the code needs is a named placeholder.
 
 **Apple Developer account (E29-S01)**
 1. Enrol LEGAL TERMINUS PRIVATE LIMITED (organisation; D-U-N-S number). Note the **Team ID**.
-2. Put the Team ID in `MobileApp/ios/App/Config/Shared.xcconfig` (`DEVELOPMENT_TEAM = …`, now a
-   comment), `MobileApp/ios/ExportOptions.plist` (`TEAMID`) and `MobileApp/environments.json` →
+2. Put the Team ID in `iOSApp/ios/App/Config/Shared.xcconfig` (`DEVELOPMENT_TEAM = …`, now a
+   comment), `iOSApp/ios/ExportOptions.plist` (`TEAMID`) and `MobileShared/environments.json` →
    `appLinks.appleTeamId`.
 3. Identifiers → **two** App IDs: `com.legalterminus.app` (production) and
    `com.legalterminus.app.qa` (QA). On both: **Sign in with Apple** and **Associated Domains**.

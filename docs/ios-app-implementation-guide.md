@@ -7,7 +7,7 @@ design decisions in `architecture.md` → "iOS app (E-29)"; the release procedur
 `legalterminus.com`, `legal-terminus-qa.web.app`).
 
 ```
-Portal/src ──(vite build --mode mobile)──▶ Portal/dist-mobile ──(cap sync ios)──▶ MobileApp/ios/App/App/public
+Portal/src ──(vite build --mode mobile)──▶ Portal/dist-mobile ──(cap sync ios)──▶ iOSApp/ios/App/App/public
    └─ lib/native.ts, lib/googleSignIn.ts (native branch), lib/firebase.ts (persistence)   — isNativePlatform() guards
 WKWebView origin capacitor://localhost ──▶ API (CORS_ORIGINS) / buckets (storage-cors.json)
 html[data-native="ios"] ──▶ safe-area and overscroll CSS; the web build has no attribute
@@ -15,7 +15,7 @@ html[data-native="ios"] ──▶ safe-area and overscroll CSS; the web build ha
 
 ## E29-S02 — the platform
 
-`MobileApp/package.json` scripts:
+`iOSApp/package.json` scripts (guide written for the old single `MobileApp/`; scripts are now `sync`, `sync:qa`, `sync:production`, `open`, `run:app`):
 ```json
 "build:web": "cd ../Portal && npm run build:mobile",
 "sync:android": "npm run build:web && cap sync android",
@@ -34,7 +34,7 @@ plugins: { …, Keyboard: { resize: 'body', resizeOnFullScreen: true } },
 // server.errorPath / android.minWebViewVersion stay Android-only; iOS has no old-WebView case.
 ```
 
-`Info.plist` keys (`MobileApp/ios/App/App/Info.plist`):
+`Info.plist` keys (`iOSApp/ios/App/App/Info.plist`):
 ```
 NSCameraUsageDescription           Legal Terminus uses the camera to photograph a document for your matter.
 NSPhotoLibraryUsageDescription     Legal Terminus needs your photos to upload a document or image.
@@ -42,7 +42,7 @@ NSPhotoLibraryAddUsageDescription  Legal Terminus saves documents you download w
 ITSAppUsesNonExemptEncryption      false
 ```
 
-`MobileApp/ios/ExportOptions.plist` (committed):
+`iOSApp/ios/ExportOptions.plist` (committed):
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -55,15 +55,15 @@ ITSAppUsesNonExemptEncryption      false
 </dict></plist>
 ```
 
-Root `.gitignore` additions (and uncomment `*.jks` / `*.keystore` in `MobileApp/android/.gitignore`):
+Root `.gitignore` additions (and uncomment `*.jks` / `*.keystore` in `AndroidApp/android/.gitignore`):
 ```
-MobileApp/ios/App/Pods/
-MobileApp/ios/App/build/
-MobileApp/ios/App/public/
-MobileApp/ios/App/App/capacitor.config.json
-MobileApp/ios/App/App/config.xml
-MobileApp/ios/**/xcuserdata/
-MobileApp/ios/**/GoogleService-Info*.plist
+iOSApp/ios/App/Pods/
+iOSApp/ios/App/build/
+iOSApp/ios/App/public/
+iOSApp/ios/App/App/capacitor.config.json
+iOSApp/ios/App/App/config.xml
+iOSApp/ios/**/xcuserdata/
+iOSApp/ios/**/GoogleService-Info*.plist
 *.mobileprovision
 *.p8
 *.jks
@@ -100,7 +100,7 @@ Workflows: `deploy-qa.yml` → `CORS_ORIGINS=https://localhost,capacitor://local
 No new sign-in code: `startGoogleSignIn` already takes the native branch on any native platform.
 iOS needs the plugin's set-up (BeatMyEMI's `ios/App` is the worked example):
 
-1. `GoogleService-Info.plist` into `MobileApp/ios/App/App/` and added to the App target in
+1. `GoogleService-Info.plist` into `iOSApp/ios/App/App/` and added to the App target in
    Xcode (ignored by git; the release Mac keeps it in `~/lt-android-release/keys/`).
 2. `Info.plist` — the Google picker returns to the app through the reversed client id from
    that plist:
@@ -111,7 +111,7 @@ iOS needs the plugin's set-up (BeatMyEMI's `ios/App` is the worked example):
      <array><string>com.googleusercontent.apps.XXXXXXXX-xxxxxxxx</string></array>   <!-- REVERSED_CLIENT_ID -->
    </dict></array>
    ```
-3. `MobileApp/ios/App/Podfile` — after the line `cap sync` writes for the plugin, add the
+3. `iOSApp/ios/App/Podfile` — after the line `cap sync` writes for the plugin, add the
    Google subspec (the plugin only links Google Sign-In when asked):
    ```ruby
    pod 'CapacitorFirebaseAuthentication', :path => '../../node_modules/@capacitor-firebase/authentication'
@@ -229,7 +229,7 @@ Playwright, web build: `expect(page.locator('html')).not.toHaveAttribute('data-n
 
 ## E29-S07 — Universal Links
 
-`MobileApp/ios/App/Config/QA.xcconfig` → `LINK_HOST = legal-terminus-qa.web.app`;
+`iOSApp/ios/App/Config/QA.xcconfig` → `LINK_HOST = legal-terminus-qa.web.app`;
 `Production.xcconfig` → `LINK_HOST = legalterminus.com`; assign per build configuration.
 `App/App.entitlements`:
 ```xml
@@ -278,7 +278,7 @@ source of this feature per `docs/releases/SYNC.md`; port by content):
 
 ## E29-S09 — the Android job and the guard
 
-`MobileApp/scripts/check-bundle.mjs <qa|production> [dir]` — walks `Portal/dist-mobile`,
+`MobileShared/scripts/check-bundle.mjs <qa|production> [dir]` — walks `Portal/dist-mobile`,
 fails on: production → `/qa-data/`, `/legal-terminus-qa/`, `/localhost:5001/`,
 `/@[\w.-]+\.test\b/`, `/EMAIL_DISABLED/`; qa → `/legalterminus\.com\/api/`. Exit 1 with the
 file and pattern; unit test over two fixture directories.
@@ -305,32 +305,32 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Production env for the Portal build        # the same FRONTEND_* secrets the Portal deploy uses
         run: printf 'VITE_API_BASE_URL=%s\nVITE_FIREBASE_API_KEY=%s\n…' "${{ secrets.FRONTEND_API_URL }}" … > Portal/.env.local
-      - run: npm ci --prefix Portal && npm ci --prefix MobileApp
-      - run: cd Portal && npm run build:mobile && node ../MobileApp/scripts/check-bundle.mjs production
+      - run: npm ci --prefix Portal && npm ci --prefix AndroidApp
+      - run: cd Portal && npm run build:mobile && node ../MobileShared/scripts/check-bundle.mjs production
       - name: Signing material
         run: |
-          echo "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" | base64 -d > MobileApp/android/app/google-services.json
-          echo "${{ secrets.ANDROID_KEYSTORE_B64 }}"     | base64 -d > MobileApp/android/upload.keystore
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" | base64 -d > AndroidApp/android/app/google-services.json
+          echo "${{ secrets.ANDROID_KEYSTORE_B64 }}"     | base64 -d > AndroidApp/android/upload.keystore
           printf 'storeFile=../upload.keystore\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
-            "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" "${{ secrets.ANDROID_KEY_ALIAS }}" "${{ secrets.ANDROID_KEY_PASSWORD }}" > MobileApp/android/key.properties
-      - run: sed -i "s|versionCode [0-9]*|versionCode ${{ inputs.build_number }}|; s|versionName \"[^\"]*\"|versionName \"${{ inputs.version_name }}\"|" MobileApp/android/app/build.gradle
-      - run: cd MobileApp && npx cap sync android
-      - run: cd MobileApp/android && ./gradlew bundleRelease assembleRelease -PlinkHost=legalterminus.com --no-daemon
+            "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" "${{ secrets.ANDROID_KEY_ALIAS }}" "${{ secrets.ANDROID_KEY_PASSWORD }}" > AndroidApp/android/key.properties
+      - run: sed -i "s|versionCode [0-9]*|versionCode ${{ inputs.build_number }}|; s|versionName \"[^\"]*\"|versionName \"${{ inputs.version_name }}\"|" AndroidApp/android/app/build.gradle
+      - run: cd AndroidApp && npx cap sync android
+      - run: cd AndroidApp/android && ./gradlew bundleRelease assembleRelease -PlinkHost=legalterminus.com --no-daemon
       - name: Verify the signer
-        run: $ANDROID_HOME/build-tools/*/apksigner verify --print-certs MobileApp/android/app/build/outputs/apk/release/*.apk | grep -q "${{ vars.ANDROID_UPLOAD_KEY_SHA1 }}"
+        run: $ANDROID_HOME/build-tools/*/apksigner verify --print-certs AndroidApp/android/app/build/outputs/apk/release/*.apk | grep -q "${{ vars.ANDROID_UPLOAD_KEY_SHA1 }}"
       - uses: actions/upload-artifact@v7
         with: { name: legalterminus-android-${{ inputs.version_name }}-${{ inputs.build_number }}, retention-days: 7,
-                path: "MobileApp/android/app/build/outputs/bundle/release/*.aab\nMobileApp/android/app/build/outputs/apk/release/*.apk\nMobileApp/android/app/build/outputs/mapping/release/mapping.txt" }
+                path: "AndroidApp/android/app/build/outputs/bundle/release/*.aab\nAndroidApp/android/app/build/outputs/apk/release/*.apk\nAndroidApp/android/app/build/outputs/mapping/release/mapping.txt" }
       - uses: softprops/action-gh-release@v2
         with: { tag_name: "${{ github.ref_name }}", name: "${{ inputs.version_name }} (Build ${{ inputs.build_number }})",
-                files: "MobileApp/android/app/build/outputs/bundle/release/*.aab\nMobileApp/android/app/build/outputs/apk/release/*.apk" }
+                files: "AndroidApp/android/app/build/outputs/bundle/release/*.aab\nAndroidApp/android/app/build/outputs/apk/release/*.apk" }
 ```
-`MobileApp/android/app/build.gradle` reads `key.properties` into `signingConfigs.release`
+`AndroidApp/android/app/build.gradle` reads `key.properties` into `signingConfigs.release`
 (standard snippet) and applies it to `buildTypes.release`; absent, a local build uses the debug
 config. Turn `minifyEnabled true` on with Capacitor's ProGuard rules so `mapping.txt` exists —
 test the release APK once after.
 
-`MobileApp/scripts/env.sh <qa|production>` copies `~/lt-android-release/env/<env>.env` to
+`MobileShared/scripts/env.sh <qa|production>` copies `~/lt-android-release/env/<env>.env` to
 `Portal/.env.local` for the Mac path (`docs/mobile-release.md`).
 
 ## E29-S10 — the console

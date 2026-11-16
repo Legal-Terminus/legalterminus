@@ -153,7 +153,7 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/status-bar"
 
 SPEC CHECKSUMS:
-  AppAuth: ef4da5a3fc2e10b90c09a0a94a9baeaedc0341d5
+  AppAuth: 3a08d0739dfbebc98104f5baa69d23201122bfd9
   AppCheckCore: be8fce5469f68d7f6a29aa94b25f097409ff7fdc
   Capacitor: 62cab4ab4ba04ea925576ddd1be188869e90d9ea
   CapacitorApp: 7b7e43debe505bc61beedb83796aa1368c86078b
@@ -171,9 +171,9 @@ SPEC CHECKSUMS:
   FirebaseCore: ab948de5d99e69aeed3cd6f5ace263ce795b2559
   FirebaseCoreExtension: 201c78d7491a273d61d8afbf491214276a951e6d
   FirebaseCoreInternal: 656b1c2fd5a1c5976183dc54b73deda78fb26ee3
-  GoogleSignIn: e449a40a92e9f2eea56e98b5214d13725dc5a00a
+  GoogleSignIn: 476a90b19668644a619caf79bd373f9f75a783ac
   GoogleUtilities: 7dc09b3fa9ecb5c2298b952313d14628b61b9da3
-  GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
+  GTMAppAuth: 9566e1a3451fd6967b58188fa15286fb6ae7914f
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   IONFilesystemLib: 306469e4c563f61de82d7bca2bbfed9e64d1b2d2
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
@@ -182,4 +182,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 00f8ccb4ee814b06fed8d56cd5e1cca23e72f760
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.17.0

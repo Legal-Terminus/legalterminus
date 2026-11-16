@@ -1,22 +1,27 @@
 // The mobile apps' environment switch (E29, owner decision 2026-11-11: QA first).
 //
 // ONE value picks the environment a build targets: LT_APP_ENV = qa | production,
-// default qa. Everything origin-dependent is derived from MobileApp/environments.json
+// default qa. Everything origin-dependent is derived from MobileShared/environments.json
 // for that value — the app id and name, the API/site host, the Universal Link and
 // App Link host, the Firebase values baked into the Portal bundle, the bundle guard.
 //
-// `npm run sync:*` records the choice in MobileApp/.app-env.json (ignored by git), so
-// a later Gradle or Xcode build follows what was synced instead of guessing.
+// `npm run sync` records the choice in <app>/.app-env.json (iOSApp/ or AndroidApp/, ignored
+// by git), so a later Gradle or Xcode build follows what was synced instead of guessing.
+//
+// Layout: MobileShared/ (this folder's parent) holds the one environments.json and these
+// scripts; iOSApp/ and AndroidApp/ are separate apps that run them from their own folder.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const MOBILE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-export const REPO_DIR = path.resolve(MOBILE_DIR, '..');
-export const STATE_FILE = path.join(MOBILE_DIR, '.app-env.json');
+export const SHARED_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+export const REPO_DIR = path.resolve(SHARED_DIR, '..');
+// The app being built: the folder `npm run` was started in (iOSApp/ or AndroidApp/), or LT_APP_DIR.
+export const APP_DIR = path.resolve(process.env.LT_APP_DIR || process.cwd());
+export const STATE_FILE = path.join(APP_DIR, '.app-env.json');
 
-export function loadEnvironments(file = path.join(MOBILE_DIR, 'environments.json')) {
+export function loadEnvironments(file = path.join(SHARED_DIR, 'environments.json')) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 

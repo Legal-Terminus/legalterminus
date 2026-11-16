@@ -2796,7 +2796,7 @@ origin is added through `CORS_ORIGINS` for each environment.
 
 ## Android app: Capacitor wrapper (E-26, 2026-11-02)
 
-`MobileApp/` is a Capacitor 8 project whose `webDir` is `Portal/dist-mobile`, produced by
+`MobileApp/` (since 2026-11-16 split into `iOSApp/`, `AndroidApp/` and `MobileShared/`) is a Capacitor 8 project whose `webDir` is `Portal/dist-mobile`, produced by
 `npm run build:mobile` (`vite build --mode mobile`). Only that mode changes `base` to `/`; the
 web build keeps `/portal/`. App id `com.legalterminus.app`; minSdk 24, target 36.
 
@@ -2832,7 +2832,7 @@ plugins loaded by dynamic `import()`. A browser takes the old path unchanged.
 - **WebView.** The Portal needs Chrome 111+ (Vite default target, Tailwind 4).
   `android.minWebViewVersion: 111` with `server.errorPath: webview-update.html` shows a
   no-JavaScript page instead of a blank screen on an older WebView. The page lives in
-  `MobileApp/web/` and only `vite build --mode mobile` emits it (`Portal/vite.config.ts`):
+  `MobileShared/web/` and only `vite build --mode mobile` emits it (`Portal/vite.config.ts`):
   the website must not serve app pages while the app is unreleased (2026-11-03).
 
 **Origins.** The app runs at `https://localhost`. QA allows it on the API (`CORS_ORIGINS`) and, as
@@ -2845,7 +2845,7 @@ committed. A throwaway key was used only to prove the release build installs.
 
 ## iOS app (E-29, planned 2026-11-10)
 
-The iPhone app is the same `MobileApp/` shell with an `ios/` platform added; the Portal bundle,
+The iPhone app is the same shell (now `iOSApp/`) with an `ios/` platform added; the Portal bundle,
 `native.ts` and the plugin set are shared with Android. Decisions, in `epics.md` E-29:
 
 - **Origin.** WKWebView cannot serve a custom-scheme app over `https`, so the iOS app's origin is
@@ -2869,10 +2869,10 @@ The iPhone app is the same `MobileApp/` shell with an `ios/` platform added; the
 
 **Built 2026-11-11 (branch `feat/ios-app`).** Structural decisions made while building it:
 
-- **One environment switch (owner, 2026-11-11: QA first).** `MobileApp/environments.json` is the only
+- **One environment switch (owner, 2026-11-11: QA first).** `MobileShared/environments.json` is the only
   place the apps' environments are described; `LT_APP_ENV` (`qa` default | `production`) picks one at
-  build time. `MobileApp/scripts/app-env.mjs` runs first in every `npm run sync:*` and writes the
-  derived files (all git-ignored): `MobileApp/.app-env.json` (read by `capacitor.config.ts` and
+  build time. `MobileShared/scripts/app-env.mjs` runs first in every `npm run sync:*` and writes the
+  derived files (all git-ignored): `<app>/.app-env.json` (read by `capacitor.config.ts` and
   `android/app/build.gradle`), `Portal/.env.mobile.local` (Vite's highest-precedence file for
   `--mode mobile`, so the environment-defining values always beat a developer's `.env.local`), and
   `ios/App/Config/Environment.xcconfig` (included by the App target's Debug/Release xcconfigs:
@@ -2881,7 +2881,7 @@ The iPhone app is the same `MobileApp/` shell with an `ios/` platform added; the
   domain, Universal/App Link host, Firebase files, the bundle guard. A QA build is a separate app,
   **"Legal Terminus QA", `com.legalterminus.app.qa`**; production keeps `com.legalterminus.app`.
   Gradle and Xcode build whatever was synced and refuse a mismatch or a missing sync.
-- **The guard** (`MobileApp/scripts/check-bundle.mjs`) runs inside every sync and in CI: forbidden
+- **The guard** (`MobileShared/scripts/check-bundle.mjs`) runs inside every sync and in CI: forbidden
   patterns per environment plus the environment's own API URL as a required string.
 - **iOS dependencies by CocoaPods**, not Capacitor 8's SPM default: the Google subspec of
   `@capacitor-firebase/authentication` is a Podfile line. Firebase ends CocoaPods releases after
@@ -2898,7 +2898,7 @@ The iPhone app is the same `MobileApp/` shell with an `ios/` platform added; the
 - **App-link files come from the repo, per host.** Firebase Hosting generates ONE
   `assetlinks.json` / `apple-app-site-association` per *project* and serves it on every site
   (seen 2026-11-11: the QA site serves production's Android entry). That cannot keep the QA app off
-  the live host, so `MobileApp/scripts/app-links.mjs` writes the files for one environment's app,
+  the live host, so `MobileShared/scripts/app-links.mjs` writes the files for one environment's app,
   and `deploy-qa.yml` puts the QA pair into the QA site (`firebase.qa.json` now deploys
   `.well-known` and serves the AASA as `application/json`). Production's files wait for launch
   approval. This supersedes "same source as `assetlinks.json`" above.
@@ -2913,7 +2913,7 @@ The iPhone app is the same `MobileApp/` shell with an `ios/` platform added; the
   on iOS, never on Android, on the web only with `VITE_APPLE_SIGN_IN=true` (off until the Firebase
   provider exists). The native first-sign-in name comes from the plugin result, not the ID token,
   and is sent as `fullName` to `/api/auth/register`.
-- **Android release signing** reads `MobileApp/android/key.properties` (absent → debug key);
+- **Android release signing** reads `AndroidApp/android/key.properties` (absent → debug key);
   `minifyEnabled true` for `mapping.txt`; the `build-android` job in `deploy-production.yml` runs
   only by hand from a release tag in the `production` environment.
 

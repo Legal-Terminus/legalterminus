@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // E29-S09 — the build guard.
 //
-//   node scripts/check-bundle.mjs [qa|production] [dir]
+//   node ../MobileShared/scripts/check-bundle.mjs [qa|production] [dir]   (from iOSApp/ or AndroidApp/)
 //
 // Fails (exit 1) when the Portal's mobile bundle carries the wrong environment: a
 // production bundle must contain nothing of QA, a QA bundle nothing of production,

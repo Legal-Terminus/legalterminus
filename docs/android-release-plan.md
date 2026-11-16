@@ -69,7 +69,7 @@ order, who does it, and which steps touch production.
    values. Still to do: an automated **build guard** that fails a release build if `qa-data`, a `-qa`
    URL or a `.test` address is present. `Portal/.env.local` holds QA values, so a build from this
    checkout bakes them in.
-7. ✅ `MobileApp/package-lock.json` is tracked (`0815a17e`), so a clean checkout can `npm ci`. It had been
+7. ✅ `MobileApp/package-lock.json` (now `AndroidApp/package-lock.json`) is tracked (`0815a17e`), so a clean checkout can `npm ci`. It had been
    hidden by the repo-wide `package-lock.json` ignore rule.
 
 ## Phase 2: Website side (⚠ PROD each step; explicit "yes" per step)

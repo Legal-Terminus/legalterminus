@@ -100,7 +100,7 @@ Every state change to a workflow step, document status, payment record, or user 
 ### Frontend Applications
 - **Portal** (new): Vite + React 19 + TypeScript
 - **Frontend** (existing): Vite + React (public marketing site, service landing pages, blog)
-- **Mobile** (planned): Capacitor 6 (Android + iOS + Web) — lives in `MobileApp/`
+- **Mobile** (planned): Capacitor 6 (Android + iOS + Web) — lives in `iOSApp/` and `AndroidApp/` (shared config in `MobileShared/`)
 - **All**: Deployed to Firebase Hosting with CDN
 
 ### Cloud Platform

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 // The environment switch (docs/mobile-release.md): LT_APP_ENV, else the last
-// `npm run sync:*` (.app-env.json), else environments.json's default (qa).
+// `npm run sync` (.app-env.json), else MobileShared/environments.json's default (qa).
 // The QA app is "Legal Terminus QA", id com.legalterminus.app.qa, so it installs next
 // to the production app and is never mistaken for it. On Android the ids also come
 // from Gradle (android/app/build.gradle), on iOS from Config/Environment.xcconfig —
@@ -13,7 +13,7 @@ type Environments = {
   baseAppId: string;
   environments: Record<string, { appIdSuffix: string; appName: string }>;
 };
-const environments = JSON.parse(readFileSync(join(__dirname, 'environments.json'), 'utf8')) as Environments;
+const environments = JSON.parse(readFileSync(join(__dirname, '..', 'MobileShared', 'environments.json'), 'utf8')) as Environments;
 const synced = (() => {
   try { return (JSON.parse(readFileSync(join(__dirname, '.app-env.json'), 'utf8')) as { env?: string }).env; } catch { return undefined; }
 })();
@@ -43,16 +43,6 @@ const config: CapacitorConfig = {
     // minimum), far above Capacitor's default of 60. Without this, an old WebView gets a
     // blank white screen instead of a message.
     minWebViewVersion: 111,
-  },
-  ios: {
-    // E29-S02/S06. iPhone only for the first release (D4): 'mobile' content mode.
-    contentInset: 'automatic',
-    preferredContentMode: 'mobile',
-    allowsLinkPreview: false,
-    scrollEnabled: true,
-    limitsNavigationsToAppBoundDomains: false,
-    // webContentsDebuggingEnabled is left to Capacitor's default: Safari Web Inspector
-    // on Debug builds only; an archived (TestFlight / App Store) build is closed.
   },
   plugins: {
     // Native Google (and, on iOS, Apple) sign-in only returns the provider's ID token; the

@@ -4176,7 +4176,7 @@ Xcode 16, a real iPhone, and the decisions below.
 | D4 | **First release scope.** | **Decided 2026-11-10:** same as Android: no push notifications (E29-S12 = E26-S06), iPhone only (no iPad layout work; `preferredContentMode: 'mobile'`). |
 | D5 | **Bundle id.** | **Decided 2026-11-10: `com.legalterminus.app`**, the same as Android, if it is free in the Apple portal. If not, `com.legalterminus.ios` — record it here; it cannot change after the first upload. |
 | D6 | **Apple sign-in on the website and Android.** Only the iOS app is required to offer it. | **Decided 2026-11-10: on the website, yes** — someone who signed up with Apple on an iPhone (possibly with "Hide my email", so no password and an address they never see) must be able to sign in on legalterminus.com too. **On Android, hidden** for the first release. |
-| D7 | **Which environment the apps talk to.** | **Decided by the owner 2026-11-11: QA first, for both apps.** One build-time switch, `LT_APP_ENV` (`qa` default, `production` for a release), drives everything environment-specific from `MobileApp/environments.json`. A QA build is a separate app — **"Legal Terminus QA", `com.legalterminus.app.qa`** — so it installs next to the production app and is never mistaken for it. This supersedes D5's "same bundle id for every build": the production id stays `com.legalterminus.app`; QA gets the `.qa` suffix on both platforms. |
+| D7 | **Which environment the apps talk to.** | **Decided by the owner 2026-11-11: QA first, for both apps.** One build-time switch, `LT_APP_ENV` (`qa` default, `production` for a release), drives everything environment-specific from `MobileShared/environments.json`. A QA build is a separate app — **"Legal Terminus QA", `com.legalterminus.app.qa`** — so it installs next to the production app and is never mistaken for it. This supersedes D5's "same bundle id for every build": the production id stays `com.legalterminus.app`; QA gets the `.qa` suffix on both platforms. |
 
 | Story | What | Status |
 |---|---|---|
@@ -4201,10 +4201,10 @@ what was built, what is verified, and what is still open. LT keeps story status 
 separate story files. The owner checklist (every Apple / Firebase / Play / GitHub / Cloud step) is
 `docs/mobile-release.md` → "Owner checklist".
 
-*The environment switch (D7, all stories).* `MobileApp/environments.json` describes QA and
+*The environment switch (D7, all stories).* `MobileShared/environments.json` describes QA and
 production (app id suffix, name, host, the Portal values that define the environment, the guard's
-patterns, app-link inputs). `LT_APP_ENV` picks one; `MobileApp/scripts/app-env.mjs` runs first in
-every `npm run sync:*` and writes `MobileApp/.app-env.json`, `Portal/.env.mobile.local` (outranks
+patterns, app-link inputs). `LT_APP_ENV` picks one; `MobileShared/scripts/app-env.mjs` runs first in
+every `npm run sync:*` and writes `<app>/.app-env.json`, `Portal/.env.mobile.local` (outranks
 `.env.local` in Vite), `ios/App/Config/Environment.xcconfig`, and copies/validates the
 environment's Firebase files. `capacitor.config.ts`, `android/app/build.gradle` (`applicationIdSuffix`,
 `app_name`, `linkHost`) and the Xcode project (`Config/Debug|Release.xcconfig` include the
@@ -4216,7 +4216,7 @@ refuses to build before a sync.
 - Open: owner registers the `.qa` apps in Firebase/Apple/Play (checklist 3, 4, 8, 9, 12).
 
 *E29-S02 — iOS platform.* `npx cap add ios --packagemanager CocoaPods` (the guide's Podfile path;
-Capacitor 8 now defaults to SPM). Committed: `MobileApp/ios/` minus Pods/public/generated config;
+Capacitor 8 now defaults to SPM). Committed: `iOSApp/ios/` minus Pods/public/generated config;
 `Podfile` with the Google subspec; `Podfile.lock`; `ExportOptions.plist` (`TEAMID` placeholder,
 method `app-store-connect`, Xcode's current name for `app-store`); `Config/*.xcconfig`;
 `App.entitlements`; `Info.plist` with the three usage strings, `ITSAppUsesNonExemptEncryption = false`,
@@ -4229,6 +4229,26 @@ Ignore lines added at the root and the Android `*.jks`/`*.keystore` lines uncomm
 - Risks: Firebase stops publishing CocoaPods releases after October 2026 (pod install warns) — a
   move to SPM is a later story. `UIRequiredDeviceCapabilities` keeps the template's `armv7`.
 - Open: Team ID in `Shared.xcconfig`/`ExportOptions.plist` (checklist 2); signing on the release Mac.
+
+*2026-11-16 — apps split into separate folders (E29-S02 / S09; owner request).* `MobileApp/` was
+split into `iOSApp/` (Capacitor + `ios/`), `AndroidApp/` (Capacitor + `android/`) and
+`MobileShared/` (`environments.json`, the switch/guard/app-link scripts and their tests, assets,
+the old-WebView page). Each app has its own `package.json`, lockfile and `node_modules`; the scripts
+write their per-build files into the folder they are run from (`APP_DIR`). npm scripts are now
+`sync`, `sync:qa`, `sync:production`, `open`, `run:app`, `check:bundle`, `test` in each app.
+Paths updated in `deploy-production.yml` (Android job), `deploy-qa.yml` (app links),
+`codeql.yml`, `dependabot.yml`, `.gitignore`, `Portal/vite.config.ts`, and the docs — no trigger or
+secret changed. Team ID `LMD2KSCQZX` set in `Shared.xcconfig` and `ExportOptions.plist`.
+- Verified 2026-11-16: `npm test` (10/10) in both apps; `sync:qa` + iOS simulator build and
+  `sync:qa` + `gradlew assembleDebug` succeed from the new folders. NOT verified: the GitHub
+  Android release job (a dry run from a tag is the owner's), a production-environment sync.
+- Not committed: the owner asked for no commit or push.
+- 2026-11-16 (later): the iOS QA Firebase app `com.legalterminus.app.qa` was registered by the owner;
+  its `GoogleService-Info.plist` is in `~/lt-android-release/keys/qa/`. A Run Script build phase
+  ("Copy GoogleService-Info.plist (if present)") now bundles it (the Xcode project had no reference,
+  so it was never in the app); a clean checkout without the file still builds. UI test
+  `testGoogleButtonStartsNativeSignIn` confirms Google's native sign-in starts. Results:
+  `docs/IOS_QA_REPORT.md`.
 
 *E29-S03 — the origin.* `corsOrigins.js` accepts exactly `capacitor://localhost` from
 `CORS_ORIGINS` (exported `IOS_APP_ORIGIN`); tests for the near-misses (`:8080`, trailing `/`,
@@ -4260,7 +4280,7 @@ now `siteOrigin()` (the environment's host).
 (dark text). CSS hooks in `index.css`: `.app-topbar`, `.app-sidebar`, `.app-bottombar`, `.app-main`,
 `.app-safe-page` pad with `env(safe-area-inset-*)` under `html[data-native]` only; overscroll off.
 `viewport-fit=cover` is added by a mobile-build-only Vite plugin, so the website's HTML is
-unchanged. Icon (1024×1024, no alpha) and splash generated from `MobileApp/assets/` with
+unchanged. Icon (1024×1024, no alpha) and splash generated from `MobileShared/assets/` with
 `npx @capacitor/assets generate --ios`. Keyboard plugin `resize: 'body'`. External links: Capacitor iOS already opens any
 other host (and `window.open`, `mailto:`, `tel:`, `upi://`) with the system
 (`WebViewDelegationHandler`), so no `openExternal()` helper or `@capacitor/browser` was added; no
@@ -4272,7 +4292,7 @@ other host (and `window.open`, `mailto:`, `tel:`, `upi://`) with the system
 
 *E29-S07 — Universal Links.* `App.entitlements`: `applinks:$(LT_LINK_HOST)` — the environment's host,
 so a QA build never claims `legalterminus.com`. Android's `linkHost` now comes from the same switch
-(the `-PlinkHost` property is gone). `MobileApp/scripts/app-links.mjs` writes the AASA and
+(the `-PlinkHost` property is gone). `MobileShared/scripts/app-links.mjs` writes the AASA and
 `assetlinks.json` for one environment's app from `environments.json` → `appLinks`; `deploy-qa.yml`
 runs it for the QA site (and `firebase.qa.json` now deploys `.well-known` and serves the AASA as
 JSON). It writes nothing while the Team ID and fingerprints are empty. Production is not wired —
@@ -4306,7 +4326,7 @@ role group, service (marking, disable, one email, repeat, failed email). Playwri
   for the in-app path (website, PR #223 follow-up).
 
 *E29-S09 — release, guard, Android job.* `docs/mobile-release.md` rewritten around the switch;
-`MobileApp/scripts/check-bundle.mjs` (forbidden and required patterns from `environments.json`;
+`MobileShared/scripts/check-bundle.mjs` (forbidden and required patterns from `environments.json`;
 unit-tested against a QA and a production fixture bundle; runs inside every sync). The production
 bundle built on this Mac passes; the same bundle checked as QA fails, as it should.
 `deploy-production.yml`: inputs `build_android`, `android_format`, `version_name`, `build_number`;
@@ -4344,7 +4364,7 @@ new Client, as decided). Shown always on iOS, never on Android (D6), on the web 
   result recorded in the story's status.
 - Never commit `GoogleService-Info.plist`, `.p8`, `.p12`, `.mobileprovision`, `*.keystore`,
   `*.jks`, `key.properties`, `ios/App/Pods/`, `xcuserdata/`. E29-S02 adds the ignore lines; the
-  Android `*.jks` / `*.keystore` lines are still commented out in `MobileApp/android/.gitignore`
+  Android `*.jks` / `*.keystore` lines are still commented out in `AndroidApp/android/.gitignore`
   and get fixed in the same change.
 - Production is touched only with the user's explicit "yes" per step (`docs/delivery.md`), and the
   live site shows nothing of the app until launch is approved (2026-11-03 rule).
@@ -4375,7 +4395,7 @@ plist exists.
 
 ### E29-S02 — The iOS platform in `MobileApp/`
 
-**As** a developer, **I want** `MobileApp/ios/` generated and building on the simulator against
+**As** a developer, **I want** `iOSApp/ios/` generated and building on the simulator against
 QA **so that** every later story has something to run.
 
 **Context.** `MobileApp/capacitor.config.ts` already carries the app id, `webDir`
@@ -4387,12 +4407,12 @@ build --mode mobile` also emits the app-only pages (`appOnlyPages()` in `Portal/
 1. `cd MobileApp && npx cap add ios` (Capacitor 8; CocoaPods installed — `brew install cocoapods`).
    Commit the generated `ios/` **except** what the ignore list below excludes.
 2. `.gitignore` (repo root, under the existing `MobileApp/` entries):
-   `MobileApp/ios/App/Pods/`, `MobileApp/ios/App/build/`, `MobileApp/ios/App/public/`,
-   `MobileApp/ios/App/App/capacitor.config.json`, `MobileApp/ios/App/App/config.xml`,
-   `MobileApp/ios/**/xcuserdata/`, `MobileApp/ios/**/GoogleService-Info*.plist`, `*.mobileprovision`,
-   `*.p8`, `*.jks`, `*.keystore`, `key.properties`, `MobileApp/ios/ExportOptions.plist` is **kept**
+   `iOSApp/ios/App/Pods/`, `iOSApp/ios/App/build/`, `iOSApp/ios/App/public/`,
+   `iOSApp/ios/App/App/capacitor.config.json`, `iOSApp/ios/App/App/config.xml`,
+   `iOSApp/ios/**/xcuserdata/`, `iOSApp/ios/**/GoogleService-Info*.plist`, `*.mobileprovision`,
+   `*.p8`, `*.jks`, `*.keystore`, `key.properties`, `iOSApp/ios/ExportOptions.plist` is **kept**
    (no secret in it; the team id is not a secret). Uncomment `*.jks` / `*.keystore` in
-   `MobileApp/android/.gitignore`. Keep `Podfile.lock` tracked (reproducible pods).
+   `AndroidApp/android/.gitignore`. Keep `Podfile.lock` tracked (reproducible pods).
 3. `MobileApp/package.json`: add `sync:ios` (`npm run build:web && cap sync ios`), `open:ios`,
    `run:ios`; rename the existing `sync` to `sync:android` and make `sync` run both.
 4. `capacitor.config.ts`: add
@@ -4403,7 +4423,7 @@ build --mode mobile` also emits the app-only pages (`appOnlyPages()` in `Portal/
    and keep `server.androidScheme`; **do not set `server.iosScheme` to `https`** — WKWebView
    does not allow it; the iOS origin is `capacitor://localhost` (S03). Also set
    `server.errorPath` only for Android — iOS has no "old WebView" case (Safari is the OS's).
-5. Xcode (`MobileApp/ios/App/App.xcworkspace`, never the `.xcodeproj`): Team = the firm's team;
+5. Xcode (`iOSApp/ios/App/App.xcworkspace`, never the `.xcodeproj`): Team = the firm's team;
    bundle id per D5; Display Name "Legal Terminus"; deployment target per D3; Automatic signing
    for Debug and Release (the Mac that releases signs with the account holder's login — see
    `docs/mobile-release.md`).
@@ -4420,7 +4440,7 @@ build --mode mobile` also emits the app-only pages (`appOnlyPages()` in `Portal/
    (Develop → Simulator) until S03 — record that it is the expected failure.
 
 **Acceptance criteria**
-- `git status` after a full build shows no untracked file under `MobileApp/ios/` — everything
+- `git status` after a full build shows no untracked file under `iOSApp/ios/` — everything
   generated is ignored or committed on purpose; `git ls-files MobileApp | grep -iE 'plist$|p8|p12|mobileprovision|keystore|jks'` lists only `Info.plist` files.
 - `npm run sync:ios` from a clean checkout (`npm ci` in `MobileApp/`) succeeds.
 - The web build (`cd Portal && npm run build`) is byte-identical to before this story
@@ -4590,7 +4610,7 @@ device checklist recorded here.
    the result; if UPI intents fail, add `LSApplicationQueriesSchemes` for the UPI apps and let
    Capacitor pass the scheme to the OS.
 8. **Icon and splash.** `npx @capacitor/assets generate --ios` from the same
-   `MobileApp/assets/` as Android; `SplashScreen` config already holds it until first paint
+   `MobileShared/assets/` as Android; `SplashScreen` config already holds it until first paint
    (`hideNativeSplash`). iOS needs a 1024×1024 icon with no alpha.
 9. **Debug.** `webContentsDebuggingEnabled` true in Debug only (Capacitor default on iOS is
    on for Debug builds; make sure Release is off).
@@ -4706,12 +4726,12 @@ a build is reproducible and never carries QA values.
 | | Android | iOS |
 |---|---|---|
 | Built by | **GitHub Actions**, job `build-android` in `deploy-production.yml`, run **by hand** (`workflow_dispatch`) from a `v*-lt.*` tag, inside the `production` environment (the reviewer approval applies) | **Xcode on the Mac**, from the same tag checked out clean |
-| Values | Production `.env` written by the job from secrets (never `.env.local`) | Production `.env` written by `MobileApp/scripts/env.sh production` from a file outside the repo |
-| Signing | Upload keystore from secrets `ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`; `GOOGLE_SERVICES_JSON_B64` | Xcode automatic signing with the team's distribution certificate; `GoogleService-Info.plist` from outside the repo; `MobileApp/ios/ExportOptions.plist` (method `app-store`) committed |
+| Values | Production `.env` written by the job from secrets (never `.env.local`) | Production `.env` written by `MobileShared/scripts/env.sh production` from a file outside the repo |
+| Signing | Upload keystore from secrets `ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`; `GOOGLE_SERVICES_JSON_B64` | Xcode automatic signing with the team's distribution certificate; `GoogleService-Info.plist` from outside the repo; `iOSApp/ios/ExportOptions.plist` (method `app-store`) committed |
 | Version | Inputs `version_name` and `build_number`; the job writes them into `build.gradle` | The same two numbers, set in Xcode (or `agvtool`) before Archive |
 | Output | Signed `.aab` + `.apk` + `mapping.txt` as workflow artifacts (7 days) and attached to a **GitHub Release `vX.Y.Z (Build N)`** on the tag | Archive → Distribute → App Store Connect → TestFlight; the `.ipa` is also exported to `~/lt-android-release/out/` and attached to the same GitHub Release by hand |
 | Store | `.aab` uploaded to Play **by hand** (Internal testing → Production, staged rollout 10% → 100%; managed publishing stays on) | TestFlight internal group → App Store review → phased release |
-| Guard | `MobileApp/scripts/check-bundle.mjs` runs after `build:mobile`: a `production` build fails if the bundle contains `qa-data`, `legal-terminus-qa`, `localhost:5001`, `.test` or `EMAIL_DISABLED`; a `qa` build fails if it contains `legalterminus.com/api` | The same script, run by `sync:ios` |
+| Guard | `MobileShared/scripts/check-bundle.mjs` runs after `build:mobile`: a `production` build fails if the bundle contains `qa-data`, `legal-terminus-qa`, `localhost:5001`, `.test` or `EMAIL_DISABLED`; a `qa` build fails if it contains `legalterminus.com/api` | The same script, run by `sync:ios` |
 | Numbers | **One `version_name` and one `build_number` for both platforms per release.** `build_number` = last GitHub Release's build + 1, never reused, never lower; QA builds count too (the Play and TestFlight counters are per app, not per track) | |
 | Secrets | GitHub Secrets as base64 (`base64 -i file | pbcopy`); the originals in two places off the repo (`~/lt-android-release/keys/` + the firm's password manager) | The `.p12` export of the distribution certificate and the App Store Connect API key `.p8` in the same two places |
 
@@ -5253,7 +5273,7 @@ E-29's code side, built in one branch: the iOS platform (S02), the app origin on
 Google + Apple sign-in set-up (S04, S11), the files audit (S05), the shell (S06), per-environment
 emailed links (S07), account deletion (S08), the guard and the Android job (S09). The owner's
 instruction of 2026-11-11 — **both apps on QA first, one build-time switch** — is decision D7:
-`LT_APP_ENV` / `MobileApp/environments.json`; a QA build is "Legal Terminus QA",
+`LT_APP_ENV` / `MobileShared/environments.json`; a QA build is "Legal Terminus QA",
 `com.legalterminus.app.qa`. Per-story detail, risks and open items: E-29 → "Implementation
 record". Owner steps: `docs/mobile-release.md` → "Owner checklist".
 
@@ -7142,7 +7162,7 @@ website, the portal or in emails point to it.
   QA still serve one: Firebase Hosting generates it from the Android app registered in the
   Firebase project settings (its SHA-256 fingerprints). Removing that is a project setting,
   left alone because the build in Play review signs in with the same registration.
-- `webview-update.html` moved to `MobileApp/web/`; only the
+- `webview-update.html` moved to `MobileShared/web/`; only the
   app build (`--mode mobile`) emits it.
 - Kept, not user-visible: the app's origin on the production API and bucket, and the
   Capacitor code, which does nothing in a browser. Removing them would only break the

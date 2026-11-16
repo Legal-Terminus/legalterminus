@@ -3,11 +3,11 @@ import groovy.json.JsonSlurper
 apply plugin: 'com.android.application'
 
 // E29 — the environment switch (docs/mobile-release.md "The environment switch").
-// The environment is the one the web bundle was synced for (MobileApp/.app-env.json,
+// The environment is the one the web bundle was synced for (AndroidApp/.app-env.json,
 // written by `npm run sync:android`), else -PappEnv / LT_APP_ENV, else qa. Asking for a
 // different one than was synced fails: the app's ids and its bundle must agree.
 def mobileDir = file('../..')
-def environments = new JsonSlurper().parse(new File(mobileDir, 'environments.json'))
+def environments = new JsonSlurper().parse(new File(mobileDir, '../MobileShared/environments.json'))
 def stateFile = new File(mobileDir, '.app-env.json')
 def syncedEnv = stateFile.exists() ? new JsonSlurper().parse(stateFile).env : null
 def askedEnv = project.findProperty('appEnv') ?: System.getenv('LT_APP_ENV')
@@ -32,8 +32,8 @@ android {
         applicationId "com.legalterminus.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
-        versionName "1.0.0"
+        versionCode 4
+        versionName "1.0.1"
         // QA installs next to production as its own app: "Legal Terminus QA", com.legalterminus.app.qa.
         applicationIdSuffix appEnv.appIdSuffix
         resValue "string", "app_name", appEnv.appName
