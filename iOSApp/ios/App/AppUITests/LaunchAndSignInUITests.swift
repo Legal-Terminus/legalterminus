@@ -14,6 +14,22 @@ final class LaunchAndSignInUITests: XCTestCase {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launch()
+        signOutIfSignedIn()
+    }
+
+    /// The pre-login tests must start from the sign-in page whatever ran before (an earlier signed-in run
+    /// leaves its session in the app): sign out through the account menu when there is one.
+    private func signOutIfSignedIn() {
+        let web = app.webViews.firstMatch
+        guard web.waitForExistence(timeout: 30) else { return }
+        if web.secureTextFields.firstMatch.waitForExistence(timeout: 12) { return } // already the sign-in page
+        let avatar = web.descendants(matching: .any)
+            .matching(NSPredicate(format: "label MATCHES '^[A-Z]{1,2}$' OR label BEGINSWITH 'E2E ' OR label BEGINSWITH 'QA '")).firstMatch
+        if avatar.waitForExistence(timeout: 10) {
+            avatar.tap()
+            let out = web.descendants(matching: .any).matching(NSPredicate(format: "label == 'Sign out'")).firstMatch
+            if out.waitForExistence(timeout: 8) { out.tap(); _ = web.secureTextFields.firstMatch.waitForExistence(timeout: 20) }
+        }
     }
 
     // MARK: helpers
@@ -226,7 +242,7 @@ final class SignedInUITests: XCTestCase {
 
     /// Leave the simulator signed out so the pre-login tests (and the next role) start clean.
     override func tearDown() {
-        if app.state == .runningForeground, web.exists, !web.textFields.firstMatch.exists {
+        if app.state == .runningForeground, web.exists, !web.secureTextFields.firstMatch.exists {
             let avatar = web.descendants(matching: .any)
                 .matching(NSPredicate(format: "label MATCHES '^[A-Z]{1,2}$' OR label BEGINSWITH 'E2E ' OR label BEGINSWITH 'QA '")).firstMatch
             if avatar.exists {
@@ -530,5 +546,108 @@ final class SignedInUITests: XCTestCase {
             XCTAssertFalse(labels().contains { $0.contains("skipped") || $0.contains("Load failed") || $0.contains("Awaiting upload") },
                            "The file did not reach storage (skipped / Load failed / Awaiting upload)")
         }
+    }
+
+    // MARK: end to end: every screen of every role, opened from the phone's own menus (QA data, read-only)
+
+    private func openMenu() {
+        let menu = web.buttons.matching(NSPredicate(format: "label == 'Open menu'")).firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: 20), "Open menu button missing")
+        menu.tap()
+        sleep(1)
+    }
+
+    /// Opens each page from the side menu and checks it loaded: still signed in, no error text, real content.
+    private func visitEveryScreen(_ role: String, _ items: [String]) throws {
+        try freshSignIn(role)
+        var report: [String] = []
+        for item in items {
+            openMenu()
+            let matches = web.links.matching(NSPredicate(format: "label == %@", item))
+            guard matches.firstMatch.waitForExistence(timeout: 10) else {
+                XCTFail("\(role): menu item '\(item)' is missing"); report.append("\(item): MISSING"); continue
+            }
+            // The same label can also be in the bottom bar: tap the one the user can actually hit (the open menu's).
+            guard let link = matches.allElementsBoundByIndex.first(where: { $0.isHittable && $0.frame.minY < 700 }) ?? matches.allElementsBoundByIndex.first(where: { $0.isHittable }) else {
+                XCTFail("\(role): menu item '\(item)' cannot be tapped"); report.append("\(item): NOT TAPPABLE"); continue
+            }
+            link.tap()
+            sleep(4)
+            let l = labels()
+            let bad = l.first { $0.range(of: "something went wrong|unexpected error|failed to load|auth/|internal server error|not found|forbidden", options: [.regularExpression, .caseInsensitive]) != nil && $0.count < 120 }
+            let signedOut = web.secureTextFields.firstMatch.exists
+            XCTAssertFalse(signedOut, "\(role): '\(item)' sent the user to the sign-in page")
+            XCTAssertNil(bad, "\(role): '\(item)' shows an error: \(bad ?? "")")
+            XCTAssertGreaterThan(l.count, 12, "\(role): '\(item)' looks empty")
+            attach("\(role)-screen-\(item)")
+            report.append("\(item): ok (\(l.count) labels)")
+        }
+        print("LT_SCREENS_\(role): \(report.joined(separator: " | "))")
+    }
+
+    func testEveryScreenAdmin() throws {
+        try visitEveryScreen("ADMIN", ["Dashboard", "Matters", "My Tasks", "Users", "Clients", "Reports", "Services", "Worksheets",
+                                       "Settings", "My Profile", "Statutory Calendar", "Website Prices", "Coupons", "Website Orders"])
+    }
+    func testEveryScreenManager() throws {
+        try visitEveryScreen("MANAGER", ["Dashboard", "Matters", "My Tasks", "Users", "Clients", "Reports", "Services", "Worksheets", "My Profile"])
+    }
+    func testEveryScreenTeamMember() throws {
+        try visitEveryScreen("TEAM", ["Dashboard", "Matters", "My Tasks", "Services", "Worksheets", "My Profile", "Statutory Calendar"])
+    }
+    func testEveryScreenClient() throws {
+        try visitEveryScreen("CLIENT", ["Dashboard", "My Services", "Reports", "My Profile"])
+    }
+    func testEveryScreenProfessional() throws {
+        try visitEveryScreen("PRO", ["Dashboard", "My Profile"])
+    }
+
+    // MARK: top margin: the header must sit right under the status bar (never a big gap, never under it)
+
+    /// Top of the header's menu button in points, measured from the top of the screen. The status bar / Dynamic
+    /// Island takes 47 to 62pt on current iPhones (XCUITest cannot read it here), then the 56pt header centres a
+    /// 36pt button: normal is roughly 57 to 85pt. A doubled safe area (the bug this guards) put it at 115pt or more.
+    private func headerGap(_ where_: String, file: StaticString = #filePath, line: UInt = #line) -> CGFloat {
+        let menu = web.buttons.matching(NSPredicate(format: "label == 'Open menu'")).firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: 15), "\(where_): header menu button missing", file: file, line: line)
+        let top = menu.frame.minY
+        print("LT_HEADER_GAP \(where_): menuTop=\(top)")
+        attach("header-\(where_)")
+        return top
+    }
+
+    private func assertHeaderGapIsNormal(_ top: CGFloat, _ where_: String, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertGreaterThanOrEqual(top, 40, "\(where_): the header is pushed UNDER the status bar (top \(top)pt)", file: file, line: line)
+        XCTAssertLessThanOrEqual(top, 95, "\(where_): the header has a big empty gap above it (top \(top)pt, normal is about 57 to 85pt)", file: file, line: line)
+    }
+
+    func testHeaderMarginStaysNormalOnEveryScreen() throws {
+        try freshSignIn("ADMIN")
+        sleep(2)
+        assertHeaderGapIsNormal(headerGap("dashboard"), "dashboard")
+        tap("Matters"); waitFor("All Matters"); sleep(2)
+        assertHeaderGapIsNormal(headerGap("matters"), "matters")
+        let card = web.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'Company Incorporation'")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 30))
+        card.tap(); sleep(2)
+        assertHeaderGapIsNormal(headerGap("matter-detail"), "matter-detail")
+        tap("Chat"); sleep(1)
+        let field = web.descendants(matching: .any).matching(NSPredicate(format: "label == 'Message'")).firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 15)); field.tap(); sleep(3)
+        assertHeaderGapIsNormal(headerGap("chat-keyboard-open"), "chat-keyboard-open")
+        // Dismiss the keyboard by switching tab, then check the page came back to normal.
+        tap("Steps"); sleep(3)
+        assertHeaderGapIsNormal(headerGap("after-keyboard-closed"), "after-keyboard-closed")
+        XCUIDevice.shared.orientation = .landscapeLeft; sleep(2)
+        XCUIDevice.shared.orientation = .portrait; sleep(3)
+        assertHeaderGapIsNormal(headerGap("after-rotation"), "after-rotation")
+    }
+
+    func testHeaderMarginClientAndTeam() throws {
+        try freshSignIn("CLIENT"); sleep(2)
+        assertHeaderGapIsNormal(headerGap("client-dashboard"), "client-dashboard")
+        signOut()
+        try freshSignIn("TEAM"); sleep(2)
+        assertHeaderGapIsNormal(headerGap("team-dashboard"), "team-dashboard")
     }
 }

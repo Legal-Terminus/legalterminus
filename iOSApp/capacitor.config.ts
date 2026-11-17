@@ -32,8 +32,10 @@ const config: CapacitorConfig = {
   // that origin on the API). No allowNavigation list: every other host opens outside the app
   // (Safari), which is what external links, receipts and the website should do (E29-S06).
   ios: {
-    // E29-S02/S06. iPhone only for the first release (D4): 'mobile' content mode.
-    contentInset: 'automatic',
+    // E29-S02/S06. iPhone only for the first release (D4): 'mobile' content mode. contentInset 'never': the Portal's CSS
+    // (html[data-native] safe-area padding) already insets the header and bottom bar; 'automatic' did it a second time,
+    // leaving a ~46pt empty band under the status bar and an uneven page offset.
+    contentInset: 'never',
     preferredContentMode: 'mobile',
     allowsLinkPreview: false,
     scrollEnabled: true,
