@@ -53,6 +53,7 @@ Thumbs.db
 package-lock.json
 # ...but each app shell's lockfile is tracked: a clean checkout must be able to `npm ci` (release builds)
 !iOSApp/package-lock.json
+!iOSAppProd/package-lock.json
 !AndroidApp/package-lock.json
 yarn.lock
 
@@ -69,8 +70,10 @@ AndroidApp/android/app/google-services.json
 
 # E29: the environment switch's outputs (MobileShared/scripts/app-env.mjs) — per build, never committed
 iOSApp/.app-env.json
+iOSAppProd/.app-env.json
 AndroidApp/.app-env.json
 iOSApp/ios/App/Config/Environment.xcconfig
+iOSAppProd/ios/App/Config/Environment.xcconfig
 
 # E29-S02: the iOS app. Generated or secret; everything else under iOSApp/ios is committed.
 iOSApp/ios/App/Pods/
@@ -81,6 +84,15 @@ iOSApp/ios/App/App/config.xml
 iOSApp/ios/**/xcuserdata/
 iOSApp/ios/**/GoogleService-Info*.plist
 iOSApp/ios/DerivedData/
+# iOSAppProd/ (production iPhone app): same rules as iOSApp/
+iOSAppProd/ios/App/Pods/
+iOSAppProd/ios/App/build/
+iOSAppProd/ios/App/App/public/
+iOSAppProd/ios/App/App/capacitor.config.json
+iOSAppProd/ios/App/App/config.xml
+iOSAppProd/ios/**/xcuserdata/
+iOSAppProd/ios/**/GoogleService-Info*.plist
+iOSAppProd/ios/DerivedData/
 # Signing material, both platforms (iOSApp/ios/ExportOptions.plist is NOT secret and is kept)
 *.mobileprovision
 *.p8

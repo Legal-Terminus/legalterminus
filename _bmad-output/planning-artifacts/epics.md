@@ -4259,6 +4259,11 @@ secret changed. Team ID `LMD2KSCQZX` set in `Shared.xcconfig` and `ExportOptions
   QA build 1.0.0 (5) `com.legalterminus.app.qa` uploaded to the new App Store Connect record "Legal Terminus QA"
   (processing VALID); TestFlight group "Legal Terminus QA Testers" created. Beta App Review NOT submitted
   (needs contact details). Reports: `docs/LEGAL_TERMINUS_IOS_QA_*.md`, `docs/LEGAL_TERMINUS_TESTFLIGHT_*.md`.
+- 2026-11-17 (production iPhone app, #268): new `iOSAppProd/`, a separate folder fixed to production
+  (`com.legalterminus.app`, `legalterminus.com`) so QA and production builds cannot be mixed; shares `MobileShared/` and
+  the Portal bundle. Production bundle guard passed; pre-login simulator tests pass (10 passed, 1 skipped); unsigned
+  Release archive built locally. NOT uploaded: no App Store Connect record, Firebase iOS app or production CORS yet
+  (`docs/ios-production-app.md`). QA upload defect D-5: QA bucket CORS lacks `capacitor://localhost`.
 
 *E29-S03 — the origin.* `corsOrigins.js` accepts exactly `capacitor://localhost` from
 `CORS_ORIGINS` (exported `IOS_APP_ORIGIN`); tests for the near-misses (`:8080`, trailing `/`,
