@@ -43,6 +43,22 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
     }, delay);
   };
 
+  // iOS opens the keyboard AFTER the 300ms nudge above, so the page was resized too late and Send
+  // stayed behind the keyboard. Nudge again whenever the keyboard or visual viewport really changes.
+  useEffect(() => {
+    const nudge = () => keepSendInView(50);
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', nudge);
+    window.addEventListener('keyboardDidShow', nudge);
+    window.addEventListener('resize', nudge);
+    return () => {
+      vv?.removeEventListener('resize', nudge);
+      window.removeEventListener('keyboardDidShow', nudge);
+      window.removeEventListener('resize', nudge);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // #200: staff get suggestions when they type "@". Never fetched for a client.
   const { data: mentionable = [] } = useQuery({
     queryKey: ['mentionable', taskId],
@@ -151,7 +167,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
             Type @ and pick a colleague to notify them by email.
           </p>
         )}
-        <div ref={sendRowRef} className="flex items-center justify-between gap-3">
+        <div ref={sendRowRef} className="flex items-center justify-between gap-3 scroll-mb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:scroll-mb-0">
           {isStaff ? (
             <label className="inline-flex items-center gap-2 text-xs text-ink-muted cursor-pointer">
               <input

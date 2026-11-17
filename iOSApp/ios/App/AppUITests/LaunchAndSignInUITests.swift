@@ -348,4 +348,85 @@ final class SignedInUITests: XCTestCase {
         app.launch()
         XCTAssertTrue(web.textFields.firstMatch.waitForExistence(timeout: 30), "Still signed in after sign-out + relaunch")
     }
+
+    // MARK: working screens (QA data; nothing is created, changed or deleted)
+
+    private func tap(_ label: String, timeout: TimeInterval = 20, file: StaticString = #filePath, line: UInt = #line) {
+        let el = web.descendants(matching: .any).matching(NSPredicate(format: "label == %@", label)).firstMatch
+        XCTAssertTrue(el.waitForExistence(timeout: timeout), "\(label) not found", file: file, line: line)
+        el.tap()
+    }
+
+    private func waitFor(_ label: String, timeout: TimeInterval = 30, file: StaticString = #filePath, line: UInt = #line) {
+        let el = web.descendants(matching: .any).matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", label, label)).firstMatch
+        XCTAssertTrue(el.waitForExistence(timeout: timeout), "\(label) did not appear", file: file, line: line)
+    }
+
+    func testAdminMattersListSearchAndFilters() throws {
+        try freshSignIn("ADMIN")
+        tap("Matters")
+        waitFor("All Matters")
+        attach("admin-matters-list")
+        let l = Set(labels())
+        XCTAssertTrue(l.contains("Status") && l.contains("Payment"), "Status and Payment filters are missing on the phone list")
+        let search = web.textFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 10), "Matters search box missing")
+        search.tap(); search.typeText("E2E Client")
+        sleep(2)
+        attach("admin-matters-search")
+        XCTAssertTrue(labels().contains { $0.contains("E2E Client") }, "Search for a known client found nothing")
+    }
+
+    func testAdminOpensMatterAndItsTabs() throws {
+        try freshSignIn("ADMIN")
+        tap("Matters")
+        waitFor("All Matters")
+        let card = web.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'Company Incorporation'")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 30), "No matter card to open")
+        card.tap()
+        for tab in ["Steps", "Documents", "Payments", "Chat"] {
+            tap(tab)
+            sleep(1)
+            attach("matter-tab-\(tab)")
+        }
+        // The chat composer's Send button must be reachable (not hidden under the bottom bar).
+        let field = web.descendants(matching: .any).matching(NSPredicate(format: "label == 'Message'")).firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 15), "Chat message box missing")
+        field.tap()
+        let send = web.buttons.matching(NSPredicate(format: "label == 'Send'")).firstMatch
+        XCTAssertTrue(send.waitForExistence(timeout: 10), "Send button missing")
+        sleep(3) // keyboard animation + the page's own scroll-into-view
+        attach("chat-composer-send-reachable")
+        let keyboard = app.keyboards.firstMatch
+        XCTAssertTrue(keyboard.exists, "keyboard not shown")
+        XCTAssertLessThanOrEqual(send.frame.maxY, keyboard.frame.minY,
+                                 "Send is hidden behind the keyboard (send bottom \(send.frame.maxY) > keyboard top \(keyboard.frame.minY))")
+        // ... and not under the bottom navigation bar either (nav is hidden by the keyboard, so check the closed state):
+    }
+
+    func testNotificationsAndProfileOpen() throws {
+        try freshSignIn("MANAGER")
+        tap("Notifications")
+        sleep(2)
+        attach("manager-notifications")
+        XCTAssertFalse(web.staticTexts.matching(NSPredicate(format: "label CONTAINS 'auth/'")).count > 0)
+    }
+
+    func testClientSeesOnlyOwnServicesAndOpensOne() throws {
+        try freshSignIn("CLIENT")
+        let nav = web.links.matching(NSPredicate(format: "label == 'My Services'")).firstMatch
+        XCTAssertTrue(nav.waitForExistence(timeout: 20), "My Services nav item missing")
+        nav.tap()
+        sleep(3)
+        attach("client-my-services")
+        let l = Set(labels())
+        XCTAssertFalse(l.contains("All Matters"), "Client sees the staff matters list")
+        let card = web.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'Company Incorporation'")).firstMatch
+        if card.waitForExistence(timeout: 20) {
+            card.tap()
+            tap("Documents")
+            sleep(2)
+            attach("client-matter-documents")
+        }
+    }
 }

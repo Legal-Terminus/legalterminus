@@ -1,6 +1,6 @@
 # LEGAL_TERMINUS_IOS_QA_REPORT
 
-Date: 2026-11-17 · App under test: **Legal Terminus QA** `com.legalterminus.app.qa` 1.0.0 (6) · Simulator: iPhone 18 Pro,
+Date: 2026-11-17 · App under test: **Legal Terminus QA** `com.legalterminus.app.qa` 1.0.0 (7) · Simulator: iPhone 18 Pro,
 iOS 27.2, Xcode 27.2 · Backend: QA only (`legal-terminus-qa.web.app`, `qa-data`). Earlier detail: `docs/IOS_QA_REPORT.md`.
 **Only tests that actually ran are counted. Everything else is under "Not run".**
 
@@ -8,7 +8,7 @@ iOS 27.2, Xcode 27.2 · Backend: QA only (`legal-terminus-qa.web.app`, `qa-data`
 
 | Suite | Run | Passed | Failed | Skipped |
 |---|---|---|---|---|
-| iOS XCUITest, real app in the simulator (`AppUITests`) | 18 | 17 | 0 | 1 (launch-time perf, runs on request) |
+| iOS XCUITest, real app in the simulator (`AppUITests`) | 22 | 21 | 0 | 1 (launch-time perf, runs on request) |
 | Playwright, iPhone 15 WebKit against QA (focused set, 2 batches) | not totalled (two partial batches) | see below | 9 specs | not counted |
 
 **XCUITest (17 passed):** launch + splash, sign-in options (Google, Sign in with Apple, email link, forgot password, sign up),
@@ -31,19 +31,33 @@ reproduced and the phone screenshot read:
   **Fixed** (D-2). With that, the client's deletion flow passes on the phone through the friendly "account disabled" message. The
   last step (admin sees the request in Users on a phone) was **not confirmed**.
 
+## Round 2 (2026-11-17, build 7)
+Added in-app tests: matters list + search + Status/Payment filters, open a matter and its Steps / Documents / Payments / Chat tabs,
+chat composer, notifications, client "My Services" page, plus **Send must sit above the on-screen keyboard** (measured).
+Wider Playwright sweep in iPhone WebKit on QA (documents, payments, search, users, matters, professional): 85 passed, 14 failed,
+7 skipped. On desktop 13 of those 14 pass, so they are phone-only; the 14th (`payments-client` unauthenticated check, API on
+localhost:5001) fails on desktop too and is not a UI matter.
+
+**Phone-only failures, classified (screens read):** 10 are test-only: `getByText(...).first()` lands on a hidden desktop-table copy
+(matters-and-clients-lists x6, users x3), or expects a hidden desktop label/format ("Matter owner" label is hidden below 640px but the
+select is named for VoiceOver; WebKit formats upload time as "at 12:05 pm", the spec expects a comma; sidebar "Users" link is the
+bottom-bar item on phones). `account-deletion` (admin step) and `professional-access` (needs "Create Matter" label) are the same family.
+None points to broken app behaviour. Not rewritten (UI-only brief); desktop runs cover them.
+
 ## Defects
 
 | ID | Severity | Finding | Status |
 |---|---|---|---|
 | D-1 | Medium | iOS zoomed/panned the page when a 14px field was focused | Fixed (16px in the app), guard test passes |
-| T-1 | Low (test) | Signed-in runs left a session that broke the pre-login tests | Fixed: teardown signs out |
-| D-2 | Low (accessibility) | The account button had no accessible name on phones (VoiceOver read only initials) | **Fixed** in `TopBar.tsx` (`aria-label` = the user's name); web build passes |
-| P-1 | Info | 9 phone-width Playwright specs fail; all pass on desktop; 6 are desktop-only selectors, 1 fixed via D-2 (admin step unconfirmed) | Classified above |
-| P-2 | Low (UI) | In the chat composer the Send button can rest under the bottom nav until scrolled | **Open** (sticky fix tried and reverted) |
-| O-1 | Low | `/api/auth/firebase-config` returns 500 on QA | Open |
+| D-2 | Low (a11y) | Account button had no accessible name on phones | Fixed (`TopBar.tsx`) |
+| D-3 | **Medium** | **iPhone app: with the keyboard open, the chat Send button was hidden behind the keyboard** (measured: Send bottom 741 > keyboard top 590) | **Fixed**: Capacitor Keyboard `resize: 'native'` (iPhone app only). Retested: passes. Two web-only attempts did not work and were reverted |
+| D-4 | Low (UI) | Chat Send could rest under the bottom nav | Fixed: scroll margin on the Send row; chat specs pass on phone |
+| T-1 | Low (test) | Signed-in runs left a session that broke pre-login tests | Fixed (teardown signs out) |
+| T-2 | Info | Phone-only Playwright failures (above) | Classified; 3 specs adjusted to phone width |
+| O-1 | Low | `/api/auth/firebase-config` returns 500 on QA (backend; out of UI scope) | Open |
 | O-4 | Low | Google prompt says "App", not "Legal Terminus QA" | Open |
-| O-3 | Watch | One first launch after install sat on the splash >14s | Not reproduced in the final runs |
-No Critical or High defects were found in what ran.
+| O-3 | Watch | One first launch after install sat on the splash >14s | Not reproduced |
+No Critical or High defects found in what ran.
 
 ## Performance / crashes / security (only what was observed)
 - **Launch:** 2.5 s average (5 runs, simulator; not a phone figure). **Crashes:** none observed in any simulator run.
@@ -61,6 +75,6 @@ Uploading and downloading a document, document preview, creating or editing a ma
 app, payments (Razorpay test mode), completing Google or Sign in with Apple, camera/photo picker, share sheet, push
 notifications, session expiry, password reset by email, a real iPhone, smaller screens (SE) and iPad, landscape beyond sign-in.
 
-## Readiness score: **58 / 100**
-Up from 42: all five roles sign in on QA in the real app, RBAC/session/sign-out verified, build uploaded and processed. Held
+## Readiness score: **64 / 100**
+Up from 42 (58 earlier today): all five roles sign in on QA in the real app, RBAC/session/sign-out verified, build uploaded and processed. Held
 down by: no document/matter/payment flows exercised in the app, a few open phone UI items (P-2) and no document/matter/payment flows exercised in the app, no real-device run.

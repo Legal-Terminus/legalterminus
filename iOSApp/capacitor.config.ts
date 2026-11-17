@@ -49,7 +49,7 @@ const config: CapacitorConfig = {
     // so there is no blank white gap while the page loads.
     SplashScreen: { launchAutoHide: false, backgroundColor: '#ffffff' },
     // E29-S06: a focused input near the bottom (login, Chat composer) is scrolled into view.
-    Keyboard: { resize: 'body', resizeOnFullScreen: true },
+    Keyboard: { resize: 'native', resizeOnFullScreen: true },
   },
 };
 
