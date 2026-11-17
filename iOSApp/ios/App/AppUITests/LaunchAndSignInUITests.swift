@@ -208,3 +208,144 @@ private extension XCUIElement {
         return button.exists ? button : self
     }
 }
+
+/// Signed-in QA in the real app (simulator). The QA test accounts are passed in as environment
+/// variables, never stored in the repo:
+///   TEST_RUNNER_LT_QA_ADMIN_EMAIL / TEST_RUNNER_LT_QA_ADMIN_PASSWORD (same for MANAGER, TEAM, CLIENT, PRO)
+/// A role without credentials is skipped. Only QA accounts (`qa-*@legalterminus.test`) work on QA.
+final class SignedInUITests: XCTestCase {
+    var app: XCUIApplication!
+    var sessionRestored = false
+    private var web: XCUIElement { app.webViews.firstMatch }
+
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+        app = XCUIApplication()
+        app.launch()
+    }
+
+    /// Leave the simulator signed out so the pre-login tests (and the next role) start clean.
+    override func tearDown() {
+        if app.state == .runningForeground, web.exists, !web.textFields.firstMatch.exists {
+            let avatar = web.descendants(matching: .any)
+                .matching(NSPredicate(format: "label MATCHES '^[A-Z]{1,2}$'")).firstMatch
+            if avatar.exists {
+                avatar.tap()
+                let out = web.descendants(matching: .any).matching(NSPredicate(format: "label == 'Sign out'")).firstMatch
+                if out.waitForExistence(timeout: 5) { out.tap(); _ = web.textFields.firstMatch.waitForExistence(timeout: 20) }
+            }
+        }
+        super.tearDown()
+    }
+
+    private func credentials(_ role: String) throws -> (String, String) {
+        let env = ProcessInfo.processInfo.environment
+        guard let e = env["LT_QA_\(role)_EMAIL"], let p = env["LT_QA_\(role)_PASSWORD"], !e.isEmpty, !p.isEmpty else {
+            throw XCTSkip("No QA credentials for \(role) (set TEST_RUNNER_LT_QA_\(role)_EMAIL / _PASSWORD)")
+        }
+        precondition(e.hasSuffix("@legalterminus.test"), "Only QA test accounts may be used")
+        return (e, p)
+    }
+
+    private func attach(_ name: String) {
+        let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        shot.name = name
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
+
+    /// Visible text of the page, taken from one snapshot (per-element queries race the page).
+    private func labels() -> [String] {
+        let tree = web.debugDescription
+        var out: [String] = []
+        for line in tree.split(separator: "\n") {
+            if let r = line.range(of: "label: '") {
+                let rest = line[r.upperBound...]
+                if let end = rest.firstIndex(of: "'") { out.append(String(rest[..<end])) }
+            }
+        }
+        return out
+    }
+
+    private func signIn(_ role: String) throws {
+        let (email, password) = try credentials(role)
+        XCTAssertTrue(web.waitForExistence(timeout: 30))
+        let field = web.textFields.firstMatch
+        if !field.waitForExistence(timeout: 25) {
+            // The previous run's session was restored (persistence): already signed in.
+            sessionRestored = true
+            return
+        }
+        field.tap(); field.typeText(email)
+        let pw = web.secureTextFields.firstMatch
+        pw.tap(); pw.typeText(password)
+        web.buttons["Sign in"].firstMatch.tap()
+        // Signed in = the password field is gone.
+        let gone = NSPredicate(format: "exists == false")
+        expectation(for: gone, evaluatedWith: web.secureTextFields.firstMatch)
+        waitForExpectations(timeout: 60)
+    }
+
+    private func has(_ label: String) -> Bool { labels().contains(label) }
+
+    private func signOut() {
+        let avatar = web.descendants(matching: .any)
+            .matching(NSPredicate(format: "label MATCHES '^[A-Z]{1,2}$'")).firstMatch
+        XCTAssertTrue(avatar.waitForExistence(timeout: 15), "Account button not found")
+        avatar.tap()
+        let out = web.descendants(matching: .any).matching(NSPredicate(format: "label == 'Sign out'")).firstMatch
+        XCTAssertTrue(out.waitForExistence(timeout: 10), "Sign out is missing from the account menu")
+        out.tap()
+        XCTAssertTrue(web.textFields.firstMatch.waitForExistence(timeout: 30), "Sign out did not return to sign-in")
+    }
+
+    /// Start from the sign-in page whatever the previous run left behind, then sign in.
+    private func freshSignIn(_ role: String) throws {
+        _ = try credentials(role)
+        if !web.textFields.firstMatch.waitForExistence(timeout: 20) { signOut() }
+        try signIn(role)
+        XCTAssertTrue(web.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Dashboard' OR label == 'My Services'")).firstMatch
+            .waitForExistence(timeout: 60), "No dashboard after signing in as \(role)")
+        sleep(2)
+    }
+
+    private func signedInChecks(_ role: String, sees: [String], doesNotSee: [String]) throws {
+        try freshSignIn(role)
+        attach("\(role)-signed-in")
+        let l = Set(labels())
+        for item in sees { XCTAssertTrue(l.contains(item), "\(role) should see \(item)") }
+        for item in doesNotSee { XCTAssertFalse(l.contains(item), "\(role) must NOT see \(item)") }
+        // The page never wider than the phone and no raw error text.
+        XCTAssertFalse(l.contains { $0.contains("auth/") }, "raw Firebase code shown")
+    }
+
+    func testAdmin() throws {
+        try signedInChecks("ADMIN", sees: ["Users", "Reports", "Services", "Matters", "Settings"], doesNotSee: [])
+    }
+    func testManager() throws {
+        try signedInChecks("MANAGER", sees: ["Users", "Reports", "Matters"], doesNotSee: ["API Keys", "Webhooks"])
+    }
+    func testTeamMember() throws {
+        try signedInChecks("TEAM", sees: ["Matters", "My Tasks", "Services"], doesNotSee: ["Users", "Clients", "Coupons", "API Keys"])
+    }
+    func testClient() throws {
+        try signedInChecks("CLIENT", sees: ["My Services", "Reports"], doesNotSee: ["Users", "Clients", "Services", "My Tasks", "Coupons", "API Keys"])
+    }
+    func testProfessional() throws {
+        try signedInChecks("PRO", sees: [], doesNotSee: ["Users", "Reports", "Coupons", "API Keys"])
+    }
+
+    func testSessionSurvivesRelaunchAndSignOutWorks() throws {
+        try freshSignIn("CLIENT")
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(web.waitForExistence(timeout: 30))
+        XCTAssertFalse(web.textFields.firstMatch.waitForExistence(timeout: 12), "Session was lost after relaunch")
+        attach("client-after-relaunch")
+        signOut()
+        attach("after-sign-out")
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(web.textFields.firstMatch.waitForExistence(timeout: 30), "Still signed in after sign-out + relaunch")
+    }
+}

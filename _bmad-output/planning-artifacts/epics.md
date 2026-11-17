@@ -4253,6 +4253,12 @@ secret changed. Team ID `LMD2KSCQZX` set in `Shared.xcconfig` and `ExportOptions
   page. `Portal/src/index.css`: `html[data-native="ios"]` form controls are 16px (app only; web and
   Android unchanged). Guard: UI test `testPageKeepsItsMarginWhileTyping` (failed before, passes
   after). Open: the website's mobile Safari has the same 14px fields (not changed).
+- 2026-11-17 (iOS QA + TestFlight, #268): signed-in XCUITests per role (`SignedInUITests`, QA accounts passed
+  as `TEST_RUNNER_LT_QA_<ROLE>_EMAIL/_PASSWORD`, never committed): admin, manager, team, client, professional
+  nav/RBAC, session survives relaunch, sign out. Full simulator suite 17 passed / 1 skipped / 0 failed.
+  QA build 1.0.0 (5) `com.legalterminus.app.qa` uploaded to the new App Store Connect record "Legal Terminus QA"
+  (processing VALID); TestFlight group "Legal Terminus QA Testers" created. Beta App Review NOT submitted
+  (needs contact details). Reports: `docs/LEGAL_TERMINUS_IOS_QA_*.md`, `docs/LEGAL_TERMINUS_TESTFLIGHT_*.md`.
 
 *E29-S03 — the origin.* `corsOrigins.js` accepts exactly `capacitor://localhost` from
 `CORS_ORIGINS` (exported `IOS_APP_ORIGIN`); tests for the near-misses (`:8080`, trailing `/`,
